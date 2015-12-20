@@ -25,6 +25,7 @@ namespace ASCOM.WiseHardware
         private WiseDome.Direction moving;
         private const int simulatedEncoderTicksPerSecond = 6;
         private bool connected;
+        private const int hwTicks = 1024;
 
         private void log(string fmt, params object[] o)
         {
@@ -42,7 +43,7 @@ namespace ASCOM.WiseHardware
                 new WiseEncSpec() { brd = Hardware.Instance.domeboard, port = DigitalPortType.FirstPortCH, mask = 0x3 },
             };
 
-            hwEncoder = new WiseEncoder(name, 1024, encSpecs, true, 100);
+            hwEncoder = new WiseEncoder(name, hwTicks, encSpecs, true, 100);
             this.simulated = simulated;
             if (this.simulated)
             {
@@ -153,6 +154,14 @@ namespace ASCOM.WiseHardware
             get
             {
                 return (simulated) ? simulatedValue : hwEncoder.Value;
+            }
+        }
+
+        public int Ticks
+        {
+            get
+            {
+                return hwTicks;
             }
         }
     }

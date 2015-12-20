@@ -412,6 +412,9 @@ namespace ASCOM.Wise40
 
         public void CloseShutter()
         {
+            if (!wisedome.Slewing)
+                throw new ASCOM.InvalidOperationException("Denied, dome is slewing!");
+
             wisedome.ShutterStop();
             wisedome.StartClosingShutter();
             tl.LogMessage("CloseShutter", "Started closing the shutter");
@@ -419,12 +422,21 @@ namespace ASCOM.Wise40
 
         public void FindHome()
         {
+            if (wisedome.ShutterIsActive)
+            {
+                tl.LogMessage("FindHome", "Denied, shutter is active.");
+                throw new ASCOM.InvalidOperationException("Cannot move, shutter is active!");
+            }
+
             wisedome.FindCalibrationPoint();
             tl.LogMessage("FindHome", "Called wisedome.FindCalibrationPoint");
         }
 
         public void OpenShutter()
         {
+            if (!wisedome.Slewing)
+                throw new ASCOM.InvalidOperationException("Denied, dome is slewing!");
+
             wisedome.ShutterStop();
             wisedome.StartOpeningShutter();
             tl.LogMessage("OpenShutter", "Started opening the shutter");
@@ -432,6 +444,12 @@ namespace ASCOM.Wise40
 
         public void Park()
         {
+            if (wisedome.ShutterIsActive)
+            {
+                tl.LogMessage("Park", "Denied, shutter is active.");
+                throw new ASCOM.InvalidOperationException("Cannot move, shutter is active!");
+            }
+
             wisedome.MoveTo(90.0);
             tl.LogMessage("Park", "Sent dome to 90.0 deg");
         }
@@ -491,6 +509,12 @@ namespace ASCOM.Wise40
 
         public void SlewToAzimuth(double Azimuth)
         {
+            if (wisedome.ShutterIsActive)
+            {
+                tl.LogMessage("SlewToAzimuth", "Denied, shutter is active.");
+                throw new ASCOM.InvalidOperationException("Cannot move, shutter is active!");
+            }
+
             wisedome.MoveTo(Azimuth);
             tl.LogMessage("SlewToAzimuth", Azimuth.ToString());
         }

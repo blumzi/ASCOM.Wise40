@@ -10,7 +10,7 @@ using ASCOM.Wise40.Properties;
 
 namespace ASCOM.WiseHardware
 {
-    public class WiseDome: IConnectable, IDisposable    {
+    public class WiseDome : IConnectable, IDisposable {
 
         private WisePin leftPin, rightPin;
         private WisePin openPin, closePin;
@@ -21,12 +21,18 @@ namespace ASCOM.WiseHardware
 
         private bool calibrating;
         private bool ventIsOpen;
+        private bool isStuck;
         private enum DomeState { Idle, MovingCW, MovingCCW, AutoShutdown };
         public enum ShutterState { Idle, Opening, Open, Closing, Closed };
+        private enum StuckPhase { NotStuck, FirstStop, GoBackward, SecondStop, ResumeForward };
         public enum Direction { CW, None, CCW };
 
         private DomeState state;
         private ShutterState _shutterState;
+
+        private StuckPhase _stuckPhase;
+        private int prevTicks;      // for Stuck checks
+        private DateTime nextStuckEvent;
 
         private const double CallibrationPointAzimuth = 254.6;
         public const int TicksPerDomeRevolution = 1018;
@@ -39,6 +45,8 @@ namespace ASCOM.WiseHardware
 
         private System.Timers.Timer domeTimer;
         private System.Timers.Timer shutterTimer;
+        private System.Timers.Timer movementTimer;
+        private System.Timers.Timer stuckTimer;
 
         private bool simulated;
 
@@ -106,6 +114,14 @@ namespace ASCOM.WiseHardware
             shutterTimer.Elapsed += onShutterTimer;
             shutterTimer.Enabled = false;
 
+            movementTimer = new System.Timers.Timer(2000); // runs every 25 (22 * 110%) seconds
+            movementTimer.Elapsed += onMovementTimer;
+            movementTimer.Enabled = false;
+
+            stuckTimer = new System.Timers.Timer(1000);  // runs every 1 second
+            stuckTimer.Elapsed += onStuckTimer;
+            stuckTimer.Enabled = false;
+
             log("WiseDome constructor done.");
         }
 
@@ -133,7 +149,7 @@ namespace ASCOM.WiseHardware
         /// <returns></returns>
         private double inertiaDegrees(double az)
         {
-            return 0.7;
+            return 2 * (360 / TicksPerDomeRevolution);
         }
 
         /// <summary>
@@ -143,21 +159,9 @@ namespace ASCOM.WiseHardware
         /// <returns></returns>
         private bool arriving(double az)
         {
-            bool ret = false;
-
-            switch (state)
-            {
-                case DomeState.MovingCW:
-                    if (Math.Abs(targetAz - Azimuth) <= inertiaDegrees(targetAz))
-                        ret = true;
-                    break;
-
-                case DomeState.MovingCCW:
-                    if (Math.Abs(targetAz - Azimuth) <= inertiaDegrees(targetAz))
-                        ret = true;
-                    break;
-            }
-            return ret;
+            if (((state == DomeState.MovingCCW) || (state == DomeState.MovingCW)) && (minAzDistance(az, Azimuth) <= inertiaDegrees(targetAz)))
+                return true;
+            return false;
         }
 
         private void onDomeTimer(object sender, System.Timers.ElapsedEventArgs e)
@@ -189,12 +193,110 @@ namespace ASCOM.WiseHardware
             }
         }
 
+        private void onMovementTimer(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            int currTicks, deltaTicks;
+            const int leastExpectedTicks = 2;  // least number of Ticks expected to change in two seconds
+            
+            // the movementTimer should not be Enabled unless the dome is moving
+            if (isStuck || ((state != DomeState.MovingCW) && (state != DomeState.MovingCCW)))
+                return;
+
+            deltaTicks = 0;
+            currTicks  = domeEncoder.Value;
+
+            if (currTicks == prevTicks)
+                isStuck = true;
+            else {
+                switch (state) {
+                    case DomeState.MovingCW:        // encoder decreases
+                        if (prevTicks > currTicks)
+                            deltaTicks = prevTicks - currTicks;
+                        else
+                            deltaTicks = domeEncoder.Ticks - currTicks + prevTicks;
+
+                        if (deltaTicks < leastExpectedTicks)
+                            isStuck = true;
+                        break;
+
+                    case DomeState.MovingCCW:       // encoder increases
+                        if (prevTicks > currTicks)
+                            deltaTicks = prevTicks - currTicks;
+                        else
+                            deltaTicks = domeEncoder.Ticks - prevTicks + currTicks;
+
+                        if (deltaTicks < leastExpectedTicks)
+                            isStuck = true;
+                        break;
+                }
+            }
+
+            if (isStuck) {
+                _stuckPhase    = StuckPhase.NotStuck;
+                nextStuckEvent = DateTime.Now;
+                onStuckTimer(null, null);           // call first phase immediately
+                stuckTimer.Enabled = true;
+            }
+
+            prevTicks = currTicks;
+        }
+
+
+        private void onStuckTimer(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            DateTime rightNow;
+            WisePin backwardPin, forwardPin;
+
+            rightNow = DateTime.Now;
+
+            if (DateTime.Compare(rightNow, nextStuckEvent) < 0)
+                return;
+
+            forwardPin = (state == DomeState.MovingCCW) ? leftPin : rightPin;
+            backwardPin = (state == DomeState.MovingCCW) ? rightPin : leftPin;
+
+            switch (_stuckPhase) {
+                case StuckPhase.NotStuck:              // Stop, let the wheels cool down
+                    forwardPin.SetOff();
+                    backwardPin.SetOff();
+                    _stuckPhase = StuckPhase.FirstStop;
+                    nextStuckEvent = rightNow.AddMilliseconds(10000);
+                    log("stuck: {0} deg, phase1: stopped moving, letting wheels cool for 10 seconds", Azimuth);
+                    break;
+
+                case StuckPhase.FirstStop:             // Go backward for two seconds
+                    backwardPin.SetOn();
+                    _stuckPhase = StuckPhase.GoBackward;
+                    nextStuckEvent = rightNow.AddMilliseconds(2000);
+                    log("stuck: {0} deg, phase2: going backwards for 2 seconds", Azimuth);
+                    break;
+
+                case StuckPhase.GoBackward:            // Stop again for two seconds
+                    backwardPin.SetOff();
+                    _stuckPhase = StuckPhase.SecondStop;
+                    nextStuckEvent = rightNow.AddMilliseconds(2000);
+                    log("stuck: {0} deg, phase3: stopping for 2 seconds", Azimuth);
+                    break;
+
+                case StuckPhase.SecondStop:            // Done, resume original movement
+                    forwardPin.SetOn();
+                    _stuckPhase = StuckPhase.NotStuck;
+                    isStuck = false;
+                    stuckTimer.Enabled = false;
+                    nextStuckEvent = rightNow.AddYears(100);
+                    log("stuck: {0} deg, phase4: resumed original motion", Azimuth);
+                    break;
+            }
+        }
+
+
         public void MoveCW()
         {
             leftPin.SetOff();
             rightPin.SetOn();
             state = DomeState.MovingCW;
             domeEncoder.setMovement(Direction.CW);
+            movementTimer.Enabled = true;
             log("WiseDome: Started moving CW");
         }
 
@@ -209,6 +311,7 @@ namespace ASCOM.WiseHardware
             leftPin.SetOn();
             state = DomeState.MovingCCW;
             domeEncoder.setMovement(Direction.CCW);
+            movementTimer.Enabled = true;
             log("WiseDome: Started moving CCW");
         }
 
@@ -222,6 +325,7 @@ namespace ASCOM.WiseHardware
             rightPin.SetOff();
             leftPin.SetOff();
             state = DomeState.Idle;
+            movementTimer.Enabled = false;
             domeEncoder.setMovement(Direction.None);
             log("WiseDome: Stopped");
         }
@@ -273,7 +377,7 @@ namespace ASCOM.WiseHardware
 
             set
             {
-                // Calibrate to 'value'
+                domeEncoder.Calibrate(value);
             }
         }
 
@@ -348,6 +452,11 @@ namespace ASCOM.WiseHardware
             }
         }
 
+        private double minAzDistance(double az1, double az2)
+        {
+            return Math.Floor(Math.Min(360 - Math.Abs(az1 - az2), Math.Abs(az1 - az2)));
+        }
+
         public bool AtPark()
         {
             return (domeEncoder.calibrated) ? Math.Abs(Azimuth - ParkAzimuth) < 1.0 : false;
@@ -387,5 +496,14 @@ namespace ASCOM.WiseHardware
                 return (state == DomeState.MovingCCW) || (state == DomeState.MovingCW);
             }
         }
+
+        public bool ShutterIsActive
+        {
+            get
+            {
+                return ((_shutterState == ShutterState.Opening) || (_shutterState == ShutterState.Closing)) ? true : false;
+            }
+        }
+
     }
 }
