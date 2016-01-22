@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using MccDaq;
 using ASCOM.Utilities;
 using ASCOM.Wise40.Properties;
+using ASCOM.Wise40;
 
 namespace ASCOM.WiseHardware
 {
@@ -39,7 +40,8 @@ namespace ASCOM.WiseHardware
         public const double DegreesPerTick = 360.0 / TicksPerDomeRevolution;
         public const double ticksPerDegree = TicksPerDomeRevolution / 360;
         public const double ParkAzimuth = 90.0;
-        private const int simulatedEncoderTicksPerSecond = 6;     // As per Yftach's measurement
+        private const int simulatedEncoderTicksPerSecond = 6;   // As per Yftach's measurement
+        private const double simulatedStuckAz = 333.0;          // If targeted to this Az, we simulate dome-stuck (must be a valid az)
 
         private double targetAz;
 
@@ -114,7 +116,7 @@ namespace ASCOM.WiseHardware
             shutterTimer.Elapsed += onShutterTimer;
             shutterTimer.Enabled = false;
 
-            movementTimer = new System.Timers.Timer(2000); // runs every 25 (22 * 110%) seconds
+            movementTimer = new System.Timers.Timer(2000); // runs every two seconds
             movementTimer.Elapsed += onMovementTimer;
             movementTimer.Enabled = false;
 
@@ -261,21 +263,21 @@ namespace ASCOM.WiseHardware
                     backwardPin.SetOff();
                     _stuckPhase = StuckPhase.FirstStop;
                     nextStuckEvent = rightNow.AddMilliseconds(10000);
-                    log("stuck: {0} deg, phase1: stopped moving, letting wheels cool for 10 seconds", Azimuth);
+                    log("stuck: {0:###.##} deg, phase1: stopped moving, letting wheels cool for 10 seconds", Azimuth);
                     break;
 
                 case StuckPhase.FirstStop:             // Go backward for two seconds
                     backwardPin.SetOn();
                     _stuckPhase = StuckPhase.GoBackward;
                     nextStuckEvent = rightNow.AddMilliseconds(2000);
-                    log("stuck: {0} deg, phase2: going backwards for 2 seconds", Azimuth);
+                    log("stuck: {0:###.##} deg, phase2: going backwards for 2 seconds", Azimuth);
                     break;
 
                 case StuckPhase.GoBackward:            // Stop again for two seconds
                     backwardPin.SetOff();
                     _stuckPhase = StuckPhase.SecondStop;
                     nextStuckEvent = rightNow.AddMilliseconds(2000);
-                    log("stuck: {0} deg, phase3: stopping for 2 seconds", Azimuth);
+                    log("stuck: {0:###.##} deg, phase3: stopping for 2 seconds", Azimuth);
                     break;
 
                 case StuckPhase.SecondStop:            // Done, resume original movement
@@ -284,7 +286,7 @@ namespace ASCOM.WiseHardware
                     isStuck = false;
                     stuckTimer.Enabled = false;
                     nextStuckEvent = rightNow.AddYears(100);
-                    log("stuck: {0} deg, phase4: resumed original motion", Azimuth);
+                    log("stuck: {0:###.##} deg, phase4: resumed original motion", Azimuth);
                     break;
             }
         }
@@ -450,6 +452,10 @@ namespace ASCOM.WiseHardware
                     MoveCW();
                     break;
             }
+
+            if (simulated && targetAz == simulatedStuckAz)
+                domeEncoder.SimulateStuckAt((dir == Direction.CW) ? targetAz - 5.0: targetAz + 5.0);
+                
         }
 
         private double minAzDistance(double az1, double az2)

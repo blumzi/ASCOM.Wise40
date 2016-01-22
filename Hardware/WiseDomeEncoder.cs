@@ -15,9 +15,13 @@ namespace ASCOM.WiseHardware
         private WiseEncoder hwEncoder;
         private double azimuth;
         public bool calibrated;
-        private bool simulated;
-        private int simulatedValue;
-        private System.Timers.Timer simulationTimer;
+
+        private bool simulated;                         // is the dome encoder simulated or real?
+        private int simulatedValue;                     // the simulated dome encoder value
+        private double simulatedStuckAzimuth;           // the azimuth where we simulate dome-stuck (simulated value does not change)?
+        private DateTime endSimulatedStuck;             // time when the dome-stuck simulation should end
+        private System.Timers.Timer simulationTimer;    // times simulated-dome events
+
         private TraceLogger logger;
 
         private int caliTicks;
@@ -26,6 +30,7 @@ namespace ASCOM.WiseHardware
         private const int simulatedEncoderTicksPerSecond = 6;
         private bool connected;
         private const int hwTicks = 1024;
+        private const double NoSimulatedStuckAz = -1.0;
 
         private void log(string fmt, params object[] o)
         {
@@ -48,6 +53,7 @@ namespace ASCOM.WiseHardware
             if (this.simulated)
             {
                 simulatedValue = 0;
+                simulatedStuckAzimuth = NoSimulatedStuckAz;
                 simulationTimer = new System.Timers.Timer(1000 / 6);
                 simulationTimer.Elapsed += onSimulationTimer;
                 simulationTimer.Enabled = true;
@@ -64,8 +70,27 @@ namespace ASCOM.WiseHardware
 
         private void onSimulationTimer(object sender, System.Timers.ElapsedEventArgs e)
         {
+            DateTime rightNow = DateTime.Now;
+
             if (!connected)
                 return;
+
+            if (simulatedStuckAzimuth != NoSimulatedStuckAz)                // A simulatedStuck is required
+            {
+                if (Math.Abs(Azimuth - simulatedStuckAzimuth) <= 1.0)       // we're in the vicinity of the simulatedStuckAzimuth
+                {
+                    if (endSimulatedStuck.Equals(DateTime.MinValue))        // endSimulatedStuck is not set
+                        endSimulatedStuck = rightNow.AddSeconds(3);         // set it to (now + 3sec)
+
+                    if (DateTime.Compare(rightNow, endSimulatedStuck) < 0)  // is it time to end simulatedStuck?
+                        return;                                             // not yet - don't modify simulatedValue
+                    else
+                    {
+                        simulatedStuckAzimuth = NoSimulatedStuckAz;
+                        endSimulatedStuck = DateTime.MinValue;
+                    }
+                }
+            }
 
             switch (moving)
             {
@@ -89,6 +114,11 @@ namespace ASCOM.WiseHardware
         {
             Calibrate(az);
             Azimuth = az;
+        }
+
+        public void SimulateStuckAt(double az)
+        {
+            simulatedStuckAzimuth = az;
         }
 
         public void Calibrate(double az)
@@ -149,6 +179,9 @@ namespace ASCOM.WiseHardware
             }
         }
 
+        /// <summary>
+        /// Gets the dome-encoder's value (either simulated or real)
+        /// </summary>
         public int Value
         {
             get
@@ -157,6 +190,9 @@ namespace ASCOM.WiseHardware
             }
         }
 
+        /// <summary>
+        /// Gets the native number of ticks per turn of the dome-encoder
+        /// </summary>
         public int Ticks
         {
             get

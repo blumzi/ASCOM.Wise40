@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dome", "Dome\Dome.csproj", "{64308775-BD4A-469C-BCAB-3ED830B811AF}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -16,6 +16,12 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hardware", "Hardware\Hardware.csproj", "{B3400CE2-9B66-4F0C-97FE-26343382BA7B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestDome", "TestDome\TestDome.csproj", "{D5207217-61C7-4E94-8097-91DBACE57D2A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzimuthTest", "AzimuthTest\AzimuthTest.csproj", "{FC23623D-FCF9-4060-B114-95EBE897D765}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Telescope", "Telescope\Telescope.csproj", "{E27802FC-EFB5-4DEB-BD4D-013F44A0813C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestTelescope", "TestTelescope\TestTelescope.csproj", "{8E8D406C-1838-4914-867D-AB602D0EAF3E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -56,6 +62,28 @@ Global
 		{D5207217-61C7-4E94-8097-91DBACE57D2A}.Release|Any CPU.ActiveCfg = Release|x86
 		{D5207217-61C7-4E94-8097-91DBACE57D2A}.Release|x86.ActiveCfg = Release|x86
 		{D5207217-61C7-4E94-8097-91DBACE57D2A}.Release|x86.Build.0 = Release|x86
+		{FC23623D-FCF9-4060-B114-95EBE897D765}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FC23623D-FCF9-4060-B114-95EBE897D765}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FC23623D-FCF9-4060-B114-95EBE897D765}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{FC23623D-FCF9-4060-B114-95EBE897D765}.Debug|x86.Build.0 = Debug|Any CPU
+		{FC23623D-FCF9-4060-B114-95EBE897D765}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FC23623D-FCF9-4060-B114-95EBE897D765}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FC23623D-FCF9-4060-B114-95EBE897D765}.Release|x86.ActiveCfg = Release|Any CPU
+		{FC23623D-FCF9-4060-B114-95EBE897D765}.Release|x86.Build.0 = Release|Any CPU
+		{E27802FC-EFB5-4DEB-BD4D-013F44A0813C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E27802FC-EFB5-4DEB-BD4D-013F44A0813C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E27802FC-EFB5-4DEB-BD4D-013F44A0813C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E27802FC-EFB5-4DEB-BD4D-013F44A0813C}.Debug|x86.Build.0 = Debug|Any CPU
+		{E27802FC-EFB5-4DEB-BD4D-013F44A0813C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E27802FC-EFB5-4DEB-BD4D-013F44A0813C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E27802FC-EFB5-4DEB-BD4D-013F44A0813C}.Release|x86.ActiveCfg = Release|Any CPU
+		{E27802FC-EFB5-4DEB-BD4D-013F44A0813C}.Release|x86.Build.0 = Release|Any CPU
+		{8E8D406C-1838-4914-867D-AB602D0EAF3E}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{8E8D406C-1838-4914-867D-AB602D0EAF3E}.Debug|x86.ActiveCfg = Debug|x86
+		{8E8D406C-1838-4914-867D-AB602D0EAF3E}.Debug|x86.Build.0 = Debug|x86
+		{8E8D406C-1838-4914-867D-AB602D0EAF3E}.Release|Any CPU.ActiveCfg = Release|x86
+		{8E8D406C-1838-4914-867D-AB602D0EAF3E}.Release|x86.ActiveCfg = Release|x86
+		{8E8D406C-1838-4914-867D-AB602D0EAF3E}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

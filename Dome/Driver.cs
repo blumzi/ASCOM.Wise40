@@ -58,7 +58,7 @@ namespace ASCOM.Wise40
     /// </summary>
     [Guid("5cec8f8d-f8be-453d-b80f-9a93a758d08a")]
     [ClassInterface(ClassInterfaceType.None)]
-    public class Dome : IDomeV2
+    public class Dome : IDomeV2, IDisposable
     {
         /// <summary>
         /// ASCOM DeviceID (COM ProgID) for this driver.
@@ -206,6 +206,9 @@ namespace ASCOM.Wise40
             utilities = null;
             astroUtilities.Dispose();
             astroUtilities = null;
+            wisedome.Dispose();
+            wisedome = null;
+            //Dispose(true);
         }
 
         public bool Connected
@@ -333,7 +336,7 @@ namespace ASCOM.Wise40
             {
                 double az = wisedome.Azimuth;
 
-                tl.LogMessage("Azimuth Get", az.ToString());
+                tl.LogMessage("Azimuth Get", az.ToString("#.##"));
                 return az;
             }
         }
@@ -516,7 +519,7 @@ namespace ASCOM.Wise40
             }
 
             wisedome.MoveTo(Azimuth);
-            tl.LogMessage("SlewToAzimuth", Azimuth.ToString());
+            tl.LogMessage("SlewToAzimuth", Azimuth.ToString("#.##"));
         }
 
         public bool Slewing
