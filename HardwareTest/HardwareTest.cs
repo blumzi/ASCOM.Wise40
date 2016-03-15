@@ -4,7 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ASCOM.WiseHardware
+using ASCOM.Wise40.Common;
+
+namespace ASCOM.Wise40.Hardware
 {
     class HardwareTest
     {

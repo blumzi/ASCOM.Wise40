@@ -9,13 +9,13 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ASCOM.Wise40</RootNamespace>
-    <AssemblyName>ASCOM.Wise40.Telescope</AssemblyName>
+    <AssemblyName>Telescope</AssemblyName>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <UpgradeBackupLocation>
     </UpgradeBackupLocation>
     <OldToolsVersion>3.5</OldToolsVersion>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <ApplicationIcon>ASCOM.ico</ApplicationIcon>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>ASCOMDriverTemplate.snk</AssemblyOriginatorKeyFile>
@@ -34,7 +34,8 @@
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -46,6 +47,8 @@
     <WarningLevel>4</WarningLevel>
     <RegisterForComInterop>true</RegisterForComInterop>
     <PlatformTarget>x86</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
+    <UseVSHostingProcess>true</UseVSHostingProcess>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -56,6 +59,7 @@
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <RegisterForComInterop>false</RegisterForComInterop>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="ASCOM.Astrometry, Version=6.0.0.0, Culture=neutral, PublicKeyToken=565de7938946fba7, processorArchitecture=MSIL" />
@@ -66,6 +70,13 @@
     <Reference Include="ASCOM.SettingsProvider, Version=6.0.0.0, Culture=neutral, PublicKeyToken=565de7938946fba7, processorArchitecture=MSIL" />
     <Reference Include="ASCOM.Utilities, Version=6.0.0.0, Culture=neutral, PublicKeyToken=565de7938946fba7, processorArchitecture=MSIL" />
     <Reference Include="ASCOM.Utilities.Video, Version=6.1.0.0, Culture=neutral, PublicKeyToken=565de7938946fba7, processorArchitecture=MSIL" />
+    <Reference Include="Common">
+      <HintPath>..\Common\bin\Debug\Common.dll</HintPath>
+    </Reference>
+    <Reference Include="MccDaq, Version=2.5.0.0, Culture=neutral, PublicKeyToken=a37eefcf5c6ca10a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Measurement Computing\DAQ\MccDaq.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Configuration.Install" />
@@ -78,7 +89,21 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Const.cs" />
+    <Compile Include="DaqsForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DaqsForm.Designer.cs">
+      <DependentUpon>DaqsForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Driver.cs" />
+    <Compile Include="Handpad.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Handpad.Designer.cs">
+      <DependentUpon>Handpad.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Movement.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -91,14 +116,24 @@
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
     <Compile Include="Rates.cs" />
+    <Compile Include="Settings.cs" />
     <Compile Include="SetupDialogForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="SetupDialogForm.designer.cs">
       <DependentUpon>SetupDialogForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Target.cs" />
+    <Compile Include="WiseMotor.cs" />
+    <Compile Include="WiseTele.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="DaqsForm.resx">
+      <DependentUpon>DaqsForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Handpad.resx">
+      <DependentUpon>Handpad.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <SubType>Designer</SubType>
       <Generator>ResXFileCodeGenerator</Generator>
@@ -110,11 +145,14 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
+    <None Include="app.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="ASCOM.png" />
     <None Include="ASCOMDriverTemplate.snk" />
+    <None Include="Properties\DataSources\ASCOM.Wise40.Hardware.WiseDaq.datasource" />
     <None Include="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
+      <Generator>PublicSettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <Content Include="ASCOM.ico" />
@@ -137,6 +175,12 @@
       <ProductName>Windows Installer 3.1</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Hardware\Hardware.csproj">
+      <Project>{b3400ce2-9b66-4f0c-97fe-26343382ba7b}</Project>
+      <Name>Hardware</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

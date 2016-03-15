@@ -4,20 +4,20 @@
 //
 // ASCOM Telescope driver for Wise40
 //
-// Description:	Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam 
-//				nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam 
-//				erat, sed diam voluptua. At vero eos et accusam et justo duo 
-//				dolores et ea rebum. Stet clita kasd gubergren, no sea takimata 
-//				sanctus est Lorem ipsum dolor sit amet.
+// Description:	A Boller and Chivens telescope (wide field Ritchey-Chretien Reflector)
+//   mounted on a rigid, off-axis equatorial mount, with:
+//   - 40 inch diameter clear aperture f/4 primary mirror
+//   - 20.1 inch diameter f/7 Cassegrain secondary mirror
+//   - corrector quartz lens located 4 inches above the surface of the primary mirror.
 //
-// Implements:	ASCOM Telescope interface version: <To be completed by driver developer>
-// Author:		(XXX) Your N. Here <your@email.here>
+// Implements:	ASCOM Telescope interface version: V3
+// Author:		(blumzi) Arie Blumenzweig <blumzi@013.net>
 //
 // Edit Log:
 //
 // Date			Who	Vers	Description
 // -----------	---	-----	-------------------------------------------------------
-// dd-mmm-yyyy	XXX	6.0.0	Initial edit, created from ASCOM driver template
+// 22-Jan-2016	AB	6.0.0	Initial edit, created from ASCOM driver template
 // --------------------------------------------------------------------------------
 //
 
@@ -31,6 +31,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 using ASCOM;
 using ASCOM.Astrometry;
@@ -39,6 +40,8 @@ using ASCOM.Utilities;
 using ASCOM.DeviceInterface;
 using System.Globalization;
 using System.Collections;
+
+using ASCOM.Wise40.Hardware;
 
 namespace ASCOM.Wise40
 {
@@ -69,15 +72,19 @@ namespace ASCOM.Wise40
         /// <summary>
         /// Driver description that displays in the ASCOM Chooser.
         /// </summary>
-        private static string driverDescription = "ASCOM Telescope Driver for Wise40.";
+        private static string driverDescription = "Wise40 Telescope";
 
-        internal static string comPortProfileName = "COM Port"; // Constants used for Profile persistence
-        internal static string comPortDefault = "COM1";
+        //internal static string comPortProfileName = "COM Port"; // Constants used for Profile persistence
+        //internal static string comPortDefault = "COM1";
         internal static string traceStateProfileName = "Trace Level";
         internal static string traceStateDefault = "false";
 
-        internal static string comPort; // Variables to hold the currrent device configuration
+        //internal static string comPort; // Variables to hold the currrent device configuration
         internal static bool traceState;
+
+        internal static string astrometricAccuracyProfileName = "Astrometric accuracy";
+        internal static string astrometricAccuracyDefault = "Full";
+        internal static Accuracy astrometricAccuracy;
 
         /// <summary>
         /// Private variable to hold the connected state
@@ -87,17 +94,20 @@ namespace ASCOM.Wise40
         /// <summary>
         /// Private variable to hold an ASCOM Utilities object
         /// </summary>
-        private Util utilities;
+        private Util util;
 
         /// <summary>
         /// Private variable to hold an ASCOM AstroUtilities object to provide the Range method
         /// </summary>
-        private AstroUtils astroUtilities;
+        private AstroUtils astroUtils;
 
         /// <summary>
         /// Private variable to hold the trace logger object (creates a diagnostic log file with information that you specify)
         /// </summary>
         private TraceLogger tl;
+        
+        public HandpadForm handpad;
+        Thread gui;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Wise40"/> class.
@@ -107,18 +117,19 @@ namespace ASCOM.Wise40
         {
             ReadProfile(); // Read device configuration from the ASCOM Profile store
 
-            tl = new TraceLogger("", "Wise40");
-            tl.Enabled = traceState;
+            tl = new TraceLogger("", "Tele");
+            tl.Enabled = true; //  traceState;
             tl.LogMessage("Telescope", "Starting initialisation");
 
             connectedState = false; // Initialise connected to false
-            utilities = new Util(); //Initialise util object
-            astroUtilities = new AstroUtils(); // Initialise astro utilities object
-            //TODO: Implement your additional construction here
+            util = new Util(); //Initialise util object
+            astroUtils = new AstroUtils(); // Initialise astro utilities object
+
+            WiseTele.Instance.init(tl, astrometricAccuracy);
+            //gui = new Thread(new ThreadStart(handpad.Show));
 
             tl.LogMessage("Telescope", "Completed initialisation");
         }
-
 
         //
         // PUBLIC COM INTERFACE ITelescopeV3 IMPLEMENTATION
@@ -137,16 +148,18 @@ namespace ASCOM.Wise40
             // consider only showing the setup dialog if not connected
             // or call a different dialog if connected
             if (IsConnected)
-                System.Windows.Forms.MessageBox.Show("Already connected, just press OK");
-
-            using (SetupDialogForm F = new SetupDialogForm())
             {
-                var result = F.ShowDialog();
-                if (result == System.Windows.Forms.DialogResult.OK)
+                handpad = new HandpadForm();
+                handpad.ShowDialog();
+            } else
+                using (SetupDialogForm F = new SetupDialogForm())
                 {
-                    WriteProfile(); // Persist device configuration values to the ASCOM Profile store
+                    var result = F.ShowDialog();
+                    if (result == System.Windows.Forms.DialogResult.OK)
+                    {
+                        WriteProfile(); // Persist device configuration values to the ASCOM Profile store
+                    }
                 }
-            }
         }
 
         public ArrayList SupportedActions
@@ -197,10 +210,14 @@ namespace ASCOM.Wise40
             tl.Enabled = false;
             tl.Dispose();
             tl = null;
-            utilities.Dispose();
-            utilities = null;
-            astroUtilities.Dispose();
-            astroUtilities = null;
+
+            util.Dispose();
+            util = null;
+
+            astroUtils.Dispose();
+            astroUtils = null;
+
+            WiseTele.Instance.Dispose();
         }
 
         public bool Connected
@@ -216,18 +233,8 @@ namespace ASCOM.Wise40
                 if (value == IsConnected)
                     return;
 
-                if (value)
-                {
-                    connectedState = true;
-                    tl.LogMessage("Connected Set", "Connecting to port " + comPort);
-                    // TODO connect to the device
-                }
-                else
-                {
-                    connectedState = false;
-                    tl.LogMessage("Connected Set", "Disconnecting from port " + comPort);
-                    // TODO disconnect from the device
-                }
+                WiseTele.Instance.Connect(value);
+                connectedState = value;
             }
         }
 
@@ -278,7 +285,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                string name = "Short driver name - please customise";
+                string name = "Wise40 Telescope";
                 tl.LogMessage("Name Get", name);
                 return name;
             }
@@ -289,16 +296,18 @@ namespace ASCOM.Wise40
         #region ITelescope Implementation
         public void AbortSlew()
         {
-            tl.LogMessage("AbortSlew", "Not implemented");
-            throw new ASCOM.MethodNotImplementedException("AbortSlew");
+            tl.LogMessage("AbortSlew", "");
+            WiseTele.Instance.abortSlew();
         }
 
         public AlignmentModes AlignmentMode
         {
             get
             {
-                tl.LogMessage("AlignmentMode Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("AlignmentMode", false);
+                AlignmentModes mode = AlignmentModes.algPolar;
+                
+                tl.LogMessage("AlignmentMode Get", mode.ToString());
+                return mode;
             }
         }
 
@@ -306,8 +315,10 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("Altitude", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("Altitude", false);
+                double alt = WiseTele.Instance.Altitude;
+
+                tl.LogMessage("Altitude Get", alt.ToString());
+                return alt; ;
             }
         }
 
@@ -315,8 +326,10 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("ApertureArea Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("ApertureArea", false);
+                double area = WiseTele.Instance.mirrorArea;
+
+                tl.LogMessage("ApertureArea Get", area.ToString());
+                return area;
             }
         }
 
@@ -324,8 +337,10 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("ApertureDiameter Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("ApertureDiameter", false);
+                double diam = WiseTele.Instance.mirrorDiam;
+
+                tl.LogMessage("ApertureDiameter Get", diam.ToString());
+                return diam;
             }
         }
 
@@ -333,8 +348,10 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("AtHome", "Get - " + false.ToString());
-                return false;
+                bool ret = WiseTele.Instance.atHome;
+
+                tl.LogMessage("AtHome", "Get - " + ret.ToString());
+                return ret;
             }
         }
 
@@ -342,23 +359,29 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("AtPark", "Get - " + false.ToString());
-                return false;
+                bool ret = WiseTele.Instance.atPark;
+
+                tl.LogMessage("AtPark", "Get - " + ret.ToString());
+                return ret;
             }
         }
 
         public IAxisRates AxisRates(TelescopeAxes Axis)
         {
-            tl.LogMessage("AxisRates", "Get - " + Axis.ToString());
-            return new AxisRates(Axis);
+            IAxisRates rates = new AxisRates(Axis);
+
+            tl.LogMessage("AxisRates", "Get - " + rates.ToString());
+            return rates;
         }
 
         public double Azimuth
         {
             get
             {
-                tl.LogMessage("Azimuth Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("Azimuth", false);
+                double az = WiseTele.Instance.Azimuth;
+
+                tl.LogMessage("Azimuth Get", az.ToString());
+                return az;
             }
         }
 
@@ -366,29 +389,33 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("CanFindHome", "Get - " + false.ToString());
-                return false;
+                tl.LogMessage("CanFindHome", "Get - " + true.ToString());
+                return true;
             }
         }
 
         public bool CanMoveAxis(TelescopeAxes Axis)
         {
-            tl.LogMessage("CanMoveAxis", "Get - " + Axis.ToString());
+            bool ret;
+
             switch (Axis)
             {
-                case TelescopeAxes.axisPrimary: return false;
-                case TelescopeAxes.axisSecondary: return false;
-                case TelescopeAxes.axisTertiary: return false;
+                case TelescopeAxes.axisPrimary:   ret = true; break ;   // Right Ascension
+                case TelescopeAxes.axisSecondary: ret = true; break ;   // Declination
+                case TelescopeAxes.axisTertiary:  ret = false; break ;  // Image Rotator/Derotator
                 default: throw new InvalidValueException("CanMoveAxis", Axis.ToString(), "0 to 2");
             }
+            tl.LogMessage("CanMoveAxis", "Get - " + Axis.ToString() + ": " + ret.ToString());
+
+            return ret;
         }
 
         public bool CanPark
         {
             get
             {
-                tl.LogMessage("CanPark", "Get - " + false.ToString());
-                return false;
+                tl.LogMessage("CanPark", "Get - " + true.ToString());
+                return true;
             }
         }
 
@@ -396,8 +423,8 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("CanPulseGuide", "Get - " + false.ToString());
-                return false;
+                tl.LogMessage("CanPulseGuide", "Get - " + true.ToString());
+                return true;
             }
         }
 
@@ -423,8 +450,8 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("CanSetPark", "Get - " + false.ToString());
-                return false;
+                tl.LogMessage("CanSetPark", "Get - " + true.ToString());
+                return true;
             }
         }
 
@@ -450,8 +477,8 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("CanSetTracking", "Get - " + false.ToString());
-                return false;
+                tl.LogMessage("CanSetTracking", "Get - " + true.ToString());
+                return true;
             }
         }
 
@@ -459,8 +486,8 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("CanSlew", "Get - " + false.ToString());
-                return false;
+                tl.LogMessage("CanSlew", "Get - " + true.ToString());
+                return true;
             }
         }
 
@@ -468,8 +495,8 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("CanSlewAltAz", "Get - " + false.ToString());
-                return false;
+                tl.LogMessage("CanSlewAltAz", "Get - " + true.ToString());
+                return true;
             }
         }
 
@@ -477,8 +504,8 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("CanSlewAltAzAsync", "Get - " + false.ToString());
-                return false;
+                tl.LogMessage("CanSlewAltAzAsync", "Get - " + true.ToString());
+                return true;
             }
         }
 
@@ -486,8 +513,8 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("CanSlewAsync", "Get - " + false.ToString());
-                return false;
+                tl.LogMessage("CanSlewAsync", "Get - " + true.ToString());
+                return true;
             }
         }
 
@@ -495,8 +522,8 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("CanSync", "Get - " + false.ToString());
-                return false;
+                tl.LogMessage("CanSync", "Get - " + true.ToString());
+                return true;
             }
         }
 
@@ -504,8 +531,8 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("CanSyncAltAz", "Get - " + false.ToString());
-                return false;
+                tl.LogMessage("CanSyncAltAz", "Get - " + true.ToString());
+                return true;
             }
         }
 
@@ -522,8 +549,9 @@ namespace ASCOM.Wise40
         {
             get
             {
-                double declination = 0.0;
-                tl.LogMessage("Declination", "Get - " + utilities.DegreesToDMS(declination, ":", ":"));
+                double declination = WiseTele.Instance.Declination;
+
+                tl.LogMessage("Declination", "Get - " + util.DegreesToDMS(declination, ":", ":"));
                 return declination;
             }
         }
@@ -532,7 +560,8 @@ namespace ASCOM.Wise40
         {
             get
             {
-                double declination = 0.0;
+                double declination = WiseTele.Instance.DeclinationRate;
+
                 tl.LogMessage("DeclinationRate", "Get - " + declination.ToString());
                 return declination;
             }
@@ -553,38 +582,43 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("DoesRefraction Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("DoesRefraction", false);
+                bool doesRefraction = WiseTele.Instance.doesRefraction;
+
+                tl.LogMessage("DoesRefraction Get", doesRefraction.ToString());
+                return doesRefraction;
             }
             set
             {
-                tl.LogMessage("DoesRefraction Set", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("DoesRefraction", true);
+                if (value == false)
+                    throw new ASCOM.InvalidOperationException("DoesRefraction");
             }
-        }
+         }
 
         public EquatorialCoordinateType EquatorialSystem
         {
             get
             {
-                EquatorialCoordinateType equatorialSystem = EquatorialCoordinateType.equLocalTopocentric;
-                tl.LogMessage("DeclinationRate", "Get - " + equatorialSystem.ToString());
+                EquatorialCoordinateType equatorialSystem = EquatorialCoordinateType.equJ2000;
+
+                tl.LogMessage("EquatorialSystem", "Get - " + equatorialSystem.ToString());
                 return equatorialSystem;
             }
         }
 
         public void FindHome()
         {
-            tl.LogMessage("FindHome", "Not implemented");
-            throw new ASCOM.MethodNotImplementedException("FindHome");
+            tl.LogMessage("FindHome", "");
+            WiseTele.Instance.findHome();
         }
 
         public double FocalLength
         {
             get
             {
-                tl.LogMessage("FocalLength Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("FocalLength", false);
+                double fl = WiseTele.Instance.focalLength;
+
+                tl.LogMessage("FocalLength Get", fl.ToString());
+                return fl;
             }
         }
 
@@ -620,15 +654,13 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("IsPulseGuiding Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("IsPulseGuiding", false);
+                return WiseTele.Instance.IsPulseGuiding;
             }
         }
 
         public void MoveAxis(TelescopeAxes Axis, double Rate)
         {
-            tl.LogMessage("MoveAxis", "Not implemented");
-            throw new ASCOM.MethodNotImplementedException("MoveAxis");
+            WiseTele.Instance.MoveAxis(Axis, Rate);
         }
 
         public void Park()
@@ -647,8 +679,9 @@ namespace ASCOM.Wise40
         {
             get
             {
-                double rightAscension = 0.0;
-                tl.LogMessage("RightAscension", "Get - " + utilities.HoursToHMS(rightAscension));
+                double rightAscension = WiseTele.Instance.RightAscension;
+
+                tl.LogMessage("RightAscension", "Get - " + util.HoursToHMS(rightAscension));
                 return rightAscension;
             }
         }
@@ -678,8 +711,10 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("SideOfPier Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("SideOfPier", false);
+                PierSide side = PierSide.pierEast;  // TBD
+
+                tl.LogMessage("SideOfPier Get", side.ToString());
+                return side;
             }
             set
             {
@@ -692,9 +727,10 @@ namespace ASCOM.Wise40
         {
             get
             {
-                double siderealTime = (18.697374558 + 24.065709824419081 * (utilities.DateLocalToJulian(DateTime.Now) - 2451545.0)) % 24.0;
-                tl.LogMessage("SiderealTime", "Get - " + siderealTime.ToString());
-                return siderealTime;
+                double st = WiseSite.Instance.LocalSiderealTime;
+
+                tl.LogMessage("SiderealTime", "Get - " + st.ToString());
+                return st;
             }
         }
 
@@ -702,8 +738,10 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("SiteElevation Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("SiteElevation", false);
+                double elevation = WiseSite.Instance.Elevation;
+
+                tl.LogMessage("SiteElevation Get", elevation.ToString());
+                return elevation;
             }
             set
             {
@@ -716,8 +754,10 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("SiteLatitude Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("SiteLatitude", false);
+                double latitude = WiseSite.Instance.Latitude;
+
+                tl.LogMessage("SiteLatitude Get", latitude.ToString());
+                return latitude;
             }
             set
             {
@@ -730,8 +770,10 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("SiteLongitude Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("SiteLongitude", false);
+                double longitude = WiseSite.Instance.Longitude;
+
+                tl.LogMessage("SiteLongitude Get", longitude.ToString());
+                return longitude;
             }
             set
             {
@@ -794,8 +836,10 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("Slewing Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("Slewing", false);
+                bool slewing = WiseTele.Instance.Slewing;
+
+                tl.LogMessage("Slewing Get", slewing.ToString());
+                return slewing;
             }
         }
 
@@ -821,13 +865,11 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("TargetDeclination Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("TargetDeclination", false);
+                return WiseTele.Instance.targetDeclination;
             }
             set
             {
-                tl.LogMessage("TargetDeclination Set", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("TargetDeclination", true);
+                WiseTele.Instance.targetDeclination = value;
             }
         }
 
@@ -835,13 +877,11 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("TargetRightAscension Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("TargetRightAscension", false);
+                return WiseTele.Instance.targetRightAscension;
             }
             set
             {
-                tl.LogMessage("TargetRightAscension Set", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("TargetRightAscension", true);
+                WiseTele.Instance.targetRightAscension = value;
             }
         }
 
@@ -849,14 +889,16 @@ namespace ASCOM.Wise40
         {
             get
             {
-                bool tracking = true;
+                bool tracking = WiseTele.Instance.Tracking;
+
                 tl.LogMessage("Tracking", "Get - " + tracking.ToString());
                 return tracking;
             }
             set
             {
-                tl.LogMessage("Tracking Set", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("Tracking", true);
+                WiseTele.Instance.Tracking = value;
+
+                tl.LogMessage("Tracking Set", WiseTele.Instance.Tracking.ToString());
             }
         }
 
@@ -893,7 +935,7 @@ namespace ASCOM.Wise40
             get
             {
                 DateTime utcDate = DateTime.UtcNow;
-                tl.LogMessage("TrackingRates", "Get - " + String.Format("MM/dd/yy HH:mm:ss", utcDate));
+                tl.LogMessage("UTCDate Get - ", utcDate.ToString());
                 return utcDate;
             }
             set
@@ -1022,7 +1064,8 @@ namespace ASCOM.Wise40
             {
                 driverProfile.DeviceType = "Telescope";
                 traceState = Convert.ToBoolean(driverProfile.GetValue(driverID, traceStateProfileName, string.Empty, traceStateDefault));
-                comPort = driverProfile.GetValue(driverID, comPortProfileName, string.Empty, comPortDefault);
+                string acc = Convert.ToString(driverProfile.GetValue(driverID, astrometricAccuracyProfileName, string.Empty, astrometricAccuracyDefault));
+                astrometricAccuracy = (acc == "Full") ? Accuracy.Full : Accuracy.Reduced;
             }
         }
 
@@ -1035,7 +1078,7 @@ namespace ASCOM.Wise40
             {
                 driverProfile.DeviceType = "Telescope";
                 driverProfile.WriteValue(driverID, traceStateProfileName, traceState.ToString());
-                driverProfile.WriteValue(driverID, comPortProfileName, comPort.ToString());
+                driverProfile.WriteValue(driverID, astrometricAccuracyProfileName, astrometricAccuracy == Accuracy.Full ? "Full" : "Reduced");
             }
         }
 

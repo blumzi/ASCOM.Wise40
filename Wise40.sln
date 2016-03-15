@@ -14,14 +14,27 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HardwareTest", "HardwareTes
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hardware", "Hardware\Hardware.csproj", "{B3400CE2-9B66-4F0C-97FE-26343382BA7B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{B76546E7-9832-4D28-B412-B34CA1C6177C} = {B76546E7-9832-4D28-B412-B34CA1C6177C}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestDome", "TestDome\TestDome.csproj", "{D5207217-61C7-4E94-8097-91DBACE57D2A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzimuthTest", "AzimuthTest\AzimuthTest.csproj", "{FC23623D-FCF9-4060-B114-95EBE897D765}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Telescope", "Telescope\Telescope.csproj", "{E27802FC-EFB5-4DEB-BD4D-013F44A0813C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{B76546E7-9832-4D28-B412-B34CA1C6177C} = {B76546E7-9832-4D28-B412-B34CA1C6177C}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestTelescope", "TestTelescope\TestTelescope.csproj", "{8E8D406C-1838-4914-867D-AB602D0EAF3E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{B3400CE2-9B66-4F0C-97FE-26343382BA7B} = {B3400CE2-9B66-4F0C-97FE-26343382BA7B}
+		{B76546E7-9832-4D28-B412-B34CA1C6177C} = {B76546E7-9832-4D28-B412-B34CA1C6177C}
+		{E27802FC-EFB5-4DEB-BD4D-013F44A0813C} = {E27802FC-EFB5-4DEB-BD4D-013F44A0813C}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "Common\Common.csproj", "{B76546E7-9832-4D28-B412-B34CA1C6177C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -84,6 +97,14 @@ Global
 		{8E8D406C-1838-4914-867D-AB602D0EAF3E}.Release|Any CPU.ActiveCfg = Release|x86
 		{8E8D406C-1838-4914-867D-AB602D0EAF3E}.Release|x86.ActiveCfg = Release|x86
 		{8E8D406C-1838-4914-867D-AB602D0EAF3E}.Release|x86.Build.0 = Release|x86
+		{B76546E7-9832-4D28-B412-B34CA1C6177C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B76546E7-9832-4D28-B412-B34CA1C6177C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B76546E7-9832-4D28-B412-B34CA1C6177C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B76546E7-9832-4D28-B412-B34CA1C6177C}.Debug|x86.Build.0 = Debug|Any CPU
+		{B76546E7-9832-4D28-B412-B34CA1C6177C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B76546E7-9832-4D28-B412-B34CA1C6177C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B76546E7-9832-4D28-B412-B34CA1C6177C}.Release|x86.ActiveCfg = Release|Any CPU
+		{B76546E7-9832-4D28-B412-B34CA1C6177C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -5,25 +5,40 @@ using System.Text;
 using System.Threading.Tasks;
 
 using MccDaq;
+using ASCOM.Wise40.Common;
 
-namespace ASCOM.WiseHardware
+namespace ASCOM.Wise40.Hardware
 {
     public class WisePin : WiseObject, IConnectable, IDisposable
     {
-        public int bit;
+        private int bit;
         private WiseDaq daq;
         private DigitalPortDirection dir;
         private bool inverse;
 
         public WisePin(string name, WiseBoard brd, DigitalPortType port, int bit, DigitalPortDirection dir, bool inverse = false)
         {
-            this.name = name + "@Board" + brd.board.BoardNum + port.ToString() + "[" + bit.ToString() + "]";
+            this.name = name +
+                "@Board" +
+                (brd.type == WiseBoard.BoardType.Hard ? brd.mccBoard.BoardNum : brd.boardNum) +
+                port.ToString() +
+                "[" + bit.ToString() + "]";
+
+
             if ((daq = brd.daqs.Find(x => x.porttype == port)) == null)
                 throw new WiseException(this.name + ": Invalid Daq spec, no " + port + " on this board");
             this.dir = dir;
             this.bit = bit;
             this.inverse = inverse;
-            daq.setdir(dir);
+            daq.setDir(dir);
+        }
+
+        public bool simulated
+        {
+            get
+            {
+                return daq.wiseBoard.type == WiseBoard.BoardType.Soft;
+            }
         }
 
         public void SetOn()
@@ -40,30 +55,36 @@ namespace ASCOM.WiseHardware
             daq.Value &= (ushort)~(1 << bit);
         }
 
-        public bool IsOn()
+        public bool isOn
         {
-            bool ret = (daq.Value & (ushort)(1 << bit)) != 0;
+            get
+            {
+                bool ret = (daq.Value & (ushort)(1 << bit)) != 0;
 
-            return inverse ? !ret : ret;
+                return inverse ? !ret : ret;
+            }
         }
 
-        public bool IsOff()
+        public bool isOff
         {
-            return !IsOn();
+            get
+            {
+                return isOn;
+            }
         }
 
         public void Connect(bool connected)
         {
             if (connected)
-                daq.setowner(name, bit);
+                daq.setOwner(name, bit);
             else
-                daq.unsetowner(bit);
+                daq.unsetOwner(bit);
         }
 
         public void Dispose()
         {
             SetOff();
-            daq.unsetowner(bit);
+            daq.unsetOwner(bit);
         }
     }
 }

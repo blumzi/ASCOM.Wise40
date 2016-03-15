@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace ASCOM.WiseHardware
+namespace ASCOM.Wise40.Common
 {
-    class WiseException : Exception
+    public class WiseException : Exception
     {
         public WiseException(string message) : base(message)
         {

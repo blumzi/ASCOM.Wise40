@@ -41,7 +41,7 @@ using ASCOM.DriverAccess;
 using System.Globalization;
 using System.Collections;
 
-using ASCOM.WiseHardware;
+using ASCOM.Wise40.Hardware;
 
 namespace ASCOM.Wise40
 {
@@ -70,15 +70,12 @@ namespace ASCOM.Wise40
         /// </summary>
         private static string driverDescription = "Wise40 Dome";
 
-        //internal static string comPortProfileName = "COM Port"; // Constants used for Profile persistence
-        //internal static string comPortDefault = "COM1";
         internal static string traceStateProfileName = "Trace Level";
         internal static string traceStateDefault = "false";
 
         internal static string simulateStateProfileName = "Simulate hardware";
-        internal static string simulateStateDefault = (Environment.MachineName == Hardware.productionMachine) ? "false" : "true";
+        internal static string simulateStateDefault = "false";
 
-        //internal static string comPort; // Variables to hold the currrent device configuration
         internal static bool traceState;
         internal static bool simulateState;
 
@@ -102,10 +99,10 @@ namespace ASCOM.Wise40
         /// </summary>
         private TraceLogger tl;
 
-        private  WiseHardware.WiseDome wisedome;
+        private  WiseDome wisedome;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="WiseHardware"/> class.
+        /// Initializes a new instance of the <see cref="Wise40Hardware"/> class.
         /// Must be public for COM registration.
         /// </summary>
         public Dome()
@@ -467,21 +464,21 @@ namespace ASCOM.Wise40
         {
             get
             {
-                WiseHardware.WiseDome.ShutterState state = wisedome.shutterState;
+                Wise40.Hardware.WiseDome.ShutterState state = wisedome.shutterState;
                 ShutterState ret = ShutterState.shutterError;
 
                 switch (state)
                 {
-                    case WiseHardware.WiseDome.ShutterState.Closed:
+                    case Wise40.Hardware.WiseDome.ShutterState.Closed:
                         ret = ShutterState.shutterClosed;
                         break;
-                    case WiseHardware.WiseDome.ShutterState.Closing:
+                    case Wise40.Hardware.WiseDome.ShutterState.Closing:
                         ret = ShutterState.shutterClosing;
                         break;
-                    case WiseHardware.WiseDome.ShutterState.Open:
+                    case Wise40.Hardware.WiseDome.ShutterState.Open:
                         ret = ShutterState.shutterOpen;
                         break;
-                    case WiseHardware.WiseDome.ShutterState.Opening:
+                    case Wise40.Hardware.WiseDome.ShutterState.Opening:
                         ret = ShutterState.shutterOpening;
                         break;
                 }

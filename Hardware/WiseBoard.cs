@@ -1,30 +1,43 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Windows.Forms;
+using ASCOM.Wise40.Common;
 
 using MccDaq;
 
-namespace ASCOM.WiseHardware
+namespace ASCOM.Wise40.Hardware
 {
     public class WiseBoard : WiseObject
     {
-        public MccBoard board;
+        public MccBoard mccBoard;
         public List<WiseDaq> daqs;
+        public enum BoardType { Hard, Soft };
+        public BoardType type;
+        public int boardNum;
+        public GroupBox gb;
 
-        public WiseBoard(MccBoard brd)
+        public WiseBoard(MccBoard mccBoard, int boardNum = 0)
         {
             int ndaqs;
 
-            board = brd;
-            name = "Board" + board.BoardNum.ToString();
+            if (mccBoard == null)    // a simulated board
+            {
+                type = BoardType.Soft;
+                this.mccBoard = new MccBoard(boardNum);
+                this.boardNum = boardNum;
+                name = "Board" + boardNum.ToString();
+                ndaqs = (boardNum == 1) ? 16 : 4;
+            }
+            else                // a real Mcc board
+            {
+                type = BoardType.Hard;
+                this.mccBoard = mccBoard;
+                name = "Board" + this.mccBoard.BoardNum.ToString();               
+                this.mccBoard.BoardConfig.GetDiNumDevs(out ndaqs);
+            }
 
             daqs = new List<WiseDaq>();
-            board.BoardConfig.GetDiNumDevs(out ndaqs);
-
             for (int devno = 0; devno < ndaqs; devno++)
-                daqs.Add(new WiseDaq(board, devno));
+                daqs.Add(new WiseDaq(this, devno));
         }
 
         public string ownersToString()

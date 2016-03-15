@@ -1,15 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using MccDaq;
 using ASCOM.Utilities;
-using ASCOM.Wise40.Properties;
-using ASCOM.Wise40;
+using ASCOM.Wise40.Common;
 
-namespace ASCOM.WiseHardware
+namespace ASCOM.Wise40.Hardware
 {
     public class WiseDome : IConnectable, IDisposable {
 
@@ -57,7 +53,7 @@ namespace ASCOM.WiseHardware
         public WiseDome(TraceLogger logger, bool simulated = true)
         {
             this.logger = logger;
-            Hardware.Instance.init(simulated);
+            Hardware.Instance.init();
 
             try {
                 connectables = new List<IConnectable>();
@@ -366,7 +362,7 @@ namespace ASCOM.WiseHardware
         {
             get
             {
-                return (simulated) ? domeEncoder.Value == 10 : caliPin.IsOff();
+                return (simulated) ? domeEncoder.Value == 10 : caliPin.isOff;
             }
         }
 

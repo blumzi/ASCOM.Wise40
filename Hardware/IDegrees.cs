@@ -4,12 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using ASCOM.Utilities;
-
-namespace ASCOM.WiseHardware
+namespace ASCOM.Wise40.Hardware
 {
-    public class WiseObject
+    public interface IDegrees
     {
-        public string name { get; set; }
+        double Degrees
+        {
+            get; set;
+        }
     }
 }

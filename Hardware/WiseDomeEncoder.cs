@@ -1,14 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-using System.Diagnostics;
 using ASCOM.Utilities;
-using ASCOM.Wise40.Properties;
 using MccDaq;
 
-namespace ASCOM.WiseHardware
+namespace ASCOM.Wise40.Hardware
 {
     public class WiseDomeEncoder : IConnectable, IDisposable 
     {

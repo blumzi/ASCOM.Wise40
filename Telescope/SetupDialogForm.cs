@@ -1,12 +1,10 @@
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Windows.Forms;
-using ASCOM.Utilities;
-using ASCOM.Wise40;
+
+
+using ASCOM.Astrometry;
+
 
 namespace ASCOM.Wise40
 {
@@ -16,17 +14,17 @@ namespace ASCOM.Wise40
         public SetupDialogForm()
         {
             InitializeComponent();
-            // Initialise current values of user settings from the ASCOM Profile 
-            textBox1.Text = Telescope.comPort;
-            chkTrace.Checked = Telescope.traceState;
+            
+            traceBox.Checked = Telescope.traceState;
+            accuracyBox.SelectedItem = Telescope.astrometricAccuracy == Accuracy.Full ? 0 : 1;
         }
 
         private void cmdOK_Click(object sender, EventArgs e) // OK button event handler
         {
             // Place any validation constraint checks here
 
-            Telescope.comPort = textBox1.Text; // Update the state variables with results from the dialogue
-            Telescope.traceState = chkTrace.Checked;
+            Telescope.traceState = traceBox.Checked;
+            Telescope.astrometricAccuracy = accuracyBox.Text == "Full" ? Accuracy.Full : Accuracy.Reduced; 
         }
 
         private void cmdCancel_Click(object sender, EventArgs e) // Cancel button event handler

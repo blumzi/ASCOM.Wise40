@@ -5,8 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 
 using System.Diagnostics;
+using ASCOM.Wise40.Common;
 
-namespace ASCOM.WiseHardware
+namespace ASCOM.Wise40.Hardware
 {
     //[StructLayout(LayoutKind.Sequential)]
     /// <summary>
@@ -51,7 +52,7 @@ namespace ASCOM.WiseHardware
                     throw new WiseException(name + ": Cannot find Daq for " + specs[i].port);
 
                 masks[i] = (byte)((specs[i].mask == 0) ? ~(1 << daqs[i].nbits) : specs[i].mask);
-                daqs[i].setdir(MccDaq.DigitalPortDirection.DigitalIn);
+                daqs[i].setDir(MccDaq.DigitalPortDirection.DigitalIn);
                 for (int bit = 0; bit < daqs[i].nbits; bit++)
                 {
                     if ((masks[i] & (1 << bit)) != 0)
@@ -210,9 +211,9 @@ namespace ASCOM.WiseHardware
                 for (int bit = 0; bit < daqs[daqno].nbits; bit++)
                     if ((masks[daqno] & (1 << bit)) != 0)
                         if (connected)
-                            daqs[daqno].setowner(name, bit);
+                            daqs[daqno].setOwner(name, bit);
                         else
-                            daqs[daqno].unsetowner(bit);
+                            daqs[daqno].unsetOwner(bit);
         }
 
         public void Dispose()
@@ -220,7 +221,7 @@ namespace ASCOM.WiseHardware
             for (int daqno = 0; daqno < daqs.Count(); daqno++)
                 for (int bit = 0; bit < daqs[daqno].nbits; bit++)
                     if ((masks[daqno] & (1 << bit)) != 0)
-                        daqs[daqno].unsetowner(bit);
+                        daqs[daqno].unsetOwner(bit);
         }
     }
 }

@@ -30,11 +30,11 @@ namespace ASCOM.Wise40
         {
             this.cmdOK = new System.Windows.Forms.Button();
             this.cmdCancel = new System.Windows.Forms.Button();
-            this.label1 = new System.Windows.Forms.Label();
+            this.descriptionLabel = new System.Windows.Forms.Label();
             this.picASCOM = new System.Windows.Forms.PictureBox();
-            this.textBox1 = new System.Windows.Forms.TextBox();
-            this.label2 = new System.Windows.Forms.Label();
-            this.chkTrace = new System.Windows.Forms.CheckBox();
+            this.accuracyBox = new System.Windows.Forms.ComboBox();
+            this.acuracyLabel = new System.Windows.Forms.Label();
+            this.traceBox = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).BeginInit();
             this.SuspendLayout();
             // 
@@ -42,7 +42,7 @@ namespace ASCOM.Wise40
             // 
             this.cmdOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.cmdOK.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.cmdOK.Location = new System.Drawing.Point(281, 112);
+            this.cmdOK.Location = new System.Drawing.Point(281, 183);
             this.cmdOK.Name = "cmdOK";
             this.cmdOK.Size = new System.Drawing.Size(59, 24);
             this.cmdOK.TabIndex = 0;
@@ -54,7 +54,7 @@ namespace ASCOM.Wise40
             // 
             this.cmdCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.cmdCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.cmdCancel.Location = new System.Drawing.Point(281, 142);
+            this.cmdCancel.Location = new System.Drawing.Point(281, 213);
             this.cmdCancel.Name = "cmdCancel";
             this.cmdCancel.Size = new System.Drawing.Size(59, 25);
             this.cmdCancel.TabIndex = 1;
@@ -62,13 +62,13 @@ namespace ASCOM.Wise40
             this.cmdCancel.UseVisualStyleBackColor = true;
             this.cmdCancel.Click += new System.EventHandler(this.cmdCancel_Click);
             // 
-            // label1
+            // descriptionLabel
             // 
-            this.label1.Location = new System.Drawing.Point(12, 9);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(123, 31);
-            this.label1.TabIndex = 2;
-            this.label1.Text = "Construct your driver\'s setup dialog here.";
+            this.descriptionLabel.Location = new System.Drawing.Point(12, 9);
+            this.descriptionLabel.Name = "descriptionLabel";
+            this.descriptionLabel.Size = new System.Drawing.Size(165, 20);
+            this.descriptionLabel.TabIndex = 2;
+            this.descriptionLabel.Text = "Wise40 Telescope driver setup.";
             // 
             // picASCOM
             // 
@@ -84,42 +84,47 @@ namespace ASCOM.Wise40
             this.picASCOM.Click += new System.EventHandler(this.BrowseToAscom);
             this.picASCOM.DoubleClick += new System.EventHandler(this.BrowseToAscom);
             // 
-            // textBox1
+            // accuracyBox
             // 
-            this.textBox1.Location = new System.Drawing.Point(77, 87);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(158, 20);
-            this.textBox1.TabIndex = 4;
+            this.accuracyBox.DisplayMember = "Full";
+            this.accuracyBox.Items.AddRange(new object[] {
+            "Full",
+            "Reduced"});
+            this.accuracyBox.Location = new System.Drawing.Point(184, 116);
+            this.accuracyBox.Name = "accuracyBox";
+            this.accuracyBox.Size = new System.Drawing.Size(69, 21);
+            this.accuracyBox.TabIndex = 8;
+            this.accuracyBox.Text = "Full";
             // 
-            // label2
+            // acuracyLabel
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(13, 90);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(58, 13);
-            this.label2.TabIndex = 5;
-            this.label2.Text = "Comm Port";
+            this.acuracyLabel.AutoSize = true;
+            this.acuracyLabel.Location = new System.Drawing.Point(74, 118);
+            this.acuracyLabel.Name = "acuracyLabel";
+            this.acuracyLabel.Size = new System.Drawing.Size(107, 13);
+            this.acuracyLabel.TabIndex = 10;
+            this.acuracyLabel.Text = "Astrometric Accuracy";
             // 
-            // chkTrace
+            // traceBox
             // 
-            this.chkTrace.AutoSize = true;
-            this.chkTrace.Location = new System.Drawing.Point(77, 118);
-            this.chkTrace.Name = "chkTrace";
-            this.chkTrace.Size = new System.Drawing.Size(69, 17);
-            this.chkTrace.TabIndex = 6;
-            this.chkTrace.Text = "Trace on";
-            this.chkTrace.UseVisualStyleBackColor = true;
+            this.traceBox.AutoSize = true;
+            this.traceBox.Location = new System.Drawing.Point(77, 72);
+            this.traceBox.Name = "traceBox";
+            this.traceBox.Size = new System.Drawing.Size(54, 17);
+            this.traceBox.TabIndex = 11;
+            this.traceBox.Text = "Trace";
+            this.traceBox.UseVisualStyleBackColor = true;
             // 
             // SetupDialogForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(350, 175);
-            this.Controls.Add(this.chkTrace);
-            this.Controls.Add(this.label2);
-            this.Controls.Add(this.textBox1);
+            this.ClientSize = new System.Drawing.Size(350, 246);
+            this.Controls.Add(this.traceBox);
+            this.Controls.Add(this.acuracyLabel);
+            this.Controls.Add(this.accuracyBox);
             this.Controls.Add(this.picASCOM);
-            this.Controls.Add(this.label1);
+            this.Controls.Add(this.descriptionLabel);
             this.Controls.Add(this.cmdCancel);
             this.Controls.Add(this.cmdOK);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
@@ -139,10 +144,10 @@ namespace ASCOM.Wise40
 
         private System.Windows.Forms.Button cmdOK;
         private System.Windows.Forms.Button cmdCancel;
-        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label descriptionLabel;
         private System.Windows.Forms.PictureBox picASCOM;
-        private System.Windows.Forms.TextBox textBox1;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.CheckBox chkTrace;
+        private System.Windows.Forms.ComboBox accuracyBox;
+        private System.Windows.Forms.Label acuracyLabel;
+        private System.Windows.Forms.CheckBox traceBox;
     }
 }
