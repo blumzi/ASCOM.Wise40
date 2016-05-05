@@ -8,5 +8,9 @@ namespace ASCOM.Wise40.Hardware
     public interface IConnectable
     {
         void Connect(bool connected);
+        bool Connected
+        {
+            get;
+        }
     }
 }

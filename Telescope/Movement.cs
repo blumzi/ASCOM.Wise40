@@ -14,7 +14,7 @@ namespace ASCOM.Wise40
     public class MovementSpecifier: IEquatable<Tuple<TelescopeAxes, double, int>>
     {
         public readonly TelescopeAxes axis;
-        public readonly double rate;
+        //public readonly double rate;
         public readonly int sign;
 
         public bool Equals(Tuple<TelescopeAxes, double, int> other)
@@ -23,7 +23,7 @@ namespace ASCOM.Wise40
                 return false;
 
             //Console.WriteLine("Equals: this# {0} other# {1}", this.GetHashCode(), other.GetHashCode());
-            return other.Item1 == axis && other.Item2 == rate && other.Item3 == sign;
+            return other.Item1 == axis /* && other.Item2 == rate */ && other.Item3 == sign;
         }
 
         public override bool Equals(object other)
@@ -37,40 +37,39 @@ namespace ASCOM.Wise40
                 return false;
 
             var o = (MovementSpecifier) other;
-            ret = o.axis == axis && o.rate == rate && o.sign == sign;
+            ret = o.axis == axis /* && o.rate == rate */ && o.sign == sign;
             //Console.WriteLine("Equals: this({0}, {1}, {2}) other: ({3}, {4}, {5}) => {6}", axis, rate, sign, o.axis, o.rate, o.sign, ret);
             return ret;
         }
 
-        public static implicit operator Tuple<TelescopeAxes, double, int> (MovementSpecifier m)
+        public static implicit operator Tuple<TelescopeAxes, /* double, */ int> (MovementSpecifier m)
         {
-            return new Tuple<TelescopeAxes, double, int>(m.axis, m.rate, m.sign);
+            return new Tuple<TelescopeAxes, /* double, */ int>(m.axis, /* m.rate, */ m.sign);
         }
 
-        public static implicit operator MovementSpecifier(Tuple<TelescopeAxes, double, int> t)
+        public static implicit operator MovementSpecifier(Tuple<TelescopeAxes, /* double, */ int> t)
         {
-            return new MovementSpecifier(t.Item1, t.Item2, t.Item3);
+            return new MovementSpecifier(t.Item1, t.Item2 /*, t.Item3 */);
         }
 
         public TelescopeAxes Axis {  get { return axis; } }
-        public double Rate { get { return rate; } }
         public int Sign { get { return sign; } }
 
-        public MovementSpecifier(TelescopeAxes axis, double rate, int sign)
+        public MovementSpecifier(TelescopeAxes axis,  /*double rate, */ int sign)
         {
             this.axis = axis;
-            this.rate = rate;
+            // this.rate = rate;
             this.sign = sign;
         }
 
         public override int GetHashCode()
         {
-            return axis.GetHashCode() ^ rate.GetHashCode() ^ sign.GetHashCode();
+            return axis.GetHashCode() /* ^ rate.GetHashCode() */ ^ sign.GetHashCode();
         }
 
         public override string ToString()
         {
-            return "( " + axis.ToString() + ", " + rate.ToString() + ", " + sign.ToString() + " )";
+            return "( " + axis.ToString() + ", " /* + rate.ToString() */ + ", " + sign.ToString() + " )";
         }
 
         public void Dispose()
@@ -84,10 +83,9 @@ namespace ASCOM.Wise40
         public readonly WiseMotor[] motors;
         public readonly bool slew;
 
-        public MovementWorker(WiseMotor[] motors, bool slew)
+        public MovementWorker(WiseMotor[] motors)
         {
             this.motors = motors;
-            this.slew = slew;
         }
 
         public bool Equals(Tuple<WiseMotor, bool> other)
@@ -228,7 +226,7 @@ namespace ASCOM.Wise40
             {
                 MovementWorker worker = dict[spec];
 
-                s += "  dict[" + spec.axis.ToString() + ", " + spec.rate.ToString() + ", " + spec.sign.ToString() + " ] = { [ ";
+                s += "  dict[" + spec.axis.ToString() + ", " /* + spec.rate.ToString() */ + ", " + spec.sign.ToString() + " ] = { [ ";
                 foreach (WiseMotor m in worker.motors)
                     s += m.ToString() + " ";
                 s += "], " + worker.slew.ToString() + "} " + spec.GetHashCode() + "\n";

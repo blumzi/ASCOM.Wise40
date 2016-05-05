@@ -15,6 +15,7 @@ namespace ASCOM.Wise40.Hardware
         private WiseDaq daq;
         private DigitalPortDirection dir;
         private bool inverse;
+        private bool _connected = false;
 
         public WisePin(string name, WiseBoard brd, DigitalPortType port, int bit, DigitalPortDirection dir, bool inverse = false)
         {
@@ -79,6 +80,15 @@ namespace ASCOM.Wise40.Hardware
                 daq.setOwner(name, bit);
             else
                 daq.unsetOwner(bit);
+            _connected = connected;
+        }
+
+        public bool Connected
+        {
+            get
+            {
+                return _connected;
+            }
         }
 
         public void Dispose()

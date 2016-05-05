@@ -15,6 +15,7 @@ namespace ASCOM.Wise40.Hardware
         private WiseDomeEncoder domeEncoder;
         private List<IConnectable> connectables;
         private List<IDisposable> disposables;
+        private bool _connected = false;
 
         private bool calibrating;
         private bool ventIsOpen;
@@ -129,8 +130,16 @@ namespace ASCOM.Wise40.Hardware
             {
                 connectable.Connect(connected);
             }
+            _connected = connected;
         }
 
+        public bool Connected
+        {
+            get
+            {
+                return _connected;
+            }
+        }
         public void log(string fmt, params object[] o)
         {
             string msg = String.Format(fmt, o);

@@ -4,12 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using ASCOM.Wise40.Common;
-
-namespace ASCOM.Wise40
+namespace ASCOM.Wise40.Common
 {
-    public class Target
+    public interface IWiseObject
     {
-        public Angle RightAscension, Declination;
+        string name { get; set; }
     }
 }

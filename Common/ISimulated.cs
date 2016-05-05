@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using ASCOM.Wise40.Common;
 
-namespace ASCOM.Wise40.Hardware
+namespace ASCOM.Wise40.Common
 {
-    public interface IDegrees: IWiseObject
+    public interface ISimulated
     {
-        double Degrees
+        bool simulated
         {
             get; set;
         }

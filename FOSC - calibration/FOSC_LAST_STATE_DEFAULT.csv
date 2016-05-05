@@ -1,0 +1,10 @@
+#TYPE,VALUE#
+aperture,Position_1
+columnator,Position_1
+upper_grism,Position_1
+lower_grism,Position_1
+shutter,Closed
+halogen1,Off
+halogen2,Off
+fe_a,Off
+mirror,Closed

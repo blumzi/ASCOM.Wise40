@@ -1,0 +1,9 @@
+#TYPE,VALUE#
+shutter,Closed
+halogen1,Off
+halogen2,Off
+fe_a,Off
+mirror,Closed
+aperture,Position 6
+upper_grism,Position 7
+lower_grism,Position 4

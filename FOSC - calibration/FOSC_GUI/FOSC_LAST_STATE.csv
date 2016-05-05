@@ -1,0 +1,9 @@
+#TYPE,VALUE,OFFSET#
+collimator,Position_1,9000
+upper_grism,Position_8,0
+HeAr,Off,0
+shutter,Closed,0
+halogen_1,Off,0
+mirror,In,0
+aperture,Position_4,-500
+lower_grism,Position_10,600

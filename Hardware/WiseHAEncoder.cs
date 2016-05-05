@@ -9,20 +9,31 @@ namespace ASCOM.Wise40.Hardware
     /// <summary>
     /// Implements the Wise40 HourAngle Encoder interface
     /// </summary>
-    public class WiseHAEncoder: IConnectable, IDisposable, IDegrees
+    public class WiseHAEncoder: IEncoder
     {
         private WiseDaq wormDaqLow, wormDaqHigh;
         private WiseDaq axisDaqLow, axisDaqHigh;
         private List<WiseDaq> daqs;
-
-        private const string name = "TeleHAEncoder";
+        private bool _simulated = false;
+        private bool _connected = false;
+        private string _name;
+        private uint _value;
+        
         private AtomicReader wormAtomicReader, axisAtomicReader;
 
         private Astrometry.NOVAS.NOVAS31 Novas31;
+        private Astrometry.AstroUtils.AstroUtils astroutils;
 
-        public WiseHAEncoder()
+        public Angle _angle;
+
+        const double HaMultiplier = 2 * Math.PI / 720 / 4096;
+        const double HaCorrection = -3.063571542;                   // 20081231: Shai Kaspi
+
+        public WiseHAEncoder(string name)
         {
             Novas31 = new Astrometry.NOVAS.NOVAS31();
+            astroutils = new Astrometry.AstroUtils.AstroUtils();
+
             List<WiseDaq> wormDaqs, axisDaqs, teleDaqs;
 
             teleDaqs = Hardware.Instance.teleboard.daqs;
@@ -46,31 +57,85 @@ namespace ASCOM.Wise40.Hardware
 
             wormAtomicReader = new AtomicReader(wormDaqs);
             axisAtomicReader = new AtomicReader(axisDaqs);
+
+            simulated = false;
+            foreach (WiseDaq d in daqs)
+            {
+                if (d.wiseBoard.type == WiseBoard.BoardType.Soft)
+                {
+                    simulated = true;
+                    break;
+                }
+            }
+            _name = name;
+            
+            _angle = Angle.FromDeg(simulated ? 0.0 : Degrees); // init value
         }
 
-        private double HAcorrection()
+        /// <summary>
+        /// Reads the axis and worm encoders
+        /// </summary>
+        /// <returns>Combined Daq values</returns>
+        public UInt32 Value
         {
-            return 0.0;
+            get {
+                if (! simulated)
+                {
+                    List<uint> daqValues;
+                    uint worm, axis;
+
+                    daqValues = wormAtomicReader.Values;
+                    worm = (daqValues[1] << 8) | daqValues[0];
+
+                    daqValues = axisAtomicReader.Values;
+                    axis = (daqValues[0] >> 4) | (daqValues[1] << 4);
+
+                    _value = ((axis * 720 - worm) & 0xfff000) + worm;
+                }
+                return _value;
+            }
+
+            set
+            {
+                if (simulated)
+                    _value = value;
+            }
         }
 
-        public double HourAngle
+        public Angle Angle
         {
             get
             {
-                List<uint> daqValues;
-                double enc;
-                const double encMultiplier = 2 * Math.PI / 720 / 4096;
-                uint worm, axis;
+                if (!simulated)
+                    _angle.Radians = (_value * HaMultiplier) + HaCorrection;
 
-                daqValues = wormAtomicReader.Values;
-                worm = (daqValues[1] << 8) | daqValues[0];
+                return _angle;
+            }
 
-                daqValues = axisAtomicReader.Values;
-                axis = (daqValues[0] >> 4) | (daqValues[1] << 4);
+            set
+            {
+                if (simulated)
+                    _angle.Degrees = value.Degrees;
+            }
+        }
 
-                enc = (((axis * 720 - worm) & 0xfff000) + worm) * encMultiplier;
+        public double Degrees
+        {
+            get
+            {
+                if (!simulated)
+                    _angle.Radians = (_value * HaMultiplier) + HaCorrection;
 
-                return enc + HAcorrection();
+                return astroutils.ConditionHA(_angle.Degrees);
+            }
+
+            set
+            {
+                _angle.Degrees = value;
+                if (simulated)
+                {
+                    _value = (uint)((_angle.Radians + HaCorrection) / HaMultiplier);
+                }
             }
         }
 
@@ -78,8 +143,7 @@ namespace ASCOM.Wise40.Hardware
         {
             get
             {
-
-                return HourAngle - WiseSite.Instance.LocalSiderealTime;
+                return astroutils.ConditionRA(WiseSite.Instance.LocalSiderealTime - Degrees);
             }
         }
 
@@ -98,6 +162,15 @@ namespace ASCOM.Wise40.Hardware
                 axisDaqLow.unsetOwners();
                 axisDaqHigh.unsetOwners();
             }
+            _connected = connected;
+        }
+
+        public bool Connected
+        {
+            get
+            {
+                return _connected;
+            }
         }
 
         public void Dispose()
@@ -106,16 +179,29 @@ namespace ASCOM.Wise40.Hardware
                 daq.unsetOwners();
         }
 
-        public double Degrees
+        public bool simulated
         {
             get
             {
-                return 0.0; //TBD: transform encoder Value to Degrees
+                return _simulated; 
             }
 
             set
             {
-                ; // TBD: transform value (in degrees) to encoder value
+                _simulated = value;
+            }
+        }
+
+        public string name
+        {
+            get
+            {
+                return _name;
+            }
+
+            set
+            {
+                _name = value;
             }
         }
     }

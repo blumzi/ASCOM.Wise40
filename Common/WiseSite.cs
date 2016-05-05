@@ -8,6 +8,7 @@ using ASCOM.Astrometry.NOVAS;
 using ASCOM.Wise40.Common.Properties;
 using ASCOM.Utilities;
 using ASCOM.Astrometry;
+using ASCOM.Wise40.Common;
 
 namespace ASCOM.Wise40
 {
@@ -15,12 +16,14 @@ namespace ASCOM.Wise40
     {
         private static WiseSite site;
         private static bool isInitialized;
-        private Astrometry.NOVAS.NOVAS31 Novas31;
-        private AstroUtils astroUtils;
-        private Astrometry.Accuracy accuracy;
-
-        Astrometry.SiteInfo siteInfo;
+        private Astrometry.NOVAS.NOVAS31 novas31;
+        private static AstroUtils astroutils;
+        private static ASCOM.Utilities.Util ascomutils;
+        public Astrometry.Accuracy astrometricAccuracy;
         public Astrometry.OnSurface onSurface;
+        public Astrometry.RefractionOption refractionOption = Astrometry.RefractionOption.NoRefraction;
+
+        public double siteLatitude, siteLongitude, siteElevation;
 
         public static WiseSite Instance
         {
@@ -39,35 +42,36 @@ namespace ASCOM.Wise40
             {
                 isInitialized = true;
 
-                siteInfo.Height = 875;
-                siteInfo.Latitude = 30.59583333333333;
-                siteInfo.Longitude = 34.763333333333335;
-                Novas31 = new Astrometry.NOVAS.NOVAS31();
-                astroUtils = new AstroUtils();
-                onSurface.Height = siteInfo.Height;
-                onSurface.Latitude = siteInfo.Latitude;
-                onSurface.Longitude = siteInfo.Longitude;
+                novas31 = new NOVAS31();
+                astroutils = new AstroUtils();
+                ascomutils = new Util();
+
+                siteLatitude = ascomutils.DMSToDegrees("30:35:50.43");
+                siteLongitude = ascomutils.DMSToDegrees("34:45:43.86");
+                siteElevation = 882.9;
+                novas31.MakeOnSurface(siteLatitude, siteLongitude, siteElevation, 0.0, 0.0, ref onSurface);
 
                 using (Profile driverProfile = new Profile())
                 {
                     driverProfile.DeviceType = "Telescope";
                     string acc = Convert.ToString(driverProfile.GetValue("ASCOM.Wise40.Telescope", "Astrometric accuracy", string.Empty, "Full"));
-                    this.accuracy = (acc == "Full") ? Accuracy.Full : Accuracy.Reduced;
+                    astrometricAccuracy = (acc == "Full") ? Accuracy.Full : Accuracy.Reduced;
                 }
             }
         }
 
         public void Dispose()
         {
-            Novas31.Dispose();
-            astroUtils.Dispose();
+            novas31.Dispose();
+            astroutils.Dispose();
+            ascomutils.Dispose();
         }
 
         public double Longitude
         {
             get
             {
-                return siteInfo.Longitude;
+                return onSurface.Longitude;
             }
         }
 
@@ -75,7 +79,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return siteInfo.Latitude;
+                return onSurface.Latitude;
             }
         }
 
@@ -83,7 +87,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return siteInfo.Height;
+                return onSurface.Height;
             }
         }
 
@@ -91,16 +95,15 @@ namespace ASCOM.Wise40
         {
             get
             {
-                var nov = new NOVAS31();
-                var ast = new AstroUtils();
-                var currJD = ast.JulianDateUT1(0);
-                double lstNow = 0;
-                var res = nov.SiderealTime(
-                    currJD, 0d, 0, GstType.GreenwichApparentSiderealTime, Method.EquinoxBased, accuracy, ref lstNow);
+                double gstNow = 0;
+
+                var res = novas31.SiderealTime(
+                    astroutils.JulianDateUT1(0), 0d, astroutils.DeltaT(), GstType.GreenwichApparentSiderealTime, Method.EquinoxBased, astrometricAccuracy, ref gstNow);
 
                 if (res != 0)
-                    throw new InvalidValueException("Error getting Local Apparent Sidereal time");
-                return lstNow + Longitude / 15;
+                    throw new InvalidValueException("Error getting Greenwich Apparent Sidereal time");
+
+                return astroutils.Range(gstNow + (Longitude / 15.0), 0.0, true, 24.0, false);
             }
         }
 
@@ -112,6 +115,17 @@ namespace ASCOM.Wise40
             return siderealTime;
         }
 
+        /// <summary> 
+        // If we haven't checked in a long enough time (10 minutes ?!?)
+        //  get temperature, humidity, pressure, air-mass, etc
+        /// </summary>
+        public void prepareRefractionData()
+        {
+            refractionOption = Astrometry.RefractionOption.NoRefraction;
 
+            // NOTE: keep low frequency
+
+            // if success in getting temp. and pres., change refractionOption to LocationRefraction
+        }
     }
 }

@@ -29,6 +29,7 @@ namespace ASCOM.Wise40.Hardware
         private bool isGray;
         private Stopwatch stopwatch;
         private int ticksPerRevolution;
+        private bool _connected = false;
 
         /// <summary>
         /// Creates a new Encoder object.
@@ -214,6 +215,15 @@ namespace ASCOM.Wise40.Hardware
                             daqs[daqno].setOwner(name, bit);
                         else
                             daqs[daqno].unsetOwner(bit);
+            _connected = connected;
+        }
+
+        public bool Connected
+        {
+            get
+            {
+                return _connected;
+            }
         }
 
         public void Dispose()

@@ -1,0 +1,45 @@
+#TYPE,NAME,VALUE#
+aperture,Position 1,1
+aperture,Position 2,2
+aperture,Position 3,3
+aperture,Position 4,4
+aperture,Position 5,5
+aperture,Position 6,6
+aperture,Position 7,7
+aperture,Position 8,8
+aperture,Position 9,9
+aperture,Position 10,10
+#collimator,Position 1,1
+#collimator,Position 2,2
+#collimator,Position 3,3
+#collimator,Position 4,4
+upper_grism,Position 1,1
+upper_grism,Position 2,2
+upper_grism,Position 3,3
+upper_grism,Position 4,4
+upper_grism,Position 5,5
+upper_grism,Position 6,6
+upper_grism,Position 7,7
+upper_grism,Position 8,8
+upper_grism,Position 9,9
+upper_grism,Position 10,10
+lower_grism,Position 1,1
+lower_grism,Position 2,2
+lower_grism,Position 3,3
+lower_grism,Position 4,4
+lower_grism,Position 5,5
+lower_grism,Position 6,6
+lower_grism,Position 7,7
+lower_grism,Position 8,8
+lower_grism,Position 9,9
+lower_grism,Position 10,10
+shutter,Open,1
+shutter,Closed,0
+halogen1,On,1
+halogen1,Off,0
+halogen2,On,1
+halogen2,Off,0
+fe_a,On,1
+fe_a,Off,0
+mirror,Closed,0
+mirror,Open,1

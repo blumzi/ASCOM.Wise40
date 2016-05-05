@@ -22,7 +22,7 @@ namespace ASCOM.Wise40.Hardware
         private double caliAz;
         private WiseDome.Direction moving;
         private const int simulatedEncoderTicksPerSecond = 6;
-        private bool connected;
+        private bool _connected = false;
         private const int hwTicks = 1024;
         private const double NoSimulatedStuckAz = -1.0;
 
@@ -54,7 +54,6 @@ namespace ASCOM.Wise40.Hardware
             }
 
             this.logger = logger;
-            connected = false;
         }
 
         public void setMovement(WiseDome.Direction dir)
@@ -66,7 +65,7 @@ namespace ASCOM.Wise40.Hardware
         {
             DateTime rightNow = DateTime.Now;
 
-            if (!connected)
+            if (! Connected)
                 return;
 
             if (simulatedStuckAzimuth != NoSimulatedStuckAz)                // A simulatedStuck is required
@@ -124,8 +123,16 @@ namespace ASCOM.Wise40.Hardware
 
         public void Connect(bool connected)
         {
-            this.connected = connected;
-            hwEncoder.Connect(this.connected);
+            this._connected = connected;
+            hwEncoder.Connect(this._connected);
+        }
+
+        public bool Connected
+        {
+            get
+            {
+                return _connected;
+            }
         }
 
         public void Dispose()

@@ -16,7 +16,7 @@ namespace ASCOM.Wise40
             InitializeComponent();
             
             traceBox.Checked = Telescope.traceState;
-            accuracyBox.SelectedItem = Telescope.astrometricAccuracy == Accuracy.Full ? 0 : 1;
+            accuracyBox.SelectedItem = WiseSite.Instance.astrometricAccuracy == Accuracy.Full ? 0 : 1;
         }
 
         private void cmdOK_Click(object sender, EventArgs e) // OK button event handler
@@ -24,7 +24,7 @@ namespace ASCOM.Wise40
             // Place any validation constraint checks here
 
             Telescope.traceState = traceBox.Checked;
-            Telescope.astrometricAccuracy = accuracyBox.Text == "Full" ? Accuracy.Full : Accuracy.Reduced; 
+            WiseSite.Instance.astrometricAccuracy = accuracyBox.Text == "Full" ? Accuracy.Full : Accuracy.Reduced; 
         }
 
         private void cmdCancel_Click(object sender, EventArgs e) // Cancel button event handler
