@@ -777,7 +777,7 @@ namespace ASCOM.Wise40
 
         private void DoCheckSafety(object StateObject)
         {
-            CheckSafety(RightAscension, Declination, true);
+            //CheckSafety(RightAscension, Declination, true);
         }
     }
 }

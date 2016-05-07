@@ -33,7 +33,7 @@ namespace ASCOM.Wise40.Hardware
 
             this.encoders = encoders;
             this.increase = increase;
-            simulated = motorPin.simulated || guideMotorPin.simulated;
+            simulated = motorPin.simulated || (guideMotorPin != null && guideMotorPin.simulated);
 
             if (simulated && (encoders == null || encoders.Count() == 0))
                 throw new WiseException(name + ": A simulated motor must have and encoder reference");

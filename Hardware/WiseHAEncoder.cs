@@ -54,6 +54,8 @@ namespace ASCOM.Wise40.Hardware
             daqs = new List<WiseDaq>();
             daqs.AddRange(wormDaqs);
             daqs.AddRange(axisDaqs);
+            foreach (WiseDaq daq in daqs)
+                daq.setDir(DigitalPortDirection.DigitalIn);
 
             wormAtomicReader = new AtomicReader(wormDaqs);
             axisAtomicReader = new AtomicReader(axisDaqs);
@@ -68,8 +70,8 @@ namespace ASCOM.Wise40.Hardware
                 }
             }
             _name = name;
-            
-            _angle = Angle.FromDeg(simulated ? 0.0 : Degrees); // init value
+
+            _angle = simulated ? Angle.FromDeg(0.0) : Angle.FromRad((Value * HaMultiplier) + HaCorrection); 
         }
 
         /// <summary>
@@ -86,9 +88,11 @@ namespace ASCOM.Wise40.Hardware
 
                     daqValues = wormAtomicReader.Values;
                     worm = (daqValues[1] << 8) | daqValues[0];
+                    //Console.WriteLine("HA worm: {0}", worm);
 
                     daqValues = axisAtomicReader.Values;
                     axis = (daqValues[0] >> 4) | (daqValues[1] << 4);
+                    //Console.WriteLine("HA axis: {0}", axis);
 
                     _value = ((axis * 720 - worm) & 0xfff000) + worm;
                 }
@@ -107,7 +111,7 @@ namespace ASCOM.Wise40.Hardware
             get
             {
                 if (!simulated)
-                    _angle.Radians = (_value * HaMultiplier) + HaCorrection;
+                    _angle.Radians = (Value * HaMultiplier) + HaCorrection;
 
                 return _angle;
             }

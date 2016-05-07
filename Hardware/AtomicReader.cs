@@ -11,7 +11,7 @@ namespace ASCOM.Wise40.Hardware
 {
     public class AtomicReader
     {
-        private const uint timeoutMicros = 100;    // microseconds between Daq reads
+        private const uint timeoutMicros = 200;    // microseconds between Daq reads
         private Stopwatch stopwatch;
         private const int maxTries = 5;
         List<WiseDaq> daqs;
@@ -26,8 +26,9 @@ namespace ASCOM.Wise40.Hardware
         {
             get
             {
-                List<uint> results = new List<uint>(daqs.Count());
+                List<uint> results = new List<uint>();
                 int i;
+                List<long> elapsedMicros = new List<long>();
 
                 for (int tries = 0; tries < maxTries; tries++)
                 {
@@ -41,7 +42,9 @@ namespace ASCOM.Wise40.Hardware
                         if (daqs[i].wiseBoard.type == WiseBoard.BoardType.Hard && i > 0)
                         {
                             stopwatch.Stop();
-                            if (stopwatch.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L)) > timeoutMicros)
+                            long micros = (stopwatch.ElapsedTicks / Stopwatch.Frequency) * 1000000L;
+                            elapsedMicros.Add(micros);
+                            if (micros > timeoutMicros)
                                 goto nexttry;
                         }
                     }
@@ -51,11 +54,14 @@ namespace ASCOM.Wise40.Hardware
 
                     nexttry:;
                 }
-
-                string err = "Failed to read daqs: ";
+                
+                string err = new StackFrame(1, true).GetMethod().Name + ": Failed to read daqs: ";
                 foreach (WiseDaq daq in daqs)
                     err += daq.name + ", ";
-                err += "within " + timeoutMicros.ToString() + " microSeconds";
+                err += "within " + timeoutMicros.ToString() + " microSeconds [";
+                foreach (long m in elapsedMicros)
+                    err += m.ToString() + ", ";
+                err += "]";
 
                 throw new WiseException(err);
             }

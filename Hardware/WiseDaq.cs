@@ -18,8 +18,8 @@ namespace ASCOM.Wise40.Hardware
         public WiseBitOwner[] owners;
         public GroupBox gb;
 
-        private ushort value;
-        private ushort mask;
+        private ushort _value;
+        private ushort _mask;
 
         /// <summary>
         /// The Daq's direction
@@ -29,14 +29,10 @@ namespace ASCOM.Wise40.Hardware
         {
             if (wiseBoard.type == WiseBoard.BoardType.Hard)
             {
-                try
-                {
-                    wiseBoard.mccBoard.DConfigPort(porttype, dir);
-                }
-                catch (ULException e)
-                {
-                    throw new WiseException(name + ": UL DConfigPort(" + porttype.ToString() + ", " + dir.ToString() + ") failed with " + e.Message);
-                }
+                MccDaq.ErrorInfo err = wiseBoard.mccBoard.DConfigPort(porttype, dir);
+                if (err.Value != 0)
+                    throw new WiseException(name + ": UL DConfigPort(" + porttype.ToString() + ", " + dir.ToString() + ") failed with " + err.Message);
+
             }
             portdir = dir;
         }
@@ -50,7 +46,7 @@ namespace ASCOM.Wise40.Hardware
             {
                 porttype = (int) DigitalPortType.FirstPortA + devno;
                 name = "Board" + wiseBoard.boardNum.ToString() + "." + ((DigitalPortType)porttype).ToString();
-                value = 0;
+                _value = 0;
                 switch(devno % 4)
                 {
                     case 0: nbits = 8; break;   // XXX-PortA
@@ -69,7 +65,7 @@ namespace ASCOM.Wise40.Hardware
             }
 
             this.porttype = (DigitalPortType) porttype;
-            mask = (ushort) ((nbits == 8) ? 0xff : 0xf);
+            _mask = (ushort) ((nbits == 8) ? 0xff : 0xf);
             owners = new WiseBitOwner[nbits];
             for (int i = 0; i < nbits; i++)
                 owners[i] = new WiseBitOwner();
@@ -94,21 +90,19 @@ namespace ASCOM.Wise40.Hardware
                 if (wiseBoard.type == WiseBoard.BoardType.Hard)
                 {
                     if (portdir == DigitalPortDirection.DigitalIn)
-                        try
-                        {
-                            wiseBoard.mccBoard.DIn(porttype, out v);
-                        }
-                        catch (ULException e)
-                        {
-                            throw new WiseException(name + ": UL DIn(" + porttype.ToString() + ") failed with :\"" + e.Message + "\"");
-                        }
+                    {
+                        ErrorInfo err = wiseBoard.mccBoard.DIn(porttype, out v);
+                        if (err.Value != ErrorInfo.ErrorCode.NoErrors)
+                            throw new WiseException(name + ": UL DIn(" + porttype.ToString() + ") failed with " + err.Message);
+                        //Console.WriteLine("v: " + v.ToString());
+                    }
                     else
-                        v = value;
+                        v = _value;
                 }
                 else
-                    v = value;
+                    v = _value;
 
-                return (ushort)(v & mask);
+                return (ushort)(v & _mask);
             }
 
             set {
@@ -116,19 +110,15 @@ namespace ASCOM.Wise40.Hardware
                 {
                     if (portdir == DigitalPortDirection.DigitalOut)
                     {
-                        try
-                        {
-                            wiseBoard.mccBoard.DOut(porttype, value);
-                        }
-                        catch (ULException e)
-                        {
-                            throw new WiseException(name + ": UL DOut(" + porttype.ToString() + ", " + value.ToString() + ") failed with :\"" + e.Message + "\"");
-                        }
-                        this.value = value;
+                        ErrorInfo err = wiseBoard.mccBoard.DOut(porttype, value);
+                        if (err.Value != ErrorInfo.ErrorCode.NoErrors)
+                            throw new WiseException(name + ": UL DOut(" + porttype.ToString() + ", " + value.ToString() + ") failed with :\"" + err.Message + "\"");
+
+                        _value = value;
                     }
                 }
                 else
-                    this.value = value;
+                    _value = value;
             }
         }
 

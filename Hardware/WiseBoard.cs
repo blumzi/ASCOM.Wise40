@@ -31,6 +31,7 @@ namespace ASCOM.Wise40.Hardware
             {
                 type = BoardType.Hard;
                 this.mccBoard = mccBoard;
+                this.boardNum = this.mccBoard.BoardNum;
                 name = "Board" + this.mccBoard.BoardNum.ToString();               
                 this.mccBoard.BoardConfig.GetDiNumDevs(out ndaqs);
             }

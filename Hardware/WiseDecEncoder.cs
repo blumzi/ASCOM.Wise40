@@ -51,6 +51,8 @@ namespace ASCOM.Wise40.Hardware
             daqs = new List<WiseDaq>();
             daqs.AddRange(wormDaqs);
             daqs.AddRange(axisDaqs);
+            foreach (WiseDaq daq in daqs)
+                daq.setDir(DigitalPortDirection.DigitalIn);
 
             wormAtomicReader = new AtomicReader(wormDaqs);
             axisAtomicReader = new AtomicReader(axisDaqs);
@@ -67,7 +69,7 @@ namespace ASCOM.Wise40.Hardware
 
             _name = name;
 
-            _angle = Angle.FromDeg(simulated ? (90.0 - WiseSite.Instance.Latitude) : Degrees); // init value
+            _angle = simulated ? Angle.FromDeg(90.0 - WiseSite.Instance.Latitude) : Angle.FromRad((Value * decMultiplier) + DecCorrection);
         }
 
         public double Declination
@@ -162,15 +164,21 @@ namespace ASCOM.Wise40.Hardware
                     _angle.Degrees = value.Degrees;
             }
         }
+
         public double Degrees
         {
             get
             {
-                if (!simulated)
-                    _angle.Radians = (Value * decMultiplier) + DecCorrection;
+                double radians = 0;
 
-                if (_angle.Radians > Math.PI)
-                    _angle.Radians -= 2 * Math.PI;
+                if (!simulated)
+                {
+                    radians = (Value * decMultiplier) + DecCorrection;
+
+                    if (radians > Math.PI)
+                        radians -= 2 * Math.PI;
+                }
+                _angle.Degrees = radians * 180.0 / Math.PI;
 
                 return _angle.Degrees;
             }
