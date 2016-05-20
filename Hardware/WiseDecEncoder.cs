@@ -14,7 +14,7 @@ namespace ASCOM.Wise40.Hardware
         private List<WiseDaq> daqs;
         private bool _simulated;
         private string _name;
-        private uint _value;
+        private uint _daqsValue;
         
         private AtomicReader wormAtomicReader, axisAtomicReader;
         private Astrometry.NOVAS.NOVAS31 Novas31;
@@ -132,18 +132,17 @@ namespace ASCOM.Wise40.Hardware
                     daqValues = axisAtomicReader.Values;
                     axis = (daqValues[0] >> 4) | (daqValues[1] << 4);
 
-                    return ((axis * 600 + worm) & 0xfff000) + worm;
+                    _daqsValue = ((axis * 600 + worm) & 0xfff000) + worm;
                 }
-                return _value;
+                return _daqsValue;
             }
 
             set
             {
                 if (simulated)
-                    _value = value;
+                    _daqsValue = value;
             }
         }
-
 
         public Angle Angle
         {
@@ -169,16 +168,13 @@ namespace ASCOM.Wise40.Hardware
         {
             get
             {
-                double radians = 0;
-
                 if (!simulated)
                 {
-                    radians = (Value * decMultiplier) + DecCorrection;
+                    _angle.Radians = (Value * decMultiplier) + DecCorrection;
 
-                    if (radians > Math.PI)
-                        radians -= 2 * Math.PI;
+                    if (_angle.Radians > Math.PI)
+                        _angle.Radians -= 2 * Math.PI;
                 }
-                _angle.Degrees = radians * 180.0 / Math.PI;
 
                 return _angle.Degrees;
             }
@@ -188,7 +184,7 @@ namespace ASCOM.Wise40.Hardware
                 _angle.Degrees = value;
                 if (simulated)
                 {
-                    _value = (uint) ((_angle.Radians - DecCorrection) / decMultiplier);
+                    _daqsValue = (uint) ((_angle.Radians - DecCorrection) / decMultiplier);
                 }
             }
         }

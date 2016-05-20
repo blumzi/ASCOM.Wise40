@@ -128,7 +128,7 @@ namespace ASCOM.Wise40
 
         public void Dispose()
         {
-            throw new System.NotImplementedException();
+            return;
         }
 
         public IEnumerator GetEnumerator()

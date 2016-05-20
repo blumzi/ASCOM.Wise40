@@ -140,7 +140,7 @@ namespace ASCOM.Wise40.Common
                         return true;
                     case 3:
                         value = new Angle(int.Parse(c[0]), int.Parse(c[1]), double.Parse(c[2]));
-                        Console.WriteLine("TryParse: {0}, {1}, {2} => {3}", int.Parse(c[0]), int.Parse(c[1]), double.Parse(c[2]), value.ToString(Format.Deg));
+                        Console.WriteLine("TryParse: {0}, {1}, {2} => {3}", int.Parse(c[0]), int.Parse(c[1]), double.Parse(c[2]), value.ToFormattedString(Format.Deg));
                         return true;
                 }
             }
@@ -157,7 +157,12 @@ namespace ASCOM.Wise40.Common
             return false;
         }
 
-        public string ToString(Format format = Format.Deg)
+        public override string ToString()
+        {
+            return ascomutils.DegreesToDMS(_degrees, "°", "'", "\"", 1);
+        }
+
+        public string ToFormattedString(Format format = Format.Deg)
         {
             switch (format)
             {
@@ -184,5 +189,88 @@ namespace ASCOM.Wise40.Common
             }
             return "";
         }
+
+        public static Angle operator +(Angle a1, Angle a2)
+        {
+            if ((object)a1 == null)
+                return a2;
+            else if ((object)a2 == null)
+                return a1;
+
+            return new Angle((a1.Degrees + a2.Degrees) % 360.0);
+        }
+
+        public static Angle operator -(Angle a1, Angle a2)
+        {
+            if ((object)a1 == null)
+                return a2;
+            else if ((object)a2 == null)
+                return a1;
+
+            return new Angle((a1.Degrees - a2.Degrees) % 360.0);
+        }
+
+        public static bool operator >(Angle a1, Angle a2)
+        {
+            return (a1.Degrees > a2.Degrees) ? true : false;
+        }
+
+        public static bool operator <(Angle a1, Angle a2)
+        {
+            return (a1.Degrees < a2.Degrees) ? true : false;
+        }
+
+        public static bool operator ==(Angle a1, Angle a2)
+        {
+            if (System.Object.ReferenceEquals(a1, a2))
+                return true;
+
+            if (((object)a1 == null || ((object)a2 == null)))
+                return false;
+
+            return a1.Degrees == a2.Degrees;
+        }
+
+        public static bool operator !=(Angle a1, Angle a2)
+        {
+            return !(a1 == a2);
+        }
+
+        public static Angle Min(Angle a1, Angle a2)
+        {
+            if ((object)a1 == null || ((object)a2 == null))
+                return null;
+            return new Angle((a1.Degrees < a2.Degrees) ? a1.Degrees : a2.Degrees);
+        }
+
+        public static Angle Max(Angle a1, Angle a2)
+        {
+
+            if ((object)a1 == null || ((object)a2 == null))
+                return null; return new Angle((a1.Degrees > a2.Degrees) ? a1.Degrees : a2.Degrees);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj == null)
+                return false;
+            Angle b = obj as Angle;
+            return b.Degrees == Degrees;
+        }
+
+        public bool Equals(Angle a)
+        {
+            if ((object)a == null)
+                return false;
+            return a.Degrees == Degrees;
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+
+        public static readonly Angle zero = new Angle(0.0);
+        public static readonly Angle invalid = new Angle(double.NaN);
     }
 }

@@ -11,7 +11,7 @@ namespace ASCOM.Wise40.Hardware
 {
     public class AtomicReader
     {
-        private const uint timeoutMicros = 200;    // microseconds between Daq reads
+        private const uint timeoutMicros = 100;    // microseconds between Daq reads
         private Stopwatch stopwatch;
         private const int maxTries = 5;
         List<WiseDaq> daqs;
@@ -50,12 +50,22 @@ namespace ASCOM.Wise40.Hardware
                     }
 
                     if (i == daqs.Count())
+                    {
+                        string s = "inter daqs (";
+                        foreach (WiseDaq daq in daqs)
+                            s += daq.name + " ";
+                        s += ") read times: ";
+                        foreach (long m in elapsedMicros)
+                            s += m.ToString() + " ";
+                        Console.WriteLine(s);
+
                         return results;
+                    }
 
                     nexttry:;
                 }
                 
-                string err = new StackFrame(1, true).GetMethod().Name + ": Failed to read daqs: ";
+                string err = "Failed to read daqs: ";
                 foreach (WiseDaq daq in daqs)
                     err += daq.name + ", ";
                 err += "within " + timeoutMicros.ToString() + " microSeconds [";

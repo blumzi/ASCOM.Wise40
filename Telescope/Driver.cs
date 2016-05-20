@@ -75,7 +75,6 @@ namespace ASCOM.Wise40
         internal static string traceStateProfileName = "Trace Level";
         internal static string traceStateDefault = "false";
 
-        //internal static string comPort; // Variables to hold the currrent device configuration
         internal static bool traceState;
 
         /// <summary>
@@ -99,7 +98,8 @@ namespace ASCOM.Wise40
         private TraceLogger tl;
         
         public HandpadForm handpad;
-        //Thread gui;
+
+        private bool driverInitiatedSlewing = false;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Wise40"/> class.
@@ -288,6 +288,12 @@ namespace ASCOM.Wise40
         #region ITelescope Implementation
         public void AbortSlew()
         {
+            if (AtPark)
+                throw new InvalidOperationException("Cannot AbortSlew while AtPark");
+
+            if (!driverInitiatedSlewing)
+                return;
+
             tl.LogMessage("AbortSlew", "");
             WiseTele.Instance.abortSlew();
         }
@@ -414,8 +420,8 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("CanPulseGuide", "Get - " + true.ToString());
-                return true;
+                tl.LogMessage("CanPulseGuide", "Get - " + false.ToString());
+                return false;
             }
         }
 
@@ -533,8 +539,8 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("CanUnpark", "Get - " + false.ToString());
-                return false;
+                tl.LogMessage("CanUnpark", "Get - " + true.ToString());
+                return true;
             }
         }
 
@@ -581,12 +587,12 @@ namespace ASCOM.Wise40
                 tl.LogMessage("DoesRefraction Get", doesRefraction.ToString());
                 return doesRefraction;
             }
+
             set
             {
-                if (value == false)
-                    throw new ASCOM.InvalidOperationException("DoesRefraction");
+                throw new ASCOM.PropertyNotImplementedException("DoesRefraction");
             }
-         }
+        }
 
         public EquatorialCoordinateType EquatorialSystem
         {
@@ -648,13 +654,13 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return WiseTele.Instance.IsPulseGuiding;
+                throw new PropertyNotImplementedException("PulseGuide not supported");
             }
         }
 
         public void MoveAxis(TelescopeAxes Axis, double Rate)
         {
-            WiseTele.Instance.MoveAxis(Axis, Rate);
+            WiseTele.Instance.MoveAxis(Axis, Rate, (Rate < 0) ? WiseTele.AxisDirection.Decreasing : WiseTele.AxisDirection.Increasing);
         }
 
         public void Park()
@@ -805,24 +811,70 @@ namespace ASCOM.Wise40
 
         public void SlewToCoordinates(double RightAscension, double Declination)
         {
+            TargetRightAscension = RightAscension;
+            TargetDeclination = Declination;
+
+            if (AtPark)
+                throw new InvalidOperationException("Cannot SlewToCoordinates while AtPark");
+
+            if (!Tracking)
+                throw new InvalidOperationException("Cannot SlewToCoordinates while NOT Tracking");
+
+            if (!WiseTele.Instance.SafeAtCoordinates(RightAscension, Declination))
+                throw new InvalidValueException("Not safe to SlewToCoordinates({0}, {1})", RightAscension.ToString(), Declination.ToString());
+
             tl.LogMessage("SlewToCoordinates", string.Format("ra: {0}, dec: {0}", RightAscension, Declination));
-            WiseTele.Instance.SlewToCoordinates(RightAscension, Declination);
+            WiseTele.Instance.SlewToCoordinatesSync(RightAscension, Declination);
         }
 
         public void SlewToCoordinatesAsync(double RightAscension, double Declination)
         {
-            tl.LogMessage("SlewToCoordinatesAsync", "Not implemented");
-            throw new ASCOM.MethodNotImplementedException("SlewToCoordinatesAsync");
+            TargetRightAscension = RightAscension;
+            TargetDeclination = Declination;
+
+            if (AtPark)
+                throw new InvalidOperationException("Cannot SlewToCoordinates while AtPark");
+
+            if (!Tracking)
+                throw new InvalidOperationException("Cannot SlewToCoordinates while NOT Tracking");
+
+            if (!WiseTele.Instance.SafeAtCoordinates(RightAscension, Declination))
+                throw new InvalidValueException("Not safe to SlewToCoordinatesAsync({0}, {1})", RightAscension.ToString(), Declination.ToString());
+
+            tl.LogMessage("SlewToCoordinatesAsync", string.Format("ra: {0}, dec: {0}", RightAscension, Declination));
+            WiseTele.Instance.SlewToCoordinatesAsync(RightAscension, Declination);
         }
 
         public void SlewToTarget()
         {
-            tl.LogMessage("SlewToTarget", "Not implemented");
-            throw new ASCOM.MethodNotImplementedException("SlewToTarget");
+            TargetRightAscension = RightAscension;
+            TargetDeclination = Declination;
+
+            if (AtPark)
+                throw new InvalidOperationException("Cannot SlewToCoordinates while AtPark");
+
+            if (!Tracking)
+                throw new InvalidOperationException("Cannot SlewToCoordinates while NOT Tracking");
+
+            if (!WiseTele.Instance.SafeAtCoordinates(RightAscension, Declination))
+                throw new InvalidValueException("Not safe to SlewToTarget({0}, {1})", TargetRightAscension.ToString(), TargetDeclination.ToString());
+
+            tl.LogMessage("SlewToTarget", string.Format("ra: {0}, dec: {0}", TargetRightAscension, TargetDeclination));
+            WiseTele.Instance.SlewToCoordinatesSync(TargetRightAscension, TargetDeclination);
         }
 
         public void SlewToTargetAsync()
         {
+            if (AtPark)
+                throw new InvalidOperationException("Cannot SlewToTargetAsync while AtPark");
+
+            if (!Tracking)
+                throw new InvalidOperationException("Cannot SlewToTargetAsync while NOT Tracking");
+
+            if (!WiseTele.Instance.SafeAtCoordinates(RightAscension, Declination))
+                throw new InvalidValueException("Not safe to SlewToTargetAsync({0}, {1})", TargetRightAscension.ToString(), TargetDeclination.ToString());
+
+            driverInitiatedSlewing = true;
             tl.LogMessage("SlewToTargetAsync", "Started");
             WiseTele.Instance.SlewToTargetAsync();
         }
@@ -901,9 +953,12 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("TrackingRate Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("TrackingRate", false);
+                DriveRates rates = WiseTele.Instance.TrackingRates;
+
+                tl.LogMessage("TrackingRate Get - ", rates.ToString());
+                return rates;
             }
+
             set
             {
                 tl.LogMessage("TrackingRate Set", "Not implemented");
@@ -942,8 +997,10 @@ namespace ASCOM.Wise40
 
         public void Unpark()
         {
-            tl.LogMessage("Unpark", "Not implemented");
-            throw new ASCOM.MethodNotImplementedException("Unpark");
+            if (WiseTele.Instance.AtPark)
+                WiseTele.Instance.AtPark = false;
+
+            tl.LogMessage("Unpark", "Done");
         }
 
         #endregion

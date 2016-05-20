@@ -17,8 +17,10 @@ namespace ASCOM.Wise40.Hardware
         private bool _simulated = false;
         private bool _connected = false;
         private string _name;
-        private uint _value;
-        
+        private uint _daqsValue;
+        private uint _value_at_fiducial_point = 1433418;
+
+
         private AtomicReader wormAtomicReader, axisAtomicReader;
 
         private Astrometry.NOVAS.NOVAS31 Novas31;
@@ -71,14 +73,14 @@ namespace ASCOM.Wise40.Hardware
             }
             _name = name;
 
-            _angle = simulated ? Angle.FromDeg(0.0) : Angle.FromRad((Value * HaMultiplier) + HaCorrection); 
+            _angle = simulated ? new Angle("00:00:00.0") : Angle.FromRad((Value * HaMultiplier) + HaCorrection); 
         }
 
         /// <summary>
         /// Reads the axis and worm encoders
         /// </summary>
         /// <returns>Combined Daq values</returns>
-        public UInt32 Value
+        public uint Value
         {
             get {
                 if (! simulated)
@@ -94,15 +96,15 @@ namespace ASCOM.Wise40.Hardware
                     axis = (daqValues[0] >> 4) | (daqValues[1] << 4);
                     //Console.WriteLine("HA axis: {0}", axis);
 
-                    _value = ((axis * 720 - worm) & 0xfff000) + worm;
+                    _daqsValue = ((axis * 720 - worm) & 0xfff000) + worm;
                 }
-                return _value;
+                return _daqsValue;
             }
 
             set
             {
                 if (simulated)
-                    _value = value;
+                    _daqsValue = value;
             }
         }
 
@@ -128,9 +130,10 @@ namespace ASCOM.Wise40.Hardware
             get
             {
                 if (!simulated)
-                    _angle.Radians = (_value * HaMultiplier) + HaCorrection;
+                    _angle.Radians = (_daqsValue * HaMultiplier) + HaCorrection;
 
-                return astroutils.ConditionHA(_angle.Degrees);
+                //return astroutils.ConditionHA(_angle.Degrees);
+                return Angle.Degrees;
             }
 
             set
@@ -138,7 +141,7 @@ namespace ASCOM.Wise40.Hardware
                 _angle.Degrees = value;
                 if (simulated)
                 {
-                    _value = (uint)((_angle.Radians + HaCorrection) / HaMultiplier);
+                    _daqsValue = (uint)((_angle.Radians + HaCorrection) / HaMultiplier);
                 }
             }
         }
@@ -147,7 +150,8 @@ namespace ASCOM.Wise40.Hardware
         {
             get
             {
-                return astroutils.ConditionRA(WiseSite.Instance.LocalSiderealTime - Degrees);
+                //return astroutils.ConditionRA(WiseSite.Instance.LocalSiderealTime - Degrees);
+                return WiseSite.Instance.LocalSiderealTime - Degrees;
             }
         }
 

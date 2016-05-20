@@ -60,21 +60,21 @@ namespace ASCOM.Wise40
                 dTime = time[curr].Subtract(time[prev]);
                 dEncoder = enc_value[curr] - enc_value[prev];
                 dDeg = enc_angle[curr].Degrees - enc_angle[prev].Degrees;
-                s = string.Format(" start-to-stop: dTime: {0} dDeg: {2} dEnc: {1}\r\n", dTime, dEncoder, Angle.FromDeg(dDeg).ToString(Angle.Format.Deg));
+                s = string.Format(" start-to-stop: dTime: {0} dDeg: {2} dEnc: {1}\r\n", dTime, dEncoder, Angle.FromDeg(dDeg).ToFormattedString(Angle.Format.Deg));
 
                 curr = (int)TimedMovementResult.ResultSelector.AtIdle;
                 prev = (int)TimedMovementResult.ResultSelector.AtStop;
                 dTime = time[curr].Subtract(time[prev]);
                 dEncoder = enc_value[curr] - enc_value[prev];
                 dDeg = enc_angle[curr].Degrees - enc_angle[prev].Degrees;
-                s += string.Format("       inertia: dTime: {0} dDeg: {2} dEnc: {1}\r\n", dTime, dEncoder, Angle.FromDeg(dDeg).ToString(Angle.Format.Deg));
+                s += string.Format("       inertia: dTime: {0} dDeg: {2} dEnc: {1}\r\n", dTime, dEncoder, Angle.FromDeg(dDeg).ToFormattedString(Angle.Format.Deg));
 
                 curr = (int)TimedMovementResult.ResultSelector.AtIdle;
                 prev = (int)TimedMovementResult.ResultSelector.AtStart;
                 dTime = time[curr].Subtract(time[prev]);
                 dEncoder = enc_value[curr] - enc_value[prev];
                 dDeg = enc_angle[curr].Degrees - enc_angle[prev].Degrees;
-                s += string.Format("         total: dTime: {0} dDeg: {2} dEnc: {1}\r\n", dTime, dEncoder, Angle.FromDeg(dDeg).ToString(Angle.Format.Deg)); s += "\r\n";
+                s += string.Format("         total: dTime: {0} dDeg: {2} dEnc: {1}\r\n", dTime, dEncoder, Angle.FromDeg(dDeg).ToFormattedString(Angle.Format.Deg)); s += "\r\n";
 
                 return s;
             }
@@ -168,12 +168,12 @@ namespace ASCOM.Wise40
             labelUTValue.Text = utc.TimeOfDay.ToString(@"hh\:mm\:ss\.f\ ");
             labelSiderealValue.Text = u.DegreesToHMS(WiseSite.Instance.LocalSiderealTime, ":", ":", "", 1);
 
-            labelRightAscensionValue.Text = Angle.FromDeg(T.RightAscension).ToString(Angle.Format.RAhms);
-            labelDeclinationValue.Text = Angle.FromDeg(T.Declination).ToString(Angle.Format.Dec);
-            labelHourAngleValue.Text = Angle.FromDeg(T.HourAngle).ToString(Angle.Format.HAhms);
+            labelRightAscensionValue.Text = Angle.FromDeg(T.RightAscension).ToFormattedString(Angle.Format.RAhms);
+            labelDeclinationValue.Text = Angle.FromDeg(T.Declination).ToFormattedString(Angle.Format.Dec);
+            labelHourAngleValue.Text = Angle.FromDeg(T.HourAngle).ToFormattedString(Angle.Format.HAhms);
 
-            labelAltitudeValue.Text = Angle.FromDeg(T.Altitude).ToString(Angle.Format.Alt);
-            labelAzimuthValue.Text = Angle.FromDeg(T.Azimuth).ToString(Angle.Format.Az);
+            labelAltitudeValue.Text = Angle.FromDeg(T.Altitude).ToFormattedString(Angle.Format.Alt);
+            labelAzimuthValue.Text = Angle.FromDeg(T.Azimuth).ToFormattedString(Angle.Format.Az);
 
             labelHAEncValue.Text = T.HAEncoder.Value.ToString();
             labelDecEncValue.Text = T.DecEncoder.Value.ToString();
@@ -210,32 +210,32 @@ namespace ASCOM.Wise40
             Button button = (Button)sender;
 
             if (button == buttonNorth)
-                T.MoveAxis(TelescopeAxes.axisSecondary, handpadRate);
+                T.MoveAxis(TelescopeAxes.axisSecondary, handpadRate, WiseTele.AxisDirection.Increasing);
             else if (button == buttonSouth)
-                T.MoveAxis(TelescopeAxes.axisSecondary, -handpadRate);
+                T.MoveAxis(TelescopeAxes.axisSecondary, handpadRate, WiseTele.AxisDirection.Decreasing);
             else if (button == buttonWest)
-                T.MoveAxis(TelescopeAxes.axisPrimary, handpadRate);
+                T.MoveAxis(TelescopeAxes.axisPrimary, handpadRate, WiseTele.AxisDirection.Increasing);
             else if (button == buttonEast)
-                T.MoveAxis(TelescopeAxes.axisPrimary, -handpadRate);
+                T.MoveAxis(TelescopeAxes.axisPrimary, handpadRate, WiseTele.AxisDirection.Decreasing);
             else if (button == buttonNE)
             {
-                T.MoveAxis(TelescopeAxes.axisSecondary, handpadRate);
-                T.MoveAxis(TelescopeAxes.axisPrimary, -handpadRate);
+                T.MoveAxis(TelescopeAxes.axisSecondary, handpadRate, WiseTele.AxisDirection.Increasing);
+                T.MoveAxis(TelescopeAxes.axisPrimary, handpadRate, WiseTele.AxisDirection.Decreasing);
             }
             else if (button == buttonNW)
             {
-                T.MoveAxis(TelescopeAxes.axisSecondary, handpadRate);
-                T.MoveAxis(TelescopeAxes.axisPrimary, handpadRate);
+                T.MoveAxis(TelescopeAxes.axisSecondary, handpadRate, WiseTele.AxisDirection.Increasing);
+                T.MoveAxis(TelescopeAxes.axisPrimary, handpadRate, WiseTele.AxisDirection.Increasing);
             }
             else if (button == buttonSE)
             {
-                T.MoveAxis(TelescopeAxes.axisSecondary, -handpadRate);
-                T.MoveAxis(TelescopeAxes.axisPrimary, -handpadRate);
+                T.MoveAxis(TelescopeAxes.axisSecondary, handpadRate, WiseTele.AxisDirection.Decreasing);
+                T.MoveAxis(TelescopeAxes.axisPrimary, handpadRate, WiseTele.AxisDirection.Decreasing);
             }
             else if (button == buttonSW)
             {
-                T.MoveAxis(TelescopeAxes.axisSecondary, -handpadRate);
-                T.MoveAxis(TelescopeAxes.axisPrimary, handpadRate);
+                T.MoveAxis(TelescopeAxes.axisSecondary, handpadRate, WiseTele.AxisDirection.Decreasing);
+                T.MoveAxis(TelescopeAxes.axisPrimary, handpadRate, WiseTele.AxisDirection.Increasing);
             }
         }
 
@@ -267,6 +267,7 @@ namespace ASCOM.Wise40
         List<TimedMovementResult> MakeStepsInTheBackground(BackgroundWorker bgw, TimedMovementArg arg)
         {
             List<TimedMovementResult> bgResults = new List<TimedMovementResult>();
+            WiseTele.AxisDirection direction = arg.rate < 0 ? WiseTele.AxisDirection.Decreasing : WiseTele.AxisDirection.Increasing;
 
             for (int stepNo = 0; stepNo < arg.nsteps; stepNo++)
             {
@@ -288,8 +289,8 @@ namespace ASCOM.Wise40
                     break;
                 }
 
-                WiseTele.Instance.log("#{3} Before: MoveAxis({0}, {1}) for {2} millis", arg.axis, arg.rate, arg.millis, stepNo);
-                T.MoveAxis(arg.axis, arg.rate);
+                WiseTele.Instance.log("#{3} Before: MoveAxis({0}, {1}, {4}) for {2} millis", arg.axis, arg.rate, arg.millis, stepNo, direction);
+                T.MoveAxis(arg.axis, Math.Abs(arg.rate), direction);
                 for (long endTicks = DateTime.Now.Ticks + 10000 * arg.millis; DateTime.Now.Ticks < endTicks; Thread.Sleep(1))
                 {
                     if (bgw.CancellationPending)
@@ -300,7 +301,7 @@ namespace ASCOM.Wise40
                         goto Out;
                     }
                 }
-                WiseTele.Instance.log("#{3} After loop: MoveAxis({0}, {1}) for {2} millis", arg.axis, arg.rate, arg.millis, stepNo);
+                WiseTele.Instance.log("#{3} After loop: MoveAxis({0}, {1}, {4}) for {2} millis", arg.axis, arg.rate, arg.millis, stepNo, direction);
 
                 selector = (int)TimedMovementResult.ResultSelector.AtStop;
                 res.time[selector] = DateTime.Now;
@@ -309,8 +310,8 @@ namespace ASCOM.Wise40
 
                 if (T.simulated)    // move some more, to simulate telescope inertia
                 {
-                    T.MoveAxis(arg.axis, arg.rate);
-                    long deltaTicks = 10000 * T.stoppingTimes[Math.Abs(arg.rate)];
+                    T.MoveAxis(arg.axis, Math.Abs(arg.rate), direction);
+                    long deltaTicks = 10000 * (long) (WiseTele.Instance.movementParameters[arg.axis][arg.rate].stopMovement.Degrees * WiseTele.Instance.movementParameters[arg.axis][arg.rate].millisecondsPerDegree);
                     for (long endTicks = DateTime.Now.Ticks + deltaTicks; DateTime.Now.Ticks < endTicks; Thread.Sleep(10))
                     {
                         if (bgw.CancellationPending)

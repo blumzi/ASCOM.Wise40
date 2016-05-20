@@ -87,7 +87,6 @@ namespace ASCOM.Wise40.Hardware
                 disposables.Add(rightPin);
                 disposables.Add(caliPin);
                 disposables.Add(ventPin);
-                disposables.Add(domeEncoder);
             }
             catch (WiseException e)
             {

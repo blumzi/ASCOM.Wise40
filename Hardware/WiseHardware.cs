@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using MccDaq;
 
 namespace ASCOM.Wise40.Hardware
 {
@@ -11,6 +12,7 @@ namespace ASCOM.Wise40.Hardware
         public WiseBoard domeboard, teleboard, miscboard;
         private static Hardware hw;
         private bool isInitialized;
+        public float mccRevNum, mccVxdRevNum;
 
         public static Hardware Instance
         {
@@ -31,7 +33,9 @@ namespace ASCOM.Wise40.Hardware
                 int maxMccBoards;
 
                 isInitialized = true;
-                MccDaq.MccService.ErrHandling(MccDaq.ErrorReporting.DontPrint, MccDaq.ErrorHandling.DontStop);
+
+                MccService.GetRevision(out mccRevNum, out mccVxdRevNum);
+                MccService.ErrHandling(MccDaq.ErrorReporting.DontPrint, MccDaq.ErrorHandling.DontStop);
                 maxMccBoards = MccDaq.GlobalConfig.NumBoards;
                 WiseBoards = new List<WiseBoard>();
 

@@ -1,12 +1,13 @@
 ﻿using System;
 using ASCOM.Utilities;
 using MccDaq;
+using System.Collections.Generic;
 
 namespace ASCOM.Wise40.Hardware
 {
-    public class WiseDomeEncoder : IConnectable, IDisposable 
+    public class WiseDomeEncoder : IConnectable
     {
-        private WiseEncoder hwEncoder;
+        //private WiseEncoder hwEncoder;
         private double azimuth;
         public bool calibrated;
 
@@ -26,6 +27,9 @@ namespace ASCOM.Wise40.Hardware
         private const int hwTicks = 1024;
         private const double NoSimulatedStuckAz = -1.0;
 
+        private WiseDaq encDaqLow, encDaqHigh;
+        private AtomicReader encAtomicReader;
+
         private void log(string fmt, params object[] o)
         {
             string msg = String.Format(fmt, o);
@@ -35,14 +39,10 @@ namespace ASCOM.Wise40.Hardware
 
         public WiseDomeEncoder(string name, TraceLogger logger, bool simulated = false)
         {
-            WiseEncSpec[] encSpecs;
+            encDaqLow = Hardware.Instance.domeboard.daqs.Find(x => x.porttype == DigitalPortType.FirstPortA);
+            encDaqHigh = Hardware.Instance.domeboard.daqs.Find(x => x.porttype == DigitalPortType.SecondPortCL);
+            encAtomicReader = new AtomicReader(new List<WiseDaq>() { encDaqLow, encDaqHigh });
 
-            encSpecs = new WiseEncSpec[] {
-                new WiseEncSpec() { brd = Hardware.Instance.domeboard, port = DigitalPortType.FirstPortB },
-                new WiseEncSpec() { brd = Hardware.Instance.domeboard, port = DigitalPortType.FirstPortCH, mask = 0x3 },
-            };
-
-            hwEncoder = new WiseEncoder(name, hwTicks, encSpecs, true, 100);
             this.simulated = simulated;
             if (this.simulated)
             {
@@ -123,8 +123,17 @@ namespace ASCOM.Wise40.Hardware
 
         public void Connect(bool connected)
         {
-            this._connected = connected;
-            hwEncoder.Connect(this._connected);
+            _connected = connected;
+            if (connected)
+            {
+                encDaqHigh.setOwners("domeEncHigh");
+                encDaqLow.setOwners("domeEncLow");
+            }
+            else
+            {
+                encDaqHigh.unsetOwners();
+                encDaqLow.unsetOwners();
+            }
         }
 
         public bool Connected
@@ -133,11 +142,6 @@ namespace ASCOM.Wise40.Hardware
             {
                 return _connected;
             }
-        }
-
-        public void Dispose()
-        {
-            hwEncoder.Dispose();
         }
 
         public double Azimuth
@@ -187,7 +191,13 @@ namespace ASCOM.Wise40.Hardware
         {
             get
             {
-                return (simulated) ? simulatedValue : hwEncoder.Value;
+
+                if (simulated)
+                    return simulatedValue;
+
+                List<uint> values = encAtomicReader.Values;
+
+                return (int) ((values[1] << 8) | values[0]);
             }
         }
 
