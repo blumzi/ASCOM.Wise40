@@ -105,9 +105,7 @@ namespace ASCOM.Wise40
         public Debugger debugger = new Debugger();
 
         private bool _connected = false;
-        private bool isInitialized = false;
         private bool _simulated = false;
-        public uint _debugLevel = 0;
 
         private List<WiseVirtualMotor> directionMotors, allMotors;
         public Dictionary<TelescopeAxes, List<WiseVirtualMotor>> axisMotors;
@@ -125,12 +123,6 @@ namespace ASCOM.Wise40
         private double mainMirrorDiam = 1.016;    // 40inch (meters)
 
         private Target target;
-
-//        public const double rateSlew = 2.0;                           // two degrees/sec
-//        public const double rateSet = 1.0 / 60;                       // one minute/sec
-//        public const double rateGuide = rateSet / 60;                 // one second/sec
-//        public const double rateTrack = Const.TRACKRATE_SIDEREAL;     // sidereal rate
-//        public const double rateStopped = 0.0;
 
         public static readonly List<double> rates = new List<double> { Const.rateSlew, Const.rateSet, Const.rateGuide };
         public static readonly Dictionary<double, string> rateName = new Dictionary<double, string> {
@@ -314,9 +306,6 @@ namespace ASCOM.Wise40
 
         public void init(Telescope T)
         {
-            if (isInitialized)
-                return;
-
             WisePin SlewPin = null;
             WisePin NorthGuidePin = null, SouthGuidePin = null, EastGuidePin = null, WestGuidePin = null;   // Guide motor activation pins
             WisePin NorthPin = null, SouthPin = null, EastPin = null, WestPin = null;                       // Set and Slew motors activation pinsisInitialized = true;
@@ -388,8 +377,7 @@ namespace ASCOM.Wise40
                 }
             }
 
-            System.Threading.TimerCallback safetyMonitorTimerCallback = new System.Threading.TimerCallback(DoCheckSafety);
-            //safetyMonitorTimer = new System.Threading.Timer(safetyMonitorTimerCallback, null, Timeout.Infinite, Timeout.Infinite);
+            TimerCallback safetyMonitorTimerCallback = new TimerCallback(DoCheckSafety);
             safetyMonitorTimer = new SafetyMonitorTimer(safetyMonitorTimerCallback, 100, 100);
 
             #region MovementParameters
@@ -793,7 +781,7 @@ namespace ASCOM.Wise40
         /// <summary>
         /// Checks if we're safe at a given position
         ///  
-        /// If (doRecover == true) then take the apropriate recovery action
+        /// If (takeAction == true) then take the apropriate recovery action
         /// </summary>
         /// <param name="ra">RightAscension of the checked position</param>
         /// <param name="dec">Declination of the checked position</param>
@@ -907,9 +895,14 @@ namespace ASCOM.Wise40
             if (bgw.CancellationPending)
                 goto workDone;
 
+            //
+            // Split the distance into segments in which the axes can either:
+            //  1. both move at the same rate
+            //  2. one stop and the other move at that rate
+            //
             foreach (double rate in rates)
             {
-                if (simulated && rate == Const.rateGuide)     // TBD
+                if (simulated && rate == Const.rateGuide)     // TODO: Major fuckup
                     break;
                 //
                 // Phase #1
@@ -980,7 +973,7 @@ namespace ASCOM.Wise40
 
                 if (currMovement[TelescopeAxes.axisPrimary].rate == Const.rateStopped && currMovement[TelescopeAxes.axisSecondary].rate == Const.rateStopped)
                 {
-                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "bgw: Both axes: decided NOT to move at rate {0}, will try next rate.", rateName[rate]);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "bgw: Both axes will NOT to move at rate {0}, will try next rate.", rateName[rate]);
                     continue;   // cannot move at this rate, move to next one
                 }
 
@@ -988,15 +981,14 @@ namespace ASCOM.Wise40
                     goto workDone;
 
                 // Phase #2:
-                //  We can move at most by Angle aRA in RightAscension and by Angle aDEC in Declination
-                //  We can move Angle.Min(aRA, aDEC) on both axes at the same time
+                //  Calculate the minimal distance both axes can move at tthe same rate.
                 //
                 Angle commonDeltaAngle = Angle.Min(currMovement[TelescopeAxes.axisPrimary].deltaAngle, currMovement[TelescopeAxes.axisSecondary].deltaAngle);
                 debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "bgw: commonDeltaAngle: {0}", commonDeltaAngle);
 
                 //
                 // Phase #3:
-                //  Start moving on each axis on which we can move at this rate
+                //  Start moving on each axis which can move at this rate
                 //
                 foreach (TelescopeAxes axis in axes)
                 {
@@ -1024,6 +1016,10 @@ namespace ASCOM.Wise40
                 }
                 debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "bgw: Axe(s) in motion at {0}", rateName[rate]);
 
+                //
+                // Phase #4:
+                //  Wait for both axes (or just the one that's moving) to reachtheir destination
+                //
                 while (true)
                 {
                     if (bgw.CancellationPending) goto
@@ -1061,6 +1057,10 @@ namespace ASCOM.Wise40
                 }
             }
 
+            //
+            // Phase #5:
+            //  Motion complete (or cancelled)
+            //
             workDone:
             e.Result = new MeasuredMovementResult() { cancelled = false };
             if (bgw.CancellationPending)
@@ -1069,7 +1069,7 @@ namespace ASCOM.Wise40
                 Stop();
             }
             foreach (TelescopeAxes axis in axes)
-                prevMovement[axis] = currMovement[axis];
+                prevMovement[axis] = currMovement[axis];    // save for changing-of-direction info.
 
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "bgw: ALL DONE, returning.");
             backgroundWorkerDone.Set();
@@ -1078,8 +1078,7 @@ namespace ASCOM.Wise40
         /// <summary>
         /// This is the common engine for moving the telescope to some known position.
         /// It is a measured-movement, i.e. we don't relly on the telescope getting there
-        ///  after a period of time, we permanently (or very frequently) monitor the encoders
-        ///  to decide if we're there yet.
+        ///  after a period of time, we frequently monitor the encoders to decide if we're there yet.
         /// If we think we overshot we go back.
         /// 
         /// This is ASYNC.
