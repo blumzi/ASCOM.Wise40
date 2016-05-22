@@ -19,7 +19,7 @@ namespace ASCOM.Wise40
     {
         public DaqsForm daqsForm;
         WiseTele T;
-        private double handpadRate = WiseTele.rateSlew;
+        private double handpadRate = Const.rateSlew;
         private BackgroundWorker scopeBackgroundMover;
 
         private class TimedMovementArg {
@@ -94,17 +94,17 @@ namespace ASCOM.Wise40
 
         private void radioButtonSlew_Click(object sender, EventArgs e)
         {
-            handpadRate = WiseTele.rateSlew;
+            handpadRate = Const.rateSlew;
         }
 
         private void radioButtonSet_Click(object sender, EventArgs e)
         {
-            handpadRate = WiseTele.rateSet;
+            handpadRate = Const.rateSet;
         }
 
         private void radioButtonGuide_Click(object sender, EventArgs e)
         {
-            handpadRate = WiseTele.rateGuide;
+            handpadRate = Const.rateGuide;
         }
 
         private void checkBoxTrack_CheckedChanged(object sender, EventArgs e)
@@ -210,32 +210,32 @@ namespace ASCOM.Wise40
             Button button = (Button)sender;
 
             if (button == buttonNorth)
-                T.MoveAxis(TelescopeAxes.axisSecondary, handpadRate, WiseTele.AxisDirection.Increasing);
+                T.MoveAxis(TelescopeAxes.axisSecondary, handpadRate, Const.AxisDirection.Increasing);
             else if (button == buttonSouth)
-                T.MoveAxis(TelescopeAxes.axisSecondary, handpadRate, WiseTele.AxisDirection.Decreasing);
+                T.MoveAxis(TelescopeAxes.axisSecondary, handpadRate, Const.AxisDirection.Decreasing);
             else if (button == buttonWest)
-                T.MoveAxis(TelescopeAxes.axisPrimary, handpadRate, WiseTele.AxisDirection.Increasing);
+                T.MoveAxis(TelescopeAxes.axisPrimary, handpadRate, Const.AxisDirection.Increasing);
             else if (button == buttonEast)
-                T.MoveAxis(TelescopeAxes.axisPrimary, handpadRate, WiseTele.AxisDirection.Decreasing);
+                T.MoveAxis(TelescopeAxes.axisPrimary, handpadRate, Const.AxisDirection.Decreasing);
             else if (button == buttonNE)
             {
-                T.MoveAxis(TelescopeAxes.axisSecondary, handpadRate, WiseTele.AxisDirection.Increasing);
-                T.MoveAxis(TelescopeAxes.axisPrimary, handpadRate, WiseTele.AxisDirection.Decreasing);
+                T.MoveAxis(TelescopeAxes.axisSecondary, handpadRate, Const.AxisDirection.Increasing);
+                T.MoveAxis(TelescopeAxes.axisPrimary, handpadRate, Const.AxisDirection.Decreasing);
             }
             else if (button == buttonNW)
             {
-                T.MoveAxis(TelescopeAxes.axisSecondary, handpadRate, WiseTele.AxisDirection.Increasing);
-                T.MoveAxis(TelescopeAxes.axisPrimary, handpadRate, WiseTele.AxisDirection.Increasing);
+                T.MoveAxis(TelescopeAxes.axisSecondary, handpadRate, Const.AxisDirection.Increasing);
+                T.MoveAxis(TelescopeAxes.axisPrimary, handpadRate, Const.AxisDirection.Increasing);
             }
             else if (button == buttonSE)
             {
-                T.MoveAxis(TelescopeAxes.axisSecondary, handpadRate, WiseTele.AxisDirection.Decreasing);
-                T.MoveAxis(TelescopeAxes.axisPrimary, handpadRate, WiseTele.AxisDirection.Decreasing);
+                T.MoveAxis(TelescopeAxes.axisSecondary, handpadRate, Const.AxisDirection.Decreasing);
+                T.MoveAxis(TelescopeAxes.axisPrimary, handpadRate, Const.AxisDirection.Decreasing);
             }
             else if (button == buttonSW)
             {
-                T.MoveAxis(TelescopeAxes.axisSecondary, handpadRate, WiseTele.AxisDirection.Decreasing);
-                T.MoveAxis(TelescopeAxes.axisPrimary, handpadRate, WiseTele.AxisDirection.Increasing);
+                T.MoveAxis(TelescopeAxes.axisSecondary, handpadRate, Const.AxisDirection.Decreasing);
+                T.MoveAxis(TelescopeAxes.axisPrimary, handpadRate, Const.AxisDirection.Increasing);
             }
         }
 
@@ -267,7 +267,7 @@ namespace ASCOM.Wise40
         List<TimedMovementResult> MakeStepsInTheBackground(BackgroundWorker bgw, TimedMovementArg arg)
         {
             List<TimedMovementResult> bgResults = new List<TimedMovementResult>();
-            WiseTele.AxisDirection direction = arg.rate < 0 ? WiseTele.AxisDirection.Decreasing : WiseTele.AxisDirection.Increasing;
+            Const.AxisDirection direction = arg.rate < 0 ? Const.AxisDirection.Decreasing : Const.AxisDirection.Increasing;
 
             for (int stepNo = 0; stepNo < arg.nsteps; stepNo++)
             {
@@ -418,11 +418,11 @@ namespace ASCOM.Wise40
                 axis = TelescopeAxes.axisSecondary;
 
             if (radioButtonSpeedGuide.Checked)
-                rate = WiseTele.rateGuide;
+                rate = Const.rateGuide;
             else if (radioButtonSpeedSlew.Checked)
-                rate = WiseTele.rateSlew;
+                rate = Const.rateSlew;
             else if (radioButtonSpeedSet.Checked)
-                rate = WiseTele.rateSet;
+                rate = Const.rateSet;
 
             if (radioButtonDirDown.Checked)
                 rate = -rate;

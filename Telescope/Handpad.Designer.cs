@@ -61,6 +61,11 @@
             this.panelFocuser = new System.Windows.Forms.Panel();
             this.panelDebug = new System.Windows.Forms.Panel();
             this.groupBox6 = new System.Windows.Forms.GroupBox();
+            this.groupBoxEncoders = new System.Windows.Forms.GroupBox();
+            this.labelDecEnc = new System.Windows.Forms.Label();
+            this.labelDecEncValue = new System.Windows.Forms.Label();
+            this.labelHAEnc = new System.Windows.Forms.Label();
+            this.labelHAEncValue = new System.Windows.Forms.Label();
             this.buttonSaveResults = new System.Windows.Forms.Button();
             this.buttonStopStudy = new System.Windows.Forms.Button();
             this.label5 = new System.Windows.Forms.Label();
@@ -95,15 +100,11 @@
             this.buttonSE = new System.Windows.Forms.Button();
             this.buttonNE = new System.Windows.Forms.Button();
             this.displayTimer = new System.Windows.Forms.Timer(this.components);
-            this.labelHAEncValue = new System.Windows.Forms.Label();
-            this.labelHAEnc = new System.Windows.Forms.Label();
-            this.labelDecEnc = new System.Windows.Forms.Label();
-            this.labelDecEncValue = new System.Windows.Forms.Label();
-            this.groupBoxEncoders = new System.Windows.Forms.GroupBox();
             this.panel1.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.panelDebug.SuspendLayout();
             this.groupBox6.SuspendLayout();
+            this.groupBoxEncoders.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownStepCount)).BeginInit();
             this.groupBox4.SuspendLayout();
             this.groupBox5.SuspendLayout();
@@ -113,7 +114,6 @@
             this.groupBox36.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.panel10.SuspendLayout();
-            this.groupBoxEncoders.SuspendLayout();
             this.SuspendLayout();
             // 
             // buttonNorth
@@ -544,6 +544,65 @@
             this.groupBox6.TabStop = false;
             this.groupBox6.Text = " Movement Study ";
             // 
+            // groupBoxEncoders
+            // 
+            this.groupBoxEncoders.Controls.Add(this.labelDecEnc);
+            this.groupBoxEncoders.Controls.Add(this.labelDecEncValue);
+            this.groupBoxEncoders.Controls.Add(this.labelHAEnc);
+            this.groupBoxEncoders.Controls.Add(this.labelHAEncValue);
+            this.groupBoxEncoders.Location = new System.Drawing.Point(280, 24);
+            this.groupBoxEncoders.Name = "groupBoxEncoders";
+            this.groupBoxEncoders.Size = new System.Drawing.Size(200, 72);
+            this.groupBoxEncoders.TabIndex = 20;
+            this.groupBoxEncoders.TabStop = false;
+            this.groupBoxEncoders.Text = " Encoders ";
+            // 
+            // labelDecEnc
+            // 
+            this.labelDecEnc.AutoSize = true;
+            this.labelDecEnc.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelDecEnc.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
+            this.labelDecEnc.Location = new System.Drawing.Point(8, 40);
+            this.labelDecEnc.Name = "labelDecEnc";
+            this.labelDecEnc.Size = new System.Drawing.Size(45, 18);
+            this.labelDecEnc.TabIndex = 18;
+            this.labelDecEnc.Text = "Dec:";
+            this.labelDecEnc.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // labelDecEncValue
+            // 
+            this.labelDecEncValue.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.labelDecEncValue.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelDecEncValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.labelDecEncValue.Location = new System.Drawing.Point(56, 45);
+            this.labelDecEncValue.Name = "labelDecEncValue";
+            this.labelDecEncValue.Size = new System.Drawing.Size(136, 20);
+            this.labelDecEncValue.TabIndex = 19;
+            this.labelDecEncValue.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // labelHAEnc
+            // 
+            this.labelHAEnc.AutoSize = true;
+            this.labelHAEnc.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelHAEnc.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
+            this.labelHAEnc.Location = new System.Drawing.Point(16, 16);
+            this.labelHAEnc.Name = "labelHAEnc";
+            this.labelHAEnc.Size = new System.Drawing.Size(37, 18);
+            this.labelHAEnc.TabIndex = 16;
+            this.labelHAEnc.Text = "HA:";
+            this.labelHAEnc.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // labelHAEncValue
+            // 
+            this.labelHAEncValue.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.labelHAEncValue.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelHAEncValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.labelHAEncValue.Location = new System.Drawing.Point(56, 21);
+            this.labelHAEncValue.Name = "labelHAEncValue";
+            this.labelHAEncValue.Size = new System.Drawing.Size(136, 20);
+            this.labelHAEncValue.TabIndex = 17;
+            this.labelHAEncValue.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
             // buttonSaveResults
             // 
             this.buttonSaveResults.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
@@ -966,65 +1025,6 @@
             this.displayTimer.Interval = 500;
             this.displayTimer.Tick += new System.EventHandler(this.displayTimer_Tick);
             // 
-            // labelHAEncValue
-            // 
-            this.labelHAEncValue.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.labelHAEncValue.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelHAEncValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelHAEncValue.Location = new System.Drawing.Point(56, 21);
-            this.labelHAEncValue.Name = "labelHAEncValue";
-            this.labelHAEncValue.Size = new System.Drawing.Size(136, 20);
-            this.labelHAEncValue.TabIndex = 17;
-            this.labelHAEncValue.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // labelHAEnc
-            // 
-            this.labelHAEnc.AutoSize = true;
-            this.labelHAEnc.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelHAEnc.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.labelHAEnc.Location = new System.Drawing.Point(16, 16);
-            this.labelHAEnc.Name = "labelHAEnc";
-            this.labelHAEnc.Size = new System.Drawing.Size(37, 18);
-            this.labelHAEnc.TabIndex = 16;
-            this.labelHAEnc.Text = "HA:";
-            this.labelHAEnc.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // labelDecEnc
-            // 
-            this.labelDecEnc.AutoSize = true;
-            this.labelDecEnc.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelDecEnc.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.labelDecEnc.Location = new System.Drawing.Point(8, 40);
-            this.labelDecEnc.Name = "labelDecEnc";
-            this.labelDecEnc.Size = new System.Drawing.Size(45, 18);
-            this.labelDecEnc.TabIndex = 18;
-            this.labelDecEnc.Text = "Dec:";
-            this.labelDecEnc.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // labelDecEncValue
-            // 
-            this.labelDecEncValue.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.labelDecEncValue.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelDecEncValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelDecEncValue.Location = new System.Drawing.Point(56, 45);
-            this.labelDecEncValue.Name = "labelDecEncValue";
-            this.labelDecEncValue.Size = new System.Drawing.Size(136, 20);
-            this.labelDecEncValue.TabIndex = 19;
-            this.labelDecEncValue.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // groupBoxEncoders
-            // 
-            this.groupBoxEncoders.Controls.Add(this.labelDecEnc);
-            this.groupBoxEncoders.Controls.Add(this.labelDecEncValue);
-            this.groupBoxEncoders.Controls.Add(this.labelHAEnc);
-            this.groupBoxEncoders.Controls.Add(this.labelHAEncValue);
-            this.groupBoxEncoders.Location = new System.Drawing.Point(280, 24);
-            this.groupBoxEncoders.Name = "groupBoxEncoders";
-            this.groupBoxEncoders.Size = new System.Drawing.Size(200, 72);
-            this.groupBoxEncoders.TabIndex = 20;
-            this.groupBoxEncoders.TabStop = false;
-            this.groupBoxEncoders.Text = " Encoders ";
-            // 
             // HandpadForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1042,6 +1042,8 @@
             this.panelDebug.ResumeLayout(false);
             this.groupBox6.ResumeLayout(false);
             this.groupBox6.PerformLayout();
+            this.groupBoxEncoders.ResumeLayout(false);
+            this.groupBoxEncoders.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownStepCount)).EndInit();
             this.groupBox4.ResumeLayout(false);
             this.groupBox4.PerformLayout();
@@ -1056,8 +1058,6 @@
             this.groupBox36.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.panel10.ResumeLayout(false);
-            this.groupBoxEncoders.ResumeLayout(false);
-            this.groupBoxEncoders.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 

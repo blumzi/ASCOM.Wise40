@@ -247,7 +247,8 @@ namespace ASCOM.Wise40.Common
         {
 
             if ((object)a1 == null || ((object)a2 == null))
-                return null; return new Angle((a1.Degrees > a2.Degrees) ? a1.Degrees : a2.Degrees);
+                return null;
+            return new Angle((a1.Degrees > a2.Degrees) ? a1.Degrees : a2.Degrees);
         }
 
         public override bool Equals(object obj)
@@ -268,6 +269,16 @@ namespace ASCOM.Wise40.Common
         public override int GetHashCode()
         {
             return base.GetHashCode();
+        }
+
+        public Tuple<Angle, Const.AxisDirection> ShortestDistance(Angle ang)
+        {
+            if (ang == this)
+                return new Tuple<Angle, Const.AxisDirection>(new Angle(0.0), Const.AxisDirection.None);
+            else if (ang > this)
+                return new Tuple<Angle, Const.AxisDirection>(ang - this, Const.AxisDirection.Increasing);
+            else
+                return new Tuple<Angle, Const.AxisDirection>(this - ang, Const.AxisDirection.Decreasing);
         }
 
         public static readonly Angle zero = new Angle(0.0);

@@ -70,7 +70,7 @@ namespace ASCOM.Wise40.Common
         public const double rateSlew = 2.0;                           // two degrees/sec
         public const double rateSet = 1.0 / 60;                       // one minute/sec
         public const double rateGuide = rateSet / 60;                 // one second/sec
-        public const double rateTrack = TRACKRATE_SIDEREAL;           // sidereal rate
+        public const double rateTrack = Const.TRACKRATE_SIDEREAL;     // sidereal rate
         public const double rateStopped = 0.0;
     }
 }

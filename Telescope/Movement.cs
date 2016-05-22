@@ -6,17 +6,18 @@ using System.Text;
 using System.Threading.Tasks;
 
 using ASCOM.DeviceInterface;
+using ASCOM.Wise40.Common;
 using ASCOM.Wise40.Hardware;
 
 
 namespace ASCOM.Wise40
 {
-    public class MovementSpecifier: IEquatable<Tuple<TelescopeAxes, double, WiseTele.AxisDirection>>
+    public class MovementSpecifier: IEquatable<Tuple<TelescopeAxes, double, Const.AxisDirection>>
     {
         public readonly TelescopeAxes axis;
-        public readonly WiseTele.AxisDirection direction;
+        public readonly Const.AxisDirection direction;
 
-        public bool Equals(Tuple<TelescopeAxes, double, WiseTele.AxisDirection> other)
+        public bool Equals(Tuple<TelescopeAxes, double, Const.AxisDirection> other)
         {
             if (other == null)
                 return false;
@@ -39,20 +40,20 @@ namespace ASCOM.Wise40
             return ret;
         }
 
-        public static implicit operator Tuple<TelescopeAxes, WiseTele.AxisDirection> (MovementSpecifier m)
+        public static implicit operator Tuple<TelescopeAxes, Const.AxisDirection> (MovementSpecifier m)
         {
-            return new Tuple<TelescopeAxes, WiseTele.AxisDirection>(m.axis, m.direction);
+            return new Tuple<TelescopeAxes, Const.AxisDirection>(m.axis, m.direction);
         }
 
-        public static implicit operator MovementSpecifier(Tuple<TelescopeAxes, WiseTele.AxisDirection> t)
+        public static implicit operator MovementSpecifier(Tuple<TelescopeAxes, Const.AxisDirection> t)
         {
             return new MovementSpecifier(t.Item1, t.Item2);
         }
 
         public TelescopeAxes Axis {  get { return axis; } }
-        public WiseTele.AxisDirection Direction { get { return direction; } }
+        public Const.AxisDirection Direction { get { return direction; } }
 
-        public MovementSpecifier(TelescopeAxes axis,  WiseTele.AxisDirection direction)
+        public MovementSpecifier(TelescopeAxes axis, Const.AxisDirection direction)
         {
             this.axis = axis;
             this.direction = direction;

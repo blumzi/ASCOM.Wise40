@@ -28,11 +28,11 @@ namespace ASCOM.Wise40.Hardware
         private int simulationTimerFrequency;
         private int timer_counts;
         private DateTime prevTick;
-        private WiseTele.AxisDirection direction;   // There are separate WiseMotor instances for North, South, East, West
+        private Const.AxisDirection direction;   // There are separate WiseMotor instances for North, South, East, West
         private bool _simulated = false;
         private bool _connected = false;
 
-        public WiseVirtualMotor(string name, WisePin motorPin, WisePin guideMotorPin, WisePin slewPin, WiseTele.AxisDirection direction, List<object> encoders = null)
+        public WiseVirtualMotor(string name, WisePin motorPin, WisePin guideMotorPin, WisePin slewPin, Const.AxisDirection direction, List<object> encoders = null)
         {
             this.name = name;
 
@@ -57,14 +57,14 @@ namespace ASCOM.Wise40.Hardware
 
         public void SetOn(double rate)
         {
-            WiseTele.Instance.log("SetOn: {0}: On at {1}", name, WiseTele.rateName[rate]);
+            WiseTele.Instance.debugger.WriteLine(Debugger.DebugLevel.DebugMotors, "SetOn: {0}: On at {1}", name, WiseTele.rateName[rate]);
 
             rate = Math.Abs(rate);
-            if (rate == WiseTele.rateSlew)
+            if (rate == Const.rateSlew)
                 activePins = new List<WisePin>() { motorPin, slewPin };
-            else if (rate == WiseTele.rateSet || rate == WiseTele.rateTrack)
+            else if (rate == Const.rateSet || rate == Const.rateTrack)
                 activePins = new List<WisePin>() { motorPin };
-            else if (rate == WiseTele.rateGuide)
+            else if (rate == Const.rateGuide)
                 activePins = new List<WisePin>() { guideMotorPin };
             currentRate = rate;
 
@@ -81,7 +81,7 @@ namespace ASCOM.Wise40.Hardware
 
         public void SetOff()
         {
-            WiseTele.Instance.log("SetOff: {0}: Off", name);
+            WiseTele.Instance.debugger.WriteLine(Debugger.DebugLevel.DebugMotors, "SetOff: {0}: Off", name);
 
             if (simulated)
                 simulationTimer.Change(Timeout.Infinite, Timeout.Infinite);
@@ -94,7 +94,7 @@ namespace ASCOM.Wise40.Hardware
                     activePins.RemoveAt(i);
                 }
             }
-            currentRate = WiseTele.rateStopped;
+            currentRate = Const.rateStopped;
         }
 
         public bool isOn
@@ -118,24 +118,27 @@ namespace ASCOM.Wise40.Hardware
             if (!simulated)
                 return;
 
-            double increment = ((direction == WiseTele.AxisDirection.Increasing) ? currentRate : -currentRate) / simulationTimerFrequency;
+            double increment = ((direction == Const.AxisDirection.Increasing) ? currentRate : -currentRate) / simulationTimerFrequency;
 
             foreach (IDegrees encoder in encoders)
             {
                 Angle before = new Angle(encoder.Degrees), inc = new Angle(increment);
                 encoder.Degrees += increment;
+//                if (simulated && currentRate == Const.rateTrack)
+//                    encoder.Degrees += increment / 2;
                 Angle after = new Angle(encoder.Degrees);
 
-//                if (name != "TrackMotor")
-//                {
-//                    Angle encoderAngle = (name == "EastMotor" || name == "WestMotor") ? new Angle(WiseTele.Instance.RightAscension) : new Angle(WiseTele.Instance.Declination);
-//
-//                    WiseTele.Instance.log("{0}: {1}: ({2} + {3} = {4}) ({5} + {6} = {7}) {8}: {9} (#{10}, {11} ms)", name, encoder.name,
-//                        before.Degrees, increment, after.Degrees,
-//                        before, inc, after,
-//                        (name == "EastMotor" || name == "WestMotor") ? "ra" : "dec",
-//                        encoderAngle, timer_counts++, DateTime.Now.Subtract(prevTick).Milliseconds);
-//                }
+                if (WiseTele.Instance.debugger.Debugging(Debugger.DebugLevel.DebugEncoders))
+                {
+                    bool primary = (name == "EastMotor" || name == "WestMotor" || name == "TrackMotor");
+                    Angle encoderAngle =  primary ? new Angle(WiseTele.Instance.RightAscension) : new Angle(WiseTele.Instance.Declination);
+
+                    WiseTele.Instance.debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "{0}: {1}: ({2} + {3} = {4}) ({5} + {6} = {7}) {8}: {9} (#{10}, {11} ms)", name, encoder.name,
+                        before.Degrees, increment, after.Degrees,
+                        before, inc, after,
+                        primary ? "ra" : "dec",
+                        encoderAngle, timer_counts++, DateTime.Now.Subtract(prevTick).Milliseconds);
+                }
                 prevTick = DateTime.Now;
             }
         }
