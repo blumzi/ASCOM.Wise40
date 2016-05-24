@@ -15,6 +15,7 @@ namespace ASCOM.Wise40.Common
             DebugAxes = (1 << 1),
             DebugMotors = (1 << 2),
             DebugExceptions = (1 << 3),
+            DebugDevice = (1 << 4),
         };
 
         private uint _level;
@@ -36,15 +37,16 @@ namespace ASCOM.Wise40.Common
 
         public void WriteLine(DebugLevel level, string fmt, params object[] o)
         {
-            if ((_level & (uint)level) != 0)
+            if (Debugging(level))
             {
                 DateTime now = DateTime.Now;
+                string msg = string.Format(fmt, o);
 
                 Console.WriteLine(string.Format("[{0}] {1}/{2}/{3} {4}: {5}: {6}",
                     Thread.CurrentThread.ManagedThreadId,
                     now.Day, now.Month, now.Year, now.TimeOfDay,
                     level.ToString(),
-                    string.Format(fmt, o)));
+                    msg));
             }
         }
 

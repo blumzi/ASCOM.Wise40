@@ -42,7 +42,7 @@ namespace ASCOM.Wise40.Hardware
 
             this.encoders = encoders;
             this.direction = direction;
-            simulated = motorPin.simulated || (guideMotorPin != null && guideMotorPin.simulated);
+            simulated = motorPin.Simulated || (guideMotorPin != null && guideMotorPin.Simulated);
 
             if (simulated && (encoders == null || encoders.Count() == 0))
                 throw new WiseException(name + ": A simulated WiseVirtualMotor must have at least one encoder reference");

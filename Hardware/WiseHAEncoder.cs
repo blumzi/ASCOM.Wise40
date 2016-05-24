@@ -150,7 +150,7 @@ namespace ASCOM.Wise40.Hardware
                         op = "inc";
                     else if (before < after)
                         op = "dec";
-
+                    
 //                    Console.WriteLine("{0}: ({1} {2} {3}) {4} {5} {6}",
 //                        name, before.ToString(), delta.ToString(), after.ToString(), new Angle(before), new Angle(delta), new Angle(after));
                     _daqsValue = (uint)((_angle.Radians + HaCorrection) / HaMultiplier);

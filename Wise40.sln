@@ -1,11 +1,12 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dome", "Dome\Dome.csproj", "{64308775-BD4A-469C-BCAB-3ED830B811AF}"
 	ProjectSection(ProjectDependencies) = postProject
 		{B3400CE2-9B66-4F0C-97FE-26343382BA7B} = {B3400CE2-9B66-4F0C-97FE-26343382BA7B}
+		{B76546E7-9832-4D28-B412-B34CA1C6177C} = {B76546E7-9832-4D28-B412-B34CA1C6177C}
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HardwareTest", "HardwareTest\HardwareTest.csproj", "{0435A1A2-1CF5-46CD-BB9C-C4B880DAEFD6}"

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Collections.Generic;
 
 using MccDaq;
@@ -16,16 +17,17 @@ namespace ASCOM.Wise40.Hardware
         private List<IConnectable> connectables;
         private List<IDisposable> disposables;
         private bool _connected = false;
-
-        private bool calibrating;
+        private bool _calibrated = false;
+        private bool _calibrating = false;
         private bool ventIsOpen;
         private bool isStuck;
+
         private enum DomeState { Idle, MovingCW, MovingCCW, AutoShutdown };
         public enum ShutterState { Idle, Opening, Open, Closing, Closed };
         private enum StuckPhase { NotStuck, FirstStop, GoBackward, SecondStop, ResumeForward };
         public enum Direction { CW, None, CCW };
 
-        private DomeState state;
+        private DomeState _state;
         private ShutterState _shutterState;
 
         private StuckPhase _stuckPhase;
@@ -39,6 +41,7 @@ namespace ASCOM.Wise40.Hardware
         public const double ParkAzimuth = 90.0;
         private const int simulatedEncoderTicksPerSecond = 6;   // As per Yftach's measurement
         private const double simulatedStuckAz = 333.0;          // If targeted to this Az, we simulate dome-stuck (must be a valid az)
+        private const double invalidAz = double.NaN;
 
         private double targetAz;
 
@@ -47,13 +50,21 @@ namespace ASCOM.Wise40.Hardware
         private System.Timers.Timer movementTimer;
         private System.Timers.Timer stuckTimer;
 
-        private bool simulated;
+        private bool _simulated = Environment.MachineName != "dome-ctlr";
+        private bool _slaved = false;
+        private bool _atPark = false;
 
-        private TraceLogger logger;
+        private Debugger debugger;
+        private static AutoResetEvent reachedCalibrationPoint = new AutoResetEvent(false);
 
-        public WiseDome(TraceLogger logger, bool simulated = true)
+        public WiseDome()
         {
-            this.logger = logger;
+            debugger = new Debugger();
+            using (Profile profile = new Profile())
+            {
+                profile.DeviceType = "Dome";
+                debugger.Level = Convert.ToUInt32(profile.GetValue("ASCOM.Wise40.Dome", "Debug Level", string.Empty, "0"));
+            }
             Hardware.Instance.init();
 
             try {
@@ -65,13 +76,13 @@ namespace ASCOM.Wise40.Hardware
                 leftPin = new WisePin("DomeLeft", Hardware.Instance.domeboard, DigitalPortType.FirstPortA, 2, DigitalPortDirection.DigitalOut);
                 rightPin = new WisePin("DomeRight", Hardware.Instance.domeboard, DigitalPortType.FirstPortA, 3, DigitalPortDirection.DigitalOut);
 
-                caliPin = new WisePin("DomeCalibration", Hardware.Instance.domeboard, DigitalPortType.FirstPortCL, 0, DigitalPortDirection.DigitalIn, simulated ? true : false);
-                if (simulated)
-                    ventPin = new WisePin("DomeVent", Hardware.Instance.domeboard, DigitalPortType.FirstPortA, 7, DigitalPortDirection.DigitalOut);
+                caliPin = new WisePin("DomeCalibration", Hardware.Instance.domeboard, DigitalPortType.FirstPortCL, 0, DigitalPortDirection.DigitalIn);
+                if (_simulated)
+                    ventPin = new WisePin("DomeVent", Hardware.Instance.teleboard, DigitalPortType.FirstPortCL, 1, DigitalPortDirection.DigitalOut);
                 else
                     ventPin = new WisePin("DomeVent", Hardware.Instance.teleboard, DigitalPortType.ThirdPortCL, 0, DigitalPortDirection.DigitalOut);
 
-                domeEncoder = new WiseDomeEncoder("DomeEncoder", logger, simulated);
+                domeEncoder = new WiseDomeEncoder("DomeEncoder");
 
                 connectables.Add(openPin);
                 connectables.Add(closePin);
@@ -90,7 +101,7 @@ namespace ASCOM.Wise40.Hardware
             }
             catch (WiseException e)
             {
-                log("WiseDome constructor caught: {0}.", e.Message);
+                debugger.WriteLine(Debugger.DebugLevel.DebugExceptions, "WiseDome constructor caught: {0}.", e.Message);
             }
 
             openPin.SetOff();
@@ -98,17 +109,19 @@ namespace ASCOM.Wise40.Hardware
             leftPin.SetOff();
             rightPin.SetOff();
 
-            calibrating = false;
+            _calibrating = false;
             ventIsOpen = false;
-            this.simulated = simulated;
-            state = DomeState.Idle;
+            _state = DomeState.Idle;
             _shutterState = ShutterState.Closed;
 
             domeTimer = new System.Timers.Timer(100);   // runs every 100 millis
             domeTimer.Elapsed += onDomeTimer;
             domeTimer.Enabled = true;
 
-            shutterTimer = new System.Timers.Timer(25 * 1000); // runs every 25 (22 * 110%) seconds
+            if (_simulated)
+                shutterTimer = new System.Timers.Timer(2 * 1000);
+            else
+                shutterTimer = new System.Timers.Timer(25 * 1000);
             shutterTimer.Elapsed += onShutterTimer;
             shutterTimer.Enabled = false;
 
@@ -120,7 +133,7 @@ namespace ASCOM.Wise40.Hardware
             stuckTimer.Elapsed += onStuckTimer;
             stuckTimer.Enabled = false;
 
-            log("WiseDome constructor done.");
+            debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "WiseDome constructor done.");
         }
 
         public void Connect(bool connected)
@@ -138,12 +151,6 @@ namespace ASCOM.Wise40.Hardware
             {
                 return _connected;
             }
-        }
-        public void log(string fmt, params object[] o)
-        {
-            string msg = String.Format(fmt, o);
-
-            logger.LogMessage("WiseDome", msg);
         }
 
         /// <summary>
@@ -165,28 +172,29 @@ namespace ASCOM.Wise40.Hardware
         /// <returns></returns>
         private bool arriving(double az)
         {
-            if (((state == DomeState.MovingCCW) || (state == DomeState.MovingCW)) && (minAzDistance(az, Azimuth) <= inertiaDegrees(targetAz)))
+            if (((_state == DomeState.MovingCCW) || (_state == DomeState.MovingCW)) && (minAzDistance(az, Azimuth) <= inertiaDegrees(targetAz)))
                 return true;
             return false;
         }
 
         private void onDomeTimer(object sender, System.Timers.ElapsedEventArgs e)
         {
-            // log("onDomeTimer: targetAz: {0}, calibrating: {1}", targetAz.ToString(), calibrating.ToString());
-            if (targetAz != -1 && arriving(targetAz))
+            if (targetAz != invalidAz && arriving(targetAz))
             {
                 Stop();
-                targetAz = -1;
+                targetAz = invalidAz;
             }
 
             if (AtCaliPoint)
             {
-                if (calibrating)
+                if (_calibrating)
                 {
                     Stop();
-                    calibrating = false;
+                    _calibrating = false;
+                    reachedCalibrationPoint.Set();
                 }
                 domeEncoder.Calibrate(CallibrationPointAzimuth);
+                _calibrated = true;
             }
         }
 
@@ -205,7 +213,7 @@ namespace ASCOM.Wise40.Hardware
             const int leastExpectedTicks = 2;  // least number of Ticks expected to change in two seconds
             
             // the movementTimer should not be Enabled unless the dome is moving
-            if (isStuck || ((state != DomeState.MovingCW) && (state != DomeState.MovingCCW)))
+            if (isStuck || ((_state != DomeState.MovingCW) && (_state != DomeState.MovingCCW)))
                 return;
 
             deltaTicks = 0;
@@ -214,7 +222,7 @@ namespace ASCOM.Wise40.Hardware
             if (currTicks == prevTicks)
                 isStuck = true;
             else {
-                switch (state) {
+                switch (_state) {
                     case DomeState.MovingCW:        // encoder decreases
                         if (prevTicks > currTicks)
                             deltaTicks = prevTicks - currTicks;
@@ -258,8 +266,8 @@ namespace ASCOM.Wise40.Hardware
             if (DateTime.Compare(rightNow, nextStuckEvent) < 0)
                 return;
 
-            forwardPin = (state == DomeState.MovingCCW) ? leftPin : rightPin;
-            backwardPin = (state == DomeState.MovingCCW) ? rightPin : leftPin;
+            forwardPin = (_state == DomeState.MovingCCW) ? leftPin : rightPin;
+            backwardPin = (_state == DomeState.MovingCCW) ? rightPin : leftPin;
 
             switch (_stuckPhase) {
                 case StuckPhase.NotStuck:              // Stop, let the wheels cool down
@@ -267,21 +275,21 @@ namespace ASCOM.Wise40.Hardware
                     backwardPin.SetOff();
                     _stuckPhase = StuckPhase.FirstStop;
                     nextStuckEvent = rightNow.AddMilliseconds(10000);
-                    log("stuck: {0:###.##} deg, phase1: stopped moving, letting wheels cool for 10 seconds", Azimuth);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "stuck: {0:###.##} deg, phase1: stopped moving, letting wheels cool for 10 seconds", Azimuth);
                     break;
 
                 case StuckPhase.FirstStop:             // Go backward for two seconds
                     backwardPin.SetOn();
                     _stuckPhase = StuckPhase.GoBackward;
                     nextStuckEvent = rightNow.AddMilliseconds(2000);
-                    log("stuck: {0:###.##} deg, phase2: going backwards for 2 seconds", Azimuth);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "stuck: {0:###.##} deg, phase2: going backwards for 2 seconds", Azimuth);
                     break;
 
                 case StuckPhase.GoBackward:            // Stop again for two seconds
                     backwardPin.SetOff();
                     _stuckPhase = StuckPhase.SecondStop;
                     nextStuckEvent = rightNow.AddMilliseconds(2000);
-                    log("stuck: {0:###.##} deg, phase3: stopping for 2 seconds", Azimuth);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "stuck: {0:###.##} deg, phase3: stopping for 2 seconds", Azimuth);
                     break;
 
                 case StuckPhase.SecondStop:            // Done, resume original movement
@@ -290,7 +298,7 @@ namespace ASCOM.Wise40.Hardware
                     isStuck = false;
                     stuckTimer.Enabled = false;
                     nextStuckEvent = rightNow.AddYears(100);
-                    log("stuck: {0:###.##} deg, phase4: resumed original motion", Azimuth);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "stuck: {0:###.##} deg, phase4: resumed original motion", Azimuth);
                     break;
             }
         }
@@ -298,12 +306,14 @@ namespace ASCOM.Wise40.Hardware
 
         public void MoveCW()
         {
+            AtPark = false;
+
             leftPin.SetOff();
             rightPin.SetOn();
-            state = DomeState.MovingCW;
+            _state = DomeState.MovingCW;
             domeEncoder.setMovement(Direction.CW);
             movementTimer.Enabled = true;
-            log("WiseDome: Started moving CW");
+            debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "WiseDome: Started moving CW");
         }
 
         public void MoveRight()
@@ -313,12 +323,14 @@ namespace ASCOM.Wise40.Hardware
 
         public void MoveCCW()
         {
+            AtPark = false;
+
             rightPin.SetOff();
             leftPin.SetOn();
-            state = DomeState.MovingCCW;
+            _state = DomeState.MovingCCW;
             domeEncoder.setMovement(Direction.CCW);
             movementTimer.Enabled = true;
-            log("WiseDome: Started moving CCW");
+            debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "WiseDome: Started moving CCW");
         }
 
         public void MoveLeft()
@@ -330,10 +342,10 @@ namespace ASCOM.Wise40.Hardware
         {
             rightPin.SetOff();
             leftPin.SetOff();
-            state = DomeState.Idle;
+            _state = DomeState.Idle;
             movementTimer.Enabled = false;
             domeEncoder.setMovement(Direction.None);
-            log("WiseDome: Stopped");
+            debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "WiseDome: Stopped");
         }
 
         public void StartOpeningShutter()
@@ -370,7 +382,7 @@ namespace ASCOM.Wise40.Hardware
         {
             get
             {
-                return (simulated) ? domeEncoder.Value == 10 : caliPin.isOff;
+                return (_simulated) ? domeEncoder.Value == 10 : caliPin.isOff;
             }
         }
 
@@ -378,6 +390,9 @@ namespace ASCOM.Wise40.Hardware
         {
             get
             {
+                if (!domeEncoder.calibrated)
+                    return invalidAz;
+                 
                 return domeEncoder.Azimuth;
             }
 
@@ -427,7 +442,10 @@ namespace ASCOM.Wise40.Hardware
 
         public void FindCalibrationPoint()
         {
-            calibrating = true;
+            AtPark = false;
+
+            debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "FindCalibrationPoint: started");
+            _calibrating = true;
             if (domeEncoder.calibrated)
             {
                 switch(ShortestWayAz(Azimuth, CallibrationPointAzimuth)) {
@@ -436,40 +454,65 @@ namespace ASCOM.Wise40.Hardware
                 }
             } else
                 MoveCCW();
+
+            debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "FindCalibrationPoint: waiting for reachedCalibrationPoin ...");
+            reachedCalibrationPoint.WaitOne();
+            debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "FindCalibrationPoint: reachedCalibrationPoin was Set()");
         }
 
-        public void MoveTo(double az)
+        public void SlewToAzimuth(double az)
         {
             Direction dir;
 
-            if (!domeEncoder.calibrated)
-                return;
+            if (!Calibrated) {
+                debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "SlewToAzimuth({0}), not calibrated, calling FindCalibrationPoint", az);
+                FindCalibrationPoint();
+            }
+
             targetAz = az;
+            AtPark = false;
 
             dir = ShortestWayAz(domeEncoder.Azimuth, targetAz);
             switch (dir)
             {
                 case Direction.CCW:
+                    debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "SlewToAzimuth({0}), at {1}, moving CCW", az, Azimuth.ToString());
                     MoveCCW();
                     break;
                 case Direction.CW:
+                    debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "SlewToAzimuth({0}), at {1}, moving CW", az, Azimuth.ToString());
                     MoveCW();
                     break;
             }
 
-            if (simulated && targetAz == simulatedStuckAz)
-                domeEncoder.SimulateStuckAt((dir == Direction.CW) ? targetAz - 5.0: targetAz + 5.0);
-                
+            if (_simulated && targetAz == simulatedStuckAz)
+            {
+                double stuckAtAz = (dir == Direction.CW) ? targetAz - 5.0 : targetAz + 5.0;
+
+                domeEncoder.SimulateStuckAt(stuckAtAz);
+                debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "Dome encoder will simulate stuck at {0}", stuckAtAz);
+            }               
         }
 
         private double minAzDistance(double az1, double az2)
         {
-            return Math.Floor(Math.Min(360 - Math.Abs(az1 - az2), Math.Abs(az1 - az2)));
+            double dist = Math.Floor(Math.Min(360 - Math.Abs(az1 - az2), Math.Abs(az1 - az2)));
+
+            debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "minAzDistance({0}, {1}) => {2}", az1, az2, dist);
+            return dist;
         }
 
-        public bool AtPark()
+        public bool AtPark
         {
-            return (domeEncoder.calibrated) ? Math.Abs(Azimuth - ParkAzimuth) < 1.0 : false;
+            get
+            {
+                return _atPark;
+            }
+
+            set
+            {
+                _atPark = value;
+            }
         }
 
         public ShutterState shutterState
@@ -478,6 +521,11 @@ namespace ASCOM.Wise40.Hardware
             {
                 return _shutterState;
             }
+        }
+
+        public bool ShutterIsActive()
+        {
+            return _shutterState == ShutterState.Opening || _shutterState == ShutterState.Closing;
         }
 
         public void FullClose()
@@ -503,17 +551,54 @@ namespace ASCOM.Wise40.Hardware
         {
             get
             {
-                return (state == DomeState.MovingCCW) || (state == DomeState.MovingCW);
+                return (_state == DomeState.MovingCCW) || (_state == DomeState.MovingCW) ||
+                    (_shutterState == ShutterState.Opening) || (_shutterState == ShutterState.Closing);
             }
         }
 
-        public bool ShutterIsActive
+        public bool Slaved
         {
             get
             {
-                return ((_shutterState == ShutterState.Opening) || (_shutterState == ShutterState.Closing)) ? true : false;
+                return _slaved;
+            }
+
+            set
+            {
+                _slaved = value;
             }
         }
 
+        public bool Calibrated
+        {
+            get
+            {
+                return _calibrated;
+            }
+        }
+
+        public void Park()
+        {
+            AtPark = false;
+            SlewToAzimuth(90.0);
+            AtPark = true;
+        }
+
+        public void OpenShutter()
+        {
+            ShutterStop();
+            StartOpeningShutter();
+        }
+
+        public void CloseShutter()
+        {
+            ShutterStop();
+            StartClosingShutter();
+        }
+
+        public void AbortSlew()
+        {
+            Stop();
+        }
     }
 }

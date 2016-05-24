@@ -7,17 +7,14 @@ namespace ASCOM.Wise40.Hardware
 {
     public class WiseDomeEncoder : IConnectable
     {
-        //private WiseEncoder hwEncoder;
         private double azimuth;
         public bool calibrated;
 
-        private bool simulated;                         // is the dome encoder simulated or real?
+        private bool _simulated = Environment.MachineName != "dome-ctlr"; 
         private int simulatedValue;                     // the simulated dome encoder value
         private double simulatedStuckAzimuth;           // the azimuth where we simulate dome-stuck (simulated value does not change)?
         private DateTime endSimulatedStuck;             // time when the dome-stuck simulation should end
         private System.Timers.Timer simulationTimer;    // times simulated-dome events
-
-        private TraceLogger logger;
 
         private int caliTicks;
         private double caliAz;
@@ -30,21 +27,13 @@ namespace ASCOM.Wise40.Hardware
         private WiseDaq encDaqLow, encDaqHigh;
         private AtomicReader encAtomicReader;
 
-        private void log(string fmt, params object[] o)
+        public WiseDomeEncoder(string name)
         {
-            string msg = String.Format(fmt, o);
+            encDaqLow = Hardware.Instance.domeboard.daqs.Find(x => x.porttype == DigitalPortType.FirstPortB);
+            encDaqHigh = Hardware.Instance.domeboard.daqs.Find(x => x.porttype == DigitalPortType.FirstPortCH);
+            encAtomicReader = new AtomicReader(new List<WiseDaq>() { encDaqHigh, encDaqLow });
 
-            logger.LogMessage("WiseDomeEncoder", msg);
-        }
-
-        public WiseDomeEncoder(string name, TraceLogger logger, bool simulated = false)
-        {
-            encDaqLow = Hardware.Instance.domeboard.daqs.Find(x => x.porttype == DigitalPortType.FirstPortA);
-            encDaqHigh = Hardware.Instance.domeboard.daqs.Find(x => x.porttype == DigitalPortType.SecondPortCL);
-            encAtomicReader = new AtomicReader(new List<WiseDaq>() { encDaqLow, encDaqHigh });
-
-            this.simulated = simulated;
-            if (this.simulated)
+            if (_simulated)
             {
                 simulatedValue = 0;
                 simulatedStuckAzimuth = NoSimulatedStuckAz;
@@ -52,8 +41,6 @@ namespace ASCOM.Wise40.Hardware
                 simulationTimer.Elapsed += onSimulationTimer;
                 simulationTimer.Enabled = true;
             }
-
-            this.logger = logger;
         }
 
         public void setMovement(WiseDome.Direction dir)
@@ -126,12 +113,16 @@ namespace ASCOM.Wise40.Hardware
             _connected = connected;
             if (connected)
             {
-                encDaqHigh.setOwners("domeEncHigh");
+                //encDaqHigh.setOwners("domeEncHigh");
+                encDaqHigh.setOwner(encDaqHigh.name, 0);
+                encDaqHigh.setOwner(encDaqHigh.name, 1);
                 encDaqLow.setOwners("domeEncLow");
             }
             else
             {
-                encDaqHigh.unsetOwners();
+                //encDaqHigh.unsetOwners();
+                encDaqHigh.unsetOwner(0);
+                encDaqHigh.unsetOwner(1);
                 encDaqLow.unsetOwners();
             }
         }
@@ -192,7 +183,7 @@ namespace ASCOM.Wise40.Hardware
             get
             {
 
-                if (simulated)
+                if (_simulated)
                     return simulatedValue;
 
                 List<uint> values = encAtomicReader.Values;
