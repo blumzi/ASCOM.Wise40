@@ -12,7 +12,7 @@ namespace ASCOM.Wise40.Hardware
 
         private WisePin leftPin, rightPin;
         private WisePin openPin, closePin;
-        private WisePin caliPin, ventPin;
+        private WisePin homePin, ventPin;
         private WiseDomeEncoder domeEncoder;
         private List<IConnectable> connectables;
         private List<IDisposable> disposables;
@@ -34,16 +34,17 @@ namespace ASCOM.Wise40.Hardware
         private int prevTicks;      // for Stuck checks
         private DateTime nextStuckEvent;
 
-        private const double CallibrationPointAzimuth = 254.6;
+        private Angle HomePointAzimuth = new Angle(254.6);
         public const int TicksPerDomeRevolution = 1018;
+
         public const double DegreesPerTick = 360.0 / TicksPerDomeRevolution;
         public const double ticksPerDegree = TicksPerDomeRevolution / 360;
-        public const double ParkAzimuth = 90.0;
         private const int simulatedEncoderTicksPerSecond = 6;   // As per Yftach's measurement
-        private const double simulatedStuckAz = 333.0;          // If targeted to this Az, we simulate dome-stuck (must be a valid az)
-        private const double invalidAz = double.NaN;
 
-        private double targetAz;
+        public const double ParkAzimuth = 90.0;
+        private Angle simulatedStuckAz = new Angle(333.0);      // If targeted to this Az, we simulate dome-stuck (must be a valid az)
+
+        private Angle targetAz = null;
 
         private System.Timers.Timer domeTimer;
         private System.Timers.Timer shutterTimer;
@@ -55,7 +56,7 @@ namespace ASCOM.Wise40.Hardware
         private bool _atPark = false;
 
         private Debugger debugger;
-        private static AutoResetEvent reachedCalibrationPoint = new AutoResetEvent(false);
+        private static AutoResetEvent reachedHomePoint = new AutoResetEvent(false);
 
         public WiseDome()
         {
@@ -76,19 +77,19 @@ namespace ASCOM.Wise40.Hardware
                 leftPin = new WisePin("DomeLeft", Hardware.Instance.domeboard, DigitalPortType.FirstPortA, 2, DigitalPortDirection.DigitalOut);
                 rightPin = new WisePin("DomeRight", Hardware.Instance.domeboard, DigitalPortType.FirstPortA, 3, DigitalPortDirection.DigitalOut);
 
-                caliPin = new WisePin("DomeCalibration", Hardware.Instance.domeboard, DigitalPortType.FirstPortCL, 0, DigitalPortDirection.DigitalIn);
+                homePin = new WisePin("DomeCalibration", Hardware.Instance.domeboard, DigitalPortType.FirstPortCL, 0, DigitalPortDirection.DigitalIn);
                 if (_simulated)
                     ventPin = new WisePin("DomeVent", Hardware.Instance.teleboard, DigitalPortType.FirstPortCL, 1, DigitalPortDirection.DigitalOut);
                 else
                     ventPin = new WisePin("DomeVent", Hardware.Instance.teleboard, DigitalPortType.ThirdPortCL, 0, DigitalPortDirection.DigitalOut);
 
-                domeEncoder = new WiseDomeEncoder("DomeEncoder");
+                domeEncoder = new WiseDomeEncoder("DomeEncoder", debugger);
 
                 connectables.Add(openPin);
                 connectables.Add(closePin);
                 connectables.Add(leftPin);
                 connectables.Add(rightPin);
-                connectables.Add(caliPin);
+                connectables.Add(homePin);
                 connectables.Add(ventPin);
                 connectables.Add(domeEncoder);
 
@@ -96,7 +97,7 @@ namespace ASCOM.Wise40.Hardware
                 disposables.Add(closePin);
                 disposables.Add(leftPin);
                 disposables.Add(rightPin);
-                disposables.Add(caliPin);
+                disposables.Add(homePin);
                 disposables.Add(ventPin);
             }
             catch (WiseException e)
@@ -160,29 +161,34 @@ namespace ASCOM.Wise40.Hardware
         /// </summary>
         /// <param name="az"></param>
         /// <returns></returns>
-        private double inertiaDegrees(double az)
+        private Angle inertiaAngle(Angle az)
         {
-            return 2 * (360 / TicksPerDomeRevolution);
+            return new Angle(2 * (Angle.max.Degrees / TicksPerDomeRevolution));
         }
 
         /// <summary>
         /// Checks if we're close enough to a given Azimuth
         /// </summary>
-        /// <param name="az"></param>
+        /// <param name="there"></param>
         /// <returns></returns>
-        private bool arriving(double az)
+        private bool arriving(Angle there)
         {
-            if (((_state == DomeState.MovingCCW) || (_state == DomeState.MovingCW)) && (minAzDistance(az, Azimuth) <= inertiaDegrees(targetAz)))
-                return true;
-            return false;
+            if ((_state != DomeState.MovingCCW) && (_state != DomeState.MovingCW))
+                return false;
+
+            ShortestDistanceResult shortest = Azimuth.ShortestDistance(there);
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "arriving here: {0}, there: {1}, dist: {3}, epsilon: {2}, ret: {4}",
+                Azimuth, there, shortest.angle, inertiaAngle(there), shortest.angle <= inertiaAngle(there));
+
+            return shortest.angle <= inertiaAngle(there);
         }
 
         private void onDomeTimer(object sender, System.Timers.ElapsedEventArgs e)
         {
-            if (targetAz != invalidAz && arriving(targetAz))
+            if (targetAz != null && arriving(targetAz))
             {
                 Stop();
-                targetAz = invalidAz;
+                targetAz = null;
             }
 
             if (AtCaliPoint)
@@ -191,9 +197,9 @@ namespace ASCOM.Wise40.Hardware
                 {
                     Stop();
                     _calibrating = false;
-                    reachedCalibrationPoint.Set();
+                    reachedHomePoint.Set();
                 }
-                domeEncoder.Calibrate(CallibrationPointAzimuth);
+                domeEncoder.Calibrate(HomePointAzimuth);
                 _calibrated = true;
             }
         }
@@ -275,21 +281,21 @@ namespace ASCOM.Wise40.Hardware
                     backwardPin.SetOff();
                     _stuckPhase = StuckPhase.FirstStop;
                     nextStuckEvent = rightNow.AddMilliseconds(10000);
-                    debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "stuck: {0:###.##} deg, phase1: stopped moving, letting wheels cool for 10 seconds", Azimuth);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "stuck: {0}, phase1: stopped moving, letting wheels cool for 10 seconds", Azimuth);
                     break;
 
                 case StuckPhase.FirstStop:             // Go backward for two seconds
                     backwardPin.SetOn();
                     _stuckPhase = StuckPhase.GoBackward;
                     nextStuckEvent = rightNow.AddMilliseconds(2000);
-                    debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "stuck: {0:###.##} deg, phase2: going backwards for 2 seconds", Azimuth);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "stuck: {0}, phase2: going backwards for 2 seconds", Azimuth);
                     break;
 
                 case StuckPhase.GoBackward:            // Stop again for two seconds
                     backwardPin.SetOff();
                     _stuckPhase = StuckPhase.SecondStop;
                     nextStuckEvent = rightNow.AddMilliseconds(2000);
-                    debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "stuck: {0:###.##} deg, phase3: stopping for 2 seconds", Azimuth);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "stuck: {0}, phase3: stopping for 2 seconds", Azimuth);
                     break;
 
                 case StuckPhase.SecondStop:            // Done, resume original movement
@@ -298,13 +304,13 @@ namespace ASCOM.Wise40.Hardware
                     isStuck = false;
                     stuckTimer.Enabled = false;
                     nextStuckEvent = rightNow.AddYears(100);
-                    debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "stuck: {0:###.##} deg, phase4: resumed original motion", Azimuth);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "stuck: {0}, phase4: resumed original motion", Azimuth);
                     break;
             }
         }
 
 
-        public void MoveCW()
+        public void StartMovingCW()
         {
             AtPark = false;
 
@@ -318,10 +324,10 @@ namespace ASCOM.Wise40.Hardware
 
         public void MoveRight()
         {
-            MoveCW();
+            StartMovingCW();
         }
 
-        public void MoveCCW()
+        public void StartMovingCCW()
         {
             AtPark = false;
 
@@ -335,7 +341,7 @@ namespace ASCOM.Wise40.Hardware
 
         public void MoveLeft()
         {
-            MoveCCW();
+            StartMovingCCW();
         }
 
         public void Stop()
@@ -382,16 +388,16 @@ namespace ASCOM.Wise40.Hardware
         {
             get
             {
-                return (_simulated) ? domeEncoder.Value == 10 : caliPin.isOff;
+                return (_simulated) ? domeEncoder.Value == 10 : homePin.isOff;
             }
         }
 
-        public double Azimuth
+        public Angle Azimuth
         {
             get
             {
                 if (!domeEncoder.calibrated)
-                    return invalidAz;
+                    return Angle.invalid;
                  
                 return domeEncoder.Azimuth;
             }
@@ -420,86 +426,62 @@ namespace ASCOM.Wise40.Hardware
             }
         }
 
-        private Direction ShortestWayAz(double fromAz, double toAz)
-        {
-            double deltaCW, deltaCCW;
-
-            if (Math.Abs(fromAz - toAz) <= DegreesPerTick)
-                return Direction.None;
-
-            if (fromAz < toAz)
-            {
-                deltaCW = toAz - fromAz;
-                deltaCCW = fromAz + 360 - toAz;
-            } else
-            {
-                deltaCW = 360 - fromAz + toAz;
-                deltaCCW = fromAz - toAz;
-            }
-
-            return (deltaCCW < deltaCW) ? Direction.CCW : Direction.CW;
-        }
-
-        public void FindCalibrationPoint()
+        public void FindHome()
         {
             AtPark = false;
 
-            debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "FindCalibrationPoint: started");
+            debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "FindHomePoint: started");
             _calibrating = true;
+
             if (domeEncoder.calibrated)
             {
-                switch(ShortestWayAz(Azimuth, CallibrationPointAzimuth)) {
-                    case Direction.CCW: MoveCCW(); break ;
-                    case Direction.CW:  MoveCW(); break;
+                ShortestDistanceResult shortest = Azimuth.ShortestDistance(HomePointAzimuth);
+
+                switch (shortest.direction) {
+                    case Const.AxisDirection.Decreasing: StartMovingCCW(); break ;
+                    case Const.AxisDirection.Increasing:  StartMovingCW(); break;
                 }
             } else
-                MoveCCW();
+                StartMovingCCW();
 
-            debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "FindCalibrationPoint: waiting for reachedCalibrationPoin ...");
-            reachedCalibrationPoint.WaitOne();
-            debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "FindCalibrationPoint: reachedCalibrationPoin was Set()");
+            debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "FindHomePoint: waiting for reachedCalibrationPoint ...");
+            reachedHomePoint.WaitOne();
+            debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "FindHomePoint: reachedCalibrationPoint was Set()");
         }
 
-        public void SlewToAzimuth(double az)
+        public void SlewToAzimuth(double toAz)
         {
-            Direction dir;
+            Const.AxisDirection dir;
+            Angle toAng = new Angle(toAz);
 
             if (!Calibrated) {
-                debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "SlewToAzimuth({0}), not calibrated, calling FindCalibrationPoint", az);
-                FindCalibrationPoint();
+                debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "SlewToAzimuth: {0}, not calibrated, calling FindHomePoint", toAng);
+                FindHome();
             }
 
-            targetAz = az;
+            targetAz = toAng;
             AtPark = false;
 
-            dir = ShortestWayAz(domeEncoder.Azimuth, targetAz);
-            switch (dir)
+            ShortestDistanceResult shortest = domeEncoder.Azimuth.ShortestDistance(targetAz);
+            switch (shortest.direction)
             {
-                case Direction.CCW:
-                    debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "SlewToAzimuth({0}), at {1}, moving CCW", az, Azimuth.ToString());
-                    MoveCCW();
+                case Const.AxisDirection.Decreasing:
+                    StartMovingCCW();
                     break;
-                case Direction.CW:
-                    debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "SlewToAzimuth({0}), at {1}, moving CW", az, Azimuth.ToString());
-                    MoveCW();
+                case Const.AxisDirection.Increasing:
+                    StartMovingCW();
                     break;
             }
+            debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "SlewToAzimuth: {0} => {1} (dist: {2}), moving {3}", Azimuth, toAng, shortest.angle, shortest.direction);
 
             if (_simulated && targetAz == simulatedStuckAz)
             {
-                double stuckAtAz = (dir == Direction.CW) ? targetAz - 5.0 : targetAz + 5.0;
+                Angle epsilon = new Angle(5.0);
+                Angle stuckAtAz = (shortest.direction == Const.AxisDirection.Increasing) ? targetAz - epsilon : targetAz + epsilon;
 
                 domeEncoder.SimulateStuckAt(stuckAtAz);
-                debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "Dome encoder will simulate stuck at {0}", stuckAtAz);
+                debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "Dome encoder will simulate stuck at {0}", stuckAtAz);
             }               
-        }
-
-        private double minAzDistance(double az1, double az2)
-        {
-            double dist = Math.Floor(Math.Min(360 - Math.Abs(az1 - az2), Math.Abs(az1 - az2)));
-
-            debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "minAzDistance({0}, {1}) => {2}", az1, az2, dist);
-            return dist;
         }
 
         public bool AtPark

@@ -1,7 +1,8 @@
 //tabs=4
 // --------------------------------------------------------------------------------
+// TODO fill in this information for your driver, then remove this line!
 //
-// ASCOM Dome driver for Wise40
+// ASCOM ObservingConditions driver for Vantage
 //
 // Description:	Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam 
 //				nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam 
@@ -9,8 +10,8 @@
 //				dolores et ea rebum. Stet clita kasd gubergren, no sea takimata 
 //				sanctus est Lorem ipsum dolor sit amet.
 //
-// Implements:	ASCOM Dome interface version: <To be completed by driver developer>
-// Author:		(blumzi) Arie Blumenzweig <blumzi@013.net>
+// Implements:	ASCOM ObservingConditions interface version: <To be completed by driver developer>
+// Author:		(XXX) Your N. Here <your@email.here>
 //
 // Edit Log:
 //
@@ -23,7 +24,7 @@
 
 // This is used to define code in the template that is specific to one class implementation
 // unused code canbe deleted and this definition removed.
-#define Dome
+#define ObservingConditions
 
 using System;
 using System.Collections.Generic;
@@ -36,45 +37,47 @@ using ASCOM.Astrometry;
 using ASCOM.Astrometry.AstroUtils;
 using ASCOM.Utilities;
 using ASCOM.DeviceInterface;
-using ASCOM.DriverAccess;
 using System.Globalization;
 using System.Collections;
 
-using ASCOM.Wise40.Hardware;
-using ASCOM.Wise40.Common;
-
-namespace ASCOM.Wise40
+namespace ASCOM.Vantage
 {
     //
-    // Your driver's DeviceID is ASCOM.Wise40.Dome
+    // Your driver's DeviceID is ASCOM.Vantage.ObservingConditions
     //
-    // The Guid attribute sets the CLSID for ASCOM.Wise40.Dome
+    // The Guid attribute sets the CLSID for ASCOM.Vantage.ObservingConditions
     // The ClassInterface/None addribute prevents an empty interface called
-    // _Wise40 from being created and used as the [default] interface
+    // _Vantage from being created and used as the [default] interface
+    //
+    // TODO Replace the not implemented exceptions with code to implement the function or
+    // throw the appropriate ASCOM exception.
     //
 
     /// <summary>
-    /// ASCOM Dome Driver for Wise40.
+    /// ASCOM ObservingConditions Driver for Vantage.
     /// </summary>
-    [Guid("5cec8f8d-f8be-453d-b80f-9a93a758d08a")]
+    [Guid("b4abbe60-4ab8-43a0-b3ac-e27f63b5abad")]
     [ClassInterface(ClassInterfaceType.None)]
-    public class Dome : IDomeV2, IDisposable
+    public class ObservingConditions : IObservingConditions
     {
         /// <summary>
         /// ASCOM DeviceID (COM ProgID) for this driver.
         /// The DeviceID is used by ASCOM applications to load the driver at runtime.
         /// </summary>
-        internal static string driverID = "ASCOM.Wise40.Dome";
+        internal static string driverID = "ASCOM.Vantage.ObservingConditions";
+        // TODO Change the descriptive string for your driver then remove this line
         /// <summary>
-        /// Dome driver for the Wise 40" telescope.
+        /// Driver description that displays in the ASCOM Chooser.
         /// </summary>
-        private static string driverDescription = "Wise40 Dome";
+        private static string driverDescription = "ASCOM ObservingConditions Driver for Vantage.";
 
+        internal static string comPortProfileName = "COM Port"; // Constants used for Profile persistence
+        internal static string comPortDefault = "COM1";
         internal static string traceStateProfileName = "Trace Level";
-        internal static string debugLevelProfileName = "Debug Level";
+        internal static string traceStateDefault = "false";
 
-        public bool traceState;
-        public Common.Debugger debugger;
+        internal static string comPort; // Variables to hold the currrent device configuration
+        internal static bool traceState;
 
         /// <summary>
         /// Private variable to hold the connected state
@@ -96,32 +99,29 @@ namespace ASCOM.Wise40
         /// </summary>
         private TraceLogger tl;
 
-        private  WiseDome wisedome;
-
         /// <summary>
-        /// Initializes a new instance of the <see cref="Wise40Hardware"/> class.
+        /// Initializes a new instance of the <see cref="Vantage"/> class.
         /// Must be public for COM registration.
         /// </summary>
-        public Dome()
+        public ObservingConditions()
         {
-            debugger = new Common.Debugger();
             ReadProfile(); // Read device configuration from the ASCOM Profile store
 
-            tl = new TraceLogger("", "Dome");
+            tl = new TraceLogger("", "Vantage");
             tl.Enabled = traceState;
-            tl.LogMessage("Dome", "Starting initialisation");
+            tl.LogMessage("ObservingConditions", "Starting initialisation");
 
             connectedState = false; // Initialise connected to false
             utilities = new Util(); //Initialise util object
             astroUtilities = new AstroUtils(); // Initialise astro utilities object
-            wisedome = new WiseDome(); // Initialise Wise40 dome
+            //TODO: Implement your additional construction here
 
-            tl.LogMessage("Dome", "Completed initialisation");
+            tl.LogMessage("ObservingConditions", "Completed initialisation");
         }
 
 
         //
-        // PUBLIC COM INTERFACE IDomeV2 IMPLEMENTATION
+        // PUBLIC COM INTERFACE IObservingConditions IMPLEMENTATION
         //
 
         #region Common properties and methods.
@@ -139,7 +139,7 @@ namespace ASCOM.Wise40
             if (IsConnected)
                 System.Windows.Forms.MessageBox.Show("Already connected, just press OK");
 
-            using (SetupDialogForm F = new SetupDialogForm(this))
+            using (SetupDialogForm F = new SetupDialogForm())
             {
                 var result = F.ShowDialog();
                 if (result == System.Windows.Forms.DialogResult.OK)
@@ -170,6 +170,7 @@ namespace ASCOM.Wise40
             this.CommandString(command, raw);
             // or
             throw new ASCOM.MethodNotImplementedException("CommandBlind");
+            // DO NOT have both these sections!  One or the other
         }
 
         public bool CommandBool(string command, bool raw)
@@ -179,6 +180,7 @@ namespace ASCOM.Wise40
             // TODO decode the return string and return true or false
             // or
             throw new ASCOM.MethodNotImplementedException("CommandBool");
+            // DO NOT have both these sections!  One or the other
         }
 
         public string CommandString(string command, bool raw)
@@ -201,9 +203,6 @@ namespace ASCOM.Wise40
             utilities = null;
             astroUtilities.Dispose();
             astroUtilities = null;
-            wisedome.Dispose();
-            wisedome = null;
-            //Dispose(true);
         }
 
         public bool Connected
@@ -222,19 +221,21 @@ namespace ASCOM.Wise40
                 if (value)
                 {
                     connectedState = true;
-                    tl.LogMessage("Connected Set", "Connected");
+                    tl.LogMessage("Connected Set", "Connecting to port " + comPort);
+                    // TODO connect to the device
                 }
                 else
                 {
                     connectedState = false;
-                    tl.LogMessage("Connected Set", "Disconnected");
+                    tl.LogMessage("Connected Set", "Disconnecting from port " + comPort);
+                    // TODO disconnect from the device
                 }
-                wisedome.Connect(connectedState);
             }
         }
 
         public string Description
         {
+            // TODO customise this device description
             get
             {
                 tl.LogMessage("Description Get", driverDescription);
@@ -247,7 +248,8 @@ namespace ASCOM.Wise40
             get
             {
                 Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-                string driverInfo = "First draft, Version: " + string.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
+                // TODO customise this driver description
+                string driverInfo = "Information about the driver itself. Version: " + String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
                 tl.LogMessage("DriverInfo Get", driverInfo);
                 return driverInfo;
             }
@@ -269,8 +271,8 @@ namespace ASCOM.Wise40
             // set by the driver wizard
             get
             {
-                tl.LogMessage("InterfaceVersion Get", "2");
-                return Convert.ToInt16("2");
+                tl.LogMessage("InterfaceVersion Get", "1");
+                return Convert.ToInt16("1");
             }
         }
 
@@ -278,7 +280,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                string name = "Wise40 Dome";
+                string name = "Short driver name - please customise";
                 tl.LogMessage("Name Get", name);
                 return name;
             }
@@ -286,273 +288,305 @@ namespace ASCOM.Wise40
 
         #endregion
 
-        #region IDome Implementation
+        #region IObservingConditions Implementation
 
-        public void AbortSlew()
-        {
-            wisedome.AbortSlew();
-            tl.LogMessage("AbortSlew", "");
-        }
-
-        public double Altitude
-        {
-            get
-            {
-                tl.LogMessage("Altitude Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("Altitude", false);
-            }
-        }
-
-        public bool AtHome
+        /// <summary>
+        /// Gets and sets the time period over which observations wil be averaged
+        /// </summary>
+        /// <remarks>
+        /// Get must be implemented, if it can't be changed it must return 0
+        /// Time period (hours) over which the property values will be averaged 0.0 =
+        /// current value, 0.5= average for the last 30 minutes, 1.0 = average for the
+        /// last hour
+        /// </remarks>
+        public double AveragePeriod
         {
             get
             {
-                bool atHome = wisedome.AtCaliPoint;
-
-                tl.LogMessage("AtHome Get", atHome.ToString());
-                return atHome;
+                tl.LogMessage("AveragePeriod", "get - 0");
+                return 0;
             }
-        }
-
-        public bool AtPark
-        {
-            get
-            {
-                bool atPark = wisedome.AtPark;
-
-                tl.LogMessage("AtPark Get", atPark.ToString());
-                return atPark;
-            }
-        }
-
-        public double Azimuth
-        {
-            get
-            {
-                Angle az = wisedome.Azimuth;
-
-                tl.LogMessage("Azimuth Get", az.ToString());
-                return az.Degrees;
-            }
-        }
-
-        public bool CanFindHome
-        {
-            get
-            {
-                tl.LogMessage("CanFindHome Get", true.ToString());
-                return true;
-            }
-        }
-
-        public bool CanPark
-        {
-            get
-            {
-                tl.LogMessage("CanPark Get", true.ToString());
-                return true;
-            }
-        }
-
-        public bool CanSetAltitude
-        {
-            get
-            {
-                tl.LogMessage("CanSetAltitude Get", false.ToString());
-                return false;
-            }
-        }
-
-        public bool CanSetAzimuth
-        {
-            get
-            {
-                tl.LogMessage("CanSetAzimuth Get", true.ToString());
-                return true;
-            }
-        }
-
-        public bool CanSetPark
-        {
-            get
-            {
-                tl.LogMessage("CanSetPark Get", false.ToString());
-                return false;
-            }
-        }
-
-        public bool CanSetShutter
-        {
-            get
-            {
-                tl.LogMessage("CanSetShutter Get", true.ToString());
-                return true;
-            }
-        }
-
-        public bool CanSlave
-        {
-            get
-            {
-                tl.LogMessage("CanSlave Get", true.ToString());
-                return true;
-            }
-        }
-
-        public bool CanSyncAzimuth
-        {
-            get
-            {
-                tl.LogMessage("CanSyncAzimuth Get", true.ToString());
-                return true;
-            }
-        }
-
-        public void CloseShutter()
-        {
-            if (wisedome.Slewing)
-                throw new ASCOM.InvalidOperationException("Denied, dome is slewing!");
-
-            wisedome.CloseShutter();
-            tl.LogMessage("CloseShutter", "");
-        }
-
-        public void FindHome()
-        {
-            if (wisedome.ShutterIsActive())
-            {
-                tl.LogMessage("FindHome", "Cannot FindHome, shutter is active.");
-                throw new ASCOM.InvalidOperationException("Cannot FindHome, shutter is active!");
-            }
-
-            tl.LogMessage("FindHome", "Calling wisedome.FindHome");
-            wisedome.FindHome();
-        }
-
-        public void OpenShutter()
-        {
-            if (wisedome.Slewing)
-                throw new ASCOM.InvalidOperationException("Cannot OpenShutter, dome is slewing!");
-
-            wisedome.OpenShutter();
-            tl.LogMessage("OpenShutter", "");
-        }
-
-        public void Park()
-        {
-            if (Slaved)
-                throw new InvalidOperationException("Cannot Park, dome is Slaved");
-
-            if (!wisedome.Calibrated)
-                throw new InvalidOperationException("Cannot Park, dome is NOT calibrated");
-
-            if (wisedome.ShutterIsActive())
-            {
-                tl.LogMessage("Park", "Cannot Park, shutter is active.");
-                throw new ASCOM.InvalidOperationException("Cannot Park, shutter is active!");
-            }
-
-            wisedome.Park();
-            tl.LogMessage("Park", "");
-        }
-
-        public void SetPark()
-        {
-            tl.LogMessage("SetPark", "Not implemented");
-            throw new ASCOM.MethodNotImplementedException("SetPark");
-        }
-
-        public ShutterState ShutterStatus
-        {
-            get
-            {
-                WiseDome.ShutterState state = wisedome.shutterState;
-                ShutterState ret = ShutterState.shutterError;
-
-                switch (state)
-                {
-                    case WiseDome.ShutterState.Closed:
-                        ret = ShutterState.shutterClosed;
-                        break;
-                    case WiseDome.ShutterState.Closing:
-                        ret = ShutterState.shutterClosing;
-                        break;
-                    case WiseDome.ShutterState.Open:
-                        ret = ShutterState.shutterOpen;
-                        break;
-                    case WiseDome.ShutterState.Opening:
-                        ret = ShutterState.shutterOpening;
-                        break;
-                }
-                tl.LogMessage("ShutterState get", ret.ToString());
-                return ret;
-            }
-        }
-
-        public bool Slaved
-        {
-            get
-            {
-                bool slaved = wisedome.Slaved;
-
-                tl.LogMessage("Slaved Get", slaved.ToString());
-                return slaved;
-            }
-
             set
             {
-                tl.LogMessage("Slaved Set", value.ToString());
-                wisedome.Slaved = value;
+                LogMessage("AveragePeriod", "set - {0}", value);
+                if (value != 0)
+                    throw new PropertyNotImplementedException("AveragePeriod", true);
             }
         }
 
-        public void SlewToAltitude(double Altitude)
-        {
-            tl.LogMessage("SlewToAltitude", "Not implemented");
-            throw new ASCOM.MethodNotImplementedException("SlewToAltitude");
-        }
-
-        public void SlewToAzimuth(double Azimuth)
-        {
-            if (wisedome.Slaved)
-                throw new InvalidOperationException("Cannot SlewToAzimuth, dome is Slaved");
-
-            if (Azimuth < 0 || Azimuth >= 360)
-                throw new InvalidValueException(string.Format("Invalid azimuth: {0}, must be >= 0 and < 360", Azimuth));
-
-            if (wisedome.ShutterIsActive())
-            {
-                tl.LogMessage("SlewToAzimuth", "Denied, shutter is active.");
-                throw new ASCOM.InvalidOperationException("Cannot move, shutter is active!");
-            }
-
-            wisedome.SlewToAzimuth(Azimuth);
-            tl.LogMessage("SlewToAzimuth", Azimuth.ToString("#.##"));
-        }
-
-        public bool Slewing
+        /// <summary>
+        /// Amount of sky obscured by cloud
+        /// </summary>
+        /// <remarks>0%= clear sky, 100% = 100% cloud coverage</remarks>
+        public double CloudCover
         {
             get
             {
-                if (Slaved)
-                    throw new InvalidOperationException("Cannot get Slewing while dome is Slaved");
-
-                bool slewing = wisedome.Slewing;
-
-                tl.LogMessage("Slewing Get", slewing.ToString());
-                return slewing;
+                tl.LogMessage("CloudCover", "get - not implemented");
+                throw new PropertyNotImplementedException("CloudCover", false);
             }
         }
 
-        public void SyncToAzimuth(double degrees)
+        /// <summary>
+        /// Atmospheric dew point at the observatory in deg C
+        /// </summary>
+        /// <remarks>
+        /// Normally optional but mandatory if <see cref=" ASCOM.DeviceInterface.IObservingConditions.Humidity"/>
+        /// Is provided
+        /// </remarks>
+        public double DewPoint
         {
-            Angle ang = new Angle(degrees);
+            get
+            {
+                tl.LogMessage("DewPoint", "get - not implemented");
+                throw new PropertyNotImplementedException("DewPoint", false);
+            }
+        }
 
-            if (ang.Degrees < 0 || ang.Degrees >= 360)
-                throw new InvalidValueException(string.Format("Cannot SyncToAzimuth({0}), must be >- 0 and < 360", ang));
+        /// <summary>
+        /// Atmospheric relative humidity at the observatory in percent
+        /// </summary>
+        /// <remarks>
+        /// Normally optional but mandatory if <see cref="ASCOM.DeviceInterface.IObservingConditions.DewPoint"/> 
+        /// Is provided
+        /// </remarks>
+        public double Humidity
+        {
+            get
+            {
+                tl.LogMessage("Humidity", "get - not implemented");
+                throw new PropertyNotImplementedException("Humidity", false);
+            }
+        }
 
-            tl.LogMessage("SyncToAzimuth", ang.ToString());
-            wisedome.Azimuth = ang;
+        /// <summary>
+        /// Atmospheric pressure at the observatory in hectoPascals (mB)
+        /// </summary>
+        /// <remarks>
+        /// This must be the pressure at the observatory and not the "reduced" pressure
+        /// at sea level. Please check whether your pressure sensor delivers local pressure
+        /// or sea level pressure and adjust if required to observatory pressure.
+        /// </remarks>
+        public double Pressure
+        {
+            get
+            {
+                tl.LogMessage("Pressure", "get - not implemented");
+                throw new PropertyNotImplementedException("Pressure", false);
+            }
+        }
+
+        /// <summary>
+        /// Rain rate at the observatory
+        /// </summary>
+        /// <remarks>
+        /// This property can be interpreted as 0.0 = Dry any positive nonzero value
+        /// = wet.
+        /// </remarks>
+        public double RainRate
+        {
+            get
+            {
+                tl.LogMessage("RainRate", "get - not implemented");
+                throw new PropertyNotImplementedException("RainRate", false);
+            }
+        }
+
+        /// <summary>
+        /// Forces the driver to immediatley query its attached hardware to refresh sensor
+        /// values
+        /// </summary>
+        public void Refresh()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        /// <summary>
+        /// Provides a description of the sensor providing the requested property
+        /// </summary>
+        /// <param name="PropertyName">Name of the property whose sensor description is required</param>
+        /// <returns>The sensor description string</returns>
+        /// <remarks>
+        /// PropertyName must be one of the sensor properties, 
+        /// properties that are not implemented must throw the MethodNotImplementedException
+        /// </remarks>
+        public string SensorDescription(string PropertyName)
+        {
+            switch (PropertyName)
+            {
+                case "AveragePeriod":
+                    return "Average period in hours, immediate values are only available";
+                case "DewPoint":
+                case "Humidity":
+                case "Pressure":
+                case "RainRate":
+                case "SkyBrightness":
+                case "SkyQuality":
+                case "StarFWHM":
+                case "SkyTemperature":
+                case "Temperature":
+                case "WindDirection":
+                case "WindGust":
+                case "WindSpeed":
+                    tl.LogMessage("SensorDescription", PropertyName + " - not implemented");
+                    throw new MethodNotImplementedException("SensorDescription(" + PropertyName + ")");
+                default:
+                    tl.LogMessage("SensorDescription", PropertyName + " - unrecognised");
+                    throw new ASCOM.InvalidValueException("SensorDescription(" + PropertyName + ")");
+            }
+        }
+
+        /// <summary>
+        /// Sky brightness at the observatory
+        /// </summary>
+        public double SkyBrightness
+        {
+            get
+            {
+                tl.LogMessage("SkyBrightness", "get - not implemented");
+                throw new PropertyNotImplementedException("SkyBrightness", false);
+            }
+        }
+
+        /// <summary>
+        /// Sky quality at the observatory
+        /// </summary>
+        public double SkyQuality
+        {
+            get
+            {
+                tl.LogMessage("SkyQuality", "get - not implemented");
+                throw new PropertyNotImplementedException("SkyQuality", false);
+            }
+        }
+
+        /// <summary>
+        /// Seeing at the observatory
+        /// </summary>
+        public double StarFWHM
+        {
+            get
+            {
+                tl.LogMessage("StarFWHM", "get - not implemented");
+                throw new PropertyNotImplementedException("StarFWHM", false);
+            }
+        }
+
+        /// <summary>
+        /// Sky temperature at the observatory in deg C
+        /// </summary>
+        public double SkyTemperature
+        {
+            get
+            {
+                tl.LogMessage("SkyTemperature", "get - not implemented");
+                throw new PropertyNotImplementedException("SkyTemperature", false);
+            }
+        }
+
+        /// <summary>
+        /// Temperature at the observatory in deg C
+        /// </summary>
+        public double Temperature
+        {
+            get
+            {
+                tl.LogMessage("Temperature", "get - not implemented");
+                throw new PropertyNotImplementedException("Temperature", false);
+            }
+        }
+
+        /// <summary>
+        /// Provides the time since the sensor value was last updated
+        /// </summary>
+        /// <param name="PropertyName">Name of the property whose time since last update Is required</param>
+        /// <returns>Time in seconds since the last sensor update for this property</returns>
+        /// <remarks>
+        /// PropertyName should be one of the sensor properties Or empty string to get
+        /// the last update of any parameter. A negative value indicates no valid value
+        /// ever received.
+        /// </remarks>
+        public double TimeSinceLastUpdate(string PropertyName)
+        {
+            tl.LogMessage("TimeSinceLastUpdate", PropertyName + " - not implemented");
+            throw new MethodNotImplementedException("TimeSinceLastUpdate(" + PropertyName + ")");
+        }
+
+        /// <summary>
+        /// Wind direction at the observatory in degrees
+        /// </summary>
+        /// <remarks>
+        /// 0..360.0, 360=N, 180=S, 90=E, 270=W. When there Is no wind the driver will
+        /// return a value of 0 for wind direction
+        /// </remarks>
+        public double WindDirection
+        {
+            get
+            {
+                tl.LogMessage("WindDirection", "get - not implemented");
+                throw new PropertyNotImplementedException("WindDirection", false);
+            }
+        }
+
+        /// <summary>
+        /// Peak 3 second wind gust at the observatory over the last 2 minutes in m/s
+        /// </summary>
+        public double WindGust
+        {
+            get
+            {
+                tl.LogMessage("WindGust", "get - not implemented");
+                throw new PropertyNotImplementedException("WindGust", false);
+            }
+        }
+
+        /// <summary>
+        /// Wind speed at the observatory in m/s
+        /// </summary>
+        public double WindSpeed
+        {
+            get
+            {
+                tl.LogMessage("WindSpeed", "get - not implemented");
+                throw new PropertyNotImplementedException("WindSpeed", false);
+            }
+        }
+
+        #endregion
+
+        #region private methods
+
+        #region calculate the gust strength as the largest wind recorded over the last two minutes
+
+        // save the time and wind speed values
+        private Dictionary<DateTime, double> winds = new Dictionary<DateTime, double>();
+
+        private double gustStrength;
+
+        private void UpdateGusts(double speed)
+        {
+            Dictionary<DateTime, double> newWinds = new Dictionary<DateTime, double>();
+            var last = DateTime.Now - TimeSpan.FromMinutes(2);
+            winds.Add(DateTime.Now, speed);
+            var gust = 0.0;
+            foreach (var item in winds)
+            {
+                if (item.Key > last)
+                {
+                    newWinds.Add(item.Key, item.Value);
+                    if (item.Value > gust)
+                        gust = item.Value;
+                }
+            }
+            gustStrength = gust;
+            winds = newWinds;
+        }
+
+        #endregion
+
+        private void LogMessage(string identifier, string message, params object[] args)
+        {
+            tl.LogMessage(identifier, string.Format(message, args));
         }
 
         #endregion
@@ -575,7 +609,7 @@ namespace ASCOM.Wise40
         {
             using (var P = new ASCOM.Utilities.Profile())
             {
-                P.DeviceType = "Dome";
+                P.DeviceType = "ObservingConditions";
                 if (bRegister)
                 {
                     P.Register(driverID, driverDescription);
@@ -666,9 +700,9 @@ namespace ASCOM.Wise40
         {
             using (Profile driverProfile = new Profile())
             {
-                driverProfile.DeviceType = "Dome";
-                traceState = Convert.ToBoolean(driverProfile.GetValue(driverID, traceStateProfileName, string.Empty, "false"));
-                debugger.Level = Convert.ToUInt32(driverProfile.GetValue(driverID, debugLevelProfileName, string.Empty, "0"));
+                driverProfile.DeviceType = "ObservingConditions";
+                traceState = Convert.ToBoolean(driverProfile.GetValue(driverID, traceStateProfileName, string.Empty, traceStateDefault));
+                comPort = driverProfile.GetValue(driverID, comPortProfileName, string.Empty, comPortDefault);
             }
         }
 
@@ -679,9 +713,9 @@ namespace ASCOM.Wise40
         {
             using (Profile driverProfile = new Profile())
             {
-                driverProfile.DeviceType = "Dome";
+                driverProfile.DeviceType = "ObservingConditions";
                 driverProfile.WriteValue(driverID, traceStateProfileName, traceState.ToString());
-                driverProfile.WriteValue(driverID, debugLevelProfileName, debugger.Level.ToString());
+                driverProfile.WriteValue(driverID, comPortProfileName, comPort.ToString());
             }
         }
 

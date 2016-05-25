@@ -4,8 +4,23 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 
+using ASCOM.Wise40.Common;
+
 namespace ASCOM.Wise40.Common
 {
+
+    public class ShortestDistanceResult
+    {
+        public Angle angle;
+        public Const.AxisDirection direction;
+
+        public ShortestDistanceResult(Angle a, Const.AxisDirection d)
+        {
+            angle = a;
+            direction = d;
+        }
+    };
+
     public class Angle
     {
         internal static Astrometry.AstroUtils.AstroUtils astroutils = new Astrometry.AstroUtils.AstroUtils();
@@ -236,6 +251,16 @@ namespace ASCOM.Wise40.Common
             return !(a1 == a2);
         }
 
+        public static bool operator <=(Angle a1, Angle a2)
+        {
+            return a1.Degrees <= a2.Degrees;
+        }
+
+        public static bool operator >=(Angle a1, Angle a2)
+        {
+            return a1.Degrees >= a2.Degrees;
+        }
+
         public static Angle Min(Angle a1, Angle a2)
         {
             if ((object)a1 == null || ((object)a2 == null))
@@ -271,17 +296,43 @@ namespace ASCOM.Wise40.Common
             return base.GetHashCode();
         }
 
-        public Tuple<Angle, Const.AxisDirection> ShortestDistance(Angle ang)
+        public ShortestDistanceResult ShortestDistance(Angle otherAngle)
         {
-            if (ang == this)
-                return new Tuple<Angle, Const.AxisDirection>(new Angle(0.0), Const.AxisDirection.None);
-            else if (ang > this)
-                return new Tuple<Angle, Const.AxisDirection>(ang - this, Const.AxisDirection.Increasing);
+            Angle incSide, decSide, smaller;
+            Const.AxisDirection dir;
+
+            Debugger debugger = new Debugger();
+            debugger.Level = 25;
+
+            if (otherAngle == this)
+                return new ShortestDistanceResult(Angle.zero, Const.AxisDirection.None);
+
+            if (otherAngle > this)
+            {
+                decSide = otherAngle - this;
+                incSide = this + (Angle.max - otherAngle);
+            }
             else
-                return new Tuple<Angle, Const.AxisDirection>(this - ang, Const.AxisDirection.Decreasing);
+            {
+                decSide = this - otherAngle;
+                incSide = otherAngle + (Angle.max - this);
+            }
+
+            if (incSide < decSide)
+            {
+                smaller = incSide;
+                dir = Const.AxisDirection.Decreasing;
+            } else
+            {
+                smaller = decSide;
+                dir = Const.AxisDirection.Increasing;
+            }
+            debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "ShortestDistance: from {4}, to {5}, ret: <{0}, {1}>, inc: {2}, dec: {3}", smaller, dir, incSide, decSide, this, otherAngle);
+            return new ShortestDistanceResult(smaller, dir);
         }
 
         public static readonly Angle zero = new Angle(0.0);
         public static readonly Angle invalid = new Angle(double.NaN);
+        public static readonly Angle max = new Angle(360.0);
     }
 }

@@ -932,9 +932,9 @@ namespace ASCOM.Wise40
                         cm.finalTargetAngle = new Angle(arg.declination);
                     }
 
-                    var tuple = cm.startingAngle.ShortestDistance(cm.finalTargetAngle);
-                    cm.deltaAngle = tuple.Item1;
-                    cm.direction = tuple.Item2;
+                    var shortest = cm.startingAngle.ShortestDistance(cm.finalTargetAngle);
+                    cm.deltaAngle = shortest.angle;
+                    cm.direction = shortest.direction;
 
                     debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "bgw: {3}: preliminary: startingAngle: {0}, deltangle: {1}, direction: {2}",
                         cm.startingAngle, cm.deltaAngle, cm.direction, axis);
