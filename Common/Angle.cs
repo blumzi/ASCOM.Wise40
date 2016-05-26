@@ -19,6 +19,12 @@ namespace ASCOM.Wise40.Common
             angle = a;
             direction = d;
         }
+
+        public ShortestDistanceResult()
+        {
+            angle = Angle.invalid;
+            direction = Const.AxisDirection.None;
+        }
     };
 
     public class Angle
@@ -298,8 +304,8 @@ namespace ASCOM.Wise40.Common
 
         public ShortestDistanceResult ShortestDistance(Angle other)
         {
-            Angle incSide, decSide, smaller;
-            Const.AxisDirection dir;
+            Angle incSide, decSide;
+            ShortestDistanceResult res = new ShortestDistanceResult();
 
             Debugger debugger = new Debugger();
             debugger.Level = 25;
@@ -320,15 +326,16 @@ namespace ASCOM.Wise40.Common
 
             if (incSide < decSide)
             {
-                smaller = incSide;
-                dir = Const.AxisDirection.Decreasing;
+                res.angle = incSide;
+                res.direction = Const.AxisDirection.Decreasing;
             } else
             {
-                smaller = decSide;
-                dir = Const.AxisDirection.Increasing;
+                res.angle = decSide;
+                res.direction = Const.AxisDirection.Increasing;
             }
-            debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "ShortestDistance: from {4}, to {5}, ret: <{0}, {1}>, inc: {2}, dec: {3}", smaller, dir, incSide, decSide, this, other);
-            return new ShortestDistanceResult(smaller, dir);
+
+            debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "ShortestDistance: from {0}, to {1}, ret: <{2}, {3}>", this, other, res.angle, res.direction);
+            return res;
         }
 
         public static readonly Angle zero = new Angle(0.0);
