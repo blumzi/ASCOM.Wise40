@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
+using System.Diagnostics;
 
 namespace ASCOM.Wise40.Common
 {
@@ -44,7 +45,7 @@ namespace ASCOM.Wise40.Common
                 DateTime now = DateTime.Now;
                 string msg = string.Format(fmt, o);
 
-                Console.WriteLine(string.Format("[{0}] {1}/{2}/{3} {4}: {5}: {6}",
+               System.Diagnostics.Debug.WriteLine(string.Format("[{0}] {1}/{2}/{3} {4}: {5}: {6}",
                     Thread.CurrentThread.ManagedThreadId,
                     now.Day, now.Month, now.Year, now.TimeOfDay,
                     level.ToString(),

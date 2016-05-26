@@ -177,8 +177,8 @@ namespace ASCOM.Wise40.Hardware
                 return false;
 
             ShortestDistanceResult shortest = Azimuth.ShortestDistance(there);
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "arriving here: {0}, there: {1}, dist: {3}, epsilon: {2}, ret: {4}",
-                Azimuth, there, shortest.angle, inertiaAngle(there), shortest.angle <= inertiaAngle(there));
+            //debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "arriving here: {0}, there: {1}, dist: {3}, epsilon: {2}, ret: {4}",
+            //    Azimuth, there, shortest.angle, inertiaAngle(there), shortest.angle <= inertiaAngle(there));
 
             return shortest.angle <= inertiaAngle(there);
         }
@@ -449,10 +449,9 @@ namespace ASCOM.Wise40.Hardware
             debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "FindHomePoint: reachedCalibrationPoint was Set()");
         }
 
-        public void SlewToAzimuth(double toAz)
+        public void SlewToAzimuth(double degrees)
         {
-            Const.AxisDirection dir;
-            Angle toAng = new Angle(toAz);
+            Angle toAng = new Angle(degrees);
 
             if (!Calibrated) {
                 debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "SlewToAzimuth: {0}, not calibrated, calling FindHomePoint", toAng);

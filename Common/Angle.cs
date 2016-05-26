@@ -296,7 +296,7 @@ namespace ASCOM.Wise40.Common
             return base.GetHashCode();
         }
 
-        public ShortestDistanceResult ShortestDistance(Angle otherAngle)
+        public ShortestDistanceResult ShortestDistance(Angle other)
         {
             Angle incSide, decSide, smaller;
             Const.AxisDirection dir;
@@ -304,18 +304,18 @@ namespace ASCOM.Wise40.Common
             Debugger debugger = new Debugger();
             debugger.Level = 25;
 
-            if (otherAngle == this)
+            if (other == this)
                 return new ShortestDistanceResult(Angle.zero, Const.AxisDirection.None);
 
-            if (otherAngle > this)
+            if (other > this)
             {
-                decSide = otherAngle - this;
-                incSide = this + (Angle.max - otherAngle);
+                decSide = other - this;
+                incSide = this + (Angle.max - other);
             }
             else
             {
-                decSide = this - otherAngle;
-                incSide = otherAngle + (Angle.max - this);
+                decSide = other + (Angle.max - this);
+                incSide = this - other;
             }
 
             if (incSide < decSide)
@@ -327,7 +327,7 @@ namespace ASCOM.Wise40.Common
                 smaller = decSide;
                 dir = Const.AxisDirection.Increasing;
             }
-            debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "ShortestDistance: from {4}, to {5}, ret: <{0}, {1}>, inc: {2}, dec: {3}", smaller, dir, incSide, decSide, this, otherAngle);
+            debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "ShortestDistance: from {4}, to {5}, ret: <{0}, {1}>, inc: {2}, dec: {3}", smaller, dir, incSide, decSide, this, other);
             return new ShortestDistanceResult(smaller, dir);
         }
 

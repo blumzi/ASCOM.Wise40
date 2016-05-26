@@ -34,10 +34,10 @@ namespace ASCOM.Wise40
             this.checkBoxTrace = new System.Windows.Forms.CheckBox();
             this.checkBoxDebug = new System.Windows.Forms.CheckBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.checkBoxDebugEncoders = new System.Windows.Forms.CheckBox();
-            this.checkBoxDebugExceptions = new System.Windows.Forms.CheckBox();
-            this.label1 = new System.Windows.Forms.Label();
             this.checkBoxDebugDevice = new System.Windows.Forms.CheckBox();
+            this.checkBoxDebugExceptions = new System.Windows.Forms.CheckBox();
+            this.checkBoxDebugEncoders = new System.Windows.Forms.CheckBox();
+            this.label1 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
@@ -120,15 +120,15 @@ namespace ASCOM.Wise40
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = " Debugged components ";
             // 
-            // checkBoxDebugEncoders
+            // checkBoxDebugDevice
             // 
-            this.checkBoxDebugEncoders.AutoSize = true;
-            this.checkBoxDebugEncoders.Location = new System.Drawing.Point(8, 40);
-            this.checkBoxDebugEncoders.Name = "checkBoxDebugEncoders";
-            this.checkBoxDebugEncoders.Size = new System.Drawing.Size(103, 17);
-            this.checkBoxDebugEncoders.TabIndex = 0;
-            this.checkBoxDebugEncoders.Text = "DebugEncoders";
-            this.checkBoxDebugEncoders.UseVisualStyleBackColor = true;
+            this.checkBoxDebugDevice.AutoSize = true;
+            this.checkBoxDebugDevice.Location = new System.Drawing.Point(8, 24);
+            this.checkBoxDebugDevice.Name = "checkBoxDebugDevice";
+            this.checkBoxDebugDevice.Size = new System.Drawing.Size(92, 17);
+            this.checkBoxDebugDevice.TabIndex = 2;
+            this.checkBoxDebugDevice.Text = "DebugDevice";
+            this.checkBoxDebugDevice.UseVisualStyleBackColor = true;
             // 
             // checkBoxDebugExceptions
             // 
@@ -140,6 +140,16 @@ namespace ASCOM.Wise40
             this.checkBoxDebugExceptions.Text = "DebugExceptions";
             this.checkBoxDebugExceptions.UseVisualStyleBackColor = true;
             // 
+            // checkBoxDebugEncoders
+            // 
+            this.checkBoxDebugEncoders.AutoSize = true;
+            this.checkBoxDebugEncoders.Location = new System.Drawing.Point(8, 40);
+            this.checkBoxDebugEncoders.Name = "checkBoxDebugEncoders";
+            this.checkBoxDebugEncoders.Size = new System.Drawing.Size(103, 17);
+            this.checkBoxDebugEncoders.TabIndex = 0;
+            this.checkBoxDebugEncoders.Text = "DebugEncoders";
+            this.checkBoxDebugEncoders.UseVisualStyleBackColor = true;
+            // 
             // label1
             // 
             this.label1.AutoSize = true;
@@ -148,16 +158,6 @@ namespace ASCOM.Wise40
             this.label1.Size = new System.Drawing.Size(132, 13);
             this.label1.TabIndex = 9;
             this.label1.Text = "Wise40 Dome driver setup";
-            // 
-            // checkBoxDebugDevice
-            // 
-            this.checkBoxDebugDevice.AutoSize = true;
-            this.checkBoxDebugDevice.Location = new System.Drawing.Point(8, 24);
-            this.checkBoxDebugDevice.Name = "checkBoxDebugDevice";
-            this.checkBoxDebugDevice.Size = new System.Drawing.Size(92, 17);
-            this.checkBoxDebugDevice.TabIndex = 2;
-            this.checkBoxDebugDevice.Text = "DebugDevice";
-            this.checkBoxDebugDevice.UseVisualStyleBackColor = true;
             // 
             // SetupDialogForm
             // 

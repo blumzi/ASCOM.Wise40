@@ -36,7 +36,11 @@ namespace AngleTests
 
             shortest = new Angle(315.0).ShortestDistance(new Angle(90.0));
             Assert.AreEqual(new Angle(135.0), shortest.angle, "315 -> 90");
-            Assert.AreEqual(Const.AxisDirection.Decreasing, shortest.direction, "315 -> 90");
+            Assert.AreEqual(Const.AxisDirection.Increasing, shortest.direction, "315 -> 90");
+
+            shortest = new Angle(315.0).ShortestDistance(new Angle(254.0));
+            Assert.AreEqual(new Angle(61.0), shortest.angle, "315 -> 254");
+            Assert.AreEqual(Const.AxisDirection.Decreasing, shortest.direction, "315 -> 254");
         }
     }
 }
