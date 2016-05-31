@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using MccDaq;
 using ASCOM.Utilities;
 using ASCOM.Wise40.Common;
+using ASCOM.Wise40;
 
 namespace ASCOM.Wise40.Hardware
 {
@@ -58,7 +59,9 @@ namespace ASCOM.Wise40.Hardware
         private Debugger debugger;
         private static AutoResetEvent reachedHomePoint = new AutoResetEvent(false);
 
-        public WiseDome()
+        private static AutoResetEvent _arrivedEvent;
+
+        public WiseDome(AutoResetEvent arrivedEvent)
         {
             debugger = new Debugger();
             using (Profile profile = new Profile())
@@ -78,10 +81,7 @@ namespace ASCOM.Wise40.Hardware
                 rightPin = new WisePin("DomeRight", Hardware.Instance.domeboard, DigitalPortType.FirstPortA, 3, DigitalPortDirection.DigitalOut);
 
                 homePin = new WisePin("DomeCalibration", Hardware.Instance.domeboard, DigitalPortType.FirstPortCL, 0, DigitalPortDirection.DigitalIn);
-                if (_simulated)
-                    ventPin = new WisePin("DomeVent", Hardware.Instance.teleboard, DigitalPortType.FirstPortCL, 1, DigitalPortDirection.DigitalOut);
-                else
-                    ventPin = new WisePin("DomeVent", Hardware.Instance.teleboard, DigitalPortType.ThirdPortCL, 0, DigitalPortDirection.DigitalOut);
+                ventPin = new WisePin("DomeVent", Hardware.Instance.teleboard, DigitalPortType.ThirdPortCL, 0, DigitalPortDirection.DigitalOut);
 
                 domeEncoder = new WiseDomeEncoder("DomeEncoder", debugger);
 
@@ -133,6 +133,8 @@ namespace ASCOM.Wise40.Hardware
             stuckTimer = new System.Timers.Timer(1000);  // runs every 1 second
             stuckTimer.Elapsed += onStuckTimer;
             stuckTimer.Enabled = false;
+
+            _arrivedEvent = arrivedEvent;
 
             debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "WiseDome constructor done.");
         }
@@ -189,6 +191,8 @@ namespace ASCOM.Wise40.Hardware
             {
                 Stop();
                 targetAz = null;
+                if (Slaved)
+                    _arrivedEvent.Set();
             }
 
             if (AtCaliPoint)

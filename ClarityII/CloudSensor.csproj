@@ -5,11 +5,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{00A10876-9B30-4D8A-A913-5FE57451F9EB}</ProjectGuid>
+    <ProjectGuid>{918D2F5B-9337-4378-8106-9F8468B34F54}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ASCOM.Vantage</RootNamespace>
-    <AssemblyName>ASCOM.Vantage.ObservingConditions</AssemblyName>
+    <RootNamespace>ASCOM.CloudSensor</RootNamespace>
+    <AssemblyName>ASCOM.ClarityII.ObservingConditions</AssemblyName>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <UpgradeBackupLocation>
@@ -90,6 +90,7 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
+    <Compile Include="SensorData.cs" />
     <Compile Include="SetupDialogForm.cs">
       <SubType>Form</SubType>
     </Compile>

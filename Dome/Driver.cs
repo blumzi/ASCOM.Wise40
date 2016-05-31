@@ -30,6 +30,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 using ASCOM;
 using ASCOM.Astrometry;
@@ -98,6 +99,8 @@ namespace ASCOM.Wise40
 
         private  WiseDome wisedome;
 
+        public AutoResetEvent arrived = new AutoResetEvent(false);
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Wise40Hardware"/> class.
         /// Must be public for COM registration.
@@ -114,7 +117,8 @@ namespace ASCOM.Wise40
             connectedState = false; // Initialise connected to false
             utilities = new Util(); //Initialise util object
             astroUtilities = new AstroUtils(); // Initialise astro utilities object
-            wisedome = new WiseDome(); // Initialise Wise40 dome
+
+            wisedome = new WiseDome(arrived); // Initialise Wise40 dome
 
             tl.LogMessage("Dome", "Completed initialisation");
         }
@@ -553,6 +557,19 @@ namespace ASCOM.Wise40
 
             tl.LogMessage("SyncToAzimuth", ang.ToString());
             wisedome.Azimuth = ang;
+        }
+
+        public uint debugLevel
+        {
+            get
+            {
+                return debugger.Level;
+            }
+
+            set
+            {
+                debugger.Level = value;
+            }
         }
 
         #endregion

@@ -116,7 +116,6 @@ namespace ASCOM.Wise40
         public WisePin TrackPin;
         public WiseVirtualMotor NorthMotor, SouthMotor, EastMotor, WestMotor, TrackMotor;
 
-        //private bool _tracking = false;
         private bool _slewing = false;
         private bool _atPark;
 
@@ -309,7 +308,6 @@ namespace ASCOM.Wise40
             WisePin SlewPin = null;
             WisePin NorthGuidePin = null, SouthGuidePin = null, EastGuidePin = null, WestGuidePin = null;   // Guide motor activation pins
             WisePin NorthPin = null, SouthPin = null, EastPin = null, WestPin = null;                       // Set and Slew motors activation pinsisInitialized = true;
-
 
             debugger = new Debugger();
             T.ReadProfile();
@@ -902,7 +900,7 @@ namespace ASCOM.Wise40
             //
             foreach (double rate in rates)
             {
-                if (simulated && rate == Const.rateGuide)     // TODO: Major fuckup
+                if (simulated && (rate == Const.rateSet || rate == Const.rateGuide))     // TODO: Major fuckup <=================================
                     break;
                 //
                 // Phase #1

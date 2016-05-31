@@ -1,6 +1,6 @@
 namespace ASCOM.Wise40
 {
-    partial class SetupDialogForm
+    partial class TelescopeSetupDialogForm
     {
         /// <summary>
         /// Required designer variable.
@@ -36,11 +36,13 @@ namespace ASCOM.Wise40
             this.acuracyLabel = new System.Windows.Forms.Label();
             this.traceBox = new System.Windows.Forms.CheckBox();
             this.groupBoxDebugging = new System.Windows.Forms.GroupBox();
-            this.checkBoxDebugging = new System.Windows.Forms.CheckBox();
-            this.checkBoxDebugEncoders = new System.Windows.Forms.CheckBox();
-            this.checkBoxDebugAxes = new System.Windows.Forms.CheckBox();
-            this.checkBoxDebugMotors = new System.Windows.Forms.CheckBox();
+            this.checkBoxDebugDevice = new System.Windows.Forms.CheckBox();
             this.checkBoxDebugExceptions = new System.Windows.Forms.CheckBox();
+            this.checkBoxDebugMotors = new System.Windows.Forms.CheckBox();
+            this.checkBoxDebugAxes = new System.Windows.Forms.CheckBox();
+            this.checkBoxDebugEncoders = new System.Windows.Forms.CheckBox();
+            this.checkBoxDebugging = new System.Windows.Forms.CheckBox();
+            this.checkBoxEnslaveDome = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).BeginInit();
             this.groupBoxDebugging.SuspendLayout();
             this.SuspendLayout();
@@ -51,7 +53,7 @@ namespace ASCOM.Wise40
             this.cmdOK.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.cmdOK.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.cmdOK.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.cmdOK.Location = new System.Drawing.Point(248, 182);
+            this.cmdOK.Location = new System.Drawing.Point(248, 201);
             this.cmdOK.Name = "cmdOK";
             this.cmdOK.Size = new System.Drawing.Size(59, 24);
             this.cmdOK.TabIndex = 0;
@@ -65,7 +67,7 @@ namespace ASCOM.Wise40
             this.cmdCancel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.cmdCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.cmdCancel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.cmdCancel.Location = new System.Drawing.Point(248, 214);
+            this.cmdCancel.Location = new System.Drawing.Point(248, 233);
             this.cmdCancel.Name = "cmdCancel";
             this.cmdCancel.Size = new System.Drawing.Size(59, 25);
             this.cmdCancel.TabIndex = 1;
@@ -128,22 +130,73 @@ namespace ASCOM.Wise40
             // 
             // groupBoxDebugging
             // 
+            this.groupBoxDebugging.Controls.Add(this.checkBoxDebugDevice);
             this.groupBoxDebugging.Controls.Add(this.checkBoxDebugExceptions);
             this.groupBoxDebugging.Controls.Add(this.checkBoxDebugMotors);
             this.groupBoxDebugging.Controls.Add(this.checkBoxDebugAxes);
             this.groupBoxDebugging.Controls.Add(this.checkBoxDebugEncoders);
             this.groupBoxDebugging.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBoxDebugging.Location = new System.Drawing.Point(88, 142);
+            this.groupBoxDebugging.Location = new System.Drawing.Point(88, 144);
             this.groupBoxDebugging.Name = "groupBoxDebugging";
-            this.groupBoxDebugging.Size = new System.Drawing.Size(144, 96);
+            this.groupBoxDebugging.Size = new System.Drawing.Size(144, 114);
             this.groupBoxDebugging.TabIndex = 12;
             this.groupBoxDebugging.TabStop = false;
             this.groupBoxDebugging.Text = " Debugged components";
             // 
+            // checkBoxDebugDevice
+            // 
+            this.checkBoxDebugDevice.AutoSize = true;
+            this.checkBoxDebugDevice.Location = new System.Drawing.Point(8, 24);
+            this.checkBoxDebugDevice.Name = "checkBoxDebugDevice";
+            this.checkBoxDebugDevice.Size = new System.Drawing.Size(60, 17);
+            this.checkBoxDebugDevice.TabIndex = 4;
+            this.checkBoxDebugDevice.Text = "Device";
+            this.checkBoxDebugDevice.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxDebugExceptions
+            // 
+            this.checkBoxDebugExceptions.AutoSize = true;
+            this.checkBoxDebugExceptions.Location = new System.Drawing.Point(8, 88);
+            this.checkBoxDebugExceptions.Name = "checkBoxDebugExceptions";
+            this.checkBoxDebugExceptions.Size = new System.Drawing.Size(78, 17);
+            this.checkBoxDebugExceptions.TabIndex = 3;
+            this.checkBoxDebugExceptions.Text = "Exceptions";
+            this.checkBoxDebugExceptions.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxDebugMotors
+            // 
+            this.checkBoxDebugMotors.AutoSize = true;
+            this.checkBoxDebugMotors.Location = new System.Drawing.Point(8, 72);
+            this.checkBoxDebugMotors.Name = "checkBoxDebugMotors";
+            this.checkBoxDebugMotors.Size = new System.Drawing.Size(58, 17);
+            this.checkBoxDebugMotors.TabIndex = 2;
+            this.checkBoxDebugMotors.Text = "Motors";
+            this.checkBoxDebugMotors.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxDebugAxes
+            // 
+            this.checkBoxDebugAxes.AutoSize = true;
+            this.checkBoxDebugAxes.Location = new System.Drawing.Point(8, 56);
+            this.checkBoxDebugAxes.Name = "checkBoxDebugAxes";
+            this.checkBoxDebugAxes.Size = new System.Drawing.Size(49, 17);
+            this.checkBoxDebugAxes.TabIndex = 1;
+            this.checkBoxDebugAxes.Text = "Axes";
+            this.checkBoxDebugAxes.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxDebugEncoders
+            // 
+            this.checkBoxDebugEncoders.AutoSize = true;
+            this.checkBoxDebugEncoders.Location = new System.Drawing.Point(8, 40);
+            this.checkBoxDebugEncoders.Name = "checkBoxDebugEncoders";
+            this.checkBoxDebugEncoders.Size = new System.Drawing.Size(71, 17);
+            this.checkBoxDebugEncoders.TabIndex = 0;
+            this.checkBoxDebugEncoders.Text = "Encoders";
+            this.checkBoxDebugEncoders.UseVisualStyleBackColor = true;
+            // 
             // checkBoxDebugging
             // 
             this.checkBoxDebugging.AutoSize = true;
-            this.checkBoxDebugging.Location = new System.Drawing.Point(24, 142);
+            this.checkBoxDebugging.Location = new System.Drawing.Point(24, 147);
             this.checkBoxDebugging.Name = "checkBoxDebugging";
             this.checkBoxDebugging.Size = new System.Drawing.Size(58, 17);
             this.checkBoxDebugging.TabIndex = 13;
@@ -151,52 +204,23 @@ namespace ASCOM.Wise40
             this.checkBoxDebugging.UseVisualStyleBackColor = true;
             this.checkBoxDebugging.CheckedChanged += new System.EventHandler(this.checkBoxDebugging_CheckedChanged);
             // 
-            // checkBoxDebugEncoders
+            // checkBoxEnslaveDome
             // 
-            this.checkBoxDebugEncoders.AutoSize = true;
-            this.checkBoxDebugEncoders.Location = new System.Drawing.Point(8, 24);
-            this.checkBoxDebugEncoders.Name = "checkBoxDebugEncoders";
-            this.checkBoxDebugEncoders.Size = new System.Drawing.Size(71, 17);
-            this.checkBoxDebugEncoders.TabIndex = 0;
-            this.checkBoxDebugEncoders.Text = "Encoders";
-            this.checkBoxDebugEncoders.UseVisualStyleBackColor = true;
+            this.checkBoxEnslaveDome.AutoSize = true;
+            this.checkBoxEnslaveDome.Location = new System.Drawing.Point(24, 128);
+            this.checkBoxEnslaveDome.Name = "checkBoxEnslaveDome";
+            this.checkBoxEnslaveDome.Size = new System.Drawing.Size(93, 17);
+            this.checkBoxEnslaveDome.TabIndex = 14;
+            this.checkBoxEnslaveDome.Text = "Enslave dome";
+            this.checkBoxEnslaveDome.UseVisualStyleBackColor = true;
             // 
-            // checkBoxDebugAxes
-            // 
-            this.checkBoxDebugAxes.AutoSize = true;
-            this.checkBoxDebugAxes.Location = new System.Drawing.Point(8, 40);
-            this.checkBoxDebugAxes.Name = "checkBoxDebugAxes";
-            this.checkBoxDebugAxes.Size = new System.Drawing.Size(49, 17);
-            this.checkBoxDebugAxes.TabIndex = 1;
-            this.checkBoxDebugAxes.Text = "Axes";
-            this.checkBoxDebugAxes.UseVisualStyleBackColor = true;
-            // 
-            // checkBoxDebugMotors
-            // 
-            this.checkBoxDebugMotors.AutoSize = true;
-            this.checkBoxDebugMotors.Location = new System.Drawing.Point(8, 56);
-            this.checkBoxDebugMotors.Name = "checkBoxDebugMotors";
-            this.checkBoxDebugMotors.Size = new System.Drawing.Size(58, 17);
-            this.checkBoxDebugMotors.TabIndex = 2;
-            this.checkBoxDebugMotors.Text = "Motors";
-            this.checkBoxDebugMotors.UseVisualStyleBackColor = true;
-            // 
-            // checkBoxDebugExceptions
-            // 
-            this.checkBoxDebugExceptions.AutoSize = true;
-            this.checkBoxDebugExceptions.Location = new System.Drawing.Point(8, 72);
-            this.checkBoxDebugExceptions.Name = "checkBoxDebugExceptions";
-            this.checkBoxDebugExceptions.Size = new System.Drawing.Size(78, 17);
-            this.checkBoxDebugExceptions.TabIndex = 3;
-            this.checkBoxDebugExceptions.Text = "Exceptions";
-            this.checkBoxDebugExceptions.UseVisualStyleBackColor = true;
-            // 
-            // SetupDialogForm
+            // TelescopeSetupDialogForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.ClientSize = new System.Drawing.Size(321, 251);
+            this.ClientSize = new System.Drawing.Size(321, 268);
+            this.Controls.Add(this.checkBoxEnslaveDome);
             this.Controls.Add(this.groupBoxDebugging);
             this.Controls.Add(this.checkBoxDebugging);
             this.Controls.Add(this.traceBox);
@@ -210,7 +234,7 @@ namespace ASCOM.Wise40
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
-            this.Name = "SetupDialogForm";
+            this.Name = "TelescopeSetupDialogForm";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Wise40 Setup";
@@ -237,5 +261,7 @@ namespace ASCOM.Wise40
         private System.Windows.Forms.CheckBox checkBoxDebugging;
         private System.Windows.Forms.CheckBox checkBoxDebugMotors;
         private System.Windows.Forms.CheckBox checkBoxDebugExceptions;
+        private System.Windows.Forms.CheckBox checkBoxDebugDevice;
+        private System.Windows.Forms.CheckBox checkBoxEnslaveDome;
     }
 }

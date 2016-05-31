@@ -72,15 +72,16 @@ namespace ASCOM.Wise40
         /// </summary>
         private static string driverDescription = "Wise40 Telescope";
 
-        internal static bool _trace;
+        public bool _trace;
 
         internal static string debugLevelProfileName = "Debug Level";
         internal static string astrometricAccuracyProfileName = "Astrometric accuracy";
         internal static string traceStateProfileName = "Trace";
+        internal static string enslaveDomeProfileName = "Enslave Dome";
         /// <summary>
         /// Private variable to hold the connected state
         /// </summary>
-        private bool connectedState;
+        private bool _connected;
 
         /// <summary>
         /// Private variable to hold an ASCOM Utilities object
@@ -92,6 +93,8 @@ namespace ASCOM.Wise40
         /// </summary>
         private AstroUtils astroUtils;
 
+        private Astrometry.NOVAS.NOVAS31 novas31 = new Astrometry.NOVAS.NOVAS31();
+
         /// <summary>
         /// Private variable to hold the trace logger object (creates a diagnostic log file with information that you specify)
         /// </summary>
@@ -100,6 +103,9 @@ namespace ASCOM.Wise40
         public HandpadForm handpad;
 
         private bool driverInitiatedSlewing = false;
+
+        public bool _enslaveDome = false;
+        private DomeSlaveDriver domeSlaveDriver;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Wise40"/> class.
@@ -113,11 +119,16 @@ namespace ASCOM.Wise40
             tl.Enabled = _trace;
             tl.LogMessage("Telescope", "Starting initialisation");
 
-            connectedState = false; // Initialise connected to false
+            _connected = false; // Initialise connected to false
             util = new Util(); //Initialise util object
             astroUtils = new AstroUtils(); // Initialise astro utilities object
 
             WiseTele.Instance.init(this);
+            if (_enslaveDome)
+            {
+                domeSlaveDriver = new DomeSlaveDriver();
+                domeSlaveDriver.debugLevel = WiseTele.Instance.debugger.Level;
+            }
 
             tl.LogMessage("Telescope", "Completed initialisation");
         }
@@ -143,7 +154,7 @@ namespace ASCOM.Wise40
                 handpad = new HandpadForm();
                 handpad.ShowDialog();
             } else
-                using (SetupDialogForm F = new SetupDialogForm(this))
+                using (TelescopeSetupDialogForm F = new TelescopeSetupDialogForm(this))
                 {
                     var result = F.ShowDialog();
                     if (result == System.Windows.Forms.DialogResult.OK)
@@ -225,7 +236,9 @@ namespace ASCOM.Wise40
                     return;
 
                 WiseTele.Instance.Connect(value);
-                connectedState = value;
+                _connected = value;
+                if (_enslaveDome)
+                    domeSlaveDriver.Connect(value);
             }
         }
 
@@ -669,7 +682,9 @@ namespace ASCOM.Wise40
         {
             tl.LogMessage("Park", "");
 
+            if (_enslaveDome) domeSlaveDriver.SlewToParkStart();
             WiseTele.Instance.Park();
+            if (_enslaveDome) domeSlaveDriver.SlewWait();
         }
 
         public void PulseGuide(GuideDirections Direction, int Duration)
@@ -826,6 +841,8 @@ namespace ASCOM.Wise40
                 throw new InvalidValueException("Not safe to SlewToCoordinates({0}, {1})", RightAscension.ToString(), Declination.ToString());
 
             tl.LogMessage("SlewToCoordinates", string.Format("ra: {0}, dec: {0}", RightAscension, Declination));
+
+            if (_enslaveDome) domeSlaveDriver.SlewStartAsync(RightAscension, Declination);
             WiseTele.Instance.SlewToCoordinatesSync(RightAscension, Declination);
         }
 
@@ -845,6 +862,8 @@ namespace ASCOM.Wise40
 
             driverInitiatedSlewing = true;
             tl.LogMessage("SlewToCoordinatesAsync", string.Format("ra: {0}, dec: {0}", RightAscension, Declination));
+
+            if (_enslaveDome) domeSlaveDriver.SlewStartAsync(RightAscension, Declination);
             WiseTele.Instance.SlewToCoordinatesAsync(RightAscension, Declination);
         }
 
@@ -864,7 +883,10 @@ namespace ASCOM.Wise40
 
             driverInitiatedSlewing = true;
             tl.LogMessage("SlewToTarget", string.Format("ra: {0}, dec: {0}", TargetRightAscension, TargetDeclination));
+
+            if (_enslaveDome) domeSlaveDriver.SlewStartAsync(TargetRightAscension, TargetDeclination);
             WiseTele.Instance.SlewToCoordinatesSync(TargetRightAscension, TargetDeclination);
+            if (_enslaveDome) domeSlaveDriver.SlewWait();
         }
 
         public void SlewToTargetAsync()
@@ -879,7 +901,9 @@ namespace ASCOM.Wise40
                 throw new InvalidValueException("Not safe to SlewToTargetAsync({0}, {1})", TargetRightAscension.ToString(), TargetDeclination.ToString());
 
             driverInitiatedSlewing = true;
+
             tl.LogMessage("SlewToTargetAsync", "Started");
+            if (_enslaveDome) domeSlaveDriver.SlewStartAsync(TargetRightAscension, TargetDeclination);
             WiseTele.Instance.SlewToTargetAsync();
         }
 
@@ -887,7 +911,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                bool slewing = WiseTele.Instance.Slewing;
+                bool slewing = WiseTele.Instance.Slewing || (_enslaveDome && domeSlaveDriver.Slewing);
 
                 tl.LogMessage("Slewing Get", slewing.ToString());
                 return slewing;
@@ -1095,7 +1119,7 @@ namespace ASCOM.Wise40
             get
             {
                 // TODO check that the driver hardware connection exists and is connected to the hardware
-                return connectedState;
+                return _connected;
             }
         }
 
@@ -1123,6 +1147,7 @@ namespace ASCOM.Wise40
                 WiseTele.Instance.debugger.Level = Convert.ToUInt32(driverProfile.GetValue(driverID, debugLevelProfileName, string.Empty, "0"));
                 WiseSite.Instance.astrometricAccuracy = driverProfile.GetValue(driverID, astrometricAccuracyProfileName, string.Empty, "Full") == "Full" ?
                     Accuracy.Full : Accuracy.Reduced;
+                _enslaveDome = Convert.ToBoolean(driverProfile.GetValue(driverID, enslaveDomeProfileName, string.Empty, "true"));
             }
         }
 
@@ -1137,6 +1162,7 @@ namespace ASCOM.Wise40
                 driverProfile.WriteValue(driverID, traceStateProfileName, _trace.ToString());
                 driverProfile.WriteValue(driverID, astrometricAccuracyProfileName, WiseSite.Instance.astrometricAccuracy == Accuracy.Full ? "Full" : "Reduced");
                 driverProfile.WriteValue(driverID, debugLevelProfileName, WiseTele.Instance.debugger.Level.ToString());
+                driverProfile.WriteValue(driverID, enslaveDomeProfileName, _enslaveDome.ToString());
             }
         }
 
