@@ -124,15 +124,18 @@ namespace ASCOM.Wise40.Hardware
                 if (!simulated)
                 {
                     List<uint> daqValues;
-                    uint worm, axis;
+                    uint worm, axis, val;
 
                     daqValues = wormAtomicReader.Values;
-                    worm = (daqValues[1] << 8) | daqValues[0];
+                    worm = ((daqValues[1] & 0x000f) << 8) | daqValues[0];       // ((SecondPortCL & 0x000f) << 8) | FirstPortA
 
                     daqValues = axisAtomicReader.Values;
-                    axis = (daqValues[0] >> 4) | (daqValues[1] << 4);
+                    axis = ((daqValues[0] & 0xff) >> 4) | (daqValues[1] << 4);  // ((SecondPortB & 0xff) >> 4) | (SecondPortA << 4)
 
-                    return ((axis * 600 + worm) & 0xfff000) + worm;
+                    // DecEnc:= ((DecAxisEnc * 600 + DecWormEnc) AND $FFF000) -DecWormEnc; //MASK lower 12 bits of DecAxisDAC
+                    // Dec_Enc:= DecEnc * 2.5566346464760687161968126491532e-6;  //2*pi/600/4096
+                    val = ((axis * 600 + worm) & 0xfff000) - worm;
+                    return (uint) (val * (2 * Math.PI / 600 / 4096));
                 }
                 return _value;
             }

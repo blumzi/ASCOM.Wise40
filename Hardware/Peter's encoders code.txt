@@ -1,0 +1,36 @@
+﻿  BAP0 := DataValue3A;
+  BAP1 := DataValue4CL;
+  BAP2 := DataValue4B;
+  BAP3 := DataValue4A;
+
+//Read Two Dec Encoders from four Prots:
+//  ULStat := cbDIn (BoardNum, FIRSTPORTA,   DataValue1A);   {read FIRSTPORTA}
+//  ULStat := cbDIn (BoardNum, SECONDPORTCL, DataValue2CL);  {read SECONDPORTCL}
+//  ULStat := cbDIn (BoardNum, SECONDPORTB,  DataValue2B);   {read SECONDPORTB}
+//  ULStat := cbDIn (BoardNum, SECONDPORTA,  DataValue2A);   {read SECONDPORTA}
+
+  BBP0 := DataValue1A;
+  BBP1 := DataValue2CL;
+  BBP2 := DataValue2B;
+  BBP3 := DataValue2A;
+
+  HAWormEnc := (BAP1 AND $000F)*$100 + BAP0;
+  HAAxisEnc := ((BAP2 AND $00FF) div $10) + ($10*BAP3);
+  HAEnc     :=  ( (HAAxisEnc*720-HAWormEnc) AND $FFF000) + HAWormEnc; //MASK lower 12 bits of HAEnc to be determined by HAWormEnc
+  HA_Enc := HAEnc*2.1305288720633905968306772076277e-6;  //2*pi/720/4096
+  HA := HA_Enc + HACorrection;
+
+//DecWormDAC is 12bit: lower nibble of boardAport0+ boardAport1
+  DecWormEnc := (BBP1 AND $000F)*$100 + BBP0;
+  DecAxisEnc := ((BBP2 AND $00FF) div $10) + ($10*BBP3); //missing 4140 div 16
+  DecEnc     :=  ( (DecAxisEnc*600 +DecWormEnc) AND $FFF000) - DecWormEnc; //MASK lower 12 bits of DecAxisDAC
+  Dec_Enc := DecEnc*2.5566346464760687161968126491532e-6;  //2*pi/600/4096
+  Dec := Dec_Enc+DecCorrection;
+  if (Dec > pi) then
+    Dec := Dec - pi2;
+
+ // correction from a matrix which will give the shifts for
+ // every HA (above)  and  Dec (below) - this is in addition to the HACorrection and DecCorrection
+  CalcCorrected_HA_dec(HA, dec, HA_Corrected, dec_Corrected);
+  HA := HA_Corrected + tiTeleIni.HA_Calibration ;
+  dec := dec_Corrected + tiTeleIni.Dec_Calibration ;
