@@ -6,6 +6,8 @@ using System.Runtime.InteropServices;
 using ASCOM.DeviceInterface;
 using System.Collections;
 
+using ASCOM.Wise40.Common;
+
 namespace ASCOM.Wise40
 {
     #region Rate class
@@ -99,17 +101,17 @@ namespace ASCOM.Wise40
                     // TODO Initialize this array with any Primary axis rates that your driver may provide
                     // Example: m_Rates = new Rate[] { new Rate(10.5, 30.2), new Rate(54.0, 43.6) }
                     this.rates = new Rate[] {
-                        new Rate(WiseTele.rateGuide, WiseTele.rateGuide),
-                        new Rate(WiseTele.rateSet, WiseTele.rateSet),
-                        new Rate(WiseTele.rateSlew, WiseTele.rateSlew),
+                        new Rate(Const.rateGuide, Const.rateGuide),
+                        new Rate(Const.rateSet, Const.rateSet),
+                        new Rate(Const.rateSlew, Const.rateSlew),
                     };
                     break;
                 case TelescopeAxes.axisSecondary:
                     // TODO Initialize this array with any Secondary axis rates that your driver may provide
                     this.rates = new Rate[] {
-                        new Rate(WiseTele.rateGuide, WiseTele.rateGuide),
-                        new Rate(WiseTele.rateSet, WiseTele.rateSet),
-                        new Rate(WiseTele.rateSlew, WiseTele.rateSlew),
+                        new Rate(Const.rateGuide, Const.rateGuide),
+                        new Rate(Const.rateSet, Const.rateSet),
+                        new Rate(Const.rateSlew, Const.rateSlew),
                      };
                     break;
                 case TelescopeAxes.axisTertiary:
@@ -128,7 +130,7 @@ namespace ASCOM.Wise40
 
         public void Dispose()
         {
-            throw new System.NotImplementedException();
+            return;
         }
 
         public IEnumerator GetEnumerator()

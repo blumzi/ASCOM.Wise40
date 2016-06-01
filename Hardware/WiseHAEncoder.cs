@@ -17,8 +17,9 @@ namespace ASCOM.Wise40.Hardware
         private bool _simulated = false;
         private bool _connected = false;
         private string _name;
-        private uint _value;
-        
+        private uint _daqsValue;
+        //private uint _value_at_fiducial_point = 1433418;
+
         private AtomicReader wormAtomicReader, axisAtomicReader;
 
         private Astrometry.NOVAS.NOVAS31 Novas31;
@@ -28,6 +29,8 @@ namespace ASCOM.Wise40.Hardware
 
         const double HaMultiplier = 2 * Math.PI / 720 / 4096;
         const double HaCorrection = -3.063571542;                   // 20081231: Shai Kaspi
+
+        private Common.Debugger debugger = new Debugger();
 
         public WiseHAEncoder(string name)
         {
@@ -71,14 +74,20 @@ namespace ASCOM.Wise40.Hardware
             }
             _name = name;
 
-            _angle = simulated ? Angle.FromDeg(0.0) : Angle.FromRad((Value * HaMultiplier) + HaCorrection); 
+            _angle = simulated ? new Angle("00:00:00.0") : Angle.FromRad((Value * HaMultiplier) + HaCorrection);
+
+            using (ASCOM.Utilities.Profile driverProfile = new ASCOM.Utilities.Profile())
+            {
+                driverProfile.DeviceType = "Telescope";
+                debugger.Level = Convert.ToUInt32(driverProfile.GetValue("ASCOM.Wise40.Telescope", "Debug Level", string.Empty, "0"));
+            }
         }
 
         /// <summary>
         /// Reads the axis and worm encoders
         /// </summary>
         /// <returns>Combined Daq values</returns>
-        public UInt32 Value
+        public uint Value
         {
             get {
                 if (! simulated)
@@ -88,21 +97,21 @@ namespace ASCOM.Wise40.Hardware
 
                     daqValues = wormAtomicReader.Values;
                     worm = (daqValues[1] << 8) | daqValues[0];
-                    //Console.WriteLine("HA worm: {0}", worm);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "HA worm: {0}", worm);
 
                     daqValues = axisAtomicReader.Values;
                     axis = (daqValues[0] >> 4) | (daqValues[1] << 4);
-                    //Console.WriteLine("HA axis: {0}", axis);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "HA axis: {0}", axis);
 
-                    _value = ((axis * 720 - worm) & 0xfff000) + worm;
+                    _daqsValue = ((axis * 720 - worm) & 0xfff000) + worm;
                 }
-                return _value;
+                return _daqsValue;
             }
 
             set
             {
                 if (simulated)
-                    _value = value;
+                    _daqsValue = value;
             }
         }
 
@@ -128,17 +137,23 @@ namespace ASCOM.Wise40.Hardware
             get
             {
                 if (!simulated)
-                    _angle.Radians = (_value * HaMultiplier) + HaCorrection;
+                    _angle.Radians = (_daqsValue * HaMultiplier) + HaCorrection;
 
-                return astroutils.ConditionHA(_angle.Degrees);
+                return Angle.Degrees;
             }
 
             set
             {
+                double before = _angle.Degrees;
                 _angle.Degrees = value;
+                double after = _angle.Degrees;
+                double delta = after - before;
+
                 if (simulated)
                 {
-                    _value = (uint)((_angle.Radians + HaCorrection) / HaMultiplier);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "{0}: ({1} {2} {3}) {4} {5} {6}",
+                        name, before.ToString(), delta.ToString(), after.ToString(), new Angle(before), new Angle(delta), new Angle(after));
+                    _daqsValue = (uint)((_angle.Radians + HaCorrection) / HaMultiplier);
                 }
             }
         }
@@ -147,7 +162,7 @@ namespace ASCOM.Wise40.Hardware
         {
             get
             {
-                return astroutils.ConditionRA(WiseSite.Instance.LocalSiderealTime - Degrees);
+                return WiseSite.Instance.LocalSiderealTime - Degrees;
             }
         }
 

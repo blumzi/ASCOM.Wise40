@@ -89,13 +89,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Const.cs" />
     <Compile Include="DaqsForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="DaqsForm.Designer.cs">
       <DependentUpon>DaqsForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="DomeSlaveDriver.cs" />
     <Compile Include="Driver.cs" />
     <Compile Include="Handpad.cs">
       <SubType>Form</SubType>
@@ -103,7 +103,6 @@
     <Compile Include="Handpad.Designer.cs">
       <DependentUpon>Handpad.cs</DependentUpon>
     </Compile>
-    <Compile Include="MeasuredMovement.cs" />
     <Compile Include="Movement.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
@@ -178,6 +177,10 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Dome\Dome.csproj">
+      <Project>{64308775-bd4a-469c-bcab-3ed830b811af}</Project>
+      <Name>Dome</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Hardware\Hardware.csproj">
       <Project>{b3400ce2-9b66-4f0c-97fe-26343382ba7b}</Project>
       <Name>Hardware</Name>

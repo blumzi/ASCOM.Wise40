@@ -63,5 +63,14 @@ namespace ASCOM.Wise40.Common
                                                                     //      1 min | 6.71018×10^-4 lunar days
                                                                     //      1 h   | 0.0402611 lunar days
                                                                     //      1 day | 0.966267 lunar days
+
+        public enum CardinalDirection { North = 0, East = 1, South = 2, West = 3 };
+        public enum AxisDirection { None = 0, Increasing = 1, Decreasing = -1 };
+
+        public const double rateSlew = 2.0;                           // two degrees/sec
+        public const double rateSet = 1.0 / 60;                       // one minute/sec
+        public const double rateGuide = rateSet / 60;                 // one second/sec
+        public const double rateTrack = TRACKRATE_SIDEREAL;           // sidereal rate
+        public const double rateStopped = 0.0;
     }
 }

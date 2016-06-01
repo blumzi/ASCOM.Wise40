@@ -7,25 +7,41 @@ using System.Text;
 using System.Windows.Forms;
 using ASCOM.Utilities;
 
+using ASCOM.Wise40.Common;
+
 namespace ASCOM.Wise40
 {
     [ComVisible(false)]					// Form not registered for COM!
     public partial class SetupDialogForm : Form
     {
-        public SetupDialogForm()
+        private Dome _dome;
+
+        public SetupDialogForm(Dome dome)
         {
+            _dome = dome;
             InitializeComponent();
-            // Initialise current values of user settings from the ASCOM Profile 
-            chkTrace.Checked = Dome.traceState;
-            chkSimulate.Checked = Dome.simulateState;
+
+            _dome.ReadProfile();
+            checkBoxTrace.Checked = _dome.traceState;
+            checkBoxDebug.Checked = (_dome.debugger.Level != 0);
+            checkBoxDebugDevice.Checked = _dome.debugger.Debugging(Debugger.DebugLevel.DebugDevice);
+            checkBoxDebugEncoders.Checked = _dome.debugger.Debugging(Debugger.DebugLevel.DebugEncoders);
+            checkBoxDebugExceptions.Checked = _dome.debugger.Debugging(Debugger.DebugLevel.DebugExceptions);
         }
 
         private void cmdOK_Click(object sender, EventArgs e) // OK button event handler
         {
-            // Place any validation constraint checks here
+            _dome.traceState = checkBoxTrace.Checked;
 
-            Dome.simulateState = chkSimulate.Checked; // Update the state variables with results from the dialogue
-            Dome.traceState = chkTrace.Checked;
+            uint level = 0;
+            if (checkBoxDebug.Checked)
+            {
+                if (checkBoxDebugDevice.Checked) level |= (uint)Debugger.DebugLevel.DebugDevice;
+                if (checkBoxDebugEncoders.Checked) level |= (uint)Debugger.DebugLevel.DebugEncoders;
+                if (checkBoxDebugExceptions.Checked) level |= (uint)Debugger.DebugLevel.DebugExceptions;
+            }
+            _dome.debugger.Level = level;
+            _dome.WriteProfile();
         }
 
         private void cmdCancel_Click(object sender, EventArgs e) // Cancel button event handler
@@ -48,6 +64,15 @@ namespace ASCOM.Wise40
             {
                 MessageBox.Show(other.Message);
             }
+        }
+
+        private void checkBoxDebug_CheckedChanged(object sender, EventArgs e)
+        {
+            List<CheckBox> cbs = new List<CheckBox>() { checkBoxDebugDevice, checkBoxDebugEncoders, checkBoxDebugExceptions };
+            CheckBox master = sender as CheckBox;
+
+            foreach (CheckBox cb in cbs)
+                cb.AutoCheck = master.Checked;
         }
     }
 }

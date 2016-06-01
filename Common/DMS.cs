@@ -6,7 +6,7 @@
     public class DMS
     {
         internal static string decimalSeparator = Thread.CurrentThread.CurrentUICulture.NumberFormat.CurrencyDecimalSeparator;
-        private double _degrees;
+        //private double _degrees;
 
         public double D { get; set; }
         public double M { get; set; }

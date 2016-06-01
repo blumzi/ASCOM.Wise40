@@ -6,24 +6,23 @@ using System.Text;
 using System.Threading.Tasks;
 
 using ASCOM.DeviceInterface;
+using ASCOM.Wise40.Common;
 using ASCOM.Wise40.Hardware;
 
 
 namespace ASCOM.Wise40
 {
-    public class MovementSpecifier: IEquatable<Tuple<TelescopeAxes, double, int>>
+    public class MovementSpecifier: IEquatable<Tuple<TelescopeAxes, double, Const.AxisDirection>>
     {
         public readonly TelescopeAxes axis;
-        //public readonly double rate;
-        public readonly int sign;
+        public readonly Const.AxisDirection direction;
 
-        public bool Equals(Tuple<TelescopeAxes, double, int> other)
+        public bool Equals(Tuple<TelescopeAxes, double, Const.AxisDirection> other)
         {
             if (other == null)
                 return false;
 
-            //Console.WriteLine("Equals: this# {0} other# {1}", this.GetHashCode(), other.GetHashCode());
-            return other.Item1 == axis /* && other.Item2 == rate */ && other.Item3 == sign;
+            return other.Item1 == axis && other.Item3 == direction;
         }
 
         public override bool Equals(object other)
@@ -37,39 +36,37 @@ namespace ASCOM.Wise40
                 return false;
 
             var o = (MovementSpecifier) other;
-            ret = o.axis == axis /* && o.rate == rate */ && o.sign == sign;
-            //Console.WriteLine("Equals: this({0}, {1}, {2}) other: ({3}, {4}, {5}) => {6}", axis, rate, sign, o.axis, o.rate, o.sign, ret);
+            ret = o.axis == axis && o.direction == direction;
             return ret;
         }
 
-        public static implicit operator Tuple<TelescopeAxes, /* double, */ int> (MovementSpecifier m)
+        public static implicit operator Tuple<TelescopeAxes, Const.AxisDirection> (MovementSpecifier m)
         {
-            return new Tuple<TelescopeAxes, /* double, */ int>(m.axis, /* m.rate, */ m.sign);
+            return new Tuple<TelescopeAxes, Const.AxisDirection>(m.axis, m.direction);
         }
 
-        public static implicit operator MovementSpecifier(Tuple<TelescopeAxes, /* double, */ int> t)
+        public static implicit operator MovementSpecifier(Tuple<TelescopeAxes, Const.AxisDirection> t)
         {
-            return new MovementSpecifier(t.Item1, t.Item2 /*, t.Item3 */);
+            return new MovementSpecifier(t.Item1, t.Item2);
         }
 
         public TelescopeAxes Axis {  get { return axis; } }
-        public int Sign { get { return sign; } }
+        public Const.AxisDirection Direction { get { return direction; } }
 
-        public MovementSpecifier(TelescopeAxes axis,  /*double rate, */ int sign)
+        public MovementSpecifier(TelescopeAxes axis, Const.AxisDirection direction)
         {
             this.axis = axis;
-            // this.rate = rate;
-            this.sign = sign;
+            this.direction = direction;
         }
 
         public override int GetHashCode()
         {
-            return axis.GetHashCode() /* ^ rate.GetHashCode() */ ^ sign.GetHashCode();
+            return axis.GetHashCode() ^ direction.GetHashCode();
         }
 
         public override string ToString()
         {
-            return "( " + axis.ToString() + ", " /* + rate.ToString() */ + ", " + sign.ToString() + " )";
+            return "( " + axis.ToString() + ", " + ", " + direction.ToString() + " )";
         }
 
         public void Dispose()
@@ -78,17 +75,17 @@ namespace ASCOM.Wise40
         }
     }
 
-    public class MovementWorker : IEquatable<Tuple<WiseMotor, bool>>
+    public class MovementWorker : IEquatable<Tuple<WiseVirtualMotor, bool>>
     {
-        public readonly WiseMotor[] motors;
+        public readonly WiseVirtualMotor[] motors;
         public readonly bool slew;
 
-        public MovementWorker(WiseMotor[] motors)
+        public MovementWorker(WiseVirtualMotor[] motors)
         {
             this.motors = motors;
         }
 
-        public bool Equals(Tuple<WiseMotor, bool> other)
+        public bool Equals(Tuple<WiseVirtualMotor, bool> other)
         {
             return other.Item1.Equals(motors) && other.Item2.Equals(slew);
         }
@@ -101,7 +98,7 @@ namespace ASCOM.Wise40
         public override string ToString()
         {
             string s = "( ";
-            foreach (WiseMotor m in motors)
+            foreach (WiseVirtualMotor m in motors)
                 s += m.name + " ";
             s += " )";
             return s;
@@ -121,7 +118,6 @@ namespace ASCOM.Wise40
         {
             get
             {
-                //Console.WriteLine("get: key# {0}", key.GetHashCode());
                 return ((IDictionary<MovementSpecifier, MovementWorker>)dict)[key];
             }
 
@@ -226,8 +222,8 @@ namespace ASCOM.Wise40
             {
                 MovementWorker worker = dict[spec];
 
-                s += "  dict[" + spec.axis.ToString() + ", " /* + spec.rate.ToString() */ + ", " + spec.sign.ToString() + " ] = { [ ";
-                foreach (WiseMotor m in worker.motors)
+                s += "  dict[" + spec.axis.ToString() + ", " + ", " + spec.direction.ToString() + " ] = { [ ";
+                foreach (WiseVirtualMotor m in worker.motors)
                     s += m.ToString() + " ";
                 s += "], " + worker.slew.ToString() + "} " + spec.GetHashCode() + "\n";
             }

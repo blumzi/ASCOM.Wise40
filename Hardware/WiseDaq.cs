@@ -29,9 +29,22 @@ namespace ASCOM.Wise40.Hardware
         {
             if (wiseBoard.type == WiseBoard.BoardType.Hard)
             {
-                MccDaq.ErrorInfo err = wiseBoard.mccBoard.DConfigPort(porttype, dir);
-                if (err.Value != 0)
-                    throw new WiseException(name + ": UL DConfigPort(" + porttype.ToString() + ", " + dir.ToString() + ") failed with " + err.Message);
+                if (Hardware.Instance.mccRevNum == 5)
+                {
+                    try
+                    {
+                        wiseBoard.mccBoard.DConfigPort(porttype, dir);
+                    } catch (ULException err)
+                    {
+                        throw new WiseException(name + ": UL DConfigPort(" + porttype.ToString() + ", " + dir.ToString() + ") failed with " + err.Message);
+                    }
+                }
+                else
+                {
+                    ErrorInfo err = wiseBoard.mccBoard.DConfigPort(porttype, dir);
+                    if (err.Value != 0)
+                        throw new WiseException(name + ": UL DConfigPort(" + porttype.ToString() + ", " + dir.ToString() + ") failed with " + err.Message);
+                }
 
             }
             portdir = dir;
@@ -91,9 +104,23 @@ namespace ASCOM.Wise40.Hardware
                 {
                     if (portdir == DigitalPortDirection.DigitalIn)
                     {
-                        ErrorInfo err = wiseBoard.mccBoard.DIn(porttype, out v);
-                        if (err.Value != ErrorInfo.ErrorCode.NoErrors)
-                            throw new WiseException(name + ": UL DIn(" + porttype.ToString() + ") failed with " + err.Message);
+                        if (Hardware.Instance.mccRevNum == 5)
+                        {
+                            try
+                            {
+                                wiseBoard.mccBoard.DIn(porttype, out v);
+                            }
+                            catch (ULException err)
+                            {
+                                throw new WiseException(name + ": UL DIn(" + porttype.ToString() + ") failed with " + err.Message);
+                            }
+                        }
+                        else
+                        {
+                            ErrorInfo err = wiseBoard.mccBoard.DIn(porttype, out v);
+                            if (err.Value != ErrorInfo.ErrorCode.NoErrors)
+                                throw new WiseException(name + ": UL DIn(" + porttype.ToString() + ") failed with " + err.Message);
+                        }
                         //Console.WriteLine("v: " + v.ToString());
                     }
                     else
@@ -106,13 +133,28 @@ namespace ASCOM.Wise40.Hardware
             }
 
             set {
+
                 if (wiseBoard.type == WiseBoard.BoardType.Hard)
                 {
                     if (portdir == DigitalPortDirection.DigitalOut)
                     {
-                        ErrorInfo err = wiseBoard.mccBoard.DOut(porttype, value);
-                        if (err.Value != ErrorInfo.ErrorCode.NoErrors)
-                            throw new WiseException(name + ": UL DOut(" + porttype.ToString() + ", " + value.ToString() + ") failed with :\"" + err.Message + "\"");
+                        if (Hardware.Instance.mccRevNum == 5)
+                        {
+                            try
+                            {
+                                wiseBoard.mccBoard.DOut(porttype, value);
+                            }
+                            catch (ULException err)
+                            {
+                                throw new WiseException(name + ": UL DOut(" + porttype.ToString() + ", " + value.ToString() + ") failed with :\"" + err.Message + "\"");
+                            }
+                        }
+                        else
+                        {
+                            ErrorInfo err = wiseBoard.mccBoard.DOut(porttype, value);
+                            if (err.Value != ErrorInfo.ErrorCode.NoErrors)
+                                throw new WiseException(name + ": UL DOut(" + porttype.ToString() + ", " + value.ToString() + ") failed with :\"" + err.Message + "\"");
+                        }
 
                         _value = value;
                     }
@@ -129,7 +171,7 @@ namespace ASCOM.Wise40.Hardware
         {
             WiseBitOwner o = owners[bit];
 
-            if (o.owner != null)
+            if (o.owner != null && o.owner != owner )
                 throw new WiseException(string.Format("Cannot set owner \"{0}\" for {1}[{2}]: Already owned by \"{3}\"!", owner, name, bit, o.owner));
 
             o.owner = owner;

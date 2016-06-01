@@ -1,50 +1,43 @@
 ﻿using System;
 using ASCOM.Utilities;
 using MccDaq;
+using System.Collections.Generic;
+
+using ASCOM.Wise40.Common;
 
 namespace ASCOM.Wise40.Hardware
 {
-    public class WiseDomeEncoder : IConnectable, IDisposable 
+    public class WiseDomeEncoder : IConnectable
     {
-        private WiseEncoder hwEncoder;
-        private double azimuth;
+        private Angle azimuth;
         public bool calibrated;
 
-        private bool simulated;                         // is the dome encoder simulated or real?
+        private bool _simulated = Environment.MachineName != "dome-ctlr"; 
         private int simulatedValue;                     // the simulated dome encoder value
-        private double simulatedStuckAzimuth;           // the azimuth where we simulate dome-stuck (simulated value does not change)?
+        private Angle simulatedStuckAzimuth;
         private DateTime endSimulatedStuck;             // time when the dome-stuck simulation should end
         private System.Timers.Timer simulationTimer;    // times simulated-dome events
 
-        private TraceLogger logger;
-
         private int caliTicks;
-        private double caliAz;
+        private Angle caliAz = new Angle(254.6);
         private WiseDome.Direction moving;
         private const int simulatedEncoderTicksPerSecond = 6;
         private bool _connected = false;
         private const int hwTicks = 1024;
-        private const double NoSimulatedStuckAz = -1.0;
+        private Angle NoSimulatedStuckAz = Angle.invalid;
+        private Debugger debugger;
 
-        private void log(string fmt, params object[] o)
+        private WiseDaq encDaqLow, encDaqHigh;
+        private AtomicReader encAtomicReader;
+
+        public WiseDomeEncoder(string name, Debugger debugger)
         {
-            string msg = String.Format(fmt, o);
+            this.debugger = debugger;
+            encDaqLow = Hardware.Instance.domeboard.daqs.Find(x => x.porttype == DigitalPortType.FirstPortB);
+            encDaqHigh = Hardware.Instance.domeboard.daqs.Find(x => x.porttype == DigitalPortType.FirstPortCH);
+            encAtomicReader = new AtomicReader(new List<WiseDaq>() { encDaqHigh, encDaqLow });
 
-            logger.LogMessage("WiseDomeEncoder", msg);
-        }
-
-        public WiseDomeEncoder(string name, TraceLogger logger, bool simulated = false)
-        {
-            WiseEncSpec[] encSpecs;
-
-            encSpecs = new WiseEncSpec[] {
-                new WiseEncSpec() { brd = Hardware.Instance.domeboard, port = DigitalPortType.FirstPortB },
-                new WiseEncSpec() { brd = Hardware.Instance.domeboard, port = DigitalPortType.FirstPortCH, mask = 0x3 },
-            };
-
-            hwEncoder = new WiseEncoder(name, hwTicks, encSpecs, true, 100);
-            this.simulated = simulated;
-            if (this.simulated)
+            if (_simulated)
             {
                 simulatedValue = 0;
                 simulatedStuckAzimuth = NoSimulatedStuckAz;
@@ -52,8 +45,6 @@ namespace ASCOM.Wise40.Hardware
                 simulationTimer.Elapsed += onSimulationTimer;
                 simulationTimer.Enabled = true;
             }
-
-            this.logger = logger;
         }
 
         public void setMovement(WiseDome.Direction dir)
@@ -70,7 +61,7 @@ namespace ASCOM.Wise40.Hardware
 
             if (simulatedStuckAzimuth != NoSimulatedStuckAz)                // A simulatedStuck is required
             {
-                if (Math.Abs(Azimuth - simulatedStuckAzimuth) <= 1.0)       // we're in the vicinity of the simulatedStuckAzimuth
+                if (Math.Abs(Azimuth.Degrees - simulatedStuckAzimuth.Degrees) <= 1.0)       // we're in the vicinity of the simulatedStuckAzimuth
                 {
                     if (endSimulatedStuck.Equals(DateTime.MinValue))        // endSimulatedStuck is not set
                         endSimulatedStuck = rightNow.AddSeconds(3);         // set it to (now + 3sec)
@@ -103,18 +94,18 @@ namespace ASCOM.Wise40.Hardware
         }
 
 
-        public void SetAzimuth(double az)
+        public void SetAzimuth(Angle az)
         {
             Calibrate(az);
             Azimuth = az;
         }
 
-        public void SimulateStuckAt(double az)
+        public void SimulateStuckAt(Angle az)
         {
             simulatedStuckAzimuth = az;
         }
 
-        public void Calibrate(double az)
+        public void Calibrate(Angle az)
         {
             caliTicks = Value;
             caliAz = az;
@@ -123,8 +114,19 @@ namespace ASCOM.Wise40.Hardware
 
         public void Connect(bool connected)
         {
-            this._connected = connected;
-            hwEncoder.Connect(this._connected);
+            _connected = connected;
+            if (connected)
+            {
+                encDaqHigh.setOwner(encDaqHigh.name, 0);
+                encDaqHigh.setOwner(encDaqHigh.name, 1);
+                encDaqLow.setOwners("domeEncLow");
+            }
+            else
+            {
+                encDaqHigh.unsetOwner(0);
+                encDaqHigh.unsetOwner(1);
+                encDaqLow.unsetOwners();
+            }
         }
 
         public bool Connected
@@ -135,43 +137,39 @@ namespace ASCOM.Wise40.Hardware
             }
         }
 
-        public void Dispose()
-        {
-            hwEncoder.Dispose();
-        }
-
-        public double Azimuth
+        public Angle Azimuth
         {
             get
             {
                 int currTicks;
-                double ret;
+                Angle az;
 
                 if (!calibrated)
-                    return -1.0;
+                    return new Angle(double.NaN);
 
                 currTicks = Value;
                 if (currTicks == caliTicks)
                 {
-                    ret = caliAz;
+                    az = caliAz;
                 }
                 else if (currTicks > caliTicks)
                 {
-                    ret = caliAz - (currTicks - caliTicks) * WiseDome.DegreesPerTick;
+                    az = caliAz - new Angle((currTicks - caliTicks) * WiseDome.DegreesPerTick);
                 }
                 else
                 {
-                    ret = caliAz + (caliTicks - currTicks) * WiseDome.DegreesPerTick;
+                    az = caliAz + new Angle((caliTicks - currTicks) * WiseDome.DegreesPerTick);
                 }
 
-                if (ret > 360)
-                    ret -= 360;
+                if (az.Degrees > 360)
+                    az.Degrees -= 360;
 
-                if (ret < 0)
-                    ret += 360;
+                if (az.Degrees < 0)
+                    az.Degrees += 360;
 
-                // log("Azimuth: currTicks: {0}, caliTicks: {1}, caliAz: {2}, ret: {3}", currTicks, caliTicks, caliAz, ret);
-                return ret;
+                debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "Azimuth: {0}, currTicks: {1}, caliTicks: {2}, caliAz: {3}",
+                    az, currTicks, caliTicks, caliAz);
+                return az;
             }
 
             set
@@ -187,7 +185,13 @@ namespace ASCOM.Wise40.Hardware
         {
             get
             {
-                return (simulated) ? simulatedValue : hwEncoder.Value;
+
+                if (_simulated)
+                    return simulatedValue;
+
+                List<uint> values = encAtomicReader.Values;
+
+                return (int) ((values[1] << 8) | values[0]);
             }
         }
 
@@ -203,4 +207,3 @@ namespace ASCOM.Wise40.Hardware
         }
     }
 }
-

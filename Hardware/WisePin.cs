@@ -34,7 +34,7 @@ namespace ASCOM.Wise40.Hardware
             daq.setDir(dir);
         }
 
-        public bool simulated
+        public bool Simulated
         {
             get
             {
