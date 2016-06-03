@@ -11,15 +11,23 @@ namespace ASCOM.Wise40.Hardware
 {
     public class AtomicReader
     {
-        private const uint timeoutMicros = 100;    // microseconds between Daq reads
+        private const uint timeoutMicros = 5000000;    // microseconds between Daq reads
         private Stopwatch stopwatch;
         private const int maxTries = 5;
         List<WiseDaq> daqs;
+
+        Common.Debugger debugger = new Common.Debugger();
 
         public AtomicReader(List<WiseDaq> daqs)
         {
             stopwatch = new Stopwatch();
             this.daqs = daqs;
+
+            using (ASCOM.Utilities.Profile driverProfile = new ASCOM.Utilities.Profile())
+            {
+                driverProfile.DeviceType = "Telescope";
+                debugger.Level = Convert.ToUInt32(driverProfile.GetValue("ASCOM.Wise40.Telescope", "Debug Level", string.Empty, "0"));
+            }
         }
 
         public List<uint> Values
@@ -29,6 +37,7 @@ namespace ASCOM.Wise40.Hardware
                 List<uint> results = new List<uint>();
                 int i;
                 List<long> elapsedMicros = new List<long>();
+                List<long> elapsedTicks = new List<long>();
 
                 for (int tries = 0; tries < maxTries; tries++)
                 {
@@ -44,6 +53,7 @@ namespace ASCOM.Wise40.Hardware
                             stopwatch.Stop();
                             long micros = (stopwatch.ElapsedTicks / Stopwatch.Frequency) * 1000000L;
                             elapsedMicros.Add(micros);
+                            elapsedTicks.Add(stopwatch.ElapsedTicks);
                             if (micros > timeoutMicros)
                                 goto nexttry;
                         }
@@ -51,13 +61,17 @@ namespace ASCOM.Wise40.Hardware
 
                     if (i == daqs.Count())
                     {
-                        string s = "inter daqs (";
+                        string s = "AtomicReader:Values: inter daqs (";
                         foreach (WiseDaq daq in daqs)
                             s += daq.name + " ";
-                        s += ") read times: ";
+                        s += ") " + elapsedMicros.Count + " read times: ";
                         foreach (long m in elapsedMicros)
                             s += m.ToString() + " ";
-                        Console.WriteLine(s);
+
+                        s += ", ticks: ";
+                        foreach (long t in elapsedTicks)
+                            s += t.ToString() + " ";
+                        debugger.WriteLine(Common.Debugger.DebugLevel.DebugEncoders, s);
 
                         return results;
                     }

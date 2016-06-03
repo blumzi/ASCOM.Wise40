@@ -151,8 +151,8 @@ namespace ASCOM.Wise40
             // or call a different dialog if connected
             if (IsConnected)
             {
-                handpad = new HandpadForm();
-                handpad.ShowDialog();
+                //handpad = new HandpadForm();
+                //handpad.ShowDialog();
             } else
                 using (TelescopeSetupDialogForm F = new TelescopeSetupDialogForm(this))
                 {
@@ -231,9 +231,17 @@ namespace ASCOM.Wise40
             }
             set
             {
+                //HandpadForm handpad = null;
+
                 tl.LogMessage("Connected Set", value.ToString());
                 if (value == IsConnected)
                     return;
+
+                //if (value == true && handpad == null)
+                //{
+                //    handpad = new HandpadForm();
+                //    handpad.ShowDialog();
+                //}
 
                 WiseTele.Instance.Connect(value);
                 _connected = value;
@@ -1147,7 +1155,7 @@ namespace ASCOM.Wise40
                 WiseTele.Instance.debugger.Level = Convert.ToUInt32(driverProfile.GetValue(driverID, debugLevelProfileName, string.Empty, "0"));
                 WiseSite.Instance.astrometricAccuracy = driverProfile.GetValue(driverID, astrometricAccuracyProfileName, string.Empty, "Full") == "Full" ?
                     Accuracy.Full : Accuracy.Reduced;
-                _enslaveDome = Convert.ToBoolean(driverProfile.GetValue(driverID, enslaveDomeProfileName, string.Empty, "true"));
+                _enslaveDome = Convert.ToBoolean(driverProfile.GetValue(driverID, enslaveDomeProfileName, string.Empty, "false"));
             }
         }
 

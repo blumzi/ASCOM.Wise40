@@ -43,37 +43,37 @@ namespace ASCOM.Wise40.Common
             }
         }
 
-        public int D
-        {
-            get
-            {
-                return (int) Math.Floor(_degrees);
-            }
-        }
+        //public int D
+        //{
+        //    get
+        //    {
+        //        return (int) Math.Floor(_degrees);
+        //    }
+        //}
 
-        public int M
-        {
-            get
-            {
-                return (int) Math.Floor((_degrees - D) * 60);
-            }
-        }
+        //public int M
+        //{
+        //    get
+        //    {
+        //        return (int) Math.Floor((_degrees - D) * 60);
+        //    }
+        //}
 
-        public double S
-        {
-            get
-            {
-                return (((_degrees - D) * 60) - M) * 60;
-            }
-        }
+        //public double S
+        //{
+        //    get
+        //    {
+        //        return (((_degrees - D) * 60) - M) * 60;
+        //    }
+        //}
 
-        public int H
-        {
-            get
-            {
-                return D / 15;
-            }
-        }
+        //public int H
+        //{
+        //    get
+        //    {
+        //        return D / 15;
+        //    }
+        //}
 
         public static Angle FromRad(double rad)
         {
@@ -107,7 +107,7 @@ namespace ASCOM.Wise40.Common
 
             set
             {
-                _degrees = value * 180.0 * Math.PI;
+                _degrees = value * 180.0 / Math.PI;
             }
         }
 

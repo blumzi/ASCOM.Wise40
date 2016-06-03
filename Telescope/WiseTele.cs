@@ -102,7 +102,7 @@ namespace ASCOM.Wise40
         private List<IDisposable> disposables;
 
         private TraceLogger traceLogger;
-        public Debugger debugger = new Debugger();
+        public Debugger debugger = new Debugger((uint) Debugger.DebugLevel.DebugAll);
 
         private bool _connected = false;
         private bool _simulated = false;
@@ -626,11 +626,8 @@ namespace ASCOM.Wise40
 
         public void Stop()
         {
-            if (_slewToCoordinatesAsync_bgw.IsBusy)
-            {
+            if (_slewToCoordinatesAsync_bgw != null && _slewToCoordinatesAsync_bgw.IsBusy)
                 _slewToCoordinatesAsync_bgw.CancelAsync();
-                backgroundWorkerDone.WaitOne();
-            }
 
             foreach (WiseVirtualMotor motor in directionMotors)
                 if (motor.isOn)
@@ -979,7 +976,7 @@ namespace ASCOM.Wise40
                     goto workDone;
 
                 // Phase #2:
-                //  Calculate the minimal distance both axes can move at tthe same rate.
+                //  Calculate the minimal distance both axes can move at the same rate.
                 //
                 Angle commonDeltaAngle = Angle.Min(currMovement[TelescopeAxes.axisPrimary].deltaAngle, currMovement[TelescopeAxes.axisSecondary].deltaAngle);
                 debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "bgw: commonDeltaAngle: {0}", commonDeltaAngle);
@@ -1016,7 +1013,7 @@ namespace ASCOM.Wise40
 
                 //
                 // Phase #4:
-                //  Wait for both axes (or just the one that's moving) to reachtheir destination
+                //  Wait for both axes (or just the one that's moving) to reach their destination
                 //
                 while (true)
                 {

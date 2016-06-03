@@ -98,7 +98,12 @@ namespace ASCOM.Wise40
                 double gstNow = 0;
 
                 var res = novas31.SiderealTime(
-                    astroutils.JulianDateUT1(0), 0d, astroutils.DeltaT(), GstType.GreenwichApparentSiderealTime, Method.EquinoxBased, astrometricAccuracy, ref gstNow);
+                    astroutils.JulianDateUT1(0), 0d,
+                    astroutils.DeltaT(),
+                    GstType.GreenwichApparentSiderealTime,
+                    Method.EquinoxBased,
+                    astrometricAccuracy,
+                    ref gstNow);
 
                 if (res != 0)
                     throw new InvalidValueException("Error getting Greenwich Apparent Sidereal time");

@@ -38,6 +38,7 @@ namespace ASCOM.Wise40
             {
                 driver = new ASCOM.DriverAccess.Telescope(Properties.Settings.Default.DriverId);
                 driver.Connected = true;
+                driver.SetupDialog();
             }
             SetUIState();
         }

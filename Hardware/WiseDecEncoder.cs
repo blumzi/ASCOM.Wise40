@@ -27,6 +27,8 @@ namespace ASCOM.Wise40.Hardware
         const double decMultiplier = 2 * Math.PI / 600 / 4096;
         const double DecCorrection = 0.35613322;                //20081231 SK: ActualDec-Encoder Dec [rad]
 
+        private Common.Debugger debugger = new Debugger();
+
         public WiseDecEncoder(string name)
         {
             Novas31 = new Astrometry.NOVAS.NOVAS31();
@@ -70,6 +72,12 @@ namespace ASCOM.Wise40.Hardware
             _name = name;
 
             _angle = simulated ? Angle.FromDeg(90.0 - WiseSite.Instance.Latitude) : Angle.FromRad((Value * decMultiplier) + DecCorrection);
+
+            using (ASCOM.Utilities.Profile driverProfile = new ASCOM.Utilities.Profile())
+            {
+                driverProfile.DeviceType = "Telescope";
+                debugger.Level = Convert.ToUInt32(driverProfile.GetValue("ASCOM.Wise40.Telescope", "Debug Level", string.Empty, "0"));
+            }
         }
 
         public double Declination
@@ -128,9 +136,11 @@ namespace ASCOM.Wise40.Hardware
 
                     daqValues = wormAtomicReader.Values;
                     worm = (daqValues[1] << 8) | daqValues[0];
+                    debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "DEC worm: {0}", worm);
 
                     daqValues = axisAtomicReader.Values;
                     axis = (daqValues[0] >> 4) | (daqValues[1] << 4);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "DEC axis: {0}", axis);
 
                     _daqsValue = ((axis * 600 + worm) & 0xfff000) + worm;
                 }
@@ -170,10 +180,13 @@ namespace ASCOM.Wise40.Hardware
             {
                 if (!simulated)
                 {
-                    _angle.Radians = (Value * decMultiplier) + DecCorrection;
+                    uint v = Value;
+                    _angle.Radians = (v * decMultiplier) + DecCorrection;
 
-                    if (_angle.Radians > Math.PI)
+                    while (_angle.Radians > Math.PI)
                         _angle.Radians -= 2 * Math.PI;
+
+                    debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "{0}: Degrees: Value: {1}, deg: {2}, rad: {3}", name, v, _angle, _angle.Radians);
                 }
 
                 return _angle.Degrees;

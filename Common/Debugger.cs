@@ -19,6 +19,8 @@ namespace ASCOM.Wise40.Common
             DebugDevice = (1 << 4),
             DebugASCOM = (1 << 5),
             DebugLogic = (1 << 6),
+
+            DebugAll = DebugEncoders | DebugAxes | DebugMotors | DebugExceptions | DebugDevice | DebugASCOM | DebugLogic,
         };
 
         private uint _level;

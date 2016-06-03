@@ -34,7 +34,7 @@ namespace ASCOM.Wise40.Hardware
                     try
                     {
                         wiseBoard.mccBoard.DConfigPort(porttype, dir);
-                    } catch (ULException err)
+                    } catch (Exception err)
                     {
                         throw new WiseException(name + ": UL DConfigPort(" + porttype.ToString() + ", " + dir.ToString() + ") failed with " + err.Message);
                     }
@@ -110,7 +110,7 @@ namespace ASCOM.Wise40.Hardware
                             {
                                 wiseBoard.mccBoard.DIn(porttype, out v);
                             }
-                            catch (ULException err)
+                            catch (Exception err)
                             {
                                 throw new WiseException(name + ": UL DIn(" + porttype.ToString() + ") failed with " + err.Message);
                             }
@@ -144,7 +144,7 @@ namespace ASCOM.Wise40.Hardware
                             {
                                 wiseBoard.mccBoard.DOut(porttype, value);
                             }
-                            catch (ULException err)
+                            catch (Exception err)
                             {
                                 throw new WiseException(name + ": UL DOut(" + porttype.ToString() + ", " + value.ToString() + ") failed with :\"" + err.Message + "\"");
                             }
