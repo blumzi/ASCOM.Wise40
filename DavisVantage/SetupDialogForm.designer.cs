@@ -32,17 +32,20 @@ namespace ASCOM.Vantage
             this.cmdCancel = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.picASCOM = new System.Windows.Forms.PictureBox();
-            this.label2 = new System.Windows.Forms.Label();
             this.chkTrace = new System.Windows.Forms.CheckBox();
-            this.comboBoxComPort = new System.Windows.Forms.ComboBox();
+            this.buttonChoose = new System.Windows.Forms.Button();
+            this.labelReportFileValue = new System.Windows.Forms.Label();
+            this.groupBoxReportFile = new System.Windows.Forms.GroupBox();
+            this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).BeginInit();
+            this.groupBoxReportFile.SuspendLayout();
             this.SuspendLayout();
             // 
             // cmdOK
             // 
             this.cmdOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.cmdOK.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.cmdOK.Location = new System.Drawing.Point(281, 112);
+            this.cmdOK.Location = new System.Drawing.Point(400, 77);
             this.cmdOK.Name = "cmdOK";
             this.cmdOK.Size = new System.Drawing.Size(59, 24);
             this.cmdOK.TabIndex = 0;
@@ -54,7 +57,7 @@ namespace ASCOM.Vantage
             // 
             this.cmdCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.cmdCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.cmdCancel.Location = new System.Drawing.Point(281, 142);
+            this.cmdCancel.Location = new System.Drawing.Point(400, 107);
             this.cmdCancel.Name = "cmdCancel";
             this.cmdCancel.Size = new System.Drawing.Size(59, 25);
             this.cmdCancel.TabIndex = 1;
@@ -64,18 +67,19 @@ namespace ASCOM.Vantage
             // 
             // label1
             // 
-            this.label1.Location = new System.Drawing.Point(12, 9);
+            this.label1.Location = new System.Drawing.Point(12, 22);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(123, 31);
+            this.label1.Size = new System.Drawing.Size(231, 31);
             this.label1.TabIndex = 2;
-            this.label1.Text = "Construct your driver\'s setup dialog here.";
+            this.label1.Text = "Davis VantagePro at Wise40 driver";
             // 
             // picASCOM
             // 
             this.picASCOM.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.picASCOM.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.picASCOM.Image = global::ASCOM.Vantage.Properties.Resources.ASCOM;
-            this.picASCOM.Location = new System.Drawing.Point(292, 9);
+            this.picASCOM.ErrorImage = global::VantagePro.Properties.Resources.ASCOM;
+            this.picASCOM.Image = global::VantagePro.Properties.Resources.ASCOM;
+            this.picASCOM.Location = new System.Drawing.Point(405, 9);
             this.picASCOM.Name = "picASCOM";
             this.picASCOM.Size = new System.Drawing.Size(48, 56);
             this.picASCOM.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
@@ -84,41 +88,56 @@ namespace ASCOM.Vantage
             this.picASCOM.Click += new System.EventHandler(this.BrowseToAscom);
             this.picASCOM.DoubleClick += new System.EventHandler(this.BrowseToAscom);
             // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(13, 90);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(58, 13);
-            this.label2.TabIndex = 5;
-            this.label2.Text = "Comm Port";
-            // 
             // chkTrace
             // 
             this.chkTrace.AutoSize = true;
-            this.chkTrace.Location = new System.Drawing.Point(77, 118);
+            this.chkTrace.Location = new System.Drawing.Point(18, 117);
             this.chkTrace.Name = "chkTrace";
             this.chkTrace.Size = new System.Drawing.Size(69, 17);
             this.chkTrace.TabIndex = 6;
             this.chkTrace.Text = "Trace on";
             this.chkTrace.UseVisualStyleBackColor = true;
             // 
-            // comboBoxComPort
+            // buttonChoose
             // 
-            this.comboBoxComPort.FormattingEnabled = true;
-            this.comboBoxComPort.Location = new System.Drawing.Point(77, 87);
-            this.comboBoxComPort.Name = "comboBoxComPort";
-            this.comboBoxComPort.Size = new System.Drawing.Size(90, 21);
-            this.comboBoxComPort.TabIndex = 7;
+            this.buttonChoose.Location = new System.Drawing.Point(6, 22);
+            this.buttonChoose.Name = "buttonChoose";
+            this.buttonChoose.Size = new System.Drawing.Size(75, 23);
+            this.buttonChoose.TabIndex = 7;
+            this.buttonChoose.Text = "Choose";
+            this.buttonChoose.UseVisualStyleBackColor = true;
+            this.buttonChoose.Click += new System.EventHandler(this.buttonChoose_Click);
+            // 
+            // labelReportFileValue
+            // 
+            this.labelReportFileValue.Location = new System.Drawing.Point(98, 22);
+            this.labelReportFileValue.Name = "labelReportFileValue";
+            this.labelReportFileValue.Size = new System.Drawing.Size(268, 23);
+            this.labelReportFileValue.TabIndex = 8;
+            // 
+            // groupBoxReportFile
+            // 
+            this.groupBoxReportFile.Controls.Add(this.labelReportFileValue);
+            this.groupBoxReportFile.Controls.Add(this.buttonChoose);
+            this.groupBoxReportFile.Location = new System.Drawing.Point(12, 56);
+            this.groupBoxReportFile.Name = "groupBoxReportFile";
+            this.groupBoxReportFile.Size = new System.Drawing.Size(372, 53);
+            this.groupBoxReportFile.TabIndex = 9;
+            this.groupBoxReportFile.TabStop = false;
+            this.groupBoxReportFile.Text = " Report File ";
+            // 
+            // openFileDialog
+            // 
+            this.openFileDialog.Title = "WeatherLink Report File";
+            this.openFileDialog.FileOk += new System.ComponentModel.CancelEventHandler(this.openFileDialog_FileOk);
             // 
             // SetupDialogForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(350, 175);
-            this.Controls.Add(this.comboBoxComPort);
+            this.ClientSize = new System.Drawing.Size(463, 174);
+            this.Controls.Add(this.groupBoxReportFile);
             this.Controls.Add(this.chkTrace);
-            this.Controls.Add(this.label2);
             this.Controls.Add(this.picASCOM);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.cmdCancel);
@@ -130,7 +149,9 @@ namespace ASCOM.Vantage
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Vantage Setup";
+            this.Load += new System.EventHandler(this.SetupDialogForm_Load);
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).EndInit();
+            this.groupBoxReportFile.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -142,8 +163,11 @@ namespace ASCOM.Vantage
         private System.Windows.Forms.Button cmdCancel;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.PictureBox picASCOM;
-        private System.Windows.Forms.Label label2;
         private System.Windows.Forms.CheckBox chkTrace;
-        private System.Windows.Forms.ComboBox comboBoxComPort;
+        private System.Windows.Forms.Button buttonChoose;
+        private System.Windows.Forms.Label labelReportFileValue;
+        private System.Windows.Forms.GroupBox groupBoxReportFile;
+        private System.Windows.Forms.OpenFileDialog openFileDialog;
+        //private System.Windows.Forms.ComboBox comboBoxComPort;
     }
 }

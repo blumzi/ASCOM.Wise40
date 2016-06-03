@@ -7,6 +7,7 @@
 //     the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
+using System.Drawing;
 
 namespace ASCOM.Vantage.Properties
 {

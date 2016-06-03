@@ -39,6 +39,7 @@ using ASCOM.Utilities;
 using ASCOM.DeviceInterface;
 using System.Globalization;
 using System.Collections;
+using System.IO;
 
 namespace ASCOM.Vantage
 {
@@ -69,14 +70,13 @@ namespace ASCOM.Vantage
         /// <summary>
         /// Driver description that displays in the ASCOM Chooser.
         /// </summary>
-        private static string driverDescription = "ASCOM ObservingConditions Driver for Vantage.";
+        private static string driverDescription = "ASCOM VantagePro at Wise40.";
 
-        internal static string comPortProfileName = "COM Port"; // Constants used for Profile persistence
-        internal static string comPortDefault = "COM1";
+        internal static string reportFileProfileName = "Report File"; // Constants used for Profile persistence
         internal static string traceStateProfileName = "Trace Level";
         internal static string traceStateDefault = "false";
 
-        internal static string comPort; // Variables to hold the currrent device configuration
+        internal static string reportFile; // Variables to hold the currrent device configuration
         internal static bool traceState;
 
         /// <summary>
@@ -99,6 +99,8 @@ namespace ASCOM.Vantage
         /// </summary>
         private TraceLogger tl;
 
+        private Dictionary<string, string> sensorData;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Vantage"/> class.
         /// Must be public for COM registration.
@@ -117,6 +119,8 @@ namespace ASCOM.Vantage
             //TODO: Implement your additional construction here
 
             tl.LogMessage("ObservingConditions", "Completed initialisation");
+            sensorData = new Dictionary<string, string>();
+            Refresh();
         }
 
 
@@ -221,14 +225,10 @@ namespace ASCOM.Vantage
                 if (value)
                 {
                     connectedState = true;
-                    tl.LogMessage("Connected Set", "Connecting to port " + comPort);
-                    // TODO connect to the device
                 }
                 else
                 {
                     connectedState = false;
-                    tl.LogMessage("Connected Set", "Disconnecting from port " + comPort);
-                    // TODO disconnect from the device
                 }
             }
         }
@@ -249,7 +249,7 @@ namespace ASCOM.Vantage
             {
                 Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
                 // TODO customise this driver description
-                string driverInfo = "Information about the driver itself. Version: " + String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
+                string driverInfo = "Parses a generated ClarityII HTML report. Version: " + String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
                 tl.LogMessage("DriverInfo Get", driverInfo);
                 return driverInfo;
             }
@@ -280,7 +280,8 @@ namespace ASCOM.Vantage
         {
             get
             {
-                string name = "Short driver name - please customise";
+                string name = "VantagePro";
+
                 tl.LogMessage("Name Get", name);
                 return name;
             }
@@ -310,7 +311,7 @@ namespace ASCOM.Vantage
             {
                 LogMessage("AveragePeriod", "set - {0}", value);
                 if (value != 0)
-                    throw new PropertyNotImplementedException("AveragePeriod", true);
+                    throw new InvalidValueException("Only 0.0 accepted");
             }
         }
 
@@ -338,8 +339,10 @@ namespace ASCOM.Vantage
         {
             get
             {
-                tl.LogMessage("DewPoint", "get - not implemented");
-                throw new PropertyNotImplementedException("DewPoint", false);
+                var dewPoint = Convert.ToDouble(sensorData["dewPoint"]);
+
+                tl.LogMessage("Pressure", "get - " + dewPoint.ToString());
+                return dewPoint;
             }
         }
 
@@ -354,8 +357,10 @@ namespace ASCOM.Vantage
         {
             get
             {
-                tl.LogMessage("Humidity", "get - not implemented");
-                throw new PropertyNotImplementedException("Humidity", false);
+                var humidity = Convert.ToDouble(sensorData["humidity"]);
+
+                tl.LogMessage("Pressure", "get - " + humidity.ToString());
+                return humidity;
             }
         }
 
@@ -371,8 +376,10 @@ namespace ASCOM.Vantage
         {
             get
             {
-                tl.LogMessage("Pressure", "get - not implemented");
-                throw new PropertyNotImplementedException("Pressure", false);
+                var pressure = Convert.ToDouble(sensorData["pressure"]);
+
+                tl.LogMessage("Pressure", "get - " + pressure.ToString());
+                return pressure;
             }
         }
 
@@ -387,8 +394,10 @@ namespace ASCOM.Vantage
         {
             get
             {
-                tl.LogMessage("RainRate", "get - not implemented");
-                throw new PropertyNotImplementedException("RainRate", false);
+                var rainRate = Convert.ToDouble(sensorData["rainRate"]);
+
+                tl.LogMessage("RainRate", "get - " + rainRate.ToString());
+                return rainRate;
             }
         }
 
@@ -398,7 +407,56 @@ namespace ASCOM.Vantage
         /// </summary>
         public void Refresh()
         {
-            throw new System.NotImplementedException();
+            tl.LogMessage("Refresh", "reportFile: " + reportFile);
+
+            if (reportFile == null || reportFile == string.Empty)
+                return;
+
+            using (StreamReader sr = new StreamReader(reportFile))
+            {
+                string[] words;
+                string line;
+
+                if (sr == null)
+                    throw new InvalidValueException(string.Format("Refresh: cannot open \"{0}\" for read.", reportFile));
+
+                while ((line = sr.ReadLine()) != null)
+                {
+                    words = line.Split('=');
+                    if (words.Length != 3)
+                        continue;
+                    switch(words[0])
+                    {
+                        case "barometer":
+                            sensorData["pressure"] = words[1];
+                            break;
+                        case "windSpeed":
+                            sensorData["windSpeed"] = words[1];
+                            break;
+                        case "windDir":
+                            sensorData["windDir"] = words[1];
+                            break;
+                        case "insideTemp":
+                            sensorData["temperature"] = words[1];
+                            break;
+                        case "insideDewPt":
+                            sensorData["dewPoint"] = words[1];
+                            break;
+                        case "insideHumidity":
+                            sensorData["humidity"] = words[1];
+                            break;
+                        case "rainRate":
+                            sensorData["rainRate"] = words[1];
+                            break;
+                        case "stationDate":
+                            sensorData["stationDate"] = words[1];
+                            break;
+                        case "stationTime":
+                            sensorData["stationTime"] = words[1];
+                            break;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -416,18 +474,21 @@ namespace ASCOM.Vantage
             {
                 case "AveragePeriod":
                     return "Average period in hours, immediate values are only available";
+
                 case "DewPoint":
                 case "Humidity":
                 case "Pressure":
+                case "Temperature":
+                case "WindDirection":
+                case "WindSpeed":
                 case "RainRate":
+                    return "SensorDescription - " + PropertyName;
+
                 case "SkyBrightness":
                 case "SkyQuality":
                 case "StarFWHM":
                 case "SkyTemperature":
-                case "Temperature":
-                case "WindDirection":
                 case "WindGust":
-                case "WindSpeed":
                     tl.LogMessage("SensorDescription", PropertyName + " - not implemented");
                     throw new MethodNotImplementedException("SensorDescription(" + PropertyName + ")");
                 default:
@@ -491,8 +552,10 @@ namespace ASCOM.Vantage
         {
             get
             {
-                tl.LogMessage("Temperature", "get - not implemented");
-                throw new PropertyNotImplementedException("Temperature", false);
+                var temperature = Convert.ToDouble(sensorData["temperature"]);
+
+                tl.LogMessage("Temperature", "get - " + temperature.ToString());
+                return temperature;
             }
         }
 
@@ -508,8 +571,12 @@ namespace ASCOM.Vantage
         /// </remarks>
         public double TimeSinceLastUpdate(string PropertyName)
         {
-            tl.LogMessage("TimeSinceLastUpdate", PropertyName + " - not implemented");
-            throw new MethodNotImplementedException("TimeSinceLastUpdate(" + PropertyName + ")");
+            string dateTime = sensorData["stationDate"] + " " + sensorData["stationTime"] + " ";
+            DateTime lastUpdate = Convert.ToDateTime(dateTime);
+            double seconds = (DateTime.Now - lastUpdate).Seconds;           
+
+            tl.LogMessage("TimeSinceLastUpdate", PropertyName + seconds.ToString());
+            return seconds;
         }
 
         /// <summary>
@@ -523,8 +590,10 @@ namespace ASCOM.Vantage
         {
             get
             {
-                tl.LogMessage("WindDirection", "get - not implemented");
-                throw new PropertyNotImplementedException("WindDirection", false);
+                var windDir = Convert.ToDouble(sensorData["windDir"]);
+
+                tl.LogMessage("WindDirection", "get - " + windDir.ToString());
+                return windDir;
             }
         }
 
@@ -547,8 +616,10 @@ namespace ASCOM.Vantage
         {
             get
             {
-                tl.LogMessage("WindSpeed", "get - not implemented");
-                throw new PropertyNotImplementedException("WindSpeed", false);
+                var windSpeed = Convert.ToDouble(sensorData["windSpeed"]);
+
+                tl.LogMessage("WindSpeed", "get - " + windSpeed.ToString());
+                return windSpeed;
             }
         }
 
@@ -702,7 +773,7 @@ namespace ASCOM.Vantage
             {
                 driverProfile.DeviceType = "ObservingConditions";
                 traceState = Convert.ToBoolean(driverProfile.GetValue(driverID, traceStateProfileName, string.Empty, traceStateDefault));
-                comPort = driverProfile.GetValue(driverID, comPortProfileName, string.Empty, comPortDefault);
+                reportFile = driverProfile.GetValue(driverID, reportFileProfileName, string.Empty, string.Empty);
             }
         }
 
@@ -715,7 +786,7 @@ namespace ASCOM.Vantage
             {
                 driverProfile.DeviceType = "ObservingConditions";
                 driverProfile.WriteValue(driverID, traceStateProfileName, traceState.ToString());
-                driverProfile.WriteValue(driverID, comPortProfileName, comPort.ToString());
+                driverProfile.WriteValue(driverID, reportFileProfileName, reportFile);
             }
         }
 

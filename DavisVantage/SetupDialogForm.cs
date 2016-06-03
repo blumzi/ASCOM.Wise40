@@ -24,8 +24,9 @@ namespace ASCOM.Vantage
         {
             // Place any validation constraint checks here
             // Update the state variables with results from the dialogue
-            ObservingConditions.comPort = (string)comboBoxComPort.SelectedItem;
+            //ObservingConditions.comPort = (string)comboBoxComPort.SelectedItem;
             ObservingConditions.traceState = chkTrace.Checked;
+            ObservingConditions.reportFile = labelReportFileValue.Text;
         }
 
         private void cmdCancel_Click(object sender, EventArgs e) // Cancel button event handler
@@ -54,13 +55,28 @@ namespace ASCOM.Vantage
         {
             chkTrace.Checked = ObservingConditions.traceState;
             // set the list of com ports to those that are currently available
-            comboBoxComPort.Items.Clear();
-            comboBoxComPort.Items.AddRange(System.IO.Ports.SerialPort.GetPortNames());      // use System.IO because it's static
+            //comboBoxComPort.Items.Clear();
+            //comboBoxComPort.Items.AddRange(System.IO.Ports.SerialPort.GetPortNames());      // use System.IO because it's static
             // select the current port if possible
-            if (comboBoxComPort.Items.Contains(ObservingConditions.comPort))
-            {
-                comboBoxComPort.SelectedItem = ObservingConditions.comPort;
-            }
+            //if (comboBoxComPort.Items.Contains(ObservingConditions.comPort))
+            //{
+            //    comboBoxComPort.SelectedItem = ObservingConditions.comPort;
+            //}
+        }
+
+        private void SetupDialogForm_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void openFileDialog_FileOk(object sender, CancelEventArgs e)
+        {
+            labelReportFileValue.Text = openFileDialog.FileName;
+        }
+
+        private void buttonChoose_Click(object sender, EventArgs e)
+        {
+            openFileDialog.ShowDialog();
         }
     }
 }
