@@ -116,10 +116,8 @@ namespace ASCOM.Vantage
             connectedState = false; // Initialise connected to false
             utilities = new Util(); //Initialise util object
             astroUtilities = new AstroUtils(); // Initialise astro utilities object
-            //TODO: Implement your additional construction here
 
             tl.LogMessage("ObservingConditions", "Completed initialisation");
-            sensorData = new Dictionary<string, string>();
             Refresh();
         }
 
@@ -143,7 +141,8 @@ namespace ASCOM.Vantage
             if (IsConnected)
                 System.Windows.Forms.MessageBox.Show("Already connected, just press OK");
 
-            using (SetupDialogForm F = new SetupDialogForm())
+            ReadProfile();
+            using (SetupDialogForm F = new SetupDialogForm(traceState, reportFile))
             {
                 var result = F.ShowDialog();
                 if (result == System.Windows.Forms.DialogResult.OK)
@@ -339,7 +338,7 @@ namespace ASCOM.Vantage
         {
             get
             {
-                var dewPoint = Convert.ToDouble(sensorData["dewPoint"]);
+                var dewPoint = Convert.ToDouble(sensorData["insideDewPt"]);
 
                 tl.LogMessage("Pressure", "get - " + dewPoint.ToString());
                 return dewPoint;
@@ -357,7 +356,7 @@ namespace ASCOM.Vantage
         {
             get
             {
-                var humidity = Convert.ToDouble(sensorData["humidity"]);
+                var humidity = Convert.ToDouble(sensorData["insideHumidity"]);
 
                 tl.LogMessage("Pressure", "get - " + humidity.ToString());
                 return humidity;
@@ -376,7 +375,7 @@ namespace ASCOM.Vantage
         {
             get
             {
-                var pressure = Convert.ToDouble(sensorData["pressure"]);
+                var pressure = Convert.ToDouble(sensorData["barometer"]);
 
                 tl.LogMessage("Pressure", "get - " + pressure.ToString());
                 return pressure;
@@ -411,7 +410,8 @@ namespace ASCOM.Vantage
 
             if (reportFile == null || reportFile == string.Empty)
                 return;
-
+            
+            sensorData = new Dictionary<string, string>();
             using (StreamReader sr = new StreamReader(reportFile))
             {
                 string[] words;
@@ -425,36 +425,7 @@ namespace ASCOM.Vantage
                     words = line.Split('=');
                     if (words.Length != 3)
                         continue;
-                    switch(words[0])
-                    {
-                        case "barometer":
-                            sensorData["pressure"] = words[1];
-                            break;
-                        case "windSpeed":
-                            sensorData["windSpeed"] = words[1];
-                            break;
-                        case "windDir":
-                            sensorData["windDir"] = words[1];
-                            break;
-                        case "insideTemp":
-                            sensorData["temperature"] = words[1];
-                            break;
-                        case "insideDewPt":
-                            sensorData["dewPoint"] = words[1];
-                            break;
-                        case "insideHumidity":
-                            sensorData["humidity"] = words[1];
-                            break;
-                        case "rainRate":
-                            sensorData["rainRate"] = words[1];
-                            break;
-                        case "stationDate":
-                            sensorData["stationDate"] = words[1];
-                            break;
-                        case "stationTime":
-                            sensorData["stationTime"] = words[1];
-                            break;
-                    }
+                    sensorData[words[0]] = words[1];
                 }
             }
         }
@@ -489,6 +460,7 @@ namespace ASCOM.Vantage
                 case "StarFWHM":
                 case "SkyTemperature":
                 case "WindGust":
+                case "CloudCover":
                     tl.LogMessage("SensorDescription", PropertyName + " - not implemented");
                     throw new MethodNotImplementedException("SensorDescription(" + PropertyName + ")");
                 default:
@@ -552,7 +524,7 @@ namespace ASCOM.Vantage
         {
             get
             {
-                var temperature = Convert.ToDouble(sensorData["temperature"]);
+                var temperature = Convert.ToDouble(sensorData["insideTemp"]);
 
                 tl.LogMessage("Temperature", "get - " + temperature.ToString());
                 return temperature;
@@ -571,7 +543,18 @@ namespace ASCOM.Vantage
         /// </remarks>
         public double TimeSinceLastUpdate(string PropertyName)
         {
-            string dateTime = sensorData["stationDate"] + " " + sensorData["stationTime"] + " ";
+            switch (PropertyName)
+            {
+                case "SkyBrightness":
+                case "SkyQuality":
+                case "StarFWHM":
+                case "SkyTemperature":
+                case "WindGust":
+                case "CloudCover":
+                    tl.LogMessage("TimeSinceLastUpdate", PropertyName + " - not implemented");
+                    throw new MethodNotImplementedException("SensorDescription(" + PropertyName + ")");
+            }
+            string dateTime = sensorData["stationDate"] + " " + sensorData["stationTime"] + "m";
             DateTime lastUpdate = Convert.ToDateTime(dateTime);
             double seconds = (DateTime.Now - lastUpdate).Seconds;           
 

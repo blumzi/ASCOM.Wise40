@@ -13,8 +13,14 @@ namespace ASCOM.Vantage
     [ComVisible(false)]					// Form not registered for COM!
     public partial class SetupDialogForm : Form
     {
-        public SetupDialogForm()
+        private bool traceState;
+        private string reportFile;
+
+        public SetupDialogForm(bool traceState, string reportFile)
         {
+            this.traceState = traceState;
+            this.reportFile = reportFile;
+
             InitializeComponent();
             // Initialise current values of user settings from the ASCOM Profile
             InitUI();
@@ -22,9 +28,6 @@ namespace ASCOM.Vantage
 
         private void cmdOK_Click(object sender, EventArgs e) // OK button event handler
         {
-            // Place any validation constraint checks here
-            // Update the state variables with results from the dialogue
-            //ObservingConditions.comPort = (string)comboBoxComPort.SelectedItem;
             ObservingConditions.traceState = chkTrace.Checked;
             ObservingConditions.reportFile = labelReportFileValue.Text;
         }
@@ -53,15 +56,8 @@ namespace ASCOM.Vantage
 
         private void InitUI()
         {
-            chkTrace.Checked = ObservingConditions.traceState;
-            // set the list of com ports to those that are currently available
-            //comboBoxComPort.Items.Clear();
-            //comboBoxComPort.Items.AddRange(System.IO.Ports.SerialPort.GetPortNames());      // use System.IO because it's static
-            // select the current port if possible
-            //if (comboBoxComPort.Items.Contains(ObservingConditions.comPort))
-            //{
-            //    comboBoxComPort.SelectedItem = ObservingConditions.comPort;
-            //}
+            chkTrace.Checked = traceState;
+            labelReportFileValue.Text = reportFile;
         }
 
         private void SetupDialogForm_Load(object sender, EventArgs e)
