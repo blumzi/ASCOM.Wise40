@@ -166,7 +166,10 @@ namespace ASCOM.Wise40
         {
             public Const.AxisDirection direction;
             public double rate;
-            public Angle startingAngle, intermediateTargetAngle, deltaAngle, finalTargetAngle;
+            public Angle startingAngle;
+            public Angle longTermTargetAngle;       // Where we finally want to get
+            public Angle shortTermTargetAngle;      // A smaller intermediate step towards the longTermTargetAngle
+            public Angle deltaAngle;
         };
 
         public Dictionary<TelescopeAxes, Dictionary<double, MovementParameters>> movementParameters;
@@ -474,7 +477,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return 7.112;   // Las Cmpanas 40" (meters)
+                return 7.112;   // Las Campanas 40" (meters)
             }
         }
 
@@ -903,8 +906,8 @@ namespace ASCOM.Wise40
                 // Phase #1
                 //  Prepare each axis' currMovement instance:
                 //   - startingAngle:           The angle before starting the movement
-                //   - finalTargetAngle:        The angle to which we want to ultimatly get on this axis (ra or dec)
-                //   - intermediateTargetAngle: The angle we want to reach in the next sub-movement, at the same rate as the other axis
+                //   - longTermTargetAngle:     The angle to which we want to ultimatly get on this axis (ra or dec)
+                //   - shortTermTargetAngle:    The angle we want to reach in the next sub-movement, at the same rate as the other axis
                 //   - direction:               Which way the axis will move
                 //
                 if (bgw.CancellationPending)
@@ -919,15 +922,15 @@ namespace ASCOM.Wise40
                     if (axis == TelescopeAxes.axisPrimary)
                     {
                         cm.startingAngle = new Angle(RightAscension);
-                        cm.finalTargetAngle = new Angle(arg.rightAscension);
+                        cm.longTermTargetAngle = new Angle(arg.rightAscension);
                     }
                     else
                     {
                         cm.startingAngle = new Angle(Declination);
-                        cm.finalTargetAngle = new Angle(arg.declination);
+                        cm.longTermTargetAngle = new Angle(arg.declination);
                     }
 
-                    var shortest = cm.startingAngle.ShortestDistance(cm.finalTargetAngle);
+                    var shortest = cm.startingAngle.ShortestDistance(cm.longTermTargetAngle);
                     cm.deltaAngle = shortest.angle;
                     cm.direction = shortest.direction;
 
@@ -956,13 +959,13 @@ namespace ASCOM.Wise40
                     {
                         Angle movementDistance = cm.deltaAngle - movementParameters[axis][rate].anglePerSecond;
                         if (cm.direction == Const.AxisDirection.Increasing)
-                            cm.intermediateTargetAngle = cm.startingAngle + movementDistance;
+                            cm.shortTermTargetAngle = cm.startingAngle + movementDistance;
                         else
-                            cm.intermediateTargetAngle = cm.startingAngle - movementDistance;
+                            cm.shortTermTargetAngle = cm.startingAngle - movementDistance;
 
                         cm.rate = rate;
                         debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "bgw: {0}: startingAngle: {1}, targetAngle: {2}, direction: {3}, rate: {4}",
-                            axis, cm.startingAngle, cm.intermediateTargetAngle, cm.direction, rateName[cm.rate]);
+                            axis, cm.startingAngle, cm.shortTermTargetAngle, cm.direction, rateName[cm.rate]);
                     }
                 }
 
@@ -997,12 +1000,12 @@ namespace ASCOM.Wise40
 
                     Angle thisMovementAngle = Angle.Max(commonDeltaAngle, cm.deltaAngle);
                     if (cm.direction == Const.AxisDirection.Increasing)
-                        cm.intermediateTargetAngle = cm.startingAngle + thisMovementAngle;
+                        cm.shortTermTargetAngle = cm.startingAngle + thisMovementAngle;
                     else
-                        cm.intermediateTargetAngle = cm.startingAngle - thisMovementAngle;
+                        cm.shortTermTargetAngle = cm.startingAngle - thisMovementAngle;
 
                     debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "bgw: {0}: (STARTING) Calling MoveAxis({0}, {1}, {4}) startingAngle: {2}, targetAngle: {3}, direction: {4}, rate: {5}", axis, rateName[rate],
-                        cm.startingAngle, cm.intermediateTargetAngle, cm.direction, rateName[cm.rate]);
+                        cm.startingAngle, cm.shortTermTargetAngle, cm.direction, rateName[cm.rate]);
 
                     if (bgw.CancellationPending)
                         goto workDone;
@@ -1028,18 +1031,18 @@ namespace ASCOM.Wise40
 
                         double currentDegrees = (axis == TelescopeAxes.axisPrimary) ? RightAscension : Declination;
                         bool arrivedAtTarget = (cm.direction == Const.AxisDirection.Increasing) ?
-                            currentDegrees >= cm.intermediateTargetAngle.Degrees :
-                            currentDegrees <= cm.intermediateTargetAngle.Degrees;
+                            currentDegrees >= cm.shortTermTargetAngle.Degrees :
+                            currentDegrees <= cm.shortTermTargetAngle.Degrees;
 
                         if (arrivedAtTarget)
                         {
                             debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "bgw: {0} stopping at {5}, calling  MoveAxis({0}, {1}) startingAngle: {2}, targetAngle: {3}, direction {4}",
-                                axis, rateName[Const.rateStopped], cm.startingAngle, cm.intermediateTargetAngle, cm.direction, new Angle(currentDegrees));
+                                axis, rateName[Const.rateStopped], cm.startingAngle, cm.shortTermTargetAngle, cm.direction, new Angle(currentDegrees));
 
                             MoveAxis(axis, Const.rateStopped, Const.AxisDirection.None, false);  // this axis has moved within range of the target, stop it (sets currentMovement[axis].rate = rateStopped)
                         } else
                             debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "bgw: {0} moving at {5}, (deg: {2}), {1} (inter: {3}, final: {4})",
-                                axis, new Angle(currentDegrees), currentDegrees, cm.intermediateTargetAngle, cm.finalTargetAngle, rateName[cm.rate]);
+                                axis, new Angle(currentDegrees), currentDegrees, cm.shortTermTargetAngle, cm.longTermTargetAngle, rateName[cm.rate]);
                     }
 
                     if (currMovement[TelescopeAxes.axisPrimary].rate == Const.rateStopped && currMovement[TelescopeAxes.axisSecondary].rate == Const.rateStopped)

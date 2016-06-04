@@ -96,6 +96,7 @@ namespace ASCOM.Wise40
             get
             {
                 double gstNow = 0;
+                double hours;
 
                 var res = novas31.SiderealTime(
                     astroutils.JulianDateUT1(0), 0d,
@@ -108,7 +109,8 @@ namespace ASCOM.Wise40
                 if (res != 0)
                     throw new InvalidValueException("Error getting Greenwich Apparent Sidereal time");
 
-                return astroutils.Range(gstNow + (Longitude / 15.0), 0.0, true, 24.0, false);
+                hours = astroutils.Range(gstNow + (Longitude / 15.0), 0.0, true, 24.0, false);
+                return hours * 15;
             }
         }
 

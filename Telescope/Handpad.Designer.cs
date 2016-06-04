@@ -550,6 +550,7 @@
             this.groupBoxEncoders.Controls.Add(this.labelDecEncValue);
             this.groupBoxEncoders.Controls.Add(this.labelHAEnc);
             this.groupBoxEncoders.Controls.Add(this.labelHAEncValue);
+            this.groupBoxEncoders.ForeColor = System.Drawing.Color.DarkOrange;
             this.groupBoxEncoders.Location = new System.Drawing.Point(280, 24);
             this.groupBoxEncoders.Name = "groupBoxEncoders";
             this.groupBoxEncoders.Size = new System.Drawing.Size(200, 72);
