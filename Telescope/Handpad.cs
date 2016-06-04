@@ -256,7 +256,7 @@ namespace ASCOM.Wise40
 
         private void buttonStopStudy_Click(object sender, EventArgs e)
         {
-            if (scopeBackgroundMover.IsBusy)
+            if (scopeBackgroundMover != null && scopeBackgroundMover.IsBusy)
                 scopeBackgroundMover.CancelAsync();
         }
 
@@ -454,6 +454,16 @@ namespace ASCOM.Wise40
         private void displayTimer_Tick(object sender, EventArgs e)
         {
             RefreshDisplay();
+        }
+
+        private void buttonGoCoord_Click(object sender, EventArgs e)
+        {
+            Astrometry.AstroUtils.AstroUtils utils = new Astrometry.AstroUtils.AstroUtils();
+
+            Angle ra = new Angle(textBoxRA.Text);
+            Angle dec = new Angle(textBoxDec.Text);
+
+            T.SlewToCoordinatesAsync(ra.Degrees, dec.Degrees);
         }
     }
 }

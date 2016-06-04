@@ -100,6 +100,11 @@
             this.buttonSE = new System.Windows.Forms.Button();
             this.buttonNE = new System.Windows.Forms.Button();
             this.displayTimer = new System.Windows.Forms.Timer(this.components);
+            this.labelRA = new System.Windows.Forms.Label();
+            this.labelDec = new System.Windows.Forms.Label();
+            this.textBoxRA = new System.Windows.Forms.TextBox();
+            this.textBoxDec = new System.Windows.Forms.TextBox();
+            this.buttonGoCoord = new System.Windows.Forms.Button();
             this.panel1.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.panelDebug.SuspendLayout();
@@ -523,6 +528,11 @@
             // 
             // groupBox6
             // 
+            this.groupBox6.Controls.Add(this.buttonGoCoord);
+            this.groupBox6.Controls.Add(this.textBoxDec);
+            this.groupBox6.Controls.Add(this.textBoxRA);
+            this.groupBox6.Controls.Add(this.labelDec);
+            this.groupBox6.Controls.Add(this.labelRA);
             this.groupBox6.Controls.Add(this.groupBoxEncoders);
             this.groupBox6.Controls.Add(this.buttonSaveResults);
             this.groupBox6.Controls.Add(this.buttonStopStudy);
@@ -611,7 +621,7 @@
             this.buttonSaveResults.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.buttonSaveResults.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonSaveResults.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonSaveResults.Location = new System.Drawing.Point(280, 139);
+            this.buttonSaveResults.Location = new System.Drawing.Point(282, 182);
             this.buttonSaveResults.Name = "buttonSaveResults";
             this.buttonSaveResults.Size = new System.Drawing.Size(200, 32);
             this.buttonSaveResults.TabIndex = 15;
@@ -626,7 +636,7 @@
             this.buttonStopStudy.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.buttonStopStudy.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonStopStudy.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonStopStudy.Location = new System.Drawing.Point(336, 104);
+            this.buttonStopStudy.Location = new System.Drawing.Point(334, 121);
             this.buttonStopStudy.Name = "buttonStopStudy";
             this.buttonStopStudy.Size = new System.Drawing.Size(144, 32);
             this.buttonStopStudy.TabIndex = 14;
@@ -688,12 +698,12 @@
             this.TextBoxLog.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.TextBoxLog.Font = new System.Drawing.Font("Lucida Console", 7.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.TextBoxLog.ForeColor = System.Drawing.Color.DarkOrange;
-            this.TextBoxLog.Location = new System.Drawing.Point(8, 176);
+            this.TextBoxLog.Location = new System.Drawing.Point(8, 228);
             this.TextBoxLog.Multiline = true;
             this.TextBoxLog.Name = "TextBoxLog";
             this.TextBoxLog.ReadOnly = true;
             this.TextBoxLog.ShortcutsEnabled = false;
-            this.TextBoxLog.Size = new System.Drawing.Size(472, 360);
+            this.TextBoxLog.Size = new System.Drawing.Size(472, 308);
             this.TextBoxLog.TabIndex = 8;
             this.TextBoxLog.Text = "hiho";
             // 
@@ -1026,6 +1036,53 @@
             this.displayTimer.Interval = 500;
             this.displayTimer.Tick += new System.EventHandler(this.displayTimer_Tick);
             // 
+            // labelRA
+            // 
+            this.labelRA.AutoSize = true;
+            this.labelRA.Location = new System.Drawing.Point(9, 152);
+            this.labelRA.Name = "labelRA";
+            this.labelRA.Size = new System.Drawing.Size(25, 13);
+            this.labelRA.TabIndex = 21;
+            this.labelRA.Text = "RA:";
+            // 
+            // labelDec
+            // 
+            this.labelDec.AutoSize = true;
+            this.labelDec.Location = new System.Drawing.Point(141, 152);
+            this.labelDec.Name = "labelDec";
+            this.labelDec.Size = new System.Drawing.Size(30, 13);
+            this.labelDec.TabIndex = 22;
+            this.labelDec.Text = "Dec:";
+            // 
+            // textBoxRA
+            // 
+            this.textBoxRA.Location = new System.Drawing.Point(35, 148);
+            this.textBoxRA.Name = "textBoxRA";
+            this.textBoxRA.Size = new System.Drawing.Size(100, 20);
+            this.textBoxRA.TabIndex = 23;
+            // 
+            // textBoxDec
+            // 
+            this.textBoxDec.Location = new System.Drawing.Point(170, 148);
+            this.textBoxDec.Name = "textBoxDec";
+            this.textBoxDec.Size = new System.Drawing.Size(100, 20);
+            this.textBoxDec.TabIndex = 24;
+            // 
+            // buttonGoCoord
+            // 
+            this.buttonGoCoord.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonGoCoord.FlatAppearance.BorderSize = 0;
+            this.buttonGoCoord.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonGoCoord.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.buttonGoCoord.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.buttonGoCoord.Location = new System.Drawing.Point(280, 142);
+            this.buttonGoCoord.Name = "buttonGoCoord";
+            this.buttonGoCoord.Size = new System.Drawing.Size(48, 32);
+            this.buttonGoCoord.TabIndex = 25;
+            this.buttonGoCoord.Text = "Go";
+            this.buttonGoCoord.UseVisualStyleBackColor = false;
+            this.buttonGoCoord.Click += new System.EventHandler(this.buttonGoCoord_Click);
+            // 
             // HandpadForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1138,5 +1195,10 @@
         private System.Windows.Forms.Label labelDecEncValue;
         private System.Windows.Forms.Label labelHAEnc;
         private System.Windows.Forms.Label labelHAEncValue;
+        private System.Windows.Forms.Button buttonGoCoord;
+        private System.Windows.Forms.TextBox textBoxDec;
+        private System.Windows.Forms.TextBox textBoxRA;
+        private System.Windows.Forms.Label labelDec;
+        private System.Windows.Forms.Label labelRA;
     }
 }

@@ -149,10 +149,10 @@ namespace ASCOM.Wise40
         {
             // consider only showing the setup dialog if not connected
             // or call a different dialog if connected
-            if (IsConnected)
+            if (IsConnected && WiseTele.Instance.debugger.Debugging(Common.Debugger.DebugLevel.DebugDevice))
             {
-                //handpad = new HandpadForm();
-                //handpad.ShowDialog();
+                handpad = new HandpadForm();
+                handpad.ShowDialog();
             } else
                 using (TelescopeSetupDialogForm F = new TelescopeSetupDialogForm(this))
                 {
