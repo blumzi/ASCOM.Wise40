@@ -67,19 +67,19 @@ namespace ASCOM.Wise40
             ascomutils.Dispose();
         }
 
-        public double Longitude
+        public Angle Longitude
         {
             get
             {
-                return onSurface.Longitude;
+                return Angle.FromDegrees(onSurface.Longitude);
             }
         }
 
-        public double Latitude
+        public Angle Latitude
         {
             get
             {
-                return onSurface.Latitude;
+                return Angle.FromDegrees(onSurface.Latitude);
             }
         }
 
@@ -91,12 +91,12 @@ namespace ASCOM.Wise40
             }
         }
 
-        public double LocalSiderealTime
+        public Angle LocalSiderealTime
         {
             get
             {
                 double gstNow = 0;
-                double hours;
+                Angle ret;
 
                 var res = novas31.SiderealTime(
                     astroutils.JulianDateUT1(0), 0d,
@@ -109,8 +109,11 @@ namespace ASCOM.Wise40
                 if (res != 0)
                     throw new InvalidValueException("Error getting Greenwich Apparent Sidereal time");
 
-                hours = astroutils.Range(gstNow + (Longitude / 15.0), 0.0, true, 24.0, false);
-                return hours * 15;
+                ret = Angle.FromHours(gstNow + Longitude.Hours);
+                Debugger debugger = new Debugger((uint)Debugger.DebugLevel.DebugAll);
+                debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "LocalSiderealTime: {0}", ret);
+
+                return ret;
             }
         }
 

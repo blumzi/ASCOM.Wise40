@@ -12,11 +12,11 @@ namespace ASCOM.CloudSensor
     [ComVisible(false)]					// Form not registered for COM!
     public partial class SetupDialogForm : Form
     {
-        public SetupDialogForm()
+        public SetupDialogForm(bool traceState, string dataFile)
         {
             InitializeComponent();
             // Initialise current values of user settings from the ASCOM Profile
-            InitUI();
+            InitUI(traceState, dataFile);
         }
 
         private void cmdOK_Click(object sender, EventArgs e) // OK button event handler
@@ -49,15 +49,21 @@ namespace ASCOM.CloudSensor
             }
         }
 
-        private void InitUI()
+        private void InitUI(bool traceState, string dataFile)
         {
-            chkTrace.Checked = ObservingConditions.traceState;
-            // set the list of com ports to those that are currently available            
+            chkTrace.Checked = traceState;
+            // set the list of com ports to those that are currently available  
+            labelDataFileValue.Text = dataFile;          
         }
 
         private void openFileDialog1_FileOk(object sender, CancelEventArgs e)
         {
             labelDataFileValue.Text = ((OpenFileDialog)sender).FileName;
+        }
+
+        private void buttonChooseDataFile_Click(object sender, EventArgs e)
+        {
+            openFileDialog.ShowDialog();
         }
     }
 }

@@ -74,7 +74,7 @@ namespace ASCOM.Wise40.Hardware
             }
             _name = name;
 
-            _angle = simulated ? new Angle("00:00:00.0") : Angle.FromRad((Value * HaMultiplier) + HaCorrection);
+            _angle = simulated ? new Angle("00:00:00.0") : Angle.FromRadians((Value * HaMultiplier) + HaCorrection);
 
             using (ASCOM.Utilities.Profile driverProfile = new ASCOM.Utilities.Profile())
             {
@@ -151,18 +151,23 @@ namespace ASCOM.Wise40.Hardware
 
                 if (simulated)
                 {
-                    debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "{0}: ({1} {2} {3}) {4} {5} {6}",
-                        name, before.ToString(), delta.ToString(), after.ToString(), new Angle(before), new Angle(delta), new Angle(after));
+                    debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "{0}: {1} + {2} = {3}", name, new Angle(before), new Angle(delta), new Angle(after));
                     _daqsValue = (uint)((_angle.Radians + HaCorrection) / HaMultiplier);
                 }
             }
         }
 
-        public double RightAscension
+        /// <summary>
+        /// Right Ascension in Hours
+        /// </summary>
+        public Angle RightAscension
         {
             get
             {
-                return WiseSite.Instance.LocalSiderealTime - Degrees;
+                Angle ret = WiseSite.Instance.LocalSiderealTime - Angle.FromDegrees(Degrees);
+                debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "RightAscension: {0}", ret);
+
+                return ret;
             }
         }
 

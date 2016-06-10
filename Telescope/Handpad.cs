@@ -60,21 +60,21 @@ namespace ASCOM.Wise40
                 dTime = time[curr].Subtract(time[prev]);
                 dEncoder = enc_value[curr] - enc_value[prev];
                 dDeg = enc_angle[curr].Degrees - enc_angle[prev].Degrees;
-                s = string.Format(" start-to-stop: dTime: {0} dDeg: {2} dEnc: {1}\r\n", dTime, dEncoder, Angle.FromDeg(dDeg).ToFormattedString(Angle.Format.Deg));
+                s = string.Format(" start-to-stop: dTime: {0} dDeg: {2} dEnc: {1}\r\n", dTime, dEncoder, Angle.FromDegrees(dDeg).ToFormattedString(Angle.Format.Deg));
 
                 curr = (int)TimedMovementResult.ResultSelector.AtIdle;
                 prev = (int)TimedMovementResult.ResultSelector.AtStop;
                 dTime = time[curr].Subtract(time[prev]);
                 dEncoder = enc_value[curr] - enc_value[prev];
                 dDeg = enc_angle[curr].Degrees - enc_angle[prev].Degrees;
-                s += string.Format("       inertia: dTime: {0} dDeg: {2} dEnc: {1}\r\n", dTime, dEncoder, Angle.FromDeg(dDeg).ToFormattedString(Angle.Format.Deg));
+                s += string.Format("       inertia: dTime: {0} dDeg: {2} dEnc: {1}\r\n", dTime, dEncoder, Angle.FromDegrees(dDeg).ToFormattedString(Angle.Format.Deg));
 
                 curr = (int)TimedMovementResult.ResultSelector.AtIdle;
                 prev = (int)TimedMovementResult.ResultSelector.AtStart;
                 dTime = time[curr].Subtract(time[prev]);
                 dEncoder = enc_value[curr] - enc_value[prev];
                 dDeg = enc_angle[curr].Degrees - enc_angle[prev].Degrees;
-                s += string.Format("         total: dTime: {0} dDeg: {2} dEnc: {1}\r\n", dTime, dEncoder, Angle.FromDeg(dDeg).ToFormattedString(Angle.Format.Deg)); s += "\r\n";
+                s += string.Format("         total: dTime: {0} dDeg: {2} dEnc: {1}\r\n", dTime, dEncoder, Angle.FromDegrees(dDeg).ToFormattedString(Angle.Format.Deg)); s += "\r\n";
 
                 return s;
             }
@@ -166,14 +166,14 @@ namespace ASCOM.Wise40
             labelDate.Text = utc.ToLongDateString();
             labelLTValue.Text = now.TimeOfDay.ToString(@"hh\:mm\:ss\.f\ ");
             labelUTValue.Text = utc.TimeOfDay.ToString(@"hh\:mm\:ss\.f\ ");
-            labelSiderealValue.Text = u.DegreesToHMS(WiseSite.Instance.LocalSiderealTime, ":", ":", "", 1);
+            labelSiderealValue.Text = WiseSite.Instance.LocalSiderealTime.ToFormattedString(Angle.Format.HMS);
 
-            labelRightAscensionValue.Text = Angle.FromDeg(T.RightAscension).ToFormattedString(Angle.Format.RAhms);
-            labelDeclinationValue.Text = Angle.FromDeg(T.Declination).ToFormattedString(Angle.Format.Dec);
-            labelHourAngleValue.Text = Angle.FromDeg(T.HourAngle).ToFormattedString(Angle.Format.HAhms);
+            labelRightAscensionValue.Text = T.RightAscension.ToFormattedString(Angle.Format.RAhms);
+            labelDeclinationValue.Text = T.Declination.ToFormattedString(Angle.Format.Dec);
+            labelHourAngleValue.Text = Angle.FromDegrees(T.HourAngle).ToFormattedString(Angle.Format.HAhms);
 
-            labelAltitudeValue.Text = Angle.FromDeg(T.Altitude).ToFormattedString(Angle.Format.Alt);
-            labelAzimuthValue.Text = Angle.FromDeg(T.Azimuth).ToFormattedString(Angle.Format.Az);
+            labelAltitudeValue.Text = Angle.FromDegrees(T.Altitude).ToFormattedString(Angle.Format.Alt);
+            labelAzimuthValue.Text = Angle.FromDegrees(T.Azimuth).ToFormattedString(Angle.Format.Az);
 
             labelHAEncValue.Text = T.HAEncoder.Value.ToString();
             labelDecEncValue.Text = T.DecEncoder.Value.ToString();
@@ -280,7 +280,7 @@ namespace ASCOM.Wise40
                 selector = (int)TimedMovementResult.ResultSelector.AtStart;
                 res.time[selector] = DateTime.Now;
                 res.enc_value[selector] = (arg.axis == TelescopeAxes.axisPrimary) ? T.HAEncoder.Value : T.DecEncoder.Value;
-                res.enc_angle[selector] = Angle.FromRad((arg.axis == TelescopeAxes.axisPrimary) ? T.HAEncoder.Angle.Radians : T.DecEncoder.Angle.Radians);
+                res.enc_angle[selector] = Angle.FromRadians((arg.axis == TelescopeAxes.axisPrimary) ? T.HAEncoder.Angle.Radians : T.DecEncoder.Angle.Radians);
 
                 if (bgw.CancellationPending)
                 {
@@ -306,7 +306,7 @@ namespace ASCOM.Wise40
                 selector = (int)TimedMovementResult.ResultSelector.AtStop;
                 res.time[selector] = DateTime.Now;
                 res.enc_value[selector] = (arg.axis == TelescopeAxes.axisPrimary) ? T.HAEncoder.Value : T.DecEncoder.Value;
-                res.enc_angle[selector] = Angle.FromDeg((arg.axis == TelescopeAxes.axisPrimary) ? T.HAEncoder.Angle.Degrees : T.DecEncoder.Angle.Degrees);
+                res.enc_angle[selector] = Angle.FromDegrees((arg.axis == TelescopeAxes.axisPrimary) ? T.HAEncoder.Angle.Degrees : T.DecEncoder.Angle.Degrees);
 
                 if (T.simulated)    // move some more, to simulate telescope inertia
                 {
@@ -350,7 +350,7 @@ namespace ASCOM.Wise40
                 selector = (int)TimedMovementResult.ResultSelector.AtIdle;
                 res.time[selector] = DateTime.Now;
                 res.enc_value[selector] = (arg.axis == TelescopeAxes.axisPrimary) ? T.HAEncoder.Value : T.DecEncoder.Value;
-                res.enc_angle[selector] = Angle.FromDeg((arg.axis == TelescopeAxes.axisPrimary) ? T.HAEncoder.Angle.Degrees : T.DecEncoder.Angle.Degrees);
+                res.enc_angle[selector] = Angle.FromDegrees((arg.axis == TelescopeAxes.axisPrimary) ? T.HAEncoder.Angle.Degrees : T.DecEncoder.Angle.Degrees);
 
                 bgResults.Add(res);
             }
@@ -463,7 +463,7 @@ namespace ASCOM.Wise40
             Angle ra = new Angle(textBoxRA.Text);
             Angle dec = new Angle(textBoxDec.Text);
 
-            T.SlewToCoordinatesAsync(ra.Degrees, dec.Degrees);
+            T.SlewToCoordinatesAsync(ra, dec);
         }
     }
 }

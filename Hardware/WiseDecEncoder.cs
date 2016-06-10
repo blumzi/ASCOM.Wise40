@@ -71,7 +71,7 @@ namespace ASCOM.Wise40.Hardware
 
             _name = name;
 
-            _angle = simulated ? Angle.FromDeg(90.0 - WiseSite.Instance.Latitude) : Angle.FromRad((Value * decMultiplier) + DecCorrection);
+            _angle = simulated ? Angle.FromDegrees(90.0) - WiseSite.Instance.Latitude : Angle.FromRadians((Value * decMultiplier) + DecCorrection);
 
             using (ASCOM.Utilities.Profile driverProfile = new ASCOM.Utilities.Profile())
             {
@@ -80,11 +80,11 @@ namespace ASCOM.Wise40.Hardware
             }
         }
 
-        public double Declination
+        public Angle Declination
         {
             get
             {
-                return Degrees;
+                return Angle.FromDegrees(Degrees);
             }
         }
 

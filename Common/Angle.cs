@@ -31,7 +31,7 @@ namespace ASCOM.Wise40.Common
     {
         internal static Astrometry.AstroUtils.AstroUtils astroutils = new Astrometry.AstroUtils.AstroUtils();
         internal static ASCOM.Utilities.Util ascomutils = new ASCOM.Utilities.Util();
-        public enum Format { Deg, RA, Dec, HA, Alt, Az, Double, Rad, HAhms, RAhms };
+        public enum Format { Deg, RA, Dec, HA, Alt, Az, Double, Rad, HAhms, RAhms, HMS };
 
         private double _degrees;
 
@@ -43,49 +43,63 @@ namespace ASCOM.Wise40.Common
             }
         }
 
-        //public int D
-        //{
-        //    get
-        //    {
-        //        return (int) Math.Floor(_degrees);
-        //    }
-        //}
-
-        //public int M
-        //{
-        //    get
-        //    {
-        //        return (int) Math.Floor((_degrees - D) * 60);
-        //    }
-        //}
-
-        //public double S
-        //{
-        //    get
-        //    {
-        //        return (((_degrees - D) * 60) - M) * 60;
-        //    }
-        //}
-
-        //public int H
-        //{
-        //    get
-        //    {
-        //        return D / 15;
-        //    }
-        //}
-
-        public static Angle FromRad(double rad)
+        public static Angle FromRadians(double rad)
         {
             return new Angle(rad * 180.0 / Math.PI);
         }
 
-        public static Angle FromDeg(double deg)
+        public static Angle FromDegrees(double deg)
         {
             return new Angle(deg);
         }
 
+        public static Angle FromHours(double hours)
+        {
+            return new Angle(hours * 15.0);
+        }
+
         public double Degrees
+        {
+            get
+            {
+                return astroutils.Range(_degrees, 0.0, true, 360.0, false);
+            }
+
+            set
+            {
+                _degrees = astroutils.Range(value, 0.0, true, 360.0, false);
+            }
+        }
+
+        public double Hours
+        {
+            get
+            {
+                return astroutils.ConditionRA(_degrees / 15.0);
+            }
+
+            set
+            {
+                _degrees = astroutils.ConditionRA(value * 15.0);
+            }
+        }
+
+        public double Declination
+        {
+            get
+            {
+                return _degrees;
+            }
+
+            set
+            {
+                if (value < -90.0 || value > 90.0)
+                    throw new InvalidValueException(string.Format("Invalid value {0}, must be between -90.0 and 90.0", value));
+                _degrees = value;
+            }
+        }
+
+        public double Raw
         {
             get
             {
@@ -102,12 +116,12 @@ namespace ASCOM.Wise40.Common
         {
             get
             {
-                return _degrees * Math.PI / 180.0;
+                return Degrees * Math.PI / 180.0;
             }
 
             set
             {
-                _degrees = value * 180.0 / Math.PI;
+                Degrees = value * 180.0 / Math.PI;
             }
         }
 
@@ -134,12 +148,12 @@ namespace ASCOM.Wise40.Common
 
         public Angle(int d, int m, double s, int sign = 1)
         {
-            _degrees = sign * ascomutils.DMSToDegrees(string.Format("{0}:{1}:{2}", d, m, s));
+            Degrees = sign * ascomutils.DMSToDegrees(string.Format("{0}:{1}:{2}", d, m, s));
         }
 
         public Angle(string s)
         {
-            _degrees = ascomutils.DMSToDegrees(s);
+            Degrees = ascomutils.DMSToDegrees(s);
         }
 
         public static bool TryParse(string coordinates, out Angle value)
@@ -187,26 +201,28 @@ namespace ASCOM.Wise40.Common
         {
             switch (format)
             {
-                case Format.Deg:
-                    return ascomutils.DegreesToDMS(_degrees, "°", "'", "\"", 1);
+
                 case Format.RA:
                     return ascomutils.DegreesToHMS(_degrees, "h", "m", "s", 1);
+
+                case Format.Deg:
                 case Format.Dec:
-                    return ascomutils.DegreesToDMS(_degrees, "°", "'", "\"", 1);
-                case Format.HA:
-                    return ascomutils.DegreesToHMS(_degrees, "h", "m", "s", 1);
                 case Format.Az:
-                    return ascomutils.DegreesToDMS(_degrees, "°", "'", "\"", 1);
                 case Format.Alt:
                     return ascomutils.DegreesToDMS(_degrees, "°", "'", "\"", 1);
+
                 case Format.Double:
                     return string.Format("{0:0.000000}", Degrees);
+
                 case Format.Rad:
                     return string.Format("{0:0.000000}", Radians);
+
                 case Format.RAhms:
-                    return ascomutils.DegreesToHMS(_degrees, "h", "m", "s", 1);
                 case Format.HAhms:
+                case Format.HA:
                     return ascomutils.DegreesToHMS(_degrees, "h", "m", "s", 1);
+                case Format.HMS:
+                    return ascomutils.DegreesToHMS(Hours, "h", "m", "s", 1);
             }
             return "";
         }
@@ -334,7 +350,7 @@ namespace ASCOM.Wise40.Common
                 res.direction = Const.AxisDirection.Increasing;
             }
 
-            debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "ShortestDistance: from {0}, to {1}, ret: <{2}, {3}>", this, other, res.angle, res.direction);
+            debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "ShortestDistance: {0} -> {1} ==> {2} {3}", this, other, res.angle, res.direction);
             return res;
         }
 

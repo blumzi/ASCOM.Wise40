@@ -78,7 +78,7 @@ namespace ASCOM.Wise40
             debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "DomeSlaveDriver: Connect({0}) done", connect);
         }
 
-        public void SlewStartAsync(double ra, double dec)
+        public void SlewStartAsync(Angle ra, Angle dec)
         {
             double rar = 0, decr = 0, az = 0, zd = 0;
 
@@ -87,7 +87,7 @@ namespace ASCOM.Wise40
                 WiseSite.Instance.astrometricAccuracy,
                 0, 0,
                 WiseSite.Instance.onSurface,
-                ra, dec,
+                ra.Hours, dec.Degrees,
                 WiseSite.Instance.refractionOption,
                 ref zd, ref az, ref rar, ref decr);
 

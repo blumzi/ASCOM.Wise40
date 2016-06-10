@@ -124,17 +124,15 @@ namespace ASCOM.Wise40.Hardware
             {
                 Angle before = new Angle(encoder.Degrees), inc = new Angle(increment);
                 encoder.Degrees += increment;
-//                if (simulated && currentRate == Const.rateTrack)
-//                    encoder.Degrees += increment / 2;
                 Angle after = new Angle(encoder.Degrees);
 
-                if (WiseTele.Instance.debugger.Debugging(Debugger.DebugLevel.DebugEncoders))
+                if (WiseTele.Instance.debugger.Debugging(Debugger.DebugLevel.DebugMotors))
                 {
                     bool primary = (name == "EastMotor" || name == "WestMotor" || name == "TrackMotor");
-                    Angle encoderAngle =  primary ? new Angle(WiseTele.Instance.RightAscension) : new Angle(WiseTele.Instance.Declination);
+                    Angle encoderAngle =  primary ? WiseTele.Instance.RightAscension : WiseTele.Instance.Declination;
 
-                    WiseTele.Instance.debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "{0}: {1}: ({2} + {3} = {4}) ({5} + {6} = {7}) {8}: {9} (#{10}, {11} ms)", name, encoder.name,
-                        before.Degrees, increment, after.Degrees,
+                    WiseTele.Instance.debugger.WriteLine(Debugger.DebugLevel.DebugMotors, "{0}: {1}: {2} + {3} = {4}, {5}: {6} (#{7}, {8} ms)",
+                        name, encoder.name,
                         before, inc, after,
                         primary ? "ra" : "dec",
                         encoderAngle, timer_counts++, DateTime.Now.Subtract(prevTick).Milliseconds);

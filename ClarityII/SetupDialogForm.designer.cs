@@ -130,6 +130,7 @@ namespace ASCOM.CloudSensor
             this.buttonChooseDataFile.TabIndex = 8;
             this.buttonChooseDataFile.Text = " Select ";
             this.buttonChooseDataFile.UseVisualStyleBackColor = true;
+            this.buttonChooseDataFile.Click += new System.EventHandler(this.buttonChooseDataFile_Click);
             // 
             // SetupDialogForm
             // 

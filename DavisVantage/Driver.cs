@@ -556,7 +556,7 @@ namespace ASCOM.Vantage
             }
             string dateTime = sensorData["stationDate"] + " " + sensorData["stationTime"] + "m";
             DateTime lastUpdate = Convert.ToDateTime(dateTime);
-            double seconds = (DateTime.Now - lastUpdate).Seconds;           
+            double seconds = (DateTime.Now - lastUpdate).TotalSeconds;           
 
             tl.LogMessage("TimeSinceLastUpdate", PropertyName + seconds.ToString());
             return seconds;
