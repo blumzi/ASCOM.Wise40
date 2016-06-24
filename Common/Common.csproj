@@ -74,6 +74,7 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
+    <Compile Include="ShortestDistanceResult.cs" />
     <Compile Include="WiseException.cs" />
     <Compile Include="WiseObject.cs" />
     <Compile Include="WiseSite.cs" />

@@ -87,7 +87,7 @@ namespace ASCOM.Wise40
                 WiseSite.Instance.astrometricAccuracy,
                 0, 0,
                 WiseSite.Instance.onSurface,
-                ra.Hours, dec.Degrees,
+                ra.Value, dec.Value,
                 WiseSite.Instance.refractionOption,
                 ref zd, ref az, ref rar, ref decr);
 

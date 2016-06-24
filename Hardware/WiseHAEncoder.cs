@@ -128,7 +128,7 @@ namespace ASCOM.Wise40.Hardware
             set
             {
                 if (simulated)
-                    _angle.Degrees = value.Degrees;
+                    _angle.Value = value.Value;
             }
         }
 
@@ -139,14 +139,14 @@ namespace ASCOM.Wise40.Hardware
                 if (!simulated)
                     _angle.Radians = (_daqsValue * HaMultiplier) + HaCorrection;
 
-                return Angle.Degrees;
+                return Angle.Value;
             }
 
             set
             {
-                double before = _angle.Degrees;
-                _angle.Degrees = value;
-                double after = _angle.Degrees;
+                double before = _angle.Value;
+                _angle.Value = value;
+                double after = _angle.Value;
                 double delta = after - before;
 
                 if (simulated)
@@ -157,6 +157,14 @@ namespace ASCOM.Wise40.Hardware
             }
         }
 
+        private double Hours
+        {
+            get
+            {
+                return Degrees / 15.0;
+            }
+        }
+
         /// <summary>
         /// Right Ascension in Hours
         /// </summary>
@@ -164,7 +172,7 @@ namespace ASCOM.Wise40.Hardware
         {
             get
             {
-                Angle ret = WiseSite.Instance.LocalSiderealTime - Angle.FromDegrees(Degrees);
+                Angle ret = WiseSite.Instance.LocalSiderealTime - Angle.FromHours(Hours);
                 debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "RightAscension: {0}", ret);
 
                 return ret;

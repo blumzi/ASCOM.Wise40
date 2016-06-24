@@ -71,7 +71,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return Angle.FromDegrees(onSurface.Longitude);
+                return Angle.FromHours(onSurface.Longitude / 15.0);
             }
         }
 
@@ -79,7 +79,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return Angle.FromDegrees(onSurface.Latitude);
+                return Angle.FromDegrees(onSurface.Latitude, Angle.Type.Dec);
             }
         }
 
@@ -96,7 +96,6 @@ namespace ASCOM.Wise40
             get
             {
                 double gstNow = 0;
-                Angle ret;
 
                 var res = novas31.SiderealTime(
                     astroutils.JulianDateUT1(0), 0d,
@@ -109,21 +108,17 @@ namespace ASCOM.Wise40
                 if (res != 0)
                     throw new InvalidValueException("Error getting Greenwich Apparent Sidereal time");
 
-                ret = Angle.FromHours(gstNow + Longitude.Hours);
-                Debugger debugger = new Debugger((uint)Debugger.DebugLevel.DebugAll);
-                debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "LocalSiderealTime: {0}", ret);
-
-                return ret;
+                return Angle.FromHours(gstNow) + Longitude;
             }
         }
 
-        public static double ToSiderealTime(DateTime dt)
-        {
-            var utilities = new Utilities.Util();
-            double siderealTime = (18.697374558 + 24.065709824419081 * (utilities.DateLocalToJulian(dt) - 2451545.0))
-                                  % 24.0;
-            return siderealTime;
-        }
+        //public static double ToSiderealTime(DateTime dt)
+        //{
+        //    var utilities = new Utilities.Util();
+        //    double siderealTime = (18.697374558 + 24.065709824419081 * (utilities.DateLocalToJulian(dt) - 2451545.0))
+        //                          % 24.0;
+        //    return siderealTime;
+        //}
 
         /// <summary> 
         // If we haven't checked in a long enough time (10 minutes ?!?)

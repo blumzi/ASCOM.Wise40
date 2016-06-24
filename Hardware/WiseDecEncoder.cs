@@ -170,7 +170,7 @@ namespace ASCOM.Wise40.Hardware
             set
             {
                 if (simulated)
-                    _angle.Degrees = value.Degrees;
+                    _angle.Value = value.Value;
             }
         }
 
@@ -189,12 +189,12 @@ namespace ASCOM.Wise40.Hardware
                     debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "{0}: Degrees: Value: {1}, deg: {2}, rad: {3}", name, v, _angle, _angle.Radians);
                 }
 
-                return _angle.Degrees;
+                return _angle.Value;
             }
 
             set
             {
-                _angle.Degrees = value;
+                _angle.Value = value;
                 if (simulated)
                 {
                     _daqsValue = (uint) ((_angle.Radians - DecCorrection) / decMultiplier);

@@ -576,7 +576,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                double declination = WiseTele.Instance.Declination.Degrees;
+                double declination = WiseTele.Instance.Declination.Value;
 
                 tl.LogMessage("Declination", "Get - " + util.DegreesToDMS(declination, ":", ":"));
                 return declination;
@@ -720,10 +720,10 @@ namespace ASCOM.Wise40
         {
             get
             {
-                double rightAscension = WiseTele.Instance.RightAscension.Hours;
+                double ret = WiseTele.Instance.RightAscension.Value;
 
-                tl.LogMessage("RightAscension", "Get - " + util.HoursToHMS(rightAscension));
-                return rightAscension;
+                tl.LogMessage("RightAscension", "Get - " + util.HoursToHMS(ret));
+                return ret;
             }
         }
 
@@ -768,10 +768,10 @@ namespace ASCOM.Wise40
         {
             get
             {
-                double st = WiseSite.Instance.LocalSiderealTime.Hours;
+                double ret = WiseSite.Instance.LocalSiderealTime.Value;
 
-                tl.LogMessage("SiderealTime", "Get - " + st.ToString());
-                return st;
+                tl.LogMessage("SiderealTime", "Get - " + ret.ToString());
+                return ret;
             }
         }
 
@@ -795,7 +795,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                double latitude = WiseSite.Instance.Latitude.Degrees;
+                double latitude = WiseSite.Instance.Latitude.Value;
 
                 tl.LogMessage("SiteLatitude Get", latitude.ToString());
                 return latitude;
@@ -807,6 +807,9 @@ namespace ASCOM.Wise40
             }
         }
 
+        /// <summary>
+        /// Site Longitude in degrees as per ASCOM.DriverAccess
+        /// </summary>
         public double SiteLongitude
         {
             get
@@ -853,8 +856,8 @@ namespace ASCOM.Wise40
         {
             TargetRightAscension = RightAscension;
             TargetDeclination = Declination;
-            Angle ra = Angle.FromHours(RightAscension);
-            Angle dec = Angle.FromDegrees(Declination);
+            Angle ra = Angle.FromHours(RightAscension, Angle.Type.RA);
+            Angle dec = Angle.FromDegrees(Declination, Angle.Type.Dec);
 
             if (AtPark)
                 throw new InvalidOperationException("Cannot SlewToCoordinates while AtPark");
@@ -863,9 +866,9 @@ namespace ASCOM.Wise40
                 throw new InvalidOperationException("Cannot SlewToCoordinates while NOT Tracking");
 
             if (!WiseTele.Instance.SafeAtCoordinates(ra, dec))
-                throw new InvalidValueException("Not safe to SlewToCoordinates({0}, {1})", RightAscension.ToString(), Declination.ToString());
+                throw new InvalidOperationException(string.Format("Not safe to SlewToCoordinates({0}, {1})", ra, dec));
 
-            tl.LogMessage("SlewToCoordinates", string.Format("ra: {0}, dec: {0}", RightAscension, Declination));
+            tl.LogMessage("SlewToCoordinates", string.Format("ra: {0}, dec: {0}", ra, dec));
 
             if (_enslaveDome)
                 domeSlaveDriver.SlewStartAsync(ra, dec);
@@ -877,8 +880,8 @@ namespace ASCOM.Wise40
             TargetRightAscension = RightAscension;
             TargetDeclination = Declination;
 
-            Angle ra = Angle.FromHours(RightAscension);
-            Angle dec = Angle.FromDegrees(Declination);
+            Angle ra = Angle.FromHours(RightAscension, Angle.Type.RA);
+            Angle dec = Angle.FromDegrees(Declination, Angle.Type.Dec);
             
             if (AtPark)
                 throw new InvalidOperationException("Cannot SlewToCoordinates while AtPark");
@@ -887,10 +890,10 @@ namespace ASCOM.Wise40
                 throw new InvalidOperationException("Cannot SlewToCoordinates while NOT Tracking");
 
             if (!WiseTele.Instance.SafeAtCoordinates(ra, dec))
-                throw new InvalidValueException("Not safe to SlewToCoordinatesAsync({0}, {1})", RightAscension.ToString(), Declination.ToString());
+                throw new InvalidOperationException(string.Format("Not safe to SlewToCoordinatesAsync({0}, {1})", ra, dec));
 
             driverInitiatedSlewing = true;
-            tl.LogMessage("SlewToCoordinatesAsync", string.Format("ra: {0}, dec: {0}", RightAscension, Declination));
+            tl.LogMessage("SlewToCoordinatesAsync", string.Format("ra: {0}, dec: {0}", ra, dec));
 
             try
             {
@@ -906,8 +909,8 @@ namespace ASCOM.Wise40
 
         public void SlewToTarget()
         {
-            Angle ra = Angle.FromHours(TargetRightAscension);
-            Angle dec = Angle.FromDegrees(TargetDeclination);
+            Angle ra = Angle.FromHours(TargetRightAscension, Angle.Type.RA);
+            Angle dec = Angle.FromDegrees(TargetDeclination, Angle.Type.Dec);
 
             if (AtPark)
                 throw new InvalidOperationException("Cannot SlewToCoordinates while AtPark");
@@ -916,10 +919,10 @@ namespace ASCOM.Wise40
                 throw new InvalidOperationException("Cannot SlewToCoordinates while NOT Tracking");
 
             if (!WiseTele.Instance.SafeAtCoordinates(ra, dec))
-                throw new InvalidValueException("Not safe to SlewToTarget({0}, {1})", TargetRightAscension.ToString(), TargetDeclination.ToString());
+                throw new InvalidOperationException(string.Format("Not safe to SlewToTarget({0}, {1})", ra, dec));
 
             driverInitiatedSlewing = true;
-            tl.LogMessage("SlewToTarget", string.Format("ra: {0}, dec: {0}", TargetRightAscension, TargetDeclination));
+            tl.LogMessage("SlewToTarget", string.Format("ra: {0}, dec: {0}", ra, dec));
 
             try
             {
@@ -937,8 +940,8 @@ namespace ASCOM.Wise40
 
         public void SlewToTargetAsync()
         {
-            Angle ra = Angle.FromHours(TargetRightAscension);
-            Angle dec = Angle.FromDegrees(TargetDeclination);
+            Angle ra = Angle.FromHours(TargetRightAscension, Angle.Type.RA);
+            Angle dec = Angle.FromDegrees(TargetDeclination, Angle.Type.Dec);
 
             if (AtPark)
                 throw new InvalidOperationException("Cannot SlewToTargetAsync while AtPark");
@@ -947,11 +950,11 @@ namespace ASCOM.Wise40
                 throw new InvalidOperationException("Cannot SlewToTargetAsync while NOT Tracking");
 
             if (!WiseTele.Instance.SafeAtCoordinates(ra, dec))
-                throw new InvalidValueException("Not safe to SlewToTargetAsync({0}, {1})", TargetRightAscension.ToString(), TargetDeclination.ToString());
+                throw new InvalidOperationException(string.Format("Not safe to SlewToTargetAsync({0}, {1})", ra, dec));
 
             driverInitiatedSlewing = true;
 
-            tl.LogMessage("SlewToTargetAsync", "Started");
+            tl.LogMessage("SlewToTargetAsync", string.Format("Started: ra: {0}, dec: {1}", ra, dec));
             try
             {
                 if (_enslaveDome)
@@ -997,11 +1000,12 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return WiseTele.Instance.targetDeclination.Degrees;
+                return WiseTele.Instance.targetDeclination.Value;
             }
+
             set
             {
-                WiseTele.Instance.targetDeclination = Angle.FromDegrees(value);
+                WiseTele.Instance.targetDeclination = Angle.FromDegrees(value, Angle.Type.Dec);
             }
         }
 
@@ -1009,12 +1013,12 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return WiseTele.Instance.targetRightAscension.Hours;
+                return WiseTele.Instance.targetRightAscension.Value;
             }
 
             set
             {
-                WiseTele.Instance.targetRightAscension = Angle.FromDegrees(value);
+                WiseTele.Instance.targetRightAscension = Angle.FromHours(value);
             }
         }
 

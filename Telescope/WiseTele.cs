@@ -574,7 +574,7 @@ namespace ASCOM.Wise40
                     WiseSite.Instance.astrometricAccuracy,
                     0, 0,
                     WiseSite.Instance.onSurface,
-                    RightAscension.Hours, Declination.Degrees,
+                    RightAscension.Value, Declination.Value,
                     WiseSite.Instance.refractionOption,
                     ref zd, ref az, ref rar, ref decr);
 
@@ -593,7 +593,7 @@ namespace ASCOM.Wise40
                     WiseSite.Instance.astrometricAccuracy,
                     0, 0,
                     WiseSite.Instance.onSurface,
-                    RightAscension.Hours, Declination.Degrees,
+                    RightAscension.Value, Declination.Value,
                     WiseSite.Instance.refractionOption,
                     ref zd, ref az, ref rar, ref decr);
 
@@ -698,6 +698,11 @@ namespace ASCOM.Wise40
 
         public void MoveAxis(TelescopeAxes Axis, double Rate, Const.AxisDirection direction = Const.AxisDirection.Increasing, bool stopTracking = false)
         {
+            if (rateName.ContainsKey(Rate))
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "MoveAxis({0}, {1}) - called", Axis, rateName[Rate]);
+            else
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "MoveAxis({0}, {1}) - called", Axis, Rate);
+
             MovementWorker mover = null;
             TelescopeAxes thisAxis = Axis;
             TelescopeAxes otherAxis = (thisAxis == TelescopeAxes.axisPrimary) ? TelescopeAxes.axisSecondary : TelescopeAxes.axisPrimary;
@@ -785,8 +790,6 @@ namespace ASCOM.Wise40
             if (target.Declination == null)
                 throw new ValueNotSetException("Target Dec not set");
 
-            SafeAtCoordinates(target.RightAscension, target.Declination, false);
-
             deltaRa = targetRightAscension - RightAscension;
             deltaDec = targetDeclination - Declination;
 
@@ -817,6 +820,8 @@ namespace ASCOM.Wise40
         /// <param name="takeAction">Take recovery actions or not</param>
         public bool SafeAtCoordinates(Angle ra, Angle dec, bool takeAction = false)
         {
+            return true;
+
             double rar = 0, decr = 0, az = 0, zd = 0;
             Angle alt;
 
@@ -825,18 +830,19 @@ namespace ASCOM.Wise40
                 WiseSite.Instance.astrometricAccuracy,
                 0, 0,
                 WiseSite.Instance.onSurface,          // TBD: set Pressure (mbar) and Temperature (C)
-                ra.Hours, dec.Degrees,
+                ra.Value, dec.Value,
                 WiseSite.Instance.refractionOption,   // TBD: do we want refraction?
                 ref zd, ref az, ref rar, ref decr);
 
             alt = Angle.FromDegrees(90.0 - zd);
             if (alt < altLimit)
             {
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "Not safe to move to ra: {0}, dec: {1} (alt: {2} is below altLimit: {3})",
-                    ra.ToFormattedString(Angle.Format.RA),
-                    dec.ToFormattedString(Angle.Format.Dec),
-                    alt.ToFormattedString(Angle.Format.Deg),
-                    altLimit.ToFormattedString(Angle.Format.Deg));
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                    string.Format("Not safe to move to ra: {0}, dec: {1} (alt: {2} is below altLimit: {3})",
+                    ra,
+                    dec,
+                    alt,
+                    altLimit));
 
                 if (takeAction)
                 {
@@ -860,7 +866,7 @@ namespace ASCOM.Wise40
             double ha = HourAngle;
 
             primaryBackoff = (ha > 0) ? ra - backoff : ra + backoff;
-            secondaryBackoff = (dec > Angle.FromDegrees(0.0)) ? Angle.FromDegrees(-backoff.Degrees) : backoff;
+            secondaryBackoff = (dec > Angle.FromDegrees(0.0)) ? Angle.FromDegrees(-backoff.Value) : backoff;
             SlewToCoordinatesSync(primaryBackoff, secondaryBackoff);
         }
 
@@ -1078,7 +1084,7 @@ namespace ASCOM.Wise40
                         //    currentDegrees <= cm.shortTermTargetAngle.Degrees;
 
                         delta = currentAngle.ShortestDistance(cm.shortTermTargetAngle);
-                        bool arrivedAtTarget = (delta.angle.Degrees <= closeEnough);
+                        bool arrivedAtTarget = (delta.angle.Value <= closeEnough);
 
                         if (arrivedAtTarget)
                         {
@@ -1089,13 +1095,13 @@ namespace ASCOM.Wise40
                         }
                         else
                         {
-                            if (prev_delta.angle.Degrees != double.NaN)
-                                mark = (prev_delta == delta) ? '=' : (prev_delta.angle > delta.angle) ? '-' : '+';
+                            if (prev_delta.angle.Value != double.NaN)
+                                mark = (prev_delta == delta) ? '=' : (prev_delta.angle > delta.angle) ? 'v' : '^';
 
-                            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "bgw: {0} still moving, {1}, at {2} going to {3}, delta: {4} ({5}), towards: {6}",
+                            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "bgw: {0} still moving, {1}, at {2} ==> {3} ({6}), delta: {4}{5}",
                                 axis, rateName[cm.rate], currentAngle, cm.shortTermTargetAngle,
                                 mark,
-                                delta, cm.longTermTargetAngle);
+                                delta.angle, cm.longTermTargetAngle);
                             prev_delta = delta;
                         }
                     }
