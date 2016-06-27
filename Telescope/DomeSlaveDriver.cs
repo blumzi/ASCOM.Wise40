@@ -22,7 +22,7 @@ namespace ASCOM.Wise40
         private Debugger debugger;
         private uint _debugLevel;
 
-        public DomeSlaveDriver()
+        public DomeSlaveDriver(Debugger debugger)
         {
             try
             {
@@ -34,12 +34,8 @@ namespace ASCOM.Wise40
             novas31 = new Astrometry.NOVAS.NOVAS31();
             astroutils = new AstroUtils();
             _arrived = _dome.arrived;
-            debugger = new Debugger();
-            using (ASCOM.Utilities.Profile driverProfile = new ASCOM.Utilities.Profile())
-            {
-                driverProfile.DeviceType = "Telescope";
-                debugger.Level = Convert.ToUInt32(driverProfile.GetValue("ASCOM.Wise40.Telescope", "Debug Level", string.Empty, "0"));
-            }
+            this.debugger = debugger;
+
             debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "DomeSlaveDriver: constructed");
         }
 

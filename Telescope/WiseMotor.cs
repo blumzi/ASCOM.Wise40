@@ -57,7 +57,7 @@ namespace ASCOM.Wise40.Hardware
 
         public void SetOn(double rate)
         {
-            WiseTele.Instance.debugger.WriteLine(Debugger.DebugLevel.DebugMotors, "SetOn: {0}: On at {1}", name, WiseTele.rateName[rate]);
+            WiseTele.Instance.debugger.WriteLine(Debugger.DebugLevel.DebugMotors, "{0}: On at {1}", name, WiseTele.RateName(rate));
 
             rate = Math.Abs(rate);
             if (rate == Const.rateSlew)
@@ -81,7 +81,8 @@ namespace ASCOM.Wise40.Hardware
 
         public void SetOff()
         {
-            WiseTele.Instance.debugger.WriteLine(Debugger.DebugLevel.DebugMotors, "SetOff: {0}: Off", name);
+            WiseTele.Instance.debugger.WriteLine(Debugger.DebugLevel.DebugMotors,
+                "{0}: Off (was at {1})", name, WiseTele.RateName(currentRate));
 
             if (simulated)
                 simulationTimer.Change(Timeout.Infinite, Timeout.Infinite);
@@ -129,11 +130,12 @@ namespace ASCOM.Wise40.Hardware
                 if (WiseTele.Instance.debugger.Debugging(Debugger.DebugLevel.DebugMotors))
                 {
                     bool primary = (name == "EastMotor" || name == "WestMotor" || name == "TrackMotor");
-                    Angle encoderAngle =  primary ? WiseTele.Instance.RightAscension : WiseTele.Instance.Declination;
+                    Angle encoderAngle =  primary ?
+                        Angle.FromHours(WiseTele.Instance.RightAscension, Angle.Type.RA) :
+                        Angle.FromDegrees(WiseTele.Instance.Declination, Angle.Type.Dec);
 
-                    WiseTele.Instance.debugger.WriteLine(Debugger.DebugLevel.DebugMotors, "{0}: {1}: {2} + {3} = {4}, {5}: {6} (#{7}, {8} ms)",
+                    WiseTele.Instance.debugger.WriteLine(Debugger.DebugLevel.DebugMotors, "{0}: {1}: {2}: {3} (#{4}, {5} ms)",
                         name, encoder.name,
-                        before, inc, after,
                         primary ? "ra" : "dec",
                         encoderAngle, timer_counts++, DateTime.Now.Subtract(prevTick).Milliseconds);
                 }

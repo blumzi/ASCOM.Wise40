@@ -210,32 +210,32 @@ namespace ASCOM.Wise40
             Button button = (Button)sender;
 
             if (button == buttonNorth)
-                T.MoveAxis(TelescopeAxes.axisSecondary, handpadRate, Const.AxisDirection.Increasing);
+                T.MoveAxis(TelescopeAxes.axisSecondary, handpadRate);
             else if (button == buttonSouth)
-                T.MoveAxis(TelescopeAxes.axisSecondary, handpadRate, Const.AxisDirection.Decreasing);
+                T.MoveAxis(TelescopeAxes.axisSecondary, -handpadRate);
             else if (button == buttonWest)
-                T.MoveAxis(TelescopeAxes.axisPrimary, handpadRate, Const.AxisDirection.Increasing);
+                T.MoveAxis(TelescopeAxes.axisPrimary, handpadRate);
             else if (button == buttonEast)
-                T.MoveAxis(TelescopeAxes.axisPrimary, handpadRate, Const.AxisDirection.Decreasing);
+                T.MoveAxis(TelescopeAxes.axisPrimary, -handpadRate);
             else if (button == buttonNE)
             {
-                T.MoveAxis(TelescopeAxes.axisSecondary, handpadRate, Const.AxisDirection.Increasing);
-                T.MoveAxis(TelescopeAxes.axisPrimary, handpadRate, Const.AxisDirection.Decreasing);
+                T.MoveAxis(TelescopeAxes.axisSecondary, handpadRate);
+                T.MoveAxis(TelescopeAxes.axisPrimary, -handpadRate);
             }
             else if (button == buttonNW)
             {
-                T.MoveAxis(TelescopeAxes.axisSecondary, handpadRate, Const.AxisDirection.Increasing);
-                T.MoveAxis(TelescopeAxes.axisPrimary, handpadRate, Const.AxisDirection.Increasing);
+                T.MoveAxis(TelescopeAxes.axisSecondary, handpadRate);
+                T.MoveAxis(TelescopeAxes.axisPrimary, -handpadRate);
             }
             else if (button == buttonSE)
             {
-                T.MoveAxis(TelescopeAxes.axisSecondary, handpadRate, Const.AxisDirection.Decreasing);
-                T.MoveAxis(TelescopeAxes.axisPrimary, handpadRate, Const.AxisDirection.Decreasing);
+                T.MoveAxis(TelescopeAxes.axisSecondary, -handpadRate);
+                T.MoveAxis(TelescopeAxes.axisPrimary, -handpadRate);
             }
             else if (button == buttonSW)
             {
-                T.MoveAxis(TelescopeAxes.axisSecondary, handpadRate, Const.AxisDirection.Decreasing);
-                T.MoveAxis(TelescopeAxes.axisPrimary, handpadRate, Const.AxisDirection.Increasing);
+                T.MoveAxis(TelescopeAxes.axisSecondary, -handpadRate);
+                T.MoveAxis(TelescopeAxes.axisPrimary, handpadRate);
             }
         }
 
@@ -290,7 +290,7 @@ namespace ASCOM.Wise40
                 }
 
                 WiseTele.Instance.log("#{3} Before: MoveAxis({0}, {1}, {4}) for {2} millis", arg.axis, arg.rate, arg.millis, stepNo, direction);
-                T.MoveAxis(arg.axis, Math.Abs(arg.rate), direction);
+                T.MoveAxis(arg.axis, arg.rate);
                 for (long endTicks = DateTime.Now.Ticks + 10000 * arg.millis; DateTime.Now.Ticks < endTicks; Thread.Sleep(1))
                 {
                     if (bgw.CancellationPending)
@@ -310,7 +310,7 @@ namespace ASCOM.Wise40
 
                 if (T.simulated)    // move some more, to simulate telescope inertia
                 {
-                    T.MoveAxis(arg.axis, Math.Abs(arg.rate), direction);
+                    T.MoveAxis(arg.axis, arg.rate);
                     long deltaTicks = 10000 * (long) (WiseTele.Instance.movementParameters[arg.axis][arg.rate].stopMovement.Value * WiseTele.Instance.movementParameters[arg.axis][arg.rate].millisecondsPerDegree);
                     for (long endTicks = DateTime.Now.Ticks + deltaTicks; DateTime.Now.Ticks < endTicks; Thread.Sleep(10))
                     {
@@ -458,12 +458,7 @@ namespace ASCOM.Wise40
 
         private void buttonGoCoord_Click(object sender, EventArgs e)
         {
-            Astrometry.AstroUtils.AstroUtils utils = new Astrometry.AstroUtils.AstroUtils();
-
-            Angle ra = new Angle(textBoxRA.Text);
-            Angle dec = new Angle(textBoxDec.Text);
-
-            T.SlewToCoordinatesAsync(ra, dec);
+            T.SlewToCoordinatesAsync(Convert.ToDouble(textBoxRA.Text), Convert.ToDouble(textBoxDec.Text));
         }
     }
 }

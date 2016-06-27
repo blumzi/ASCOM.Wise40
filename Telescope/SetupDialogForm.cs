@@ -74,7 +74,7 @@ namespace ASCOM.Wise40
                 if (checkBoxDebugDevice.Checked) level |= (uint)Debugger.DebugLevel.DebugDevice;
             }
             WiseTele.Instance.debugger.Level = level;
-            Telescope._enslaveDome = checkBoxEnslaveDome.Checked;
+            WiseTele.Instance._enslaveDome = checkBoxEnslaveDome.Checked;
         }
 
         private void cmdCancel_Click(object sender, EventArgs e) // Cancel button event handler

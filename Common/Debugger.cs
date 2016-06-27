@@ -12,22 +12,32 @@ namespace ASCOM.Wise40.Common
     {
         public enum DebugLevel
         {
-            DebugEncoders = (1 << 0),
-            DebugAxes = (1 << 1),
-            DebugMotors = (1 << 2),
+            DebugASCOM = (1 << 0),
+            DebugDevice = (1 << 1),
+            DebugLogic = (1 << 2),
             DebugExceptions = (1 << 3),
-            DebugDevice = (1 << 4),
-            DebugASCOM = (1 << 5),
-            DebugLogic = (1 << 6),
+            DebugAxes = (1 << 4),
+            DebugMotors = (1 << 5),
+            DebugEncoders = (1 << 6),
 
             DebugAll = DebugEncoders | DebugAxes | DebugMotors | DebugExceptions | DebugDevice | DebugASCOM | DebugLogic,
         };
+
+        public string[] indents = new string[(int)DebugLevel.DebugEncoders + 1];
 
         private uint _level;
 
         public Debugger(uint level = 0) // may want to add optional file-name
         {
             _level = level;
+
+            indents[(int)DebugLevel.DebugASCOM] = "      ";
+            indents[(int)DebugLevel.DebugDevice] = ">     ";
+            indents[(int)DebugLevel.DebugLogic] = ">>    ";
+            indents[(int)DebugLevel.DebugExceptions] = ">>>   ";
+            indents[(int)DebugLevel.DebugAxes] = ">>>>  ";
+            indents[(int)DebugLevel.DebugMotors] = ">>>>> ";
+            indents[(int)DebugLevel.DebugEncoders] = ">>>>>>";
         }
 
         /// <summary>
@@ -47,10 +57,10 @@ namespace ASCOM.Wise40.Common
                 DateTime now = DateTime.Now;
                 string msg = string.Format(fmt, o);
 
-               System.Diagnostics.Debug.WriteLine(string.Format("{0,4} {1}/{2}/{3} {4} {5,-15} {6}",
+               System.Diagnostics.Debug.WriteLine(string.Format("{0,4} {1}/{2}/{3} {4} {5,-25} {6}",
                     "[" + Thread.CurrentThread.ManagedThreadId.ToString() + "]",
                     now.Day, now.Month, now.Year, now.TimeOfDay,
-                    level.ToString() + ":",
+                    indents[(int)level] + " " + level.ToString() + ":",
                     msg));
             }
         }

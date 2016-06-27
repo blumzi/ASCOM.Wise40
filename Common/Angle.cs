@@ -212,18 +212,18 @@ namespace ASCOM.Wise40.Common
             }
         }
 
-        //public double Hours
-        //{
-        //    get
-        //    {
-        //        return astroutils.ConditionRA(_value / 15.0);
-        //    }
+        public double Hours
+        {
+            get
+            {
+                return _degrees / 15.0;
+            }
 
-        //    set
-        //    {
-        //        _value = astroutils.ConditionRA(value * 15.0);
-        //    }
-        //}
+            set
+            {
+                _degrees = value * 15.0;
+            }
+        }
 
         //public double Declination
         //{
