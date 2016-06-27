@@ -160,42 +160,28 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("SupportedActions Get", "Returning empty arraylist");
-                return new ArrayList();
+                return WiseTele.Instance.SupportedActions;
             }
         }
 
         public string Action(string actionName, string actionParameters)
         {
-            throw new ASCOM.ActionNotImplementedException("Action " + actionName + " is not implemented by this driver");
+            return WiseTele.Instance.Action(actionName, actionParameters);
         }
 
         public void CommandBlind(string command, bool raw)
         {
-            CheckConnected("CommandBlind");
-            // Call CommandString and return as soon as it finishes
-            this.CommandString(command, raw);
-            // or
-            throw new ASCOM.MethodNotImplementedException("CommandBlind");
+            WiseTele.Instance.CommandBlind(command, raw);
         }
 
         public bool CommandBool(string command, bool raw)
         {
-            CheckConnected("CommandBool");
-            string ret = CommandString(command, raw);
-            // TODO decode the return string and return true or false
-            // or
-            throw new ASCOM.MethodNotImplementedException("CommandBool");
+            return WiseTele.Instance.CommandBool(command, raw);
         }
 
         public string CommandString(string command, bool raw)
         {
-            CheckConnected("CommandString");
-            // it's a good idea to put all the low level communication with the device here,
-            // then all communication calls this function
-            // you need something to ensure that only one command is in progress at a time
-
-            throw new ASCOM.MethodNotImplementedException("CommandString");
+            return WiseTele.Instance.CommandString(command, raw);
         }
 
         public void Dispose()
@@ -239,11 +225,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-                // TODO customise this driver description
-                string driverInfo = "Information about the driver itself. Version: " + String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
-                tl.LogMessage("DriverInfo Get", driverInfo);
-                return driverInfo;
+                return WiseTele.Instance.DriverInfo;
             }
         }
 
@@ -251,10 +233,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-                string driverVersion = String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
-                tl.LogMessage("DriverVersion Get", driverVersion);
-                return driverVersion;
+                return WiseTele.Instance.DriverVersion;
             }
         }
 
@@ -263,8 +242,7 @@ namespace ASCOM.Wise40
             // set by the driver wizard
             get
             {
-                tl.LogMessage("InterfaceVersion Get", "3");
-                return Convert.ToInt16("3");
+                return WiseTele.Instance.InterfaceVersion;
             }
         }
 
@@ -272,9 +250,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                string name = "Wise40 Telescope";
-                tl.LogMessage("Name Get", name);
-                return name;
+                return WiseTele.Instance.Name;
             }
         }
 
@@ -306,10 +282,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                double area = WiseTele.Instance.mirrorArea;
-
-                tl.LogMessage("ApertureArea Get", area.ToString());
-                return area;
+                return WiseTele.Instance.ApertureArea;
             }
         }
 
@@ -317,10 +290,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                double diam = WiseTele.Instance.mirrorDiam;
-
-                tl.LogMessage("ApertureDiameter Get", diam.ToString());
-                return diam;
+                return WiseTele.Instance.ApertureDiameter;
             }
         }
 
@@ -328,10 +298,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                bool ret = false;       // Homing is not implemented
-                tl.LogMessage("AtHome", "Get - " + ret.ToString());
-                debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, string.Format("AtHome Get - {0}", ret));
-                return ret;
+                return WiseTele.Instance.AtHome;
             }
         }
 
@@ -345,10 +312,7 @@ namespace ASCOM.Wise40
 
         public IAxisRates AxisRates(TelescopeAxes Axis)
         {
-            IAxisRates rates = new AxisRates(Axis);
-
-            tl.LogMessage("AxisRates", "Get - " + rates.ToString());
-            return rates;
+            return WiseTele.Instance.AxisRates(Axis);
         }
 
         public double Azimuth
@@ -363,8 +327,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("CanFindHome", "Get - " + false.ToString());
-                return false;
+                return WiseTele.Instance.CanFindHome;
             }
         }
 
@@ -377,8 +340,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("CanPark", "Get - " + true.ToString());
-                return true;
+                return WiseTele.Instance.CanPark;
             }
         }
 
@@ -386,8 +348,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("CanPulseGuide", "Get - " + false.ToString());
-                return false;
+                return WiseTele.Instance.CanPulseGuide;
             }
         }
 
@@ -395,8 +356,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("CanSetDeclinationRate", "Get - " + false.ToString());
-                return false;
+                return WiseTele.Instance.CanSetDeclinationRate;
             }
         }
 
@@ -404,8 +364,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("CanSetGuideRates", "Get - " + false.ToString());
-                return false;
+                return WiseTele.Instance.CanSetGuideRates;
             }
         }
 
@@ -413,10 +372,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                bool ret = false;
-
-                tl.LogMessage("CanSetPark", "Get - " + ret.ToString());
-                return ret;
+                return WiseTele.Instance.CanSetPark;
             }
         }
 
@@ -424,8 +380,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("CanSetPierSide", "Get - " + false.ToString());
-                return false;
+                return WiseTele.Instance.CanSetPierSide;
             }
         }
 
@@ -433,8 +388,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("CanSetRightAscensionRate", "Get - " + false.ToString());
-                return false;
+                return WiseTele.Instance.CanSetRightAscensionRate;
             }
         }
 
@@ -442,8 +396,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("CanSetTracking", "Get - " + true.ToString());
-                return true;
+                return WiseTele.Instance.CanSetTracking;
             }
         }
 
@@ -451,8 +404,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("CanSlew", "Get - " + true.ToString());
-                return true;
+                return WiseTele.Instance.CanSlew;
             }
         }
 
@@ -460,10 +412,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                bool ret = false;
-
-                tl.LogMessage("CanSlewAltAz", "Get - " + ret.ToString());
-                return ret;
+                return WiseTele.Instance.CanSlewAltAz;
             }
         }
 
@@ -471,10 +420,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                bool ret = false;
-
-                tl.LogMessage("CanSlewAltAzAsync", "Get - " + ret.ToString());
-                return ret;
+                return WiseTele.Instance.CanSlewAltAzAsync;
             }
         }
 
@@ -482,8 +428,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("CanSlewAsync", "Get - " + true.ToString());
-                return true;
+                return WiseTele.Instance.CanSlewAsync;
             }
         }
 
@@ -491,10 +436,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                bool ret = false;
-
-                tl.LogMessage("CanSync", "Get - " + ret.ToString());
-                return ret;
+                return WiseTele.Instance.CanSync;
             }
         }
 
@@ -502,10 +444,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                bool ret = false;
-
-                tl.LogMessage("CanSyncAltAz", "Get - " + ret.ToString());
-                return ret;
+                return WiseTele.Instance.CanSyncAltAz;
             }
         }
 
@@ -513,8 +452,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("CanUnpark", "Get - " + true.ToString());
-                return true;
+                return WiseTele.Instance.CanUnpark;
             }
         }
 
@@ -541,23 +479,19 @@ namespace ASCOM.Wise40
 
         public PierSide DestinationSideOfPier(double RightAscension, double Declination)
         {
-            tl.LogMessage("DestinationSideOfPier Get", "Not implemented");
-            throw new ASCOM.PropertyNotImplementedException("DestinationSideOfPier", false);
+            return WiseTele.Instance.DestinationSideOfPier(RightAscension, Declination);
         }
 
         public bool DoesRefraction
         {
             get
             {
-                bool doesRefraction = WiseTele.Instance.doesRefraction;
-
-                tl.LogMessage("DoesRefraction Get", doesRefraction.ToString());
-                return doesRefraction;
+                return WiseTele.Instance.doesRefraction;
             }
 
             set
             {
-                throw new ASCOM.PropertyNotImplementedException("DoesRefraction");
+                WiseTele.Instance.doesRefraction = value;
             }
         }
 
@@ -565,17 +499,13 @@ namespace ASCOM.Wise40
         {
             get
             {
-                EquatorialCoordinateType equatorialSystem = EquatorialCoordinateType.equJ2000;
-
-                tl.LogMessage("EquatorialSystem", "Get - " + equatorialSystem.ToString());
-                return equatorialSystem;
+                return WiseTele.Instance.EquatorialSystem;
             }
         }
 
         public void FindHome()
         {
-            tl.LogMessage("FindHome", "Not Implemented");
-            throw new MethodNotImplementedException("FindHome");
+            WiseTele.Instance.FindHome();
         }
 
         public double FocalLength
@@ -590,13 +520,12 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("GuideRateDeclination Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("GuideRateDeclination", false);
+                return WiseTele.Instance.GuideRateDeclination;
             }
+
             set
             {
-                tl.LogMessage("GuideRateDeclination Set", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("GuideRateDeclination", true);
+                WiseTele.Instance.GuideRateDeclination = value;
             }
         }
 
@@ -604,13 +533,12 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("GuideRateRightAscension Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("GuideRateRightAscension", false);
+                return WiseTele.Instance.GuideRateRightAscension;
             }
+
             set
             {
-                tl.LogMessage("GuideRateRightAscension Set", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("GuideRateRightAscension", true);
+                WiseTele.Instance.GuideRateRightAscension = value;
             }
         }
 
@@ -618,7 +546,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                throw new PropertyNotImplementedException("PulseGuide not supported");
+                return WiseTele.Instance.IsPulseGuiding;
             }
         }
 
@@ -634,8 +562,7 @@ namespace ASCOM.Wise40
 
         public void PulseGuide(GuideDirections Direction, int Duration)
         {
-            tl.LogMessage("PulseGuide", "Not implemented");
-            throw new ASCOM.MethodNotImplementedException("PulseGuide");
+            WiseTele.Instance.PulseGuide(Direction, Duration);
         }
 
         public double RightAscension
@@ -650,36 +577,28 @@ namespace ASCOM.Wise40
         {
             get
             {
-                double rightAscensionRate = 0.0;
-                tl.LogMessage("RightAscensionRate", "Get - " + rightAscensionRate.ToString());
-                return rightAscensionRate;
+                return WiseTele.Instance.RightAscensionRate;
             }
             set
             {
-                tl.LogMessage("RightAscensionRate Set", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("RightAscensionRate", true);
+                WiseTele.Instance.RightAscensionRate = value;
             }
         }
 
         public void SetPark()
         {
-            tl.LogMessage("SetPark", "Not implemented");
-            throw new ASCOM.MethodNotImplementedException("SetPark");
+            WiseTele.Instance.SetPark();
         }
 
         public PierSide SideOfPier
         {
             get
             {
-                PierSide side = PierSide.pierEast;  // TBD
-
-                tl.LogMessage("SideOfPier Get", side.ToString());
-                return side;
+                return WiseTele.Instance.SideOfPier;
             }
             set
             {
-                tl.LogMessage("SideOfPier Set", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("SideOfPier", true);
+                WiseTele.Instance.SideOfPier = value;
             }
         }
 
@@ -716,9 +635,6 @@ namespace ASCOM.Wise40
             }
         }
 
-        /// <summary>
-        /// Site Longitude in degrees as per ASCOM.DriverAccess
-        /// </summary>
         public double SiteLongitude
         {
             get
@@ -735,26 +651,23 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("SlewSettleTime Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("SlewSettleTime", false);
+                return WiseTele.Instance.SlewSettleTime;
             }
+
             set
             {
-                tl.LogMessage("SlewSettleTime Set", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("SlewSettleTime", true);
+                WiseTele.Instance.SlewSettleTime = value;
             }
         }
 
         public void SlewToAltAz(double Azimuth, double Altitude)
         {
-            tl.LogMessage("SlewToAltAz", String.Format("az: {0}, alt: {1}\n", Azimuth, Altitude));
-            throw new ASCOM.MethodNotImplementedException("SlewToAltAz");
+            WiseTele.Instance.SlewToAltAz(Azimuth, Altitude);
         }
 
         public void SlewToAltAzAsync(double Azimuth, double Altitude)
         {
-            tl.LogMessage("SlewToAltAzAsync", String.Format("az: {0}, alt: {1}\n", Azimuth, Altitude));
-            throw new ASCOM.MethodNotImplementedException("SlewToAltAzAsync");
+            WiseTele.Instance.SlewToAltAzAsync(Azimuth, Altitude);
         }
 
         public void SlewToCoordinates(double RightAscension, double Declination)

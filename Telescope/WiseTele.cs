@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using ASCOM.Utilities;
 using ASCOM.Astrometry.NOVAS;
@@ -279,7 +280,7 @@ namespace ASCOM.Wise40
             }
         }
 
-        public double mirrorDiam
+        public double ApertureDiameter
         {
             get
             {
@@ -287,18 +288,26 @@ namespace ASCOM.Wise40
             }
         }
 
-        public double mirrorArea
+        public double ApertureArea
         {
             get
             {
-                return Math.PI * Math.Pow(mirrorDiam, 2);
+                return Math.PI * Math.Pow(ApertureDiameter, 2);
             }
         }
 
         public bool doesRefraction {
             get
             {
-                return false;
+                bool ret = false;
+
+                traceLogger.LogMessage("DoesRefraction Get", ret.ToString());
+                return ret;
+            }
+
+            set
+            {
+                throw new ASCOM.PropertyNotImplementedException("DoesRefraction");
             }
         }
 
@@ -1574,6 +1583,404 @@ namespace ASCOM.Wise40
             traceLogger.LogMessage("CanMoveAxis", "Get - " + Axis.ToString() + ": " + ret.ToString());
 
             return ret;
+        }
+
+        public EquatorialCoordinateType EquatorialSystem
+        {
+            get
+            {
+                EquatorialCoordinateType equatorialSystem = EquatorialCoordinateType.equJ2000;
+
+                traceLogger.LogMessage("EquatorialSystem", "Get - " + equatorialSystem.ToString());
+                return equatorialSystem;
+            }
+        }
+
+        public void FindHome()
+        {
+            traceLogger.LogMessage("FindHome", "Not Implemented");
+            throw new MethodNotImplementedException("FindHome");
+        }
+
+        public PierSide DestinationSideOfPier(double RightAscension, double Declination)
+        {
+            traceLogger.LogMessage("DestinationSideOfPier Get", "Not implemented");
+            throw new ASCOM.PropertyNotImplementedException("DestinationSideOfPier", false);
+        }
+
+        public bool CanPark
+        {
+            get
+            {
+                traceLogger.LogMessage("CanPark", "Get - " + true.ToString());
+                return true;
+            }
+        }
+
+        public bool CanPulseGuide
+        {
+            get
+            {
+                traceLogger.LogMessage("CanPulseGuide", "Get - " + false.ToString());
+                return false;
+            }
+        }
+
+        public bool CanSetDeclinationRate
+        {
+            get
+            {
+                traceLogger.LogMessage("CanSetDeclinationRate", "Get - " + false.ToString());
+                return false;
+            }
+        }
+
+        public bool CanSetGuideRates
+        {
+            get
+            {
+                traceLogger.LogMessage("CanSetGuideRates", "Get - " + false.ToString());
+                return false;
+            }
+        }
+
+        public bool CanSetPark
+        {
+            get
+            {
+                bool ret = false;
+
+                traceLogger.LogMessage("CanSetPark", "Get - " + ret.ToString());
+                return ret;
+            }
+        }
+
+        public bool CanSetPierSide
+        {
+            get
+            {
+                traceLogger.LogMessage("CanSetPierSide", "Get - " + false.ToString());
+                return false;
+            }
+        }
+
+        public bool CanSetRightAscensionRate
+        {
+            get
+            {
+                traceLogger.LogMessage("CanSetRightAscensionRate", "Get - " + false.ToString());
+                return false;
+            }
+        }
+
+        public bool CanSetTracking
+        {
+            get
+            {
+                traceLogger.LogMessage("CanSetTracking", "Get - " + true.ToString());
+                return true;
+            }
+        }
+
+        public bool CanSlew
+        {
+            get
+            {
+                bool ret = true;
+
+                traceLogger.LogMessage("CanSlew", "Get - " + ret.ToString());
+                return ret;
+            }
+        }
+
+        public bool CanSlewAltAz
+        {
+            get
+            {
+                bool ret = false;
+
+                traceLogger.LogMessage("CanSlewAltAz", "Get - " + ret.ToString());
+                return ret;
+            }
+        }
+
+        public bool CanSlewAltAzAsync
+        {
+            get
+            {
+                bool ret = false;
+
+                traceLogger.LogMessage("CanSlewAltAzAsync", "Get - " + ret.ToString());
+                return ret;
+            }
+        }
+
+        public bool CanSlewAsync
+        {
+            get
+            {
+                bool ret = true;
+
+                traceLogger.LogMessage("CanSlewAsync", "Get - " + ret.ToString());
+                return ret;
+            }
+        }
+
+        public bool CanSync
+        {
+            get
+            {
+                bool ret = false;
+
+                traceLogger.LogMessage("CanSync", "Get - " + ret.ToString());
+                return ret;
+            }
+        }
+
+        public bool CanSyncAltAz
+        {
+            get
+            {
+                bool ret = false;
+
+                traceLogger.LogMessage("CanSyncAltAz", "Get - " + ret.ToString());
+                return ret;
+            }
+        }
+
+        public bool CanUnpark
+        {
+            get
+            {
+                bool ret = true;
+
+                traceLogger.LogMessage("CanUnpark", "Get - " + ret.ToString());
+                return ret;
+            }
+        }
+
+        public double GuideRateDeclination
+        {
+            get
+            {
+                traceLogger.LogMessage("GuideRateDeclination Get", "Not implemented");
+                throw new ASCOM.PropertyNotImplementedException("GuideRateDeclination", false);
+            }
+            set
+            {
+                traceLogger.LogMessage("GuideRateDeclination Set", "Not implemented");
+                throw new ASCOM.PropertyNotImplementedException("GuideRateDeclination", true);
+            }
+        }
+
+        public double GuideRateRightAscension
+        {
+            get
+            {
+                traceLogger.LogMessage("GuideRateRightAscension Get", "Not implemented");
+                throw new ASCOM.PropertyNotImplementedException("GuideRateRightAscension", false);
+            }
+            set
+            {
+                traceLogger.LogMessage("GuideRateRightAscension Set", "Not implemented");
+                throw new ASCOM.PropertyNotImplementedException("GuideRateRightAscension", true);
+            }
+        }
+
+        public bool AtHome
+        {
+            get
+            {
+                bool ret = false;       // Homing is not implemented
+
+                traceLogger.LogMessage("AtHome", "Get - " + ret.ToString());
+                debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, string.Format("AtHome Get - {0}", ret));
+                return ret;
+            }
+        }
+
+        public bool CanFindHome
+        {
+            get
+            {
+                bool ret = false;
+
+                traceLogger.LogMessage("CanFindHome", "Get - " + ret.ToString());
+                return ret;
+            }
+        }
+
+        public IAxisRates AxisRates(TelescopeAxes Axis)
+        {
+            IAxisRates rates = new AxisRates(Axis);
+
+            traceLogger.LogMessage("AxisRates", "Get - " + rates.ToString());
+            return rates;
+        }
+
+        public short SlewSettleTime
+        {
+            get
+            {
+                traceLogger.LogMessage("SlewSettleTime Get", "Not implemented");
+                throw new ASCOM.PropertyNotImplementedException("SlewSettleTime", false);
+            }
+
+            set
+            {
+                traceLogger.LogMessage("SlewSettleTime Set", "Not implemented");
+                throw new ASCOM.PropertyNotImplementedException("SlewSettleTime", true);
+            }
+        }
+
+        public void SlewToAltAz(double Azimuth, double Altitude)
+        {
+            traceLogger.LogMessage("SlewToAltAz", String.Format("SlewToAltAz({0}, {1})", Azimuth, Altitude));
+            throw new ASCOM.MethodNotImplementedException("SlewToAltAz");
+        }
+
+        public void SlewToAltAzAsync(double Azimuth, double Altitude)
+        {
+            traceLogger.LogMessage("SlewToAltAzAsync", String.Format("SlewToAltAzAsync({0}, {1})", Azimuth, Altitude));
+            throw new ASCOM.MethodNotImplementedException("SlewToAltAzAsync");
+        }
+
+        public double RightAscensionRate
+        {
+            get
+            {
+                double rightAscensionRate = 0.0;
+                traceLogger.LogMessage("RightAscensionRate", "Get - " + rightAscensionRate.ToString());
+                return rightAscensionRate;
+            }
+
+            set
+            {
+                traceLogger.LogMessage("RightAscensionRate Set", "Not implemented");
+                throw new ASCOM.PropertyNotImplementedException("RightAscensionRate", true);
+            }
+        }
+
+        public void SetPark()
+        {
+            traceLogger.LogMessage("SetPark", "Not implemented");
+            throw new ASCOM.MethodNotImplementedException("SetPark");
+        }
+
+        public PierSide SideOfPier
+        {
+            get
+            {
+                PierSide side = PierSide.pierEast;  // TBD
+
+                traceLogger.LogMessage("SideOfPier Get", side.ToString());
+                return side;
+            }
+
+            set
+            {
+                traceLogger.LogMessage("SideOfPier Set", "Not implemented");
+                throw new ASCOM.PropertyNotImplementedException("SideOfPier", true);
+            }
+        }
+
+        public void PulseGuide(GuideDirections Direction, int Duration)
+        {
+            traceLogger.LogMessage("PulseGuide", "Not implemented");
+            throw new ASCOM.MethodNotImplementedException("PulseGuide");
+        }
+
+        public ArrayList SupportedActions
+        {
+            get
+            {
+                traceLogger.LogMessage("SupportedActions Get", "Returning empty arraylist");
+                return new ArrayList();
+            }
+        }
+
+        public string Action(string actionName, string actionParameters)
+        {
+            throw new ASCOM.ActionNotImplementedException("Action " + actionName + " is not implemented by this driver");
+        }
+
+        private void CheckConnected(string message)
+        {
+            if (!_connected)
+            {
+                throw new ASCOM.NotConnectedException(message);
+            }
+        }
+
+        public void CommandBlind(string command, bool raw)
+        {
+            CheckConnected("CommandBlind");
+            // Call CommandString and return as soon as it finishes
+            //this.CommandString(command, raw);
+            // or
+            throw new ASCOM.MethodNotImplementedException("CommandBlind");
+        }
+
+        public bool CommandBool(string command, bool raw)
+        {
+            CheckConnected("CommandBool");
+            //string ret = CommandString(command, raw);
+            // TODO decode the return string and return true or false
+            // or
+            throw new ASCOM.MethodNotImplementedException("CommandBool");
+        }
+
+        public string CommandString(string command, bool raw)
+        {
+            CheckConnected("CommandString");
+            // it's a good idea to put all the low level communication with the device here,
+            // then all communication calls this function
+            // you need something to ensure that only one command is in progress at a time
+
+            throw new ASCOM.MethodNotImplementedException("CommandString");
+        }
+
+        public string DriverInfo
+        {
+            get
+            {
+                Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+                // TODO customise this driver description
+                string driverInfo = "Information about the driver itself. Version: " + 
+                    String.Format(System.Globalization.CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
+                traceLogger.LogMessage("DriverInfo Get", driverInfo);
+                return driverInfo;
+            }
+        }
+
+        public string DriverVersion
+        {
+            get
+            {
+                Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+                string driverVersion = String.Format(System.Globalization.CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
+                traceLogger.LogMessage("DriverVersion Get", driverVersion);
+                return driverVersion;
+            }
+        }
+
+        public short InterfaceVersion
+        {
+            get
+            {
+                traceLogger.LogMessage("InterfaceVersion Get", "3");
+                return Convert.ToInt16("3");
+            }
+        }
+
+        public string Name
+        {
+            get
+            {
+                string name = "Wise40 Telescope";
+                traceLogger.LogMessage("Name Get", name);
+                return name;
+            }
         }
 
     }
