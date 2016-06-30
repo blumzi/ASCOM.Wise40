@@ -99,6 +99,14 @@ namespace AngleTests
             shortest = new Angle(90.0, Angle.Type.Dec).ShortestDistance(new Angle(-90.0, Angle.Type.Dec));
             Assert.AreEqual(new Angle(180.0), shortest.angle, "90 -> -90");
             Assert.AreEqual(Const.AxisDirection.Decreasing, shortest.direction, "90 -> -90");
+
+            shortest = new Angle(20.0, Angle.Type.Dec).ShortestDistance(new Angle(-30.0, Angle.Type.Dec));
+            Assert.AreEqual(new Angle(50.0), shortest.angle, "20 -> -30");
+            Assert.AreEqual(Const.AxisDirection.Decreasing, shortest.direction, "20 -> -30");
+
+            shortest = new Angle(-20.0, Angle.Type.Dec).ShortestDistance(new Angle(30.0, Angle.Type.Dec));
+            Assert.AreEqual(new Angle(50.0), shortest.angle, "-20 -> 30");
+            Assert.AreEqual(Const.AxisDirection.Increasing, shortest.direction, "-20 -> 30");
         }
 
         [TestMethod]
@@ -107,23 +115,23 @@ namespace AngleTests
             ShortestDistanceResult shortest;
 
             shortest = Angle.FromHours(0.0).ShortestDistance(Angle.FromHours(1.25));
-            Assert.AreEqual(new Angle(1.25), shortest.angle, "0 -> 1.25");
+            Assert.AreEqual(Angle.FromHours(1.25), shortest.angle, "0 -> 1.25");
             Assert.AreEqual(Const.AxisDirection.Increasing, shortest.direction, "0 -> 1.25");
 
             shortest = Angle.FromHours(0.0).ShortestDistance(Angle.FromHours(-2.5));
-            Assert.AreEqual(new Angle(2.5), shortest.angle, "0 -> -2.5");
+            Assert.AreEqual(Angle.FromHours(2.5), shortest.angle, "0 -> -2.5");
             Assert.AreEqual(Const.AxisDirection.Decreasing, shortest.direction, "0 -> -2.5");
 
             shortest = Angle.FromHours(2.0).ShortestDistance(Angle.FromHours(6.0));
-            Assert.AreEqual(new Angle(4.0), shortest.angle, "2 -> 6");
+            Assert.AreEqual(Angle.FromHours(4.0), shortest.angle, "2 -> 6");
             Assert.AreEqual(Const.AxisDirection.Increasing, shortest.direction, "2 -> 6");
 
             shortest = Angle.FromHours(1.0).ShortestDistance(Angle.FromHours(23.0));
-            Assert.AreEqual(new Angle(2.0), shortest.angle, "1 -> 23");
+            Assert.AreEqual(Angle.FromHours(2.0), shortest.angle, "1 -> 23");
             Assert.AreEqual(Const.AxisDirection.Decreasing, shortest.direction, "1 -> 23");
 
             shortest = Angle.FromHours(22.0).ShortestDistance(Angle.FromHours(2.0));
-            Assert.AreEqual(new Angle(4.0), shortest.angle, "22 -> 2");
+            Assert.AreEqual(Angle.FromHours(4.0), shortest.angle, "22 -> 2");
             Assert.AreEqual(Const.AxisDirection.Increasing, shortest.direction, "22 -> 2");
 
             shortest = new Angle("23h30m00s").ShortestDistance(new Angle("2h30m00s"));
@@ -229,8 +237,8 @@ namespace AngleTests
             a1 = new Angle("2d3m4.5s");
             a2 = Angle.FromDegrees(2.0 + (3.0 / 60) + (4.5 / 60 / 60));
             Assert.AreEqual(a1, a2);
-            Assert.AreEqual(a1.ToString(), "02°03'04.5\"");
-            Assert.AreEqual(a2.ToString(), "02°03'04.5\"");
+            Assert.AreEqual(a1.ToString(), "02:03:04.5");
+            Assert.AreEqual(a2.ToString(), "02:03:04.5");
         }
 
         [TestMethod]

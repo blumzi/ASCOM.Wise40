@@ -130,7 +130,7 @@ namespace ASCOM.Wise40.Hardware
             set
             {
                 if (simulated)
-                    _angle.Value = value.Value;
+                    _angle = value;
             }
         }
 
@@ -141,20 +141,19 @@ namespace ASCOM.Wise40.Hardware
                 if (!simulated)
                     _angle.Radians = (_daqsValue * HaMultiplier) + HaCorrection;
 
-                return Angle.Value;
+                return Angle.Degrees;
             }
 
             set
             {
-                double before = _angle.Value;
-                _angle.Value = value;
-                double after = _angle.Value;
-                double delta = after - before;
+                Angle before = _angle;
+                _angle.Degrees = value;
+                Angle after = _angle;
+                Angle delta = after - before;
 
                 if (simulated)
                 {
-                    debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "[{0}] {1}: {2} + {3} = {4}",
-                        this.GetHashCode(), name, new Angle(before), new Angle(delta), new Angle(after));
+                    debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "[{0}] {1}: {2} + {3} = {4}", this.GetHashCode(), name, before, delta, after);
                     _daqsValue = (uint)((_angle.Radians + HaCorrection) / HaMultiplier);
                 }
             }
@@ -164,7 +163,7 @@ namespace ASCOM.Wise40.Hardware
         {
             get
             {
-                return Degrees / 15.0;
+                return Angle.Hours;
             }
         }
 

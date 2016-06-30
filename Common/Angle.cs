@@ -13,7 +13,7 @@ namespace ASCOM.Wise40.Common
         internal static Astrometry.AstroUtils.AstroUtils astroutils = new Astrometry.AstroUtils.AstroUtils();
         internal static ASCOM.Utilities.Util ascomutils = new ASCOM.Utilities.Util();
         //public enum Format { Deg, RA, Dec, HA, Alt, Az, Double, Rad, HAhms, RAhms, HMS };
-        public enum Type {  Deg, RA, Dec, HA, Az, Alt };
+        public enum Type {  Deg, RA, Dec, HA, Az, Alt, None };
 
         private double _degrees;
         private bool _cyclic;
@@ -81,6 +81,9 @@ namespace ASCOM.Wise40.Common
                     break;
             }
 
+            if (_cyclic)
+                val = normalize(this, val);
+
             if (val != double.NaN)
             {
                 if (_lowestIncluded && val < _lowest)
@@ -93,15 +96,18 @@ namespace ASCOM.Wise40.Common
                     throw new InvalidValueException(string.Format("value: {0} >= highest: {1}", val, _highest));
             }
 
-            if (_cyclic)
-                val = normalize(this, val);
+            //if (_cyclic)
+            //    val = normalize(this, val);
 
             _degrees = _isHMS ? val * 15.0 : val;
         }
 
         public Angle(int u, int m, double s, int sign = 1)
         {
-            Value = sign * ascomutils.DMSToDegrees(string.Format("{0}:{1}:{2}", u, m, s));
+            if (_isHMS)
+                Degrees = sign * ascomutils.HMSToDegrees(string.Format("{0}:{1}:{2}", u, m, s));
+            else
+                Degrees = sign * ascomutils.DMSToDegrees(string.Format("{0}:{1}:{2}", u, m, s));
         }
 
         public Angle(string s)
@@ -153,7 +159,7 @@ namespace ASCOM.Wise40.Common
         public static Angle FromHours(double hours, Type type = Type.RA)
         {
             return new Angle(hours, type);
-        }
+        }        
 
         private static double normalize(Angle a, double d)
         {
@@ -163,17 +169,53 @@ namespace ASCOM.Wise40.Common
                 return d;
         }
 
+
         /// <summary>
         /// Controls the access to an Angle's internal value while applying
         ///  normalization, if mandated by the Angle's type.
         ///  
         /// Contains the actual value, either in degrees or hours, according to _isHSM.
         /// </summary>
-        public double Value
+        //public double Value
+        //{
+        //    get
+        //    {
+        //        return _isHMS ? _degrees / 15.0 : _degrees;
+        //    }
+
+        //    set
+        //    {
+        //        if (_cyclic)
+        //            value = (value %= _highest) >= 0.0 ? value : (value + _highest);
+
+        //        if (_highest != double.PositiveInfinity)
+        //        {
+        //            if (_highestIncluded && value > _highest)
+        //                throw new InvalidValueException(string.Format("value: {0} > highest: {1}", value, _highest));
+        //            else if (!_highestIncluded && value >= _highest)
+        //                throw new InvalidValueException(string.Format("value: {0} >= highest: {1}", value, _highest));
+        //        }
+
+        //        if (_lowest != double.NegativeInfinity)
+        //        {
+        //            if (_lowestIncluded && value < _lowest)
+        //                throw new InvalidValueException(string.Format("value: {0} < lowest: {1}", value, _lowest));
+        //            else if (!_lowestIncluded && value <= _lowest)
+        //                throw new InvalidValueException(string.Format("value: {0} <= lowest: {1}", value, _lowest));
+        //        }
+
+        //        _degrees = _isHMS ? value * 15.0 : value;
+        //    }
+        //}
+
+        /// <summary>
+        /// Exposes the internal value, converted to degrees if _isHSM.
+        /// </summary>
+        public double Degrees
         {
             get
             {
-                return _isHMS ? _degrees / 15.0 : _degrees;
+                return _degrees;
             }
 
             set
@@ -197,18 +239,7 @@ namespace ASCOM.Wise40.Common
                         throw new InvalidValueException(string.Format("value: {0} <= lowest: {1}", value, _lowest));
                 }
 
-                _degrees = _isHMS ? value * 15.0 : value;
-            }
-        }
-
-        /// <summary>
-        /// Exposes the internal value, converted to degrees if _isHSM.
-        /// </summary>
-        public double Degrees
-        {
-            get
-            {
-                return _degrees;
+                _degrees = value;
             }
         }
 
@@ -221,7 +252,7 @@ namespace ASCOM.Wise40.Common
 
             set
             {
-                _degrees = value * 15.0;
+                Degrees = value * 15.0;
             }
         }
 
@@ -257,12 +288,12 @@ namespace ASCOM.Wise40.Common
         {
             get
             {
-                return Value * Math.PI / 180.0;
+                return Degrees * Math.PI / 180.0;
             }
 
             set
             {
-                Value = value * 180.0 / Math.PI;
+                Degrees = value * 180.0 / Math.PI;
             }
         }
 
@@ -289,8 +320,15 @@ namespace ASCOM.Wise40.Common
             else if ((object)a2 == null)
                 return a1;
 
-            double d = a1.Degrees + a2.Degrees;
-            return new Angle(a1._isHMS ? d / 15.0 : d, a1._type);
+            double degrees = a1.Degrees + a2.Degrees;
+            if (a1._cyclic)
+            {
+                double max = a1._isHMS ? a1._highest * 15.0 : a1._highest;
+                degrees %= max;
+                if (degrees < 0.0)
+                    degrees += max;
+            }
+            return a1._isHMS ? Angle.FromHours(degrees / 15.0, a1._type) : Angle.FromDegrees(degrees, a1._type);
         }
 
         public static Angle operator -(Angle a1, Angle a2)
@@ -302,18 +340,25 @@ namespace ASCOM.Wise40.Common
             else if ((object)a2 == null)
                 return a1;
 
-            double d = a1.Degrees - a2.Degrees;
-            return new Angle(a1._isHMS ? d / 15.0 : d, a1._type);
+            double degrees = a1.Degrees - a2.Degrees;
+            if (a1._cyclic)
+            {
+                double max = a1._isHMS ? a1._highest * 15.0 : a1._highest;
+                degrees %= max;
+                if (degrees < 0.0)
+                    degrees += max;
+            }
+            return a1._isHMS ? Angle.FromHours(degrees / 15.0, a1._type) : Angle.FromDegrees(degrees, a1._type);
         }
 
         public static bool operator >(Angle a1, Angle a2)
         {
-            return (a1.Value > a2.Value) ? true : false;
+            return (a1.Degrees > a2.Degrees) ? true : false;
         }
 
         public static bool operator <(Angle a1, Angle a2)
         {
-            return (a1.Value < a2.Value) ? true : false;
+            return (a1.Degrees < a2.Degrees) ? true : false;
         }
 
         public static bool operator ==(Angle a1, Angle a2)
@@ -324,7 +369,7 @@ namespace ASCOM.Wise40.Common
             if (((object)a1 == null || ((object)a2 == null)))
                 return false;
 
-            return a1.Value == a2.Value;
+            return a1.Degrees == a2.Degrees;
         }
 
         public static bool operator !=(Angle a1, Angle a2)
@@ -334,12 +379,12 @@ namespace ASCOM.Wise40.Common
 
         public static bool operator <=(Angle a1, Angle a2)
         {
-            return a1.Value <= a2.Value;
+            return a1.Degrees <= a2.Degrees;
         }
 
         public static bool operator >=(Angle a1, Angle a2)
         {
-            return a1.Value >= a2.Value;
+            return a1.Degrees >= a2.Degrees;
         }
 
         public static Angle Min(Angle a1, Angle a2)
@@ -347,8 +392,8 @@ namespace ASCOM.Wise40.Common
             if ((object)a1 == null || ((object)a2 == null))
                 return null;
 
-            var min = (a1.Value <= a2.Value) ? a1 : a2;
-            return new Angle(min.Value, min._type);
+            var min = (a1.Degrees <= a2.Degrees) ? a1 : a2;
+            return new Angle(min.Degrees, min._type);
         }
 
         public static Angle Max(Angle a1, Angle a2)
@@ -357,8 +402,8 @@ namespace ASCOM.Wise40.Common
             if ((object)a1 == null || ((object)a2 == null))
                 return null;
 
-            var max = (a1.Value >= a2.Value) ? a1 : a2;
-            return new Angle(max.Value, max._type);
+            var max = (a1.Degrees >= a2.Degrees) ? a1 : a2;
+            return new Angle(max.Degrees, max._type);
         }
 
         public override bool Equals(object obj)
@@ -367,14 +412,14 @@ namespace ASCOM.Wise40.Common
                 return false;
 
             Angle b = obj as Angle;
-            return Math.Abs(b.Value - Value) <= epsilon;
+            return Math.Abs(b.Degrees - Degrees) <= epsilon;
         }
 
         public bool Equals(Angle a)
         {
             if ((object)a == null)
                 return false;
-            return Math.Abs(a.Value - Value) <= epsilon;
+            return Math.Abs(a.Degrees - Degrees) <= epsilon;
         }
 
         public override int GetHashCode()
@@ -399,14 +444,14 @@ namespace ASCOM.Wise40.Common
                 {
                     decSide = other - this;
                     incSide = this + ((_isHMS) ? 
-                        Angle.FromHours(_highest - other.Value, this._type) : 
-                        Angle.FromDegrees(_highest - other.Value, this._type));
+                        Angle.FromHours(_highest - other.Hours, this._type) : 
+                        Angle.FromDegrees(_highest - other.Degrees, this._type));
                 }
                 else
                 {
                     decSide = other + ((_isHMS) ?
-                        Angle.FromHours(_highest - this.Value, this._type) :
-                        Angle.FromDegrees(_highest - this.Value, this._type));
+                        Angle.FromHours(_highest - this.Hours, this._type) :
+                        Angle.FromDegrees(_highest - this.Degrees, this._type));
                     incSide = this - other;
                 }
 
@@ -420,17 +465,37 @@ namespace ASCOM.Wise40.Common
                     res.angle = decSide;
                     res.direction = Const.AxisDirection.Increasing;
                 }
-                res.angle._type = Type.Deg;
+                res.angle._type = this._type;
 
             }
             else
             {
-                res.angle = new Angle(Math.Abs(this.Value - other.Value), Type.Deg);
-                res.direction = (this.Value > other.Value) ? Const.AxisDirection.Decreasing : Const.AxisDirection.Increasing;
+                res.angle = new Angle(Math.Abs(this.Degrees - other.Degrees), Type.Deg);
+                res.direction = (this.Degrees > other.Degrees) ? Const.AxisDirection.Decreasing : Const.AxisDirection.Increasing;
             }
 
             debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "ShortestDistance: {0} -> {1} ==> {2} {3}", this, other, res.angle, res.direction);
             return res;
+        }
+
+        public static double Deg2Hours(string s)
+        {
+            return new Angle(s).Hours;
+        }
+
+        public static double Deg2Hours(double deg)
+        {
+            return deg / 15.0;
+        }
+
+        public static double Hours2Deg(string s)
+        {
+            return new Angle(s).Degrees;
+        }
+
+        public static double Hours2Deg(double hours)
+        {
+            return hours * 15.0;
         }
 
         public static readonly Angle zero = new Angle(0.0);

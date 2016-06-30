@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using ASCOM.Wise40.Common;
+using ASCOM.DeviceInterface;
 
 namespace ASCOM.Wise40.Hardware
 {
@@ -28,11 +29,19 @@ namespace ASCOM.Wise40.Hardware
         private int simulationTimerFrequency;
         private int timer_counts;
         private DateTime prevTick;
-        private Const.AxisDirection direction;   // There are separate WiseMotor instances for North, South, East, West
+        private TelescopeAxes _axis;
+        private Const.AxisDirection _direction;   // There are separate WiseMotor instances for North, South, East, West
         private bool _simulated = false;
         private bool _connected = false;
 
-        public WiseVirtualMotor(string name, WisePin motorPin, WisePin guideMotorPin, WisePin slewPin, Const.AxisDirection direction, List<object> encoders = null)
+        public WiseVirtualMotor(
+            string name,
+            WisePin motorPin,
+            WisePin guideMotorPin,
+            WisePin slewPin,
+            TelescopeAxes axis,
+            Const.AxisDirection direction,
+            List<object> encoders = null)
         {
             this.name = name;
 
@@ -41,7 +50,8 @@ namespace ASCOM.Wise40.Hardware
             this.slewPin = slewPin;
 
             this.encoders = encoders;
-            this.direction = direction;
+            this._axis = axis;
+            this._direction = direction;
             simulated = motorPin.Simulated || (guideMotorPin != null && guideMotorPin.Simulated);
 
             if (simulated && (encoders == null || encoders.Count() == 0))
@@ -119,25 +129,36 @@ namespace ASCOM.Wise40.Hardware
             if (!simulated)
                 return;
 
-            double increment = ((direction == Const.AxisDirection.Increasing) ? currentRate : -currentRate) / simulationTimerFrequency;
+            double degrees = currentRate / simulationTimerFrequency;
+            Angle angle = (_axis == TelescopeAxes.axisPrimary) ? Angle.FromHours(degrees/15.0) : Angle.FromDegrees(degrees);
 
-            foreach (IDegrees encoder in encoders)
+            foreach (IEncoder encoder in encoders)
             {
-                Angle before = new Angle(encoder.Degrees), inc = new Angle(increment);
-                encoder.Degrees += increment;
-                Angle after = new Angle(encoder.Degrees);
+                Angle before = _axis == TelescopeAxes.axisPrimary ? Angle.FromHours(WiseTele.Instance.RightAscension) : Angle.FromDegrees(WiseTele.Instance.Declination);
+
+                string op = _direction == Const.AxisDirection.Increasing ? "+" : "-";
+                if (_direction == Const.AxisDirection.Increasing)
+                    encoder.Angle += angle;
+                else
+                    encoder.Angle -= angle;
 
                 if (WiseTele.Instance.debugger.Debugging(Debugger.DebugLevel.DebugMotors))
                 {
-                    bool primary = (name == "EastMotor" || name == "WestMotor" || name == "TrackMotor");
-                    Angle encoderAngle =  primary ?
-                        Angle.FromHours(WiseTele.Instance.RightAscension, Angle.Type.RA) :
-                        Angle.FromDegrees(WiseTele.Instance.Declination, Angle.Type.Dec);
+                    Angle after = _axis == TelescopeAxes.axisPrimary ? Angle.FromHours(WiseTele.Instance.RightAscension) : Angle.FromDegrees(WiseTele.Instance.Declination);
 
-                    WiseTele.Instance.debugger.WriteLine(Debugger.DebugLevel.DebugMotors, "{0}: {1}: {2}: {3} (#{4}, {5} ms)",
-                        name, encoder.name,
-                        primary ? "ra" : "dec",
-                        encoderAngle, timer_counts++, DateTime.Now.Subtract(prevTick).Milliseconds);
+                    WiseTele.Instance.debugger.WriteLine(
+                        Debugger.DebugLevel.DebugMotors, "bumpEncoders: {0}: {1}: {2}: (angle: {3}, op: {10}) {4} => {5} ({6} => {7}) (#{8}, {9} ms)",
+                        name,
+                        encoder.name,
+                        _axis == TelescopeAxes.axisPrimary ? "ra" : "dec",
+                        angle.Degrees,
+                        before,
+                        after,
+                        before.Degrees,
+                        after.Degrees,
+                        timer_counts++,
+                        DateTime.Now.Subtract(prevTick).Milliseconds,
+                        op);
                 }
                 prevTick = DateTime.Now;
             }

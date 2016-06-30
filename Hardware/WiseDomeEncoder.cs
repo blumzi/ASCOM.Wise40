@@ -61,7 +61,7 @@ namespace ASCOM.Wise40.Hardware
 
             if (simulatedStuckAzimuth != NoSimulatedStuckAz)                // A simulatedStuck is required
             {
-                if (Math.Abs(Azimuth.Value - simulatedStuckAzimuth.Value) <= 1.0)       // we're in the vicinity of the simulatedStuckAzimuth
+                if (Math.Abs(Azimuth.Degrees - simulatedStuckAzimuth.Degrees) <= 1.0)       // we're in the vicinity of the simulatedStuckAzimuth
                 {
                     if (endSimulatedStuck.Equals(DateTime.MinValue))        // endSimulatedStuck is not set
                         endSimulatedStuck = rightNow.AddSeconds(3);         // set it to (now + 3sec)
@@ -161,11 +161,11 @@ namespace ASCOM.Wise40.Hardware
                     az = caliAz + new Angle((caliTicks - currTicks) * WiseDome.DegreesPerTick);
                 }
 
-                if (az.Value > 360)
-                    az.Value -= 360;
+                //if (az.Value > 360)
+                //    az.Value -= 360;
 
-                if (az.Value < 0)
-                    az.Value += 360;
+                //if (az.Value < 0)
+                //    az.Value += 360;
 
                 debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "Azimuth: {0}, currTicks: {1}, caliTicks: {2}, caliAz: {3}",
                     az, currTicks, caliTicks, caliAz);

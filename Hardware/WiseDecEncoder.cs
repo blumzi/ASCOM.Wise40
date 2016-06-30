@@ -173,7 +173,7 @@ namespace ASCOM.Wise40.Hardware
             set
             {
                 if (simulated)
-                    _angle.Value = value.Value;
+                    _angle.Degrees = value.Degrees;
             }
         }
 
@@ -193,12 +193,12 @@ namespace ASCOM.Wise40.Hardware
                         "[{0}] {1} Degrees - Value: {2}, deg: {3}", this.GetHashCode(), name, v, _angle);
                 }
 
-                return _angle.Value;
+                return _angle.Degrees;
             }
 
             set
             {
-                _angle.Value = value;
+                _angle.Degrees = value;
                 if (simulated)
                 {
                     _daqsValue = (uint) ((_angle.Radians - DecCorrection) / decMultiplier);

@@ -59,21 +59,21 @@ namespace ASCOM.Wise40
                 prev = (int)TimedMovementResult.ResultSelector.AtStart;
                 dTime = time[curr].Subtract(time[prev]);
                 dEncoder = enc_value[curr] - enc_value[prev];
-                dDeg = enc_angle[curr].Value - enc_angle[prev].Value;
+                dDeg = enc_angle[curr].Degrees - enc_angle[prev].Degrees;
                 s = string.Format(" start-to-stop: dTime: {0} dDeg: {2} dEnc: {1}\r\n", dTime, dEncoder, Angle.FromDegrees(dDeg));
 
                 curr = (int)TimedMovementResult.ResultSelector.AtIdle;
                 prev = (int)TimedMovementResult.ResultSelector.AtStop;
                 dTime = time[curr].Subtract(time[prev]);
                 dEncoder = enc_value[curr] - enc_value[prev];
-                dDeg = enc_angle[curr].Value - enc_angle[prev].Value;
+                dDeg = enc_angle[curr].Degrees - enc_angle[prev].Degrees;
                 s += string.Format("       inertia: dTime: {0} dDeg: {2} dEnc: {1}\r\n", dTime, dEncoder, Angle.FromDegrees(dDeg));
 
                 curr = (int)TimedMovementResult.ResultSelector.AtIdle;
                 prev = (int)TimedMovementResult.ResultSelector.AtStart;
                 dTime = time[curr].Subtract(time[prev]);
                 dEncoder = enc_value[curr] - enc_value[prev];
-                dDeg = enc_angle[curr].Value - enc_angle[prev].Value;
+                dDeg = enc_angle[curr].Degrees - enc_angle[prev].Degrees;
                 s += string.Format("         total: dTime: {0} dDeg: {2} dEnc: {1}\r\n", dTime, dEncoder, Angle.FromDegrees(dDeg)); s += "\r\n";
 
                 return s;
@@ -306,12 +306,12 @@ namespace ASCOM.Wise40
                 selector = (int)TimedMovementResult.ResultSelector.AtStop;
                 res.time[selector] = DateTime.Now;
                 res.enc_value[selector] = (arg.axis == TelescopeAxes.axisPrimary) ? T.HAEncoder.Value : T.DecEncoder.Value;
-                res.enc_angle[selector] = Angle.FromDegrees((arg.axis == TelescopeAxes.axisPrimary) ? T.HAEncoder.Angle.Value : T.DecEncoder.Angle.Value);
+                res.enc_angle[selector] = Angle.FromDegrees((arg.axis == TelescopeAxes.axisPrimary) ? T.HAEncoder.Angle.Degrees : T.DecEncoder.Angle.Degrees);
 
                 if (T.simulated)    // move some more, to simulate telescope inertia
                 {
                     T.MoveAxis(arg.axis, arg.rate);
-                    long deltaTicks = 10000 * (long) (WiseTele.Instance.movementParameters[arg.axis][arg.rate].stopMovement.Value * WiseTele.Instance.movementParameters[arg.axis][arg.rate].millisecondsPerDegree);
+                    long deltaTicks = 10000 * (long) (WiseTele.Instance.movementParameters[arg.axis][arg.rate].stopMovement.Degrees * WiseTele.Instance.movementParameters[arg.axis][arg.rate].millisecondsPerDegree);
                     for (long endTicks = DateTime.Now.Ticks + deltaTicks; DateTime.Now.Ticks < endTicks; Thread.Sleep(10))
                     {
                         if (bgw.CancellationPending)
@@ -350,7 +350,7 @@ namespace ASCOM.Wise40
                 selector = (int)TimedMovementResult.ResultSelector.AtIdle;
                 res.time[selector] = DateTime.Now;
                 res.enc_value[selector] = (arg.axis == TelescopeAxes.axisPrimary) ? T.HAEncoder.Value : T.DecEncoder.Value;
-                res.enc_angle[selector] = Angle.FromDegrees((arg.axis == TelescopeAxes.axisPrimary) ? T.HAEncoder.Angle.Value : T.DecEncoder.Angle.Value);
+                res.enc_angle[selector] = Angle.FromDegrees((arg.axis == TelescopeAxes.axisPrimary) ? T.HAEncoder.Angle.Degrees : T.DecEncoder.Angle.Degrees);
 
                 bgResults.Add(res);
             }

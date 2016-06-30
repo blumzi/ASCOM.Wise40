@@ -336,7 +336,7 @@ namespace ASCOM.Wise40
                 Angle az = wisedome.Azimuth;
 
                 tl.LogMessage("Azimuth Get", az.ToString());
-                return az.Value;
+                return az.Degrees;
             }
         }
 
@@ -552,7 +552,7 @@ namespace ASCOM.Wise40
         {
             Angle ang = new Angle(degrees);
 
-            if (ang.Value < 0 || ang.Value >= 360)
+            if (degrees < 0.0 || degrees >= 360.0)
                 throw new InvalidValueException(string.Format("Cannot SyncToAzimuth({0}), must be >- 0 and < 360", ang));
 
             tl.LogMessage("SyncToAzimuth", ang.ToString());
