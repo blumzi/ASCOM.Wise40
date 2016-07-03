@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using System.Diagnostics;
+
 namespace ASCOM.CloudSensor
 {
 
@@ -92,7 +94,7 @@ namespace ASCOM.CloudSensor
         public enum WetFlagValue { wetDry = 0, wetLastMinute = 1, wetRightNow = 2 };
         public WetFlagValue rainFlag;
         public WetFlagValue wetFlag;
-        public int sinceSeeconds;
+        public int sinceSeconds;
         public DateTime lastWriten;
         public enum CloudCondition
         {
@@ -163,14 +165,21 @@ namespace ASCOM.CloudSensor
                 heaterSetting = Convert.ToInt32(data.Substring(66, 3));
                 rainFlag = (WetFlagValue)Convert.ToInt32(data.Substring(70, 1));
                 wetFlag = (WetFlagValue)Convert.ToInt32(data.Substring(72, 1));
-                sinceSeeconds = Convert.ToInt32(data.Substring(74, 5));
-                lastWriten = Convert.ToDateTime(data.Substring(80, 11));
+                sinceSeconds = Convert.ToInt32(data.Substring(74, 5));
+                //lastWriten = Convert.ToDateTime(data.Substring(80, 12));
                 cloudCondition = (CloudCondition)Convert.ToInt32(data.Substring(93, 1));
                 windCondition = (WindCondition)Convert.ToInt32(data.Substring(95, 1));
                 rainCondition = (RainCondition)Convert.ToInt32(data.Substring(97, 1));
                 dayCondition = (DayCondition)Convert.ToInt32(data.Substring(99, 1));
-                roofCloseRequested = Convert.ToBoolean(data.Substring(101, 1));
-                alerting = Convert.ToBoolean(data.Substring(103, 1));
+                switch (data.Substring(101, 1))
+                {
+                    case "0":
+                        roofCloseRequested = false;
+                        break;
+                    case "1":
+                        roofCloseRequested = true;
+                        break;
+                }
             } catch(Exception e)
             {
                 throw new InvalidValueException(string.Format("Could not parse sensor data, caught: {0}", e.Message));

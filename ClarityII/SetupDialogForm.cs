@@ -12,10 +12,14 @@ namespace ASCOM.CloudSensor
     [ComVisible(false)]					// Form not registered for COM!
     public partial class SetupDialogForm : Form
     {
-        public SetupDialogForm()
+        private ObservingConditions _oc;
+
+        public SetupDialogForm(ObservingConditions observingConditions)
         {
             InitializeComponent();
             // Initialise current values of user settings from the ASCOM Profile
+            _oc = observingConditions;
+            _oc.ReadProfile();
             InitUI();
         }
 
@@ -23,8 +27,8 @@ namespace ASCOM.CloudSensor
         {
             // Place any validation constraint checks here
             // Update the state variables with results from the dialogue
-            ObservingConditions._dataFile = openFileDialog.FileName;
-            ObservingConditions.traceState = chkTrace.Checked;
+            _oc._dataFile = openFileDialog.FileName;
+            _oc._traceState = chkTrace.Checked;
         }
 
         private void cmdCancel_Click(object sender, EventArgs e) // Cancel button event handler
@@ -51,13 +55,18 @@ namespace ASCOM.CloudSensor
 
         private void InitUI()
         {
-            chkTrace.Checked = ObservingConditions.traceState;
-            // set the list of com ports to those that are currently available            
+            chkTrace.Checked = _oc._traceState;
+            labelDataFileValue.Text = _oc._dataFile;            
         }
 
         private void openFileDialog1_FileOk(object sender, CancelEventArgs e)
         {
             labelDataFileValue.Text = ((OpenFileDialog)sender).FileName;
+        }
+
+        private void buttonChooseDataFile_Click(object sender, EventArgs e)
+        {
+            openFileDialog.ShowDialog();
         }
     }
 }

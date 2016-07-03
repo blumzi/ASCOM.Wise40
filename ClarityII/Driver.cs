@@ -73,8 +73,8 @@ namespace ASCOM.CloudSensor
         internal static string traceStateProfileName = "Trace Level";
         internal static string traceStateDefault = "false";
 
-        internal static string _dataFile; // Variables to hold the currrent device configuration
-        internal static bool traceState;
+        public string _dataFile; // Variables to hold the currrent device configuration
+        public bool _traceState;
 
         /// <summary>
         /// Private variable to hold the connected state
@@ -107,7 +107,7 @@ namespace ASCOM.CloudSensor
             ReadProfile(); // Read device configuration from the ASCOM Profile store
 
             tl = new TraceLogger("", "CloudSensor");
-            tl.Enabled = traceState;
+            tl.Enabled = _traceState;
             tl.LogMessage("ObservingConditions", "Starting initialisation");
 
             connectedState = false; // Initialise connected to false
@@ -159,7 +159,7 @@ namespace ASCOM.CloudSensor
             if (IsConnected)
                 System.Windows.Forms.MessageBox.Show("Already connected, just press OK");
 
-            using (SetupDialogForm F = new SetupDialogForm())
+            using (SetupDialogForm F = new SetupDialogForm(this))
             {
                 var result = F.ShowDialog();
                 if (result == System.Windows.Forms.DialogResult.OK)
@@ -528,8 +528,10 @@ namespace ASCOM.CloudSensor
         /// </remarks>
         public double TimeSinceLastUpdate(string PropertyName)
         {
-            tl.LogMessage("TimeSinceLastUpdate", PropertyName + " - not implemented");
-            throw new MethodNotImplementedException("TimeSinceLastUpdate(" + PropertyName + ")");
+            int ret = sensorData.sinceSeconds;
+
+            tl.LogMessage("TimeSinceLastUpdate", string.Format("{0} - {1}", PropertyName, ret));
+            return ret;
         }
 
         /// <summary>
@@ -721,7 +723,7 @@ namespace ASCOM.CloudSensor
             using (Profile driverProfile = new Profile())
             {
                 driverProfile.DeviceType = "ObservingConditions";
-                traceState = Convert.ToBoolean(driverProfile.GetValue(driverID, traceStateProfileName, string.Empty, traceStateDefault));
+                _traceState = Convert.ToBoolean(driverProfile.GetValue(driverID, traceStateProfileName, string.Empty, traceStateDefault));
                 _dataFile = driverProfile.GetValue(driverID, dataFileProfileName, string.Empty, string.Empty);
             }
         }
@@ -734,7 +736,7 @@ namespace ASCOM.CloudSensor
             using (Profile driverProfile = new Profile())
             {
                 driverProfile.DeviceType = "ObservingConditions";
-                driverProfile.WriteValue(driverID, traceStateProfileName, traceState.ToString());
+                driverProfile.WriteValue(driverID, traceStateProfileName, _traceState.ToString());
                 driverProfile.WriteValue(driverID, dataFileProfileName, _dataFile.ToString());
             }
         }
