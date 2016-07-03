@@ -99,7 +99,7 @@ namespace ASCOM.CloudSensor
             // 
             // openFileDialog
             // 
-            this.openFileDialog.FileName = "dataFile";
+            this.openFileDialog.FileName = "";
             this.openFileDialog.Title = " ClarityII data file ";
             this.openFileDialog.FileOk += new System.ComponentModel.CancelEventHandler(this.openFileDialog1_FileOk);
             // 
