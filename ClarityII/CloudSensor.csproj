@@ -110,6 +110,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Sample Files\ClarityII-data.txt" />
     <None Include="app.config" />
     <None Include="ASCOM.png" />
     <None Include="ASCOMDriverTemplate.snk" />

@@ -100,7 +100,7 @@ namespace ASCOM.CloudSensor
             cloudUnknown = 0,
             cloudClear = 1,
             cloudCloudy = 2,
-            cloudVeyCloudy = 3,
+            cloudVeryCloudy = 3,
             cloudWet = 4,
         }
         public CloudCondition cloudCondition;
@@ -166,15 +166,13 @@ namespace ASCOM.CloudSensor
                 rainFlag = (WetFlagValue)Convert.ToInt32(data.Substring(70, 1));
                 wetFlag = (WetFlagValue)Convert.ToInt32(data.Substring(72, 1));
                 sinceSeeconds = Convert.ToInt32(data.Substring(74, 5));
-                //lastWriten = Convert.ToDateTime(data.Substring(80, 11));
+                //lastWriten = Convert.ToDateTime(data.Substring(80, 12));
                 cloudCondition = (CloudCondition)Convert.ToInt32(data.Substring(93, 1));
                 windCondition = (WindCondition)Convert.ToInt32(data.Substring(95, 1));
                 rainCondition = (RainCondition)Convert.ToInt32(data.Substring(97, 1));
                 dayCondition = (DayCondition)Convert.ToInt32(data.Substring(99, 1));
                 var x = Convert.ToInt32(data.Substring(101, 1));
                 roofCloseRequested = (x == 1) ? true : false;
-                x = Convert.ToInt32(data.Substring(103, 1));
-                alerting = (x == 1) ? true : false;
             } catch(Exception e)
             {
                 throw new InvalidValueException(string.Format("Could not parse sensor data, caught: {0}", e.Message));
