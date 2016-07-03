@@ -18,7 +18,7 @@ namespace ASCOM.Wise40.Hardware
         private bool _connected = false;
         private string _name;
         private uint _daqsValue;
-        //private uint _value_at_fiducial_point = 1433418;
+        private const uint _realValueAtFiducialMark = 1432779; // Arie - 02 July 2016
 
         private AtomicReader wormAtomicReader, axisAtomicReader;
 
@@ -29,7 +29,8 @@ namespace ASCOM.Wise40.Hardware
 
         const double HaMultiplier = 2 * Math.PI / 720 / 4096;
         const double HaCorrection = -3.063571542;                   // 20081231: Shai Kaspi
-        const uint _simulatedValueAtFiducialMark = 1432672;
+        //const double HaCorrection = -6.899777777777778;  // 20160702: Arie
+        const uint _simulatedValueAtFiducialMark = _realValueAtFiducialMark;
 
         private Common.Debugger debugger = new Debugger();
 
@@ -75,8 +76,11 @@ namespace ASCOM.Wise40.Hardware
             }
             _name = name;
 
-            _angle = simulated ? new Angle("00h00m00.0s") : Angle.FromRadians((Value * HaMultiplier) + HaCorrection, Angle.Type.RA);
-
+            if (simulated)
+                _angle = new Angle("00h00m00.0s");
+            else
+                _angle = Angle.FromRadians((Value * HaMultiplier) + HaCorrection);
+ 
             using (ASCOM.Utilities.Profile driverProfile = new ASCOM.Utilities.Profile())
             {
                 driverProfile.DeviceType = "Telescope";
@@ -99,13 +103,14 @@ namespace ASCOM.Wise40.Hardware
 
                     daqValues = wormAtomicReader.Values;
                     worm = (daqValues[1] << 8) | daqValues[0];
-                    debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "[{0}] Value - HA worm: {1}", this.GetHashCode(), worm);
 
                     daqValues = axisAtomicReader.Values;
                     axis = (daqValues[0] >> 4) | (daqValues[1] << 4);
-                    debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "[{0}] Value - HA axis: {1}", this.GetHashCode(), axis);
 
                     _daqsValue = ((axis * 720 - worm) & 0xfff000) + worm;
+                    debugger.WriteLine(Debugger.DebugLevel.DebugEncoders,
+                        "{0}: value: {1}, axis: {2}, worm: {3}",
+                        name, _daqsValue, axis, worm);
                 }
                 return _daqsValue;
             }
@@ -114,6 +119,44 @@ namespace ASCOM.Wise40.Hardware
             {
                 if (simulated)
                     _daqsValue = value;
+            }
+        }
+
+        public uint AxisValue
+        {
+            get
+            {
+                if (simulated)
+                    return 0;
+                else
+                {
+                    List<uint> daqValues;
+                    uint axis;
+
+                    daqValues = axisAtomicReader.Values;
+                    axis = (daqValues[0] >> 4) | (daqValues[1] << 4);
+
+                    return axis;
+                }
+            }
+        }
+
+        public uint WormValue
+        {
+            get
+            {
+                if (simulated)
+                    return 0;
+                else
+                {
+                    List<uint> daqValues;
+                    uint worm;
+
+                    daqValues = wormAtomicReader.Values;
+                    worm = (daqValues[1] << 8) | daqValues[0];
+
+                    return worm;
+                }
             }
         }
 

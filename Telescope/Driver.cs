@@ -204,12 +204,14 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return WiseTele.Instance.Connected;
+                _connected = WiseTele.Instance.Connected;
+                return _connected;
             }
 
             set
             {
                 WiseTele.Instance.Connected = value;
+                _connected = WiseTele.Instance.Connected;
             }
         }
 

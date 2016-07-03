@@ -492,11 +492,6 @@ namespace ASCOM.Wise40
                 changeDirection = Angle.FromHours(Angle.Deg2Hours("00:00:30.0")),
                 startMovement = Angle.FromHours(Angle.Deg2Hours("00:00:20.0")),
                 stopMovement = Angle.FromHours(Angle.Deg2Hours("00:00:20.0")),
-
-                //anglePerSecond = new Angle("02:00:0.0"),
-                //changeDirection = new Angle("00:00:30.0"),
-                //startMovement = new Angle("00:00:20.0"),
-                //stopMovement = new Angle("00:00:20.0"),
                 millisecondsPerDegree = 500.0,      // 2deg/sec
             };
 
@@ -626,7 +621,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return astroutils.ConditionHA(HAEncoder.Degrees);
+                return astroutils.ConditionHA(HAEncoder.Angle.Hours);
             }
         }
 
@@ -1181,8 +1176,8 @@ namespace ASCOM.Wise40
                         cm.deltaAngle = shortest.angle;
                         cm.direction = shortest.direction;
 
-                        debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "bgw: {3}: preliminary: startingAngle: {0}, deltangle: {1}, direction: {2}",
-                            cm.startingAngle, cm.deltaAngle, cm.direction, axis);
+                        debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "bgw: {0}: preliminary: startingAngle: {1}, deltangle: {2}, direction: {3}",
+                            axis, cm.startingAngle, cm.deltaAngle, cm.direction);
 
                         //
                         // A minimal move on this axis, at this rate, is the sum of:
@@ -1194,7 +1189,8 @@ namespace ASCOM.Wise40
                         // If the total movement needed is less than this total, don't move. Let
                         //  the next iteration, at a lower rate, take care of it.
                         //
-                        Angle minimalMovementAngle = mp.startMovement + mp.anglePerSecond + mp.stopMovement;
+                        //Angle minimalMovementAngle = mp.startMovement + mp.anglePerSecond + mp.stopMovement;
+                        Angle minimalMovementAngle = mp.anglePerSecond + mp.stopMovement;
                         if (prevMovement[axis].direction != Const.AxisDirection.None && prevMovement[axis].direction != cm.direction)
                             minimalMovementAngle += mp.changeDirection;
                         debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "bgw: {0}: minimalMovementAngle: {1}", axis, minimalMovementAngle);
@@ -1206,15 +1202,15 @@ namespace ASCOM.Wise40
                         }
                         else
                         {
-                            Angle movementDistance = cm.deltaAngle - movementParameters[axis][rate].anglePerSecond;
+                            Angle movementDistance = Angle.FromDegrees(cm.deltaAngle.Degrees - movementParameters[axis][rate].anglePerSecond.Degrees);
                             if (cm.direction == Const.AxisDirection.Increasing)
                                 cm.shortTermTargetAngle = cm.startingAngle + movementDistance;
                             else
                                 cm.shortTermTargetAngle = cm.startingAngle - movementDistance;
 
                             cm.rate = rate;
-                            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "bgw: {0}: startingAngle: {1}, targetAngle: {2}, direction: {3}, rate: {4}",
-                                axis, cm.startingAngle, cm.shortTermTargetAngle, cm.direction, RateName(cm.rate));
+                            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "bgw: {0}: startingAngle: {1}, targetAngle: {2}, distance: {3}, direction: {4}, rate: {5}",
+                                axis, cm.startingAngle, cm.shortTermTargetAngle, movementDistance, cm.direction, RateName(cm.rate));
                         }
                     }
 
@@ -1253,10 +1249,18 @@ namespace ASCOM.Wise40
                         }
 
                         Angle thisMovementAngle = Angle.Max(commonDeltaAngle, cm.deltaAngle);
+                        Angle before = cm.shortTermTargetAngle;
+                        Angle d = (axis == TelescopeAxes.axisPrimary) ?
+                            Angle.FromHours(thisMovementAngle.Hours) :
+                            Angle.FromDegrees(thisMovementAngle.Degrees);
+
                         if (cm.direction == Const.AxisDirection.Increasing)
-                            cm.shortTermTargetAngle = cm.startingAngle + thisMovementAngle;
+                            cm.shortTermTargetAngle = cm.startingAngle + d;
                         else
-                            cm.shortTermTargetAngle = cm.startingAngle - thisMovementAngle;
+                            cm.shortTermTargetAngle = cm.startingAngle - d;
+
+                        debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "bgw: {0}: before: {1}, {2} + {3} => {4}",
+                            axis, before, cm.startingAngle, d, cm.shortTermTargetAngle);
 
                         debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "bgw: {0}: Calling MoveAxis({0}, {1}, {2}) startingAngle: {3}, targetAngle: {4}",
                             axis, RateName(rate), cm.direction, cm.startingAngle, cm.shortTermTargetAngle);

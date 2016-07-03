@@ -139,13 +139,16 @@ namespace ASCOM.Wise40.Hardware
 
                     daqValues = wormAtomicReader.Values;
                     worm = (daqValues[1] << 8) | daqValues[0];
-                    debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "[{0}] Value - DEC worm: {1}", this.GetHashCode(), worm);
+                    //debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "[{0}] Value - DEC worm: {1}", this.GetHashCode(), worm);
 
                     daqValues = axisAtomicReader.Values;
                     axis = (daqValues[0] >> 4) | (daqValues[1] << 4);
-                    debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "[{0}] Value - DEC axis: {1}", this.GetHashCode(), axis);
+                    //debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "[{0}] Value - DEC axis: {1}", this.GetHashCode(), axis);
 
                     _daqsValue = ((axis * 600 + worm) & 0xfff000) + worm;
+                    debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, 
+                        "{0}: value: {1}, axis: {2}, worm: {3}", 
+                        name, _daqsValue, axis, worm);
                 }
                 return _daqsValue;
             }

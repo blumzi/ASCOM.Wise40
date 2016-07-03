@@ -58,21 +58,21 @@ namespace ASCOM.Wise40
                 curr = (int)TimedMovementResult.ResultSelector.AtStop;
                 prev = (int)TimedMovementResult.ResultSelector.AtStart;
                 dTime = time[curr].Subtract(time[prev]);
-                dEncoder = enc_value[curr] - enc_value[prev];
+                dEncoder = (enc_value[curr] > enc_value[prev]) ? enc_value[curr] - enc_value[prev] : enc_value[prev] - enc_value[curr];
                 dDeg = enc_angle[curr].Degrees - enc_angle[prev].Degrees;
                 s = string.Format(" start-to-stop: dTime: {0} dDeg: {2} dEnc: {1}\r\n", dTime, dEncoder, Angle.FromDegrees(dDeg));
 
                 curr = (int)TimedMovementResult.ResultSelector.AtIdle;
                 prev = (int)TimedMovementResult.ResultSelector.AtStop;
                 dTime = time[curr].Subtract(time[prev]);
-                dEncoder = enc_value[curr] - enc_value[prev];
+                dEncoder = (enc_value[curr] > enc_value[prev]) ? enc_value[curr] - enc_value[prev] : enc_value[prev] - enc_value[curr];
                 dDeg = enc_angle[curr].Degrees - enc_angle[prev].Degrees;
                 s += string.Format("       inertia: dTime: {0} dDeg: {2} dEnc: {1}\r\n", dTime, dEncoder, Angle.FromDegrees(dDeg));
 
                 curr = (int)TimedMovementResult.ResultSelector.AtIdle;
                 prev = (int)TimedMovementResult.ResultSelector.AtStart;
                 dTime = time[curr].Subtract(time[prev]);
-                dEncoder = enc_value[curr] - enc_value[prev];
+                dEncoder = (enc_value[curr] > enc_value[prev]) ? enc_value[curr] - enc_value[prev] : enc_value[prev] - enc_value[curr];
                 dDeg = enc_angle[curr].Degrees - enc_angle[prev].Degrees;
                 s += string.Format("         total: dTime: {0} dDeg: {2} dEnc: {1}\r\n", dTime, dEncoder, Angle.FromDegrees(dDeg)); s += "\r\n";
 
@@ -150,8 +150,6 @@ namespace ASCOM.Wise40
         private void buttonStop_Click(object sender, EventArgs e)
         {
             T.Stop();
-            if (scopeBackgroundMover.IsBusy)
-                scopeBackgroundMover.CancelAsync();
         }
 
         private void RefreshDisplay()
@@ -167,16 +165,19 @@ namespace ASCOM.Wise40
             labelLTValue.Text = now.TimeOfDay.ToString(@"hh\:mm\:ss\.f\ ");
             labelUTValue.Text = utc.TimeOfDay.ToString(@"hh\:mm\:ss\.f\ ");
             labelSiderealValue.Text = WiseSite.Instance.LocalSiderealTime.ToString();
+            
+            labelRightAscensionValue.Text = Angle.FromHours(T.RightAscension).ToNiceString();
+            labelDeclinationValue.Text = Angle.FromDegrees(T.Declination).ToNiceString();
+            labelHourAngleValue.Text = Angle.FromHours(T.HourAngle, Angle.Type.HA).ToNiceString();
 
-            labelRightAscensionValue.Text = T.RightAscension.ToString();
-            labelDeclinationValue.Text = T.Declination.ToString();
-            labelHourAngleValue.Text = Angle.FromDegrees(T.HourAngle).ToString();
-
-            labelAltitudeValue.Text = Angle.FromDegrees(T.Altitude).ToString();
-            labelAzimuthValue.Text = Angle.FromDegrees(T.Azimuth).ToString();
+            labelAltitudeValue.Text = Angle.FromDegrees(T.Altitude).ToNiceString();
+            labelAzimuthValue.Text = Angle.FromDegrees(T.Azimuth).ToNiceString();
 
             labelHAEncValue.Text = T.HAEncoder.Value.ToString();
             labelDecEncValue.Text = T.DecEncoder.Value.ToString();
+
+            axisValue.Text = T.HAEncoder.AxisValue.ToString();
+            wormValue.Text = T.HAEncoder.WormValue.ToString();
 
             if (scopeBackgroundMover != null && scopeBackgroundMover.IsBusy)
                 TextBoxLog.Text = "Working ...";
@@ -256,8 +257,7 @@ namespace ASCOM.Wise40
 
         private void buttonStopStudy_Click(object sender, EventArgs e)
         {
-            if (scopeBackgroundMover != null && scopeBackgroundMover.IsBusy)
-                scopeBackgroundMover.CancelAsync();
+            T.Stop();
         }
 
         /// <summary>
@@ -337,7 +337,7 @@ namespace ASCOM.Wise40
 
                 if (!T.simulated)
                 {
-                    Thread.Sleep(2000);     // wait for real scope to stop
+                    Thread.Sleep(10000);     // wait for real scope to stop
 
                     if (bgw.CancellationPending)
                     {
@@ -458,7 +458,33 @@ namespace ASCOM.Wise40
 
         private void buttonGoCoord_Click(object sender, EventArgs e)
         {
-            T.SlewToCoordinatesAsync(Convert.ToDouble(textBoxRA.Text), Convert.ToDouble(textBoxDec.Text));
+            if (! T.Tracking)
+            {
+                MessageBox.Show("Telescope is NOT tracking!", "Error");
+                return;
+            }
+
+            T.SlewToCoordinatesAsync(new Angle(textBoxRA.Text).Hours, new Angle(textBoxDec.Text).Degrees);
+        }
+
+        private void label8_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label7_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label6_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label9_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
