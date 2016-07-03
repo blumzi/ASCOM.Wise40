@@ -71,12 +71,15 @@ namespace ASCOM.Wise40.Hardware
 
             _name = name;
 
-            _angle = simulated ? Angle.FromDeg(90.0 - WiseSite.Instance.Latitude) : Angle.FromRad((Value * decMultiplier) + DecCorrection);
+            _angle = simulated ?
+                Angle.FromDegrees(90.0, Angle.Type.Dec) - WiseSite.Instance.Latitude :
+                Angle.FromRadians((Value * decMultiplier) + DecCorrection, Angle.Type.Dec);
 
             using (ASCOM.Utilities.Profile driverProfile = new ASCOM.Utilities.Profile())
             {
                 driverProfile.DeviceType = "Telescope";
-                debugger.Level = Convert.ToUInt32(driverProfile.GetValue("ASCOM.Wise40.Telescope", "Debug Level", string.Empty, "0"));
+                //debugger.Level = Convert.ToUInt32(driverProfile.GetValue("ASCOM.Wise40.Telescope", "Debug Level", string.Empty, "0"));
+                debugger.Level = (uint)Debugger.DebugLevel.DebugAll;
             }
         }
 
@@ -136,11 +139,11 @@ namespace ASCOM.Wise40.Hardware
 
                     daqValues = wormAtomicReader.Values;
                     worm = (daqValues[1] << 8) | daqValues[0];
-                    debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "DEC worm: {0}", worm);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "[{0}] Value - DEC worm: {1}", this.GetHashCode(), worm);
 
                     daqValues = axisAtomicReader.Values;
                     axis = (daqValues[0] >> 4) | (daqValues[1] << 4);
-                    debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "DEC axis: {0}", axis);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "[{0}] Value - DEC axis: {1}", this.GetHashCode(), axis);
 
                     _daqsValue = ((axis * 600 + worm) & 0xfff000) + worm;
                 }
@@ -186,7 +189,8 @@ namespace ASCOM.Wise40.Hardware
                     while (_angle.Radians > Math.PI)
                         _angle.Radians -= 2 * Math.PI;
 
-                    debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "{0}: Degrees: Value: {1}, deg: {2}, rad: {3}", name, v, _angle, _angle.Radians);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugEncoders,
+                        "[{0}] {1} Degrees - Value: {2}, deg: {3}", this.GetHashCode(), name, v, _angle);
                 }
 
                 return _angle.Degrees;

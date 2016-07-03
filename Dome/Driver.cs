@@ -552,7 +552,7 @@ namespace ASCOM.Wise40
         {
             Angle ang = new Angle(degrees);
 
-            if (ang.Degrees < 0 || ang.Degrees >= 360)
+            if (degrees < 0.0 || degrees >= 360.0)
                 throw new InvalidValueException(string.Format("Cannot SyncToAzimuth({0}), must be >- 0 and < 360", ang));
 
             tl.LogMessage("SyncToAzimuth", ang.ToString());

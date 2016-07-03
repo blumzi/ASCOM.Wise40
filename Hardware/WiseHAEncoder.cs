@@ -29,6 +29,7 @@ namespace ASCOM.Wise40.Hardware
 
         const double HaMultiplier = 2 * Math.PI / 720 / 4096;
         const double HaCorrection = -3.063571542;                   // 20081231: Shai Kaspi
+        const uint _simulatedValueAtFiducialMark = 1432672;
 
         private Common.Debugger debugger = new Debugger();
 
@@ -74,12 +75,13 @@ namespace ASCOM.Wise40.Hardware
             }
             _name = name;
 
-            _angle = simulated ? new Angle("00:00:00.0") : Angle.FromRad((Value * HaMultiplier) + HaCorrection);
+            _angle = simulated ? new Angle("00h00m00.0s") : Angle.FromRadians((Value * HaMultiplier) + HaCorrection, Angle.Type.RA);
 
             using (ASCOM.Utilities.Profile driverProfile = new ASCOM.Utilities.Profile())
             {
                 driverProfile.DeviceType = "Telescope";
-                debugger.Level = Convert.ToUInt32(driverProfile.GetValue("ASCOM.Wise40.Telescope", "Debug Level", string.Empty, "0"));
+                //debugger.Level = Convert.ToUInt32(driverProfile.GetValue("ASCOM.Wise40.Telescope", "Debug Level", string.Empty, "0"));
+                debugger.Level = (uint)Debugger.DebugLevel.DebugAll;
             }
         }
 
@@ -97,11 +99,11 @@ namespace ASCOM.Wise40.Hardware
 
                     daqValues = wormAtomicReader.Values;
                     worm = (daqValues[1] << 8) | daqValues[0];
-                    debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "HA worm: {0}", worm);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "[{0}] Value - HA worm: {1}", this.GetHashCode(), worm);
 
                     daqValues = axisAtomicReader.Values;
                     axis = (daqValues[0] >> 4) | (daqValues[1] << 4);
-                    debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "HA axis: {0}", axis);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "[{0}] Value - HA axis: {1}", this.GetHashCode(), axis);
 
                     _daqsValue = ((axis * 720 - worm) & 0xfff000) + worm;
                 }
@@ -128,7 +130,7 @@ namespace ASCOM.Wise40.Hardware
             set
             {
                 if (simulated)
-                    _angle.Degrees = value.Degrees;
+                    _angle = value;
             }
         }
 
@@ -144,25 +146,38 @@ namespace ASCOM.Wise40.Hardware
 
             set
             {
-                double before = _angle.Degrees;
+                Angle before = _angle;
                 _angle.Degrees = value;
-                double after = _angle.Degrees;
-                double delta = after - before;
+                Angle after = _angle;
+                Angle delta = after - before;
 
                 if (simulated)
                 {
-                    debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "{0}: ({1} {2} {3}) {4} {5} {6}",
-                        name, before.ToString(), delta.ToString(), after.ToString(), new Angle(before), new Angle(delta), new Angle(after));
+                    debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "[{0}] {1}: {2} + {3} = {4}", this.GetHashCode(), name, before, delta, after);
                     _daqsValue = (uint)((_angle.Radians + HaCorrection) / HaMultiplier);
                 }
             }
         }
 
-        public double RightAscension
+        private double Hours
         {
             get
             {
-                return WiseSite.Instance.LocalSiderealTime - Degrees;
+                return Angle.Hours;
+            }
+        }
+
+        /// <summary>
+        /// Right Ascension in Hours
+        /// </summary>
+        public Angle RightAscension
+        {
+            get
+            {
+                Angle ret = WiseSite.Instance.LocalSiderealTime - Angle.FromHours(Hours, Angle.Type.RA);
+                debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "[{0}] RightAscension: {1}", this.GetHashCode(), ret);
+
+                return ret;
             }
         }
 

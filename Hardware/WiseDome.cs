@@ -165,7 +165,7 @@ namespace ASCOM.Wise40.Hardware
         /// <returns></returns>
         private Angle inertiaAngle(Angle az)
         {
-            return new Angle(2 * (Angle.max.Degrees / TicksPerDomeRevolution));
+            return new Angle(2 * (360.0 / TicksPerDomeRevolution));
         }
 
         /// <summary>

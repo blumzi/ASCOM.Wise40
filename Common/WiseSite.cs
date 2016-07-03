@@ -67,19 +67,19 @@ namespace ASCOM.Wise40
             ascomutils.Dispose();
         }
 
-        public double Longitude
+        public Angle Longitude
         {
             get
             {
-                return onSurface.Longitude;
+                return Angle.FromHours(onSurface.Longitude / 15.0);
             }
         }
 
-        public double Latitude
+        public Angle Latitude
         {
             get
             {
-                return onSurface.Latitude;
+                return Angle.FromDegrees(onSurface.Latitude, Angle.Type.Dec);
             }
         }
 
@@ -91,12 +91,11 @@ namespace ASCOM.Wise40
             }
         }
 
-        public double LocalSiderealTime
+        public Angle LocalSiderealTime
         {
             get
             {
                 double gstNow = 0;
-                double hours;
 
                 var res = novas31.SiderealTime(
                     astroutils.JulianDateUT1(0), 0d,
@@ -109,18 +108,17 @@ namespace ASCOM.Wise40
                 if (res != 0)
                     throw new InvalidValueException("Error getting Greenwich Apparent Sidereal time");
 
-                hours = astroutils.Range(gstNow + (Longitude / 15.0), 0.0, true, 24.0, false);
-                return hours * 15;
+                return Angle.FromHours(gstNow) + Longitude;
             }
         }
 
-        public static double ToSiderealTime(DateTime dt)
-        {
-            var utilities = new Utilities.Util();
-            double siderealTime = (18.697374558 + 24.065709824419081 * (utilities.DateLocalToJulian(dt) - 2451545.0))
-                                  % 24.0;
-            return siderealTime;
-        }
+        //public static double ToSiderealTime(DateTime dt)
+        //{
+        //    var utilities = new Utilities.Util();
+        //    double siderealTime = (18.697374558 + 24.065709824419081 * (utilities.DateLocalToJulian(dt) - 2451545.0))
+        //                          % 24.0;
+        //    return siderealTime;
+        //}
 
         /// <summary> 
         // If we haven't checked in a long enough time (10 minutes ?!?)

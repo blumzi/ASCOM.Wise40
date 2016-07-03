@@ -22,7 +22,7 @@ namespace ASCOM.Wise40
         private Debugger debugger;
         private uint _debugLevel;
 
-        public DomeSlaveDriver()
+        public DomeSlaveDriver(Debugger debugger)
         {
             try
             {
@@ -34,12 +34,8 @@ namespace ASCOM.Wise40
             novas31 = new Astrometry.NOVAS.NOVAS31();
             astroutils = new AstroUtils();
             _arrived = _dome.arrived;
-            debugger = new Debugger();
-            using (ASCOM.Utilities.Profile driverProfile = new ASCOM.Utilities.Profile())
-            {
-                driverProfile.DeviceType = "Telescope";
-                debugger.Level = Convert.ToUInt32(driverProfile.GetValue("ASCOM.Wise40.Telescope", "Debug Level", string.Empty, "0"));
-            }
+            this.debugger = debugger;
+
             debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "DomeSlaveDriver: constructed");
         }
 
@@ -78,7 +74,7 @@ namespace ASCOM.Wise40
             debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "DomeSlaveDriver: Connect({0}) done", connect);
         }
 
-        public void SlewStartAsync(double ra, double dec)
+        public void SlewStartAsync(Angle ra, Angle dec)
         {
             double rar = 0, decr = 0, az = 0, zd = 0;
 
@@ -87,7 +83,7 @@ namespace ASCOM.Wise40
                 WiseSite.Instance.astrometricAccuracy,
                 0, 0,
                 WiseSite.Instance.onSurface,
-                ra, dec,
+                ra.Hours, dec.Degrees,
                 WiseSite.Instance.refractionOption,
                 ref zd, ref az, ref rar, ref decr);
 

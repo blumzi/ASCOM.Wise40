@@ -161,11 +161,11 @@ namespace ASCOM.Wise40.Hardware
                     az = caliAz + new Angle((caliTicks - currTicks) * WiseDome.DegreesPerTick);
                 }
 
-                if (az.Degrees > 360)
-                    az.Degrees -= 360;
+                //if (az.Value > 360)
+                //    az.Value -= 360;
 
-                if (az.Degrees < 0)
-                    az.Degrees += 360;
+                //if (az.Value < 0)
+                //    az.Value += 360;
 
                 debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "Azimuth: {0}, currTicks: {1}, caliTicks: {2}, caliAz: {3}",
                     az, currTicks, caliTicks, caliAz);

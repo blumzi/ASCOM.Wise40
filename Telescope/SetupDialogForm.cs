@@ -13,23 +13,29 @@ namespace ASCOM.Wise40
     [ComVisible(false)]					// Form not registered for COM!
     public partial class TelescopeSetupDialogForm : Form
     {
-        Telescope _T;
+        bool traceState;
+        uint debugLevel;
+        Accuracy accuracy;
+        bool enslaveDome;
 
-        public TelescopeSetupDialogForm(Telescope telescope)
+        public TelescopeSetupDialogForm(bool traceState, uint debugLevel, Accuracy accuracy, bool enslaveDome)
         {
-            InitializeComponent();
+            this.traceState = traceState;
+            this.debugLevel = debugLevel;
+            this.accuracy = accuracy;
+            this.enslaveDome = enslaveDome;
 
-            _T = telescope;
-            _T.ReadProfile();
-            traceBox.Checked = _T._trace;
-            accuracyBox.SelectedItem = (WiseSite.Instance.astrometricAccuracy == Accuracy.Full) ? 0 : 1;
-            checkBoxEnslaveDome.Checked = _T._enslaveDome;
+            InitializeComponent();
+            
+            traceBox.Checked = traceState;
+            accuracyBox.SelectedItem = (accuracy == Accuracy.Full) ? 0 : 1;
+            checkBoxEnslaveDome.Checked = enslaveDome;
             if (WiseTele.Instance.debugger.Level == 0)
             {
                 checkBoxDebugging.Checked = false;
 
-                checkBoxDebugDevice.AutoCheck = true;
-                checkBoxDebugExceptions.AutoCheck = true;
+                checkBoxDebugDevice.AutoCheck = false;
+                checkBoxDebugExceptions.AutoCheck = false;
                 checkBoxDebugEncoders.AutoCheck = false;
                 checkBoxDebugAxes.AutoCheck = false;
                 checkBoxDebugMotors.AutoCheck = false;
@@ -38,24 +44,24 @@ namespace ASCOM.Wise40
             {
                 checkBoxDebugging.Checked = true;
 
-                checkBoxDebugExceptions.Checked = true;
+                checkBoxDebugExceptions.AutoCheck = true;
                 checkBoxDebugEncoders.AutoCheck = true;
                 checkBoxDebugAxes.AutoCheck = true;
                 checkBoxDebugMotors.AutoCheck = true;
                 checkBoxDebugDevice.AutoCheck = true;
 
                 Debugger debugger = WiseTele.Instance.debugger;
-                checkBoxDebugEncoders.Checked = debugger.Debugging(Debugger.DebugLevel.DebugEncoders);
-                checkBoxDebugAxes.Checked = debugger.Debugging(Debugger.DebugLevel.DebugAxes);
-                checkBoxDebugExceptions.Checked = debugger.Debugging(Debugger.DebugLevel.DebugExceptions);
-                checkBoxDebugMotors.Checked = debugger.Debugging(Debugger.DebugLevel.DebugMotors);
-                checkBoxDebugDevice.Checked = debugger.Debugging(Debugger.DebugLevel.DebugDevice);
+                checkBoxDebugEncoders.CheckState = debugger.Debugging(Debugger.DebugLevel.DebugEncoders) ? CheckState.Checked : CheckState.Unchecked;
+                checkBoxDebugAxes.CheckState = debugger.Debugging(Debugger.DebugLevel.DebugAxes) ? CheckState.Checked : CheckState.Unchecked;
+                checkBoxDebugExceptions.CheckState = debugger.Debugging(Debugger.DebugLevel.DebugExceptions) ? CheckState.Checked : CheckState.Unchecked;
+                checkBoxDebugMotors.CheckState = debugger.Debugging(Debugger.DebugLevel.DebugMotors) ? CheckState.Checked : CheckState.Unchecked;
+                checkBoxDebugDevice.CheckState = debugger.Debugging(Debugger.DebugLevel.DebugDevice) ? CheckState.Checked : CheckState.Unchecked;
             }
         }
 
         private void cmdOK_Click(object sender, EventArgs e) // OK button event handler
         {
-            _T._trace = traceBox.Checked;
+            Telescope._trace = traceBox.Checked;
             WiseSite.Instance.astrometricAccuracy = accuracyBox.Text == "Full" ? Accuracy.Full : Accuracy.Reduced;
 
             uint level = 0;
@@ -68,9 +74,7 @@ namespace ASCOM.Wise40
                 if (checkBoxDebugDevice.Checked) level |= (uint)Debugger.DebugLevel.DebugDevice;
             }
             WiseTele.Instance.debugger.Level = level;
-            _T._enslaveDome = checkBoxEnslaveDome.Checked;
-
-            _T.WriteProfile();
+            WiseTele.Instance._enslaveDome = checkBoxEnslaveDome.Checked;
         }
 
         private void cmdCancel_Click(object sender, EventArgs e) // Cancel button event handler
@@ -104,6 +108,13 @@ namespace ASCOM.Wise40
                 checkBoxDebugAxes.AutoCheck = true;
                 checkBoxDebugMotors.AutoCheck = true;
                 checkBoxDebugDevice.AutoCheck = true;
+
+                Debugger debugger = WiseTele.Instance.debugger;
+                checkBoxDebugExceptions.CheckState = debugger.Debugging(Debugger.DebugLevel.DebugExceptions) ? CheckState.Checked : CheckState.Unchecked;
+                checkBoxDebugEncoders.CheckState = debugger.Debugging(Debugger.DebugLevel.DebugEncoders) ? CheckState.Checked : CheckState.Unchecked;
+                checkBoxDebugAxes.CheckState = debugger.Debugging(Debugger.DebugLevel.DebugAxes) ? CheckState.Checked : CheckState.Unchecked;
+                checkBoxDebugMotors.CheckState = debugger.Debugging(Debugger.DebugLevel.DebugMotors) ? CheckState.Checked : CheckState.Unchecked;
+                checkBoxDebugDevice.CheckState = debugger.Debugging(Debugger.DebugLevel.DebugDevice) ? CheckState.Checked : CheckState.Unchecked; 
             } else
             {
                 checkBoxDebugExceptions.AutoCheck = false;

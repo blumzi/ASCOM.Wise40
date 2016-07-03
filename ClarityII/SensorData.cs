@@ -3,15 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using System.Diagnostics;
-
 namespace ASCOM.CloudSensor
 {
 
     //    
     //    Excerpt from the ClarityII manual
     //            
-    //                17.1.1 New Format
+    //        17.1.1 New Format
     //            This recommended format gives access to all of the data Cloud Sensor II can provide.The data is similar
     //            to the display fields in the Clarity II window.The format has been split across two lines to make it fit on
     //            this page:
@@ -56,6 +54,7 @@ namespace ASCOM.CloudSensor
     //
     public class SensorData
     {
+        public double age;
         public DateTime date;
         public enum TempUnits {
             tempCelsius = 0,
@@ -94,7 +93,7 @@ namespace ASCOM.CloudSensor
         public enum WetFlagValue { wetDry = 0, wetLastMinute = 1, wetRightNow = 2 };
         public WetFlagValue rainFlag;
         public WetFlagValue wetFlag;
-        public int sinceSeconds;
+        public int sinceSeeconds;
         public DateTime lastWriten;
         public enum CloudCondition
         {
@@ -133,8 +132,9 @@ namespace ASCOM.CloudSensor
         public SensorData(string data)
         {
             try
-            {
+            {                
                 date = Convert.ToDateTime(data.Substring(0, 22));
+                age = DateTime.Now.Subtract(date).TotalSeconds;
                 switch (data.Substring(23, 1))
                 {
                     case "C":
@@ -165,21 +165,16 @@ namespace ASCOM.CloudSensor
                 heaterSetting = Convert.ToInt32(data.Substring(66, 3));
                 rainFlag = (WetFlagValue)Convert.ToInt32(data.Substring(70, 1));
                 wetFlag = (WetFlagValue)Convert.ToInt32(data.Substring(72, 1));
-                sinceSeconds = Convert.ToInt32(data.Substring(74, 5));
-                //lastWriten = Convert.ToDateTime(data.Substring(80, 12));
+                sinceSeeconds = Convert.ToInt32(data.Substring(74, 5));
+                //lastWriten = Convert.ToDateTime(data.Substring(80, 11));
                 cloudCondition = (CloudCondition)Convert.ToInt32(data.Substring(93, 1));
                 windCondition = (WindCondition)Convert.ToInt32(data.Substring(95, 1));
                 rainCondition = (RainCondition)Convert.ToInt32(data.Substring(97, 1));
                 dayCondition = (DayCondition)Convert.ToInt32(data.Substring(99, 1));
-                switch (data.Substring(101, 1))
-                {
-                    case "0":
-                        roofCloseRequested = false;
-                        break;
-                    case "1":
-                        roofCloseRequested = true;
-                        break;
-                }
+                var x = Convert.ToInt32(data.Substring(101, 1));
+                roofCloseRequested = (x == 1) ? true : false;
+                x = Convert.ToInt32(data.Substring(103, 1));
+                alerting = (x == 1) ? true : false;
             } catch(Exception e)
             {
                 throw new InvalidValueException(string.Format("Could not parse sensor data, caught: {0}", e.Message));

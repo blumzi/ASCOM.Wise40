@@ -73,8 +73,8 @@ namespace ASCOM.CloudSensor
         internal static string traceStateProfileName = "Trace Level";
         internal static string traceStateDefault = "false";
 
-        public string _dataFile; // Variables to hold the currrent device configuration
-        public bool _traceState;
+        internal static string _dataFile; // Variables to hold the currrent device configuration
+        internal static bool traceState;
 
         /// <summary>
         /// Private variable to hold the connected state
@@ -84,7 +84,7 @@ namespace ASCOM.CloudSensor
         /// <summary>
         /// Private variable to hold an ASCOM Utilities object
         /// </summary>
-        private Util utilities;
+        private Util utilities = new Util();
 
         /// <summary>
         /// Private variable to hold an ASCOM AstroUtilities object to provide the Range method
@@ -107,7 +107,7 @@ namespace ASCOM.CloudSensor
             ReadProfile(); // Read device configuration from the ASCOM Profile store
 
             tl = new TraceLogger("", "CloudSensor");
-            tl.Enabled = _traceState;
+            tl.Enabled = traceState;
             tl.LogMessage("ObservingConditions", "Starting initialisation");
 
             connectedState = false; // Initialise connected to false
@@ -159,7 +159,7 @@ namespace ASCOM.CloudSensor
             if (IsConnected)
                 System.Windows.Forms.MessageBox.Show("Already connected, just press OK");
 
-            using (SetupDialogForm F = new SetupDialogForm(this))
+            using (SetupDialogForm F = new SetupDialogForm(traceState, _dataFile))
             {
                 var result = F.ShowDialog();
                 if (result == System.Windows.Forms.DialogResult.OK)
@@ -241,21 +241,18 @@ namespace ASCOM.CloudSensor
                 if (value)
                 {
                     connectedState = true;
-                    tl.LogMessage("Connected Set", "Connecting to port " + _dataFile);
-                    // TODO connect to the device
+                    tl.LogMessage("Connected Set", "Connecting to file " + _dataFile);
                 }
                 else
                 {
                     connectedState = false;
-                    tl.LogMessage("Connected Set", "Disconnecting from port " + _dataFile);
-                    // TODO disconnect from the device
+                    tl.LogMessage("Connected Set", "Disconnecting from file " + _dataFile);
                 }
             }
         }
 
         public string Description
         {
-            // TODO customise this device description
             get
             {
                 tl.LogMessage("Description Get", driverDescription);
@@ -268,7 +265,6 @@ namespace ASCOM.CloudSensor
             get
             {
                 Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-                // TODO customise this driver description
                 string driverInfo = "Parses the ClarityII \"Single Line Data File\" (new format). Version: " + String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
                 tl.LogMessage("DriverInfo Get", driverInfo);
                 return driverInfo;
@@ -330,7 +326,7 @@ namespace ASCOM.CloudSensor
             {
                 LogMessage("AveragePeriod", "set - {0}", value);
                 if (value != 0)
-                    throw new PropertyNotImplementedException("AveragePeriod", true);
+                    throw new InvalidValueException("Only 0.0 accepted");
             }
         }
 
@@ -342,6 +338,16 @@ namespace ASCOM.CloudSensor
         {
             get
             {
+                switch(sensorData.cloudCondition)
+                {
+                    case SensorData.CloudCondition.cloudClear:
+                    case SensorData.CloudCondition.cloudUnknown:
+                        return 0.0;
+                    case SensorData.CloudCondition.cloudCloudy:
+                        return 50.0;
+                    case SensorData.CloudCondition.cloudVeyCloudy:
+                        return 90.0;
+                }
                 tl.LogMessage("CloudCover", "get - not implemented");
                 throw new PropertyNotImplementedException("CloudCover", false);
             }
@@ -358,8 +364,9 @@ namespace ASCOM.CloudSensor
         {
             get
             {
-                tl.LogMessage("DewPoint", "get - not implemented");
-                throw new PropertyNotImplementedException("DewPoint", false);
+                double ret = sensorData.dewPoint;
+                tl.LogMessage("DewPoint", string.Format("get - {0}", ret));
+                return ret;
             }
         }
 
@@ -374,8 +381,9 @@ namespace ASCOM.CloudSensor
         {
             get
             {
-                tl.LogMessage("Humidity", "get - not implemented");
-                throw new PropertyNotImplementedException("Humidity", false);
+                double ret = sensorData.humidity;
+                tl.LogMessage("Humidity", string.Format("get - {0}", ret));
+                return ret;
             }
         }
 
@@ -438,16 +446,18 @@ namespace ASCOM.CloudSensor
                     return "Average period in hours, immediate values are only available";
                 case "DewPoint":
                 case "Humidity":
+                case "SkyTemperature":
+                case "Temperature":
+                case "WindSpeed":
+                case "CloudCover":
+                    return PropertyName + " Description";
                 case "Pressure":
                 case "RainRate":
                 case "SkyBrightness":
                 case "SkyQuality":
                 case "StarFWHM":
-                case "SkyTemperature":
-                case "Temperature":
                 case "WindDirection":
                 case "WindGust":
-                case "WindSpeed":
                     tl.LogMessage("SensorDescription", PropertyName + " - not implemented");
                     throw new MethodNotImplementedException("SensorDescription(" + PropertyName + ")");
                 default:
@@ -499,8 +509,16 @@ namespace ASCOM.CloudSensor
         {
             get
             {
-                tl.LogMessage("SkyTemperature", "get - not implemented");
-                throw new PropertyNotImplementedException("SkyTemperature", false);
+                var ret = sensorData.skyAmbientTemp;
+
+                if (ret == (double)SensorData.SpecialTempValue.specialTempSaturatedHot)
+                    ret = 100;
+                else if (ret == (double)SensorData.SpecialTempValue.specialTempSaturatedLow)
+                    ret = -100.0;
+                else if (ret == (double)SensorData.SpecialTempValue.specialTempWet)
+                    ret = 100;
+                tl.LogMessage("SkyTemperature", string.Format("get - {0}", ret));
+                return ret;
             }
         }
 
@@ -511,8 +529,10 @@ namespace ASCOM.CloudSensor
         {
             get
             {
-                tl.LogMessage("Temperature", "get - not implemented");
-                throw new PropertyNotImplementedException("Temperature", false);
+                double ret = sensorData.ambientTemp;
+
+                tl.LogMessage("Temperature", string.Format("get - {0}", ret));
+                return ret;
             }
         }
 
@@ -528,9 +548,22 @@ namespace ASCOM.CloudSensor
         /// </remarks>
         public double TimeSinceLastUpdate(string PropertyName)
         {
-            int ret = sensorData.sinceSeconds;
+            switch (PropertyName)
+            {
+                case "SkyBrightness":
+                case "SkyQuality":
+                case "StarFWHM":
+                case "WindGust":
+                case "Pressure":
+                case "RainRate":
+                case "WindDirection":
+                    tl.LogMessage("TimeSinceLastUpdate", PropertyName + " - not implemented");
+                    throw new MethodNotImplementedException("SensorDescription(" + PropertyName + ")");
+            }
 
-            tl.LogMessage("TimeSinceLastUpdate", string.Format("{0} - {1}", PropertyName, ret));
+            var ret = sensorData.age;
+
+            tl.LogMessage("TimeSinceLastUpdate", PropertyName + ret.ToString());
             return ret;
         }
 
@@ -569,8 +602,22 @@ namespace ASCOM.CloudSensor
         {
             get
             {
-                tl.LogMessage("WindSpeed", "get - not implemented");
-                throw new PropertyNotImplementedException("WindSpeed", false);
+                double ret = sensorData.windSpeed;
+
+                switch (sensorData.windUnits)
+                {
+                    case SensorData.WindUnits.windKmPerHour:
+                        ret = ret * 1000 / 3600;
+                        break;
+                    case SensorData.WindUnits.windMilesPerHour:
+                        ret = utilities.ConvertUnits(ret, Units.milesPerHour, Units.metresPerSecond);
+                        break;
+                    case SensorData.WindUnits.windMeterPerSecond:
+                        break;
+                }
+
+                tl.LogMessage("WindSpeed", string.Format("get - {0}", ret));
+                return ret;
             }
         }
 
@@ -723,7 +770,7 @@ namespace ASCOM.CloudSensor
             using (Profile driverProfile = new Profile())
             {
                 driverProfile.DeviceType = "ObservingConditions";
-                _traceState = Convert.ToBoolean(driverProfile.GetValue(driverID, traceStateProfileName, string.Empty, traceStateDefault));
+                traceState = Convert.ToBoolean(driverProfile.GetValue(driverID, traceStateProfileName, string.Empty, traceStateDefault));
                 _dataFile = driverProfile.GetValue(driverID, dataFileProfileName, string.Empty, string.Empty);
             }
         }
@@ -736,8 +783,8 @@ namespace ASCOM.CloudSensor
             using (Profile driverProfile = new Profile())
             {
                 driverProfile.DeviceType = "ObservingConditions";
-                driverProfile.WriteValue(driverID, traceStateProfileName, _traceState.ToString());
-                driverProfile.WriteValue(driverID, dataFileProfileName, _dataFile.ToString());
+                driverProfile.WriteValue(driverID, traceStateProfileName, traceState.ToString());
+                driverProfile.WriteValue(driverID, dataFileProfileName, _dataFile);
             }
         }
 

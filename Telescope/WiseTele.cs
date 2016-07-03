@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using ASCOM.Utilities;
 using ASCOM.Astrometry.NOVAS;
@@ -45,6 +46,24 @@ using System.Threading;
 /// </summary>
 namespace ASCOM.Wise40
 {
+    public class MovementCanceledException : Exception
+    {
+        public MovementCanceledException()
+        {
+
+        }
+
+        public MovementCanceledException(string message)
+            : base(message)
+        {
+
+        }
+        public MovementCanceledException(string message, Exception inner)
+            : base(message, inner)
+        {
+
+        }
+    }
 
     //public class WiseTele : IDisposable, IConnectable
     public class WiseTele : IDisposable, IConnectable, ISimulated
@@ -84,7 +103,7 @@ namespace ASCOM.Wise40
         }
 
         private class MeasuredMovementArg {
-            public double rightAscension, declination;
+            public Angle rightAscension, declination;
         }
 
         private class MeasuredMovementResult
@@ -93,6 +112,11 @@ namespace ASCOM.Wise40
         }
 
         private MeasuredMovementResult result;
+
+        /// <summary>
+        /// Driver description that displays in the ASCOM Chooser.
+        /// </summary>
+        public static string driverDescription = "Wise40 Telescope";
 
         private static NOVAS31 novas31;
         private static Util ascomutils;
@@ -114,26 +138,18 @@ namespace ASCOM.Wise40
         public WiseDecEncoder DecEncoder;
 
         public WisePin TrackPin;
-        public WiseVirtualMotor NorthMotor, SouthMotor, EastMotor, WestMotor, TrackMotor;
+        public WiseVirtualMotor NorthMotor, SouthMotor, EastMotor, WestMotor, TrackingMotor;
 
         private bool _slewing = false;
         private bool _atPark;
 
         private double mainMirrorDiam = 1.016;    // 40inch (meters)
 
-        private Target target;
+        //private Target target;
+        private Angle _targetRightAscension;
+        private Angle _targetDeclination;
 
         public static readonly List<double> rates = new List<double> { Const.rateSlew, Const.rateSet, Const.rateGuide };
-        public static readonly Dictionary<double, string> rateName = new Dictionary<double, string> {
-            { Const.rateStopped,  "rateStopped" },
-            { Const.rateSlew,  "rateSlew" },
-            { Const.rateSet,  "rateSet" },
-            { Const.rateGuide,  "rateGuide" },
-            { -Const.rateSlew,  "-rateSlew" },
-            { -Const.rateSet,  "-rateSet" },
-            { -Const.rateGuide,  "-rateGuide" },
-            { Const. rateTrack, "rateTrack" },
-        };
         public static readonly List<TelescopeAxes> axes = new List<TelescopeAxes> { TelescopeAxes.axisPrimary, TelescopeAxes.axisSecondary };
 
 
@@ -185,50 +201,104 @@ namespace ASCOM.Wise40
         private SafetyMonitorTimer safetyMonitorTimer;
 
         public BackgroundWorker _slewToCoordinatesAsync_bgw;
-        private static AutoResetEvent backgroundWorkerDone = new AutoResetEvent(false);
+        private static AutoResetEvent _slewToCoordinatesAsync_bgwDone = new AutoResetEvent(false);
 
-        public double targetDeclination {
+        public bool _enslaveDome = false;
+        private DomeSlaveDriver domeSlaveDriver;
+
+        private bool _driverInitiatedSlewing = false;
+        private bool _wasSlewing = false;
+
+        /// <summary>
+        /// From real-life measurements on axisPrimary, four samples, spaced at 5deg gave the following HA encoder values:
+        ///     1.  5deg: 1422425
+        ///     2. 10deg: 1412187
+        ///     3. 15deg: 1401946
+        ///     4. 20deg: 1391713
+        ///     
+        /// The respective deltas are:
+        ///     1. d1: 10238
+        ///     2. d2: 10241
+        ///     3. d3: 10233
+        ///     
+        /// This gives approx 2047.46 ticks per 1deg, or 3600/2047.46 seconds per encoder tick.
+        /// 
+        /// </summary>
+        private const double closeEnough = 3600.0 / 2047.46;
+
+        public static string RateName(double rate)
+        {
+            Dictionary<double, string> names = new Dictionary<double, string> {
+                { Const.rateStopped,  "rateStopped" },
+                { Const.rateSlew,  "rateSlew" },
+                { Const.rateSet,  "rateSet" },
+                { Const.rateGuide,  "rateGuide" },
+                { -Const.rateSlew,  "-rateSlew" },
+                { -Const.rateSet,  "-rateSet" },
+                { -Const.rateGuide,  "-rateGuide" },
+                { Const. rateTrack, "rateTrack" },
+            };
+
+            if (names.ContainsKey(rate))
+                return names[rate];
+            return rate.ToString();
+        }
+
+        public double TargetDeclination {
             get
             {
-                if (target.Declination == null)
+                if (_targetDeclination == null)
                     throw new ValueNotSetException("Target not set");
 
-                traceLogger.LogMessage("TargetDeclination Get", target.Declination.ToFormattedString(Angle.Format.Dec));
-                return target.Declination.Degrees;
+                traceLogger.LogMessage("TargetDeclination Get", string.Format("{0}", _targetDeclination));
+                debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM,
+                    string.Format("TargetDeclination Get - {0} ({1})", _targetDeclination, _targetDeclination.Degrees));
+                return _targetDeclination.Degrees;
             }
 
             set
             {
-                if (value < -90 || value > 90)
-                    throw new InvalidValueException("Must be between -90 and 90");
+                if (value < -90.0 || value > 90.0)
+                    throw new InvalidValueException(string.Format("Invalid Declination {0}. Must be between -90 and 90", value));
 
-                target.Declination = new Angle(value);
-                traceLogger.LogMessage("TargetDeclination Set", target.Declination.ToFormattedString(Angle.Format.Dec));
+                _targetDeclination = Angle.FromDegrees(value, Angle.Type.Dec);
+                traceLogger.LogMessage("TargetDeclination Set", string.Format("{0}", _targetDeclination));
+                debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM,
+                    string.Format("TargetDeclination Set - {0} ({1})", _targetDeclination, _targetDeclination.Degrees));
             }
         }
 
-        public double targetRightAscension
+        public double TargetRightAscension
         {
             get
             {
-                if (target.RightAscension == null)
-                    throw new ValueNotSetException("Target not set");
+                if (_targetRightAscension == null)
+                    throw new ValueNotSetException("Target RA not set");
 
-                traceLogger.LogMessage("TargetRightAscension Set", target.RightAscension.ToFormattedString(Angle.Format.RAhms));
-                return target.RightAscension.Degrees;
+                Angle ret = _targetRightAscension;
+
+                traceLogger.LogMessage("TargetRightAscension Get", string.Format("{0}", _targetRightAscension));
+                debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM,
+                    string.Format("TargetRightAscension Get - {0} ({1})", ret, ret.Hours));
+
+                return _targetRightAscension.Hours;
             }
 
             set
             {
-                if (value < 0 || value > 24)
-                    throw new ASCOM.InvalidValueException("Must be between 0 to 24");
+                if (value < 0.0 || value > 24.0)
+                    throw new ASCOM.InvalidValueException(string.Format("Invalid RightAscension {0}. Must be between 0 to 24", value));
 
-                target.RightAscension = new Angle(value);
-                traceLogger.LogMessage("TargetRightAscension Set", target.RightAscension.ToFormattedString(Angle.Format.RAhms));
+                _targetRightAscension = Angle.FromHours(value, Angle.Type.RA);
+                traceLogger.LogMessage("TargetRightAscension Set", string.Format("{0}", _targetRightAscension));
+                debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM,
+                    string.Format("TargetRightAscension Set - {0} ({1})",
+                    _targetRightAscension,
+                    _targetRightAscension.Hours));
             }
         }
 
-        public double mirrorDiam
+        public double ApertureDiameter
         {
             get
             {
@@ -236,18 +306,26 @@ namespace ASCOM.Wise40
             }
         }
 
-        public double mirrorArea
+        public double ApertureArea
         {
             get
             {
-                return Math.PI * Math.Pow(mirrorDiam, 2);
+                return Math.PI * Math.Pow(ApertureDiameter, 2);
             }
         }
 
         public bool doesRefraction {
             get
             {
-                return false;
+                bool ret = false;
+
+                traceLogger.LogMessage("DoesRefraction Get", ret.ToString());
+                return ret;
+            }
+
+            set
+            {
+                throw new ASCOM.PropertyNotImplementedException("DoesRefraction");
             }
         }
 
@@ -257,6 +335,8 @@ namespace ASCOM.Wise40
             {
                 disposable.Dispose();
             }
+            _targetRightAscension = null;
+            _targetDeclination = null;
         }
 
         public void Connect(bool connected)
@@ -272,7 +352,23 @@ namespace ASCOM.Wise40
         {
             get
             {
+                traceLogger.LogMessage("Connected Get", _connected.ToString());
                 return _connected;
+            }
+
+            set
+            {
+                traceLogger.LogMessage("Connected Set", value.ToString());
+                if (value == _connected)
+                    return;
+
+                foreach (var connectable in connectables)
+                {
+                    connectable.Connect(value);
+                }
+                _connected = value;
+                if (_enslaveDome)
+                    domeSlaveDriver.Connect(value);
             }
         }
 
@@ -314,12 +410,13 @@ namespace ASCOM.Wise40
 
             debugger = new Debugger();
             T.ReadProfile();
-            traceLogger = T.tl;
+            traceLogger = new TraceLogger("", "Tele");
+            traceLogger.Enabled = Telescope._trace;
             novas31 = new NOVAS31();
             ascomutils = new Util();
             astroutils = new Astrometry.AstroUtils.AstroUtils();
             Hardware.Hardware.Instance.init();
-            target = new Target();
+            
             List<ISimulated> hardware_elements = new List<ISimulated>();
 
             try
@@ -348,11 +445,11 @@ namespace ASCOM.Wise40
                debugger.WriteLine(Debugger.DebugLevel.DebugExceptions, "WiseTele constructor caught: {0}.", e.Message);
             }
 
-            instance.NorthMotor = new WiseVirtualMotor("NorthMotor", NorthPin, NorthGuidePin, SlewPin, Const.AxisDirection.Increasing, new List<object> { instance.DecEncoder });
-            instance.SouthMotor = new WiseVirtualMotor("SouthMotor", SouthPin, SouthGuidePin, SlewPin, Const.AxisDirection.Decreasing, new List<object> { instance.DecEncoder });
-            instance.WestMotor = new WiseVirtualMotor("WestMotor", WestPin, WestGuidePin, SlewPin, Const.AxisDirection.Increasing, new List<object> { instance.HAEncoder });
-            instance.EastMotor = new WiseVirtualMotor("EastMotor", EastPin, EastGuidePin, SlewPin, Const.AxisDirection.Decreasing, new List<object> { instance.HAEncoder });
-            instance.TrackMotor = new WiseVirtualMotor("TrackMotor", TrackPin, null, null, Const.AxisDirection.Increasing, new List<object> { instance.HAEncoder });
+            instance.NorthMotor = new WiseVirtualMotor("NorthMotor", NorthPin, NorthGuidePin, SlewPin, TelescopeAxes.axisSecondary, Const.AxisDirection.Increasing, new List<object> { instance.DecEncoder });
+            instance.SouthMotor = new WiseVirtualMotor("SouthMotor", SouthPin, SouthGuidePin, SlewPin, TelescopeAxes.axisSecondary, Const.AxisDirection.Decreasing, new List<object> { instance.DecEncoder });
+            instance.WestMotor = new WiseVirtualMotor("WestMotor", WestPin, WestGuidePin, SlewPin, TelescopeAxes.axisPrimary, Const.AxisDirection.Increasing, new List<object> { instance.HAEncoder });
+            instance.EastMotor = new WiseVirtualMotor("EastMotor", EastPin, EastGuidePin, SlewPin, TelescopeAxes.axisPrimary, Const.AxisDirection.Decreasing, new List<object> { instance.HAEncoder });
+            instance.TrackingMotor = new WiseVirtualMotor("TrackMotor", TrackPin, null, null, TelescopeAxes.axisPrimary, Const.AxisDirection.Increasing, new List<object> { instance.HAEncoder });
 
             instance.axisMotors = new Dictionary<TelescopeAxes, List<WiseVirtualMotor>>();
             instance.axisMotors[TelescopeAxes.axisPrimary] = new List<WiseVirtualMotor> { instance.EastMotor, instance.WestMotor };
@@ -364,7 +461,7 @@ namespace ASCOM.Wise40
 
             instance.allMotors = new List<WiseVirtualMotor>();
             instance.allMotors.AddRange(instance.directionMotors);
-            instance.allMotors.Add(TrackMotor);
+            instance.allMotors.Add(TrackingMotor);
 
             hardware_elements.AddRange(instance.allMotors);
             hardware_elements.Add(instance.HAEncoder);
@@ -391,44 +488,54 @@ namespace ASCOM.Wise40
             instance.movementParameters[TelescopeAxes.axisPrimary] = new Dictionary<double, MovementParameters>();
             instance.movementParameters[TelescopeAxes.axisPrimary][Const.rateSlew] = new MovementParameters()
             {
-                anglePerSecond = new Angle("02:00:0.0"), changeDirection = new Angle("00:00:30.0"),
-                startMovement = new Angle("00:00:20.0"), stopMovement = new Angle("00:00:20.0"),
+                anglePerSecond = Angle.FromHours(Angle.Deg2Hours(Const.rateSlew)),
+                changeDirection = Angle.FromHours(Angle.Deg2Hours("00:00:30.0")),
+                startMovement = Angle.FromHours(Angle.Deg2Hours("00:00:20.0")),
+                stopMovement = Angle.FromHours(Angle.Deg2Hours("00:00:20.0")),
+
+                //anglePerSecond = new Angle("02:00:0.0"),
+                //changeDirection = new Angle("00:00:30.0"),
+                //startMovement = new Angle("00:00:20.0"),
+                //stopMovement = new Angle("00:00:20.0"),
                 millisecondsPerDegree = 500.0,      // 2deg/sec
             };
 
             instance.movementParameters[TelescopeAxes.axisPrimary][Const.rateSet] = new MovementParameters()
             {
-                anglePerSecond = new Angle("00:01:0.0"), changeDirection = new Angle("00:00:20.0"),
-                startMovement = new Angle("00:00:10.0"), stopMovement = new Angle("00:00:10.0"),
+                anglePerSecond = Angle.FromHours(Angle.Deg2Hours(Const.rateSet)),
+                changeDirection = Angle.FromHours(Angle.Deg2Hours("00:00:20.0")),
+                stopMovement = Angle.FromHours(Angle.Deg2Hours("00:00:10.0")),
+                startMovement = Angle.FromHours(Angle.Deg2Hours("00:00:10.0")),
                 millisecondsPerDegree = 60000.0,    // 1min/sec
             };
 
             instance.movementParameters[TelescopeAxes.axisPrimary][Const.rateGuide] = new MovementParameters()
             {
-                anglePerSecond = new Angle("00:00:01.0"), changeDirection = new Angle("00:00:00.5"),
-                startMovement = new Angle("00:00:00.5"),  stopMovement = new Angle("00:00:00.5"),
+                anglePerSecond = Angle.FromHours(Angle.Deg2Hours(Const.rateGuide)),
+                changeDirection = Angle.FromHours(Angle.Deg2Hours("00:00:00.5")),
+                startMovement = Angle.FromHours(Angle.Deg2Hours("00:00:00.5")),
+                stopMovement = Angle.FromHours(Angle.Deg2Hours("00:00:00.5")),
                 millisecondsPerDegree = 3600000.0,  // 1 sec/sec
             };
-
 
             instance.movementParameters[TelescopeAxes.axisSecondary] = new Dictionary<double, MovementParameters>();
             instance.movementParameters[TelescopeAxes.axisSecondary][Const.rateSlew] = new MovementParameters()
             {
-                anglePerSecond = new Angle("02:00:00.0"), changeDirection = new Angle("00:00:30.0"),
+                anglePerSecond = new Angle(Const.rateSlew), changeDirection = new Angle("00:00:30.0"),
                 startMovement = new Angle("00:00:20.0"),  stopMovement = new Angle("00:00:20.0"),
                 millisecondsPerDegree = 500.0,      // 2 deg/sec
             };
 
             instance.movementParameters[TelescopeAxes.axisSecondary][Const.rateSet] = new MovementParameters()
             {
-                anglePerSecond = new Angle("00:01:00.0"), changeDirection = new Angle("00:00:30.0"),
+                anglePerSecond = new Angle(Const.rateSet), changeDirection = new Angle("00:00:30.0"),
                 startMovement = new Angle("00:00:20.0"), stopMovement = new Angle("00:00:20.0"),
                 millisecondsPerDegree = 60000.0,    // 1 min/sec
             };
 
             instance.movementParameters[TelescopeAxes.axisSecondary][Const.rateGuide] = new MovementParameters()
             {
-                anglePerSecond = new Angle("00:00:01.0"), changeDirection = new Angle("00:00:00.5"),
+                anglePerSecond = new Angle(Const.rateGuide), changeDirection = new Angle("00:00:00.5"),
                 startMovement = new Angle("00:00:00.5"), stopMovement = new Angle("00:00:00.5"),
                 millisecondsPerDegree = 3600000.0,  // 1 sec/sec
             };
@@ -453,7 +560,7 @@ namespace ASCOM.Wise40
             instance.connectables.Add(instance.EastMotor);
             instance.connectables.Add(instance.WestMotor);
             instance.connectables.Add(instance.SouthMotor);
-            instance.connectables.Add(instance.TrackMotor);
+            instance.connectables.Add(instance.TrackingMotor);
             instance.connectables.Add(instance.HAEncoder);
             instance.connectables.Add(instance.DecEncoder);
 
@@ -461,28 +568,44 @@ namespace ASCOM.Wise40
             instance.disposables.Add(instance.EastMotor);
             instance.disposables.Add(instance.WestMotor);
             instance.disposables.Add(instance.SouthMotor);
-            instance.disposables.Add(instance.TrackMotor);
+            instance.disposables.Add(instance.TrackingMotor);
             instance.disposables.Add(instance.HAEncoder);
             instance.disposables.Add(instance.DecEncoder);
 
             SlewPin.SetOff();
-            instance.TrackMotor.SetOff();
+            instance.TrackingMotor.SetOff();
             instance.NorthMotor.SetOff();
             instance.EastMotor.SetOff();
             instance.WestMotor.SetOff();
             instance.SouthMotor.SetOff();
-        }
 
-        public double focalLength
-        {
-            get
+            if (_enslaveDome)
             {
-                return 7.112;   // Las Campanas 40" (meters)
+                domeSlaveDriver = new DomeSlaveDriver(debugger);
             }
         }
 
-        public void abortSlew()
+        public double FocalLength
         {
+            get
+            {
+                double ret = 7.112;  // Las Campanas 40" (meters)
+
+                traceLogger.LogMessage("FocalLength Get", ret.ToString());
+                return ret;   
+            }
+        }
+
+        public void AbortSlew()
+        {
+            if (AtPark)
+                throw new InvalidOperationException("Cannot AbortSlew while AtPark");
+
+            if (!_driverInitiatedSlewing)
+                return;
+
+            traceLogger.LogMessage("AbortSlew", "");
+            debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, "AbortSlew");
             Stop();
         }
 
@@ -490,7 +613,12 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return HAEncoder.RightAscension;
+                var ret = HAEncoder.RightAscension;
+
+                traceLogger.LogMessage("RightAscension", string.Format("Get - {0} ({1})", ret, ret.Hours));
+                debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, string.Format("RightAscension Get - {0} ({1})", ret, ret.Hours));
+
+                return ret.Hours;
             }
         }
 
@@ -506,7 +634,11 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return DecEncoder.Declination;
+                var ret = Angle.FromDegrees(DecEncoder.Declination);
+
+                traceLogger.LogMessage("Declination", string.Format("Get - {0} ({1})", ret, ret.Degrees));
+                debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, string.Format("Declination Get - {0} ({1})", ret, ret.Degrees));
+                return ret.Degrees;
             }
         }
 
@@ -561,6 +693,7 @@ namespace ASCOM.Wise40
                     WiseSite.Instance.refractionOption,
                     ref zd, ref az, ref rar, ref decr);
 
+                traceLogger.LogMessage("Azimuth Get", az.ToString());
                 return az;
             }
         }
@@ -569,7 +702,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                double rar = 0, decr = 0, az = 0, zd = 0;
+                double rar = 0, decr = 0, az = 0, zd = 0, alt;
 
                 WiseSite.Instance.prepareRefractionData();
                 novas31.Equ2Hor(astroutils.JulianDateUT1(0), 0,
@@ -580,7 +713,9 @@ namespace ASCOM.Wise40
                     WiseSite.Instance.refractionOption,
                     ref zd, ref az, ref rar, ref decr);
 
-                return (90.0 - zd);
+                alt = 90.0 - zd;
+                traceLogger.LogMessage("Altitude Get", alt.ToString());
+                return alt;
             }
         }
 
@@ -588,21 +723,29 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return TrackMotor.isOn; ;
+                bool ret = TrackingMotor.isOn;
+
+                traceLogger.LogMessage("Tracking", "Get - " + ret.ToString());
+                debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, string.Format("Tracking Get - {0}", ret));
+                return ret;
             }
 
             set
             {
+                traceLogger.LogMessage("Tracking Set", value.ToString());
+                debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, string.Format("Tracking Set - {0}", value));
+
                 if (value)
                 {
-                    TrackMotor.SetOn(Const.rateTrack);
+                    if (TrackingMotor.isOff)
+                        TrackingMotor.SetOn(Const.rateTrack);
                     if (!safetyMonitorTimer.isOn)
                         safetyMonitorTimer.SetOn();
                 }
                 else
                 {
-                    if (TrackMotor.isOn)
-                        TrackMotor.SetOff();
+                    if (TrackingMotor.isOn)
+                        TrackingMotor.SetOff();
 
                     bool active = false;
                     foreach (WiseVirtualMotor m in directionMotors)
@@ -619,11 +762,20 @@ namespace ASCOM.Wise40
             }
         }
 
-        public DriveRates TrackingRates
+        public DriveRates TrackingRate
         {
             get
             {
-                return DriveRates.driveSidereal;
+                var rates = DriveRates.driveSidereal;
+
+                traceLogger.LogMessage("TrackingRate Get - ", rates.ToString());
+                return rates;
+            }
+
+            set
+            {
+                traceLogger.LogMessage("TrackingRate Set", "Not implemented");
+                throw new ASCOM.PropertyNotImplementedException("TrackingRate", true);
             }
         }
 
@@ -661,25 +813,68 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return _slewing;
+                bool ret = _slewing || (_enslaveDome && domeSlaveDriver.Slewing);
+
+                traceLogger.LogMessage("Slewing Get", ret.ToString());
+                debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, string.Format("Slewing Get - {0}", ret));
+
+                if (_wasSlewing == true && ret == false)
+                    _driverInitiatedSlewing = false;
+
+                _wasSlewing = ret;
+
+                return ret;
             }
 
             set
             {
                 _slewing = value;
             }
+
         }
 
         public double DeclinationRate
         {
             get
             {
-                return 0.0;
+                double decRate = 0.0;
+
+                traceLogger.LogMessage("DeclinationRate", "Get - " + decRate.ToString());
+                return decRate;
+            }
+
+            set
+            {
+                traceLogger.LogMessage("DeclinationRate Set", "Not implemented");
+                throw new ASCOM.PropertyNotImplementedException("DeclinationRate", true);
             }
         }
 
-        public void MoveAxis(TelescopeAxes Axis, double Rate, Const.AxisDirection direction = Const.AxisDirection.Increasing, bool stopTracking = false)
+        public void MoveAxis(TelescopeAxes Axis, double Rate)
         {
+            traceLogger.LogMessage("MoveAxis", string.Format("MoveAxis({0}, {1})", Axis, Rate));
+            debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, string.Format("MoveAxis({0}, {1})", Axis, Rate));
+
+            Const.AxisDirection direction = (Rate == 0.0) ? Const.AxisDirection.None : 
+                (Rate < 0.0) ? Const.AxisDirection.Decreasing : Const.AxisDirection.Increasing;
+
+            _driverInitiatedSlewing = true;
+
+            try
+            {
+                _moveAxis(Axis, Rate, direction, true);
+            }
+            catch (Exception e)
+            {
+                _driverInitiatedSlewing = false;
+                throw e;
+            }
+        }
+
+        private void _moveAxis(TelescopeAxes Axis, double Rate, Const.AxisDirection direction = Const.AxisDirection.Increasing, bool stopTracking = false)
+        {
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "_moveAxis({0}, {1}): called", Axis, RateName(Rate));
+
             MovementWorker mover = null;
             TelescopeAxes thisAxis = Axis;
             TelescopeAxes otherAxis = (thisAxis == TelescopeAxes.axisPrimary) ? TelescopeAxes.axisSecondary : TelescopeAxes.axisPrimary;
@@ -688,50 +883,61 @@ namespace ASCOM.Wise40
                 throw new InvalidValueException("Cannot move in axisTertiary");
 
             if (AtPark)
+            {
+                WiseTele.Instance.currMovement[Axis].rate = Const.rateStopped;
                 throw new InvalidValueException("Cannot MoveAxis while AtPark");
+            }
 
             if (Rate == Const.rateStopped)
             {
                 foreach (WiseVirtualMotor m in axisMotors[thisAxis])
                     if (m.isOn)
                     {
-                        debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "MoveAxis: rateStopped: {0} was on, stopping it.", m.name);
+                        debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "_moveAxis({0}, {1}):  {2} was on, stopping it.", Axis, RateName(Rate), m.name);
                         m.SetOff();
                     }
-
-                _slewing = false;
 
                 if (wasTracking)
                     Tracking = true;
 
                 WiseTele.Instance.currMovement[Axis].rate = Const.rateStopped;      // signals _slewToCoordinatesAsync_bgw_DoWork that this Axis is stopped
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "MoveAxis: {0}, rate: {1}", Axis, rateName[Rate]);
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "_moveAxis({0}, {1}): done.", Axis, RateName(Rate));
+
+                _slewing = false;
+
                 return;
             }
 
             double absRate = Math.Abs(Rate);
             if (! ((absRate == Const.rateSlew) || (absRate == Const.rateSet) || (absRate == Const.rateGuide)))
-                throw new InvalidValueException(string.Format("Invalid rate {0}", Rate.ToString()));
+                throw new InvalidValueException(string.Format("_moveAxis({0}, {1}): Invalid rate.", Axis, Rate));
 
             if (WiseTele.Instance.currMovement[otherAxis].rate != Const.rateStopped && absRate != WiseTele.Instance.currMovement[otherAxis].rate)
-                throw new InvalidValueException(string.Format("Cannot MoveAxis({0}, {1}) ({2}) [{3} is moving at {4}]",
-                    Axis, rateName[Rate], axisDirectionName[Axis][direction], otherAxis, rateName[WiseTele.Instance.currMovement[otherAxis].rate]));
+            {
+                string msg = string.Format("Cannot _moveAxis({0}, {1}) ({2}) while {3} is moving at {4}",
+                    Axis, RateName(Rate), axisDirectionName[Axis][direction], otherAxis, RateName(currMovement[otherAxis].rate));
+
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, msg);
+                throw new InvalidValueException(msg);
+            }
 
             try {
                 mover = movementDict[new MovementSpecifier(Axis, direction)];
             } catch(Exception e) {
-                throw new InvalidValueException(string.Format("Cannot MoveAxis({0}, {1}) ({2}) [{3}]",
-                    Axis, axisDirectionName[Axis][direction], rateName[Rate], e.Message));
+                throw new InvalidValueException(string.Format("Don't know how to _moveAxis({0}, {1}) (no mover) ({2}) [{3}]",
+                    Axis, RateName(Rate), axisDirectionName[Axis][direction], e.Message));
             }
 
-            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "MoveAxis: {0}: ({1}), at {2}, stopTracking: {3}", Axis, axisDirectionName[Axis][direction], rateName[Rate], stopTracking);
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "_moveAxis({0}, {1}): direction: {2}, stopTracking: {3}",
+                Axis, RateName(Rate), axisDirectionName[Axis][direction], stopTracking);
             wasTracking = Tracking;
             if (stopTracking)
                 Tracking = false;
+
             _slewing = true;
 
             foreach (WiseVirtualMotor m in mover.motors) {
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "MoveAxis: {0}: starting {1}", rateName[Rate], m.name);
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "_moveAxis({0}, {1}): starting {2}", Axis, RateName(Rate), m.name);
                 m.SetOn(Rate);
             }
 
@@ -743,37 +949,46 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return false;   // TBD
+                throw new PropertyNotImplementedException("IsPulseGuiding");
             }
         }
 
         public void SlewToTargetAsync()
         {
-            double deltaRa, deltaDec;
+            Angle ra = Angle.FromHours(TargetRightAscension, Angle.Type.RA);
+            Angle dec = Angle.FromDegrees(TargetDeclination, Angle.Type.Dec);
 
-            if (target.RightAscension == null || target.Declination == null)
-                throw new ValueNotSetException("Target not set");
+            traceLogger.LogMessage("SlewToTargetAsync", string.Format("Started: ra: {0}, dec: {1}", ra, dec));
+            debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, string.Format("SlewToTargetAsync({0}, {1})", ra, dec));
 
-            SafeAtCoordinates(target.RightAscension.Degrees, target.Declination.Degrees, false);
+            if (_targetRightAscension == null)
+                throw new ValueNotSetException("Target RA not set");
+            if (_targetDeclination == null)
+                throw new ValueNotSetException("Target Dec not set");
 
-            deltaRa = targetRightAscension - RightAscension;
-            deltaDec = targetDeclination - Declination;
+            if (AtPark)
+                throw new InvalidOperationException("Cannot SlewToTargetAsync while AtPark");
 
-            /*
-             * TODO:
-             *  - Split deltaRa and deltaDec into rateSlew, rateSet and rateGuide segments
-             *  - Slewing = true
-             *  - For each segment
-             *      - Start the axis-motor
-             *      - Start the axis-timer (frequency = ???)
-             *      - The axis-timer handler:
-             *          - if the next occurence will be less than (2 * the stoppingTime[currentRate]) away:
-             *              - stops the axis-motor
-             *              - sets handler to one that throws a new NotImplementedException (to prevent event after Enabled = false)
-             *              - sets Enabled = false
-             *              - if the other axis-timer is also done, Slewing = false
-             */
-            _slewToCoordinatesAsync(target.RightAscension.Degrees, target.Declination.Degrees);
+            if (!Tracking)
+                throw new InvalidOperationException("Cannot SlewToTargetAsync while NOT Tracking");
+
+
+            if (! SafeAtCoordinates(ra, dec))
+                throw new InvalidOperationException(string.Format("Not safe to SlewToTargetAsync({0}, {1})", ra, dec));
+
+            _driverInitiatedSlewing = true;
+
+            try
+            {
+                if (_enslaveDome)
+                    domeSlaveDriver.SlewStartAsync(ra, dec);
+                _slewToCoordinatesAsync(_targetRightAscension, _targetDeclination);
+            }
+            catch (Exception e)
+            {
+                _driverInitiatedSlewing = false;
+                throw e;
+            }
         }
 
         /// <summary>
@@ -784,8 +999,10 @@ namespace ASCOM.Wise40
         /// <param name="ra">RightAscension of the checked position</param>
         /// <param name="dec">Declination of the checked position</param>
         /// <param name="takeAction">Take recovery actions or not</param>
-        public bool SafeAtCoordinates(double ra, double dec, bool takeAction = false)
+        public bool SafeAtCoordinates(Angle ra, Angle dec, bool takeAction = false)
         {
+            return true;
+
             double rar = 0, decr = 0, az = 0, zd = 0;
             Angle alt;
 
@@ -794,18 +1011,19 @@ namespace ASCOM.Wise40
                 WiseSite.Instance.astrometricAccuracy,
                 0, 0,
                 WiseSite.Instance.onSurface,          // TBD: set Pressure (mbar) and Temperature (C)
-                ra, dec,
+                ra.Hours, dec.Degrees,
                 WiseSite.Instance.refractionOption,   // TBD: do we want refraction?
                 ref zd, ref az, ref rar, ref decr);
 
-            alt = Angle.FromDeg(90.0 - zd);
-            if (alt.Degrees < altLimit.Degrees)
+            alt = Angle.FromDegrees(90.0 - zd);
+            if (alt < altLimit)
             {
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "Not safe to move to ra: {0}, dec: {1} (alt: {2} is below altLimit: {3})",
-                    Angle.FromDeg(ra).ToFormattedString(Angle.Format.RA),
-                    Angle.FromDeg(dec).ToFormattedString(Angle.Format.Dec),
-                    alt.ToFormattedString(Angle.Format.Deg),
-                    altLimit.ToFormattedString(Angle.Format.Deg));
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                    string.Format("Not safe to move to ra: {0}, dec: {1} (alt: {2} is below altLimit: {3})",
+                    ra,
+                    dec,
+                    alt,
+                    altLimit));
 
                 if (takeAction)
                 {
@@ -823,13 +1041,15 @@ namespace ASCOM.Wise40
         /// </summary>
         private void BackToSafety()
         {
-            double backoffDeg = 20 / 3600; // 20 seconds (TBD)
-            double primaryBackoff = 0, secondaryBackoff = 0;
-            double ra = RightAscension, ha = HourAngle, dec = Declination;
+            Angle backoff = new Angle("00:00:20.0");
+            Angle primaryBackoff, secondaryBackoff;
+            Angle ra = Angle.FromHours(RightAscension, Angle.Type.RA);
+            Angle dec = Angle.FromDegrees(Declination, Angle.Type.Dec);
+            double ha = HourAngle;
 
-            primaryBackoff = (ha > 0) ? ra - backoffDeg : ra + backoffDeg;
-            secondaryBackoff = (dec > 0) ? -backoffDeg : backoffDeg;
-            SlewToCoordinatesSync(primaryBackoff, secondaryBackoff);
+            primaryBackoff = (ha > 0) ? ra - backoff : ra + backoff;
+            secondaryBackoff = (dec > Angle.FromDegrees(0.0)) ? Angle.FromDegrees(-backoff.Degrees) : backoff;
+            SlewToCoordinates(primaryBackoff.Hours, secondaryBackoff.Degrees);
         }
 
         public bool simulated
@@ -848,7 +1068,12 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return _atPark;
+                bool ret = _atPark;
+
+                traceLogger.LogMessage("AtPark", "Get - " + ret.ToString());
+                debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, string.Format("AtPark Get - {0}", ret));
+
+                return ret;
             }
 
             set
@@ -859,218 +1084,267 @@ namespace ASCOM.Wise40
 
         public void Park()
         {
+            traceLogger.LogMessage("Park", "");
+            debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, "Park");
+
             if (AtPark)
                 return;
 
-            _slewToCoordinatesSync(WiseSite.Instance.LocalSiderealTime, WiseSite.Instance.Latitude);    // sync
+            if (_enslaveDome)
+                domeSlaveDriver.SlewToParkStart();
+            _slewToCoordinatesSync(WiseSite.Instance.LocalSiderealTime, WiseSite.Instance.Latitude);
             AtPark = true;
+            if (_enslaveDome)
+                domeSlaveDriver.SlewWait();
         }
 
-        private void _slewToCoordinatesSync(double RightAscension, double Declination)  // sync
+        private void _slewToCoordinatesSync(Angle RightAscension, Angle Declination)
         {
+            debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "_slewToCoordinatesSync: ({0}, {1}), called.", RightAscension, Declination);
             _slewToCoordinatesAsync(RightAscension, Declination);
-            backgroundWorkerDone.WaitOne();
-            _slewing = false;
+            debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "_slewToCoordinatesSync: ({0}, {1}), waiting ...", RightAscension, Declination);
+
+            while (Slewing)
+            {
+                debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "_slewToCoordinatesSync: ({0}, {1}), still Slewing ...", RightAscension, Declination);
+                Thread.Sleep(500);
+            }
+
+            debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "_slewToCoordinatesSync: ({0}, {1}), done.", RightAscension, Declination);
         }
 
         private void _slewToCoordinatesAsync_bgw_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
+            debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "_slewToCoordinatesAsync_bgw_RunWorkerCompleted: Called: e.Cancelled: {0}, e.Error: \"{1}\"",
+                e.Cancelled, e.Error);
+
             if (!e.Cancelled && e.Error == null)
                 result = e.Cancelled ? null : (MeasuredMovementResult)e.Result;
+
+            Slewing = false;
         }
 
         private void _slewToCoordinatesAsync_bgw_DoWork(object sender, DoWorkEventArgs e)
         {
             MeasuredMovementArg arg = (MeasuredMovementArg)e.Argument;
             BackgroundWorker bgw = sender as BackgroundWorker;
+            MeasuredMovementResult result = e.Result as MeasuredMovementResult;
 
-            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "bgw: arg: ra = {0}, dec = {1}",
-                new Angle(arg.rightAscension), new Angle(arg.declination));
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "bgw: arg: ra = {0}, dec = {1}", arg.rightAscension, arg.declination);
 
             _slewing = true;
             Movement cm;
 
-            if (bgw.CancellationPending)
-                goto workDone;
-
-            //
-            // Split the distance into segments in which the axes can either:
-            //  1. both move at the same rate
-            //  2. one stop and the other move at that rate
-            //
-            foreach (double rate in rates)
+            result = new MeasuredMovementResult() { cancelled = false };
+            e.Cancel = false;
+            try
             {
-                if (simulated && (rate == Const.rateSet || rate == Const.rateGuide))     // TODO: Major fuckup <=================================
-                    break;
-                //
-                // Phase #1
-                //  Prepare each axis' currMovement instance:
-                //   - startingAngle:           The angle before starting the movement
-                //   - longTermTargetAngle:     The angle to which we want to ultimatly get on this axis (ra or dec)
-                //   - shortTermTargetAngle:    The angle we want to reach in the next sub-movement, at the same rate as the other axis
-                //   - direction:               Which way the axis will move
-                //
                 if (bgw.CancellationPending)
-                    goto workDone;
-
-                foreach (TelescopeAxes axis in axes)
-                {
-                    MovementParameters mp = movementParameters[axis][rate];
-                    WiseTele.Instance.currMovement[axis] = new Movement() { rate = Const.rateStopped };
-                    cm = WiseTele.Instance.currMovement[axis];
-
-                    if (axis == TelescopeAxes.axisPrimary)
-                    {
-                        cm.startingAngle = new Angle(RightAscension);
-                        cm.longTermTargetAngle = new Angle(arg.rightAscension);
-                    }
-                    else
-                    {
-                        cm.startingAngle = new Angle(Declination);
-                        cm.longTermTargetAngle = new Angle(arg.declination);
-                    }
-
-                    var shortest = cm.startingAngle.ShortestDistance(cm.longTermTargetAngle);
-                    cm.deltaAngle = shortest.angle;
-                    cm.direction = shortest.direction;
-
-                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "bgw: {3}: preliminary: startingAngle: {0}, deltangle: {1}, direction: {2}",
-                        cm.startingAngle, cm.deltaAngle, cm.direction, axis);
-
-                    //
-                    // A minimal move on this axis, at this rate, is the sum of:
-                    //  - the startMovement angle
-                    //  - at least one anglePerSecond angle
-                    //  - the stopMovement angle
-                    //  - if we change direction, the changeDirection angle
-                    //
-                    // If the total movement needed is less than this total, don't move. Let
-                    //  the next iteration, at a lower rate, take care of it.
-                    //
-                    Angle minimalMovementAngle = mp.startMovement + mp.anglePerSecond + mp.stopMovement;
-                    if (prevMovement[axis].direction != Const.AxisDirection.None && prevMovement[axis].direction != cm.direction)
-                        minimalMovementAngle += mp.changeDirection;
-                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "bgw: {0}: minimalMovementAngle: {1}", axis, minimalMovementAngle);
-
-                    if (cm.deltaAngle < minimalMovementAngle) {
-                        cm.rate = Const.rateStopped;
-                        debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "bgw: {0}: Not moving at rate {1}, too short", axis, rateName[rate]);
-                    } else
-                    {
-                        Angle movementDistance = cm.deltaAngle - movementParameters[axis][rate].anglePerSecond;
-                        if (cm.direction == Const.AxisDirection.Increasing)
-                            cm.shortTermTargetAngle = cm.startingAngle + movementDistance;
-                        else
-                            cm.shortTermTargetAngle = cm.startingAngle - movementDistance;
-
-                        cm.rate = rate;
-                        debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "bgw: {0}: startingAngle: {1}, targetAngle: {2}, direction: {3}, rate: {4}",
-                            axis, cm.startingAngle, cm.shortTermTargetAngle, cm.direction, rateName[cm.rate]);
-                    }
-                }
-
-                if (currMovement[TelescopeAxes.axisPrimary].rate == Const.rateStopped && currMovement[TelescopeAxes.axisSecondary].rate == Const.rateStopped)
-                {
-                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "bgw: Both axes will NOT to move at rate {0}, will try next rate.", rateName[rate]);
-                    continue;   // cannot move at this rate, move to next one
-                }
-
-                if (bgw.CancellationPending)
-                    goto workDone;
-
-                // Phase #2:
-                //  Calculate the minimal distance both axes can move at the same rate.
-                //
-                Angle commonDeltaAngle = Angle.Min(currMovement[TelescopeAxes.axisPrimary].deltaAngle, currMovement[TelescopeAxes.axisSecondary].deltaAngle);
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "bgw: commonDeltaAngle: {0}", commonDeltaAngle);
+                    throw new MovementCanceledException();
 
                 //
-                // Phase #3:
-                //  Start moving on each axis which can move at this rate
+                // Split the distance into segments in which the axes can either:
+                //  1. both move at the same rate
+                //  2. one stop and the other move at that rate
                 //
-                foreach (TelescopeAxes axis in axes)
+                foreach (double rate in rates)
                 {
-                    cm = currMovement[axis];
-
-                    if (cm.rate == Const.rateStopped)
-                    {
-                        debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "bgw: {0} STOPPED", axis);
-                        continue;
-                    }
-
-                    Angle thisMovementAngle = Angle.Max(commonDeltaAngle, cm.deltaAngle);
-                    if (cm.direction == Const.AxisDirection.Increasing)
-                        cm.shortTermTargetAngle = cm.startingAngle + thisMovementAngle;
-                    else
-                        cm.shortTermTargetAngle = cm.startingAngle - thisMovementAngle;
-
-                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "bgw: {0}: (STARTING) Calling MoveAxis({0}, {1}, {4}) startingAngle: {2}, targetAngle: {3}, direction: {4}, rate: {5}", axis, rateName[rate],
-                        cm.startingAngle, cm.shortTermTargetAngle, cm.direction, rateName[cm.rate]);
-
+                    //
+                    // Phase #1
+                    //  Prepare each axis' currMovement instance:
+                    //   - startingAngle:           The angle before starting the movement
+                    //   - longTermTargetAngle:     The angle to which we want to ultimatly get on this axis (ra or dec)
+                    //   - shortTermTargetAngle:    The angle we want to reach in the next sub-movement, at the same rate as the other axis
+                    //   - direction:               Which way the axis will move
+                    //
                     if (bgw.CancellationPending)
-                        goto workDone;
-
-                    MoveAxis(axis, rate, cm.direction, false);   // sets currentMovement[axis].rate != rateStopped
-                }
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "bgw: Axe(s) in motion at {0}", rateName[rate]);
-
-                //
-                // Phase #4:
-                //  Wait for both axes (or just the one that's moving) to reach their destination
-                //
-                while (true)
-                {
-                    if (bgw.CancellationPending) goto
-                            workDone;
+                        throw new MovementCanceledException();
 
                     foreach (TelescopeAxes axis in axes)
                     {
-                        cm = currMovement[axis];
-                        if (cm.rate == Const.rateStopped) // movement on this axis was already stopped
-                            continue;
+                        MovementParameters mp = movementParameters[axis][rate];
+                        WiseTele.Instance.currMovement[axis] = new Movement() { rate = Const.rateStopped };
+                        cm = WiseTele.Instance.currMovement[axis];
 
-                        double currentDegrees = (axis == TelescopeAxes.axisPrimary) ? RightAscension : Declination;
-                        bool arrivedAtTarget = (cm.direction == Const.AxisDirection.Increasing) ?
-                            currentDegrees >= cm.shortTermTargetAngle.Degrees :
-                            currentDegrees <= cm.shortTermTargetAngle.Degrees;
-
-                        if (arrivedAtTarget)
+                        if (axis == TelescopeAxes.axisPrimary)
                         {
-                            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "bgw: {0} stopping at {5}, calling  MoveAxis({0}, {1}) startingAngle: {2}, targetAngle: {3}, direction {4}",
-                                axis, rateName[Const.rateStopped], cm.startingAngle, cm.shortTermTargetAngle, cm.direction, new Angle(currentDegrees));
+                            cm.startingAngle = Angle.FromHours(RightAscension, Angle.Type.RA);
+                            cm.longTermTargetAngle = arg.rightAscension;
+                        }
+                        else
+                        {
+                            cm.startingAngle = Angle.FromDegrees(Declination, Angle.Type.Dec);
+                            cm.longTermTargetAngle = arg.declination;
+                        }
 
-                            MoveAxis(axis, Const.rateStopped, Const.AxisDirection.None, false);  // this axis has moved within range of the target, stop it (sets currentMovement[axis].rate = rateStopped)
-                        } else
-                            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "bgw: {0} moving at {5}, (deg: {2}), {1} (inter: {3}, final: {4})",
-                                axis, new Angle(currentDegrees), currentDegrees, cm.shortTermTargetAngle, cm.longTermTargetAngle, rateName[cm.rate]);
+                        var shortest = cm.startingAngle.ShortestDistance(cm.longTermTargetAngle);
+                        cm.deltaAngle = shortest.angle;
+                        cm.direction = shortest.direction;
+
+                        debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "bgw: {3}: preliminary: startingAngle: {0}, deltangle: {1}, direction: {2}",
+                            cm.startingAngle, cm.deltaAngle, cm.direction, axis);
+
+                        //
+                        // A minimal move on this axis, at this rate, is the sum of:
+                        //  - the startMovement angle
+                        //  - at least one anglePerSecond angle
+                        //  - the stopMovement angle
+                        //  - if we change direction, the changeDirection angle
+                        //
+                        // If the total movement needed is less than this total, don't move. Let
+                        //  the next iteration, at a lower rate, take care of it.
+                        //
+                        Angle minimalMovementAngle = mp.startMovement + mp.anglePerSecond + mp.stopMovement;
+                        if (prevMovement[axis].direction != Const.AxisDirection.None && prevMovement[axis].direction != cm.direction)
+                            minimalMovementAngle += mp.changeDirection;
+                        debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "bgw: {0}: minimalMovementAngle: {1}", axis, minimalMovementAngle);
+
+                        if (cm.deltaAngle < minimalMovementAngle)
+                        {
+                            cm.rate = Const.rateStopped;
+                            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "bgw: {0}: Not moving at rate {1}, too short", axis, RateName(rate));
+                        }
+                        else
+                        {
+                            Angle movementDistance = cm.deltaAngle - movementParameters[axis][rate].anglePerSecond;
+                            if (cm.direction == Const.AxisDirection.Increasing)
+                                cm.shortTermTargetAngle = cm.startingAngle + movementDistance;
+                            else
+                                cm.shortTermTargetAngle = cm.startingAngle - movementDistance;
+
+                            cm.rate = rate;
+                            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "bgw: {0}: startingAngle: {1}, targetAngle: {2}, direction: {3}, rate: {4}",
+                                axis, cm.startingAngle, cm.shortTermTargetAngle, cm.direction, RateName(cm.rate));
+                        }
                     }
 
                     if (currMovement[TelescopeAxes.axisPrimary].rate == Const.rateStopped && currMovement[TelescopeAxes.axisSecondary].rate == Const.rateStopped)
                     {
-                        debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "bgw: BOTH axes are STOPPED after moving at {0}", rateName[rate]);
-                        break;
+                        debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "bgw: Both axes will NOT to move at rate {0}, will try next rate.", RateName(rate));
+                        continue;   // cannot move at this rate, move to next one
                     }
-                    else
-                        Thread.Sleep(5);    // TODO: make it configurable or constant
+
+                    if (bgw.CancellationPending)
+                        throw new MovementCanceledException();
+
+                    // Phase #2:
+                    //  Calculate the minimal distance both axes can move at the same rate.
+                    //
+                    //Angle commonDeltaAngle = Angle.Min(currMovement[TelescopeAxes.axisPrimary].deltaAngle, currMovement[TelescopeAxes.axisSecondary].deltaAngle);
+                    Angle commonDeltaAngle = Angle.FromDegrees(
+                        Math.Min(
+                            currMovement[TelescopeAxes.axisPrimary].deltaAngle.Degrees,
+                            currMovement[TelescopeAxes.axisSecondary].deltaAngle.Degrees));
+                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "bgw: commonDeltaAngle: {0}", commonDeltaAngle);
+
+                    //
+                    // Phase #3:
+                    //  Start moving on each axis which can move at this rate
+                    //
+                    List<TelescopeAxes> activeAxes = new List<TelescopeAxes>();
+                    foreach (TelescopeAxes axis in axes)
+                    {
+                        cm = currMovement[axis];
+
+                        if (cm.rate == Const.rateStopped)
+                        {
+                            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "bgw: {0} STOPPED", axis);
+                            continue;
+                        }
+
+                        Angle thisMovementAngle = Angle.Max(commonDeltaAngle, cm.deltaAngle);
+                        if (cm.direction == Const.AxisDirection.Increasing)
+                            cm.shortTermTargetAngle = cm.startingAngle + thisMovementAngle;
+                        else
+                            cm.shortTermTargetAngle = cm.startingAngle - thisMovementAngle;
+
+                        debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "bgw: {0}: Calling MoveAxis({0}, {1}, {2}) startingAngle: {3}, targetAngle: {4}",
+                            axis, RateName(rate), cm.direction, cm.startingAngle, cm.shortTermTargetAngle);
+
+                        if (bgw.CancellationPending)
+                            throw new MovementCanceledException();
+
+                        _moveAxis(axis, rate, cm.direction, false);   // sets currentMovement[axis].rate != rateStopped
+                        activeAxes.Add(axis);
+                    }
+                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "bgw: {0} in motion at {1}", activeAxes.ToString(), RateName(rate));
+
+                    //
+                    // Phase #4:
+                    //  Wait for both axes (or just the one that's moving) to reach their destination
+                    //
+                    while (true)
+                    {
+                        if (bgw.CancellationPending)
+                            throw new MovementCanceledException();
+
+                        foreach (TelescopeAxes axis in axes)
+                        {
+                            ShortestDistanceResult delta, prev_delta = new ShortestDistanceResult() { angle = Angle.invalid };
+                            char mark = '?';
+
+                            cm = currMovement[axis];
+                            if (cm.rate == Const.rateStopped) // movement on this axis was already stopped
+                                continue;
+
+                            Angle currentAngle = (axis == TelescopeAxes.axisPrimary) ?
+                                Angle.FromHours(RightAscension, Angle.Type.RA) :
+                                Angle.FromDegrees(Declination, Angle.Type.Dec);
+
+                            delta = currentAngle.ShortestDistance(cm.shortTermTargetAngle);
+                            bool arrivedAtTarget = (delta.angle.Degrees <= closeEnough);
+
+                            if (arrivedAtTarget)
+                            {
+                                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "bgw: {0} stopping at {5}, calling  MoveAxis({0}, {1}) startingAngle: {2}, targetAngle: {3}, direction {4}",
+                                    axis, RateName(Const.rateStopped), cm.startingAngle, cm.shortTermTargetAngle, cm.direction, currentAngle);
+
+                                _moveAxis(axis, Const.rateStopped, Const.AxisDirection.None, false);  // this axis has moved within range of the target, stop it (sets currentMovement[axis].rate = rateStopped)
+                            }
+                            else
+                            {
+                                if (prev_delta.angle.Degrees != double.NaN)
+                                    mark = (prev_delta == delta) ? '=' : (prev_delta.angle > delta.angle) ? 'v' : '^';
+
+                                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "bgw: {0} still moving, {1}, at {2} ==> {3} ({6}), delta: {4}{5}",
+                                    axis, RateName(cm.rate), currentAngle, cm.shortTermTargetAngle,
+                                    mark,
+                                    delta.angle, cm.longTermTargetAngle);
+                                prev_delta = delta;
+                            }
+                        }
+
+                        if (currMovement[TelescopeAxes.axisPrimary].rate == Const.rateStopped && currMovement[TelescopeAxes.axisSecondary].rate == Const.rateStopped)
+                        {
+                            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "bgw: BOTH axes are STOPPED after moving at {0}", RateName(rate));
+                            break;
+                        }
+                        else
+                        {
+                            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "sleeping 5 ...");
+                            Thread.Sleep(5);    // TODO: make it configurable or constant
+                        }
+                    }
                 }
-            }
-
-            //
-            // Phase #5:
-            //  Motion complete (or cancelled)
-            //
-            workDone:
-            e.Result = new MeasuredMovementResult() { cancelled = false };
-            if (bgw.CancellationPending)
+            } catch (MovementCanceledException)
             {
-                ((MeasuredMovementResult)e.Result).cancelled = true;
-                Stop();
-            }
-            foreach (TelescopeAxes axis in axes)
-                prevMovement[axis] = currMovement[axis];    // save for changing-of-direction info.
+                result.cancelled = true;
+                e.Cancel = true;
+            } finally {
 
-            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "bgw: ALL DONE, returning.");
-            backgroundWorkerDone.Set();
+                //
+                // Phase #5:
+                //  Motion complete (or cancelled)
+                //
+                Stop();
+                currMovement[TelescopeAxes.axisPrimary].rate = Const.rateStopped;
+                currMovement[TelescopeAxes.axisSecondary].rate = Const.rateStopped;
+
+                foreach (TelescopeAxes axis in axes)
+                    prevMovement[axis] = currMovement[axis];    // save for change-of-direction info.
+
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "bgw: ALL DONE, returning.");
+            }
         }
 
         /// <summary>
@@ -1083,8 +1357,11 @@ namespace ASCOM.Wise40
         /// </summary>
         /// <param name="RightAscension"></param>
         /// <param name="Declination"></param>
-        private void _slewToCoordinatesAsync(double RightAscension, double Declination)
+        private void _slewToCoordinatesAsync(Angle RightAscension, Angle Declination)
         {
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "_slewToCoordinatesAsync({0}, {1}) - called",
+                RightAscension, Declination);
+
             _slewToCoordinatesAsync_bgw = new BackgroundWorker();
 
             _slewToCoordinatesAsync_bgw.WorkerSupportsCancellation = true;
@@ -1094,34 +1371,668 @@ namespace ASCOM.Wise40
             _slewToCoordinatesAsync_bgw.RunWorkerAsync(new MeasuredMovementArg() { rightAscension = RightAscension, declination = Declination });
         }
 
-        public void SlewToCoordinatesSync(double RightAscension, double Declination) // sync
+        public void SlewToCoordinates(double RightAscension, double Declination)
         {
+            Angle ra = Angle.FromHours(RightAscension, Angle.Type.RA);
+            Angle dec = Angle.FromDegrees(Declination, Angle.Type.Dec);
+
+            traceLogger.LogMessage("SlewToCoordinates", string.Format("ra: {0}, dec: {0}", ra, dec));
+            debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, string.Format("SlewToCoordinates - {0}, {1}", ra, dec));
+
+            TargetRightAscension = RightAscension;
+            TargetDeclination = Declination;
+
+            if (AtPark)
+                throw new InvalidOperationException("Cannot SlewToCoordinates while AtPark");
+
+            if (!Tracking)
+                throw new InvalidOperationException("Cannot SlewToCoordinates while NOT Tracking");
+
+
+            if (!SafeAtCoordinates(ra, dec))
+                throw new InvalidOperationException(string.Format("Not safe to SlewToCoordinates({0}, {1})", ra, dec));
+
             try
             {
-                _slewToCoordinatesSync(RightAscension, Declination);
+                if (_enslaveDome)
+                    domeSlaveDriver.SlewStartAsync(ra, dec);
+                _slewToCoordinatesSync(ra, dec);
             }
             catch (Exception e)
             {
-                debugger.WriteLine(Debugger.DebugLevel.DebugExceptions, "SlewToCoordinates: _slewToCoordinatesSync({0}, {1}) threw exception: {2}", new Angle(RightAscension), new Angle(Declination), e.Message);
+                debugger.WriteLine(Debugger.DebugLevel.DebugExceptions, "SlewToCoordinates: _slewToCoordinatesSync({0}, {1}) threw exception: {2}",
+                    ra, dec, e.Message);
                 _slewing = false;
             }
         }
 
         public void SlewToCoordinatesAsync(double RightAscension, double Declination)
         {
+            TargetRightAscension = RightAscension;
+            TargetDeclination = Declination;
+
+            Angle ra = Angle.FromHours(RightAscension, Angle.Type.RA);
+            Angle dec = Angle.FromDegrees(Declination, Angle.Type.Dec);
+
+            debugger.WriteLine(Common.Debugger.DebugLevel.DebugDevice, "SlewToCoordinatesAsync({0}, {1})", ra, dec);
+
+            if (AtPark)
+                throw new InvalidOperationException("Cannot SlewToCoordinates while AtPark");
+
+            if (!Tracking)
+                throw new InvalidOperationException("Cannot SlewToCoordinates while NOT Tracking");
+
+            if (!SafeAtCoordinates(ra, dec))
+                throw new InvalidOperationException(string.Format("Not safe to SlewToCoordinatesAsync({0}, {1})", ra, dec));
+
             try
             {
-                _slewToCoordinatesAsync(RightAscension, Declination);
+                if (_enslaveDome)
+                    domeSlaveDriver.SlewStartAsync(ra, dec);
+                _slewToCoordinatesAsync(ra, dec);
             } catch (Exception e)
             {
-                debugger.WriteLine(Debugger.DebugLevel.DebugExceptions, "SlewToCoordinatesAsync: _slewToCoordinatesAsync({0}, {1}) threw exception: {2}", new Angle(RightAscension), new Angle(Declination), e.Message);
+                debugger.WriteLine(Debugger.DebugLevel.DebugExceptions, "SlewToCoordinatesAsync({0}, {1}) caught exception: {2}",
+                    RightAscension, Declination, e.Message);
                 _slewing = false;
             }
         }
 
         private void DoCheckSafety(object StateObject)
         {
-            SafeAtCoordinates(RightAscension, Declination, true);
+            SafeAtCoordinates(Angle.FromHours(RightAscension, Angle.Type.RA), Angle.FromDegrees(Declination, Angle.Type.Dec), true);
         }
+
+        public void Unpark()
+        {
+            if (AtPark)
+                AtPark = false;
+
+            traceLogger.LogMessage("Unpark", "Done");
+            debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, "Unpark");
+        }
+
+        public DateTime UTCDate
+        {
+            get
+            {
+                DateTime utcDate = DateTime.UtcNow;
+                traceLogger.LogMessage("UTCDate Get - ", utcDate.ToString());
+                return utcDate;
+            }
+
+            set
+            {
+                traceLogger.LogMessage("UTCDate Set", "Not implemented");
+                throw new ASCOM.PropertyNotImplementedException("UTCDate", true);
+            }
+        }
+
+        public ITrackingRates TrackingRates
+        {
+            get
+            {
+                ITrackingRates trackingRates = new TrackingRates();
+                traceLogger.LogMessage("TrackingRates", "Get - ");
+                foreach (DriveRates driveRate in trackingRates)
+                {
+                    traceLogger.LogMessage("TrackingRates", "Get - " + driveRate.ToString());
+                }
+                return trackingRates;
+            }
+        }
+
+        public void SyncToTarget()
+        {
+            traceLogger.LogMessage("SyncToTarget", "Not implemented");
+            throw new ASCOM.MethodNotImplementedException("SyncToTarget");
+        }
+
+        public string Description
+        {
+            get
+            {
+                var ret = "Wise40 Telescope";
+                traceLogger.LogMessage("Description Get", ret);
+                return ret;
+            }
+        }
+
+        public AlignmentModes AlignmentMode
+        {
+            get
+            {
+                AlignmentModes mode = AlignmentModes.algPolar;
+
+                traceLogger.LogMessage("AlignmentMode Get", mode.ToString());
+                return mode;
+            }
+        }
+
+        public double SiderealTime
+        {
+            get
+            {
+                double ret = WiseSite.Instance.LocalSiderealTime.Hours;
+
+                traceLogger.LogMessage("SiderealTime", "Get - " + ret.ToString());
+                return ret;
+            }
+        }
+
+        public double SiteElevation
+        {
+            get
+            {
+                double elevation = WiseSite.Instance.Elevation;
+
+                traceLogger.LogMessage("SiteElevation Get", elevation.ToString());
+                return elevation;
+            }
+
+            set
+            {
+                traceLogger.LogMessage("SiteElevation Set", "Not implemented");
+                throw new ASCOM.PropertyNotImplementedException("SiteElevation", true);
+            }
+        }
+
+        public double SiteLatitude
+        {
+            get
+            {
+                double latitude = WiseSite.Instance.Latitude.Degrees;
+
+                traceLogger.LogMessage("SiteLatitude Get", latitude.ToString());
+                return latitude;
+            }
+            set
+            {
+                traceLogger.LogMessage("SiteLatitude Set", "Not implemented");
+                throw new ASCOM.PropertyNotImplementedException("SiteLatitude", true);
+            }
+        }
+
+        /// <summary>
+        /// Site Longitude in degrees as per ASCOM.DriverAccess
+        /// </summary>
+        public double SiteLongitude
+        {
+            get
+            {
+                double longitude = WiseSite.Instance.Longitude.Degrees;
+
+                traceLogger.LogMessage("SiteLongitude Get", longitude.ToString());
+                return longitude;
+            }
+            set
+            {
+                traceLogger.LogMessage("SiteLongitude Set", "Not implemented");
+                throw new ASCOM.PropertyNotImplementedException("SiteLongitude", true);
+            }
+        }
+
+        public void SlewToTarget()
+        {
+            Angle ra = Angle.FromHours(TargetRightAscension, Angle.Type.RA);
+            Angle dec = Angle.FromDegrees(TargetDeclination, Angle.Type.Dec);
+
+            traceLogger.LogMessage("SlewToTarget", string.Format("ra: {0}, dec: {0}", ra, dec));
+            debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, string.Format("SlewToTarget - {0}, {1}", ra, dec));
+
+            if (AtPark)
+                throw new InvalidOperationException("Cannot SlewToCoordinates while AtPark");
+
+            if (!Tracking)
+                throw new InvalidOperationException("Cannot SlewToCoordinates while NOT Tracking");
+
+            if (!SafeAtCoordinates(ra, dec))
+                throw new InvalidOperationException(string.Format("Not safe to SlewToTarget({0}, {1})", ra, dec));
+
+            _driverInitiatedSlewing = true;
+
+            try
+            {
+                if (_enslaveDome)
+                    domeSlaveDriver.SlewStartAsync(ra, dec);
+
+                SlewToCoordinates(TargetRightAscension, TargetDeclination); // sync
+
+                if (_enslaveDome)
+                    domeSlaveDriver.SlewWait();
+            }
+            catch (Exception e)
+            {
+                _driverInitiatedSlewing = false;
+                throw e;
+            }
+        }
+
+        public void SyncToAltAz(double Azimuth, double Altitude)
+        {
+            traceLogger.LogMessage("SyncToAltAz", "Not implemented");
+            throw new ASCOM.MethodNotImplementedException("SyncToAltAz");
+        }
+
+        public void SyncToCoordinates(double RightAscension, double Declination)
+        {
+            traceLogger.LogMessage("SyncToCoordinates", "Not implemented");
+            throw new ASCOM.MethodNotImplementedException("SyncToCoordinates");
+        }
+
+        public bool CanMoveAxis(TelescopeAxes Axis)
+        {
+            bool ret;
+
+            switch (Axis)
+            {
+                case TelescopeAxes.axisPrimary: ret = true; break;   // Right Ascension
+                case TelescopeAxes.axisSecondary: ret = true; break;   // Declination
+                case TelescopeAxes.axisTertiary: ret = false; break;  // Image Rotator/Derotator
+                default: throw new InvalidValueException("CanMoveAxis", Axis.ToString(), "0 to 2");
+            }
+            traceLogger.LogMessage("CanMoveAxis", "Get - " + Axis.ToString() + ": " + ret.ToString());
+
+            return ret;
+        }
+
+        public EquatorialCoordinateType EquatorialSystem
+        {
+            get
+            {
+                EquatorialCoordinateType equatorialSystem = EquatorialCoordinateType.equJ2000;
+
+                traceLogger.LogMessage("EquatorialSystem", "Get - " + equatorialSystem.ToString());
+                return equatorialSystem;
+            }
+        }
+
+        public void FindHome()
+        {
+            traceLogger.LogMessage("FindHome", "Not Implemented");
+            throw new MethodNotImplementedException("FindHome");
+        }
+
+        public PierSide DestinationSideOfPier(double RightAscension, double Declination)
+        {
+            traceLogger.LogMessage("DestinationSideOfPier Get", "Not implemented");
+            throw new ASCOM.PropertyNotImplementedException("DestinationSideOfPier", false);
+        }
+
+        public bool CanPark
+        {
+            get
+            {
+                traceLogger.LogMessage("CanPark", "Get - " + true.ToString());
+                return true;
+            }
+        }
+
+        public bool CanPulseGuide
+        {
+            get
+            {
+                traceLogger.LogMessage("CanPulseGuide", "Get - " + false.ToString());
+                return false;
+            }
+        }
+
+        public bool CanSetDeclinationRate
+        {
+            get
+            {
+                traceLogger.LogMessage("CanSetDeclinationRate", "Get - " + false.ToString());
+                return false;
+            }
+        }
+
+        public bool CanSetGuideRates
+        {
+            get
+            {
+                traceLogger.LogMessage("CanSetGuideRates", "Get - " + false.ToString());
+                return false;
+            }
+        }
+
+        public bool CanSetPark
+        {
+            get
+            {
+                bool ret = false;
+
+                traceLogger.LogMessage("CanSetPark", "Get - " + ret.ToString());
+                return ret;
+            }
+        }
+
+        public bool CanSetPierSide
+        {
+            get
+            {
+                traceLogger.LogMessage("CanSetPierSide", "Get - " + false.ToString());
+                return false;
+            }
+        }
+
+        public bool CanSetRightAscensionRate
+        {
+            get
+            {
+                traceLogger.LogMessage("CanSetRightAscensionRate", "Get - " + false.ToString());
+                return false;
+            }
+        }
+
+        public bool CanSetTracking
+        {
+            get
+            {
+                traceLogger.LogMessage("CanSetTracking", "Get - " + true.ToString());
+                return true;
+            }
+        }
+
+        public bool CanSlew
+        {
+            get
+            {
+                bool ret = true;
+
+                traceLogger.LogMessage("CanSlew", "Get - " + ret.ToString());
+                return ret;
+            }
+        }
+
+        public bool CanSlewAltAz
+        {
+            get
+            {
+                bool ret = false;
+
+                traceLogger.LogMessage("CanSlewAltAz", "Get - " + ret.ToString());
+                return ret;
+            }
+        }
+
+        public bool CanSlewAltAzAsync
+        {
+            get
+            {
+                bool ret = false;
+
+                traceLogger.LogMessage("CanSlewAltAzAsync", "Get - " + ret.ToString());
+                return ret;
+            }
+        }
+
+        public bool CanSlewAsync
+        {
+            get
+            {
+                bool ret = true;
+
+                traceLogger.LogMessage("CanSlewAsync", "Get - " + ret.ToString());
+                return ret;
+            }
+        }
+
+        public bool CanSync
+        {
+            get
+            {
+                bool ret = false;
+
+                traceLogger.LogMessage("CanSync", "Get - " + ret.ToString());
+                return ret;
+            }
+        }
+
+        public bool CanSyncAltAz
+        {
+            get
+            {
+                bool ret = false;
+
+                traceLogger.LogMessage("CanSyncAltAz", "Get - " + ret.ToString());
+                return ret;
+            }
+        }
+
+        public bool CanUnpark
+        {
+            get
+            {
+                bool ret = true;
+
+                traceLogger.LogMessage("CanUnpark", "Get - " + ret.ToString());
+                return ret;
+            }
+        }
+
+        public double GuideRateDeclination
+        {
+            get
+            {
+                traceLogger.LogMessage("GuideRateDeclination Get", "Not implemented");
+                throw new ASCOM.PropertyNotImplementedException("GuideRateDeclination", false);
+            }
+            set
+            {
+                traceLogger.LogMessage("GuideRateDeclination Set", "Not implemented");
+                throw new ASCOM.PropertyNotImplementedException("GuideRateDeclination", true);
+            }
+        }
+
+        public double GuideRateRightAscension
+        {
+            get
+            {
+                traceLogger.LogMessage("GuideRateRightAscension Get", "Not implemented");
+                throw new ASCOM.PropertyNotImplementedException("GuideRateRightAscension", false);
+            }
+            set
+            {
+                traceLogger.LogMessage("GuideRateRightAscension Set", "Not implemented");
+                throw new ASCOM.PropertyNotImplementedException("GuideRateRightAscension", true);
+            }
+        }
+
+        public bool AtHome
+        {
+            get
+            {
+                bool ret = false;       // Homing is not implemented
+
+                traceLogger.LogMessage("AtHome", "Get - " + ret.ToString());
+                debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, string.Format("AtHome Get - {0}", ret));
+                return ret;
+            }
+        }
+
+        public bool CanFindHome
+        {
+            get
+            {
+                bool ret = false;
+
+                traceLogger.LogMessage("CanFindHome", "Get - " + ret.ToString());
+                return ret;
+            }
+        }
+
+        public IAxisRates AxisRates(TelescopeAxes Axis)
+        {
+            IAxisRates rates = new AxisRates(Axis);
+
+            traceLogger.LogMessage("AxisRates", "Get - " + rates.ToString());
+            return rates;
+        }
+
+        public short SlewSettleTime
+        {
+            get
+            {
+                traceLogger.LogMessage("SlewSettleTime Get", "Not implemented");
+                throw new ASCOM.PropertyNotImplementedException("SlewSettleTime", false);
+            }
+
+            set
+            {
+                traceLogger.LogMessage("SlewSettleTime Set", "Not implemented");
+                throw new ASCOM.PropertyNotImplementedException("SlewSettleTime", true);
+            }
+        }
+
+        public void SlewToAltAz(double Azimuth, double Altitude)
+        {
+            traceLogger.LogMessage("SlewToAltAz", String.Format("SlewToAltAz({0}, {1})", Azimuth, Altitude));
+            throw new ASCOM.MethodNotImplementedException("SlewToAltAz");
+        }
+
+        public void SlewToAltAzAsync(double Azimuth, double Altitude)
+        {
+            traceLogger.LogMessage("SlewToAltAzAsync", String.Format("SlewToAltAzAsync({0}, {1})", Azimuth, Altitude));
+            throw new ASCOM.MethodNotImplementedException("SlewToAltAzAsync");
+        }
+
+        public double RightAscensionRate
+        {
+            get
+            {
+                double rightAscensionRate = 0.0;
+                traceLogger.LogMessage("RightAscensionRate", "Get - " + rightAscensionRate.ToString());
+                return rightAscensionRate;
+            }
+
+            set
+            {
+                traceLogger.LogMessage("RightAscensionRate Set", "Not implemented");
+                throw new ASCOM.PropertyNotImplementedException("RightAscensionRate", true);
+            }
+        }
+
+        public void SetPark()
+        {
+            traceLogger.LogMessage("SetPark", "Not implemented");
+            throw new ASCOM.MethodNotImplementedException("SetPark");
+        }
+
+        public PierSide SideOfPier
+        {
+            get
+            {
+                PierSide side = PierSide.pierEast;
+
+                traceLogger.LogMessage("SideOfPier Get", side.ToString());
+                return side;
+            }
+
+            set
+            {
+                traceLogger.LogMessage("SideOfPier Set", "Not implemented");
+                throw new ASCOM.PropertyNotImplementedException("SideOfPier", true);
+            }
+        }
+
+        public void PulseGuide(GuideDirections Direction, int Duration)
+        {
+            traceLogger.LogMessage("PulseGuide", "Not implemented");
+            throw new ASCOM.MethodNotImplementedException("PulseGuide");
+        }
+
+        public ArrayList SupportedActions
+        {
+            get
+            {
+                traceLogger.LogMessage("SupportedActions Get", "Returning empty arraylist");
+                return new ArrayList();
+            }
+        }
+
+        public string Action(string actionName, string actionParameters)
+        {
+            throw new ASCOM.ActionNotImplementedException("Action " + actionName + " is not implemented by this driver");
+        }
+
+        private void CheckConnected(string message)
+        {
+            if (!_connected)
+            {
+                throw new ASCOM.NotConnectedException(message);
+            }
+        }
+
+        public void CommandBlind(string command, bool raw)
+        {
+            CheckConnected("CommandBlind");
+            // Call CommandString and return as soon as it finishes
+            //this.CommandString(command, raw);
+            // or
+            throw new ASCOM.MethodNotImplementedException("CommandBlind");
+        }
+
+        public bool CommandBool(string command, bool raw)
+        {
+            CheckConnected("CommandBool");
+            //string ret = CommandString(command, raw);
+            // TODO decode the return string and return true or false
+            // or
+            throw new ASCOM.MethodNotImplementedException("CommandBool");
+        }
+
+        public string CommandString(string command, bool raw)
+        {
+            CheckConnected("CommandString");
+            // it's a good idea to put all the low level communication with the device here,
+            // then all communication calls this function
+            // you need something to ensure that only one command is in progress at a time
+
+            throw new ASCOM.MethodNotImplementedException("CommandString");
+        }
+
+        public string DriverInfo
+        {
+            get
+            {
+                Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+                // TODO customise this driver description
+                string driverInfo = "Information about the driver itself. Version: " + 
+                    String.Format(System.Globalization.CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
+                traceLogger.LogMessage("DriverInfo Get", driverInfo);
+                return driverInfo;
+            }
+        }
+
+        public string DriverVersion
+        {
+            get
+            {
+                Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+                string driverVersion = String.Format(System.Globalization.CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
+                traceLogger.LogMessage("DriverVersion Get", driverVersion);
+                return driverVersion;
+            }
+        }
+
+        public short InterfaceVersion
+        {
+            get
+            {
+                traceLogger.LogMessage("InterfaceVersion Get", "3");
+                return Convert.ToInt16("3");
+            }
+        }
+
+        public string Name
+        {
+            get
+            {
+                string name = "Wise40 Telescope";
+                traceLogger.LogMessage("Name Get", name);
+                return name;
+            }
+        }
+
     }
 }
