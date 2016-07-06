@@ -248,7 +248,7 @@ namespace ASCOM.Vantage
             {
                 Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
                 // TODO customise this driver description
-                string driverInfo = "Parses a generated ClarityII HTML report. Version: " + String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
+                string driverInfo = "Parses a generated WeatherLink HTML report. Version: " + String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
                 tl.LogMessage("DriverInfo Get", driverInfo);
                 return driverInfo;
             }
@@ -340,7 +340,7 @@ namespace ASCOM.Vantage
             {
                 var dewPoint = Convert.ToDouble(sensorData["insideDewPt"]);
 
-                tl.LogMessage("Pressure", "get - " + dewPoint.ToString());
+                tl.LogMessage("DewPoint", "get - " + dewPoint.ToString());
                 return dewPoint;
             }
         }
@@ -358,7 +358,7 @@ namespace ASCOM.Vantage
             {
                 var humidity = Convert.ToDouble(sensorData["insideHumidity"]);
 
-                tl.LogMessage("Pressure", "get - " + humidity.ToString());
+                tl.LogMessage("Humidity", "get - " + humidity.ToString());
                 return humidity;
             }
         }

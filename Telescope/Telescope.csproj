@@ -116,6 +116,8 @@
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
     <Compile Include="Rates.cs" />
+    <Compile Include="ReadyToSlewFlags.cs" />
+    <Compile Include="SafetyMonitorTimer.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="SetupDialogForm.cs">
       <SubType>Form</SubType>

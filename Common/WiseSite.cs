@@ -9,10 +9,11 @@ using ASCOM.Wise40.Common.Properties;
 using ASCOM.Utilities;
 using ASCOM.Astrometry;
 using ASCOM.Wise40.Common;
+using ASCOM.DriverAccess;
 
 namespace ASCOM.Wise40
 {
-    public class WiseSite: IDisposable
+    public class WiseSite : IDisposable
     {
         private static WiseSite site;
         private static bool isInitialized;
@@ -21,9 +22,10 @@ namespace ASCOM.Wise40
         private static ASCOM.Utilities.Util ascomutils;
         public Astrometry.Accuracy astrometricAccuracy;
         public Astrometry.OnSurface onSurface;
-        public Astrometry.RefractionOption refractionOption = Astrometry.RefractionOption.NoRefraction;
-
+        public Astrometry.RefractionOption refractionOption;
         public double siteLatitude, siteLongitude, siteElevation;
+        private ObservingConditions observingConditions;
+        private DateTime lastOCFetch;
 
         public static WiseSite Instance
         {
@@ -56,6 +58,18 @@ namespace ASCOM.Wise40
                     driverProfile.DeviceType = "Telescope";
                     string acc = Convert.ToString(driverProfile.GetValue("ASCOM.Wise40.Telescope", "Astrometric accuracy", string.Empty, "Full"));
                     astrometricAccuracy = (acc == "Full") ? Accuracy.Full : Accuracy.Reduced;
+                }
+
+
+                try
+                {
+                    observingConditions = new ObservingConditions("ASCOM.Vantage.ObservingConditions");
+                    refractionOption = Astrometry.RefractionOption.LocationRefraction;
+                    lastOCFetch = DateTime.Now;
+                }
+                catch
+                {
+                    refractionOption = Astrometry.RefractionOption.NoRefraction;
                 }
             }
         }
@@ -112,25 +126,32 @@ namespace ASCOM.Wise40
             }
         }
 
-        //public static double ToSiderealTime(DateTime dt)
-        //{
-        //    var utilities = new Utilities.Util();
-        //    double siderealTime = (18.697374558 + 24.065709824419081 * (utilities.DateLocalToJulian(dt) - 2451545.0))
-        //                          % 24.0;
-        //    return siderealTime;
-        //}
-
         /// <summary> 
         // If we haven't checked in a long enough time (10 minutes ?!?)
-        //  get temperature, humidity, pressure, air-mass, etc
+        //  get temperature and pressure.
         /// </summary>
         public void prepareRefractionData()
         {
+            const int freqOCFetchMinutes = 10;
+
             refractionOption = Astrometry.RefractionOption.NoRefraction;
+            if (observingConditions != null && DateTime.Now.Subtract(lastOCFetch).TotalMinutes < freqOCFetchMinutes)
+            {
+                try
+                {
+                    double timeSinceLastUpdate = observingConditions.TimeSinceLastUpdate("");
 
-            // NOTE: keep low frequency
-
-            // if success in getting temp. and pres., change refractionOption to LocationRefraction
+                    if (timeSinceLastUpdate < (freqOCFetchMinutes * 60))
+                    {
+                        onSurface.Temperature = observingConditions.Temperature;
+                        onSurface.Pressure = observingConditions.Pressure;
+                        refractionOption = Astrometry.RefractionOption.LocationRefraction;
+                    }
+                }
+                catch
+                {
+                }
+            }
         }
     }
 }

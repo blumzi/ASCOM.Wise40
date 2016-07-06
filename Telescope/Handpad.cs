@@ -289,7 +289,6 @@ namespace ASCOM.Wise40
                     break;
                 }
 
-                WiseTele.Instance.log("#{3} Before: MoveAxis({0}, {1}, {4}) for {2} millis", arg.axis, arg.rate, arg.millis, stepNo, direction);
                 T.MoveAxis(arg.axis, arg.rate);
                 for (long endTicks = DateTime.Now.Ticks + 10000 * arg.millis; DateTime.Now.Ticks < endTicks; Thread.Sleep(1))
                 {
@@ -301,7 +300,6 @@ namespace ASCOM.Wise40
                         goto Out;
                     }
                 }
-                WiseTele.Instance.log("#{3} After loop: MoveAxis({0}, {1}, {4}) for {2} millis", arg.axis, arg.rate, arg.millis, stepNo, direction);
 
                 selector = (int)TimedMovementResult.ResultSelector.AtStop;
                 res.time[selector] = DateTime.Now;
@@ -325,8 +323,6 @@ namespace ASCOM.Wise40
                 }
 
                 T.Stop();
-
-                WiseTele.Instance.log("#{3} After:  MoveAxis({0}, {1}) for {2} millis", arg.axis, arg.rate, arg.millis, stepNo);
 
                 if (bgw.CancellationPending)
                 {
