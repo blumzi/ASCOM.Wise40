@@ -797,7 +797,7 @@ namespace ASCOM.Wise40
 
                 if (_wasSlewing == true && ret == false)
                 {
-                    slewingCancellationTokenSource.Dispose();
+                    //slewingCancellationTokenSource.Dispose();
                     slewingCancellationTokenSource = null;
                     _driverInitiatedSlewing = false;
                 }
@@ -852,7 +852,11 @@ namespace ASCOM.Wise40
             }
         }
 
-        private void _moveAxis(TelescopeAxes Axis, double Rate, Const.AxisDirection direction, bool stopTracking = false)
+        private void _moveAxis(
+            TelescopeAxes Axis,
+            double Rate,
+            Const.AxisDirection direction = Const.AxisDirection.None,
+            bool stopTracking = false)
         {
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "_moveAxis({0}, {1}): called", Axis, RateName(Rate));
 
@@ -1078,6 +1082,7 @@ namespace ASCOM.Wise40
         {
             string threadName = Thread.CurrentThread.Name;
             Movement cm = WiseTele.Instance.currMovement[axis];
+            Angle currPosition = new Angle(0.0);
 
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
                 "{0}: targetAngle: {1}", threadName, targetAngle);
@@ -1158,7 +1163,7 @@ namespace ASCOM.Wise40
 
                             slewingToken.ThrowIfCancellationRequested();
 
-                            Angle currPosition = (axis == TelescopeAxes.axisPrimary) ?
+                            currPosition = (axis == TelescopeAxes.axisPrimary) ?
                                 Angle.FromHours(RightAscension, Angle.Type.RA) :
                                 Angle.FromDegrees(Declination, Angle.Type.Dec);
 
@@ -1175,7 +1180,7 @@ namespace ASCOM.Wise40
                                     remainingDistance.angle, cm.intermediateTarget,
                                     axis, RateName(Const.rateStopped));
 
-                                _moveAxis(axis, Const.rateStopped, Const.AxisDirection.None, false);
+                                _moveAxis(axis, Const.rateStopped);
                                 break;
                             }
                             else
@@ -1194,8 +1199,8 @@ namespace ASCOM.Wise40
             } catch (OperationCanceledException)
             {
                 debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                    "{0} at {1}: Slew cancelled", threadName, RateName(cm.rate));
-                _moveAxis(axis, Const.rateStopped, Const.AxisDirection.None, false);
+                    "{0} at {1}: Slew cancelled at {2}", threadName, RateName(cm.rate), currPosition);
+                _moveAxis(axis, Const.rateStopped);
             }
         }
 
