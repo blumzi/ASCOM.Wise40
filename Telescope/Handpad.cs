@@ -179,6 +179,8 @@ namespace ASCOM.Wise40
             axisValue.Text = T.HAEncoder.AxisValue.ToString();
             wormValue.Text = T.HAEncoder.WormValue.ToString();
 
+            checkBoxTrack.Checked = T.Tracking;
+
             if (scopeBackgroundMover != null && scopeBackgroundMover.IsBusy)
                 TextBoxLog.Text = "Working ...";
 

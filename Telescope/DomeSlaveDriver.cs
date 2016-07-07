@@ -124,5 +124,10 @@ namespace ASCOM.Wise40
                 _debugLevel = value;
             }
         }
+
+        public void AbortSlew()
+        {
+            _dome.AbortSlew();
+        }
     }
 }

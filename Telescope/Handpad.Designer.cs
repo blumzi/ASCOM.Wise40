@@ -67,6 +67,10 @@
             this.labelDec = new System.Windows.Forms.Label();
             this.labelRA = new System.Windows.Forms.Label();
             this.groupBoxEncoders = new System.Windows.Forms.GroupBox();
+            this.wormValue = new System.Windows.Forms.Label();
+            this.label8 = new System.Windows.Forms.Label();
+            this.axisValue = new System.Windows.Forms.Label();
+            this.label6 = new System.Windows.Forms.Label();
             this.labelDecEnc = new System.Windows.Forms.Label();
             this.labelDecEncValue = new System.Windows.Forms.Label();
             this.labelHAEnc = new System.Windows.Forms.Label();
@@ -105,10 +109,6 @@
             this.buttonSE = new System.Windows.Forms.Button();
             this.buttonNE = new System.Windows.Forms.Button();
             this.displayTimer = new System.Windows.Forms.Timer(this.components);
-            this.label6 = new System.Windows.Forms.Label();
-            this.axisValue = new System.Windows.Forms.Label();
-            this.label8 = new System.Windows.Forms.Label();
-            this.wormValue = new System.Windows.Forms.Label();
             this.panel1.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.panelDebug.SuspendLayout();
@@ -575,16 +575,18 @@
             // 
             // textBoxDec
             // 
+            this.textBoxDec.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.textBoxDec.Location = new System.Drawing.Point(169, 179);
             this.textBoxDec.Name = "textBoxDec";
-            this.textBoxDec.Size = new System.Drawing.Size(100, 20);
+            this.textBoxDec.Size = new System.Drawing.Size(100, 23);
             this.textBoxDec.TabIndex = 24;
             // 
             // textBoxRA
             // 
+            this.textBoxRA.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.textBoxRA.Location = new System.Drawing.Point(34, 179);
             this.textBoxRA.Name = "textBoxRA";
-            this.textBoxRA.Size = new System.Drawing.Size(100, 20);
+            this.textBoxRA.Size = new System.Drawing.Size(100, 23);
             this.textBoxRA.TabIndex = 23;
             // 
             // labelDec
@@ -622,6 +624,56 @@
             this.groupBoxEncoders.TabIndex = 20;
             this.groupBoxEncoders.TabStop = false;
             this.groupBoxEncoders.Text = " Encoders ";
+            // 
+            // wormValue
+            // 
+            this.wormValue.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.wormValue.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.wormValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.wormValue.Location = new System.Drawing.Point(153, 45);
+            this.wormValue.Name = "wormValue";
+            this.wormValue.Size = new System.Drawing.Size(72, 20);
+            this.wormValue.TabIndex = 23;
+            this.wormValue.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.wormValue.Click += new System.EventHandler(this.label9_Click);
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label8.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
+            this.label8.Location = new System.Drawing.Point(120, 46);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(39, 18);
+            this.label8.TabIndex = 22;
+            this.label8.Text = "Wo:";
+            this.label8.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.label8.Click += new System.EventHandler(this.label8_Click);
+            // 
+            // axisValue
+            // 
+            this.axisValue.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.axisValue.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.axisValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.axisValue.Location = new System.Drawing.Point(42, 45);
+            this.axisValue.Name = "axisValue";
+            this.axisValue.Size = new System.Drawing.Size(72, 20);
+            this.axisValue.TabIndex = 21;
+            this.axisValue.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.axisValue.Click += new System.EventHandler(this.label7_Click);
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label6.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
+            this.label6.Location = new System.Drawing.Point(8, 46);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(36, 18);
+            this.label6.TabIndex = 20;
+            this.label6.Text = "Ax:";
+            this.label6.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.label6.Click += new System.EventHandler(this.label6_Click);
             // 
             // labelDecEnc
             // 
@@ -1090,56 +1142,6 @@
             // 
             this.displayTimer.Interval = 500;
             this.displayTimer.Tick += new System.EventHandler(this.displayTimer_Tick);
-            // 
-            // label6
-            // 
-            this.label6.AutoSize = true;
-            this.label6.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label6.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label6.Location = new System.Drawing.Point(8, 46);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(36, 18);
-            this.label6.TabIndex = 20;
-            this.label6.Text = "Ax:";
-            this.label6.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.label6.Click += new System.EventHandler(this.label6_Click);
-            // 
-            // axisValue
-            // 
-            this.axisValue.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.axisValue.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.axisValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.axisValue.Location = new System.Drawing.Point(42, 44);
-            this.axisValue.Name = "axisValue";
-            this.axisValue.Size = new System.Drawing.Size(72, 20);
-            this.axisValue.TabIndex = 21;
-            this.axisValue.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.axisValue.Click += new System.EventHandler(this.label7_Click);
-            // 
-            // label8
-            // 
-            this.label8.AutoSize = true;
-            this.label8.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label8.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label8.Location = new System.Drawing.Point(120, 46);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(39, 18);
-            this.label8.TabIndex = 22;
-            this.label8.Text = "Wo:";
-            this.label8.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.label8.Click += new System.EventHandler(this.label8_Click);
-            // 
-            // wormValue
-            // 
-            this.wormValue.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.wormValue.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.wormValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.wormValue.Location = new System.Drawing.Point(153, 44);
-            this.wormValue.Name = "wormValue";
-            this.wormValue.Size = new System.Drawing.Size(72, 20);
-            this.wormValue.TabIndex = 23;
-            this.wormValue.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.wormValue.Click += new System.EventHandler(this.label9_Click);
             // 
             // HandpadForm
             // 

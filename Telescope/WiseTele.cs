@@ -12,6 +12,7 @@ using ASCOM.Wise40;
 using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Linq;
 
 /// <summary>
 /// From the Las Campanas web site (http://www.lco.cl/telescopes-information/henrietta-swope) for the Swope telescope,
@@ -97,8 +98,8 @@ namespace ASCOM.Wise40
         /// A synchronous slew waits on the whole list to complete.
         /// </summary>
         private List<Task> slewers = new List<Task>();
-        CancellationTokenSource slewingTokenSource;
-        CancellationToken slewingToken;
+        private static CancellationTokenSource slewingCancellationTokenSource;
+        private static CancellationToken slewingToken;
 
         ReadyToSlewFlags readyToSlew = new ReadyToSlewFlags();
 
@@ -533,7 +534,7 @@ namespace ASCOM.Wise40
             if (!_driverInitiatedSlewing)
                 return;
 
-            slewingTokenSource.Cancel();
+            slewingCancellationTokenSource.Cancel();
             traceLogger.LogMessage("AbortSlew", "");
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, "AbortSlew");
         }
@@ -674,7 +675,24 @@ namespace ASCOM.Wise40
 
         public void Stop()
         {
-            slewingTokenSource.Cancel();
+            if (slewingCancellationTokenSource != null)
+            {
+                try
+                {
+                    slewingCancellationTokenSource.Cancel();
+                } catch (AggregateException ax)
+                {
+                    ax.Handle((ex) =>
+                    {
+                        debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                            "Stop: got {0}", ex.Message);
+                        if (ex is ObjectDisposedException)
+                            return true;
+                        return false;
+                    });                        
+                }
+            }
+                
 
             foreach (WiseVirtualMotor motor in directionMotors)
                 if (motor.isOn)
@@ -684,6 +702,59 @@ namespace ASCOM.Wise40
 
             Tracking = false;
             Slewing = false;
+        }
+
+        /// <summary>
+        /// Returns true if the axis FULLY stopped.
+        /// </summary>
+        /// <param name="axis"></param>
+        /// <returns></returns>
+        public bool IsStopped(TelescopeAxes axis)
+        {
+            const int nValues = 10;
+            bool ret = false;
+            int millis = 100;
+
+            //
+            // Take 10 samples and expect the last four to be less than epsilon.
+            // - axisPrimary: Sample the RightAscension, epsilon = 1/10 arcsec
+            // - axisSecondary: Sample the Dec encoder, epsilon = 1 encoder click
+            //
+            if (axis == TelescopeAxes.axisPrimary)
+            {
+                List<double> values = new List<double>();
+                double epsilon = new Angle("00:00:00.1").Degrees;
+                List<double> deltas = new List<double>(); ;
+
+                for (var i = 0; i < nValues; i++)
+                {
+                    values.Add(RightAscension);
+                    if (i >= 6)
+                        deltas.Add(Math.Abs(values[i] - values[i - 1]));
+                    Thread.Sleep(millis);
+                }
+                if (deltas.Max() <= epsilon)
+                    ret = true;
+            } else
+            {
+                List<uint> values = new List<uint>();
+                uint epsilon = 1;
+                List<uint> deltas = new List<uint>();
+                
+                for (var i = 0; i < nValues; i++)
+                {
+                    values.Add(DecEncoder.Value);
+                    if (i >= 6)
+                        deltas.Add((uint) Math.Abs(values[i] - values[i - 1]));
+                    Thread.Sleep(millis);
+                }
+                if (deltas.Max() <= epsilon)
+                    ret = true;
+            }
+
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                "{0} is {1}stopped", axis.ToString(), ret ? "" : "NOT ");
+            return ret;
         }
 
         public bool Moving
@@ -725,7 +796,11 @@ namespace ASCOM.Wise40
                 debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, string.Format("Slewing Get - {0}", ret));
 
                 if (_wasSlewing == true && ret == false)
+                {
+                    slewingCancellationTokenSource.Dispose();
+                    slewingCancellationTokenSource = null;
                     _driverInitiatedSlewing = false;
+                }
 
                 _wasSlewing = ret;
 
@@ -777,7 +852,7 @@ namespace ASCOM.Wise40
             }
         }
 
-        private void _moveAxis(TelescopeAxes Axis, double Rate, Const.AxisDirection direction = Const.AxisDirection.Increasing, bool stopTracking = false)
+        private void _moveAxis(TelescopeAxes Axis, double Rate, Const.AxisDirection direction, bool stopTracking = false)
         {
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "_moveAxis({0}, {1}): called", Axis, RateName(Rate));
 
@@ -1007,107 +1082,120 @@ namespace ASCOM.Wise40
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
                 "{0}: targetAngle: {1}", threadName, targetAngle);
 
-            cm.finalTarget = targetAngle;
-            foreach (var rate in rates)
-            {
-                MovementParameters mp = movementParameters[axis][rate];
-                WiseTele.Instance.currMovement[axis] = new Movement() { rate = Const.rateStopped };
-
-                slewingToken.ThrowIfCancellationRequested();
-                readyToSlew.Increment(rate);
-
-                while (readyToSlew.Get(rate) != 2)
+            try {
+                cm.finalTarget = targetAngle;
+                foreach (var rate in rates)
                 {
-                    const int syncMillis = 500;
-                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                       "{0} at {1}: waiting {2} millis for the other axis ...",
-                       threadName, RateName(rate), syncMillis);
-   
-                    Thread.Sleep(syncMillis);
-                    slewingToken.ThrowIfCancellationRequested();
-                } 
-
-                cm.start = (axis == TelescopeAxes.axisPrimary) ?
-                    Angle.FromHours(RightAscension, Angle.Type.RA) :
-                    Angle.FromDegrees(Declination, Angle.Type.Dec);
-
-                var shortest = cm.start.ShortestDistance(cm.finalTarget);
-                cm.distanceToFinalTarget = shortest.angle;
-                cm.direction = shortest.direction;
-
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                    "{0} at {1}: start: {2}, distanceToFinalTarget: {3}, direction: {4}",
-                    threadName, RateName(rate), cm.start, cm.distanceToFinalTarget, cm.direction);
-
-                Angle minimalMovementAngle = mp.anglePerSecond + mp.stopMovement;
-                if (prevMovement[axis].direction != Const.AxisDirection.None && prevMovement[axis].direction != cm.direction)
-                    minimalMovementAngle += mp.changeDirection;
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0} at {1}: minimalMovementAngle: {2}",
-                    threadName, RateName(rate), minimalMovementAngle);
-
-                if (cm.distanceToFinalTarget < minimalMovementAngle)
-                {
-                    cm.rate = Const.rateStopped;
-                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0} at {1}: Not moving, too short", threadName, RateName(rate));
-                    continue;   // to next rate
-                }
-                else
-                {
-                    Angle intermediateDistance = cm.distanceToFinalTarget - movementParameters[axis][rate].anglePerSecond;
-
-                    if (cm.direction == Const.AxisDirection.Increasing)
-                        cm.intermediateTarget = cm.start + intermediateDistance;
-                    else
-                        cm.intermediateTarget = cm.start - intermediateDistance;
-
-                    cm.rate = rate;
-                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                        "{0} at {1}: start: {2}, intermediateTarget: {3}, intermediateDistance: {4}, direction: {5}",
-                        threadName, RateName(cm.rate), cm.start, cm.intermediateTarget, intermediateDistance, cm.direction);
+                    MovementParameters mp = movementParameters[axis][rate];
+                    WiseTele.Instance.currMovement[axis] = new Movement() { rate = Const.rateStopped };
 
                     slewingToken.ThrowIfCancellationRequested();
-                    _moveAxis(axis, rate, cm.direction, false);
+                    readyToSlew.Increment(rate);
 
-                    //
-                    // The axis is set in motion, wait for it to arrive at target
-                    //
-                    while (true)
+                    while (readyToSlew.Get(rate) != 2)
                     {
-                        const int waitMillis = 5;    // TODO: make it configurable or constant
-                        ShortestDistanceResult remainingDistance;
+                        const int syncMillis = 500;
+                        debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                           "{0} at {1}: waiting {2} millis for the other axis ...",
+                           threadName, RateName(rate), syncMillis);
 
-                        Angle currPosition = (axis == TelescopeAxes.axisPrimary) ?
-                            Angle.FromHours(RightAscension, Angle.Type.RA) :
-                            Angle.FromDegrees(Declination, Angle.Type.Dec);
+                        Thread.Sleep(syncMillis);
+                        slewingToken.ThrowIfCancellationRequested();
+                    }
 
-                        remainingDistance = currPosition.ShortestDistance(cm.intermediateTarget);
-                        if (remainingDistance.angle.Degrees <= mp.stopMovement.Degrees)
-                        {
-                            //
-                            // We're so close to the target that after stopping the
-                            //  motor inertia will take us there.
-                            //
-                            debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                                "{0} at {1}: stopping at {2}, ({3} from {4}), calling  MoveAxis({5}, {6})",
-                                threadName, RateName(cm.rate), currPosition,
-                                remainingDistance.angle, cm.intermediateTarget,
-                                axis, RateName(Const.rateStopped));
+                    cm.start = (axis == TelescopeAxes.axisPrimary) ?
+                        Angle.FromHours(RightAscension, Angle.Type.RA) :
+                        Angle.FromDegrees(Declination, Angle.Type.Dec);
 
-                            _moveAxis(axis, Const.rateStopped, Const.AxisDirection.None, false);
-                            break;
-                        }
+                    var shortest = cm.start.ShortestDistance(cm.finalTarget);
+                    cm.distanceToFinalTarget = shortest.angle;
+                    cm.direction = shortest.direction;
+
+                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                        "{0} at {1}: start: {2}, distanceToFinalTarget: {3}, direction: {4}",
+                        threadName, RateName(rate), cm.start, cm.distanceToFinalTarget, cm.direction);
+
+                    Angle minimalMovementAngle = mp.anglePerSecond + mp.stopMovement;
+                    if (prevMovement[axis].direction != Const.AxisDirection.None && prevMovement[axis].direction != cm.direction)
+                    {
+                        minimalMovementAngle += mp.changeDirection;
+                        while (!IsStopped(axis))
+                            ;
+                    }
+                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0} at {1}: minimalMovementAngle: {2}",
+                        threadName, RateName(rate), minimalMovementAngle);
+
+                    if (cm.distanceToFinalTarget < minimalMovementAngle)
+                    {
+                        cm.rate = Const.rateStopped;
+                        debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0} at {1}: Not moving, too short", threadName, RateName(rate));
+                        continue;   // to next rate
+                    }
+                    else
+                    {
+                        Angle intermediateDistance = cm.distanceToFinalTarget - movementParameters[axis][rate].anglePerSecond;
+
+                        if (cm.direction == Const.AxisDirection.Increasing)
+                            cm.intermediateTarget = cm.start + intermediateDistance;
                         else
+                            cm.intermediateTarget = cm.start - intermediateDistance;
+
+                        cm.rate = rate;
+                        debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                            "{0} at {1}: start: {2}, intermediateTarget: {3}, intermediateDistance: {4}, direction: {5}",
+                            threadName, RateName(cm.rate), cm.start, cm.intermediateTarget, intermediateDistance, cm.direction);
+
+                        slewingToken.ThrowIfCancellationRequested();
+                        _moveAxis(axis, rate, cm.direction, false);
+
+                        //
+                        // The axis is set in motion, wait for it to arrive at target
+                        //
+                        while (true)
                         {
-                            debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                                "{0} at {1}: still moving, currPosition: {2} ==> intermediateTarget: {3}, finalTarget: {4}, remainingAngle {5}, sleeping {6} millis ...",
-                                threadName, RateName(cm.rate), currPosition,
-                                cm.intermediateTarget, cm.finalTarget,
-                                remainingDistance.angle, waitMillis);
-                            
-                            Thread.Sleep(waitMillis);
+                            const int waitMillis = 5;    // TODO: make it configurable or constant
+                            ShortestDistanceResult remainingDistance;
+
+                            slewingToken.ThrowIfCancellationRequested();
+
+                            Angle currPosition = (axis == TelescopeAxes.axisPrimary) ?
+                                Angle.FromHours(RightAscension, Angle.Type.RA) :
+                                Angle.FromDegrees(Declination, Angle.Type.Dec);
+
+                            remainingDistance = currPosition.ShortestDistance(cm.intermediateTarget);
+                            if (remainingDistance.angle.Degrees <= mp.stopMovement.Degrees)
+                            {
+                                //
+                                // We're so close to the target that after stopping the
+                                //  motor inertia will take us there.
+                                //
+                                debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                                    "{0} at {1}: stopping at {2}, ({3} from {4}), calling  MoveAxis({5}, {6})",
+                                    threadName, RateName(cm.rate), currPosition,
+                                    remainingDistance.angle, cm.intermediateTarget,
+                                    axis, RateName(Const.rateStopped));
+
+                                _moveAxis(axis, Const.rateStopped, Const.AxisDirection.None, false);
+                                break;
+                            }
+                            else
+                            {
+                                debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                                    "{0} at {1}: still moving, currPosition: {2} ==> intermediateTarget: {3}, finalTarget: {4}, remainingAngle {5}, sleeping {6} millis ...",
+                                    threadName, RateName(cm.rate), currPosition,
+                                    cm.intermediateTarget, cm.finalTarget,
+                                    remainingDistance.angle, waitMillis);
+
+                                Thread.Sleep(waitMillis);
+                            }
                         }
                     }
                 }
+            } catch (OperationCanceledException)
+            {
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                    "{0} at {1}: Slew cancelled", threadName, RateName(cm.rate));
+                _moveAxis(axis, Const.rateStopped, Const.AxisDirection.None, false);
             }
         }
 
@@ -1115,8 +1203,8 @@ namespace ASCOM.Wise40
         {
             slewers.Clear();
             readyToSlew.Reset();
-            slewingTokenSource = new CancellationTokenSource();
-            slewingToken = slewingTokenSource.Token;
+            slewingCancellationTokenSource = new CancellationTokenSource();
+            slewingToken = slewingCancellationTokenSource.Token;
             Slewing = true;
 
             try
@@ -1125,7 +1213,13 @@ namespace ASCOM.Wise40
                     slewers.Add(Task.Run(() =>
                     {
                         Thread.CurrentThread.Name = "domeSlewer";
-                        domeSlaveDriver.SlewStartAsync(RightAscension, Declination);
+                        try
+                        {
+                            domeSlaveDriver.SlewStartAsync(RightAscension, Declination);
+                        } catch (OperationCanceledException)
+                        {
+                            domeSlaveDriver.AbortSlew();
+                        }
                     }, slewingToken));
 
                 slewers.Add(Task.Run(() =>
@@ -1144,16 +1238,10 @@ namespace ASCOM.Wise40
             {
                 ae.Handle((ex) =>
                 {
-                    if (ex is OperationCanceledException)
-                    {
-                        Stop();
-                        return true;
-                    }
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                        "_slewToCoordinatesAsync: Caught {0}", ex.Message);
                     return false;
                 });
-            } finally
-            {
-                slewingTokenSource.Dispose();
             }
         }
 
