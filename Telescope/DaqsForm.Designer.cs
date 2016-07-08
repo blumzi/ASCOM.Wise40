@@ -2411,8 +2411,9 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(822, 582);
             this.Controls.Add(this.panelHardware);
+            this.Location = new System.Drawing.Point(100, 100);
             this.Name = "DaqsForm";
-            this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Wise40 Hardware Monitor";
             this.TopMost = true;
             this.VisibleChanged += new System.EventHandler(this.DaqsForm_VisibleChanged);

@@ -21,6 +21,8 @@ namespace ASCOM.Wise40.Hardware
         private ushort _value;
         private ushort _mask;
 
+        private Debugger debugger = new Debugger((uint)Debugger.DebugLevel.DebugMotors);
+
         /// <summary>
         /// The Daq's direction
         /// </summary>
@@ -136,6 +138,11 @@ namespace ASCOM.Wise40.Hardware
 
                 if (wiseBoard.type == WiseBoard.BoardType.Hard)
                 {
+                    debugger.WriteLine(Debugger.DebugLevel.DebugMotors,
+                        "daq.Value.set: board: {0}, port: {1}, value: 0x{2:x}",
+                        this.wiseBoard.name,
+                        this.porttype.ToString(),
+                        value);
                     if (portdir == DigitalPortDirection.DigitalOut)
                     {
                         if (Hardware.Instance.mccRevNum == 5)

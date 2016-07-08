@@ -630,9 +630,9 @@
             this.wormValue.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.wormValue.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.wormValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.wormValue.Location = new System.Drawing.Point(153, 45);
+            this.wormValue.Location = new System.Drawing.Point(160, 50);
             this.wormValue.Name = "wormValue";
-            this.wormValue.Size = new System.Drawing.Size(72, 20);
+            this.wormValue.Size = new System.Drawing.Size(60, 20);
             this.wormValue.TabIndex = 23;
             this.wormValue.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.wormValue.Click += new System.EventHandler(this.label9_Click);
@@ -642,7 +642,7 @@
             this.label8.AutoSize = true;
             this.label8.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label8.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label8.Location = new System.Drawing.Point(120, 46);
+            this.label8.Location = new System.Drawing.Point(118, 47);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(39, 18);
             this.label8.TabIndex = 22;
@@ -655,9 +655,9 @@
             this.axisValue.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.axisValue.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.axisValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.axisValue.Location = new System.Drawing.Point(42, 45);
+            this.axisValue.Location = new System.Drawing.Point(49, 50);
             this.axisValue.Name = "axisValue";
-            this.axisValue.Size = new System.Drawing.Size(72, 20);
+            this.axisValue.Size = new System.Drawing.Size(63, 20);
             this.axisValue.TabIndex = 21;
             this.axisValue.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.axisValue.Click += new System.EventHandler(this.label7_Click);
@@ -667,7 +667,7 @@
             this.label6.AutoSize = true;
             this.label6.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label6.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label6.Location = new System.Drawing.Point(8, 46);
+            this.label6.Location = new System.Drawing.Point(7, 47);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(36, 18);
             this.label6.TabIndex = 20;
@@ -680,7 +680,7 @@
             this.labelDecEnc.AutoSize = true;
             this.labelDecEnc.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelDecEnc.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.labelDecEnc.Location = new System.Drawing.Point(8, 77);
+            this.labelDecEnc.Location = new System.Drawing.Point(8, 75);
             this.labelDecEnc.Name = "labelDecEnc";
             this.labelDecEnc.Size = new System.Drawing.Size(45, 18);
             this.labelDecEnc.TabIndex = 18;

@@ -481,10 +481,14 @@ namespace ASCOM.Wise40
 
 
             instance.movementDict = new MovementDictionary();
-            instance.movementDict[new MovementSpecifier(TelescopeAxes.axisPrimary, Const.AxisDirection.Decreasing)] = new MovementWorker(new WiseVirtualMotor[] { EastMotor });
-            instance.movementDict[new MovementSpecifier(TelescopeAxes.axisPrimary, Const.AxisDirection.Increasing)] = new MovementWorker(new WiseVirtualMotor[] { WestMotor });
-            instance.movementDict[new MovementSpecifier(TelescopeAxes.axisSecondary, Const.AxisDirection.Increasing)] = new MovementWorker(new WiseVirtualMotor[] { NorthMotor });
-            instance.movementDict[new MovementSpecifier(TelescopeAxes.axisSecondary, Const.AxisDirection.Decreasing)] = new MovementWorker(new WiseVirtualMotor[] { SouthMotor });
+            instance.movementDict[new MovementSpecifier(TelescopeAxes.axisPrimary, Const.AxisDirection.Decreasing)] =
+                new MovementWorker(new WiseVirtualMotor[] { EastMotor });
+            instance.movementDict[new MovementSpecifier(TelescopeAxes.axisPrimary, Const.AxisDirection.Increasing)] =
+                new MovementWorker(new WiseVirtualMotor[] { WestMotor });
+            instance.movementDict[new MovementSpecifier(TelescopeAxes.axisSecondary, Const.AxisDirection.Increasing)] =
+                new MovementWorker(new WiseVirtualMotor[] { NorthMotor });
+            instance.movementDict[new MovementSpecifier(TelescopeAxes.axisSecondary, Const.AxisDirection.Decreasing)] =
+                new MovementWorker(new WiseVirtualMotor[] { SouthMotor });
 
             instance.connectables.Add(instance.NorthMotor);
             instance.connectables.Add(instance.EastMotor);

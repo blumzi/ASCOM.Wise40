@@ -71,7 +71,7 @@ namespace ASCOM.Wise40.Hardware
             WiseTele.Instance.debugger.WriteLine(Debugger.DebugLevel.DebugMotors, "{0}: On at {1}", name, WiseTele.RateName(rate));
 
             if (rate == Const.rateSlew)
-                activePins = new List<WisePin>() { motorPin, slewPin };
+                activePins = new List<WisePin>() { slewPin, motorPin };
             else if (rate == Const.rateSet || rate == Const.rateTrack)
                 activePins = new List<WisePin>() { motorPin };
             else if (rate == Const.rateGuide)

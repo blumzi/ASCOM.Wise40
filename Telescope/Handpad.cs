@@ -116,8 +116,25 @@ namespace ASCOM.Wise40
         {
             Button button = (Button)sender;
 
-            daqsForm = new DaqsForm(this);
-            daqsForm.Visible = true;
+            if (daqsForm == null)
+            {
+                daqsForm = new DaqsForm(this);
+                daqsForm.Visible = true;
+                buttonHardware.Text = "Hide hardware";
+            }
+            else
+            {
+                if (daqsForm.Visible)
+                {
+                    buttonHardware.Text = "Show hardware";
+                    daqsForm.Visible = false;
+                }
+                else
+                {
+                    buttonHardware.Text = "Hide hardware";
+                    daqsForm.Visible = true;
+                }
+            }
         }
 
         private void buttonDome_Click(object sender, EventArgs e)

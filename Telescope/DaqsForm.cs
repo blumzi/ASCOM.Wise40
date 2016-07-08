@@ -21,8 +21,8 @@ namespace ASCOM.Wise40
         {
             InitializeComponent();
 
-            StartPosition = FormStartPosition.Manual;
-            Location = new Point(handpad.Top, handpad.Right);
+            //StartPosition = FormStartPosition.WindowsDefaultLocation;
+            //Location = new Point(handpad.Top, handpad.Right);
             this.handpad = handpad;
 
             boards = new List<WiseBoard>();
