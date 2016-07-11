@@ -173,7 +173,10 @@ namespace ASCOM.Wise40.Hardware
             set
             {
                 if (simulated)
+                {
                     _angle = value;
+                    Value = (uint)Math.Round((_angle.Radians - HaCorrection) / HaMultiplier);
+                }
             }
         }
 

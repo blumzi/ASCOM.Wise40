@@ -174,7 +174,10 @@ namespace ASCOM.Wise40.Hardware
             set
             {
                 if (simulated)
+                {
                     _angle.Degrees = value.Degrees;
+                    Value = (uint) Math.Round((_angle.Radians - DecCorrection) / decMultiplier);
+                }
             }
         }
 

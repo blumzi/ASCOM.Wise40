@@ -96,6 +96,11 @@
             this.radioButtonSpeedSlew = new System.Windows.Forms.RadioButton();
             this.panelDome = new System.Windows.Forms.Panel();
             this.panelControls = new System.Windows.Forms.Panel();
+            this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.checkBoxSlewingIsActive = new System.Windows.Forms.CheckBox();
+            this.checkBoxSecondaryIsActive = new System.Windows.Forms.CheckBox();
+            this.checkBoxTrackingIsActive = new System.Windows.Forms.CheckBox();
+            this.checkBoxPrimaryIsActive = new System.Windows.Forms.CheckBox();
             this.label1 = new System.Windows.Forms.Label();
             this.panel2 = new System.Windows.Forms.Panel();
             this.buttonHandpad = new System.Windows.Forms.Button();
@@ -119,6 +124,7 @@
             this.groupBox5.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.panelControls.SuspendLayout();
+            this.groupBox3.SuspendLayout();
             this.panel2.SuspendLayout();
             this.groupBox36.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -963,6 +969,7 @@
             // panelControls
             // 
             this.panelControls.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
+            this.panelControls.Controls.Add(this.groupBox3);
             this.panelControls.Controls.Add(this.label1);
             this.panelControls.Controls.Add(this.panel2);
             this.panelControls.Controls.Add(this.groupBox36);
@@ -975,6 +982,69 @@
             this.panelControls.Name = "panelControls";
             this.panelControls.Size = new System.Drawing.Size(362, 554);
             this.panelControls.TabIndex = 0;
+            // 
+            // groupBox3
+            // 
+            this.groupBox3.Controls.Add(this.checkBoxSlewingIsActive);
+            this.groupBox3.Controls.Add(this.checkBoxSecondaryIsActive);
+            this.groupBox3.Controls.Add(this.checkBoxTrackingIsActive);
+            this.groupBox3.Controls.Add(this.checkBoxPrimaryIsActive);
+            this.groupBox3.ForeColor = System.Drawing.Color.DarkOrange;
+            this.groupBox3.Location = new System.Drawing.Point(224, 261);
+            this.groupBox3.Name = "groupBox3";
+            this.groupBox3.Size = new System.Drawing.Size(88, 102);
+            this.groupBox3.TabIndex = 17;
+            this.groupBox3.TabStop = false;
+            this.groupBox3.Text = " Activity ";
+            // 
+            // checkBoxSlewingIsActive
+            // 
+            this.checkBoxSlewingIsActive.AutoCheck = false;
+            this.checkBoxSlewingIsActive.AutoSize = true;
+            this.checkBoxSlewingIsActive.ForeColor = System.Drawing.Color.DarkOrange;
+            this.checkBoxSlewingIsActive.Location = new System.Drawing.Point(8, 80);
+            this.checkBoxSlewingIsActive.Name = "checkBoxSlewingIsActive";
+            this.checkBoxSlewingIsActive.Size = new System.Drawing.Size(63, 17);
+            this.checkBoxSlewingIsActive.TabIndex = 3;
+            this.checkBoxSlewingIsActive.Text = "Slewing";
+            this.checkBoxSlewingIsActive.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxSecondaryIsActive
+            // 
+            this.checkBoxSecondaryIsActive.AutoCheck = false;
+            this.checkBoxSecondaryIsActive.AutoSize = true;
+            this.checkBoxSecondaryIsActive.ForeColor = System.Drawing.Color.DarkOrange;
+            this.checkBoxSecondaryIsActive.Location = new System.Drawing.Point(8, 40);
+            this.checkBoxSecondaryIsActive.Name = "checkBoxSecondaryIsActive";
+            this.checkBoxSecondaryIsActive.Size = new System.Drawing.Size(77, 17);
+            this.checkBoxSecondaryIsActive.TabIndex = 1;
+            this.checkBoxSecondaryIsActive.Text = "Secondary";
+            this.checkBoxSecondaryIsActive.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxTrackingIsActive
+            // 
+            this.checkBoxTrackingIsActive.AutoCheck = false;
+            this.checkBoxTrackingIsActive.AutoSize = true;
+            this.checkBoxTrackingIsActive.ForeColor = System.Drawing.Color.DarkOrange;
+            this.checkBoxTrackingIsActive.Location = new System.Drawing.Point(8, 60);
+            this.checkBoxTrackingIsActive.Name = "checkBoxTrackingIsActive";
+            this.checkBoxTrackingIsActive.Size = new System.Drawing.Size(68, 17);
+            this.checkBoxTrackingIsActive.TabIndex = 2;
+            this.checkBoxTrackingIsActive.Text = "Tracking";
+            this.checkBoxTrackingIsActive.UseVisualStyleBackColor = true;
+            this.checkBoxTrackingIsActive.CheckedChanged += new System.EventHandler(this.checkBox2_CheckedChanged);
+            // 
+            // checkBoxPrimaryIsActive
+            // 
+            this.checkBoxPrimaryIsActive.AutoCheck = false;
+            this.checkBoxPrimaryIsActive.AutoSize = true;
+            this.checkBoxPrimaryIsActive.ForeColor = System.Drawing.Color.DarkOrange;
+            this.checkBoxPrimaryIsActive.Location = new System.Drawing.Point(8, 20);
+            this.checkBoxPrimaryIsActive.Name = "checkBoxPrimaryIsActive";
+            this.checkBoxPrimaryIsActive.Size = new System.Drawing.Size(60, 17);
+            this.checkBoxPrimaryIsActive.TabIndex = 0;
+            this.checkBoxPrimaryIsActive.Text = "Primary";
+            this.checkBoxPrimaryIsActive.UseVisualStyleBackColor = true;
             // 
             // label1
             // 
@@ -1069,7 +1139,7 @@
             this.panel10.Controls.Add(this.buttonSouth);
             this.panel10.Controls.Add(this.buttonWest);
             this.panel10.Controls.Add(this.buttonEast);
-            this.panel10.Location = new System.Drawing.Point(89, 236);
+            this.panel10.Location = new System.Drawing.Point(56, 236);
             this.panel10.Name = "panel10";
             this.panel10.Size = new System.Drawing.Size(160, 152);
             this.panel10.TabIndex = 11;
@@ -1171,6 +1241,8 @@
             this.groupBox2.PerformLayout();
             this.panelControls.ResumeLayout(false);
             this.panelControls.PerformLayout();
+            this.groupBox3.ResumeLayout(false);
+            this.groupBox3.PerformLayout();
             this.panel2.ResumeLayout(false);
             this.groupBox36.ResumeLayout(false);
             this.groupBox36.PerformLayout();
@@ -1264,5 +1336,10 @@
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.Label axisValue;
         private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.GroupBox groupBox3;
+        private System.Windows.Forms.CheckBox checkBoxSecondaryIsActive;
+        private System.Windows.Forms.CheckBox checkBoxTrackingIsActive;
+        private System.Windows.Forms.CheckBox checkBoxPrimaryIsActive;
+        private System.Windows.Forms.CheckBox checkBoxSlewingIsActive;
     }
 }

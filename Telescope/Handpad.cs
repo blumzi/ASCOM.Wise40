@@ -196,6 +196,11 @@ namespace ASCOM.Wise40
             axisValue.Text = T.HAEncoder.AxisValue.ToString();
             wormValue.Text = T.HAEncoder.WormValue.ToString();
 
+            checkBoxPrimaryIsActive.Checked = T.AxisIsMoving(TelescopeAxes.axisPrimary);
+            checkBoxSecondaryIsActive.Checked = T.AxisIsMoving(TelescopeAxes.axisSecondary);
+            checkBoxSlewingIsActive.Checked = T.Slewing;
+            checkBoxTrackingIsActive.Checked = T.Tracking;
+
             checkBoxTrack.Checked = T.Tracking;
 
             if (scopeBackgroundMover != null && scopeBackgroundMover.IsBusy)
@@ -498,6 +503,11 @@ namespace ASCOM.Wise40
         }
 
         private void label9_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void checkBox2_CheckedChanged(object sender, EventArgs e)
         {
 
         }

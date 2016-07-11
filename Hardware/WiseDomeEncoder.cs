@@ -18,12 +18,12 @@ namespace ASCOM.Wise40.Hardware
         private DateTime endSimulatedStuck;             // time when the dome-stuck simulation should end
         private System.Timers.Timer simulationTimer;    // times simulated-dome events
 
-        private int caliTicks;
-        private Angle caliAz = new Angle(254.6);
-        private WiseDome.Direction moving;
-        private const int simulatedEncoderTicksPerSecond = 6;
+        private int _caliTicks;
+        private Angle _caliAz = new Angle(254.6, Angle.Type.Az);
+        private WiseDome.Direction _movingDirection;
+        private const int _simulatedEncoderTicksPerSecond = 6;
         private bool _connected = false;
-        private const int hwTicks = 1024;
+        private const int _hwTicks = 1024;
         private Angle NoSimulatedStuckAz = Angle.invalid;
         private Debugger debugger;
 
@@ -49,7 +49,7 @@ namespace ASCOM.Wise40.Hardware
 
         public void setMovement(WiseDome.Direction dir)
         {
-            moving = dir;
+            _movingDirection = dir;
         }
 
         private void onSimulationTimer(object sender, System.Timers.ElapsedEventArgs e)
@@ -76,7 +76,7 @@ namespace ASCOM.Wise40.Hardware
                 }
             }
 
-            switch (moving)
+            switch (_movingDirection)
             {
                 case WiseDome.Direction.CCW:
                     simulatedValue++;
@@ -107,8 +107,8 @@ namespace ASCOM.Wise40.Hardware
 
         public void Calibrate(Angle az)
         {
-            caliTicks = Value;
-            caliAz = az;
+            _caliTicks = Value;
+            _caliAz = az;
             calibrated = true;
         }
 
@@ -145,30 +145,24 @@ namespace ASCOM.Wise40.Hardware
                 Angle az;
 
                 if (!calibrated)
-                    return new Angle(double.NaN);
+                    return Angle.invalid;
 
                 currTicks = Value;
-                if (currTicks == caliTicks)
+                if (currTicks == _caliTicks)
                 {
-                    az = caliAz;
+                    az = _caliAz;
                 }
-                else if (currTicks > caliTicks)
+                else if (currTicks > _caliTicks)
                 {
-                    az = caliAz - new Angle((currTicks - caliTicks) * WiseDome.DegreesPerTick);
+                    az = _caliAz - new Angle((currTicks - _caliTicks) * WiseDome.DegreesPerTick, Angle.Type.Az);
                 }
                 else
                 {
-                    az = caliAz + new Angle((caliTicks - currTicks) * WiseDome.DegreesPerTick);
+                    az = _caliAz + new Angle((_caliTicks - currTicks) * WiseDome.DegreesPerTick, Angle.Type.Az);
                 }
 
-                //if (az.Value > 360)
-                //    az.Value -= 360;
-
-                //if (az.Value < 0)
-                //    az.Value += 360;
-
-                debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "Azimuth: {0}, currTicks: {1}, caliTicks: {2}, caliAz: {3}",
-                    az, currTicks, caliTicks, caliAz);
+                debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "DomeAzimuth: {0}, currTicks: {1}, caliTicks: {2}, caliAz: {3}",
+                    az.ToNiceString(), currTicks, _caliTicks, _caliAz.ToNiceString());
                 return az;
             }
 
@@ -202,7 +196,7 @@ namespace ASCOM.Wise40.Hardware
         {
             get
             {
-                return hwTicks;
+                return _hwTicks;
             }
         }
     }
