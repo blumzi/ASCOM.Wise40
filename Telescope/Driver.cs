@@ -911,7 +911,7 @@ namespace ASCOM.Wise40
                 WiseTele.Instance.debugger.Level = (uint)Common.Debugger.DebugLevel.DebugAll;
                 WiseSite.Instance.astrometricAccuracy = driverProfile.GetValue(driverID, astrometricAccuracyProfileName, string.Empty, "Full") == "Full" ?
                     Accuracy.Full : Accuracy.Reduced;
-                WiseTele.Instance._enslaveDome = Convert.ToBoolean(driverProfile.GetValue(driverID, enslaveDomeProfileName, string.Empty, "false"));
+                WiseTele.Instance._enslaveDome = Convert.ToBoolean(driverProfile.GetValue(driverID, enslaveDomeProfileName, string.Empty, "true"));
             }
         }
 

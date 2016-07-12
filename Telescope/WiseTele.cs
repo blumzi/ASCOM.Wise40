@@ -108,6 +108,8 @@ namespace ASCOM.Wise40
         private static CancellationToken slewingCancellationToken;
 
         private Task movementCheckerTask;
+        private static CancellationTokenSource movementCheckerCancellationTokenSource;
+        private static CancellationToken movementCheckerCancellationToken;
 
         ReadyToSlewFlags readyToSlew = new ReadyToSlewFlags();
 
@@ -126,6 +128,8 @@ namespace ASCOM.Wise40
                 { TelescopeAxes.axisPrimary, axisPrimaryNames },
                 { TelescopeAxes.axisSecondary, axisSecondaryNames },
             };
+
+        private Hardware.Hardware hw = Hardware.Hardware.Instance;
 
         public class MovementParameters
         {
@@ -321,21 +325,35 @@ namespace ASCOM.Wise40
                     connectable.Connect(value);
                 }
                 _connected = value;
-                if (_enslaveDome)
-                    domeSlaveDriver.Connect(value);
+                if (instance._enslaveDome)
+                    DomeSlaveDriver.Instance.Connect(value);
 
                 if (_connected)
-                    movementCheckerTask = Task.Run(() =>
+                {
+                    movementCheckerCancellationTokenSource = new CancellationTokenSource();
+                    movementCheckerCancellationToken = movementCheckerCancellationTokenSource.Token;
+
+                    try
                     {
-                        Thread.CurrentThread.Name = "AxisMovementChecker";
-                        AxisMovementChecker();
-                    });
+                        movementCheckerTask = Task.Run(() =>
+                        {
+                            Thread.CurrentThread.Name = "AxisMovementChecker";
+                            AxisMovementChecker();
+                        }, movementCheckerCancellationToken);
+                    }
+                    catch (OperationCanceledException) { }
+                }
                 else
-                    movementCheckerTask.Dispose();
+                {
+                    if (movementCheckerTask != null)
+                    {
+                        movementCheckerCancellationTokenSource.Cancel();
+                    }
+                }
             }
         }
 
-        public static readonly WiseTele instance = new WiseTele(); // Singleton
+        private static readonly WiseTele instance = new WiseTele(); // Singleton
 
         // Explicit static constructor to tell C# compiler
         // not to mark type as beforefieldinit
@@ -368,7 +386,7 @@ namespace ASCOM.Wise40
             novas31 = new NOVAS31();
             ascomutils = new Util();
             astroutils = new Astrometry.AstroUtils.AstroUtils();
-            Hardware.Hardware.Instance.init();
+            hw.init();
             
             List<ISimulated> hardware_elements = new List<ISimulated>();
 
@@ -377,18 +395,18 @@ namespace ASCOM.Wise40
                 instance.connectables = new List<IConnectable>();
                 instance.disposables = new List<IDisposable>();
 
-                NorthPin = new WisePin("TeleNorth", Hardware.Hardware.Instance.teleboard, DigitalPortType.FirstPortCL, 0, DigitalPortDirection.DigitalOut);
-                EastPin = new WisePin("TeleEast", Hardware.Hardware.Instance.teleboard, DigitalPortType.FirstPortCL, 1, DigitalPortDirection.DigitalOut);
-                WestPin = new WisePin("TeleWest", Hardware.Hardware.Instance.teleboard, DigitalPortType.FirstPortCL, 2, DigitalPortDirection.DigitalOut);
-                SouthPin = new WisePin("TeleSouth", Hardware.Hardware.Instance.teleboard, DigitalPortType.FirstPortCL, 3, DigitalPortDirection.DigitalOut);
+                NorthPin = new WisePin("TeleNorth", hw.teleboard, DigitalPortType.FirstPortCL, 0, DigitalPortDirection.DigitalOut);
+                EastPin = new WisePin("TeleEast", hw.teleboard, DigitalPortType.FirstPortCL, 1, DigitalPortDirection.DigitalOut);
+                WestPin = new WisePin("TeleWest", hw.teleboard, DigitalPortType.FirstPortCL, 2, DigitalPortDirection.DigitalOut);
+                SouthPin = new WisePin("TeleSouth", hw.teleboard, DigitalPortType.FirstPortCL, 3, DigitalPortDirection.DigitalOut);
 
-                SlewPin = new WisePin("TeleSlew", Hardware.Hardware.Instance.teleboard, DigitalPortType.FirstPortCH, 0, DigitalPortDirection.DigitalOut);
-                TrackPin = new WisePin("TeleTrack", Hardware.Hardware.Instance.teleboard, DigitalPortType.FirstPortCH, 2, DigitalPortDirection.DigitalOut);
+                SlewPin = new WisePin("TeleSlew", hw.teleboard, DigitalPortType.FirstPortCH, 0, DigitalPortDirection.DigitalOut);
+                TrackPin = new WisePin("TeleTrack", hw.teleboard, DigitalPortType.FirstPortCH, 2, DigitalPortDirection.DigitalOut);
 
-                NorthGuidePin = new WisePin("TeleNorthGuide", Hardware.Hardware.Instance.teleboard, DigitalPortType.FirstPortB, 0, DigitalPortDirection.DigitalOut);
-                EastGuidePin = new WisePin("TeleEastGuide", Hardware.Hardware.Instance.teleboard, DigitalPortType.FirstPortB, 1, DigitalPortDirection.DigitalOut);
-                WestGuidePin = new WisePin("TeleWestGuide", Hardware.Hardware.Instance.teleboard, DigitalPortType.FirstPortB, 2, DigitalPortDirection.DigitalOut);
-                SouthGuidePin = new WisePin("TeleSouthGuide", Hardware.Hardware.Instance.teleboard, DigitalPortType.FirstPortB, 3, DigitalPortDirection.DigitalOut);
+                NorthGuidePin = new WisePin("TeleNorthGuide", hw.teleboard, DigitalPortType.FirstPortB, 0, DigitalPortDirection.DigitalOut);
+                EastGuidePin = new WisePin("TeleEastGuide", hw.teleboard, DigitalPortType.FirstPortB, 1, DigitalPortDirection.DigitalOut);
+                WestGuidePin = new WisePin("TeleWestGuide", hw.teleboard, DigitalPortType.FirstPortB, 2, DigitalPortDirection.DigitalOut);
+                SouthGuidePin = new WisePin("TeleSouthGuide", hw.teleboard, DigitalPortType.FirstPortB, 3, DigitalPortDirection.DigitalOut);
 
                 instance.HAEncoder = new WiseHAEncoder("TeleHAEncoder");
                 instance.DecEncoder = new WiseDecEncoder("TeleDecEncoder");
@@ -531,8 +549,11 @@ namespace ASCOM.Wise40
             instance.WestMotor.SetOff();
             instance.SouthMotor.SetOff();
 
-            if (_enslaveDome)
-                domeSlaveDriver = new DomeSlaveDriver(debugger);
+            if (instance._enslaveDome)
+            {
+                domeSlaveDriver = new DomeSlaveDriver();
+                domeSlaveDriver.init(this);
+            }
         }
 
         public double FocalLength
@@ -972,17 +993,19 @@ namespace ASCOM.Wise40
             if (_targetDeclination == null)
                 throw new ValueNotSetException("Target Dec not set");
 
+            Angle ra = Angle.FromHours(TargetRightAscension, Angle.Type.RA);
+            Angle dec = Angle.FromDegrees(TargetDeclination, Angle.Type.Dec);
+
+            traceLogger.LogMessage("SlewToTargetAsync", string.Format("Started: ra: {0}, dec: {1}", ra, dec));
+            debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, string.Format("SlewToTargetAsync({0}, {1})", ra, dec));
+
+
             if (AtPark)
                 throw new InvalidOperationException("Cannot SlewToTargetAsync while AtPark");
 
             if (!Tracking)
                 throw new InvalidOperationException("Cannot SlewToTargetAsync while NOT Tracking");
 
-            Angle ra = Angle.FromHours(TargetRightAscension, Angle.Type.RA);
-            Angle dec = Angle.FromDegrees(TargetDeclination, Angle.Type.Dec);
-
-            traceLogger.LogMessage("SlewToTargetAsync", string.Format("Started: ra: {0}, dec: {1}", ra, dec));
-            debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, string.Format("SlewToTargetAsync({0}, {1})", ra, dec));
 
             if (! SafeAtCoordinates(ra, dec))
                 throw new InvalidOperationException(string.Format("Not safe to SlewToTargetAsync({0}, {1})", ra, dec));
@@ -1002,8 +1025,6 @@ namespace ASCOM.Wise40
         /// <param name="takeAction">Take recovery actions or not</param>
         public bool SafeAtCoordinates(Angle ra, Angle dec, bool takeAction = false)
         {
-            return true;
-
             double rar = 0, decr = 0, az = 0, zd = 0;
             Angle alt;
 
@@ -1109,6 +1130,7 @@ namespace ASCOM.Wise40
             string threadName = Thread.CurrentThread.Name;
             Movement cm = WiseTele.Instance.currMovement[axis];
             Angle currPosition = new Angle(0.0);
+            MovementParameters mp;
 
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
                 "{0}: targetAngle: {1}", threadName, targetAngle);
@@ -1117,7 +1139,7 @@ namespace ASCOM.Wise40
                 cm.finalTarget = targetAngle;
                 foreach (var rate in rates)
                 {
-                    MovementParameters mp = movementParameters[axis][rate];
+                    mp = movementParameters[axis][rate];
                     WiseTele.Instance.currMovement[axis] = new Movement() { rate = Const.rateStopped };
 
                     slewingCancellationToken.ThrowIfCancellationRequested();
@@ -1192,11 +1214,12 @@ namespace ASCOM.Wise40
                         // The axis is set in motion, wait for it to arrive at target
                         //
 
-                        ShortestDistanceResult prevRemainigDistance = null;
+                        ShortestDistanceResult prevRemainingDistance = null;
                         while (true)
                         {
                             const int waitMillis = 5;    // TODO: make it configurable or constant
                             ShortestDistanceResult remainingDistance;
+                            double allowedDrift = new Angle("0:0:40.0").Degrees;
 
                             slewingCancellationToken.ThrowIfCancellationRequested();
 
@@ -1205,18 +1228,37 @@ namespace ASCOM.Wise40
                                 Angle.FromDegrees(Declination, Angle.Type.Dec);
 
                             remainingDistance = currPosition.ShortestDistance(cm.intermediateTarget);
-                            if (remainingDistance.angle.Degrees <= mp.stopMovement.Degrees ||
-                                cm.direction != remainingDistance.direction ||
-                                prevRemainigDistance != null && (remainingDistance.angle > prevRemainigDistance.angle))
+                            string arrivalReason = null;
+
+                            if (remainingDistance.angle.Degrees <= mp.stopMovement.Degrees)
+                            {
+                                arrivalReason = string.Format("proximity: remainingDistance.angle ({0}, {1}) <= mp.stopMovement ({2}, {3})",
+                                    remainingDistance.angle, remainingDistance.angle.Degrees,
+                                    mp.stopMovement, mp.stopMovement.Degrees);
+                            }
+                            else if (cm.direction != remainingDistance.direction) {
+                                arrivalReason = string.Format("movement direction changed: cm.direction: {0} != remainingDistance.direction: {1}",
+                                    cm.direction.ToString(), remainingDistance.direction.ToString());
+                            } else if (prevRemainingDistance != null) {
+                                if (Math.Abs(remainingDistance.angle.Degrees - prevRemainingDistance.angle.Degrees) > allowedDrift)
+                                {
+                                    //arrivalReason = string.Format("remainingDistance has increased: {0} > {1}, more than {3}",
+                                    //    remainingDistance.angle, prevRemainingDistance.angle, allowedDrift.ToString());
+                                    arrivalReason = null;
+                                }
+                            }
+
+                            if (arrivalReason != null)
                             {
                                 //
                                 // We're so close to the target that after stopping the
                                 //  motor inertia will take us there.
                                 //
                                 debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                                    "{0} at {1}: stopping at {2}, ({3} from {4}), calling  MoveAxis({5}, {6})",
+                                    "{0} at {1}: stopping at {2}, ({3} from {4}), arrivalReason: {5}, calling  MoveAxis({6}, {7})",
                                     threadName, RateName(cm.rate), currPosition,
                                     remainingDistance.angle, cm.intermediateTarget,
+                                    arrivalReason,
                                     axis, RateName(Const.rateStopped));
 
                                 _moveAxis(axis, Const.rateStopped);
@@ -1232,7 +1274,7 @@ namespace ASCOM.Wise40
                                     mp.stopMovement, mp.stopMovement.Degrees,
                                     waitMillis);
 
-                                prevRemainigDistance = remainingDistance;
+                                prevRemainingDistance = remainingDistance;
                                 Thread.Sleep(waitMillis);
                             }
                         }
@@ -1256,16 +1298,16 @@ namespace ASCOM.Wise40
 
             try
             {
-                if (_enslaveDome)
+                if (instance._enslaveDome)
                     slewers.Add(Task.Run(() =>
                     {
                         Thread.CurrentThread.Name = "domeSlewer";
                         try
                         {
-                            domeSlaveDriver.SlewStartAsync(RightAscension, Declination);
+                            DomeSlaveDriver.Instance.SlewStartAsync(RightAscension, Declination);
                         } catch (OperationCanceledException)
                         {
-                            domeSlaveDriver.AbortSlew();
+                            DomeSlaveDriver.Instance.AbortSlew();
                         }
                     }, slewingCancellationToken));
 
@@ -1331,8 +1373,8 @@ namespace ASCOM.Wise40
             TargetRightAscension = RightAscension;
             TargetDeclination = Declination;
 
-            Angle ra = Angle.FromHours(RightAscension, Angle.Type.RA);
-            Angle dec = Angle.FromDegrees(Declination, Angle.Type.Dec);
+            Angle ra = Angle.FromHours(TargetRightAscension, Angle.Type.RA);
+            Angle dec = Angle.FromDegrees(TargetDeclination, Angle.Type.Dec);
 
             debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "SlewToCoordinatesAsync({0}, {1})", ra, dec);
 

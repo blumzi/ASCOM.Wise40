@@ -78,11 +78,6 @@ namespace ASCOM.Wise40
         public Common.Debugger debugger;
 
         /// <summary>
-        /// Private variable to hold the connected state
-        /// </summary>
-        private bool connectedState;
-
-        /// <summary>
         /// Private variable to hold an ASCOM Utilities object
         /// </summary>
         private Util utilities;
@@ -95,9 +90,9 @@ namespace ASCOM.Wise40
         /// <summary>
         /// Private variable to hold the trace logger object (creates a diagnostic log file with information that you specify)
         /// </summary>
-        private TraceLogger tl;
+        public static TraceLogger tl;
 
-        private  WiseDome wisedome;
+        private  WiseDome wisedome = WiseDome.Instance;
 
         public AutoResetEvent arrived = new AutoResetEvent(false);
 
@@ -113,16 +108,14 @@ namespace ASCOM.Wise40
             tl = new TraceLogger("", "Dome");
             tl.Enabled = traceState;
             tl.LogMessage("Dome", "Starting initialisation");
-
-            connectedState = false; // Initialise connected to false
+            
             utilities = new Util(); //Initialise util object
             astroUtilities = new AstroUtils(); // Initialise astro utilities object
 
-            wisedome = new WiseDome(arrived); // Initialise Wise40 dome
+            wisedome.init(arrived);
 
             tl.LogMessage("Dome", "Completed initialisation");
         }
-
 
         //
         // PUBLIC COM INTERFACE IDomeV2 IMPLEMENTATION
@@ -140,7 +133,7 @@ namespace ASCOM.Wise40
         {
             // consider only showing the setup dialog if not connected
             // or call a different dialog if connected
-            if (IsConnected)
+            if (wisedome.Connected)
                 System.Windows.Forms.MessageBox.Show("Already connected, just press OK");
 
             using (SetupDialogForm F = new SetupDialogForm(this))
@@ -157,47 +150,32 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("SupportedActions Get", "Returning empty arraylist");
-                return new ArrayList();
+                return wisedome.SupportedActions;
             }
         }
 
         public string Action(string actionName, string actionParameters)
         {
-            throw new ASCOM.ActionNotImplementedException("Action " + actionName + " is not implemented by this driver");
+            return wisedome.Action(actionName, actionParameters);
         }
 
         public void CommandBlind(string command, bool raw)
         {
-            CheckConnected("CommandBlind");
-            // Call CommandString and return as soon as it finishes
-            this.CommandString(command, raw);
-            // or
-            throw new ASCOM.MethodNotImplementedException("CommandBlind");
+            wisedome.CommandBlind(command, raw);
         }
 
         public bool CommandBool(string command, bool raw)
         {
-            CheckConnected("CommandBool");
-            string ret = CommandString(command, raw);
-            // TODO decode the return string and return true or false
-            // or
-            throw new ASCOM.MethodNotImplementedException("CommandBool");
+            return wisedome.CommandBool(command, raw);
         }
 
         public string CommandString(string command, bool raw)
         {
-            CheckConnected("CommandString");
-            // it's a good idea to put all the low level communication with the device here,
-            // then all communication calls this function
-            // you need something to ensure that only one command is in progress at a time
-
-            throw new ASCOM.MethodNotImplementedException("CommandString");
+            return wisedome.CommandString(command, raw);
         }
 
         public void Dispose()
         {
-            // Clean up the tracelogger and util objects
             tl.Enabled = false;
             tl.Dispose();
             tl = null;
@@ -207,33 +185,18 @@ namespace ASCOM.Wise40
             astroUtilities = null;
             wisedome.Dispose();
             wisedome = null;
-            //Dispose(true);
         }
 
         public bool Connected
         {
             get
             {
-                tl.LogMessage("Connected Get", IsConnected.ToString());
-                return IsConnected;
+                return wisedome.Connected;
             }
+
             set
             {
-                tl.LogMessage("Connected Set", value.ToString());
-                if (value == IsConnected)
-                    return;
-
-                if (value)
-                {
-                    connectedState = true;
-                    tl.LogMessage("Connected Set", "Connected");
-                }
-                else
-                {
-                    connectedState = false;
-                    tl.LogMessage("Connected Set", "Disconnected");
-                }
-                wisedome.Connect(connectedState);
+                wisedome.Connected = value;
             }
         }
 
@@ -241,8 +204,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("Description Get", driverDescription);
-                return driverDescription;
+                return wisedome.Description;
             }
         }
 
@@ -250,10 +212,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-                string driverInfo = "First draft, Version: " + string.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
-                tl.LogMessage("DriverInfo Get", driverInfo);
-                return driverInfo;
+                return wisedome.DriverInfo;
             }
         }
 
@@ -261,10 +220,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-                string driverVersion = String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
-                tl.LogMessage("DriverVersion Get", driverVersion);
-                return driverVersion;
+                return wisedome.DriverVersion;
             }
         }
 
@@ -273,8 +229,7 @@ namespace ASCOM.Wise40
             // set by the driver wizard
             get
             {
-                tl.LogMessage("InterfaceVersion Get", "2");
-                return Convert.ToInt16("2");
+                return wisedome.InterfaceVersion;
             }
         }
 
@@ -282,9 +237,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                string name = "Wise40 Dome";
-                tl.LogMessage("Name Get", name);
-                return name;
+                return wisedome.Name;
             }
         }
 
@@ -295,15 +248,13 @@ namespace ASCOM.Wise40
         public void AbortSlew()
         {
             wisedome.AbortSlew();
-            tl.LogMessage("AbortSlew", "");
         }
 
         public double Altitude
         {
             get
             {
-                tl.LogMessage("Altitude Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("Altitude", false);
+                return wisedome.Altitude;
             }
         }
 
@@ -311,10 +262,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                bool atHome = wisedome.AtCaliPoint;
-
-                tl.LogMessage("AtHome Get", atHome.ToString());
-                return atHome;
+                return wisedome.AtHome;
             }
         }
 
@@ -322,10 +270,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                bool atPark = wisedome.AtPark;
-
-                tl.LogMessage("AtPark Get", atPark.ToString());
-                return atPark;
+                return wisedome.AtPark;
             }
         }
 
@@ -333,10 +278,10 @@ namespace ASCOM.Wise40
         {
             get
             {
-                Angle az = wisedome.Azimuth;
+                double ret = wisedome.Azimuth.Degrees;
 
-                tl.LogMessage("Azimuth Get", az.ToString());
-                return az.Degrees;
+                tl.LogMessage("Azimuth Get", ret.ToString());
+                return ret;
             }
         }
 
@@ -344,8 +289,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("CanFindHome Get", true.ToString());
-                return true;
+                return wisedome.CanFindHome;
             }
         }
 
@@ -353,8 +297,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("CanPark Get", true.ToString());
-                return true;
+                return wisedome.CanPark;
             }
         }
 
@@ -362,8 +305,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("CanSetAltitude Get", false.ToString());
-                return false;
+                return wisedome.CanSetAltitude;
             }
         }
 
@@ -371,8 +313,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("CanSetAzimuth Get", true.ToString());
-                return true;
+                return wisedome.CanSetAzimuth;
             }
         }
 
@@ -380,8 +321,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("CanSetPark Get", false.ToString());
-                return false;
+                return wisedome.CanSetPark;
             }
         }
 
@@ -389,8 +329,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("CanSetShutter Get", true.ToString());
-                return true;
+                return wisedome.CanSetShutter;
             }
         }
 
@@ -398,8 +337,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("CanSlave Get", true.ToString());
-                return true;
+                return wisedome.CanSlave;
             }
         }
 
@@ -407,89 +345,40 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("CanSyncAzimuth Get", true.ToString());
-                return true;
+                return wisedome.CanSyncAzimuth;
             }
         }
 
         public void CloseShutter()
         {
-            if (wisedome.Slewing)
-                throw new ASCOM.InvalidOperationException("Denied, dome is slewing!");
-
             wisedome.CloseShutter();
-            tl.LogMessage("CloseShutter", "");
         }
 
         public void FindHome()
         {
-            if (wisedome.ShutterIsActive())
-            {
-                tl.LogMessage("FindHome", "Cannot FindHome, shutter is active.");
-                throw new ASCOM.InvalidOperationException("Cannot FindHome, shutter is active!");
-            }
-
-            tl.LogMessage("FindHome", "Calling wisedome.FindHome");
             wisedome.FindHome();
         }
 
         public void OpenShutter()
         {
-            if (wisedome.Slewing)
-                throw new ASCOM.InvalidOperationException("Cannot OpenShutter, dome is slewing!");
-
             wisedome.OpenShutter();
-            tl.LogMessage("OpenShutter", "");
         }
 
         public void Park()
         {
-            if (Slaved)
-                throw new InvalidOperationException("Cannot Park, dome is Slaved");
-
-            if (!wisedome.Calibrated)
-                throw new InvalidOperationException("Cannot Park, dome is NOT calibrated");
-
-            if (wisedome.ShutterIsActive())
-            {
-                tl.LogMessage("Park", "Cannot Park, shutter is active.");
-                throw new ASCOM.InvalidOperationException("Cannot Park, shutter is active!");
-            }
-
             wisedome.Park();
-            tl.LogMessage("Park", "");
         }
 
         public void SetPark()
         {
-            tl.LogMessage("SetPark", "Not implemented");
-            throw new ASCOM.MethodNotImplementedException("SetPark");
+            wisedome.SetPark();
         }
 
         public ShutterState ShutterStatus
         {
             get
             {
-                WiseDome.ShutterState state = wisedome.shutterState;
-                ShutterState ret = ShutterState.shutterError;
-
-                switch (state)
-                {
-                    case WiseDome.ShutterState.Closed:
-                        ret = ShutterState.shutterClosed;
-                        break;
-                    case WiseDome.ShutterState.Closing:
-                        ret = ShutterState.shutterClosing;
-                        break;
-                    case WiseDome.ShutterState.Open:
-                        ret = ShutterState.shutterOpen;
-                        break;
-                    case WiseDome.ShutterState.Opening:
-                        ret = ShutterState.shutterOpening;
-                        break;
-                }
-                tl.LogMessage("ShutterState get", ret.ToString());
-                return ret;
+                return wisedome.ShutterStatus;
             }
         }
 
@@ -497,66 +386,36 @@ namespace ASCOM.Wise40
         {
             get
             {
-                bool slaved = wisedome.Slaved;
-
-                tl.LogMessage("Slaved Get", slaved.ToString());
-                return slaved;
+                return wisedome.Slaved;
             }
 
             set
             {
-                tl.LogMessage("Slaved Set", value.ToString());
                 wisedome.Slaved = value;
             }
         }
 
         public void SlewToAltitude(double Altitude)
         {
-            tl.LogMessage("SlewToAltitude", "Not implemented");
-            throw new ASCOM.MethodNotImplementedException("SlewToAltitude");
+            wisedome.SlewToAltitude(Altitude);
         }
 
         public void SlewToAzimuth(double Azimuth)
         {
-            if (wisedome.Slaved)
-                throw new InvalidOperationException("Cannot SlewToAzimuth, dome is Slaved");
-
-            if (Azimuth < 0 || Azimuth >= 360)
-                throw new InvalidValueException(string.Format("Invalid azimuth: {0}, must be >= 0 and < 360", Azimuth));
-
-            if (wisedome.ShutterIsActive())
-            {
-                tl.LogMessage("SlewToAzimuth", "Denied, shutter is active.");
-                throw new ASCOM.InvalidOperationException("Cannot move, shutter is active!");
-            }
-
             wisedome.SlewToAzimuth(Azimuth);
-            tl.LogMessage("SlewToAzimuth", Azimuth.ToString("#.##"));
         }
 
         public bool Slewing
         {
             get
             {
-                if (Slaved)
-                    throw new InvalidOperationException("Cannot get Slewing while dome is Slaved");
-
-                bool slewing = wisedome.Slewing;
-
-                tl.LogMessage("Slewing Get", slewing.ToString());
-                return slewing;
+                return wisedome.Slewing;
             }
         }
 
         public void SyncToAzimuth(double degrees)
         {
-            Angle ang = new Angle(degrees);
-
-            if (degrees < 0.0 || degrees >= 360.0)
-                throw new InvalidValueException(string.Format("Cannot SyncToAzimuth({0}), must be >- 0 and < 360", ang));
-
-            tl.LogMessage("SyncToAzimuth", ang.ToString());
-            wisedome.Azimuth = ang;
+            wisedome.SyncToAzimuth(degrees);
         }
 
         public uint debugLevel
@@ -651,30 +510,6 @@ namespace ASCOM.Wise40
         }
 
         #endregion
-
-        /// <summary>
-        /// Returns true if there is a valid connection to the driver hardware
-        /// </summary>
-        private bool IsConnected
-        {
-            get
-            {
-                // TODO check that the driver hardware connection exists and is connected to the hardware
-                return connectedState;
-            }
-        }
-
-        /// <summary>
-        /// Use this function to throw an exception if we aren't connected to the hardware
-        /// </summary>
-        /// <param name="message"></param>
-        private void CheckConnected(string message)
-        {
-            if (!IsConnected)
-            {
-                throw new ASCOM.NotConnectedException(message);
-            }
-        }
 
         /// <summary>
         /// Read the device configuration from the ASCOM Profile store

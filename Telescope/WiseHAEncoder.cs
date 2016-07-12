@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using MccDaq;
 using ASCOM.Wise40;
 using ASCOM.Wise40.Common;
+using ASCOM.Wise40.Hardware;
 
-namespace ASCOM.Wise40.Hardware
+namespace ASCOM.Wise40
 {
     /// <summary>
     /// Implements the Wise40 HourAngle Encoder interface
@@ -32,7 +33,8 @@ namespace ASCOM.Wise40.Hardware
         //const double HaCorrection = -6.899777777777778;  // 20160702: Arie
         const uint _simulatedValueAtFiducialMark = _realValueAtFiducialMark;
 
-        private Common.Debugger debugger = new Debugger();
+        private Common.Debugger debugger = new Debugger((uint)Debugger.DebugLevel.DebugEncoders);
+        private Hardware.Hardware hw = Hardware.Hardware.Instance;
 
         public WiseHAEncoder(string name)
         {
@@ -41,7 +43,7 @@ namespace ASCOM.Wise40.Hardware
 
             List<WiseDaq> wormDaqs, axisDaqs, teleDaqs;
 
-            teleDaqs = Hardware.Instance.teleboard.daqs;
+            teleDaqs = hw.teleboard.daqs;
 
             wormDaqLow = teleDaqs.Find(x => x.porttype == DigitalPortType.ThirdPortA);
             wormDaqHigh = teleDaqs.Find(x => x.porttype == DigitalPortType.FourthPortCL);
@@ -84,8 +86,7 @@ namespace ASCOM.Wise40.Hardware
             using (ASCOM.Utilities.Profile driverProfile = new ASCOM.Utilities.Profile())
             {
                 driverProfile.DeviceType = "Telescope";
-                debugger.Level = Convert.ToUInt32(driverProfile.GetValue("ASCOM.Wise40.Telescope", "Debug Level", string.Empty, "0"));
-                //debugger.Level = (uint)Debugger.DebugLevel.DebugAll;
+                //debugger.Level = Convert.ToUInt32(driverProfile.GetValue("ASCOM.Wise40.Telescope", "Debug Level", string.Empty, "0"));
             }
         }
 
@@ -96,7 +97,12 @@ namespace ASCOM.Wise40.Hardware
         public uint Value
         {
             get {
-                if (! simulated)
+                if (simulated)
+                {
+                    debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "{0}: value: {1}",
+                        name, _daqsValue);
+                }
+                else
                 {
                     List<uint> daqValues;
                     uint worm, axis;
@@ -112,6 +118,7 @@ namespace ASCOM.Wise40.Hardware
                         "{0}: value: {1}, axis: {2}, worm: {3}",
                         name, _daqsValue, axis, worm);
                 }
+
                 return _daqsValue;
             }
 
@@ -174,7 +181,8 @@ namespace ASCOM.Wise40.Hardware
             {
                 if (simulated)
                 {
-                    _angle = value;
+                    //_angle = value;
+                    _angle = Angle.FromHours(value.Hours);
                     Value = (uint)Math.Round((_angle.Radians - HaCorrection) / HaMultiplier);
                 }
             }

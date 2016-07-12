@@ -126,6 +126,8 @@
       <DependentUpon>SetupDialogForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Target.cs" />
+    <Compile Include="WiseDecEncoder.cs" />
+    <Compile Include="WiseHAEncoder.cs" />
     <Compile Include="WiseMotor.cs" />
     <Compile Include="WiseTele.cs" />
   </ItemGroup>

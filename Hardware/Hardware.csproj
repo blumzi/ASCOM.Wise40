@@ -89,11 +89,7 @@
     <Compile Include="WiseBitOwner.cs" />
     <Compile Include="WiseBoard.cs" />
     <Compile Include="WiseDaq.cs" />
-    <Compile Include="WiseDecEncoder.cs" />
-    <Compile Include="WiseDome.cs" />
-    <Compile Include="WiseDomeEncoder.cs" />
     <Compile Include="WiseEncoder.cs" />
-    <Compile Include="WiseHAEncoder.cs" />
     <Compile Include="WiseHardware.cs" />
     <Compile Include="WisePin.cs" />
   </ItemGroup>
@@ -107,7 +103,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="BuildingBlocks\" />
-    <Folder Include="Dome\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

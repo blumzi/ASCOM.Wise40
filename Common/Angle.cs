@@ -169,45 +169,6 @@ namespace ASCOM.Wise40.Common
                 return d;
         }
 
-
-        /// <summary>
-        /// Controls the access to an Angle's internal value while applying
-        ///  normalization, if mandated by the Angle's type.
-        ///  
-        /// Contains the actual value, either in degrees or hours, according to _isHSM.
-        /// </summary>
-        //public double Value
-        //{
-        //    get
-        //    {
-        //        return _isHMS ? _degrees / 15.0 : _degrees;
-        //    }
-
-        //    set
-        //    {
-        //        if (_cyclic)
-        //            value = (value %= _highest) >= 0.0 ? value : (value + _highest);
-
-        //        if (_highest != double.PositiveInfinity)
-        //        {
-        //            if (_highestIncluded && value > _highest)
-        //                throw new InvalidValueException(string.Format("value: {0} > highest: {1}", value, _highest));
-        //            else if (!_highestIncluded && value >= _highest)
-        //                throw new InvalidValueException(string.Format("value: {0} >= highest: {1}", value, _highest));
-        //        }
-
-        //        if (_lowest != double.NegativeInfinity)
-        //        {
-        //            if (_lowestIncluded && value < _lowest)
-        //                throw new InvalidValueException(string.Format("value: {0} < lowest: {1}", value, _lowest));
-        //            else if (!_lowestIncluded && value <= _lowest)
-        //                throw new InvalidValueException(string.Format("value: {0} <= lowest: {1}", value, _lowest));
-        //        }
-
-        //        _degrees = _isHMS ? value * 15.0 : value;
-        //    }
-        //}
-
         /// <summary>
         /// Exposes the internal value, converted to degrees if _isHSM.
         /// </summary>

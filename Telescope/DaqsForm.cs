@@ -16,19 +16,18 @@ namespace ASCOM.Wise40
     {
         private List<WiseBoard> boards;
         private HandpadForm handpad;
+        private Hardware.Hardware hw = Hardware.Hardware.Instance;
 
         public DaqsForm(HandpadForm handpad)
         {
             InitializeComponent();
 
-            //StartPosition = FormStartPosition.WindowsDefaultLocation;
-            //Location = new Point(handpad.Top, handpad.Right);
             this.handpad = handpad;
 
             boards = new List<WiseBoard>();
-            boards.Add(Hardware.Hardware.Instance.miscboard);
-            boards.Add(Hardware.Hardware.Instance.teleboard);
-            boards.Add(Hardware.Hardware.Instance.domeboard);
+            boards.Add(hw.miscboard);
+            boards.Add(hw.teleboard);
+            boards.Add(hw.domeboard);
 
             Control[] controls;
 

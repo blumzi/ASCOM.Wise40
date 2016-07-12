@@ -4,8 +4,9 @@ using System.Linq;
 using System.Text;
 using MccDaq;
 using ASCOM.Wise40.Common;
+using ASCOM.Wise40.Hardware;
 
-namespace ASCOM.Wise40.Hardware
+namespace ASCOM.Wise40
 {
     public class WiseDecEncoder : IEncoder
     {
@@ -28,6 +29,7 @@ namespace ASCOM.Wise40.Hardware
         const double DecCorrection = 0.35613322;                //20081231 SK: ActualDec-Encoder Dec [rad]
 
         private Common.Debugger debugger = new Debugger();
+        private Hardware.Hardware hw = Hardware.Hardware.Instance;
 
         public WiseDecEncoder(string name)
         {
@@ -35,7 +37,7 @@ namespace ASCOM.Wise40.Hardware
             astroutils = new Astrometry.AstroUtils.AstroUtils();
             List<WiseDaq> wormDaqs, axisDaqs, teleDaqs;
 
-            teleDaqs = Hardware.Instance.teleboard.daqs;
+            teleDaqs = hw.teleboard.daqs;
 
             wormDaqLow = teleDaqs.Find(x => x.porttype == DigitalPortType.FirstPortA);
             wormDaqHigh = teleDaqs.Find(x => x.porttype == DigitalPortType.SecondPortCL);

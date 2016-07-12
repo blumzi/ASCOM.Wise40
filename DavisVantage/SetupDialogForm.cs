@@ -28,8 +28,8 @@ namespace ASCOM.Vantage
 
         private void cmdOK_Click(object sender, EventArgs e) // OK button event handler
         {
-            ObservingConditions.traceState = chkTrace.Checked;
-            ObservingConditions.reportFile = labelReportFileValue.Text;
+            ObservingConditions._traceState = chkTrace.Checked;
+            ObservingConditions._reportFile = labelReportFileValue.Text;
         }
 
         private void cmdCancel_Click(object sender, EventArgs e) // Cancel button event handler
