@@ -30,12 +30,14 @@ namespace ASCOM.Wise40
 
         private Common.Debugger debugger = new Debugger();
         private Hardware.Hardware hw = Hardware.Hardware.Instance;
+        private static WiseSite wisesite = WiseSite.Instance;
 
         public WiseDecEncoder(string name)
         {
             Novas31 = new Astrometry.NOVAS.NOVAS31();
             astroutils = new Astrometry.AstroUtils.AstroUtils();
             List<WiseDaq> wormDaqs, axisDaqs, teleDaqs;
+            wisesite.init();
 
             teleDaqs = hw.teleboard.daqs;
 
@@ -74,14 +76,13 @@ namespace ASCOM.Wise40
             _name = name;
 
             _angle = simulated ?
-                Angle.FromDegrees(90.0, Angle.Type.Dec) - WiseSite.Instance.Latitude :
+                Angle.FromDegrees(90.0, Angle.Type.Dec) - wisesite.Latitude :
                 Angle.FromRadians((Value * decMultiplier) + DecCorrection, Angle.Type.Dec);
 
             using (ASCOM.Utilities.Profile driverProfile = new ASCOM.Utilities.Profile())
             {
                 driverProfile.DeviceType = "Telescope";
                 debugger.Level = Convert.ToUInt32(driverProfile.GetValue("ASCOM.Wise40.Telescope", "Debug Level", string.Empty, "0"));
-                //debugger.Level = (uint)Debugger.DebugLevel.DebugAll;
             }
         }
 

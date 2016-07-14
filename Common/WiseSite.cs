@@ -15,8 +15,8 @@ namespace ASCOM.Wise40
 {
     public class WiseSite : IDisposable
     {
-        private static WiseSite site;
-        private static bool isInitialized;
+        private static WiseSite _wisesite = new WiseSite();
+        private static bool _initialized;
         private Astrometry.NOVAS.NOVAS31 novas31;
         private static AstroUtils astroutils;
         private static ASCOM.Utilities.Util ascomutils;
@@ -31,47 +31,43 @@ namespace ASCOM.Wise40
         {
             get
             {
-                if (site == null)
-                    site = new WiseSite();
-                site.init();
-                return site;
+                return _wisesite;
             }
         }
 
         public void init()
         {
-            if (!isInitialized)
+            if (_initialized)
+                return;
+
+            novas31 = new NOVAS31();
+            astroutils = new AstroUtils();
+            ascomutils = new Util();
+
+            siteLatitude = ascomutils.DMSToDegrees("30:35:50.43");
+            siteLongitude = ascomutils.DMSToDegrees("34:45:43.86");
+            siteElevation = 882.9;
+            novas31.MakeOnSurface(siteLatitude, siteLongitude, siteElevation, 0.0, 0.0, ref onSurface);
+
+            //using (Profile driverProfile = new Profile())
+            //{
+            //    driverProfile.DeviceType = "Telescope";
+            //    string acc = Convert.ToString(driverProfile.GetValue("ASCOM.Wise40.Telescope", "Astrometric accuracy", string.Empty, "Full"));
+            //    astrometricAccuracy = (acc == "Full") ? Accuracy.Full : Accuracy.Reduced;
+            //}
+
+            try
             {
-                isInitialized = true;
-
-                novas31 = new NOVAS31();
-                astroutils = new AstroUtils();
-                ascomutils = new Util();
-
-                siteLatitude = ascomutils.DMSToDegrees("30:35:50.43");
-                siteLongitude = ascomutils.DMSToDegrees("34:45:43.86");
-                siteElevation = 882.9;
-                novas31.MakeOnSurface(siteLatitude, siteLongitude, siteElevation, 0.0, 0.0, ref onSurface);
-
-                using (Profile driverProfile = new Profile())
-                {
-                    driverProfile.DeviceType = "Telescope";
-                    string acc = Convert.ToString(driverProfile.GetValue("ASCOM.Wise40.Telescope", "Astrometric accuracy", string.Empty, "Full"));
-                    astrometricAccuracy = (acc == "Full") ? Accuracy.Full : Accuracy.Reduced;
-                }
-
-
-                try
-                {
-                    observingConditions = new ObservingConditions("ASCOM.Vantage.ObservingConditions");
-                    refractionOption = Astrometry.RefractionOption.LocationRefraction;
-                    lastOCFetch = DateTime.Now;
-                }
-                catch
-                {
-                    refractionOption = Astrometry.RefractionOption.NoRefraction;
-                }
+                observingConditions = new ObservingConditions("ASCOM.Vantage.ObservingConditions");
+                refractionOption = Astrometry.RefractionOption.LocationRefraction;
+                lastOCFetch = DateTime.Now;
             }
+            catch
+            {
+                refractionOption = Astrometry.RefractionOption.NoRefraction;
+            }
+
+            _initialized = true;
         }
 
         public void Dispose()

@@ -100,6 +100,9 @@ namespace ASCOM.Wise40
 
         private Common.Debugger debugger;
 
+        private WiseTele wisetele = WiseTele.Instance;
+        private static WiseSite wisesite = WiseSite.Instance;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Wise40"/> class.
         /// Must be public for COM registration.
@@ -107,7 +110,7 @@ namespace ASCOM.Wise40
         public Telescope()
         {
             ReadProfile(); // Read device configuration from the ASCOM Profile store
-            debugger = new Common.Debugger(WiseTele.Instance.debugger.Level);
+            debugger = new Common.Debugger(wisetele.debugger.Level);
 
             tl = new TraceLogger("", "Tele");
             tl.Enabled = _trace;
@@ -117,7 +120,8 @@ namespace ASCOM.Wise40
             util = new Util(); //Initialise util object
             astroUtils = new AstroUtils(); // Initialise astro utilities object
 
-            WiseTele.Instance.init(this);
+            wisetele.init(this);
+            wisesite.init();
 
             tl.LogMessage("Telescope", "Completed initialisation");
         }
@@ -138,15 +142,15 @@ namespace ASCOM.Wise40
         {
             // consider only showing the setup dialog if not connected
             // or call a different dialog if connected
-            if (IsConnected && WiseTele.Instance.debugger.Debugging(Common.Debugger.DebugLevel.DebugDevice))
+            if (IsConnected && wisetele.debugger.Debugging(Common.Debugger.DebugLevel.DebugDevice))
             {
                 handpad = new HandpadForm();
                 handpad.ShowDialog();
             } else
                 using (TelescopeSetupDialogForm F = new TelescopeSetupDialogForm(_trace,
-                    WiseTele.Instance.debugger.Level,
-                    WiseSite.Instance.astrometricAccuracy,
-                    WiseTele.Instance._enslaveDome))
+                    wisetele.debugger.Level,
+                    wisesite.astrometricAccuracy,
+                    wisetele._enslaveDome))
                 {
                     var result = F.ShowDialog();
                     if (result == System.Windows.Forms.DialogResult.OK)
@@ -160,28 +164,28 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return WiseTele.Instance.SupportedActions;
+                return wisetele.SupportedActions;
             }
         }
 
         public string Action(string actionName, string actionParameters)
         {
-            return WiseTele.Instance.Action(actionName, actionParameters);
+            return wisetele.Action(actionName, actionParameters);
         }
 
         public void CommandBlind(string command, bool raw)
         {
-            WiseTele.Instance.CommandBlind(command, raw);
+            wisetele.CommandBlind(command, raw);
         }
 
         public bool CommandBool(string command, bool raw)
         {
-            return WiseTele.Instance.CommandBool(command, raw);
+            return wisetele.CommandBool(command, raw);
         }
 
         public string CommandString(string command, bool raw)
         {
-            return WiseTele.Instance.CommandString(command, raw);
+            return wisetele.CommandString(command, raw);
         }
 
         public void Dispose()
@@ -197,21 +201,21 @@ namespace ASCOM.Wise40
             astroUtils.Dispose();
             astroUtils = null;
 
-            WiseTele.Instance.Dispose();
+            wisetele.Dispose();
         }
 
         public bool Connected
         {
             get
             {
-                _connected = WiseTele.Instance.Connected;
+                _connected = wisetele.Connected;
                 return _connected;
             }
 
             set
             {
-                WiseTele.Instance.Connected = value;
-                _connected = WiseTele.Instance.Connected;
+                wisetele.Connected = value;
+                _connected = wisetele.Connected;
             }
         }
 
@@ -219,7 +223,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return WiseTele.Instance.Description;
+                return wisetele.Description;
             }
         }
 
@@ -227,7 +231,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return WiseTele.Instance.DriverInfo;
+                return wisetele.DriverInfo;
             }
         }
 
@@ -235,7 +239,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return WiseTele.Instance.DriverVersion;
+                return wisetele.DriverVersion;
             }
         }
 
@@ -244,7 +248,7 @@ namespace ASCOM.Wise40
             // set by the driver wizard
             get
             {
-                return WiseTele.Instance.InterfaceVersion;
+                return wisetele.InterfaceVersion;
             }
         }
 
@@ -252,7 +256,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return WiseTele.Instance.Name;
+                return wisetele.Name;
             }
         }
 
@@ -261,14 +265,14 @@ namespace ASCOM.Wise40
         #region ITelescope Implementation
         public void AbortSlew()
         {
-            WiseTele.Instance.AbortSlew();
+            wisetele.AbortSlew();
         }
 
         public AlignmentModes AlignmentMode
         {
             get
             {
-                return WiseTele.Instance.AlignmentMode;
+                return wisetele.AlignmentMode;
             }
         }
 
@@ -276,7 +280,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return WiseTele.Instance.Altitude;
+                return wisetele.Altitude;
             }
         }
 
@@ -284,7 +288,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return WiseTele.Instance.ApertureArea;
+                return wisetele.ApertureArea;
             }
         }
 
@@ -292,7 +296,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return WiseTele.Instance.ApertureDiameter;
+                return wisetele.ApertureDiameter;
             }
         }
 
@@ -300,7 +304,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return WiseTele.Instance.AtHome;
+                return wisetele.AtHome;
             }
         }
 
@@ -308,20 +312,20 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return WiseTele.Instance.AtPark;
+                return wisetele.AtPark;
             }
         }
 
         public IAxisRates AxisRates(TelescopeAxes Axis)
         {
-            return WiseTele.Instance.AxisRates(Axis);
+            return wisetele.AxisRates(Axis);
         }
 
         public double Azimuth
         {
             get
             {
-                return WiseTele.Instance.Azimuth;
+                return wisetele.Azimuth;
             }
         }
 
@@ -329,20 +333,20 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return WiseTele.Instance.CanFindHome;
+                return wisetele.CanFindHome;
             }
         }
 
         public bool CanMoveAxis(TelescopeAxes Axis)
         {
-            return WiseTele.Instance.CanMoveAxis(Axis);
+            return wisetele.CanMoveAxis(Axis);
         }
 
         public bool CanPark
         {
             get
             {
-                return WiseTele.Instance.CanPark;
+                return wisetele.CanPark;
             }
         }
 
@@ -350,7 +354,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return WiseTele.Instance.CanPulseGuide;
+                return wisetele.CanPulseGuide;
             }
         }
 
@@ -358,7 +362,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return WiseTele.Instance.CanSetDeclinationRate;
+                return wisetele.CanSetDeclinationRate;
             }
         }
 
@@ -366,7 +370,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return WiseTele.Instance.CanSetGuideRates;
+                return wisetele.CanSetGuideRates;
             }
         }
 
@@ -374,7 +378,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return WiseTele.Instance.CanSetPark;
+                return wisetele.CanSetPark;
             }
         }
 
@@ -382,7 +386,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return WiseTele.Instance.CanSetPierSide;
+                return wisetele.CanSetPierSide;
             }
         }
 
@@ -390,7 +394,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return WiseTele.Instance.CanSetRightAscensionRate;
+                return wisetele.CanSetRightAscensionRate;
             }
         }
 
@@ -398,7 +402,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return WiseTele.Instance.CanSetTracking;
+                return wisetele.CanSetTracking;
             }
         }
 
@@ -406,7 +410,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return WiseTele.Instance.CanSlew;
+                return wisetele.CanSlew;
             }
         }
 
@@ -414,7 +418,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return WiseTele.Instance.CanSlewAltAz;
+                return wisetele.CanSlewAltAz;
             }
         }
 
@@ -422,7 +426,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return WiseTele.Instance.CanSlewAltAzAsync;
+                return wisetele.CanSlewAltAzAsync;
             }
         }
 
@@ -430,7 +434,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return WiseTele.Instance.CanSlewAsync;
+                return wisetele.CanSlewAsync;
             }
         }
 
@@ -438,7 +442,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return WiseTele.Instance.CanSync;
+                return wisetele.CanSync;
             }
         }
 
@@ -446,7 +450,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return WiseTele.Instance.CanSyncAltAz;
+                return wisetele.CanSyncAltAz;
             }
         }
 
@@ -454,7 +458,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return WiseTele.Instance.CanUnpark;
+                return wisetele.CanUnpark;
             }
         }
 
@@ -462,7 +466,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return WiseTele.Instance.Declination;
+                return wisetele.Declination;
             }
         }
 
@@ -470,30 +474,30 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return WiseTele.Instance.DeclinationRate;
+                return wisetele.DeclinationRate;
             }
 
             set
             {
-                WiseTele.Instance.DeclinationRate = value;
+                wisetele.DeclinationRate = value;
             }
         }
 
         public PierSide DestinationSideOfPier(double RightAscension, double Declination)
         {
-            return WiseTele.Instance.DestinationSideOfPier(RightAscension, Declination);
+            return wisetele.DestinationSideOfPier(RightAscension, Declination);
         }
 
         public bool DoesRefraction
         {
             get
             {
-                return WiseTele.Instance.doesRefraction;
+                return wisetele.doesRefraction;
             }
 
             set
             {
-                WiseTele.Instance.doesRefraction = value;
+                wisetele.doesRefraction = value;
             }
         }
 
@@ -501,20 +505,20 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return WiseTele.Instance.EquatorialSystem;
+                return wisetele.EquatorialSystem;
             }
         }
 
         public void FindHome()
         {
-            WiseTele.Instance.FindHome();
+            wisetele.FindHome();
         }
 
         public double FocalLength
         {
             get
             {
-                return WiseTele.Instance.FocalLength;
+                return wisetele.FocalLength;
             }
         }
 
@@ -522,12 +526,12 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return WiseTele.Instance.GuideRateDeclination;
+                return wisetele.GuideRateDeclination;
             }
 
             set
             {
-                WiseTele.Instance.GuideRateDeclination = value;
+                wisetele.GuideRateDeclination = value;
             }
         }
 
@@ -535,12 +539,12 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return WiseTele.Instance.GuideRateRightAscension;
+                return wisetele.GuideRateRightAscension;
             }
 
             set
             {
-                WiseTele.Instance.GuideRateRightAscension = value;
+                wisetele.GuideRateRightAscension = value;
             }
         }
 
@@ -548,30 +552,30 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return WiseTele.Instance.IsPulseGuiding;
+                return wisetele.IsPulseGuiding;
             }
         }
 
         public void MoveAxis(TelescopeAxes Axis, double Rate)
         {
-            WiseTele.Instance.MoveAxis(Axis, Rate);
+            wisetele.MoveAxis(Axis, Rate);
         }
 
         public void Park()
         {
-            WiseTele.Instance.Park();
+            wisetele.Park();
         }
 
         public void PulseGuide(GuideDirections Direction, int Duration)
         {
-            WiseTele.Instance.PulseGuide(Direction, Duration);
+            wisetele.PulseGuide(Direction, Duration);
         }
 
         public double RightAscension
         {
             get
             {
-                return WiseTele.Instance.RightAscension;
+                return wisetele.RightAscension;
             }
         }
 
@@ -579,28 +583,28 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return WiseTele.Instance.RightAscensionRate;
+                return wisetele.RightAscensionRate;
             }
             set
             {
-                WiseTele.Instance.RightAscensionRate = value;
+                wisetele.RightAscensionRate = value;
             }
         }
 
         public void SetPark()
         {
-            WiseTele.Instance.SetPark();
+            wisetele.SetPark();
         }
 
         public PierSide SideOfPier
         {
             get
             {
-                return WiseTele.Instance.SideOfPier;
+                return wisetele.SideOfPier;
             }
             set
             {
-                WiseTele.Instance.SideOfPier = value;
+                wisetele.SideOfPier = value;
             }
         }
 
@@ -608,7 +612,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return WiseTele.Instance.SiderealTime;
+                return wisetele.SiderealTime;
             }
         }
 
@@ -616,12 +620,12 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return WiseTele.Instance.SiteElevation;
+                return wisetele.SiteElevation;
             }
 
             set
             {
-                WiseTele.Instance.SiteElevation = value;
+                wisetele.SiteElevation = value;
             }
         }
 
@@ -629,11 +633,11 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return WiseTele.Instance.SiteLatitude;
+                return wisetele.SiteLatitude;
             }
             set
             {
-                WiseTele.Instance.SiteLatitude = value;
+                wisetele.SiteLatitude = value;
             }
         }
 
@@ -641,11 +645,11 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return WiseTele.Instance.SiteLongitude;
+                return wisetele.SiteLongitude;
             }
             set
             {
-                WiseTele.Instance.SiteLongitude = value;
+                wisetele.SiteLongitude = value;
             }
         }
 
@@ -653,79 +657,79 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return WiseTele.Instance.SlewSettleTime;
+                return wisetele.SlewSettleTime;
             }
 
             set
             {
-                WiseTele.Instance.SlewSettleTime = value;
+                wisetele.SlewSettleTime = value;
             }
         }
 
         public void SlewToAltAz(double Azimuth, double Altitude)
         {
-            WiseTele.Instance.SlewToAltAz(Azimuth, Altitude);
+            wisetele.SlewToAltAz(Azimuth, Altitude);
         }
 
         public void SlewToAltAzAsync(double Azimuth, double Altitude)
         {
-            WiseTele.Instance.SlewToAltAzAsync(Azimuth, Altitude);
+            wisetele.SlewToAltAzAsync(Azimuth, Altitude);
         }
 
         public void SlewToCoordinates(double RightAscension, double Declination)
         {
 
-            WiseTele.Instance.SlewToCoordinates(RightAscension, Declination);
+            wisetele.SlewToCoordinates(RightAscension, Declination);
         }
 
         public void SlewToCoordinatesAsync(double RightAscension, double Declination)
         {
-            WiseTele.Instance.SlewToCoordinatesAsync(RightAscension, Declination);
+            wisetele.SlewToCoordinatesAsync(RightAscension, Declination);
         }
 
         public void SlewToTarget()
         {
-            WiseTele.Instance.SlewToTarget();
+            wisetele.SlewToTarget();
         }
 
         public void SlewToTargetAsync()
         {
-            WiseTele.Instance.SlewToTargetAsync();
+            wisetele.SlewToTargetAsync();
         }
 
         public bool Slewing
         {
             get
             {
-                return WiseTele.Instance.Slewing;
+                return wisetele.Slewing;
             }
         }
 
         public void SyncToAltAz(double Azimuth, double Altitude)
         {
-            WiseTele.Instance.SyncToAltAz(Azimuth, Altitude);
+            wisetele.SyncToAltAz(Azimuth, Altitude);
         }
 
         public void SyncToCoordinates(double RightAscension, double Declination)
         {
-            WiseTele.Instance.SyncToCoordinates(RightAscension, Declination);
+            wisetele.SyncToCoordinates(RightAscension, Declination);
         }
 
         public void SyncToTarget()
         {
-            WiseTele.Instance.SyncToTarget();
+            wisetele.SyncToTarget();
         }
 
         public double TargetDeclination
         {
             get
             {
-                return WiseTele.Instance.TargetDeclination;
+                return wisetele.TargetDeclination;
             }
 
             set
             {
-                WiseTele.Instance.TargetDeclination = value;
+                wisetele.TargetDeclination = value;
             }
         }
 
@@ -733,12 +737,12 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return WiseTele.Instance.TargetRightAscension;
+                return wisetele.TargetRightAscension;
             }
 
             set
             {
-                WiseTele.Instance.TargetRightAscension = value;
+                wisetele.TargetRightAscension = value;
             }
         }
 
@@ -746,12 +750,12 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return WiseTele.Instance.Tracking;
+                return wisetele.Tracking;
             }
 
             set
             {
-                WiseTele.Instance.Tracking = value;
+                wisetele.Tracking = value;
             }
         }
 
@@ -759,12 +763,12 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return WiseTele.Instance.TrackingRate;
+                return wisetele.TrackingRate;
             }
 
             set
             {
-                WiseTele.Instance.TrackingRate = value;
+                wisetele.TrackingRate = value;
             }
         }
 
@@ -772,7 +776,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return WiseTele.Instance.TrackingRates;
+                return wisetele.TrackingRates;
             }
         }
 
@@ -780,18 +784,18 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return WiseTele.Instance.UTCDate;
+                return wisetele.UTCDate;
             }
 
             set
             {
-                WiseTele.Instance.UTCDate = value;
+                wisetele.UTCDate = value;
             }
         }
 
         public void Unpark()
         {
-            WiseTele.Instance.Unpark();
+            wisetele.Unpark();
         }
 
         #endregion
@@ -907,11 +911,12 @@ namespace ASCOM.Wise40
             {
                 driverProfile.DeviceType = "Telescope";
                 _trace = Convert.ToBoolean(driverProfile.GetValue(driverID, traceStateProfileName, string.Empty, "false"));
-                //WiseTele.Instance.debugger.Level = Convert.ToUInt32(driverProfile.GetValue(driverID, debugLevelProfileName, string.Empty, "0"));
-                WiseTele.Instance.debugger.Level = (uint)Common.Debugger.DebugLevel.DebugAll;
-                WiseSite.Instance.astrometricAccuracy = driverProfile.GetValue(driverID, astrometricAccuracyProfileName, string.Empty, "Full") == "Full" ?
-                    Accuracy.Full : Accuracy.Reduced;
-                WiseTele.Instance._enslaveDome = Convert.ToBoolean(driverProfile.GetValue(driverID, enslaveDomeProfileName, string.Empty, "true"));
+                wisetele.debugger.Level = Convert.ToUInt32(driverProfile.GetValue(driverID, debugLevelProfileName, string.Empty, "0"));
+                wisetele._enslaveDome = Convert.ToBoolean(driverProfile.GetValue(driverID, enslaveDomeProfileName, string.Empty, "false"));
+                wisesite.astrometricAccuracy = 
+                    driverProfile.GetValue(driverID, astrometricAccuracyProfileName, string.Empty, "Full") == "Full" ?
+                        Accuracy.Full :
+                        Accuracy.Reduced;
             }
         }
 
@@ -924,9 +929,9 @@ namespace ASCOM.Wise40
             {
                 driverProfile.DeviceType = "Telescope";
                 driverProfile.WriteValue(driverID, traceStateProfileName, _trace.ToString());
-                driverProfile.WriteValue(driverID, astrometricAccuracyProfileName, WiseSite.Instance.astrometricAccuracy == Accuracy.Full ? "Full" : "Reduced");
-                driverProfile.WriteValue(driverID, debugLevelProfileName, WiseTele.Instance.debugger.Level.ToString());
-                driverProfile.WriteValue(driverID, enslaveDomeProfileName, WiseTele.Instance._enslaveDome.ToString());
+                driverProfile.WriteValue(driverID, astrometricAccuracyProfileName, wisesite.astrometricAccuracy == Accuracy.Full ? "Full" : "Reduced");
+                driverProfile.WriteValue(driverID, debugLevelProfileName, wisetele.debugger.Level.ToString());
+                driverProfile.WriteValue(driverID, enslaveDomeProfileName, wisetele._enslaveDome.ToString());
             }
         }
 

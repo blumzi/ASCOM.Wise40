@@ -14,6 +14,9 @@ namespace ASCOM.Wise40
 {
     public class WiseDome : IConnectable, IDisposable {
 
+        private static readonly WiseDome instance = new WiseDome(); // Singleton
+        private static bool _initialized = false;
+
         private WisePin leftPin, rightPin;
         private WisePin openPin, closePin;
         private WisePin homePin, ventPin;
@@ -67,8 +70,6 @@ namespace ASCOM.Wise40
 
         private static TraceLogger tl;
 
-        private static readonly WiseDome instance = new WiseDome(); // Singleton
-
         // Explicit static constructor to tell C# compiler
         // not to mark type as beforefieldinit
         static WiseDome()
@@ -87,17 +88,31 @@ namespace ASCOM.Wise40
             }
         }
 
-        public void init(AutoResetEvent arrivedEvent)
+        public void SetDebugger(Debugger debugger)
         {
-            WiseDome.tl = Dome.tl;
+            this.debugger = debugger;
+        }
+
+        public void SetLogger(TraceLogger logger)
+        {
+            tl = logger;
+        }
+
+        public void init()
+        {
+            if (_initialized)
+                return;
+
+            tl = new TraceLogger();
 
             debugger = new Debugger();
             using (Profile profile = new Profile())
             {
                 profile.DeviceType = "Dome";
-                //debugger.Level = Convert.ToUInt32(profile.GetValue("ASCOM.Wise40.Dome", "Debug Level", string.Empty, "0"));
-                debugger.Level = (uint)Debugger.DebugLevel.DebugAll;
+                debugger.Level = Convert.ToUInt32(profile.GetValue("ASCOM.Wise40.Dome", "Debug Level", string.Empty, "0"));
+                tl.Enabled = Convert.ToBoolean(profile.GetValue("ASCOM.Wise40.Dome", "Trace Level", string.Empty, "false"));                
             }
+
             hw.init();
 
             try {
@@ -163,9 +178,14 @@ namespace ASCOM.Wise40
             _stuckTimer.Elapsed += onStuckTimer;
             _stuckTimer.Enabled = false;
 
-            _arrivedEvent = arrivedEvent;
+            _initialized = true;
 
-            debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "WiseDome constructor done.");
+            debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "WiseDome init() done.");
+        }
+
+        public void SetArrivedEvent(AutoResetEvent e)
+        {
+            _arrivedEvent = e;
         }
 
         public void Connect(bool connected)

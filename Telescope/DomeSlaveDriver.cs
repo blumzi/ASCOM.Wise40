@@ -13,16 +13,18 @@ namespace ASCOM.Wise40
 {
     class DomeSlaveDriver: IConnectable
     {
-        private Wise40.Dome _dome = null;
+        private static WiseDome wisedome = WiseDome.Instance;
         private bool _connected = false;
         private ASCOM.Astrometry.NOVAS.NOVAS31 novas31;
         private AstroUtils astroutils;
         AutoResetEvent _arrived = new AutoResetEvent(false);
         private bool _slewStarted = false;
         private Debugger debugger;
-        private uint _debugLevel;
 
         public static readonly DomeSlaveDriver instance = new DomeSlaveDriver(); // Singleton
+        private static WiseSite wisesite = WiseSite.Instance;
+
+        private bool _initialized = false;
 
         // Explicit static constructor to tell C# compiler
         // not to mark type as beforefieldinit
@@ -42,21 +44,23 @@ namespace ASCOM.Wise40
             }
         }
 
-        public void init(WiseTele T)
+        public void init()
         {
-            try
-            {
-                instance._dome = new Dome();
-            } catch (Exception e)
-            {
-                throw new Exception(string.Format("DomeSlaveDriver: Cannot get a Dome instance ({0}", e.Message));
-            }
+            if (_initialized)
+                return;
+
+            debugger = WiseTele.Instance.debugger;
             instance.novas31 = new Astrometry.NOVAS.NOVAS31();
             instance.astroutils = new AstroUtils();
-            _arrived = instance._dome.arrived;
-            instance.debugger = T.debugger;
+            _arrived = new AutoResetEvent(false);
+            wisedome.init();
+            wisedome.SetArrivedEvent(_arrived);
+            wisedome.SetDebugger(debugger);
+            wisedome.SetLogger(WiseTele.Instance.traceLogger);
+            wisesite.init();
 
-            instance.debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "DomeSlaveDriver: constructed");
+            _initialized = true;
+            debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "DomeSlaveDriver: init() done.");
         }
 
         public bool Connected
@@ -69,51 +73,34 @@ namespace ASCOM.Wise40
 
         public void Connect(bool connect)
         {
-            if (connect == true)
-            {
-                try
-                {
-                    instance._dome.Connected = true;
-                    instance._dome.debugLevel = _debugLevel;
-                }
-                catch (Exception e)
-                {
-                    throw new Exception(string.Format("DomeSlaveDriver: Cannot enslave dome ({0})", e.Message));
-                }
-            }
-            else
-            {
-                if (_dome != null)
-                {
-                    instance._dome.Connected = false;
-                }
-            }
-            instance.debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "DomeSlaveDriver: Connect({0}) done", connect);
+            if (!_initialized)
+                init();
+            wisedome.Connect(connect);
         }
 
         public void SlewStartAsync(Angle ra, Angle dec)
         {
             double rar = 0, decr = 0, az = 0, zd = 0;
 
-            WiseSite.Instance.prepareRefractionData();
+            wisesite.prepareRefractionData();
             instance.novas31.Equ2Hor(instance.astroutils.JulianDateUT1(0), 0,
-                WiseSite.Instance.astrometricAccuracy,
+                wisesite.astrometricAccuracy,
                 0, 0,
-                WiseSite.Instance.onSurface,
+                wisesite.onSurface,
                 ra.Hours, dec.Degrees,
-                WiseSite.Instance.refractionOption,
+                wisesite.refractionOption,
                 ref zd, ref az, ref rar, ref decr);
 
             _slewStarted = true;
-            instance.debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "DomeSlaveDriver: Asking dome to SlewToAzimuth({0})", new Angle(az));
-            instance._dome.SlewToAzimuth(az);
+            debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "DomeSlaveDriver: Asking dome to SlewToAzimuth({0})", new Angle(az));
+            wisedome.SlewToAzimuth(az);
         }
 
         public void SlewWait()
         {
-            instance.debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "DomeSlaveDriver: Waiting for dome to arrive to target az");
+            debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "DomeSlaveDriver: Waiting for dome to arrive to target az");
             _arrived.WaitOne();
-            instance.debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "DomeSlaveDriver: Dome arrived to target az");
+            debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "DomeSlaveDriver: Dome arrived to target az");
             _slewStarted = false;
         }
 
@@ -127,24 +114,15 @@ namespace ASCOM.Wise40
 
         public void SlewToParkStart()
         {
-            if (instance._dome.CanPark) {
-                //_dome.Slaved = false;   // dome cannot park while slaved
+            if (wisedome.CanPark) {
                 _slewStarted = true;
-                instance._dome.Park();
-            }
-        }
-
-        public uint debugLevel
-        {
-            set
-            {
-                _debugLevel = value;
+                wisedome.Park();
             }
         }
 
         public void AbortSlew()
         {
-            instance._dome.AbortSlew();
+            wisedome.AbortSlew();
         }
     }
 }

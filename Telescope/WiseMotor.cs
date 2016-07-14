@@ -24,6 +24,7 @@ namespace ASCOM.Wise40.Hardware
         private WisePin motorPin, guideMotorPin, slewPin;
         private List<WisePin> activePins;
         private List<object> encoders;
+        private object encodersLock = new object();
         private System.Threading.Timer simulationTimer;
         private double currentRate;
         private int simulationTimerFrequency;
@@ -134,20 +135,29 @@ namespace ASCOM.Wise40.Hardware
 
             foreach (IEncoder encoder in encoders)
             {
-                Angle before = _axis == TelescopeAxes.axisPrimary ? Angle.FromHours(WiseTele.Instance.RightAscension) : Angle.FromDegrees(WiseTele.Instance.Declination);
+                Angle before, after;
+                string op;
 
-                string op = _direction == Const.AxisDirection.Increasing ? "+" : "-";
-                if (_direction == Const.AxisDirection.Increasing)
-                    encoder.Angle += angle;
-                else
-                    encoder.Angle -= angle;
+                lock (encodersLock)
+                {
+                    before = _axis == TelescopeAxes.axisPrimary ?
+                    Angle.FromHours(WiseTele.Instance.RightAscension) :
+                    Angle.FromDegrees(WiseTele.Instance.Declination);
+
+                    op = _direction == Const.AxisDirection.Increasing ? "+" : "-";
+                    if (_direction == Const.AxisDirection.Increasing)
+                        encoder.Angle += angle;
+                    else
+                        encoder.Angle -= angle;
+                    after = _axis == TelescopeAxes.axisPrimary ? 
+                        Angle.FromHours(WiseTele.Instance.RightAscension) : 
+                        Angle.FromDegrees(WiseTele.Instance.Declination);
+                }
 
                 if (WiseTele.Instance.debugger.Debugging(Debugger.DebugLevel.DebugMotors))
                 {
-                    Angle after = _axis == TelescopeAxes.axisPrimary ? Angle.FromHours(WiseTele.Instance.RightAscension) : Angle.FromDegrees(WiseTele.Instance.Declination);
-
-                    WiseTele.Instance.debugger.WriteLine(
-                        Debugger.DebugLevel.DebugMotors, "bumpEncoders: {0}: {1}: {2}: (angle: {3}, op: {10}) {4} => {5} ({6} => {7}) (#{8}, {9} ms)",
+                    WiseTele.Instance.debugger.WriteLine(Debugger.DebugLevel.DebugMotors,
+                        "bumpEncoders: {0}: {1}: {2}: (angle: {3}, op: {10}) {4} => {5} ({6} => {7}) (#{8}, {9} ms)",
                         name,
                         encoder.name,
                         _axis == TelescopeAxes.axisPrimary ? "ra" : "dec",

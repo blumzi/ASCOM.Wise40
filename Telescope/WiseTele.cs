@@ -62,7 +62,7 @@ namespace ASCOM.Wise40
         private List<IConnectable> connectables;
         private List<IDisposable> disposables;
 
-        private TraceLogger traceLogger;
+        public TraceLogger traceLogger;
         public Debugger debugger = new Debugger((uint) Debugger.DebugLevel.DebugAll);
 
         private bool _connected = false;
@@ -93,6 +93,8 @@ namespace ASCOM.Wise40
         private List<double> _primaryAxisValues = new List<double>(_nAxisValues);
         private List<uint> _secondaryAxisValues = new List<uint>(_nAxisValues);
         private object _primaryValuesLock = new Object(), _secondaryValuesLock = new Object();
+
+        private static WiseSite wisesite = WiseSite.Instance;
 
         /// <summary>
         /// Usually two or three tasks are used to perform a slew:
@@ -163,7 +165,7 @@ namespace ASCOM.Wise40
         private SafetyMonitorTimer safetyMonitorTimer;
 
         public bool _enslaveDome = false;
-        private DomeSlaveDriver domeSlaveDriver;
+        private DomeSlaveDriver domeSlaveDriver = DomeSlaveDriver.Instance;
 
         private bool _driverInitiatedSlewing = false;
         private bool _wasSlewing = false;
@@ -354,6 +356,7 @@ namespace ASCOM.Wise40
         }
 
         private static readonly WiseTele instance = new WiseTele(); // Singleton
+        private static bool _initialized = false;
 
         // Explicit static constructor to tell C# compiler
         // not to mark type as beforefieldinit
@@ -373,20 +376,24 @@ namespace ASCOM.Wise40
             }
         }
 
-        public void init(Telescope T)
+        public void init(Telescope tele)
         {
+            if (_initialized)
+                return;
+
             WisePin SlewPin = null;
             WisePin NorthGuidePin = null, SouthGuidePin = null, EastGuidePin = null, WestGuidePin = null;   // Guide motor activation pins
             WisePin NorthPin = null, SouthPin = null, EastPin = null, WestPin = null;                       // Set and Slew motors activation pinsisInitialized = true;
 
             debugger = new Debugger();
-            T.ReadProfile();
+            tele.ReadProfile();
             traceLogger = new TraceLogger("", "Tele");
             traceLogger.Enabled = Telescope._trace;
             novas31 = new NOVAS31();
             ascomutils = new Util();
             astroutils = new Astrometry.AstroUtils.AstroUtils();
             hw.init();
+            wisesite.init();
             
             List<ISimulated> hardware_elements = new List<ISimulated>();
 
@@ -551,9 +558,12 @@ namespace ASCOM.Wise40
 
             if (instance._enslaveDome)
             {
-                domeSlaveDriver = new DomeSlaveDriver();
-                domeSlaveDriver.init(this);
+                domeSlaveDriver = DomeSlaveDriver.Instance;
+                domeSlaveDriver.init();
             }
+
+            _initialized = true;
+            debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "WiseTele init() done.");
         }
 
         public double FocalLength
@@ -619,13 +629,13 @@ namespace ASCOM.Wise40
             {
                 double rar = 0, decr = 0, az = 0, zd= 0;
 
-                WiseSite.Instance.prepareRefractionData();
+                wisesite.prepareRefractionData();
                 novas31.Equ2Hor(astroutils.JulianDateUT1(0), 0,
-                    WiseSite.Instance.astrometricAccuracy,
+                    wisesite.astrometricAccuracy,
                     0, 0,
-                    WiseSite.Instance.onSurface,
+                    wisesite.onSurface,
                     RightAscension, Declination,
-                    WiseSite.Instance.refractionOption,
+                    wisesite.refractionOption,
                     ref zd, ref az, ref rar, ref decr);
 
                 traceLogger.LogMessage("Azimuth Get", az.ToString());
@@ -639,13 +649,13 @@ namespace ASCOM.Wise40
             {
                 double rar = 0, decr = 0, az = 0, zd = 0, alt;
 
-                WiseSite.Instance.prepareRefractionData();
+                wisesite.prepareRefractionData();
                 novas31.Equ2Hor(astroutils.JulianDateUT1(0), 0,
-                    WiseSite.Instance.astrometricAccuracy,
+                    wisesite.astrometricAccuracy,
                     0, 0,
-                    WiseSite.Instance.onSurface,
+                    wisesite.onSurface,
                     RightAscension, Declination,
-                    WiseSite.Instance.refractionOption,
+                    wisesite.refractionOption,
                     ref zd, ref az, ref rar, ref decr);
 
                 alt = 90.0 - zd;
@@ -661,14 +671,14 @@ namespace ASCOM.Wise40
                 bool ret = TrackingMotor.isOn;
 
                 traceLogger.LogMessage("Tracking", "Get - " + ret.ToString());
-                debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, string.Format("Tracking Get - {0}", ret));
+                debugger.WriteLine(Debugger.DebugLevel.DebugASCOM, string.Format("Tracking Get - {0}", ret));
                 return ret;
             }
 
             set
             {
                 traceLogger.LogMessage("Tracking Set", value.ToString());
-                debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, string.Format("Tracking Set - {0}", value));
+                debugger.WriteLine(Debugger.DebugLevel.DebugASCOM, string.Format("Tracking Set - {0}", value));
 
                 if (value)
                 {
@@ -755,7 +765,7 @@ namespace ASCOM.Wise40
 
         private void CheckAxisMovement(object StateObject)
         {
-            foreach (TelescopeAxes axis in new List<TelescopeAxes>() { TelescopeAxes.axisPrimary, TelescopeAxes.axisSecondary }) {
+            foreach (TelescopeAxes axis in axes) {
                 if (axis == TelescopeAxes.axisPrimary)
                 {
                     var epsilon = new Angle("00:00:00.1").Degrees;
@@ -916,7 +926,7 @@ namespace ASCOM.Wise40
 
             if (AtPark)
             {
-                WiseTele.Instance.currMovement[Axis].rate = Const.rateStopped;
+                Instance.currMovement[Axis].rate = Const.rateStopped;
                 throw new InvalidValueException("Cannot MoveAxis while AtPark");
             }
 
@@ -932,7 +942,7 @@ namespace ASCOM.Wise40
                 if (wasTracking)
                     Tracking = true;
 
-                WiseTele.Instance.currMovement[Axis].rate = Const.rateStopped;
+                Instance.currMovement[Axis].rate = Const.rateStopped;
                 debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "_moveAxis({0}, {1}): done.", Axis, RateName(Rate));
 
                 _slewing = false;
@@ -944,8 +954,8 @@ namespace ASCOM.Wise40
             if (! ((absRate == Const.rateSlew) || (absRate == Const.rateSet) || (absRate == Const.rateGuide)))
                 throw new InvalidValueException(string.Format("_moveAxis({0}, {1}): Invalid rate.", Axis, Rate));
 
-            if (WiseTele.Instance.currMovement[otherAxis].rate != Const.rateStopped && 
-                absRate != WiseTele.Instance.currMovement[otherAxis].rate)
+            if (Instance.currMovement[otherAxis].rate != Const.rateStopped && 
+                absRate != Instance.currMovement[otherAxis].rate)
             {
                 string msg = string.Format("Cannot _moveAxis({0}, {1}) ({2}) while {3} is moving at {4}",
                     Axis, RateName(Rate), axisDirectionName[Axis][direction], otherAxis, RateName(currMovement[otherAxis].rate));
@@ -1025,16 +1035,18 @@ namespace ASCOM.Wise40
         /// <param name="takeAction">Take recovery actions or not</param>
         public bool SafeAtCoordinates(Angle ra, Angle dec, bool takeAction = false)
         {
+            return true;
+
             double rar = 0, decr = 0, az = 0, zd = 0;
             Angle alt;
 
-            WiseSite.Instance.prepareRefractionData();
+            wisesite.prepareRefractionData();
             novas31.Equ2Hor(astroutils.JulianDateUT1(0), 0,
-                WiseSite.Instance.astrometricAccuracy,
+                wisesite.astrometricAccuracy,
                 0, 0,
-                WiseSite.Instance.onSurface,          // TBD: set Pressure (mbar) and Temperature (C)
+                wisesite.onSurface,          // TBD: set Pressure (mbar) and Temperature (C)
                 ra.Hours, dec.Degrees,
-                WiseSite.Instance.refractionOption,   // TBD: do we want refraction?
+                wisesite.refractionOption,   // TBD: do we want refraction?
                 ref zd, ref az, ref rar, ref decr);
 
             alt = Angle.FromDegrees(90.0 - zd);
@@ -1112,7 +1124,7 @@ namespace ASCOM.Wise40
             if (AtPark)
                 return;
 
-            _slewToCoordinatesSync(WiseSite.Instance.LocalSiderealTime, WiseSite.Instance.Latitude);
+            _slewToCoordinatesSync(wisesite.LocalSiderealTime, wisesite.Latitude);
             AtPark = true;
         }
 
@@ -1128,7 +1140,7 @@ namespace ASCOM.Wise40
         private void Slewer(TelescopeAxes axis, Angle targetAngle)
         {
             string threadName = Thread.CurrentThread.Name;
-            Movement cm = WiseTele.Instance.currMovement[axis];
+            Movement cm = Instance.currMovement[axis];
             Angle currPosition = new Angle(0.0);
             MovementParameters mp;
 
@@ -1140,7 +1152,7 @@ namespace ASCOM.Wise40
                 foreach (var rate in rates)
                 {
                     mp = movementParameters[axis][rate];
-                    WiseTele.Instance.currMovement[axis] = new Movement() { rate = Const.rateStopped };
+                    Instance.currMovement[axis] = new Movement() { rate = Const.rateStopped };
 
                     slewingCancellationToken.ThrowIfCancellationRequested();
                     readyToSlew.Increment(rate);
@@ -1473,7 +1485,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                double ret = WiseSite.Instance.LocalSiderealTime.Hours;
+                double ret = wisesite.LocalSiderealTime.Hours;
 
                 traceLogger.LogMessage("SiderealTime", "Get - " + ret.ToString());
                 return ret;
@@ -1484,7 +1496,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                double elevation = WiseSite.Instance.Elevation;
+                double elevation = wisesite.Elevation;
 
                 traceLogger.LogMessage("SiteElevation Get", elevation.ToString());
                 return elevation;
@@ -1501,7 +1513,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                double latitude = WiseSite.Instance.Latitude.Degrees;
+                double latitude = wisesite.Latitude.Degrees;
 
                 traceLogger.LogMessage("SiteLatitude Get", latitude.ToString());
                 return latitude;
@@ -1520,7 +1532,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                double longitude = WiseSite.Instance.Longitude.Degrees;
+                double longitude = wisesite.Longitude.Degrees;
 
                 traceLogger.LogMessage("SiteLongitude Get", longitude.ToString());
                 return longitude;

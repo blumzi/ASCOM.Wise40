@@ -109,10 +109,13 @@ namespace ASCOM.Wise40
             tl.Enabled = traceState;
             tl.LogMessage("Dome", "Starting initialisation");
             
-            utilities = new Util(); //Initialise util object
-            astroUtilities = new AstroUtils(); // Initialise astro utilities object
+            utilities = new Util();
+            astroUtilities = new AstroUtils();
 
-            wisedome.init(arrived);
+            wisedome.init();
+            wisedome.SetArrivedEvent(arrived);
+            wisedome.SetDebugger(debugger);
+            wisedome.SetLogger(tl);
 
             tl.LogMessage("Dome", "Completed initialisation");
         }

@@ -17,6 +17,7 @@ namespace ASCOM.Wise40
         uint debugLevel;
         Accuracy accuracy;
         bool enslaveDome;
+        private static WiseSite wisesite = WiseSite.Instance;
 
         public TelescopeSetupDialogForm(bool traceState, uint debugLevel, Accuracy accuracy, bool enslaveDome)
         {
@@ -26,6 +27,7 @@ namespace ASCOM.Wise40
             this.enslaveDome = enslaveDome;
 
             InitializeComponent();
+            wisesite.init();
             
             traceBox.Checked = traceState;
             accuracyBox.SelectedItem = (accuracy == Accuracy.Full) ? 0 : 1;
@@ -62,7 +64,7 @@ namespace ASCOM.Wise40
         private void cmdOK_Click(object sender, EventArgs e) // OK button event handler
         {
             Telescope._trace = traceBox.Checked;
-            WiseSite.Instance.astrometricAccuracy = accuracyBox.Text == "Full" ? Accuracy.Full : Accuracy.Reduced;
+            wisesite.astrometricAccuracy = accuracyBox.Text == "Full" ? Accuracy.Full : Accuracy.Reduced;
 
             uint level = 0;
             if (checkBoxDebugging.Checked)

@@ -35,11 +35,13 @@ namespace ASCOM.Wise40
 
         private Common.Debugger debugger = new Debugger((uint)Debugger.DebugLevel.DebugEncoders);
         private Hardware.Hardware hw = Hardware.Hardware.Instance;
+        private static WiseSite wisesite = WiseSite.Instance;
 
         public WiseHAEncoder(string name)
         {
             Novas31 = new Astrometry.NOVAS.NOVAS31();
             astroutils = new Astrometry.AstroUtils.AstroUtils();
+            wisesite.init();
 
             List<WiseDaq> wormDaqs, axisDaqs, teleDaqs;
 
@@ -86,7 +88,7 @@ namespace ASCOM.Wise40
             using (ASCOM.Utilities.Profile driverProfile = new ASCOM.Utilities.Profile())
             {
                 driverProfile.DeviceType = "Telescope";
-                //debugger.Level = Convert.ToUInt32(driverProfile.GetValue("ASCOM.Wise40.Telescope", "Debug Level", string.Empty, "0"));
+                debugger.Level = Convert.ToUInt32(driverProfile.GetValue("ASCOM.Wise40.Telescope", "Debug Level", string.Empty, "0"));
             }
         }
 
@@ -181,7 +183,6 @@ namespace ASCOM.Wise40
             {
                 if (simulated)
                 {
-                    //_angle = value;
                     _angle = Angle.FromHours(value.Hours);
                     Value = (uint)Math.Round((_angle.Radians - HaCorrection) / HaMultiplier);
                 }
@@ -228,7 +229,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                Angle ret = WiseSite.Instance.LocalSiderealTime - Angle.FromHours(Hours, Angle.Type.RA);
+                Angle ret = wisesite.LocalSiderealTime - Angle.FromHours(Hours, Angle.Type.RA);
                 debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "[{0}] RightAscension: {1}", this.GetHashCode(), ret);
 
                 return ret;

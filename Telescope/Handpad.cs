@@ -18,9 +18,10 @@ namespace ASCOM.Wise40
     public partial class HandpadForm : Form
     {
         public DaqsForm daqsForm;
-        WiseTele T;
+        private static WiseTele wisetele = WiseTele.Instance;
         private double handpadRate = Const.rateSlew;
         private BackgroundWorker scopeBackgroundMover;
+        private static WiseSite wisesite = WiseSite.Instance;
 
         private class TimedMovementArg {
             public TelescopeAxes axis;
@@ -86,10 +87,10 @@ namespace ASCOM.Wise40
         public HandpadForm()
         {
             InitializeComponent();
-            T = WiseTele.Instance;
-            checkBoxTrack.Checked = T.Tracking;
+            checkBoxTrack.Checked = wisetele.Tracking;
             //daqsForm = new DaqsForm(this);
             results = new List<TimedMovementResult>();
+            wisesite.init();
         }
 
         private void radioButtonSlew_Click(object sender, EventArgs e)
@@ -109,7 +110,7 @@ namespace ASCOM.Wise40
 
         private void checkBoxTrack_CheckedChanged(object sender, EventArgs e)
         {
-            T.Tracking = ((CheckBox)sender).Checked;
+            wisetele.Tracking = ((CheckBox)sender).Checked;
         }
 
         private void buttonHardware_Click(object sender, EventArgs e)
@@ -166,7 +167,7 @@ namespace ASCOM.Wise40
 
         private void buttonStop_Click(object sender, EventArgs e)
         {
-            T.Stop();
+            wisetele.Stop();
         }
 
         private void RefreshDisplay()
@@ -181,27 +182,27 @@ namespace ASCOM.Wise40
             labelDate.Text = utc.ToLongDateString();
             labelLTValue.Text = now.TimeOfDay.ToString(@"hh\:mm\:ss\.f\ ");
             labelUTValue.Text = utc.TimeOfDay.ToString(@"hh\:mm\:ss\.f\ ");
-            labelSiderealValue.Text = WiseSite.Instance.LocalSiderealTime.ToString();
+            labelSiderealValue.Text = wisesite.LocalSiderealTime.ToString();
             
-            labelRightAscensionValue.Text = Angle.FromHours(T.RightAscension).ToNiceString();
-            labelDeclinationValue.Text = Angle.FromDegrees(T.Declination).ToNiceString();
-            labelHourAngleValue.Text = Angle.FromHours(T.HourAngle, Angle.Type.HA).ToNiceString();
+            labelRightAscensionValue.Text = Angle.FromHours(wisetele.RightAscension).ToNiceString();
+            labelDeclinationValue.Text = Angle.FromDegrees(wisetele.Declination).ToNiceString();
+            labelHourAngleValue.Text = Angle.FromHours(wisetele.HourAngle, Angle.Type.HA).ToNiceString();
 
-            labelAltitudeValue.Text = Angle.FromDegrees(T.Altitude).ToNiceString();
-            labelAzimuthValue.Text = Angle.FromDegrees(T.Azimuth).ToNiceString();
+            labelAltitudeValue.Text = Angle.FromDegrees(wisetele.Altitude).ToNiceString();
+            labelAzimuthValue.Text = Angle.FromDegrees(wisetele.Azimuth).ToNiceString();
 
-            labelHAEncValue.Text = T.HAEncoder.Value.ToString();
-            labelDecEncValue.Text = T.DecEncoder.Value.ToString();
+            labelHAEncValue.Text = wisetele.HAEncoder.Value.ToString();
+            labelDecEncValue.Text = wisetele.DecEncoder.Value.ToString();
 
-            axisValue.Text = T.HAEncoder.AxisValue.ToString();
-            wormValue.Text = T.HAEncoder.WormValue.ToString();
+            axisValue.Text = wisetele.HAEncoder.AxisValue.ToString();
+            wormValue.Text = wisetele.HAEncoder.WormValue.ToString();
 
-            checkBoxPrimaryIsActive.Checked = T.AxisIsMoving(TelescopeAxes.axisPrimary);
-            checkBoxSecondaryIsActive.Checked = T.AxisIsMoving(TelescopeAxes.axisSecondary);
-            checkBoxSlewingIsActive.Checked = T.Slewing;
-            checkBoxTrackingIsActive.Checked = T.Tracking;
+            checkBoxPrimaryIsActive.Checked = wisetele.AxisIsMoving(TelescopeAxes.axisPrimary);
+            checkBoxSecondaryIsActive.Checked = wisetele.AxisIsMoving(TelescopeAxes.axisSecondary);
+            checkBoxSlewingIsActive.Checked = wisetele.Slewing;
+            checkBoxTrackingIsActive.Checked = wisetele.Tracking;
 
-            checkBoxTrack.Checked = T.Tracking;
+            checkBoxTrack.Checked = wisetele.Tracking;
 
             if (scopeBackgroundMover != null && scopeBackgroundMover.IsBusy)
                 TextBoxLog.Text = "Working ...";
@@ -235,38 +236,38 @@ namespace ASCOM.Wise40
             Button button = (Button)sender;
 
             if (button == buttonNorth)
-                T.MoveAxis(TelescopeAxes.axisSecondary, handpadRate);
+                wisetele.MoveAxis(TelescopeAxes.axisSecondary, handpadRate);
             else if (button == buttonSouth)
-                T.MoveAxis(TelescopeAxes.axisSecondary, -handpadRate);
+                wisetele.MoveAxis(TelescopeAxes.axisSecondary, -handpadRate);
             else if (button == buttonWest)
-                T.MoveAxis(TelescopeAxes.axisPrimary, handpadRate);
+                wisetele.MoveAxis(TelescopeAxes.axisPrimary, handpadRate);
             else if (button == buttonEast)
-                T.MoveAxis(TelescopeAxes.axisPrimary, -handpadRate);
+                wisetele.MoveAxis(TelescopeAxes.axisPrimary, -handpadRate);
             else if (button == buttonNE)
             {
-                T.MoveAxis(TelescopeAxes.axisSecondary, handpadRate);
-                T.MoveAxis(TelescopeAxes.axisPrimary, -handpadRate);
+                wisetele.MoveAxis(TelescopeAxes.axisSecondary, handpadRate);
+                wisetele.MoveAxis(TelescopeAxes.axisPrimary, -handpadRate);
             }
             else if (button == buttonNW)
             {
-                T.MoveAxis(TelescopeAxes.axisSecondary, handpadRate);
-                T.MoveAxis(TelescopeAxes.axisPrimary, -handpadRate);
+                wisetele.MoveAxis(TelescopeAxes.axisSecondary, handpadRate);
+                wisetele.MoveAxis(TelescopeAxes.axisPrimary, -handpadRate);
             }
             else if (button == buttonSE)
             {
-                T.MoveAxis(TelescopeAxes.axisSecondary, -handpadRate);
-                T.MoveAxis(TelescopeAxes.axisPrimary, -handpadRate);
+                wisetele.MoveAxis(TelescopeAxes.axisSecondary, -handpadRate);
+                wisetele.MoveAxis(TelescopeAxes.axisPrimary, -handpadRate);
             }
             else if (button == buttonSW)
             {
-                T.MoveAxis(TelescopeAxes.axisSecondary, -handpadRate);
-                T.MoveAxis(TelescopeAxes.axisPrimary, handpadRate);
+                wisetele.MoveAxis(TelescopeAxes.axisSecondary, -handpadRate);
+                wisetele.MoveAxis(TelescopeAxes.axisPrimary, handpadRate);
             }
         }
 
         private void directionButton_MouseUp(object sender, MouseEventArgs e)
         {
-            T.Stop();
+            wisetele.Stop();
         }
 
         private void radioButton3_CheckedChanged(object sender, EventArgs e)
@@ -281,7 +282,7 @@ namespace ASCOM.Wise40
 
         private void buttonStopStudy_Click(object sender, EventArgs e)
         {
-            T.Stop();
+            wisetele.Stop();
         }
 
         /// <summary>
@@ -303,8 +304,8 @@ namespace ASCOM.Wise40
 
                 selector = (int)TimedMovementResult.ResultSelector.AtStart;
                 res.time[selector] = DateTime.Now;
-                res.enc_value[selector] = (arg.axis == TelescopeAxes.axisPrimary) ? T.HAEncoder.Value : T.DecEncoder.Value;
-                res.enc_angle[selector] = Angle.FromRadians((arg.axis == TelescopeAxes.axisPrimary) ? T.HAEncoder.Angle.Radians : T.DecEncoder.Angle.Radians);
+                res.enc_value[selector] = (arg.axis == TelescopeAxes.axisPrimary) ? wisetele.HAEncoder.Value : wisetele.DecEncoder.Value;
+                res.enc_angle[selector] = Angle.FromRadians((arg.axis == TelescopeAxes.axisPrimary) ? wisetele.HAEncoder.Angle.Radians : wisetele.DecEncoder.Angle.Radians);
 
                 if (bgw.CancellationPending)
                 {
@@ -313,12 +314,12 @@ namespace ASCOM.Wise40
                     break;
                 }
 
-                T.MoveAxis(arg.axis, arg.rate);
+                wisetele.MoveAxis(arg.axis, arg.rate);
                 for (long endTicks = DateTime.Now.Ticks + 10000 * arg.millis; DateTime.Now.Ticks < endTicks; Thread.Sleep(1))
                 {
                     if (bgw.CancellationPending)
                     {
-                        T.Stop();
+                        wisetele.Stop();
                         res.cancelled = true;
                         bgResults.Add(res);
                         goto Out;
@@ -327,18 +328,18 @@ namespace ASCOM.Wise40
 
                 selector = (int)TimedMovementResult.ResultSelector.AtStop;
                 res.time[selector] = DateTime.Now;
-                res.enc_value[selector] = (arg.axis == TelescopeAxes.axisPrimary) ? T.HAEncoder.Value : T.DecEncoder.Value;
-                res.enc_angle[selector] = Angle.FromDegrees((arg.axis == TelescopeAxes.axisPrimary) ? T.HAEncoder.Angle.Degrees : T.DecEncoder.Angle.Degrees);
+                res.enc_value[selector] = (arg.axis == TelescopeAxes.axisPrimary) ? wisetele.HAEncoder.Value : wisetele.DecEncoder.Value;
+                res.enc_angle[selector] = Angle.FromDegrees((arg.axis == TelescopeAxes.axisPrimary) ? wisetele.HAEncoder.Angle.Degrees : wisetele.DecEncoder.Angle.Degrees);
 
-                if (T.simulated)    // move some more, to simulate telescope inertia
+                if (wisetele.simulated)    // move some more, to simulate telescope inertia
                 {
-                    T.MoveAxis(arg.axis, arg.rate);
+                    wisetele.MoveAxis(arg.axis, arg.rate);
                     long deltaTicks = 10000 * (long) (WiseTele.Instance.movementParameters[arg.axis][arg.rate].stopMovement.Degrees * WiseTele.Instance.movementParameters[arg.axis][arg.rate].millisecondsPerDegree);
                     for (long endTicks = DateTime.Now.Ticks + deltaTicks; DateTime.Now.Ticks < endTicks; Thread.Sleep(10))
                     {
                         if (bgw.CancellationPending)
                         {
-                            T.Stop();
+                            wisetele.Stop();
                             res.cancelled = true;
                             bgResults.Add(res);
                             goto Out;
@@ -346,7 +347,7 @@ namespace ASCOM.Wise40
                     }
                 }
 
-                T.Stop();
+                wisetele.Stop();
 
                 if (bgw.CancellationPending)
                 {
@@ -355,7 +356,7 @@ namespace ASCOM.Wise40
                     goto Out;
                 }
 
-                if (!T.simulated)
+                if (!wisetele.simulated)
                 {
                     Thread.Sleep(10000);     // wait for real scope to stop
 
@@ -369,8 +370,8 @@ namespace ASCOM.Wise40
 
                 selector = (int)TimedMovementResult.ResultSelector.AtIdle;
                 res.time[selector] = DateTime.Now;
-                res.enc_value[selector] = (arg.axis == TelescopeAxes.axisPrimary) ? T.HAEncoder.Value : T.DecEncoder.Value;
-                res.enc_angle[selector] = Angle.FromDegrees((arg.axis == TelescopeAxes.axisPrimary) ? T.HAEncoder.Angle.Degrees : T.DecEncoder.Angle.Degrees);
+                res.enc_value[selector] = (arg.axis == TelescopeAxes.axisPrimary) ? wisetele.HAEncoder.Value : wisetele.DecEncoder.Value;
+                res.enc_angle[selector] = Angle.FromDegrees((arg.axis == TelescopeAxes.axisPrimary) ? wisetele.HAEncoder.Angle.Degrees : wisetele.DecEncoder.Angle.Degrees);
 
                 bgResults.Add(res);
             }
@@ -478,13 +479,13 @@ namespace ASCOM.Wise40
 
         private void buttonGoCoord_Click(object sender, EventArgs e)
         {
-            if (! T.Tracking)
+            if (! wisetele.Tracking)
             {
                 MessageBox.Show("Telescope is NOT tracking!", "Error");
                 return;
             }
 
-            T.SlewToCoordinatesAsync(new Angle(textBoxRA.Text).Hours, new Angle(textBoxDec.Text).Degrees);
+            wisetele.SlewToCoordinatesAsync(new Angle(textBoxRA.Text).Hours, new Angle(textBoxDec.Text).Degrees);
         }
 
         private void label8_Click(object sender, EventArgs e)
