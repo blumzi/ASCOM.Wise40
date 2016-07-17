@@ -98,7 +98,7 @@ namespace ASCOM.Wise40
         
         public HandpadForm handpad;
 
-        private Common.Debugger debugger;
+        private Common.Debugger debugger = Common.Debugger.Instance;
 
         private WiseTele wisetele = WiseTele.Instance;
         private static WiseSite wisesite = WiseSite.Instance;
@@ -110,7 +110,6 @@ namespace ASCOM.Wise40
         public Telescope()
         {
             ReadProfile(); // Read device configuration from the ASCOM Profile store
-            debugger = new Common.Debugger(wisetele.debugger.Level);
 
             tl = new TraceLogger("", "Tele");
             tl.Enabled = _trace;
@@ -911,7 +910,7 @@ namespace ASCOM.Wise40
             {
                 driverProfile.DeviceType = "Telescope";
                 _trace = Convert.ToBoolean(driverProfile.GetValue(driverID, traceStateProfileName, string.Empty, "false"));
-                wisetele.debugger.Level = Convert.ToUInt32(driverProfile.GetValue(driverID, debugLevelProfileName, string.Empty, "0"));
+                debugger.Level = Convert.ToUInt32(driverProfile.GetValue(driverID, debugLevelProfileName, string.Empty, "0"));
                 wisetele._enslaveDome = Convert.ToBoolean(driverProfile.GetValue(driverID, enslaveDomeProfileName, string.Empty, "false"));
                 wisesite.astrometricAccuracy = 
                     driverProfile.GetValue(driverID, astrometricAccuracyProfileName, string.Empty, "Full") == "Full" ?

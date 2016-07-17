@@ -28,7 +28,7 @@ namespace ASCOM.Wise40
         const double decMultiplier = 2 * Math.PI / 600 / 4096;
         const double DecCorrection = 0.35613322;                //20081231 SK: ActualDec-Encoder Dec [rad]
 
-        private Common.Debugger debugger = new Debugger();
+        private Common.Debugger debugger = Debugger.Instance;
         private Hardware.Hardware hw = Hardware.Hardware.Instance;
         private static WiseSite wisesite = WiseSite.Instance;
 

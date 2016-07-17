@@ -10,6 +10,25 @@ namespace ASCOM.Wise40.Common
 {
     public class Debugger
     {
+        private static readonly Debugger instance = new Debugger(); // Singleton
+        private static bool _initialized = false;
+
+        static Debugger()
+        {
+        }
+
+        public Debugger()
+        {
+        }
+
+        public static Debugger Instance
+        {
+            get
+            {
+                return instance;
+            }
+        }
+
         public enum DebugLevel
         {
             DebugASCOM = (1 << 0),
@@ -23,13 +42,17 @@ namespace ASCOM.Wise40.Common
             DebugAll = DebugEncoders | DebugAxes | DebugMotors | DebugExceptions | DebugDevice | DebugASCOM | DebugLogic,
         };
 
-        public string[] indents = new string[(int)DebugLevel.DebugEncoders + 1];
+        public static string[] indents = new string[(int)DebugLevel.DebugEncoders + 1];
 
-        private uint _level;
+        private static uint _level;
 
-        public Debugger(uint level = 0) // may want to add optional file-name
+        public void init(uint level = 0)
         {
-            _level = level;
+            if (_initialized)
+                return;
+
+            if (level != 0)
+                _level = level;
 
             indents[(int)DebugLevel.DebugASCOM] = "      ";
             indents[(int)DebugLevel.DebugDevice] = ">     ";
@@ -38,6 +61,8 @@ namespace ASCOM.Wise40.Common
             indents[(int)DebugLevel.DebugAxes] = ">>>>  ";
             indents[(int)DebugLevel.DebugMotors] = ">>>>> ";
             indents[(int)DebugLevel.DebugEncoders] = ">>>>>>";
+
+            _initialized = true;
         }
 
         /// <summary>

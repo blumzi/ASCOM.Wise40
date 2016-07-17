@@ -102,7 +102,7 @@ namespace ASCOM.Wise40
         /// </summary>
         public Dome()
         {
-            debugger = new Common.Debugger();
+            debugger = Common.Debugger.Instance;
             ReadProfile(); // Read device configuration from the ASCOM Profile store
 
             tl = new TraceLogger("", "Dome");
@@ -112,9 +112,9 @@ namespace ASCOM.Wise40
             utilities = new Util();
             astroUtilities = new AstroUtils();
 
+            debugger.init();
             wisedome.init();
             wisedome.SetArrivedEvent(arrived);
-            wisedome.SetDebugger(debugger);
             wisedome.SetLogger(tl);
 
             tl.LogMessage("Dome", "Completed initialisation");

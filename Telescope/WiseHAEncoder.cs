@@ -33,7 +33,7 @@ namespace ASCOM.Wise40
         //const double HaCorrection = -6.899777777777778;  // 20160702: Arie
         const uint _simulatedValueAtFiducialMark = _realValueAtFiducialMark;
 
-        private Common.Debugger debugger = new Debugger((uint)Debugger.DebugLevel.DebugEncoders);
+        private Common.Debugger debugger = Common.Debugger.Instance;
         private Hardware.Hardware hw = Hardware.Hardware.Instance;
         private static WiseSite wisesite = WiseSite.Instance;
 

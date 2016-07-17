@@ -34,6 +34,7 @@ namespace ASCOM.Wise40.Hardware
         private Const.AxisDirection _direction;   // There are separate WiseMotor instances for North, South, East, West
         private bool _simulated = false;
         private bool _connected = false;
+        private Debugger debugger = Debugger.Instance;
 
         public WiseVirtualMotor(
             string name,
@@ -69,7 +70,7 @@ namespace ASCOM.Wise40.Hardware
         public void SetOn(double rate)
         {
             rate = Math.Abs(rate);
-            WiseTele.Instance.debugger.WriteLine(Debugger.DebugLevel.DebugMotors, "{0}: On at {1}", name, WiseTele.RateName(rate));
+            debugger.WriteLine(Debugger.DebugLevel.DebugMotors, "{0}: On at {1}", name, WiseTele.RateName(rate));
 
             if (rate == Const.rateSlew)
                 activePins = new List<WisePin>() { slewPin, motorPin };
@@ -92,7 +93,7 @@ namespace ASCOM.Wise40.Hardware
 
         public void SetOff()
         {
-            WiseTele.Instance.debugger.WriteLine(Debugger.DebugLevel.DebugMotors,
+            debugger.WriteLine(Debugger.DebugLevel.DebugMotors,
                 "{0}: Off (was at {1})", name, WiseTele.RateName(currentRate));
 
             if (simulated)
@@ -154,9 +155,7 @@ namespace ASCOM.Wise40.Hardware
                         Angle.FromDegrees(WiseTele.Instance.Declination);
                 }
 
-                if (WiseTele.Instance.debugger.Debugging(Debugger.DebugLevel.DebugMotors))
-                {
-                    WiseTele.Instance.debugger.WriteLine(Debugger.DebugLevel.DebugMotors,
+                debugger.WriteLine(Debugger.DebugLevel.DebugMotors,
                         "bumpEncoders: {0}: {1}: {2}: (angle: {3}, op: {10}) {4} => {5} ({6} => {7}) (#{8}, {9} ms)",
                         name,
                         encoder.name,
@@ -169,7 +168,6 @@ namespace ASCOM.Wise40.Hardware
                         timer_counts++,
                         DateTime.Now.Subtract(prevTick).Milliseconds,
                         op);
-                }
                 prevTick = DateTime.Now;
             }
         }

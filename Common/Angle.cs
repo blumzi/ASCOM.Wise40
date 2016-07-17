@@ -393,7 +393,7 @@ namespace ASCOM.Wise40.Common
             Angle incSide, decSide;
             ShortestDistanceResult res = new ShortestDistanceResult();
 
-            Debugger debugger = new Debugger();
+            Debugger debugger = Debugger.Instance;
             debugger.Level = 25;
 
             if (other == this)

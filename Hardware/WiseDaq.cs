@@ -21,7 +21,7 @@ namespace ASCOM.Wise40.Hardware
         private ushort _value;
         private ushort _mask;
 
-        private Debugger debugger = new Debugger((uint)Debugger.DebugLevel.DebugMotors);
+        private Debugger debugger = Debugger.Instance;
 
         /// <summary>
         /// The Daq's direction

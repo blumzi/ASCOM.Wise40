@@ -25,17 +25,16 @@ namespace ASCOM.Wise40
         private const int _simulatedEncoderTicksPerSecond = 6;
         private bool _connected = false;
         private const int _hwTicks = 1024;
-        private Debugger debugger;
+        private Debugger debugger = Debugger.Instance;
         private string _name;
 
         private WiseDaq encDaqLow, encDaqHigh;
         private AtomicReader encAtomicReader;
         private Hardware.Hardware hw = Hardware.Hardware.Instance;
 
-        public WiseDomeEncoder(string name, Debugger debugger)
+        public WiseDomeEncoder(string name)
         {
             _name = name;
-            this.debugger = debugger;
             encDaqLow = hw.domeboard.daqs.Find(x => x.porttype == DigitalPortType.FirstPortB);
             encDaqHigh = hw.domeboard.daqs.Find(x => x.porttype == DigitalPortType.FirstPortCH);
             encAtomicReader = new AtomicReader(new List<WiseDaq>() { encDaqHigh, encDaqLow });

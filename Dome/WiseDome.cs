@@ -62,7 +62,7 @@ namespace ASCOM.Wise40
         private bool _slaved = false;
         private bool _atPark = false;
 
-        private Debugger debugger;
+        private Debugger debugger = Debugger.Instance;
         private static AutoResetEvent reachedHomePoint = new AutoResetEvent(false);
 
         private static AutoResetEvent _arrivedEvent;
@@ -88,11 +88,6 @@ namespace ASCOM.Wise40
             }
         }
 
-        public void SetDebugger(Debugger debugger)
-        {
-            this.debugger = debugger;
-        }
-
         public void SetLogger(TraceLogger logger)
         {
             tl = logger;
@@ -105,7 +100,6 @@ namespace ASCOM.Wise40
 
             tl = new TraceLogger();
 
-            debugger = new Debugger();
             using (Profile profile = new Profile())
             {
                 profile.DeviceType = "Dome";
@@ -127,7 +121,7 @@ namespace ASCOM.Wise40
                 homePin = new WisePin("DomeCalibration", hw.domeboard, DigitalPortType.FirstPortCL, 0, DigitalPortDirection.DigitalIn);
                 ventPin = new WisePin("DomeVent", hw.teleboard, DigitalPortType.ThirdPortCL, 0, DigitalPortDirection.DigitalOut);
 
-                domeEncoder = new WiseDomeEncoder("DomeEncoder", debugger);
+                domeEncoder = new WiseDomeEncoder("DomeEncoder");
 
                 connectables.Add(openPin);
                 connectables.Add(closePin);
@@ -238,9 +232,6 @@ namespace ASCOM.Wise40
                 return false;
 
             ShortestDistanceResult shortest = Azimuth.ShortestDistance(there);
-            //debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "arriving here: {0}, there: {1}, dist: {3}, epsilon: {2}, ret: {4}",
-            //    Azimuth, there, shortest.angle, inertiaAngle(there), shortest.angle <= inertiaAngle(there));
-
             return shortest.angle <= inertiaAngle(there);
         }
 

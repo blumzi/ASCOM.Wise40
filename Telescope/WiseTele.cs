@@ -63,7 +63,7 @@ namespace ASCOM.Wise40
         private List<IDisposable> disposables;
 
         public TraceLogger traceLogger;
-        public Debugger debugger = new Debugger((uint) Debugger.DebugLevel.DebugAll);
+        public Debugger debugger = Debugger.Instance;
 
         private bool _connected = false;
         private bool _simulated = false;
@@ -385,8 +385,8 @@ namespace ASCOM.Wise40
             WisePin NorthGuidePin = null, SouthGuidePin = null, EastGuidePin = null, WestGuidePin = null;   // Guide motor activation pins
             WisePin NorthPin = null, SouthPin = null, EastPin = null, WestPin = null;                       // Set and Slew motors activation pinsisInitialized = true;
 
-            debugger = new Debugger();
             tele.ReadProfile();
+            debugger.init();
             traceLogger = new TraceLogger("", "Tele");
             traceLogger.Enabled = Telescope._trace;
             novas31 = new NOVAS31();

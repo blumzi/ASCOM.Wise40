@@ -49,13 +49,12 @@ namespace ASCOM.Wise40
             if (_initialized)
                 return;
 
-            debugger = WiseTele.Instance.debugger;
+            debugger = Debugger.Instance;
             instance.novas31 = new Astrometry.NOVAS.NOVAS31();
             instance.astroutils = new AstroUtils();
             _arrived = new AutoResetEvent(false);
             wisedome.init();
             wisedome.SetArrivedEvent(_arrived);
-            wisedome.SetDebugger(debugger);
             wisedome.SetLogger(WiseTele.Instance.traceLogger);
             wisesite.init();
 

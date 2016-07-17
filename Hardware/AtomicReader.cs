@@ -16,7 +16,7 @@ namespace ASCOM.Wise40.Hardware
         private const int maxTries = 5;
         List<WiseDaq> daqs;
 
-        Common.Debugger debugger = new Common.Debugger();
+        Common.Debugger debugger = Common.Debugger.Instance;
 
         public AtomicReader(List<WiseDaq> daqs)
         {

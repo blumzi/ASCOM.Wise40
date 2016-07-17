@@ -52,7 +52,7 @@ namespace ASCOM.Wise40
                 checkBoxDebugMotors.AutoCheck = true;
                 checkBoxDebugDevice.AutoCheck = true;
 
-                Debugger debugger = WiseTele.Instance.debugger;
+                Debugger debugger = Debugger.Instance;
                 checkBoxDebugEncoders.CheckState = debugger.Debugging(Debugger.DebugLevel.DebugEncoders) ? CheckState.Checked : CheckState.Unchecked;
                 checkBoxDebugAxes.CheckState = debugger.Debugging(Debugger.DebugLevel.DebugAxes) ? CheckState.Checked : CheckState.Unchecked;
                 checkBoxDebugExceptions.CheckState = debugger.Debugging(Debugger.DebugLevel.DebugExceptions) ? CheckState.Checked : CheckState.Unchecked;
@@ -111,7 +111,7 @@ namespace ASCOM.Wise40
                 checkBoxDebugMotors.AutoCheck = true;
                 checkBoxDebugDevice.AutoCheck = true;
 
-                Debugger debugger = WiseTele.Instance.debugger;
+                Debugger debugger = Debugger.Instance;
                 checkBoxDebugExceptions.CheckState = debugger.Debugging(Debugger.DebugLevel.DebugExceptions) ? CheckState.Checked : CheckState.Unchecked;
                 checkBoxDebugEncoders.CheckState = debugger.Debugging(Debugger.DebugLevel.DebugEncoders) ? CheckState.Checked : CheckState.Unchecked;
                 checkBoxDebugAxes.CheckState = debugger.Debugging(Debugger.DebugLevel.DebugAxes) ? CheckState.Checked : CheckState.Unchecked;
