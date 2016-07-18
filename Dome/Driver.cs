@@ -75,7 +75,7 @@ namespace ASCOM.Wise40
         internal static string debugLevelProfileName = "Debug Level";
 
         public bool traceState;
-        public Common.Debugger debugger;
+        public Common.Debugger debugger = Common.Debugger.Instance;
 
         /// <summary>
         /// Private variable to hold an ASCOM Utilities object

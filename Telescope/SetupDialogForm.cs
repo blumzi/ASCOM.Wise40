@@ -28,37 +28,20 @@ namespace ASCOM.Wise40
 
             InitializeComponent();
             wisesite.init();
-            
+
             traceBox.Checked = traceState;
             accuracyBox.SelectedItem = (accuracy == Accuracy.Full) ? 0 : 1;
             checkBoxEnslaveDome.Checked = enslaveDome;
-            if (WiseTele.Instance.debugger.Level == 0)
-            {
-                checkBoxDebugging.Checked = false;
 
-                checkBoxDebugDevice.AutoCheck = false;
-                checkBoxDebugExceptions.AutoCheck = false;
-                checkBoxDebugEncoders.AutoCheck = false;
-                checkBoxDebugAxes.AutoCheck = false;
-                checkBoxDebugMotors.AutoCheck = false;
-            }
-            else
-            {
-                checkBoxDebugging.Checked = true;
 
-                checkBoxDebugExceptions.AutoCheck = true;
-                checkBoxDebugEncoders.AutoCheck = true;
-                checkBoxDebugAxes.AutoCheck = true;
-                checkBoxDebugMotors.AutoCheck = true;
-                checkBoxDebugDevice.AutoCheck = true;
-
-                Debugger debugger = Debugger.Instance;
-                checkBoxDebugEncoders.CheckState = debugger.Debugging(Debugger.DebugLevel.DebugEncoders) ? CheckState.Checked : CheckState.Unchecked;
-                checkBoxDebugAxes.CheckState = debugger.Debugging(Debugger.DebugLevel.DebugAxes) ? CheckState.Checked : CheckState.Unchecked;
-                checkBoxDebugExceptions.CheckState = debugger.Debugging(Debugger.DebugLevel.DebugExceptions) ? CheckState.Checked : CheckState.Unchecked;
-                checkBoxDebugMotors.CheckState = debugger.Debugging(Debugger.DebugLevel.DebugMotors) ? CheckState.Checked : CheckState.Unchecked;
-                checkBoxDebugDevice.CheckState = debugger.Debugging(Debugger.DebugLevel.DebugDevice) ? CheckState.Checked : CheckState.Unchecked;
-            }
+            Debugger debugger = Debugger.Instance;
+            checkBoxDebugEncoders.CheckState = debugger.Debugging(Debugger.DebugLevel.DebugEncoders) ? CheckState.Checked : CheckState.Unchecked;
+            checkBoxDebugAxes.CheckState = debugger.Debugging(Debugger.DebugLevel.DebugAxes) ? CheckState.Checked : CheckState.Unchecked;
+            checkBoxDebugExceptions.CheckState = debugger.Debugging(Debugger.DebugLevel.DebugExceptions) ? CheckState.Checked : CheckState.Unchecked;
+            checkBoxDebugMotors.CheckState = debugger.Debugging(Debugger.DebugLevel.DebugMotors) ? CheckState.Checked : CheckState.Unchecked;
+            checkBoxDebugDevice.CheckState = debugger.Debugging(Debugger.DebugLevel.DebugDevice) ? CheckState.Checked : CheckState.Unchecked;
+            checkBoxDebugASCOM.CheckState = debugger.Debugging(Debugger.DebugLevel.DebugASCOM) ? CheckState.Checked : CheckState.Unchecked;
+            checkBoxDebugLogic.CheckState = debugger.Debugging(Debugger.DebugLevel.DebugLogic) ? CheckState.Checked : CheckState.Unchecked;
         }
 
         private void cmdOK_Click(object sender, EventArgs e) // OK button event handler
@@ -67,15 +50,15 @@ namespace ASCOM.Wise40
             wisesite.astrometricAccuracy = accuracyBox.Text == "Full" ? Accuracy.Full : Accuracy.Reduced;
 
             uint level = 0;
-            if (checkBoxDebugging.Checked)
-            {
-                if (checkBoxDebugEncoders.Checked) level |= (uint) Debugger.DebugLevel.DebugEncoders;
-                if (checkBoxDebugAxes.Checked) level |= (uint)Debugger.DebugLevel.DebugAxes;
-                if (checkBoxDebugExceptions.Checked) level |= (uint)Debugger.DebugLevel.DebugExceptions;
-                if (checkBoxDebugMotors.Checked) level |= (uint)Debugger.DebugLevel.DebugMotors;
-                if (checkBoxDebugDevice.Checked) level |= (uint)Debugger.DebugLevel.DebugDevice;
-            }
+            if (checkBoxDebugEncoders.Checked) level |= (uint)Debugger.DebugLevel.DebugEncoders;
+            if (checkBoxDebugAxes.Checked) level |= (uint)Debugger.DebugLevel.DebugAxes;
+            if (checkBoxDebugExceptions.Checked) level |= (uint)Debugger.DebugLevel.DebugExceptions;
+            if (checkBoxDebugMotors.Checked) level |= (uint)Debugger.DebugLevel.DebugMotors;
+            if (checkBoxDebugDevice.Checked) level |= (uint)Debugger.DebugLevel.DebugDevice;
+            if (checkBoxDebugASCOM.Checked) level |= (uint)Debugger.DebugLevel.DebugASCOM;
+            if (checkBoxDebugLogic.Checked) level |= (uint)Debugger.DebugLevel.DebugLogic;
             WiseTele.Instance.debugger.Level = level;
+
             WiseTele.Instance._enslaveDome = checkBoxEnslaveDome.Checked;
         }
 
@@ -101,36 +84,28 @@ namespace ASCOM.Wise40
             }
         }
 
-        private void checkBoxDebugging_CheckedChanged(object sender, EventArgs e)
+        private void buttonSetAll_Click(object sender, EventArgs e)
         {
-            if (checkBoxDebugging.Checked)
-            {
-                checkBoxDebugExceptions.AutoCheck = true;
-                checkBoxDebugEncoders.AutoCheck = true;
-                checkBoxDebugAxes.AutoCheck = true;
-                checkBoxDebugMotors.AutoCheck = true;
-                checkBoxDebugDevice.AutoCheck = true;
+            checkBoxDebugEncoders.Checked = true;
+            checkBoxDebugAxes.Checked = true;
+            checkBoxDebugExceptions.Checked = true;
+            checkBoxDebugMotors.Checked = true;
+            checkBoxDebugDevice.Checked = true;
+            checkBoxDebugLogic.Checked = true;
+            checkBoxDebugMotors.Checked = true;
+            checkBoxDebugASCOM.Checked = true;
+        }
 
-                Debugger debugger = Debugger.Instance;
-                checkBoxDebugExceptions.CheckState = debugger.Debugging(Debugger.DebugLevel.DebugExceptions) ? CheckState.Checked : CheckState.Unchecked;
-                checkBoxDebugEncoders.CheckState = debugger.Debugging(Debugger.DebugLevel.DebugEncoders) ? CheckState.Checked : CheckState.Unchecked;
-                checkBoxDebugAxes.CheckState = debugger.Debugging(Debugger.DebugLevel.DebugAxes) ? CheckState.Checked : CheckState.Unchecked;
-                checkBoxDebugMotors.CheckState = debugger.Debugging(Debugger.DebugLevel.DebugMotors) ? CheckState.Checked : CheckState.Unchecked;
-                checkBoxDebugDevice.CheckState = debugger.Debugging(Debugger.DebugLevel.DebugDevice) ? CheckState.Checked : CheckState.Unchecked; 
-            } else
-            {
-                checkBoxDebugExceptions.AutoCheck = false;
-                checkBoxDebugEncoders.AutoCheck = false;
-                checkBoxDebugAxes.AutoCheck = false;
-                checkBoxDebugMotors.AutoCheck = false;
-                checkBoxDebugDevice.AutoCheck = false;
-
-                checkBoxDebugExceptions.Checked = false;
-                checkBoxDebugEncoders.Checked = false;
-                checkBoxDebugAxes.Checked = false;
-                checkBoxDebugMotors.Checked = false;
-                checkBoxDebugDevice.Checked = false;
-            }
+        private void buttonClearAll_Click(object sender, EventArgs e)
+        {
+            checkBoxDebugEncoders.Checked = false;
+            checkBoxDebugAxes.Checked = false;
+            checkBoxDebugExceptions.Checked = false;
+            checkBoxDebugMotors.Checked = false;
+            checkBoxDebugDevice.Checked = false;
+            checkBoxDebugLogic.Checked = false;
+            checkBoxDebugMotors.Checked = false;
+            checkBoxDebugASCOM.Checked = false;
         }
     }
 }

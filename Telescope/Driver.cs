@@ -141,7 +141,7 @@ namespace ASCOM.Wise40
         {
             // consider only showing the setup dialog if not connected
             // or call a different dialog if connected
-            if (IsConnected && wisetele.debugger.Debugging(Common.Debugger.DebugLevel.DebugDevice))
+            if (_connected && wisetele.debugger.Debugging(Common.Debugger.DebugLevel.DebugDevice))
             {
                 handpad = new HandpadForm();
                 handpad.ShowDialog();
@@ -878,24 +878,12 @@ namespace ASCOM.Wise40
         #endregion
 
         /// <summary>
-        /// Returns true if there is a valid connection to the driver hardware
-        /// </summary>
-        private bool IsConnected
-        {
-            get
-            {
-                // TODO check that the driver hardware connection exists and is connected to the hardware
-                return _connected;
-            }
-        }
-
-        /// <summary>
         /// Use this function to throw an exception if we aren't connected to the hardware
         /// </summary>
         /// <param name="message"></param>
         private void CheckConnected(string message)
         {
-            if (!IsConnected)
+            if (!_connected)
             {
                 throw new ASCOM.NotConnectedException(message);
             }
