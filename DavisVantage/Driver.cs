@@ -82,7 +82,7 @@ namespace ASCOM.Vantage
         /// <summary>
         /// Private variable to hold the connected state
         /// </summary>
-        private bool _connectedState;
+        private bool _connected = false;
 
         /// <summary>
         /// Private variable to hold an ASCOM Utilities object
@@ -108,12 +108,20 @@ namespace ASCOM.Vantage
         public ObservingConditions()
         {
             ReadProfile(); // Read device configuration from the ASCOM Profile store
+            if (_connected)
+            {
+                if (_reportFile == null || _reportFile == string.Empty)
+                    throw new InvalidValueException("Null or empty report file name");
+
+                if (!File.Exists(_reportFile))
+                    throw new FileNotFoundException(_reportFile);
+            }
 
             tl = new TraceLogger("", "Vantage");
             tl.Enabled = _traceState;
             tl.LogMessage("ObservingConditions", "Starting initialisation");
 
-            _connectedState = false; // Initialise connected to false
+            _connected = false; // Initialise connected to false
             utilities = new Util(); //Initialise util object
             astroUtilities = new AstroUtils(); // Initialise astro utilities object
 
@@ -223,11 +231,11 @@ namespace ASCOM.Vantage
 
                 if (value)
                 {
-                    _connectedState = true;
+                    _connected = true;
                 }
                 else
                 {
-                    _connectedState = false;
+                    _connected = false;
                 }
             }
         }
@@ -409,7 +417,12 @@ namespace ASCOM.Vantage
             tl.LogMessage("Refresh", "reportFile: " + _reportFile);
 
             if (_reportFile == null || _reportFile == string.Empty)
-                return;
+            {
+                if (_connected)
+                    throw new InvalidValueException("Null or empty report file name");
+                else
+                    return;
+            }
             
             sensorData = new Dictionary<string, string>();
             using (StreamReader sr = new StreamReader(_reportFile))
@@ -731,7 +744,7 @@ namespace ASCOM.Vantage
             get
             {
                 // TODO check that the driver hardware connection exists and is connected to the hardware
-                return _connectedState;
+                return _connected;
             }
         }
 

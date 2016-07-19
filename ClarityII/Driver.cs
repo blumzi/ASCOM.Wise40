@@ -79,7 +79,7 @@ namespace ASCOM.CloudSensor
         /// <summary>
         /// Private variable to hold the connected state
         /// </summary>
-        private bool connectedState;
+        private bool _connected;
 
         /// <summary>
         /// Private variable to hold an ASCOM Utilities object
@@ -110,7 +110,7 @@ namespace ASCOM.CloudSensor
             tl.Enabled = _traceState;
             tl.LogMessage("ObservingConditions", "Starting initialisation");
 
-            connectedState = false; // Initialise connected to false
+            _connected = false; // Initialise connected to false
             utilities = new Util(); //Initialise util object
             astroUtilities = new AstroUtils(); // Initialise astro utilities object
 
@@ -124,7 +124,12 @@ namespace ASCOM.CloudSensor
             string str;
 
             if (_dataFile == null || _dataFile == string.Empty)
-                return;
+            {
+                if (_connected == true)
+                    throw new InvalidValueException("Null or empty data file name");
+                else
+                    return;
+            }
 
             try
             {
@@ -240,12 +245,12 @@ namespace ASCOM.CloudSensor
 
                 if (value)
                 {
-                    connectedState = true;
+                    _connected = true;
                     tl.LogMessage("Connected Set", "Connecting to file " + _dataFile);
                 }
                 else
                 {
-                    connectedState = false;
+                    _connected = false;
                     tl.LogMessage("Connected Set", "Disconnecting from file " + _dataFile);
                 }
             }
@@ -752,7 +757,7 @@ namespace ASCOM.CloudSensor
             get
             {
                 // TODO check that the driver hardware connection exists and is connected to the hardware
-                return connectedState;
+                return _connected;
             }
         }
 
