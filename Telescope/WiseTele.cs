@@ -425,8 +425,10 @@ namespace ASCOM.Wise40
 
             instance.NorthMotor = new WiseVirtualMotor("NorthMotor", NorthPin, NorthGuidePin, SlewPin, TelescopeAxes.axisSecondary, Const.AxisDirection.Increasing, new List<object> { instance.DecEncoder });
             instance.SouthMotor = new WiseVirtualMotor("SouthMotor", SouthPin, SouthGuidePin, SlewPin, TelescopeAxes.axisSecondary, Const.AxisDirection.Decreasing, new List<object> { instance.DecEncoder });
-            instance.WestMotor = new WiseVirtualMotor("WestMotor", WestPin, WestGuidePin, SlewPin, TelescopeAxes.axisPrimary, Const.AxisDirection.Increasing, new List<object> { instance.HAEncoder });
-            instance.EastMotor = new WiseVirtualMotor("EastMotor", EastPin, EastGuidePin, SlewPin, TelescopeAxes.axisPrimary, Const.AxisDirection.Decreasing, new List<object> { instance.HAEncoder });
+            //instance.WestMotor = new WiseVirtualMotor("WestMotor", WestPin, WestGuidePin, SlewPin, TelescopeAxes.axisPrimary, Const.AxisDirection.Increasing, new List<object> { instance.HAEncoder });
+            //instance.EastMotor = new WiseVirtualMotor("EastMotor", EastPin, EastGuidePin, SlewPin, TelescopeAxes.axisPrimary, Const.AxisDirection.Decreasing, new List<object> { instance.HAEncoder });
+            instance.WestMotor = new WiseVirtualMotor("WestMotor", WestPin, WestGuidePin, SlewPin, TelescopeAxes.axisPrimary, Const.AxisDirection.Decreasing, new List<object> { instance.HAEncoder });
+            instance.EastMotor = new WiseVirtualMotor("EastMotor", EastPin, EastGuidePin, SlewPin, TelescopeAxes.axisPrimary, Const.AxisDirection.Increasing, new List<object> { instance.HAEncoder });
             instance.TrackingMotor = new WiseVirtualMotor("TrackMotor", TrackPin, null, null, TelescopeAxes.axisPrimary, Const.AxisDirection.Increasing, new List<object> { instance.HAEncoder });
 
             instance.axisMotors = new Dictionary<TelescopeAxes, List<WiseVirtualMotor>>();
@@ -477,8 +479,8 @@ namespace ASCOM.Wise40
             {
                 anglePerSecond = Angle.FromHours(Angle.Deg2Hours(Const.rateSet)),
                 changeDirection = Angle.FromHours(Angle.Deg2Hours("00:00:20.0")),
-                stopMovement = Angle.FromHours(Angle.Deg2Hours("00:01:00.0")),
                 minimalMovement = Angle.FromHours(Angle.Deg2Hours("00:00:10.0")),
+                stopMovement = Angle.FromHours(Angle.Deg2Hours("00:00:20.0")),
                 millisecondsPerDegree = 60000.0,    // 1min/sec
             };
 
