@@ -23,7 +23,8 @@ namespace ASCOM.Wise40
         private BackgroundWorker scopeBackgroundMover;
         private static WiseSite wisesite = WiseSite.Instance;
 
-        private class TimedMovementArg {
+        private class TimedMovementArg
+        {
             public TelescopeAxes axis;
             public double rate;
             public int millis;
@@ -145,7 +146,8 @@ namespace ASCOM.Wise40
                 buttonDome.Text = "Show Dome";
                 panelDome.Visible = false;
             }
-            else {
+            else
+            {
                 buttonDome.Text = "Hide Dome";
                 panelDome.Visible = true;
             }
@@ -183,7 +185,7 @@ namespace ASCOM.Wise40
             labelLTValue.Text = now.TimeOfDay.ToString(@"hh\:mm\:ss\.f\ ");
             labelUTValue.Text = utc.TimeOfDay.ToString(@"hh\:mm\:ss\.f\ ");
             labelSiderealValue.Text = wisesite.LocalSiderealTime.ToString();
-            
+
             labelRightAscensionValue.Text = Angle.FromHours(wisetele.RightAscension).ToNiceString();
             labelDeclinationValue.Text = Angle.FromDegrees(wisetele.Declination).ToNiceString();
             labelHourAngleValue.Text = Angle.FromHours(wisetele.HourAngle, Angle.Type.HA).ToNiceString();
@@ -233,9 +235,15 @@ namespace ASCOM.Wise40
 
         private void buttonHandpad_Click(object sender, EventArgs e)
         {
-            Button button = (Button)sender;
-
-            panelControls.Visible = false;
+            if (panelDebug.Visible)
+            {
+                buttonStudy.Text = "Show Study";
+                panelDebug.Visible = false;
+            } else
+            {
+                buttonStudy.Text = "Hide Study";
+                panelDebug.Visible = true;
+            }
         }
 
         private void directionButton_MouseDown(object sender, MouseEventArgs e)
@@ -341,7 +349,7 @@ namespace ASCOM.Wise40
                 if (wisetele.simulated)    // move some more, to simulate telescope inertia
                 {
                     wisetele.MoveAxis(arg.axis, arg.rate);
-                    long deltaTicks = 10000 * (long) (WiseTele.Instance.movementParameters[arg.axis][arg.rate].stopMovement.Degrees * WiseTele.Instance.movementParameters[arg.axis][arg.rate].millisecondsPerDegree);
+                    long deltaTicks = 10000 * (long)(WiseTele.Instance.movementParameters[arg.axis][arg.rate].stopMovement.Degrees * WiseTele.Instance.movementParameters[arg.axis][arg.rate].millisecondsPerDegree);
                     for (long endTicks = DateTime.Now.Ticks + deltaTicks; DateTime.Now.Ticks < endTicks; Thread.Sleep(10))
                     {
                         if (bgw.CancellationPending)
@@ -384,7 +392,7 @@ namespace ASCOM.Wise40
             }
 
             Out:
-                return bgResults;
+            return bgResults;
         }
 
         private void scopeBackgroundMover_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
@@ -416,7 +424,7 @@ namespace ASCOM.Wise40
             scopeBackgroundMover.RunWorkerCompleted += new RunWorkerCompletedEventHandler(scopeBackgroundMover_RunWorkerCompleted);
             scopeBackgroundMover.DoWork += new DoWorkEventHandler(scopeBackgroundMover_DoWork);
 
-            scopeBackgroundMover.RunWorkerAsync(new TimedMovementArg() { axis = axis, rate = rate, millis = millis, nsteps =  nsteps});
+            scopeBackgroundMover.RunWorkerAsync(new TimedMovementArg() { axis = axis, rate = rate, millis = millis, nsteps = nsteps });
         }
 
         private void buttonGo_Click(object sender, EventArgs e)
@@ -467,16 +475,16 @@ namespace ASCOM.Wise40
                 using (StreamWriter sw = File.CreateText(path))
                     sw.WriteLine("# Movement Study Results for Wise40.");
 
-                using (StreamWriter sw = File.AppendText(path))
-                {
-                    sw.WriteLine("");
-                    sw.WriteLine(string.Format("# {0}", DateTime.Now));
+            using (StreamWriter sw = File.AppendText(path))
+            {
+                sw.WriteLine("");
+                sw.WriteLine(string.Format("# {0}", DateTime.Now));
 
-                    foreach (TimedMovementResult res in results)
-                    {
-                        sw.WriteLine(res.ToString());
-                    }
+                foreach (TimedMovementResult res in results)
+                {
+                    sw.WriteLine(res.ToString());
                 }
+            }
         }
 
         private void displayTimer_Tick(object sender, EventArgs e)
@@ -486,7 +494,7 @@ namespace ASCOM.Wise40
 
         private void buttonGoCoord_Click(object sender, EventArgs e)
         {
-            if (! wisetele.Tracking)
+            if (!wisetele.Tracking)
             {
                 MessageBox.Show("Telescope is NOT tracking!", "Error");
                 return;
@@ -528,6 +536,16 @@ namespace ASCOM.Wise40
         private void textBoxDec_MouseDoubleClick(object sender, MouseEventArgs e)
         {
             textBoxDec.Text = Angle.FromDegrees(wisetele.Declination).ToString();
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            WiseDome.Instance.OpenShutter();
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            WiseDome.Instance.CloseShutter();
         }
     }
 }
