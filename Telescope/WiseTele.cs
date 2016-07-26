@@ -94,6 +94,8 @@ namespace ASCOM.Wise40
         private List<uint> _secondaryAxisValues = new List<uint>(_nAxisValues);
         private object _primaryValuesLock = new Object(), _secondaryValuesLock = new Object();
 
+        public object _primaryEncoderLock = new object(), _secondaryEncoderLock = new object();
+
         private static WiseSite wisesite = WiseSite.Instance;
 
         /// <summary>
@@ -117,8 +119,8 @@ namespace ASCOM.Wise40
 
         public static Dictionary<Const.AxisDirection, string> axisPrimaryNames = new Dictionary<Const.AxisDirection, string>()
             {
-                { Const.AxisDirection.Increasing, "West" },
-                { Const.AxisDirection.Decreasing, "East" },
+                { Const.AxisDirection.Increasing, "East" },
+                { Const.AxisDirection.Decreasing, "West" },
             }, axisSecondaryNames = new Dictionary<Const.AxisDirection, string>()
             {
                 { Const.AxisDirection.Increasing, "North" },
@@ -131,7 +133,7 @@ namespace ASCOM.Wise40
                 { TelescopeAxes.axisSecondary, axisSecondaryNames },
             };
 
-        private Hardware.Hardware hw = Hardware.Hardware.Instance;
+        private Hardware.Hardware hardware = Hardware.Hardware.Instance;
 
         public class MovementParameters
         {
@@ -322,13 +324,14 @@ namespace ASCOM.Wise40
                 if (value == _connected)
                     return;
 
+                if (_enslaveDome && connectables.Find(x => x.Equals(domeSlaveDriver)) == null)
+                    connectables.Add(domeSlaveDriver);
+
                 foreach (var connectable in connectables)
                 {
                     connectable.Connect(value);
                 }
                 _connected = value;
-                if (instance._enslaveDome)
-                    DomeSlaveDriver.Instance.Connect(value);
 
                 if (_connected)
                 {
@@ -392,28 +395,30 @@ namespace ASCOM.Wise40
             novas31 = new NOVAS31();
             ascomutils = new Util();
             astroutils = new Astrometry.AstroUtils.AstroUtils();
-            hw.init();
+            hardware.init();
             wisesite.init();
-            
-            List<ISimulated> hardware_elements = new List<ISimulated>();
 
+            #region MotorDefinitions
+            //
+            // Define motors-related hardware (pins and encoders)
+            //
             try
             {
                 instance.connectables = new List<IConnectable>();
                 instance.disposables = new List<IDisposable>();
 
-                NorthPin = new WisePin("TeleNorth", hw.teleboard, DigitalPortType.FirstPortCL, 0, DigitalPortDirection.DigitalOut);
-                EastPin = new WisePin("TeleEast", hw.teleboard, DigitalPortType.FirstPortCL, 1, DigitalPortDirection.DigitalOut);
-                WestPin = new WisePin("TeleWest", hw.teleboard, DigitalPortType.FirstPortCL, 2, DigitalPortDirection.DigitalOut);
-                SouthPin = new WisePin("TeleSouth", hw.teleboard, DigitalPortType.FirstPortCL, 3, DigitalPortDirection.DigitalOut);
+                NorthPin = new WisePin("TeleNorth", hardware.teleboard, DigitalPortType.FirstPortCL, 0, DigitalPortDirection.DigitalOut);
+                EastPin = new WisePin("TeleEast", hardware.teleboard, DigitalPortType.FirstPortCL, 1, DigitalPortDirection.DigitalOut);
+                WestPin = new WisePin("TeleWest", hardware.teleboard, DigitalPortType.FirstPortCL, 2, DigitalPortDirection.DigitalOut);
+                SouthPin = new WisePin("TeleSouth", hardware.teleboard, DigitalPortType.FirstPortCL, 3, DigitalPortDirection.DigitalOut);
 
-                SlewPin = new WisePin("TeleSlew", hw.teleboard, DigitalPortType.FirstPortCH, 0, DigitalPortDirection.DigitalOut);
-                TrackPin = new WisePin("TeleTrack", hw.teleboard, DigitalPortType.FirstPortCH, 2, DigitalPortDirection.DigitalOut);
+                SlewPin = new WisePin("TeleSlew", hardware.teleboard, DigitalPortType.FirstPortCH, 0, DigitalPortDirection.DigitalOut);
+                TrackPin = new WisePin("TeleTrack", hardware.teleboard, DigitalPortType.FirstPortCH, 2, DigitalPortDirection.DigitalOut);
 
-                NorthGuidePin = new WisePin("TeleNorthGuide", hw.teleboard, DigitalPortType.FirstPortB, 0, DigitalPortDirection.DigitalOut);
-                EastGuidePin = new WisePin("TeleEastGuide", hw.teleboard, DigitalPortType.FirstPortB, 1, DigitalPortDirection.DigitalOut);
-                WestGuidePin = new WisePin("TeleWestGuide", hw.teleboard, DigitalPortType.FirstPortB, 2, DigitalPortDirection.DigitalOut);
-                SouthGuidePin = new WisePin("TeleSouthGuide", hw.teleboard, DigitalPortType.FirstPortB, 3, DigitalPortDirection.DigitalOut);
+                NorthGuidePin = new WisePin("TeleNorthGuide", hardware.teleboard, DigitalPortType.FirstPortB, 0, DigitalPortDirection.DigitalOut);
+                EastGuidePin = new WisePin("TeleEastGuide", hardware.teleboard, DigitalPortType.FirstPortB, 1, DigitalPortDirection.DigitalOut);
+                WestGuidePin = new WisePin("TeleWestGuide", hardware.teleboard, DigitalPortType.FirstPortB, 2, DigitalPortDirection.DigitalOut);
+                SouthGuidePin = new WisePin("TeleSouthGuide", hardware.teleboard, DigitalPortType.FirstPortB, 3, DigitalPortDirection.DigitalOut);
 
                 instance.HAEncoder = new WiseHAEncoder("TeleHAEncoder");
                 instance.DecEncoder = new WiseDecEncoder("TeleDecEncoder");
@@ -423,14 +428,27 @@ namespace ASCOM.Wise40
                debugger.WriteLine(Debugger.DebugLevel.DebugExceptions, "WiseTele constructor caught: {0}.", e.Message);
             }
 
-            instance.NorthMotor = new WiseVirtualMotor("NorthMotor", NorthPin, NorthGuidePin, SlewPin, TelescopeAxes.axisSecondary, Const.AxisDirection.Increasing, new List<object> { instance.DecEncoder });
-            instance.SouthMotor = new WiseVirtualMotor("SouthMotor", SouthPin, SouthGuidePin, SlewPin, TelescopeAxes.axisSecondary, Const.AxisDirection.Decreasing, new List<object> { instance.DecEncoder });
-            //instance.WestMotor = new WiseVirtualMotor("WestMotor", WestPin, WestGuidePin, SlewPin, TelescopeAxes.axisPrimary, Const.AxisDirection.Increasing, new List<object> { instance.HAEncoder });
-            //instance.EastMotor = new WiseVirtualMotor("EastMotor", EastPin, EastGuidePin, SlewPin, TelescopeAxes.axisPrimary, Const.AxisDirection.Decreasing, new List<object> { instance.HAEncoder });
-            instance.WestMotor = new WiseVirtualMotor("WestMotor", WestPin, WestGuidePin, SlewPin, TelescopeAxes.axisPrimary, Const.AxisDirection.Decreasing, new List<object> { instance.HAEncoder });
-            instance.EastMotor = new WiseVirtualMotor("EastMotor", EastPin, EastGuidePin, SlewPin, TelescopeAxes.axisPrimary, Const.AxisDirection.Increasing, new List<object> { instance.HAEncoder });
-            instance.TrackingMotor = new WiseVirtualMotor("TrackMotor", TrackPin, null, null, TelescopeAxes.axisPrimary, Const.AxisDirection.Increasing, new List<object> { instance.HAEncoder });
+            //
+            // Define motors-related software interfaces (WiseVirtualMotor)
+            //
+            instance.NorthMotor = new WiseVirtualMotor("NorthMotor", NorthPin, NorthGuidePin, SlewPin,
+                TelescopeAxes.axisSecondary, Const.AxisDirection.Increasing, new List<object> { instance.DecEncoder });
 
+            instance.SouthMotor = new WiseVirtualMotor("SouthMotor", SouthPin, SouthGuidePin, SlewPin,
+                TelescopeAxes.axisSecondary, Const.AxisDirection.Decreasing, new List<object> { instance.DecEncoder });
+
+            instance.WestMotor = new WiseVirtualMotor("WestMotor", WestPin, WestGuidePin, SlewPin,
+                TelescopeAxes.axisPrimary, Const.AxisDirection.Decreasing, new List<object> { instance.HAEncoder });
+
+            instance.EastMotor = new WiseVirtualMotor("EastMotor", EastPin, EastGuidePin, SlewPin,
+                TelescopeAxes.axisPrimary, Const.AxisDirection.Increasing, new List<object> { instance.HAEncoder });
+
+            instance.TrackingMotor = new WiseVirtualMotor("TrackMotor", TrackPin, null, null,
+                TelescopeAxes.axisPrimary, Const.AxisDirection.Increasing, new List<object> { instance.HAEncoder });
+
+            //
+            // Define motor groups
+            //
             instance.axisMotors = new Dictionary<TelescopeAxes, List<WiseVirtualMotor>>();
             instance.axisMotors[TelescopeAxes.axisPrimary] = new List<WiseVirtualMotor> { instance.EastMotor, instance.WestMotor };
             instance.axisMotors[TelescopeAxes.axisSecondary] = new List<WiseVirtualMotor> { instance.NorthMotor, instance.SouthMotor };
@@ -443,6 +461,7 @@ namespace ASCOM.Wise40
             instance.allMotors.AddRange(instance.directionMotors);
             instance.allMotors.Add(TrackingMotor);
 
+            List<ISimulated> hardware_elements = new List<ISimulated>();
             hardware_elements.AddRange(instance.allMotors);
             hardware_elements.Add(instance.HAEncoder);
             hardware_elements.Add(instance.DecEncoder);
@@ -454,6 +473,7 @@ namespace ASCOM.Wise40
                     break;
                 }
             }
+            #endregion
 
             TimerCallback safetyMonitorTimerCallback = new TimerCallback(DoCheckSafety);
             safetyMonitorTimer = new SafetyMonitorTimer(safetyMonitorTimerCallback, 100, 100);
@@ -516,10 +536,12 @@ namespace ASCOM.Wise40
             };
             #endregion
 
+            // prevMovement remembers the previous movement, so we can detect change-of-direction
             instance.prevMovement = new Dictionary<TelescopeAxes, Movement>();
             instance.prevMovement[TelescopeAxes.axisPrimary] = new Movement() { direction = Const.AxisDirection.None, rate = Const.rateStopped };
             instance.prevMovement[TelescopeAxes.axisSecondary] = new Movement() { direction = Const.AxisDirection.None, rate = Const.rateStopped };
 
+            // currMovement contains the current telescope-movement parameters
             instance.currMovement = new Dictionary<TelescopeAxes, Movement>();
             instance.currMovement[TelescopeAxes.axisPrimary] = new Movement() { direction = Const.AxisDirection.None, rate = Const.rateStopped };
             instance.currMovement[TelescopeAxes.axisSecondary] = new Movement() { direction = Const.AxisDirection.None, rate = Const.rateStopped };
@@ -527,9 +549,9 @@ namespace ASCOM.Wise40
 
             instance.movementDict = new MovementDictionary();
             instance.movementDict[new MovementSpecifier(TelescopeAxes.axisPrimary, Const.AxisDirection.Decreasing)] =
-                new MovementWorker(new WiseVirtualMotor[] { EastMotor });
-            instance.movementDict[new MovementSpecifier(TelescopeAxes.axisPrimary, Const.AxisDirection.Increasing)] =
                 new MovementWorker(new WiseVirtualMotor[] { WestMotor });
+            instance.movementDict[new MovementSpecifier(TelescopeAxes.axisPrimary, Const.AxisDirection.Increasing)] =
+                new MovementWorker(new WiseVirtualMotor[] { EastMotor });
             instance.movementDict[new MovementSpecifier(TelescopeAxes.axisSecondary, Const.AxisDirection.Increasing)] =
                 new MovementWorker(new WiseVirtualMotor[] { NorthMotor });
             instance.movementDict[new MovementSpecifier(TelescopeAxes.axisSecondary, Const.AxisDirection.Decreasing)] =
@@ -560,8 +582,8 @@ namespace ASCOM.Wise40
 
             if (instance._enslaveDome)
             {
-                domeSlaveDriver = DomeSlaveDriver.Instance;
-                domeSlaveDriver.init();
+                instance.domeSlaveDriver.init();
+                instance.connectables.Add(instance.domeSlaveDriver);
             }
 
             _initialized = true;
@@ -572,7 +594,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                double ret = 7.112;  // Las Campanas 40" (meters)
+                double ret = 7.112;  // from Las Campanas 40" (meters)
 
                 traceLogger.LogMessage("FocalLength Get", ret.ToString());
                 return ret;   
@@ -1318,10 +1340,11 @@ namespace ASCOM.Wise40
                         Thread.CurrentThread.Name = "domeSlewer";
                         try
                         {
-                            DomeSlaveDriver.Instance.SlewStartAsync(RightAscension, Declination);
-                        } catch (OperationCanceledException)
+                            domeSlaveDriver.SlewStartAsync(RightAscension, Declination);
+                        }
+                        catch (OperationCanceledException)
                         {
-                            DomeSlaveDriver.Instance.AbortSlew();
+                            domeSlaveDriver.AbortSlew();
                         }
                     }, slewingCancellationToken));
 

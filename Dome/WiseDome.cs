@@ -29,7 +29,7 @@ namespace ASCOM.Wise40
         private bool _ventIsOpen;
         private bool _isStuck;
 
-        private enum DomeState { Idle, MovingCW, MovingCCW, AutoShutdown };
+        public enum DomeState { Idle, MovingCW, MovingCCW, AutoShutdown };
         public enum ShutterState { Idle, Opening, Open, Closing, Closed };
         private enum StuckPhase { NotStuck, FirstStop, GoBackward, SecondStop, ResumeForward };
         public enum Direction { CW, None, CCW };
@@ -575,11 +575,21 @@ namespace ASCOM.Wise40
             }
         }
 
-        public ShutterState shutterState
+        public string Status
         {
             get
             {
-                return _shutterState;
+                switch (_state)
+                {
+                    case DomeState.Idle:
+                        return "Idle";
+                    case DomeState.MovingCCW:
+                        return Calibrated ? "Moving CCW" : "Calibrating CCW";
+                    case DomeState.MovingCW:
+                        return Calibrated ? "Moving CW" : "Calibrating CW";
+                    default:
+                        return "Unknown";
+                }
             }
         }
 
@@ -814,7 +824,7 @@ namespace ASCOM.Wise40
             {
                 ASCOM.DeviceInterface.ShutterState ret = DeviceInterface.ShutterState.shutterError;
 
-                switch (shutterState)
+                switch (_shutterState)
                 {
                     case WiseDome.ShutterState.Closed:
                         ret = DeviceInterface.ShutterState.shutterClosed;

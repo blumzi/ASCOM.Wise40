@@ -70,11 +70,12 @@ namespace ASCOM.Wise40
             }
         }
 
-        public void Connect(bool connect)
+        public void Connect(bool value)
         {
             if (!_initialized)
                 init();
-            wisedome.Connect(connect);
+            _connected = value;
+            wisedome.Connect(value);
         }
 
         public void SlewStartAsync(Angle ra, Angle dec)
@@ -122,6 +123,53 @@ namespace ASCOM.Wise40
         public void AbortSlew()
         {
             wisedome.AbortSlew();
+        }
+
+        public string Azimuth
+        {
+            get
+            {
+                if (!Connected)
+                    return "not connected";
+                if (!wisedome.Calibrated)
+                    return "not calibrated";
+
+                return wisedome.Azimuth.ToNiceString();
+            }
+        }
+
+        public string Status
+        {
+            get
+            {
+                if (!Connected)
+                    return "not connected";
+
+                return wisedome.Status;
+            }
+        }
+
+        public string ShutterStatus
+        {
+            get
+            {
+                if (!Connected)
+                    return "not connected";
+
+                switch (wisedome.ShutterStatus)
+                {
+                    case DeviceInterface.ShutterState.shutterClosed:
+                        return "Closed";
+                    case DeviceInterface.ShutterState.shutterClosing:
+                        return "Closing";
+                    case DeviceInterface.ShutterState.shutterOpen:
+                        return "Open";
+                    case DeviceInterface.ShutterState.shutterOpening:
+                        return "Opening";
+                    default:
+                        return "Unknown";
+                }
+            }
         }
     }
 }

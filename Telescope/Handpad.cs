@@ -217,6 +217,13 @@ namespace ASCOM.Wise40
                         TextBoxLog.Text += string.Format("[{0}]: ({2})\r\n{1}", i, results[i].ToString(), results[i].cancelled ? "cancelled" : "completed");
                 resultsAvailable = false;
             }
+
+            if (panelDome.Visible)
+            {
+                labelDomeAzimuthValue.Text = DomeSlaveDriver.Instance.Azimuth;
+                labelDomeStatusValue.Text = DomeSlaveDriver.Instance.Status;
+                labelDomeShutterStatusValue.Text = DomeSlaveDriver.Instance.ShutterStatus;
+            }
         }
 
         private void HandpadForm_VisibleChanged(object sender, EventArgs e)
@@ -511,6 +518,16 @@ namespace ASCOM.Wise40
         private void checkBox2_CheckedChanged(object sender, EventArgs e)
         {
 
+        }
+
+        private void textBoxRA_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            textBoxRA.Text = Angle.FromHours(wisetele.RightAscension).ToString();
+        }
+
+        private void textBoxDec_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            textBoxDec.Text = Angle.FromDegrees(wisetele.Declination).ToString();
         }
     }
 }

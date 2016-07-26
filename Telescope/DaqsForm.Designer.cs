@@ -253,7 +253,7 @@
             this.panelHardware.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
             this.panelHardware.Location = new System.Drawing.Point(0, 0);
             this.panelHardware.Name = "panelHardware";
-            this.panelHardware.Size = new System.Drawing.Size(822, 584);
+            this.panelHardware.Size = new System.Drawing.Size(896, 584);
             this.panelHardware.TabIndex = 13;
             // 
             // gbBoard1
@@ -263,9 +263,9 @@
             this.gbBoard1.Controls.Add(this.groupBox19);
             this.gbBoard1.Controls.Add(this.groupBox14);
             this.gbBoard1.ForeColor = System.Drawing.Color.DarkOrange;
-            this.gbBoard1.Location = new System.Drawing.Point(290, 5);
+            this.gbBoard1.Location = new System.Drawing.Point(312, 5);
             this.gbBoard1.Name = "gbBoard1";
-            this.gbBoard1.Size = new System.Drawing.Size(521, 569);
+            this.gbBoard1.Size = new System.Drawing.Size(576, 569);
             this.gbBoard1.TabIndex = 2;
             this.gbBoard1.TabStop = false;
             this.gbBoard1.Text = " Telescope (Board1)";
@@ -277,9 +277,9 @@
             this.groupBox24.Controls.Add(this.gbBoard1FourthPortB);
             this.groupBox24.Controls.Add(this.gbBoard1FourthPortA);
             this.groupBox24.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBox24.Location = new System.Drawing.Point(263, 307);
+            this.groupBox24.Location = new System.Drawing.Point(296, 307);
             this.groupBox24.Name = "groupBox24";
-            this.groupBox24.Size = new System.Drawing.Size(250, 255);
+            this.groupBox24.Size = new System.Drawing.Size(272, 255);
             this.groupBox24.TabIndex = 3;
             this.groupBox24.TabStop = false;
             this.groupBox24.Text = " FourthPort ";
@@ -293,9 +293,9 @@
             this.gbBoard1FourthPortCH.Controls.Add(this.cbBoard1FourthPortCHbit3);
             this.gbBoard1FourthPortCH.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.gbBoard1FourthPortCH.ForeColor = System.Drawing.Color.DarkOrange;
-            this.gbBoard1FourthPortCH.Location = new System.Drawing.Point(130, 165);
+            this.gbBoard1FourthPortCH.Location = new System.Drawing.Point(136, 165);
             this.gbBoard1FourthPortCH.Name = "gbBoard1FourthPortCH";
-            this.gbBoard1FourthPortCH.Size = new System.Drawing.Size(115, 80);
+            this.gbBoard1FourthPortCH.Size = new System.Drawing.Size(125, 80);
             this.gbBoard1FourthPortCH.TabIndex = 7;
             this.gbBoard1FourthPortCH.TabStop = false;
             this.gbBoard1FourthPortCH.Text = " FourthPortCH ";
@@ -355,7 +355,7 @@
             this.gbBoard1FourthPortCL.ForeColor = System.Drawing.Color.DarkOrange;
             this.gbBoard1FourthPortCL.Location = new System.Drawing.Point(9, 165);
             this.gbBoard1FourthPortCL.Name = "gbBoard1FourthPortCL";
-            this.gbBoard1FourthPortCL.Size = new System.Drawing.Size(115, 80);
+            this.gbBoard1FourthPortCL.Size = new System.Drawing.Size(125, 80);
             this.gbBoard1FourthPortCL.TabIndex = 6;
             this.gbBoard1FourthPortCL.TabStop = false;
             this.gbBoard1FourthPortCL.Text = " FourthPortCL ";
@@ -417,9 +417,9 @@
             this.gbBoard1FourthPortB.Controls.Add(this.cbBoard1FourthPortBbit3);
             this.gbBoard1FourthPortB.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.gbBoard1FourthPortB.ForeColor = System.Drawing.Color.DarkOrange;
-            this.gbBoard1FourthPortB.Location = new System.Drawing.Point(130, 18);
+            this.gbBoard1FourthPortB.Location = new System.Drawing.Point(136, 18);
             this.gbBoard1FourthPortB.Name = "gbBoard1FourthPortB";
-            this.gbBoard1FourthPortB.Size = new System.Drawing.Size(115, 141);
+            this.gbBoard1FourthPortB.Size = new System.Drawing.Size(125, 141);
             this.gbBoard1FourthPortB.TabIndex = 5;
             this.gbBoard1FourthPortB.TabStop = false;
             this.gbBoard1FourthPortB.Text = " FourthPortB ";
@@ -527,7 +527,7 @@
             this.gbBoard1FourthPortA.ForeColor = System.Drawing.Color.DarkOrange;
             this.gbBoard1FourthPortA.Location = new System.Drawing.Point(9, 18);
             this.gbBoard1FourthPortA.Name = "gbBoard1FourthPortA";
-            this.gbBoard1FourthPortA.Size = new System.Drawing.Size(115, 141);
+            this.gbBoard1FourthPortA.Size = new System.Drawing.Size(125, 141);
             this.gbBoard1FourthPortA.TabIndex = 4;
             this.gbBoard1FourthPortA.TabStop = false;
             this.gbBoard1FourthPortA.Text = " FourthPortA ";
@@ -629,7 +629,7 @@
             this.groupBox29.ForeColor = System.Drawing.Color.DarkOrange;
             this.groupBox29.Location = new System.Drawing.Point(6, 307);
             this.groupBox29.Name = "groupBox29";
-            this.groupBox29.Size = new System.Drawing.Size(250, 255);
+            this.groupBox29.Size = new System.Drawing.Size(282, 255);
             this.groupBox29.TabIndex = 2;
             this.groupBox29.TabStop = false;
             this.groupBox29.Text = " ThirdPort ";
@@ -643,9 +643,9 @@
             this.gbBoard1ThirdPortCH.Controls.Add(this.cbBoard1ThirdPortCHbit3);
             this.gbBoard1ThirdPortCH.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.gbBoard1ThirdPortCH.ForeColor = System.Drawing.Color.DarkOrange;
-            this.gbBoard1ThirdPortCH.Location = new System.Drawing.Point(130, 165);
+            this.gbBoard1ThirdPortCH.Location = new System.Drawing.Point(136, 165);
             this.gbBoard1ThirdPortCH.Name = "gbBoard1ThirdPortCH";
-            this.gbBoard1ThirdPortCH.Size = new System.Drawing.Size(115, 80);
+            this.gbBoard1ThirdPortCH.Size = new System.Drawing.Size(136, 80);
             this.gbBoard1ThirdPortCH.TabIndex = 7;
             this.gbBoard1ThirdPortCH.TabStop = false;
             this.gbBoard1ThirdPortCH.Text = " ThirdPortCH ";
@@ -705,7 +705,7 @@
             this.gbBoard1ThirdPortCL.ForeColor = System.Drawing.Color.DarkOrange;
             this.gbBoard1ThirdPortCL.Location = new System.Drawing.Point(9, 165);
             this.gbBoard1ThirdPortCL.Name = "gbBoard1ThirdPortCL";
-            this.gbBoard1ThirdPortCL.Size = new System.Drawing.Size(115, 80);
+            this.gbBoard1ThirdPortCL.Size = new System.Drawing.Size(125, 80);
             this.gbBoard1ThirdPortCL.TabIndex = 6;
             this.gbBoard1ThirdPortCL.TabStop = false;
             this.gbBoard1ThirdPortCL.Text = "ThirdPortCL ";
@@ -767,9 +767,9 @@
             this.gbBoard1ThirdPortB.Controls.Add(this.cbBoard1ThirdPortBbit3);
             this.gbBoard1ThirdPortB.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.gbBoard1ThirdPortB.ForeColor = System.Drawing.Color.DarkOrange;
-            this.gbBoard1ThirdPortB.Location = new System.Drawing.Point(130, 18);
+            this.gbBoard1ThirdPortB.Location = new System.Drawing.Point(136, 18);
             this.gbBoard1ThirdPortB.Name = "gbBoard1ThirdPortB";
-            this.gbBoard1ThirdPortB.Size = new System.Drawing.Size(115, 141);
+            this.gbBoard1ThirdPortB.Size = new System.Drawing.Size(136, 141);
             this.gbBoard1ThirdPortB.TabIndex = 5;
             this.gbBoard1ThirdPortB.TabStop = false;
             this.gbBoard1ThirdPortB.Text = " ThirdPortB ";
@@ -877,7 +877,7 @@
             this.gbBoard1ThirdPortA.ForeColor = System.Drawing.Color.DarkOrange;
             this.gbBoard1ThirdPortA.Location = new System.Drawing.Point(9, 18);
             this.gbBoard1ThirdPortA.Name = "gbBoard1ThirdPortA";
-            this.gbBoard1ThirdPortA.Size = new System.Drawing.Size(115, 141);
+            this.gbBoard1ThirdPortA.Size = new System.Drawing.Size(125, 141);
             this.gbBoard1ThirdPortA.TabIndex = 4;
             this.gbBoard1ThirdPortA.TabStop = false;
             this.gbBoard1ThirdPortA.Text = " ThirdPortA ";
@@ -977,9 +977,9 @@
             this.groupBox19.Controls.Add(this.gbBoard1SecondPortB);
             this.groupBox19.Controls.Add(this.gbBoard1SecondPortA);
             this.groupBox19.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBox19.Location = new System.Drawing.Point(263, 19);
+            this.groupBox19.Location = new System.Drawing.Point(296, 19);
             this.groupBox19.Name = "groupBox19";
-            this.groupBox19.Size = new System.Drawing.Size(250, 255);
+            this.groupBox19.Size = new System.Drawing.Size(272, 255);
             this.groupBox19.TabIndex = 1;
             this.groupBox19.TabStop = false;
             this.groupBox19.Text = " SecondPort ";
@@ -993,9 +993,9 @@
             this.gbBoard1SecondPortCH.Controls.Add(this.cbBoard1SecondPortCHbit3);
             this.gbBoard1SecondPortCH.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.gbBoard1SecondPortCH.ForeColor = System.Drawing.Color.DarkOrange;
-            this.gbBoard1SecondPortCH.Location = new System.Drawing.Point(130, 165);
+            this.gbBoard1SecondPortCH.Location = new System.Drawing.Point(136, 165);
             this.gbBoard1SecondPortCH.Name = "gbBoard1SecondPortCH";
-            this.gbBoard1SecondPortCH.Size = new System.Drawing.Size(115, 80);
+            this.gbBoard1SecondPortCH.Size = new System.Drawing.Size(125, 80);
             this.gbBoard1SecondPortCH.TabIndex = 7;
             this.gbBoard1SecondPortCH.TabStop = false;
             this.gbBoard1SecondPortCH.Text = "SecondPortCH ";
@@ -1055,7 +1055,7 @@
             this.gbBoard1SecondPortCL.ForeColor = System.Drawing.Color.DarkOrange;
             this.gbBoard1SecondPortCL.Location = new System.Drawing.Point(9, 165);
             this.gbBoard1SecondPortCL.Name = "gbBoard1SecondPortCL";
-            this.gbBoard1SecondPortCL.Size = new System.Drawing.Size(115, 80);
+            this.gbBoard1SecondPortCL.Size = new System.Drawing.Size(125, 80);
             this.gbBoard1SecondPortCL.TabIndex = 6;
             this.gbBoard1SecondPortCL.TabStop = false;
             this.gbBoard1SecondPortCL.Text = " SecondPortCL ";
@@ -1117,9 +1117,9 @@
             this.gbBoard1SecondPortB.Controls.Add(this.cbBoard1SecondPortBbit3);
             this.gbBoard1SecondPortB.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.gbBoard1SecondPortB.ForeColor = System.Drawing.Color.DarkOrange;
-            this.gbBoard1SecondPortB.Location = new System.Drawing.Point(130, 18);
+            this.gbBoard1SecondPortB.Location = new System.Drawing.Point(136, 18);
             this.gbBoard1SecondPortB.Name = "gbBoard1SecondPortB";
-            this.gbBoard1SecondPortB.Size = new System.Drawing.Size(115, 141);
+            this.gbBoard1SecondPortB.Size = new System.Drawing.Size(125, 141);
             this.gbBoard1SecondPortB.TabIndex = 5;
             this.gbBoard1SecondPortB.TabStop = false;
             this.gbBoard1SecondPortB.Text = " SecondPortB ";
@@ -1227,7 +1227,7 @@
             this.gbBoard1SecondPortA.ForeColor = System.Drawing.Color.DarkOrange;
             this.gbBoard1SecondPortA.Location = new System.Drawing.Point(9, 18);
             this.gbBoard1SecondPortA.Name = "gbBoard1SecondPortA";
-            this.gbBoard1SecondPortA.Size = new System.Drawing.Size(115, 141);
+            this.gbBoard1SecondPortA.Size = new System.Drawing.Size(125, 141);
             this.gbBoard1SecondPortA.TabIndex = 4;
             this.gbBoard1SecondPortA.TabStop = false;
             this.gbBoard1SecondPortA.Text = "SecondPortA ";
@@ -1329,7 +1329,7 @@
             this.groupBox14.ForeColor = System.Drawing.Color.DarkOrange;
             this.groupBox14.Location = new System.Drawing.Point(6, 19);
             this.groupBox14.Name = "groupBox14";
-            this.groupBox14.Size = new System.Drawing.Size(250, 255);
+            this.groupBox14.Size = new System.Drawing.Size(282, 255);
             this.groupBox14.TabIndex = 0;
             this.groupBox14.TabStop = false;
             this.groupBox14.Text = " FirstPort ";
@@ -1343,9 +1343,9 @@
             this.gbBoard1FirstPortCH.Controls.Add(this.cbBoard1FirstPortCHbit3);
             this.gbBoard1FirstPortCH.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.gbBoard1FirstPortCH.ForeColor = System.Drawing.Color.DarkOrange;
-            this.gbBoard1FirstPortCH.Location = new System.Drawing.Point(130, 163);
+            this.gbBoard1FirstPortCH.Location = new System.Drawing.Point(136, 163);
             this.gbBoard1FirstPortCH.Name = "gbBoard1FirstPortCH";
-            this.gbBoard1FirstPortCH.Size = new System.Drawing.Size(115, 80);
+            this.gbBoard1FirstPortCH.Size = new System.Drawing.Size(136, 80);
             this.gbBoard1FirstPortCH.TabIndex = 7;
             this.gbBoard1FirstPortCH.TabStop = false;
             this.gbBoard1FirstPortCH.Text = " FirstPortCH ";
@@ -1405,7 +1405,7 @@
             this.gbBoard1FirstPortCL.ForeColor = System.Drawing.Color.DarkOrange;
             this.gbBoard1FirstPortCL.Location = new System.Drawing.Point(9, 165);
             this.gbBoard1FirstPortCL.Name = "gbBoard1FirstPortCL";
-            this.gbBoard1FirstPortCL.Size = new System.Drawing.Size(115, 80);
+            this.gbBoard1FirstPortCL.Size = new System.Drawing.Size(125, 80);
             this.gbBoard1FirstPortCL.TabIndex = 6;
             this.gbBoard1FirstPortCL.TabStop = false;
             this.gbBoard1FirstPortCL.Text = " FirstPortCL ";
@@ -1467,9 +1467,9 @@
             this.gbBoard1FirstPortB.Controls.Add(this.cbBoard1FirstPortBbit3);
             this.gbBoard1FirstPortB.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.gbBoard1FirstPortB.ForeColor = System.Drawing.Color.DarkOrange;
-            this.gbBoard1FirstPortB.Location = new System.Drawing.Point(130, 18);
+            this.gbBoard1FirstPortB.Location = new System.Drawing.Point(136, 18);
             this.gbBoard1FirstPortB.Name = "gbBoard1FirstPortB";
-            this.gbBoard1FirstPortB.Size = new System.Drawing.Size(115, 141);
+            this.gbBoard1FirstPortB.Size = new System.Drawing.Size(136, 141);
             this.gbBoard1FirstPortB.TabIndex = 5;
             this.gbBoard1FirstPortB.TabStop = false;
             this.gbBoard1FirstPortB.Text = " FirstPortB ";
@@ -1577,7 +1577,7 @@
             this.gbBoard1FirstPortA.ForeColor = System.Drawing.Color.DarkOrange;
             this.gbBoard1FirstPortA.Location = new System.Drawing.Point(9, 18);
             this.gbBoard1FirstPortA.Name = "gbBoard1FirstPortA";
-            this.gbBoard1FirstPortA.Size = new System.Drawing.Size(115, 141);
+            this.gbBoard1FirstPortA.Size = new System.Drawing.Size(125, 141);
             this.gbBoard1FirstPortA.TabIndex = 4;
             this.gbBoard1FirstPortA.TabStop = false;
             this.gbBoard1FirstPortA.Text = " FirstPortA ";
@@ -1674,9 +1674,9 @@
             // 
             this.gbBoard2.Controls.Add(this.groupBox3);
             this.gbBoard2.ForeColor = System.Drawing.Color.DarkOrange;
-            this.gbBoard2.Location = new System.Drawing.Point(6, 293);
+            this.gbBoard2.Location = new System.Drawing.Point(9, 293);
             this.gbBoard2.Name = "gbBoard2";
-            this.gbBoard2.Size = new System.Drawing.Size(268, 281);
+            this.gbBoard2.Size = new System.Drawing.Size(287, 281);
             this.gbBoard2.TabIndex = 1;
             this.gbBoard2.TabStop = false;
             this.gbBoard2.Text = " Dome (Board2)";
@@ -1690,7 +1690,7 @@
             this.groupBox3.ForeColor = System.Drawing.Color.DarkOrange;
             this.groupBox3.Location = new System.Drawing.Point(6, 19);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(250, 255);
+            this.groupBox3.Size = new System.Drawing.Size(272, 255);
             this.groupBox3.TabIndex = 0;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = " FirstPort ";
@@ -1704,9 +1704,9 @@
             this.gbBoard2FirstPortCH.Controls.Add(this.cbBoard2FirstPortCHbit3);
             this.gbBoard2FirstPortCH.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.gbBoard2FirstPortCH.ForeColor = System.Drawing.Color.DarkOrange;
-            this.gbBoard2FirstPortCH.Location = new System.Drawing.Point(130, 165);
+            this.gbBoard2FirstPortCH.Location = new System.Drawing.Point(136, 165);
             this.gbBoard2FirstPortCH.Name = "gbBoard2FirstPortCH";
-            this.gbBoard2FirstPortCH.Size = new System.Drawing.Size(113, 80);
+            this.gbBoard2FirstPortCH.Size = new System.Drawing.Size(125, 80);
             this.gbBoard2FirstPortCH.TabIndex = 7;
             this.gbBoard2FirstPortCH.TabStop = false;
             this.gbBoard2FirstPortCH.Text = " FirstPortCH ";
@@ -1766,7 +1766,7 @@
             this.gbBoard2FirstPortCL.ForeColor = System.Drawing.Color.DarkOrange;
             this.gbBoard2FirstPortCL.Location = new System.Drawing.Point(9, 165);
             this.gbBoard2FirstPortCL.Name = "gbBoard2FirstPortCL";
-            this.gbBoard2FirstPortCL.Size = new System.Drawing.Size(118, 80);
+            this.gbBoard2FirstPortCL.Size = new System.Drawing.Size(125, 80);
             this.gbBoard2FirstPortCL.TabIndex = 6;
             this.gbBoard2FirstPortCL.TabStop = false;
             this.gbBoard2FirstPortCL.Text = " FirstPortCL ";
@@ -1828,9 +1828,9 @@
             this.gbBoard2FirstPortB.Controls.Add(this.cbBoard2FirstPortBbit3);
             this.gbBoard2FirstPortB.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.gbBoard2FirstPortB.ForeColor = System.Drawing.Color.DarkOrange;
-            this.gbBoard2FirstPortB.Location = new System.Drawing.Point(130, 18);
+            this.gbBoard2FirstPortB.Location = new System.Drawing.Point(136, 18);
             this.gbBoard2FirstPortB.Name = "gbBoard2FirstPortB";
-            this.gbBoard2FirstPortB.Size = new System.Drawing.Size(113, 141);
+            this.gbBoard2FirstPortB.Size = new System.Drawing.Size(125, 141);
             this.gbBoard2FirstPortB.TabIndex = 5;
             this.gbBoard2FirstPortB.TabStop = false;
             this.gbBoard2FirstPortB.Text = " FirstPortB ";
@@ -1938,7 +1938,7 @@
             this.gbBoard2FirstPortA.ForeColor = System.Drawing.Color.DarkOrange;
             this.gbBoard2FirstPortA.Location = new System.Drawing.Point(9, 18);
             this.gbBoard2FirstPortA.Name = "gbBoard2FirstPortA";
-            this.gbBoard2FirstPortA.Size = new System.Drawing.Size(118, 141);
+            this.gbBoard2FirstPortA.Size = new System.Drawing.Size(125, 141);
             this.gbBoard2FirstPortA.TabIndex = 4;
             this.gbBoard2FirstPortA.TabStop = false;
             this.gbBoard2FirstPortA.Text = " FirstPortA ";
@@ -2038,7 +2038,7 @@
             this.gbBoard0.ForeColor = System.Drawing.Color.DarkOrange;
             this.gbBoard0.Location = new System.Drawing.Point(9, 5);
             this.gbBoard0.Name = "gbBoard0";
-            this.gbBoard0.Size = new System.Drawing.Size(265, 282);
+            this.gbBoard0.Size = new System.Drawing.Size(287, 282);
             this.gbBoard0.TabIndex = 0;
             this.gbBoard0.TabStop = false;
             this.gbBoard0.Text = " Miscelaneous (Board0)";
@@ -2052,7 +2052,7 @@
             this.groupBox5.ForeColor = System.Drawing.Color.DarkOrange;
             this.groupBox5.Location = new System.Drawing.Point(6, 19);
             this.groupBox5.Name = "groupBox5";
-            this.groupBox5.Size = new System.Drawing.Size(250, 255);
+            this.groupBox5.Size = new System.Drawing.Size(272, 255);
             this.groupBox5.TabIndex = 0;
             this.groupBox5.TabStop = false;
             this.groupBox5.Text = " FirstPort ";
@@ -2066,9 +2066,9 @@
             this.gbBoard0FirstPortCH.Controls.Add(this.cbBoard0FirstPortCHbit3);
             this.gbBoard0FirstPortCH.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.gbBoard0FirstPortCH.ForeColor = System.Drawing.Color.DarkOrange;
-            this.gbBoard0FirstPortCH.Location = new System.Drawing.Point(130, 165);
+            this.gbBoard0FirstPortCH.Location = new System.Drawing.Point(136, 165);
             this.gbBoard0FirstPortCH.Name = "gbBoard0FirstPortCH";
-            this.gbBoard0FirstPortCH.Size = new System.Drawing.Size(110, 80);
+            this.gbBoard0FirstPortCH.Size = new System.Drawing.Size(125, 80);
             this.gbBoard0FirstPortCH.TabIndex = 7;
             this.gbBoard0FirstPortCH.TabStop = false;
             this.gbBoard0FirstPortCH.Text = " FirstPortCH ";
@@ -2128,7 +2128,7 @@
             this.gbBoard0FirstPortCL.ForeColor = System.Drawing.Color.DarkOrange;
             this.gbBoard0FirstPortCL.Location = new System.Drawing.Point(9, 165);
             this.gbBoard0FirstPortCL.Name = "gbBoard0FirstPortCL";
-            this.gbBoard0FirstPortCL.Size = new System.Drawing.Size(115, 80);
+            this.gbBoard0FirstPortCL.Size = new System.Drawing.Size(125, 80);
             this.gbBoard0FirstPortCL.TabIndex = 6;
             this.gbBoard0FirstPortCL.TabStop = false;
             this.gbBoard0FirstPortCL.Text = " FirstPortCL ";
@@ -2190,9 +2190,9 @@
             this.gbBoard0FirstPortB.Controls.Add(this.cbBoard0FirstPortBbit3);
             this.gbBoard0FirstPortB.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.gbBoard0FirstPortB.ForeColor = System.Drawing.Color.DarkOrange;
-            this.gbBoard0FirstPortB.Location = new System.Drawing.Point(130, 18);
+            this.gbBoard0FirstPortB.Location = new System.Drawing.Point(136, 18);
             this.gbBoard0FirstPortB.Name = "gbBoard0FirstPortB";
-            this.gbBoard0FirstPortB.Size = new System.Drawing.Size(110, 141);
+            this.gbBoard0FirstPortB.Size = new System.Drawing.Size(125, 141);
             this.gbBoard0FirstPortB.TabIndex = 5;
             this.gbBoard0FirstPortB.TabStop = false;
             this.gbBoard0FirstPortB.Text = " FirstPortB ";
@@ -2300,7 +2300,7 @@
             this.gbBoard0FirstPortA.ForeColor = System.Drawing.Color.DarkOrange;
             this.gbBoard0FirstPortA.Location = new System.Drawing.Point(9, 18);
             this.gbBoard0FirstPortA.Name = "gbBoard0FirstPortA";
-            this.gbBoard0FirstPortA.Size = new System.Drawing.Size(115, 141);
+            this.gbBoard0FirstPortA.Size = new System.Drawing.Size(125, 141);
             this.gbBoard0FirstPortA.TabIndex = 4;
             this.gbBoard0FirstPortA.TabStop = false;
             this.gbBoard0FirstPortA.Text = " FirstPortA ";
@@ -2409,7 +2409,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(822, 582);
+            this.ClientSize = new System.Drawing.Size(895, 582);
             this.Controls.Add(this.panelHardware);
             this.Location = new System.Drawing.Point(100, 100);
             this.Name = "DaqsForm";

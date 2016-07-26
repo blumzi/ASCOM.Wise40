@@ -394,7 +394,6 @@ namespace ASCOM.Wise40.Common
             ShortestDistanceResult res = new ShortestDistanceResult();
 
             Debugger debugger = Debugger.Instance;
-            debugger.Level = 25;
 
             if (other == this)
                 return new ShortestDistanceResult(Angle.zero, Const.AxisDirection.None);

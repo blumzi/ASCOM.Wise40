@@ -24,7 +24,6 @@ namespace ASCOM.Wise40.Hardware
         private WisePin motorPin, guideMotorPin, slewPin;
         private List<WisePin> activePins;
         private List<object> encoders;
-        private object encodersLock = new object();
         private System.Threading.Timer simulationTimer;
         private double currentRate;
         private int simulationTimerFrequency;
@@ -131,43 +130,55 @@ namespace ASCOM.Wise40.Hardware
             if (!simulated)
                 return;
 
+            bool primary = (_axis == TelescopeAxes.axisPrimary) ? true : false;
+
             double degrees = currentRate / simulationTimerFrequency;
-            Angle angle = (_axis == TelescopeAxes.axisPrimary) ? Angle.FromHours(degrees/15.0) : Angle.FromDegrees(degrees);
+            Angle delta = primary ? Angle.FromHours(degrees/15.0, Angle.Type.HA) : Angle.FromDegrees(degrees);
+            WiseTele wisetele = WiseTele.Instance;
 
             foreach (IEncoder encoder in encoders)
             {
                 Angle before, after;
                 string op;
 
-                lock (encodersLock)
+                lock (primary ? wisetele._primaryEncoderLock : wisetele._secondaryEncoderLock)
                 {
-                    before = _axis == TelescopeAxes.axisPrimary ?
-                    Angle.FromHours(WiseTele.Instance.RightAscension) :
-                    Angle.FromDegrees(WiseTele.Instance.Declination);
+                    before = primary ?
+                        Angle.FromHours(wisetele.HourAngle, Angle.Type.HA) :
+                        Angle.FromDegrees(wisetele.Declination);
 
-                    op = _direction == Const.AxisDirection.Increasing ? "+" : "-";
                     if (_direction == Const.AxisDirection.Increasing)
-                        encoder.Angle += angle;
+                    {
+                        op = "+";
+                        encoder.Angle += delta;
+                    }
                     else
-                        encoder.Angle -= angle;
-                    after = _axis == TelescopeAxes.axisPrimary ? 
-                        Angle.FromHours(WiseTele.Instance.RightAscension) : 
-                        Angle.FromDegrees(WiseTele.Instance.Declination);
+                    {
+                        op = "-";
+                        encoder.Angle -= delta;
+                    }
+
+                    after = primary ? 
+                        Angle.FromHours(wisetele.HourAngle, Angle.Type.HA) : 
+                        Angle.FromDegrees(wisetele.Declination);
                 }
 
                 debugger.WriteLine(Debugger.DebugLevel.DebugMotors,
-                        "bumpEncoders: {0}: {1}: {2}: (angle: {3}, op: {10}) {4} => {5} ({6} => {7}) (#{8}, {9} ms)",
-                        name,
-                        encoder.name,
-                        _axis == TelescopeAxes.axisPrimary ? "ra" : "dec",
-                        angle.Degrees,
-                        before,
-                        after,
-                        before.Degrees,
-                        after.Degrees,
-                        timer_counts++,
-                        DateTime.Now.Subtract(prevTick).Milliseconds,
-                        op);
+                        "bumpEncoders: {0}: {1}: {13} {2}:  {3} {4} {5} = {6} ({7} {8} {9} = {10}) (#{11}, {12} ms)",
+                        name,                   // 0
+                        encoder.name,           // 1
+                        primary ? "ha" : "dec", // 2
+                        before,                 // 3
+                        op,                     // 4
+                        delta,                  // 5
+                        after,                  // 6
+                        before.Degrees,         // 7
+                        op,                     // 8
+                        delta.Degrees,          // 9
+                        after.Degrees,          // 10
+                        timer_counts++,         // 11
+                        DateTime.Now.Subtract(prevTick).Milliseconds,   // 12
+                        WiseTele.RateName(currentRate));                // 13
                 prevTick = DateTime.Now;
             }
         }

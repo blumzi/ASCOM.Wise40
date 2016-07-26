@@ -2,6 +2,19 @@
 {
     public class WiseObject
     {
-        public string name { get; set; }
+        private string _name;
+
+        public string name
+        {
+            get
+            {
+                return _name;
+            }
+
+            set
+            {
+                _name = value;
+            }
+        }
     }
 }

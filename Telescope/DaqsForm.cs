@@ -66,7 +66,7 @@ namespace ASCOM.Wise40
                             Console.WriteLine("Missing: {0}", "cb" + "Board" + board.boardNum.ToString() + porttype + "bit" + bit.ToString());
                         if (daq.owners[bit].checkBox != null)
                         {
-                            string s = daq.owners[bit].owner;
+                            string s = "[" + bit.ToString() + "] " + daq.owners[bit].owner;
                             if (s != null)
                             {
                                 int idx = s.IndexOf('@');
