@@ -24,7 +24,7 @@ namespace ASCOM.Wise40
         public Astrometry.OnSurface onSurface;
         public Astrometry.RefractionOption refractionOption;
         public double siteLatitude, siteLongitude, siteElevation;
-        private ObservingConditions observingConditions;
+        public ObservingConditions observingConditions;
         private DateTime lastOCFetch;
 
         public static WiseSite Instance
@@ -58,7 +58,7 @@ namespace ASCOM.Wise40
 
             try
             {
-                observingConditions = new ObservingConditions("ASCOM.Vantage.ObservingConditions");
+                observingConditions = new ObservingConditions("ASCOM.OCH.ObservingConditions");
                 refractionOption = Astrometry.RefractionOption.LocationRefraction;
                 lastOCFetch = DateTime.Now;
             }
@@ -135,6 +135,9 @@ namespace ASCOM.Wise40
             {
                 try
                 {
+                    if (!observingConditions.Connected)
+                        observingConditions.Connected = true;
+
                     double timeSinceLastUpdate = observingConditions.TimeSinceLastUpdate("");
 
                     if (timeSinceLastUpdate < (freqOCFetchMinutes * 60))

@@ -444,7 +444,7 @@ namespace ASCOM.Wise40
                 TelescopeAxes.axisPrimary, Const.AxisDirection.Increasing, new List<object> { instance.HAEncoder });
 
             instance.TrackingMotor = new WiseVirtualMotor("TrackMotor", TrackPin, null, null,
-                TelescopeAxes.axisPrimary, Const.AxisDirection.Increasing, new List<object> { instance.HAEncoder });
+                TelescopeAxes.axisPrimary, Const.AxisDirection.Decreasing, new List<object> { instance.HAEncoder });
 
             //
             // Define motor groups
@@ -580,11 +580,8 @@ namespace ASCOM.Wise40
             instance.WestMotor.SetOff();
             instance.SouthMotor.SetOff();
 
-            if (instance._enslaveDome)
-            {
-                instance.domeSlaveDriver.init();
-                instance.connectables.Add(instance.domeSlaveDriver);
-            }
+            instance.domeSlaveDriver.init();
+            instance.connectables.Add(instance.domeSlaveDriver);
 
             _initialized = true;
             debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "WiseTele init() done.");
@@ -1068,15 +1065,15 @@ namespace ASCOM.Wise40
             novas31.Equ2Hor(astroutils.JulianDateUT1(0), 0,
                 wisesite.astrometricAccuracy,
                 0, 0,
-                wisesite.onSurface,          // TBD: set Pressure (mbar) and Temperature (C)
+                wisesite.onSurface,
                 ra.Hours, dec.Degrees,
-                wisesite.refractionOption,   // TBD: do we want refraction?
+                wisesite.refractionOption,
                 ref zd, ref az, ref rar, ref decr);
 
             alt = Angle.FromDegrees(90.0 - zd);
             if (alt < altLimit)
             {
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
                     string.Format("Not safe to move to ra: {0}, dec: {1} (alt: {2} is below altLimit: {3})",
                     ra,
                     dec,

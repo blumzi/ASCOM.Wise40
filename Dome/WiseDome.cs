@@ -943,7 +943,7 @@ namespace ASCOM.Wise40
             get
             {
                 string name = "Wise40 Dome";
-                tl.LogMessage("Name Get", name);
+                //tl.LogMessage("Name Get", name);
                 return name;
             }
         }

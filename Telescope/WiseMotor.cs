@@ -149,13 +149,29 @@ namespace ASCOM.Wise40.Hardware
 
                     if (_direction == Const.AxisDirection.Increasing)
                     {
-                        op = "+";
-                        encoder.Angle += delta;
+                        if (primary)
+                        {
+                            op = "-";
+                            encoder.Angle -= delta;
+                        }
+                        else
+                        {
+                            op = "+";
+                            encoder.Angle += delta;
+                        }
                     }
                     else
                     {
-                        op = "-";
-                        encoder.Angle -= delta;
+                        if (primary)
+                        {
+                            op = "+";
+                            encoder.Angle += delta;
+                        }
+                        else
+                        {
+                            op = "-";
+                            encoder.Angle -= delta;
+                        }
                     }
 
                     after = primary ? 
