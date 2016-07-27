@@ -161,6 +161,12 @@
             this.labelAltitude = new System.Windows.Forms.Label();
             this.labelLTValue = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
+            this.groupBoxCurrentRates = new System.Windows.Forms.GroupBox();
+            this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
+            this.labelCurrPrimDirValue = new System.Windows.Forms.Label();
+            this.labelCurrSecDirValue = new System.Windows.Forms.Label();
+            this.labelCurrPrimRateValue = new System.Windows.Forms.Label();
+            this.labelCurrSecRateValue = new System.Windows.Forms.Label();
             this.panelDebug.SuspendLayout();
             this.panelControls.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -186,6 +192,8 @@
             this.groupBoxWeather.SuspendLayout();
             this.tableLayoutPanelWeather.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
+            this.groupBoxCurrentRates.SuspendLayout();
+            this.tableLayoutPanel2.SuspendLayout();
             this.SuspendLayout();
             // 
             // displayRefreshTimer
@@ -731,6 +739,7 @@
             // groupBoxMovementStudy
             // 
             this.groupBoxMovementStudy.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
+            this.groupBoxMovementStudy.Controls.Add(this.groupBoxCurrentRates);
             this.groupBoxMovementStudy.Controls.Add(this.buttonGoCoord);
             this.groupBoxMovementStudy.Controls.Add(this.textBoxDec);
             this.groupBoxMovementStudy.Controls.Add(this.textBoxRA);
@@ -764,7 +773,7 @@
             this.buttonGoCoord.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.buttonGoCoord.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonGoCoord.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonGoCoord.Location = new System.Drawing.Point(279, 173);
+            this.buttonGoCoord.Location = new System.Drawing.Point(279, 181);
             this.buttonGoCoord.Name = "buttonGoCoord";
             this.buttonGoCoord.Size = new System.Drawing.Size(48, 32);
             this.buttonGoCoord.TabIndex = 25;
@@ -775,7 +784,7 @@
             // textBoxDec
             // 
             this.textBoxDec.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxDec.Location = new System.Drawing.Point(169, 179);
+            this.textBoxDec.Location = new System.Drawing.Point(169, 187);
             this.textBoxDec.Name = "textBoxDec";
             this.textBoxDec.Size = new System.Drawing.Size(100, 23);
             this.textBoxDec.TabIndex = 24;
@@ -784,7 +793,7 @@
             // textBoxRA
             // 
             this.textBoxRA.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxRA.Location = new System.Drawing.Point(34, 179);
+            this.textBoxRA.Location = new System.Drawing.Point(34, 187);
             this.textBoxRA.Name = "textBoxRA";
             this.textBoxRA.Size = new System.Drawing.Size(100, 23);
             this.textBoxRA.TabIndex = 23;
@@ -793,7 +802,7 @@
             // labelDec
             // 
             this.labelDec.AutoSize = true;
-            this.labelDec.Location = new System.Drawing.Point(140, 183);
+            this.labelDec.Location = new System.Drawing.Point(140, 191);
             this.labelDec.Name = "labelDec";
             this.labelDec.Size = new System.Drawing.Size(30, 13);
             this.labelDec.TabIndex = 22;
@@ -802,7 +811,7 @@
             // labelRA
             // 
             this.labelRA.AutoSize = true;
-            this.labelRA.Location = new System.Drawing.Point(8, 183);
+            this.labelRA.Location = new System.Drawing.Point(8, 191);
             this.labelRA.Name = "labelRA";
             this.labelRA.Size = new System.Drawing.Size(25, 13);
             this.labelRA.TabIndex = 21;
@@ -819,9 +828,9 @@
             this.groupBoxEncoders.Controls.Add(this.labelHAEnc);
             this.groupBoxEncoders.Controls.Add(this.labelHAEncValue);
             this.groupBoxEncoders.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBoxEncoders.Location = new System.Drawing.Point(240, 24);
+            this.groupBoxEncoders.Location = new System.Drawing.Point(235, 24);
             this.groupBoxEncoders.Name = "groupBoxEncoders";
-            this.groupBoxEncoders.Size = new System.Drawing.Size(240, 105);
+            this.groupBoxEncoders.Size = new System.Drawing.Size(240, 112);
             this.groupBoxEncoders.TabIndex = 20;
             this.groupBoxEncoders.TabStop = false;
             this.groupBoxEncoders.Text = " Encoders ";
@@ -929,7 +938,7 @@
             this.buttonSaveResults.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.buttonSaveResults.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonSaveResults.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonSaveResults.Location = new System.Drawing.Point(144, 224);
+            this.buttonSaveResults.Location = new System.Drawing.Point(144, 232);
             this.buttonSaveResults.Name = "buttonSaveResults";
             this.buttonSaveResults.Size = new System.Drawing.Size(200, 32);
             this.buttonSaveResults.TabIndex = 15;
@@ -944,7 +953,7 @@
             this.buttonStopStudy.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.buttonStopStudy.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonStopStudy.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonStopStudy.Location = new System.Drawing.Point(333, 152);
+            this.buttonStopStudy.Location = new System.Drawing.Point(333, 160);
             this.buttonStopStudy.Name = "buttonStopStudy";
             this.buttonStopStudy.Size = new System.Drawing.Size(144, 32);
             this.buttonStopStudy.TabIndex = 14;
@@ -955,7 +964,7 @@
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(199, 143);
+            this.label5.Location = new System.Drawing.Point(199, 151);
             this.label5.MaximumSize = new System.Drawing.Size(100, 0);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(55, 13);
@@ -964,7 +973,7 @@
             // 
             // textBoxMillis
             // 
-            this.textBoxMillis.Location = new System.Drawing.Point(151, 139);
+            this.textBoxMillis.Location = new System.Drawing.Point(151, 147);
             this.textBoxMillis.Name = "textBoxMillis";
             this.textBoxMillis.Size = new System.Drawing.Size(40, 20);
             this.textBoxMillis.TabIndex = 12;
@@ -974,7 +983,7 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(95, 143);
+            this.label4.Location = new System.Drawing.Point(95, 151);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(50, 13);
             this.label4.TabIndex = 11;
@@ -982,7 +991,7 @@
             // 
             // numericUpDownStepCount
             // 
-            this.numericUpDownStepCount.Location = new System.Drawing.Point(47, 139);
+            this.numericUpDownStepCount.Location = new System.Drawing.Point(47, 147);
             this.numericUpDownStepCount.Name = "numericUpDownStepCount";
             this.numericUpDownStepCount.Size = new System.Drawing.Size(40, 20);
             this.numericUpDownStepCount.TabIndex = 10;
@@ -995,7 +1004,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(7, 143);
+            this.label3.Location = new System.Drawing.Point(7, 151);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(34, 13);
             this.label3.TabIndex = 9;
@@ -1058,7 +1067,7 @@
             this.buttonGoStudy.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.buttonGoStudy.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonGoStudy.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonGoStudy.Location = new System.Drawing.Point(279, 135);
+            this.buttonGoStudy.Location = new System.Drawing.Point(279, 143);
             this.buttonGoStudy.Name = "buttonGoStudy";
             this.buttonGoStudy.Size = new System.Drawing.Size(48, 32);
             this.buttonGoStudy.TabIndex = 7;
@@ -1398,10 +1407,10 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.tableLayoutPanelWeather.ColumnCount = 4;
-            this.tableLayoutPanelWeather.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tableLayoutPanelWeather.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
-            this.tableLayoutPanelWeather.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tableLayoutPanelWeather.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.tableLayoutPanelWeather.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 30F));
+            this.tableLayoutPanelWeather.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 20F));
+            this.tableLayoutPanelWeather.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 30F));
+            this.tableLayoutPanelWeather.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 20F));
             this.tableLayoutPanelWeather.Controls.Add(this.labelWindSpeedValue, 3, 4);
             this.tableLayoutPanelWeather.Controls.Add(this.labelWindDirValue, 3, 3);
             this.tableLayoutPanelWeather.Controls.Add(this.labelTempValue, 3, 2);
@@ -1440,7 +1449,7 @@
             this.label12.AutoSize = true;
             this.label12.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label12.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label12.Location = new System.Drawing.Point(5, 27);
+            this.label12.Location = new System.Drawing.Point(6, 27);
             this.label12.Name = "label12";
             this.label12.Size = new System.Drawing.Size(76, 27);
             this.label12.TabIndex = 0;
@@ -1454,7 +1463,7 @@
             this.label13.AutoSize = true;
             this.label13.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label13.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label13.Location = new System.Drawing.Point(16, 54);
+            this.label13.Location = new System.Drawing.Point(17, 54);
             this.label13.Name = "label13";
             this.label13.Size = new System.Drawing.Size(65, 27);
             this.label13.TabIndex = 1;
@@ -1468,7 +1477,7 @@
             this.label14.AutoSize = true;
             this.label14.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label14.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label14.Location = new System.Drawing.Point(22, 81);
+            this.label14.Location = new System.Drawing.Point(23, 81);
             this.label14.Name = "label14";
             this.label14.Size = new System.Drawing.Size(59, 27);
             this.label14.TabIndex = 2;
@@ -1482,7 +1491,7 @@
             this.label16.AutoSize = true;
             this.label16.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label16.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label16.Location = new System.Drawing.Point(21, 108);
+            this.label16.Location = new System.Drawing.Point(22, 108);
             this.label16.Name = "label16";
             this.label16.Size = new System.Drawing.Size(60, 27);
             this.label16.TabIndex = 3;
@@ -1496,7 +1505,7 @@
             this.label18.AutoSize = true;
             this.label18.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label18.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label18.Location = new System.Drawing.Point(154, 0);
+            this.label18.Location = new System.Drawing.Point(160, 0);
             this.label18.Name = "label18";
             this.label18.Size = new System.Drawing.Size(64, 27);
             this.label18.TabIndex = 4;
@@ -1510,7 +1519,7 @@
             this.label19.AutoSize = true;
             this.label19.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label19.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label19.Location = new System.Drawing.Point(155, 27);
+            this.label19.Location = new System.Drawing.Point(161, 27);
             this.label19.Name = "label19";
             this.label19.Size = new System.Drawing.Size(63, 27);
             this.label19.TabIndex = 5;
@@ -1524,7 +1533,7 @@
             this.label20.AutoSize = true;
             this.label20.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label20.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label20.Location = new System.Drawing.Point(176, 54);
+            this.label20.Location = new System.Drawing.Point(182, 54);
             this.label20.Name = "label20";
             this.label20.Size = new System.Drawing.Size(42, 27);
             this.label20.TabIndex = 6;
@@ -1538,7 +1547,7 @@
             this.label21.AutoSize = true;
             this.label21.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label21.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label21.Location = new System.Drawing.Point(162, 81);
+            this.label21.Location = new System.Drawing.Point(168, 81);
             this.label21.Name = "label21";
             this.label21.Size = new System.Drawing.Size(56, 27);
             this.label21.TabIndex = 7;
@@ -1552,7 +1561,7 @@
             this.label22.AutoSize = true;
             this.label22.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label22.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label22.Location = new System.Drawing.Point(142, 108);
+            this.label22.Location = new System.Drawing.Point(148, 108);
             this.label22.Name = "label22";
             this.label22.Size = new System.Drawing.Size(76, 27);
             this.label22.TabIndex = 8;
@@ -1566,7 +1575,7 @@
             this.label23.AutoSize = true;
             this.label23.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label23.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label23.Location = new System.Drawing.Point(48, 0);
+            this.label23.Location = new System.Drawing.Point(49, 0);
             this.label23.Name = "label23";
             this.label23.Size = new System.Drawing.Size(33, 27);
             this.label23.TabIndex = 9;
@@ -1581,9 +1590,9 @@
             this.labelAgeValue.AutoSize = true;
             this.labelAgeValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.labelAgeValue.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.labelAgeValue.Location = new System.Drawing.Point(87, 0);
+            this.labelAgeValue.Location = new System.Drawing.Point(88, 0);
             this.labelAgeValue.Name = "labelAgeValue";
-            this.labelAgeValue.Size = new System.Drawing.Size(47, 27);
+            this.labelAgeValue.Size = new System.Drawing.Size(51, 27);
             this.labelAgeValue.TabIndex = 10;
             this.labelAgeValue.Text = "age";
             this.labelAgeValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -1596,9 +1605,9 @@
             this.labelCloudCoverValue.AutoSize = true;
             this.labelCloudCoverValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.labelCloudCoverValue.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.labelCloudCoverValue.Location = new System.Drawing.Point(87, 27);
+            this.labelCloudCoverValue.Location = new System.Drawing.Point(88, 27);
             this.labelCloudCoverValue.Name = "labelCloudCoverValue";
-            this.labelCloudCoverValue.Size = new System.Drawing.Size(47, 27);
+            this.labelCloudCoverValue.Size = new System.Drawing.Size(51, 27);
             this.labelCloudCoverValue.TabIndex = 11;
             this.labelCloudCoverValue.Text = "cloud";
             this.labelCloudCoverValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -1611,9 +1620,9 @@
             this.labelDewPointValue.AutoSize = true;
             this.labelDewPointValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.labelDewPointValue.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.labelDewPointValue.Location = new System.Drawing.Point(87, 54);
+            this.labelDewPointValue.Location = new System.Drawing.Point(88, 54);
             this.labelDewPointValue.Name = "labelDewPointValue";
-            this.labelDewPointValue.Size = new System.Drawing.Size(47, 27);
+            this.labelDewPointValue.Size = new System.Drawing.Size(51, 27);
             this.labelDewPointValue.TabIndex = 12;
             this.labelDewPointValue.Text = "dew";
             this.labelDewPointValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -1626,9 +1635,9 @@
             this.labelHumidityValue.AutoSize = true;
             this.labelHumidityValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.labelHumidityValue.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.labelHumidityValue.Location = new System.Drawing.Point(87, 81);
+            this.labelHumidityValue.Location = new System.Drawing.Point(88, 81);
             this.labelHumidityValue.Name = "labelHumidityValue";
-            this.labelHumidityValue.Size = new System.Drawing.Size(47, 27);
+            this.labelHumidityValue.Size = new System.Drawing.Size(51, 27);
             this.labelHumidityValue.TabIndex = 13;
             this.labelHumidityValue.Text = "humidity";
             this.labelHumidityValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -1641,9 +1650,9 @@
             this.labelPressureValue.AutoSize = true;
             this.labelPressureValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.labelPressureValue.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.labelPressureValue.Location = new System.Drawing.Point(87, 108);
+            this.labelPressureValue.Location = new System.Drawing.Point(88, 108);
             this.labelPressureValue.Name = "labelPressureValue";
-            this.labelPressureValue.Size = new System.Drawing.Size(47, 27);
+            this.labelPressureValue.Size = new System.Drawing.Size(51, 27);
             this.labelPressureValue.TabIndex = 14;
             this.labelPressureValue.Text = "pressure";
             this.labelPressureValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -1656,9 +1665,9 @@
             this.labelRainRateValue.AutoSize = true;
             this.labelRainRateValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.labelRainRateValue.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.labelRainRateValue.Location = new System.Drawing.Point(224, 0);
+            this.labelRainRateValue.Location = new System.Drawing.Point(230, 0);
             this.labelRainRateValue.Name = "labelRainRateValue";
-            this.labelRainRateValue.Size = new System.Drawing.Size(58, 27);
+            this.labelRainRateValue.Size = new System.Drawing.Size(52, 27);
             this.labelRainRateValue.TabIndex = 15;
             this.labelRainRateValue.Text = "rain";
             this.labelRainRateValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -1671,9 +1680,9 @@
             this.labelSkyTempValue.AutoSize = true;
             this.labelSkyTempValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.labelSkyTempValue.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.labelSkyTempValue.Location = new System.Drawing.Point(224, 27);
+            this.labelSkyTempValue.Location = new System.Drawing.Point(230, 27);
             this.labelSkyTempValue.Name = "labelSkyTempValue";
-            this.labelSkyTempValue.Size = new System.Drawing.Size(58, 27);
+            this.labelSkyTempValue.Size = new System.Drawing.Size(52, 27);
             this.labelSkyTempValue.TabIndex = 16;
             this.labelSkyTempValue.Text = "skytemp";
             this.labelSkyTempValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -1686,9 +1695,9 @@
             this.labelTempValue.AutoSize = true;
             this.labelTempValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.labelTempValue.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.labelTempValue.Location = new System.Drawing.Point(224, 54);
+            this.labelTempValue.Location = new System.Drawing.Point(230, 54);
             this.labelTempValue.Name = "labelTempValue";
-            this.labelTempValue.Size = new System.Drawing.Size(58, 27);
+            this.labelTempValue.Size = new System.Drawing.Size(52, 27);
             this.labelTempValue.TabIndex = 17;
             this.labelTempValue.Text = "temp";
             this.labelTempValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -1701,9 +1710,9 @@
             this.labelWindDirValue.AutoSize = true;
             this.labelWindDirValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.labelWindDirValue.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.labelWindDirValue.Location = new System.Drawing.Point(224, 81);
+            this.labelWindDirValue.Location = new System.Drawing.Point(230, 81);
             this.labelWindDirValue.Name = "labelWindDirValue";
-            this.labelWindDirValue.Size = new System.Drawing.Size(58, 27);
+            this.labelWindDirValue.Size = new System.Drawing.Size(52, 27);
             this.labelWindDirValue.TabIndex = 18;
             this.labelWindDirValue.Text = "winddir";
             this.labelWindDirValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -1716,9 +1725,9 @@
             this.labelWindSpeedValue.AutoSize = true;
             this.labelWindSpeedValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.labelWindSpeedValue.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.labelWindSpeedValue.Location = new System.Drawing.Point(224, 108);
+            this.labelWindSpeedValue.Location = new System.Drawing.Point(230, 108);
             this.labelWindSpeedValue.Name = "labelWindSpeedValue";
-            this.labelWindSpeedValue.Size = new System.Drawing.Size(58, 27);
+            this.labelWindSpeedValue.Size = new System.Drawing.Size(52, 27);
             this.labelWindSpeedValue.TabIndex = 19;
             this.labelWindSpeedValue.Text = "windspeed";
             this.labelWindSpeedValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -2007,6 +2016,93 @@
             this.label2.Text = "LST:";
             this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
+            // groupBoxCurrentRates
+            // 
+            this.groupBoxCurrentRates.Controls.Add(this.tableLayoutPanel2);
+            this.groupBoxCurrentRates.ForeColor = System.Drawing.Color.DarkOrange;
+            this.groupBoxCurrentRates.Location = new System.Drawing.Point(8, 96);
+            this.groupBoxCurrentRates.Name = "groupBoxCurrentRates";
+            this.groupBoxCurrentRates.Size = new System.Drawing.Size(216, 40);
+            this.groupBoxCurrentRates.TabIndex = 26;
+            this.groupBoxCurrentRates.TabStop = false;
+            this.groupBoxCurrentRates.Text = " Current Axes State  ";
+            // 
+            // tableLayoutPanel2
+            // 
+            this.tableLayoutPanel2.ColumnCount = 4;
+            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.tableLayoutPanel2.Controls.Add(this.labelCurrPrimRateValue, 0, 0);
+            this.tableLayoutPanel2.Controls.Add(this.labelCurrPrimDirValue, 0, 0);
+            this.tableLayoutPanel2.Controls.Add(this.labelCurrSecRateValue, 3, 0);
+            this.tableLayoutPanel2.Controls.Add(this.labelCurrSecDirValue, 2, 0);
+            this.tableLayoutPanel2.Location = new System.Drawing.Point(3, 12);
+            this.tableLayoutPanel2.Name = "tableLayoutPanel2";
+            this.tableLayoutPanel2.RowCount = 1;
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.tableLayoutPanel2.Size = new System.Drawing.Size(205, 24);
+            this.tableLayoutPanel2.TabIndex = 0;
+            // 
+            // labelCurrPrimDirValue
+            // 
+            this.labelCurrPrimDirValue.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.labelCurrPrimDirValue.AutoSize = true;
+            this.labelCurrPrimDirValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelCurrPrimDirValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
+            this.labelCurrPrimDirValue.Location = new System.Drawing.Point(3, 0);
+            this.labelCurrPrimDirValue.Name = "labelCurrPrimDirValue";
+            this.labelCurrPrimDirValue.Size = new System.Drawing.Size(35, 24);
+            this.labelCurrPrimDirValue.TabIndex = 5;
+            this.labelCurrPrimDirValue.Text = "Prim:";
+            this.labelCurrPrimDirValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // labelCurrSecDirValue
+            // 
+            this.labelCurrSecDirValue.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.labelCurrSecDirValue.AutoSize = true;
+            this.labelCurrSecDirValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelCurrSecDirValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
+            this.labelCurrSecDirValue.Location = new System.Drawing.Point(97, 0);
+            this.labelCurrSecDirValue.Name = "labelCurrSecDirValue";
+            this.labelCurrSecDirValue.Size = new System.Drawing.Size(33, 24);
+            this.labelCurrSecDirValue.TabIndex = 6;
+            this.labelCurrSecDirValue.Text = "Sec:";
+            this.labelCurrSecDirValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // labelCurrPrimRateValue
+            // 
+            this.labelCurrPrimRateValue.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.labelCurrPrimRateValue.AutoSize = true;
+            this.labelCurrPrimRateValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.labelCurrPrimRateValue.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.labelCurrPrimRateValue.Location = new System.Drawing.Point(44, 0);
+            this.labelCurrPrimRateValue.Name = "labelCurrPrimRateValue";
+            this.labelCurrPrimRateValue.Size = new System.Drawing.Size(47, 24);
+            this.labelCurrPrimRateValue.TabIndex = 11;
+            this.labelCurrPrimRateValue.Text = "Stopped";
+            this.labelCurrPrimRateValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // labelCurrSecRateValue
+            // 
+            this.labelCurrSecRateValue.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.labelCurrSecRateValue.AutoSize = true;
+            this.labelCurrSecRateValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.labelCurrSecRateValue.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.labelCurrSecRateValue.Location = new System.Drawing.Point(136, 0);
+            this.labelCurrSecRateValue.Name = "labelCurrSecRateValue";
+            this.labelCurrSecRateValue.Size = new System.Drawing.Size(66, 24);
+            this.labelCurrSecRateValue.TabIndex = 12;
+            this.labelCurrSecRateValue.Text = "Stopped";
+            this.labelCurrSecRateValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
             // HandpadForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -2059,6 +2155,9 @@
             this.tableLayoutPanelWeather.PerformLayout();
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
+            this.groupBoxCurrentRates.ResumeLayout(false);
+            this.tableLayoutPanel2.ResumeLayout(false);
+            this.tableLayoutPanel2.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -2197,5 +2296,11 @@
         private System.Windows.Forms.Label labelDeclinationValue;
         private System.Windows.Forms.Label labelAzimuthValue;
         private System.Windows.Forms.Label labelDeclination;
+        private System.Windows.Forms.GroupBox groupBoxCurrentRates;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel2;
+        private System.Windows.Forms.Label labelCurrPrimRateValue;
+        private System.Windows.Forms.Label labelCurrPrimDirValue;
+        private System.Windows.Forms.Label labelCurrSecRateValue;
+        private System.Windows.Forms.Label labelCurrSecDirValue;
     }
 }

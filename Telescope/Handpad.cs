@@ -269,6 +269,23 @@ namespace ASCOM.Wise40
                 labelWindSpeedValue.Text = oc.WindSpeed.ToString() + "m/s";
                 labelWindDirValue.Text = oc.WindDirection.ToString() + "°";
             }
+
+            if (groupBoxCurrentRates.Visible)
+            {
+                WiseVirtualMotor m;
+
+                m = wisetele.WestMotor.isOn ? wisetele.WestMotor : wisetele.EastMotor.isOn ? wisetele.EastMotor : null;
+                if (m == null)
+                    labelCurrPrimRateValue.Text = "Stopped";
+                else
+                    labelCurrPrimRateValue.Text = m.name.Replace("Motor", "") + "@" + WiseTele.RateName(m.currentRate).Replace("rate", "");
+
+                m = wisetele.SouthMotor.isOn ? wisetele.SouthMotor : wisetele.NorthMotor.isOn ? wisetele.NorthMotor : null;
+                if (m == null)
+                    labelCurrSecRateValue.Text = "Stopped";
+                else
+                    labelCurrSecRateValue.Text = m.name.Replace("Motor", "") + "@" + WiseTele.RateName(m.currentRate).Replace("rate", "");
+            }
         }
 
         private void HandpadForm_VisibleChanged(object sender, EventArgs e)

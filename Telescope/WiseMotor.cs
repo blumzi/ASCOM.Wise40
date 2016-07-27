@@ -25,7 +25,7 @@ namespace ASCOM.Wise40.Hardware
         private List<WisePin> activePins;
         private List<object> encoders;
         private System.Threading.Timer simulationTimer;
-        private double currentRate;
+        public double currentRate;
         private int simulationTimerFrequency;
         private int timer_counts;
         private DateTime prevTick;
