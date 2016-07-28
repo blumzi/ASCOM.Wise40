@@ -624,7 +624,7 @@
             this.label9.AutoSize = true;
             this.label9.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label9.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label9.Location = new System.Drawing.Point(16, 16);
+            this.label9.Location = new System.Drawing.Point(34, 16);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(64, 18);
             this.label9.TabIndex = 18;
@@ -661,7 +661,7 @@
             this.label15.AutoSize = true;
             this.label15.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label15.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label15.Location = new System.Drawing.Point(16, 48);
+            this.label15.Location = new System.Drawing.Point(34, 48);
             this.label15.Name = "label15";
             this.label15.Size = new System.Drawing.Size(64, 18);
             this.label15.TabIndex = 18;
@@ -707,7 +707,7 @@
             this.groupBoxDomeGroup.Controls.Add(this.labelDomeSlavedConfValue);
             this.groupBoxDomeGroup.Controls.Add(this.labelConfDomeSlaved);
             this.groupBoxDomeGroup.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBoxDomeGroup.Location = new System.Drawing.Point(8, 8);
+            this.groupBoxDomeGroup.Location = new System.Drawing.Point(8, 11);
             this.groupBoxDomeGroup.Name = "groupBoxDomeGroup";
             this.groupBoxDomeGroup.Size = new System.Drawing.Size(280, 232);
             this.groupBoxDomeGroup.TabIndex = 25;
@@ -759,9 +759,9 @@
             this.groupBoxMovementStudy.Controls.Add(this.groupBox5);
             this.groupBoxMovementStudy.Controls.Add(this.groupBox2);
             this.groupBoxMovementStudy.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBoxMovementStudy.Location = new System.Drawing.Point(8, 8);
+            this.groupBoxMovementStudy.Location = new System.Drawing.Point(8, 11);
             this.groupBoxMovementStudy.Name = "groupBoxMovementStudy";
-            this.groupBoxMovementStudy.Size = new System.Drawing.Size(484, 560);
+            this.groupBoxMovementStudy.Size = new System.Drawing.Size(484, 557);
             this.groupBoxMovementStudy.TabIndex = 8;
             this.groupBoxMovementStudy.TabStop = false;
             this.groupBoxMovementStudy.Text = " Movement Study ";
@@ -773,7 +773,7 @@
             this.buttonGoCoord.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.buttonGoCoord.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonGoCoord.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonGoCoord.Location = new System.Drawing.Point(279, 181);
+            this.buttonGoCoord.Location = new System.Drawing.Point(279, 192);
             this.buttonGoCoord.Name = "buttonGoCoord";
             this.buttonGoCoord.Size = new System.Drawing.Size(48, 32);
             this.buttonGoCoord.TabIndex = 25;
@@ -784,7 +784,7 @@
             // textBoxDec
             // 
             this.textBoxDec.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxDec.Location = new System.Drawing.Point(169, 187);
+            this.textBoxDec.Location = new System.Drawing.Point(169, 198);
             this.textBoxDec.Name = "textBoxDec";
             this.textBoxDec.Size = new System.Drawing.Size(100, 23);
             this.textBoxDec.TabIndex = 24;
@@ -793,7 +793,7 @@
             // textBoxRA
             // 
             this.textBoxRA.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxRA.Location = new System.Drawing.Point(34, 187);
+            this.textBoxRA.Location = new System.Drawing.Point(34, 198);
             this.textBoxRA.Name = "textBoxRA";
             this.textBoxRA.Size = new System.Drawing.Size(100, 23);
             this.textBoxRA.TabIndex = 23;
@@ -802,7 +802,7 @@
             // labelDec
             // 
             this.labelDec.AutoSize = true;
-            this.labelDec.Location = new System.Drawing.Point(140, 191);
+            this.labelDec.Location = new System.Drawing.Point(140, 202);
             this.labelDec.Name = "labelDec";
             this.labelDec.Size = new System.Drawing.Size(30, 13);
             this.labelDec.TabIndex = 22;
@@ -811,7 +811,7 @@
             // labelRA
             // 
             this.labelRA.AutoSize = true;
-            this.labelRA.Location = new System.Drawing.Point(8, 191);
+            this.labelRA.Location = new System.Drawing.Point(8, 202);
             this.labelRA.Name = "labelRA";
             this.labelRA.Size = new System.Drawing.Size(25, 13);
             this.labelRA.TabIndex = 21;
@@ -953,7 +953,7 @@
             this.buttonStopStudy.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.buttonStopStudy.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonStopStudy.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonStopStudy.Location = new System.Drawing.Point(333, 160);
+            this.buttonStopStudy.Location = new System.Drawing.Point(333, 171);
             this.buttonStopStudy.Name = "buttonStopStudy";
             this.buttonStopStudy.Size = new System.Drawing.Size(144, 32);
             this.buttonStopStudy.TabIndex = 14;
@@ -964,7 +964,7 @@
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(199, 151);
+            this.label5.Location = new System.Drawing.Point(199, 162);
             this.label5.MaximumSize = new System.Drawing.Size(100, 0);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(55, 13);
@@ -973,7 +973,7 @@
             // 
             // textBoxMillis
             // 
-            this.textBoxMillis.Location = new System.Drawing.Point(151, 147);
+            this.textBoxMillis.Location = new System.Drawing.Point(151, 158);
             this.textBoxMillis.Name = "textBoxMillis";
             this.textBoxMillis.Size = new System.Drawing.Size(40, 20);
             this.textBoxMillis.TabIndex = 12;
@@ -983,7 +983,7 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(95, 151);
+            this.label4.Location = new System.Drawing.Point(95, 162);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(50, 13);
             this.label4.TabIndex = 11;
@@ -991,7 +991,7 @@
             // 
             // numericUpDownStepCount
             // 
-            this.numericUpDownStepCount.Location = new System.Drawing.Point(47, 147);
+            this.numericUpDownStepCount.Location = new System.Drawing.Point(47, 158);
             this.numericUpDownStepCount.Name = "numericUpDownStepCount";
             this.numericUpDownStepCount.Size = new System.Drawing.Size(40, 20);
             this.numericUpDownStepCount.TabIndex = 10;
@@ -1004,7 +1004,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(7, 151);
+            this.label3.Location = new System.Drawing.Point(7, 162);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(34, 13);
             this.label3.TabIndex = 9;
@@ -1067,7 +1067,7 @@
             this.buttonGoStudy.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.buttonGoStudy.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonGoStudy.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonGoStudy.Location = new System.Drawing.Point(279, 143);
+            this.buttonGoStudy.Location = new System.Drawing.Point(279, 154);
             this.buttonGoStudy.Name = "buttonGoStudy";
             this.buttonGoStudy.Size = new System.Drawing.Size(48, 32);
             this.buttonGoStudy.TabIndex = 7;
@@ -1213,7 +1213,7 @@
             this.labelConfDomeSlaved.AutoSize = true;
             this.labelConfDomeSlaved.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelConfDomeSlaved.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.labelConfDomeSlaved.Location = new System.Drawing.Point(48, 23);
+            this.labelConfDomeSlaved.Location = new System.Drawing.Point(48, 22);
             this.labelConfDomeSlaved.Name = "labelConfDomeSlaved";
             this.labelConfDomeSlaved.Size = new System.Drawing.Size(51, 13);
             this.labelConfDomeSlaved.TabIndex = 0;
@@ -1346,7 +1346,7 @@
             // 
             this.labelDomeSlavedConfValue.AutoSize = true;
             this.labelDomeSlavedConfValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelDomeSlavedConfValue.Location = new System.Drawing.Point(92, 25);
+            this.labelDomeSlavedConfValue.Location = new System.Drawing.Point(92, 24);
             this.labelDomeSlavedConfValue.Name = "labelDomeSlavedConfValue";
             this.labelDomeSlavedConfValue.Size = new System.Drawing.Size(138, 13);
             this.labelDomeSlavedConfValue.TabIndex = 1;
@@ -1755,7 +1755,7 @@
             this.tableLayoutPanel1.Controls.Add(this.labelDeclinationValue, 3, 2);
             this.tableLayoutPanel1.Controls.Add(this.labelAzimuthValue, 3, 3);
             this.tableLayoutPanel1.Controls.Add(this.labelDeclination, 2, 2);
-            this.tableLayoutPanel1.Location = new System.Drawing.Point(5, 56);
+            this.tableLayoutPanel1.Location = new System.Drawing.Point(4, 56);
             this.tableLayoutPanel1.Margin = new System.Windows.Forms.Padding(0);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
             this.tableLayoutPanel1.RowCount = 4;
@@ -1795,7 +1795,7 @@
             this.labelAzimuthValue.Name = "labelAzimuthValue";
             this.labelAzimuthValue.Size = new System.Drawing.Size(128, 32);
             this.labelAzimuthValue.TabIndex = 18;
-            this.labelAzimuthValue.Text = "359d59\'59.1\"";
+            this.labelAzimuthValue.Text = "000°00\'00.0\"";
             this.labelAzimuthValue.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // labelDeclinationValue
@@ -1806,12 +1806,12 @@
             this.labelDeclinationValue.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.labelDeclinationValue.Font = new System.Drawing.Font("Lucida Console", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelDeclinationValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelDeclinationValue.Location = new System.Drawing.Point(222, 64);
+            this.labelDeclinationValue.Location = new System.Drawing.Point(232, 64);
             this.labelDeclinationValue.Margin = new System.Windows.Forms.Padding(0);
             this.labelDeclinationValue.Name = "labelDeclinationValue";
-            this.labelDeclinationValue.Size = new System.Drawing.Size(128, 32);
+            this.labelDeclinationValue.Size = new System.Drawing.Size(118, 32);
             this.labelDeclinationValue.TabIndex = 16;
-            this.labelDeclinationValue.Text = " 120d59\'59.1\"";
+            this.labelDeclinationValue.Text = "00°00\'00.0\"";
             this.labelDeclinationValue.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // labelAzimuth
@@ -1842,7 +1842,7 @@
             this.labelHourAngleValue.Name = "labelHourAngleValue";
             this.labelHourAngleValue.Size = new System.Drawing.Size(128, 32);
             this.labelHourAngleValue.TabIndex = 10;
-            this.labelHourAngleValue.Text = "-11h59m59.1s";
+            this.labelHourAngleValue.Text = "-00h00m00.0s";
             this.labelHourAngleValue.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // labelLT
@@ -1888,7 +1888,7 @@
             this.labelRightAscensionValue.Name = "labelRightAscensionValue";
             this.labelRightAscensionValue.Size = new System.Drawing.Size(128, 32);
             this.labelRightAscensionValue.TabIndex = 12;
-            this.labelRightAscensionValue.Text = "-89h59m59.1s";
+            this.labelRightAscensionValue.Text = "-00h00m00.0s";
             this.labelRightAscensionValue.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // labelSiderealValue
@@ -1899,12 +1899,12 @@
             this.labelSiderealValue.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.labelSiderealValue.Font = new System.Drawing.Font("Lucida Console", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelSiderealValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelSiderealValue.Location = new System.Drawing.Point(242, 32);
+            this.labelSiderealValue.Location = new System.Drawing.Point(232, 32);
             this.labelSiderealValue.Margin = new System.Windows.Forms.Padding(0);
             this.labelSiderealValue.Name = "labelSiderealValue";
-            this.labelSiderealValue.Size = new System.Drawing.Size(108, 32);
+            this.labelSiderealValue.Size = new System.Drawing.Size(118, 32);
             this.labelSiderealValue.TabIndex = 8;
-            this.labelSiderealValue.Text = "23:59:59.1";
+            this.labelSiderealValue.Text = "00h00m00.0s";
             this.labelSiderealValue.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // labelHourAngle
@@ -1930,12 +1930,12 @@
             this.labelUTValue.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.labelUTValue.Font = new System.Drawing.Font("Lucida Console", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelUTValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelUTValue.Location = new System.Drawing.Point(65, 0);
+            this.labelUTValue.Location = new System.Drawing.Point(55, 0);
             this.labelUTValue.Margin = new System.Windows.Forms.Padding(0);
             this.labelUTValue.Name = "labelUTValue";
-            this.labelUTValue.Size = new System.Drawing.Size(108, 32);
+            this.labelUTValue.Size = new System.Drawing.Size(118, 32);
             this.labelUTValue.TabIndex = 20;
-            this.labelUTValue.Text = "23:59:59.1";
+            this.labelUTValue.Text = "00h00m00.0s";
             this.labelUTValue.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // labelRightAscension
@@ -1966,7 +1966,7 @@
             this.labelAltitudeValue.Name = "labelAltitudeValue";
             this.labelAltitudeValue.Size = new System.Drawing.Size(118, 32);
             this.labelAltitudeValue.TabIndex = 17;
-            this.labelAltitudeValue.Text = "89s59\'59.1\"";
+            this.labelAltitudeValue.Text = "00°00\'00.0\"";
             this.labelAltitudeValue.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // labelAltitude
@@ -1992,12 +1992,12 @@
             this.labelLTValue.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.labelLTValue.Font = new System.Drawing.Font("Lucida Console", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelLTValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelLTValue.Location = new System.Drawing.Point(242, 0);
+            this.labelLTValue.Location = new System.Drawing.Point(232, 0);
             this.labelLTValue.Margin = new System.Windows.Forms.Padding(0);
             this.labelLTValue.Name = "labelLTValue";
-            this.labelLTValue.Size = new System.Drawing.Size(108, 32);
+            this.labelLTValue.Size = new System.Drawing.Size(118, 32);
             this.labelLTValue.TabIndex = 22;
-            this.labelLTValue.Text = "23:59:59.1";
+            this.labelLTValue.Text = "00h00m00.0s";
             this.labelLTValue.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // label2

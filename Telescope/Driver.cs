@@ -139,9 +139,7 @@ namespace ASCOM.Wise40
         /// </summary>
         public void SetupDialog()
         {
-            // consider only showing the setup dialog if not connected
-            // or call a different dialog if connected
-            if (wisetele.Connected && wisetele.debugger.Debugging(Common.Debugger.DebugLevel.DebugDevice))
+            if (wisetele.Connected)
             {
                 handpad = new HandpadForm();
                 handpad.ShowDialog();

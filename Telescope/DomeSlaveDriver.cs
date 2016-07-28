@@ -130,9 +130,9 @@ namespace ASCOM.Wise40
             get
             {
                 if (!Connected)
-                    return "not connected";
+                    return "Not connected";
                 if (!wisedome.Calibrated)
-                    return "not calibrated";
+                    return "Not calibrated";
 
                 return wisedome.Azimuth.ToNiceString();
             }
@@ -143,7 +143,7 @@ namespace ASCOM.Wise40
             get
             {
                 if (!Connected)
-                    return "not connected";
+                    return "Not connected";
 
                 return wisedome.Status;
             }
@@ -154,7 +154,7 @@ namespace ASCOM.Wise40
             get
             {
                 if (!Connected)
-                    return "not connected";
+                    return "Not connected";
 
                 switch (wisedome.ShutterStatus)
                 {

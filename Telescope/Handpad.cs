@@ -274,17 +274,27 @@ namespace ASCOM.Wise40
             {
                 WiseVirtualMotor m;
 
-                m = wisetele.WestMotor.isOn ? wisetele.WestMotor : wisetele.EastMotor.isOn ? wisetele.EastMotor : null;
+                m = null;
+                if (wisetele.WestMotor.isOn)
+                    m = wisetele.WestMotor;
+                else if (wisetele.EastMotor.isOn)
+                    m = wisetele.EastMotor;
+
                 if (m == null)
                     labelCurrPrimRateValue.Text = "Stopped";
                 else
-                    labelCurrPrimRateValue.Text = m.name.Replace("Motor", "") + "@" + WiseTele.RateName(m.currentRate).Replace("rate", "");
+                    labelCurrPrimRateValue.Text = m.name.Substring(0, 1) + "@" + WiseTele.RateName(m.currentRate).Replace("rate", "");
 
-                m = wisetele.SouthMotor.isOn ? wisetele.SouthMotor : wisetele.NorthMotor.isOn ? wisetele.NorthMotor : null;
+                m = null;
+                if (wisetele.NorthMotor.isOn)
+                    m = wisetele.NorthMotor;
+                else if (wisetele.SouthMotor.isOn)
+                    m = wisetele.SouthMotor;
+
                 if (m == null)
                     labelCurrSecRateValue.Text = "Stopped";
                 else
-                    labelCurrSecRateValue.Text = m.name.Replace("Motor", "") + "@" + WiseTele.RateName(m.currentRate).Replace("rate", "");
+                    labelCurrSecRateValue.Text = m.name.Substring(0, 1) + "@" + WiseTele.RateName(m.currentRate).Replace("rate", "");
             }
         }
 
