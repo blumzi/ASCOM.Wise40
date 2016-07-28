@@ -98,13 +98,18 @@ namespace ASCOM.Wise40.Hardware
             if (simulated)
                 simulationTimer.Change(Timeout.Infinite, Timeout.Infinite);
 
-            if ((activePins != null) && (activePins.Count > 0))
-            {
-                for (int i = activePins.Count - 1; i >= 0; i--)
-                {
-                    activePins[i].SetOff();
-                    activePins.RemoveAt(i);
-                }
+            //if ((activePins != null) && (activePins.Count > 0))
+            //{
+            //    for (int i = activePins.Count - 1; i >= 0; i--)
+            //    {
+            //        activePins[i].SetOff();
+            //        activePins.RemoveAt(i);
+            //    }
+            //}
+            if (activePins != null) {
+                foreach (WisePin pin in activePins)
+                    pin.SetOff();
+                activePins.Clear();
             }
             currentRate = Const.rateStopped;
         }
