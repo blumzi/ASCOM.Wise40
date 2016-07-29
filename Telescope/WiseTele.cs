@@ -88,6 +88,7 @@ namespace ASCOM.Wise40
         public static readonly List<double> rates = new List<double> { Const.rateSlew, Const.rateSet, Const.rateGuide };
         public static readonly List<TelescopeAxes> axes = new List<TelescopeAxes> { TelescopeAxes.axisPrimary, TelescopeAxes.axisSecondary };
 
+        private long _primaryIsMoving = 0, _secondaryIsMoving = 0;
         private const int _nAxisValues = 5;
         private List<double> _primaryAxisValues = new List<double>(_nAxisValues);
         private List<uint> _secondaryAxisValues = new List<uint>(_nAxisValues);
@@ -109,6 +110,10 @@ namespace ASCOM.Wise40
         private List<Task> slewers = new List<Task>();
         private static CancellationTokenSource slewingCancellationTokenSource;
         private static CancellationToken slewingCancellationToken;
+
+        private Task movementCheckerTask;
+        private static CancellationTokenSource movementCheckerCancellationTokenSource;
+        private static CancellationToken movementCheckerCancellationToken;
 
         ReadyToSlewFlags readyToSlew = new ReadyToSlewFlags();
 
@@ -327,6 +332,29 @@ namespace ASCOM.Wise40
                     connectable.Connect(value);
                 }
                 _connected = value;
+
+                if (_connected)
+                {
+                    movementCheckerCancellationTokenSource = new CancellationTokenSource();
+                    movementCheckerCancellationToken = movementCheckerCancellationTokenSource.Token;
+
+                    try
+                    {
+                        movementCheckerTask = Task.Run(() =>
+                        {
+                            Thread.CurrentThread.Name = "AxisMovementChecker";
+                            AxisMovementChecker();
+                        }, movementCheckerCancellationToken);
+                    }
+                    catch (OperationCanceledException) { }
+                }
+                else
+                {
+                    if (movementCheckerTask != null)
+                    {
+                        movementCheckerCancellationTokenSource.Cancel();
+                    }
+                }
             }
         }
 
@@ -750,21 +778,68 @@ namespace ASCOM.Wise40
 
         public bool AxisIsMoving(TelescopeAxes axis)
         {
-            //if (axis == TelescopeAxes.axisPrimary)
-            //    return Interlocked.Read(ref _primaryIsMoving) == 1;
-            //else
-            //    return Interlocked.Read(ref _secondaryIsMoving) == 1;
-            foreach (WiseVirtualMotor m in instance.axisMotors[axis])
-                if (m.isOn)
-                    return true;
-            return false;
+            if (axis == TelescopeAxes.axisPrimary)
+                return Interlocked.Read(ref _primaryIsMoving) == 1;
+            else
+                return Interlocked.Read(ref _secondaryIsMoving) == 1;
+        }
+
+        private void CheckAxisMovement(object StateObject)
+        {
+            foreach (TelescopeAxes axis in axes) {
+                if (axis == TelescopeAxes.axisPrimary)
+                {
+                    var epsilon = new Angle("00:00:00.1").Degrees;
+                    lock (_primaryValuesLock)
+                    {
+                        if (_primaryAxisValues.Count == _nAxisValues)
+                            _primaryAxisValues.Remove(_primaryAxisValues.ElementAt(0));
+                        _primaryAxisValues.Add(RightAscension);
+
+                        if (_primaryAxisValues.Count == _nAxisValues)
+                        {
+                            var deltas = new List<double>();
+                            for (var i = 1; i < _primaryAxisValues.Count; i++)
+                                deltas.Add(Math.Abs(_primaryAxisValues[i] - _primaryAxisValues[i - 1]));
+
+                            Interlocked.Exchange(ref _primaryIsMoving, (deltas.Max() <= epsilon) ? 0 : 1);
+                        }
+                    }
+                }
+                else
+                {
+                    uint epsilon = 1;
+                    lock (_secondaryValuesLock)
+                    {
+                        if (_secondaryAxisValues.Count == _nAxisValues)
+                            _secondaryAxisValues.Remove(_secondaryAxisValues.ElementAt(0));
+                        _secondaryAxisValues.Add(DecEncoder.Value);
+
+                        if (_secondaryAxisValues.Count == _nAxisValues)
+                        {
+                            var deltas = new List<uint>();
+                            for (var i = 1; i < _secondaryAxisValues.Count; i++)
+                                deltas.Add((uint)Math.Abs(_secondaryAxisValues[i] - _secondaryAxisValues[i - 1]));
+
+                            Interlocked.Exchange(ref _secondaryIsMoving, (deltas.Max() <= epsilon) ? 0 : 1);
+                        }
+                    }
+                }
+            }
+        }
+
+        public void AxisMovementChecker()
+        {
+            TimerCallback axisMovementTimerCallback = new TimerCallback(CheckAxisMovement);
+            System.Threading.Timer movementCheckerTimer = new System.Threading.Timer(axisMovementTimerCallback);
+            movementCheckerTimer.Change(100, 100);
         }
 
         public bool Moving
         {
             get
             {
-                foreach (WiseVirtualMotor m in instance.directionMotors)
+                foreach (WiseVirtualMotor m in directionMotors)
                     if (m.isOn)
                         return true;
                 return false;
@@ -878,7 +953,7 @@ namespace ASCOM.Wise40
 
             if (Rate == Const.rateStopped)
             {
-                foreach (WiseVirtualMotor m in instance.axisMotors[thisAxis])
+                foreach (WiseVirtualMotor m in axisMotors[thisAxis])
                     if (m.isOn)
                     {
                         debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "_moveAxis({0}, {1}):  {2} was on, stopping it.", Axis, RateName(Rate), m.name);

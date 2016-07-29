@@ -2054,9 +2054,9 @@
             this.labelCurrPrimDirValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
             this.labelCurrPrimDirValue.Location = new System.Drawing.Point(3, 0);
             this.labelCurrPrimDirValue.Name = "labelCurrPrimDirValue";
-            this.labelCurrPrimDirValue.Size = new System.Drawing.Size(28, 24);
+            this.labelCurrPrimDirValue.Size = new System.Drawing.Size(35, 24);
             this.labelCurrPrimDirValue.TabIndex = 5;
-            this.labelCurrPrimDirValue.Text = "RA:";
+            this.labelCurrPrimDirValue.Text = "Prim:";
             this.labelCurrPrimDirValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // labelCurrSecDirValue
@@ -2066,11 +2066,11 @@
             this.labelCurrSecDirValue.AutoSize = true;
             this.labelCurrSecDirValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelCurrSecDirValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.labelCurrSecDirValue.Location = new System.Drawing.Point(90, 0);
+            this.labelCurrSecDirValue.Location = new System.Drawing.Point(97, 0);
             this.labelCurrSecDirValue.Name = "labelCurrSecDirValue";
-            this.labelCurrSecDirValue.Size = new System.Drawing.Size(34, 24);
+            this.labelCurrSecDirValue.Size = new System.Drawing.Size(33, 24);
             this.labelCurrSecDirValue.TabIndex = 6;
-            this.labelCurrSecDirValue.Text = "Dec:";
+            this.labelCurrSecDirValue.Text = "Sec:";
             this.labelCurrSecDirValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // labelCurrPrimRateValue
@@ -2081,7 +2081,7 @@
             this.labelCurrPrimRateValue.AutoSize = true;
             this.labelCurrPrimRateValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.labelCurrPrimRateValue.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.labelCurrPrimRateValue.Location = new System.Drawing.Point(37, 0);
+            this.labelCurrPrimRateValue.Location = new System.Drawing.Point(44, 0);
             this.labelCurrPrimRateValue.Name = "labelCurrPrimRateValue";
             this.labelCurrPrimRateValue.Size = new System.Drawing.Size(47, 24);
             this.labelCurrPrimRateValue.TabIndex = 11;
@@ -2096,9 +2096,9 @@
             this.labelCurrSecRateValue.AutoSize = true;
             this.labelCurrSecRateValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.labelCurrSecRateValue.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.labelCurrSecRateValue.Location = new System.Drawing.Point(130, 0);
+            this.labelCurrSecRateValue.Location = new System.Drawing.Point(136, 0);
             this.labelCurrSecRateValue.Name = "labelCurrSecRateValue";
-            this.labelCurrSecRateValue.Size = new System.Drawing.Size(72, 24);
+            this.labelCurrSecRateValue.Size = new System.Drawing.Size(66, 24);
             this.labelCurrSecRateValue.TabIndex = 12;
             this.labelCurrSecRateValue.Text = "Stopped";
             this.labelCurrSecRateValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;

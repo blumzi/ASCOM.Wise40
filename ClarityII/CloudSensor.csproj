@@ -110,8 +110,6 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Files\CloudSensor Setup.iss" />
-    <Content Include="Files\ReadMe.txt" />
     <Content Include="Sample Files\ClarityII-data.txt" />
     <None Include="app.config" />
     <None Include="ASCOM.png" />
@@ -141,7 +139,6 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>
