@@ -111,10 +111,23 @@ namespace ASCOM.Wise40
         private static CancellationTokenSource slewingCancellationTokenSource;
         private static CancellationToken slewingCancellationToken;
 
+        /// <summary>
+        /// Another background Task checks whether the telescope is acually moving
+        ///  by monitoring the RightAscension (should not change if Tracking) and
+        ///  Declination (should not change).
+        /// </summary>
         private Task movementCheckerTask;
         private static CancellationTokenSource movementCheckerCancellationTokenSource;
         private static CancellationToken movementCheckerCancellationToken;
 
+        public double _lastTrackingLST;
+
+        /// <summary>
+        /// These are per-rate semphores:
+        ///  - Zeroed before slews
+        ///  - Increased by each axis slewer when it is ready to slew at the specific rate
+        ///  - Both slewers wait for the semaphore to read 2 (both axes are ready) before actuating the motors
+        /// </summary>
         ReadyToSlewFlags readyToSlew = new ReadyToSlewFlags();
 
         public static Dictionary<Const.AxisDirection, string> axisPrimaryNames = new Dictionary<Const.AxisDirection, string>()
@@ -703,6 +716,8 @@ namespace ASCOM.Wise40
 
                 if (value)
                 {
+                    _lastTrackingLST = wisesite.LocalSiderealTime.Hours;
+
                     if (TrackingMotor.isOff)
                         TrackingMotor.SetOn(Const.rateTrack);
                     if (!safetyMonitorTimer.isOn)

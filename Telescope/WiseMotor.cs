@@ -125,16 +125,46 @@ namespace ASCOM.Wise40.Hardware
             }
         }
 
+        /// <summary>
+        /// This is used only by simulated motors.
+        /// It is called at a timer interval (simulationTimerFrequency) and increases/decreases
+        ///  the attached encoder(s) according to the motor's currentRate.
+        ///  
+        /// The TrackMotor is a special case.
+        /// </summary>
+        /// <param name="StateObject"></param>
         private void bumpEncoders(object StateObject)
         {
             if (!simulated)
                 return;
 
             bool primary = (_axis == TelescopeAxes.axisPrimary) ? true : false;
-
-            double degrees = currentRate / simulationTimerFrequency;
-            Angle delta = primary ? Angle.FromHours(degrees/15.0, Angle.Type.HA) : Angle.FromDegrees(degrees);
+            Angle delta = Angle.zero;
             WiseTele wisetele = WiseTele.Instance;
+            WiseSite wisesite = WiseSite.Instance;
+
+            //
+            // Calculate the delta to be added/subtracted from the attached encoder(s)
+            //
+            if (name == "TrackMotor")
+            {
+                //
+                // To better simulate the tracking-motor, we use the actual LocalSiderealTime
+                //  that passed since the last time we read it.  This neutralizes
+                //  inaccuracies of the timer intervals.
+                //
+                // The wisetele._lastTrackingLST variable gets initialized each time
+                //  Tracking is enabled.
+                //
+                double lstHoursNow = wisesite.LocalSiderealTime.Hours;
+                delta = Angle.FromHours(lstHoursNow - wisetele._lastTrackingLST);
+                wisetele._lastTrackingLST = lstHoursNow;
+            }
+            else
+            {
+                double degrees = currentRate / simulationTimerFrequency;
+                delta = primary ? Angle.FromHours(degrees / 15.0, Angle.Type.HA) : Angle.FromDegrees(degrees);
+            }
 
             foreach (IEncoder encoder in encoders)
             {

@@ -1,0 +1,26 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+</head>
+<body>
+    <h1>CloudSensor ASCOM ObservingConditions driver</h1>
+    <h2>Author</h2>
+    Arie Blumenzweig<address>blumzi@013.net</address>
+    <p>For the Wise Observatory, Tel Aviv University Astrophysics Department.</p>
+    <h2>Abstract.</h2>
+    <p> This is an ASCOM driver for the CloudSensorII from Boltwood Systems.</p>
+    <p> It presents the sensor-data gathered from a devicein an ASCOM compliant interface.  The device can be connected either to the local
+    computer or to a remote one.</p>
+    <h2>Method</h2>
+    <p> The driver is based on the ClarityII single-line-data-file (new format) feature.  This is described in Section 17.1 of the
+        <a href="#http://www.ea4su.org/utilidades/claritymanual.pdf">Cloud Sensor II User’s Manual</a>.</p>
+    <p> The ClarityII software can be configured (via its Setup) to save the raw data gathered from the sensors in an external file with a very specific format.
+    The data-file can be saved on a local folder or in one that gets mapped to/from other computers.  It is updated every two seconds.</p>
+    <p>The ASCOM driver reads the data-file and presents its contents via an ASCOM ObservingConditions object.</p>
+    <h2>Setup</h2>
+    <p> The driver has an ASCOM compliant Setup form.  The path to the data-file is entered and saved in the driver's ASCOM profile.</p>
+</body>
+</html>
