@@ -10,9 +10,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("ASCOM.CloudSensor.ObservingConditions")]
 [assembly: AssemblyDescription("ASCOM ObservingConditions driver for Boltwood CloudSensor")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("The ASCOM Initiative")]
+[assembly: AssemblyCompany("Department of Astrophysics, School of Physics & Astronomy, Tel Aviv University, Israel")]
 [assembly: AssemblyProduct("ASCOM ObservingConditions driver for Boltwood CloudSensor")]
-[assembly: AssemblyCopyright("Copyright © 2016 The ASCOM Initiative")]
+[assembly: AssemblyCopyright("Copyright © 2016 Department of Astrophysics, School of Physics & Astronomy, Tel Aviv University, Israel")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

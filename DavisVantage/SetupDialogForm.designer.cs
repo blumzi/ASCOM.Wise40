@@ -77,8 +77,8 @@ namespace ASCOM.Vantage
             // 
             this.picASCOM.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.picASCOM.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.picASCOM.ErrorImage = global::VantagePro.Properties.Resources.ASCOM;
-            this.picASCOM.Image = global::VantagePro.Properties.Resources.ASCOM;
+            this.picASCOM.ErrorImage = global::ASCOM.Wise40.Properties.Resources.ASCOM;
+            this.picASCOM.Image = global::ASCOM.Wise40.Properties.Resources.ASCOM;
             this.picASCOM.Location = new System.Drawing.Point(405, 9);
             this.picASCOM.Name = "picASCOM";
             this.picASCOM.Size = new System.Drawing.Size(48, 56);

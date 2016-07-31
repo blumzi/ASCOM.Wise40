@@ -150,7 +150,7 @@
     </PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PostBuildEvent>"C:\Program Files (x86)\Inno Setup 5\ISCC.exe" /O"c:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\ClarityII\Installer" "c:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\ClarityII\Installer\CloudSensor Setup.iss" 
+    <PostBuildEvent>"C:\Program Files (x86)\Inno Setup 5\ISCC.exe" /Q /O"$(SolutionDir)\Deliveries" "$(ProjectDir)\Installer\CloudSensor Setup.iss" 
 </PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

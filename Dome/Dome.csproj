@@ -171,7 +171,7 @@
     </PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PostBuildEvent>"C:\Program Files (x86)\Inno Setup 5\ISCC.exe" /O"c:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Dome\Installer" "c:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Dome\Installer\Wise40Dome Setup.iss" 
+    <PostBuildEvent>"C:\Program Files (x86)\Inno Setup 5\ISCC.exe" /O"$(SolutionDir)\Deliveries" "$(ProjectDir)\Installer\Wise40Dome Setup.iss" 
 </PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

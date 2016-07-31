@@ -1,0 +1,58 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+</head>
+<body>
+    <center><h1>Wise40 ASCOM Dome driver</h1></center>
+    <center>
+        <b><a href="https://physics.tau.ac.il/astrophysics/wise_observatory">Wise Observatory</a></b>
+        <br />
+        <br />Raymond & Beverly Sackler Faculty of Exact Sciences
+        <br /> School of Physics & Astronomy 
+        <br />Department of Astrophysics
+        <br />
+        <br />Tel Aviv University
+        <br />Israel
+        <br />
+        <br />Arie Blumenzweig<address>blumzi@013.net</address>
+    </center>
+  
+
+    <h2>Abstract.</h2>
+    <p> This is an ASCOM Dome driver for the 10 meter dome at the  Wise Observatory, housing the Wise 40inch telescope.</p>
+
+    <h2>Hardware</h2>
+    <ul>
+        <li>Motors - Two electric motors move the dome eithe clock-wise (CW) or counter-clock-wise (CCW).</li>
+        <li>Shutter - The shutter has its own motors.  A full open/close takes about 22 seconds.</li>
+        <li>Encoder - A 1024 count absolute-encoder monitors the dome's position.  A full rotation of the dome takes 1018 encoder counts.</li>
+        <li>Calibration switch - A wand momentary-switch is mounted at Azimuth 254.6 degrees.  It is crucial for the encoder calibration.</li>
+    </ul>
+
+    <h2>Software</h2>
+    <p>The main objectives of the driver are:</p>
+    <ul>
+        <li>Supply the Azimuth reading</li>
+        <li>Start and stop slew-to-azimuth requests, moving in the <i>shortest-path</i> direction.</li>
+        <li>Report whether the dome is slewing or not.</li>
+    </ul>
+    <p>As mentioned before, a full dome rotation takes 1018 encoder counts. The encoder itself zeroes after 1024 counts.  It is thus that
+    the encoder will zero-up at a slightly different Azimuth after each rotation.</p>
+
+    <h3>Calibration</h3>
+    <p>The driver maintains a relation between the absolute Azimuth and the encoder's zero-point, namely a <b>calibration</b>.</p>
+    <ul>
+        <li>The driver starts up as <i><b>not-calibrated</b></i>.</li>
+        <li>While <i><b>not-calibrated</b></i> the Azimuth is reported as <b>-1</b>.</li>
+        <li>The first read of the Azimuth will start turning the dome CCW in search of the calibration-switch.</li>
+        <li>Whenever the calibration-switch is encountered, the counter-value/Azimuth relation is re-established.</li>
+        <li>When calibrated, the driver calculates the Azimuth according to the last calibration relation.</li>
+    </ul>
+
+    <h3>ASCOM Compliance</h3>
+    <p>The driver passes the ASCOM 6.2 Compliance test.</p>
+</body>
+</html>

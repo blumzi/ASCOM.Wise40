@@ -9,7 +9,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ASCOM.Wise40</RootNamespace>
-    <AssemblyName>Telescope</AssemblyName>
+    <AssemblyName>ASCOM.Wise40.Telescope</AssemblyName>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <UpgradeBackupLocation>
@@ -60,6 +60,9 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <RegisterForComInterop>false</RegisterForComInterop>
     <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="ASCOM.Astrometry, Version=6.0.0.0, Culture=neutral, PublicKeyToken=565de7938946fba7, processorArchitecture=MSIL" />
@@ -164,6 +167,8 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <Content Include="ASCOM.ico" />
+    <Content Include="Installer\ReadMe.html" />
+    <Content Include="Installer\Wise40Telescope Setup.iss" />
     <Content Include="ReadMe.htm" />
     <None Include="Resources\ASCOM.bmp" />
   </ItemGroup>
@@ -198,6 +203,9 @@
   <PropertyGroup>
     <PreBuildEvent>
     </PreBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent>"C:\Program Files (x86)\Inno Setup 5\ISCC.exe" /Q /O"$(SolutionDir)\Deliveries" "$(ProjectDir)\Installer\Wise40Telescope Setup.iss"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

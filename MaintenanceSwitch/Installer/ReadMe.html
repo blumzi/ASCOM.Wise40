@@ -1,0 +1,39 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+</head>
+<body>
+    <center><h1>MaintenanceSwitch ASCOM SafetyMonitor driver</h1></center>
+    <center>
+        <b><a href="https://physics.tau.ac.il/astrophysics/wise_observatory">Wise Observatory</a></b>
+        <br />
+        <br />Raymond & Beverly Sackler Faculty of Exact Sciences
+        <br /> School of Physics & Astronomy 
+        <br />Department of Astrophysics
+        <br />
+        <br />Tel Aviv University
+        <br />Israel
+        <br />
+        <br />Arie Blumenzweig<address>blumzi@013.net</address>
+    </center>
+  
+
+    <h2>Abstract</h2>
+    <p> This is an ASCOM SafetyMonitor driver for the main switch (at the back of the observatory's original console) in the 10 meter dome at the  Wise Observatory.</p>
+
+    <h2>Hardware</h2>
+    <p>The maintenance switch provides/denies power to all the relays that allow computer control of the 40" observatory.  Its main use
+        is to prevent the computers from accidentally moving any of the observatory components (telescope, dome, dome shutter, etc.) while
+        humans perform maintenance tasks.</p>
+
+    <h2>Software</h2>
+    <p>The driver monitors the switch's state and reports it as safe/not-safe via an ASCOM SafetyMonitor object.
+    It can be used by other ASCOM drivers or by an Observatory-Controll class of software.</p>
+
+    <h3>ASCOM Compliance</h3>
+    <p>The driver passes the ASCOM 6.2 Compliance test.</p>
+</body>
+</html>

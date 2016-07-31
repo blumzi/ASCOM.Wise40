@@ -10,9 +10,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("ASCOM.Wise40.Telescope")]
 [assembly: AssemblyDescription("ASCOM Telescope driver for Wise40")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("The ASCOM Initiative")]
+[assembly: AssemblyCompany("Department of Astrophysics, School of Physics & Astronomy, Tel Aviv University, Israel")]
 [assembly: AssemblyProduct("ASCOM Telescope driver for Wise40")]
-[assembly: AssemblyCopyright("Copyright © 2016 The ASCOM Initiative")]
+[assembly: AssemblyCopyright("Copyright © 2016 Department of Astrophysics, School of Physics & Astronomy, Tel Aviv University, Israel")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

@@ -1,0 +1,45 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+</head>
+<body>
+    <center><h1>VantagePro ASCOM ObservingConditions driver</h1></center>
+    <center>
+        <b><a href="https://physics.tau.ac.il/astrophysics/wise_observatory">Wise Observatory</a></b>
+        <br />
+        <br />Raymond & Beverly Sackler Faculty of Exact Sciences
+        <br /> School of Physics & Astronomy 
+        <br />Department of Astrophysics
+        <br />
+        <br />Tel Aviv University
+        <br />Israel
+        <br />
+        <br />Arie Blumenzweig<address>blumzi@013.net</address>
+    </center>
+  
+
+    <h2>Abstract</h2>
+    <p> This is an ASCOM ObservingConditions driver for the VantagePro weather station of the Wise40 instrument at the  Wise Observatory.
+     We needed to write this driver since the actual station is hooked-up to a computer different from the one driving the 40" telescope.</p>
+
+    <h2>Hardware</h2>
+    <p>The VantagePro weather station has a serial port interface and is hooked-up to a serial port on the <i>weather-pc</i> computer in the main dome.
+    The computer driving the dome (<i>dome-ctlr</i>) has no access to this port.</p>
+
+    <h2>Software</h2>
+    <p>The <i>WeatherLink</i> software, provided by the Davis Company and running on <i>weather-pc</i>, was configured to periodically (every 10 minutes) produce
+    an HTML report that dumps the values for all its internal variables (using the Weather_Wise40_Vantage_Pro.htx template file).</p>
+    <p>The report is produced in a local folder on <i>weather-pc</i>.</p>
+
+    <p>This driver parses the HTML report file (mapped to a folder on <i>dome-ctlr</i>) and presents it as an ASCOM ObservationConditions object.</p>
+    
+    <h3>Setup</h3>
+    <p>The driver has an ASCOM compliant Setup window where the path to the HTML report file can be selected.</p>
+
+    <h3>ASCOM Compliance</h3>
+    <p>The driver passes the ASCOM 6.2 Compliance test.</p>
+</body>
+</html>
