@@ -8,7 +8,7 @@ namespace ASCOM.Wise40.Common
 {
     public interface ISimulated
     {
-        bool simulated
+        bool Simulated
         {
             get; set;
         }

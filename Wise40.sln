@@ -37,6 +37,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestTelescope", "TestTelesc
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VantagePro", "DavisVantage\VantagePro.csproj", "{C819D411-A817-4CEE-B597-A57F2CA5B5B0}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Deliveries", "Deliveries", "{C2D939BB-B935-4F3D-A78F-06C9BC99D4A2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

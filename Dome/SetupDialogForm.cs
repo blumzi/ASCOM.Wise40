@@ -15,6 +15,7 @@ namespace ASCOM.Wise40
     public partial class SetupDialogForm : Form
     {
         private Dome _dome;
+        private WiseDome wisedome = WiseDome.Instance;
 
         public SetupDialogForm(Dome dome)
         {
@@ -23,7 +24,7 @@ namespace ASCOM.Wise40
 
             _dome.ReadProfile();
             checkBoxTrace.Checked = _dome.traceState;
-            checkBoxDebug.Checked = (_dome.debugger.Level != 0);
+            checkBoxAutoCalibrate.Checked = (_dome.debugger.Level != 0);
             checkBoxDebugDevice.Checked = _dome.debugger.Debugging(Debugger.DebugLevel.DebugDevice);
             checkBoxDebugEncoders.Checked = _dome.debugger.Debugging(Debugger.DebugLevel.DebugEncoders);
             checkBoxDebugExceptions.Checked = _dome.debugger.Debugging(Debugger.DebugLevel.DebugExceptions);
@@ -34,7 +35,7 @@ namespace ASCOM.Wise40
             _dome.traceState = checkBoxTrace.Checked;
 
             uint level = 0;
-            if (checkBoxDebug.Checked)
+            if (checkBoxAutoCalibrate.Checked)
             {
                 if (checkBoxDebugDevice.Checked) level |= (uint)Debugger.DebugLevel.DebugDevice;
                 if (checkBoxDebugEncoders.Checked) level |= (uint)Debugger.DebugLevel.DebugEncoders;
@@ -66,13 +67,9 @@ namespace ASCOM.Wise40
             }
         }
 
-        private void checkBoxDebug_CheckedChanged(object sender, EventArgs e)
+        private void checkBoxAutoCalibrate_CheckedChanged(object sender, EventArgs e)
         {
-            List<CheckBox> cbs = new List<CheckBox>() { checkBoxDebugDevice, checkBoxDebugEncoders, checkBoxDebugExceptions };
-            CheckBox master = sender as CheckBox;
-
-            foreach (CheckBox cb in cbs)
-                cb.AutoCheck = master.Checked;
+            wisedome._autoCalibrate = (sender as CheckBox).Checked;
         }
     }
 }

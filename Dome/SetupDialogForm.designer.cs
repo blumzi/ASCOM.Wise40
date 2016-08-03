@@ -32,7 +32,7 @@ namespace ASCOM.Wise40
             this.cmdCancel = new System.Windows.Forms.Button();
             this.picASCOM = new System.Windows.Forms.PictureBox();
             this.checkBoxTrace = new System.Windows.Forms.CheckBox();
-            this.checkBoxDebug = new System.Windows.Forms.CheckBox();
+            this.checkBoxAutoCalibrate = new System.Windows.Forms.CheckBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.checkBoxDebugDevice = new System.Windows.Forms.CheckBox();
             this.checkBoxDebugExceptions = new System.Windows.Forms.CheckBox();
@@ -95,17 +95,17 @@ namespace ASCOM.Wise40
             this.checkBoxTrace.Text = "Trace";
             this.checkBoxTrace.UseVisualStyleBackColor = true;
             // 
-            // checkBoxDebug
+            // checkBoxAutoCalibrate
             // 
-            this.checkBoxDebug.AutoSize = true;
-            this.checkBoxDebug.Location = new System.Drawing.Point(23, 105);
-            this.checkBoxDebug.Name = "checkBoxDebug";
-            this.checkBoxDebug.Size = new System.Drawing.Size(58, 17);
-            this.checkBoxDebug.TabIndex = 7;
-            this.checkBoxDebug.TabStop = false;
-            this.checkBoxDebug.Text = "Debug";
-            this.checkBoxDebug.UseVisualStyleBackColor = true;
-            this.checkBoxDebug.CheckedChanged += new System.EventHandler(this.checkBoxDebug_CheckedChanged);
+            this.checkBoxAutoCalibrate.AutoSize = true;
+            this.checkBoxAutoCalibrate.Location = new System.Drawing.Point(23, 105);
+            this.checkBoxAutoCalibrate.Name = "checkBoxAutoCalibrate";
+            this.checkBoxAutoCalibrate.Size = new System.Drawing.Size(92, 17);
+            this.checkBoxAutoCalibrate.TabIndex = 7;
+            this.checkBoxAutoCalibrate.TabStop = false;
+            this.checkBoxAutoCalibrate.Text = "Auto Calibrate";
+            this.checkBoxAutoCalibrate.UseVisualStyleBackColor = true;
+            this.checkBoxAutoCalibrate.CheckedChanged += new System.EventHandler(this.checkBoxAutoCalibrate_CheckedChanged);
             // 
             // groupBox1
             // 
@@ -167,7 +167,7 @@ namespace ASCOM.Wise40
             this.ClientSize = new System.Drawing.Size(294, 217);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.groupBox1);
-            this.Controls.Add(this.checkBoxDebug);
+            this.Controls.Add(this.checkBoxAutoCalibrate);
             this.Controls.Add(this.checkBoxTrace);
             this.Controls.Add(this.picASCOM);
             this.Controls.Add(this.cmdCancel);
@@ -194,7 +194,7 @@ namespace ASCOM.Wise40
         private System.Windows.Forms.Button cmdCancel;
         private System.Windows.Forms.PictureBox picASCOM;
         private System.Windows.Forms.CheckBox checkBoxTrace;
-        private System.Windows.Forms.CheckBox checkBoxDebug;
+        private System.Windows.Forms.CheckBox checkBoxAutoCalibrate;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.CheckBox checkBoxDebugEncoders;
         private System.Windows.Forms.CheckBox checkBoxDebugExceptions;

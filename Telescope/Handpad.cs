@@ -23,6 +23,8 @@ namespace ASCOM.Wise40
         private double handpadRate = Const.rateSlew;
         private BackgroundWorker scopeBackgroundMover;
         private static WiseSite wisesite = WiseSite.Instance;
+        private static Debugger debugger = Debugger.Instance;
+        private static DomeSlaveDriver domeSlaveDriver = DomeSlaveDriver.Instance;
 
         private class TimedMovementArg
         {
@@ -34,50 +36,44 @@ namespace ASCOM.Wise40
 
         private class TimedMovementResult
         {
-            public uint[] enc_value;
-            public Angle[] enc_angle;
+            public Angle[] encoder_angle;
             public DateTime[] time;
             public int threadId;
             public bool cancelled;
+            public TelescopeAxes axis;
 
             public enum ResultSelector { AtStart = 0, AtStop = 1, AtIdle = 2 };
 
-            public TimedMovementResult()
+            public TimedMovementResult(TelescopeAxes axis)
             {
-                enc_value = new uint[3];
-                enc_angle = new Angle[3];
+                encoder_angle = new Angle[3];
                 time = new DateTime[3];
                 cancelled = false;
+                this.axis = axis;
             }
 
             public override string ToString()
             {
                 string s;
                 int curr, prev;
-                uint dEncoder;
                 TimeSpan dTime;
-                double dDeg;
+                Angle dAngle;
+                ShortestDistanceResult dist;
 
                 curr = (int)TimedMovementResult.ResultSelector.AtStop;
                 prev = (int)TimedMovementResult.ResultSelector.AtStart;
-                dTime = time[curr].Subtract(time[prev]);
-                dEncoder = (enc_value[curr] > enc_value[prev]) ? enc_value[curr] - enc_value[prev] : enc_value[prev] - enc_value[curr];
-                dDeg = enc_angle[curr].Degrees - enc_angle[prev].Degrees;
-                s = string.Format(" start-to-stop: dTime: {0} dDeg: {2} dEnc: {1}\r\n", dTime, dEncoder, Angle.FromDegrees(dDeg));
+                dTime = time[curr].Subtract(time[prev]);dist = encoder_angle[curr].ShortestDistance(encoder_angle[prev]);
+                dAngle = dist.angle;s = string.Format(" start-to-stop: dTime: {0} dAng: {1}\r\n", dTime, dAngle);
 
                 curr = (int)TimedMovementResult.ResultSelector.AtIdle;
                 prev = (int)TimedMovementResult.ResultSelector.AtStop;
-                dTime = time[curr].Subtract(time[prev]);
-                dEncoder = (enc_value[curr] > enc_value[prev]) ? enc_value[curr] - enc_value[prev] : enc_value[prev] - enc_value[curr];
-                dDeg = enc_angle[curr].Degrees - enc_angle[prev].Degrees;
-                s += string.Format("       inertia: dTime: {0} dDeg: {2} dEnc: {1}\r\n", dTime, dEncoder, Angle.FromDegrees(dDeg));
+                dTime = time[curr].Subtract(time[prev]);dist = encoder_angle[curr].ShortestDistance(encoder_angle[prev]);
+                dAngle = dist.angle;s += string.Format("       inertia: dTime: {0} dAng: {1}\r\n", dTime, dAngle);
 
                 curr = (int)TimedMovementResult.ResultSelector.AtIdle;
                 prev = (int)TimedMovementResult.ResultSelector.AtStart;
-                dTime = time[curr].Subtract(time[prev]);
-                dEncoder = (enc_value[curr] > enc_value[prev]) ? enc_value[curr] - enc_value[prev] : enc_value[prev] - enc_value[curr];
-                dDeg = enc_angle[curr].Degrees - enc_angle[prev].Degrees;
-                s += string.Format("         total: dTime: {0} dDeg: {2} dEnc: {1}\r\n", dTime, dEncoder, Angle.FromDegrees(dDeg)); s += "\r\n";
+                dTime = time[curr].Subtract(time[prev]);dist = encoder_angle[curr].ShortestDistance(encoder_angle[prev]);
+                dAngle = dist.angle;s += string.Format("        total: dTime: {0} dAng: {1}\r\n", dTime, dAngle);
 
                 return s;
             }
@@ -90,7 +86,6 @@ namespace ASCOM.Wise40
         {
             InitializeComponent();
             checkBoxTrack.Checked = wisetele.Tracking;
-            //daqsForm = new DaqsForm(this);
             results = new List<TimedMovementResult>();
             wisesite.init();
             WiseDome.Instance.init();
@@ -221,8 +216,15 @@ namespace ASCOM.Wise40
                 if (results.Count == 0)
                     TextBoxLog.Text = "Cancelled by user!";
                 else
+                {
+                    TelescopeAxes axis = results[0].axis;
+
                     for (int i = 0; i < results.Count; i++)
-                        TextBoxLog.Text += string.Format("[{0}]: ({2})\r\n{1}", i, results[i].ToString(), results[i].cancelled ? "cancelled" : "completed");
+                    {
+                        TextBoxLog.Text += string.Format("[{0}]: ({2})\r\n{1}",
+                            i, results[i].ToString(), results[i].cancelled ? "cancelled" : "completed");
+                    }
+                }
                 resultsAvailable = false;
             }
 
@@ -239,35 +241,41 @@ namespace ASCOM.Wise40
                     }
                 }
 
-                labelDomeAzimuthValue.Text = DomeSlaveDriver.Instance.Azimuth;
-                labelDomeStatusValue.Text = DomeSlaveDriver.Instance.Status;
-                labelDomeShutterStatusValue.Text = DomeSlaveDriver.Instance.ShutterStatus;
+                labelDomeAzimuthValue.Text = domeSlaveDriver.Azimuth;
+                labelDomeStatusValue.Text = domeSlaveDriver.Status;
+                labelDomeShutterStatusValue.Text = domeSlaveDriver.ShutterStatus;
             }
 
             if (groupBoxWeather.Visible)
             {
-                ObservingConditions oc = wisesite.observingConditions;
+                try
+                {
+                    ObservingConditions oc = wisesite.observingConditions;
 
-                labelAgeValue.Text = ((int) Math.Round(oc.TimeSinceLastUpdate(""), 2)).ToString() + "sec";
+                    labelAgeValue.Text = ((int)Math.Round(oc.TimeSinceLastUpdate(""), 2)).ToString() + "sec";
 
-                double d = oc.CloudCover;
-                if (d == 0.0)
-                    labelCloudCoverValue.Text = "Clear";
-                else if (d == 50.0)
-                    labelCloudCoverValue.Text = "Cloudy";
-                else if (d == 90.0)
-                    labelCloudCoverValue.Text = "VeryCloudy";
-                else
-                    labelCloudCoverValue.Text = "Unknown";
+                    double d = oc.CloudCover;
+                    if (d == 0.0)
+                        labelCloudCoverValue.Text = "Clear";
+                    else if (d == 50.0)
+                        labelCloudCoverValue.Text = "Cloudy";
+                    else if (d == 90.0)
+                        labelCloudCoverValue.Text = "VeryCloudy";
+                    else
+                        labelCloudCoverValue.Text = "Unknown";
 
-                labelDewPointValue.Text = oc.DewPoint.ToString() + "°C";
-                labelSkyTempValue.Text = oc.SkyTemperature.ToString() + "°C";
-                labelTempValue.Text = oc.Temperature.ToString() + "°C";
-                labelHumidityValue.Text = oc.Humidity.ToString() + "%";
-                labelPressureValue.Text = oc.Pressure.ToString() + "mB";
-                labelRainRateValue.Text = (oc.RainRate > 0.0) ? "Wet" : "Dry";
-                labelWindSpeedValue.Text = oc.WindSpeed.ToString() + "m/s";
-                labelWindDirValue.Text = oc.WindDirection.ToString() + "°";
+                    labelDewPointValue.Text = oc.DewPoint.ToString() + "°C";
+                    labelSkyTempValue.Text = oc.SkyTemperature.ToString() + "°C";
+                    labelTempValue.Text = oc.Temperature.ToString() + "°C";
+                    labelHumidityValue.Text = oc.Humidity.ToString() + "%";
+                    labelPressureValue.Text = oc.Pressure.ToString() + "mB";
+                    labelRainRateValue.Text = (oc.RainRate > 0.0) ? "Wet" : "Dry";
+                    labelWindSpeedValue.Text = oc.WindSpeed.ToString() + "m/s";
+                    labelWindDirValue.Text = oc.WindDirection.ToString() + "°";
+                }
+                catch (PropertyNotImplementedException e) {
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "OC: exception: {0}", e.Message);
+                }
             }
 
             if (groupBoxCurrentRates.Visible)
@@ -283,7 +291,8 @@ namespace ASCOM.Wise40
                 if (m == null)
                     labelCurrPrimRateValue.Text = "Stopped";
                 else
-                    labelCurrPrimRateValue.Text = m.name.Substring(0, 1) + "@" + WiseTele.RateName(m.currentRate).Replace("rate", "");
+                    labelCurrPrimRateValue.Text = m.name.Remove(m.name.IndexOf('M')) + "@" + 
+                        WiseTele.RateName(m.currentRate).Replace("rate", "");
 
                 m = null;
                 if (wisetele.NorthMotor.isOn)
@@ -294,7 +303,8 @@ namespace ASCOM.Wise40
                 if (m == null)
                     labelCurrSecRateValue.Text = "Stopped";
                 else
-                    labelCurrSecRateValue.Text = m.name.Substring(0, 1) + "@" + WiseTele.RateName(m.currentRate).Replace("rate", "");
+                    labelCurrSecRateValue.Text = m.name.Remove(m.name.IndexOf('M')) + "@" + 
+                        WiseTele.RateName(m.currentRate).Replace("rate", "");
             }
         }
 
@@ -324,9 +334,9 @@ namespace ASCOM.Wise40
                 wisetele.MoveAxis(TelescopeAxes.axisSecondary, handpadRate);
             else if (button == buttonSouth)
                 wisetele.MoveAxis(TelescopeAxes.axisSecondary, -handpadRate);
-            else if (button == buttonWest)
-                wisetele.MoveAxis(TelescopeAxes.axisPrimary, handpadRate);
             else if (button == buttonEast)
+                wisetele.MoveAxis(TelescopeAxes.axisPrimary, handpadRate);
+            else if (button == buttonWest)
                 wisetele.MoveAxis(TelescopeAxes.axisPrimary, -handpadRate);
             else if (button == buttonNE)
             {
@@ -382,15 +392,15 @@ namespace ASCOM.Wise40
             for (int stepNo = 0; stepNo < arg.nsteps; stepNo++)
             {
                 int selector;
-                TimedMovementResult res = new TimedMovementResult();
+                TimedMovementResult res = new TimedMovementResult(arg.axis);
                 res.cancelled = false;
 
                 res.threadId = Thread.CurrentThread.ManagedThreadId;
 
                 selector = (int)TimedMovementResult.ResultSelector.AtStart;
-                res.time[selector] = DateTime.Now;
-                res.enc_value[selector] = (arg.axis == TelescopeAxes.axisPrimary) ? wisetele.HAEncoder.Value : wisetele.DecEncoder.Value;
-                res.enc_angle[selector] = Angle.FromRadians((arg.axis == TelescopeAxes.axisPrimary) ? wisetele.HAEncoder.Angle.Radians : wisetele.DecEncoder.Angle.Radians);
+                res.time[selector] = DateTime.Now;res.encoder_angle[selector] = arg.axis == TelescopeAxes.axisPrimary ?
+                    Angle.FromHours(wisetele.RightAscension) :
+                    Angle.FromDegrees(wisetele.Declination);
 
                 if (bgw.CancellationPending)
                 {
@@ -412,11 +422,11 @@ namespace ASCOM.Wise40
                 }
 
                 selector = (int)TimedMovementResult.ResultSelector.AtStop;
-                res.time[selector] = DateTime.Now;
-                res.enc_value[selector] = (arg.axis == TelescopeAxes.axisPrimary) ? wisetele.HAEncoder.Value : wisetele.DecEncoder.Value;
-                res.enc_angle[selector] = Angle.FromDegrees((arg.axis == TelescopeAxes.axisPrimary) ? wisetele.HAEncoder.Angle.Degrees : wisetele.DecEncoder.Angle.Degrees);
+                res.time[selector] = DateTime.Now;res.encoder_angle[selector] = arg.axis == TelescopeAxes.axisPrimary ?
+                     Angle.FromHours(wisetele.RightAscension) :
+                     Angle.FromDegrees(wisetele.Declination);
 
-                if (wisetele.simulated)    // move some more, to simulate telescope inertia
+                if (wisetele.Simulated)    // move some more, to simulate telescope inertia
                 {
                     wisetele.MoveAxis(arg.axis, arg.rate);
                     long deltaTicks = 10000 * (long)(WiseTele.Instance.movementParameters[arg.axis][arg.rate].stopMovement.Degrees * WiseTele.Instance.movementParameters[arg.axis][arg.rate].millisecondsPerDegree);
@@ -441,9 +451,8 @@ namespace ASCOM.Wise40
                     goto Out;
                 }
 
-                if (!wisetele.simulated)
+                while (wisetele.AxisIsMoving(arg.axis))
                 {
-                    Thread.Sleep(10000);     // wait for real scope to stop
 
                     if (bgw.CancellationPending)
                     {
@@ -451,12 +460,13 @@ namespace ASCOM.Wise40
                         bgResults.Add(res);
                         goto Out;
                     }
+                    Thread.Sleep(500);
                 }
 
                 selector = (int)TimedMovementResult.ResultSelector.AtIdle;
-                res.time[selector] = DateTime.Now;
-                res.enc_value[selector] = (arg.axis == TelescopeAxes.axisPrimary) ? wisetele.HAEncoder.Value : wisetele.DecEncoder.Value;
-                res.enc_angle[selector] = Angle.FromDegrees((arg.axis == TelescopeAxes.axisPrimary) ? wisetele.HAEncoder.Angle.Degrees : wisetele.DecEncoder.Angle.Degrees);
+                res.time[selector] = DateTime.Now;res.encoder_angle[selector] = arg.axis == TelescopeAxes.axisPrimary ?
+                     Angle.FromHours(wisetele.RightAscension) :
+                     Angle.FromDegrees(wisetele.Declination);
 
                 bgResults.Add(res);
             }
@@ -640,6 +650,16 @@ namespace ASCOM.Wise40
         private void checkBoxEnslaveDome_CheckedChanged(object sender, EventArgs e)
         {
             wisetele._enslaveDome = checkBoxEnslaveDome.Checked;
+        }
+
+        private void buttonOpenShutterClick(object sender, EventArgs e)
+        {
+            domeSlaveDriver.OpenShutter();
+        }
+
+        private void buttonCloseShutterClick(object sender, EventArgs e)
+        {
+            domeSlaveDriver.CloseShutter();
         }
     }
 }

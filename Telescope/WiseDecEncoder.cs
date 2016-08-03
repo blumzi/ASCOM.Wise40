@@ -32,6 +32,8 @@ namespace ASCOM.Wise40
         private Hardware.Hardware hw = Hardware.Hardware.Instance;
         private static WiseSite wisesite = WiseSite.Instance;
 
+        private static Object _lock = new Object();
+
         public WiseDecEncoder(string name)
         {
             Novas31 = new Astrometry.NOVAS.NOVAS31();
@@ -63,19 +65,19 @@ namespace ASCOM.Wise40
             wormAtomicReader = new AtomicReader(wormDaqs);
             axisAtomicReader = new AtomicReader(axisDaqs);
 
-            simulated = false;
+            Simulated = false;
             foreach (WiseDaq d in daqs)
             {
                 if (d.wiseBoard.type == WiseBoard.BoardType.Soft)
                 {
-                    simulated = true;
+                    Simulated = true;
                     break;
                 }
             }
 
             _name = name;
 
-            _angle = simulated ?
+            _angle = Simulated ?
                 Angle.FromDegrees(90.0, Angle.Type.Dec) - wisesite.Latitude :
                 Angle.FromRadians((Value * decMultiplier) + DecCorrection, Angle.Type.Dec);
 
@@ -135,18 +137,21 @@ namespace ASCOM.Wise40
         {
             get
             {
-                if (!simulated)
+                if (!Simulated)
                 {
                     List<uint> daqValues;
                     uint worm, axis;
 
-                    daqValues = wormAtomicReader.Values;
-                    worm = (daqValues[1] << 8) | daqValues[0];
+                    lock (_lock)
+                    {
+                        daqValues = wormAtomicReader.Values;
+                        worm = (daqValues[1] << 8) | daqValues[0];
 
-                    daqValues = axisAtomicReader.Values;
-                    axis = (daqValues[0] >> 4) | (daqValues[1] << 4);
+                        daqValues = axisAtomicReader.Values;
+                        axis = (daqValues[0] >> 4) | (daqValues[1] << 4);
 
-                    _daqsValue = ((axis * 600 + worm) & 0xfff000) + worm;
+                        _daqsValue = ((axis * 600 + worm) & 0xfff000) + worm;
+                    }
                     debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, 
                         "{0}: value: {1}, axis: {2}, worm: {3}", 
                         name, _daqsValue, axis, worm);
@@ -156,7 +161,7 @@ namespace ASCOM.Wise40
 
             set
             {
-                if (simulated)
+                if (Simulated)
                     _daqsValue = value;
             }
         }
@@ -165,7 +170,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                if(! simulated)
+                if(! Simulated)
                     _angle.Radians = (Value * decMultiplier) + DecCorrection;
 
                 if (_angle.Radians > Math.PI)
@@ -176,7 +181,7 @@ namespace ASCOM.Wise40
 
             set
             {
-                if (simulated)
+                if (Simulated)
                 {
                     _angle.Degrees = value.Degrees;
                     Value = (uint) Math.Round((_angle.Radians - DecCorrection) / decMultiplier);
@@ -188,7 +193,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                if (!simulated)
+                if (!Simulated)
                 {
                     uint v = Value;
                     _angle.Radians = (v * decMultiplier) + DecCorrection;
@@ -206,14 +211,14 @@ namespace ASCOM.Wise40
             set
             {
                 _angle.Degrees = value;
-                if (simulated)
+                if (Simulated)
                 {
                     _daqsValue = (uint) ((_angle.Radians - DecCorrection) / decMultiplier);
                 }
             }
         }
 
-        public bool simulated
+        public bool Simulated
         {
             get
             {

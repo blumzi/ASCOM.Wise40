@@ -156,6 +156,7 @@ namespace ASCOM.Wise40
             public Angle minimalMovement;
             public Angle stopMovement;
             public Angle anglePerSecond;
+            public Angle epsilonProximity;
             public double millisecondsPerDegree;
         };
 
@@ -377,7 +378,7 @@ namespace ASCOM.Wise40
             {
                 if (axis == TelescopeAxes.axisPrimary)
                 {
-                    var epsilon = new Angle("00:00:00.1").Degrees;
+                    var epsilon = new Angle("00:00:00.5").Degrees;
                     lock (_primaryValuesLock)
                     {
                         if (_primaryAxisValues.Count == _nAxisValues)
@@ -390,7 +391,11 @@ namespace ASCOM.Wise40
                             for (var i = 1; i < _primaryAxisValues.Count; i++)
                                 deltas.Add(Math.Abs(_primaryAxisValues[i]  - _primaryAxisValues[i - 1]));
 
-                            Interlocked.Exchange(ref _primaryIsMoving, (deltas.Max() <= epsilon) ? 0 : 1);
+                            double max = deltas.Max();
+                            Interlocked.Exchange(ref _primaryIsMoving, (max <= epsilon) ? 0 : 1);
+                            //debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                            //    "CheckAxisMovement: primaryAxis: max: {0}, _primaryIsMoving: {1}, epsilon: {2}",
+                            //    max, Interlocked.Read(ref _primaryIsMoving), epsilon);
                         }
                     }
                 }
@@ -532,9 +537,9 @@ namespace ASCOM.Wise40
             hardware_elements.Add(instance.DecEncoder);
             foreach (ISimulated s in hardware_elements)
             {
-                if (s.simulated)
+                if (s.Simulated)
                 {
-                    simulated = true;
+                    Simulated = true;
                     break;
                 }
             }
@@ -555,8 +560,9 @@ namespace ASCOM.Wise40
             {
                 anglePerSecond = Angle.FromHours(Angle.Deg2Hours(Const.rateSlew)),
                 changeDirection = Angle.FromHours(Angle.Deg2Hours("00:00:30.0")),
-                minimalMovement = Angle.FromHours(Angle.Deg2Hours("02:00:00.0")),
-                stopMovement = Angle.FromHours(Angle.Deg2Hours("00:00:20.0")),
+                minimalMovement = Angle.FromHours(Angle.Deg2Hours("01:00:00.0")),
+                stopMovement = new Angle("00h08m00.0s"),
+                epsilonProximity = new Angle("00h21m00.0s"),
                 millisecondsPerDegree = 500.0,      // 2deg/sec
             };
 
@@ -565,7 +571,8 @@ namespace ASCOM.Wise40
                 anglePerSecond = Angle.FromHours(Angle.Deg2Hours(Const.rateSet)),
                 changeDirection = Angle.FromHours(Angle.Deg2Hours("00:00:20.0")),
                 minimalMovement = Angle.FromHours(Angle.Deg2Hours("00:00:10.0")),
-                stopMovement = Angle.FromHours(Angle.Deg2Hours("00:00:20.0")),
+                stopMovement = new Angle("00h00m01.0s"),
+                epsilonProximity = new Angle("00h00m02.0s"),
                 millisecondsPerDegree = 60000.0,    // 1min/sec
             };
 
@@ -573,30 +580,38 @@ namespace ASCOM.Wise40
             {
                 anglePerSecond = Angle.FromHours(Angle.Deg2Hours(Const.rateGuide)),
                 changeDirection = Angle.FromHours(Angle.Deg2Hours("00:00:00.5")),
-                minimalMovement = Angle.FromHours(Angle.Deg2Hours("00:00:10.0")),
-                stopMovement = Angle.FromHours(Angle.Deg2Hours("00:00:00.5")),
+                minimalMovement = Angle.FromHours(Angle.Deg2Hours("00:00:01.0")),
+                stopMovement = new Angle("00h00m00.5s"),
+                epsilonProximity = new Angle("00h00m01.0s"),
                 millisecondsPerDegree = 3600000.0,  // 1 sec/sec
             };
 
             instance.movementParameters[TelescopeAxes.axisSecondary] = new Dictionary<double, MovementParameters>();
             instance.movementParameters[TelescopeAxes.axisSecondary][Const.rateSlew] = new MovementParameters()
             {
-                anglePerSecond = new Angle(Const.rateSlew), changeDirection = new Angle("00:00:30.0"),
-                minimalMovement = new Angle("02:00:00.0"),  stopMovement = new Angle("00:00:20.0"),
+                anglePerSecond = new Angle(Const.rateSlew),
+                changeDirection = new Angle("00:00:30.0"),
+                minimalMovement = new Angle("01:00:00.0"),
+                stopMovement = Angle.FromDegrees(Angle.Hours2Deg("00h08m00.0s")),
+                epsilonProximity = Angle.FromDegrees(Angle.Hours2Deg("00h21m00.0s")),
                 millisecondsPerDegree = 500.0,      // 2 deg/sec
             };
 
             instance.movementParameters[TelescopeAxes.axisSecondary][Const.rateSet] = new MovementParameters()
             {
                 anglePerSecond = new Angle(Const.rateSet), changeDirection = new Angle("00:00:30.0"),
-                minimalMovement = new Angle("00:10:00.0"), stopMovement = new Angle("00:00:20.0"),
+                minimalMovement = new Angle("00:10:00.0"),
+                stopMovement = Angle.FromDegrees(Angle.Hours2Deg("00h00m01.0s")),
+                epsilonProximity = Angle.FromDegrees(Angle.Hours2Deg("00h00m02.0s")),
                 millisecondsPerDegree = 60000.0,    // 1 min/sec
             };
 
             instance.movementParameters[TelescopeAxes.axisSecondary][Const.rateGuide] = new MovementParameters()
             {
                 anglePerSecond = new Angle(Const.rateGuide), changeDirection = new Angle("00:00:00.5"),
-                minimalMovement = new Angle("00:00:10.0"), stopMovement = new Angle("00:00:00.5"),
+                minimalMovement = new Angle("00:00:01.0"),
+                stopMovement = Angle.FromDegrees(Angle.Hours2Deg("00h00m00.5s")),
+                epsilonProximity = Angle.FromDegrees(Angle.Hours2Deg("00h00m01.0s")),
                 millisecondsPerDegree = 3600000.0,  // 1 sec/sec
             };
             #endregion
@@ -946,6 +961,28 @@ namespace ASCOM.Wise40
             }
         }
 
+        private void _stopAxis(TelescopeAxes axis)
+        {
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "_stopAxis({0}): called", axis);
+
+            // Stop any motors that may be On
+            foreach (WiseVirtualMotor m in instance.axisMotors[axis])
+                if (m.isOn)
+                {
+                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, 
+                        "_stopAxis({0}):  {1} was on, stopping it.", axis, m.name);
+                    m.SetOff();
+                }
+
+            // Restore tracking
+            if (wasTracking)
+                Tracking = true;
+            
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "_stopAxis({0}): done.", axis);
+
+            _slewing = false;
+        }
+
         private void _moveAxis(
             TelescopeAxes Axis,
             double Rate,
@@ -965,26 +1002,6 @@ namespace ASCOM.Wise40
             {
                 Instance.currMovement[Axis].rate = Const.rateStopped;
                 throw new InvalidValueException("Cannot MoveAxis while AtPark");
-            }
-
-            if (Rate == Const.rateStopped)
-            {
-                foreach (WiseVirtualMotor m in instance.axisMotors[thisAxis])
-                    if (m.isOn)
-                    {
-                        debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "_moveAxis({0}, {1}):  {2} was on, stopping it.", Axis, RateName(Rate), m.name);
-                        m.SetOff();
-                    }
-
-                if (wasTracking)
-                    Tracking = true;
-
-                Instance.currMovement[Axis].rate = Const.rateStopped;
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "_moveAxis({0}, {1}): done.", Axis, RateName(Rate));
-
-                _slewing = false;
-
-                return;
             }
 
             double absRate = Math.Abs(Rate);
@@ -1017,7 +1034,8 @@ namespace ASCOM.Wise40
             _slewing = true;
 
             foreach (WiseVirtualMotor m in mover.motors) {
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "_moveAxis({0}, {1}): starting {2}", Axis, RateName(Rate), m.name);
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, 
+                    "_moveAxis({0}, {1}): starting {2}", Axis, RateName(Rate), m.name);
                 m.SetOn(Rate);
             }
 
@@ -1123,7 +1141,7 @@ namespace ASCOM.Wise40
             SlewToCoordinates(primaryBackoff.Hours, secondaryBackoff.Degrees);
         }
 
-        public bool simulated
+        public bool Simulated
         {
             get
             {
@@ -1204,8 +1222,8 @@ namespace ASCOM.Wise40
                            "{0} at {1}: waiting {2} millis for the other axis ...",
                            threadName, RateName(rate), syncMillis);
 
-                        Thread.Sleep(syncMillis);
                         slewingCancellationToken.ThrowIfCancellationRequested();
+                        Thread.Sleep(syncMillis);
                     }
 
                     //
@@ -1227,16 +1245,19 @@ namespace ASCOM.Wise40
                     if (prevMovement[axis].direction != Const.AxisDirection.None && prevMovement[axis].direction != cm.direction)
                     {
                         minimalMovementAngle += mp.changeDirection;
-                        while (AxisIsMoving(axis))
-                            ;
+                        debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                            "{0} at {1}: will change direction.",
+                            threadName, RateName(rate));
                     }
-                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0} at {1}: minimalMovementAngle: {2}",
+                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                        "{0} at {1}: minimalMovementAngle: {2}",
                         threadName, RateName(rate), minimalMovementAngle);
 
                     if (cm.distanceToFinalTarget < minimalMovementAngle)
                     {
-                        cm.rate = Const.rateStopped;
-                        debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0} at {1}: Not moving, too short ({2} < {3}, {4} < {5})",
+                        //cm.rate = Const.rateStopped;
+                        debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                            "{0} at {1}: Not moving, too short ({2} < {3}, {4} < {5})",
                             threadName, RateName(rate),
                             cm.distanceToFinalTarget, minimalMovementAngle,
                             cm.distanceToFinalTarget.Degrees, minimalMovementAngle.Degrees);
@@ -1262,7 +1283,6 @@ namespace ASCOM.Wise40
                         //
                         // The axis is set in motion, wait for it to arrive at target
                         //
-
                         ShortestDistanceResult prevRemainingDistance = null;
                         while (true)
                         {
@@ -1273,13 +1293,15 @@ namespace ASCOM.Wise40
                             slewingCancellationToken.ThrowIfCancellationRequested();
 
                             currPosition = (axis == TelescopeAxes.axisPrimary) ?
-                                Angle.FromHours(RightAscension, Angle.Type.RA) :
-                                Angle.FromDegrees(Declination, Angle.Type.Dec);
+                                Angle.FromHours(instance.RightAscension, Angle.Type.RA) :
+                                Angle.FromDegrees(instance.Declination, Angle.Type.Dec);
 
                             remainingDistance = currPosition.ShortestDistance(cm.intermediateTarget);
                             string arrivalReason = null;
 
-                            if (remainingDistance.angle.Degrees <= mp.stopMovement.Degrees)
+                            //if (remainingDistance.angle.Degrees <= mp.stopMovement.Degrees)
+                            //if (remainingDistance.angle.Degrees <= mp.epsilonProximity.Degrees)
+                            if (remainingDistance.angle <= mp.stopMovement)
                             {
                                 arrivalReason = string.Format("proximity: remainingDistance.angle ({0}, {1}) <= mp.stopMovement ({2}, {3})",
                                     remainingDistance.angle, remainingDistance.angle.Degrees,
@@ -1310,12 +1332,35 @@ namespace ASCOM.Wise40
                                     arrivalReason,
                                     axis, RateName(Const.rateStopped));
 
-                                _moveAxis(axis, Const.rateStopped);
+                                _stopAxis(axis);
+                                instance.currMovement[axis].rate = Const.rateStopped;
+
+                                if (arrivalReason.Contains("movement direction changed"))
+                                    throw new InvalidProgramException();
+
+                                Angle a;
+                                a = (axis == TelescopeAxes.axisPrimary) ?
+                                    Angle.FromHours(instance.RightAscension) :
+                                    Angle.FromDegrees(instance.Declination);
+                                debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                                    "{0} at {1}: {2} waiting for {3} to stop moving ...",
+                                    threadName, RateName(cm.rate), a, axis);
+
+                                while (AxisIsMoving(axis))
+                                    Thread.Sleep(500);
+
+                                a = (axis == TelescopeAxes.axisPrimary) ?
+                                    Angle.FromHours(instance.RightAscension) :
+                                    Angle.FromDegrees(instance.Declination);
+                                debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                                    "{0} at {1}: {2} {3} has stopped moving.",
+                                    threadName, RateName(cm.rate), a, axis);
+
                                 break;
                             }
-                            else
-                            {
-                                debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+
+                            // Not there yet
+                            debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
                                     "{0} at {1}: still moving, currPosition: {2} ==> intermediateTarget: {3}, finalTarget: {4}, remaining (Angle: {5}, degrees: {6}, direction: {7}), stopMovement: ({8}, {9}), sleeping {10} millis ...",
                                     threadName, RateName(cm.rate), currPosition,
                                     cm.intermediateTarget, cm.finalTarget,
@@ -1323,17 +1368,18 @@ namespace ASCOM.Wise40
                                     mp.stopMovement, mp.stopMovement.Degrees,
                                     waitMillis);
 
-                                prevRemainingDistance = remainingDistance;
-                                Thread.Sleep(waitMillis);
-                            }
+                            prevRemainingDistance = remainingDistance;
+                            Thread.Sleep(waitMillis);
                         }
                     }
                 }
-            } catch (OperationCanceledException)
+            }
+            catch (OperationCanceledException)
             {
                 debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
                     "{0} at {1}: Slew cancelled at {2}", threadName, RateName(cm.rate), currPosition);
-                _moveAxis(axis, Const.rateStopped);
+                _stopAxis(axis);
+                instance.currMovement[axis].rate = Const.rateStopped;
             }
         }
 

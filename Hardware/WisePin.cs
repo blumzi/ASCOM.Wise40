@@ -70,7 +70,7 @@ namespace ASCOM.Wise40.Hardware
         {
             get
             {
-                return isOn;
+                return !isOn;
             }
         }
 

@@ -22,7 +22,7 @@ namespace ASCOM.Wise40.Hardware
     public class WiseVirtualMotor : WiseObject, IConnectable, IDisposable, ISimulated
     {
         private WisePin motorPin, guideMotorPin, slewPin;
-        private List<WisePin> activePins;
+        private List<WisePin> activePins = new List<WisePin>();
         private List<object> encoders;
         private System.Threading.Timer simulationTimer;
         public double currentRate;
@@ -53,17 +53,17 @@ namespace ASCOM.Wise40.Hardware
             this.encoders = encoders;
             this._axis = axis;
             this._direction = direction;
-            simulated = motorPin.Simulated || (guideMotorPin != null && guideMotorPin.Simulated);
+            Simulated = motorPin.Simulated || (guideMotorPin != null && guideMotorPin.Simulated);
 
-            if (simulated && (encoders == null || encoders.Count() == 0))
+            if (Simulated && (encoders == null || encoders.Count() == 0))
                 throw new WiseException(name + ": A simulated WiseVirtualMotor must have at least one encoder reference");
 
-            if (simulated)
+            if (Simulated)
             {
                 simulationTimerFrequency = 15;
                 TimerCallback TimerCallback = new TimerCallback(bumpEncoders);
                 simulationTimer = new System.Threading.Timer(TimerCallback, null, Timeout.Infinite, Timeout.Infinite);
-            }
+            } 
         }
 
         public void SetOn(double rate)
@@ -82,7 +82,7 @@ namespace ASCOM.Wise40.Hardware
             foreach (WisePin pin in activePins)
                 pin.SetOn();
 
-            if (simulated)
+            if (Simulated)
             {
                 timer_counts = 0;
                 prevTick = DateTime.Now;
@@ -95,17 +95,9 @@ namespace ASCOM.Wise40.Hardware
             debugger.WriteLine(Debugger.DebugLevel.DebugMotors,
                 "{0}: Off (was at {1})", name, WiseTele.RateName(currentRate));
 
-            if (simulated)
+            if (Simulated)
                 simulationTimer.Change(Timeout.Infinite, Timeout.Infinite);
 
-            //if ((activePins != null) && (activePins.Count > 0))
-            //{
-            //    for (int i = activePins.Count - 1; i >= 0; i--)
-            //    {
-            //        activePins[i].SetOff();
-            //        activePins.RemoveAt(i);
-            //    }
-            //}
             if (activePins != null) {
                 foreach (WisePin pin in activePins)
                     pin.SetOff();
@@ -118,7 +110,10 @@ namespace ASCOM.Wise40.Hardware
         {
             get
             {
-                return (activePins != null) && activePins.Count != 0;
+                foreach (WisePin pin in new List<WisePin>() { motorPin, guideMotorPin })
+                    if (pin != null && pin.isOn)
+                        return true;
+                return false;
             }
         }
 
@@ -140,7 +135,7 @@ namespace ASCOM.Wise40.Hardware
         /// <param name="StateObject"></param>
         private void bumpEncoders(object StateObject)
         {
-            if (!simulated)
+            if (!Simulated)
                 return;
 
             bool primary = (_axis == TelescopeAxes.axisPrimary) ? true : false;
@@ -264,7 +259,7 @@ namespace ASCOM.Wise40.Hardware
             return name;
         }
 
-        public bool simulated
+        public bool Simulated
         {
             get
             {

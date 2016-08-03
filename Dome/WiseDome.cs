@@ -24,8 +24,8 @@ namespace ASCOM.Wise40
         private List<IConnectable> connectables;
         private List<IDisposable> disposables;
         private bool _connected = false;
-        private bool _calibrated = false;
         private bool _calibrating = false;
+        public bool _autoCalibrate = false;
         private bool _ventIsOpen;
         private bool _isStuck;
 
@@ -58,12 +58,11 @@ namespace ASCOM.Wise40
         private System.Timers.Timer _movementTimer;
         private System.Timers.Timer _stuckTimer;
 
-        private bool _simulated = Environment.MachineName != "dome-ctlr";
+        private bool _simulated = Environment.MachineName.ToLower() != "dome-ctlr";
         private bool _slaved = false;
         private bool _atPark = false;
 
         private Debugger debugger = Debugger.Instance;
-        private static AutoResetEvent reachedHomePoint = new AutoResetEvent(false);
 
         private static AutoResetEvent _arrivedEvent;
         private static Hardware.Hardware hw = Hardware.Hardware.Instance;
@@ -209,6 +208,14 @@ namespace ASCOM.Wise40
             }
         }
 
+        public bool Calibrated
+        {
+            get
+            {
+                return domeEncoder._calibrated;
+            }
+        }
+
         /// <summary>
         /// Calculates how many degrees it will take the dome to stop.
         /// Right now it's about 0.7 degrees (two ticks).  In the future it may be derived
@@ -251,10 +258,9 @@ namespace ASCOM.Wise40
                 {
                     Stop();
                     _calibrating = false;
-                    reachedHomePoint.Set();
+                    _arrivedEvent.Set();
                 }
                 domeEncoder.Calibrate(_homePointAzimuth);
-                _calibrated = true;
             }
         }
 
@@ -450,8 +456,17 @@ namespace ASCOM.Wise40
         {
             get
             {
-                Angle ret = !domeEncoder.calibrated ? Angle.invalid : domeEncoder.Azimuth;
+                Angle ret;
 
+                if (!Calibrated)
+                {
+                    if (_autoCalibrate)
+                        FindHome();
+                    else
+                        return Angle.invalid;
+                }
+
+                ret = domeEncoder.Azimuth;
                 tl.LogMessage("Azimuth Get", ret.ToString());
                 return ret;
             }
@@ -496,7 +511,7 @@ namespace ASCOM.Wise40
             debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "FindHomePoint: started");
             _calibrating = true;
 
-            if (domeEncoder.calibrated)
+            if (Calibrated)
             {
                 ShortestDistanceResult shortest = Azimuth.ShortestDistance(_homePointAzimuth);
 
@@ -508,7 +523,7 @@ namespace ASCOM.Wise40
                 StartMovingCCW();
 
             debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "FindHomePoint: waiting for reachedCalibrationPoint ...");
-            reachedHomePoint.WaitOne();
+            _arrivedEvent.WaitOne();
             debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "FindHomePoint: reachedCalibrationPoint was Set()");
         }
 
@@ -644,14 +659,6 @@ namespace ASCOM.Wise40
             {
                 tl.LogMessage("Slaved Set", value.ToString());
                 _slaved = value;
-            }
-        }
-
-        public bool Calibrated
-        {
-            get
-            {
-                return _calibrated;
             }
         }
 

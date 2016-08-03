@@ -149,6 +149,16 @@ namespace ASCOM.Wise40
             }
         }
 
+        public void OpenShutter()
+        {
+            wisedome.OpenShutter();
+        }
+
+        public void CloseShutter()
+        {
+            wisedome.CloseShutter();
+        }
+
         public string ShutterStatus
         {
             get

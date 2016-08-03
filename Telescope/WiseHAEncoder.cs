@@ -37,6 +37,8 @@ namespace ASCOM.Wise40
         private Hardware.Hardware hw = Hardware.Hardware.Instance;
         private static WiseSite wisesite = WiseSite.Instance;
 
+        private static Object _lock = new object();
+
         public WiseHAEncoder(string name)
         {
             Novas31 = new Astrometry.NOVAS.NOVAS31();
@@ -69,18 +71,18 @@ namespace ASCOM.Wise40
             wormAtomicReader = new AtomicReader(wormDaqs);
             axisAtomicReader = new AtomicReader(axisDaqs);
 
-            simulated = false;
+            Simulated = false;
             foreach (WiseDaq d in daqs)
             {
                 if (d.wiseBoard.type == WiseBoard.BoardType.Soft)
                 {
-                    simulated = true;
+                    Simulated = true;
                     break;
                 }
             }
             _name = name;
 
-            if (simulated)
+            if (Simulated)
                 _angle = new Angle("00h00m00.0s");
             else
                 _angle = Angle.FromRadians((Value * HaMultiplier) + HaCorrection);
@@ -99,23 +101,26 @@ namespace ASCOM.Wise40
         public uint Value
         {
             get {
-                if (simulated)
+                if (Simulated)
                 {
                     debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "{0}: value: {1}",
                         name, _daqsValue);
                 }
                 else
                 {
-                    List<uint> daqValues;
                     uint worm, axis;
+                    lock (_lock)
+                    {
+                        List<uint> daqValues;
 
-                    daqValues = wormAtomicReader.Values;
-                    worm = (daqValues[1] << 8) | daqValues[0];
+                        daqValues = wormAtomicReader.Values;
+                        worm = (daqValues[1] << 8) | daqValues[0];
 
-                    daqValues = axisAtomicReader.Values;
-                    axis = (daqValues[0] >> 4) | (daqValues[1] << 4);
+                        daqValues = axisAtomicReader.Values;
+                        axis = (daqValues[0] >> 4) | (daqValues[1] << 4);
 
-                    _daqsValue = ((axis * 720 - worm) & 0xfff000) + worm;
+                        _daqsValue = ((axis * 720 - worm) & 0xfff000) + worm;
+                    }
                     debugger.WriteLine(Debugger.DebugLevel.DebugEncoders,
                         "{0}: value: {1}, axis: {2}, worm: {3}",
                         name, _daqsValue, axis, worm);
@@ -126,7 +131,7 @@ namespace ASCOM.Wise40
 
             set
             {
-                if (simulated)
+                if (Simulated)
                     _daqsValue = value;
             }
         }
@@ -135,7 +140,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                if (simulated)
+                if (Simulated)
                     return 0;
                 else
                 {
@@ -154,7 +159,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                if (simulated)
+                if (Simulated)
                     return 0;
                 else
                 {
@@ -173,7 +178,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                if (!simulated)
+                if (!Simulated)
                     _angle.Radians = (Value * HaMultiplier) + HaCorrection;
 
                 return _angle;
@@ -181,7 +186,7 @@ namespace ASCOM.Wise40
 
             set
             {
-                if (simulated)
+                if (Simulated)
                 {
                     _angle = Angle.FromHours(value.Hours);
                     Value = (uint)Math.Round((_angle.Radians - HaCorrection) / HaMultiplier);
@@ -193,7 +198,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                if (!simulated)
+                if (!Simulated)
                     _angle.Radians = (_daqsValue * HaMultiplier) + HaCorrection;
 
                 return Angle.Degrees;
@@ -206,7 +211,7 @@ namespace ASCOM.Wise40
                 Angle after = _angle;
                 Angle delta = after - before;
 
-                if (simulated)
+                if (Simulated)
                 {
                     debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "[{0}] {1}: {2} + {3} = {4}", this.GetHashCode(), name, before, delta, after);
                     _daqsValue = (uint)((_angle.Radians + HaCorrection) / HaMultiplier);
@@ -268,7 +273,7 @@ namespace ASCOM.Wise40
                 daq.unsetOwners();
         }
 
-        public bool simulated
+        public bool Simulated
         {
             get
             {

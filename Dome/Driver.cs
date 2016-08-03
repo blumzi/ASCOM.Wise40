@@ -73,6 +73,7 @@ namespace ASCOM.Wise40
 
         internal static string traceStateProfileName = "Trace Level";
         internal static string debugLevelProfileName = "Debug Level";
+        internal static string autoCalibrateProfileName = "AutoCalibrate";
 
         public bool traceState;
         public Common.Debugger debugger = Common.Debugger.Instance;
@@ -524,6 +525,7 @@ namespace ASCOM.Wise40
                 driverProfile.DeviceType = "Dome";
                 traceState = Convert.ToBoolean(driverProfile.GetValue(driverID, traceStateProfileName, string.Empty, "false"));
                 debugger.Level = Convert.ToUInt32(driverProfile.GetValue(driverID, debugLevelProfileName, string.Empty, "0"));
+                wisedome._autoCalibrate = Convert.ToBoolean(driverProfile.GetValue(driverID, autoCalibrateProfileName, string.Empty, "false"));
             }
         }
 
@@ -537,6 +539,7 @@ namespace ASCOM.Wise40
                 driverProfile.DeviceType = "Dome";
                 driverProfile.WriteValue(driverID, traceStateProfileName, traceState.ToString());
                 driverProfile.WriteValue(driverID, debugLevelProfileName, debugger.Level.ToString());
+                driverProfile.WriteValue(driverID, autoCalibrateProfileName, wisedome._autoCalibrate.ToString());
             }
         }
 

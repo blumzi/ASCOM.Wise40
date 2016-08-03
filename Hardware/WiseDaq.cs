@@ -104,29 +104,25 @@ namespace ASCOM.Wise40.Hardware
 
                 if (wiseBoard.type == WiseBoard.BoardType.Hard)
                 {
-                    if (portdir == DigitalPortDirection.DigitalIn)
+
+                    if (Hardware.Instance.mccRevNum == 5)
                     {
-                        if (Hardware.Instance.mccRevNum == 5)
+                        try
                         {
-                            try
-                            {
-                                wiseBoard.mccBoard.DIn(porttype, out v);
-                            }
-                            catch (Exception err)
-                            {
-                                throw new WiseException(name + ": UL DIn(" + porttype.ToString() + ") failed with " + err.Message);
-                            }
+                            wiseBoard.mccBoard.DIn(porttype, out v);
                         }
-                        else
+                        catch (Exception err)
                         {
-                            ErrorInfo err = wiseBoard.mccBoard.DIn(porttype, out v);
-                            if (err.Value != ErrorInfo.ErrorCode.NoErrors)
-                                throw new WiseException(name + ": UL DIn(" + porttype.ToString() + ") failed with " + err.Message);
+                            throw new WiseException(name + ": UL DIn(" + porttype.ToString() + ") failed with " + err.Message);
                         }
-                        //Console.WriteLine("v: " + v.ToString());
                     }
                     else
-                        v = _value;
+                    {
+                        ErrorInfo err = wiseBoard.mccBoard.DIn(porttype, out v);
+                        if (err.Value != ErrorInfo.ErrorCode.NoErrors)
+                            throw new WiseException(name + ": UL DIn(" + porttype.ToString() + ") failed with " + err.Message);
+                    }
+                    //Console.WriteLine("v: " + v.ToString());
                 }
                 else
                     v = _value;
@@ -138,7 +134,7 @@ namespace ASCOM.Wise40.Hardware
 
                 if (wiseBoard.type == WiseBoard.BoardType.Hard)
                 {
-                    debugger.WriteLine(Debugger.DebugLevel.DebugMotors,
+                    debugger.WriteLine(Debugger.DebugLevel.DebugEncoders,
                         "daq.Value.set: board: {0}, port: {1}, value: 0x{2:x}",
                         this.wiseBoard.name,
                         this.porttype.ToString(),

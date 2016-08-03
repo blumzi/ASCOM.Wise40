@@ -165,7 +165,7 @@
     </PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PostBuildEvent>"C:\Program Files (x86)\Inno Setup 5\ISCC.exe" /Q /O"$(SolutionDir)\Deliveries" "$(ProjectDir)\Installer\MaintenanceSwitch Setup.iss" 
+    <PostBuildEvent>rem "C:\Program Files (x86)\Inno Setup 5\ISCC.exe" /Q /O"$(SolutionDir)\Deliveries" "$(ProjectDir)\Installer\MaintenanceSwitch Setup.iss" 
 </PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -11,9 +11,9 @@ namespace ASCOM.Wise40
     public class WiseDomeEncoder : IConnectable
     {
         private Angle azimuth;
-        public bool calibrated;
+        public bool _calibrated;
 
-        private bool _simulated = Environment.MachineName != "dome-ctlr"; 
+        private bool _simulated = Environment.MachineName.ToLower() != "dome-ctlr"; 
         private int simulatedValue;                     // the simulated dome encoder value
         private Angle simulatedStuckAzimuth;
         private DateTime endSimulatedStuck;             // time when the dome-stuck simulation should end
@@ -111,7 +111,7 @@ namespace ASCOM.Wise40
         {
             _caliTicks = Value;
             _caliAz = az;
-            calibrated = true;
+            _calibrated = true;
         }
 
         public void Connect(bool connected)
@@ -146,7 +146,7 @@ namespace ASCOM.Wise40
                 int currTicks;
                 Angle az;
 
-                if (!calibrated)
+                if (!_calibrated)
                     return Angle.invalid;
 
                 currTicks = Value;
