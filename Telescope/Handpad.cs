@@ -25,6 +25,7 @@ namespace ASCOM.Wise40
         private static WiseSite wisesite = WiseSite.Instance;
         private static Debugger debugger = Debugger.Instance;
         private static DomeSlaveDriver domeSlaveDriver = DomeSlaveDriver.Instance;
+        private DateTime statusDisplayExpiration = new DateTime();
 
         private class TimedMovementArg
         {
@@ -121,7 +122,7 @@ namespace ASCOM.Wise40
 
             if (daqsForm == null)
             {
-                daqsForm = new DaqsForm(this);
+                daqsForm = new DaqsForm();
                 daqsForm.Visible = true;
                 buttonHardware.Text = "Hide hardware";
             }
@@ -326,37 +327,43 @@ namespace ASCOM.Wise40
             }
         }
 
-        private void directionButton_MouseDown(object sender, MouseEventArgs e)
+        public void directionButton_MouseDown(object sender, MouseEventArgs e)
         {
             Button button = (Button)sender;
 
-            if (button == buttonNorth)
-                wisetele.MoveAxis(TelescopeAxes.axisSecondary, handpadRate);
-            else if (button == buttonSouth)
-                wisetele.MoveAxis(TelescopeAxes.axisSecondary, -handpadRate);
-            else if (button == buttonEast)
-                wisetele.MoveAxis(TelescopeAxes.axisPrimary, handpadRate);
-            else if (button == buttonWest)
-                wisetele.MoveAxis(TelescopeAxes.axisPrimary, -handpadRate);
-            else if (button == buttonNE)
+            try
             {
-                wisetele.MoveAxis(TelescopeAxes.axisSecondary, handpadRate);
-                wisetele.MoveAxis(TelescopeAxes.axisPrimary, -handpadRate);
-            }
-            else if (button == buttonNW)
+                if (button == buttonNorth)
+                    wisetele.MoveAxis(TelescopeAxes.axisSecondary, handpadRate);
+                else if (button == buttonSouth)
+                    wisetele.MoveAxis(TelescopeAxes.axisSecondary, -handpadRate);
+                else if (button == buttonEast)
+                    wisetele.MoveAxis(TelescopeAxes.axisPrimary, handpadRate);
+                else if (button == buttonWest)
+                    wisetele.MoveAxis(TelescopeAxes.axisPrimary, -handpadRate);
+                else if (button == buttonNE)
+                {
+                    wisetele.MoveAxis(TelescopeAxes.axisSecondary, handpadRate);
+                    wisetele.MoveAxis(TelescopeAxes.axisPrimary, -handpadRate);
+                }
+                else if (button == buttonNW)
+                {
+                    wisetele.MoveAxis(TelescopeAxes.axisSecondary, handpadRate);
+                    wisetele.MoveAxis(TelescopeAxes.axisPrimary, -handpadRate);
+                }
+                else if (button == buttonSE)
+                {
+                    wisetele.MoveAxis(TelescopeAxes.axisSecondary, -handpadRate);
+                    wisetele.MoveAxis(TelescopeAxes.axisPrimary, -handpadRate);
+                }
+                else if (button == buttonSW)
+                {
+                    wisetele.MoveAxis(TelescopeAxes.axisSecondary, -handpadRate);
+                    wisetele.MoveAxis(TelescopeAxes.axisPrimary, handpadRate);
+                }
+            } catch (Exception ex)
             {
-                wisetele.MoveAxis(TelescopeAxes.axisSecondary, handpadRate);
-                wisetele.MoveAxis(TelescopeAxes.axisPrimary, -handpadRate);
-            }
-            else if (button == buttonSE)
-            {
-                wisetele.MoveAxis(TelescopeAxes.axisSecondary, -handpadRate);
-                wisetele.MoveAxis(TelescopeAxes.axisPrimary, -handpadRate);
-            }
-            else if (button == buttonSW)
-            {
-                wisetele.MoveAxis(TelescopeAxes.axisSecondary, -handpadRate);
-                wisetele.MoveAxis(TelescopeAxes.axisPrimary, handpadRate);
+                Status(ex.Message, 2000, "error");
             }
         }
 
@@ -543,7 +550,13 @@ namespace ASCOM.Wise40
             if (radioButtonDirDown.Checked)
                 rate = -rate;
 
-            MakeSteps(axis, rate, millis, nSteps);
+            try
+            {
+                MakeSteps(axis, rate, millis, nSteps);
+            } catch (Exception ex)
+            {
+                Status(ex.Message, 2000, "warning");
+            }
         }
 
         private void buttonSaveResults_Click(object sender, EventArgs e)
@@ -576,11 +589,17 @@ namespace ASCOM.Wise40
         {
             if (!wisetele.Tracking)
             {
-                MessageBox.Show("Telescope is NOT tracking!", "Error");
+                Status("Telescope is NOT tracking!", 1000, "error");
                 return;
             }
 
-            wisetele.SlewToCoordinatesAsync(new Angle(textBoxRA.Text).Hours, new Angle(textBoxDec.Text).Degrees);
+            try
+            {
+                wisetele.SlewToCoordinatesAsync(new Angle(textBoxRA.Text).Hours, new Angle(textBoxDec.Text).Degrees);
+            } catch (Exception ex)
+            {
+                Status(ex.Message, 2000, "error");
+            }
         }
 
         private void label8_Click(object sender, EventArgs e)
@@ -660,6 +679,34 @@ namespace ASCOM.Wise40
         private void buttonCloseShutterClick(object sender, EventArgs e)
         {
             domeSlaveDriver.CloseShutter();
+        }
+
+        private void Status(string s, int millis = 1000, string severity = "regular")
+        {
+            Dictionary<string, Color> colors = new Dictionary<string, Color>()
+            {
+                { "regular", Color.FromArgb(176, 161, 142) },
+                { "warning", Color.LightGoldenrodYellow },
+                { "error", Color.IndianRed },
+                { "good", Color.Green },
+            };
+
+            labelStatus.ForeColor = colors[severity];
+            labelStatus.Text = s;
+            statusDisplayExpiration = DateTime.Now.AddMilliseconds(millis);
+            timerStatus.Start();
+        }
+
+        private void timerStatus_Tick(object sender, EventArgs e)
+        {
+            DateTime now = DateTime.Now;
+
+            if (now.CompareTo(statusDisplayExpiration) > 0)
+            {
+                labelStatus.Text = "";
+                statusDisplayExpiration = now;
+                timerStatus.Stop();
+            }
         }
     }
 }

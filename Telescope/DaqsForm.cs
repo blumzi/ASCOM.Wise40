@@ -15,14 +15,11 @@ namespace ASCOM.Wise40
     public partial class DaqsForm : Form
     {
         private List<WiseBoard> boards;
-        private HandpadForm handpad;
         private Hardware.Hardware hw = Hardware.Hardware.Instance;
-
-        public DaqsForm(HandpadForm handpad)
+        
+        public DaqsForm()
         {
             InitializeComponent();
-
-            this.handpad = handpad;
 
             boards = new List<WiseBoard>();
             boards.Add(hw.miscboard);
@@ -103,9 +100,9 @@ namespace ASCOM.Wise40
 
         private void DaqsForm_VisibleChanged(object sender, EventArgs e)
         {
-            timerDaqsRefresh.Enabled = ((Form)sender).Visible;
-            if (!((Form)sender).Visible)
-                handpad.buttonHardware.Text = "Show Hardware";
+            Form form = sender as Form;
+
+            timerDaqsRefresh.Enabled = form.Visible;
         }
     }
 }

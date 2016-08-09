@@ -103,7 +103,8 @@ namespace ASCOM.Wise40
             {
                 profile.DeviceType = "Dome";
                 debugger.Level = Convert.ToUInt32(profile.GetValue("ASCOM.Wise40.Dome", "Debug Level", string.Empty, "0"));
-                tl.Enabled = Convert.ToBoolean(profile.GetValue("ASCOM.Wise40.Dome", "Trace Level", string.Empty, "false"));                
+                tl.Enabled = Convert.ToBoolean(profile.GetValue("ASCOM.Wise40.Dome", "Trace Level", string.Empty, "false"));
+                _autoCalibrate = Convert.ToBoolean(profile.GetValue("ASCOM.Wise40.Dome", "AutoCalibrate", string.Empty, "false"));
             }
 
             hw.init();

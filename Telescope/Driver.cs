@@ -68,7 +68,7 @@ namespace ASCOM.Wise40
         /// </summary>
         internal static string driverID = "ASCOM.Wise40.Telescope";
 
-        public static bool _trace = true;   // TODO: fix profile value
+        //public static bool _trace = true;   // TODO: fix profile value
 
         internal static string debugLevelProfileName = "Debug Level";
         internal static string astrometricAccuracyProfileName = "Astrometric accuracy";
@@ -94,7 +94,7 @@ namespace ASCOM.Wise40
         /// <summary>
         /// Private variable to hold the trace logger object (creates a diagnostic log file with information that you specify)
         /// </summary>
-        public TraceLogger tl;
+        //public TraceLogger tl;
         
         public HandpadForm handpad;
 
@@ -111,18 +111,13 @@ namespace ASCOM.Wise40
         {
             ReadProfile(); // Read device configuration from the ASCOM Profile store
 
-            tl = new TraceLogger("", "Tele");
-            tl.Enabled = _trace;
-            tl.LogMessage("Telescope", "Starting initialisation");
-
             _connected = false; // Initialise connected to false
             util = new Util(); //Initialise util object
             astroUtils = new AstroUtils(); // Initialise astro utilities object
 
-            wisetele.init(this);
+            wisetele.init();
             wisesite.init();
-
-            tl.LogMessage("Telescope", "Completed initialisation");
+            debugger.init();
         }
 
         //
@@ -144,7 +139,7 @@ namespace ASCOM.Wise40
                 handpad = new HandpadForm();
                 handpad.ShowDialog();
             } else
-                using (TelescopeSetupDialogForm F = new TelescopeSetupDialogForm(_trace,
+                using (TelescopeSetupDialogForm F = new TelescopeSetupDialogForm(wisetele.traceLogger.Enabled,
                     wisetele.debugger.Level,
                     wisesite.astrometricAccuracy,
                     wisetele._enslaveDome))
@@ -187,11 +182,6 @@ namespace ASCOM.Wise40
 
         public void Dispose()
         {
-            // Clean up the tracelogger and util objects
-            tl.Enabled = false;
-            tl.Dispose();
-            tl = null;
-
             util.Dispose();
             util = null;
 
@@ -895,7 +885,7 @@ namespace ASCOM.Wise40
             using (Profile driverProfile = new Profile())
             {
                 driverProfile.DeviceType = "Telescope";
-                _trace = Convert.ToBoolean(driverProfile.GetValue(driverID, traceStateProfileName, string.Empty, "false"));
+                wisetele.traceLogger.Enabled = Convert.ToBoolean(driverProfile.GetValue(driverID, traceStateProfileName, string.Empty, "false"));
                 debugger.Level = Convert.ToUInt32(driverProfile.GetValue(driverID, debugLevelProfileName, string.Empty, "0"));
                 wisetele._enslaveDome = Convert.ToBoolean(driverProfile.GetValue(driverID, enslaveDomeProfileName, string.Empty, "false"));
                 wisesite.astrometricAccuracy = 
@@ -913,7 +903,7 @@ namespace ASCOM.Wise40
             using (Profile driverProfile = new Profile())
             {
                 driverProfile.DeviceType = "Telescope";
-                driverProfile.WriteValue(driverID, traceStateProfileName, _trace.ToString());
+                driverProfile.WriteValue(driverID, traceStateProfileName, wisetele.traceLogger.Enabled.ToString());
                 driverProfile.WriteValue(driverID, astrometricAccuracyProfileName, wisesite.astrometricAccuracy == Accuracy.Full ? "Full" : "Reduced");
                 driverProfile.WriteValue(driverID, debugLevelProfileName, wisetele.debugger.Level.ToString());
                 driverProfile.WriteValue(driverID, enslaveDomeProfileName, wisetele._enslaveDome.ToString());

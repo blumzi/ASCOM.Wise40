@@ -49,16 +49,10 @@ namespace ASCOM.Wise40
             siteElevation = 882.9;
             novas31.MakeOnSurface(siteLatitude, siteLongitude, siteElevation, 0.0, 0.0, ref onSurface);
 
-            //using (Profile driverProfile = new Profile())
-            //{
-            //    driverProfile.DeviceType = "Telescope";
-            //    string acc = Convert.ToString(driverProfile.GetValue("ASCOM.Wise40.Telescope", "Astrometric accuracy", string.Empty, "Full"));
-            //    astrometricAccuracy = (acc == "Full") ? Accuracy.Full : Accuracy.Reduced;
-            //}
-
             try
             {
                 observingConditions = new ObservingConditions("ASCOM.OCH.ObservingConditions");
+                observingConditions.Connected = true;
                 refractionOption = Astrometry.RefractionOption.LocationRefraction;
                 lastOCFetch = DateTime.Now;
             }
@@ -131,16 +125,13 @@ namespace ASCOM.Wise40
             const int freqOCFetchMinutes = 10;
 
             refractionOption = Astrometry.RefractionOption.NoRefraction;
-            if (observingConditions != null && DateTime.Now.Subtract(lastOCFetch).TotalMinutes < freqOCFetchMinutes)
+            if (observingConditions != null && DateTime.Now.Subtract(lastOCFetch).TotalMinutes > freqOCFetchMinutes)
             {
                 try
                 {
-                    if (!observingConditions.Connected)
-                        observingConditions.Connected = true;
+                    double timeSinceLastUpdate = observingConditions.TimeSinceLastUpdate("Temperature");
 
-                    double timeSinceLastUpdate = observingConditions.TimeSinceLastUpdate("");
-
-                    if (timeSinceLastUpdate < (freqOCFetchMinutes * 60))
+                    if (timeSinceLastUpdate > (freqOCFetchMinutes * 60))
                     {
                         onSurface.Temperature = observingConditions.Temperature;
                         onSurface.Pressure = observingConditions.Pressure;

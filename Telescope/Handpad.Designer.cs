@@ -33,7 +33,7 @@
             this.panelDebug = new System.Windows.Forms.Panel();
             this.groupBoxMovementStudy = new System.Windows.Forms.GroupBox();
             this.groupBoxCurrentRates = new System.Windows.Forms.GroupBox();
-            this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
+            this.tableLayoutPanelAxesState = new System.Windows.Forms.TableLayoutPanel();
             this.labelCurrPrimRateValue = new System.Windows.Forms.Label();
             this.labelCurrPrimDirValue = new System.Windows.Forms.Label();
             this.labelCurrSecRateValue = new System.Windows.Forms.Label();
@@ -76,7 +76,7 @@
             this.radioButtonSlew = new System.Windows.Forms.RadioButton();
             this.radioButtonGuide = new System.Windows.Forms.RadioButton();
             this.radioButtonSet = new System.Windows.Forms.RadioButton();
-            this.panel10 = new System.Windows.Forms.Panel();
+            this.panelDirectionButtons = new System.Windows.Forms.Panel();
             this.buttonNW = new System.Windows.Forms.Button();
             this.buttonSW = new System.Windows.Forms.Button();
             this.buttonSE = new System.Windows.Forms.Button();
@@ -87,7 +87,7 @@
             this.buttonEast = new System.Windows.Forms.Button();
             this.buttonWest = new System.Windows.Forms.Button();
             this.groupBoxTelescope = new System.Windows.Forms.GroupBox();
-            this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
+            this.tableLayoutPanelCoordinates = new System.Windows.Forms.TableLayoutPanel();
             this.label2 = new System.Windows.Forms.Label();
             this.labelLTValue = new System.Windows.Forms.Label();
             this.labelAltitude = new System.Windows.Forms.Label();
@@ -113,7 +113,7 @@
             this.groupBoxTracking = new System.Windows.Forms.GroupBox();
             this.checkBoxEnslaveDome = new System.Windows.Forms.CheckBox();
             this.checkBoxTrack = new System.Windows.Forms.CheckBox();
-            this.panel2 = new System.Windows.Forms.Panel();
+            this.panelShowHideButtons = new System.Windows.Forms.Panel();
             this.buttonWeather = new System.Windows.Forms.Button();
             this.buttonStudy = new System.Windows.Forms.Button();
             this.buttonDome = new System.Windows.Forms.Button();
@@ -167,10 +167,12 @@
             this.labelDewPointValue = new System.Windows.Forms.Label();
             this.labelHumidityValue = new System.Windows.Forms.Label();
             this.labelPressureValue = new System.Windows.Forms.Label();
+            this.labelStatus = new System.Windows.Forms.Label();
+            this.timerStatus = new System.Windows.Forms.Timer(this.components);
             this.panelDebug.SuspendLayout();
             this.groupBoxMovementStudy.SuspendLayout();
             this.groupBoxCurrentRates.SuspendLayout();
-            this.tableLayoutPanel2.SuspendLayout();
+            this.tableLayoutPanelAxesState.SuspendLayout();
             this.groupBoxEncoders.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownStepCount)).BeginInit();
             this.groupBox4.SuspendLayout();
@@ -178,12 +180,12 @@
             this.groupBox2.SuspendLayout();
             this.panelControls.SuspendLayout();
             this.groupBox36.SuspendLayout();
-            this.panel10.SuspendLayout();
+            this.panelDirectionButtons.SuspendLayout();
             this.groupBoxTelescope.SuspendLayout();
-            this.tableLayoutPanel1.SuspendLayout();
+            this.tableLayoutPanelCoordinates.SuspendLayout();
             this.groupBox3.SuspendLayout();
             this.groupBoxTracking.SuspendLayout();
-            this.panel2.SuspendLayout();
+            this.panelShowHideButtons.SuspendLayout();
             this.panelDome.SuspendLayout();
             this.groupBox7.SuspendLayout();
             this.groupBoxDome.SuspendLayout();
@@ -245,7 +247,7 @@
             // 
             // groupBoxCurrentRates
             // 
-            this.groupBoxCurrentRates.Controls.Add(this.tableLayoutPanel2);
+            this.groupBoxCurrentRates.Controls.Add(this.tableLayoutPanelAxesState);
             this.groupBoxCurrentRates.ForeColor = System.Drawing.Color.DarkOrange;
             this.groupBoxCurrentRates.Location = new System.Drawing.Point(8, 96);
             this.groupBoxCurrentRates.Name = "groupBoxCurrentRates";
@@ -254,23 +256,23 @@
             this.groupBoxCurrentRates.TabStop = false;
             this.groupBoxCurrentRates.Text = " Current Axes State  ";
             // 
-            // tableLayoutPanel2
+            // tableLayoutPanelAxesState
             // 
-            this.tableLayoutPanel2.ColumnCount = 4;
-            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
-            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
-            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
-            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
-            this.tableLayoutPanel2.Controls.Add(this.labelCurrPrimRateValue, 0, 0);
-            this.tableLayoutPanel2.Controls.Add(this.labelCurrPrimDirValue, 0, 0);
-            this.tableLayoutPanel2.Controls.Add(this.labelCurrSecRateValue, 3, 0);
-            this.tableLayoutPanel2.Controls.Add(this.labelCurrSecDirValue, 2, 0);
-            this.tableLayoutPanel2.Location = new System.Drawing.Point(3, 12);
-            this.tableLayoutPanel2.Name = "tableLayoutPanel2";
-            this.tableLayoutPanel2.RowCount = 1;
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanel2.Size = new System.Drawing.Size(205, 24);
-            this.tableLayoutPanel2.TabIndex = 0;
+            this.tableLayoutPanelAxesState.ColumnCount = 4;
+            this.tableLayoutPanelAxesState.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.tableLayoutPanelAxesState.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.tableLayoutPanelAxesState.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.tableLayoutPanelAxesState.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.tableLayoutPanelAxesState.Controls.Add(this.labelCurrPrimRateValue, 0, 0);
+            this.tableLayoutPanelAxesState.Controls.Add(this.labelCurrPrimDirValue, 0, 0);
+            this.tableLayoutPanelAxesState.Controls.Add(this.labelCurrSecRateValue, 3, 0);
+            this.tableLayoutPanelAxesState.Controls.Add(this.labelCurrSecDirValue, 2, 0);
+            this.tableLayoutPanelAxesState.Location = new System.Drawing.Point(3, 12);
+            this.tableLayoutPanelAxesState.Name = "tableLayoutPanelAxesState";
+            this.tableLayoutPanelAxesState.RowCount = 1;
+            this.tableLayoutPanelAxesState.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.tableLayoutPanelAxesState.Size = new System.Drawing.Size(205, 24);
+            this.tableLayoutPanelAxesState.TabIndex = 0;
             // 
             // labelCurrPrimRateValue
             // 
@@ -730,14 +732,13 @@
             this.panelControls.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.panelControls.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.panelControls.Controls.Add(this.groupBox36);
-            this.panelControls.Controls.Add(this.panel10);
+            this.panelControls.Controls.Add(this.panelDirectionButtons);
             this.panelControls.Controls.Add(this.groupBoxTelescope);
-            this.panelControls.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panelControls.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.panelControls.Location = new System.Drawing.Point(3, 3);
             this.panelControls.Name = "panelControls";
             this.tableLayoutPanelMain.SetRowSpan(this.panelControls, 3);
-            this.panelControls.Size = new System.Drawing.Size(363, 573);
+            this.panelControls.Size = new System.Drawing.Size(363, 571);
             this.panelControls.TabIndex = 0;
             // 
             // groupBox36
@@ -788,21 +789,21 @@
             this.radioButtonSet.UseVisualStyleBackColor = true;
             this.radioButtonSet.Click += new System.EventHandler(this.radioButtonSet_Click);
             // 
-            // panel10
+            // panelDirectionButtons
             // 
-            this.panel10.Controls.Add(this.buttonNW);
-            this.panel10.Controls.Add(this.buttonSW);
-            this.panel10.Controls.Add(this.buttonSE);
-            this.panel10.Controls.Add(this.buttonNE);
-            this.panel10.Controls.Add(this.buttonNorth);
-            this.panel10.Controls.Add(this.buttonStop);
-            this.panel10.Controls.Add(this.buttonSouth);
-            this.panel10.Controls.Add(this.buttonEast);
-            this.panel10.Controls.Add(this.buttonWest);
-            this.panel10.Location = new System.Drawing.Point(56, 224);
-            this.panel10.Name = "panel10";
-            this.panel10.Size = new System.Drawing.Size(160, 152);
-            this.panel10.TabIndex = 11;
+            this.panelDirectionButtons.Controls.Add(this.buttonNW);
+            this.panelDirectionButtons.Controls.Add(this.buttonSW);
+            this.panelDirectionButtons.Controls.Add(this.buttonSE);
+            this.panelDirectionButtons.Controls.Add(this.buttonNE);
+            this.panelDirectionButtons.Controls.Add(this.buttonNorth);
+            this.panelDirectionButtons.Controls.Add(this.buttonStop);
+            this.panelDirectionButtons.Controls.Add(this.buttonSouth);
+            this.panelDirectionButtons.Controls.Add(this.buttonEast);
+            this.panelDirectionButtons.Controls.Add(this.buttonWest);
+            this.panelDirectionButtons.Location = new System.Drawing.Point(56, 245);
+            this.panelDirectionButtons.Name = "panelDirectionButtons";
+            this.panelDirectionButtons.Size = new System.Drawing.Size(160, 152);
+            this.panelDirectionButtons.TabIndex = 11;
             // 
             // buttonNW
             // 
@@ -944,11 +945,12 @@
             // 
             // groupBoxTelescope
             // 
-            this.groupBoxTelescope.Controls.Add(this.tableLayoutPanel1);
+            this.groupBoxTelescope.Controls.Add(this.labelStatus);
+            this.groupBoxTelescope.Controls.Add(this.tableLayoutPanelCoordinates);
             this.groupBoxTelescope.Controls.Add(this.groupBox3);
             this.groupBoxTelescope.Controls.Add(this.labelDate);
             this.groupBoxTelescope.Controls.Add(this.groupBoxTracking);
-            this.groupBoxTelescope.Controls.Add(this.panel2);
+            this.groupBoxTelescope.Controls.Add(this.panelShowHideButtons);
             this.groupBoxTelescope.ForeColor = System.Drawing.Color.DarkOrange;
             this.groupBoxTelescope.Location = new System.Drawing.Point(0, 11);
             this.groupBoxTelescope.Name = "groupBoxTelescope";
@@ -957,39 +959,39 @@
             this.groupBoxTelescope.TabStop = false;
             this.groupBoxTelescope.Text = " Telescope ";
             // 
-            // tableLayoutPanel1
+            // tableLayoutPanelCoordinates
             // 
-            this.tableLayoutPanel1.ColumnCount = 4;
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 12.68365F));
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 36.99398F));
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 13.3284F));
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 36.99398F));
-            this.tableLayoutPanel1.Controls.Add(this.label2, 2, 1);
-            this.tableLayoutPanel1.Controls.Add(this.labelLTValue, 3, 0);
-            this.tableLayoutPanel1.Controls.Add(this.labelAltitude, 0, 3);
-            this.tableLayoutPanel1.Controls.Add(this.labelAltitudeValue, 1, 3);
-            this.tableLayoutPanel1.Controls.Add(this.labelRightAscension, 0, 2);
-            this.tableLayoutPanel1.Controls.Add(this.labelUTValue, 1, 0);
-            this.tableLayoutPanel1.Controls.Add(this.labelHourAngle, 0, 1);
-            this.tableLayoutPanel1.Controls.Add(this.labelSiderealValue, 3, 1);
-            this.tableLayoutPanel1.Controls.Add(this.labelRightAscensionValue, 1, 2);
-            this.tableLayoutPanel1.Controls.Add(this.labelUT, 0, 0);
-            this.tableLayoutPanel1.Controls.Add(this.labelLT, 2, 0);
-            this.tableLayoutPanel1.Controls.Add(this.labelHourAngleValue, 1, 1);
-            this.tableLayoutPanel1.Controls.Add(this.labelAzimuth, 2, 3);
-            this.tableLayoutPanel1.Controls.Add(this.labelDeclinationValue, 3, 2);
-            this.tableLayoutPanel1.Controls.Add(this.labelAzimuthValue, 3, 3);
-            this.tableLayoutPanel1.Controls.Add(this.labelDeclination, 2, 2);
-            this.tableLayoutPanel1.Location = new System.Drawing.Point(4, 56);
-            this.tableLayoutPanel1.Margin = new System.Windows.Forms.Padding(0);
-            this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-            this.tableLayoutPanel1.RowCount = 4;
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(350, 128);
-            this.tableLayoutPanel1.TabIndex = 18;
+            this.tableLayoutPanelCoordinates.ColumnCount = 4;
+            this.tableLayoutPanelCoordinates.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 12.68365F));
+            this.tableLayoutPanelCoordinates.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 36.99398F));
+            this.tableLayoutPanelCoordinates.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 13.3284F));
+            this.tableLayoutPanelCoordinates.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 36.99398F));
+            this.tableLayoutPanelCoordinates.Controls.Add(this.label2, 2, 1);
+            this.tableLayoutPanelCoordinates.Controls.Add(this.labelLTValue, 3, 0);
+            this.tableLayoutPanelCoordinates.Controls.Add(this.labelAltitude, 0, 3);
+            this.tableLayoutPanelCoordinates.Controls.Add(this.labelAltitudeValue, 1, 3);
+            this.tableLayoutPanelCoordinates.Controls.Add(this.labelRightAscension, 0, 2);
+            this.tableLayoutPanelCoordinates.Controls.Add(this.labelUTValue, 1, 0);
+            this.tableLayoutPanelCoordinates.Controls.Add(this.labelHourAngle, 0, 1);
+            this.tableLayoutPanelCoordinates.Controls.Add(this.labelSiderealValue, 3, 1);
+            this.tableLayoutPanelCoordinates.Controls.Add(this.labelRightAscensionValue, 1, 2);
+            this.tableLayoutPanelCoordinates.Controls.Add(this.labelUT, 0, 0);
+            this.tableLayoutPanelCoordinates.Controls.Add(this.labelLT, 2, 0);
+            this.tableLayoutPanelCoordinates.Controls.Add(this.labelHourAngleValue, 1, 1);
+            this.tableLayoutPanelCoordinates.Controls.Add(this.labelAzimuth, 2, 3);
+            this.tableLayoutPanelCoordinates.Controls.Add(this.labelDeclinationValue, 3, 2);
+            this.tableLayoutPanelCoordinates.Controls.Add(this.labelAzimuthValue, 3, 3);
+            this.tableLayoutPanelCoordinates.Controls.Add(this.labelDeclination, 2, 2);
+            this.tableLayoutPanelCoordinates.Location = new System.Drawing.Point(4, 56);
+            this.tableLayoutPanelCoordinates.Margin = new System.Windows.Forms.Padding(0);
+            this.tableLayoutPanelCoordinates.Name = "tableLayoutPanelCoordinates";
+            this.tableLayoutPanelCoordinates.RowCount = 4;
+            this.tableLayoutPanelCoordinates.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
+            this.tableLayoutPanelCoordinates.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
+            this.tableLayoutPanelCoordinates.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
+            this.tableLayoutPanelCoordinates.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
+            this.tableLayoutPanelCoordinates.Size = new System.Drawing.Size(350, 128);
+            this.tableLayoutPanelCoordinates.TabIndex = 18;
             // 
             // label2
             // 
@@ -1248,7 +1250,7 @@
             this.groupBox3.Controls.Add(this.checkBoxTrackingIsActive);
             this.groupBox3.Controls.Add(this.checkBoxPrimaryIsActive);
             this.groupBox3.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBox3.Location = new System.Drawing.Point(224, 235);
+            this.groupBox3.Location = new System.Drawing.Point(224, 253);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Size = new System.Drawing.Size(88, 102);
             this.groupBox3.TabIndex = 17;
@@ -1320,7 +1322,7 @@
             this.groupBoxTracking.Controls.Add(this.checkBoxEnslaveDome);
             this.groupBoxTracking.Controls.Add(this.checkBoxTrack);
             this.groupBoxTracking.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBoxTracking.Location = new System.Drawing.Point(84, 464);
+            this.groupBoxTracking.Location = new System.Drawing.Point(84, 482);
             this.groupBoxTracking.Name = "groupBoxTracking";
             this.groupBoxTracking.Size = new System.Drawing.Size(108, 56);
             this.groupBoxTracking.TabIndex = 0;
@@ -1351,17 +1353,17 @@
             this.checkBoxTrack.UseVisualStyleBackColor = true;
             this.checkBoxTrack.CheckedChanged += new System.EventHandler(this.checkBoxTrack_CheckedChanged);
             // 
-            // panel2
+            // panelShowHideButtons
             // 
-            this.panel2.Controls.Add(this.buttonWeather);
-            this.panel2.Controls.Add(this.buttonStudy);
-            this.panel2.Controls.Add(this.buttonDome);
-            this.panel2.Controls.Add(this.buttonFocuser);
-            this.panel2.Controls.Add(this.buttonHardware);
-            this.panel2.Location = new System.Drawing.Point(218, 386);
-            this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(100, 136);
-            this.panel2.TabIndex = 15;
+            this.panelShowHideButtons.Controls.Add(this.buttonWeather);
+            this.panelShowHideButtons.Controls.Add(this.buttonStudy);
+            this.panelShowHideButtons.Controls.Add(this.buttonDome);
+            this.panelShowHideButtons.Controls.Add(this.buttonFocuser);
+            this.panelShowHideButtons.Controls.Add(this.buttonHardware);
+            this.panelShowHideButtons.Location = new System.Drawing.Point(218, 404);
+            this.panelShowHideButtons.Name = "panelShowHideButtons";
+            this.panelShowHideButtons.Size = new System.Drawing.Size(100, 136);
+            this.panelShowHideButtons.TabIndex = 15;
             // 
             // buttonWeather
             // 
@@ -2103,13 +2105,28 @@
             this.labelPressureValue.Text = "pressure";
             this.labelPressureValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
+            // labelStatus
+            // 
+            this.labelStatus.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.labelStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelStatus.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
+            this.labelStatus.Location = new System.Drawing.Point(16, 200);
+            this.labelStatus.Name = "labelStatus";
+            this.labelStatus.Size = new System.Drawing.Size(328, 17);
+            this.labelStatus.TabIndex = 24;
+            this.labelStatus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // timerStatus
+            // 
+            this.timerStatus.Tick += new System.EventHandler(this.timerStatus_Tick);
+            // 
             // HandpadForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSize = true;
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.ClientSize = new System.Drawing.Size(1163, 620);
+            this.ClientSize = new System.Drawing.Size(1167, 580);
             this.Controls.Add(this.tableLayoutPanelMain);
             this.Name = "HandpadForm";
             this.Text = "Wise40 Telescope Handpad";
@@ -2118,8 +2135,8 @@
             this.groupBoxMovementStudy.ResumeLayout(false);
             this.groupBoxMovementStudy.PerformLayout();
             this.groupBoxCurrentRates.ResumeLayout(false);
-            this.tableLayoutPanel2.ResumeLayout(false);
-            this.tableLayoutPanel2.PerformLayout();
+            this.tableLayoutPanelAxesState.ResumeLayout(false);
+            this.tableLayoutPanelAxesState.PerformLayout();
             this.groupBoxEncoders.ResumeLayout(false);
             this.groupBoxEncoders.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownStepCount)).EndInit();
@@ -2132,16 +2149,16 @@
             this.panelControls.ResumeLayout(false);
             this.groupBox36.ResumeLayout(false);
             this.groupBox36.PerformLayout();
-            this.panel10.ResumeLayout(false);
+            this.panelDirectionButtons.ResumeLayout(false);
             this.groupBoxTelescope.ResumeLayout(false);
             this.groupBoxTelescope.PerformLayout();
-            this.tableLayoutPanel1.ResumeLayout(false);
-            this.tableLayoutPanel1.PerformLayout();
+            this.tableLayoutPanelCoordinates.ResumeLayout(false);
+            this.tableLayoutPanelCoordinates.PerformLayout();
             this.groupBox3.ResumeLayout(false);
             this.groupBox3.PerformLayout();
             this.groupBoxTracking.ResumeLayout(false);
             this.groupBoxTracking.PerformLayout();
-            this.panel2.ResumeLayout(false);
+            this.panelShowHideButtons.ResumeLayout(false);
             this.panelDome.ResumeLayout(false);
             this.groupBox7.ResumeLayout(false);
             this.groupBox7.PerformLayout();
@@ -2172,7 +2189,7 @@
         private System.Windows.Forms.CheckBox checkBoxSecondaryIsActive;
         private System.Windows.Forms.CheckBox checkBoxTrackingIsActive;
         private System.Windows.Forms.CheckBox checkBoxPrimaryIsActive;
-        private System.Windows.Forms.Panel panel2;
+        private System.Windows.Forms.Panel panelShowHideButtons;
         private System.Windows.Forms.Button buttonStudy;
         private System.Windows.Forms.Button buttonDome;
         private System.Windows.Forms.Button buttonFocuser;
@@ -2181,7 +2198,7 @@
         private System.Windows.Forms.RadioButton radioButtonSlew;
         private System.Windows.Forms.RadioButton radioButtonGuide;
         private System.Windows.Forms.RadioButton radioButtonSet;
-        private System.Windows.Forms.Panel panel10;
+        private System.Windows.Forms.Panel panelDirectionButtons;
         private System.Windows.Forms.Button buttonNW;
         private System.Windows.Forms.Button buttonSW;
         private System.Windows.Forms.Button buttonSE;
@@ -2279,7 +2296,7 @@
         private System.Windows.Forms.Label labelDewPointValue;
         private System.Windows.Forms.Label labelHumidityValue;
         private System.Windows.Forms.Label labelPressureValue;
-        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPanelCoordinates;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label labelLTValue;
         private System.Windows.Forms.Label labelAltitude;
@@ -2297,10 +2314,12 @@
         private System.Windows.Forms.Label labelAzimuthValue;
         private System.Windows.Forms.Label labelDeclination;
         private System.Windows.Forms.GroupBox groupBoxCurrentRates;
-        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel2;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPanelAxesState;
         private System.Windows.Forms.Label labelCurrPrimRateValue;
         private System.Windows.Forms.Label labelCurrPrimDirValue;
         private System.Windows.Forms.Label labelCurrSecRateValue;
         private System.Windows.Forms.Label labelCurrSecDirValue;
+        private System.Windows.Forms.Label labelStatus;
+        private System.Windows.Forms.Timer timerStatus;
     }
 }
