@@ -11,7 +11,7 @@ namespace ASCOM.Wise40.Hardware
 {
     public class AtomicReader
     {
-        private const uint timeoutMicros = 5000000;    // microseconds between Daq reads
+        private const uint timeoutMicros = 50000000;    // microseconds between Daq reads
         private Stopwatch stopwatch;
         private const int maxTries = 5;
         List<WiseDaq> daqs;

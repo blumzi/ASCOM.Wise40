@@ -7,11 +7,11 @@ using System.Runtime.InteropServices;
 // associated with an assembly.
 //
 // TODO - Add your authorship information here
-[assembly: AssemblyTitle("ASCOM.MaintenanceSwitch.SafetyMonitor")]
+[assembly: AssemblyTitle("ASCOM.SafetySwitch.SafetyMonitor")]
 [assembly: AssemblyDescription("ASCOM SafetyMonitor driver for MaintenanceSwitch")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("The ASCOM Initiative")]
-[assembly: AssemblyProduct("ASCOM SafetyMonitor driver for MaintenanceSwitch")]
+[assembly: AssemblyProduct("ASCOM SafetyMonitor driver for Wise40 SafetySwitch")]
 [assembly: AssemblyCopyright("Copyright © 2016 The ASCOM Initiative")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

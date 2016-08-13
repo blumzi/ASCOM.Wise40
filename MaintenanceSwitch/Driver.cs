@@ -2,7 +2,7 @@
 // --------------------------------------------------------------------------------
 // TODO fill in this information for your driver, then remove this line!
 //
-// ASCOM SafetyMonitor driver for MaintenanceSwitch
+// ASCOM SafetyMonitor driver for SafetySwitch
 //
 // Description:	The computer control of the various components at the Wise Observatory 
 //              can be overriden by a "Maintenance" switch.  This switch prevents (when off)
@@ -45,18 +45,18 @@ using MccDaq;
 namespace ASCOM.MaintenanceSwitch
 {
     //
-    // Your driver's DeviceID is ASCOM.MaintenanceSwitch.SafetyMonitor
+    // Your driver's DeviceID is ASCOM.SafetySwitch.SafetyMonitor
     //
-    // The Guid attribute sets the CLSID for ASCOM.MaintenanceSwitch.SafetyMonitor
+    // The Guid attribute sets the CLSID for ASCOM.SafetySwitch.SafetyMonitor
     // The ClassInterface/None addribute prevents an empty interface called
-    // _MaintenanceSwitch from being created and used as the [default] interface
+    // _SafetySwitch from being created and used as the [default] interface
     //
     // TODO Replace the not implemented exceptions with code to implement the function or
     // throw the appropriate ASCOM exception.
     //
 
     /// <summary>
-    /// ASCOM SafetyMonitor Driver for MaintenanceSwitch.
+    /// ASCOM SafetyMonitor Driver for SafetySwitch.
     /// </summary>
     [Guid("2e34d51b-c84b-4856-8a88-bc13971cf7ae")]
     [ClassInterface(ClassInterfaceType.None)]
@@ -66,12 +66,12 @@ namespace ASCOM.MaintenanceSwitch
         /// ASCOM DeviceID (COM ProgID) for this driver.
         /// The DeviceID is used by ASCOM applications to load the driver at runtime.
         /// </summary>
-        internal static string driverID = "ASCOM.MaintenanceSwitch.SafetyMonitor";
+        internal static string driverID = "ASCOM.SafetySwitch.SafetyMonitor";
         // TODO Change the descriptive string for your driver then remove this line
         /// <summary>
         /// Driver description that displays in the ASCOM Chooser.
         /// </summary>
-        private static string driverDescription = "ASCOM SafetyMonitor Driver for MaintenanceSwitch.";
+        private static string driverDescription = "ASCOM Wise40 SafetySwitch.";
 
         internal static string comPortProfileName = "COM Port"; // Constants used for Profile persistence
         internal static string traceStateProfileName = "Trace Level";
@@ -89,17 +89,17 @@ namespace ASCOM.MaintenanceSwitch
         /// </summary>
         private TraceLogger tl;
 
-        private WisePin maintenancePin;
+        private WisePin safetyPin;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="MaintenanceSwitch"/> class.
+        /// Initializes a new instance of the <see cref="SafetySwitch"/> class.
         /// Must be public for COM registration.
         /// </summary>
         public SafetyMonitor()
         {
             ReadProfile(); // Read device configuration from the ASCOM Profile store
 
-            tl = new TraceLogger("", "MaintenanceSwitch");
+            tl = new TraceLogger("", "SafetySwitch");
             tl.Enabled = traceState;
             tl.LogMessage("SafetyMonitor", "Starting initialisation");
 
@@ -111,11 +111,11 @@ namespace ASCOM.MaintenanceSwitch
 
             try
             {
-                maintenancePin = new WisePin("MaintenanceSwitch", Hardware.Instance.domeboard, DigitalPortType.FirstPortA, 0, DigitalPortDirection.DigitalIn);
+                safetyPin = new WisePin("SafetySwitch", Hardware.Instance.teleboard, DigitalPortType.SecondPortCH, 0, DigitalPortDirection.DigitalIn);
             }
             catch (WiseException e)
             {
-                tl.LogMessage("SafetyMonitor", string.Format("MaintenanceSwitch constructor caught: {0}.", e.Message));
+                tl.LogMessage("SafetyMonitor", string.Format("SafetySwitch constructor caught: {0}.", e.Message));
             }
         }
 
@@ -139,14 +139,14 @@ namespace ASCOM.MaintenanceSwitch
             if (IsConnected)
                 System.Windows.Forms.MessageBox.Show("Already connected, just press OK");
 
-            using (SetupDialogForm F = new SetupDialogForm())
-            {
-                var result = F.ShowDialog();
-                if (result == System.Windows.Forms.DialogResult.OK)
-                {
-                    WriteProfile(); // Persist device configuration values to the ASCOM Profile store
-                }
-            }
+            //using (SetupDialogForm F = new SetupDialogForm())
+            //{
+            //    var result = F.ShowDialog();
+            //    if (result == System.Windows.Forms.DialogResult.OK)
+            //    {
+            //        WriteProfile(); // Persist device configuration values to the ASCOM Profile store
+            //    }
+            //}
         }
 
         public ArrayList SupportedActions
@@ -199,13 +199,13 @@ namespace ASCOM.MaintenanceSwitch
             tl.Enabled = false;
             tl.Dispose();
             tl = null;
-            maintenancePin.Dispose();
+            safetyPin.Dispose();
         }
 
         public void Connect(bool value)
         {
             tl.LogMessage("Connect", value.ToString());
-            maintenancePin.Connect(value);
+            safetyPin.Connect(value);
             connectedState = value;
         }
 
@@ -237,7 +237,7 @@ namespace ASCOM.MaintenanceSwitch
             get
             {
                 Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-                string driverInfo = "MaintenanceSwitch driver. Version: " + String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
+                string driverInfo = "SafetySwitch driver. Version: " + String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
                 tl.LogMessage("DriverInfo Get", driverInfo);
                 return driverInfo;
             }
@@ -268,7 +268,7 @@ namespace ASCOM.MaintenanceSwitch
         {
             get
             {
-                string name = "MaintenanceSwitch";
+                string name = "SafetySwitch";
                 tl.LogMessage("Name Get", name);
                 return name;
             }
@@ -281,7 +281,7 @@ namespace ASCOM.MaintenanceSwitch
         {
             get
             {
-                bool safe = maintenancePin.isOff;
+                bool safe = safetyPin.isOn;
 
                 tl.LogMessage("IsSafe Get", safe.ToString());
                 return safe;

@@ -12,14 +12,16 @@ using ASCOM.Wise40.Common;
 
 namespace ASCOM.Wise40
 {
-    public class AxisStatusMonitor : IConnectable
+    public class AxisMonitor : IConnectable
     {
         private double _previousValue = double.NaN;
         private FixedSizedQueue<double> _deltas = new FixedSizedQueue<double>(5);
-        private TelescopeAxes _axis;
+        private TelescopeAxes _axis, _other_axis;
         private WiseTele wisetele = WiseTele.Instance;
         private bool _connected = false;
         private Debugger debugger;
+        private AxisMonitor _counterpart;
+        private double _currentRate = Const.rateStopped;
 
         private static double epsilon;
         private static readonly int _samplingFrequency = 10;
@@ -35,13 +37,26 @@ namespace ASCOM.Wise40
 
         private System.Threading.Timer movementCheckerTimer;
 
-        public AxisStatusMonitor(TelescopeAxes axis)
+        public AxisMonitor(TelescopeAxes axis)
         {
             debugger = new Debugger();
             debugger.Level = (uint) Debugger.DebugLevel.DebugAxes;
 
             _axis = axis;
-            epsilon = (_axis == TelescopeAxes.axisPrimary) ? .00001D : 0.0;
+            if (_axis == TelescopeAxes.axisPrimary)
+            {
+                _other_axis = TelescopeAxes.axisSecondary;
+                epsilon = 0.00001D;
+            } else
+            {
+                _other_axis = TelescopeAxes.axisPrimary;
+                epsilon = 0.0;
+            }
+        }
+
+        public void SetCounterpart(AxisMonitor m)
+        {
+            _counterpart = m;
         }
 
         public bool IsMoving
@@ -152,6 +167,37 @@ namespace ASCOM.Wise40
 
                 _connected = value;
             }
+        }
+
+        public bool CanMoveAtRate(double rate)
+        {
+            double otherRate = Const.rateStopped;
+            bool ret = false;
+
+            foreach (WiseVirtualMotor m in wisetele.axisMotors[_other_axis])
+                {
+                    if (m.isOn)
+                    {
+                        otherRate = m.currentRate;
+                        break;
+                    }
+                }
+
+            if ((otherRate == Const.rateStopped) ||
+                (otherRate == rate) ||
+                ((rate == Const.rateSlew || rate == Const.rateSet) && otherRate == Const.rateGuide) ||
+                (rate == Const.rateGuide && (otherRate == Const.rateSet || otherRate == Const.rateSlew)))
+                ret = true;
+            else
+                ret = false;
+
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                "CanMoveAtRate: {0}, axis: {1} => {2}",
+                WiseTele.RateName(rate), _axis, ret.ToString());
+            #endregion
+
+            return ret;
         }
     }
 }

@@ -25,6 +25,7 @@ namespace ASCOM.Wise40
         public Astrometry.RefractionOption refractionOption;
         public double siteLatitude, siteLongitude, siteElevation;
         public ObservingConditions observingConditions;
+        public SafetyMonitor safetySwitch;
         private DateTime lastOCFetch;
 
         public static WiseSite Instance
@@ -60,6 +61,7 @@ namespace ASCOM.Wise40
             {
                 refractionOption = Astrometry.RefractionOption.NoRefraction;
             }
+            //safetySwitch = new SafetyMonitor("ASCOM.SafetySwitch.SafetyMonitor");
 
             _initialized = true;
         }
@@ -141,6 +143,15 @@ namespace ASCOM.Wise40
                 catch
                 {
                 }
+            }
+        }
+
+        public bool IsSafe
+        {
+            get
+            {
+                //return safetySwitch.IsSafe;
+                return true;
             }
         }
     }

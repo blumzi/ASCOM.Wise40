@@ -87,6 +87,7 @@
             this.buttonEast = new System.Windows.Forms.Button();
             this.buttonWest = new System.Windows.Forms.Button();
             this.groupBoxTelescope = new System.Windows.Forms.GroupBox();
+            this.labelStatus = new System.Windows.Forms.Label();
             this.tableLayoutPanelCoordinates = new System.Windows.Forms.TableLayoutPanel();
             this.label2 = new System.Windows.Forms.Label();
             this.labelLTValue = new System.Windows.Forms.Label();
@@ -167,7 +168,6 @@
             this.labelDewPointValue = new System.Windows.Forms.Label();
             this.labelHumidityValue = new System.Windows.Forms.Label();
             this.labelPressureValue = new System.Windows.Forms.Label();
-            this.labelStatus = new System.Windows.Forms.Label();
             this.timerStatus = new System.Windows.Forms.Timer(this.components);
             this.panelDebug.SuspendLayout();
             this.groupBoxMovementStudy.SuspendLayout();
@@ -519,11 +519,11 @@
             this.buttonStopStudy.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.buttonStopStudy.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonStopStudy.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonStopStudy.Location = new System.Drawing.Point(333, 171);
+            this.buttonStopStudy.Location = new System.Drawing.Point(356, 172);
             this.buttonStopStudy.Name = "buttonStopStudy";
-            this.buttonStopStudy.Size = new System.Drawing.Size(144, 32);
+            this.buttonStopStudy.Size = new System.Drawing.Size(106, 32);
             this.buttonStopStudy.TabIndex = 14;
-            this.buttonStopStudy.Text = "Full Stop";
+            this.buttonStopStudy.Text = "Stop";
             this.buttonStopStudy.UseVisualStyleBackColor = false;
             this.buttonStopStudy.Click += new System.EventHandler(this.buttonStopStudy_Click);
             // 
@@ -958,6 +958,17 @@
             this.groupBoxTelescope.TabIndex = 18;
             this.groupBoxTelescope.TabStop = false;
             this.groupBoxTelescope.Text = " Telescope ";
+            // 
+            // labelStatus
+            // 
+            this.labelStatus.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.labelStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelStatus.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
+            this.labelStatus.Location = new System.Drawing.Point(16, 200);
+            this.labelStatus.Name = "labelStatus";
+            this.labelStatus.Size = new System.Drawing.Size(328, 17);
+            this.labelStatus.TabIndex = 24;
+            this.labelStatus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // tableLayoutPanelCoordinates
             // 
@@ -2104,17 +2115,6 @@
             this.labelPressureValue.TabIndex = 14;
             this.labelPressureValue.Text = "pressure";
             this.labelPressureValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // labelStatus
-            // 
-            this.labelStatus.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.labelStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelStatus.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.labelStatus.Location = new System.Drawing.Point(16, 200);
-            this.labelStatus.Name = "labelStatus";
-            this.labelStatus.Size = new System.Drawing.Size(328, 17);
-            this.labelStatus.TabIndex = 24;
-            this.labelStatus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // timerStatus
             // 

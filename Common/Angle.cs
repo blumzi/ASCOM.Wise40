@@ -81,20 +81,20 @@ namespace ASCOM.Wise40.Common
                     break;
             }
 
-            if (_cyclic)
-                val = normalize(this, val);
+            //if (_cyclic)
+            //    val = normalize(this, val);
 
-            if (val != double.NaN)
-            {
-                if (_lowestIncluded && val < _lowest)
-                    throw new InvalidValueException(string.Format("value: {0} < lowest: {1}", val, _lowest));
-                if (!_lowestIncluded && val <= _lowest)
-                    throw new InvalidValueException(string.Format("value: {0} <= lowest: {1}", val, _lowest));
-                if (_highestIncluded && val > _highest)
-                    throw new InvalidValueException(string.Format("value: {0} > highest: {1}", val, _highest));
-                if (!_highestIncluded && val >= _highest)
-                    throw new InvalidValueException(string.Format("value: {0} >= highest: {1}", val, _highest));
-            }
+            //if (val != double.NaN)
+            //{
+            //    if (_lowestIncluded && val < _lowest)
+            //        throw new InvalidValueException(string.Format("value: {0} < lowest: {1}", val, _lowest));
+            //    if (!_lowestIncluded && val <= _lowest)
+            //        throw new InvalidValueException(string.Format("value: {0} <= lowest: {1}", val, _lowest));
+            //    if (_highestIncluded && val > _highest)
+            //        throw new InvalidValueException(string.Format("value: {0} > highest: {1}", val, _highest));
+            //    if (!_highestIncluded && val >= _highest)
+            //        throw new InvalidValueException(string.Format("value: {0} >= highest: {1}", val, _highest));
+            //}
 
             //if (_cyclic)
             //    val = normalize(this, val);
@@ -184,21 +184,21 @@ namespace ASCOM.Wise40.Common
                 if (_cyclic)
                     value = (value %= _highest) >= 0.0 ? value : (value + _highest);
 
-                if (_highest != double.PositiveInfinity)
-                {
-                    if (_highestIncluded && value > _highest)
-                        throw new InvalidValueException(string.Format("value: {0} > highest: {1}", value, _highest));
-                    else if (!_highestIncluded && value >= _highest)
-                        throw new InvalidValueException(string.Format("value: {0} >= highest: {1}", value, _highest));
-                }
+                //if (_highest != double.PositiveInfinity)
+                //{
+                //    if (_highestIncluded && value > _highest)
+                //        throw new InvalidValueException(string.Format("value: {0} > highest: {1}", value, _highest));
+                //    else if (!_highestIncluded && value >= _highest)
+                //        throw new InvalidValueException(string.Format("value: {0} >= highest: {1}", value, _highest));
+                //}
 
-                if (_lowest != double.NegativeInfinity)
-                {
-                    if (_lowestIncluded && value < _lowest)
-                        throw new InvalidValueException(string.Format("value: {0} < lowest: {1}", value, _lowest));
-                    else if (!_lowestIncluded && value <= _lowest)
-                        throw new InvalidValueException(string.Format("value: {0} <= lowest: {1}", value, _lowest));
-                }
+                //if (_lowest != double.NegativeInfinity)
+                //{
+                //    if (_lowestIncluded && value < _lowest)
+                //        throw new InvalidValueException(string.Format("value: {0} < lowest: {1}", value, _lowest));
+                //    else if (!_lowestIncluded && value <= _lowest)
+                //        throw new InvalidValueException(string.Format("value: {0} <= lowest: {1}", value, _lowest));
+                //}
 
                 _degrees = value;
             }

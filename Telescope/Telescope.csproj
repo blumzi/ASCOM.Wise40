@@ -96,7 +96,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AxisStatusMonitor.cs" />
+    <Compile Include="AxisMonitor.cs" />
     <Compile Include="DaqsForm.cs">
       <SubType>Form</SubType>
     </Compile>

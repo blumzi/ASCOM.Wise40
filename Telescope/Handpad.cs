@@ -26,6 +26,7 @@ namespace ASCOM.Wise40
         private static Debugger debugger = Debugger.Instance;
         private static DomeSlaveDriver domeSlaveDriver = DomeSlaveDriver.Instance;
         private DateTime statusDisplayExpiration = new DateTime();
+        public enum Severity { None, Good, Warning, Error };
 
         private class TimedMovementArg
         {
@@ -94,6 +95,11 @@ namespace ASCOM.Wise40
             groupBoxTelescope.Text = string.Format(" {0} - v{1} ", wisetele.Name, wisetele.DriverVersion);
             groupBoxWeather.Text = string.Format(" {0} - v{1} ", wisesite.observingConditions.Name, wisesite.observingConditions.DriverVersion);
             groupBoxDomeGroup.Text = string.Format(" {0} - v{1} ", WiseDome.Instance.Name, WiseDome.Instance.DriverVersion);
+
+            if (wisesite.IsSafe)
+                Status("Wise40 is safe.", 10000, Severity.Good);
+            else
+                Status("Wise40 is NOT safe !!!", 0, Severity.Error);
         }
 
         private void radioButtonSlew_Click(object sender, EventArgs e)
@@ -363,7 +369,7 @@ namespace ASCOM.Wise40
                 }
             } catch (Exception ex)
             {
-                Status(ex.Message, 2000, "error");
+                Status(ex.Message, 2000, Severity.Error);
             }
         }
 
@@ -555,7 +561,7 @@ namespace ASCOM.Wise40
                 MakeSteps(axis, rate, millis, nSteps);
             } catch (Exception ex)
             {
-                Status(ex.Message, 2000, "warning");
+                Status(ex.Message, 2000, Severity.Warning);
             }
         }
 
@@ -589,7 +595,7 @@ namespace ASCOM.Wise40
         {
             if (!wisetele.Tracking)
             {
-                Status("Telescope is NOT tracking!", 1000, "error");
+                Status("Telescope is NOT tracking!", 1000, Severity.Error);
                 return;
             }
 
@@ -598,7 +604,7 @@ namespace ASCOM.Wise40
                 wisetele.SlewToCoordinatesAsync(new Angle(textBoxRA.Text).Hours, new Angle(textBoxDec.Text).Degrees);
             } catch (Exception ex)
             {
-                Status(ex.Message, 2000, "error");
+                Status(ex.Message, 2000, Severity.Error);
             }
         }
 
@@ -681,20 +687,23 @@ namespace ASCOM.Wise40
             domeSlaveDriver.CloseShutter();
         }
 
-        private void Status(string s, int millis = 1000, string severity = "regular")
+        private void Status(string s, int millis = 0, Severity severity = Severity.None)
         {
-            Dictionary<string, Color> colors = new Dictionary<string, Color>()
+            Dictionary<Severity, Color> colors = new Dictionary<Severity, Color>()
             {
-                { "regular", Color.FromArgb(176, 161, 142) },
-                { "warning", Color.LightGoldenrodYellow },
-                { "error", Color.IndianRed },
-                { "good", Color.Green },
+                { Severity.None, Color.FromArgb(176, 161, 142) },
+                { Severity.Warning, Color.LightGoldenrodYellow },
+                { Severity.Error, Color.IndianRed },
+                { Severity.Good, Color.Green },
             };
 
             labelStatus.ForeColor = colors[severity];
             labelStatus.Text = s;
-            statusDisplayExpiration = DateTime.Now.AddMilliseconds(millis);
-            timerStatus.Start();
+            if (millis > 0)
+            {
+                statusDisplayExpiration = DateTime.Now.AddMilliseconds(millis);
+                timerStatus.Start();
+            }
         }
 
         private void timerStatus_Tick(object sender, EventArgs e)

@@ -29,11 +29,13 @@ namespace ASCOM.Wise40.Hardware
         private int simulationTimerFrequency;
         private int timer_counts;
         private DateTime prevTick;
-        private TelescopeAxes _axis;
+        private TelescopeAxes _axis, _otherAxis;
         private Const.AxisDirection _direction;   // There are separate WiseMotor instances for North, South, East, West
         private bool _simulated = false;
         private bool _connected = false;
         private Debugger debugger = Debugger.Instance;
+        private WiseTele wisetele = WiseTele.Instance;
+        private WiseSite wisesite = WiseSite.Instance;
 
         public WiseVirtualMotor(
             string name,
@@ -52,6 +54,8 @@ namespace ASCOM.Wise40.Hardware
 
             this.encoders = encoders;
             this._axis = axis;
+            this._otherAxis = (_axis == TelescopeAxes.axisPrimary) ?
+                TelescopeAxes.axisSecondary : TelescopeAxes.axisPrimary;
             this._direction = direction;
             Simulated = motorPin.Simulated || (guideMotorPin != null && guideMotorPin.Simulated);
 
@@ -100,7 +104,23 @@ namespace ASCOM.Wise40.Hardware
 
             if (activePins != null) {
                 foreach (WisePin pin in activePins)
-                    pin.SetOff();
+                {
+                    bool inUseByOtherAxis;
+
+                    if (pin == slewPin)
+                    {
+                        inUseByOtherAxis = false;
+                        foreach (WiseVirtualMotor m in wisetele.axisMotors[_otherAxis])
+                            if (m.isOn)
+                            {
+                                inUseByOtherAxis = true;
+                                break;
+                            }
+                        if (!inUseByOtherAxis)
+                            pin.SetOff();
+                    } else
+                        pin.SetOff();
+                }
                 activePins.Clear();
             }
             currentRate = Const.rateStopped;
@@ -140,8 +160,6 @@ namespace ASCOM.Wise40.Hardware
 
             bool primary = (_axis == TelescopeAxes.axisPrimary) ? true : false;
             Angle delta = Angle.zero;
-            WiseTele wisetele = WiseTele.Instance;
-            WiseSite wisesite = WiseSite.Instance;
 
             //
             // Calculate the delta to be added/subtracted from the attached encoder(s)
