@@ -114,10 +114,6 @@
       <Project>{b3400ce2-9b66-4f0c-97fe-26343382ba7b}</Project>
       <Name>Hardware</Name>
     </ProjectReference>
-    <ProjectReference Include="..\MaintenanceSwitch\MaintenanceSwitch.csproj">
-      <Project>{ee436121-3aa2-4208-b29f-af2299e221f4}</Project>
-      <Name>MaintenanceSwitch</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Telescope\Telescope.csproj">
       <Project>{e27802fc-efb5-4deb-bd4d-013f44a0813c}</Project>
       <Name>Telescope</Name>

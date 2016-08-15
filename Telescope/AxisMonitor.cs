@@ -21,7 +21,6 @@ namespace ASCOM.Wise40
         private bool _connected = false;
         private Debugger debugger;
         private AxisMonitor _counterpart;
-        private double _currentRate = Const.rateStopped;
 
         private static double epsilon;
         private static readonly int _samplingFrequency = 10;

@@ -126,6 +126,7 @@ namespace ASCOM.Wise40
         //private static CancellationToken movementCheckerCancellationToken;
 
         private AxisMonitor primaryStatusMonitor, secondaryStatusMonitor;
+        Dictionary<TelescopeAxes, AxisMonitor> axisStatusMonitors;
 
         public double _lastTrackingLST;
 
@@ -636,8 +637,11 @@ namespace ASCOM.Wise40
 
             primaryStatusMonitor = new AxisMonitor(TelescopeAxes.axisPrimary);
             secondaryStatusMonitor = new AxisMonitor(TelescopeAxes.axisSecondary);
-            primaryStatusMonitor.SetCounterpart(secondaryStatusMonitor);
-            secondaryStatusMonitor.SetCounterpart(primaryStatusMonitor);
+            axisStatusMonitors = new Dictionary<TelescopeAxes, AxisMonitor>()
+            {
+                { TelescopeAxes.axisPrimary, primaryStatusMonitor },
+                { TelescopeAxes.axisSecondary, secondaryStatusMonitor },
+            };
 
             instance.connectables.Add(instance.NorthMotor);
             instance.connectables.Add(instance.EastMotor);
@@ -723,7 +727,7 @@ namespace ASCOM.Wise40
                 var ret = Angle.FromDegrees(DecEncoder.Declination);
 
                 traceLogger.LogMessage("Declination", string.Format("Get - {0} ({1})", ret, ret.Degrees));
-                debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, string.Format("Declination Get - {0} ({1})", ret, ret.Degrees));
+                debugger.WriteLine(Debugger.DebugLevel.DebugASCOM, string.Format("Declination Get - {0} ({1})", ret, ret.Degrees));
                 return ret.Degrees;
             }
         }
@@ -913,11 +917,10 @@ namespace ASCOM.Wise40
                 }
 
                 traceLogger.LogMessage("Slewing Get", ret.ToString());
-                debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, string.Format("Slewing Get - {0}", ret));
+                debugger.WriteLine(Debugger.DebugLevel.DebugASCOM, string.Format("Slewing Get - {0}", ret));
 
                 if (_wasSlewing == true && ret == false)
                 {
-                    //slewingCancellationTokenSource.Dispose();
                     slewingCancellationTokenSource = null;
                     _driverInitiatedSlewing = false;
                 }
@@ -956,7 +959,7 @@ namespace ASCOM.Wise40
             traceLogger.LogMessage("MoveAxis", string.Format("MoveAxis({0}, {1})", Axis, Rate));
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, string.Format("MoveAxis({0}, {1})", Axis, Rate));
 
-            Const.AxisDirection direction = (Rate == 0.0) ? Const.AxisDirection.None : 
+            Const.AxisDirection direction = (Rate == Const.rateStopped) ? Const.AxisDirection.None : 
                 (Rate < 0.0) ? Const.AxisDirection.Decreasing : Const.AxisDirection.Increasing;
 
             _driverInitiatedSlewing = true;
@@ -1019,8 +1022,7 @@ namespace ASCOM.Wise40
             if (! ((absRate == Const.rateSlew) || (absRate == Const.rateSet) || (absRate == Const.rateGuide)))
                 throw new InvalidValueException(string.Format("_moveAxis({0}, {1}): Invalid rate.", Axis, Rate));
 
-            if (Instance.currMovement[otherAxis].rate != Const.rateStopped && 
-                absRate != Instance.currMovement[otherAxis].rate)
+            if (! axisStatusMonitors[Axis].CanMoveAtRate(absRate))
             {
                 string msg = string.Format("Cannot _moveAxis({0}, {1}) ({2}) while {3} is moving at {4}",
                     Axis, RateName(Rate), axisDirectionName[Axis][direction], otherAxis, RateName(currMovement[otherAxis].rate));
@@ -1029,7 +1031,8 @@ namespace ASCOM.Wise40
                 throw new InvalidValueException(msg);
             }
 
-            try {
+            try
+                {
                 mover = movementDict[new MovementSpecifier(Axis, direction)];
             } catch(Exception e) {
                 throw new InvalidValueException(string.Format("Don't know how to _moveAxis({0}, {1}) (no mover) ({2}) [{3}]",
@@ -1288,21 +1291,6 @@ namespace ASCOM.Wise40
 
                     slewingCancellationToken.ThrowIfCancellationRequested();
 
-                    //
-                    // Wait till this axis is allowed to move at the current rate.
-                    //
-                    while (! axisStatus.CanMoveAtRate(rate))
-                    {
-                        const int syncMillis = 500;
-                        #region debug
-                        debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                           "{0} at {1}: waiting {2} millis for the other axis ...",
-                           cm.threadName, RateName(rate), syncMillis);
-                        #endregion debug
-
-                        slewingCancellationToken.ThrowIfCancellationRequested();
-                        Thread.Sleep(syncMillis);
-                    }
 
                     //
                     // Both axes can now move at the current rate
@@ -1337,6 +1325,22 @@ namespace ASCOM.Wise40
                             cm.distanceToTarget.Degrees, minimalMovementAngle.Degrees);
                         #endregion debug
                         continue;   // this rate is no good, try thr next one
+                    }
+
+                    //
+                    // Wait till this axis is allowed to move at the current rate.
+                    //
+                    while (!axisStatus.CanMoveAtRate(rate))
+                    {
+                        const int syncMillis = 500;
+                        #region debug
+                        debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                           "{0} at {1}: waiting {2} millis for the other axis ...",
+                           cm.threadName, RateName(rate), syncMillis);
+                        #endregion debug
+
+                        slewingCancellationToken.ThrowIfCancellationRequested();
+                        Thread.Sleep(syncMillis);
                     }
 
                     //

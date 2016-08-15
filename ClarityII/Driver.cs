@@ -215,6 +215,11 @@ namespace ASCOM.CloudSensor
             // then all communication calls this function
             // you need something to ensure that only one command is in progress at a time
 
+            switch(command)
+            {
+                case "daylight":
+                    return ((int)sensorData.dayCondition).ToString();
+            }
             throw new ASCOM.MethodNotImplementedException("CommandString");
         }
 
