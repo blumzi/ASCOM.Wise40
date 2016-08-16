@@ -1,0 +1,42 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+</head>
+<body>
+    <center><h1>SafeToImage ASCOM SafetyMonitor driver</h1></center>
+    <center>
+        <b><a href="https://physics.tau.ac.il/astrophysics/wise_observatory">Wise Observatory</a></b>
+        <br />
+        <br />Raymond & Beverly Sackler Faculty of Exact Sciences
+        <br /> School of Physics & Astronomy 
+        <br />Department of Astrophysics
+        <br />
+        <br />Tel Aviv University
+        <br />Israel
+        <br />
+        <br />Arie Blumenzweig<address>blumzi@013.net</address>
+    </center>
+  
+
+    <h2>Abstract</h2>
+    <p> This is an ASCOM SafetyMonitor driver for the Wise Observatory.
+     It defines a set of environment parameters and values that are monitored in order to decide whether it is safe to take an image.</p>
+    <p>The driver's <i>IsSafe</i> method can be called before an image is taken.</p>
+
+    <h2>Hardware</h2>
+    <p>The weather data is gathered from both one of the Boltwood CloudSensorII and from the Davis VantagePro2 weather stations available at the Wise Observatory.</p>
+
+    <h2>Software</h2>
+    <p>This is a wrapper ASCOM driver.  It uses the weather stations' own ASCOM drivers to retrieve the actual data.
+    It then checks if any of the monitored parameters excedes the maximal values defined in the driver's profile.</p>
+        
+    <h3>Setup</h3>
+    <p>The driver has an ASCOM compliant Setup window where the monitored parameters and their maximal values are defined.</p>
+
+    <h3>ASCOM Compliance</h3>
+    <p>The driver passes the ASCOM 6.2 Compliance test.</p>
+</body>
+</html>

@@ -1,4 +1,4 @@
-namespace ASCOM.Wise40.SafeToOpen
+namespace ASCOM.Wise40.SafeToImage
 {
     partial class SetupDialogForm
     {
@@ -94,15 +94,15 @@ namespace ASCOM.Wise40.SafeToOpen
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(244, 55);
             this.label1.TabIndex = 2;
-            this.label1.Text = "Wise40 SafeToOpen SafetyMonitor.\r\nSets safety parameters and values for opening t" +
-    "he Wise40 observatory.";
+            this.label1.Text = "Wise40 SafeToImage SafetyMonitor.\r\nMonitors the safety of environmental parameter" +
+    "s for imaging.\r\n";
             this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // picASCOM
             // 
             this.picASCOM.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.picASCOM.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.picASCOM.Image = global::ASCOM.Wise40.SafeToOpen.Properties.Resources.ASCOM;
+            this.picASCOM.Image = global::ASCOM.Wise40.SafeToImage.Properties.Resources.ASCOM;
             this.picASCOM.Location = new System.Drawing.Point(292, 9);
             this.picASCOM.Name = "picASCOM";
             this.picASCOM.Size = new System.Drawing.Size(48, 56);
@@ -129,9 +129,9 @@ namespace ASCOM.Wise40.SafeToOpen
             this.label2.ForeColor = System.Drawing.Color.DarkOrange;
             this.label2.Location = new System.Drawing.Point(16, 80);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(315, 13);
+            this.label2.Size = new System.Drawing.Size(297, 13);
             this.label2.TabIndex = 7;
-            this.label2.Text = "Set the maximum safe values for opening the Wise40 observatory";
+            this.label2.Text = "Set max. safety values for imaging at the Wise40 observatory.";
             // 
             // comboBoxCloud
             // 
@@ -170,9 +170,9 @@ namespace ASCOM.Wise40.SafeToOpen
             this.label4.ForeColor = System.Drawing.Color.DarkOrange;
             this.label4.Location = new System.Drawing.Point(16, 264);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(133, 13);
+            this.label4.Size = new System.Drawing.Size(174, 13);
             this.label4.TabIndex = 10;
-            this.label4.Text = "Unsafe if data is older than";
+            this.label4.Text = "Unsafe if weather data is older than";
             // 
             // label5
             // 
@@ -208,7 +208,7 @@ namespace ASCOM.Wise40.SafeToOpen
             // 
             this.textBoxAge.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.textBoxAge.ForeColor = System.Drawing.Color.DarkOrange;
-            this.textBoxAge.Location = new System.Drawing.Point(152, 260);
+            this.textBoxAge.Location = new System.Drawing.Point(200, 260);
             this.textBoxAge.Margin = new System.Windows.Forms.Padding(6, 3, 3, 3);
             this.textBoxAge.Name = "textBoxAge";
             this.textBoxAge.Size = new System.Drawing.Size(24, 20);
@@ -359,7 +359,7 @@ namespace ASCOM.Wise40.SafeToOpen
             // 
             this.label16.AutoSize = true;
             this.label16.ForeColor = System.Drawing.Color.DarkOrange;
-            this.label16.Location = new System.Drawing.Point(176, 264);
+            this.label16.Location = new System.Drawing.Point(228, 264);
             this.label16.Name = "label16";
             this.label16.Size = new System.Drawing.Size(24, 13);
             this.label16.TabIndex = 28;
@@ -403,7 +403,7 @@ namespace ASCOM.Wise40.SafeToOpen
             this.Name = "SetupDialogForm";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Wise40.SafeToOpen Setup";
+            this.Text = "Wise40.SafeToImage Setup";
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();

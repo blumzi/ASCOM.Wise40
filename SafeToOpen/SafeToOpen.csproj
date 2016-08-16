@@ -121,6 +121,8 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <Content Include="ASCOM.ico" />
+    <Content Include="Installer\ReadMe.html" />
+    <Content Include="Installer\SafeToOpen Setup.iss" />
     <Content Include="ReadMe.htm" />
     <None Include="Resources\ASCOM.bmp" />
   </ItemGroup>
@@ -159,6 +161,10 @@
   <PropertyGroup>
     <PreBuildEvent>
     </PreBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent>rem "C:\Program Files (x86)\Inno Setup 5\ISCC.exe" /Q /O"$(SolutionDir)\Deliveries" "$(ProjectDir)\Installer\$(ProjectName) Setup.iss" 
+</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

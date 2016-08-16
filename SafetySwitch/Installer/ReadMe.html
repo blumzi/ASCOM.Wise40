@@ -1,0 +1,48 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+</head>
+<body>
+    <center><h1>SafetySwitch ASCOM SafetyMonitor driver</h1></center>
+    <center>
+        <b><a href="https://physics.tau.ac.il/astrophysics/wise_observatory">Wise Observatory</a></b>
+        <br />
+        <br />Raymond & Beverly Sackler Faculty of Exact Sciences
+        <br /> School of Physics & Astronomy
+        <br />Department of Astrophysics
+        <br />
+        <br />Tel Aviv University
+        <br />Israel
+        <br />
+        <br />Arie Blumenzweig<address>blumzi@013.net</address>
+    </center>
+
+
+    <h2>Abstract</h2>
+    <p>
+        This is an ASCOM SafetyMonitor driver for the Wise Observatory.
+        It monitors the observatory's main SafetySwitch.
+    </p>
+    <p>The driver's <i>IsSafe</i> method should be called before any of the observatory's computer-controlled parts is controlled.</p>
+
+    <h2>Hardware</h2>
+    <p>The Wise 40" Observatory has a main SafetySwitch at the back of the observatory's original console. 
+    It enables/disables computer control of the various components (telescope, dome, focus, etc.).
+    The main use of the switch is to prevent computer control while maintenance tasks are being performed at the observatory.</p>
+
+    <h2>Software</h2>
+    <p>
+        If the driver's <i>IsSafe</i> method returns <code>false</code> the controlling method should throw an <code>InvalidOperationException</code>, as prescribed
+        by the ASCOM standard for operations that cannot be performed at the moment.
+    </p>
+
+    <h3>Setup</h3>
+    <p>The driver has no configurable parameters.</p>
+
+    <h3>ASCOM Compliance</h3>
+    <p>The driver passes the ASCOM 6.2 Compliance test.</p>
+</body>
+</html>

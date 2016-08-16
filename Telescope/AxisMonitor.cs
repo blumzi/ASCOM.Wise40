@@ -22,7 +22,7 @@ namespace ASCOM.Wise40
         private Debugger debugger;
         private AxisMonitor _counterpart;
 
-        private static double epsilon;
+        //private static double epsilon;
         private static readonly int _samplingFrequency = 10;
 
         /// <summary>
@@ -45,11 +45,11 @@ namespace ASCOM.Wise40
             if (_axis == TelescopeAxes.axisPrimary)
             {
                 _other_axis = TelescopeAxes.axisSecondary;
-                epsilon = 0.00001D;
+                //epsilon = 0.00001D;
             } else
             {
                 _other_axis = TelescopeAxes.axisPrimary;
-                epsilon = 0.0;
+                //epsilon = 0.0;
             }
         }
 
