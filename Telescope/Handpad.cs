@@ -198,6 +198,11 @@ namespace ASCOM.Wise40
             labelDeclinationValue.Text = Angle.FromDegrees(wisetele.Declination).ToNiceString();
             labelHourAngleValue.Text = Angle.FromHours(wisetele.HourAngle, Angle.Type.HA).ToNiceString();
 
+            labelNewRA.Text = "";
+            labelNewRARadians.Text = Angle.FromHours(wisetele.RightAscension).Radians.ToString();
+            labelNewDec.Text = "";
+            labelNewDecRadians.Text = Angle.FromDegrees(wisetele.Declination).Radians.ToString();
+
             labelAltitudeValue.Text = Angle.FromDegrees(wisetele.Altitude).ToNiceString();
             labelAzimuthValue.Text = Angle.FromDegrees(wisetele.Azimuth).ToNiceString();
 

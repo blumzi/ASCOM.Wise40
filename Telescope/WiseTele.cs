@@ -163,7 +163,7 @@ namespace ASCOM.Wise40
 
         public class MovementParameters
         {
-            public Angle changeDirection;
+            //public Angle changeDirection;
             public Angle minimalMovement;
             public Angle stopMovement;
             public double millisecondsPerDegree;
@@ -566,7 +566,7 @@ namespace ASCOM.Wise40
             instance.movementParameters[TelescopeAxes.axisPrimary] = new Dictionary<double, MovementParameters>();
             instance.movementParameters[TelescopeAxes.axisPrimary][Const.rateSlew] = new MovementParameters()
             {
-                changeDirection = Angle.FromHours(Angle.Deg2Hours("00:00:30.0")),
+                //changeDirection = Angle.FromHours(Angle.Deg2Hours("00:00:30.0")),
                 minimalMovement = Angle.FromHours(Angle.Deg2Hours("01:00:00.0")),
                 stopMovement = new Angle("00h19m00.0s"),
                 millisecondsPerDegree = 500.0,      // 2deg/sec
@@ -574,24 +574,24 @@ namespace ASCOM.Wise40
 
             instance.movementParameters[TelescopeAxes.axisPrimary][Const.rateSet] = new MovementParameters()
             {            
-                changeDirection = Angle.FromHours(Angle.Deg2Hours("00:00:20.0")),
-                minimalMovement = Angle.FromHours(Angle.Deg2Hours("00:00:10.0")),
+                //changeDirection = Angle.FromHours(Angle.Deg2Hours("00:00:20.0")),
+                minimalMovement = Angle.FromHours(Angle.Deg2Hours("00:00:05.0")),
                 stopMovement = new Angle("00h00m01.0s"),
                 millisecondsPerDegree = 60000.0,    // 1min/sec
             };
 
             instance.movementParameters[TelescopeAxes.axisPrimary][Const.rateGuide] = new MovementParameters()
             {
-                changeDirection = Angle.FromHours(Angle.Deg2Hours("00:00:00.5")),
+                //changeDirection = Angle.FromHours(Angle.Deg2Hours("00:00:00.5")),
                 minimalMovement = Angle.FromHours(Angle.Deg2Hours("00:00:01.0")),
-                stopMovement = new Angle("00h00m00.5s"),
+                stopMovement = new Angle("00h00m00.1s"),
                 millisecondsPerDegree = 3600000.0,  // 1 sec/sec
             };
 
             instance.movementParameters[TelescopeAxes.axisSecondary] = new Dictionary<double, MovementParameters>();
             instance.movementParameters[TelescopeAxes.axisSecondary][Const.rateSlew] = new MovementParameters()
             {
-                changeDirection = new Angle("00:00:30.0"),
+                //changeDirection = new Angle("00:00:30.0"),
                 minimalMovement = new Angle("01:00:00.0"),
                 stopMovement = new Angle("00:08:00.0"),
                 millisecondsPerDegree = 500.0,      // 2 deg/sec
@@ -599,15 +599,15 @@ namespace ASCOM.Wise40
 
             instance.movementParameters[TelescopeAxes.axisSecondary][Const.rateSet] = new MovementParameters()
             {
-                changeDirection = new Angle("00:00:30.0"),
-                minimalMovement = new Angle("00:10:00.0"),
-                stopMovement = new Angle("00:04:30.0"),
+                //changeDirection = new Angle("00:00:30.0"),
+                minimalMovement = new Angle("00:00:05.0"),
+                stopMovement = new Angle("00:00:01.0"),
                 millisecondsPerDegree = 60000.0,    // 1 min/sec
             };
 
             instance.movementParameters[TelescopeAxes.axisSecondary][Const.rateGuide] = new MovementParameters()
             {
-                changeDirection = new Angle("00:00:00.5"),
+                //changeDirection = new Angle("00:00:00.5"),
                 minimalMovement = new Angle("00:00:01.0"),
                 stopMovement = Angle.FromDegrees(Angle.Hours2Deg("00h00m00.5s")),
                 millisecondsPerDegree = 3600000.0,  // 1 sec/sec
@@ -1290,7 +1290,6 @@ namespace ASCOM.Wise40
                     mp = movementParameters[axis][rate];
 
                     slewingCancellationToken.ThrowIfCancellationRequested();
-
 
                     //
                     // Both axes can now move at the current rate

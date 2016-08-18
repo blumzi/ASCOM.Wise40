@@ -148,7 +148,7 @@ namespace AngleTests
             Assert.IsTrue(new Angle(15.0, Angle.Type.Az) < new Angle(30.0, Angle.Type.Az));
 
             Assert.AreEqual(new Angle(-90.0, Angle.Type.Az), new Angle(270.0, Angle.Type.Az));
-            
+
             Assert.AreEqual(new Angle(350, Angle.Type.Az) + new Angle(20, Angle.Type.Az), new Angle(10, Angle.Type.Az), "350 + 20 => 10");
 
             a1 = new Angle(350, Angle.Type.Az);
@@ -168,7 +168,7 @@ namespace AngleTests
         public void Generic()
         {
             var expected = "value: 370 >= highest: 360";
-            var ex = ExceptionAssert.Throws<InvalidValueException> (() => new Angle(370.0, Angle.Type.Deg, 360.0));
+            var ex = ExceptionAssert.Throws<InvalidValueException>(() => new Angle(370.0, Angle.Type.Deg, 360.0));
 
             if (ex.Message != expected)
                 Assert.Fail(string.Format("Bad exception - expected: {0}, got: {1}", expected, ex.Message));
@@ -251,6 +251,34 @@ namespace AngleTests
             var a3 = a1 + a2;
             var a4 = Angle.FromHours(3.0 + (40.0 / 60) + (40.0 / 60 / 60));
             Assert.AreEqual(a3, a4);
+
+            a1 = new Angle("23h00m00.0s");
+            a2 = new Angle("02h00m00.0s");
+            Assert.AreEqual(a1 + a2, new Angle("01h00m00.0s"));
+            
+            Assert.AreEqual(new Angle("00h00m10.0s") - new Angle("00h00m20.0s"), new Angle("23h59m50.0s"));
+        }
+
+        [TestMethod]
+        public void Normalizations()
+        {
+            Angle a1, a2;
+
+            a1 = new Angle(120.0, Angle.Type.Dec);
+            a2 = new Angle(60.0, Angle.Type.Dec);
+            Assert.AreEqual(a1, a2);
+
+            a1 = new Angle(-110.0, Angle.Type.Dec);
+            a2 = new Angle(-70.0, Angle.Type.Dec);
+            Assert.AreEqual(a1, a2);
+
+            a1 = new Angle("25h00m00.0s");
+            a2 = new Angle("01h00m00.0s");
+            Assert.AreEqual(a1, a2);
+
+            a1 = new Angle("-01h00m00.0s");
+            a2 = new Angle("23h00m00.0s");
+            Assert.AreEqual(a1, a2);
         }
     }
 }

@@ -41,7 +41,7 @@ using System.Globalization;
 using System.Collections;
 
 using ASCOM.DriverAccess;
-using ASCOM.Wise40;
+using ASCOM.CloudSensor;
 
 namespace ASCOM.Wise40.SafeToOpen
 {
@@ -102,8 +102,8 @@ namespace ASCOM.Wise40.SafeToOpen
         /// </summary>
         private TraceLogger tl;
 
-        private static ObservingConditions boltwood;
-        private static ObservingConditions vantagePro;
+        private static ASCOM.DriverAccess.ObservingConditions boltwood;
+        private static ASCOM.DriverAccess.ObservingConditions vantagePro;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Wise40.SafeToOpen"/> class.
@@ -119,8 +119,8 @@ namespace ASCOM.Wise40.SafeToOpen
 
             _connected = false; // Initialise connected to false
 
-            boltwood = new ObservingConditions("ASCOM.CloudSensor.ObservingConditions");
-            vantagePro = new ObservingConditions("ASCOM.Vantage.ObservingConditions");
+            boltwood = new DriverAccess.ObservingConditions("ASCOM.CloudSensor.ObservingConditions");
+            vantagePro = new DriverAccess.ObservingConditions("ASCOM.Vantage.ObservingConditions");
 
             tl.LogMessage("SafetyMonitor", "Completed initialisation");
         }

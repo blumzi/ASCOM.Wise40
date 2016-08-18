@@ -98,6 +98,7 @@ namespace ASCOM.Wise40.Common
 
             //if (_cyclic)
             //    val = normalize(this, val);
+            //val = normalize(this, val);
 
             _degrees = _isHMS ? val * 15.0 : val;
         }
@@ -116,7 +117,9 @@ namespace ASCOM.Wise40.Common
 
             if (s.IndexOfAny(hoursSeparators) == -1)
             {
-                this._degrees = ascomutils.DMSToDegrees(s);
+                char[] delimiters = { ':' };
+                double deg = 0.0, min = 0.0, sec = 0.0;
+
                 this._type = Type.Deg;
                 this._isHMS = false;
                 this._cyclic = false;
@@ -124,10 +127,31 @@ namespace ASCOM.Wise40.Common
                 this._highestIncluded = false;
                 this._lowest = double.NegativeInfinity;
                 this._lowestIncluded = false;
+                string[] words = s.Split(delimiters);
+                switch (words.Count())
+                {
+                    case 1:
+                        sec = Convert.ToDouble(words[0]);
+                        break;
+                    case 2:
+                        min = Convert.ToDouble(words[0]);
+                        sec = Convert.ToDouble(words[1]);
+                        break;
+                    case 3:
+                        deg = Convert.ToDouble(words[0]);
+                        min = Convert.ToDouble(words[1]);
+                        sec = Convert.ToDouble(words[2]);
+                        break;
+                }
+                //this._degrees = normalize(this, deg + (min / 60) + (sec / 3600));
+
+                this._degrees = ascomutils.DMSToDegrees(s);
             }
             else
             {
-                this._degrees = ascomutils.HMSToDegrees(s);
+                char[] delimiters = { 'h', 'm', 's' };
+                double hr = 0.0, min = 0.0, sec = 0.0;
+
                 this._type = Type.RA;
                 this._isHMS = true;
                 this._cyclic = true;
@@ -135,6 +159,27 @@ namespace ASCOM.Wise40.Common
                 this._highestIncluded = false;
                 this._lowest = 0.0;
                 this._lowestIncluded = true;
+
+                if (s.EndsWith("s"))
+                    s = s.TrimEnd(new char[] {'s'});
+                string[] words = s.Split(delimiters);
+                switch (words.Count())
+                {
+                    case 1:
+                        sec = Convert.ToDouble(words[0]);
+                        break;
+                    case 2:
+                        min = Convert.ToDouble(words[0]);
+                        sec = Convert.ToDouble(words[1]);
+                        break;
+                    case 3:
+                        hr = Convert.ToDouble(words[0]);
+                        min = Convert.ToDouble(words[1]);
+                        sec = Convert.ToDouble(words[2]);
+                        break;
+                }
+                this._degrees = ascomutils.HMSToDegrees(s);
+                //this._degrees = normalize(this, hr + (min / 60) + (sec / 3600)) * 15.0;
             }
         }
 
@@ -161,12 +206,25 @@ namespace ASCOM.Wise40.Common
             return new Angle(hours, type);
         }        
 
-        private static double normalize(Angle a, double d)
+        public static double normalize(Angle a, double d)
         {
             if (a._cyclic)
-                return (d %= a._highest) >= 0.0 ? d : d + a._highest;
-            else
-                return d;
+            {
+
+                double abs = Math.Abs(d) % a._highest;
+                int sign = Math.Sign(d);
+
+                d = (sign < 0) ? a._highest - abs : a._lowest + abs;
+            }
+            else if (Math.Abs(d) > a._highest && (a._type == Type.Dec || a._type == Type.Alt))
+            {
+                double abs = Math.Abs(d);
+                int sign = Math.Sign(d);
+
+                abs = a._highest - (abs % a._highest);
+                d = abs * sign;
+            }
+            return d;
         }
 
         /// <summary>
@@ -272,6 +330,15 @@ namespace ASCOM.Wise40.Common
                 ascomutils.DegreesToDMS(Degrees, "°", "'", "\"", 1);
         }
 
+        private static double normalizeAltAndDec(Angle a, double d)
+        {
+            if (d > a._highest)
+                return a._highest - Math.Abs(a._highest - d);
+            else if (d < a._lowest)
+                return a._lowest - Math.Abs(a._lowest - d);
+            else return d;
+        }
+
         public static Angle operator +(Angle a1, Angle a2)
         {
             if ((object)a1 == null && (object)a2 == null)
@@ -281,15 +348,16 @@ namespace ASCOM.Wise40.Common
             else if ((object)a2 == null)
                 return a1;
 
-            double degrees = a1.Degrees + a2.Degrees;
+            double result = a1.Degrees + a2.Degrees;
             if (a1._cyclic)
             {
                 double max = a1._isHMS ? a1._highest * 15.0 : a1._highest;
-                degrees %= max;
-                if (degrees < 0.0)
-                    degrees += max;
-            }
-            return a1._isHMS ? Angle.FromHours(degrees / 15.0, a1._type) : Angle.FromDegrees(degrees, a1._type);
+                result %= max;
+                if (result < 0.0)
+                    result += max;
+            } else if (a1._type == Type.Alt || a1._type == Type.Dec)
+                result = normalizeAltAndDec(a1, result);
+            return a1._isHMS ? Angle.FromHours(result / 15.0, a1._type) : Angle.FromDegrees(result, a1._type);
         }
 
         public static Angle operator -(Angle a1, Angle a2)
@@ -301,15 +369,17 @@ namespace ASCOM.Wise40.Common
             else if ((object)a2 == null)
                 return a1;
 
-            double degrees = a1.Degrees - a2.Degrees;
+            double result = a1.Degrees - a2.Degrees;
             if (a1._cyclic)
             {
                 double max = a1._isHMS ? a1._highest * 15.0 : a1._highest;
-                degrees %= max;
-                if (degrees < 0.0)
-                    degrees += max;
+                result %= max;
+                if (result < 0.0)
+                    result += max;
             }
-            return a1._isHMS ? Angle.FromHours(degrees / 15.0, a1._type) : Angle.FromDegrees(degrees, a1._type);
+            else if (a1._type == Type.Alt || a1._type == Type.Dec)
+                result = normalizeAltAndDec(a1, result);
+            return a1._isHMS ? Angle.FromHours(result / 15.0, a1._type) : Angle.FromDegrees(result, a1._type);
         }
 
         public static bool operator >(Angle a1, Angle a2)

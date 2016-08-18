@@ -42,6 +42,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SafetySwitch", "SafetySwitc
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SafeToOpen", "SafeToOpen\SafeToOpen.csproj", "{7FA766D4-8F97-4D9F-8F62-F25C84C01FF2}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C819D411-A817-4CEE-B597-A57F2CA5B5B0} = {C819D411-A817-4CEE-B597-A57F2CA5B5B0}
+		{918D2F5B-9337-4378-8106-9F8468B34F54} = {918D2F5B-9337-4378-8106-9F8468B34F54}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SafeToImage", "SafeToImage\SafeToImage.csproj", "{990E4DFA-414E-4C05-89C0-6F18A5C6FA94}"
 EndProject

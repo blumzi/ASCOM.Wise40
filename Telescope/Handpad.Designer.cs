@@ -169,6 +169,14 @@
             this.labelHumidityValue = new System.Windows.Forms.Label();
             this.labelPressureValue = new System.Windows.Forms.Label();
             this.timerStatus = new System.Windows.Forms.Timer(this.components);
+            this.label1 = new System.Windows.Forms.Label();
+            this.labelNewRA = new System.Windows.Forms.Label();
+            this.labelNewDec = new System.Windows.Forms.Label();
+            this.label24 = new System.Windows.Forms.Label();
+            this.labelNewRARadians = new System.Windows.Forms.Label();
+            this.labelNewDecRadians = new System.Windows.Forms.Label();
+            this.label7 = new System.Windows.Forms.Label();
+            this.label10 = new System.Windows.Forms.Label();
             this.panelDebug.SuspendLayout();
             this.groupBoxMovementStudy.SuspendLayout();
             this.groupBoxCurrentRates.SuspendLayout();
@@ -218,6 +226,14 @@
             // groupBoxMovementStudy
             // 
             this.groupBoxMovementStudy.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
+            this.groupBoxMovementStudy.Controls.Add(this.label7);
+            this.groupBoxMovementStudy.Controls.Add(this.label10);
+            this.groupBoxMovementStudy.Controls.Add(this.labelNewRARadians);
+            this.groupBoxMovementStudy.Controls.Add(this.labelNewDecRadians);
+            this.groupBoxMovementStudy.Controls.Add(this.labelNewRA);
+            this.groupBoxMovementStudy.Controls.Add(this.labelNewDec);
+            this.groupBoxMovementStudy.Controls.Add(this.label24);
+            this.groupBoxMovementStudy.Controls.Add(this.label1);
             this.groupBoxMovementStudy.Controls.Add(this.groupBoxCurrentRates);
             this.groupBoxMovementStudy.Controls.Add(this.buttonGoCoord);
             this.groupBoxMovementStudy.Controls.Add(this.textBoxDec);
@@ -339,7 +355,7 @@
             this.buttonGoCoord.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.buttonGoCoord.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonGoCoord.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonGoCoord.Location = new System.Drawing.Point(279, 192);
+            this.buttonGoCoord.Location = new System.Drawing.Point(279, 248);
             this.buttonGoCoord.Name = "buttonGoCoord";
             this.buttonGoCoord.Size = new System.Drawing.Size(48, 32);
             this.buttonGoCoord.TabIndex = 25;
@@ -350,7 +366,7 @@
             // textBoxDec
             // 
             this.textBoxDec.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxDec.Location = new System.Drawing.Point(169, 198);
+            this.textBoxDec.Location = new System.Drawing.Point(169, 254);
             this.textBoxDec.Name = "textBoxDec";
             this.textBoxDec.Size = new System.Drawing.Size(100, 23);
             this.textBoxDec.TabIndex = 24;
@@ -359,7 +375,7 @@
             // textBoxRA
             // 
             this.textBoxRA.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxRA.Location = new System.Drawing.Point(34, 198);
+            this.textBoxRA.Location = new System.Drawing.Point(34, 254);
             this.textBoxRA.Name = "textBoxRA";
             this.textBoxRA.Size = new System.Drawing.Size(100, 23);
             this.textBoxRA.TabIndex = 23;
@@ -368,7 +384,7 @@
             // labelDec
             // 
             this.labelDec.AutoSize = true;
-            this.labelDec.Location = new System.Drawing.Point(140, 202);
+            this.labelDec.Location = new System.Drawing.Point(140, 258);
             this.labelDec.Name = "labelDec";
             this.labelDec.Size = new System.Drawing.Size(30, 13);
             this.labelDec.TabIndex = 22;
@@ -377,7 +393,7 @@
             // labelRA
             // 
             this.labelRA.AutoSize = true;
-            this.labelRA.Location = new System.Drawing.Point(8, 202);
+            this.labelRA.Location = new System.Drawing.Point(8, 258);
             this.labelRA.Name = "labelRA";
             this.labelRA.Size = new System.Drawing.Size(25, 13);
             this.labelRA.TabIndex = 21;
@@ -504,7 +520,7 @@
             this.buttonSaveResults.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.buttonSaveResults.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonSaveResults.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonSaveResults.Location = new System.Drawing.Point(144, 232);
+            this.buttonSaveResults.Location = new System.Drawing.Point(144, 288);
             this.buttonSaveResults.Name = "buttonSaveResults";
             this.buttonSaveResults.Size = new System.Drawing.Size(200, 32);
             this.buttonSaveResults.TabIndex = 15;
@@ -519,7 +535,7 @@
             this.buttonStopStudy.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.buttonStopStudy.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonStopStudy.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonStopStudy.Location = new System.Drawing.Point(356, 172);
+            this.buttonStopStudy.Location = new System.Drawing.Point(356, 228);
             this.buttonStopStudy.Name = "buttonStopStudy";
             this.buttonStopStudy.Size = new System.Drawing.Size(106, 32);
             this.buttonStopStudy.TabIndex = 14;
@@ -530,7 +546,7 @@
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(199, 162);
+            this.label5.Location = new System.Drawing.Point(199, 218);
             this.label5.MaximumSize = new System.Drawing.Size(100, 0);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(55, 13);
@@ -539,7 +555,7 @@
             // 
             // textBoxMillis
             // 
-            this.textBoxMillis.Location = new System.Drawing.Point(151, 158);
+            this.textBoxMillis.Location = new System.Drawing.Point(151, 214);
             this.textBoxMillis.Name = "textBoxMillis";
             this.textBoxMillis.Size = new System.Drawing.Size(40, 20);
             this.textBoxMillis.TabIndex = 12;
@@ -549,7 +565,7 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(95, 162);
+            this.label4.Location = new System.Drawing.Point(95, 218);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(50, 13);
             this.label4.TabIndex = 11;
@@ -557,7 +573,7 @@
             // 
             // numericUpDownStepCount
             // 
-            this.numericUpDownStepCount.Location = new System.Drawing.Point(47, 158);
+            this.numericUpDownStepCount.Location = new System.Drawing.Point(47, 214);
             this.numericUpDownStepCount.Name = "numericUpDownStepCount";
             this.numericUpDownStepCount.Size = new System.Drawing.Size(40, 20);
             this.numericUpDownStepCount.TabIndex = 10;
@@ -570,7 +586,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(7, 162);
+            this.label3.Location = new System.Drawing.Point(7, 218);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(34, 13);
             this.label3.TabIndex = 9;
@@ -581,12 +597,12 @@
             this.TextBoxLog.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.TextBoxLog.Font = new System.Drawing.Font("Lucida Console", 7.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.TextBoxLog.ForeColor = System.Drawing.Color.DarkOrange;
-            this.TextBoxLog.Location = new System.Drawing.Point(8, 272);
+            this.TextBoxLog.Location = new System.Drawing.Point(8, 328);
             this.TextBoxLog.Multiline = true;
             this.TextBoxLog.Name = "TextBoxLog";
             this.TextBoxLog.ReadOnly = true;
             this.TextBoxLog.ShortcutsEnabled = false;
-            this.TextBoxLog.Size = new System.Drawing.Size(472, 282);
+            this.TextBoxLog.Size = new System.Drawing.Size(472, 226);
             this.TextBoxLog.TabIndex = 8;
             this.TextBoxLog.Text = "hiho";
             // 
@@ -633,7 +649,7 @@
             this.buttonGoStudy.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.buttonGoStudy.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonGoStudy.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonGoStudy.Location = new System.Drawing.Point(279, 154);
+            this.buttonGoStudy.Location = new System.Drawing.Point(279, 210);
             this.buttonGoStudy.Name = "buttonGoStudy";
             this.buttonGoStudy.Size = new System.Drawing.Size(48, 32);
             this.buttonGoStudy.TabIndex = 7;
@@ -2120,6 +2136,132 @@
             // 
             this.timerStatus.Tick += new System.EventHandler(this.timerStatus_Tick);
             // 
+            // label1
+            // 
+            this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.label1.AutoSize = true;
+            this.label1.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
+            this.label1.Location = new System.Drawing.Point(20, 152);
+            this.label1.Margin = new System.Windows.Forms.Padding(0);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(35, 18);
+            this.label1.TabIndex = 27;
+            this.label1.Text = "RA:";
+            this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // labelNewRA
+            // 
+            this.labelNewRA.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.labelNewRA.AutoSize = true;
+            this.labelNewRA.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.labelNewRA.Font = new System.Drawing.Font("Lucida Console", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelNewRA.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.labelNewRA.Location = new System.Drawing.Point(64, 152);
+            this.labelNewRA.Margin = new System.Windows.Forms.Padding(0);
+            this.labelNewRA.Name = "labelNewRA";
+            this.labelNewRA.Size = new System.Drawing.Size(128, 16);
+            this.labelNewRA.TabIndex = 28;
+            this.labelNewRA.Text = "-00h00m00.0s";
+            this.labelNewRA.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // labelNewDec
+            // 
+            this.labelNewDec.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.labelNewDec.AutoSize = true;
+            this.labelNewDec.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.labelNewDec.Font = new System.Drawing.Font("Lucida Console", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelNewDec.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.labelNewDec.Location = new System.Drawing.Point(64, 171);
+            this.labelNewDec.Margin = new System.Windows.Forms.Padding(0);
+            this.labelNewDec.Name = "labelNewDec";
+            this.labelNewDec.Size = new System.Drawing.Size(118, 16);
+            this.labelNewDec.TabIndex = 30;
+            this.labelNewDec.Text = "00°00\'00.0\"";
+            this.labelNewDec.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // label24
+            // 
+            this.label24.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.label24.AutoSize = true;
+            this.label24.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.label24.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label24.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
+            this.label24.Location = new System.Drawing.Point(8, 171);
+            this.label24.Margin = new System.Windows.Forms.Padding(0);
+            this.label24.Name = "label24";
+            this.label24.Size = new System.Drawing.Size(47, 18);
+            this.label24.TabIndex = 29;
+            this.label24.Text = "DEC:";
+            this.label24.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // labelNewRARadians
+            // 
+            this.labelNewRARadians.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.labelNewRARadians.AutoSize = true;
+            this.labelNewRARadians.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.labelNewRARadians.Font = new System.Drawing.Font("Lucida Console", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelNewRARadians.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.labelNewRARadians.Location = new System.Drawing.Point(256, 152);
+            this.labelNewRARadians.Margin = new System.Windows.Forms.Padding(0);
+            this.labelNewRARadians.Name = "labelNewRARadians";
+            this.labelNewRARadians.Size = new System.Drawing.Size(128, 16);
+            this.labelNewRARadians.TabIndex = 31;
+            this.labelNewRARadians.Text = "-00h00m00.0s";
+            this.labelNewRARadians.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // labelNewDecRadians
+            // 
+            this.labelNewDecRadians.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.labelNewDecRadians.AutoSize = true;
+            this.labelNewDecRadians.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.labelNewDecRadians.Font = new System.Drawing.Font("Lucida Console", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelNewDecRadians.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.labelNewDecRadians.Location = new System.Drawing.Point(256, 171);
+            this.labelNewDecRadians.Margin = new System.Windows.Forms.Padding(0);
+            this.labelNewDecRadians.Name = "labelNewDecRadians";
+            this.labelNewDecRadians.Size = new System.Drawing.Size(118, 16);
+            this.labelNewDecRadians.TabIndex = 32;
+            this.labelNewDecRadians.Text = "00°00\'00.0\"";
+            this.labelNewDecRadians.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // label7
+            // 
+            this.label7.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.label7.AutoSize = true;
+            this.label7.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.label7.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label7.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
+            this.label7.Location = new System.Drawing.Point(208, 171);
+            this.label7.Margin = new System.Windows.Forms.Padding(0);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(41, 18);
+            this.label7.TabIndex = 34;
+            this.label7.Text = "rad:";
+            this.label7.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // label10
+            // 
+            this.label10.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.label10.AutoSize = true;
+            this.label10.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label10.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
+            this.label10.Location = new System.Drawing.Point(208, 152);
+            this.label10.Margin = new System.Windows.Forms.Padding(0);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(41, 18);
+            this.label10.TabIndex = 33;
+            this.label10.Text = "rad:";
+            this.label10.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
             // HandpadForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -2321,5 +2463,13 @@
         private System.Windows.Forms.Label labelCurrSecDirValue;
         private System.Windows.Forms.Label labelStatus;
         private System.Windows.Forms.Timer timerStatus;
+        private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.Label label10;
+        private System.Windows.Forms.Label labelNewRARadians;
+        private System.Windows.Forms.Label labelNewDecRadians;
+        private System.Windows.Forms.Label labelNewRA;
+        private System.Windows.Forms.Label labelNewDec;
+        private System.Windows.Forms.Label label24;
+        private System.Windows.Forms.Label label1;
     }
 }
