@@ -7,11 +7,11 @@ using System.Runtime.InteropServices;
 // associated with an assembly.
 //
 // TODO - Add your authorship information here
-[assembly: AssemblyTitle("ASCOM.Wise40.SafetySwitch.SafetyMonitor")]
-[assembly: AssemblyDescription("ASCOM SafetySwitch SafetyMonitor driver for Wise40")]
+[assembly: AssemblyTitle("ASCOM.Wise40.ComputerControl.SafetyMonitor")]
+[assembly: AssemblyDescription("ASCOM SafetyMonitor driver for Wise40.ComputerControl")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("The ASCOM Initiative")]
-[assembly: AssemblyProduct("ASCOM SafetySwitch SafetyMonitor driver for Wise40")]
+[assembly: AssemblyProduct("ASCOM SafetyMonitor driver for Wise40.ComputerControl")]
 [assembly: AssemblyCopyright("Copyright © 2016 The ASCOM Initiative")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -22,7 +22,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(true)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("5fd90fbe-2a5b-4d77-ad48-b5f253ef2bec")]
+[assembly: Guid("df144d1d-f512-4336-a58b-d86920ee92f6")]
 
 // Version information for an assembly consists of the following four values:
 //

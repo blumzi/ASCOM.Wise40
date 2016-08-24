@@ -183,7 +183,7 @@ namespace ASCOM.Wise40
             {
                 if (Simulated)
                 {
-                    _angle.Degrees = value.Degrees;
+                    _angle.Radians = value.Radians;
                     Value = (uint) Math.Round((_angle.Radians - DecCorrection) / decMultiplier);
                 }
             }

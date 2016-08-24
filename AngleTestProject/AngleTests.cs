@@ -167,11 +167,8 @@ namespace AngleTests
         [TestMethod]
         public void Generic()
         {
-            var expected = "value: 370 >= highest: 360";
-            var ex = ExceptionAssert.Throws<InvalidValueException>(() => new Angle(370.0, Angle.Type.Deg, 360.0));
-
-            if (ex.Message != expected)
-                Assert.Fail(string.Format("Bad exception - expected: {0}, got: {1}", expected, ex.Message));
+            Assert.AreEqual(new Angle(10.0, Angle.Type.Deg), new Angle(370.0, Angle.Type.Deg));
+            Assert.AreEqual(new Angle(40.0, Angle.Type.Deg), new Angle(100.0, Angle.Type.Deg) + new Angle(300.0, Angle.Type.Deg));
         }
 
         [TestMethod]
@@ -179,42 +176,23 @@ namespace AngleTests
         {
             Assert.IsTrue(new Angle(1.0, Angle.Type.RA) > new Angle(0.0, Angle.Type.RA));
             Assert.IsTrue(new Angle(1.0, Angle.Type.RA) < new Angle(3.0, Angle.Type.RA));
-
-            Assert.IsFalse(new Angle("01h00m00.0s") < new Angle("-01h00m00.0s"));
-            Assert.AreEqual((new Angle("01h00m00.0s") - new Angle("02h00m00.0s")), new Angle("23h00m00.0s"));
+            
+            Assert.AreEqual(new Angle("23h00m00.0s"), (new Angle("01h00m00.0s") - new Angle("02h00m00.0s")));
         }
 
         [TestMethod]
         public void Declination()
         {
-            var expected = "value: 91 > highest: 90";
-            var ex = ExceptionAssert.Throws<InvalidValueException>(() => new Angle(91.0, Angle.Type.Dec));
-            if (ex.Message != expected)
-                Assert.Fail(string.Format("Bad exception - expected: {0}, got: {1}", expected, ex.Message));
+            string expected;
+            Exception ex;
 
-            expected = "value: -91 < lowest: -90";
-            ex = ExceptionAssert.Throws<InvalidValueException>(() => new Angle(-91.0, Angle.Type.Dec));
-            if (ex.Message != expected)
-                Assert.Fail(string.Format("Bad exception - expected: {0}, got: {1}", expected, ex.Message));
+            //Assert.AreEqual(Angle.FromDegrees(89.0, Angle.Type.Dec), Angle.FromDegrees(91.0, Angle.Type.Dec));
+            //Assert.AreEqual(Angle.FromDegrees(-89.0, Angle.Type.Dec), Angle.FromDegrees(-91.0, Angle.Type.Dec));
 
             Assert.AreEqual(new Angle(12.5, Angle.Type.Dec) + new Angle(12.5, Angle.Type.Dec), new Angle(25, Angle.Type.Dec), "12.5 + 12.5 => 25");
             Assert.AreEqual(new Angle(-80, Angle.Type.Dec) + new Angle(20, Angle.Type.Dec), new Angle(-60, Angle.Type.Dec), "-80 + 20 => -60");
             Assert.AreEqual(new Angle(-10, Angle.Type.Dec) + new Angle(20, Angle.Type.Dec), new Angle(10, Angle.Type.Dec), "-10 + 20 => 10");
             Assert.AreEqual(new Angle(30, Angle.Type.Dec) - new Angle(45, Angle.Type.Dec), new Angle(-15, Angle.Type.Dec), "30 - 45 => -15");
-
-            Angle a1 = new Angle(80, Angle.Type.Dec);
-            Angle a2;
-            expected = "value: 100 > highest: 90";
-            ex = ExceptionAssert.Throws<InvalidValueException>(() => a2 = a1 + new Angle(20.0));
-            if (ex.Message != expected)
-                Assert.Fail(string.Format("Bad exception - expected: {0}, got: {1}", expected, ex.Message));
-
-            a1 = new Angle(-70, Angle.Type.Dec);
-            expected = "value: -100 < lowest: -90";
-            ex = ExceptionAssert.Throws<InvalidValueException>(() => a2 = a1 - new Angle(30.0));
-            if (ex.Message != expected)
-                Assert.Fail(string.Format("Bad exception - expected: {0}, got: {1}", expected, ex.Message));
-
         }
 
         [TestMethod]
@@ -256,29 +234,29 @@ namespace AngleTests
             a2 = new Angle("02h00m00.0s");
             Assert.AreEqual(a1 + a2, new Angle("01h00m00.0s"));
             
-            Assert.AreEqual(new Angle("00h00m10.0s") - new Angle("00h00m20.0s"), new Angle("23h59m50.0s"));
+            Assert.AreEqual(new Angle("23h59m50.0s"), new Angle("00h00m10.0s") - new Angle("00h00m20.0s"), "00h00m10.0s - 00h00m20.0s = 23h59m50.0s");
         }
 
-        [TestMethod]
-        public void Normalizations()
-        {
-            Angle a1, a2;
+        //[TestMethod]
+        //public void Normalizations()
+        //{
+        //    Angle a1, a2;
 
-            a1 = new Angle(120.0, Angle.Type.Dec);
-            a2 = new Angle(60.0, Angle.Type.Dec);
-            Assert.AreEqual(a1, a2);
+        //    a1 = new Angle(120.0, Angle.Type.Dec);
+        //    a2 = new Angle(60.0, Angle.Type.Dec);
+        //    Assert.AreEqual(a1, a2);
 
-            a1 = new Angle(-110.0, Angle.Type.Dec);
-            a2 = new Angle(-70.0, Angle.Type.Dec);
-            Assert.AreEqual(a1, a2);
+        //    a1 = new Angle(-110.0, Angle.Type.Dec);
+        //    a2 = new Angle(-70.0, Angle.Type.Dec);
+        //    Assert.AreEqual(a1, a2);
 
-            a1 = new Angle("25h00m00.0s");
-            a2 = new Angle("01h00m00.0s");
-            Assert.AreEqual(a1, a2);
+        //    a1 = new Angle("25h00m00.0s");
+        //    a2 = new Angle("01h00m00.0s");
+        //    Assert.AreEqual(a1, a2);
 
-            a1 = new Angle("-01h00m00.0s");
-            a2 = new Angle("23h00m00.0s");
-            Assert.AreEqual(a1, a2);
-        }
+        //    a1 = new Angle("-01h00m00.0s");
+        //    a2 = new Angle("23h00m00.0s");
+        //    Assert.AreEqual(a1, a2);
+        //}
     }
 }

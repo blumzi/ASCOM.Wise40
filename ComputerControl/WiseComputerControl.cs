@@ -8,25 +8,25 @@ using MccDaq;
 
 namespace ASCOM.Wise40
 {
-    public class WiseSafetySwitch
+    public class WiseComputerControl
     {
-        private static readonly WiseSafetySwitch instance = new WiseSafetySwitch(); // Singleton
+        private static readonly WiseComputerControl instance = new WiseComputerControl(); // Singleton
         private static bool _initialized = false;
-        private WisePin safetyPin;
+        private WisePin computerControlPin;
         private Hardware.Hardware hardware = Hardware.Hardware.Instance;
         private static bool _simulated;
 
         // Explicit static constructor to tell C# compiler
         // not to mark type as beforefieldinit
-        static WiseSafetySwitch()
+        static WiseComputerControl()
         {
         }
 
-        public WiseSafetySwitch()
+        public WiseComputerControl()
         {
         }
 
-        public static WiseSafetySwitch Instance
+        public static WiseComputerControl Instance
         {
             get
             {
@@ -39,8 +39,8 @@ namespace ASCOM.Wise40
             if (_initialized)
                 return;
             
-            safetyPin = new WisePin("SafetySwitch", hardware.teleboard, DigitalPortType.SecondPortCH, 0, DigitalPortDirection.DigitalIn);
-            _simulated = safetyPin.Simulated;
+            computerControlPin = new WisePin("ComputerControl", hardware.teleboard, DigitalPortType.SecondPortCH, 0, DigitalPortDirection.DigitalIn);
+            _simulated = computerControlPin.Simulated;
             _initialized = true;
         }
 
@@ -48,7 +48,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return _simulated ? true : safetyPin.isOn;
+                return _simulated ? true : computerControlPin.isOn;
             }
         }
     }

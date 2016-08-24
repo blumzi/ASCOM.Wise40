@@ -164,7 +164,12 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\SafeToOpen\SafeToOpen.csproj">
+      <Project>{7fa766d4-8f97-4d9f-8f62-f25c84c01ff2}</Project>
+      <Name>SafeToOpen</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>

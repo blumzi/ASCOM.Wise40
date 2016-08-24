@@ -82,7 +82,7 @@ namespace ASCOM.Wise40
         {
             double rar = 0, decr = 0, az = 0, zd = 0;
 
-            wisesite.prepareRefractionData();
+            wisesite.prepareRefractionData(WiseTele.Instance._calculateRefraction);
             instance.novas31.Equ2Hor(instance.astroutils.JulianDateUT1(0), 0,
                 wisesite.astrometricAccuracy,
                 0, 0,

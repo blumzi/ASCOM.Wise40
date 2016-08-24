@@ -62,12 +62,12 @@ namespace ASCOM.Wise40
         /// ASCOM DeviceID (COM ProgID) for this driver.
         /// The DeviceID is used by ASCOM applications to load the driver at runtime.
         /// </summary>
-        internal static string driverID = "ASCOM.Wise40.SafetyMonitor";
+        internal static string driverID = "ASCOM.Wise40.SafetySwitch.SafetyMonitor";
         // TODO Change the descriptive string for your driver then remove this line
         /// <summary>
         /// Driver description that displays in the ASCOM Chooser.
         /// </summary>
-        private static string driverDescription = "ASCOM SafetyMonitor Driver for Wise40.";
+        private static string driverDescription = "ASCOM Wise40 SafetySwitch";
 
         internal static string traceStateProfileName = "Trace Level";
         internal static string traceStateDefault = "false";

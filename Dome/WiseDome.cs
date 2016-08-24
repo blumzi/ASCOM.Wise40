@@ -8,13 +8,14 @@ using MccDaq;
 using ASCOM.Utilities;
 using ASCOM.Wise40.Common;
 using ASCOM.Wise40.Hardware;
-using ASCOM.Wise40;
+using ASCOM.Wise40.SafeToOpen;
 
 namespace ASCOM.Wise40
 {
     public class WiseDome : IConnectable, IDisposable {
 
         private static readonly WiseDome instance = new WiseDome(); // Singleton
+        private static WiseSite wisesite = WiseSite.Instance;
         private static bool _initialized = false;
 
         private WisePin leftPin, rightPin;
@@ -67,7 +68,7 @@ namespace ASCOM.Wise40
         private static AutoResetEvent _arrivedEvent;
         private static Hardware.Hardware hw = Hardware.Hardware.Instance;
 
-        private static TraceLogger tl;
+        private static TraceLogger tl;        
 
         // Explicit static constructor to tell C# compiler
         // not to mark type as beforefieldinit
@@ -171,6 +172,8 @@ namespace ASCOM.Wise40
             _stuckTimer = new System.Timers.Timer(1000);  // runs every 1 second
             _stuckTimer.Elapsed += onStuckTimer;
             _stuckTimer.Enabled = false;
+
+            wisesite.init();
 
             _initialized = true;
 
@@ -505,6 +508,9 @@ namespace ASCOM.Wise40
                 throw new ASCOM.InvalidOperationException("Cannot FindHome, shutter is active!");
             }
 
+            if (wisesite.safetySwitch != null && !wisesite.safetySwitch.IsSafe)
+                throw new ASCOM.InvalidOperationException("Wise40 safety switch is OFF!");
+
             tl.LogMessage("FindHome", "Calling wisedome.FindHome");
 
             AtPark = false;
@@ -541,6 +547,9 @@ namespace ASCOM.Wise40
                 tl.LogMessage("SlewToAzimuth", "Denied, shutter is active.");
                 throw new ASCOM.InvalidOperationException("Cannot move, shutter is active!");
             }
+
+            if (wisesite.safetySwitch != null && !wisesite.safetySwitch.IsSafe)
+                throw new ASCOM.InvalidOperationException("Wise40 safety switch is OFF!");
 
             Angle toAng = new Angle(degrees);
 
@@ -688,7 +697,10 @@ namespace ASCOM.Wise40
         {
             if (Slewing)
                 throw new ASCOM.InvalidOperationException("Cannot OpenShutter, dome is slewing!");
-            
+
+            if (wisesite.safeToOpen != null && !wisesite.safeToOpen.IsSafe)
+                throw new ASCOM.InvalidOperationException("Not safe to open shutter!");
+
             tl.LogMessage("OpenShutter", "");
 
             ShutterStop();

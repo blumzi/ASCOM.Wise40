@@ -156,7 +156,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <PostBuildEvent>rem "C:\Program Files (x86)\Inno Setup 5\ISCC.exe" /Q /O"$(SolutionDir)\Deliveries" "$(ProjectDir)\Installer\$(ProjectName) Setup.iss" 
-</PostBuildEvent>
+"C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Restore-ASCOM-Profiles\bin\Debug\Restore-ASCOM-Profiles.exe"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

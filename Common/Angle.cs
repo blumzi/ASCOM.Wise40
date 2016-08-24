@@ -12,17 +12,18 @@ namespace ASCOM.Wise40.Common
     {
         internal static Astrometry.AstroUtils.AstroUtils astroutils = new Astrometry.AstroUtils.AstroUtils();
         internal static ASCOM.Utilities.Util ascomutils = new ASCOM.Utilities.Util();
-        //public enum Format { Deg, RA, Dec, HA, Alt, Az, Double, Rad, HAhms, RAhms, HMS };
         public enum Type {  Deg, RA, Dec, HA, Az, Alt, None };
 
-        private double _degrees;
-        private bool _cyclic;
+        //private double _degrees;
+        private double _radians;
+        private bool _periodic;
         private double _highest;
         private double _lowest;
         private bool _highestIncluded;
         private bool _lowestIncluded;
         private Type _type;
         private bool _isHMS;
+        private readonly static double pi = Math.PI;
 
         public Angle(double val = double.NaN,
             Type type = Type.Deg,
@@ -35,7 +36,7 @@ namespace ASCOM.Wise40.Common
             switch (this._type)
             {
                 case Type.Deg:
-                    _cyclic = false;
+                    _periodic = true;
                     _highest = highest;
                     _lowest = lowest;
                     _lowestIncluded = lowestIncluded;
@@ -44,7 +45,7 @@ namespace ASCOM.Wise40.Common
                     break;
 
                 case Type.RA:
-                    _cyclic = true;
+                    _periodic = true;
                     _lowest = 0.0;
                     _lowestIncluded = true;
                     _highest = 24.0;
@@ -54,16 +55,16 @@ namespace ASCOM.Wise40.Common
 
                 case Type.Dec:
                 case Type.Alt:
-                    _cyclic = false;
-                    _lowest = -90.0;
+                    _periodic = false;
+                    _lowest = -(pi/2);
                     _lowestIncluded = true;
-                    _highest = 90.0;
+                    _highest = pi/2;
                     _highestIncluded = true;
                     _isHMS = false;
                     break;
 
                 case Type.HA:
-                    _cyclic = false;
+                    _periodic = false;
                     _lowest = -12.0;
                     _lowestIncluded = true;
                     _highest = 12.0;
@@ -72,10 +73,10 @@ namespace ASCOM.Wise40.Common
                     break;
 
                 case Type.Az:
-                    _cyclic = true;
+                    _periodic = true;
                     _lowest = 0;
                     _lowestIncluded = true;
-                    _highest = 360.0;
+                    _highest = 2*pi;
                     _highestIncluded = false;
                     _isHMS = false;
                     break;
@@ -100,34 +101,50 @@ namespace ASCOM.Wise40.Common
             //    val = normalize(this, val);
             //val = normalize(this, val);
 
-            _degrees = _isHMS ? val * 15.0 : val;
+            //_degrees = _isHMS ? val * 15.0 : val;
+            double rad = Deg2Rad(_isHMS ? Hours2Deg(val) : val);
+            if (_periodic)
+            {
+                while (rad > _highest)
+                    rad -= 2 * pi;
+                while (rad < _lowest)
+                    rad += 2 * pi;
+            }
+
+            //Radians = (_type == Type.Dec) ? Math.Acos(Math.Abs(Math.Cos(rad))) : rad;
+            Radians = rad;
         }
 
         public Angle(int u, int m, double s, int sign = 1)
         {
             if (_isHMS)
-                Degrees = sign * ascomutils.HMSToDegrees(string.Format("{0}:{1}:{2}", u, m, s));
+                //Degrees = sign * ascomutils.HMSToDegrees(string.Format("{0}:{1}:{2}", u, m, s));
+                Radians = Deg2Rad(sign * ascomutils.HMSToDegrees(string.Format("{0}:{1}:{2}", u, m, s)));
             else
-                Degrees = sign * ascomutils.DMSToDegrees(string.Format("{0}:{1}:{2}", u, m, s));
+                //Degrees = sign * ascomutils.DMSToDegrees(string.Format("{0}:{1}:{2}", u, m, s));
+                Radians = Deg2Rad(sign * ascomutils.DMSToDegrees(string.Format("{0}:{1}:{2}", u, m, s)));
         }
 
-        public Angle(string s)
+        public Angle(string sexagesimal)
         {
             char[] hoursSeparators = { 'h', 'H' };
 
-            if (s.IndexOfAny(hoursSeparators) == -1)
+            if (sexagesimal.IndexOfAny(hoursSeparators) == -1)
             {
-                char[] delimiters = { ':' };
+                char[] delimiters = { ':', 'd', 'm', 's' };
                 double deg = 0.0, min = 0.0, sec = 0.0;
 
                 this._type = Type.Deg;
                 this._isHMS = false;
-                this._cyclic = false;
+                this._periodic = false;
                 this._highest = double.PositiveInfinity;
                 this._highestIncluded = false;
                 this._lowest = double.NegativeInfinity;
                 this._lowestIncluded = false;
-                string[] words = s.Split(delimiters);
+
+                if (sexagesimal.EndsWith("s"))
+                    sexagesimal = sexagesimal.TrimEnd(new char[] { 's' });
+                string[] words = sexagesimal.Split(delimiters);
                 switch (words.Count())
                 {
                     case 1:
@@ -145,7 +162,8 @@ namespace ASCOM.Wise40.Common
                 }
                 //this._degrees = normalize(this, deg + (min / 60) + (sec / 3600));
 
-                this._degrees = ascomutils.DMSToDegrees(s);
+                //this._degrees = ascomutils.DMSToDegrees(sexagesimal);
+                this.Radians = Deg2Rad(ascomutils.DMSToDegrees(sexagesimal));
             }
             else
             {
@@ -154,15 +172,15 @@ namespace ASCOM.Wise40.Common
 
                 this._type = Type.RA;
                 this._isHMS = true;
-                this._cyclic = true;
+                this._periodic = true;
                 this._highest = 24.0;
                 this._highestIncluded = false;
                 this._lowest = 0.0;
                 this._lowestIncluded = true;
 
-                if (s.EndsWith("s"))
-                    s = s.TrimEnd(new char[] {'s'});
-                string[] words = s.Split(delimiters);
+                if (sexagesimal.EndsWith("s"))
+                    sexagesimal = sexagesimal.TrimEnd(new char[] {'s'});
+                string[] words = sexagesimal.Split(delimiters);
                 switch (words.Count())
                 {
                     case 1:
@@ -178,17 +196,38 @@ namespace ASCOM.Wise40.Common
                         sec = Convert.ToDouble(words[2]);
                         break;
                 }
-                this._degrees = ascomutils.HMSToDegrees(s);
+                //this._degrees = ascomutils.HMSToDegrees(sexagesimal);
                 //this._degrees = normalize(this, hr + (min / 60) + (sec / 3600)) * 15.0;
+                this.Radians = Deg2Rad(ascomutils.HMSToDegrees(sexagesimal));
             }
         }
 
-        private int Sign
+        //private int Sign
+        //{
+        //    get
+        //    {
+        //        return _degrees < 0 ? -1 : 1;
+        //    }
+        //}
+
+        public static double Deg2Rad(double deg)
         {
-            get
-            {
-                return _degrees < 0 ? -1 : 1;
-            }
+            return (deg * pi) / 180.0;
+        }
+
+        public static double Rad2Deg(double rad)
+        {
+            return (rad * 180.0) / pi;
+        }
+
+        public static double Rad2Hours(double rad)
+        {
+            return rad * 24 / (2 * pi);
+        }
+
+        public static double Hours2Rad(double hours)
+        {
+            return hours * 2 * pi / 24;
         }
 
         public static Angle FromRadians(double rad, Type type = Type.Deg)
@@ -208,7 +247,7 @@ namespace ASCOM.Wise40.Common
 
         public static double normalize(Angle a, double d)
         {
-            if (a._cyclic)
+            if (a._periodic)
             {
 
                 double abs = Math.Abs(d) % a._highest;
@@ -234,31 +273,15 @@ namespace ASCOM.Wise40.Common
         {
             get
             {
-                return _degrees;
+                return Rad2Deg(Radians);
             }
 
             set
             {
-                if (_cyclic)
+                if (_periodic)
                     value = (value %= _highest) >= 0.0 ? value : (value + _highest);
 
-                //if (_highest != double.PositiveInfinity)
-                //{
-                //    if (_highestIncluded && value > _highest)
-                //        throw new InvalidValueException(string.Format("value: {0} > highest: {1}", value, _highest));
-                //    else if (!_highestIncluded && value >= _highest)
-                //        throw new InvalidValueException(string.Format("value: {0} >= highest: {1}", value, _highest));
-                //}
-
-                //if (_lowest != double.NegativeInfinity)
-                //{
-                //    if (_lowestIncluded && value < _lowest)
-                //        throw new InvalidValueException(string.Format("value: {0} < lowest: {1}", value, _lowest));
-                //    else if (!_lowestIncluded && value <= _lowest)
-                //        throw new InvalidValueException(string.Format("value: {0} <= lowest: {1}", value, _lowest));
-                //}
-
-                _degrees = value;
+                Radians = value;
             }
         }
 
@@ -266,40 +289,12 @@ namespace ASCOM.Wise40.Common
         {
             get
             {
-                return _degrees / 15.0;
+                return Rad2Hours(Radians);
             }
 
             set
             {
-                Degrees = value * 15.0;
-            }
-        }
-
-        //public double Declination
-        //{
-        //    get
-        //    {
-        //        return _value;
-        //    }
-
-        //    set
-        //    {
-        //        if (value < -90.0 || value > 90.0)
-        //            throw new InvalidValueException(string.Format("Invalid value {0}, must be between -90.0 and 90.0", value));
-        //        _value = value;
-        //    }
-        //}
-
-        public double Raw
-        {
-            get
-            {
-                return _degrees;
-            }
-
-            set
-            {
-                _degrees = value;
+                Radians = Hours2Rad(value);
             }
         }
 
@@ -307,12 +302,19 @@ namespace ASCOM.Wise40.Common
         {
             get
             {
-                return Degrees * Math.PI / 180.0;
+                return _radians;
             }
 
             set
             {
-                Degrees = value * 180.0 / Math.PI;
+                if (_periodic)
+                {
+                    while (value > 2 * pi)
+                        value -= 2 * pi;
+                    while (value < -2 * pi)
+                        value += 2 * pi;
+                }
+                _radians = value;
             }
         }
 
@@ -348,16 +350,16 @@ namespace ASCOM.Wise40.Common
             else if ((object)a2 == null)
                 return a1;
 
-            double result = a1.Degrees + a2.Degrees;
-            if (a1._cyclic)
+            double radians = a1.Radians + a2.Radians;
+
+            if (a1._periodic)
             {
-                double max = a1._isHMS ? a1._highest * 15.0 : a1._highest;
-                result %= max;
-                if (result < 0.0)
-                    result += max;
-            } else if (a1._type == Type.Alt || a1._type == Type.Dec)
-                result = normalizeAltAndDec(a1, result);
-            return a1._isHMS ? Angle.FromHours(result / 15.0, a1._type) : Angle.FromDegrees(result, a1._type);
+                double max = a1._isHMS ? Hours2Rad(a1._highest) : a1._highest;
+                radians %= max;
+
+            }
+
+            return a1._isHMS ? Angle.FromHours(Rad2Hours(radians), a1._type) : Angle.FromRadians(radians, a1._type);
         }
 
         public static Angle operator -(Angle a1, Angle a2)
@@ -369,27 +371,27 @@ namespace ASCOM.Wise40.Common
             else if ((object)a2 == null)
                 return a1;
 
-            double result = a1.Degrees - a2.Degrees;
-            if (a1._cyclic)
+            double radians = a1.Radians - a2.Radians;
+            if (a1._periodic)
             {
-                double max = a1._isHMS ? a1._highest * 15.0 : a1._highest;
-                result %= max;
-                if (result < 0.0)
-                    result += max;
+                double max = a1._isHMS ? Hours2Rad(a1._highest) : a1._highest;
+                radians %= max;
+
+                while (radians < -2 * pi)
+                    radians += 2 * pi;
             }
-            else if (a1._type == Type.Alt || a1._type == Type.Dec)
-                result = normalizeAltAndDec(a1, result);
-            return a1._isHMS ? Angle.FromHours(result / 15.0, a1._type) : Angle.FromDegrees(result, a1._type);
+
+            return a1._isHMS ? Angle.FromHours(Rad2Hours(radians), a1._type) : Angle.FromRadians(radians, a1._type);
         }
 
         public static bool operator >(Angle a1, Angle a2)
         {
-            return (a1.Degrees > a2.Degrees) ? true : false;
+            return (a1.Radians > a2.Radians) ? true : false;
         }
 
         public static bool operator <(Angle a1, Angle a2)
         {
-            return (a1.Degrees < a2.Degrees) ? true : false;
+            return (a1.Radians < a2.Radians) ? true : false;
         }
 
         public static bool operator ==(Angle a1, Angle a2)
@@ -400,7 +402,7 @@ namespace ASCOM.Wise40.Common
             if (((object)a1 == null || ((object)a2 == null)))
                 return false;
 
-            return a1.Degrees == a2.Degrees;
+            return a1.Radians == a2.Radians;
         }
 
         public static bool operator !=(Angle a1, Angle a2)
@@ -410,12 +412,12 @@ namespace ASCOM.Wise40.Common
 
         public static bool operator <=(Angle a1, Angle a2)
         {
-            return a1.Degrees <= a2.Degrees;
+            return a1.Radians <= a2.Radians;
         }
 
         public static bool operator >=(Angle a1, Angle a2)
         {
-            return a1.Degrees >= a2.Degrees;
+            return a1.Radians >= a2.Radians;
         }
 
         public static Angle Min(Angle a1, Angle a2)
@@ -423,8 +425,8 @@ namespace ASCOM.Wise40.Common
             if ((object)a1 == null || ((object)a2 == null))
                 return null;
 
-            var min = (a1.Degrees <= a2.Degrees) ? a1 : a2;
-            return new Angle(min.Degrees, min._type);
+            var min = (a1.Radians <= a2.Radians) ? a1 : a2;
+            return Angle.FromRadians(min.Radians, min._type);
         }
 
         public static Angle Max(Angle a1, Angle a2)
@@ -433,8 +435,8 @@ namespace ASCOM.Wise40.Common
             if ((object)a1 == null || ((object)a2 == null))
                 return null;
 
-            var max = (a1.Degrees >= a2.Degrees) ? a1 : a2;
-            return new Angle(max.Degrees, max._type);
+            var max = (a1.Radians >= a2.Radians) ? a1 : a2;
+            return Angle.FromRadians(max.Radians, max._type);
         }
 
         public override bool Equals(object obj)
@@ -443,14 +445,14 @@ namespace ASCOM.Wise40.Common
                 return false;
 
             Angle b = obj as Angle;
-            return Math.Abs(b.Degrees - Degrees) <= epsilon;
+            return Math.Abs(b.Radians - Radians) <= epsilonRad;
         }
 
         public bool Equals(Angle a)
         {
             if ((object)a == null)
                 return false;
-            return Math.Abs(a.Degrees - Degrees) <= epsilon;
+            return Math.Abs(a.Radians - Radians) <= epsilonRad;
         }
 
         public override int GetHashCode()
@@ -461,51 +463,51 @@ namespace ASCOM.Wise40.Common
         public ShortestDistanceResult ShortestDistance(Angle other)
         {
             Angle incSide, decSide;
-            ShortestDistanceResult res = new ShortestDistanceResult();
+            ShortestDistanceResult result = new ShortestDistanceResult();
 
             Debugger debugger = Debugger.Instance;
 
             if (other == this)
                 return new ShortestDistanceResult(Angle.zero, Const.AxisDirection.None);
 
-            if (_cyclic)
+            if (_periodic)
             {
                 if (other > this)
                 {
                     decSide = other - this;
                     incSide = this + ((_isHMS) ? 
                         Angle.FromHours(_highest - other.Hours, this._type) : 
-                        Angle.FromDegrees(_highest - other.Degrees, this._type));
+                        Angle.FromRadians(_highest - other.Radians, this._type));
                 }
                 else
                 {
                     decSide = other + ((_isHMS) ?
                         Angle.FromHours(_highest - this.Hours, this._type) :
-                        Angle.FromDegrees(_highest - this.Degrees, this._type));
+                        Angle.FromRadians(_highest - this.Radians, this._type));
                     incSide = this - other;
                 }
 
                 if (incSide < decSide)
                 {
-                    res.angle = incSide;
-                    res.direction = Const.AxisDirection.Decreasing;
+                    result.angle = incSide;
+                    result.direction = Const.AxisDirection.Decreasing;
                 }
                 else
                 {
-                    res.angle = decSide;
-                    res.direction = Const.AxisDirection.Increasing;
+                    result.angle = decSide;
+                    result.direction = Const.AxisDirection.Increasing;
                 }
-                res.angle._type = this._type;
+                result.angle._type = this._type;
 
             }
             else
             {
-                res.angle = new Angle(Math.Abs(this.Degrees - other.Degrees), Type.Deg);
-                res.direction = (this.Degrees > other.Degrees) ? Const.AxisDirection.Decreasing : Const.AxisDirection.Increasing;
+                result.angle = Angle.FromRadians(Math.Abs(this.Radians - other.Radians), this._type);
+                result.direction = (this.Radians > other.Radians) ? Const.AxisDirection.Decreasing : Const.AxisDirection.Increasing;
             }
 
-            debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "ShortestDistance: {0} -> {1} ==> {2} {3}", this, other, res.angle, res.direction);
-            return res;
+            debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "ShortestDistance: {0} -> {1} ==> {2} {3}", this, other, result.angle, result.direction);
+            return result;
         }
 
         public static double Deg2Hours(string s)
@@ -530,6 +532,6 @@ namespace ASCOM.Wise40.Common
 
         public static readonly Angle zero = new Angle(0.0);
         public static readonly Angle invalid = new Angle(double.NaN);
-        public static double epsilon = (1.0 / 3600.0) / 1000000.0;    // 1 micro-second
+        public static double epsilonRad = Deg2Rad((1.0 / 3600.0) / 1000000.0);    // 1 micro-second
     }
 }

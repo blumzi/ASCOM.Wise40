@@ -2,22 +2,18 @@
 // --------------------------------------------------------------------------------
 // TODO fill in this information for your driver, then remove this line!
 //
-// ASCOM SafetyMonitor driver for Wise40.SafeToOpen
+// ASCOM SafetyMonitor driver for Wise40.ComputerControl
 //
-// Description:	Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam 
-//				nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam 
-//				erat, sed diam voluptua. At vero eos et accusam et justo duo 
-//				dolores et ea rebum. Stet clita kasd gubergren, no sea takimata 
-//				sanctus est Lorem ipsum dolor sit amet.
+// Description:	Reads the ComputerControl switch status at Wise40.
 //
 // Implements:	ASCOM SafetyMonitor interface version: <To be completed by driver developer>
-// Author:		(XXX) Your N. Here <your@email.here>
+// Author:		(AB) Arie Blumenzweig <blumzi@013.net>
 //
 // Edit Log:
 //
 // Date			Who	Vers	Description
 // -----------	---	-----	-------------------------------------------------------
-// dd-mmm-yyyy	XXX	6.0.0	Initial edit, created from ASCOM driver template
+// 24-Aug-2016	AB	6.0.0	Initial edit, created from ASCOM driver template
 // --------------------------------------------------------------------------------
 //
 
@@ -40,26 +36,23 @@ using ASCOM.DeviceInterface;
 using System.Globalization;
 using System.Collections;
 
-using ASCOM.DriverAccess;
-using ASCOM.CloudSensor;
-
-namespace ASCOM.Wise40.SafeToOpen
+namespace ASCOM.Wise40.ComputerControl
 {
     //
-    // Your driver's DeviceID is ASCOM.Wise40.SafeToOpen.SafetyMonitor
+    // Your driver's DeviceID is ASCOM.Wise40.ComputerControl.SafetyMonitor
     //
-    // The Guid attribute sets the CLSID for ASCOM.Wise40.SafeToOpen.SafetyMonitor
+    // The Guid attribute sets the CLSID for ASCOM.Wise40.ComputerControl.SafetyMonitor
     // The ClassInterface/None addribute prevents an empty interface called
-    // _Wise40.SafeToOpen from being created and used as the [default] interface
+    // _Wise40.ComputerControl from being created and used as the [default] interface
     //
     // TODO Replace the not implemented exceptions with code to implement the function or
     // throw the appropriate ASCOM exception.
     //
 
     /// <summary>
-    /// ASCOM SafetyMonitor Driver for Wise40.SafeToOpen.
+    /// ASCOM SafetyMonitor Driver for Wise40.ComputerControl.
     /// </summary>
-    [Guid("6b5388b9-d420-4596-9311-f5f9c3dd090f")]
+    [Guid("7f8e5d5f-aa98-410d-a67e-9f7c0ae4d735")]
     [ClassInterface(ClassInterfaceType.None)]
     public class SafetyMonitor : ISafetyMonitor
     {
@@ -67,29 +60,16 @@ namespace ASCOM.Wise40.SafeToOpen
         /// ASCOM DeviceID (COM ProgID) for this driver.
         /// The DeviceID is used by ASCOM applications to load the driver at runtime.
         /// </summary>
-        internal static string driverID = "ASCOM.Wise40.SafeToOpen.SafetyMonitor";
+        internal static string driverID = "ASCOM.Wise40.ComputerControl.SafetyMonitor";
         // TODO Change the descriptive string for your driver then remove this line
         /// <summary>
         /// Driver description that displays in the ASCOM Chooser.
         /// </summary>
-        private static string driverDescription = "ASCOM Wise40 SafeToOpen.";
-
+        private static string driverDescription = "ASCOM Wise40.ComputerControl.";
+        
         internal static string traceStateProfileName = "Trace Level";
         internal static string traceStateDefault = "false";
-
-        internal static string cloudsMaxProfileName = "Clouds Max";
-        internal static string windMaxProfileName = "Wind Max";
-        internal static string rainMaxProfileName = "Rain Max";
-        internal static string lightMaxProfileName = "Light Max";
-        internal static string humidityMaxProfileName = "Humidity Max";
-        internal static string ageMaxSecondsProfileName = "Age Max";
-
-        internal static CloudSensor.SensorData.CloudCondition cloudsMax;
-        internal static double windMax;
-        internal static double rainMax;
-        internal static CloudSensor.SensorData.DayCondition lightMax;
-        internal static double humidityMax;
-        internal static int ageMaxSeconds;
+        
         internal static bool traceState;
 
         /// <summary>
@@ -102,34 +82,26 @@ namespace ASCOM.Wise40.SafeToOpen
         /// </summary>
         private TraceLogger tl;
 
-        private static ASCOM.DriverAccess.ObservingConditions boltwood;
-        private static ASCOM.DriverAccess.ObservingConditions vantagePro;
+        private WiseComputerControl wisesafety = WiseComputerControl.Instance;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Wise40.SafeToOpen"/> class.
+        /// Initializes a new instance of the <see cref="Wise40.ComputerControl"/> class.
         /// Must be public for COM registration.
         /// </summary>
         public SafetyMonitor()
         {
             ReadProfile(); // Read device configuration from the ASCOM Profile store
 
-            tl = new TraceLogger("", "Wise40.SafeToOpen");
+            tl = new TraceLogger("", "Wise40.ComputerControl");
             tl.Enabled = traceState;
             tl.LogMessage("SafetyMonitor", "Starting initialisation");
 
-            _connected = false; // Initialise connected to false
-
-            try
-            {
-                boltwood = new DriverAccess.ObservingConditions("ASCOM.CloudSensor.ObservingConditions");
-                vantagePro = new DriverAccess.ObservingConditions("ASCOM.Vantage.ObservingConditions");
-            } catch
-            {
-                throw new InvalidOperationException("Could not open weather stations");
-            }
+            _connected = false;
+            wisesafety.init();
 
             tl.LogMessage("SafetyMonitor", "Completed initialisation");
         }
+
 
         //
         // PUBLIC COM INTERFACE ISafetyMonitor IMPLEMENTATION
@@ -222,20 +194,12 @@ namespace ASCOM.Wise40.SafeToOpen
             set
             {
                 tl.LogMessage("Connected Set", value.ToString());
-                if (value == IsConnected)
-                    return;
-
-                if (boltwood != null)
-                    boltwood.Connected = value;
-                if (vantagePro != null)
-                    vantagePro.Connected = value;
                 _connected = value;
             }
         }
 
         public string Description
         {
-            // TODO customise this device description
             get
             {
                 tl.LogMessage("Description Get", driverDescription);
@@ -248,8 +212,7 @@ namespace ASCOM.Wise40.SafeToOpen
             get
             {
                 Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-                // TODO customise this driver description
-                string driverInfo = "Implements Wise40 weather max. values, wraps Boltwood CloudSensorII and Davis VantagePro. Version: " + String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
+                string driverInfo = "Quick and Dirty. Version: " + String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
                 tl.LogMessage("DriverInfo Get", driverInfo);
                 return driverInfo;
             }
@@ -280,7 +243,7 @@ namespace ASCOM.Wise40.SafeToOpen
         {
             get
             {
-                string name = "Short driver name - please customise";
+                string name = "Wise40 ComputerControl";
                 tl.LogMessage("Name Get", name);
                 return name;
             }
@@ -293,30 +256,7 @@ namespace ASCOM.Wise40.SafeToOpen
         {
             get
             {
-                bool ret = true;
-
-                if (boltwood == null)
-                    return false;
-
-                int light = Convert.ToInt32(boltwood.CommandString("daylight", true));
-                if (ageMaxSeconds > 0 && boltwood.TimeSinceLastUpdate("") > ageMaxSeconds)
-                    ret = false;
-                else if ((int)boltwood.CloudCover > (int)cloudsMax)
-                    ret = false;
-                else if (light > (int)lightMax)
-                    ret = false;
-
-                if (vantagePro == null)
-                    return false;
-
-                if (ageMaxSeconds > 0 && vantagePro.TimeSinceLastUpdate("") > ageMaxSeconds)
-                    ret = false;
-                else if (vantagePro.WindSpeed > windMax)
-                    ret = false;
-                else if (vantagePro.Humidity > humidityMax)
-                    ret = false;
-                else if (vantagePro.RainRate > rainMax)
-                    ret = false;
+                bool ret = wisesafety.IsSafe;
 
                 tl.LogMessage("IsSafe Get", ret.ToString());
                 return ret;
@@ -430,74 +370,24 @@ namespace ASCOM.Wise40.SafeToOpen
         /// <summary>
         /// Read the device configuration from the ASCOM Profile store
         /// </summary>
-        internal static void ReadProfile()
+        internal void ReadProfile()
         {
             using (Profile driverProfile = new Profile())
             {
-                int i;
-
                 driverProfile.DeviceType = "SafetyMonitor";
                 traceState = Convert.ToBoolean(driverProfile.GetValue(driverID, traceStateProfileName, string.Empty, traceStateDefault));
-                switch(driverProfile.GetValue(driverID, cloudsMaxProfileName, string.Empty, 0.ToString())) {
-                    case "cloudUnknown":
-                        cloudsMax = CloudSensor.SensorData.CloudCondition.cloudUnknown;
-                        break;
-                    case "cloudClear":
-                        cloudsMax = CloudSensor.SensorData.CloudCondition.cloudClear;
-                        break;
-                    case "cloudCloudy":
-                        cloudsMax = CloudSensor.SensorData.CloudCondition.cloudCloudy;
-                        break;
-                    case "cloudVeryCloudy":
-                        cloudsMax = CloudSensor.SensorData.CloudCondition.cloudVeryCloudy;
-                        break;
-                    case "cloudWet":
-                        cloudsMax = CloudSensor.SensorData.CloudCondition.cloudWet;
-                        break;
-                    default:
-                        cloudsMax = CloudSensor.SensorData.CloudCondition.cloudUnknown;
-                        break;
-                }
-                windMax = Convert.ToDouble(driverProfile.GetValue(driverID, windMaxProfileName, string.Empty, 0.0.ToString()));
-                rainMax = Convert.ToDouble(driverProfile.GetValue(driverID, rainMaxProfileName, string.Empty, 0.0.ToString()));
-                humidityMax = Convert.ToDouble(driverProfile.GetValue(driverID, humidityMaxProfileName, string.Empty, 0.0.ToString()));
-                ageMaxSeconds = Convert.ToInt32(driverProfile.GetValue(driverID, ageMaxSecondsProfileName, string.Empty, 0.0.ToString()));
-                switch(driverProfile.GetValue(driverID, lightMaxProfileName, string.Empty, 0.ToString()))
-                {
-                    case "dayUnknown":
-                        lightMax = CloudSensor.SensorData.DayCondition.dayUnknown;
-                        break;
-                    case "dayDark":
-                        lightMax = CloudSensor.SensorData.DayCondition.dayDark;
-                        break;
-                    case "dayLight":
-                        lightMax = CloudSensor.SensorData.DayCondition.dayLight;
-                        break;
-                    case "dayVeryLight":
-                        lightMax = CloudSensor.SensorData.DayCondition.dayVeryLight;
-                        break;
-                    default:
-                        lightMax = CloudSensor.SensorData.DayCondition.dayUnknown;
-                        break;
-                }
             }
         }
 
         /// <summary>
         /// Write the device configuration to the  ASCOM  Profile store
         /// </summary>
-        internal static void WriteProfile()
+        internal void WriteProfile()
         {
             using (Profile driverProfile = new Profile())
             {
                 driverProfile.DeviceType = "SafetyMonitor";
                 driverProfile.WriteValue(driverID, traceStateProfileName, traceState.ToString());
-                driverProfile.WriteValue(driverID, cloudsMaxProfileName, cloudsMax.ToString());
-                driverProfile.WriteValue(driverID, windMaxProfileName, windMax.ToString());
-                driverProfile.WriteValue(driverID, rainMaxProfileName, rainMax.ToString());
-                driverProfile.WriteValue(driverID, lightMaxProfileName, lightMax.ToString());
-                driverProfile.WriteValue(driverID, humidityMaxProfileName, humidityMax.ToString());
-                driverProfile.WriteValue(driverID, ageMaxSecondsProfileName, ageMaxSeconds.ToString());
             }
         }
 

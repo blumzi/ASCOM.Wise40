@@ -4,7 +4,7 @@
 ;
 [Setup]
 AppID={{f86848a3-b655-4564-aa8a-013046f82a88}
-AppName=ASCOM SafetySwitch SafetyMonitor Driver
+AppName=ASCOM ComputerControl SafetyMonitor Driver
 AppVerName="ASCOM {param:ProjectName} SafetyMonitor Driver 6.2.0.0"
 AppVersion=6.2.0.0
 AppPublisher=Arie Blumenzweig <blumzi@013.net>
@@ -17,35 +17,35 @@ DefaultDirName="{cf}\ASCOM\SafetyMonitor"
 DisableDirPage=yes
 DisableProgramGroupPage=yes
 OutputDir="."
-OutputBaseFilename="SafetySwitch Setup"
+OutputBaseFilename="ComputerControl Setup"
 Compression=lzma
 SolidCompression=yes
 ; Put there by Platform if Driver Installer Support selected
 WizardImageFile="C:\Program Files (x86)\ASCOM\Platform 6 Developer Components\Installer Generator\Resources\WizardImage.bmp"
 LicenseFile="C:\Program Files (x86)\ASCOM\Platform 6 Developer Components\Installer Generator\Resources\CreativeCommons.txt"
-; {cf}\ASCOM\Uninstall\SafetySwitch folder created by Platform, always
-UninstallFilesDir="{cf}\ASCOM\Uninstall\SafetyMonitor\SafetySwitch"
+; {cf}\ASCOM\Uninstall\ComputerControl folder created by Platform, always
+UninstallFilesDir="{cf}\ASCOM\Uninstall\SafetyMonitor\ComputerControl"
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Dirs]
-Name: "{cf}\ASCOM\Uninstall\SafetyMonitor\SafetySwitch"
+Name: "{cf}\ASCOM\Uninstall\SafetyMonitor\ComputerControl"
 ; TODO: Add subfolders below {app} as needed (e.g. Name: "{app}\MyFolder")
 
 [Files]
-Source: "C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\SafetySwitch\bin\Debug\ASCOM.Wise40.SafetySwitch.SafetyMonitor.dll"; DestDir: "{app}"
+Source: "C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\ComputerControl\bin\Debug\ASCOM.Wise40.ComputerControl.SafetyMonitor.dll"; DestDir: "{app}"
 ;Source: {TargetPath}; DestDir: "{app}"
 ; Require a read-me HTML to appear after installation, maybe driver's Help doc
-Source: "C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\SafetySwitch\\Installer\ReadMe.html"; DestDir: "{app}"; Flags: isreadme
+Source: "C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\ComputerControl\\Installer\ReadMe.html"; DestDir: "{app}"; Flags: isreadme
 ; TODO: Add other files needed by your driver here (add subfolders above)
 
 
 ; Only if driver is .NET
 [Run]
 ; Only for .NET assembly/in-proc drivers
-Filename: "{dotnet4032}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.SafetySwitch.SafetyMonitor.dll"""; Flags: runhidden 32bit
-Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.SafetySwitch.SafetyMonitor.dll"""; Flags: runhidden 64bit; Check: IsWin64
+Filename: "{dotnet4032}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.ComputerControl.SafetyMonitor.dll"""; Flags: runhidden 32bit
+Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.ComputerControl.SafetyMonitor.dll"""; Flags: runhidden 64bit; Check: IsWin64
 
 
 
@@ -53,10 +53,10 @@ Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40
 ; Only if driver is .NET
 [UninstallRun]
 ; Only for .NET assembly/in-proc drivers
-Filename: "{dotnet4032}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Wise40.SafetySwitch.SafetyMonitor.dll"""; Flags: runhidden 32bit
+Filename: "{dotnet4032}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Wise40.ComputerControl.SafetyMonitor.dll"""; Flags: runhidden 32bit
 ; This helps to give a clean uninstall
-Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.SafetySwitch.SafetyMonitor.dll"""; Flags: runhidden 64bit; Check: IsWin64
-Filename: "{dotnet4064}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Wise40.SafetySwitch.SafetyMonitor.dll"""; Flags: runhidden 64bit; Check: IsWin64
+Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.ComputerControl.SafetyMonitor.dll"""; Flags: runhidden 64bit; Check: IsWin64
+Filename: "{dotnet4064}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Wise40.ComputerControl.SafetyMonitor.dll"""; Flags: runhidden 64bit; Check: IsWin64
 
 
 

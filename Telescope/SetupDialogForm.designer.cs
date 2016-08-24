@@ -46,6 +46,7 @@ namespace ASCOM.Wise40
             this.checkBoxDebugAxes = new System.Windows.Forms.CheckBox();
             this.checkBoxDebugEncoders = new System.Windows.Forms.CheckBox();
             this.checkBoxEnslaveDome = new System.Windows.Forms.CheckBox();
+            this.checkBoxCalculateRefraction = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).BeginInit();
             this.groupBoxDebugging.SuspendLayout();
             this.SuspendLayout();
@@ -56,7 +57,7 @@ namespace ASCOM.Wise40
             this.cmdOK.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.cmdOK.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.cmdOK.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.cmdOK.Location = new System.Drawing.Point(248, 241);
+            this.cmdOK.Location = new System.Drawing.Point(248, 270);
             this.cmdOK.Name = "cmdOK";
             this.cmdOK.Size = new System.Drawing.Size(59, 24);
             this.cmdOK.TabIndex = 0;
@@ -70,7 +71,7 @@ namespace ASCOM.Wise40
             this.cmdCancel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.cmdCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.cmdCancel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.cmdCancel.Location = new System.Drawing.Point(248, 267);
+            this.cmdCancel.Location = new System.Drawing.Point(248, 296);
             this.cmdCancel.Name = "cmdCancel";
             this.cmdCancel.Size = new System.Drawing.Size(59, 25);
             this.cmdCancel.TabIndex = 1;
@@ -143,7 +144,7 @@ namespace ASCOM.Wise40
             this.groupBoxDebugging.Controls.Add(this.checkBoxDebugAxes);
             this.groupBoxDebugging.Controls.Add(this.checkBoxDebugEncoders);
             this.groupBoxDebugging.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBoxDebugging.Location = new System.Drawing.Point(16, 152);
+            this.groupBoxDebugging.Location = new System.Drawing.Point(16, 176);
             this.groupBoxDebugging.Name = "groupBoxDebugging";
             this.groupBoxDebugging.Size = new System.Drawing.Size(208, 144);
             this.groupBoxDebugging.TabIndex = 12;
@@ -256,12 +257,25 @@ namespace ASCOM.Wise40
             this.checkBoxEnslaveDome.Text = "Enslave dome";
             this.checkBoxEnslaveDome.UseVisualStyleBackColor = true;
             // 
+            // checkBoxCalculateRefraction
+            // 
+            this.checkBoxCalculateRefraction.AutoSize = true;
+            this.checkBoxCalculateRefraction.Checked = true;
+            this.checkBoxCalculateRefraction.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkBoxCalculateRefraction.Location = new System.Drawing.Point(24, 148);
+            this.checkBoxCalculateRefraction.Name = "checkBoxCalculateRefraction";
+            this.checkBoxCalculateRefraction.Size = new System.Drawing.Size(117, 17);
+            this.checkBoxCalculateRefraction.TabIndex = 15;
+            this.checkBoxCalculateRefraction.Text = "Calculate refraction";
+            this.checkBoxCalculateRefraction.UseVisualStyleBackColor = true;
+            // 
             // TelescopeSetupDialogForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.ClientSize = new System.Drawing.Size(321, 304);
+            this.ClientSize = new System.Drawing.Size(321, 333);
+            this.Controls.Add(this.checkBoxCalculateRefraction);
             this.Controls.Add(this.checkBoxEnslaveDome);
             this.Controls.Add(this.groupBoxDebugging);
             this.Controls.Add(this.traceBox);
@@ -307,5 +321,6 @@ namespace ASCOM.Wise40
         private System.Windows.Forms.CheckBox checkBoxDebugLogic;
         private System.Windows.Forms.Button buttonClearAll;
         private System.Windows.Forms.Button buttonSetAll;
+        private System.Windows.Forms.CheckBox checkBoxCalculateRefraction;
     }
 }

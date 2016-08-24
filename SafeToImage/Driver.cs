@@ -119,8 +119,14 @@ namespace ASCOM.Wise40.SafeToImage
 
             _connected = false; // Initialise connected to false
 
-            boltwood = new ObservingConditions("ASCOM.CloudSensor.ObservingConditions");
-            vantagePro = new ObservingConditions("ASCOM.Vantage.ObservingConditions");
+            try
+            {
+                boltwood = new ObservingConditions("ASCOM.CloudSensor.ObservingConditions");
+                vantagePro = new ObservingConditions("ASCOM.Vantage.ObservingConditions");
+            } catch
+            {
+                throw new InvalidOperationException("Could not open weather stations");
+            }
 
             tl.LogMessage("SafetyMonitor", "Completed initialisation");
         }
@@ -219,8 +225,10 @@ namespace ASCOM.Wise40.SafeToImage
                 if (value == IsConnected)
                     return;
 
-                boltwood.Connected = value;
-                vantagePro.Connected = value;
+                if (boltwood != null)
+                      boltwood.Connected = value;
+                if (vantagePro != null)
+                    vantagePro.Connected = value;
                 _connected = value;
             }
         }
@@ -286,6 +294,9 @@ namespace ASCOM.Wise40.SafeToImage
             get
             {
                 bool ret = true;
+
+                if (boltwood == null || vantagePro == null)
+                    return false;
 
                 int light = Convert.ToInt32(boltwood.CommandString("daylight", true));
                 if (ageMaxSeconds > 0 && boltwood.TimeSinceLastUpdate("") > ageMaxSeconds)

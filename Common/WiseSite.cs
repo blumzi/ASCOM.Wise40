@@ -9,6 +9,7 @@ using ASCOM.Wise40.Common.Properties;
 using ASCOM.Utilities;
 using ASCOM.Astrometry;
 using ASCOM.Wise40.Common;
+using ASCOM.Wise40;
 using ASCOM.DriverAccess;
 
 namespace ASCOM.Wise40
@@ -25,8 +26,14 @@ namespace ASCOM.Wise40
         public Astrometry.RefractionOption refractionOption;
         public double siteLatitude, siteLongitude, siteElevation;
         public ObservingConditions observingConditions;
-        public SafetyMonitor safetySwitch;
+        public SafetyMonitor safetySwitch, safeToOpen, safeToImage;
         private DateTime lastOCFetch;
+
+        //
+        // From the VantagePro summary graphs for 2015
+        //
+        private static readonly double[] averageTemperatures = { 9.7, 10.7, 14.0, 15.0, 21.1, 21.3, 24.4, 25.9, 24.7, 20.8, 16.1, 10.1 };
+        private static readonly double[] averagePressures = { 1021, 1012, 1017, 1013, 1008, 1008, 1006, 1007, 1008, 1013, 1015, 1022 };
 
         public static WiseSite Instance
         {
@@ -57,11 +64,41 @@ namespace ASCOM.Wise40
                 refractionOption = Astrometry.RefractionOption.LocationRefraction;
                 lastOCFetch = DateTime.Now;
             }
-            catch
+            catch (Exception e)
             {
+                observingConditions = null;
                 refractionOption = Astrometry.RefractionOption.NoRefraction;
             }
-            //safetySwitch = new SafetyMonitor("ASCOM.SafetySwitch.SafetyMonitor");
+
+            try
+            {
+                safetySwitch = new SafetyMonitor("ASCOM.Wise40.ComputerControl.SafetyMonitor");
+                safetySwitch.Connected = true;
+            }
+            catch (Exception e)
+            {
+                safetySwitch = null;
+            }
+
+            try
+            {
+                safeToOpen = new SafetyMonitor("ASCOM.Wise40.SafeToOpen.SafetyMonitor");
+                safeToOpen.Connected = true;
+            }
+            catch (Exception e)
+            {
+                safeToOpen = null;
+            }
+
+            try
+            {
+                safeToImage = new SafetyMonitor("ASCOM.Wise40.SafeToImage.SafetyMonitor");
+                safeToImage.Connected = true;
+            }
+            catch (Exception e)
+            {
+                safeToImage = null;
+            }
 
             _initialized = true;
         }
@@ -71,6 +108,24 @@ namespace ASCOM.Wise40
             novas31.Dispose();
             astroutils.Dispose();
             ascomutils.Dispose();
+
+            if (safetySwitch != null)
+            {
+                safetySwitch.Connected = false;
+                safetySwitch.Dispose();
+            }
+
+            if (safeToOpen != null)
+            {
+                safeToOpen.Connected = false;
+                safeToOpen.Dispose();
+            }
+
+            if (safeToImage != null)
+            {
+                safeToImage.Connected = false;
+                safeToImage.Dispose();
+            }
         }
 
         public Angle Longitude
@@ -122,11 +177,16 @@ namespace ASCOM.Wise40
         // If we haven't checked in a long enough time (10 minutes ?!?)
         //  get temperature and pressure.
         /// </summary>
-        public void prepareRefractionData()
+        public void prepareRefractionData(bool calculateRefraction)
         {
             const int freqOCFetchMinutes = 10;
 
-            refractionOption = Astrometry.RefractionOption.NoRefraction;
+            if (!calculateRefraction)
+            {
+                refractionOption = RefractionOption.NoRefraction;
+                return;
+            }
+
             if (observingConditions != null && DateTime.Now.Subtract(lastOCFetch).TotalMinutes > freqOCFetchMinutes)
             {
                 try
@@ -137,21 +197,16 @@ namespace ASCOM.Wise40
                     {
                         onSurface.Temperature = observingConditions.Temperature;
                         onSurface.Pressure = observingConditions.Pressure;
-                        refractionOption = Astrometry.RefractionOption.LocationRefraction;
+                        refractionOption = RefractionOption.LocationRefraction;
                     }
                 }
                 catch
                 {
-                }
-            }
-        }
+                    DateTime now = DateTime.Now;
 
-        public bool IsSafe
-        {
-            get
-            {
-                //return safetySwitch.IsSafe;
-                return true;
+                    onSurface.Temperature = averageTemperatures[now.Month];
+                    onSurface.Pressure = averagePressures[now.Month];
+                }
             }
         }
     }

@@ -89,11 +89,6 @@ namespace ASCOM.Wise40
         public static readonly List<double> rates = new List<double> { Const.rateSlew, Const.rateSet, Const.rateGuide };
         public static readonly List<TelescopeAxes> axes = new List<TelescopeAxes> { TelescopeAxes.axisPrimary, TelescopeAxes.axisSecondary };
 
-        //private long _primaryIsMoving = 0, _secondaryIsMoving = 0;
-        //private const int _nAxisValues = 5;
-        //private List<double> _primaryAxisValues = new List<double>(_nAxisValues);
-        //private List<uint> _secondaryAxisValues = new List<uint>(_nAxisValues);
-
         private object _primaryValuesLock = new Object(), _secondaryValuesLock = new Object();
 
         public object _primaryEncoderLock = new object(), _secondaryEncoderLock = new object();
@@ -163,7 +158,6 @@ namespace ASCOM.Wise40
 
         public class MovementParameters
         {
-            //public Angle changeDirection;
             public Angle minimalMovement;
             public Angle stopMovement;
             public double millisecondsPerDegree;
@@ -175,7 +169,6 @@ namespace ASCOM.Wise40
             public double rate;
             public Angle start;
             public Angle target;            // Where we finally want to get, through all the speed rates.
-            //public Angle intermediateTarget;     // An intermediate step towards the finalAngle, at one specific speed rate.
             public Angle distanceToTarget;
             public string threadName;
             public TelescopeAxes axis;
@@ -185,7 +178,9 @@ namespace ASCOM.Wise40
         public Dictionary<TelescopeAxes, Movement> prevMovement;         // remembers data about the previous axes movement, specifically the direction
         public Dictionary<TelescopeAxes, Movement> currMovement;         // the current axes movement        
 
-        private static Angle altLimit = new Angle(14.0, Angle.Type.Alt); // telescope must not go below this Altitude (14 min)
+        private static readonly Angle altLimit = new Angle(14.0, Angle.Type.Alt); // telescope must not go below this Altitude (14 min)
+        private static readonly Angle maxHaLimit = Angle.FromHours(7.0);
+        private static readonly Angle minHaLimit = Angle.FromHours(-7.0);
 
         public MovementDictionary movementDict;
         private bool wasTracking;
@@ -195,8 +190,13 @@ namespace ASCOM.Wise40
         public bool _enslaveDome = false;
         private DomeSlaveDriver domeSlaveDriver = DomeSlaveDriver.Instance;
 
+        public bool _calculateRefraction = true;
+        private string calculateRefractionProfileName = "Calculate refraction";
+
         private bool _driverInitiatedSlewing = false;
         private bool _wasSlewing = false;
+
+        private WiseComputerControl wisesafetyswitch = WiseComputerControl.Instance;
 
         /// <summary>
         /// From real-life measurements on axisPrimary, four samples, spaced at 5deg gave the following HA encoder values:
@@ -738,7 +738,7 @@ namespace ASCOM.Wise40
             {
                 double rar = 0, decr = 0, az = 0, zd= 0;
 
-                wisesite.prepareRefractionData();
+                wisesite.prepareRefractionData(_calculateRefraction);
                 novas31.Equ2Hor(astroutils.JulianDateUT1(0), 0,
                     wisesite.astrometricAccuracy,
                     0, 0,
@@ -758,7 +758,7 @@ namespace ASCOM.Wise40
             {
                 double rar = 0, decr = 0, az = 0, zd = 0, alt;
 
-                wisesite.prepareRefractionData();
+                wisesite.prepareRefractionData(_calculateRefraction);
                 novas31.Equ2Hor(astroutils.JulianDateUT1(0), 0,
                     wisesite.astrometricAccuracy,
                     0, 0,
@@ -1018,6 +1018,9 @@ namespace ASCOM.Wise40
                 throw new InvalidValueException("Cannot MoveAxis while AtPark");
             }
 
+            if (!wisesafetyswitch.IsSafe)
+                throw new InvalidOperationException("Safety switch is OFF (not safe)");
+
             double absRate = Math.Abs(Rate);
             if (! ((absRate == Const.rateSlew) || (absRate == Const.rateSet) || (absRate == Const.rateGuide)))
                 throw new InvalidValueException(string.Format("_moveAxis({0}, {1}): Invalid rate.", Axis, Rate));
@@ -1089,6 +1092,9 @@ namespace ASCOM.Wise40
             if (! SafeAtCoordinates(ra, dec))
                 throw new InvalidOperationException(string.Format("Not safe to SlewToTargetAsync({0}, {1})", ra, dec));
 
+            if (!wisesafetyswitch.IsSafe)
+                throw new InvalidOperationException("Safety switch is OFF (not safe)");
+
             _driverInitiatedSlewing = true;
 
             _slewToCoordinatesAsync(_targetRightAscension, _targetDeclination);
@@ -1102,12 +1108,13 @@ namespace ASCOM.Wise40
         /// <param name="ra">RightAscension of the checked position</param>
         /// <param name="dec">Declination of the checked position</param>
         /// <param name="takeAction">Take recovery actions or not</param>
-        public bool SafeAtCoordinates(Angle ra, Angle dec, bool takeAction = false)
+        /// <param name="checkHA">Check that the telescope's HourAngle is within limits.  Relevant only when (ra, dec) are the current position.</param>
+        public bool SafeAtCoordinates(Angle ra, Angle dec, bool takeAction = false, bool checkHA = false)
         {
             double rar = 0, decr = 0, az = 0, zd = 0;
-            Angle alt;
+            Angle alt, ha;
 
-            wisesite.prepareRefractionData();
+            wisesite.prepareRefractionData(_calculateRefraction);
             novas31.Equ2Hor(astroutils.JulianDateUT1(0), 0,
                 wisesite.astrometricAccuracy,
                 0, 0,
@@ -1117,7 +1124,14 @@ namespace ASCOM.Wise40
                 ref zd, ref az, ref rar, ref decr);
 
             alt = Angle.FromDegrees(90.0 - zd);
-            if (alt < altLimit)
+            ha = Angle.FromHours(HourAngle);
+
+            bool altNotSafe = alt < altLimit;
+            bool haNotSafe = false;
+            if (checkHA)
+                haNotSafe = ha < minHaLimit || ha > maxHaLimit;
+
+            if (altNotSafe || (checkHA && haNotSafe))
             {
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
                     string.Format("Not safe at ra: {0}, dec: {1} (alt: {2} < altLimit: {3})",
@@ -1497,6 +1511,9 @@ namespace ASCOM.Wise40
             if (!SafeAtCoordinates(ra, dec))
                 throw new InvalidOperationException(string.Format("Not safe to SlewToCoordinates({0}, {1})", ra, dec));
 
+            if (! wisesafetyswitch.IsSafe)
+                throw new InvalidOperationException("Safety switch is OFF (not safe)");
+
             try
             {
                 _slewToCoordinatesSync(ra, dec);
@@ -1529,6 +1546,9 @@ namespace ASCOM.Wise40
             if (!SafeAtCoordinates(ra, dec))
                 throw new InvalidOperationException(string.Format("Not safe to SlewToCoordinatesAsync({0}, {1})", ra, dec));
 
+            if (!wisesafetyswitch.IsSafe)
+                throw new InvalidOperationException("Safety switch is OFF (not safe)");
+
             try
             {
                 _slewToCoordinatesAsync(ra, dec);
@@ -1542,7 +1562,7 @@ namespace ASCOM.Wise40
 
         private void DoCheckSafety(object StateObject)
         {
-            SafeAtCoordinates(Angle.FromHours(RightAscension, Angle.Type.RA), Angle.FromDegrees(Declination, Angle.Type.Dec), true);
+            SafeAtCoordinates(Angle.FromHours(RightAscension, Angle.Type.RA), Angle.FromDegrees(Declination, Angle.Type.Dec), true, true);
         }
 
         public void Unpark()
@@ -1690,6 +1710,9 @@ namespace ASCOM.Wise40
 
             if (!SafeAtCoordinates(ra, dec))
                 throw new InvalidOperationException(string.Format("Not safe to SlewToTarget({0}, {1})", ra, dec));
+
+            if (!wisesafetyswitch.IsSafe)
+                throw new InvalidOperationException("Safety switch is OFF (not safe)");
 
             _driverInitiatedSlewing = true;
 
@@ -2144,6 +2167,7 @@ namespace ASCOM.Wise40
                     driverProfile.GetValue(driverID, astrometricAccuracyProfileName, string.Empty, "Full") == "Full" ?
                         Accuracy.Full :
                         Accuracy.Reduced;
+                _calculateRefraction = Convert.ToBoolean(driverProfile.GetValue(driverID, calculateRefractionProfileName, string.Empty, "true"));
             }
         }
 
@@ -2159,6 +2183,7 @@ namespace ASCOM.Wise40
                 driverProfile.WriteValue(driverID, astrometricAccuracyProfileName, wisesite.astrometricAccuracy == Accuracy.Full ? "Full" : "Reduced");
                 driverProfile.WriteValue(driverID, debugLevelProfileName, debugger.Level.ToString());
                 driverProfile.WriteValue(driverID, enslaveDomeProfileName, _enslaveDome.ToString());
+                driverProfile.WriteValue(driverID, calculateRefractionProfileName, _calculateRefraction.ToString());
             }
         }
     }

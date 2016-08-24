@@ -93,13 +93,10 @@ namespace ASCOM.Wise40
             WiseDome.Instance.init();
 
             groupBoxTelescope.Text = string.Format(" {0} - v{1} ", wisetele.Name, wisetele.DriverVersion);
-            groupBoxWeather.Text = string.Format(" {0} - v{1} ", wisesite.observingConditions.Name, wisesite.observingConditions.DriverVersion);
+            groupBoxWeather.Text = wisesite.observingConditions.Connected ?
+                string.Format(" {0} - v{1} ", wisesite.observingConditions.Name, wisesite.observingConditions.DriverVersion) :
+                " Weather - Not connected ";
             groupBoxDomeGroup.Text = string.Format(" {0} - v{1} ", WiseDome.Instance.Name, WiseDome.Instance.DriverVersion);
-
-            if (wisesite.IsSafe)
-                Status("Wise40 is safe.", 10000, Severity.Good);
-            else
-                Status("Wise40 is NOT safe !!!", 0, Severity.Error);
         }
 
         private void radioButtonSlew_Click(object sender, EventArgs e)
@@ -212,6 +209,10 @@ namespace ASCOM.Wise40
             axisValue.Text = wisetele.HAEncoder.AxisValue.ToString();
             wormValue.Text = wisetele.HAEncoder.WormValue.ToString();
 
+            labelComputerControl.ForeColor = wisesite.safetySwitch == null ? Color.Yellow : (wisesite.safetySwitch.IsSafe ? Color.Green : Color.Red);
+            labelSafeToOpen.ForeColor = wisesite.safeToOpen == null ? Color.Yellow : (wisesite.safeToOpen.IsSafe ? Color.Green : Color.Red);
+            labelSafeToImage.ForeColor = wisesite.safeToImage == null ? Color.Yellow : (wisesite.safeToImage.IsSafe ? Color.Green : Color.Red);
+
             checkBoxPrimaryIsActive.Checked = wisetele.AxisIsMoving(TelescopeAxes.axisPrimary);
             checkBoxSecondaryIsActive.Checked = wisetele.AxisIsMoving(TelescopeAxes.axisSecondary);
             checkBoxSlewingIsActive.Checked = wisetele.Slewing;
@@ -242,17 +243,6 @@ namespace ASCOM.Wise40
 
             if (panelDome.Visible)
             {
-                if (labelDomeSlavedConfValue.Text == string.Empty)
-                {
-                    using (ASCOM.Utilities.Profile driverProfile = new ASCOM.Utilities.Profile())
-                    {
-                        driverProfile.DeviceType = "Telescope";
-                        bool confDomeSlaved = Convert.ToBoolean(driverProfile.GetValue("ASCOM.Wise40.Telescope", "Enslave Dome", string.Empty, "false"));
-
-                        labelDomeSlavedConfValue.Text = confDomeSlaved ? "Enslaved" : "Not enslaved" + " while tracking";
-                    }
-                }
-
                 labelDomeAzimuthValue.Text = domeSlaveDriver.Azimuth;
                 labelDomeStatusValue.Text = domeSlaveDriver.Status;
                 labelDomeShutterStatusValue.Text = domeSlaveDriver.ShutterStatus;
@@ -260,33 +250,53 @@ namespace ASCOM.Wise40
 
             if (groupBoxWeather.Visible)
             {
-                try
+                if (!wisesite.observingConditions.Connected)
                 {
-                    ObservingConditions oc = wisesite.observingConditions;
+                    string nc = "???";
 
-                    labelAgeValue.Text = ((int)Math.Round(oc.TimeSinceLastUpdate(""), 2)).ToString() + "sec";
-
-                    double d = oc.CloudCover;
-                    if (d == 0.0)
-                        labelCloudCoverValue.Text = "Clear";
-                    else if (d == 50.0)
-                        labelCloudCoverValue.Text = "Cloudy";
-                    else if (d == 90.0)
-                        labelCloudCoverValue.Text = "VeryCloudy";
-                    else
-                        labelCloudCoverValue.Text = "Unknown";
-
-                    labelDewPointValue.Text = oc.DewPoint.ToString() + "°C";
-                    labelSkyTempValue.Text = oc.SkyTemperature.ToString() + "°C";
-                    labelTempValue.Text = oc.Temperature.ToString() + "°C";
-                    labelHumidityValue.Text = oc.Humidity.ToString() + "%";
-                    labelPressureValue.Text = oc.Pressure.ToString() + "mB";
-                    labelRainRateValue.Text = (oc.RainRate > 0.0) ? "Wet" : "Dry";
-                    labelWindSpeedValue.Text = oc.WindSpeed.ToString() + "m/s";
-                    labelWindDirValue.Text = oc.WindDirection.ToString() + "°";
+                    labelAgeValue.Text = nc;
+                    labelCloudCoverValue.Text = nc;
+                    labelCloudCoverValue.Text = nc;
+                    labelDewPointValue.Text = nc;
+                    labelSkyTempValue.Text = nc;
+                    labelTempValue.Text = nc;
+                    labelHumidityValue.Text = nc;
+                    labelPressureValue.Text = nc;
+                    labelRainRateValue.Text = nc;
+                    labelWindSpeedValue.Text = nc;
+                    labelWindDirValue.Text = nc;
                 }
-                catch (PropertyNotImplementedException e) {
-                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "OC: exception: {0}", e.Message);
+                else
+                {
+                    try
+                    {
+                        ObservingConditions oc = wisesite.observingConditions;
+
+                        labelAgeValue.Text = ((int)Math.Round(oc.TimeSinceLastUpdate(""), 2)).ToString() + "sec";
+
+                        double d = oc.CloudCover;
+                        if (d == 0.0)
+                            labelCloudCoverValue.Text = "Clear";
+                        else if (d == 50.0)
+                            labelCloudCoverValue.Text = "Cloudy";
+                        else if (d == 90.0)
+                            labelCloudCoverValue.Text = "VeryCloudy";
+                        else
+                            labelCloudCoverValue.Text = "Unknown";
+
+                        labelDewPointValue.Text = oc.DewPoint.ToString() + "°C";
+                        labelSkyTempValue.Text = oc.SkyTemperature.ToString() + "°C";
+                        labelTempValue.Text = oc.Temperature.ToString() + "°C";
+                        labelHumidityValue.Text = oc.Humidity.ToString() + "%";
+                        labelPressureValue.Text = oc.Pressure.ToString() + "mB";
+                        labelRainRateValue.Text = (oc.RainRate > 0.0) ? "Wet" : "Dry";
+                        labelWindSpeedValue.Text = oc.WindSpeed.ToString() + "m/s";
+                        labelWindDirValue.Text = oc.WindDirection.ToString() + "°";
+                    }
+                    catch (PropertyNotImplementedException e)
+                    {
+                        debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "OC: exception: {0}", e.Message);
+                    }
                 }
             }
 
@@ -721,6 +731,73 @@ namespace ASCOM.Wise40
                 statusDisplayExpiration = now;
                 timerStatus.Stop();
             }
+        }
+
+        private void labelConfDomeSlaved_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void buttonSafety_Click(object sender, EventArgs e)
+        {
+            Button button = (Button)sender;
+
+            if (groupBoxSafety.Visible)
+            {
+                buttonSafety.Text = "Show safety";
+                groupBoxSafety.Visible = false;
+            }
+            else
+            {
+                buttonSafety.Text = "Hide safety";
+                groupBoxSafety.Visible = true;
+            }
+        }
+
+        private void textBoxDomeAzGo_Validated(object sender, EventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            double az = Convert.ToDouble(tb.Text);
+
+            if (az < 0.0 || az >= 360.0)
+                tb.Text = "";
+        }
+
+        private void buttonDomeAzGo_Click(object sender, EventArgs e)
+        {
+            if (textBoxDomeAzGo.Text == string.Empty)
+                return;
+
+            double az = Convert.ToDouble(textBoxDomeAzGo.Text);
+            if (az < 0.0 || az >= 360.0)
+                textBoxDomeAzGo.Text = "";
+
+            WiseDome.Instance.Azimuth = Angle.FromDegrees(az);
+        }
+
+        private void buttonDomeLeft_MouseDown(object sender, MouseEventArgs e)
+        {
+            WiseDome.Instance.StartMovingCCW();
+        }
+
+        private void buttonDomeRight_MouseDown(object sender, MouseEventArgs e)
+        {
+            WiseDome.Instance.StartMovingCW();
+        }
+
+        private void buttonDomeRight_MouseUp(object sender, MouseEventArgs e)
+        {
+            WiseDome.Instance.Stop();
+        }
+
+        private void buttonDomeLeft_MouseUp(object sender, MouseEventArgs e)
+        {
+            WiseDome.Instance.Stop();
+        }
+
+        private void buttonDomeStop_Click(object sender, EventArgs e)
+        {
+            WiseDome.Instance.Stop();
         }
     }
 }

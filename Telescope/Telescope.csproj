@@ -191,6 +191,10 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ComputerControl\ComputerControl.csproj">
+      <Project>{eef50bc4-becc-430b-9a05-769c80d8d25c}</Project>
+      <Name>ComputerControl</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Dome\Dome.csproj">
       <Project>{64308775-bd4a-469c-bcab-3ed830b811af}</Project>
       <Name>Dome</Name>

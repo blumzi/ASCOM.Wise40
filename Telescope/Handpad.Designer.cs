@@ -32,6 +32,14 @@
             this.displayRefreshTimer = new System.Windows.Forms.Timer(this.components);
             this.panelDebug = new System.Windows.Forms.Panel();
             this.groupBoxMovementStudy = new System.Windows.Forms.GroupBox();
+            this.label7 = new System.Windows.Forms.Label();
+            this.label10 = new System.Windows.Forms.Label();
+            this.labelNewRARadians = new System.Windows.Forms.Label();
+            this.labelNewDecRadians = new System.Windows.Forms.Label();
+            this.labelNewRA = new System.Windows.Forms.Label();
+            this.labelNewDec = new System.Windows.Forms.Label();
+            this.label24 = new System.Windows.Forms.Label();
+            this.label1 = new System.Windows.Forms.Label();
             this.groupBoxCurrentRates = new System.Windows.Forms.GroupBox();
             this.tableLayoutPanelAxesState = new System.Windows.Forms.TableLayoutPanel();
             this.labelCurrPrimRateValue = new System.Windows.Forms.Label();
@@ -115,6 +123,7 @@
             this.checkBoxEnslaveDome = new System.Windows.Forms.CheckBox();
             this.checkBoxTrack = new System.Windows.Forms.CheckBox();
             this.panelShowHideButtons = new System.Windows.Forms.Panel();
+            this.buttonSafety = new System.Windows.Forms.Button();
             this.buttonWeather = new System.Windows.Forms.Button();
             this.buttonStudy = new System.Windows.Forms.Button();
             this.buttonDome = new System.Windows.Forms.Button();
@@ -126,14 +135,11 @@
             this.buttonOpenShutter = new System.Windows.Forms.Button();
             this.label9 = new System.Windows.Forms.Label();
             this.labelDomeShutterStatusValue = new System.Windows.Forms.Label();
-            this.groupBoxDome = new System.Windows.Forms.GroupBox();
             this.label15 = new System.Windows.Forms.Label();
             this.labelDomeStatusValue = new System.Windows.Forms.Label();
             this.label17 = new System.Windows.Forms.Label();
             this.labelDomeAzimuthValue = new System.Windows.Forms.Label();
             this.groupBoxDomeGroup = new System.Windows.Forms.GroupBox();
-            this.labelDomeSlavedConfValue = new System.Windows.Forms.Label();
-            this.labelConfDomeSlaved = new System.Windows.Forms.Label();
             this.panelFocuser = new System.Windows.Forms.Panel();
             this.groupBoxFocuser = new System.Windows.Forms.GroupBox();
             this.tableLayoutPanelFocuser = new System.Windows.Forms.TableLayoutPanel();
@@ -168,15 +174,16 @@
             this.labelDewPointValue = new System.Windows.Forms.Label();
             this.labelHumidityValue = new System.Windows.Forms.Label();
             this.labelPressureValue = new System.Windows.Forms.Label();
+            this.groupBoxSafety = new System.Windows.Forms.GroupBox();
+            this.labelSafeToImage = new System.Windows.Forms.Label();
+            this.labelSafeToOpen = new System.Windows.Forms.Label();
+            this.labelComputerControl = new System.Windows.Forms.Label();
             this.timerStatus = new System.Windows.Forms.Timer(this.components);
-            this.label1 = new System.Windows.Forms.Label();
-            this.labelNewRA = new System.Windows.Forms.Label();
-            this.labelNewDec = new System.Windows.Forms.Label();
-            this.label24 = new System.Windows.Forms.Label();
-            this.labelNewRARadians = new System.Windows.Forms.Label();
-            this.labelNewDecRadians = new System.Windows.Forms.Label();
-            this.label7 = new System.Windows.Forms.Label();
-            this.label10 = new System.Windows.Forms.Label();
+            this.buttonDomeLeft = new System.Windows.Forms.Button();
+            this.buttonDomeStop = new System.Windows.Forms.Button();
+            this.buttonDomeRight = new System.Windows.Forms.Button();
+            this.buttonDomeAzGo = new System.Windows.Forms.Button();
+            this.textBoxDomeAzGo = new System.Windows.Forms.TextBox();
             this.panelDebug.SuspendLayout();
             this.groupBoxMovementStudy.SuspendLayout();
             this.groupBoxCurrentRates.SuspendLayout();
@@ -196,7 +203,6 @@
             this.panelShowHideButtons.SuspendLayout();
             this.panelDome.SuspendLayout();
             this.groupBox7.SuspendLayout();
-            this.groupBoxDome.SuspendLayout();
             this.groupBoxDomeGroup.SuspendLayout();
             this.panelFocuser.SuspendLayout();
             this.groupBoxFocuser.SuspendLayout();
@@ -204,6 +210,7 @@
             this.tableLayoutPanelMain.SuspendLayout();
             this.groupBoxWeather.SuspendLayout();
             this.tableLayoutPanelWeather.SuspendLayout();
+            this.groupBoxSafety.SuspendLayout();
             this.SuspendLayout();
             // 
             // displayRefreshTimer
@@ -218,8 +225,8 @@
             this.panelDebug.Controls.Add(this.groupBoxMovementStudy);
             this.panelDebug.Location = new System.Drawing.Point(672, 3);
             this.panelDebug.Name = "panelDebug";
-            this.tableLayoutPanelMain.SetRowSpan(this.panelDebug, 3);
-            this.panelDebug.Size = new System.Drawing.Size(492, 573);
+            this.tableLayoutPanelMain.SetRowSpan(this.panelDebug, 4);
+            this.panelDebug.Size = new System.Drawing.Size(492, 637);
             this.panelDebug.TabIndex = 14;
             this.panelDebug.Visible = false;
             // 
@@ -254,12 +261,138 @@
             this.groupBoxMovementStudy.Controls.Add(this.groupBox5);
             this.groupBoxMovementStudy.Controls.Add(this.groupBox2);
             this.groupBoxMovementStudy.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBoxMovementStudy.Location = new System.Drawing.Point(8, 11);
+            this.groupBoxMovementStudy.Location = new System.Drawing.Point(8, 8);
             this.groupBoxMovementStudy.Name = "groupBoxMovementStudy";
-            this.groupBoxMovementStudy.Size = new System.Drawing.Size(484, 557);
+            this.groupBoxMovementStudy.Size = new System.Drawing.Size(484, 624);
             this.groupBoxMovementStudy.TabIndex = 8;
             this.groupBoxMovementStudy.TabStop = false;
             this.groupBoxMovementStudy.Text = " Movement Study ";
+            // 
+            // label7
+            // 
+            this.label7.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.label7.AutoSize = true;
+            this.label7.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.label7.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label7.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
+            this.label7.Location = new System.Drawing.Point(208, 171);
+            this.label7.Margin = new System.Windows.Forms.Padding(0);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(41, 18);
+            this.label7.TabIndex = 34;
+            this.label7.Text = "rad:";
+            this.label7.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // label10
+            // 
+            this.label10.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.label10.AutoSize = true;
+            this.label10.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label10.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
+            this.label10.Location = new System.Drawing.Point(208, 152);
+            this.label10.Margin = new System.Windows.Forms.Padding(0);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(41, 18);
+            this.label10.TabIndex = 33;
+            this.label10.Text = "rad:";
+            this.label10.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // labelNewRARadians
+            // 
+            this.labelNewRARadians.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.labelNewRARadians.AutoSize = true;
+            this.labelNewRARadians.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.labelNewRARadians.Font = new System.Drawing.Font("Lucida Console", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelNewRARadians.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.labelNewRARadians.Location = new System.Drawing.Point(256, 152);
+            this.labelNewRARadians.Margin = new System.Windows.Forms.Padding(0);
+            this.labelNewRARadians.Name = "labelNewRARadians";
+            this.labelNewRARadians.Size = new System.Drawing.Size(128, 16);
+            this.labelNewRARadians.TabIndex = 31;
+            this.labelNewRARadians.Text = "-00h00m00.0s";
+            this.labelNewRARadians.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // labelNewDecRadians
+            // 
+            this.labelNewDecRadians.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.labelNewDecRadians.AutoSize = true;
+            this.labelNewDecRadians.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.labelNewDecRadians.Font = new System.Drawing.Font("Lucida Console", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelNewDecRadians.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.labelNewDecRadians.Location = new System.Drawing.Point(256, 171);
+            this.labelNewDecRadians.Margin = new System.Windows.Forms.Padding(0);
+            this.labelNewDecRadians.Name = "labelNewDecRadians";
+            this.labelNewDecRadians.Size = new System.Drawing.Size(118, 16);
+            this.labelNewDecRadians.TabIndex = 32;
+            this.labelNewDecRadians.Text = "00°00\'00.0\"";
+            this.labelNewDecRadians.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // labelNewRA
+            // 
+            this.labelNewRA.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.labelNewRA.AutoSize = true;
+            this.labelNewRA.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.labelNewRA.Font = new System.Drawing.Font("Lucida Console", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelNewRA.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.labelNewRA.Location = new System.Drawing.Point(64, 152);
+            this.labelNewRA.Margin = new System.Windows.Forms.Padding(0);
+            this.labelNewRA.Name = "labelNewRA";
+            this.labelNewRA.Size = new System.Drawing.Size(128, 16);
+            this.labelNewRA.TabIndex = 28;
+            this.labelNewRA.Text = "-00h00m00.0s";
+            this.labelNewRA.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // labelNewDec
+            // 
+            this.labelNewDec.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.labelNewDec.AutoSize = true;
+            this.labelNewDec.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.labelNewDec.Font = new System.Drawing.Font("Lucida Console", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelNewDec.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.labelNewDec.Location = new System.Drawing.Point(64, 171);
+            this.labelNewDec.Margin = new System.Windows.Forms.Padding(0);
+            this.labelNewDec.Name = "labelNewDec";
+            this.labelNewDec.Size = new System.Drawing.Size(118, 16);
+            this.labelNewDec.TabIndex = 30;
+            this.labelNewDec.Text = "00°00\'00.0\"";
+            this.labelNewDec.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // label24
+            // 
+            this.label24.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.label24.AutoSize = true;
+            this.label24.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.label24.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label24.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
+            this.label24.Location = new System.Drawing.Point(8, 171);
+            this.label24.Margin = new System.Windows.Forms.Padding(0);
+            this.label24.Name = "label24";
+            this.label24.Size = new System.Drawing.Size(47, 18);
+            this.label24.TabIndex = 29;
+            this.label24.Text = "DEC:";
+            this.label24.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // label1
+            // 
+            this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.label1.AutoSize = true;
+            this.label1.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
+            this.label1.Location = new System.Drawing.Point(20, 152);
+            this.label1.Margin = new System.Windows.Forms.Padding(0);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(35, 18);
+            this.label1.TabIndex = 27;
+            this.label1.Text = "RA:";
+            this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // groupBoxCurrentRates
             // 
@@ -602,7 +735,7 @@
             this.TextBoxLog.Name = "TextBoxLog";
             this.TextBoxLog.ReadOnly = true;
             this.TextBoxLog.ShortcutsEnabled = false;
-            this.TextBoxLog.Size = new System.Drawing.Size(472, 226);
+            this.TextBoxLog.Size = new System.Drawing.Size(472, 280);
             this.TextBoxLog.TabIndex = 8;
             this.TextBoxLog.Text = "hiho";
             // 
@@ -753,8 +886,8 @@
             this.panelControls.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.panelControls.Location = new System.Drawing.Point(3, 3);
             this.panelControls.Name = "panelControls";
-            this.tableLayoutPanelMain.SetRowSpan(this.panelControls, 3);
-            this.panelControls.Size = new System.Drawing.Size(363, 571);
+            this.tableLayoutPanelMain.SetRowSpan(this.panelControls, 4);
+            this.panelControls.Size = new System.Drawing.Size(363, 640);
             this.panelControls.TabIndex = 0;
             // 
             // groupBox36
@@ -763,7 +896,7 @@
             this.groupBox36.Controls.Add(this.radioButtonGuide);
             this.groupBox36.Controls.Add(this.radioButtonSet);
             this.groupBox36.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBox36.Location = new System.Drawing.Point(84, 392);
+            this.groupBox36.Location = new System.Drawing.Point(81, 424);
             this.groupBox36.Name = "groupBox36";
             this.groupBox36.Size = new System.Drawing.Size(108, 77);
             this.groupBox36.TabIndex = 12;
@@ -968,9 +1101,9 @@
             this.groupBoxTelescope.Controls.Add(this.groupBoxTracking);
             this.groupBoxTelescope.Controls.Add(this.panelShowHideButtons);
             this.groupBoxTelescope.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBoxTelescope.Location = new System.Drawing.Point(0, 11);
+            this.groupBoxTelescope.Location = new System.Drawing.Point(0, 5);
             this.groupBoxTelescope.Name = "groupBoxTelescope";
-            this.groupBoxTelescope.Size = new System.Drawing.Size(360, 557);
+            this.groupBoxTelescope.Size = new System.Drawing.Size(360, 632);
             this.groupBoxTelescope.TabIndex = 18;
             this.groupBoxTelescope.TabStop = false;
             this.groupBoxTelescope.Text = " Telescope ";
@@ -1277,7 +1410,7 @@
             this.groupBox3.Controls.Add(this.checkBoxTrackingIsActive);
             this.groupBox3.Controls.Add(this.checkBoxPrimaryIsActive);
             this.groupBox3.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBox3.Location = new System.Drawing.Point(224, 253);
+            this.groupBox3.Location = new System.Drawing.Point(224, 270);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Size = new System.Drawing.Size(88, 102);
             this.groupBox3.TabIndex = 17;
@@ -1349,9 +1482,9 @@
             this.groupBoxTracking.Controls.Add(this.checkBoxEnslaveDome);
             this.groupBoxTracking.Controls.Add(this.checkBoxTrack);
             this.groupBoxTracking.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBoxTracking.Location = new System.Drawing.Point(84, 482);
+            this.groupBoxTracking.Location = new System.Drawing.Point(81, 512);
             this.groupBoxTracking.Name = "groupBoxTracking";
-            this.groupBoxTracking.Size = new System.Drawing.Size(108, 56);
+            this.groupBoxTracking.Size = new System.Drawing.Size(108, 68);
             this.groupBoxTracking.TabIndex = 0;
             this.groupBoxTracking.TabStop = false;
             this.groupBoxTracking.Text = " Tracking ";
@@ -1360,7 +1493,7 @@
             // 
             this.checkBoxEnslaveDome.AutoSize = true;
             this.checkBoxEnslaveDome.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.checkBoxEnslaveDome.Location = new System.Drawing.Point(8, 32);
+            this.checkBoxEnslaveDome.Location = new System.Drawing.Point(8, 37);
             this.checkBoxEnslaveDome.Name = "checkBoxEnslaveDome";
             this.checkBoxEnslaveDome.Size = new System.Drawing.Size(95, 17);
             this.checkBoxEnslaveDome.TabIndex = 7;
@@ -1372,7 +1505,7 @@
             // 
             this.checkBoxTrack.AutoSize = true;
             this.checkBoxTrack.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.checkBoxTrack.Location = new System.Drawing.Point(8, 16);
+            this.checkBoxTrack.Location = new System.Drawing.Point(8, 21);
             this.checkBoxTrack.Name = "checkBoxTrack";
             this.checkBoxTrack.Size = new System.Drawing.Size(54, 17);
             this.checkBoxTrack.TabIndex = 6;
@@ -1382,15 +1515,28 @@
             // 
             // panelShowHideButtons
             // 
+            this.panelShowHideButtons.Controls.Add(this.buttonSafety);
             this.panelShowHideButtons.Controls.Add(this.buttonWeather);
             this.panelShowHideButtons.Controls.Add(this.buttonStudy);
             this.panelShowHideButtons.Controls.Add(this.buttonDome);
             this.panelShowHideButtons.Controls.Add(this.buttonFocuser);
             this.panelShowHideButtons.Controls.Add(this.buttonHardware);
-            this.panelShowHideButtons.Location = new System.Drawing.Point(218, 404);
+            this.panelShowHideButtons.Location = new System.Drawing.Point(215, 420);
             this.panelShowHideButtons.Name = "panelShowHideButtons";
-            this.panelShowHideButtons.Size = new System.Drawing.Size(100, 136);
+            this.panelShowHideButtons.Size = new System.Drawing.Size(100, 168);
             this.panelShowHideButtons.TabIndex = 15;
+            // 
+            // buttonSafety
+            // 
+            this.buttonSafety.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonSafety.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.buttonSafety.Location = new System.Drawing.Point(4, 138);
+            this.buttonSafety.Name = "buttonSafety";
+            this.buttonSafety.Size = new System.Drawing.Size(93, 23);
+            this.buttonSafety.TabIndex = 17;
+            this.buttonSafety.Text = "Show Safety";
+            this.buttonSafety.UseVisualStyleBackColor = false;
+            this.buttonSafety.Click += new System.EventHandler(this.buttonSafety_Click);
             // 
             // buttonWeather
             // 
@@ -1454,12 +1600,14 @@
             // 
             // panelDome
             // 
+            this.panelDome.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.panelDome.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.panelDome.Controls.Add(this.groupBox7);
-            this.panelDome.Controls.Add(this.groupBoxDome);
             this.panelDome.Controls.Add(this.groupBoxDomeGroup);
             this.panelDome.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.panelDome.Location = new System.Drawing.Point(372, 3);
+            this.panelDome.Location = new System.Drawing.Point(372, 62);
             this.panelDome.Name = "panelDome";
             this.panelDome.Size = new System.Drawing.Size(294, 253);
             this.panelDome.TabIndex = 13;
@@ -1526,26 +1674,12 @@
             this.labelDomeShutterStatusValue.TabIndex = 19;
             this.labelDomeShutterStatusValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
-            // groupBoxDome
-            // 
-            this.groupBoxDome.Controls.Add(this.label15);
-            this.groupBoxDome.Controls.Add(this.labelDomeStatusValue);
-            this.groupBoxDome.Controls.Add(this.label17);
-            this.groupBoxDome.Controls.Add(this.labelDomeAzimuthValue);
-            this.groupBoxDome.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBoxDome.Location = new System.Drawing.Point(24, 48);
-            this.groupBoxDome.Name = "groupBoxDome";
-            this.groupBoxDome.Size = new System.Drawing.Size(248, 80);
-            this.groupBoxDome.TabIndex = 23;
-            this.groupBoxDome.TabStop = false;
-            this.groupBoxDome.Text = " Dome ";
-            // 
             // label15
             // 
             this.label15.AutoSize = true;
             this.label15.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label15.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label15.Location = new System.Drawing.Point(34, 48);
+            this.label15.Location = new System.Drawing.Point(32, 98);
             this.label15.Name = "label15";
             this.label15.Size = new System.Drawing.Size(64, 18);
             this.label15.TabIndex = 18;
@@ -1557,7 +1691,7 @@
             this.labelDomeStatusValue.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.labelDomeStatusValue.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelDomeStatusValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelDomeStatusValue.Location = new System.Drawing.Point(104, 54);
+            this.labelDomeStatusValue.Location = new System.Drawing.Point(102, 102);
             this.labelDomeStatusValue.Name = "labelDomeStatusValue";
             this.labelDomeStatusValue.Size = new System.Drawing.Size(128, 20);
             this.labelDomeStatusValue.TabIndex = 19;
@@ -1568,11 +1702,11 @@
             this.label17.AutoSize = true;
             this.label17.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label17.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label17.Location = new System.Drawing.Point(16, 19);
+            this.label17.Location = new System.Drawing.Point(24, 20);
             this.label17.Name = "label17";
-            this.label17.Size = new System.Drawing.Size(82, 18);
+            this.label17.Size = new System.Drawing.Size(35, 18);
             this.label17.TabIndex = 16;
-            this.label17.Text = "Azimuth:";
+            this.label17.Text = "Az:";
             this.label17.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // labelDomeAzimuthValue
@@ -1580,16 +1714,26 @@
             this.labelDomeAzimuthValue.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.labelDomeAzimuthValue.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelDomeAzimuthValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelDomeAzimuthValue.Location = new System.Drawing.Point(104, 24);
+            this.labelDomeAzimuthValue.Location = new System.Drawing.Point(62, 24);
             this.labelDomeAzimuthValue.Name = "labelDomeAzimuthValue";
-            this.labelDomeAzimuthValue.Size = new System.Drawing.Size(128, 20);
+            this.labelDomeAzimuthValue.Size = new System.Drawing.Size(114, 20);
             this.labelDomeAzimuthValue.TabIndex = 17;
             this.labelDomeAzimuthValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // groupBoxDomeGroup
             // 
-            this.groupBoxDomeGroup.Controls.Add(this.labelDomeSlavedConfValue);
-            this.groupBoxDomeGroup.Controls.Add(this.labelConfDomeSlaved);
+            this.groupBoxDomeGroup.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBoxDomeGroup.Controls.Add(this.textBoxDomeAzGo);
+            this.groupBoxDomeGroup.Controls.Add(this.buttonDomeAzGo);
+            this.groupBoxDomeGroup.Controls.Add(this.buttonDomeRight);
+            this.groupBoxDomeGroup.Controls.Add(this.buttonDomeStop);
+            this.groupBoxDomeGroup.Controls.Add(this.buttonDomeLeft);
+            this.groupBoxDomeGroup.Controls.Add(this.label15);
+            this.groupBoxDomeGroup.Controls.Add(this.labelDomeAzimuthValue);
+            this.groupBoxDomeGroup.Controls.Add(this.labelDomeStatusValue);
+            this.groupBoxDomeGroup.Controls.Add(this.label17);
             this.groupBoxDomeGroup.ForeColor = System.Drawing.Color.DarkOrange;
             this.groupBoxDomeGroup.Location = new System.Drawing.Point(8, 11);
             this.groupBoxDomeGroup.Name = "groupBoxDomeGroup";
@@ -1598,34 +1742,12 @@
             this.groupBoxDomeGroup.TabStop = false;
             this.groupBoxDomeGroup.Text = " Dome ";
             // 
-            // labelDomeSlavedConfValue
-            // 
-            this.labelDomeSlavedConfValue.AutoSize = true;
-            this.labelDomeSlavedConfValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelDomeSlavedConfValue.Location = new System.Drawing.Point(92, 24);
-            this.labelDomeSlavedConfValue.Name = "labelDomeSlavedConfValue";
-            this.labelDomeSlavedConfValue.Size = new System.Drawing.Size(138, 13);
-            this.labelDomeSlavedConfValue.TabIndex = 1;
-            this.labelDomeSlavedConfValue.Text = "Not enslaved while tracking";
-            // 
-            // labelConfDomeSlaved
-            // 
-            this.labelConfDomeSlaved.AutoSize = true;
-            this.labelConfDomeSlaved.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelConfDomeSlaved.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.labelConfDomeSlaved.Location = new System.Drawing.Point(48, 22);
-            this.labelConfDomeSlaved.Name = "labelConfDomeSlaved";
-            this.labelConfDomeSlaved.Size = new System.Drawing.Size(51, 13);
-            this.labelConfDomeSlaved.TabIndex = 0;
-            this.labelConfDomeSlaved.Text = "Config: ";
-            this.labelConfDomeSlaved.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
             // panelFocuser
             // 
             this.panelFocuser.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.panelFocuser.Controls.Add(this.groupBoxFocuser);
             this.panelFocuser.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.panelFocuser.Location = new System.Drawing.Point(372, 262);
+            this.panelFocuser.Location = new System.Drawing.Point(372, 321);
             this.panelFocuser.Name = "panelFocuser";
             this.panelFocuser.Size = new System.Drawing.Size(294, 146);
             this.panelFocuser.TabIndex = 14;
@@ -1633,6 +1755,9 @@
             // 
             // groupBoxFocuser
             // 
+            this.groupBoxFocuser.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBoxFocuser.Controls.Add(this.tableLayoutPanelFocuser);
             this.groupBoxFocuser.ForeColor = System.Drawing.Color.DarkOrange;
             this.groupBoxFocuser.Location = new System.Drawing.Point(8, -1);
@@ -1773,29 +1898,33 @@
             this.tableLayoutPanelMain.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
             this.tableLayoutPanelMain.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
             this.tableLayoutPanelMain.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
-            this.tableLayoutPanelMain.Controls.Add(this.panelFocuser, 1, 1);
-            this.tableLayoutPanelMain.Controls.Add(this.panelDome, 1, 0);
+            this.tableLayoutPanelMain.Controls.Add(this.panelFocuser, 1, 2);
+            this.tableLayoutPanelMain.Controls.Add(this.panelDome, 1, 1);
             this.tableLayoutPanelMain.Controls.Add(this.panelControls, 0, 0);
             this.tableLayoutPanelMain.Controls.Add(this.panelDebug, 2, 0);
-            this.tableLayoutPanelMain.Controls.Add(this.groupBoxWeather, 1, 2);
+            this.tableLayoutPanelMain.Controls.Add(this.groupBoxWeather, 1, 3);
+            this.tableLayoutPanelMain.Controls.Add(this.groupBoxSafety, 1, 0);
             this.tableLayoutPanelMain.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanelMain.Name = "tableLayoutPanelMain";
-            this.tableLayoutPanelMain.RowCount = 3;
+            this.tableLayoutPanelMain.RowCount = 4;
+            this.tableLayoutPanelMain.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanelMain.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanelMain.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanelMain.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanelMain.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.tableLayoutPanelMain.Size = new System.Drawing.Size(1167, 579);
+            this.tableLayoutPanelMain.Size = new System.Drawing.Size(1167, 646);
             this.tableLayoutPanelMain.TabIndex = 12;
             // 
             // groupBoxWeather
             // 
+            this.groupBoxWeather.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBoxWeather.Controls.Add(this.tableLayoutPanelWeather);
-            this.groupBoxWeather.Dock = System.Windows.Forms.DockStyle.Fill;
             this.groupBoxWeather.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBoxWeather.Location = new System.Drawing.Point(372, 414);
+            this.groupBoxWeather.Location = new System.Drawing.Point(372, 473);
             this.groupBoxWeather.Name = "groupBoxWeather";
-            this.groupBoxWeather.Size = new System.Drawing.Size(294, 162);
+            this.groupBoxWeather.Size = new System.Drawing.Size(294, 170);
             this.groupBoxWeather.TabIndex = 15;
             this.groupBoxWeather.TabStop = false;
             this.groupBoxWeather.Text = " Weather ";
@@ -1839,7 +1968,7 @@
             this.tableLayoutPanelWeather.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 20F));
             this.tableLayoutPanelWeather.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 20F));
             this.tableLayoutPanelWeather.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 20F));
-            this.tableLayoutPanelWeather.Size = new System.Drawing.Size(285, 135);
+            this.tableLayoutPanelWeather.Size = new System.Drawing.Size(285, 143);
             this.tableLayoutPanelWeather.TabIndex = 0;
             // 
             // labelWindSpeedValue
@@ -1850,9 +1979,9 @@
             this.labelWindSpeedValue.AutoSize = true;
             this.labelWindSpeedValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.labelWindSpeedValue.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.labelWindSpeedValue.Location = new System.Drawing.Point(231, 108);
+            this.labelWindSpeedValue.Location = new System.Drawing.Point(231, 112);
             this.labelWindSpeedValue.Name = "labelWindSpeedValue";
-            this.labelWindSpeedValue.Size = new System.Drawing.Size(51, 27);
+            this.labelWindSpeedValue.Size = new System.Drawing.Size(51, 31);
             this.labelWindSpeedValue.TabIndex = 19;
             this.labelWindSpeedValue.Text = "windspeed";
             this.labelWindSpeedValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -1865,9 +1994,9 @@
             this.labelWindDirValue.AutoSize = true;
             this.labelWindDirValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.labelWindDirValue.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.labelWindDirValue.Location = new System.Drawing.Point(231, 81);
+            this.labelWindDirValue.Location = new System.Drawing.Point(231, 84);
             this.labelWindDirValue.Name = "labelWindDirValue";
-            this.labelWindDirValue.Size = new System.Drawing.Size(51, 27);
+            this.labelWindDirValue.Size = new System.Drawing.Size(51, 28);
             this.labelWindDirValue.TabIndex = 18;
             this.labelWindDirValue.Text = "winddir";
             this.labelWindDirValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -1880,9 +2009,9 @@
             this.labelTempValue.AutoSize = true;
             this.labelTempValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.labelTempValue.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.labelTempValue.Location = new System.Drawing.Point(231, 54);
+            this.labelTempValue.Location = new System.Drawing.Point(231, 56);
             this.labelTempValue.Name = "labelTempValue";
-            this.labelTempValue.Size = new System.Drawing.Size(51, 27);
+            this.labelTempValue.Size = new System.Drawing.Size(51, 28);
             this.labelTempValue.TabIndex = 17;
             this.labelTempValue.Text = "temp";
             this.labelTempValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -1895,9 +2024,9 @@
             this.labelSkyTempValue.AutoSize = true;
             this.labelSkyTempValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.labelSkyTempValue.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.labelSkyTempValue.Location = new System.Drawing.Point(231, 27);
+            this.labelSkyTempValue.Location = new System.Drawing.Point(231, 28);
             this.labelSkyTempValue.Name = "labelSkyTempValue";
-            this.labelSkyTempValue.Size = new System.Drawing.Size(51, 27);
+            this.labelSkyTempValue.Size = new System.Drawing.Size(51, 28);
             this.labelSkyTempValue.TabIndex = 16;
             this.labelSkyTempValue.Text = "skytemp";
             this.labelSkyTempValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -1912,7 +2041,7 @@
             this.labelRainRateValue.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.labelRainRateValue.Location = new System.Drawing.Point(231, 0);
             this.labelRainRateValue.Name = "labelRainRateValue";
-            this.labelRainRateValue.Size = new System.Drawing.Size(51, 27);
+            this.labelRainRateValue.Size = new System.Drawing.Size(51, 28);
             this.labelRainRateValue.TabIndex = 15;
             this.labelRainRateValue.Text = "rain";
             this.labelRainRateValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -1926,7 +2055,7 @@
             this.label23.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
             this.label23.Location = new System.Drawing.Point(42, 0);
             this.label23.Name = "label23";
-            this.label23.Size = new System.Drawing.Size(33, 27);
+            this.label23.Size = new System.Drawing.Size(33, 28);
             this.label23.TabIndex = 9;
             this.label23.Text = "Age:";
             this.label23.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -1938,9 +2067,9 @@
             this.label22.AutoSize = true;
             this.label22.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label22.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label22.Location = new System.Drawing.Point(149, 108);
+            this.label22.Location = new System.Drawing.Point(149, 112);
             this.label22.Name = "label22";
-            this.label22.Size = new System.Drawing.Size(76, 27);
+            this.label22.Size = new System.Drawing.Size(76, 31);
             this.label22.TabIndex = 8;
             this.label22.Text = "WindSpeed:";
             this.label22.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -1952,9 +2081,9 @@
             this.label21.AutoSize = true;
             this.label21.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label21.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label21.Location = new System.Drawing.Point(169, 81);
+            this.label21.Location = new System.Drawing.Point(169, 84);
             this.label21.Name = "label21";
-            this.label21.Size = new System.Drawing.Size(56, 27);
+            this.label21.Size = new System.Drawing.Size(56, 28);
             this.label21.TabIndex = 7;
             this.label21.Text = "WindDir:";
             this.label21.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -1966,9 +2095,9 @@
             this.label20.AutoSize = true;
             this.label20.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label20.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label20.Location = new System.Drawing.Point(183, 54);
+            this.label20.Location = new System.Drawing.Point(183, 56);
             this.label20.Name = "label20";
-            this.label20.Size = new System.Drawing.Size(42, 27);
+            this.label20.Size = new System.Drawing.Size(42, 28);
             this.label20.TabIndex = 6;
             this.label20.Text = "Temp:";
             this.label20.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -1980,9 +2109,9 @@
             this.label19.AutoSize = true;
             this.label19.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label19.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label19.Location = new System.Drawing.Point(162, 27);
+            this.label19.Location = new System.Drawing.Point(162, 28);
             this.label19.Name = "label19";
-            this.label19.Size = new System.Drawing.Size(63, 27);
+            this.label19.Size = new System.Drawing.Size(63, 28);
             this.label19.TabIndex = 5;
             this.label19.Text = "SkyTemp:";
             this.label19.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -1996,7 +2125,7 @@
             this.label18.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
             this.label18.Location = new System.Drawing.Point(161, 0);
             this.label18.Name = "label18";
-            this.label18.Size = new System.Drawing.Size(64, 27);
+            this.label18.Size = new System.Drawing.Size(64, 28);
             this.label18.TabIndex = 4;
             this.label18.Text = "RainRate:";
             this.label18.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -2008,9 +2137,9 @@
             this.label16.AutoSize = true;
             this.label16.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label16.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label16.Location = new System.Drawing.Point(15, 108);
+            this.label16.Location = new System.Drawing.Point(15, 112);
             this.label16.Name = "label16";
-            this.label16.Size = new System.Drawing.Size(60, 27);
+            this.label16.Size = new System.Drawing.Size(60, 31);
             this.label16.TabIndex = 3;
             this.label16.Text = "Pressure:";
             this.label16.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -2022,9 +2151,9 @@
             this.label14.AutoSize = true;
             this.label14.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label14.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label14.Location = new System.Drawing.Point(16, 81);
+            this.label14.Location = new System.Drawing.Point(16, 84);
             this.label14.Name = "label14";
-            this.label14.Size = new System.Drawing.Size(59, 27);
+            this.label14.Size = new System.Drawing.Size(59, 28);
             this.label14.TabIndex = 2;
             this.label14.Text = "Humidity:";
             this.label14.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -2036,9 +2165,9 @@
             this.label13.AutoSize = true;
             this.label13.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label13.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label13.Location = new System.Drawing.Point(10, 54);
+            this.label13.Location = new System.Drawing.Point(10, 56);
             this.label13.Name = "label13";
-            this.label13.Size = new System.Drawing.Size(65, 27);
+            this.label13.Size = new System.Drawing.Size(65, 28);
             this.label13.TabIndex = 1;
             this.label13.Text = "DewPoint:";
             this.label13.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -2050,9 +2179,9 @@
             this.label12.AutoSize = true;
             this.label12.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label12.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label12.Location = new System.Drawing.Point(3, 27);
+            this.label12.Location = new System.Drawing.Point(3, 28);
             this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(72, 27);
+            this.label12.Size = new System.Drawing.Size(72, 28);
             this.label12.TabIndex = 0;
             this.label12.Text = "CloudCover:";
             this.label12.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -2067,7 +2196,7 @@
             this.labelAgeValue.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.labelAgeValue.Location = new System.Drawing.Point(81, 0);
             this.labelAgeValue.Name = "labelAgeValue";
-            this.labelAgeValue.Size = new System.Drawing.Size(61, 27);
+            this.labelAgeValue.Size = new System.Drawing.Size(61, 28);
             this.labelAgeValue.TabIndex = 10;
             this.labelAgeValue.Text = "age";
             this.labelAgeValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -2080,9 +2209,9 @@
             this.labelCloudCoverValue.AutoSize = true;
             this.labelCloudCoverValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.labelCloudCoverValue.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.labelCloudCoverValue.Location = new System.Drawing.Point(81, 27);
+            this.labelCloudCoverValue.Location = new System.Drawing.Point(81, 28);
             this.labelCloudCoverValue.Name = "labelCloudCoverValue";
-            this.labelCloudCoverValue.Size = new System.Drawing.Size(61, 27);
+            this.labelCloudCoverValue.Size = new System.Drawing.Size(61, 28);
             this.labelCloudCoverValue.TabIndex = 11;
             this.labelCloudCoverValue.Text = "cloud";
             this.labelCloudCoverValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -2095,9 +2224,9 @@
             this.labelDewPointValue.AutoSize = true;
             this.labelDewPointValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.labelDewPointValue.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.labelDewPointValue.Location = new System.Drawing.Point(81, 54);
+            this.labelDewPointValue.Location = new System.Drawing.Point(81, 56);
             this.labelDewPointValue.Name = "labelDewPointValue";
-            this.labelDewPointValue.Size = new System.Drawing.Size(61, 27);
+            this.labelDewPointValue.Size = new System.Drawing.Size(61, 28);
             this.labelDewPointValue.TabIndex = 12;
             this.labelDewPointValue.Text = "dew";
             this.labelDewPointValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -2110,9 +2239,9 @@
             this.labelHumidityValue.AutoSize = true;
             this.labelHumidityValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.labelHumidityValue.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.labelHumidityValue.Location = new System.Drawing.Point(81, 81);
+            this.labelHumidityValue.Location = new System.Drawing.Point(81, 84);
             this.labelHumidityValue.Name = "labelHumidityValue";
-            this.labelHumidityValue.Size = new System.Drawing.Size(61, 27);
+            this.labelHumidityValue.Size = new System.Drawing.Size(61, 28);
             this.labelHumidityValue.TabIndex = 13;
             this.labelHumidityValue.Text = "humidity";
             this.labelHumidityValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -2125,142 +2254,119 @@
             this.labelPressureValue.AutoSize = true;
             this.labelPressureValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.labelPressureValue.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.labelPressureValue.Location = new System.Drawing.Point(81, 108);
+            this.labelPressureValue.Location = new System.Drawing.Point(81, 112);
             this.labelPressureValue.Name = "labelPressureValue";
-            this.labelPressureValue.Size = new System.Drawing.Size(61, 27);
+            this.labelPressureValue.Size = new System.Drawing.Size(61, 31);
             this.labelPressureValue.TabIndex = 14;
             this.labelPressureValue.Text = "pressure";
             this.labelPressureValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // groupBoxSafety
+            // 
+            this.groupBoxSafety.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBoxSafety.Controls.Add(this.labelSafeToImage);
+            this.groupBoxSafety.Controls.Add(this.labelSafeToOpen);
+            this.groupBoxSafety.Controls.Add(this.labelComputerControl);
+            this.groupBoxSafety.ForeColor = System.Drawing.Color.DarkOrange;
+            this.groupBoxSafety.Location = new System.Drawing.Point(372, 3);
+            this.groupBoxSafety.Name = "groupBoxSafety";
+            this.groupBoxSafety.Size = new System.Drawing.Size(294, 53);
+            this.groupBoxSafety.TabIndex = 16;
+            this.groupBoxSafety.TabStop = false;
+            this.groupBoxSafety.Text = " Safety ";
+            this.groupBoxSafety.Visible = false;
+            // 
+            // labelSafeToImage
+            // 
+            this.labelSafeToImage.AutoSize = true;
+            this.labelSafeToImage.Location = new System.Drawing.Point(200, 24);
+            this.labelSafeToImage.Name = "labelSafeToImage";
+            this.labelSafeToImage.Size = new System.Drawing.Size(71, 13);
+            this.labelSafeToImage.TabIndex = 2;
+            this.labelSafeToImage.Text = "SafeToImage";
+            // 
+            // labelSafeToOpen
+            // 
+            this.labelSafeToOpen.AutoSize = true;
+            this.labelSafeToOpen.Location = new System.Drawing.Point(123, 24);
+            this.labelSafeToOpen.Name = "labelSafeToOpen";
+            this.labelSafeToOpen.Size = new System.Drawing.Size(68, 13);
+            this.labelSafeToOpen.TabIndex = 1;
+            this.labelSafeToOpen.Text = "SafeToOpen";
+            // 
+            // labelComputerControl
+            // 
+            this.labelComputerControl.AutoSize = true;
+            this.labelComputerControl.Location = new System.Drawing.Point(24, 24);
+            this.labelComputerControl.Name = "labelComputerControl";
+            this.labelComputerControl.Size = new System.Drawing.Size(85, 13);
+            this.labelComputerControl.TabIndex = 0;
+            this.labelComputerControl.Text = "ComputerControl";
             // 
             // timerStatus
             // 
             this.timerStatus.Tick += new System.EventHandler(this.timerStatus_Tick);
             // 
-            // label1
+            // buttonDomeLeft
             // 
-            this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.label1.AutoSize = true;
-            this.label1.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label1.Location = new System.Drawing.Point(20, 152);
-            this.label1.Margin = new System.Windows.Forms.Padding(0);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(35, 18);
-            this.label1.TabIndex = 27;
-            this.label1.Text = "RA:";
-            this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.buttonDomeLeft.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonDomeLeft.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.buttonDomeLeft.Location = new System.Drawing.Point(24, 63);
+            this.buttonDomeLeft.Name = "buttonDomeLeft";
+            this.buttonDomeLeft.Size = new System.Drawing.Size(58, 23);
+            this.buttonDomeLeft.TabIndex = 21;
+            this.buttonDomeLeft.Text = "Left";
+            this.buttonDomeLeft.UseVisualStyleBackColor = false;
+            this.buttonDomeLeft.MouseDown += new System.Windows.Forms.MouseEventHandler(this.buttonDomeLeft_MouseDown);
+            this.buttonDomeLeft.MouseUp += new System.Windows.Forms.MouseEventHandler(this.buttonDomeLeft_MouseUp);
             // 
-            // labelNewRA
+            // buttonDomeStop
             // 
-            this.labelNewRA.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.labelNewRA.AutoSize = true;
-            this.labelNewRA.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.labelNewRA.Font = new System.Drawing.Font("Lucida Console", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelNewRA.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelNewRA.Location = new System.Drawing.Point(64, 152);
-            this.labelNewRA.Margin = new System.Windows.Forms.Padding(0);
-            this.labelNewRA.Name = "labelNewRA";
-            this.labelNewRA.Size = new System.Drawing.Size(128, 16);
-            this.labelNewRA.TabIndex = 28;
-            this.labelNewRA.Text = "-00h00m00.0s";
-            this.labelNewRA.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.buttonDomeStop.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonDomeStop.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.buttonDomeStop.Location = new System.Drawing.Point(99, 63);
+            this.buttonDomeStop.Name = "buttonDomeStop";
+            this.buttonDomeStop.Size = new System.Drawing.Size(88, 23);
+            this.buttonDomeStop.TabIndex = 22;
+            this.buttonDomeStop.Text = "Stop";
+            this.buttonDomeStop.UseVisualStyleBackColor = false;
+            this.buttonDomeStop.Click += new System.EventHandler(this.buttonDomeStop_Click);
             // 
-            // labelNewDec
+            // buttonDomeRight
             // 
-            this.labelNewDec.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.labelNewDec.AutoSize = true;
-            this.labelNewDec.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.labelNewDec.Font = new System.Drawing.Font("Lucida Console", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelNewDec.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelNewDec.Location = new System.Drawing.Point(64, 171);
-            this.labelNewDec.Margin = new System.Windows.Forms.Padding(0);
-            this.labelNewDec.Name = "labelNewDec";
-            this.labelNewDec.Size = new System.Drawing.Size(118, 16);
-            this.labelNewDec.TabIndex = 30;
-            this.labelNewDec.Text = "00°00\'00.0\"";
-            this.labelNewDec.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.buttonDomeRight.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonDomeRight.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.buttonDomeRight.Location = new System.Drawing.Point(202, 63);
+            this.buttonDomeRight.Name = "buttonDomeRight";
+            this.buttonDomeRight.Size = new System.Drawing.Size(58, 23);
+            this.buttonDomeRight.TabIndex = 23;
+            this.buttonDomeRight.Text = "Right";
+            this.buttonDomeRight.UseVisualStyleBackColor = false;
+            this.buttonDomeRight.MouseDown += new System.Windows.Forms.MouseEventHandler(this.buttonDomeRight_MouseDown);
+            this.buttonDomeRight.MouseUp += new System.Windows.Forms.MouseEventHandler(this.buttonDomeRight_MouseUp);
             // 
-            // label24
+            // buttonDomeAzGo
             // 
-            this.label24.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.label24.AutoSize = true;
-            this.label24.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.label24.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label24.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label24.Location = new System.Drawing.Point(8, 171);
-            this.label24.Margin = new System.Windows.Forms.Padding(0);
-            this.label24.Name = "label24";
-            this.label24.Size = new System.Drawing.Size(47, 18);
-            this.label24.TabIndex = 29;
-            this.label24.Text = "DEC:";
-            this.label24.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.buttonDomeAzGo.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonDomeAzGo.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.buttonDomeAzGo.Location = new System.Drawing.Point(224, 22);
+            this.buttonDomeAzGo.Name = "buttonDomeAzGo";
+            this.buttonDomeAzGo.Size = new System.Drawing.Size(34, 23);
+            this.buttonDomeAzGo.TabIndex = 24;
+            this.buttonDomeAzGo.Text = "Go";
+            this.buttonDomeAzGo.UseVisualStyleBackColor = false;
+            this.buttonDomeAzGo.Click += new System.EventHandler(this.buttonDomeAzGo_Click);
             // 
-            // labelNewRARadians
+            // textBoxDomeAzGo
             // 
-            this.labelNewRARadians.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.labelNewRARadians.AutoSize = true;
-            this.labelNewRARadians.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.labelNewRARadians.Font = new System.Drawing.Font("Lucida Console", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelNewRARadians.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelNewRARadians.Location = new System.Drawing.Point(256, 152);
-            this.labelNewRARadians.Margin = new System.Windows.Forms.Padding(0);
-            this.labelNewRARadians.Name = "labelNewRARadians";
-            this.labelNewRARadians.Size = new System.Drawing.Size(128, 16);
-            this.labelNewRARadians.TabIndex = 31;
-            this.labelNewRARadians.Text = "-00h00m00.0s";
-            this.labelNewRARadians.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // labelNewDecRadians
-            // 
-            this.labelNewDecRadians.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.labelNewDecRadians.AutoSize = true;
-            this.labelNewDecRadians.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.labelNewDecRadians.Font = new System.Drawing.Font("Lucida Console", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelNewDecRadians.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelNewDecRadians.Location = new System.Drawing.Point(256, 171);
-            this.labelNewDecRadians.Margin = new System.Windows.Forms.Padding(0);
-            this.labelNewDecRadians.Name = "labelNewDecRadians";
-            this.labelNewDecRadians.Size = new System.Drawing.Size(118, 16);
-            this.labelNewDecRadians.TabIndex = 32;
-            this.labelNewDecRadians.Text = "00°00\'00.0\"";
-            this.labelNewDecRadians.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // label7
-            // 
-            this.label7.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.label7.AutoSize = true;
-            this.label7.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.label7.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label7.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label7.Location = new System.Drawing.Point(208, 171);
-            this.label7.Margin = new System.Windows.Forms.Padding(0);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(41, 18);
-            this.label7.TabIndex = 34;
-            this.label7.Text = "rad:";
-            this.label7.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // label10
-            // 
-            this.label10.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.label10.AutoSize = true;
-            this.label10.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label10.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label10.Location = new System.Drawing.Point(208, 152);
-            this.label10.Margin = new System.Windows.Forms.Padding(0);
-            this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(41, 18);
-            this.label10.TabIndex = 33;
-            this.label10.Text = "rad:";
-            this.label10.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.textBoxDomeAzGo.Location = new System.Drawing.Point(184, 23);
+            this.textBoxDomeAzGo.Name = "textBoxDomeAzGo";
+            this.textBoxDomeAzGo.Size = new System.Drawing.Size(36, 20);
+            this.textBoxDomeAzGo.TabIndex = 25;
+            this.textBoxDomeAzGo.Enter += new System.EventHandler(this.buttonDomeAzGo_Click);
+            this.textBoxDomeAzGo.Validated += new System.EventHandler(this.textBoxDomeAzGo_Validated);
             // 
             // HandpadForm
             // 
@@ -2268,7 +2374,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSize = true;
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.ClientSize = new System.Drawing.Size(1167, 580);
+            this.ClientSize = new System.Drawing.Size(1167, 641);
             this.Controls.Add(this.tableLayoutPanelMain);
             this.Name = "HandpadForm";
             this.Text = "Wise40 Telescope Handpad";
@@ -2304,8 +2410,6 @@
             this.panelDome.ResumeLayout(false);
             this.groupBox7.ResumeLayout(false);
             this.groupBox7.PerformLayout();
-            this.groupBoxDome.ResumeLayout(false);
-            this.groupBoxDome.PerformLayout();
             this.groupBoxDomeGroup.ResumeLayout(false);
             this.groupBoxDomeGroup.PerformLayout();
             this.panelFocuser.ResumeLayout(false);
@@ -2317,6 +2421,8 @@
             this.groupBoxWeather.ResumeLayout(false);
             this.tableLayoutPanelWeather.ResumeLayout(false);
             this.tableLayoutPanelWeather.PerformLayout();
+            this.groupBoxSafety.ResumeLayout(false);
+            this.groupBoxSafety.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -2357,7 +2463,6 @@
         private System.Windows.Forms.GroupBox groupBox7;
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.Label labelDomeShutterStatusValue;
-        private System.Windows.Forms.GroupBox groupBoxDome;
         private System.Windows.Forms.Label label15;
         private System.Windows.Forms.Label labelDomeStatusValue;
         private System.Windows.Forms.Label label17;
@@ -2411,8 +2516,6 @@
         private System.Windows.Forms.TextBox textBox2;
         private System.Windows.Forms.Label label1FocusCurrentValue;
         private System.Windows.Forms.Label label11;
-        private System.Windows.Forms.Label labelConfDomeSlaved;
-        private System.Windows.Forms.Label labelDomeSlavedConfValue;
         private System.Windows.Forms.GroupBox groupBoxTracking;
         private System.Windows.Forms.CheckBox checkBoxEnslaveDome;
         private System.Windows.Forms.Button buttonWeather;
@@ -2471,5 +2574,15 @@
         private System.Windows.Forms.Label labelNewDec;
         private System.Windows.Forms.Label label24;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.GroupBox groupBoxSafety;
+        private System.Windows.Forms.Label labelSafeToImage;
+        private System.Windows.Forms.Label labelSafeToOpen;
+        private System.Windows.Forms.Label labelComputerControl;
+        public System.Windows.Forms.Button buttonSafety;
+        private System.Windows.Forms.TextBox textBoxDomeAzGo;
+        private System.Windows.Forms.Button buttonDomeAzGo;
+        private System.Windows.Forms.Button buttonDomeRight;
+        private System.Windows.Forms.Button buttonDomeStop;
+        private System.Windows.Forms.Button buttonDomeLeft;
     }
 }

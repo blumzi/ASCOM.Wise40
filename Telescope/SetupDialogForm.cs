@@ -13,27 +13,19 @@ namespace ASCOM.Wise40
     [ComVisible(false)]					// Form not registered for COM!
     public partial class TelescopeSetupDialogForm : Form
     {
-        bool traceState;
-        uint debugLevel;
-        Accuracy accuracy;
-        bool enslaveDome;
         private static WiseSite wisesite = WiseSite.Instance;
         private static WiseTele wisetele = WiseTele.Instance;
 
         public TelescopeSetupDialogForm(bool traceState, uint debugLevel, Accuracy accuracy, bool enslaveDome)
         {
-            this.traceState = traceState;
-            this.debugLevel = debugLevel;
-            this.accuracy = accuracy;
-            this.enslaveDome = enslaveDome;
-
             InitializeComponent();
+            wisetele.init();
             wisesite.init();
 
-            traceBox.Checked = traceState;
-            accuracyBox.SelectedItem = (accuracy == Accuracy.Full) ? 0 : 1;
-            checkBoxEnslaveDome.Checked = enslaveDome;
-
+            traceBox.Checked = wisetele.traceLogger.Enabled;
+            accuracyBox.SelectedItem = (wisesite.astrometricAccuracy == Accuracy.Full) ? 0 : 1;
+            checkBoxEnslaveDome.Checked = wisetele._enslaveDome;
+            checkBoxCalculateRefraction.Checked = wisetele._calculateRefraction;
 
             Debugger debugger = Debugger.Instance;
             checkBoxDebugEncoders.CheckState = debugger.Debugging(Debugger.DebugLevel.DebugEncoders) ? CheckState.Checked : CheckState.Unchecked;
@@ -58,9 +50,10 @@ namespace ASCOM.Wise40
             if (checkBoxDebugDevice.Checked) level |= (uint)Debugger.DebugLevel.DebugDevice;
             if (checkBoxDebugASCOM.Checked) level |= (uint)Debugger.DebugLevel.DebugASCOM;
             if (checkBoxDebugLogic.Checked) level |= (uint)Debugger.DebugLevel.DebugLogic;
-            WiseTele.Instance.debugger.Level = level;
+            wisetele.debugger.Level = level;
 
-            WiseTele.Instance._enslaveDome = checkBoxEnslaveDome.Checked;
+            wisetele._enslaveDome = checkBoxEnslaveDome.Checked;
+            wisetele._calculateRefraction = checkBoxCalculateRefraction.Checked;
         }
 
         private void cmdCancel_Click(object sender, EventArgs e) // Cancel button event handler

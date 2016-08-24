@@ -74,6 +74,7 @@ namespace ASCOM.Wise40
         internal static string astrometricAccuracyProfileName = "Astrometric accuracy";
         internal static string traceStateProfileName = "Trace";
         internal static string enslaveDomeProfileName = "Enslave Dome";
+        internal static string calculateRefractionProfileName = "Calculate refraction";
         /// <summary>
         /// Private variable to hold the connected state
         /// </summary>
@@ -907,6 +908,7 @@ namespace ASCOM.Wise40
                 driverProfile.WriteValue(driverID, astrometricAccuracyProfileName, wisesite.astrometricAccuracy == Accuracy.Full ? "Full" : "Reduced");
                 driverProfile.WriteValue(driverID, debugLevelProfileName, wisetele.debugger.Level.ToString());
                 driverProfile.WriteValue(driverID, enslaveDomeProfileName, wisetele._enslaveDome.ToString());
+                driverProfile.WriteValue(driverID, calculateRefractionProfileName, wisetele._calculateRefraction.ToString());
             }
         }
 

@@ -108,14 +108,8 @@ namespace ASCOM.Vantage
         public ObservingConditions()
         {
             ReadProfile(); // Read device configuration from the ASCOM Profile store
-            if (_connected)
-            {
-                if (_reportFile == null || _reportFile == string.Empty)
+            if (_reportFile == null || _reportFile == string.Empty || !File.Exists(_reportFile))
                     throw new InvalidValueException("Null or empty report file name");
-
-                if (!File.Exists(_reportFile))
-                    throw new FileNotFoundException(_reportFile);
-            }
 
             tl = new TraceLogger("", "Vantage");
             tl.Enabled = _traceState;
