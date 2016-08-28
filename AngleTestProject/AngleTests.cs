@@ -183,8 +183,8 @@ namespace AngleTests
         [TestMethod]
         public void Declination()
         {
-            string expected;
-            Exception ex;
+            //string expected;
+            //Exception ex;
 
             //Assert.AreEqual(Angle.FromDegrees(89.0, Angle.Type.Dec), Angle.FromDegrees(91.0, Angle.Type.Dec));
             //Assert.AreEqual(Angle.FromDegrees(-89.0, Angle.Type.Dec), Angle.FromDegrees(-91.0, Angle.Type.Dec));

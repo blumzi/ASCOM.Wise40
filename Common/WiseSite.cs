@@ -64,7 +64,7 @@ namespace ASCOM.Wise40
                 refractionOption = Astrometry.RefractionOption.LocationRefraction;
                 lastOCFetch = DateTime.Now;
             }
-            catch (Exception e)
+            catch
             {
                 observingConditions = null;
                 refractionOption = Astrometry.RefractionOption.NoRefraction;
@@ -75,7 +75,7 @@ namespace ASCOM.Wise40
                 safetySwitch = new SafetyMonitor("ASCOM.Wise40.ComputerControl.SafetyMonitor");
                 safetySwitch.Connected = true;
             }
-            catch (Exception e)
+            catch
             {
                 safetySwitch = null;
             }
@@ -85,7 +85,7 @@ namespace ASCOM.Wise40
                 safeToOpen = new SafetyMonitor("ASCOM.Wise40.SafeToOpen.SafetyMonitor");
                 safeToOpen.Connected = true;
             }
-            catch (Exception e)
+            catch
             {
                 safeToOpen = null;
             }
@@ -95,7 +95,7 @@ namespace ASCOM.Wise40
                 safeToImage = new SafetyMonitor("ASCOM.Wise40.SafeToImage.SafetyMonitor");
                 safeToImage.Connected = true;
             }
-            catch (Exception e)
+            catch
             {
                 safeToImage = null;
             }
@@ -186,6 +186,10 @@ namespace ASCOM.Wise40
                 refractionOption = RefractionOption.NoRefraction;
                 return;
             }
+            DateTime now = DateTime.Now;
+
+            onSurface.Temperature = averageTemperatures[now.Month];
+            onSurface.Pressure = averagePressures[now.Month];
 
             if (observingConditions != null && DateTime.Now.Subtract(lastOCFetch).TotalMinutes > freqOCFetchMinutes)
             {
@@ -200,13 +204,7 @@ namespace ASCOM.Wise40
                         refractionOption = RefractionOption.LocationRefraction;
                     }
                 }
-                catch
-                {
-                    DateTime now = DateTime.Now;
-
-                    onSurface.Temperature = averageTemperatures[now.Month];
-                    onSurface.Pressure = averagePressures[now.Month];
-                }
+                catch { }
             }
         }
     }

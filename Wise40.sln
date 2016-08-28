@@ -26,10 +26,19 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AngleTestProject", "AngleTestProject\AngleTestProject.csproj", "{21A702E9-2208-48B3-845F-3D6D6886EFCB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CloudSensor", "ClarityII\CloudSensor.csproj", "{918D2F5B-9337-4378-8106-9F8468B34F54}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E26E5B94-4AE9-425D-A5C9-797CB33F24F5} = {E26E5B94-4AE9-425D-A5C9-797CB33F24F5}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VantagePro", "DavisVantage\VantagePro.csproj", "{C819D411-A817-4CEE-B597-A57F2CA5B5B0}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E26E5B94-4AE9-425D-A5C9-797CB33F24F5} = {E26E5B94-4AE9-425D-A5C9-797CB33F24F5}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Deliveries", "Deliveries", "{C2D939BB-B935-4F3D-A78F-06C9BC99D4A2}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\..\ASCOM\Logs 2016-08-28\ASCOM.Wise40.Telescope.Validation.txt = ..\..\..\ASCOM\Logs 2016-08-28\ASCOM.Wise40.Telescope.Validation.txt
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dashboard", "Dashboard\Dashboard.csproj", "{5E7FEA6C-8A53-4394-9E66-8C8843679FB5}"
 EndProject
@@ -37,9 +46,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SafeToOpen", "SafeToOpen\Sa
 	ProjectSection(ProjectDependencies) = postProject
 		{C819D411-A817-4CEE-B597-A57F2CA5B5B0} = {C819D411-A817-4CEE-B597-A57F2CA5B5B0}
 		{918D2F5B-9337-4378-8106-9F8468B34F54} = {918D2F5B-9337-4378-8106-9F8468B34F54}
+		{E26E5B94-4AE9-425D-A5C9-797CB33F24F5} = {E26E5B94-4AE9-425D-A5C9-797CB33F24F5}
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SafeToImage", "SafeToImage\SafeToImage.csproj", "{990E4DFA-414E-4C05-89C0-6F18A5C6FA94}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E26E5B94-4AE9-425D-A5C9-797CB33F24F5} = {E26E5B94-4AE9-425D-A5C9-797CB33F24F5}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Restore-ASCOM-Profiles", "Restore-ASCOM-Profiles\Restore-ASCOM-Profiles.csproj", "{E26E5B94-4AE9-425D-A5C9-797CB33F24F5}"
 EndProject

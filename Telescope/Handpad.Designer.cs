@@ -40,12 +40,6 @@
             this.labelNewDec = new System.Windows.Forms.Label();
             this.label24 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
-            this.groupBoxCurrentRates = new System.Windows.Forms.GroupBox();
-            this.tableLayoutPanelAxesState = new System.Windows.Forms.TableLayoutPanel();
-            this.labelCurrPrimRateValue = new System.Windows.Forms.Label();
-            this.labelCurrPrimDirValue = new System.Windows.Forms.Label();
-            this.labelCurrSecRateValue = new System.Windows.Forms.Label();
-            this.labelCurrSecDirValue = new System.Windows.Forms.Label();
             this.buttonGoCoord = new System.Windows.Forms.Button();
             this.textBoxDec = new System.Windows.Forms.TextBox();
             this.textBoxRA = new System.Windows.Forms.TextBox();
@@ -135,11 +129,16 @@
             this.buttonOpenShutter = new System.Windows.Forms.Button();
             this.label9 = new System.Windows.Forms.Label();
             this.labelDomeShutterStatusValue = new System.Windows.Forms.Label();
+            this.groupBoxDomeGroup = new System.Windows.Forms.GroupBox();
+            this.textBoxDomeAzGo = new System.Windows.Forms.TextBox();
+            this.buttonDomeAzGo = new System.Windows.Forms.Button();
+            this.buttonDomeRight = new System.Windows.Forms.Button();
+            this.buttonDomeStop = new System.Windows.Forms.Button();
+            this.buttonDomeLeft = new System.Windows.Forms.Button();
             this.label15 = new System.Windows.Forms.Label();
+            this.labelDomeAzimuthValue = new System.Windows.Forms.Label();
             this.labelDomeStatusValue = new System.Windows.Forms.Label();
             this.label17 = new System.Windows.Forms.Label();
-            this.labelDomeAzimuthValue = new System.Windows.Forms.Label();
-            this.groupBoxDomeGroup = new System.Windows.Forms.GroupBox();
             this.panelFocuser = new System.Windows.Forms.Panel();
             this.groupBoxFocuser = new System.Windows.Forms.GroupBox();
             this.tableLayoutPanelFocuser = new System.Windows.Forms.TableLayoutPanel();
@@ -179,15 +178,8 @@
             this.labelSafeToOpen = new System.Windows.Forms.Label();
             this.labelComputerControl = new System.Windows.Forms.Label();
             this.timerStatus = new System.Windows.Forms.Timer(this.components);
-            this.buttonDomeLeft = new System.Windows.Forms.Button();
-            this.buttonDomeStop = new System.Windows.Forms.Button();
-            this.buttonDomeRight = new System.Windows.Forms.Button();
-            this.buttonDomeAzGo = new System.Windows.Forms.Button();
-            this.textBoxDomeAzGo = new System.Windows.Forms.TextBox();
             this.panelDebug.SuspendLayout();
             this.groupBoxMovementStudy.SuspendLayout();
-            this.groupBoxCurrentRates.SuspendLayout();
-            this.tableLayoutPanelAxesState.SuspendLayout();
             this.groupBoxEncoders.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownStepCount)).BeginInit();
             this.groupBox4.SuspendLayout();
@@ -241,7 +233,6 @@
             this.groupBoxMovementStudy.Controls.Add(this.labelNewDec);
             this.groupBoxMovementStudy.Controls.Add(this.label24);
             this.groupBoxMovementStudy.Controls.Add(this.label1);
-            this.groupBoxMovementStudy.Controls.Add(this.groupBoxCurrentRates);
             this.groupBoxMovementStudy.Controls.Add(this.buttonGoCoord);
             this.groupBoxMovementStudy.Controls.Add(this.textBoxDec);
             this.groupBoxMovementStudy.Controls.Add(this.textBoxRA);
@@ -393,93 +384,6 @@
             this.label1.TabIndex = 27;
             this.label1.Text = "RA:";
             this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // groupBoxCurrentRates
-            // 
-            this.groupBoxCurrentRates.Controls.Add(this.tableLayoutPanelAxesState);
-            this.groupBoxCurrentRates.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBoxCurrentRates.Location = new System.Drawing.Point(8, 96);
-            this.groupBoxCurrentRates.Name = "groupBoxCurrentRates";
-            this.groupBoxCurrentRates.Size = new System.Drawing.Size(216, 40);
-            this.groupBoxCurrentRates.TabIndex = 26;
-            this.groupBoxCurrentRates.TabStop = false;
-            this.groupBoxCurrentRates.Text = " Current Axes State  ";
-            // 
-            // tableLayoutPanelAxesState
-            // 
-            this.tableLayoutPanelAxesState.ColumnCount = 4;
-            this.tableLayoutPanelAxesState.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
-            this.tableLayoutPanelAxesState.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
-            this.tableLayoutPanelAxesState.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
-            this.tableLayoutPanelAxesState.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
-            this.tableLayoutPanelAxesState.Controls.Add(this.labelCurrPrimRateValue, 0, 0);
-            this.tableLayoutPanelAxesState.Controls.Add(this.labelCurrPrimDirValue, 0, 0);
-            this.tableLayoutPanelAxesState.Controls.Add(this.labelCurrSecRateValue, 3, 0);
-            this.tableLayoutPanelAxesState.Controls.Add(this.labelCurrSecDirValue, 2, 0);
-            this.tableLayoutPanelAxesState.Location = new System.Drawing.Point(3, 12);
-            this.tableLayoutPanelAxesState.Name = "tableLayoutPanelAxesState";
-            this.tableLayoutPanelAxesState.RowCount = 1;
-            this.tableLayoutPanelAxesState.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanelAxesState.Size = new System.Drawing.Size(205, 24);
-            this.tableLayoutPanelAxesState.TabIndex = 0;
-            // 
-            // labelCurrPrimRateValue
-            // 
-            this.labelCurrPrimRateValue.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.labelCurrPrimRateValue.AutoSize = true;
-            this.labelCurrPrimRateValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelCurrPrimRateValue.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.labelCurrPrimRateValue.Location = new System.Drawing.Point(37, 0);
-            this.labelCurrPrimRateValue.Name = "labelCurrPrimRateValue";
-            this.labelCurrPrimRateValue.Size = new System.Drawing.Size(47, 24);
-            this.labelCurrPrimRateValue.TabIndex = 11;
-            this.labelCurrPrimRateValue.Text = "Stopped";
-            this.labelCurrPrimRateValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // labelCurrPrimDirValue
-            // 
-            this.labelCurrPrimDirValue.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.labelCurrPrimDirValue.AutoSize = true;
-            this.labelCurrPrimDirValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelCurrPrimDirValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.labelCurrPrimDirValue.Location = new System.Drawing.Point(3, 0);
-            this.labelCurrPrimDirValue.Name = "labelCurrPrimDirValue";
-            this.labelCurrPrimDirValue.Size = new System.Drawing.Size(28, 24);
-            this.labelCurrPrimDirValue.TabIndex = 5;
-            this.labelCurrPrimDirValue.Text = "RA:";
-            this.labelCurrPrimDirValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // labelCurrSecRateValue
-            // 
-            this.labelCurrSecRateValue.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.labelCurrSecRateValue.AutoSize = true;
-            this.labelCurrSecRateValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelCurrSecRateValue.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.labelCurrSecRateValue.Location = new System.Drawing.Point(130, 0);
-            this.labelCurrSecRateValue.Name = "labelCurrSecRateValue";
-            this.labelCurrSecRateValue.Size = new System.Drawing.Size(72, 24);
-            this.labelCurrSecRateValue.TabIndex = 12;
-            this.labelCurrSecRateValue.Text = "Stopped";
-            this.labelCurrSecRateValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // labelCurrSecDirValue
-            // 
-            this.labelCurrSecDirValue.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.labelCurrSecDirValue.AutoSize = true;
-            this.labelCurrSecDirValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelCurrSecDirValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.labelCurrSecDirValue.Location = new System.Drawing.Point(90, 0);
-            this.labelCurrSecDirValue.Name = "labelCurrSecDirValue";
-            this.labelCurrSecDirValue.Size = new System.Drawing.Size(34, 24);
-            this.labelCurrSecDirValue.TabIndex = 6;
-            this.labelCurrSecDirValue.Text = "Dec:";
-            this.labelCurrSecDirValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // buttonGoCoord
             // 
@@ -880,8 +784,6 @@
             this.panelControls.AutoSize = true;
             this.panelControls.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.panelControls.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.panelControls.Controls.Add(this.groupBox36);
-            this.panelControls.Controls.Add(this.panelDirectionButtons);
             this.panelControls.Controls.Add(this.groupBoxTelescope);
             this.panelControls.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.panelControls.Location = new System.Drawing.Point(3, 3);
@@ -896,7 +798,7 @@
             this.groupBox36.Controls.Add(this.radioButtonGuide);
             this.groupBox36.Controls.Add(this.radioButtonSet);
             this.groupBox36.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBox36.Location = new System.Drawing.Point(81, 424);
+            this.groupBox36.Location = new System.Drawing.Point(228, 208);
             this.groupBox36.Name = "groupBox36";
             this.groupBox36.Size = new System.Drawing.Size(108, 77);
             this.groupBox36.TabIndex = 12;
@@ -949,7 +851,7 @@
             this.panelDirectionButtons.Controls.Add(this.buttonSouth);
             this.panelDirectionButtons.Controls.Add(this.buttonEast);
             this.panelDirectionButtons.Controls.Add(this.buttonWest);
-            this.panelDirectionButtons.Location = new System.Drawing.Point(56, 245);
+            this.panelDirectionButtons.Location = new System.Drawing.Point(48, 216);
             this.panelDirectionButtons.Name = "panelDirectionButtons";
             this.panelDirectionButtons.Size = new System.Drawing.Size(160, 152);
             this.panelDirectionButtons.TabIndex = 11;
@@ -1094,6 +996,8 @@
             // 
             // groupBoxTelescope
             // 
+            this.groupBoxTelescope.Controls.Add(this.panelDirectionButtons);
+            this.groupBoxTelescope.Controls.Add(this.groupBox36);
             this.groupBoxTelescope.Controls.Add(this.labelStatus);
             this.groupBoxTelescope.Controls.Add(this.tableLayoutPanelCoordinates);
             this.groupBoxTelescope.Controls.Add(this.groupBox3);
@@ -1113,9 +1017,9 @@
             this.labelStatus.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.labelStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelStatus.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.labelStatus.Location = new System.Drawing.Point(16, 200);
+            this.labelStatus.Location = new System.Drawing.Point(16, 576);
             this.labelStatus.Name = "labelStatus";
-            this.labelStatus.Size = new System.Drawing.Size(328, 17);
+            this.labelStatus.Size = new System.Drawing.Size(336, 17);
             this.labelStatus.TabIndex = 24;
             this.labelStatus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
@@ -1410,9 +1314,9 @@
             this.groupBox3.Controls.Add(this.checkBoxTrackingIsActive);
             this.groupBox3.Controls.Add(this.checkBoxPrimaryIsActive);
             this.groupBox3.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBox3.Location = new System.Drawing.Point(224, 270);
+            this.groupBox3.Location = new System.Drawing.Point(44, 417);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(88, 102);
+            this.groupBox3.Size = new System.Drawing.Size(168, 102);
             this.groupBox3.TabIndex = 17;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = " Active  ";
@@ -1482,7 +1386,7 @@
             this.groupBoxTracking.Controls.Add(this.checkBoxEnslaveDome);
             this.groupBoxTracking.Controls.Add(this.checkBoxTrack);
             this.groupBoxTracking.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBoxTracking.Location = new System.Drawing.Point(81, 512);
+            this.groupBoxTracking.Location = new System.Drawing.Point(228, 296);
             this.groupBoxTracking.Name = "groupBoxTracking";
             this.groupBoxTracking.Size = new System.Drawing.Size(108, 68);
             this.groupBoxTracking.TabIndex = 0;
@@ -1521,7 +1425,7 @@
             this.panelShowHideButtons.Controls.Add(this.buttonDome);
             this.panelShowHideButtons.Controls.Add(this.buttonFocuser);
             this.panelShowHideButtons.Controls.Add(this.buttonHardware);
-            this.panelShowHideButtons.Location = new System.Drawing.Point(215, 420);
+            this.panelShowHideButtons.Location = new System.Drawing.Point(232, 384);
             this.panelShowHideButtons.Name = "panelShowHideButtons";
             this.panelShowHideButtons.Size = new System.Drawing.Size(100, 168);
             this.panelShowHideButtons.TabIndex = 15;
@@ -1530,7 +1434,7 @@
             // 
             this.buttonSafety.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.buttonSafety.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonSafety.Location = new System.Drawing.Point(4, 138);
+            this.buttonSafety.Location = new System.Drawing.Point(4, 4);
             this.buttonSafety.Name = "buttonSafety";
             this.buttonSafety.Size = new System.Drawing.Size(93, 23);
             this.buttonSafety.TabIndex = 17;
@@ -1554,7 +1458,7 @@
             // 
             this.buttonStudy.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.buttonStudy.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonStudy.Location = new System.Drawing.Point(4, 4);
+            this.buttonStudy.Location = new System.Drawing.Point(4, 138);
             this.buttonStudy.Name = "buttonStudy";
             this.buttonStudy.Size = new System.Drawing.Size(93, 23);
             this.buttonStudy.TabIndex = 15;
@@ -1620,7 +1524,7 @@
             this.groupBox7.Controls.Add(this.label9);
             this.groupBox7.Controls.Add(this.labelDomeShutterStatusValue);
             this.groupBox7.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBox7.Location = new System.Drawing.Point(24, 136);
+            this.groupBox7.Location = new System.Drawing.Point(24, 138);
             this.groupBox7.Name = "groupBox7";
             this.groupBox7.Size = new System.Drawing.Size(248, 88);
             this.groupBox7.TabIndex = 24;
@@ -1674,6 +1578,87 @@
             this.labelDomeShutterStatusValue.TabIndex = 19;
             this.labelDomeShutterStatusValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
+            // groupBoxDomeGroup
+            // 
+            this.groupBoxDomeGroup.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBoxDomeGroup.Controls.Add(this.textBoxDomeAzGo);
+            this.groupBoxDomeGroup.Controls.Add(this.buttonDomeAzGo);
+            this.groupBoxDomeGroup.Controls.Add(this.buttonDomeRight);
+            this.groupBoxDomeGroup.Controls.Add(this.buttonDomeStop);
+            this.groupBoxDomeGroup.Controls.Add(this.buttonDomeLeft);
+            this.groupBoxDomeGroup.Controls.Add(this.label15);
+            this.groupBoxDomeGroup.Controls.Add(this.labelDomeAzimuthValue);
+            this.groupBoxDomeGroup.Controls.Add(this.labelDomeStatusValue);
+            this.groupBoxDomeGroup.Controls.Add(this.label17);
+            this.groupBoxDomeGroup.ForeColor = System.Drawing.Color.DarkOrange;
+            this.groupBoxDomeGroup.Location = new System.Drawing.Point(8, 11);
+            this.groupBoxDomeGroup.Name = "groupBoxDomeGroup";
+            this.groupBoxDomeGroup.Size = new System.Drawing.Size(280, 232);
+            this.groupBoxDomeGroup.TabIndex = 25;
+            this.groupBoxDomeGroup.TabStop = false;
+            this.groupBoxDomeGroup.Text = " Dome ";
+            // 
+            // textBoxDomeAzGo
+            // 
+            this.textBoxDomeAzGo.Location = new System.Drawing.Point(184, 23);
+            this.textBoxDomeAzGo.Name = "textBoxDomeAzGo";
+            this.textBoxDomeAzGo.Size = new System.Drawing.Size(36, 20);
+            this.textBoxDomeAzGo.TabIndex = 25;
+            this.textBoxDomeAzGo.Enter += new System.EventHandler(this.buttonDomeAzGo_Click);
+            this.textBoxDomeAzGo.Validated += new System.EventHandler(this.textBoxDomeAzGo_Validated);
+            // 
+            // buttonDomeAzGo
+            // 
+            this.buttonDomeAzGo.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonDomeAzGo.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.buttonDomeAzGo.Location = new System.Drawing.Point(224, 22);
+            this.buttonDomeAzGo.Name = "buttonDomeAzGo";
+            this.buttonDomeAzGo.Size = new System.Drawing.Size(34, 23);
+            this.buttonDomeAzGo.TabIndex = 24;
+            this.buttonDomeAzGo.Text = "Go";
+            this.buttonDomeAzGo.UseVisualStyleBackColor = false;
+            this.buttonDomeAzGo.Click += new System.EventHandler(this.buttonDomeAzGo_Click);
+            // 
+            // buttonDomeRight
+            // 
+            this.buttonDomeRight.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonDomeRight.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.buttonDomeRight.Location = new System.Drawing.Point(202, 59);
+            this.buttonDomeRight.Name = "buttonDomeRight";
+            this.buttonDomeRight.Size = new System.Drawing.Size(58, 23);
+            this.buttonDomeRight.TabIndex = 23;
+            this.buttonDomeRight.Text = "Right";
+            this.buttonDomeRight.UseVisualStyleBackColor = false;
+            this.buttonDomeRight.MouseDown += new System.Windows.Forms.MouseEventHandler(this.buttonDomeRight_MouseDown);
+            this.buttonDomeRight.MouseUp += new System.Windows.Forms.MouseEventHandler(this.buttonDomeRight_MouseUp);
+            // 
+            // buttonDomeStop
+            // 
+            this.buttonDomeStop.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonDomeStop.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.buttonDomeStop.Location = new System.Drawing.Point(99, 59);
+            this.buttonDomeStop.Name = "buttonDomeStop";
+            this.buttonDomeStop.Size = new System.Drawing.Size(88, 23);
+            this.buttonDomeStop.TabIndex = 22;
+            this.buttonDomeStop.Text = "Stop";
+            this.buttonDomeStop.UseVisualStyleBackColor = false;
+            this.buttonDomeStop.Click += new System.EventHandler(this.buttonDomeStop_Click);
+            // 
+            // buttonDomeLeft
+            // 
+            this.buttonDomeLeft.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonDomeLeft.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.buttonDomeLeft.Location = new System.Drawing.Point(24, 59);
+            this.buttonDomeLeft.Name = "buttonDomeLeft";
+            this.buttonDomeLeft.Size = new System.Drawing.Size(58, 23);
+            this.buttonDomeLeft.TabIndex = 21;
+            this.buttonDomeLeft.Text = "Left";
+            this.buttonDomeLeft.UseVisualStyleBackColor = false;
+            this.buttonDomeLeft.MouseDown += new System.Windows.Forms.MouseEventHandler(this.buttonDomeLeft_MouseDown);
+            this.buttonDomeLeft.MouseUp += new System.Windows.Forms.MouseEventHandler(this.buttonDomeLeft_MouseUp);
+            // 
             // label15
             // 
             this.label15.AutoSize = true;
@@ -1685,6 +1670,17 @@
             this.label15.TabIndex = 18;
             this.label15.Text = "Status:";
             this.label15.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // labelDomeAzimuthValue
+            // 
+            this.labelDomeAzimuthValue.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.labelDomeAzimuthValue.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelDomeAzimuthValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.labelDomeAzimuthValue.Location = new System.Drawing.Point(62, 24);
+            this.labelDomeAzimuthValue.Name = "labelDomeAzimuthValue";
+            this.labelDomeAzimuthValue.Size = new System.Drawing.Size(114, 20);
+            this.labelDomeAzimuthValue.TabIndex = 17;
+            this.labelDomeAzimuthValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // labelDomeStatusValue
             // 
@@ -1708,39 +1704,6 @@
             this.label17.TabIndex = 16;
             this.label17.Text = "Az:";
             this.label17.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // labelDomeAzimuthValue
-            // 
-            this.labelDomeAzimuthValue.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.labelDomeAzimuthValue.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelDomeAzimuthValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelDomeAzimuthValue.Location = new System.Drawing.Point(62, 24);
-            this.labelDomeAzimuthValue.Name = "labelDomeAzimuthValue";
-            this.labelDomeAzimuthValue.Size = new System.Drawing.Size(114, 20);
-            this.labelDomeAzimuthValue.TabIndex = 17;
-            this.labelDomeAzimuthValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // groupBoxDomeGroup
-            // 
-            this.groupBoxDomeGroup.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.groupBoxDomeGroup.Controls.Add(this.textBoxDomeAzGo);
-            this.groupBoxDomeGroup.Controls.Add(this.buttonDomeAzGo);
-            this.groupBoxDomeGroup.Controls.Add(this.buttonDomeRight);
-            this.groupBoxDomeGroup.Controls.Add(this.buttonDomeStop);
-            this.groupBoxDomeGroup.Controls.Add(this.buttonDomeLeft);
-            this.groupBoxDomeGroup.Controls.Add(this.label15);
-            this.groupBoxDomeGroup.Controls.Add(this.labelDomeAzimuthValue);
-            this.groupBoxDomeGroup.Controls.Add(this.labelDomeStatusValue);
-            this.groupBoxDomeGroup.Controls.Add(this.label17);
-            this.groupBoxDomeGroup.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBoxDomeGroup.Location = new System.Drawing.Point(8, 11);
-            this.groupBoxDomeGroup.Name = "groupBoxDomeGroup";
-            this.groupBoxDomeGroup.Size = new System.Drawing.Size(280, 232);
-            this.groupBoxDomeGroup.TabIndex = 25;
-            this.groupBoxDomeGroup.TabStop = false;
-            this.groupBoxDomeGroup.Text = " Dome ";
             // 
             // panelFocuser
             // 
@@ -2309,72 +2272,13 @@
             // 
             this.timerStatus.Tick += new System.EventHandler(this.timerStatus_Tick);
             // 
-            // buttonDomeLeft
-            // 
-            this.buttonDomeLeft.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.buttonDomeLeft.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonDomeLeft.Location = new System.Drawing.Point(24, 63);
-            this.buttonDomeLeft.Name = "buttonDomeLeft";
-            this.buttonDomeLeft.Size = new System.Drawing.Size(58, 23);
-            this.buttonDomeLeft.TabIndex = 21;
-            this.buttonDomeLeft.Text = "Left";
-            this.buttonDomeLeft.UseVisualStyleBackColor = false;
-            this.buttonDomeLeft.MouseDown += new System.Windows.Forms.MouseEventHandler(this.buttonDomeLeft_MouseDown);
-            this.buttonDomeLeft.MouseUp += new System.Windows.Forms.MouseEventHandler(this.buttonDomeLeft_MouseUp);
-            // 
-            // buttonDomeStop
-            // 
-            this.buttonDomeStop.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.buttonDomeStop.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonDomeStop.Location = new System.Drawing.Point(99, 63);
-            this.buttonDomeStop.Name = "buttonDomeStop";
-            this.buttonDomeStop.Size = new System.Drawing.Size(88, 23);
-            this.buttonDomeStop.TabIndex = 22;
-            this.buttonDomeStop.Text = "Stop";
-            this.buttonDomeStop.UseVisualStyleBackColor = false;
-            this.buttonDomeStop.Click += new System.EventHandler(this.buttonDomeStop_Click);
-            // 
-            // buttonDomeRight
-            // 
-            this.buttonDomeRight.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.buttonDomeRight.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonDomeRight.Location = new System.Drawing.Point(202, 63);
-            this.buttonDomeRight.Name = "buttonDomeRight";
-            this.buttonDomeRight.Size = new System.Drawing.Size(58, 23);
-            this.buttonDomeRight.TabIndex = 23;
-            this.buttonDomeRight.Text = "Right";
-            this.buttonDomeRight.UseVisualStyleBackColor = false;
-            this.buttonDomeRight.MouseDown += new System.Windows.Forms.MouseEventHandler(this.buttonDomeRight_MouseDown);
-            this.buttonDomeRight.MouseUp += new System.Windows.Forms.MouseEventHandler(this.buttonDomeRight_MouseUp);
-            // 
-            // buttonDomeAzGo
-            // 
-            this.buttonDomeAzGo.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.buttonDomeAzGo.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonDomeAzGo.Location = new System.Drawing.Point(224, 22);
-            this.buttonDomeAzGo.Name = "buttonDomeAzGo";
-            this.buttonDomeAzGo.Size = new System.Drawing.Size(34, 23);
-            this.buttonDomeAzGo.TabIndex = 24;
-            this.buttonDomeAzGo.Text = "Go";
-            this.buttonDomeAzGo.UseVisualStyleBackColor = false;
-            this.buttonDomeAzGo.Click += new System.EventHandler(this.buttonDomeAzGo_Click);
-            // 
-            // textBoxDomeAzGo
-            // 
-            this.textBoxDomeAzGo.Location = new System.Drawing.Point(184, 23);
-            this.textBoxDomeAzGo.Name = "textBoxDomeAzGo";
-            this.textBoxDomeAzGo.Size = new System.Drawing.Size(36, 20);
-            this.textBoxDomeAzGo.TabIndex = 25;
-            this.textBoxDomeAzGo.Enter += new System.EventHandler(this.buttonDomeAzGo_Click);
-            this.textBoxDomeAzGo.Validated += new System.EventHandler(this.textBoxDomeAzGo_Validated);
-            // 
             // HandpadForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSize = true;
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.ClientSize = new System.Drawing.Size(1167, 641);
+            this.ClientSize = new System.Drawing.Size(1167, 646);
             this.Controls.Add(this.tableLayoutPanelMain);
             this.Name = "HandpadForm";
             this.Text = "Wise40 Telescope Handpad";
@@ -2382,9 +2286,6 @@
             this.panelDebug.ResumeLayout(false);
             this.groupBoxMovementStudy.ResumeLayout(false);
             this.groupBoxMovementStudy.PerformLayout();
-            this.groupBoxCurrentRates.ResumeLayout(false);
-            this.tableLayoutPanelAxesState.ResumeLayout(false);
-            this.tableLayoutPanelAxesState.PerformLayout();
             this.groupBoxEncoders.ResumeLayout(false);
             this.groupBoxEncoders.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownStepCount)).EndInit();
@@ -2558,12 +2459,6 @@
         private System.Windows.Forms.Label labelDeclinationValue;
         private System.Windows.Forms.Label labelAzimuthValue;
         private System.Windows.Forms.Label labelDeclination;
-        private System.Windows.Forms.GroupBox groupBoxCurrentRates;
-        private System.Windows.Forms.TableLayoutPanel tableLayoutPanelAxesState;
-        private System.Windows.Forms.Label labelCurrPrimRateValue;
-        private System.Windows.Forms.Label labelCurrPrimDirValue;
-        private System.Windows.Forms.Label labelCurrSecRateValue;
-        private System.Windows.Forms.Label labelCurrSecDirValue;
         private System.Windows.Forms.Label labelStatus;
         private System.Windows.Forms.Timer timerStatus;
         private System.Windows.Forms.Label label7;

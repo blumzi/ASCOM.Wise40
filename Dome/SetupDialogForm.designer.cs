@@ -34,7 +34,7 @@ namespace ASCOM.Wise40
             this.checkBoxTrace = new System.Windows.Forms.CheckBox();
             this.checkBoxAutoCalibrate = new System.Windows.Forms.CheckBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.checkBoxDebugDevice = new System.Windows.Forms.CheckBox();
+            this.checkBoxDebugAxes = new System.Windows.Forms.CheckBox();
             this.checkBoxDebugExceptions = new System.Windows.Forms.CheckBox();
             this.checkBoxDebugEncoders = new System.Windows.Forms.CheckBox();
             this.label1 = new System.Windows.Forms.Label();
@@ -109,7 +109,7 @@ namespace ASCOM.Wise40
             // 
             // groupBox1
             // 
-            this.groupBox1.Controls.Add(this.checkBoxDebugDevice);
+            this.groupBox1.Controls.Add(this.checkBoxDebugAxes);
             this.groupBox1.Controls.Add(this.checkBoxDebugExceptions);
             this.groupBox1.Controls.Add(this.checkBoxDebugEncoders);
             this.groupBox1.ForeColor = System.Drawing.Color.DarkOrange;
@@ -120,15 +120,15 @@ namespace ASCOM.Wise40
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = " Debugged components ";
             // 
-            // checkBoxDebugDevice
+            // checkBoxDebugAxes
             // 
-            this.checkBoxDebugDevice.AutoSize = true;
-            this.checkBoxDebugDevice.Location = new System.Drawing.Point(8, 24);
-            this.checkBoxDebugDevice.Name = "checkBoxDebugDevice";
-            this.checkBoxDebugDevice.Size = new System.Drawing.Size(92, 17);
-            this.checkBoxDebugDevice.TabIndex = 2;
-            this.checkBoxDebugDevice.Text = "DebugDevice";
-            this.checkBoxDebugDevice.UseVisualStyleBackColor = true;
+            this.checkBoxDebugAxes.AutoSize = true;
+            this.checkBoxDebugAxes.Location = new System.Drawing.Point(8, 24);
+            this.checkBoxDebugAxes.Name = "checkBoxDebugAxes";
+            this.checkBoxDebugAxes.Size = new System.Drawing.Size(81, 17);
+            this.checkBoxDebugAxes.TabIndex = 2;
+            this.checkBoxDebugAxes.Text = "DebugAxes";
+            this.checkBoxDebugAxes.UseVisualStyleBackColor = true;
             // 
             // checkBoxDebugExceptions
             // 
@@ -199,6 +199,6 @@ namespace ASCOM.Wise40
         private System.Windows.Forms.CheckBox checkBoxDebugEncoders;
         private System.Windows.Forms.CheckBox checkBoxDebugExceptions;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.CheckBox checkBoxDebugDevice;
+        private System.Windows.Forms.CheckBox checkBoxDebugAxes;
     }
 }

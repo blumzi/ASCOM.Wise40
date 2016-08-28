@@ -1,0 +1,437 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" InitialTargets="ValidateSolutionConfiguration;ValidateToolsVersions;ValidateProjects" DefaultTargets="Build">
+  <PropertyGroup>
+    <VCTargetsPath>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V140\</VCTargetsPath>
+    <VCTargetsPath10>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\</VCTargetsPath10>
+    <VCTargetsPath11>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V110\</VCTargetsPath11>
+    <VCTargetsPath12>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V120\</VCTargetsPath12>
+    <VCTargetsPath14>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V140\</VCTargetsPath14>
+    <MSBuildToolsPath32>C:\Program Files (x86)\MSBuild\14.0\bin\</MSBuildToolsPath32>
+    <MSBuildToolsRoot>C:\Program Files (x86)\MSBuild\</MSBuildToolsRoot>
+    <MSBuildFrameworkToolsPath>C:\Windows\Microsoft.NET\Framework\v4.0.30319\</MSBuildFrameworkToolsPath>
+    <MSBuildFrameworkToolsPath32>C:\Windows\Microsoft.NET\Framework\v4.0.30319\</MSBuildFrameworkToolsPath32>
+    <MSBuildFrameworkToolsRoot>C:\Windows\Microsoft.NET\Framework\</MSBuildFrameworkToolsRoot>
+    <MSBuildRuntimeVersion>4.0.30319</MSBuildRuntimeVersion>
+    <FrameworkSDKRoot>C:\Program Files (x86)\Microsoft SDKs\Windows\v10.0A\</FrameworkSDKRoot>
+    <SDK35ToolsPath>C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\</SDK35ToolsPath>
+    <SDK40ToolsPath>C:\Program Files (x86)\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.6 Tools\</SDK40ToolsPath>
+    <WindowsSDK80Path>C:\Program Files (x86)\Windows Kits\8.1\</WindowsSDK80Path>
+    <Configuration>Debug</Configuration>
+    <Platform>Any CPU</Platform>
+    <AspNetConfiguration>Debug</AspNetConfiguration>
+    <SolutionDir>C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\</SolutionDir>
+    <SolutionExt>.sln</SolutionExt>
+    <SolutionFileName>Wise40.sln</SolutionFileName>
+    <SolutionName>Wise40</SolutionName>
+    <SolutionPath>C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Wise40.sln</SolutionPath>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <CurrentSolutionConfigurationContents>
+      <SolutionConfiguration xmlns="">
+  <ProjectConfiguration Project="{64308775-BD4A-469C-BCAB-3ED830B811AF}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Dome\Dome.csproj" BuildProjectInSolution="True">Debug|AnyCPU<ProjectDependency Project="{B3400CE2-9B66-4F0C-97FE-26343382BA7B}" /><ProjectDependency Project="{B76546E7-9832-4D28-B412-B34CA1C6177C}" /></ProjectConfiguration>
+  <ProjectConfiguration Project="{B3400CE2-9B66-4F0C-97FE-26343382BA7B}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Hardware\Hardware.csproj" BuildProjectInSolution="True">Debug|AnyCPU<ProjectDependency Project="{B76546E7-9832-4D28-B412-B34CA1C6177C}" /></ProjectConfiguration>
+  <ProjectConfiguration Project="{E27802FC-EFB5-4DEB-BD4D-013F44A0813C}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Telescope\Telescope.csproj" BuildProjectInSolution="True">Debug|AnyCPU<ProjectDependency Project="{C819D411-A817-4CEE-B597-A57F2CA5B5B0}" /><ProjectDependency Project="{918D2F5B-9337-4378-8106-9F8468B34F54}" /><ProjectDependency Project="{B76546E7-9832-4D28-B412-B34CA1C6177C}" /></ProjectConfiguration>
+  <ProjectConfiguration Project="{B76546E7-9832-4D28-B412-B34CA1C6177C}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Common\Common.csproj" BuildProjectInSolution="True">Debug|AnyCPU</ProjectConfiguration>
+  <ProjectConfiguration Project="{21A702E9-2208-48B3-845F-3D6D6886EFCB}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\AngleTestProject\AngleTestProject.csproj" BuildProjectInSolution="True">Debug|AnyCPU</ProjectConfiguration>
+  <ProjectConfiguration Project="{918D2F5B-9337-4378-8106-9F8468B34F54}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\ClarityII\CloudSensor.csproj" BuildProjectInSolution="True">Debug|AnyCPU<ProjectDependency Project="{E26E5B94-4AE9-425D-A5C9-797CB33F24F5}" /></ProjectConfiguration>
+  <ProjectConfiguration Project="{C819D411-A817-4CEE-B597-A57F2CA5B5B0}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\DavisVantage\VantagePro.csproj" BuildProjectInSolution="True">Debug|AnyCPU<ProjectDependency Project="{E26E5B94-4AE9-425D-A5C9-797CB33F24F5}" /></ProjectConfiguration>
+  <ProjectConfiguration Project="{5E7FEA6C-8A53-4394-9E66-8C8843679FB5}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Dashboard\Dashboard.csproj" BuildProjectInSolution="True">Debug|AnyCPU</ProjectConfiguration>
+  <ProjectConfiguration Project="{7FA766D4-8F97-4D9F-8F62-F25C84C01FF2}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\SafeToOpen\SafeToOpen.csproj" BuildProjectInSolution="True">Debug|AnyCPU<ProjectDependency Project="{C819D411-A817-4CEE-B597-A57F2CA5B5B0}" /><ProjectDependency Project="{918D2F5B-9337-4378-8106-9F8468B34F54}" /><ProjectDependency Project="{E26E5B94-4AE9-425D-A5C9-797CB33F24F5}" /></ProjectConfiguration>
+  <ProjectConfiguration Project="{990E4DFA-414E-4C05-89C0-6F18A5C6FA94}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\SafeToImage\SafeToImage.csproj" BuildProjectInSolution="True">Debug|AnyCPU<ProjectDependency Project="{E26E5B94-4AE9-425D-A5C9-797CB33F24F5}" /></ProjectConfiguration>
+  <ProjectConfiguration Project="{E26E5B94-4AE9-425D-A5C9-797CB33F24F5}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Restore-ASCOM-Profiles\Restore-ASCOM-Profiles.csproj" BuildProjectInSolution="True">Debug|AnyCPU</ProjectConfiguration>
+  <ProjectConfiguration Project="{EEF50BC4-BECC-430B-9A05-769C80D8D25C}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\ComputerControl\ComputerControl.csproj" BuildProjectInSolution="True">Debug|AnyCPU</ProjectConfiguration>
+</SolutionConfiguration>
+    </CurrentSolutionConfigurationContents>
+  </PropertyGroup>
+  <ItemDefinitionGroup />
+  <ItemGroup>
+    <SolutionConfiguration Include="Debug|Any CPU">
+      <Configuration>Debug</Configuration>
+      <Platform>Any CPU</Platform>
+      <Content>
+        <SolutionConfiguration xmlns="">
+  <ProjectConfiguration Project="{64308775-BD4A-469C-BCAB-3ED830B811AF}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Dome\Dome.csproj" BuildProjectInSolution="True">Debug|AnyCPU<ProjectDependency Project="{B3400CE2-9B66-4F0C-97FE-26343382BA7B}" /><ProjectDependency Project="{B76546E7-9832-4D28-B412-B34CA1C6177C}" /></ProjectConfiguration>
+  <ProjectConfiguration Project="{B3400CE2-9B66-4F0C-97FE-26343382BA7B}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Hardware\Hardware.csproj" BuildProjectInSolution="True">Debug|AnyCPU<ProjectDependency Project="{B76546E7-9832-4D28-B412-B34CA1C6177C}" /></ProjectConfiguration>
+  <ProjectConfiguration Project="{E27802FC-EFB5-4DEB-BD4D-013F44A0813C}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Telescope\Telescope.csproj" BuildProjectInSolution="True">Debug|AnyCPU<ProjectDependency Project="{C819D411-A817-4CEE-B597-A57F2CA5B5B0}" /><ProjectDependency Project="{918D2F5B-9337-4378-8106-9F8468B34F54}" /><ProjectDependency Project="{B76546E7-9832-4D28-B412-B34CA1C6177C}" /></ProjectConfiguration>
+  <ProjectConfiguration Project="{B76546E7-9832-4D28-B412-B34CA1C6177C}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Common\Common.csproj" BuildProjectInSolution="True">Debug|AnyCPU</ProjectConfiguration>
+  <ProjectConfiguration Project="{21A702E9-2208-48B3-845F-3D6D6886EFCB}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\AngleTestProject\AngleTestProject.csproj" BuildProjectInSolution="True">Debug|AnyCPU</ProjectConfiguration>
+  <ProjectConfiguration Project="{918D2F5B-9337-4378-8106-9F8468B34F54}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\ClarityII\CloudSensor.csproj" BuildProjectInSolution="True">Debug|AnyCPU<ProjectDependency Project="{E26E5B94-4AE9-425D-A5C9-797CB33F24F5}" /></ProjectConfiguration>
+  <ProjectConfiguration Project="{C819D411-A817-4CEE-B597-A57F2CA5B5B0}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\DavisVantage\VantagePro.csproj" BuildProjectInSolution="True">Debug|AnyCPU<ProjectDependency Project="{E26E5B94-4AE9-425D-A5C9-797CB33F24F5}" /></ProjectConfiguration>
+  <ProjectConfiguration Project="{5E7FEA6C-8A53-4394-9E66-8C8843679FB5}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Dashboard\Dashboard.csproj" BuildProjectInSolution="True">Debug|AnyCPU</ProjectConfiguration>
+  <ProjectConfiguration Project="{7FA766D4-8F97-4D9F-8F62-F25C84C01FF2}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\SafeToOpen\SafeToOpen.csproj" BuildProjectInSolution="True">Debug|AnyCPU<ProjectDependency Project="{C819D411-A817-4CEE-B597-A57F2CA5B5B0}" /><ProjectDependency Project="{918D2F5B-9337-4378-8106-9F8468B34F54}" /><ProjectDependency Project="{E26E5B94-4AE9-425D-A5C9-797CB33F24F5}" /></ProjectConfiguration>
+  <ProjectConfiguration Project="{990E4DFA-414E-4C05-89C0-6F18A5C6FA94}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\SafeToImage\SafeToImage.csproj" BuildProjectInSolution="True">Debug|AnyCPU<ProjectDependency Project="{E26E5B94-4AE9-425D-A5C9-797CB33F24F5}" /></ProjectConfiguration>
+  <ProjectConfiguration Project="{E26E5B94-4AE9-425D-A5C9-797CB33F24F5}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Restore-ASCOM-Profiles\Restore-ASCOM-Profiles.csproj" BuildProjectInSolution="True">Debug|AnyCPU</ProjectConfiguration>
+  <ProjectConfiguration Project="{EEF50BC4-BECC-430B-9A05-769C80D8D25C}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\ComputerControl\ComputerControl.csproj" BuildProjectInSolution="True">Debug|AnyCPU</ProjectConfiguration>
+</SolutionConfiguration>
+      </Content>
+    </SolutionConfiguration>
+    <SolutionConfiguration Include="Debug|x86">
+      <Configuration>Debug</Configuration>
+      <Platform>x86</Platform>
+      <Content>
+        <SolutionConfiguration xmlns="">
+  <ProjectConfiguration Project="{64308775-BD4A-469C-BCAB-3ED830B811AF}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Dome\Dome.csproj" BuildProjectInSolution="True">Debug|AnyCPU<ProjectDependency Project="{B3400CE2-9B66-4F0C-97FE-26343382BA7B}" /><ProjectDependency Project="{B76546E7-9832-4D28-B412-B34CA1C6177C}" /></ProjectConfiguration>
+  <ProjectConfiguration Project="{B3400CE2-9B66-4F0C-97FE-26343382BA7B}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Hardware\Hardware.csproj" BuildProjectInSolution="True">Debug|AnyCPU<ProjectDependency Project="{B76546E7-9832-4D28-B412-B34CA1C6177C}" /></ProjectConfiguration>
+  <ProjectConfiguration Project="{E27802FC-EFB5-4DEB-BD4D-013F44A0813C}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Telescope\Telescope.csproj" BuildProjectInSolution="True">Debug|AnyCPU<ProjectDependency Project="{C819D411-A817-4CEE-B597-A57F2CA5B5B0}" /><ProjectDependency Project="{918D2F5B-9337-4378-8106-9F8468B34F54}" /><ProjectDependency Project="{B76546E7-9832-4D28-B412-B34CA1C6177C}" /></ProjectConfiguration>
+  <ProjectConfiguration Project="{B76546E7-9832-4D28-B412-B34CA1C6177C}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Common\Common.csproj" BuildProjectInSolution="True">Debug|AnyCPU</ProjectConfiguration>
+  <ProjectConfiguration Project="{21A702E9-2208-48B3-845F-3D6D6886EFCB}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\AngleTestProject\AngleTestProject.csproj" BuildProjectInSolution="True">Debug|AnyCPU</ProjectConfiguration>
+  <ProjectConfiguration Project="{918D2F5B-9337-4378-8106-9F8468B34F54}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\ClarityII\CloudSensor.csproj" BuildProjectInSolution="True">Debug|AnyCPU<ProjectDependency Project="{E26E5B94-4AE9-425D-A5C9-797CB33F24F5}" /></ProjectConfiguration>
+  <ProjectConfiguration Project="{C819D411-A817-4CEE-B597-A57F2CA5B5B0}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\DavisVantage\VantagePro.csproj" BuildProjectInSolution="True">Debug|AnyCPU<ProjectDependency Project="{E26E5B94-4AE9-425D-A5C9-797CB33F24F5}" /></ProjectConfiguration>
+  <ProjectConfiguration Project="{5E7FEA6C-8A53-4394-9E66-8C8843679FB5}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Dashboard\Dashboard.csproj" BuildProjectInSolution="True">Debug|AnyCPU</ProjectConfiguration>
+  <ProjectConfiguration Project="{7FA766D4-8F97-4D9F-8F62-F25C84C01FF2}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\SafeToOpen\SafeToOpen.csproj" BuildProjectInSolution="True">Debug|AnyCPU<ProjectDependency Project="{C819D411-A817-4CEE-B597-A57F2CA5B5B0}" /><ProjectDependency Project="{918D2F5B-9337-4378-8106-9F8468B34F54}" /><ProjectDependency Project="{E26E5B94-4AE9-425D-A5C9-797CB33F24F5}" /></ProjectConfiguration>
+  <ProjectConfiguration Project="{990E4DFA-414E-4C05-89C0-6F18A5C6FA94}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\SafeToImage\SafeToImage.csproj" BuildProjectInSolution="True">Debug|AnyCPU<ProjectDependency Project="{E26E5B94-4AE9-425D-A5C9-797CB33F24F5}" /></ProjectConfiguration>
+  <ProjectConfiguration Project="{E26E5B94-4AE9-425D-A5C9-797CB33F24F5}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Restore-ASCOM-Profiles\Restore-ASCOM-Profiles.csproj" BuildProjectInSolution="True">Debug|AnyCPU</ProjectConfiguration>
+  <ProjectConfiguration Project="{EEF50BC4-BECC-430B-9A05-769C80D8D25C}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\ComputerControl\ComputerControl.csproj" BuildProjectInSolution="True">Debug|AnyCPU</ProjectConfiguration>
+</SolutionConfiguration>
+      </Content>
+    </SolutionConfiguration>
+    <SolutionConfiguration Include="Release|Any CPU">
+      <Configuration>Release</Configuration>
+      <Platform>Any CPU</Platform>
+      <Content>
+        <SolutionConfiguration xmlns="">
+  <ProjectConfiguration Project="{64308775-BD4A-469C-BCAB-3ED830B811AF}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Dome\Dome.csproj" BuildProjectInSolution="True">Release|AnyCPU<ProjectDependency Project="{B3400CE2-9B66-4F0C-97FE-26343382BA7B}" /><ProjectDependency Project="{B76546E7-9832-4D28-B412-B34CA1C6177C}" /></ProjectConfiguration>
+  <ProjectConfiguration Project="{B3400CE2-9B66-4F0C-97FE-26343382BA7B}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Hardware\Hardware.csproj" BuildProjectInSolution="True">Release|AnyCPU<ProjectDependency Project="{B76546E7-9832-4D28-B412-B34CA1C6177C}" /></ProjectConfiguration>
+  <ProjectConfiguration Project="{E27802FC-EFB5-4DEB-BD4D-013F44A0813C}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Telescope\Telescope.csproj" BuildProjectInSolution="True">Release|AnyCPU<ProjectDependency Project="{C819D411-A817-4CEE-B597-A57F2CA5B5B0}" /><ProjectDependency Project="{918D2F5B-9337-4378-8106-9F8468B34F54}" /><ProjectDependency Project="{B76546E7-9832-4D28-B412-B34CA1C6177C}" /></ProjectConfiguration>
+  <ProjectConfiguration Project="{B76546E7-9832-4D28-B412-B34CA1C6177C}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Common\Common.csproj" BuildProjectInSolution="True">Release|AnyCPU</ProjectConfiguration>
+  <ProjectConfiguration Project="{21A702E9-2208-48B3-845F-3D6D6886EFCB}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\AngleTestProject\AngleTestProject.csproj" BuildProjectInSolution="True">Release|AnyCPU</ProjectConfiguration>
+  <ProjectConfiguration Project="{918D2F5B-9337-4378-8106-9F8468B34F54}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\ClarityII\CloudSensor.csproj" BuildProjectInSolution="True">Release|AnyCPU<ProjectDependency Project="{E26E5B94-4AE9-425D-A5C9-797CB33F24F5}" /></ProjectConfiguration>
+  <ProjectConfiguration Project="{C819D411-A817-4CEE-B597-A57F2CA5B5B0}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\DavisVantage\VantagePro.csproj" BuildProjectInSolution="True">Release|AnyCPU<ProjectDependency Project="{E26E5B94-4AE9-425D-A5C9-797CB33F24F5}" /></ProjectConfiguration>
+  <ProjectConfiguration Project="{5E7FEA6C-8A53-4394-9E66-8C8843679FB5}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Dashboard\Dashboard.csproj" BuildProjectInSolution="True">Release|AnyCPU</ProjectConfiguration>
+  <ProjectConfiguration Project="{7FA766D4-8F97-4D9F-8F62-F25C84C01FF2}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\SafeToOpen\SafeToOpen.csproj" BuildProjectInSolution="True">Release|AnyCPU<ProjectDependency Project="{C819D411-A817-4CEE-B597-A57F2CA5B5B0}" /><ProjectDependency Project="{918D2F5B-9337-4378-8106-9F8468B34F54}" /><ProjectDependency Project="{E26E5B94-4AE9-425D-A5C9-797CB33F24F5}" /></ProjectConfiguration>
+  <ProjectConfiguration Project="{990E4DFA-414E-4C05-89C0-6F18A5C6FA94}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\SafeToImage\SafeToImage.csproj" BuildProjectInSolution="True">Release|AnyCPU<ProjectDependency Project="{E26E5B94-4AE9-425D-A5C9-797CB33F24F5}" /></ProjectConfiguration>
+  <ProjectConfiguration Project="{E26E5B94-4AE9-425D-A5C9-797CB33F24F5}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Restore-ASCOM-Profiles\Restore-ASCOM-Profiles.csproj" BuildProjectInSolution="True">Release|AnyCPU</ProjectConfiguration>
+  <ProjectConfiguration Project="{EEF50BC4-BECC-430B-9A05-769C80D8D25C}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\ComputerControl\ComputerControl.csproj" BuildProjectInSolution="True">Release|AnyCPU</ProjectConfiguration>
+</SolutionConfiguration>
+      </Content>
+    </SolutionConfiguration>
+    <SolutionConfiguration Include="Release|x86">
+      <Configuration>Release</Configuration>
+      <Platform>x86</Platform>
+      <Content>
+        <SolutionConfiguration xmlns="">
+  <ProjectConfiguration Project="{64308775-BD4A-469C-BCAB-3ED830B811AF}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Dome\Dome.csproj" BuildProjectInSolution="True">Release|AnyCPU<ProjectDependency Project="{B3400CE2-9B66-4F0C-97FE-26343382BA7B}" /><ProjectDependency Project="{B76546E7-9832-4D28-B412-B34CA1C6177C}" /></ProjectConfiguration>
+  <ProjectConfiguration Project="{B3400CE2-9B66-4F0C-97FE-26343382BA7B}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Hardware\Hardware.csproj" BuildProjectInSolution="True">Release|AnyCPU<ProjectDependency Project="{B76546E7-9832-4D28-B412-B34CA1C6177C}" /></ProjectConfiguration>
+  <ProjectConfiguration Project="{E27802FC-EFB5-4DEB-BD4D-013F44A0813C}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Telescope\Telescope.csproj" BuildProjectInSolution="True">Release|AnyCPU<ProjectDependency Project="{C819D411-A817-4CEE-B597-A57F2CA5B5B0}" /><ProjectDependency Project="{918D2F5B-9337-4378-8106-9F8468B34F54}" /><ProjectDependency Project="{B76546E7-9832-4D28-B412-B34CA1C6177C}" /></ProjectConfiguration>
+  <ProjectConfiguration Project="{B76546E7-9832-4D28-B412-B34CA1C6177C}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Common\Common.csproj" BuildProjectInSolution="True">Release|AnyCPU</ProjectConfiguration>
+  <ProjectConfiguration Project="{21A702E9-2208-48B3-845F-3D6D6886EFCB}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\AngleTestProject\AngleTestProject.csproj" BuildProjectInSolution="True">Release|AnyCPU</ProjectConfiguration>
+  <ProjectConfiguration Project="{918D2F5B-9337-4378-8106-9F8468B34F54}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\ClarityII\CloudSensor.csproj" BuildProjectInSolution="True">Release|AnyCPU<ProjectDependency Project="{E26E5B94-4AE9-425D-A5C9-797CB33F24F5}" /></ProjectConfiguration>
+  <ProjectConfiguration Project="{C819D411-A817-4CEE-B597-A57F2CA5B5B0}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\DavisVantage\VantagePro.csproj" BuildProjectInSolution="True">Release|AnyCPU<ProjectDependency Project="{E26E5B94-4AE9-425D-A5C9-797CB33F24F5}" /></ProjectConfiguration>
+  <ProjectConfiguration Project="{5E7FEA6C-8A53-4394-9E66-8C8843679FB5}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Dashboard\Dashboard.csproj" BuildProjectInSolution="True">Release|AnyCPU</ProjectConfiguration>
+  <ProjectConfiguration Project="{7FA766D4-8F97-4D9F-8F62-F25C84C01FF2}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\SafeToOpen\SafeToOpen.csproj" BuildProjectInSolution="True">Release|AnyCPU<ProjectDependency Project="{C819D411-A817-4CEE-B597-A57F2CA5B5B0}" /><ProjectDependency Project="{918D2F5B-9337-4378-8106-9F8468B34F54}" /><ProjectDependency Project="{E26E5B94-4AE9-425D-A5C9-797CB33F24F5}" /></ProjectConfiguration>
+  <ProjectConfiguration Project="{990E4DFA-414E-4C05-89C0-6F18A5C6FA94}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\SafeToImage\SafeToImage.csproj" BuildProjectInSolution="True">Release|AnyCPU<ProjectDependency Project="{E26E5B94-4AE9-425D-A5C9-797CB33F24F5}" /></ProjectConfiguration>
+  <ProjectConfiguration Project="{E26E5B94-4AE9-425D-A5C9-797CB33F24F5}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Restore-ASCOM-Profiles\Restore-ASCOM-Profiles.csproj" BuildProjectInSolution="True">Release|AnyCPU</ProjectConfiguration>
+  <ProjectConfiguration Project="{EEF50BC4-BECC-430B-9A05-769C80D8D25C}" AbsolutePath="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\ComputerControl\ComputerControl.csproj" BuildProjectInSolution="True">Release|AnyCPU</ProjectConfiguration>
+</SolutionConfiguration>
+      </Content>
+    </SolutionConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Dome\Dome.csproj.metaproj">
+      <ToolsVersion>14.0</ToolsVersion>
+      <SkipNonexistentProjects>Build</SkipNonexistentProjects>
+      <AdditionalProperties>Configuration=Debug; Platform=Any CPU</AdditionalProperties>
+      <Configuration>Debug</Configuration>
+      <Platform>AnyCPU</Platform>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Hardware\Hardware.csproj.metaproj">
+      <ToolsVersion>14.0</ToolsVersion>
+      <SkipNonexistentProjects>Build</SkipNonexistentProjects>
+      <AdditionalProperties>Configuration=Debug; Platform=Any CPU</AdditionalProperties>
+      <Configuration>Debug</Configuration>
+      <Platform>AnyCPU</Platform>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Telescope\Telescope.csproj.metaproj">
+      <ToolsVersion>14.0</ToolsVersion>
+      <SkipNonexistentProjects>Build</SkipNonexistentProjects>
+      <AdditionalProperties>Configuration=Debug; Platform=Any CPU</AdditionalProperties>
+      <Configuration>Debug</Configuration>
+      <Platform>AnyCPU</Platform>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Common\Common.csproj">
+      <ToolsVersion>
+      </ToolsVersion>
+      <SkipNonexistentProjects>False</SkipNonexistentProjects>
+      <AdditionalProperties>Configuration=Debug; Platform=AnyCPU</AdditionalProperties>
+      <Configuration>Debug</Configuration>
+      <Platform>AnyCPU</Platform>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\AngleTestProject\AngleTestProject.csproj">
+      <ToolsVersion>
+      </ToolsVersion>
+      <SkipNonexistentProjects>False</SkipNonexistentProjects>
+      <AdditionalProperties>Configuration=Debug; Platform=AnyCPU</AdditionalProperties>
+      <Configuration>Debug</Configuration>
+      <Platform>AnyCPU</Platform>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\ClarityII\CloudSensor.csproj.metaproj">
+      <ToolsVersion>14.0</ToolsVersion>
+      <SkipNonexistentProjects>Build</SkipNonexistentProjects>
+      <AdditionalProperties>Configuration=Debug; Platform=Any CPU</AdditionalProperties>
+      <Configuration>Debug</Configuration>
+      <Platform>AnyCPU</Platform>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\DavisVantage\VantagePro.csproj.metaproj">
+      <ToolsVersion>14.0</ToolsVersion>
+      <SkipNonexistentProjects>Build</SkipNonexistentProjects>
+      <AdditionalProperties>Configuration=Debug; Platform=Any CPU</AdditionalProperties>
+      <Configuration>Debug</Configuration>
+      <Platform>AnyCPU</Platform>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Dashboard\Dashboard.csproj">
+      <ToolsVersion>
+      </ToolsVersion>
+      <SkipNonexistentProjects>False</SkipNonexistentProjects>
+      <AdditionalProperties>Configuration=Debug; Platform=AnyCPU</AdditionalProperties>
+      <Configuration>Debug</Configuration>
+      <Platform>AnyCPU</Platform>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\SafeToOpen\SafeToOpen.csproj.metaproj">
+      <ToolsVersion>14.0</ToolsVersion>
+      <SkipNonexistentProjects>Build</SkipNonexistentProjects>
+      <AdditionalProperties>Configuration=Debug; Platform=Any CPU</AdditionalProperties>
+      <Configuration>Debug</Configuration>
+      <Platform>AnyCPU</Platform>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\SafeToImage\SafeToImage.csproj.metaproj">
+      <ToolsVersion>14.0</ToolsVersion>
+      <SkipNonexistentProjects>Build</SkipNonexistentProjects>
+      <AdditionalProperties>Configuration=Debug; Platform=Any CPU</AdditionalProperties>
+      <Configuration>Debug</Configuration>
+      <Platform>AnyCPU</Platform>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Restore-ASCOM-Profiles\Restore-ASCOM-Profiles.csproj">
+      <ToolsVersion>
+      </ToolsVersion>
+      <SkipNonexistentProjects>False</SkipNonexistentProjects>
+      <AdditionalProperties>Configuration=Debug; Platform=AnyCPU</AdditionalProperties>
+      <Configuration>Debug</Configuration>
+      <Platform>AnyCPU</Platform>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\ComputerControl\ComputerControl.csproj">
+      <ToolsVersion>
+      </ToolsVersion>
+      <SkipNonexistentProjects>False</SkipNonexistentProjects>
+      <AdditionalProperties>Configuration=Debug; Platform=AnyCPU</AdditionalProperties>
+      <Configuration>Debug</Configuration>
+      <Platform>AnyCPU</Platform>
+    </ProjectReference>
+  </ItemGroup>
+  <Target Name="ValidateSolutionConfiguration">
+    <Error Condition="('$(CurrentSolutionConfigurationContents)' == '') and ('$(SkipInvalidConfigurations)' != 'true')" Text="The specified solution configuration &quot;$(Configuration)|$(Platform)&quot; is invalid. Please specify a valid solution configuration using the Configuration and Platform properties (e.g. MSBuild.exe Solution.sln /p:Configuration=Debug /p:Platform=&quot;Any CPU&quot;) or leave those properties blank to use the default solution configuration." Code="MSB4126" HelpKeyword="MSBuild.SolutionInvalidSolutionConfiguration" />
+    <Warning Condition="('$(CurrentSolutionConfigurationContents)' == '') and ('$(SkipInvalidConfigurations)' == 'true')" Text="The specified solution configuration &quot;$(Configuration)|$(Platform)&quot; is invalid. Please specify a valid solution configuration using the Configuration and Platform properties (e.g. MSBuild.exe Solution.sln /p:Configuration=Debug /p:Platform=&quot;Any CPU&quot;) or leave those properties blank to use the default solution configuration." Code="MSB4126" HelpKeyword="MSBuild.SolutionInvalidSolutionConfiguration" />
+    <Message Condition="'$(CurrentSolutionConfigurationContents)' != ''" Text="Building solution configuration &quot;$(Configuration)|$(Platform)&quot;." />
+  </Target>
+  <Target Name="ValidateToolsVersions">
+    <Error Condition="'$(MSBuildToolsVersion)' == '2.0' and ('$(ProjectToolsVersion)' != '2.0' and '$(ProjectToolsVersion)' != '')" Text="The tools version &quot;$(MSBuildToolsVersion)&quot; of the solution does not support building projects with a different tools version." Code="MSB4149" HelpKeyword="MSBuild.SolutionToolsVersionDoesNotSupportProjectToolsVersion" />
+  </Target>
+  <Target Name="ValidateProjects" />
+  <Target Name="GetSolutionConfigurationContents" Outputs="$(SolutionConfigurationContents)" />
+  <Target Name="Build" Outputs="@(CollectedBuildOutput)">
+    <MSBuild Projects="@(ProjectReference)" BuildInParallel="True" Properties="BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)" SkipNonexistentProjects="%(ProjectReference.SkipNonexistentProjects)">
+      <Output TaskParameter="TargetOutputs" ItemName="CollectedBuildOutput" />
+    </MSBuild>
+  </Target>
+  <Target Name="Clean">
+    <MSBuild Projects="@(ProjectReference-&gt;Reverse())" Targets="Clean" BuildInParallel="True" Properties="BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)" SkipNonexistentProjects="%(ProjectReference.SkipNonexistentProjects)" />
+  </Target>
+  <Target Name="Rebuild" Outputs="@(CollectedBuildOutput)">
+    <MSBuild Projects="@(ProjectReference)" Targets="Rebuild" BuildInParallel="True" Properties="BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)" SkipNonexistentProjects="%(ProjectReference.SkipNonexistentProjects)">
+      <Output TaskParameter="TargetOutputs" ItemName="CollectedBuildOutput" />
+    </MSBuild>
+  </Target>
+  <Target Name="Publish">
+    <MSBuild Projects="@(ProjectReference)" Targets="Publish" BuildInParallel="True" Properties="BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)" SkipNonexistentProjects="%(ProjectReference.SkipNonexistentProjects)" />
+  </Target>
+  <Target Name="Dome" Outputs="@(DomeBuildOutput)">
+    <MSBuild Condition="'%(ProjectReference.Identity)' == 'C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Dome\Dome.csproj.metaproj'" Projects="@(ProjectReference)" BuildInParallel="True" ToolsVersion="14.0" Properties="BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)" SkipNonexistentProjects="%(ProjectReference.SkipNonexistentProjects)">
+      <Output TaskParameter="TargetOutputs" ItemName="DomeBuildOutput" />
+    </MSBuild>
+  </Target>
+  <Target Name="Dome:Clean">
+    <MSBuild Condition="'%(ProjectReference.Identity)' == 'C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Dome\Dome.csproj.metaproj'" Projects="@(ProjectReference)" Targets="Clean" BuildInParallel="True" ToolsVersion="14.0" Properties="BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)" SkipNonexistentProjects="%(ProjectReference.SkipNonexistentProjects)" />
+  </Target>
+  <Target Name="Dome:Rebuild" Outputs="@(DomeBuildOutput)">
+    <MSBuild Condition="'%(ProjectReference.Identity)' == 'C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Dome\Dome.csproj.metaproj'" Projects="@(ProjectReference)" Targets="Rebuild" BuildInParallel="True" ToolsVersion="14.0" Properties="BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)" SkipNonexistentProjects="%(ProjectReference.SkipNonexistentProjects)">
+      <Output TaskParameter="TargetOutputs" ItemName="DomeBuildOutput" />
+    </MSBuild>
+  </Target>
+  <Target Name="Dome:Publish">
+    <MSBuild Condition="'%(ProjectReference.Identity)' == 'C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Dome\Dome.csproj.metaproj'" Projects="@(ProjectReference)" Targets="Publish" BuildInParallel="True" ToolsVersion="14.0" Properties="BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)" SkipNonexistentProjects="%(ProjectReference.SkipNonexistentProjects)" />
+  </Target>
+  <Target Name="Hardware" Outputs="@(HardwareBuildOutput)">
+    <MSBuild Condition="'%(ProjectReference.Identity)' == 'C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Hardware\Hardware.csproj.metaproj'" Projects="@(ProjectReference)" BuildInParallel="True" ToolsVersion="14.0" Properties="BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)" SkipNonexistentProjects="%(ProjectReference.SkipNonexistentProjects)">
+      <Output TaskParameter="TargetOutputs" ItemName="HardwareBuildOutput" />
+    </MSBuild>
+  </Target>
+  <Target Name="Hardware:Clean">
+    <MSBuild Condition="'%(ProjectReference.Identity)' == 'C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Hardware\Hardware.csproj.metaproj'" Projects="@(ProjectReference)" Targets="Clean" BuildInParallel="True" ToolsVersion="14.0" Properties="BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)" SkipNonexistentProjects="%(ProjectReference.SkipNonexistentProjects)" />
+  </Target>
+  <Target Name="Hardware:Rebuild" Outputs="@(HardwareBuildOutput)">
+    <MSBuild Condition="'%(ProjectReference.Identity)' == 'C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Hardware\Hardware.csproj.metaproj'" Projects="@(ProjectReference)" Targets="Rebuild" BuildInParallel="True" ToolsVersion="14.0" Properties="BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)" SkipNonexistentProjects="%(ProjectReference.SkipNonexistentProjects)">
+      <Output TaskParameter="TargetOutputs" ItemName="HardwareBuildOutput" />
+    </MSBuild>
+  </Target>
+  <Target Name="Hardware:Publish">
+    <MSBuild Condition="'%(ProjectReference.Identity)' == 'C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Hardware\Hardware.csproj.metaproj'" Projects="@(ProjectReference)" Targets="Publish" BuildInParallel="True" ToolsVersion="14.0" Properties="BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)" SkipNonexistentProjects="%(ProjectReference.SkipNonexistentProjects)" />
+  </Target>
+  <Target Name="Telescope" Outputs="@(TelescopeBuildOutput)">
+    <MSBuild Condition="'%(ProjectReference.Identity)' == 'C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Telescope\Telescope.csproj.metaproj'" Projects="@(ProjectReference)" BuildInParallel="True" ToolsVersion="14.0" Properties="BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)" SkipNonexistentProjects="%(ProjectReference.SkipNonexistentProjects)">
+      <Output TaskParameter="TargetOutputs" ItemName="TelescopeBuildOutput" />
+    </MSBuild>
+  </Target>
+  <Target Name="Telescope:Clean">
+    <MSBuild Condition="'%(ProjectReference.Identity)' == 'C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Telescope\Telescope.csproj.metaproj'" Projects="@(ProjectReference)" Targets="Clean" BuildInParallel="True" ToolsVersion="14.0" Properties="BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)" SkipNonexistentProjects="%(ProjectReference.SkipNonexistentProjects)" />
+  </Target>
+  <Target Name="Telescope:Rebuild" Outputs="@(TelescopeBuildOutput)">
+    <MSBuild Condition="'%(ProjectReference.Identity)' == 'C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Telescope\Telescope.csproj.metaproj'" Projects="@(ProjectReference)" Targets="Rebuild" BuildInParallel="True" ToolsVersion="14.0" Properties="BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)" SkipNonexistentProjects="%(ProjectReference.SkipNonexistentProjects)">
+      <Output TaskParameter="TargetOutputs" ItemName="TelescopeBuildOutput" />
+    </MSBuild>
+  </Target>
+  <Target Name="Telescope:Publish">
+    <MSBuild Condition="'%(ProjectReference.Identity)' == 'C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Telescope\Telescope.csproj.metaproj'" Projects="@(ProjectReference)" Targets="Publish" BuildInParallel="True" ToolsVersion="14.0" Properties="BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)" SkipNonexistentProjects="%(ProjectReference.SkipNonexistentProjects)" />
+  </Target>
+  <Target Name="Common" Outputs="@(CommonBuildOutput)">
+    <MSBuild Condition="'%(ProjectReference.Identity)' == 'C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Common\Common.csproj'" Projects="@(ProjectReference)" BuildInParallel="True" ToolsVersion="$(ProjectToolsVersion)" Properties="Configuration=Debug; Platform=AnyCPU;BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)">
+      <Output TaskParameter="TargetOutputs" ItemName="CommonBuildOutput" />
+    </MSBuild>
+  </Target>
+  <Target Name="Common:Clean">
+    <MSBuild Condition="'%(ProjectReference.Identity)' == 'C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Common\Common.csproj'" Projects="@(ProjectReference)" Targets="Clean" BuildInParallel="True" ToolsVersion="$(ProjectToolsVersion)" Properties="Configuration=Debug; Platform=AnyCPU;BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)" />
+  </Target>
+  <Target Name="Common:Rebuild" Outputs="@(CommonBuildOutput)">
+    <MSBuild Condition="'%(ProjectReference.Identity)' == 'C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Common\Common.csproj'" Projects="@(ProjectReference)" Targets="Rebuild" BuildInParallel="True" ToolsVersion="$(ProjectToolsVersion)" Properties="Configuration=Debug; Platform=AnyCPU;BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)">
+      <Output TaskParameter="TargetOutputs" ItemName="CommonBuildOutput" />
+    </MSBuild>
+  </Target>
+  <Target Name="Common:Publish">
+    <MSBuild Condition="'%(ProjectReference.Identity)' == 'C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Common\Common.csproj'" Projects="@(ProjectReference)" Targets="Publish" BuildInParallel="True" ToolsVersion="$(ProjectToolsVersion)" Properties="Configuration=Debug; Platform=AnyCPU;BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)" />
+  </Target>
+  <Target Name="AngleTestProject" Outputs="@(AngleTestProjectBuildOutput)">
+    <MSBuild Condition="'%(ProjectReference.Identity)' == 'C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\AngleTestProject\AngleTestProject.csproj'" Projects="@(ProjectReference)" BuildInParallel="True" ToolsVersion="$(ProjectToolsVersion)" Properties="Configuration=Debug; Platform=AnyCPU;BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)">
+      <Output TaskParameter="TargetOutputs" ItemName="AngleTestProjectBuildOutput" />
+    </MSBuild>
+  </Target>
+  <Target Name="AngleTestProject:Clean">
+    <MSBuild Condition="'%(ProjectReference.Identity)' == 'C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\AngleTestProject\AngleTestProject.csproj'" Projects="@(ProjectReference)" Targets="Clean" BuildInParallel="True" ToolsVersion="$(ProjectToolsVersion)" Properties="Configuration=Debug; Platform=AnyCPU;BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)" />
+  </Target>
+  <Target Name="AngleTestProject:Rebuild" Outputs="@(AngleTestProjectBuildOutput)">
+    <MSBuild Condition="'%(ProjectReference.Identity)' == 'C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\AngleTestProject\AngleTestProject.csproj'" Projects="@(ProjectReference)" Targets="Rebuild" BuildInParallel="True" ToolsVersion="$(ProjectToolsVersion)" Properties="Configuration=Debug; Platform=AnyCPU;BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)">
+      <Output TaskParameter="TargetOutputs" ItemName="AngleTestProjectBuildOutput" />
+    </MSBuild>
+  </Target>
+  <Target Name="AngleTestProject:Publish">
+    <MSBuild Condition="'%(ProjectReference.Identity)' == 'C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\AngleTestProject\AngleTestProject.csproj'" Projects="@(ProjectReference)" Targets="Publish" BuildInParallel="True" ToolsVersion="$(ProjectToolsVersion)" Properties="Configuration=Debug; Platform=AnyCPU;BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)" />
+  </Target>
+  <Target Name="CloudSensor" Outputs="@(CloudSensorBuildOutput)">
+    <MSBuild Condition="'%(ProjectReference.Identity)' == 'C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\ClarityII\CloudSensor.csproj.metaproj'" Projects="@(ProjectReference)" BuildInParallel="True" ToolsVersion="14.0" Properties="BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)" SkipNonexistentProjects="%(ProjectReference.SkipNonexistentProjects)">
+      <Output TaskParameter="TargetOutputs" ItemName="CloudSensorBuildOutput" />
+    </MSBuild>
+  </Target>
+  <Target Name="CloudSensor:Clean">
+    <MSBuild Condition="'%(ProjectReference.Identity)' == 'C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\ClarityII\CloudSensor.csproj.metaproj'" Projects="@(ProjectReference)" Targets="Clean" BuildInParallel="True" ToolsVersion="14.0" Properties="BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)" SkipNonexistentProjects="%(ProjectReference.SkipNonexistentProjects)" />
+  </Target>
+  <Target Name="CloudSensor:Rebuild" Outputs="@(CloudSensorBuildOutput)">
+    <MSBuild Condition="'%(ProjectReference.Identity)' == 'C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\ClarityII\CloudSensor.csproj.metaproj'" Projects="@(ProjectReference)" Targets="Rebuild" BuildInParallel="True" ToolsVersion="14.0" Properties="BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)" SkipNonexistentProjects="%(ProjectReference.SkipNonexistentProjects)">
+      <Output TaskParameter="TargetOutputs" ItemName="CloudSensorBuildOutput" />
+    </MSBuild>
+  </Target>
+  <Target Name="CloudSensor:Publish">
+    <MSBuild Condition="'%(ProjectReference.Identity)' == 'C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\ClarityII\CloudSensor.csproj.metaproj'" Projects="@(ProjectReference)" Targets="Publish" BuildInParallel="True" ToolsVersion="14.0" Properties="BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)" SkipNonexistentProjects="%(ProjectReference.SkipNonexistentProjects)" />
+  </Target>
+  <Target Name="VantagePro" Outputs="@(VantageProBuildOutput)">
+    <MSBuild Condition="'%(ProjectReference.Identity)' == 'C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\DavisVantage\VantagePro.csproj.metaproj'" Projects="@(ProjectReference)" BuildInParallel="True" ToolsVersion="14.0" Properties="BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)" SkipNonexistentProjects="%(ProjectReference.SkipNonexistentProjects)">
+      <Output TaskParameter="TargetOutputs" ItemName="VantageProBuildOutput" />
+    </MSBuild>
+  </Target>
+  <Target Name="VantagePro:Clean">
+    <MSBuild Condition="'%(ProjectReference.Identity)' == 'C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\DavisVantage\VantagePro.csproj.metaproj'" Projects="@(ProjectReference)" Targets="Clean" BuildInParallel="True" ToolsVersion="14.0" Properties="BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)" SkipNonexistentProjects="%(ProjectReference.SkipNonexistentProjects)" />
+  </Target>
+  <Target Name="VantagePro:Rebuild" Outputs="@(VantageProBuildOutput)">
+    <MSBuild Condition="'%(ProjectReference.Identity)' == 'C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\DavisVantage\VantagePro.csproj.metaproj'" Projects="@(ProjectReference)" Targets="Rebuild" BuildInParallel="True" ToolsVersion="14.0" Properties="BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)" SkipNonexistentProjects="%(ProjectReference.SkipNonexistentProjects)">
+      <Output TaskParameter="TargetOutputs" ItemName="VantageProBuildOutput" />
+    </MSBuild>
+  </Target>
+  <Target Name="VantagePro:Publish">
+    <MSBuild Condition="'%(ProjectReference.Identity)' == 'C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\DavisVantage\VantagePro.csproj.metaproj'" Projects="@(ProjectReference)" Targets="Publish" BuildInParallel="True" ToolsVersion="14.0" Properties="BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)" SkipNonexistentProjects="%(ProjectReference.SkipNonexistentProjects)" />
+  </Target>
+  <Target Name="Dashboard" Outputs="@(DashboardBuildOutput)">
+    <MSBuild Condition="'%(ProjectReference.Identity)' == 'C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Dashboard\Dashboard.csproj'" Projects="@(ProjectReference)" BuildInParallel="True" ToolsVersion="$(ProjectToolsVersion)" Properties="Configuration=Debug; Platform=AnyCPU;BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)">
+      <Output TaskParameter="TargetOutputs" ItemName="DashboardBuildOutput" />
+    </MSBuild>
+  </Target>
+  <Target Name="Dashboard:Clean">
+    <MSBuild Condition="'%(ProjectReference.Identity)' == 'C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Dashboard\Dashboard.csproj'" Projects="@(ProjectReference)" Targets="Clean" BuildInParallel="True" ToolsVersion="$(ProjectToolsVersion)" Properties="Configuration=Debug; Platform=AnyCPU;BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)" />
+  </Target>
+  <Target Name="Dashboard:Rebuild" Outputs="@(DashboardBuildOutput)">
+    <MSBuild Condition="'%(ProjectReference.Identity)' == 'C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Dashboard\Dashboard.csproj'" Projects="@(ProjectReference)" Targets="Rebuild" BuildInParallel="True" ToolsVersion="$(ProjectToolsVersion)" Properties="Configuration=Debug; Platform=AnyCPU;BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)">
+      <Output TaskParameter="TargetOutputs" ItemName="DashboardBuildOutput" />
+    </MSBuild>
+  </Target>
+  <Target Name="Dashboard:Publish">
+    <MSBuild Condition="'%(ProjectReference.Identity)' == 'C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Dashboard\Dashboard.csproj'" Projects="@(ProjectReference)" Targets="Publish" BuildInParallel="True" ToolsVersion="$(ProjectToolsVersion)" Properties="Configuration=Debug; Platform=AnyCPU;BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)" />
+  </Target>
+  <Target Name="SafeToOpen" Outputs="@(SafeToOpenBuildOutput)">
+    <MSBuild Condition="'%(ProjectReference.Identity)' == 'C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\SafeToOpen\SafeToOpen.csproj.metaproj'" Projects="@(ProjectReference)" BuildInParallel="True" ToolsVersion="14.0" Properties="BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)" SkipNonexistentProjects="%(ProjectReference.SkipNonexistentProjects)">
+      <Output TaskParameter="TargetOutputs" ItemName="SafeToOpenBuildOutput" />
+    </MSBuild>
+  </Target>
+  <Target Name="SafeToOpen:Clean">
+    <MSBuild Condition="'%(ProjectReference.Identity)' == 'C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\SafeToOpen\SafeToOpen.csproj.metaproj'" Projects="@(ProjectReference)" Targets="Clean" BuildInParallel="True" ToolsVersion="14.0" Properties="BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)" SkipNonexistentProjects="%(ProjectReference.SkipNonexistentProjects)" />
+  </Target>
+  <Target Name="SafeToOpen:Rebuild" Outputs="@(SafeToOpenBuildOutput)">
+    <MSBuild Condition="'%(ProjectReference.Identity)' == 'C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\SafeToOpen\SafeToOpen.csproj.metaproj'" Projects="@(ProjectReference)" Targets="Rebuild" BuildInParallel="True" ToolsVersion="14.0" Properties="BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)" SkipNonexistentProjects="%(ProjectReference.SkipNonexistentProjects)">
+      <Output TaskParameter="TargetOutputs" ItemName="SafeToOpenBuildOutput" />
+    </MSBuild>
+  </Target>
+  <Target Name="SafeToOpen:Publish">
+    <MSBuild Condition="'%(ProjectReference.Identity)' == 'C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\SafeToOpen\SafeToOpen.csproj.metaproj'" Projects="@(ProjectReference)" Targets="Publish" BuildInParallel="True" ToolsVersion="14.0" Properties="BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)" SkipNonexistentProjects="%(ProjectReference.SkipNonexistentProjects)" />
+  </Target>
+  <Target Name="SafeToImage" Outputs="@(SafeToImageBuildOutput)">
+    <MSBuild Condition="'%(ProjectReference.Identity)' == 'C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\SafeToImage\SafeToImage.csproj.metaproj'" Projects="@(ProjectReference)" BuildInParallel="True" ToolsVersion="14.0" Properties="BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)" SkipNonexistentProjects="%(ProjectReference.SkipNonexistentProjects)">
+      <Output TaskParameter="TargetOutputs" ItemName="SafeToImageBuildOutput" />
+    </MSBuild>
+  </Target>
+  <Target Name="SafeToImage:Clean">
+    <MSBuild Condition="'%(ProjectReference.Identity)' == 'C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\SafeToImage\SafeToImage.csproj.metaproj'" Projects="@(ProjectReference)" Targets="Clean" BuildInParallel="True" ToolsVersion="14.0" Properties="BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)" SkipNonexistentProjects="%(ProjectReference.SkipNonexistentProjects)" />
+  </Target>
+  <Target Name="SafeToImage:Rebuild" Outputs="@(SafeToImageBuildOutput)">
+    <MSBuild Condition="'%(ProjectReference.Identity)' == 'C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\SafeToImage\SafeToImage.csproj.metaproj'" Projects="@(ProjectReference)" Targets="Rebuild" BuildInParallel="True" ToolsVersion="14.0" Properties="BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)" SkipNonexistentProjects="%(ProjectReference.SkipNonexistentProjects)">
+      <Output TaskParameter="TargetOutputs" ItemName="SafeToImageBuildOutput" />
+    </MSBuild>
+  </Target>
+  <Target Name="SafeToImage:Publish">
+    <MSBuild Condition="'%(ProjectReference.Identity)' == 'C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\SafeToImage\SafeToImage.csproj.metaproj'" Projects="@(ProjectReference)" Targets="Publish" BuildInParallel="True" ToolsVersion="14.0" Properties="BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)" SkipNonexistentProjects="%(ProjectReference.SkipNonexistentProjects)" />
+  </Target>
+  <Target Name="Restore-ASCOM-Profiles" Outputs="@(Restore-ASCOM-ProfilesBuildOutput)">
+    <MSBuild Condition="'%(ProjectReference.Identity)' == 'C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Restore-ASCOM-Profiles\Restore-ASCOM-Profiles.csproj'" Projects="@(ProjectReference)" BuildInParallel="True" ToolsVersion="$(ProjectToolsVersion)" Properties="Configuration=Debug; Platform=AnyCPU;BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)">
+      <Output TaskParameter="TargetOutputs" ItemName="Restore-ASCOM-ProfilesBuildOutput" />
+    </MSBuild>
+  </Target>
+  <Target Name="Restore-ASCOM-Profiles:Clean">
+    <MSBuild Condition="'%(ProjectReference.Identity)' == 'C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Restore-ASCOM-Profiles\Restore-ASCOM-Profiles.csproj'" Projects="@(ProjectReference)" Targets="Clean" BuildInParallel="True" ToolsVersion="$(ProjectToolsVersion)" Properties="Configuration=Debug; Platform=AnyCPU;BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)" />
+  </Target>
+  <Target Name="Restore-ASCOM-Profiles:Rebuild" Outputs="@(Restore-ASCOM-ProfilesBuildOutput)">
+    <MSBuild Condition="'%(ProjectReference.Identity)' == 'C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Restore-ASCOM-Profiles\Restore-ASCOM-Profiles.csproj'" Projects="@(ProjectReference)" Targets="Rebuild" BuildInParallel="True" ToolsVersion="$(ProjectToolsVersion)" Properties="Configuration=Debug; Platform=AnyCPU;BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)">
+      <Output TaskParameter="TargetOutputs" ItemName="Restore-ASCOM-ProfilesBuildOutput" />
+    </MSBuild>
+  </Target>
+  <Target Name="Restore-ASCOM-Profiles:Publish">
+    <MSBuild Condition="'%(ProjectReference.Identity)' == 'C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Restore-ASCOM-Profiles\Restore-ASCOM-Profiles.csproj'" Projects="@(ProjectReference)" Targets="Publish" BuildInParallel="True" ToolsVersion="$(ProjectToolsVersion)" Properties="Configuration=Debug; Platform=AnyCPU;BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)" />
+  </Target>
+  <Target Name="ComputerControl" Outputs="@(ComputerControlBuildOutput)">
+    <MSBuild Condition="'%(ProjectReference.Identity)' == 'C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\ComputerControl\ComputerControl.csproj'" Projects="@(ProjectReference)" BuildInParallel="True" ToolsVersion="$(ProjectToolsVersion)" Properties="Configuration=Debug; Platform=AnyCPU;BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)">
+      <Output TaskParameter="TargetOutputs" ItemName="ComputerControlBuildOutput" />
+    </MSBuild>
+  </Target>
+  <Target Name="ComputerControl:Clean">
+    <MSBuild Condition="'%(ProjectReference.Identity)' == 'C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\ComputerControl\ComputerControl.csproj'" Projects="@(ProjectReference)" Targets="Clean" BuildInParallel="True" ToolsVersion="$(ProjectToolsVersion)" Properties="Configuration=Debug; Platform=AnyCPU;BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)" />
+  </Target>
+  <Target Name="ComputerControl:Rebuild" Outputs="@(ComputerControlBuildOutput)">
+    <MSBuild Condition="'%(ProjectReference.Identity)' == 'C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\ComputerControl\ComputerControl.csproj'" Projects="@(ProjectReference)" Targets="Rebuild" BuildInParallel="True" ToolsVersion="$(ProjectToolsVersion)" Properties="Configuration=Debug; Platform=AnyCPU;BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)">
+      <Output TaskParameter="TargetOutputs" ItemName="ComputerControlBuildOutput" />
+    </MSBuild>
+  </Target>
+  <Target Name="ComputerControl:Publish">
+    <MSBuild Condition="'%(ProjectReference.Identity)' == 'C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\ComputerControl\ComputerControl.csproj'" Projects="@(ProjectReference)" Targets="Publish" BuildInParallel="True" ToolsVersion="$(ProjectToolsVersion)" Properties="Configuration=Debug; Platform=AnyCPU;BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)" />
+  </Target>
+</Project>

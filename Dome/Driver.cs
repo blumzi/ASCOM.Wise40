@@ -115,7 +115,7 @@ namespace ASCOM.Wise40
 
             debugger.init();
             wisedome.init();
-            wisedome.SetArrivedEvent(arrived);
+            wisedome.SetArrivedAtAzEvent(arrived);
             wisedome.SetLogger(tl);
 
             tl.LogMessage("Dome", "Completed initialisation");

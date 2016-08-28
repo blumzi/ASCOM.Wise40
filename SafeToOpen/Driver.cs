@@ -434,8 +434,6 @@ namespace ASCOM.Wise40.SafeToOpen
         {
             using (Profile driverProfile = new Profile())
             {
-                int i;
-
                 driverProfile.DeviceType = "SafetyMonitor";
                 traceState = Convert.ToBoolean(driverProfile.GetValue(driverID, traceStateProfileName, string.Empty, traceStateDefault));
                 switch(driverProfile.GetValue(driverID, cloudsMaxProfileName, string.Empty, 0.ToString())) {

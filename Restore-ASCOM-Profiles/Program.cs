@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using ASCOM.Utilities;
+using ASCOM.Wise40.Common;
 
 namespace Restore_ASCOM_Profiles
 {
@@ -16,6 +17,7 @@ namespace Restore_ASCOM_Profiles
             WriteVantageProProfile();
             WriteSafeToOpenProfile();
             WriteSafeToImageProfile();
+            WriteDomeProfile();
 
             Environment.Exit(0);
         }
@@ -93,6 +95,23 @@ namespace Restore_ASCOM_Profiles
                 driverProfile.WriteValue(driverID, lightMaxProfileName, "darkLight");
                 driverProfile.WriteValue(driverID, humidityMaxProfileName, 70.ToString());
                 driverProfile.WriteValue(driverID, ageMaxSecondsProfileName, 0.ToString());
+            }
+        }
+
+        internal static void WriteDomeProfile()
+        {
+            string driverID = "ASCOM.Wise40.Dome";
+            string traceStateProfileName = "Trace Level";
+            string debugLevelProfileName = "Debug Level";
+            string autoCalibrateProfileName = "AutoCalibrate";
+            int debugLevel = (int)Debugger.DebugLevel.DebugAxes;
+
+            using (Profile driverProfile = new Profile())
+            {
+                driverProfile.DeviceType = "Dome";
+                driverProfile.WriteValue(driverID, traceStateProfileName, false.ToString());
+                driverProfile.WriteValue(driverID, debugLevelProfileName, debugLevel.ToString());
+                driverProfile.WriteValue(driverID, autoCalibrateProfileName, true.ToString());
             }
         }
     }

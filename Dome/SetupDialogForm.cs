@@ -25,7 +25,7 @@ namespace ASCOM.Wise40
             _dome.ReadProfile();
             checkBoxTrace.Checked = _dome.traceState;
             checkBoxAutoCalibrate.Checked = (_dome.debugger.Level != 0);
-            checkBoxDebugDevice.Checked = _dome.debugger.Debugging(Debugger.DebugLevel.DebugDevice);
+            checkBoxDebugAxes.Checked = _dome.debugger.Debugging(Debugger.DebugLevel.DebugAxes);
             checkBoxDebugEncoders.Checked = _dome.debugger.Debugging(Debugger.DebugLevel.DebugEncoders);
             checkBoxDebugExceptions.Checked = _dome.debugger.Debugging(Debugger.DebugLevel.DebugExceptions);
         }
@@ -37,7 +37,7 @@ namespace ASCOM.Wise40
             uint level = 0;
             if (checkBoxAutoCalibrate.Checked)
             {
-                if (checkBoxDebugDevice.Checked) level |= (uint)Debugger.DebugLevel.DebugDevice;
+                if (checkBoxDebugAxes.Checked) level |= (uint)Debugger.DebugLevel.DebugAxes;
                 if (checkBoxDebugEncoders.Checked) level |= (uint)Debugger.DebugLevel.DebugEncoders;
                 if (checkBoxDebugExceptions.Checked) level |= (uint)Debugger.DebugLevel.DebugExceptions;
             }

@@ -17,8 +17,8 @@ namespace ASCOM.Wise40
         private bool _connected = false;
         private ASCOM.Astrometry.NOVAS.NOVAS31 novas31;
         private AstroUtils astroutils;
-        AutoResetEvent _arrived = new AutoResetEvent(false);
-        private bool _slewStarted = false;
+        AutoResetEvent _arrivedAtAz = new AutoResetEvent(false);
+        private bool _slewing = false;
         private Debugger debugger;
 
         public static readonly DomeSlaveDriver instance = new DomeSlaveDriver(); // Singleton
@@ -52,14 +52,16 @@ namespace ASCOM.Wise40
             debugger = Debugger.Instance;
             instance.novas31 = new Astrometry.NOVAS.NOVAS31();
             instance.astroutils = new AstroUtils();
-            _arrived = new AutoResetEvent(false);
+            _arrivedAtAz = new AutoResetEvent(false);
             wisedome.init();
-            wisedome.SetArrivedEvent(_arrived);
+            wisedome.SetArrivedAtAzEvent(_arrivedAtAz);
             wisedome.SetLogger(WiseTele.Instance.traceLogger);
             wisesite.init();
 
             _initialized = true;
-            debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "DomeSlaveDriver: init() done.");
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver: init() done.");
+            #endregion
         }
 
         public bool Connected
@@ -74,11 +76,11 @@ namespace ASCOM.Wise40
         {
             if (!_initialized)
                 init();
-            _connected = value;
             wisedome.Connect(value);
+            _connected = value;
         }
 
-        public void SlewStartAsync(Angle ra, Angle dec)
+        public void SlewToCoords(Angle ra, Angle dec)
         {
             double rar = 0, decr = 0, az = 0, zd = 0;
 
@@ -91,32 +93,45 @@ namespace ASCOM.Wise40
                 wisesite.refractionOption,
                 ref zd, ref az, ref rar, ref decr);
 
-            _slewStarted = true;
-            debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "DomeSlaveDriver: Asking dome to SlewToAzimuth({0})", new Angle(az));
-            wisedome.SlewToAzimuth(az);
-        }
-
-        public void SlewWait()
-        {
-            debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "DomeSlaveDriver: Waiting for dome to arrive to target az");
-            _arrived.WaitOne();
-            debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "DomeSlaveDriver: Dome arrived to target az");
-            _slewStarted = false;
+            _slewing = true;
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver: Asking dome to SlewToAzimuth({0})", new Angle(az));
+            #endregion
+            wisedome.SlewToAzimuth(az);            
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver: Waiting for dome to arrive to target az");
+            #endregion
+            _arrivedAtAz.WaitOne();
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver: Dome arrived to target az");
+            #endregion
+            _slewing = false;
         }
 
         public bool Slewing
         {
             get
             {
-                return _slewStarted;
+                return _slewing;
             }
         }
 
-        public void SlewToParkStart()
+        public void SlewToPark()
         {
             if (wisedome.CanPark) {
-                _slewStarted = true;
+                _slewing = true;
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver: Asking dome to Park()");
+                #endregion
                 wisedome.Park();
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver: Waiting for dome to arrive Park");
+                #endregion
+                _arrivedAtAz.WaitOne();
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver: Dome arrived at Park.");
+                #endregion
+                _slewing = false;
             }
         }
 
@@ -129,7 +144,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                if (!Connected)
+                if (!wisedome.Connected)
                     return "Not connected";
                 if (!wisedome.Calibrated)
                     return "Not calibrated";

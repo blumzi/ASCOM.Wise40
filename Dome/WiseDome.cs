@@ -51,6 +51,7 @@ namespace ASCOM.Wise40
 
         public const double _parkAzimuth = 90.0;
         private Angle _simulatedStuckAz = new Angle(333.0);      // If targeted to this Az, we simulate dome-stuck (must be a valid az)
+        private bool _parking = false;
 
         private Angle _targetAz = null;
 
@@ -65,7 +66,8 @@ namespace ASCOM.Wise40
 
         private Debugger debugger = Debugger.Instance;
 
-        private static AutoResetEvent _arrivedEvent;
+        private static AutoResetEvent _arrivedAtAzEvent;
+        private static AutoResetEvent _foundCalibration = new AutoResetEvent(false);
         private static Hardware.Hardware hw = Hardware.Hardware.Instance;
 
         private static TraceLogger tl;        
@@ -141,7 +143,7 @@ namespace ASCOM.Wise40
             }
             catch (WiseException e)
             {
-                debugger.WriteLine(Debugger.DebugLevel.DebugExceptions, "WiseDome constructor caught: {0}.", e.Message);
+                debugger.WriteLine(Debugger.DebugLevel.DebugExceptions, "WiseDome: constructor caught: {0}.", e.Message);
             }
 
             openPin.SetOff();
@@ -177,12 +179,12 @@ namespace ASCOM.Wise40
 
             _initialized = true;
 
-            debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "WiseDome init() done.");
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: init() done.");
         }
 
-        public void SetArrivedEvent(AutoResetEvent e)
+        public void SetArrivedAtAzEvent(AutoResetEvent e)
         {
-            _arrivedEvent = e;
+            _arrivedAtAzEvent = e;
         }
 
         public void Connect(bool connected)
@@ -252,8 +254,14 @@ namespace ASCOM.Wise40
             {
                 Stop();
                 _targetAz = null;
-                if (Slaved)
-                    _arrivedEvent.Set();
+
+                if (_parking)
+                {
+                    _parking = false;
+                    AtPark = true;
+                }
+
+                _arrivedAtAzEvent.Set();
             }
 
             if (AtCaliPoint)
@@ -262,7 +270,7 @@ namespace ASCOM.Wise40
                 {
                     Stop();
                     _calibrating = false;
-                    _arrivedEvent.Set();
+                    _foundCalibration.Set();
                 }
                 domeEncoder.Calibrate(_homePointAzimuth);
             }
@@ -345,21 +353,28 @@ namespace ASCOM.Wise40
                     backwardPin.SetOff();
                     _stuckPhase = StuckPhase.FirstStop;
                     nextStuckEvent = rightNow.AddMilliseconds(10000);
-                    debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "stuck: {0}, phase1: stopped moving, letting wheels cool for 10 seconds", Azimuth);
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: stuck: {0}, phase1: stopped moving, letting wheels cool for 10 seconds", Azimuth);
+                    #endregion
+
                     break;
 
                 case StuckPhase.FirstStop:             // Go backward for two seconds
                     backwardPin.SetOn();
                     _stuckPhase = StuckPhase.GoBackward;
                     nextStuckEvent = rightNow.AddMilliseconds(2000);
-                    debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "stuck: {0}, phase2: going backwards for 2 seconds", Azimuth);
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: stuck: {0}, phase2: going backwards for 2 seconds", Azimuth);
+                    #endregion
                     break;
 
                 case StuckPhase.GoBackward:            // Stop again for two seconds
                     backwardPin.SetOff();
                     _stuckPhase = StuckPhase.SecondStop;
                     nextStuckEvent = rightNow.AddMilliseconds(2000);
-                    debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "stuck: {0}, phase3: stopping for 2 seconds", Azimuth);
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: stuck: {0}, phase3: stopping for 2 seconds", Azimuth);
+                    #endregion
                     break;
 
                 case StuckPhase.SecondStop:            // Done, resume original movement
@@ -368,7 +383,9 @@ namespace ASCOM.Wise40
                     _isStuck = false;
                     _stuckTimer.Enabled = false;
                     nextStuckEvent = rightNow.AddYears(100);
-                    debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "stuck: {0}, phase4: resumed original motion", Azimuth);
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: stuck: {0}, phase4: resumed original motion", Azimuth);
+                    #endregion
                     break;
             }
         }
@@ -383,7 +400,9 @@ namespace ASCOM.Wise40
             _state = DomeState.MovingCW;
             domeEncoder.setMovement(Direction.CW);
             _movementTimer.Enabled = true;
-            debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "WiseDome: Started moving CW");
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: Started moving CW");
+            #endregion
         }
 
         public void MoveRight()
@@ -400,7 +419,9 @@ namespace ASCOM.Wise40
             _state = DomeState.MovingCCW;
             domeEncoder.setMovement(Direction.CCW);
             _movementTimer.Enabled = true;
-            debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "WiseDome: Started moving CCW");
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: Started moving CCW");
+            #endregion
         }
 
         public void MoveLeft()
@@ -415,7 +436,9 @@ namespace ASCOM.Wise40
             _state = DomeState.Idle;
             _movementTimer.Enabled = false;
             domeEncoder.setMovement(Direction.None);
-            debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "WiseDome: Stopped");
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: Stopped");
+            #endregion
         }
 
         public void StartOpeningShutter()
@@ -515,7 +538,9 @@ namespace ASCOM.Wise40
 
             AtPark = false;
 
-            debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "FindHomePoint: started");
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: FindHomePoint: started");
+            #endregion
             _calibrating = true;
 
             if (Calibrated)
@@ -529,9 +554,13 @@ namespace ASCOM.Wise40
             } else
                 StartMovingCCW();
 
-            debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "FindHomePoint: waiting for reachedCalibrationPoint ...");
-            _arrivedEvent.WaitOne();
-            debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "FindHomePoint: reachedCalibrationPoint was Set()");
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: FindHomePoint: waiting for reachedCalibrationPoint ...");
+            #endregion
+            _foundCalibration.WaitOne();
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: FindHomePoint: reachedCalibrationPoint was Set()");
+            #endregion
         }
 
         public void SlewToAzimuth(double degrees)
@@ -555,8 +584,11 @@ namespace ASCOM.Wise40
 
             tl.LogMessage("SlewToAzimuth", toAng.ToString());
 
-            if (!Calibrated) {
-                debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "SlewToAzimuth: {0}, not calibrated, calling FindHomePoint", toAng);
+            if (!Calibrated)
+            {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: SlewToAzimuth: {0}, not calibrated, calling FindHomePoint", toAng);
+                #endregion
                 FindHome();
             }
 
@@ -573,7 +605,9 @@ namespace ASCOM.Wise40
                     StartMovingCW();
                     break;
             }
-            debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "SlewToAzimuth: {0} => {1} (dist: {2}), moving {3}", Azimuth, toAng, shortest.angle, shortest.direction);
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: SlewToAzimuth: {0} => {1} (dist: {2}), moving {3}", Azimuth, toAng, shortest.angle, shortest.direction);
+            #endregion
 
             if (_simulated && _targetAz == _simulatedStuckAz)
             {
@@ -581,8 +615,10 @@ namespace ASCOM.Wise40
                 Angle stuckAtAz = (shortest.direction == Const.AxisDirection.Increasing) ? _targetAz - epsilon : _targetAz + epsilon;
 
                 domeEncoder.SimulateStuckAt(stuckAtAz);
-                debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "Dome encoder will simulate stuck at {0}", stuckAtAz);
-            }               
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "WiseDome: Dome encoder will simulate stuck at {0}", stuckAtAz);
+                #endregion
+            }
         }
 
         public bool AtPark
@@ -689,8 +725,8 @@ namespace ASCOM.Wise40
             tl.LogMessage("Park", "");
 
             AtPark = false;
-            SlewToAzimuth(90.0);
-            AtPark = true;
+            _parking = true;
+            SlewToAzimuth(_parkAzimuth);
         }
 
         public void OpenShutter()

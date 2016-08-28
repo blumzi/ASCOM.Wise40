@@ -215,8 +215,35 @@ namespace ASCOM.Wise40
 
             checkBoxPrimaryIsActive.Checked = wisetele.AxisIsMoving(TelescopeAxes.axisPrimary);
             checkBoxSecondaryIsActive.Checked = wisetele.AxisIsMoving(TelescopeAxes.axisSecondary);
+            string activeSlewers = wisetele.Slewers;
+            checkBoxSlewingIsActive.Text = (activeSlewers == string.Empty) ? "Slewing" : "Slewing (" + activeSlewers + ")";
             checkBoxSlewingIsActive.Checked = wisetele.Slewing;
             checkBoxTrackingIsActive.Checked = wisetele.Tracking;
+
+            WiseVirtualMotor m;
+
+            m = null;
+            if (wisetele.WestMotor.isOn)
+                m = wisetele.WestMotor;
+            else if (wisetele.EastMotor.isOn)
+                m = wisetele.EastMotor;
+
+            checkBoxPrimaryIsActive.Text = "Primary";
+            if (m != null)
+                checkBoxPrimaryIsActive.Text += ": " + m.name.Remove(m.name.IndexOf('M')) + "@" +
+                    WiseTele.RateName(m.currentRate).Replace("rate", "");
+
+            m = null;
+            if (wisetele.NorthMotor.isOn)
+                m = wisetele.NorthMotor;
+            else if (wisetele.SouthMotor.isOn)
+                m = wisetele.SouthMotor;
+
+
+            checkBoxSecondaryIsActive.Text = "Secondary";
+            if (m != null)
+                checkBoxSecondaryIsActive.Text += ": " + m.name.Remove(m.name.IndexOf('M')) + "@" +
+                    WiseTele.RateName(m.currentRate).Replace("rate", "");
 
             checkBoxTrack.Checked = wisetele.Tracking;
 
@@ -298,35 +325,6 @@ namespace ASCOM.Wise40
                         debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "OC: exception: {0}", e.Message);
                     }
                 }
-            }
-
-            if (groupBoxCurrentRates.Visible)
-            {
-                WiseVirtualMotor m;
-
-                m = null;
-                if (wisetele.WestMotor.isOn)
-                    m = wisetele.WestMotor;
-                else if (wisetele.EastMotor.isOn)
-                    m = wisetele.EastMotor;
-
-                if (m == null)
-                    labelCurrPrimRateValue.Text = "Stopped";
-                else
-                    labelCurrPrimRateValue.Text = m.name.Remove(m.name.IndexOf('M')) + "@" + 
-                        WiseTele.RateName(m.currentRate).Replace("rate", "");
-
-                m = null;
-                if (wisetele.NorthMotor.isOn)
-                    m = wisetele.NorthMotor;
-                else if (wisetele.SouthMotor.isOn)
-                    m = wisetele.SouthMotor;
-
-                if (m == null)
-                    labelCurrSecRateValue.Text = "Stopped";
-                else
-                    labelCurrSecRateValue.Text = m.name.Remove(m.name.IndexOf('M')) + "@" + 
-                        WiseTele.RateName(m.currentRate).Replace("rate", "");
             }
         }
 

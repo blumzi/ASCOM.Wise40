@@ -53,18 +53,13 @@ namespace ASCOM.Wise40
             }
         }
 
-        public void SetCounterpart(AxisMonitor m)
-        {
-            _counterpart = m;
-        }
-
         public bool IsMoving
         {
             get
             {
                 bool ret;
                 double _max = double.MinValue;
-                double epsilon = 0.00002;       // TODO: Check in real life
+                double epsilon = 0.00004;       // TODO: Check in real life
                 foreach (double d in _deltas.ToArray())
                     if (d > _max)
                         _max = d;
@@ -119,7 +114,7 @@ namespace ASCOM.Wise40
             {
                 movementCheckerTask = Task.Run(() =>
                 {
-                    Thread.CurrentThread.Name = _axis.ToString() + "MovementChecker";
+                    //Thread.CurrentThread.Name = _axis.ToString() + "MovementChecker";
                     AxisMovementChecker();
                 }, movementCheckerCancellationToken);
             }
