@@ -200,12 +200,12 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("Connected Get", _connected.ToString());
+                tl.LogMessage("Dome: Connected Get", _connected.ToString());
                 return _connected;
             }
             set
             {
-                tl.LogMessage("Connected Set", value.ToString());
+                tl.LogMessage("Dome: Connected Set", value.ToString());
 
                 if (value == _connected)
                     return;
@@ -494,13 +494,13 @@ namespace ASCOM.Wise40
                 }
 
                 ret = domeEncoder.Azimuth;
-                tl.LogMessage("Azimuth Get", ret.ToString());
+                tl.LogMessage("Dome: Azimuth Get", ret.ToString());
                 return ret;
             }
 
             set
             {
-                tl.LogMessage("Azimuth Set", value.ToString());
+                tl.LogMessage("Dome: Azimuth Set", value.ToString());
                 domeEncoder.Calibrate(value);
             }
         }
@@ -527,14 +527,14 @@ namespace ASCOM.Wise40
         {
             if (ShutterIsActive())
             {
-                tl.LogMessage("FindHome", "Cannot FindHome, shutter is active.");
+                tl.LogMessage("Dome: FindHome", "Cannot FindHome, shutter is active.");
                 throw new ASCOM.InvalidOperationException("Cannot FindHome, shutter is active!");
             }
 
             if (wisesite.safetySwitch != null && !wisesite.safetySwitch.IsSafe)
                 throw new ASCOM.InvalidOperationException("Wise40 safety switch is OFF!");
 
-            tl.LogMessage("FindHome", "Calling wisedome.FindHome");
+            tl.LogMessage("Dome: FindHome", "Calling wisedome.FindHome");
 
             AtPark = false;
 
@@ -573,7 +573,7 @@ namespace ASCOM.Wise40
 
             if (ShutterIsActive())
             {
-                tl.LogMessage("SlewToAzimuth", "Denied, shutter is active.");
+                tl.LogMessage("Dome: SlewToAzimuth", "Denied, shutter is active.");
                 throw new ASCOM.InvalidOperationException("Cannot move, shutter is active!");
             }
 
@@ -582,7 +582,7 @@ namespace ASCOM.Wise40
 
             Angle toAng = new Angle(degrees);
 
-            tl.LogMessage("SlewToAzimuth", toAng.ToString());
+            tl.LogMessage("Dome: SlewToAzimuth", toAng.ToString());
 
             if (!Calibrated)
             {
@@ -625,13 +625,13 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("AtPark Get", _atPark.ToString());
+                tl.LogMessage("Dome: AtPark Get", _atPark.ToString());
                 return _atPark;
             }
 
             set
             {
-                tl.LogMessage("AtPark Set", value.ToString());
+                tl.LogMessage("Dome: AtPark Set", value.ToString());
                 _atPark = value;
             }
         }
@@ -688,7 +688,7 @@ namespace ASCOM.Wise40
                 bool ret = (_state == DomeState.MovingCCW) || (_state == DomeState.MovingCW) ||
                     (_shutterState == ShutterState.Opening) || (_shutterState == ShutterState.Closing);
 
-                tl.LogMessage("Slewing Get", ret.ToString());
+                tl.LogMessage("Dome: Slewing Get", ret.ToString());
                 return ret;
             }
         }
@@ -697,13 +697,13 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("Slaved Get", _slaved.ToString());
+                tl.LogMessage("Dome: Slaved Get", _slaved.ToString());
                 return _slaved;
             }
 
             set
             {
-                tl.LogMessage("Slaved Set", value.ToString());
+                tl.LogMessage("Dome: Slaved Set", value.ToString());
                 _slaved = value;
             }
         }
@@ -718,11 +718,11 @@ namespace ASCOM.Wise40
 
             if (ShutterIsActive())
             {
-                tl.LogMessage("Park", "Cannot Park, shutter is active.");
+                tl.LogMessage("Dome: Park", "Cannot Park, shutter is active.");
                 throw new ASCOM.InvalidOperationException("Cannot Park, shutter is active!");
             }
             
-            tl.LogMessage("Park", "");
+            tl.LogMessage("Dome: Park", "");
 
             AtPark = false;
             _parking = true;
@@ -737,7 +737,7 @@ namespace ASCOM.Wise40
             if (wisesite.safeToOpen != null && !wisesite.safeToOpen.IsSafe)
                 throw new ASCOM.InvalidOperationException("Not safe to open shutter!");
 
-            tl.LogMessage("OpenShutter", "");
+            tl.LogMessage("Dome: OpenShutter", "");
 
             ShutterStop();
             StartOpeningShutter();
@@ -748,7 +748,7 @@ namespace ASCOM.Wise40
             if (Slewing)
                 throw new ASCOM.InvalidOperationException("Cannot CloseShutter, dome is slewing!");
 
-            tl.LogMessage("CloseShutter", "");
+            tl.LogMessage("Dome: CloseShutter", "");
 
             ShutterStop();
             StartClosingShutter();
@@ -756,7 +756,7 @@ namespace ASCOM.Wise40
 
         public void AbortSlew()
         {
-            tl.LogMessage("AbortSlew", "");
+            tl.LogMessage("Dome: AbortSlew", "");
             Stop();
         }
 
@@ -764,7 +764,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("Altitude Get", "Not implemented");
+                tl.LogMessage("Dome: Altitude Get", "Not implemented");
                 throw new ASCOM.PropertyNotImplementedException("Altitude", false);
             }
         }
@@ -775,7 +775,7 @@ namespace ASCOM.Wise40
             {
                 bool atHome = AtCaliPoint;
 
-                tl.LogMessage("AtHome Get", atHome.ToString());
+                tl.LogMessage("Dome: AtHome Get", atHome.ToString());
                 return atHome;
             }
         }
@@ -783,7 +783,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("CanFindHome Get", true.ToString());
+                tl.LogMessage("Dome: CanFindHome Get", true.ToString());
                 return true;
             }
         }
@@ -792,7 +792,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("CanPark Get", true.ToString());
+                tl.LogMessage("Dome: CanPark Get", true.ToString());
                 return true;
             }
         }
@@ -801,7 +801,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("CanSetAltitude Get", false.ToString());
+                tl.LogMessage("Dome: CanSetAltitude Get", false.ToString());
                 return false;
             }
         }
@@ -810,7 +810,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("CanSetAzimuth Get", true.ToString());
+                tl.LogMessage("Dome: CanSetAzimuth Get", true.ToString());
                 return true;
             }
         }
@@ -819,7 +819,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("CanSetPark Get", false.ToString());
+                tl.LogMessage("Dome: CanSetPark Get", false.ToString());
                 return false;
             }
         }
@@ -828,7 +828,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("CanSetShutter Get", true.ToString());
+                tl.LogMessage("Dome: CanSetShutter Get", true.ToString());
                 return true;
             }
         }
@@ -837,7 +837,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("CanSlave Get", true.ToString());
+                tl.LogMessage("Dome: CanSlave Get", true.ToString());
                 return true;
             }
         }
@@ -846,7 +846,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("CanSyncAzimuth Get", true.ToString());
+                tl.LogMessage("Dome: CanSyncAzimuth Get", true.ToString());
                 return true;
             }
         }
@@ -858,19 +858,19 @@ namespace ASCOM.Wise40
             if (degrees < 0.0 || degrees >= 360.0)
                 throw new InvalidValueException(string.Format("Cannot SyncToAzimuth({0}), must be >= 0 and < 360", ang));
 
-            tl.LogMessage("SyncToAzimuth", ang.ToString());
+            tl.LogMessage("Dome: SyncToAzimuth", ang.ToString());
             Azimuth = ang;
         }
 
         public void SlewToAltitude(double Altitude)
         {
-            tl.LogMessage("SlewToAltitude", "Not implemented");
+            tl.LogMessage("Dome: SlewToAltitude", "Not implemented");
             throw new ASCOM.MethodNotImplementedException("SlewToAltitude");
         }
 
         public void SetPark()
         {
-            tl.LogMessage("SetPark", "Not implemented");
+            tl.LogMessage("Dome: SetPark", "Not implemented");
             throw new ASCOM.MethodNotImplementedException("SetPark");
         }
 
@@ -895,7 +895,7 @@ namespace ASCOM.Wise40
                         ret = DeviceInterface.ShutterState.shutterOpening;
                         break;
                 }
-                tl.LogMessage("ShutterState get", ret.ToString());
+                tl.LogMessage("Dome: ShutterState get", ret.ToString());
                 return ret;
             }
         }
@@ -904,7 +904,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                tl.LogMessage("SupportedActions Get", "Returning empty arraylist");
+                tl.LogMessage("Dome: SupportedActions Get", "Returning empty arraylist");
                 return new ArrayList();
             }
         }
@@ -957,7 +957,7 @@ namespace ASCOM.Wise40
             {
                 string description = "Wise40 Dome";
 
-                tl.LogMessage("Description Get", description);
+                tl.LogMessage("Dome: Description Get", description);
                 return description;
             }
         }
@@ -968,7 +968,7 @@ namespace ASCOM.Wise40
             {
                 Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
                 string driverInfo = "First draft, Version: " + string.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
-                tl.LogMessage("DriverInfo Get", driverInfo);
+                tl.LogMessage("Dome: DriverInfo Get", driverInfo);
                 return driverInfo;
             }
         }
@@ -979,7 +979,7 @@ namespace ASCOM.Wise40
             {
                 Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
                 string driverVersion = String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
-                tl.LogMessage("DriverVersion Get", driverVersion);
+                tl.LogMessage("Dome: DriverVersion Get", driverVersion);
                 return driverVersion;
             }
         }
@@ -989,7 +989,7 @@ namespace ASCOM.Wise40
             // set by the driver wizard
             get
             {
-                tl.LogMessage("InterfaceVersion Get", "2");
+                tl.LogMessage("Dome: InterfaceVersion Get", "2");
                 return Convert.ToInt16("2");
             }
         }
