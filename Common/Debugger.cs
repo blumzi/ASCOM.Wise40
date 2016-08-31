@@ -82,8 +82,9 @@ namespace ASCOM.Wise40.Common
                 DateTime now = DateTime.Now;
                 string msg = string.Format(fmt, o);
 
-               System.Diagnostics.Debug.WriteLine(string.Format("{0,4} {1}/{2}/{3} {4} {5,-25} {6}",
-                    "[" + Thread.CurrentThread.ManagedThreadId.ToString() + "]",
+               System.Diagnostics.Debug.WriteLine(string.Format("{0,4} {1:4} {2}/{3}/{4} {5} {6,-25} {7}",
+                    Thread.CurrentThread.ManagedThreadId.ToString(),
+                    (Task.CurrentId.HasValue ? Task.CurrentId.Value : -1).ToString(),
                     now.Day, now.Month, now.Year, now.TimeOfDay,
                     indents[(int)level] + " " + level.ToString() + ":",
                     msg));
