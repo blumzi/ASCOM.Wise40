@@ -84,6 +84,9 @@ namespace ASCOM.Wise40
         {
             double rar = 0, decr = 0, az = 0, zd = 0;
 
+            if (WiseTele._driverInitiatedSlewing)
+                WiseTele.activeSlewers.Add(ActiveSlewers.SlewerType.SlewerDome);
+
             wisesite.prepareRefractionData(WiseTele.Instance._calculateRefraction);
             instance.novas31.Equ2Hor(instance.astroutils.JulianDateUT1(0), 0,
                 wisesite.astrometricAccuracy,
@@ -95,17 +98,20 @@ namespace ASCOM.Wise40
 
             _slewing = true;
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver: Asking dome to SlewToAzimuth({0})", new Angle(az));
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver: Asking dome to SlewToAzimuth({0})", new Angle(az, Angle.Type.Az));
             #endregion
             wisedome.SlewToAzimuth(az);            
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver: Waiting for dome to arrive to target az");
             #endregion
             _arrivedAtAz.WaitOne();
-            #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver: Dome arrived to target az");
-            #endregion
             _slewing = false;
+
+            if (WiseTele._driverInitiatedSlewing)
+                WiseTele.activeSlewers.Delete(ActiveSlewers.SlewerType.SlewerDome, ref WiseTele._driverInitiatedSlewing);
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver: Dome arrived to {0}", new Angle(az, Angle.Type.Az));
+            #endregion
         }
 
         public bool Slewing
@@ -138,6 +144,7 @@ namespace ASCOM.Wise40
         public void AbortSlew()
         {
             wisedome.AbortSlew();
+            WiseTele.activeSlewers.Delete(ActiveSlewers.SlewerType.SlewerDome, ref WiseTele._driverInitiatedSlewing);
         }
 
         public string Azimuth
