@@ -20,7 +20,6 @@ namespace ASCOM.Wise40
         private WiseTele wisetele = WiseTele.Instance;
         private bool _connected = false;
         private Debugger debugger;
-        private AxisMonitor _counterpart;
 
         //private static double epsilon;
         private static readonly int _samplingFrequency = 10;
