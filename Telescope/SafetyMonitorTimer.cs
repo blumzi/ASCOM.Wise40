@@ -4,40 +4,71 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using ASCOM.Wise40.Common;
+
 namespace ASCOM.Wise40
 {
+
+    /// <summary>
+    /// A timer that should be on whenever any of the directional or tracking motors 
+    ///  are on.  The callback checks if the telescope is safe at the current coordinates.
+    /// </summary>
     class SafetyMonitorTimer
     {
+        private static WiseTele wisetele = WiseTele.Instance;
         private System.Threading.Timer timer;
-        private bool _isOn;
-        private int dueTime, period;
+        private int _dueTime, _period;
+        private bool _enabled;
 
-        public SafetyMonitorTimer(System.Threading.TimerCallback callback, int dueTime, int period)
+        private void SafetyChecker(object StateObject)
         {
-            timer = new System.Threading.Timer(callback);
-            this.dueTime = dueTime;
-            this.period = period;
-            _isOn = false;
+            wisetele.CheckSafetyAtCoordinates(
+                Angle.FromHours(wisetele.RightAscension, Angle.Type.RA),
+                Angle.FromDegrees(wisetele.Declination, Angle.Type.Dec),
+                true);
         }
 
-        public bool isOn
+        public SafetyMonitorTimer(int dueTime = 100, int period = 100)
+        {
+            System.Threading.TimerCallback callback = new System.Threading.TimerCallback(SafetyChecker);
+
+            timer = new System.Threading.Timer(callback);
+            this._dueTime = dueTime;
+            this._period = period;
+            _enabled = false;
+        }
+
+        public bool Enabled
         {
             get
             {
-                return _isOn;
+                return _enabled;
+            }
+
+            set
+            {
+                _enabled = value;
+                if (_enabled)
+                    timer.Change(_dueTime, _period);
+                else
+                    timer.Change(0, 0);
             }
         }
 
-        public void SetOn()
+        public void EnableIfNeeded()
         {
-            timer.Change(dueTime, period);
-            _isOn = true;
+            if ((wisetele.DirectionMotorsAreActive || wisetele.TrackingMotor.isOn) && !Enabled)
+            {
+                Enabled = true;
+            }
         }
 
-        public void SetOff()
+        public void DisableIfNotNeeded()
         {
-            timer.Change(0, 0);
-            _isOn = false;
+            if (Enabled && !(wisetele.DirectionMotorsAreActive || wisetele.TrackingMotor.isOn))
+            {
+                Enabled = false;
+            }
         }
     }
 }
