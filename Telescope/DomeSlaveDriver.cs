@@ -74,33 +74,21 @@ namespace ASCOM.Wise40
 
         public void Connect(bool value)
         {
-            if (!_initialized)
-                init();
+            init();
             wisedome.Connect(value);
             _connected = value;
         }
 
-        public void SlewToCoords(Angle ra, Angle dec)
+        public void SlewToAz(double az)
         {
-            double rar = 0, decr = 0, az = 0, zd = 0;
-
             if (WiseTele._driverInitiatedSlewing)
                 WiseTele.activeSlewers.Add(ActiveSlewers.SlewerType.SlewerDome);
-
-            wisesite.prepareRefractionData(WiseTele.Instance._calculateRefraction);
-            instance.novas31.Equ2Hor(instance.astroutils.JulianDateUT1(0), 0,
-                wisesite.astrometricAccuracy,
-                0, 0,
-                wisesite.onSurface,
-                ra.Hours, dec.Degrees,
-                wisesite.refractionOption,
-                ref zd, ref az, ref rar, ref decr);
 
             _slewing = true;
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver: Asking dome to SlewToAzimuth({0})", new Angle(az, Angle.Type.Az));
             #endregion
-            wisedome.SlewToAzimuth(az);            
+            wisedome.SlewToAzimuth(az);
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver: Waiting for dome to arrive to target az");
             #endregion
@@ -112,6 +100,22 @@ namespace ASCOM.Wise40
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver: Dome arrived to {0}", new Angle(az, Angle.Type.Az));
             #endregion
+        }
+
+        public void SlewToCoords(Angle ra, Angle dec)
+        {
+            double rar = 0, decr = 0, az = 0, zd = 0;
+
+            wisesite.prepareRefractionData(WiseTele.Instance._calculateRefraction);
+            instance.novas31.Equ2Hor(instance.astroutils.JulianDateUT1(0), 0,
+                wisesite.astrometricAccuracy,
+                0, 0,
+                wisesite.onSurface,
+                ra.Hours, dec.Degrees,
+                wisesite.refractionOption,
+                ref zd, ref az, ref rar, ref decr);
+
+            SlewToAz(az);
         }
 
         public bool Slewing

@@ -47,5 +47,10 @@ namespace ASCOM.Wise40
 
             return (int)ret;
         }
+
+        public bool Ready(double rate)
+        {
+            return Get(rate) == 2;
+        }
     };
 }

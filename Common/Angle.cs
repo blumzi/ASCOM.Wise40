@@ -327,9 +327,12 @@ namespace ASCOM.Wise40.Common
 
         public string ToNiceString()
         {
-            return _isHMS ?
-                ascomutils.DegreesToHMS(Degrees, "h", "m", "s", 1) :
-                ascomutils.DegreesToDMS(Degrees, "°", "'", "\"", 1);
+            if (_isHMS)
+                return ascomutils.DegreesToHMS(Degrees, "h", "m", "s", 1);
+            else if (_type == Type.Az)
+                return Degrees.ToString("0.#°");
+            else
+                return ascomutils.DegreesToDMS(Degrees, "°", "'", "\"", 1);
         }
 
         private static double normalizeAltAndDec(Angle a, double d)

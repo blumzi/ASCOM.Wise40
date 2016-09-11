@@ -11,15 +11,15 @@ namespace ASCOM.Wise40
     public class WiseDomeEncoder : IConnectable
     {
         private Angle azimuth;
-        public bool _calibrated;
+        private bool _calibrated = false;
 
         private bool _simulated = Environment.MachineName.ToLower() != "dome-ctlr"; 
-        private int simulatedValue;                     // the simulated dome encoder value
+        private uint simulatedValue;                     // the simulated dome encoder value
         private Angle simulatedStuckAzimuth;
         private DateTime endSimulatedStuck;             // time when the dome-stuck simulation should end
         private System.Timers.Timer simulationTimer;    // times simulated-dome events
 
-        private int _caliTicks;
+        private uint _caliTicks;
         private Angle _caliAz = new Angle(254.6, Angle.Type.Az);
         private WiseDome.Direction _movingDirection;
         private const int _simulatedEncoderTicksPerSecond = 6;
@@ -27,13 +27,38 @@ namespace ASCOM.Wise40
         private const int _hwTicks = 1024;
         private Debugger debugger = Debugger.Instance;
         private string _name;
+        private bool _initialized = false;
 
         private WiseDaq encDaqLow, encDaqHigh;
         private AtomicReader encAtomicReader;
         private Hardware.Hardware hw = Hardware.Hardware.Instance;
 
-        public WiseDomeEncoder(string name)
+        private static readonly WiseDomeEncoder instance = new WiseDomeEncoder(); // Singleton
+
+        private object _lock = new object();
+        // Explicit static constructor to tell C# compiler
+        // not to mark type as beforefieldinit
+        static WiseDomeEncoder()
         {
+        }
+
+        public WiseDomeEncoder()
+        {
+        }
+
+        public static WiseDomeEncoder Instance
+        {
+            get
+            {
+                return instance;
+            }
+        }
+
+        public void init(string name)
+        {
+            if (_initialized)
+                return;
+
             _name = name;
             encDaqLow = hw.domeboard.daqs.Find(x => x.porttype == DigitalPortType.FirstPortB);
             encDaqHigh = hw.domeboard.daqs.Find(x => x.porttype == DigitalPortType.FirstPortCH);
@@ -47,6 +72,7 @@ namespace ASCOM.Wise40
                 simulationTimer.Elapsed += onSimulationTimer;
                 simulationTimer.Enabled = true;
             }
+            _initialized = true;
         }
 
         public void setMovement(WiseDome.Direction dir)
@@ -114,13 +140,21 @@ namespace ASCOM.Wise40
             _calibrated = true;
         }
 
+        public bool Calibrated
+        {
+            get
+            {
+                return _calibrated;
+            }
+        }
+
         public void Connect(bool connected)
         {
             _connected = connected;
             if (connected)
             {
-                encDaqHigh.setOwner(encDaqHigh.name, 0);
-                encDaqHigh.setOwner(encDaqHigh.name, 1);
+                encDaqHigh.setOwner("domeEncLow", 0);
+                encDaqHigh.setOwner("domeEncLow", 1);
                 encDaqLow.setOwners("domeEncLow");
             }
             else
@@ -143,7 +177,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                int currTicks;
+                uint currTicks;
                 Angle az;
 
                 if (!_calibrated)
@@ -163,8 +197,10 @@ namespace ASCOM.Wise40
                     az = _caliAz + new Angle((_caliTicks - currTicks) * WiseDome.DegreesPerTick, Angle.Type.Az);
                 }
 
-                debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "{0}: Azimuth: {1}, currTicks: {2}, caliTicks: {3}, caliAz: {4}",
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "WiseDome: {0}: Azimuth: {1}, currTicks: {2}, caliTicks: {3}, caliAz: {4}",
                     _name, az.ToNiceString(), currTicks, _caliTicks, _caliAz.ToNiceString());
+                #endregion
                 return az;
             }
 
@@ -177,24 +213,33 @@ namespace ASCOM.Wise40
         /// <summary>
         /// Gets the dome-encoder's value (either simulated or real)
         /// </summary>
-        public int Value
+        public uint Value
         {
             get
             {
+                uint ret;
 
                 if (_simulated)
                     return simulatedValue;
 
-                List<uint> values = encAtomicReader.Values;
-
-                return (int) ((values[1] << 8) | values[0]);
+                List<uint> values;
+                lock (_lock)
+                {
+                    values = encAtomicReader.Values;
+                }
+                ret = ((values[1] << 8) | values[0]) & 0x3ff;
+                ret = WiseEncoder.GrayCode[ret];
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "WiseDome: encoder: ret {0}", ret);
+                #endregion
+                return ret;
             }
         }
 
         /// <summary>
         /// Gets the native number of ticks per turn of the dome-encoder
         /// </summary>
-        public int Ticks
+        public uint Ticks
         {
             get
             {

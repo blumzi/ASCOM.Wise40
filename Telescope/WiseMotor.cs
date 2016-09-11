@@ -102,7 +102,7 @@ namespace ASCOM.Wise40.Hardware
             if (Simulated)
                 simulationTimer.Change(Timeout.Infinite, Timeout.Infinite);
 
-            if (activePins != null) {
+            if (activePins != null && activePins.Count > 0) {
                 foreach (WisePin pin in activePins)
                 {
                     bool inUseByOtherAxis;

@@ -74,10 +74,7 @@
             this.radioButtonSpeedSet = new System.Windows.Forms.RadioButton();
             this.radioButtonSpeedSlew = new System.Windows.Forms.RadioButton();
             this.panelControls = new System.Windows.Forms.Panel();
-            this.groupBox36 = new System.Windows.Forms.GroupBox();
-            this.radioButtonSlew = new System.Windows.Forms.RadioButton();
-            this.radioButtonGuide = new System.Windows.Forms.RadioButton();
-            this.radioButtonSet = new System.Windows.Forms.RadioButton();
+            this.groupBoxTelescope = new System.Windows.Forms.GroupBox();
             this.panelDirectionButtons = new System.Windows.Forms.Panel();
             this.buttonNW = new System.Windows.Forms.Button();
             this.buttonSW = new System.Windows.Forms.Button();
@@ -88,7 +85,10 @@
             this.buttonSouth = new System.Windows.Forms.Button();
             this.buttonEast = new System.Windows.Forms.Button();
             this.buttonWest = new System.Windows.Forms.Button();
-            this.groupBoxTelescope = new System.Windows.Forms.GroupBox();
+            this.groupBox36 = new System.Windows.Forms.GroupBox();
+            this.radioButtonSlew = new System.Windows.Forms.RadioButton();
+            this.radioButtonGuide = new System.Windows.Forms.RadioButton();
+            this.radioButtonSet = new System.Windows.Forms.RadioButton();
             this.labelStatus = new System.Windows.Forms.Label();
             this.tableLayoutPanelCoordinates = new System.Windows.Forms.TableLayoutPanel();
             this.label2 = new System.Windows.Forms.Label();
@@ -186,9 +186,9 @@
             this.groupBox5.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.panelControls.SuspendLayout();
-            this.groupBox36.SuspendLayout();
-            this.panelDirectionButtons.SuspendLayout();
             this.groupBoxTelescope.SuspendLayout();
+            this.panelDirectionButtons.SuspendLayout();
+            this.groupBox36.SuspendLayout();
             this.tableLayoutPanelCoordinates.SuspendLayout();
             this.groupBox3.SuspendLayout();
             this.groupBoxTracking.SuspendLayout();
@@ -792,53 +792,23 @@
             this.panelControls.Size = new System.Drawing.Size(363, 640);
             this.panelControls.TabIndex = 0;
             // 
-            // groupBox36
+            // groupBoxTelescope
             // 
-            this.groupBox36.Controls.Add(this.radioButtonSlew);
-            this.groupBox36.Controls.Add(this.radioButtonGuide);
-            this.groupBox36.Controls.Add(this.radioButtonSet);
-            this.groupBox36.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBox36.Location = new System.Drawing.Point(228, 208);
-            this.groupBox36.Name = "groupBox36";
-            this.groupBox36.Size = new System.Drawing.Size(108, 77);
-            this.groupBox36.TabIndex = 12;
-            this.groupBox36.TabStop = false;
-            this.groupBox36.Text = " Speed ";
-            // 
-            // radioButtonSlew
-            // 
-            this.radioButtonSlew.AutoSize = true;
-            this.radioButtonSlew.Checked = true;
-            this.radioButtonSlew.Location = new System.Drawing.Point(24, 53);
-            this.radioButtonSlew.Name = "radioButtonSlew";
-            this.radioButtonSlew.Size = new System.Drawing.Size(48, 17);
-            this.radioButtonSlew.TabIndex = 0;
-            this.radioButtonSlew.TabStop = true;
-            this.radioButtonSlew.Text = "Slew";
-            this.radioButtonSlew.UseVisualStyleBackColor = true;
-            this.radioButtonSlew.Click += new System.EventHandler(this.radioButtonSlew_Click);
-            // 
-            // radioButtonGuide
-            // 
-            this.radioButtonGuide.AutoSize = true;
-            this.radioButtonGuide.Location = new System.Drawing.Point(24, 19);
-            this.radioButtonGuide.Name = "radioButtonGuide";
-            this.radioButtonGuide.Size = new System.Drawing.Size(53, 17);
-            this.radioButtonGuide.TabIndex = 2;
-            this.radioButtonGuide.Text = "Guide";
-            this.radioButtonGuide.UseVisualStyleBackColor = true;
-            this.radioButtonGuide.Click += new System.EventHandler(this.radioButtonGuide_Click);
-            // 
-            // radioButtonSet
-            // 
-            this.radioButtonSet.AutoSize = true;
-            this.radioButtonSet.Location = new System.Drawing.Point(24, 36);
-            this.radioButtonSet.Name = "radioButtonSet";
-            this.radioButtonSet.Size = new System.Drawing.Size(41, 17);
-            this.radioButtonSet.TabIndex = 1;
-            this.radioButtonSet.Text = "Set";
-            this.radioButtonSet.UseVisualStyleBackColor = true;
-            this.radioButtonSet.Click += new System.EventHandler(this.radioButtonSet_Click);
+            this.groupBoxTelescope.Controls.Add(this.panelDirectionButtons);
+            this.groupBoxTelescope.Controls.Add(this.groupBox36);
+            this.groupBoxTelescope.Controls.Add(this.labelStatus);
+            this.groupBoxTelescope.Controls.Add(this.tableLayoutPanelCoordinates);
+            this.groupBoxTelescope.Controls.Add(this.groupBox3);
+            this.groupBoxTelescope.Controls.Add(this.labelDate);
+            this.groupBoxTelescope.Controls.Add(this.groupBoxTracking);
+            this.groupBoxTelescope.Controls.Add(this.panelShowHideButtons);
+            this.groupBoxTelescope.ForeColor = System.Drawing.Color.DarkOrange;
+            this.groupBoxTelescope.Location = new System.Drawing.Point(0, 5);
+            this.groupBoxTelescope.Name = "groupBoxTelescope";
+            this.groupBoxTelescope.Size = new System.Drawing.Size(360, 632);
+            this.groupBoxTelescope.TabIndex = 18;
+            this.groupBoxTelescope.TabStop = false;
+            this.groupBoxTelescope.Text = " Telescope ";
             // 
             // panelDirectionButtons
             // 
@@ -994,23 +964,53 @@
             this.buttonWest.MouseDown += new System.Windows.Forms.MouseEventHandler(this.directionButton_MouseDown);
             this.buttonWest.MouseUp += new System.Windows.Forms.MouseEventHandler(this.directionButton_MouseUp);
             // 
-            // groupBoxTelescope
+            // groupBox36
             // 
-            this.groupBoxTelescope.Controls.Add(this.panelDirectionButtons);
-            this.groupBoxTelescope.Controls.Add(this.groupBox36);
-            this.groupBoxTelescope.Controls.Add(this.labelStatus);
-            this.groupBoxTelescope.Controls.Add(this.tableLayoutPanelCoordinates);
-            this.groupBoxTelescope.Controls.Add(this.groupBox3);
-            this.groupBoxTelescope.Controls.Add(this.labelDate);
-            this.groupBoxTelescope.Controls.Add(this.groupBoxTracking);
-            this.groupBoxTelescope.Controls.Add(this.panelShowHideButtons);
-            this.groupBoxTelescope.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBoxTelescope.Location = new System.Drawing.Point(0, 5);
-            this.groupBoxTelescope.Name = "groupBoxTelescope";
-            this.groupBoxTelescope.Size = new System.Drawing.Size(360, 632);
-            this.groupBoxTelescope.TabIndex = 18;
-            this.groupBoxTelescope.TabStop = false;
-            this.groupBoxTelescope.Text = " Telescope ";
+            this.groupBox36.Controls.Add(this.radioButtonSlew);
+            this.groupBox36.Controls.Add(this.radioButtonGuide);
+            this.groupBox36.Controls.Add(this.radioButtonSet);
+            this.groupBox36.ForeColor = System.Drawing.Color.DarkOrange;
+            this.groupBox36.Location = new System.Drawing.Point(228, 208);
+            this.groupBox36.Name = "groupBox36";
+            this.groupBox36.Size = new System.Drawing.Size(108, 77);
+            this.groupBox36.TabIndex = 12;
+            this.groupBox36.TabStop = false;
+            this.groupBox36.Text = " Speed ";
+            // 
+            // radioButtonSlew
+            // 
+            this.radioButtonSlew.AutoSize = true;
+            this.radioButtonSlew.Checked = true;
+            this.radioButtonSlew.Location = new System.Drawing.Point(24, 53);
+            this.radioButtonSlew.Name = "radioButtonSlew";
+            this.radioButtonSlew.Size = new System.Drawing.Size(48, 17);
+            this.radioButtonSlew.TabIndex = 0;
+            this.radioButtonSlew.TabStop = true;
+            this.radioButtonSlew.Text = "Slew";
+            this.radioButtonSlew.UseVisualStyleBackColor = true;
+            this.radioButtonSlew.Click += new System.EventHandler(this.radioButtonSlew_Click);
+            // 
+            // radioButtonGuide
+            // 
+            this.radioButtonGuide.AutoSize = true;
+            this.radioButtonGuide.Location = new System.Drawing.Point(24, 19);
+            this.radioButtonGuide.Name = "radioButtonGuide";
+            this.radioButtonGuide.Size = new System.Drawing.Size(53, 17);
+            this.radioButtonGuide.TabIndex = 2;
+            this.radioButtonGuide.Text = "Guide";
+            this.radioButtonGuide.UseVisualStyleBackColor = true;
+            this.radioButtonGuide.Click += new System.EventHandler(this.radioButtonGuide_Click);
+            // 
+            // radioButtonSet
+            // 
+            this.radioButtonSet.AutoSize = true;
+            this.radioButtonSet.Location = new System.Drawing.Point(24, 36);
+            this.radioButtonSet.Name = "radioButtonSet";
+            this.radioButtonSet.Size = new System.Drawing.Size(41, 17);
+            this.radioButtonSet.TabIndex = 1;
+            this.radioButtonSet.Text = "Set";
+            this.radioButtonSet.UseVisualStyleBackColor = true;
+            this.radioButtonSet.Click += new System.EventHandler(this.radioButtonSet_Click);
             // 
             // labelStatus
             // 
@@ -1415,7 +1415,7 @@
             this.checkBoxTrack.TabIndex = 6;
             this.checkBoxTrack.Text = "Track";
             this.checkBoxTrack.UseVisualStyleBackColor = true;
-            this.checkBoxTrack.CheckedChanged += new System.EventHandler(this.checkBoxTrack_CheckedChanged);
+            this.checkBoxTrack.Click += new System.EventHandler(this.checkBoxTrack_CheckedChanged);
             // 
             // panelShowHideButtons
             // 
@@ -2296,11 +2296,11 @@
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
             this.panelControls.ResumeLayout(false);
-            this.groupBox36.ResumeLayout(false);
-            this.groupBox36.PerformLayout();
-            this.panelDirectionButtons.ResumeLayout(false);
             this.groupBoxTelescope.ResumeLayout(false);
             this.groupBoxTelescope.PerformLayout();
+            this.panelDirectionButtons.ResumeLayout(false);
+            this.groupBox36.ResumeLayout(false);
+            this.groupBox36.PerformLayout();
             this.tableLayoutPanelCoordinates.ResumeLayout(false);
             this.tableLayoutPanelCoordinates.PerformLayout();
             this.groupBox3.ResumeLayout(false);

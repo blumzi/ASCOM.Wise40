@@ -209,7 +209,7 @@ namespace ASCOM.Wise40
             axisValue.Text = wisetele.HAEncoder.AxisValue.ToString();
             wormValue.Text = wisetele.HAEncoder.WormValue.ToString();
 
-            labelComputerControl.ForeColor = wisesite.safetySwitch == null ? Color.Yellow : (wisesite.safetySwitch.IsSafe ? Color.Green : Color.Red);
+            labelComputerControl.ForeColor = wisesite.computerControl == null ? Color.Yellow : (wisesite.computerControl.IsSafe ? Color.Green : Color.Red);
             labelSafeToOpen.ForeColor = wisesite.safeToOpen == null ? Color.Yellow : (wisesite.safeToOpen.IsSafe ? Color.Green : Color.Red);
             labelSafeToImage.ForeColor = wisesite.safeToImage == null ? Color.Yellow : (wisesite.safeToImage.IsSafe ? Color.Green : Color.Red);
 
@@ -755,6 +755,8 @@ namespace ASCOM.Wise40
         private void textBoxDomeAzGo_Validated(object sender, EventArgs e)
         {
             TextBox tb = sender as TextBox;
+            if (tb.Text == string.Empty)
+                return;
             double az = Convert.ToDouble(tb.Text);
 
             if (az < 0.0 || az >= 360.0)
@@ -770,7 +772,7 @@ namespace ASCOM.Wise40
             if (az < 0.0 || az >= 360.0)
                 textBoxDomeAzGo.Text = "";
 
-            WiseDome.Instance.Azimuth = Angle.FromDegrees(az);
+            wisetele.DomeSlewer(az);
         }
 
         private void buttonDomeLeft_MouseDown(object sender, MouseEventArgs e)

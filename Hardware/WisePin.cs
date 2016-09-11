@@ -25,13 +25,14 @@ namespace ASCOM.Wise40.Hardware
                 port.ToString() +
                 "[" + bit.ToString() + "]";
 
-
             if ((daq = brd.daqs.Find(x => x.porttype == port)) == null)
                 throw new WiseException(this.name + ": Invalid Daq spec, no " + port + " on this board");
             this.dir = dir;
             this.bit = bit;
             this.inverse = inverse;
             daq.setDir(dir);
+            if (daq.owners != null && daq.owners[bit] == null)
+            daq.setOwner(name, bit);
         }
 
         public bool Simulated

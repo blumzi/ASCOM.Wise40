@@ -11,6 +11,8 @@ namespace Restore_ASCOM_Profiles
 {
     class Program
     {
+        private static bool realMachine = Environment.MachineName.ToLower() == "dome-ctlr";
+
         static void Main(string[] args)
         {
             WriteCloudSensorProfile();
@@ -27,12 +29,15 @@ namespace Restore_ASCOM_Profiles
             string driverID = "ASCOM.CloudSensor.ObservingConditions";
             string dataFileProfileName = "Data File";
             string traceStateProfileName = "Trace Level";
+            string dataFile = realMachine ? 
+                "z:/clarityII-data.txt" :
+                "c:/temp/clarityII-data.txt";
 
             using (Profile driverProfile = new Profile())
             {
                 driverProfile.DeviceType = "ObservingConditions";
                 driverProfile.WriteValue(driverID, traceStateProfileName, false.ToString());
-                driverProfile.WriteValue(driverID, dataFileProfileName, "c:/temp/clarityII-data.txt");
+                driverProfile.WriteValue(driverID, dataFileProfileName, dataFile);
             }
         }
 
@@ -41,12 +46,15 @@ namespace Restore_ASCOM_Profiles
             string driverID = "ASCOM.Vantage.ObservingConditions";
             string reportFileProfileName = "Report File";
             string traceStateProfileName = "Trace Level";
+            string reportFile = realMachine ?
+                "y:/Weather_Wise40_Vantage_Pro.htm" :
+                "c:/temp/Weather_Wise40_Vantage_Pro.htm";
 
             using (Profile driverProfile = new Profile())
             {
                 driverProfile.DeviceType = "ObservingConditions";
                 driverProfile.WriteValue(driverID, traceStateProfileName, false.ToString());
-                driverProfile.WriteValue(driverID, reportFileProfileName, "c:/temp/Weather_Wise40_Vantage_Pro.htm");
+                driverProfile.WriteValue(driverID, reportFileProfileName, reportFile);
             }
         }
 

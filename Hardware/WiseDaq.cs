@@ -122,7 +122,6 @@ namespace ASCOM.Wise40.Hardware
                         if (err.Value != ErrorInfo.ErrorCode.NoErrors)
                             throw new WiseException(name + ": UL DIn(" + porttype.ToString() + ") failed with " + err.Message);
                     }
-                    //Console.WriteLine("v: " + v.ToString());
                 }
                 else
                     v = _value;
@@ -131,13 +130,15 @@ namespace ASCOM.Wise40.Hardware
             }
 
             set {
+                ushort before = this.Value;
 
                 if (wiseBoard.type == WiseBoard.BoardType.Hard)
                 {
                     debugger.WriteLine(Debugger.DebugLevel.DebugEncoders,
-                        "daq.Value.set: board: {0}, port: {1}, value: 0x{2:x}",
+                        "daq.Value.set: board: {0}, port: {1}, value: 0x{2:x} => 0x{3:x}",
                         this.wiseBoard.name,
                         this.porttype.ToString(),
+                        before,
                         value);
                     if (portdir == DigitalPortDirection.DigitalOut)
                     {

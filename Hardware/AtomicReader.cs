@@ -11,9 +11,9 @@ namespace ASCOM.Wise40.Hardware
 {
     public class AtomicReader
     {
-        private const uint timeoutMicros = 50000000;    // microseconds between Daq reads
+        private const double timeoutMillis = 2000.0;    // milliseconds between Daq reads
         private Stopwatch stopwatch;
-        private const int maxTries = 5;
+        private const int maxTries = 20;
         List<WiseDaq> daqs;
 
         Common.Debugger debugger = Common.Debugger.Instance;
@@ -36,7 +36,7 @@ namespace ASCOM.Wise40.Hardware
             {
                 List<uint> results = new List<uint>();
                 int i;
-                List<long> elapsedMicros = new List<long>();
+                List<double> elapsedMillis = new List<double>();
                 List<long> elapsedTicks = new List<long>();
 
                 for (int tries = 0; tries < maxTries; tries++)
@@ -44,17 +44,17 @@ namespace ASCOM.Wise40.Hardware
                     for (i = 0; i < daqs.Count(); i++)
                     {
                         if (daqs[i].wiseBoard.type == WiseBoard.BoardType.Hard && i > 0)
-                            stopwatch.Start();
+                            stopwatch.Restart();
 
                         results.Add(daqs[i].Value);
 
                         if (daqs[i].wiseBoard.type == WiseBoard.BoardType.Hard && i > 0)
                         {
                             stopwatch.Stop();
-                            long micros = (stopwatch.ElapsedTicks / Stopwatch.Frequency) * 1000000L;
-                            elapsedMicros.Add(micros);
+                            double millis = stopwatch.Elapsed.TotalMilliseconds;
+                            elapsedMillis.Add(millis);
                             elapsedTicks.Add(stopwatch.ElapsedTicks);
-                            if (micros > timeoutMicros)
+                            if (millis > timeoutMillis)
                                 goto nexttry;
                         }
                     }
@@ -64,8 +64,8 @@ namespace ASCOM.Wise40.Hardware
                         string s = "AtomicReader:Values: inter daqs (";
                         foreach (WiseDaq daq in daqs)
                             s += daq.name + " ";
-                        s += ") " + elapsedMicros.Count + " read times: ";
-                        foreach (long m in elapsedMicros)
+                        s += ") " + elapsedMillis.Count + " read times: ";
+                        foreach (double m in elapsedMillis)
                             s += m.ToString() + " ";
 
                         s += ", ticks: ";
@@ -81,12 +81,15 @@ namespace ASCOM.Wise40.Hardware
                 
                 string err = "Failed to read daqs: ";
                 foreach (WiseDaq daq in daqs)
-                    err += daq.name + ", ";
-                err += "within " + timeoutMicros.ToString() + " microSeconds [";
-                foreach (long m in elapsedMicros)
-                    err += m.ToString() + ", ";
+                    err += daq.name + " ";
+                err += ", within " + timeoutMillis.ToString() + " milliSeconds, max: ";
+                err += elapsedMillis.Max().ToString();
+                err += " [ ";
+                foreach (double m in elapsedMillis)
+                    err += m.ToString() + " ";
                 err += "]";
 
+                debugger.WriteLine(Common.Debugger.DebugLevel.DebugEncoders, err);
                 throw new WiseException(err);
             }
         }

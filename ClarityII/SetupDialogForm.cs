@@ -26,7 +26,7 @@ namespace ASCOM.CloudSensor
         {
             // Place any validation constraint checks here
             // Update the state variables with results from the dialogue
-            _oc._dataFile = openFileDialog.FileName;
+            _oc._dataFile = labelDataFileValue.Text;
             _oc._traceState = chkTrace.Checked;
         }
 

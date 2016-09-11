@@ -39,7 +39,7 @@ namespace ASCOM.Wise40
         private ShutterState _shutterState;
 
         private StuckPhase _stuckPhase;
-        private int _prevTicks;      // for Stuck checks
+        private uint _prevTicks;      // for Stuck checks
         private DateTime nextStuckEvent;
 
         private Angle _homePointAzimuth = new Angle(254.6, Angle.Type.Az);
@@ -124,7 +124,8 @@ namespace ASCOM.Wise40
                 homePin = new WisePin("DomeCalibration", hw.domeboard, DigitalPortType.FirstPortCL, 0, DigitalPortDirection.DigitalIn);
                 ventPin = new WisePin("DomeVent", hw.teleboard, DigitalPortType.ThirdPortCL, 0, DigitalPortDirection.DigitalOut);
 
-                domeEncoder = new WiseDomeEncoder("DomeEncoder");
+                domeEncoder = WiseDomeEncoder.Instance;
+                domeEncoder.init("DomeEncoder");
 
                 connectables.Add(openPin);
                 connectables.Add(closePin);
@@ -218,7 +219,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return domeEncoder._calibrated;
+                return domeEncoder.Calibrated;
             }
         }
 
@@ -244,7 +245,7 @@ namespace ASCOM.Wise40
             if ((_state != DomeState.MovingCCW) && (_state != DomeState.MovingCW))
                 return false;
 
-            ShortestDistanceResult shortest = Azimuth.ShortestDistance(there);
+            ShortestDistanceResult shortest = instance.Azimuth.ShortestDistance(there);
             return shortest.angle <= inertiaAngle(there);
         }
 
@@ -270,6 +271,9 @@ namespace ASCOM.Wise40
                 {
                     Stop();
                     _calibrating = false;
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: Setting _foundCalibration ...");
+                    #endregion
                     _foundCalibration.Set();
                 }
                 domeEncoder.Calibrate(_homePointAzimuth);
@@ -287,7 +291,7 @@ namespace ASCOM.Wise40
 
         private void onMovementTimer(object sender, System.Timers.ElapsedEventArgs e)
         {
-            int currTicks, deltaTicks;
+            uint currTicks, deltaTicks;
             const int leastExpectedTicks = 2;  // least number of Ticks expected to change in two seconds
             
             // the movementTimer should not be Enabled unless the dome is moving
@@ -354,7 +358,7 @@ namespace ASCOM.Wise40
                     _stuckPhase = StuckPhase.FirstStop;
                     nextStuckEvent = rightNow.AddMilliseconds(10000);
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: stuck: {0}, phase1: stopped moving, letting wheels cool for 10 seconds", Azimuth);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: stuck: {0}, phase1: stopped moving, letting wheels cool for 10 seconds", instance.Azimuth);
                     #endregion
 
                     break;
@@ -364,7 +368,7 @@ namespace ASCOM.Wise40
                     _stuckPhase = StuckPhase.GoBackward;
                     nextStuckEvent = rightNow.AddMilliseconds(2000);
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: stuck: {0}, phase2: going backwards for 2 seconds", Azimuth);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: stuck: {0}, phase2: going backwards for 2 seconds", instance.Azimuth);
                     #endregion
                     break;
 
@@ -373,7 +377,7 @@ namespace ASCOM.Wise40
                     _stuckPhase = StuckPhase.SecondStop;
                     nextStuckEvent = rightNow.AddMilliseconds(2000);
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: stuck: {0}, phase3: stopping for 2 seconds", Azimuth);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: stuck: {0}, phase3: stopping for 2 seconds", instance.Azimuth);
                     #endregion
                     break;
 
@@ -384,7 +388,7 @@ namespace ASCOM.Wise40
                     _stuckTimer.Enabled = false;
                     nextStuckEvent = rightNow.AddYears(100);
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: stuck: {0}, phase4: resumed original motion", Azimuth);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: stuck: {0}, phase4: resumed original motion", instance.Azimuth);
                     #endregion
                     break;
             }
@@ -494,13 +498,23 @@ namespace ASCOM.Wise40
                 }
 
                 ret = domeEncoder.Azimuth;
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: [{0}] Azimuth: get => {1}", this.GetHashCode(), ret);
+                #endregion
+                #region trace
                 tl.LogMessage("Dome: Azimuth Get", ret.ToString());
+                #endregion
                 return ret;
             }
 
             set
             {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: Azimuth: set({0})", value);
+                #endregion
+                #region trace
                 tl.LogMessage("Dome: Azimuth Set", value.ToString());
+                #endregion
                 domeEncoder.Calibrate(value);
             }
         }
@@ -531,10 +545,8 @@ namespace ASCOM.Wise40
                 throw new ASCOM.InvalidOperationException("Cannot FindHome, shutter is active!");
             }
 
-            if (wisesite.safetySwitch != null && !wisesite.safetySwitch.IsSafe)
-                throw new ASCOM.InvalidOperationException("Wise40 safety switch is OFF!");
-
-            tl.LogMessage("Dome: FindHome", "Calling wisedome.FindHome");
+            if (wisesite.computerControl != null && !wisesite.computerControl.IsSafe)
+                throw new ASCOM.InvalidOperationException("Wise40 computer control is OFF!");
 
             AtPark = false;
 
@@ -545,7 +557,7 @@ namespace ASCOM.Wise40
 
             if (Calibrated)
             {
-                ShortestDistanceResult shortest = Azimuth.ShortestDistance(_homePointAzimuth);
+                ShortestDistanceResult shortest = instance.Azimuth.ShortestDistance(_homePointAzimuth);
 
                 switch (shortest.direction) {
                     case Const.AxisDirection.Decreasing: StartMovingCCW(); break ;
@@ -555,11 +567,11 @@ namespace ASCOM.Wise40
                 StartMovingCCW();
 
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: FindHomePoint: waiting for reachedCalibrationPoint ...");
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: FindHomePoint: waiting for _foundCalibration ...");
             #endregion
             _foundCalibration.WaitOne();
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: FindHomePoint: reachedCalibrationPoint was Set()");
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: FindHomePoint: _foundCalibration was Set()");
             #endregion
         }
 
@@ -569,7 +581,7 @@ namespace ASCOM.Wise40
                 throw new InvalidOperationException("Cannot SlewToAzimuth, dome is Slaved");
 
             if (degrees < 0 || degrees >= 360)
-                throw new InvalidValueException(string.Format("Invalid azimuth: {0}, must be >= 0 and < 360", Azimuth));
+                throw new InvalidValueException(string.Format("Invalid azimuth: {0}, must be >= 0 and < 360", degrees));
 
             if (ShutterIsActive())
             {
@@ -577,8 +589,8 @@ namespace ASCOM.Wise40
                 throw new ASCOM.InvalidOperationException("Cannot move, shutter is active!");
             }
 
-            if (wisesite.safetySwitch != null && !wisesite.safetySwitch.IsSafe)
-                throw new ASCOM.InvalidOperationException("Wise40 safety switch is OFF!");
+            if (wisesite.computerControl != null && !wisesite.computerControl.IsSafe)
+                throw new ASCOM.InvalidOperationException("Wise40 computer control is OFF!");
 
             Angle toAng = new Angle(degrees);
 
@@ -586,10 +598,19 @@ namespace ASCOM.Wise40
 
             if (!Calibrated)
             {
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: SlewToAzimuth: {0}, not calibrated, calling FindHomePoint", toAng);
-                #endregion
-                FindHome();
+                if (_autoCalibrate)
+                {
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: SlewToAzimuth: {0}, not calibrated, _autoCalibrate == true, calling FindHomePoint", toAng);
+                    #endregion
+                    FindHome();
+                } else
+                {
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: SlewToAzimuth: {0}, not calibrated, _autoCalibrate == false, throwing InvalidOperationException", toAng);
+                    #endregion
+                    throw new ASCOM.InvalidOperationException("Not calibrated!");
+                }
             }
 
             _targetAz = toAng;
@@ -606,7 +627,8 @@ namespace ASCOM.Wise40
                     break;
             }
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: SlewToAzimuth: {0} => {1} (dist: {2}), moving {3}", Azimuth, toAng, shortest.angle, shortest.direction);
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: SlewToAzimuth: {0} => {1} (dist: {2}), moving {3}",
+                instance.Azimuth, toAng, shortest.angle, shortest.direction);
             #endregion
 
             if (_simulated && _targetAz == _simulatedStuckAz)
@@ -859,7 +881,7 @@ namespace ASCOM.Wise40
                 throw new InvalidValueException(string.Format("Cannot SyncToAzimuth({0}), must be >= 0 and < 360", ang));
 
             tl.LogMessage("Dome: SyncToAzimuth", ang.ToString());
-            Azimuth = ang;
+            instance.Azimuth = ang;
         }
 
         public void SlewToAltitude(double Altitude)

@@ -100,7 +100,7 @@ namespace ASCOM.Wise40.Hardware
             }
         }
 
-        private ushort[] GrayCode = new ushort[1024] {
+        public static ushort[] GrayCode = new ushort[1024] {
             0,    1,    3,    2,    7,    6,    4,    5,   15,   14,
             12,   13,    8,    9,   11,   10,   31,   30,   28,   29,
             24,   25,   27,   26,   16,   17,   19,   18,   23,   22,
