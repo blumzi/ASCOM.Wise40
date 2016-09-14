@@ -330,7 +330,7 @@ namespace ASCOM.Wise40.Common
             if (_isHMS)
                 return ascomutils.DegreesToHMS(Degrees, "h", "m", "s", 1);
             else if (_type == Type.Az)
-                return Degrees.ToString("0.#°");
+                return Degrees.ToString("0.0°");
             else
                 return ascomutils.DegreesToDMS(Degrees, "°", "'", "\"", 1);
         }

@@ -24,5 +24,8 @@ namespace ASCOM.Wise40.Common
         public const double rateTrack = 360.0 / stellarDay;           // sidereal rate
         public const double rateTrackLunar = 360.0 / lunarDay;        // lunar rate
         public const double rateTrackSolar = 360.0 / solarDay;        // solar rate
+
+        public const double defaultReadTimeoutMillis = 2000.0;
+        public const int defaultReadRetries = 20;
     }
 }

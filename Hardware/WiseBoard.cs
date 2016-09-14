@@ -24,7 +24,7 @@ namespace ASCOM.Wise40.Hardware
                 type = BoardType.Soft;
                 this.mccBoard = new MccBoard(boardNum);
                 this.boardNum = boardNum;
-                name = "Board" + boardNum.ToString();
+                Name = "Board" + boardNum.ToString();
                 ndaqs = (boardNum == 1) ? 16 : 4;
             }
             else                // a real Mcc board
@@ -32,7 +32,7 @@ namespace ASCOM.Wise40.Hardware
                 type = BoardType.Hard;
                 this.mccBoard = mccBoard;
                 this.boardNum = this.mccBoard.BoardNum;
-                name = "Board" + this.mccBoard.BoardNum.ToString();               
+                Name = "Board" + this.mccBoard.BoardNum.ToString();               
                 this.mccBoard.BoardConfig.GetDiNumDevs(out ndaqs);
             }
 
@@ -43,7 +43,7 @@ namespace ASCOM.Wise40.Hardware
 
         public string ownersToString()
         {
-            string ret = name + '\n';
+            string ret = Name + '\n';
 
             foreach (WiseDaq daq in daqs)
                 ret += daq.ownersToString() + '\n';

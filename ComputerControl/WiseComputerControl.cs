@@ -39,7 +39,7 @@ namespace ASCOM.Wise40
             if (_initialized)
                 return;
             
-            computerControlPin = new WisePin("ComputerControl", hardware.teleboard, DigitalPortType.SecondPortCH, 0, DigitalPortDirection.DigitalIn);
+            computerControlPin = new WisePin("CompControl", hardware.teleboard, DigitalPortType.SecondPortCH, 0, DigitalPortDirection.DigitalIn);
             _simulated = computerControlPin.Simulated;
             _initialized = true;
         }

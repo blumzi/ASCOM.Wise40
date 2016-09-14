@@ -46,7 +46,7 @@ namespace ASCOM.Wise40.Hardware
             Const.AxisDirection direction,
             List<object> encoders = null)
         {
-            this.name = name;
+            this.Name = name;
 
             this.motorPin = motorPin;
             this.guideMotorPin = guideMotorPin;
@@ -73,7 +73,7 @@ namespace ASCOM.Wise40.Hardware
         public void SetOn(double rate)
         {
             rate = Math.Abs(rate);
-            debugger.WriteLine(Debugger.DebugLevel.DebugMotors, "{0}: On at {1}", name, WiseTele.RateName(rate));
+            debugger.WriteLine(Debugger.DebugLevel.DebugMotors, "{0}: On at {1}", Name, WiseTele.RateName(rate));
 
             if (rate == Const.rateSlew)
                 activePins = new List<WisePin>() { slewPin, motorPin };
@@ -97,7 +97,7 @@ namespace ASCOM.Wise40.Hardware
         public void SetOff()
         {
             debugger.WriteLine(Debugger.DebugLevel.DebugMotors,
-                "{0}: Off (was at {1})", name, WiseTele.RateName(currentRate));
+                "{0}: Off (was at {1})", Name, WiseTele.RateName(currentRate));
 
             if (Simulated)
                 simulationTimer.Change(Timeout.Infinite, Timeout.Infinite);
@@ -164,7 +164,7 @@ namespace ASCOM.Wise40.Hardware
             //
             // Calculate the delta to be added/subtracted from the attached encoder(s)
             //
-            if (name == "TrackMotor")
+            if (Name == "TrackMotor")
             {
                 //
                 // To better simulate the tracking-motor, we use the actual LocalSiderealTime
@@ -229,8 +229,8 @@ namespace ASCOM.Wise40.Hardware
 
                 debugger.WriteLine(Debugger.DebugLevel.DebugMotors,
                         "bumpEncoders: {0}: {1}: {13} {2}:  {3} {4} {5} = {6} ({7} {8} {9} = {10}) (#{11}, {12} ms)",
-                        name,                   // 0
-                        encoder.name,           // 1
+                        Name,                   // 0
+                        encoder.Name,           // 1
                         primary ? "ha" : "dec", // 2
                         before,                 // 3
                         op,                     // 4
@@ -274,7 +274,7 @@ namespace ASCOM.Wise40.Hardware
 
         public override string ToString()
         {
-            return name;
+            return Name;
         }
 
         public bool Simulated

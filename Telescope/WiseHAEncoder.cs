@@ -7,21 +7,15 @@ using ASCOM.Wise40.Hardware;
 
 namespace ASCOM.Wise40
 {
-    /// <summary>
-    /// Implements the Wise40 HourAngle Encoder interface
-    /// </summary>
-    public class WiseHAEncoder: IEncoder
+    public class WiseHAEncoder : IEncoder
     {
-        private WiseDaq wormDaqLow, wormDaqHigh;
-        private WiseDaq axisDaqLow, axisDaqHigh;
-        private List<WiseDaq> daqs;
-        private bool _simulated = false;
+        private readonly bool _simulated = Environment.MachineName.ToLower() != "dome-ctlr";
         private bool _connected = false;
         private string _name;
         private uint _daqsValue;
         private const uint _realValueAtFiducialMark = 1432779; // Arie - 02 July 2016
-
-        private AtomicReader wormAtomicReader, axisAtomicReader;
+        
+        private WiseEncoder axisEncoder, wormEncoder;
 
         private Astrometry.NOVAS.NOVAS31 Novas31;
         private Astrometry.AstroUtils.AstroUtils astroutils;
@@ -45,42 +39,23 @@ namespace ASCOM.Wise40
             astroutils = new Astrometry.AstroUtils.AstroUtils();
             wisesite.init();
 
-            List<WiseDaq> wormDaqs, axisDaqs, teleDaqs;
-
-            teleDaqs = hw.teleboard.daqs;
-
-            wormDaqLow = teleDaqs.Find(x => x.porttype == DigitalPortType.ThirdPortA);
-            wormDaqHigh = teleDaqs.Find(x => x.porttype == DigitalPortType.FourthPortCL);
-            axisDaqLow = teleDaqs.Find(x => x.porttype == DigitalPortType.FourthPortB);
-            axisDaqHigh = teleDaqs.Find(x => x.porttype == DigitalPortType.FourthPortA);
-
-            wormDaqs = new List<WiseDaq>();
-            wormDaqs.Add(wormDaqLow);
-            wormDaqs.Add(wormDaqHigh);
-
-            axisDaqs = new List<WiseDaq>();
-            axisDaqs.Add(axisDaqLow);
-            axisDaqs.Add(axisDaqHigh);
-
-            daqs = new List<WiseDaq>();
-            daqs.AddRange(wormDaqs);
-            daqs.AddRange(axisDaqs);
-            foreach (WiseDaq daq in daqs)
-                daq.setDir(DigitalPortDirection.DigitalIn);
-
-            wormAtomicReader = new AtomicReader(wormDaqs);
-            axisAtomicReader = new AtomicReader(axisDaqs);
-
-            Simulated = false;
-            foreach (WiseDaq d in daqs)
-            {
-                if (d.wiseBoard.type == WiseBoard.BoardType.Soft)
-                {
-                    Simulated = true;
-                    break;
+            axisEncoder = new WiseEncoder("HAAxis",
+                1 << 16,
+                new List<WiseEncSpec>() {
+                    new WiseEncSpec() { brd = hw.teleboard, port = DigitalPortType.FourthPortA, mask = 0xff },
+                    new WiseEncSpec() { brd = hw.teleboard, port = DigitalPortType.FourthPortB, mask = 0xff },
                 }
-            }
-            _name = name;
+            );
+
+            wormEncoder = new WiseEncoder("HAWorm",
+                1 << 12,
+                new List<WiseEncSpec>() {
+                    new WiseEncSpec() { brd = hw.teleboard, port = DigitalPortType.FourthPortCL, mask = 0x0f },
+                    new WiseEncSpec() { brd = hw.teleboard, port = DigitalPortType.ThirdPortA,   mask = 0xff },
+                }
+            );
+
+            Name = name;
 
             if (Simulated)
                 _angle = new Angle("00h00m00.0s");
@@ -100,32 +75,25 @@ namespace ASCOM.Wise40
         /// <returns>Combined Daq values</returns>
         public uint Value
         {
-            get {
-                if (Simulated)
+            get
+            {
+                uint worm, axis;
+
+                if (! Simulated)
                 {
-                    debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "{0}: value: {1}",
-                        name, _daqsValue);
-                }
-                else
-                {
-                    uint worm, axis;
                     lock (_lock)
                     {
-                        List<uint> daqValues;
-
-                        daqValues = wormAtomicReader.Values;
-                        worm = (daqValues[1] << 8) | daqValues[0];
-
-                        daqValues = axisAtomicReader.Values;
-                        axis = (daqValues[0] >> 4) | (daqValues[1] << 4);
+                        worm = wormEncoder.Value;
+                        axis = axisEncoder.Value;
 
                         _daqsValue = ((axis * 720 - worm) & 0xfff000) + worm;
                     }
+                    #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugEncoders,
                         "{0}: value: {1}, axis: {2}, worm: {3}",
-                        name, _daqsValue, axis, worm);
+                        Name, _daqsValue, axis, worm);
+                    #endregion
                 }
-
                 return _daqsValue;
             }
 
@@ -144,13 +112,7 @@ namespace ASCOM.Wise40
                     return 0;
                 else
                 {
-                    List<uint> daqValues;
-                    uint axis;
-
-                    daqValues = axisAtomicReader.Values;
-                    axis = (daqValues[0] >> 4) | (daqValues[1] << 4);
-
-                    return axis;
+                    return axisEncoder.Value;
                 }
             }
         }
@@ -163,13 +125,7 @@ namespace ASCOM.Wise40
                     return 0;
                 else
                 {
-                    List<uint> daqValues;
-                    uint worm;
-
-                    daqValues = wormAtomicReader.Values;
-                    worm = (daqValues[1] << 8) | daqValues[0];
-
-                    return worm;
+                    return wormEncoder.Value;
                 }
             }
         }
@@ -213,7 +169,10 @@ namespace ASCOM.Wise40
 
                 if (Simulated)
                 {
-                    debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "[{0}] {1}: {2} + {3} = {4}", this.GetHashCode(), name, before, delta, after);
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "[{0}] {1}: {2} + {3} = {4}",
+                        this.GetHashCode(), Name, before, delta, after);
+                    #endregion
                     _daqsValue = (uint)((_angle.Radians + HaCorrection) / HaMultiplier);
                 }
             }
@@ -235,27 +194,18 @@ namespace ASCOM.Wise40
             get
             {
                 Angle ret = wisesite.LocalSiderealTime - Angle.FromHours(Hours, Angle.Type.RA);
+                #region debug
                 //debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "[{0}] RightAscension: {1}", this.GetHashCode(), ret);
-
+                #endregion
                 return ret;
             }
         }
 
         public void Connect(bool connected)
         {
-            if (connected)
-            {
-                wormDaqLow.setOwners("HAWormLow");
-                wormDaqHigh.setOwners("HAWormHigh");
-                axisDaqLow.setOwners("HAAxisLow");
-                axisDaqHigh.setOwners("HAAxisHigh");
-            } else
-            {
-                wormDaqLow.unsetOwners();
-                wormDaqHigh.unsetOwners();
-                axisDaqLow.unsetOwners();
-                axisDaqHigh.unsetOwners();
-            }
+            axisEncoder.Connect(connected);
+            wormEncoder.Connect(connected);
+
             _connected = connected;
         }
 
@@ -269,24 +219,22 @@ namespace ASCOM.Wise40
 
         public void Dispose()
         {
-            foreach (WiseDaq daq in daqs)
-                daq.unsetOwners();
+            axisEncoder.Dispose();
+            wormEncoder.Dispose();
         }
 
         public bool Simulated
         {
             get
             {
-                return _simulated; 
+                return _simulated;
             }
 
             set
-            {
-                _simulated = value;
-            }
+            { }
         }
 
-        public string name
+        public string Name
         {
             get
             {

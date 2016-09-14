@@ -8,29 +8,25 @@ using ASCOM.Wise40.Hardware;
 
 namespace ASCOM.Wise40
 {
-    public class WiseDomeEncoder : IConnectable
+    public class WiseDomeEncoder : WiseEncoder
     {
         private Angle azimuth;
         private bool _calibrated = false;
 
-        private bool _simulated = Environment.MachineName.ToLower() != "dome-ctlr"; 
-        private uint simulatedValue;                     // the simulated dome encoder value
+        // Simulation stuff
+        private bool _simulated = Environment.MachineName.ToLower() != "dome-ctlr";
+        private int simulatedValue = 0;                     // the simulated dome encoder value
         private Angle simulatedStuckAzimuth;
         private DateTime endSimulatedStuck;             // time when the dome-stuck simulation should end
         private System.Timers.Timer simulationTimer;    // times simulated-dome events
+        private const int _simulatedEncoderTicksPerSecond = 6;
 
         private uint _caliTicks;
         private Angle _caliAz = new Angle(254.6, Angle.Type.Az);
         private WiseDome.Direction _movingDirection;
-        private const int _simulatedEncoderTicksPerSecond = 6;
-        private bool _connected = false;
         private const int _hwTicks = 1024;
-        private Debugger debugger = Debugger.Instance;
-        private string _name;
         private bool _initialized = false;
-
-        private WiseDaq encDaqLow, encDaqHigh;
-        private AtomicReader encAtomicReader;
+        
         private Hardware.Hardware hw = Hardware.Hardware.Instance;
 
         private static readonly WiseDomeEncoder instance = new WiseDomeEncoder(); // Singleton
@@ -41,7 +37,7 @@ namespace ASCOM.Wise40
         static WiseDomeEncoder()
         {
         }
-
+        
         public WiseDomeEncoder()
         {
         }
@@ -54,15 +50,18 @@ namespace ASCOM.Wise40
             }
         }
 
-        public void init(string name)
+        public void init()
         {
             if (_initialized)
                 return;
-
-            _name = name;
-            encDaqLow = hw.domeboard.daqs.Find(x => x.porttype == DigitalPortType.FirstPortB);
-            encDaqHigh = hw.domeboard.daqs.Find(x => x.porttype == DigitalPortType.FirstPortCH);
-            encAtomicReader = new AtomicReader(new List<WiseDaq>() { encDaqHigh, encDaqLow });
+            
+            base.init("DomeEnc",
+                _hwTicks,
+                new List<WiseEncSpec>() {
+                    new WiseEncSpec() { brd = hw.domeboard, port = DigitalPortType.FirstPortCH, mask = 0x3 },
+                    new WiseEncSpec() { brd = hw.domeboard, port = DigitalPortType.FirstPortB, mask = 0xff },
+                },
+                true);
 
             if (_simulated)
             {
@@ -82,14 +81,14 @@ namespace ASCOM.Wise40
 
         private void onSimulationTimer(object sender, System.Timers.ElapsedEventArgs e)
         {
-            DateTime rightNow = DateTime.Now;
-
             if (! Connected)
                 return;
 
-            if (simulatedStuckAzimuth != Angle.invalid)                // A simulatedStuck is required
+            DateTime rightNow = DateTime.Now;
+
+            if (instance.simulatedStuckAzimuth != Angle.invalid)                // A simulatedStuck is required
             {
-                if (Math.Abs(Azimuth.Degrees - simulatedStuckAzimuth.Degrees) <= 1.0)       // we're in the vicinity of the simulatedStuckAzimuth
+                if (Math.Abs(instance.Azimuth.Degrees - simulatedStuckAzimuth.Degrees) <= 1.0)       // we're in the vicinity of the simulatedStuckAzimuth
                 {
                     if (endSimulatedStuck.Equals(DateTime.MinValue))        // endSimulatedStuck is not set
                         endSimulatedStuck = rightNow.AddSeconds(3);         // set it to (now + 3sec)
@@ -104,21 +103,21 @@ namespace ASCOM.Wise40
                 }
             }
 
-            switch (_movingDirection)
+            switch (instance._movingDirection)
             {
                 case WiseDome.Direction.CCW:
-                    simulatedValue++;
+                    instance.simulatedValue++;
                     break;
 
                 case WiseDome.Direction.CW:
-                    simulatedValue--;
+                    instance.simulatedValue--;
                     break;
             }
 
-            if (simulatedValue < 0)
-                simulatedValue = 1023;
-            if (simulatedValue > 1023)
-                simulatedValue = 0;
+            if (instance.simulatedValue < 0)
+                instance.simulatedValue = 1023;
+            if (instance.simulatedValue > 1023)
+                instance.simulatedValue = 0;
         }
 
 
@@ -148,31 +147,6 @@ namespace ASCOM.Wise40
             }
         }
 
-        public void Connect(bool connected)
-        {
-            _connected = connected;
-            if (connected)
-            {
-                encDaqHigh.setOwner("domeEncLow", 0);
-                encDaqHigh.setOwner("domeEncLow", 1);
-                encDaqLow.setOwners("domeEncLow");
-            }
-            else
-            {
-                encDaqHigh.unsetOwner(0);
-                encDaqHigh.unsetOwner(1);
-                encDaqLow.unsetOwners();
-            }
-        }
-
-        public bool Connected
-        {
-            get
-            {
-                return _connected;
-            }
-        }
-
         public Angle Azimuth
         {
             get
@@ -199,7 +173,7 @@ namespace ASCOM.Wise40
 
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "WiseDome: {0}: Azimuth: {1}, currTicks: {2}, caliTicks: {3}, caliAz: {4}",
-                    _name, az.ToNiceString(), currTicks, _caliTicks, _caliAz.ToNiceString());
+                    Name, az.ToNiceString(), currTicks, _caliTicks, _caliAz.ToNiceString());
                 #endregion
                 return az;
             }
@@ -213,22 +187,11 @@ namespace ASCOM.Wise40
         /// <summary>
         /// Gets the dome-encoder's value (either simulated or real)
         /// </summary>
-        public uint Value
+        public new uint Value
         {
             get
             {
-                uint ret;
-
-                if (_simulated)
-                    return simulatedValue;
-
-                List<uint> values;
-                lock (_lock)
-                {
-                    values = encAtomicReader.Values;
-                }
-                ret = ((values[1] << 8) | values[0]) & 0x3ff;
-                ret = WiseEncoder.GrayCode[ret];
+                uint ret = _simulated ? (uint)simulatedValue : base.Value;
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "WiseDome: encoder: ret {0}", ret);
                 #endregion

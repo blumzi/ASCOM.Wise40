@@ -17,90 +17,92 @@ namespace ASCOM.Wise40.Hardware
     {
         public WiseBoard brd;
         public MccDaq.DigitalPortType port;
-        public ushort mask;
+        public byte mask;
     };
 
-    public class WiseEncoder : WiseObject, IConnectable, IDisposable
+    /// <summary>
+    /// Wraps a hardware encoder with:
+    ///  - atomic read of the MccDaqs
+    ///  - simulated values
+    ///  - Gray code handling
+    /// </summary>
+    public class WiseEncoder : IWiseObject, IConnectable, IDisposable, ISimulated
     {
-        private WiseDaq[] daqs;
-        private byte[] masks;
-        private int nbits;
-        private uint timeoutMicros;    // microseconds between Daq reads
-        private bool isGray;
-        private Stopwatch stopwatch;
-        private int ticksPerRevolution;
+        private string _name;
+        private List<WiseDaq> _daqs;
+        private List<byte> _masks;
+        private int _nbits;
+        private bool _isGray;
+        private int _hwTicks;
         private bool _connected = false;
+        protected bool _simulated = Environment.MachineName.ToLower() != "dome-ctlr";
+        private AtomicReader _atomicReader;
+        protected Common.Debugger debugger = Common.Debugger.Instance;
 
-        /// <summary>
-        /// Creates a new Encoder object.
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="specs"></param>
-        /// <param name="timeout">max microseconds between Daq reads</param>
-        public WiseEncoder(string name, int ticks, WiseEncSpec[] specs, bool gray, uint micros)
+        public WiseEncoder() { }
+
+        public WiseEncoder(string name, int hwTicks, List<WiseEncSpec> specs, bool isGray = false, double timeoutMillis = Const.defaultReadTimeoutMillis, int retries = Const.defaultReadRetries)
         {
-            daqs = new WiseDaq[specs.Count()];
-            masks = new byte[specs.Count()];
-            timeoutMicros = micros;
-            isGray = gray;
-            ticksPerRevolution = ticks;
-            stopwatch = new Stopwatch();
-            this.name = name;
-
-            for (int i = 0; i < daqs.Count(); i++)
-            {
-                if ((daqs[i] = specs[i].brd.daqs.Find(x => x.porttype == specs[i].port)) == null)
-                    throw new WiseException(name + ": Cannot find Daq for " + specs[i].port);
-
-                masks[i] = (byte)((specs[i].mask == 0) ? ~(1 << daqs[i].nbits) : specs[i].mask);
-                daqs[i].setDir(MccDaq.DigitalPortDirection.DigitalIn);
-                for (int bit = 0; bit < daqs[i].nbits; bit++)
-                {
-                    if ((masks[i] & (1 << bit)) != 0)
-                        nbits++;
-                }
-            }
+            init(name, hwTicks, specs, isGray, timeoutMillis, retries);
         }
 
-        public int Value
+        /// <summary>
+        /// Initializes a WiseEncoder
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="hwTicks"></param>
+        /// <param name="specs"></param>
+        /// <param name="isGray"></param>
+        public void init(string name, int hwTicks, List<WiseEncSpec> specs, bool isGray = false, double timeoutMillis = Const.defaultReadTimeoutMillis, int retries = Const.defaultReadRetries)
+        {
+            int nSpecs = specs.Count();
+            _daqs = new List<WiseDaq>(nSpecs);
+            _masks = new List<byte>(nSpecs);
+            _isGray = isGray;
+            _hwTicks = hwTicks;
+            _name = name;
+            
+            foreach (WiseEncSpec spec in specs)
+            {
+                WiseDaq daq;
+                byte mask;
+
+                if ((daq = spec.brd.daqs.Find(x => x.porttype == spec.port)) == null)
+                    throw new WiseException(name + ": Cannot find Daq for " + spec.port + " on " + spec.brd.Name);
+
+                mask = (byte)((spec.mask == 0) ? ~(1 << daq.nbits) : spec.mask);
+                daq.setDir(MccDaq.DigitalPortDirection.DigitalIn);
+                for (int bit = 0; bit < daq.nbits; bit++)
+                {
+                    if ((mask & (1 << bit)) != 0)
+                    {
+                        _nbits++;
+                    }
+                }
+                _daqs.Add(daq);
+                _masks.Add(mask);
+            }
+            _atomicReader = new AtomicReader(_daqs, timeoutMillis, retries);
+        }
+
+        public uint Value
         {
             get
             {
-                const int MaxTries = 5;
-                int tries;
-                int ret = 0;
+                uint ret = 0;
+                List<uint> values = _atomicReader.Values;
 
-                for (tries = 0; tries < MaxTries; tries++)
-                {
-                    for (int i = 0; i < daqs.Count(); i++)
-                    {
-                        ushort v;
-
-                        if (i > 0)
-                            stopwatch.Start();
-                        v = daqs[i].Value;
-                        if (i > 0)
-                        {
-                            stopwatch.Stop();
-                            if (stopwatch.ElapsedTicks / (Stopwatch.Frequency / (1000L * 1000L)) > timeoutMicros)
-                                goto nexttry;
-                        }
-                        if (isGray)
-                            v = GrayCode[v];
-
-                        ret = (ret << 8) | (byte)(v & masks[i]);
-                    }
-
-                    return ret;
-                    nexttry:;
+                foreach (uint v in values) {
+                    uint val = _isGray ? GrayCode[v] : v;
+                    ret = (ret << 8) | (val & _masks[values.IndexOf(v)]);
                 }
 
-                throw new WiseException("Cannot read encoder after " + tries.ToString() + " tries");
-                //return 0;
+                return ret;
             }
         }
 
-        public static ushort[] GrayCode = new ushort[1024] {
+        #region GrayCode
+        protected static ushort[] GrayCode = new ushort[1024] {
             0,    1,    3,    2,    7,    6,    4,    5,   15,   14,
             12,   13,    8,    9,   11,   10,   31,   30,   28,   29,
             24,   25,   27,   26,   16,   17,   19,   18,   23,   22,
@@ -205,16 +207,20 @@ namespace ASCOM.Wise40.Hardware
            675,  674,  679,  678,  676,  677,  687,  686,  684,  685,
            680,  681,  683,  682
                  };
+        #endregion
 
         public void Connect(bool connected)
         {
-            for (int daqno = 0; daqno < daqs.Count(); daqno++)
-                for (int bit = 0; bit < daqs[daqno].nbits; bit++)
-                    if ((masks[daqno] & (1 << bit)) != 0)
+            int encBit = _nbits - 1;
+            
+            foreach (var daq in _daqs)
+                for (int daqBit = daq.nbits - 1; daqBit >= 0; daqBit--)
+                    if ((_masks[_daqs.IndexOf(daq)] & (1 << daqBit)) != 0)
                         if (connected)
-                            daqs[daqno].setOwner(name, bit);
+                            daq.setOwner(Name + "[" + encBit-- + "]", daqBit);
                         else
-                            daqs[daqno].unsetOwner(bit);
+                            daq.unsetOwner(daqBit);
+
             _connected = connected;
         }
 
@@ -228,10 +234,22 @@ namespace ASCOM.Wise40.Hardware
 
         public void Dispose()
         {
-            for (int daqno = 0; daqno < daqs.Count(); daqno++)
-                for (int bit = 0; bit < daqs[daqno].nbits; bit++)
-                    if ((masks[daqno] & (1 << bit)) != 0)
-                        daqs[daqno].unsetOwner(bit);
+            for (int daqno = 0; daqno < _daqs.Count(); daqno++)
+                for (int bit = 0; bit < _daqs[daqno].nbits; bit++)
+                    if ((_masks[daqno] & (1 << bit)) != 0)
+                        _daqs[daqno].unsetOwner(bit);
+        }
+
+        public string Name
+        {
+            get { return _name; }
+            set { _name = value; }
+        }
+
+        public bool Simulated
+        {
+            get { return _simulated; }
+            set { }
         }
     }
 }

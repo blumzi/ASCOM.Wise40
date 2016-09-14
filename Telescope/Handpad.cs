@@ -230,7 +230,7 @@ namespace ASCOM.Wise40
 
             checkBoxPrimaryIsActive.Text = "Primary";
             if (m != null)
-                checkBoxPrimaryIsActive.Text += ": " + m.name.Remove(m.name.IndexOf('M')) + "@" +
+                checkBoxPrimaryIsActive.Text += ": " + m.Name.Remove(m.Name.IndexOf('M')) + "@" +
                     WiseTele.RateName(m.currentRate).Replace("rate", "");
 
             m = null;
@@ -242,7 +242,7 @@ namespace ASCOM.Wise40
 
             checkBoxSecondaryIsActive.Text = "Secondary";
             if (m != null)
-                checkBoxSecondaryIsActive.Text += ": " + m.name.Remove(m.name.IndexOf('M')) + "@" +
+                checkBoxSecondaryIsActive.Text += ": " + m.Name.Remove(m.Name.IndexOf('M')) + "@" +
                     WiseTele.RateName(m.currentRate).Replace("rate", "");
 
             checkBoxTrack.Checked = wisetele.Tracking;

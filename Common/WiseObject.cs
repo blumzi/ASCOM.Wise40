@@ -2,9 +2,9 @@
 {
     public class WiseObject
     {
-        private string _name;
+        protected string _name;
 
-        public string name
+        public string Name
         {
             get
             {

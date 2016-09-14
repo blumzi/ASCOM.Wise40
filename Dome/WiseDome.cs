@@ -21,7 +21,7 @@ namespace ASCOM.Wise40
         private WisePin leftPin, rightPin;
         private WisePin openPin, closePin;
         private WisePin homePin, ventPin;
-        private WiseDomeEncoder domeEncoder;
+        private static WiseDomeEncoder domeEncoder = WiseDomeEncoder.Instance;
         private List<IConnectable> connectables;
         private List<IDisposable> disposables;
         private bool _connected = false;
@@ -104,10 +104,12 @@ namespace ASCOM.Wise40
 
             using (Profile profile = new Profile())
             {
+                string driverID = "ASCOM.Wise40.Dome";
+
                 profile.DeviceType = "Dome";
-                debugger.Level = Convert.ToUInt32(profile.GetValue("ASCOM.Wise40.Dome", "Debug Level", string.Empty, "0"));
-                tl.Enabled = Convert.ToBoolean(profile.GetValue("ASCOM.Wise40.Dome", "Trace Level", string.Empty, "false"));
-                _autoCalibrate = Convert.ToBoolean(profile.GetValue("ASCOM.Wise40.Dome", "AutoCalibrate", string.Empty, "false"));
+                debugger.Level = Convert.ToUInt32(profile.GetValue(driverID, "Debug Level", string.Empty, "0"));
+                tl.Enabled = Convert.ToBoolean(profile.GetValue(driverID, "Trace Level", string.Empty, "false"));
+                _autoCalibrate = Convert.ToBoolean(profile.GetValue(driverID, "AutoCalibrate", string.Empty, "false"));
             }
 
             hw.init();
@@ -116,16 +118,16 @@ namespace ASCOM.Wise40
                 connectables = new List<IConnectable>();
                 disposables = new List<IDisposable>();
 
-                openPin = new WisePin("DomeShutterOpen", hw.domeboard, DigitalPortType.FirstPortA, 0, DigitalPortDirection.DigitalOut);
-                closePin = new WisePin("DomeShutterClose", hw.domeboard, DigitalPortType.FirstPortA, 1, DigitalPortDirection.DigitalOut);
+                openPin = new WisePin("ShutterOpen", hw.domeboard, DigitalPortType.FirstPortA, 0, DigitalPortDirection.DigitalOut);
+                closePin = new WisePin("ShutterClose", hw.domeboard, DigitalPortType.FirstPortA, 1, DigitalPortDirection.DigitalOut);
                 leftPin = new WisePin("DomeLeft", hw.domeboard, DigitalPortType.FirstPortA, 2, DigitalPortDirection.DigitalOut);
                 rightPin = new WisePin("DomeRight", hw.domeboard, DigitalPortType.FirstPortA, 3, DigitalPortDirection.DigitalOut);
 
-                homePin = new WisePin("DomeCalibration", hw.domeboard, DigitalPortType.FirstPortCL, 0, DigitalPortDirection.DigitalIn);
+                homePin = new WisePin("DomeCalib", hw.domeboard, DigitalPortType.FirstPortCL, 0, DigitalPortDirection.DigitalIn);
                 ventPin = new WisePin("DomeVent", hw.teleboard, DigitalPortType.ThirdPortCL, 0, DigitalPortDirection.DigitalOut);
 
                 domeEncoder = WiseDomeEncoder.Instance;
-                domeEncoder.init("DomeEncoder");
+                domeEncoder.init();
 
                 connectables.Add(openPin);
                 connectables.Add(closePin);

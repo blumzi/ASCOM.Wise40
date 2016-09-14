@@ -10,14 +10,12 @@ namespace ASCOM.Wise40
 {
     public class WiseDecEncoder : IEncoder
     {
-        private WiseDaq wormDaqLow, wormDaqHigh;
-        private WiseDaq axisDaqLow, axisDaqHigh;
-        private List<WiseDaq> daqs;
-        private bool _simulated;
+        private readonly bool _simulated = Environment.MachineName.ToLower() != "dome-ctlr";
         private string _name;
         private uint _daqsValue;
-        
-        private AtomicReader wormAtomicReader, axisAtomicReader;
+
+        private WiseEncoder axisEncoder, wormEncoder;
+
         private Astrometry.NOVAS.NOVAS31 Novas31;
         private Astrometry.AstroUtils.AstroUtils astroutils;
 
@@ -38,44 +36,25 @@ namespace ASCOM.Wise40
         {
             Novas31 = new Astrometry.NOVAS.NOVAS31();
             astroutils = new Astrometry.AstroUtils.AstroUtils();
-            List<WiseDaq> wormDaqs, axisDaqs, teleDaqs;
             wisesite.init();
 
-            teleDaqs = hw.teleboard.daqs;
-
-            wormDaqLow = teleDaqs.Find(x => x.porttype == DigitalPortType.FirstPortA);
-            wormDaqHigh = teleDaqs.Find(x => x.porttype == DigitalPortType.SecondPortCL);
-            axisDaqLow = teleDaqs.Find(x => x.porttype == DigitalPortType.SecondPortB);
-            axisDaqHigh = teleDaqs.Find(x => x.porttype == DigitalPortType.SecondPortA);
-
-            wormDaqs = new List<WiseDaq>();
-            wormDaqs.Add(wormDaqLow);
-            wormDaqs.Add(wormDaqHigh);
-
-            axisDaqs = new List<WiseDaq>();
-            axisDaqs.Add(axisDaqLow);
-            axisDaqs.Add(axisDaqHigh);
-
-            daqs = new List<WiseDaq>();
-            daqs.AddRange(wormDaqs);
-            daqs.AddRange(axisDaqs);
-            foreach (WiseDaq daq in daqs)
-                daq.setDir(DigitalPortDirection.DigitalIn);
-
-            wormAtomicReader = new AtomicReader(wormDaqs);
-            axisAtomicReader = new AtomicReader(axisDaqs);
-
-            Simulated = false;
-            foreach (WiseDaq d in daqs)
-            {
-                if (d.wiseBoard.type == WiseBoard.BoardType.Soft)
-                {
-                    Simulated = true;
-                    break;
+            axisEncoder = new WiseEncoder("DecAxis",
+                1 << 16,
+                new List<WiseEncSpec>() {
+                    new WiseEncSpec() { brd = hw.teleboard, port = DigitalPortType.SecondPortA, mask = 0xff },
+                    new WiseEncSpec() { brd = hw.teleboard, port = DigitalPortType.SecondPortB, mask = 0xff },
                 }
-            }
+            );
 
-            _name = name;
+            wormEncoder = new WiseEncoder("DecWorm",
+                1 << 12,
+                new List<WiseEncSpec>() {
+                    new WiseEncSpec() { brd = hw.teleboard, port = DigitalPortType.SecondPortCL, mask = 0x0f },
+                    new WiseEncSpec() { brd = hw.teleboard, port = DigitalPortType.FirstPortA,   mask = 0xff },
+                }
+            );
+
+            Name = name;
 
             _angle = Simulated ?
                 Angle.FromDegrees(90.0, Angle.Type.Dec) - wisesite.Latitude :
@@ -98,20 +77,9 @@ namespace ASCOM.Wise40
 
         public void Connect(bool connected)
         {
-            if (connected)
-            {
-                wormDaqLow.setOwners("DecWormLow");
-                wormDaqHigh.setOwners("DecWormHigh");
-                axisDaqLow.setOwners("DecAxisLow");
-                axisDaqHigh.setOwners("DecAxisHigh");
-            }
-            else
-            {
-                wormDaqLow.unsetOwners();
-                wormDaqHigh.unsetOwners();
-                axisDaqLow.unsetOwners();
-                axisDaqHigh.unsetOwners();
-            }
+            axisEncoder.Connect(connected);
+            wormEncoder.Connect(connected);
+
             _connected = connected;
         }
 
@@ -123,10 +91,9 @@ namespace ASCOM.Wise40
             }
         }
 
-        public void Dispose()
-        {
-            foreach (WiseDaq daq in daqs)
-                daq.unsetOwners();
+        public void Dispose() {
+            axisEncoder.Dispose();
+            wormEncoder.Dispose();
         }
 
         /// <summary>
@@ -139,22 +106,19 @@ namespace ASCOM.Wise40
             {
                 if (!Simulated)
                 {
-                    List<uint> daqValues;
                     uint worm, axis;
 
                     lock (_lock)
                     {
-                        daqValues = wormAtomicReader.Values;
-                        worm = (daqValues[1] << 8) | daqValues[0];
-
-                        daqValues = axisAtomicReader.Values;
-                        axis = (daqValues[0] >> 4) | (daqValues[1] << 4);
-
+                        worm = wormEncoder.Value;                        
+                        axis = axisEncoder.Value;
                         _daqsValue = ((axis * 600 + worm) & 0xfff000) + worm;
                     }
+                    #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, 
                         "{0}: value: {1}, axis: {2}, worm: {3}", 
-                        name, _daqsValue, axis, worm);
+                        Name, _daqsValue, axis, worm);
+                    #endregion
                 }
                 return _daqsValue;
             }
@@ -201,8 +165,10 @@ namespace ASCOM.Wise40
                     while (_angle.Radians > Math.PI)
                         _angle.Radians -= 2 * Math.PI;
 
+                    #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugEncoders,
-                        "[{0}] {1} Degrees - Value: {2}, deg: {3}", this.GetHashCode(), name, v, _angle);
+                        "[{0}] {1} Degrees - Value: {2}, deg: {3}", this.GetHashCode(), Name, v, _angle);
+                    #endregion
                 }
 
                 return _angle.Degrees;
@@ -224,13 +190,10 @@ namespace ASCOM.Wise40
             {
                 return _simulated;
             }
-            set
-            {
-                _simulated = value;
-            }
+            set { }
         }
 
-        public string name
+        public string Name
         {
             get
             {

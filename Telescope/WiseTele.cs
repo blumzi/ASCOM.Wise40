@@ -411,6 +411,7 @@ namespace ASCOM.Wise40
             hardware.init();
             wisesite.init();
             activeSlewers.init();
+            wiseComputerControl.init();
 
             #region MotorDefinitions
             //
@@ -974,7 +975,7 @@ namespace ASCOM.Wise40
                 {
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                        "StopAxis({0}):  {1} was on, stopping it.", axis, m.name);
+                        "StopAxis({0}):  {1} was on, stopping it.", axis, m.Name);
                     #endregion debug
                     m.SetOff();
                 }
@@ -1065,7 +1066,7 @@ namespace ASCOM.Wise40
             {
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                    "_moveAxis({0}, {1}): currPosition: {2}, starting {3}", Axis, RateName(Rate), currPosition, m.name);
+                    "_moveAxis({0}, {1}): currPosition: {2}, starting {3}", Axis, RateName(Rate), currPosition, m.Name);
                 #endregion debug
                 m.SetOn(Rate);
             }
