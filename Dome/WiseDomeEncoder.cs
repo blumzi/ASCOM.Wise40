@@ -14,11 +14,10 @@ namespace ASCOM.Wise40
         private bool _calibrated = false;
 
         // Simulation stuff
-        private bool _simulated = Environment.MachineName.ToLower() != "dome-ctlr";
         private int simulatedValue = 0;                     // the simulated dome encoder value
         private Angle simulatedStuckAzimuth;
-        private DateTime endSimulatedStuck;             // time when the dome-stuck simulation should end
-        private System.Timers.Timer simulationTimer;    // times simulated-dome events
+        private DateTime endSimulatedStuck;                 // time when the dome-stuck simulation should end
+        private System.Timers.Timer simulationTimer;        // times simulated-dome events
         private const int _simulatedEncoderTicksPerSecond = 6;
 
         private uint _caliTicks;

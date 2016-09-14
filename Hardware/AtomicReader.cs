@@ -9,7 +9,6 @@ using ASCOM.Wise40.Common;
 
 namespace ASCOM.Wise40.Hardware
 {
-    public const double DefaultTimeoutMillis = 2000.0;
     public class AtomicReader
     {
         public const double DefaultTimeoutMillis = 2000.0;
@@ -22,7 +21,9 @@ namespace ASCOM.Wise40.Hardware
 
         Common.Debugger debugger = Common.Debugger.Instance;
 
-        public AtomicReader(List<WiseDaq> daqs, double timeoutMillis = DefaultTimeoutMillis, int maxTries = DefaultMaxTries)
+        public AtomicReader(List<WiseDaq> daqs,
+            double timeoutMillis = Const.defaultReadTimeoutMillis,
+            int maxTries = Const.defaultReadRetries)
         {
             stopwatch = new Stopwatch();
             this.daqs = daqs;
