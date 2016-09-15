@@ -135,7 +135,7 @@ namespace ASCOM.Wise40
             get
             {
                 if (!Simulated)
-                    _angle.Radians = (Value * HaMultiplier) + HaCorrection;
+                    _angle = Angle.FromRadians((Value * HaMultiplier) + HaCorrection);
 
                 return _angle;
             }
@@ -154,8 +154,8 @@ namespace ASCOM.Wise40
         {
             get
             {
-                if (!Simulated)
-                    _angle.Radians = (_daqsValue * HaMultiplier) + HaCorrection;
+                //if (!Simulated)
+                //    _angle.Radians = (_daqsValue * HaMultiplier) + HaCorrection;
 
                 return Angle.Degrees;
             }

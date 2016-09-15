@@ -67,11 +67,10 @@ namespace ASCOM.Wise40.Hardware
                                 elapsedMillis.Add(millis);
                                 elapsedTicks.Add(stopwatch.ElapsedTicks);
 
-                                if (millis <= _timeoutMillis)
-                                    results.Add(v);
-                                else
+                                if (millis > _timeoutMillis)
                                     break;
                             }
+                            results.Add(v);
                         }
                     }
 

@@ -659,12 +659,24 @@ namespace ASCOM.Wise40
 
         private void button1_Click(object sender, EventArgs e)
         {
-            WiseDome.Instance.OpenShutter();
+            try
+            {
+                WiseDome.Instance.OpenShutter();
+            } catch (Exception ex)
+            {
+                Status(ex.Message, 1000, Severity.Error);
+            }                     
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
-            WiseDome.Instance.CloseShutter();
+            try
+            {
+                WiseDome.Instance.CloseShutter();
+            } catch (Exception ex)
+            {
+                Status(ex.Message, 1000, Severity.Error);
+            }
         }
 
         private void button3_Click(object sender, EventArgs e)
@@ -693,12 +705,24 @@ namespace ASCOM.Wise40
 
         private void buttonOpenShutterClick(object sender, EventArgs e)
         {
-            domeSlaveDriver.OpenShutter();
+            try
+            {
+                domeSlaveDriver.OpenShutter();
+            } catch (Exception ex)
+            {
+                Status(ex.Message, 1000, Severity.Error);  
+            }
         }
 
         private void buttonCloseShutterClick(object sender, EventArgs e)
         {
-            domeSlaveDriver.CloseShutter();
+            try
+            {
+                domeSlaveDriver.CloseShutter();
+            } catch (Exception ex)
+            {
+                Status(ex.Message, 1000, Severity.Error);
+            }
         }
 
         private void Status(string s, int millis = 0, Severity severity = Severity.None)
