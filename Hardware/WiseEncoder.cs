@@ -116,6 +116,19 @@ namespace ASCOM.Wise40.Hardware
             }
         }
 
+        public List<uint> RawValues
+        {
+            get
+            {
+                List<uint> values = _atomicReader.Values;
+                List<uint> ret = new List<uint>(values.Count()); ;
+
+                foreach (var v in values)
+                    ret.Add(v & _masks[values.IndexOf(v)]);
+                return ret;
+            }
+        }
+
         #region GrayCode
         protected static ushort[] GrayCode = new ushort[1024] {
             0,    1,    3,    2,    7,    6,    4,    5,   15,   14,
