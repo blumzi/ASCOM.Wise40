@@ -19,6 +19,10 @@ namespace ASCOM.Wise40.Hardware
         List<WiseDaq> daqs;
         object _lock = new object();
 
+        DateTime lastRead;
+        List<uint> lastResults;
+        public readonly int persistanceMillis = 50;
+
         Common.Debugger debugger = Common.Debugger.Instance;
 
         public AtomicReader(string name, List<WiseDaq> daqs,
@@ -42,6 +46,9 @@ namespace ASCOM.Wise40.Hardware
         {
             get
             {
+                if (DateTime.Now.Subtract(lastRead).TotalMilliseconds < persistanceMillis && lastResults != null)
+                    return lastResults;
+
                 List<uint> results;
                 List<double> elapsedMillis = new List<double>();
                 List<long> elapsedTicks = new List<long>();
@@ -90,6 +97,8 @@ namespace ASCOM.Wise40.Hardware
                             s += t.ToString() + " ";
                         debugger.WriteLine(Common.Debugger.DebugLevel.DebugEncoders, s);
                         #endregion
+                        lastRead = DateTime.Now;
+                        lastResults = results;
                         return results;
                     }
                     
