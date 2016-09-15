@@ -1437,8 +1437,8 @@ namespace ASCOM.Wise40
                     cm.rate = rate;
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                        "{0} at {1}: cm.start: {2}, shortest.angle: {3}, cm.direction: {4}",
-                        cm.taskName, RateName(cm.rate), cm.start, shortest.angle, cm.direction);
+                        "{0} at {1}: cm.start: {2}, cm.target: {3}, shortest.angle: {4}, cm.direction: {5}",
+                        cm.taskName, RateName(cm.rate), cm.start, cm.target, shortest.angle, cm.direction);
                     #endregion debug
 
                     slewingCancellationToken.ThrowIfCancellationRequested();
