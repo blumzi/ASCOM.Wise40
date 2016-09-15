@@ -9,7 +9,7 @@ using ASCOM.Wise40.Common;
 
 namespace ASCOM.Wise40.Hardware
 {
-    public class AtomicReader
+    public class AtomicReader : WiseObject
     {
         public const double DefaultTimeoutMillis = 2000.0;
         public static readonly int DefaultMaxTries = 20;
@@ -21,10 +21,11 @@ namespace ASCOM.Wise40.Hardware
 
         Common.Debugger debugger = Common.Debugger.Instance;
 
-        public AtomicReader(List<WiseDaq> daqs,
+        public AtomicReader(string name, List<WiseDaq> daqs,
             double timeoutMillis = Const.defaultReadTimeoutMillis,
             int maxTries = Const.defaultReadRetries)
         {
+            Name = name;
             stopwatch = new Stopwatch();
             this.daqs = daqs;
             _timeoutMillis = timeoutMillis;
@@ -77,7 +78,7 @@ namespace ASCOM.Wise40.Hardware
                     if (results.Count() == daqs.Count())
                     {
                         #region debug
-                        string s = "AtomicReader:Values: inter daqs (";
+                        string s = "AtomicReader " + Name + " :Values: inter daqs (";
                         foreach (WiseDaq daq in daqs)
                             s += daq.Name + " ";
                         s += ") " + elapsedMillis.Count + " read times: ";
@@ -95,7 +96,7 @@ namespace ASCOM.Wise40.Hardware
                 } while (--tries > 0);
 
                 #region debug
-                string err = "Failed to read daqs: ";
+                string err = "AtomicReader " + Name + " Failed to read daqs: ";
                 foreach (WiseDaq daq in daqs)
                     err += daq.Name + " ";
                 err += ", within " + _timeoutMillis.ToString() + " milliSeconds, max: ";

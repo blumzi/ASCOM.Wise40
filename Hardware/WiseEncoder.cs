@@ -94,7 +94,7 @@ namespace ASCOM.Wise40.Hardware
                 _daqs.Add(daq);
                 _masks.Add(mask);
             }
-            _atomicReader = new AtomicReader(_daqs, timeoutMillis, retries);
+            _atomicReader = new AtomicReader(Name, _daqs, timeoutMillis, retries);
         }
 
         public uint Value
