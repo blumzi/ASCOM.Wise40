@@ -27,7 +27,6 @@ namespace ASCOM.Wise40
         private bool _connected = false;
         private bool _calibrating = false;
         public bool _autoCalibrate = false;
-        private bool _ventIsOpen;
         private bool _isStuck;
 
         public enum DomeState { Idle, MovingCW, MovingCCW, AutoShutdown };
@@ -155,7 +154,6 @@ namespace ASCOM.Wise40
             rightPin.SetOff();
 
             _calibrating = false;
-            _ventIsOpen = false;
             _state = DomeState.Idle;
             _shutterState = ShutterState.Closed;
 
