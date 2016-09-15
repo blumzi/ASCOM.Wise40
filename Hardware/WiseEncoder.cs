@@ -120,12 +120,7 @@ namespace ASCOM.Wise40.Hardware
         {
             get
             {
-                List<uint> values = _atomicReader.Values;
-                List<uint> ret = new List<uint>(values.Count()); ;
-
-                foreach (var v in values)
-                    ret.Add(v & _masks[values.IndexOf(v)]);
-                return ret;
+                return _atomicReader.Values;
             }
         }
 

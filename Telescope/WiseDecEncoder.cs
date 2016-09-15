@@ -113,8 +113,8 @@ namespace ASCOM.Wise40
                         List<uint> wormValues = wormEncoder.RawValues;
                         List<uint> axisValues = axisEncoder.RawValues;
 
-                        worm = (wormValues[1] << 8) | wormValues[0];                        
-                        axis = (axisValues[0] >> 4) | (axisValues[1] << 4);
+                        worm = (wormValues[0] << 8) | wormValues[1];                        
+                        axis = (axisValues[1] >> 4) | (axisValues[0] << 4);
 
                         _daqsValue = ((axis * 600 + worm) & 0xfff000) + worm;
                     }
