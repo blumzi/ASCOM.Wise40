@@ -59,6 +59,8 @@ namespace ASCOM.Wise40
 
             if (Simulated)
                 _angle = new Angle("00h00m00.0s");
+            //else
+            //    _angle = Angle.FromRadians((Value * HaMultiplier) + HaCorrection);
 
             using (ASCOM.Utilities.Profile driverProfile = new ASCOM.Utilities.Profile())
             {
