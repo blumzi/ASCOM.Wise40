@@ -178,6 +178,7 @@
             this.labelSafeToOpen = new System.Windows.Forms.Label();
             this.labelComputerControl = new System.Windows.Forms.Label();
             this.timerStatus = new System.Windows.Forms.Timer(this.components);
+            this.checkBoxVent = new System.Windows.Forms.CheckBox();
             this.panelDebug.SuspendLayout();
             this.groupBoxMovementStudy.SuspendLayout();
             this.groupBoxEncoders.SuspendLayout();
@@ -1526,7 +1527,7 @@
             this.groupBox7.ForeColor = System.Drawing.Color.DarkOrange;
             this.groupBox7.Location = new System.Drawing.Point(24, 138);
             this.groupBox7.Name = "groupBox7";
-            this.groupBox7.Size = new System.Drawing.Size(248, 88);
+            this.groupBox7.Size = new System.Drawing.Size(200, 88);
             this.groupBox7.TabIndex = 24;
             this.groupBox7.TabStop = false;
             this.groupBox7.Text = " Shutter ";
@@ -1535,7 +1536,7 @@
             // 
             this.buttonCloseShutter.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.buttonCloseShutter.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonCloseShutter.Location = new System.Drawing.Point(128, 56);
+            this.buttonCloseShutter.Location = new System.Drawing.Point(106, 56);
             this.buttonCloseShutter.Name = "buttonCloseShutter";
             this.buttonCloseShutter.Size = new System.Drawing.Size(58, 23);
             this.buttonCloseShutter.TabIndex = 21;
@@ -1547,7 +1548,7 @@
             // 
             this.buttonOpenShutter.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.buttonOpenShutter.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonOpenShutter.Location = new System.Drawing.Point(56, 56);
+            this.buttonOpenShutter.Location = new System.Drawing.Point(34, 56);
             this.buttonOpenShutter.Name = "buttonOpenShutter";
             this.buttonOpenShutter.Size = new System.Drawing.Size(58, 23);
             this.buttonOpenShutter.TabIndex = 20;
@@ -1560,7 +1561,7 @@
             this.label9.AutoSize = true;
             this.label9.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label9.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label9.Location = new System.Drawing.Point(34, 16);
+            this.label9.Location = new System.Drawing.Point(8, 16);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(64, 18);
             this.label9.TabIndex = 18;
@@ -1572,9 +1573,9 @@
             this.labelDomeShutterStatusValue.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.labelDomeShutterStatusValue.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelDomeShutterStatusValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelDomeShutterStatusValue.Location = new System.Drawing.Point(104, 21);
+            this.labelDomeShutterStatusValue.Location = new System.Drawing.Point(78, 21);
             this.labelDomeShutterStatusValue.Name = "labelDomeShutterStatusValue";
-            this.labelDomeShutterStatusValue.Size = new System.Drawing.Size(128, 20);
+            this.labelDomeShutterStatusValue.Size = new System.Drawing.Size(114, 20);
             this.labelDomeShutterStatusValue.TabIndex = 19;
             this.labelDomeShutterStatusValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -1583,6 +1584,7 @@
             this.groupBoxDomeGroup.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBoxDomeGroup.Controls.Add(this.checkBoxVent);
             this.groupBoxDomeGroup.Controls.Add(this.textBoxDomeAzGo);
             this.groupBoxDomeGroup.Controls.Add(this.buttonDomeAzGo);
             this.groupBoxDomeGroup.Controls.Add(this.buttonDomeRight);
@@ -1664,7 +1666,7 @@
             this.label15.AutoSize = true;
             this.label15.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label15.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label15.Location = new System.Drawing.Point(32, 98);
+            this.label15.Location = new System.Drawing.Point(25, 96);
             this.label15.Name = "label15";
             this.label15.Size = new System.Drawing.Size(64, 18);
             this.label15.TabIndex = 18;
@@ -1687,9 +1689,9 @@
             this.labelDomeStatusValue.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.labelDomeStatusValue.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelDomeStatusValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelDomeStatusValue.Location = new System.Drawing.Point(102, 102);
+            this.labelDomeStatusValue.Location = new System.Drawing.Point(95, 100);
             this.labelDomeStatusValue.Name = "labelDomeStatusValue";
-            this.labelDomeStatusValue.Size = new System.Drawing.Size(128, 20);
+            this.labelDomeStatusValue.Size = new System.Drawing.Size(161, 20);
             this.labelDomeStatusValue.TabIndex = 19;
             this.labelDomeStatusValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -2272,6 +2274,18 @@
             // 
             this.timerStatus.Tick += new System.EventHandler(this.timerStatus_Tick);
             // 
+            // checkBoxVent
+            // 
+            this.checkBoxVent.AutoSize = true;
+            this.checkBoxVent.CheckAlign = System.Drawing.ContentAlignment.BottomCenter;
+            this.checkBoxVent.Location = new System.Drawing.Point(232, 152);
+            this.checkBoxVent.Name = "checkBoxVent";
+            this.checkBoxVent.Size = new System.Drawing.Size(33, 31);
+            this.checkBoxVent.TabIndex = 26;
+            this.checkBoxVent.Text = "Vent";
+            this.checkBoxVent.UseVisualStyleBackColor = true;
+            this.checkBoxVent.Click += new System.EventHandler(this.checkBoxVent_Click);
+            // 
             // HandpadForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -2479,5 +2493,6 @@
         private System.Windows.Forms.Button buttonDomeRight;
         private System.Windows.Forms.Button buttonDomeStop;
         private System.Windows.Forms.Button buttonDomeLeft;
+        private System.Windows.Forms.CheckBox checkBoxVent;
     }
 }

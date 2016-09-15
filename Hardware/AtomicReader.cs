@@ -41,7 +41,7 @@ namespace ASCOM.Wise40.Hardware
         {
             get
             {
-                List<uint> results = new List<uint>(daqs.Count());
+                List<uint> results;
                 List<double> elapsedMillis = new List<double>();
                 List<long> elapsedTicks = new List<long>();
                 int tries = _maxTries;
@@ -50,6 +50,7 @@ namespace ASCOM.Wise40.Hardware
                 {
                     lock (_lock)
                     {
+                        results = new List<uint>(daqs.Count());
                         foreach (var daq in daqs)
                         {
                             uint v;
@@ -69,10 +70,7 @@ namespace ASCOM.Wise40.Hardware
                                 if (millis <= _timeoutMillis)
                                     results.Add(v);
                                 else
-                                {
-                                    results = new List<uint>(daqs.Count());
                                     break;
-                                }
                             }
                         }
                     }

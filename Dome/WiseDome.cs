@@ -521,21 +521,19 @@ namespace ASCOM.Wise40
             }
         }
 
-        public void OpenVent()
+        public bool Vent
         {
-            if (!_ventIsOpen)
+            get
             {
-                ventPin.SetOn();
-                _ventIsOpen = true;
+                return ventPin.isOn;
             }
-        }
 
-        public void CloseVent()
-        {
-            if (_ventIsOpen)
+            set
             {
-                ventPin.SetOff();
-                _ventIsOpen = false;
+                if (value)
+                    ventPin.SetOn();
+                else
+                    ventPin.SetOff();
             }
         }
 
@@ -699,7 +697,8 @@ namespace ASCOM.Wise40
             closePin.SetOff();
             leftPin.SetOff();
             rightPin.SetOff();
-            ventPin.SetOff();
+
+            Vent = false;
         }
 
         public bool Slewing

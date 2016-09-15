@@ -273,6 +273,7 @@ namespace ASCOM.Wise40
                 labelDomeAzimuthValue.Text = domeSlaveDriver.Azimuth;
                 labelDomeStatusValue.Text = domeSlaveDriver.Status;
                 labelDomeShutterStatusValue.Text = domeSlaveDriver.ShutterStatus;
+                checkBoxVent.Checked = WiseDome.Instance.Vent;
             }
 
             if (groupBoxWeather.Visible)
@@ -798,6 +799,11 @@ namespace ASCOM.Wise40
         private void buttonDomeStop_Click(object sender, EventArgs e)
         {
             WiseDome.Instance.Stop();
+        }
+
+        private void checkBoxVent_Click(object sender, EventArgs e)
+        {
+            WiseDome.Instance.Vent = (sender as CheckBox).Checked;
         }
     }
 }

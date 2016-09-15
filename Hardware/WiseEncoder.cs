@@ -41,7 +41,12 @@ namespace ASCOM.Wise40.Hardware
 
         public WiseEncoder() { }
 
-        public WiseEncoder(string name, int hwTicks, List<WiseEncSpec> specs, bool isGray = false, double timeoutMillis = Const.defaultReadTimeoutMillis, int retries = Const.defaultReadRetries)
+        public WiseEncoder(string name,
+            int hwTicks,
+            List<WiseEncSpec> specs,
+            bool isGray = false,
+            double timeoutMillis = Const.defaultReadTimeoutMillis,
+            int retries = Const.defaultReadRetries)
         {
             init(name, hwTicks, specs, isGray, timeoutMillis, retries);
         }
@@ -53,14 +58,21 @@ namespace ASCOM.Wise40.Hardware
         /// <param name="hwTicks"></param>
         /// <param name="specs"></param>
         /// <param name="isGray"></param>
-        public void init(string name, int hwTicks, List<WiseEncSpec> specs, bool isGray = false, double timeoutMillis = Const.defaultReadTimeoutMillis, int retries = Const.defaultReadRetries)
+        /// <param name="timeoutMillis"></param>
+        /// <param name="retries"></param>
+        public void init(string name,
+            int hwTicks,
+            List<WiseEncSpec> specs,
+            bool isGray = false,
+            double timeoutMillis = Const.defaultReadTimeoutMillis,
+            int retries = Const.defaultReadRetries)
         {
             int nSpecs = specs.Count();
             _daqs = new List<WiseDaq>(nSpecs);
             _masks = new List<byte>(nSpecs);
             _isGray = isGray;
             _hwTicks = hwTicks;
-            _name = name;
+            Name = name;
             
             foreach (WiseEncSpec spec in specs)
             {
@@ -92,10 +104,13 @@ namespace ASCOM.Wise40.Hardware
                 uint ret = 0;
                 List<uint> values = _atomicReader.Values;
 
-                foreach (uint v in values) {
-                    uint val = _isGray ? GrayCode[v] : v;
-                    ret = (ret << 8) | (val & _masks[values.IndexOf(v)]);
-                }
+                foreach (uint v in values)
+                    ret = (ret << 8) | (v & _masks[values.IndexOf(v)]);
+                if (_isGray)
+                    ret = GrayCode[ret];
+                #region debug
+                debugger.WriteLine(Common.Debugger.DebugLevel.DebugEncoders, "{0}: value: {1}", Name, ret);
+                #endregion
 
                 return ret;
             }
