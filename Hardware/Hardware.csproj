@@ -63,7 +63,7 @@
     </Reference>
     <Reference Include="MccDaq, Version=2.5.0.0, Culture=neutral, PublicKeyToken=a37eefcf5c6ca10a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>Measurement Computing\MccDaq.dll</HintPath>
+      <HintPath>Measurement Computing\DAQ\MccDaq.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -96,6 +96,20 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="ASCOMDriverTemplate.snk" />
+    <None Include="Measurement Computing\DAQ\Android\ul_help.zip" />
+    <None Include="Measurement Computing\DAQ\Documents\82C54.pdf" />
+    <None Include="Measurement Computing\DAQ\Documents\82C55A.pdf" />
+    <None Include="Measurement Computing\DAQ\Documents\9513A.pdf" />
+    <None Include="Measurement Computing\DAQ\Documents\ChinaRoHS%28CHN%29.pdf" />
+    <None Include="Measurement Computing\DAQ\Documents\ChinaRoHS%28ENG%29.pdf" />
+    <None Include="Measurement Computing\DAQ\Documents\DAQ-Software-Quick-Start.pdf" />
+    <None Include="Measurement Computing\DAQ\Documents\LS7266R1.pdf" />
+    <None Include="Measurement Computing\DAQ\Documents\signals.pdf" />
+    <None Include="Measurement Computing\DAQ\Documents\ULRedistribution.pdf" />
+    <None Include="Measurement Computing\DAQ\Examples.lnk" />
+    <None Include="Measurement Computing\DAQ\LOG00000.BIN" />
+    <None Include="Measurement Computing\DAQ\MCCBoardCfg.mde" />
+    <None Include="Measurement Computing\DAQ\ULHelp.chm" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -103,10 +117,36 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="BuildingBlocks\" />
+    <Folder Include="Measurement Computing\DAQ\FirmwareImages\" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Measurement Computing\MccDaq.dll" />
-    <Content Include="Measurement Computing\MccDaq.xml" />
+    <Content Include="Measurement Computing\DAQ\Android\ul.jar" />
+    <Content Include="Measurement Computing\DAQ\cbercode.txt" />
+    <Content Include="Measurement Computing\DAQ\cbi_cal.dll" />
+    <Content Include="Measurement Computing\DAQ\cbi_node.dll" />
+    <Content Include="Measurement Computing\DAQ\cbi_prop.dll" />
+    <Content Include="Measurement Computing\DAQ\cbi_test.dll" />
+    <Content Include="Measurement Computing\DAQ\cbw32.dll" />
+    <Content Include="Measurement Computing\DAQ\cbw64.dll" />
+    <Content Include="Measurement Computing\DAQ\DaqDevInfo.dll" />
+    <Content Include="Measurement Computing\DAQ\DaqDevInfo64.dll" />
+    <Content Include="Measurement Computing\DAQ\DaqLib.dll" />
+    <Content Include="Measurement Computing\DAQ\DaqLib64.dll" />
+    <Content Include="Measurement Computing\DAQ\Documents\ReadMe.txt" />
+    <Content Include="Measurement Computing\DAQ\HIDRegUpdater.exe" />
+    <Content Include="Measurement Computing\DAQ\inscal32.exe" />
+    <Content Include="Measurement Computing\DAQ\logo.bmp" />
+    <Content Include="Measurement Computing\DAQ\MccDaq.dll" />
+    <Content Include="Measurement Computing\DAQ\MccDaq.xml" />
+    <Content Include="Measurement Computing\DAQ\MccSkts.exe" />
+    <Content Include="Measurement Computing\DAQ\MccSktsIfc.dll" />
+    <Content Include="Measurement Computing\DAQ\ndercode.txt" />
+    <Content Include="Measurement Computing\DAQ\ReadMe.txt" />
+    <Content Include="Measurement Computing\DAQ\ReadMeUL.txt" />
+    <Content Include="Measurement Computing\DAQ\scanview.exe" />
+    <Content Include="Measurement Computing\DAQ\SET422.EXE" />
+    <Content Include="Measurement Computing\DAQ\ulprops.txt" />
+    <Content Include="Measurement Computing\DAQ\vicomponents.ocx" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
