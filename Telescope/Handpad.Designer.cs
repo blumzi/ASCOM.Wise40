@@ -130,6 +130,7 @@
             this.label9 = new System.Windows.Forms.Label();
             this.labelDomeShutterStatusValue = new System.Windows.Forms.Label();
             this.groupBoxDomeGroup = new System.Windows.Forms.GroupBox();
+            this.checkBoxVent = new System.Windows.Forms.CheckBox();
             this.textBoxDomeAzGo = new System.Windows.Forms.TextBox();
             this.buttonDomeAzGo = new System.Windows.Forms.Button();
             this.buttonDomeRight = new System.Windows.Forms.Button();
@@ -178,7 +179,6 @@
             this.labelSafeToOpen = new System.Windows.Forms.Label();
             this.labelComputerControl = new System.Windows.Forms.Label();
             this.timerStatus = new System.Windows.Forms.Timer(this.components);
-            this.checkBoxVent = new System.Windows.Forms.CheckBox();
             this.panelDebug.SuspendLayout();
             this.groupBoxMovementStudy.SuspendLayout();
             this.groupBoxEncoders.SuspendLayout();
@@ -234,11 +234,6 @@
             this.groupBoxMovementStudy.Controls.Add(this.labelNewDec);
             this.groupBoxMovementStudy.Controls.Add(this.label24);
             this.groupBoxMovementStudy.Controls.Add(this.label1);
-            this.groupBoxMovementStudy.Controls.Add(this.buttonGoCoord);
-            this.groupBoxMovementStudy.Controls.Add(this.textBoxDec);
-            this.groupBoxMovementStudy.Controls.Add(this.textBoxRA);
-            this.groupBoxMovementStudy.Controls.Add(this.labelDec);
-            this.groupBoxMovementStudy.Controls.Add(this.labelRA);
             this.groupBoxMovementStudy.Controls.Add(this.groupBoxEncoders);
             this.groupBoxMovementStudy.Controls.Add(this.buttonSaveResults);
             this.groupBoxMovementStudy.Controls.Add(this.buttonStopStudy);
@@ -393,7 +388,7 @@
             this.buttonGoCoord.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.buttonGoCoord.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonGoCoord.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonGoCoord.Location = new System.Drawing.Point(279, 248);
+            this.buttonGoCoord.Location = new System.Drawing.Point(267, 196);
             this.buttonGoCoord.Name = "buttonGoCoord";
             this.buttonGoCoord.Size = new System.Drawing.Size(48, 32);
             this.buttonGoCoord.TabIndex = 25;
@@ -403,26 +398,32 @@
             // 
             // textBoxDec
             // 
+            this.textBoxDec.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.textBoxDec.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxDec.Location = new System.Drawing.Point(169, 254);
+            this.textBoxDec.Location = new System.Drawing.Point(183, 201);
+            this.textBoxDec.Margin = new System.Windows.Forms.Padding(7, 3, 3, 3);
             this.textBoxDec.Name = "textBoxDec";
-            this.textBoxDec.Size = new System.Drawing.Size(100, 23);
+            this.textBoxDec.Size = new System.Drawing.Size(71, 23);
             this.textBoxDec.TabIndex = 24;
+            this.textBoxDec.Text = "00:00:00.0";
             this.textBoxDec.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.textBoxDec_MouseDoubleClick);
             // 
             // textBoxRA
             // 
+            this.textBoxRA.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.textBoxRA.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxRA.Location = new System.Drawing.Point(34, 254);
+            this.textBoxRA.Location = new System.Drawing.Point(62, 201);
+            this.textBoxRA.Margin = new System.Windows.Forms.Padding(7, 3, 3, 3);
             this.textBoxRA.Name = "textBoxRA";
-            this.textBoxRA.Size = new System.Drawing.Size(100, 23);
+            this.textBoxRA.Size = new System.Drawing.Size(84, 23);
             this.textBoxRA.TabIndex = 23;
+            this.textBoxRA.Text = "00h00m00.0s";
             this.textBoxRA.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.textBoxRA_MouseDoubleClick);
             // 
             // labelDec
             // 
             this.labelDec.AutoSize = true;
-            this.labelDec.Location = new System.Drawing.Point(140, 258);
+            this.labelDec.Location = new System.Drawing.Point(152, 205);
             this.labelDec.Name = "labelDec";
             this.labelDec.Size = new System.Drawing.Size(30, 13);
             this.labelDec.TabIndex = 22;
@@ -431,7 +432,7 @@
             // labelRA
             // 
             this.labelRA.AutoSize = true;
-            this.labelRA.Location = new System.Drawing.Point(8, 258);
+            this.labelRA.Location = new System.Drawing.Point(36, 205);
             this.labelRA.Name = "labelRA";
             this.labelRA.Size = new System.Drawing.Size(25, 13);
             this.labelRA.TabIndex = 21;
@@ -593,6 +594,7 @@
             // 
             // textBoxMillis
             // 
+            this.textBoxMillis.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.textBoxMillis.Location = new System.Drawing.Point(151, 214);
             this.textBoxMillis.Name = "textBoxMillis";
             this.textBoxMillis.Size = new System.Drawing.Size(40, 20);
@@ -611,6 +613,7 @@
             // 
             // numericUpDownStepCount
             // 
+            this.numericUpDownStepCount.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.numericUpDownStepCount.Location = new System.Drawing.Point(47, 214);
             this.numericUpDownStepCount.Name = "numericUpDownStepCount";
             this.numericUpDownStepCount.Size = new System.Drawing.Size(40, 20);
@@ -803,6 +806,11 @@
             this.groupBoxTelescope.Controls.Add(this.labelDate);
             this.groupBoxTelescope.Controls.Add(this.groupBoxTracking);
             this.groupBoxTelescope.Controls.Add(this.panelShowHideButtons);
+            this.groupBoxTelescope.Controls.Add(this.buttonGoCoord);
+            this.groupBoxTelescope.Controls.Add(this.textBoxRA);
+            this.groupBoxTelescope.Controls.Add(this.textBoxDec);
+            this.groupBoxTelescope.Controls.Add(this.labelRA);
+            this.groupBoxTelescope.Controls.Add(this.labelDec);
             this.groupBoxTelescope.ForeColor = System.Drawing.Color.DarkOrange;
             this.groupBoxTelescope.Location = new System.Drawing.Point(0, 5);
             this.groupBoxTelescope.Name = "groupBoxTelescope";
@@ -822,7 +830,7 @@
             this.panelDirectionButtons.Controls.Add(this.buttonSouth);
             this.panelDirectionButtons.Controls.Add(this.buttonEast);
             this.panelDirectionButtons.Controls.Add(this.buttonWest);
-            this.panelDirectionButtons.Location = new System.Drawing.Point(48, 216);
+            this.panelDirectionButtons.Location = new System.Drawing.Point(48, 282);
             this.panelDirectionButtons.Name = "panelDirectionButtons";
             this.panelDirectionButtons.Size = new System.Drawing.Size(160, 152);
             this.panelDirectionButtons.TabIndex = 11;
@@ -838,7 +846,7 @@
             this.buttonNW.Name = "buttonNW";
             this.buttonNW.Size = new System.Drawing.Size(40, 40);
             this.buttonNW.TabIndex = 8;
-            this.buttonNW.Text = "NW";
+            this.buttonNW.Text = "NE";
             this.buttonNW.UseVisualStyleBackColor = false;
             this.buttonNW.MouseDown += new System.Windows.Forms.MouseEventHandler(this.directionButton_MouseDown);
             this.buttonNW.MouseUp += new System.Windows.Forms.MouseEventHandler(this.directionButton_MouseUp);
@@ -854,7 +862,7 @@
             this.buttonSW.Name = "buttonSW";
             this.buttonSW.Size = new System.Drawing.Size(40, 40);
             this.buttonSW.TabIndex = 7;
-            this.buttonSW.Text = "SW";
+            this.buttonSW.Text = "SE";
             this.buttonSW.UseVisualStyleBackColor = false;
             this.buttonSW.MouseDown += new System.Windows.Forms.MouseEventHandler(this.directionButton_MouseDown);
             this.buttonSW.MouseUp += new System.Windows.Forms.MouseEventHandler(this.directionButton_MouseUp);
@@ -870,7 +878,7 @@
             this.buttonSE.Name = "buttonSE";
             this.buttonSE.Size = new System.Drawing.Size(40, 40);
             this.buttonSE.TabIndex = 6;
-            this.buttonSE.Text = "SE";
+            this.buttonSE.Text = "SW";
             this.buttonSE.UseVisualStyleBackColor = false;
             this.buttonSE.MouseDown += new System.Windows.Forms.MouseEventHandler(this.directionButton_MouseDown);
             this.buttonSE.MouseUp += new System.Windows.Forms.MouseEventHandler(this.directionButton_MouseUp);
@@ -886,7 +894,7 @@
             this.buttonNE.Name = "buttonNE";
             this.buttonNE.Size = new System.Drawing.Size(40, 40);
             this.buttonNE.TabIndex = 5;
-            this.buttonNE.Text = "NE";
+            this.buttonNE.Text = "NW";
             this.buttonNE.UseVisualStyleBackColor = false;
             this.buttonNE.MouseDown += new System.Windows.Forms.MouseEventHandler(this.directionButton_MouseDown);
             this.buttonNE.MouseUp += new System.Windows.Forms.MouseEventHandler(this.directionButton_MouseUp);
@@ -971,7 +979,7 @@
             this.groupBox36.Controls.Add(this.radioButtonGuide);
             this.groupBox36.Controls.Add(this.radioButtonSet);
             this.groupBox36.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBox36.Location = new System.Drawing.Point(228, 208);
+            this.groupBox36.Location = new System.Drawing.Point(228, 274);
             this.groupBox36.Name = "groupBox36";
             this.groupBox36.Size = new System.Drawing.Size(108, 77);
             this.groupBox36.TabIndex = 12;
@@ -1016,11 +1024,12 @@
             // labelStatus
             // 
             this.labelStatus.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.labelStatus.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.labelStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelStatus.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.labelStatus.Location = new System.Drawing.Point(16, 576);
+            this.labelStatus.Location = new System.Drawing.Point(22, 242);
             this.labelStatus.Name = "labelStatus";
-            this.labelStatus.Size = new System.Drawing.Size(336, 17);
+            this.labelStatus.Size = new System.Drawing.Size(316, 17);
             this.labelStatus.TabIndex = 24;
             this.labelStatus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
@@ -1315,7 +1324,7 @@
             this.groupBox3.Controls.Add(this.checkBoxTrackingIsActive);
             this.groupBox3.Controls.Add(this.checkBoxPrimaryIsActive);
             this.groupBox3.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBox3.Location = new System.Drawing.Point(44, 417);
+            this.groupBox3.Location = new System.Drawing.Point(44, 480);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Size = new System.Drawing.Size(168, 102);
             this.groupBox3.TabIndex = 17;
@@ -1387,7 +1396,7 @@
             this.groupBoxTracking.Controls.Add(this.checkBoxEnslaveDome);
             this.groupBoxTracking.Controls.Add(this.checkBoxTrack);
             this.groupBoxTracking.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBoxTracking.Location = new System.Drawing.Point(228, 296);
+            this.groupBoxTracking.Location = new System.Drawing.Point(228, 361);
             this.groupBoxTracking.Name = "groupBoxTracking";
             this.groupBoxTracking.Size = new System.Drawing.Size(108, 68);
             this.groupBoxTracking.TabIndex = 0;
@@ -1426,7 +1435,7 @@
             this.panelShowHideButtons.Controls.Add(this.buttonDome);
             this.panelShowHideButtons.Controls.Add(this.buttonFocuser);
             this.panelShowHideButtons.Controls.Add(this.buttonHardware);
-            this.panelShowHideButtons.Location = new System.Drawing.Point(232, 384);
+            this.panelShowHideButtons.Location = new System.Drawing.Point(232, 445);
             this.panelShowHideButtons.Name = "panelShowHideButtons";
             this.panelShowHideButtons.Size = new System.Drawing.Size(100, 168);
             this.panelShowHideButtons.TabIndex = 15;
@@ -1602,9 +1611,22 @@
             this.groupBoxDomeGroup.TabStop = false;
             this.groupBoxDomeGroup.Text = " Dome ";
             // 
+            // checkBoxVent
+            // 
+            this.checkBoxVent.AutoSize = true;
+            this.checkBoxVent.CheckAlign = System.Drawing.ContentAlignment.BottomCenter;
+            this.checkBoxVent.Location = new System.Drawing.Point(232, 152);
+            this.checkBoxVent.Name = "checkBoxVent";
+            this.checkBoxVent.Size = new System.Drawing.Size(33, 31);
+            this.checkBoxVent.TabIndex = 26;
+            this.checkBoxVent.Text = "Vent";
+            this.checkBoxVent.UseVisualStyleBackColor = true;
+            this.checkBoxVent.Click += new System.EventHandler(this.checkBoxVent_Click);
+            // 
             // textBoxDomeAzGo
             // 
-            this.textBoxDomeAzGo.Location = new System.Drawing.Point(184, 23);
+            this.textBoxDomeAzGo.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.textBoxDomeAzGo.Location = new System.Drawing.Point(164, 23);
             this.textBoxDomeAzGo.Name = "textBoxDomeAzGo";
             this.textBoxDomeAzGo.Size = new System.Drawing.Size(36, 20);
             this.textBoxDomeAzGo.TabIndex = 25;
@@ -1615,7 +1637,7 @@
             // 
             this.buttonDomeAzGo.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.buttonDomeAzGo.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonDomeAzGo.Location = new System.Drawing.Point(224, 22);
+            this.buttonDomeAzGo.Location = new System.Drawing.Point(204, 22);
             this.buttonDomeAzGo.Name = "buttonDomeAzGo";
             this.buttonDomeAzGo.Size = new System.Drawing.Size(34, 23);
             this.buttonDomeAzGo.TabIndex = 24;
@@ -1678,9 +1700,9 @@
             this.labelDomeAzimuthValue.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.labelDomeAzimuthValue.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelDomeAzimuthValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelDomeAzimuthValue.Location = new System.Drawing.Point(62, 24);
+            this.labelDomeAzimuthValue.Location = new System.Drawing.Point(53, 24);
             this.labelDomeAzimuthValue.Name = "labelDomeAzimuthValue";
-            this.labelDomeAzimuthValue.Size = new System.Drawing.Size(114, 20);
+            this.labelDomeAzimuthValue.Size = new System.Drawing.Size(105, 20);
             this.labelDomeAzimuthValue.TabIndex = 17;
             this.labelDomeAzimuthValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -1700,7 +1722,7 @@
             this.label17.AutoSize = true;
             this.label17.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label17.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label17.Location = new System.Drawing.Point(24, 20);
+            this.label17.Location = new System.Drawing.Point(15, 20);
             this.label17.Name = "label17";
             this.label17.Size = new System.Drawing.Size(35, 18);
             this.label17.TabIndex = 16;
@@ -1809,6 +1831,7 @@
             // textBox2
             // 
             this.textBox2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBox2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.textBox2.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.textBox2.Location = new System.Drawing.Point(79, 55);
             this.textBox2.Name = "textBox2";
@@ -2273,18 +2296,6 @@
             // timerStatus
             // 
             this.timerStatus.Tick += new System.EventHandler(this.timerStatus_Tick);
-            // 
-            // checkBoxVent
-            // 
-            this.checkBoxVent.AutoSize = true;
-            this.checkBoxVent.CheckAlign = System.Drawing.ContentAlignment.BottomCenter;
-            this.checkBoxVent.Location = new System.Drawing.Point(232, 152);
-            this.checkBoxVent.Name = "checkBoxVent";
-            this.checkBoxVent.Size = new System.Drawing.Size(33, 31);
-            this.checkBoxVent.TabIndex = 26;
-            this.checkBoxVent.Text = "Vent";
-            this.checkBoxVent.UseVisualStyleBackColor = true;
-            this.checkBoxVent.Click += new System.EventHandler(this.checkBoxVent_Click);
             // 
             // HandpadForm
             // 

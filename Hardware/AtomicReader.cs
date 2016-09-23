@@ -21,7 +21,7 @@ namespace ASCOM.Wise40.Hardware
 
         DateTime lastRead;
         List<uint> lastResults;
-        public readonly int persistanceMillis = 50;
+        //public readonly int persistanceMillis = 200;
 
         Common.Debugger debugger = Common.Debugger.Instance;
 
@@ -46,8 +46,8 @@ namespace ASCOM.Wise40.Hardware
         {
             get
             {
-                if (DateTime.Now.Subtract(lastRead).TotalMilliseconds < persistanceMillis && lastResults != null)
-                    return lastResults;
+                //if (DateTime.Now.Subtract(lastRead).TotalMilliseconds < persistanceMillis && lastResults != null)
+                //    return lastResults;
 
                 List<uint> results;
                 List<double> elapsedMillis = new List<double>();
@@ -85,7 +85,10 @@ namespace ASCOM.Wise40.Hardware
                     if (results.Count() == daqs.Count())
                     {
                         #region debug
-                        string s = "AtomicReader " + Name + " :Values: inter daqs (";
+                        string s = "[" + this.GetHashCode().ToString() + "] AtomicReader " + Name + " :Values: ";
+                        foreach (var res in results)
+                            s += res.ToString() + " ";
+                        s += "inter daqs (";
                         foreach (WiseDaq daq in daqs)
                             s += daq.Name + " ";
                         s += ") " + elapsedMillis.Count + " read times: ";

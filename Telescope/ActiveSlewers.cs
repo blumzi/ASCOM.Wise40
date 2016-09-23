@@ -15,12 +15,8 @@ namespace ASCOM.Wise40
 
         public ActiveSlewers()
         {
-            _active = new List<SlewerType>();
-        }
-
-        public void init()
-        {
             wisetele = WiseTele.Instance;
+            _active = new List<SlewerType>();
         }
 
         public void Add(SlewerType slewer)
@@ -79,6 +75,12 @@ namespace ASCOM.Wise40
             lock (_lock)
                 ret = _active.Contains(slewer);
             return ret;
+        }
+
+        public void Clear()
+        {
+            lock(_lock)
+                _active.Clear();
         }
     }
 }

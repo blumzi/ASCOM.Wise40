@@ -115,7 +115,7 @@ namespace ASCOM.Wise40
         private List<Task> slewerTasks = new List<Task>();
         private static CancellationTokenSource slewingCancellationTokenSource;
         private static CancellationToken slewingCancellationToken;
-        public static ActiveSlewers activeSlewers = new Wise40.ActiveSlewers();
+        public static ActiveSlewers activeSlewers = new ActiveSlewers();
 
         private AxisMonitor primaryStatusMonitor, secondaryStatusMonitor;
         Dictionary<TelescopeAxes, AxisMonitor> axisStatusMonitors;
@@ -410,7 +410,6 @@ namespace ASCOM.Wise40
             astroutils = new Astrometry.AstroUtils.AstroUtils();
             hardware.init();
             wisesite.init();
-            activeSlewers.init();
             wiseComputerControl.init();
 
             #region MotorDefinitions
@@ -533,8 +532,8 @@ namespace ASCOM.Wise40
 
             instance.realMovementParameters[TelescopeAxes.axisSecondary][Const.rateSet] = new MovementParameters()
             {
-                minimalMovement = new Angle("00:00:05.0"),
-                stopMovement    = new Angle("00:00:30.0"),
+                minimalMovement = new Angle("00:01:00.0"),
+                stopMovement    = new Angle("00:00:15.0"),
                 millisecondsPerDegree = 60000.0,    // 1 min/sec
             };
 
@@ -1516,12 +1515,12 @@ namespace ASCOM.Wise40
                             // Not there yet, continue waiting
                             #region debug
                             debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                                    "{0} at {1}: at {2}, moving ==> target: {3}, remaining (Angle: {4}, radians: {5}, direction: {6}), stopMovement: ({7}, {8}), sleeping {9} millis ...",
+                                    "{0} at {1}: at {2} ({10}), moving ==> target: {3}, remaining (Angle: {4}, radians: {5}, direction: {6}), stopMovement: ({7}, {8}), sleeping {9} millis ...",
                                     cm.taskName, RateName(cm.rate), currPosition,
                                     cm.target,
                                     remainingDistance.angle, remainingDistance.angle.Radians, remainingDistance.direction,
                                     mp.stopMovement, mp.stopMovement.Radians,
-                                    waitMillis);
+                                    waitMillis, currPosition.Radians);
                             #endregion debug
                             slewingCancellationToken.ThrowIfCancellationRequested();
                             Thread.Sleep(waitMillis);
@@ -1590,24 +1589,11 @@ namespace ASCOM.Wise40
             slewingCancellationTokenSource = new CancellationTokenSource();
             slewingCancellationToken = slewingCancellationTokenSource.Token;
 
+            activeSlewers = new ActiveSlewers();
             try
             {
                 if (instance._enslaveDome)
                 {
-                    //SlewerTask domeSlewer = new SlewerTask() { name = "Dome" };
-                    //domeSlewer.task = Task.Run(() =>
-                    //    {
-                    //        try
-                    //        {
-                    //            domeSlaveDriver.SlewToCoords(RightAscension, Declination);
-                    //        }
-                    //        catch (OperationCanceledException)
-                    //        {
-                    //            domeSlaveDriver.AbortSlew();
-                    //        }
-                    //    }, slewingCancellationToken);
-                    //slewers.Add(domeSlewer);
-                    //slewerTasks.Add(domeSlewer.task);
                     DomeSlewer(RightAscension, Declination);
                 }
 
