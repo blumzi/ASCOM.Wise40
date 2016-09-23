@@ -116,7 +116,7 @@ namespace ASCOM.Wise40
                         worm = (wormValues[0] << 8) | wormValues[1];                        
                         axis = (axisValues[1] >> 4) | (axisValues[0] << 4);
 
-                        _daqsValue = ((axis * 600 + worm) & 0xfff000) + worm;
+                        _daqsValue = ((axis * 600 + worm) & 0xfff000) - worm;
                     }
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, 
