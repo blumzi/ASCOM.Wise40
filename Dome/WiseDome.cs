@@ -327,12 +327,12 @@ namespace ASCOM.Wise40
                 }
             }
 
-            if (_isStuck) {
-                _stuckPhase    = StuckPhase.NotStuck;
-                nextStuckEvent = DateTime.Now;
-                onStuckTimer(null, null);           // call first phase immediately
-                _stuckTimer.Enabled = true;
-            }
+            //if (_isStuck) {
+            //    _stuckPhase    = StuckPhase.NotStuck;
+            //    nextStuckEvent = DateTime.Now;
+            //    onStuckTimer(null, null);           // call first phase immediately
+            //    _stuckTimer.Enabled = true;
+            //}
 
             _prevTicks = currTicks;
         }
@@ -665,9 +665,9 @@ namespace ASCOM.Wise40
                     case DomeState.Idle:
                         return "Idle";
                     case DomeState.MovingCCW:
-                        return Calibrated ? "Moving CCW" : "Calibrating CCW";
+                        return _calibrating ? "Calibrating CCW" :"Moving CCW";
                     case DomeState.MovingCW:
-                        return Calibrated ? "Moving CW" : "Calibrating CW";
+                        return _calibrating ? "Calibrating CW" :"Moving CW";
                     default:
                         return "Unknown";
                 }
