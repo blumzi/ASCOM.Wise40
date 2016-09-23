@@ -222,12 +222,12 @@ namespace ASCOM.Wise40.Common
 
         public static double Rad2Hours(double rad)
         {
-            return rad * 24 / (2 * pi);
+            return rad * 24.0 / (2.0 * pi);
         }
 
         public static double Hours2Rad(double hours)
         {
-            return hours * 2 * pi / 24;
+            return hours * 2.0 * pi / 24.0;
         }
 
         public static Angle FromRadians(double rad, Type type = Type.Deg)
