@@ -12,7 +12,7 @@ using ASCOM.Wise40.SafeToOpen;
 
 namespace ASCOM.Wise40
 {
-    public class WiseDome : IConnectable, IDisposable {
+    public class WiseDome : WiseObject, IConnectable, IDisposable {
 
         private static readonly WiseDome instance = new WiseDome(); // Singleton
         private static WiseSite wisesite = WiseSite.Instance;
@@ -58,8 +58,7 @@ namespace ASCOM.Wise40
         private System.Timers.Timer _shutterTimer;
         private System.Timers.Timer _movementTimer;
         private System.Timers.Timer _stuckTimer;
-
-        private bool _simulated = Environment.MachineName.ToLower() != "dome-ctlr";
+        
         private bool _slaved = false;
         private bool _atPark = false;
 
@@ -99,6 +98,7 @@ namespace ASCOM.Wise40
             if (_initialized)
                 return;
 
+            Name = "Wise40 Dome";
             tl = new TraceLogger();
 
             using (Profile profile = new Profile())
@@ -161,7 +161,7 @@ namespace ASCOM.Wise40
             _domeTimer.Elapsed += onDomeTimer;
             _domeTimer.Enabled = true;
 
-            if (_simulated)
+            if (Simulated)
                 _shutterTimer = new System.Timers.Timer(2 * 1000);
             else
                 _shutterTimer = new System.Timers.Timer(25 * 1000);
@@ -177,6 +177,8 @@ namespace ASCOM.Wise40
             _stuckTimer.Enabled = false;
 
             wisesite.init();
+
+            RestoreCalibrationData();
 
             _initialized = true;
 
@@ -270,6 +272,7 @@ namespace ASCOM.Wise40
                 if (_calibrating)
                 {
                     Stop();
+                    Thread.Sleep(2000);     // settle down
                     _calibrating = false;
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: Setting _foundCalibration ...");
@@ -335,6 +338,8 @@ namespace ASCOM.Wise40
             //}
 
             _prevTicks = currTicks;
+
+            SaveCalibrationData();
         }
 
 
@@ -479,7 +484,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return (_simulated) ? domeEncoder.Value == 10 : homePin.isOff;
+                return (Simulated) ? domeEncoder.Value == 10 : homePin.isOff;
             }
         }
 
@@ -629,7 +634,7 @@ namespace ASCOM.Wise40
                 instance.Azimuth, toAng, shortest.angle, shortest.direction);
             #endregion
 
-            if (_simulated && _targetAz == _simulatedStuckAz)
+            if (Simulated && _targetAz == _simulatedStuckAz)
             {
                 Angle epsilon = new Angle(5.0);
                 Angle stuckAtAz = (shortest.direction == Const.AxisDirection.Increasing) ? _targetAz - epsilon : _targetAz + epsilon;
@@ -756,7 +761,13 @@ namespace ASCOM.Wise40
                 throw new ASCOM.InvalidOperationException("Cannot OpenShutter, dome is slewing!");
 
             if (wisesite.safeToOpen != null && !wisesite.safeToOpen.IsSafe)
+            {
+                #region trace
+                tl.LogMessage("Dome", string.Format("Unsafe to open shutter ({0})",
+                    wisesite.safeToOpen.CommandString("unsafeReasons", false)));
+                #endregion
                 throw new ASCOM.InvalidOperationException("Not safe to open shutter!");
+            }
 
             tl.LogMessage("Dome: OpenShutter", "");
 
@@ -1015,14 +1026,59 @@ namespace ASCOM.Wise40
             }
         }
 
-        public string Name
+        #region SaveRestoreCalibrationData
+
+        private readonly string calibrationDataFilePath = "c:/temp/DomeCalibrationData.txt";
+
+        private void SaveCalibrationData()
         {
-            get
+            List<string> lines = new List<string>();
+
+            lines.Add("#");
+            lines.Add(string.Format("# WiseDome calibration data, saved: {0}", DateTime.Now.ToLongDateString()));
+            lines.Add("#  This file is generated automatically, please don't change it!");
+            lines.Add("#");
+            lines.Add(string.Format("Encoder: {0}", domeEncoder.Value));
+            lines.Add(string.Format("Azimuth: {0}", Azimuth.Degrees.ToString()));
+
+            System.IO.File.WriteAllLines(calibrationDataFilePath, lines);
+        }
+
+        private void RestoreCalibrationData()
+        {
+            uint savedEncoderValue = uint.MaxValue;
+            double savedAzimuth = double.NaN;
+            
+            if (!System.IO.File.Exists(calibrationDataFilePath))
+                return;
+
+            foreach (string line in System.IO.File.ReadLines(calibrationDataFilePath))
             {
-                string name = "Wise40 Dome";
-                //tl.LogMessage("Name Get", name);
-                return name;
+                if (line.StartsWith("Encoder: "))
+                    savedEncoderValue = Convert.ToUInt32(line.Substring("Encoder: ".Length));
+                else if (line.StartsWith("Azimuth: "))
+                    savedAzimuth = Convert.ToDouble(line.Substring("Azimuth: ".Length));
+            }
+
+            if (savedAzimuth != double.NaN && savedEncoderValue != uint.MinValue) {
+                if (Simulated)
+                {
+                    domeEncoder.Value = savedEncoderValue;
+                    domeEncoder.Calibrate(Angle.FromDegrees(savedAzimuth));
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Restored calibration data from \"{0}\", Azimuth: {1}",
+                        calibrationDataFilePath, savedAzimuth);
+                    #endregion
+                }
+                else if (savedEncoderValue == domeEncoder.Value)
+                {
+                    domeEncoder.Calibrate(Angle.FromDegrees(savedAzimuth));
+                    #region trace
+                    tl.LogMessage("Dome", string.Format("Restored calibration data from \"{0}\", Azimuth: {1}", calibrationDataFilePath, savedAzimuth));
+                    #endregion
+                }
             }
         }
+        #endregion
     }
 }

@@ -7,11 +7,11 @@ using ASCOM.Wise40.Hardware;
 
 namespace ASCOM.Wise40
 {
-    public class WiseHAEncoder : IEncoder
+    public class WiseHAEncoder : WiseObject, IConnectable, IDisposable, IEncoder
     {
-        private readonly bool _simulated = Environment.MachineName.ToLower() != "dome-ctlr";
+        //private readonly bool _simulated = Environment.MachineName.ToLower() != "dome-ctlr";
         private bool _connected = false;
-        private string _name;
+        //private string _name;
         private uint _daqsValue;
         private const uint _realValueAtFiducialMark = 1432779; // Arie - 02 July 2016
         
@@ -35,6 +35,7 @@ namespace ASCOM.Wise40
 
         public WiseHAEncoder(string name)
         {
+            Name = "HAEncoder";
             Novas31 = new Astrometry.NOVAS.NOVAS31();
             astroutils = new Astrometry.AstroUtils.AstroUtils();
             wisesite.init();
@@ -224,30 +225,6 @@ namespace ASCOM.Wise40
         {
             axisEncoder.Dispose();
             wormEncoder.Dispose();
-        }
-
-        public bool Simulated
-        {
-            get
-            {
-                return _simulated;
-            }
-
-            set
-            { }
-        }
-
-        public string Name
-        {
-            get
-            {
-                return _name;
-            }
-
-            set
-            {
-                _name = value;
-            }
-        }
+        }        
     }
 }

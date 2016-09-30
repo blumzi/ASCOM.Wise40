@@ -5,11 +5,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{E27802FC-EFB5-4DEB-BD4D-013F44A0813C}</ProjectGuid>
+    <ProjectGuid>{D49AE541-3D66-4EF4-8A07-69357070718B}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ASCOM.Wise40</RootNamespace>
-    <AssemblyName>ASCOM.Wise40.Telescope</AssemblyName>
+    <AssemblyName>ASCOM.Wise40.Focuser</AssemblyName>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <UpgradeBackupLocation>
@@ -48,7 +48,6 @@
     <RegisterForComInterop>true</RegisterForComInterop>
     <PlatformTarget>x86</PlatformTarget>
     <Prefer32Bit>false</Prefer32Bit>
-    <UseVSHostingProcess>true</UseVSHostingProcess>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -61,26 +60,16 @@
     <RegisterForComInterop>false</RegisterForComInterop>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
-  <PropertyGroup>
-    <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
-  </PropertyGroup>
   <ItemGroup>
     <Reference Include="ASCOM.Astrometry, Version=6.0.0.0, Culture=neutral, PublicKeyToken=565de7938946fba7, processorArchitecture=MSIL" />
     <Reference Include="ASCOM.Attributes, Version=6.0.0.0, Culture=neutral, PublicKeyToken=565de7938946fba7, processorArchitecture=MSIL" />
     <Reference Include="ASCOM.Controls, Version=6.0.0.0, Culture=neutral, PublicKeyToken=565de7938946fba7, processorArchitecture=MSIL" />
     <Reference Include="ASCOM.DeviceInterfaces, Version=6.0.0.0, Culture=neutral, PublicKeyToken=565de7938946fba7, processorArchitecture=MSIL" />
-    <Reference Include="ASCOM.DriverAccess, Version=6.0.0.0, Culture=neutral, PublicKeyToken=565de7938946fba7, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\ASCOM\Platform 6 Developer Components\Components\Platform6\ASCOM.DriverAccess.dll</HintPath>
-    </Reference>
     <Reference Include="ASCOM.Exceptions, Version=6.0.0.0, Culture=neutral, PublicKeyToken=565de7938946fba7, processorArchitecture=MSIL" />
     <Reference Include="ASCOM.SettingsProvider, Version=6.0.0.0, Culture=neutral, PublicKeyToken=565de7938946fba7, processorArchitecture=MSIL" />
     <Reference Include="ASCOM.Utilities, Version=6.0.0.0, Culture=neutral, PublicKeyToken=565de7938946fba7, processorArchitecture=MSIL" />
     <Reference Include="ASCOM.Utilities.Video, Version=6.1.0.0, Culture=neutral, PublicKeyToken=565de7938946fba7, processorArchitecture=MSIL" />
-    <Reference Include="Common">
-      <HintPath>..\Common\bin\Debug\Common.dll</HintPath>
-    </Reference>
-    <Reference Include="MccDaq, Version=2.1.0.0, Culture=neutral, PublicKeyToken=a37eefcf5c6ca10a, processorArchitecture=MSIL">
+    <Reference Include="MccDaq, Version=2.5.0.0, Culture=neutral, PublicKeyToken=a37eefcf5c6ca10a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Hardware\Measurement Computing\DAQ\MccDaq.dll</HintPath>
     </Reference>
@@ -96,23 +85,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ActiveSlewers.cs" />
-    <Compile Include="AxisMonitor.cs" />
-    <Compile Include="DaqsForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="DaqsForm.Designer.cs">
-      <DependentUpon>DaqsForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="DomeSlaveDriver.cs" />
     <Compile Include="Driver.cs" />
-    <Compile Include="Handpad.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Handpad.Designer.cs">
-      <DependentUpon>Handpad.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Movement.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -124,29 +97,16 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
-    <Compile Include="Rates.cs" />
-    <Compile Include="ReadyToSlewFlags.cs" />
-    <Compile Include="SafetyMonitorTimer.cs" />
-    <Compile Include="Settings.cs" />
     <Compile Include="SetupDialogForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="SetupDialogForm.designer.cs">
       <DependentUpon>SetupDialogForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Target.cs" />
-    <Compile Include="WiseDecEncoder.cs" />
-    <Compile Include="WiseHAEncoder.cs" />
-    <Compile Include="WiseMotor.cs" />
-    <Compile Include="WiseTele.cs" />
+    <Compile Include="WiseFocuser.cs" />
+    <Compile Include="WiseFocuserEnc.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="DaqsForm.resx">
-      <DependentUpon>DaqsForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Handpad.resx">
-      <DependentUpon>Handpad.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <SubType>Designer</SubType>
       <Generator>ResXFileCodeGenerator</Generator>
@@ -158,19 +118,14 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config">
-      <SubType>Designer</SubType>
-    </None>
+    <None Include="app.config" />
     <None Include="ASCOM.png" />
     <None Include="ASCOMDriverTemplate.snk" />
-    <None Include="Properties\DataSources\ASCOM.Wise40.Hardware.WiseDaq.datasource" />
     <None Include="Properties\Settings.settings">
-      <Generator>PublicSettingsSingleFileGenerator</Generator>
+      <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <Content Include="ASCOM.ico" />
-    <Content Include="Installer\ReadMe.html" />
-    <Content Include="Installer\Wise40Telescope Setup.iss" />
     <Content Include="ReadMe.htm" />
     <None Include="Resources\ASCOM.bmp" />
   </ItemGroup>
@@ -192,17 +147,9 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ComputerControl\ComputerControl.csproj">
-      <Project>{eef50bc4-becc-430b-9a05-769c80d8d25c}</Project>
-      <Name>ComputerControl</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Dome\Dome.csproj">
-      <Project>{64308775-bd4a-469c-bcab-3ed830b811af}</Project>
-      <Name>Dome</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Focus\Focuser.csproj">
-      <Project>{d49ae541-3d66-4ef4-8a07-69357070718b}</Project>
-      <Name>Focuser</Name>
+    <ProjectReference Include="..\Common\Common.csproj">
+      <Project>{b76546e7-9832-4d28-b412-b34ca1c6177c}</Project>
+      <Name>Common</Name>
     </ProjectReference>
     <ProjectReference Include="..\Hardware\Hardware.csproj">
       <Project>{b3400ce2-9b66-4f0c-97fe-26343382ba7b}</Project>
@@ -213,9 +160,6 @@
   <PropertyGroup>
     <PreBuildEvent>
     </PreBuildEvent>
-  </PropertyGroup>
-  <PropertyGroup>
-    <PostBuildEvent>rem "C:\Program Files (x86)\Inno Setup 5\ISCC.exe" /Q /O"$(SolutionDir)\Deliveries" "$(ProjectDir)\Installer\Wise40Telescope Setup.iss"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -1,8 +1,11 @@
-﻿namespace ASCOM.Wise40.Common
+﻿using System;
+
+namespace ASCOM.Wise40.Common
 {
     public class WiseObject
     {
-        protected string _name;
+        private string _name;
+        private static bool _simulated = Environment.MachineName.ToLower() != "dome-ctlr";
 
         public string Name
         {
@@ -14,6 +17,14 @@
             set
             {
                 _name = value;
+            }
+        }
+
+        public bool Simulated
+        {
+            get
+            {
+                return _simulated;
             }
         }
     }

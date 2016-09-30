@@ -201,7 +201,10 @@ namespace ASCOM.Wise40.SafeToOpen
             // then all communication calls this function
             // you need something to ensure that only one command is in progress at a time
 
-            throw new ASCOM.MethodNotImplementedException("CommandString");
+            if (command == "unsafeReasons")
+                return string.Join(", ", UnsafeReasons);
+
+            return string.Empty;
         }
 
         public void Dispose()
@@ -287,6 +290,41 @@ namespace ASCOM.Wise40.SafeToOpen
         }
 
         #endregion
+
+        /// <summary>
+        /// Ouch, this is IsSafe all over again!
+        /// </summary>
+        public List<string> UnsafeReasons
+        {
+            get
+            {
+                List<string> reasons = new List<string>();
+
+                if (boltwood == null)
+                    reasons.Add("No connection to boltwood station");
+
+                int light = Convert.ToInt32(boltwood.CommandString("daylight", true));
+                if (ageMaxSeconds > 0 && boltwood.TimeSinceLastUpdate("") > ageMaxSeconds)
+                    reasons.Add(string.Format("boltwood data is older than {0} seconds", ageMaxSeconds));
+                else if ((int)boltwood.CloudCover > (int)cloudsMax)
+                    reasons.Add(string.Format("boltwood CloudCover {0} is greater than {1}", (int)boltwood.CloudCover > (int)cloudsMax));
+                else if (light > (int)lightMax)
+                    reasons.Add(string.Format("boltwood DayLight {0} is greater than {1}", light, lightMax));
+
+                if (vantagePro == null)
+                    reasons.Add("No connection to vantagePro station");
+
+                if (ageMaxSeconds > 0 && vantagePro.TimeSinceLastUpdate("") > ageMaxSeconds)
+                    reasons.Add(string.Format("vantagePro data is older than {0} seconds", ageMaxSeconds));
+                else if (vantagePro.WindSpeed > windMax)
+                    reasons.Add(string.Format("vantagePro WindSpeed {0} is greater than {1}", vantagePro.WindSpeed, windMax));
+                else if (vantagePro.Humidity > humidityMax)
+                    reasons.Add(string.Format("vantagePro Humidity {0} is greater than {1}", vantagePro.Humidity, humidityMax));
+                else if (vantagePro.RainRate > rainMax)
+                    reasons.Add(string.Format("vantagePro RainRate {0} is greater than {1}", vantagePro.RainRate, rainMax));
+                return reasons;
+            }
+        }
 
         #region ISafetyMonitor Implementation
         public bool IsSafe
@@ -498,8 +536,6 @@ namespace ASCOM.Wise40.SafeToOpen
                 driverProfile.WriteValue(driverID, ageMaxSecondsProfileName, ageMaxSeconds.ToString());
             }
         }
-
         #endregion
-
     }
 }

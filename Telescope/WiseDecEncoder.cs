@@ -8,10 +8,8 @@ using ASCOM.Wise40.Hardware;
 
 namespace ASCOM.Wise40
 {
-    public class WiseDecEncoder : IEncoder
+    public class WiseDecEncoder : WiseObject, IConnectable, IDisposable, IEncoder
     {
-        private readonly bool _simulated = Environment.MachineName.ToLower() != "dome-ctlr";
-        private string _name;
         private uint _daqsValue;
 
         private WiseEncoder axisEncoder, wormEncoder;
@@ -34,6 +32,7 @@ namespace ASCOM.Wise40
 
         public WiseDecEncoder(string name)
         {
+            Name = "DecEncoder";
             Novas31 = new Astrometry.NOVAS.NOVAS31();
             astroutils = new Astrometry.AstroUtils.AstroUtils();
             wisesite.init();
@@ -188,26 +187,26 @@ namespace ASCOM.Wise40
             }
         }
 
-        public bool Simulated
-        {
-            get
-            {
-                return _simulated;
-            }
-            set { }
-        }
+        //public bool Simulated
+        //{
+        //    get
+        //    {
+        //        return _simulated;
+        //    }
+        //    set { }
+        //}
 
-        public string Name
-        {
-            get
-            {
-                return _name;
-            }
+        //public string Name
+        //{
+        //    get
+        //    {
+        //        return _name;
+        //    }
 
-            set
-            {
-                _name = value;
-            }
-        }
+        //    set
+        //    {
+        //        _name = value;
+        //    }
+        //}
     }
 }

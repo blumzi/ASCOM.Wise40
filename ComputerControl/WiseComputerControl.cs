@@ -3,18 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using ASCOM.Wise40.Common;
 using ASCOM.Wise40.Hardware;
 using MccDaq;
 
 namespace ASCOM.Wise40
 {
-    public class WiseComputerControl
+    public class WiseComputerControl : WiseObject
     {
         private static readonly WiseComputerControl instance = new WiseComputerControl(); // Singleton
         private static bool _initialized = false;
         private WisePin computerControlPin;
         private Hardware.Hardware hardware = Hardware.Hardware.Instance;
-        private static bool _simulated;
+        //private static bool _simulated;
 
         // Explicit static constructor to tell C# compiler
         // not to mark type as beforefieldinit
@@ -40,7 +41,7 @@ namespace ASCOM.Wise40
                 return;
             
             computerControlPin = new WisePin("CompControl", hardware.teleboard, DigitalPortType.SecondPortCH, 0, DigitalPortDirection.DigitalIn);
-            _simulated = computerControlPin.Simulated;
+            //_simulated = computerControlPin.Simulated;
             _initialized = true;
         }
 
@@ -48,7 +49,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return _simulated ? true : computerControlPin.isOn;
+                return Simulated ? true : computerControlPin.isOn;
             }
         }
     }

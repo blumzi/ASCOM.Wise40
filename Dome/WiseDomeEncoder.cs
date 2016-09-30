@@ -53,7 +53,8 @@ namespace ASCOM.Wise40
         {
             if (_initialized)
                 return;
-            
+
+            Name = "DomeEnc";
             base.init("DomeEnc",
                 _hwTicks,
                 new List<WiseEncSpec>() {
@@ -62,7 +63,7 @@ namespace ASCOM.Wise40
                 },
                 true);
 
-            if (_simulated)
+            if (Simulated)
             {
                 simulatedValue = 0;
                 simulatedStuckAzimuth = Angle.invalid;
@@ -190,11 +191,18 @@ namespace ASCOM.Wise40
         {
             get
             {
-                uint ret = _simulated ? (uint)simulatedValue : base.Value;
+                uint ret = Simulated ? (uint)simulatedValue : base.Value;
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "WiseDome: encoder: ret {0}", ret);
                 #endregion
                 return ret;
+            }
+
+            set
+            {
+                if (!Simulated)
+                    return;
+                simulatedValue = (int) value;
             }
         }
 

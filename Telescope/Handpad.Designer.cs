@@ -40,11 +40,6 @@
             this.labelNewDec = new System.Windows.Forms.Label();
             this.label24 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
-            this.buttonGoCoord = new System.Windows.Forms.Button();
-            this.textBoxDec = new System.Windows.Forms.TextBox();
-            this.textBoxRA = new System.Windows.Forms.TextBox();
-            this.labelDec = new System.Windows.Forms.Label();
-            this.labelRA = new System.Windows.Forms.Label();
             this.groupBoxEncoders = new System.Windows.Forms.GroupBox();
             this.wormValue = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
@@ -73,8 +68,14 @@
             this.radioButtonSpeedGuide = new System.Windows.Forms.RadioButton();
             this.radioButtonSpeedSet = new System.Windows.Forms.RadioButton();
             this.radioButtonSpeedSlew = new System.Windows.Forms.RadioButton();
+            this.buttonGoCoord = new System.Windows.Forms.Button();
+            this.textBoxDec = new System.Windows.Forms.TextBox();
+            this.textBoxRA = new System.Windows.Forms.TextBox();
+            this.labelDec = new System.Windows.Forms.Label();
+            this.labelRA = new System.Windows.Forms.Label();
             this.panelControls = new System.Windows.Forms.Panel();
             this.groupBoxTelescope = new System.Windows.Forms.GroupBox();
+            this.buttonMainStop = new System.Windows.Forms.Button();
             this.panelDirectionButtons = new System.Windows.Forms.Panel();
             this.buttonNW = new System.Windows.Forms.Button();
             this.buttonSW = new System.Windows.Forms.Button();
@@ -143,14 +144,14 @@
             this.panelFocuser = new System.Windows.Forms.Panel();
             this.groupBoxFocuser = new System.Windows.Forms.GroupBox();
             this.tableLayoutPanelFocuser = new System.Windows.Forms.TableLayoutPanel();
-            this.button3 = new System.Windows.Forms.Button();
-            this.button4 = new System.Windows.Forms.Button();
-            this.button2 = new System.Windows.Forms.Button();
-            this.button1 = new System.Windows.Forms.Button();
-            this.textBox2 = new System.Windows.Forms.TextBox();
-            this.label1FocusCurrentValue = new System.Windows.Forms.Label();
+            this.buttonFocusAllDown = new System.Windows.Forms.Button();
+            this.buttonFocusDown = new System.Windows.Forms.Button();
+            this.buttonFocusAllUp = new System.Windows.Forms.Button();
+            this.buttonFocusGoto = new System.Windows.Forms.Button();
+            this.textBoxFocusGotoPosition = new System.Windows.Forms.TextBox();
+            this.labelFocusCurrentValue = new System.Windows.Forms.Label();
             this.label11 = new System.Windows.Forms.Label();
-            this.button5 = new System.Windows.Forms.Button();
+            this.buttonFocusUp = new System.Windows.Forms.Button();
             this.tableLayoutPanelMain = new System.Windows.Forms.TableLayoutPanel();
             this.groupBoxWeather = new System.Windows.Forms.GroupBox();
             this.tableLayoutPanelWeather = new System.Windows.Forms.TableLayoutPanel();
@@ -179,6 +180,8 @@
             this.labelSafeToOpen = new System.Windows.Forms.Label();
             this.labelComputerControl = new System.Windows.Forms.Label();
             this.timerStatus = new System.Windows.Forms.Timer(this.components);
+            this.toolTip = new System.Windows.Forms.ToolTip(this.components);
+            this.buttonFocuserStop = new System.Windows.Forms.Button();
             this.panelDebug.SuspendLayout();
             this.groupBoxMovementStudy.SuspendLayout();
             this.groupBoxEncoders.SuspendLayout();
@@ -381,63 +384,6 @@
             this.label1.Text = "RA:";
             this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
-            // buttonGoCoord
-            // 
-            this.buttonGoCoord.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.buttonGoCoord.FlatAppearance.BorderSize = 0;
-            this.buttonGoCoord.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.buttonGoCoord.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.buttonGoCoord.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonGoCoord.Location = new System.Drawing.Point(267, 196);
-            this.buttonGoCoord.Name = "buttonGoCoord";
-            this.buttonGoCoord.Size = new System.Drawing.Size(48, 32);
-            this.buttonGoCoord.TabIndex = 25;
-            this.buttonGoCoord.Text = "Go";
-            this.buttonGoCoord.UseVisualStyleBackColor = false;
-            this.buttonGoCoord.Click += new System.EventHandler(this.buttonGoCoord_Click);
-            // 
-            // textBoxDec
-            // 
-            this.textBoxDec.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.textBoxDec.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxDec.Location = new System.Drawing.Point(183, 201);
-            this.textBoxDec.Margin = new System.Windows.Forms.Padding(7, 3, 3, 3);
-            this.textBoxDec.Name = "textBoxDec";
-            this.textBoxDec.Size = new System.Drawing.Size(71, 23);
-            this.textBoxDec.TabIndex = 24;
-            this.textBoxDec.Text = "00:00:00.0";
-            this.textBoxDec.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.textBoxDec_MouseDoubleClick);
-            // 
-            // textBoxRA
-            // 
-            this.textBoxRA.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.textBoxRA.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxRA.Location = new System.Drawing.Point(62, 201);
-            this.textBoxRA.Margin = new System.Windows.Forms.Padding(7, 3, 3, 3);
-            this.textBoxRA.Name = "textBoxRA";
-            this.textBoxRA.Size = new System.Drawing.Size(84, 23);
-            this.textBoxRA.TabIndex = 23;
-            this.textBoxRA.Text = "00h00m00.0s";
-            this.textBoxRA.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.textBoxRA_MouseDoubleClick);
-            // 
-            // labelDec
-            // 
-            this.labelDec.AutoSize = true;
-            this.labelDec.Location = new System.Drawing.Point(152, 205);
-            this.labelDec.Name = "labelDec";
-            this.labelDec.Size = new System.Drawing.Size(30, 13);
-            this.labelDec.TabIndex = 22;
-            this.labelDec.Text = "Dec:";
-            // 
-            // labelRA
-            // 
-            this.labelRA.AutoSize = true;
-            this.labelRA.Location = new System.Drawing.Point(36, 205);
-            this.labelRA.Name = "labelRA";
-            this.labelRA.Size = new System.Drawing.Size(25, 13);
-            this.labelRA.TabIndex = 21;
-            this.labelRA.Text = "RA:";
-            // 
             // groupBoxEncoders
             // 
             this.groupBoxEncoders.Controls.Add(this.wormValue);
@@ -559,7 +505,7 @@
             this.buttonSaveResults.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.buttonSaveResults.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonSaveResults.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonSaveResults.Location = new System.Drawing.Point(144, 288);
+            this.buttonSaveResults.Location = new System.Drawing.Point(144, 256);
             this.buttonSaveResults.Name = "buttonSaveResults";
             this.buttonSaveResults.Size = new System.Drawing.Size(200, 32);
             this.buttonSaveResults.TabIndex = 15;
@@ -574,7 +520,7 @@
             this.buttonStopStudy.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.buttonStopStudy.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonStopStudy.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonStopStudy.Location = new System.Drawing.Point(356, 228);
+            this.buttonStopStudy.Location = new System.Drawing.Point(352, 210);
             this.buttonStopStudy.Name = "buttonStopStudy";
             this.buttonStopStudy.Size = new System.Drawing.Size(106, 32);
             this.buttonStopStudy.TabIndex = 14;
@@ -638,12 +584,12 @@
             this.TextBoxLog.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.TextBoxLog.Font = new System.Drawing.Font("Lucida Console", 7.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.TextBoxLog.ForeColor = System.Drawing.Color.DarkOrange;
-            this.TextBoxLog.Location = new System.Drawing.Point(8, 328);
+            this.TextBoxLog.Location = new System.Drawing.Point(8, 304);
             this.TextBoxLog.Multiline = true;
             this.TextBoxLog.Name = "TextBoxLog";
             this.TextBoxLog.ReadOnly = true;
             this.TextBoxLog.ShortcutsEnabled = false;
-            this.TextBoxLog.Size = new System.Drawing.Size(472, 280);
+            this.TextBoxLog.Size = new System.Drawing.Size(472, 304);
             this.TextBoxLog.TabIndex = 8;
             this.TextBoxLog.Text = "hiho";
             // 
@@ -783,6 +729,61 @@
             this.radioButtonSpeedSlew.Text = "Slew";
             this.radioButtonSpeedSlew.UseVisualStyleBackColor = true;
             // 
+            // buttonGoCoord
+            // 
+            this.buttonGoCoord.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonGoCoord.FlatAppearance.BorderSize = 0;
+            this.buttonGoCoord.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonGoCoord.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.buttonGoCoord.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.buttonGoCoord.Location = new System.Drawing.Point(235, 196);
+            this.buttonGoCoord.Name = "buttonGoCoord";
+            this.buttonGoCoord.Size = new System.Drawing.Size(58, 32);
+            this.buttonGoCoord.TabIndex = 25;
+            this.buttonGoCoord.Text = "Go";
+            this.buttonGoCoord.UseVisualStyleBackColor = false;
+            this.buttonGoCoord.Click += new System.EventHandler(this.buttonGoCoord_Click);
+            // 
+            // textBoxDec
+            // 
+            this.textBoxDec.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.textBoxDec.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.textBoxDec.Location = new System.Drawing.Point(155, 201);
+            this.textBoxDec.Margin = new System.Windows.Forms.Padding(7, 3, 3, 3);
+            this.textBoxDec.Name = "textBoxDec";
+            this.textBoxDec.Size = new System.Drawing.Size(75, 23);
+            this.textBoxDec.TabIndex = 24;
+            this.textBoxDec.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.textBoxDec_MouseDoubleClick);
+            // 
+            // textBoxRA
+            // 
+            this.textBoxRA.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.textBoxRA.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.textBoxRA.Location = new System.Drawing.Point(37, 201);
+            this.textBoxRA.Margin = new System.Windows.Forms.Padding(7, 3, 3, 3);
+            this.textBoxRA.Name = "textBoxRA";
+            this.textBoxRA.Size = new System.Drawing.Size(84, 23);
+            this.textBoxRA.TabIndex = 23;
+            this.textBoxRA.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.textBoxRA_MouseDoubleClick);
+            // 
+            // labelDec
+            // 
+            this.labelDec.AutoSize = true;
+            this.labelDec.Location = new System.Drawing.Point(124, 205);
+            this.labelDec.Name = "labelDec";
+            this.labelDec.Size = new System.Drawing.Size(30, 13);
+            this.labelDec.TabIndex = 22;
+            this.labelDec.Text = "Dec:";
+            // 
+            // labelRA
+            // 
+            this.labelRA.AutoSize = true;
+            this.labelRA.Location = new System.Drawing.Point(11, 205);
+            this.labelRA.Name = "labelRA";
+            this.labelRA.Size = new System.Drawing.Size(25, 13);
+            this.labelRA.TabIndex = 21;
+            this.labelRA.Text = "RA:";
+            // 
             // panelControls
             // 
             this.panelControls.AutoSize = true;
@@ -798,6 +799,7 @@
             // 
             // groupBoxTelescope
             // 
+            this.groupBoxTelescope.Controls.Add(this.buttonMainStop);
             this.groupBoxTelescope.Controls.Add(this.panelDirectionButtons);
             this.groupBoxTelescope.Controls.Add(this.groupBox36);
             this.groupBoxTelescope.Controls.Add(this.labelStatus);
@@ -818,6 +820,21 @@
             this.groupBoxTelescope.TabIndex = 18;
             this.groupBoxTelescope.TabStop = false;
             this.groupBoxTelescope.Text = " Telescope ";
+            // 
+            // buttonMainStop
+            // 
+            this.buttonMainStop.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonMainStop.FlatAppearance.BorderSize = 0;
+            this.buttonMainStop.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonMainStop.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.buttonMainStop.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.buttonMainStop.Location = new System.Drawing.Point(296, 196);
+            this.buttonMainStop.Name = "buttonMainStop";
+            this.buttonMainStop.Size = new System.Drawing.Size(56, 32);
+            this.buttonMainStop.TabIndex = 26;
+            this.buttonMainStop.Text = "Stop";
+            this.buttonMainStop.UseVisualStyleBackColor = false;
+            this.buttonMainStop.Click += new System.EventHandler(this.buttonMainStop_Click);
             // 
             // panelDirectionButtons
             // 
@@ -1024,10 +1041,10 @@
             // labelStatus
             // 
             this.labelStatus.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.labelStatus.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.labelStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelStatus.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
             this.labelStatus.Location = new System.Drawing.Point(22, 242);
+            this.labelStatus.Margin = new System.Windows.Forms.Padding(3);
             this.labelStatus.Name = "labelStatus";
             this.labelStatus.Size = new System.Drawing.Size(316, 17);
             this.labelStatus.TabIndex = 24;
@@ -1626,7 +1643,7 @@
             // textBoxDomeAzGo
             // 
             this.textBoxDomeAzGo.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.textBoxDomeAzGo.Location = new System.Drawing.Point(164, 23);
+            this.textBoxDomeAzGo.Location = new System.Drawing.Point(184, 23);
             this.textBoxDomeAzGo.Name = "textBoxDomeAzGo";
             this.textBoxDomeAzGo.Size = new System.Drawing.Size(36, 20);
             this.textBoxDomeAzGo.TabIndex = 25;
@@ -1637,7 +1654,7 @@
             // 
             this.buttonDomeAzGo.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.buttonDomeAzGo.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonDomeAzGo.Location = new System.Drawing.Point(204, 22);
+            this.buttonDomeAzGo.Location = new System.Drawing.Point(224, 22);
             this.buttonDomeAzGo.Name = "buttonDomeAzGo";
             this.buttonDomeAzGo.Size = new System.Drawing.Size(34, 23);
             this.buttonDomeAzGo.TabIndex = 24;
@@ -1700,9 +1717,9 @@
             this.labelDomeAzimuthValue.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.labelDomeAzimuthValue.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelDomeAzimuthValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelDomeAzimuthValue.Location = new System.Drawing.Point(53, 24);
+            this.labelDomeAzimuthValue.Location = new System.Drawing.Point(49, 24);
             this.labelDomeAzimuthValue.Name = "labelDomeAzimuthValue";
-            this.labelDomeAzimuthValue.Size = new System.Drawing.Size(105, 20);
+            this.labelDomeAzimuthValue.Size = new System.Drawing.Size(119, 20);
             this.labelDomeAzimuthValue.TabIndex = 17;
             this.labelDomeAzimuthValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -1722,7 +1739,7 @@
             this.label17.AutoSize = true;
             this.label17.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label17.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label17.Location = new System.Drawing.Point(15, 20);
+            this.label17.Location = new System.Drawing.Point(11, 20);
             this.label17.Name = "label17";
             this.label17.Size = new System.Drawing.Size(35, 18);
             this.label17.TabIndex = 16;
@@ -1756,99 +1773,106 @@
             // 
             // tableLayoutPanelFocuser
             // 
-            this.tableLayoutPanelFocuser.ColumnCount = 4;
-            this.tableLayoutPanelFocuser.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 30F));
-            this.tableLayoutPanelFocuser.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 30F));
-            this.tableLayoutPanelFocuser.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 20F));
-            this.tableLayoutPanelFocuser.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 20F));
-            this.tableLayoutPanelFocuser.Controls.Add(this.button3, 3, 1);
-            this.tableLayoutPanelFocuser.Controls.Add(this.button4, 2, 1);
-            this.tableLayoutPanelFocuser.Controls.Add(this.button2, 3, 0);
-            this.tableLayoutPanelFocuser.Controls.Add(this.button1, 0, 1);
-            this.tableLayoutPanelFocuser.Controls.Add(this.textBox2, 1, 1);
-            this.tableLayoutPanelFocuser.Controls.Add(this.label1FocusCurrentValue, 1, 0);
+            this.tableLayoutPanelFocuser.ColumnCount = 5;
+            this.tableLayoutPanelFocuser.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 26.76056F));
+            this.tableLayoutPanelFocuser.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 28.16902F));
+            this.tableLayoutPanelFocuser.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 22.53521F));
+            this.tableLayoutPanelFocuser.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 22.53521F));
+            this.tableLayoutPanelFocuser.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.tableLayoutPanelFocuser.Controls.Add(this.buttonFocuserStop, 4, 0);
+            this.tableLayoutPanelFocuser.Controls.Add(this.buttonFocusAllDown, 3, 1);
+            this.tableLayoutPanelFocuser.Controls.Add(this.buttonFocusDown, 2, 1);
+            this.tableLayoutPanelFocuser.Controls.Add(this.buttonFocusAllUp, 3, 0);
+            this.tableLayoutPanelFocuser.Controls.Add(this.buttonFocusGoto, 0, 1);
+            this.tableLayoutPanelFocuser.Controls.Add(this.textBoxFocusGotoPosition, 1, 1);
+            this.tableLayoutPanelFocuser.Controls.Add(this.labelFocusCurrentValue, 1, 0);
             this.tableLayoutPanelFocuser.Controls.Add(this.label11, 0, 0);
-            this.tableLayoutPanelFocuser.Controls.Add(this.button5, 2, 0);
+            this.tableLayoutPanelFocuser.Controls.Add(this.buttonFocusUp, 2, 0);
             this.tableLayoutPanelFocuser.Location = new System.Drawing.Point(8, 32);
             this.tableLayoutPanelFocuser.Name = "tableLayoutPanelFocuser";
             this.tableLayoutPanelFocuser.RowCount = 2;
             this.tableLayoutPanelFocuser.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.tableLayoutPanelFocuser.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tableLayoutPanelFocuser.Size = new System.Drawing.Size(256, 88);
+            this.tableLayoutPanelFocuser.Size = new System.Drawing.Size(264, 88);
             this.tableLayoutPanelFocuser.TabIndex = 27;
             // 
-            // button3
+            // buttonFocusAllDown
             // 
-            this.button3.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.button3.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.button3.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.button3.Location = new System.Drawing.Point(206, 47);
-            this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(47, 38);
-            this.button3.TabIndex = 24;
-            this.button3.Text = "All Out";
-            this.button3.UseVisualStyleBackColor = false;
-            this.button3.Click += new System.EventHandler(this.button3_Click);
+            this.buttonFocusAllDown.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonFocusAllDown.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.buttonFocusAllDown.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.buttonFocusAllDown.Location = new System.Drawing.Point(174, 47);
+            this.buttonFocusAllDown.Name = "buttonFocusAllDown";
+            this.buttonFocusAllDown.Size = new System.Drawing.Size(44, 38);
+            this.buttonFocusAllDown.TabIndex = 24;
+            this.buttonFocusAllDown.Text = "All Down";
+            this.buttonFocusAllDown.UseVisualStyleBackColor = false;
+            this.buttonFocusAllDown.Click += new System.EventHandler(this.focuserAllDown);
             // 
-            // button4
+            // buttonFocusDown
             // 
-            this.button4.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.buttonFocusDown.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.button4.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.button4.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.button4.Location = new System.Drawing.Point(155, 47);
-            this.button4.Name = "button4";
-            this.button4.Size = new System.Drawing.Size(45, 38);
-            this.button4.TabIndex = 25;
-            this.button4.Text = "Out";
-            this.button4.UseVisualStyleBackColor = false;
+            this.buttonFocusDown.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonFocusDown.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.buttonFocusDown.Location = new System.Drawing.Point(124, 47);
+            this.buttonFocusDown.Name = "buttonFocusDown";
+            this.buttonFocusDown.Size = new System.Drawing.Size(44, 38);
+            this.buttonFocusDown.TabIndex = 25;
+            this.buttonFocusDown.Text = "Down";
+            this.buttonFocusDown.UseVisualStyleBackColor = false;
+            this.buttonFocusDown.MouseDown += new System.Windows.Forms.MouseEventHandler(this.buttonFocusDown_MouseDown);
+            this.buttonFocusDown.MouseUp += new System.Windows.Forms.MouseEventHandler(this.focuserHalt);
             // 
-            // button2
+            // buttonFocusAllUp
             // 
-            this.button2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.button2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.button2.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.button2.Location = new System.Drawing.Point(206, 3);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(47, 38);
-            this.button2.TabIndex = 23;
-            this.button2.Text = "All In";
-            this.button2.UseVisualStyleBackColor = false;
+            this.buttonFocusAllUp.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonFocusAllUp.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.buttonFocusAllUp.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.buttonFocusAllUp.Location = new System.Drawing.Point(174, 3);
+            this.buttonFocusAllUp.Name = "buttonFocusAllUp";
+            this.buttonFocusAllUp.Size = new System.Drawing.Size(44, 38);
+            this.buttonFocusAllUp.TabIndex = 23;
+            this.buttonFocusAllUp.Text = "All Up";
+            this.buttonFocusAllUp.UseVisualStyleBackColor = false;
+            this.buttonFocusAllUp.Click += new System.EventHandler(this.buttonFocusAllUp_Click);
             // 
-            // button1
+            // buttonFocusGoto
             // 
-            this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.button1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.button1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.button1.Location = new System.Drawing.Point(3, 54);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(70, 23);
-            this.button1.TabIndex = 21;
-            this.button1.Text = "Goto";
-            this.button1.UseVisualStyleBackColor = false;
+            this.buttonFocusGoto.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonFocusGoto.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonFocusGoto.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.buttonFocusGoto.Location = new System.Drawing.Point(3, 54);
+            this.buttonFocusGoto.Name = "buttonFocusGoto";
+            this.buttonFocusGoto.Size = new System.Drawing.Size(53, 23);
+            this.buttonFocusGoto.TabIndex = 21;
+            this.buttonFocusGoto.Text = "Goto";
+            this.buttonFocusGoto.UseVisualStyleBackColor = false;
+            this.buttonFocusGoto.Click += new System.EventHandler(this.buttonFocusGoto_Click);
             // 
-            // textBox2
+            // textBoxFocusGotoPosition
             // 
-            this.textBox2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBox2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.textBox2.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBox2.Location = new System.Drawing.Point(79, 55);
-            this.textBox2.Name = "textBox2";
-            this.textBox2.Size = new System.Drawing.Size(70, 21);
-            this.textBox2.TabIndex = 22;
+            this.textBoxFocusGotoPosition.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBoxFocusGotoPosition.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.textBoxFocusGotoPosition.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.textBoxFocusGotoPosition.Location = new System.Drawing.Point(62, 55);
+            this.textBoxFocusGotoPosition.Name = "textBoxFocusGotoPosition";
+            this.textBoxFocusGotoPosition.Size = new System.Drawing.Size(56, 21);
+            this.textBoxFocusGotoPosition.TabIndex = 22;
+            this.textBoxFocusGotoPosition.Validated += new System.EventHandler(this.textBoxFocusGotoPosition_Validated);
             // 
-            // label1FocusCurrentValue
+            // labelFocusCurrentValue
             // 
-            this.label1FocusCurrentValue.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.label1FocusCurrentValue.AutoSize = true;
-            this.label1FocusCurrentValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1FocusCurrentValue.Location = new System.Drawing.Point(79, 13);
-            this.label1FocusCurrentValue.Name = "label1FocusCurrentValue";
-            this.label1FocusCurrentValue.Size = new System.Drawing.Size(70, 18);
-            this.label1FocusCurrentValue.TabIndex = 20;
-            this.label1FocusCurrentValue.Text = "960";
-            this.label1FocusCurrentValue.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.labelFocusCurrentValue.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.labelFocusCurrentValue.AutoSize = true;
+            this.labelFocusCurrentValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelFocusCurrentValue.Location = new System.Drawing.Point(62, 13);
+            this.labelFocusCurrentValue.Name = "labelFocusCurrentValue";
+            this.labelFocusCurrentValue.Size = new System.Drawing.Size(56, 18);
+            this.labelFocusCurrentValue.TabIndex = 20;
+            this.labelFocusCurrentValue.Text = "960";
+            this.labelFocusCurrentValue.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // label11
             // 
@@ -1858,24 +1882,26 @@
             this.label11.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
             this.label11.Location = new System.Drawing.Point(3, 15);
             this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(70, 13);
+            this.label11.Size = new System.Drawing.Size(53, 13);
             this.label11.TabIndex = 19;
-            this.label11.Text = "Current:";
+            this.label11.Text = "Pos:";
             this.label11.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // button5
+            // buttonFocusUp
             // 
-            this.button5.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.buttonFocusUp.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.button5.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.button5.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.button5.Location = new System.Drawing.Point(155, 3);
-            this.button5.Name = "button5";
-            this.button5.Size = new System.Drawing.Size(45, 38);
-            this.button5.TabIndex = 26;
-            this.button5.Text = "In";
-            this.button5.UseVisualStyleBackColor = false;
+            this.buttonFocusUp.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonFocusUp.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.buttonFocusUp.Location = new System.Drawing.Point(124, 3);
+            this.buttonFocusUp.Name = "buttonFocusUp";
+            this.buttonFocusUp.Size = new System.Drawing.Size(44, 38);
+            this.buttonFocusUp.TabIndex = 26;
+            this.buttonFocusUp.Text = "Up";
+            this.buttonFocusUp.UseVisualStyleBackColor = false;
+            this.buttonFocusUp.MouseDown += new System.Windows.Forms.MouseEventHandler(this.buttonFocusUp_MouseDown);
+            this.buttonFocusUp.MouseUp += new System.Windows.Forms.MouseEventHandler(this.focuserHalt);
             // 
             // tableLayoutPanelMain
             // 
@@ -2297,6 +2323,22 @@
             // 
             this.timerStatus.Tick += new System.EventHandler(this.timerStatus_Tick);
             // 
+            // buttonFocuserStop
+            // 
+            this.buttonFocuserStop.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonFocuserStop.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonFocuserStop.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.buttonFocuserStop.Location = new System.Drawing.Point(224, 3);
+            this.buttonFocuserStop.Name = "buttonFocuserStop";
+            this.tableLayoutPanelFocuser.SetRowSpan(this.buttonFocuserStop, 2);
+            this.buttonFocuserStop.Size = new System.Drawing.Size(37, 82);
+            this.buttonFocuserStop.TabIndex = 28;
+            this.buttonFocuserStop.Text = "Stop";
+            this.buttonFocuserStop.UseVisualStyleBackColor = false;
+            this.buttonFocuserStop.Click += new System.EventHandler(this.buttonFocuserStop_Click);
+            // 
             // HandpadForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -2434,13 +2476,13 @@
         private System.Windows.Forms.Button buttonCloseShutter;
         private System.Windows.Forms.Button buttonOpenShutter;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanelFocuser;
-        private System.Windows.Forms.Button button3;
-        private System.Windows.Forms.Button button4;
-        private System.Windows.Forms.Button button2;
-        private System.Windows.Forms.Button button5;
-        private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.TextBox textBox2;
-        private System.Windows.Forms.Label label1FocusCurrentValue;
+        private System.Windows.Forms.Button buttonFocusAllDown;
+        private System.Windows.Forms.Button buttonFocusDown;
+        private System.Windows.Forms.Button buttonFocusAllUp;
+        private System.Windows.Forms.Button buttonFocusUp;
+        private System.Windows.Forms.Button buttonFocusGoto;
+        private System.Windows.Forms.TextBox textBoxFocusGotoPosition;
+        private System.Windows.Forms.Label labelFocusCurrentValue;
         private System.Windows.Forms.Label label11;
         private System.Windows.Forms.GroupBox groupBoxTracking;
         private System.Windows.Forms.CheckBox checkBoxEnslaveDome;
@@ -2505,5 +2547,8 @@
         private System.Windows.Forms.Button buttonDomeStop;
         private System.Windows.Forms.Button buttonDomeLeft;
         private System.Windows.Forms.CheckBox checkBoxVent;
+        private System.Windows.Forms.Button buttonMainStop;
+        private System.Windows.Forms.ToolTip toolTip;
+        private System.Windows.Forms.Button buttonFocuserStop;
     }
 }

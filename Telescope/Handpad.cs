@@ -25,6 +25,7 @@ namespace ASCOM.Wise40
         private static WiseSite wisesite = WiseSite.Instance;
         private static Debugger debugger = Debugger.Instance;
         private static DomeSlaveDriver domeSlaveDriver = DomeSlaveDriver.Instance;
+        private static WiseFocuser wisefocuser = WiseFocuser.Instance;
         private DateTime statusDisplayExpiration = new DateTime();
         public enum Severity { None, Good, Warning, Error };
 
@@ -91,12 +92,15 @@ namespace ASCOM.Wise40
             results = new List<TimedMovementResult>();
             wisesite.init();
             WiseDome.Instance.init();
+            wisefocuser.init();
+            wisefocuser.Connected = true;
 
             groupBoxTelescope.Text = string.Format(" {0} - v{1} ", wisetele.Name, wisetele.DriverVersion);
             groupBoxWeather.Text = wisesite.observingConditions.Connected ?
                 string.Format(" {0} - v{1} ", wisesite.observingConditions.Name, wisesite.observingConditions.DriverVersion) :
                 " Weather - Not connected ";
             groupBoxDomeGroup.Text = string.Format(" {0} - v{1} ", WiseDome.Instance.Name, WiseDome.Instance.DriverVersion);
+            groupBoxFocuser.Text = string.Format(" {0} - v{1} ", wisefocuser.Name, wisefocuser.DriverVersion);
         }
 
         private void radioButtonSlew_Click(object sender, EventArgs e)
@@ -209,9 +213,53 @@ namespace ASCOM.Wise40
             axisValue.Text = wisetele.HAEncoder.AxisValue.ToString();
             wormValue.Text = wisetele.HAEncoder.WormValue.ToString();
 
-            labelComputerControl.ForeColor = wisesite.computerControl == null ? Color.Yellow : (wisesite.computerControl.IsSafe ? Color.Green : Color.Red);
-            labelSafeToOpen.ForeColor = wisesite.safeToOpen == null ? Color.Yellow : (wisesite.safeToOpen.IsSafe ? Color.Green : Color.Red);
-            labelSafeToImage.ForeColor = wisesite.safeToImage == null ? Color.Yellow : (wisesite.safeToImage.IsSafe ? Color.Green : Color.Red);
+            string why;
+            if (wisesite.computerControl == null)
+            {
+                labelComputerControl.ForeColor = Color.Yellow;
+                why = "Cannot read the computer control switch!";
+            } else if (wisesite.computerControl.IsSafe)
+            {
+                labelComputerControl.ForeColor = Color.Green;
+                why = "Computer control is enabled.";
+            } else
+            {
+                labelComputerControl.ForeColor = Color.Red;
+                why = why = "Computer control switch is OFF!";
+            }
+            toolTip.SetToolTip(labelComputerControl, why);
+
+            if (wisesite.safeToOpen == null)
+            {
+                labelSafeToOpen.ForeColor = Color.Yellow;
+                why = "Cannot connect to the safeToOpen driver!";
+            }
+            else if (wisesite.safeToOpen.IsSafe)
+            {
+                labelSafeToOpen.ForeColor = Color.Green;
+                why = "Conditions are safe to open the dome.";
+            }
+            else
+            {
+                labelSafeToOpen.ForeColor = Color.Red;
+                why = wisesite.safeToOpen.CommandString("unsafeReasons", false);
+            }
+            toolTip.SetToolTip(labelSafeToOpen, why);
+
+            if (wisesite.safeToImage == null)
+            {
+                labelSafeToImage.ForeColor = Color.Yellow;
+                why = "Cannot connect to the safeToImage driver!";
+            } else if (wisesite.safeToImage.IsSafe)
+            {
+                labelSafeToImage.ForeColor = Color.Green;
+                why = "Conditions are safe to image.";
+            } else
+            {
+                labelSafeToImage.ForeColor = Color.Red;
+                why = wisesite.safeToImage.CommandString("unsafeReasons", false);
+            }
+            toolTip.SetToolTip(labelSafeToImage, why);
 
             checkBoxPrimaryIsActive.Checked = wisetele.AxisIsMoving(TelescopeAxes.axisPrimary);
             checkBoxSecondaryIsActive.Checked = wisetele.AxisIsMoving(TelescopeAxes.axisSecondary);
@@ -326,6 +374,11 @@ namespace ASCOM.Wise40
                         debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "OC: exception: {0}", e.Message);
                     }
                 }
+            }
+
+            if (panelFocuser.Visible)
+            {
+                labelFocusCurrentValue.Text = wisefocuser.position.ToString(); ;
             }
         }
 
@@ -679,11 +732,6 @@ namespace ASCOM.Wise40
             }
         }
 
-        private void button3_Click(object sender, EventArgs e)
-        {
-
-        }
-
         private void buttonWeather_Click(object sender, EventArgs e)
         {
             if (groupBoxWeather.Visible)
@@ -828,6 +876,65 @@ namespace ASCOM.Wise40
         private void checkBoxVent_Click(object sender, EventArgs e)
         {
             WiseDome.Instance.Vent = (sender as CheckBox).Checked;
+        }
+
+        private void buttonMainStop_Click(object sender, EventArgs e)
+        {
+            wisetele.Stop();
+        }
+
+        private void focuserHalt(object sender, MouseEventArgs e)
+        {
+            wisefocuser.Stop();
+        }
+
+        private void buttonFocuserStop_Click(object sender, EventArgs e)
+        {
+            wisefocuser.Stop();
+        }
+
+        private void buttonFocusUp_MouseDown(object sender, MouseEventArgs e)
+        {
+            wisefocuser.Move(WiseFocuser.Direction.Up);
+        }
+
+        private void buttonFocusDown_MouseDown(object sender, MouseEventArgs e)
+        {
+            wisefocuser.Move(WiseFocuser.Direction.Down);
+        }
+
+        private void buttonFocusGoto_Click(object sender, EventArgs e)
+        {
+            if (textBoxFocusGotoPosition.Text == string.Empty)
+                return;
+
+            wisefocuser.Move(Convert.ToInt32(textBoxFocusGotoPosition.Text));
+        }
+
+        private void textBoxFocusGotoPosition_Validated(object sender, EventArgs e)
+        {
+            TextBox box = (sender as TextBox);
+
+            if (box.Text == string.Empty)
+                return;
+
+            int pos = Convert.ToInt32(box.Text);
+
+            if (pos < 0 || pos >= wisefocuser.MaxStep)
+            {
+                Status("Bad focuser target position", 1000, Severity.Error);
+                box.Text = string.Empty;
+            }
+        }
+
+        private void buttonFocusAllUp_Click(object sender, EventArgs e)
+        {
+            wisefocuser.Move(WiseFocuser.Direction.AllUp);
+        }
+
+        private void focuserAllDown(object sender, EventArgs e)
+        {
+            wisefocuser.Move(WiseFocuser.Direction.AllDown);
         }
     }
 }

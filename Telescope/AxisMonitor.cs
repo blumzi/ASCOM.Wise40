@@ -113,7 +113,6 @@ namespace ASCOM.Wise40
             {
                 movementCheckerTask = Task.Run(() =>
                 {
-                    //Thread.CurrentThread.Name = _axis.ToString() + "MovementChecker";
                     AxisMovementChecker();
                 }, movementCheckerCancellationToken);
             }

@@ -35,13 +35,13 @@ namespace ASCOM.Wise40.Hardware
                 daq.setOwner(name, bit);
         }
 
-        public bool Simulated
-        {
-            get
-            {
-                return daq.wiseBoard.type == WiseBoard.BoardType.Soft;
-            }
-        }
+        //public bool Simulated
+        //{
+        //    get
+        //    {
+        //        return daq.wiseBoard.type == WiseBoard.BoardType.Soft;
+        //    }
+        //}
 
         public void SetOn()
         {

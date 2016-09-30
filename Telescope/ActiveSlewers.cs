@@ -9,7 +9,7 @@ namespace ASCOM.Wise40
     public class ActiveSlewers
     {
         private WiseTele wisetele;
-        public enum SlewerType { SlewerNone, SlewerDome, SlewerRa, SlewerDec };
+        public enum SlewerType { SlewerNone, SlewerDome, SlewerRa, SlewerDec, SlewerFocus };
         private Object _lock = new object();
         private List<SlewerType> _active;
 

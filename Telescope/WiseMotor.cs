@@ -19,7 +19,7 @@ namespace ASCOM.Wise40.Hardware
     ///   
     /// When simulated the WiseVirtualMotor will also increase/decrease the value of the relevant (simulated) encoder.
     /// </summary>
-    public class WiseVirtualMotor : WiseObject, IConnectable, IDisposable, ISimulated
+    public class WiseVirtualMotor : WiseObject, IConnectable, IDisposable //, ISimulated
     {
         private WisePin motorPin, guideMotorPin, slewPin;
         private List<WisePin> activePins = new List<WisePin>();
@@ -31,7 +31,7 @@ namespace ASCOM.Wise40.Hardware
         private DateTime prevTick;
         private TelescopeAxes _axis, _otherAxis;
         private Const.AxisDirection _direction;   // There are separate WiseMotor instances for North, South, East, West
-        private bool _simulated = false;
+        //private bool _simulated = false;
         private bool _connected = false;
         private Debugger debugger = Debugger.Instance;
         private WiseTele wisetele = WiseTele.Instance;
@@ -57,10 +57,10 @@ namespace ASCOM.Wise40.Hardware
             this._otherAxis = (_axis == TelescopeAxes.axisPrimary) ?
                 TelescopeAxes.axisSecondary : TelescopeAxes.axisPrimary;
             this._direction = direction;
-            Simulated = motorPin.Simulated || (guideMotorPin != null && guideMotorPin.Simulated);
+            //Simulated = motorPin.Simulated || (guideMotorPin != null && guideMotorPin.Simulated);
 
             if (Simulated && (encoders == null || encoders.Count() == 0))
-                throw new WiseException(name + ": A simulated WiseVirtualMotor must have at least one encoder reference");
+                throw new WiseException(Name + ": A simulated WiseVirtualMotor must have at least one encoder reference");
 
             if (Simulated)
             {
@@ -277,16 +277,16 @@ namespace ASCOM.Wise40.Hardware
             return Name;
         }
 
-        public bool Simulated
-        {
-            get
-            {
-                return _simulated;
-            }
-            set
-            {
-                _simulated = value;
-            }
-        }
+        //public bool Simulated
+        //{
+        //    get
+        //    {
+        //        return _simulated;
+        //    }
+        //    set
+        //    {
+        //        _simulated = value;
+        //    }
+        //}
     }
 }

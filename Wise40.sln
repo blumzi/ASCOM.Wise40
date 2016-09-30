@@ -17,6 +17,7 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Telescope", "Telescope\Telescope.csproj", "{E27802FC-EFB5-4DEB-BD4D-013F44A0813C}"
 	ProjectSection(ProjectDependencies) = postProject
 		{C819D411-A817-4CEE-B597-A57F2CA5B5B0} = {C819D411-A817-4CEE-B597-A57F2CA5B5B0}
+		{D49AE541-3D66-4EF4-8A07-69357070718B} = {D49AE541-3D66-4EF4-8A07-69357070718B}
 		{918D2F5B-9337-4378-8106-9F8468B34F54} = {918D2F5B-9337-4378-8106-9F8468B34F54}
 		{B76546E7-9832-4D28-B412-B34CA1C6177C} = {B76546E7-9832-4D28-B412-B34CA1C6177C}
 	EndProjectSection
@@ -57,6 +58,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Restore-ASCOM-Profiles", "Restore-ASCOM-Profiles\Restore-ASCOM-Profiles.csproj", "{E26E5B94-4AE9-425D-A5C9-797CB33F24F5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ComputerControl", "ComputerControl\ComputerControl.csproj", "{EEF50BC4-BECC-430B-9A05-769C80D8D25C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Focuser", "Focus\Focuser.csproj", "{D49AE541-3D66-4EF4-8A07-69357070718B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -163,6 +166,14 @@ Global
 		{EEF50BC4-BECC-430B-9A05-769C80D8D25C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{EEF50BC4-BECC-430B-9A05-769C80D8D25C}.Release|x86.ActiveCfg = Release|Any CPU
 		{EEF50BC4-BECC-430B-9A05-769C80D8D25C}.Release|x86.Build.0 = Release|Any CPU
+		{D49AE541-3D66-4EF4-8A07-69357070718B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D49AE541-3D66-4EF4-8A07-69357070718B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D49AE541-3D66-4EF4-8A07-69357070718B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D49AE541-3D66-4EF4-8A07-69357070718B}.Debug|x86.Build.0 = Debug|Any CPU
+		{D49AE541-3D66-4EF4-8A07-69357070718B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D49AE541-3D66-4EF4-8A07-69357070718B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D49AE541-3D66-4EF4-8A07-69357070718B}.Release|x86.ActiveCfg = Release|Any CPU
+		{D49AE541-3D66-4EF4-8A07-69357070718B}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

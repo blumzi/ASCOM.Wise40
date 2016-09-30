@@ -26,16 +26,17 @@ namespace ASCOM.Wise40.Hardware
     ///  - simulated values
     ///  - Gray code handling
     /// </summary>
-    public class WiseEncoder : IWiseObject, IConnectable, IDisposable, ISimulated
+    //public class WiseEncoder : IWiseObject, IConnectable, IDisposable, ISimulated
+    public class WiseEncoder : WiseObject, IConnectable, IDisposable
     {
-        private string _name;
+        //private string _name;
         private List<WiseDaq> _daqs;
         private List<byte> _masks;
         private int _nbits;
         private bool _isGray;
         private int _hwTicks;
         private bool _connected = false;
-        protected bool _simulated = Environment.MachineName.ToLower() != "dome-ctlr";
+        //protected bool _simulated = Environment.MachineName.ToLower() != "dome-ctlr";
         private AtomicReader _atomicReader;
         protected Common.Debugger debugger = Common.Debugger.Instance;
 
@@ -261,18 +262,6 @@ namespace ASCOM.Wise40.Hardware
                 for (int bit = 0; bit < _daqs[daqno].nbits; bit++)
                     if ((_masks[daqno] & (1 << bit)) != 0)
                         _daqs[daqno].unsetOwner(bit);
-        }
-
-        public string Name
-        {
-            get { return _name; }
-            set { _name = value; }
-        }
-
-        public bool Simulated
-        {
-            get { return _simulated; }
-            set { }
         }
     }
 }

@@ -49,7 +49,7 @@ using System.Linq;
 /// </summary>
 namespace ASCOM.Wise40
 {
-    public class WiseTele : IDisposable, IConnectable, ISimulated
+    public class WiseTele : WiseObject, IDisposable, IConnectable
     {
         /// <summary>
         /// Driver description that displays in the ASCOM Chooser.
@@ -67,7 +67,6 @@ namespace ASCOM.Wise40
         public Debugger debugger = Debugger.Instance;
 
         private bool _connected = false;
-        private bool _simulated = false;
 
         private List<WiseVirtualMotor> directionMotors, allMotors;
         public Dictionary<TelescopeAxes, List<WiseVirtualMotor>> axisMotors;
@@ -166,7 +165,7 @@ namespace ASCOM.Wise40
         public Dictionary<TelescopeAxes, Movement> prevMovement;         // remembers data about the previous axes movement, specifically the direction
         public Dictionary<TelescopeAxes, Movement> currMovement;         // the current axes movement        
 
-        private static readonly Angle altLimit = new Angle(14.0, Angle.Type.Alt); // telescope must not go below this Altitude (14 min)
+        private static readonly Angle altLimit = new Angle(14.0, Angle.Type.Alt); // telescope must not go below 14deg Altitude
         private static readonly Angle haLimit = Angle.FromHours(7.0);
 
         public MovementDictionary movementDict;
@@ -183,24 +182,6 @@ namespace ASCOM.Wise40
         public static bool _driverInitiatedSlewing = false;
 
         private static WiseComputerControl wiseComputerControl = WiseComputerControl.Instance;
-
-        //ReadyToSlewFlags readyToSlew = new ReadyToSlewFlags();
-
-        /// <summary>
-        /// From real-life measurements on axisPrimary, four samples, spaced at 5deg gave the following HA encoder values:
-        ///     1.  5deg: 1422425
-        ///     2. 10deg: 1412187
-        ///     3. 15deg: 1401946
-        ///     4. 20deg: 1391713
-        ///     
-        /// The respective deltas are:
-        ///     1. d1: 10238
-        ///     2. d2: 10241
-        ///     3. d3: 10233
-        ///     
-        /// This gives approx 2047.46 ticks per 1deg, or 3600/2047.46 arcseconds per encoder tick.
-        /// 
-        /// </summary>
 
         public static string RateName(double rate)
         {
@@ -398,6 +379,8 @@ namespace ASCOM.Wise40
             if (_initialized)
                 return;
 
+            Name = "WiseTele";
+
             WisePin SlewPin = null;
             WisePin NorthGuidePin = null, SouthGuidePin = null, EastGuidePin = null, WestGuidePin = null;   // Guide motor activation pins
             WisePin NorthPin = null, SouthPin = null, EastPin = null, WestPin = null;                       // Set and Slew motors activation pinsisInitialized = true;
@@ -481,18 +464,10 @@ namespace ASCOM.Wise40
             instance.allMotors.AddRange(instance.directionMotors);
             instance.allMotors.Add(TrackingMotor);
 
-            List<ISimulated> hardware_elements = new List<ISimulated>();
+            List<WiseObject> hardware_elements = new List<WiseObject>();
             hardware_elements.AddRange(instance.allMotors);
             hardware_elements.Add(instance.HAEncoder);
             hardware_elements.Add(instance.DecEncoder);
-            foreach (ISimulated s in hardware_elements)
-            {
-                if (s.Simulated)
-                {
-                    Simulated = true;
-                    break;
-                }
-            }
             #endregion
 
             safetyMonitorTimer = new SafetyMonitorTimer();
@@ -1211,17 +1186,17 @@ namespace ASCOM.Wise40
             }
         }
 
-        public bool Simulated
-        {
-            get
-            {
-                return _simulated;
-            }
-            set
-            {
-                _simulated = value;
-            }
-        }
+        //public bool Simulated
+        //{
+        //    get
+        //    {
+        //        return _simulated;
+        //    }
+        //    set
+        //    {
+        //        _simulated = value;
+        //    }
+        //}
 
         public bool AtPark
         {
@@ -1294,7 +1269,7 @@ namespace ASCOM.Wise40
             #endregion debug
         }
 
-        private enum SlewerStatus { Undefined, CloseEnough, ChangedDirection, Canceled, Closer };
+        private enum SlewerStatus { Undefined, CloseEnough, ChangedDirection, Canceled };
 
         private void Slewer(TelescopeAxes axis, Angle targetAngle)
         {
@@ -1328,7 +1303,6 @@ namespace ASCOM.Wise40
                     case SlewerStatus.Canceled:
                         done = true;
                         break;
-                    case SlewerStatus.Closer:
                     case SlewerStatus.ChangedDirection:
                         break;  // NOTE: this breaks the switch, not the loop
                 }
@@ -2412,18 +2386,6 @@ namespace ASCOM.Wise40
                 traceLogger.LogMessage("InterfaceVersion Get", "3");
                 #endregion
                 return Convert.ToInt16("3");
-            }
-        }
-
-        public string Name
-        {
-            get
-            {
-                string name = "Wise40 Telescope";
-                #region trace
-                traceLogger.LogMessage("Name Get", name);
-                #endregion
-                return name;
             }
         }
 
