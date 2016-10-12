@@ -110,15 +110,15 @@ namespace Restore_ASCOM_Profiles
         {
             string driverID = "ASCOM.Wise40.Dome";
             string traceStateProfileName = "Trace Level";
-            string debugLevelProfileName = "Debug Level";
+            //string debugLevelProfileName = "Debug Level";
             string autoCalibrateProfileName = "AutoCalibrate";
-            int debugLevel = (int)Debugger.DebugLevel.DebugAxes;
+            //int debugLevel = (int)Debugger.DebugLevel.DebugAxes;
 
             using (Profile driverProfile = new Profile())
             {
                 driverProfile.DeviceType = "Dome";
                 driverProfile.WriteValue(driverID, traceStateProfileName, false.ToString());
-                driverProfile.WriteValue(driverID, debugLevelProfileName, debugLevel.ToString());
+                //driverProfile.WriteValue(driverID, debugLevelProfileName, debugLevel.ToString());
                 driverProfile.WriteValue(driverID, autoCalibrateProfileName, true.ToString());
             }
         }

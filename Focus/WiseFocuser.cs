@@ -17,6 +17,8 @@ namespace ASCOM.Wise40
         private static readonly WiseFocuser instance = new WiseFocuser();
         private bool _initialized = false;
         private bool _connected = false;
+        private enum FocuserStatus { Idle, MovingUp, MovingAllUp, MovingDown, MovingAllDown };
+        private FocuserStatus _status = FocuserStatus.Idle;
 
         public TraceLogger traceLogger = new TraceLogger();
         public Debugger debugger = Debugger.Instance;
@@ -53,7 +55,6 @@ namespace ASCOM.Wise40
 
         internal static string driverID = "ASCOM.Wise40.Focuser";
         internal static string debugLevelProfileName = "Debug Level";
-        internal static string traceStateProfileName = "Trace";
 
         private static string driverDescription = "ASCOM Wise40 Focuser";
 
@@ -73,10 +74,12 @@ namespace ASCOM.Wise40
                 return;
 
             Name = "WiseFocuser";
+            _status = FocuserStatus.Idle;
 
             ReadProfile();
-            debugger.init((uint)Debugger.DebugLevel.DebugLogic | (uint)Debugger.DebugLevel.DebugEncoders);
+            debugger.init(Debugger.DebugLevel.DebugLogic | Debugger.DebugLevel.DebugEncoders);
             traceLogger = new TraceLogger("", "Focuser");
+            traceLogger.Enabled = debugger.Tracing;
             hardware.init();
             wisesite.init();
 
@@ -144,8 +147,6 @@ namespace ASCOM.Wise40
             using (Profile driverProfile = new Profile())
             {
                 driverProfile.DeviceType = "Focuser";
-                traceLogger.Enabled = Convert.ToBoolean(driverProfile.GetValue(driverID, traceStateProfileName, string.Empty, "false"));
-                debugger.Level = Convert.ToUInt32(driverProfile.GetValue(driverID, debugLevelProfileName, string.Empty, "0"));
             }
         }
 
@@ -154,12 +155,6 @@ namespace ASCOM.Wise40
         /// </summary>
         internal void WriteProfile()
         {
-            using (Profile driverProfile = new Profile())
-            {
-                driverProfile.DeviceType = "Telescope";
-                driverProfile.WriteValue(driverID, traceStateProfileName, traceLogger.Enabled.ToString());
-                driverProfile.WriteValue(driverID, debugLevelProfileName, debugger.Level.ToString());
-            }
         }
 
         public double Temperature
@@ -257,6 +252,7 @@ namespace ASCOM.Wise40
             if (Simulated)
                 simulationTimer.Change(0, 0);
             movementTimer.Change(0, 0);
+            _status = FocuserStatus.Idle;
         }
 
         public void Halt()
@@ -338,18 +334,22 @@ namespace ASCOM.Wise40
                 case Direction.Up:
                     targetPos = -1;
                     pinUp.SetOn();
+                    _status = FocuserStatus.MovingUp;
                     break;
                 case Direction.Down:
                     targetPos = -1;
                     pinDown.SetOn();
+                    _status = FocuserStatus.MovingDown;
                     break;
                 case Direction.AllUp:
                     targetPos = int.MaxValue;
                     pinUp.SetOn();
+                    _status = FocuserStatus.MovingAllUp;
                     break;
                 case Direction.AllDown:
                     targetPos = int.MinValue;
                     pinDown.SetOn();
+                    _status = FocuserStatus.MovingAllDown;
                     break;
             }
 
@@ -376,9 +376,15 @@ namespace ASCOM.Wise40
 
             targetPos = pos;
             if (targetPos > currentPos)
+            {
+                _status = FocuserStatus.MovingUp;
                 pinUp.SetOn();
+            }
             else
+            {
+                _status = FocuserStatus.MovingDown;
                 pinDown.SetOn();
+            }
 
             if (Simulated)
                 simulationTimer.Change(simulatedMotionTimeout, simulatedMotionTimeout);
@@ -513,6 +519,35 @@ namespace ASCOM.Wise40
             {
                 if (Position - targetPos <= (Simulated ? 0 : motionParameters[Direction.Down].stoppingDistance))
                     Stop();
+            }
+        }
+
+        public string Status
+        {
+            get
+            {
+                string ret = "";
+
+                switch (_status)
+                {
+                    case FocuserStatus.MovingUp:
+                        ret = "Moving Up";
+                        if (targetPos != -1)
+                            ret += string.Format(" to {0}", targetPos);
+                        break;
+                    case FocuserStatus.MovingDown:
+                        ret = "Moving Down";
+                        if (targetPos != -1)
+                            ret += string.Format(" to {0}", targetPos);
+                        break;
+                    case FocuserStatus.MovingAllUp:
+                        ret = "Moving All Up";
+                        break;
+                    case FocuserStatus.MovingAllDown:
+                        ret = "Moving All Down";
+                        break;
+                }
+                return ret;
             }
         }
     }

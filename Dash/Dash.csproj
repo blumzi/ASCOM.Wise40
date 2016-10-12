@@ -1,0 +1,173 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{9C7BA1AC-D9A1-4FBD-B29A-6456968B2555}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Dash</RootNamespace>
+    <AssemblyName>Dash</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>x86</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="ASCOM.DeviceInterfaces, Version=6.0.0.0, Culture=neutral, PublicKeyToken=565de7938946fba7, processorArchitecture=MSIL" />
+    <Reference Include="ASCOM.DriverAccess, Version=6.0.0.0, Culture=neutral, PublicKeyToken=565de7938946fba7, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\ASCOM\Platform 6 Developer Components\Components\Platform6\ASCOM.DriverAccess.dll</HintPath>
+    </Reference>
+    <Reference Include="ASCOM.Exceptions, Version=6.0.0.0, Culture=neutral, PublicKeyToken=565de7938946fba7, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\ASCOM\Platform 6 Developer Components\Components\Platform6\ASCOM.Exceptions.dll</HintPath>
+    </Reference>
+    <Reference Include="ASCOM.Utilities, Version=6.0.0.0, Culture=neutral, PublicKeyToken=565de7938946fba7, processorArchitecture=MSIL" />
+    <Reference Include="MccDaq, Version=2.5.0.0, Culture=neutral, PublicKeyToken=a37eefcf5c6ca10a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Hardware\Measurement Computing\DAQ\MccDaq.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\Telescope\DaqsForm.cs">
+      <Link>DaqsForm.cs</Link>
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="About.cs" />
+    <Compile Include="DaqsForm.Designer.cs">
+      <DependentUpon>DaqsForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Dash.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dash.Designer.cs">
+      <DependentUpon>Dash.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AboutForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AboutForm.Designer.cs">
+      <DependentUpon>AboutForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="DebuggingForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DebuggingForm.Designer.cs">
+      <DependentUpon>DebuggingForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Statuser.cs" />
+    <Compile Include="Wise40Renderer.cs" />
+    <EmbeddedResource Include="AboutForm.resx">
+      <DependentUpon>AboutForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Dash.resx">
+      <DependentUpon>Dash.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DebuggingForm.resx">
+      <DependentUpon>DebuggingForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ClarityII\CloudSensor.csproj">
+      <Project>{918d2f5b-9337-4378-8106-9f8468b34f54}</Project>
+      <Name>CloudSensor</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Common\Common.csproj">
+      <Project>{b76546e7-9832-4d28-b412-b34ca1c6177c}</Project>
+      <Name>Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ComputerControl\ComputerControl.csproj">
+      <Project>{eef50bc4-becc-430b-9a05-769c80d8d25c}</Project>
+      <Name>ComputerControl</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DavisVantage\VantagePro.csproj">
+      <Project>{c819d411-a817-4cee-b597-a57f2ca5b5b0}</Project>
+      <Name>VantagePro</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Dome\Dome.csproj">
+      <Project>{64308775-bd4a-469c-bcab-3ed830b811af}</Project>
+      <Name>Dome</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Focus\Focuser.csproj">
+      <Project>{d49ae541-3d66-4ef4-8a07-69357070718b}</Project>
+      <Name>Focuser</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Hardware\Hardware.csproj">
+      <Project>{b3400ce2-9b66-4f0c-97fe-26343382ba7b}</Project>
+      <Name>Hardware</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SafeToImage\SafeToImage.csproj">
+      <Project>{990e4dfa-414e-4c05-89c0-6f18a5c6fa94}</Project>
+      <Name>SafeToImage</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SafeToOpen\SafeToOpen.csproj">
+      <Project>{7fa766d4-8f97-4d9f-8f62-f25c84c01ff2}</Project>
+      <Name>SafeToOpen</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Telescope\Telescope.csproj">
+      <Project>{e27802fc-efb5-4deb-bd4d-013f44a0813c}</Project>
+      <Name>Telescope</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

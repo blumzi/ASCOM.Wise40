@@ -41,6 +41,8 @@ using ASCOM.DeviceInterface;
 using System.Globalization;
 using System.Collections;
 
+using ASCOM.Wise40.Common;
+
 namespace ASCOM.CloudSensor
 {
     //
@@ -91,10 +93,8 @@ namespace ASCOM.CloudSensor
         /// </summary>
         private AstroUtils astroUtilities;
 
-        /// <summary>
-        /// Private variable to hold the trace logger object (creates a diagnostic log file with information that you specify)
-        /// </summary>
         private TraceLogger tl;
+        private Wise40.Common.Debugger debugger = Wise40.Common.Debugger.Instance;
 
         private SensorData sensorData;
 
@@ -107,7 +107,7 @@ namespace ASCOM.CloudSensor
             ReadProfile(); // Read device configuration from the ASCOM Profile store
 
             tl = new TraceLogger("", "CloudSensor");
-            tl.Enabled = _traceState;
+            tl.Enabled = debugger.Tracing;
             tl.LogMessage("ObservingConditions", "Starting initialisation");
 
             _connected = false; // Initialise connected to false

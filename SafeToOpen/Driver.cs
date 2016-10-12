@@ -43,6 +43,8 @@ using System.Collections;
 using ASCOM.DriverAccess;
 using ASCOM.CloudSensor;
 
+using ASCOM.Wise40.Common;
+
 namespace ASCOM.Wise40.SafeToOpen
 {
     //
@@ -97,9 +99,7 @@ namespace ASCOM.Wise40.SafeToOpen
         /// </summary>
         private bool _connected;
 
-        /// <summary>
-        /// Private variable to hold the trace logger object (creates a diagnostic log file with information that you specify)
-        /// </summary>
+        private Wise40.Common.Debugger debugger = Wise40.Common.Debugger.Instance;
         private TraceLogger tl;
 
         private static ASCOM.DriverAccess.ObservingConditions boltwood;
@@ -114,7 +114,7 @@ namespace ASCOM.Wise40.SafeToOpen
             ReadProfile(); // Read device configuration from the ASCOM Profile store
 
             tl = new TraceLogger("", "Wise40.SafeToOpen");
-            tl.Enabled = traceState;
+            tl.Enabled = debugger.Tracing;
             tl.LogMessage("SafetyMonitor", "Starting initialisation");
 
             _connected = false; // Initialise connected to false

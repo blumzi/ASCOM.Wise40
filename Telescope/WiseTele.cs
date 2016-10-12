@@ -107,14 +107,13 @@ namespace ASCOM.Wise40
         /// </summary>
         public struct SlewerTask
         {
-            public string name;
+            public Slewers.Type type;
             public Task task;
         }
-        private List<SlewerTask> slewers = new List<SlewerTask>();
-        private List<Task> slewerTasks = new List<Task>();
+
         private static CancellationTokenSource slewingCancellationTokenSource;
         private static CancellationToken slewingCancellationToken;
-        public static ActiveSlewers activeSlewers = new ActiveSlewers();
+        public Slewers slewers = Slewers.Instance;
 
         private AxisMonitor primaryStatusMonitor, secondaryStatusMonitor;
         Dictionary<TelescopeAxes, AxisMonitor> axisStatusMonitors;
@@ -179,7 +178,7 @@ namespace ASCOM.Wise40
         public bool _calculateRefraction = true;
         private string calculateRefractionProfileName = "Calculate refraction";
 
-        public static bool _driverInitiatedSlewing = false;
+        public bool _driverInitiatedSlewing = false;
 
         private static WiseComputerControl wiseComputerControl = WiseComputerControl.Instance;
 
@@ -825,16 +824,16 @@ namespace ASCOM.Wise40
                 }
                 catch (AggregateException ax)
                 {
-                    ax.Handle((ex) =>
+                    ax.Handle((Func<Exception, bool>)((ex) =>
                     {
                         #region debug
-                        debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                        debugger.WriteLine((Debugger.DebugLevel)Debugger.DebugLevel.DebugLogic,
                             "Stop: got {0}", ex.Message);
                         #endregion debug
                         if (ex is ObjectDisposedException)
                             return true;
                         return false;
-                    });
+                    }));
                 }
             }
 
@@ -1185,19 +1184,7 @@ namespace ASCOM.Wise40
                     Tracking = false;
             }
         }
-
-        //public bool Simulated
-        //{
-        //    get
-        //    {
-        //        return _simulated;
-        //    }
-        //    set
-        //    {
-        //        _simulated = value;
-        //    }
-        //}
-
+        
         public bool AtPark
         {
             get
@@ -1231,11 +1218,13 @@ namespace ASCOM.Wise40
             #region debug
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, "Park");
             #endregion debug
-
             if (AtPark)
                 return;
 
-            _slewToCoordinatesSync(wisesite.LocalSiderealTime, wisesite.Latitude);
+            _driverInitiatedSlewing = true;
+            Angle ra = wisesite.LocalSiderealTime;
+            Angle dec = wisesite.Latitude;
+            _slewToCoordinatesAsync(ra, dec);
             AtPark = true;
         }
 
@@ -1246,22 +1235,28 @@ namespace ASCOM.Wise40
             #endregion debug
             _slewToCoordinatesAsync(RightAscension, Declination);
             Thread.Sleep(20);  // wait for workers to be born
-            #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "_slewToCoordinatesSync: ({0}, {1}), waiting ...", RightAscension, Declination);
-            #endregion debug
             try
             {
-                Task.WaitAll(slewerTasks.ToArray());
+                while (slewers.ToString() != string.Empty)
+                {
+                    int millis = 500;
+
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "_slewToCoordinatesSync: ({0}, {1}), waiting {2} millis for {3} slewers ...",
+                        RightAscension, Declination, millis, slewers.ToString());
+                    #endregion debug
+                    Task.WaitAll(slewers.ToArray(), millis, slewingCancellationToken);
+                }
             } catch (AggregateException ae)
             {
-                ae.Handle((ex) =>
+                ae.Handle((Func<Exception, bool>)((ex) =>
                 {
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                    debugger.WriteLine((Debugger.DebugLevel)Debugger.DebugLevel.DebugLogic,
                         "_slewToCoordinatesSync: Caught \"{0}\"", ex.Message);
                     #endregion
                     return false;
-                });
+                }));
             }
             _driverInitiatedSlewing = false;
             #region debug
@@ -1273,10 +1268,6 @@ namespace ASCOM.Wise40
 
         private void Slewer(TelescopeAxes axis, Angle targetAngle)
         {
-            activeSlewers.Add(axis == TelescopeAxes.axisPrimary ?
-                ActiveSlewers.SlewerType.SlewerRa : 
-                ActiveSlewers.SlewerType.SlewerDec);
-
             instance.currMovement[axis] = new Movement() {
                 rate = Const.rateStopped,
                 direction = Const.AxisDirection.None
@@ -1307,10 +1298,7 @@ namespace ASCOM.Wise40
                         break;  // NOTE: this breaks the switch, not the loop
                 }
             }
-            while (!done);
-
-            activeSlewers.Delete(axis == TelescopeAxes.axisPrimary ? ActiveSlewers.SlewerType.SlewerRa : ActiveSlewers.SlewerType.SlewerDec,
-                            ref _driverInitiatedSlewing);
+            while (!done);            
         }
 
         private void StopAxisAndWaitForHalt(TelescopeAxes axis)
@@ -1520,50 +1508,97 @@ namespace ASCOM.Wise40
             return SlewerStatus.CloseEnough;
         }
 
-        private void DomeSlewer(Angle ra, Angle dec)
+        private void _genericDomeSlewer(Action action)
         {
-            SlewerTask domeSlewer = new SlewerTask() { name = "Dome" };
-            domeSlewer.task = Task.Run(() =>
-            {
-                try
-                {
-                    domeSlaveDriver.SlewToCoords(ra, dec);
-                }
-                catch (OperationCanceledException)
-                {
-                    domeSlaveDriver.AbortSlew();
-                }
-            }, slewingCancellationToken);
+            SlewerTask domeSlewer = new SlewerTask() { type = Slewers.Type.Dome };
+            domeSlewer.task = Task.Run(
+                () => {
+                    try
+                    {
+                        action();
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        domeSlaveDriver.AbortSlew();
+                    }
+                },
+                slewingCancellationToken
+            );
             slewers.Add(domeSlewer);
-            slewerTasks.Add(domeSlewer.task);
         }
 
+        public void DomeSlewer(Angle ra, Angle dec)
+        {
+            _genericDomeSlewer(() => domeSlaveDriver.SlewToAz(ra, dec));
+        }
+
+        //public void DomeSlewer(Angle ra, Angle dec)
+        //{
+        //    SlewerTask domeSlewer = new SlewerTask() { type = Slewers.Type.Dome };
+        //    domeSlewer.task = Task.Run(() => {
+        //            try
+        //            {
+        //                domeSlaveDriver.SlewToAz(ra, dec);
+        //            }
+        //            catch (OperationCanceledException)
+        //            {
+        //                domeSlaveDriver.AbortSlew();
+        //            }
+        //        },
+        //        slewingCancellationToken
+        //    );
+        //    slewers.Add(domeSlewer);
+        //}
+
+        //public void DomeSlewer(double az)
+        //{
+        //    SlewerTask domeSlewer = new SlewerTask() { type = Slewers.Type.Dome };
+        //    domeSlewer.task = Task.Run(() =>
+        //    {
+        //        try
+        //        {
+        //            domeSlaveDriver.SlewToAz(az);
+        //        }
+        //        catch (OperationCanceledException)
+        //        {
+        //            domeSlaveDriver.AbortSlew();
+        //        }
+        //    }, slewingCancellationToken);
+        //    slewers.Add(domeSlewer);
+        //}
         public void DomeSlewer(double az)
         {
-            SlewerTask domeSlewer = new SlewerTask() { name = "Dome" };
-            domeSlewer.task = Task.Run(() =>
-            {
-                try
-                {
-                    domeSlaveDriver.SlewToAz(az);
-                }
-                catch (OperationCanceledException)
-                {
-                    domeSlaveDriver.AbortSlew();
-                }
-            }, slewingCancellationToken);
-            slewers.Add(domeSlewer);
-            slewerTasks.Add(domeSlewer.task);
+            _genericDomeSlewer(() => domeSlaveDriver.SlewToAz(az));
         }
+
+        //public void DomeParker()
+        //{
+        //    SlewerTask domeSlewer = new SlewerTask() { type = Slewers.Type.Dome };
+        //    domeSlewer.task = Task.Run(() =>
+        //    {
+        //        try
+        //        {
+        //            domeSlaveDriver.Park();
+        //        }
+        //        catch (OperationCanceledException)
+        //        {
+        //            domeSlaveDriver.AbortSlew();
+        //        }
+        //    }, slewingCancellationToken);
+        //    slewers.Add(domeSlewer);
+        //}
+        public void DomeParker()
+        {
+            _genericDomeSlewer(() => domeSlaveDriver.Park());
+        }
+
 
         private void _slewToCoordinatesAsync(Angle RightAscension, Angle Declination)
         {
             slewers.Clear();
-            slewerTasks.Clear();
             slewingCancellationTokenSource = new CancellationTokenSource();
             slewingCancellationToken = slewingCancellationTokenSource.Token;
-
-            activeSlewers = new ActiveSlewers();
+            
             try
             {
                 if (instance._enslaveDome)
@@ -1574,37 +1609,35 @@ namespace ASCOM.Wise40
                 //readyToSlew.Reset();
                 SlewerTask raSlewer = new SlewerTask()
                 {
-                    name = "Ra",
+                    type = Slewers.Type.Ra,
                     task = Task.Run(() =>
                     {
                         Slewer(TelescopeAxes.axisPrimary, RightAscension);
                     }, slewingCancellationToken)
                 };
                 slewers.Add(raSlewer);
-                slewerTasks.Add(raSlewer.task);
 
                 SlewerTask decSlewer = new SlewerTask()
                 {
-                    name = "Dec",
+                    type = Slewers.Type.Dec,
                     task = Task.Run(() =>
                             {
                                 Slewer(TelescopeAxes.axisSecondary, Declination);
                             }, slewingCancellationToken)
                 };
                 slewers.Add(decSlewer);
-                slewerTasks.Add(decSlewer.task);
 
             }
             catch (AggregateException ae)
             {
-                ae.Handle((ex) =>
+                ae.Handle((Func<Exception, bool>)((ex) =>
                 {
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                    debugger.WriteLine((Debugger.DebugLevel)Debugger.DebugLevel.DebugLogic,
                         "_slewToCoordinatesAsync: Caught {0}", ex.Message);
                     #endregion
                     return false;
-                });
+                }));
             }
         }
 
@@ -2394,13 +2427,12 @@ namespace ASCOM.Wise40
         /// </summary>
         internal void ReadProfile()
         {
-            int defaultDebugLevel = (int)Debugger.DebugLevel.DebugASCOM + 
-                                    (int)Debugger.DebugLevel.DebugAxes + 
-                                    (int)Debugger.DebugLevel.DebugLogic;
+            //int defaultDebugLevel = (int)Debugger.DebugLevel.DebugASCOM + 
+            //                        (int)Debugger.DebugLevel.DebugAxes + 
+            //                        (int)Debugger.DebugLevel.DebugLogic;
             using (Profile driverProfile = new Profile())
             {
                 driverProfile.DeviceType = "Telescope";
-                debugger.Level = Convert.ToUInt32(driverProfile.GetValue(driverID, debugLevelProfileName, string.Empty, defaultDebugLevel.ToString()));
                 _enslaveDome = Convert.ToBoolean(driverProfile.GetValue(driverID, enslaveDomeProfileName, string.Empty, "false"));
                 wisesite.astrometricAccuracy =
                     driverProfile.GetValue(driverID, astrometricAccuracyProfileName, string.Empty, "Full") == "Full" ?
@@ -2420,7 +2452,7 @@ namespace ASCOM.Wise40
                 driverProfile.DeviceType = "Telescope";
                 driverProfile.WriteValue(driverID, traceStateProfileName, traceLogger.Enabled.ToString());
                 driverProfile.WriteValue(driverID, astrometricAccuracyProfileName, wisesite.astrometricAccuracy == Accuracy.Full ? "Full" : "Reduced");
-                driverProfile.WriteValue(driverID, debugLevelProfileName, debugger.Level.ToString());
+                //driverProfile.WriteValue(driverID, debugLevelProfileName, debugger.Level.ToString());
                 driverProfile.WriteValue(driverID, enslaveDomeProfileName, _enslaveDome.ToString());
                 driverProfile.WriteValue(driverID, calculateRefractionProfileName, _calculateRefraction.ToString());
             }

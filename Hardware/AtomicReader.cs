@@ -21,7 +21,6 @@ namespace ASCOM.Wise40.Hardware
 
         DateTime lastRead;
         List<uint> lastResults;
-        //public readonly int persistanceMillis = 200;
 
         Common.Debugger debugger = Common.Debugger.Instance;
 
@@ -34,21 +33,12 @@ namespace ASCOM.Wise40.Hardware
             this.daqs = daqs;
             _timeoutMillis = timeoutMillis;
             _maxTries = maxTries;
-
-            using (ASCOM.Utilities.Profile driverProfile = new ASCOM.Utilities.Profile())
-            {
-                driverProfile.DeviceType = "Telescope";
-                debugger.Level = Convert.ToUInt32(driverProfile.GetValue("ASCOM.Wise40.Telescope", "Debug Level", string.Empty, "0"));
-            }
         }
 
         public List<uint> Values
         {
             get
             {
-                //if (DateTime.Now.Subtract(lastRead).TotalMilliseconds < persistanceMillis && lastResults != null)
-                //    return lastResults;
-
                 List<uint> results;
                 List<double> elapsedMillis = new List<double>();
                 List<long> elapsedTicks = new List<long>();

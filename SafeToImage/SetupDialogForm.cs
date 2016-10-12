@@ -26,13 +26,12 @@ namespace ASCOM.Wise40.SafeToImage
         private void cmdOK_Click(object sender, EventArgs e) // OK button event handler
         {
             bool valid = true;
-            Color okColor = chkTrace.ForeColor;
+            Color okColor = labelTitle.ForeColor;
             Color badColor = Color.Red;
             int i;
 
             // Place any validation constraint checks here
             // Update the state variables with results from the dialogue
-            SafetyMonitor.traceState = chkTrace.Checked;
             i = Convert.ToInt32(textBoxAge.Text);
             if (i < 0)
             {
@@ -98,8 +97,7 @@ namespace ASCOM.Wise40.SafeToImage
         private void InitUI()
         {
             SafetyMonitor.ReadProfile();
-              
-            chkTrace.Checked = SafetyMonitor.traceState;
+            
             comboBoxCloud.SelectedIndex = (int)SafetyMonitor.cloudsMax;
             comboBoxRain.SelectedIndex = (int)SafetyMonitor.rainMax;
             comboBoxLight.SelectedIndex = (int)SafetyMonitor.lightMax;

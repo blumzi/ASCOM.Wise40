@@ -103,11 +103,10 @@ namespace ASCOM.Wise40
         /// </summary>
         public Dome()
         {
-            debugger = Common.Debugger.Instance;
             ReadProfile(); // Read device configuration from the ASCOM Profile store
 
             tl = new TraceLogger("", "Dome");
-            tl.Enabled = traceState;
+            tl.Enabled = debugger.Tracing;
             tl.LogMessage("Dome", "Starting initialisation");
             
             utilities = new Util();
@@ -116,7 +115,6 @@ namespace ASCOM.Wise40
             debugger.init();
             wisedome.init();
             wisedome.SetArrivedAtAzEvent(arrived);
-            wisedome.SetLogger(tl);
 
             tl.LogMessage("Dome", "Completed initialisation");
         }
@@ -422,19 +420,6 @@ namespace ASCOM.Wise40
             wisedome.SyncToAzimuth(degrees);
         }
 
-        public uint debugLevel
-        {
-            get
-            {
-                return debugger.Level;
-            }
-
-            set
-            {
-                debugger.Level = value;
-            }
-        }
-
         #endregion
 
         #region Private properties and methods
@@ -524,7 +509,6 @@ namespace ASCOM.Wise40
             {
                 driverProfile.DeviceType = "Dome";
                 traceState = Convert.ToBoolean(driverProfile.GetValue(driverID, traceStateProfileName, string.Empty, "false"));
-                debugger.Level = Convert.ToUInt32(driverProfile.GetValue(driverID, debugLevelProfileName, string.Empty, "0"));
                 wisedome._autoCalibrate = Convert.ToBoolean(driverProfile.GetValue(driverID, autoCalibrateProfileName, string.Empty, "false"));
             }
         }
@@ -538,7 +522,7 @@ namespace ASCOM.Wise40
             {
                 driverProfile.DeviceType = "Dome";
                 driverProfile.WriteValue(driverID, traceStateProfileName, traceState.ToString());
-                driverProfile.WriteValue(driverID, debugLevelProfileName, debugger.Level.ToString());
+                //driverProfile.WriteValue(driverID, debugLevelProfileName, debugger.Level.ToString());
                 driverProfile.WriteValue(driverID, autoCalibrateProfileName, wisedome._autoCalibrate.ToString());
             }
         }

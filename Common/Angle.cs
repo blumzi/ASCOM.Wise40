@@ -81,27 +81,7 @@ namespace ASCOM.Wise40.Common
                     _isHMS = false;
                     break;
             }
-
-            //if (_cyclic)
-            //    val = normalize(this, val);
-
-            //if (val != double.NaN)
-            //{
-            //    if (_lowestIncluded && val < _lowest)
-            //        throw new InvalidValueException(string.Format("value: {0} < lowest: {1}", val, _lowest));
-            //    if (!_lowestIncluded && val <= _lowest)
-            //        throw new InvalidValueException(string.Format("value: {0} <= lowest: {1}", val, _lowest));
-            //    if (_highestIncluded && val > _highest)
-            //        throw new InvalidValueException(string.Format("value: {0} > highest: {1}", val, _highest));
-            //    if (!_highestIncluded && val >= _highest)
-            //        throw new InvalidValueException(string.Format("value: {0} >= highest: {1}", val, _highest));
-            //}
-
-            //if (_cyclic)
-            //    val = normalize(this, val);
-            //val = normalize(this, val);
-
-            //_degrees = _isHMS ? val * 15.0 : val;
+            
             double rad = Deg2Rad(_isHMS ? Hours2Deg(val) : val);
             if (_periodic)
             {
@@ -327,6 +307,8 @@ namespace ASCOM.Wise40.Common
 
         public string ToNiceString()
         {
+            if (Radians == double.NaN)
+                return "Invalid";
             if (_isHMS)
                 return ascomutils.DegreesToHMS(Degrees, "h", "m", "s", 1);
             else if (_type == Type.Az)
@@ -535,6 +517,7 @@ namespace ASCOM.Wise40.Common
 
         public static readonly Angle zero = new Angle(0.0);
         public static readonly Angle invalid = new Angle(double.NaN);
+        public static readonly Angle invalidAz = new Angle(double.NaN, Type.Az);
         public static double epsilonRad = Deg2Rad((1.0 / 3600.0) / 1000000.0);    // 1 micro-second
     }
 }

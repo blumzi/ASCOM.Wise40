@@ -41,6 +41,8 @@ using System.Globalization;
 using System.Collections;
 using System.IO;
 
+using ASCOM.Wise40.Common;
+
 namespace ASCOM.Vantage
 {
     //
@@ -77,7 +79,6 @@ namespace ASCOM.Vantage
         internal static string traceStateDefault = "false";
 
         internal static string _reportFile;
-        internal static bool _traceState;
 
         /// <summary>
         /// Private variable to hold the connected state
@@ -94,9 +95,7 @@ namespace ASCOM.Vantage
         /// </summary>
         private AstroUtils astroUtilities;
 
-        /// <summary>
-        /// Private variable to hold the trace logger object (creates a diagnostic log file with information that you specify)
-        /// </summary>
+        private Wise40.Common.Debugger debugger = Wise40.Common.Debugger.Instance;
         private TraceLogger tl;
 
         private Dictionary<string, string> sensorData;
@@ -112,7 +111,7 @@ namespace ASCOM.Vantage
                     throw new InvalidValueException("Null or empty report file name");
 
             tl = new TraceLogger("", "Vantage");
-            tl.Enabled = _traceState;
+            tl.Enabled = debugger.Tracing;
             tl.LogMessage("ObservingConditions", "Starting initialisation");
 
             _connected = false; // Initialise connected to false
@@ -144,7 +143,7 @@ namespace ASCOM.Vantage
                 System.Windows.Forms.MessageBox.Show("Already connected, just press OK");
 
             ReadProfile();
-            using (SetupDialogForm F = new SetupDialogForm(_traceState, _reportFile))
+            using (SetupDialogForm F = new SetupDialogForm(_reportFile))
             {
                 var result = F.ShowDialog();
                 if (result == System.Windows.Forms.DialogResult.OK)
@@ -762,7 +761,6 @@ namespace ASCOM.Vantage
             using (Profile driverProfile = new Profile())
             {
                 driverProfile.DeviceType = "ObservingConditions";
-                _traceState = Convert.ToBoolean(driverProfile.GetValue(driverID, traceStateProfileName, string.Empty, traceStateDefault));
                 _reportFile = driverProfile.GetValue(driverID, reportFileProfileName, string.Empty, string.Empty);
             }
         }
@@ -775,7 +773,6 @@ namespace ASCOM.Vantage
             using (Profile driverProfile = new Profile())
             {
                 driverProfile.DeviceType = "ObservingConditions";
-                driverProfile.WriteValue(driverID, traceStateProfileName, _traceState.ToString());
                 driverProfile.WriteValue(driverID, reportFileProfileName, _reportFile);
             }
         }

@@ -186,6 +186,7 @@
             this.timerRefreshDisplay = new System.Windows.Forms.Timer(this.components);
             this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.toolStripContainer1 = new System.Windows.Forms.ToolStripContainer();
             this.statusStrip1.SuspendLayout();
             this.toolStrip1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
@@ -216,6 +217,8 @@
             this.tableLayoutPanelWeather.SuspendLayout();
             this.flowLayoutPanel1.SuspendLayout();
             this.panel1.SuspendLayout();
+            this.toolStripContainer1.LeftToolStripPanel.SuspendLayout();
+            this.toolStripContainer1.SuspendLayout();
             this.SuspendLayout();
             // 
             // statusStrip1
@@ -241,7 +244,7 @@
             // 
             this.toolStrip1.AllowMerge = false;
             this.toolStrip1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.toolStrip1.Dock = System.Windows.Forms.DockStyle.Left;
+            this.toolStrip1.Dock = System.Windows.Forms.DockStyle.None;
             this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripButtonTelescope,
             this.toolStripButtonDome,
@@ -256,9 +259,9 @@
             this.toolStripButtonConnectTelescope,
             this.toolStripButtonConnectDome,
             this.toolStripButtonConnectFocuser});
-            this.toolStrip1.Location = new System.Drawing.Point(0, 0);
+            this.toolStrip1.Location = new System.Drawing.Point(0, 3);
             this.toolStrip1.Name = "toolStrip1";
-            this.toolStrip1.Size = new System.Drawing.Size(127, 641);
+            this.toolStrip1.Size = new System.Drawing.Size(127, 147);
             this.toolStrip1.TabIndex = 1;
             this.toolStrip1.Text = "toolStrip1";
             // 
@@ -269,7 +272,7 @@
             this.toolStripButtonTelescope.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButtonTelescope.Image")));
             this.toolStripButtonTelescope.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolStripButtonTelescope.Name = "toolStripButtonTelescope";
-            this.toolStripButtonTelescope.Size = new System.Drawing.Size(124, 19);
+            this.toolStripButtonTelescope.Size = new System.Drawing.Size(125, 19);
             this.toolStripButtonTelescope.Text = "Hide Telescope";
             this.toolStripButtonTelescope.Click += new System.EventHandler(this.toolStripButtonTelescope_Click);
             // 
@@ -280,7 +283,7 @@
             this.toolStripButtonDome.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButtonDome.Image")));
             this.toolStripButtonDome.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolStripButtonDome.Name = "toolStripButtonDome";
-            this.toolStripButtonDome.Size = new System.Drawing.Size(124, 19);
+            this.toolStripButtonDome.Size = new System.Drawing.Size(125, 19);
             this.toolStripButtonDome.Text = "Show Dome";
             this.toolStripButtonDome.Click += new System.EventHandler(this.toolStripButtonDome_Click);
             // 
@@ -291,7 +294,7 @@
             this.toolStripButtonFocuser.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButtonFocuser.Image")));
             this.toolStripButtonFocuser.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolStripButtonFocuser.Name = "toolStripButtonFocuser";
-            this.toolStripButtonFocuser.Size = new System.Drawing.Size(124, 19);
+            this.toolStripButtonFocuser.Size = new System.Drawing.Size(125, 19);
             this.toolStripButtonFocuser.Text = "Show Focuser";
             this.toolStripButtonFocuser.Click += new System.EventHandler(this.toolStripButtonFocuser_Click);
             // 
@@ -302,14 +305,14 @@
             this.toolStripButtonWeather.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButtonWeather.Image")));
             this.toolStripButtonWeather.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolStripButtonWeather.Name = "toolStripButtonWeather";
-            this.toolStripButtonWeather.Size = new System.Drawing.Size(124, 19);
+            this.toolStripButtonWeather.Size = new System.Drawing.Size(125, 19);
             this.toolStripButtonWeather.Text = "Show Weather";
             this.toolStripButtonWeather.Click += new System.EventHandler(this.toolStripButtonWeather_Click);
             // 
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(124, 6);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(125, 6);
             // 
             // toolStripButtonMotionStudy
             // 
@@ -318,7 +321,7 @@
             this.toolStripButtonMotionStudy.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButtonMotionStudy.Image")));
             this.toolStripButtonMotionStudy.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolStripButtonMotionStudy.Name = "toolStripButtonMotionStudy";
-            this.toolStripButtonMotionStudy.Size = new System.Drawing.Size(124, 19);
+            this.toolStripButtonMotionStudy.Size = new System.Drawing.Size(125, 19);
             this.toolStripButtonMotionStudy.Text = "Show Motion Study";
             this.toolStripButtonMotionStudy.Click += new System.EventHandler(this.toolStripButtonMotionStudy_Click);
             // 
@@ -334,7 +337,7 @@
             this.toolStripButtonDIO.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButtonDIO.Image")));
             this.toolStripButtonDIO.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolStripButtonDIO.Name = "toolStripButtonDIO";
-            this.toolStripButtonDIO.Size = new System.Drawing.Size(124, 19);
+            this.toolStripButtonDIO.Size = new System.Drawing.Size(92, 19);
             this.toolStripButtonDIO.Text = "Show Digital IO";
             this.toolStripButtonDIO.Click += new System.EventHandler(this.toolStripButtonDIO_Click);
             // 
@@ -355,7 +358,7 @@
             this.toolStripButtonConnectTelescope.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButtonConnectTelescope.Image")));
             this.toolStripButtonConnectTelescope.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolStripButtonConnectTelescope.Name = "toolStripButtonConnectTelescope";
-            this.toolStripButtonConnectTelescope.Size = new System.Drawing.Size(124, 19);
+            this.toolStripButtonConnectTelescope.Size = new System.Drawing.Size(126, 19);
             this.toolStripButtonConnectTelescope.Text = "Disconnect Telescope";
             this.toolStripButtonConnectTelescope.Click += new System.EventHandler(this.toolStripButtonConnectTelescope_Click);
             // 
@@ -366,7 +369,7 @@
             this.toolStripButtonConnectDome.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButtonConnectDome.Image")));
             this.toolStripButtonConnectDome.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolStripButtonConnectDome.Name = "toolStripButtonConnectDome";
-            this.toolStripButtonConnectDome.Size = new System.Drawing.Size(124, 19);
+            this.toolStripButtonConnectDome.Size = new System.Drawing.Size(105, 19);
             this.toolStripButtonConnectDome.Text = "Disconnect Dome";
             this.toolStripButtonConnectDome.Click += new System.EventHandler(this.toolStripButtonConnectDome_Click);
             // 
@@ -377,7 +380,7 @@
             this.toolStripButtonConnectFocuser.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButtonConnectFocuser.Image")));
             this.toolStripButtonConnectFocuser.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolStripButtonConnectFocuser.Name = "toolStripButtonConnectFocuser";
-            this.toolStripButtonConnectFocuser.Size = new System.Drawing.Size(124, 19);
+            this.toolStripButtonConnectFocuser.Size = new System.Drawing.Size(100, 19);
             this.toolStripButtonConnectFocuser.Text = "Connect Focuser";
             // 
             // menuStrip1
@@ -387,9 +390,9 @@
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
             this.helpToolStripMenuItem});
-            this.menuStrip1.Location = new System.Drawing.Point(127, 0);
+            this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(1155, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(1282, 24);
             this.menuStrip1.TabIndex = 2;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -2256,6 +2259,22 @@
             this.panel1.Size = new System.Drawing.Size(1096, 608);
             this.panel1.TabIndex = 15;
             // 
+            // toolStripContainer1
+            // 
+            // 
+            // toolStripContainer1.ContentPanel
+            // 
+            this.toolStripContainer1.ContentPanel.Size = new System.Drawing.Size(23, 150);
+            // 
+            // toolStripContainer1.LeftToolStripPanel
+            // 
+            this.toolStripContainer1.LeftToolStripPanel.Controls.Add(this.toolStrip1);
+            this.toolStripContainer1.Location = new System.Drawing.Point(8, 8);
+            this.toolStripContainer1.Name = "toolStripContainer1";
+            this.toolStripContainer1.Size = new System.Drawing.Size(150, 175);
+            this.toolStripContainer1.TabIndex = 16;
+            this.toolStripContainer1.Text = "toolStripContainer1";
+            // 
             // DashboardForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -2263,9 +2282,9 @@
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.ClientSize = new System.Drawing.Size(1282, 663);
+            this.Controls.Add(this.toolStripContainer1);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.menuStrip1);
-            this.Controls.Add(this.toolStrip1);
             this.Controls.Add(this.statusStrip1);
             this.Name = "DashboardForm";
             this.Text = "Wise40 Dashboard";
@@ -2318,6 +2337,10 @@
             this.flowLayoutPanel1.ResumeLayout(false);
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
+            this.toolStripContainer1.LeftToolStripPanel.ResumeLayout(false);
+            this.toolStripContainer1.LeftToolStripPanel.PerformLayout();
+            this.toolStripContainer1.ResumeLayout(false);
+            this.toolStripContainer1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -2481,6 +2504,7 @@
         private System.Windows.Forms.Timer timerRefreshDisplay;
         private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
         private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.ToolStripContainer toolStripContainer1;
     }
 }
 

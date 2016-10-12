@@ -16,9 +16,8 @@ namespace ASCOM.Vantage
         private bool traceState;
         private string reportFile;
 
-        public SetupDialogForm(bool traceState, string reportFile)
+        public SetupDialogForm(string reportFile)
         {
-            this.traceState = traceState;
             this.reportFile = reportFile;
 
             InitializeComponent();
@@ -28,7 +27,6 @@ namespace ASCOM.Vantage
 
         private void cmdOK_Click(object sender, EventArgs e) // OK button event handler
         {
-            ObservingConditions._traceState = chkTrace.Checked;
             ObservingConditions._reportFile = labelReportFileValue.Text;
         }
 
@@ -56,7 +54,6 @@ namespace ASCOM.Vantage
 
         private void InitUI()
         {
-            chkTrace.Checked = traceState;
             labelReportFileValue.Text = reportFile;
         }
 

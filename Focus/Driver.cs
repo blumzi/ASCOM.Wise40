@@ -75,7 +75,6 @@ namespace ASCOM.Wise40
             wisefocuser.traceLogger.LogMessage("Focuser", "Completed initialisation");
         }
 
-
         //
         // PUBLIC COM INTERFACE IFocuserV2 IMPLEMENTATION
         //

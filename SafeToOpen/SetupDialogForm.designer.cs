@@ -33,7 +33,6 @@ namespace ASCOM.Wise40.SafeToOpen
             this.cmdCancel = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.picASCOM = new System.Windows.Forms.PictureBox();
-            this.chkTrace = new System.Windows.Forms.CheckBox();
             this.label2 = new System.Windows.Forms.Label();
             this.comboBoxCloud = new System.Windows.Forms.ComboBox();
             this.label3 = new System.Windows.Forms.Label();
@@ -65,7 +64,7 @@ namespace ASCOM.Wise40.SafeToOpen
             this.cmdOK.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.cmdOK.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.cmdOK.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.cmdOK.Location = new System.Drawing.Point(281, 266);
+            this.cmdOK.Location = new System.Drawing.Point(310, 222);
             this.cmdOK.Name = "cmdOK";
             this.cmdOK.Size = new System.Drawing.Size(59, 24);
             this.cmdOK.TabIndex = 0;
@@ -79,7 +78,7 @@ namespace ASCOM.Wise40.SafeToOpen
             this.cmdCancel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.cmdCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.cmdCancel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.cmdCancel.Location = new System.Drawing.Point(281, 296);
+            this.cmdCancel.Location = new System.Drawing.Point(310, 252);
             this.cmdCancel.Name = "cmdCancel";
             this.cmdCancel.Size = new System.Drawing.Size(59, 25);
             this.cmdCancel.TabIndex = 1;
@@ -103,7 +102,7 @@ namespace ASCOM.Wise40.SafeToOpen
             this.picASCOM.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.picASCOM.Cursor = System.Windows.Forms.Cursors.Hand;
             this.picASCOM.Image = global::ASCOM.Wise40.SafeToOpen.Properties.Resources.ASCOM;
-            this.picASCOM.Location = new System.Drawing.Point(292, 9);
+            this.picASCOM.Location = new System.Drawing.Point(321, 9);
             this.picASCOM.Name = "picASCOM";
             this.picASCOM.Size = new System.Drawing.Size(48, 56);
             this.picASCOM.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
@@ -111,17 +110,6 @@ namespace ASCOM.Wise40.SafeToOpen
             this.picASCOM.TabStop = false;
             this.picASCOM.Click += new System.EventHandler(this.BrowseToAscom);
             this.picASCOM.DoubleClick += new System.EventHandler(this.BrowseToAscom);
-            // 
-            // chkTrace
-            // 
-            this.chkTrace.AutoSize = true;
-            this.chkTrace.ForeColor = System.Drawing.Color.DarkOrange;
-            this.chkTrace.Location = new System.Drawing.Point(16, 296);
-            this.chkTrace.Name = "chkTrace";
-            this.chkTrace.Size = new System.Drawing.Size(69, 17);
-            this.chkTrace.TabIndex = 6;
-            this.chkTrace.Text = "Trace on";
-            this.chkTrace.UseVisualStyleBackColor = true;
             // 
             // label2
             // 
@@ -370,7 +358,7 @@ namespace ASCOM.Wise40.SafeToOpen
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.ClientSize = new System.Drawing.Size(350, 342);
+            this.ClientSize = new System.Drawing.Size(379, 298);
             this.Controls.Add(this.label16);
             this.Controls.Add(this.label15);
             this.Controls.Add(this.label14);
@@ -392,7 +380,6 @@ namespace ASCOM.Wise40.SafeToOpen
             this.Controls.Add(this.label3);
             this.Controls.Add(this.comboBoxCloud);
             this.Controls.Add(this.label2);
-            this.Controls.Add(this.chkTrace);
             this.Controls.Add(this.picASCOM);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.cmdCancel);
@@ -416,7 +403,6 @@ namespace ASCOM.Wise40.SafeToOpen
         private System.Windows.Forms.Button cmdCancel;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.PictureBox picASCOM;
-        private System.Windows.Forms.CheckBox chkTrace;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.ComboBox comboBoxCloud;
         private System.Windows.Forms.Label label3;

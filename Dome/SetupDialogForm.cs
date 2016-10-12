@@ -33,15 +33,6 @@ namespace ASCOM.Wise40
         private void cmdOK_Click(object sender, EventArgs e) // OK button event handler
         {
             _dome.traceState = checkBoxTrace.Checked;
-
-            uint level = 0;
-            if (checkBoxAutoCalibrate.Checked)
-            {
-                if (checkBoxDebugAxes.Checked) level |= (uint)Debugger.DebugLevel.DebugAxes;
-                if (checkBoxDebugEncoders.Checked) level |= (uint)Debugger.DebugLevel.DebugEncoders;
-                if (checkBoxDebugExceptions.Checked) level |= (uint)Debugger.DebugLevel.DebugExceptions;
-            }
-            _dome.debugger.Level = level;
             _dome.WriteProfile();
         }
 

@@ -19,7 +19,7 @@ namespace ASCOM.Wise40
         private TelescopeAxes _axis, _other_axis;
         private WiseTele wisetele = WiseTele.Instance;
         private bool _connected = false;
-        private Debugger debugger;
+        private Debugger debugger = Debugger.Instance;
 
         //private static double epsilon;
         private static readonly int _samplingFrequency = 10;
@@ -37,9 +37,6 @@ namespace ASCOM.Wise40
 
         public AxisMonitor(TelescopeAxes axis)
         {
-            debugger = new Debugger();
-            debugger.Level = (uint) Debugger.DebugLevel.DebugAxes;
-
             _axis = axis;
             if (_axis == TelescopeAxes.axisPrimary)
             {

@@ -24,7 +24,6 @@ namespace ASCOM.Wise40.ComputerControl
         {
             // Place any validation constraint checks here
             // Update the state variables with results from the dialogue
-            SafetyMonitor.traceState = chkTrace.Checked;
         }
 
         private void cmdCancel_Click(object sender, EventArgs e) // Cancel button event handler
@@ -51,7 +50,6 @@ namespace ASCOM.Wise40.ComputerControl
 
         private void InitUI()
         {
-            chkTrace.Checked = SafetyMonitor.traceState;
         }
     }
 }

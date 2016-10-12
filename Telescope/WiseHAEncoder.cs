@@ -63,11 +63,11 @@ namespace ASCOM.Wise40
             //else
             //    _angle = Angle.FromRadians((Value * HaMultiplier) + HaCorrection);
 
-            using (ASCOM.Utilities.Profile driverProfile = new ASCOM.Utilities.Profile())
-            {
-                driverProfile.DeviceType = "Telescope";
-                debugger.Level = Convert.ToUInt32(driverProfile.GetValue("ASCOM.Wise40.Telescope", "Debug Level", string.Empty, "0"));
-            }
+            //using (ASCOM.Utilities.Profile driverProfile = new ASCOM.Utilities.Profile())
+            //{
+            //    driverProfile.DeviceType = "Telescope";
+            //    debugger.Level = (Debugger.DebugLevel) Convert.ToUInt32(driverProfile.GetValue("ASCOM.Wise40.Telescope", "Debug Level", string.Empty, "0"));
+            //}
         }
 
         /// <summary>

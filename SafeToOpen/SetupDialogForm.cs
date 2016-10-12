@@ -27,13 +27,11 @@ namespace ASCOM.Wise40.SafeToOpen
         private void cmdOK_Click(object sender, EventArgs e) // OK button event handler
         {
             bool valid = true;
-            Color okColor = chkTrace.ForeColor;
             Color badColor = Color.Red;
             int i;
 
             // Place any validation constraint checks here
             // Update the state variables with results from the dialogue
-            SafetyMonitor.traceState = chkTrace.Checked;
             i = Convert.ToInt32(textBoxAge.Text);
             if (i < 0)
             {
@@ -41,7 +39,6 @@ namespace ASCOM.Wise40.SafeToOpen
                 valid = false;
             } else
             {
-                textBoxAge.ForeColor = okColor;
                 SafetyMonitor.ageMaxSeconds = i;
             }
             SafetyMonitor.cloudsMax = (CloudSensor.SensorData.CloudCondition)comboBoxCloud.SelectedIndex;
@@ -50,7 +47,6 @@ namespace ASCOM.Wise40.SafeToOpen
             i = Convert.ToInt32(textBoxHumidity.Text);
             if (i >= 0 && i <= 100)
             {
-                textBoxHumidity.ForeColor = okColor;
                 SafetyMonitor.humidityMax = i;
             }
             else
@@ -61,7 +57,6 @@ namespace ASCOM.Wise40.SafeToOpen
             i = Convert.ToInt32(textBoxWind.Text);
             if (i >= 0)
             {
-                textBoxWind.ForeColor = okColor;
                 SafetyMonitor.windMax = i;
             }
             else
@@ -99,8 +94,7 @@ namespace ASCOM.Wise40.SafeToOpen
         private void InitUI()
         {
             SafetyMonitor.ReadProfile();
-              
-            chkTrace.Checked = SafetyMonitor.traceState;
+            
             comboBoxCloud.SelectedIndex = (int)SafetyMonitor.cloudsMax;
             comboBoxRain.SelectedIndex = (int)SafetyMonitor.rainMax;
             comboBoxLight.SelectedIndex = (int)SafetyMonitor.lightMax;

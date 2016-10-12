@@ -32,7 +32,6 @@ namespace ASCOM.Vantage
             this.cmdCancel = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.picASCOM = new System.Windows.Forms.PictureBox();
-            this.chkTrace = new System.Windows.Forms.CheckBox();
             this.buttonChoose = new System.Windows.Forms.Button();
             this.labelReportFileValue = new System.Windows.Forms.Label();
             this.groupBoxReportFile = new System.Windows.Forms.GroupBox();
@@ -45,7 +44,7 @@ namespace ASCOM.Vantage
             // 
             this.cmdOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.cmdOK.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.cmdOK.Location = new System.Drawing.Point(400, 77);
+            this.cmdOK.Location = new System.Drawing.Point(400, 76);
             this.cmdOK.Name = "cmdOK";
             this.cmdOK.Size = new System.Drawing.Size(59, 24);
             this.cmdOK.TabIndex = 0;
@@ -57,7 +56,7 @@ namespace ASCOM.Vantage
             // 
             this.cmdCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.cmdCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.cmdCancel.Location = new System.Drawing.Point(400, 107);
+            this.cmdCancel.Location = new System.Drawing.Point(400, 106);
             this.cmdCancel.Name = "cmdCancel";
             this.cmdCancel.Size = new System.Drawing.Size(59, 25);
             this.cmdCancel.TabIndex = 1;
@@ -88,16 +87,6 @@ namespace ASCOM.Vantage
             this.picASCOM.Click += new System.EventHandler(this.BrowseToAscom);
             this.picASCOM.DoubleClick += new System.EventHandler(this.BrowseToAscom);
             // 
-            // chkTrace
-            // 
-            this.chkTrace.AutoSize = true;
-            this.chkTrace.Location = new System.Drawing.Point(18, 117);
-            this.chkTrace.Name = "chkTrace";
-            this.chkTrace.Size = new System.Drawing.Size(69, 17);
-            this.chkTrace.TabIndex = 6;
-            this.chkTrace.Text = "Trace on";
-            this.chkTrace.UseVisualStyleBackColor = true;
-            // 
             // buttonChoose
             // 
             this.buttonChoose.Location = new System.Drawing.Point(6, 22);
@@ -119,7 +108,7 @@ namespace ASCOM.Vantage
             // 
             this.groupBoxReportFile.Controls.Add(this.labelReportFileValue);
             this.groupBoxReportFile.Controls.Add(this.buttonChoose);
-            this.groupBoxReportFile.Location = new System.Drawing.Point(12, 56);
+            this.groupBoxReportFile.Location = new System.Drawing.Point(8, 78);
             this.groupBoxReportFile.Name = "groupBoxReportFile";
             this.groupBoxReportFile.Size = new System.Drawing.Size(372, 53);
             this.groupBoxReportFile.TabIndex = 9;
@@ -135,9 +124,8 @@ namespace ASCOM.Vantage
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(463, 174);
+            this.ClientSize = new System.Drawing.Size(463, 173);
             this.Controls.Add(this.groupBoxReportFile);
-            this.Controls.Add(this.chkTrace);
             this.Controls.Add(this.picASCOM);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.cmdCancel);
@@ -163,7 +151,6 @@ namespace ASCOM.Vantage
         private System.Windows.Forms.Button cmdCancel;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.PictureBox picASCOM;
-        private System.Windows.Forms.CheckBox chkTrace;
         private System.Windows.Forms.Button buttonChoose;
         private System.Windows.Forms.Label labelReportFileValue;
         private System.Windows.Forms.GroupBox groupBoxReportFile;

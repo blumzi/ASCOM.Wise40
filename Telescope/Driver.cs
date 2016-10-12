@@ -95,9 +95,8 @@ namespace ASCOM.Wise40
         /// <summary>
         /// Private variable to hold the trace logger object (creates a diagnostic log file with information that you specify)
         /// </summary>
-        //public TraceLogger tl;
         
-        public HandpadForm handpad;
+        public TelescopeHandpadForm handpad;
 
         private Common.Debugger debugger = Common.Debugger.Instance;
 
@@ -137,7 +136,7 @@ namespace ASCOM.Wise40
         {
             if (wisetele.Connected)
             {
-                handpad = new HandpadForm();
+                handpad = new TelescopeHandpadForm();
                 handpad.ShowDialog();
             } else
                 using (TelescopeSetupDialogForm F = new TelescopeSetupDialogForm(wisetele.traceLogger.Enabled,
@@ -887,7 +886,6 @@ namespace ASCOM.Wise40
             {
                 driverProfile.DeviceType = "Telescope";
                 wisetele.traceLogger.Enabled = Convert.ToBoolean(driverProfile.GetValue(driverID, traceStateProfileName, string.Empty, "false"));
-                debugger.Level = Convert.ToUInt32(driverProfile.GetValue(driverID, debugLevelProfileName, string.Empty, "0"));
                 wisetele._enslaveDome = Convert.ToBoolean(driverProfile.GetValue(driverID, enslaveDomeProfileName, string.Empty, "false"));
                 wisesite.astrometricAccuracy = 
                     driverProfile.GetValue(driverID, astrometricAccuracyProfileName, string.Empty, "Full") == "Full" ?
@@ -906,7 +904,7 @@ namespace ASCOM.Wise40
                 driverProfile.DeviceType = "Telescope";
                 driverProfile.WriteValue(driverID, traceStateProfileName, wisetele.traceLogger.Enabled.ToString());
                 driverProfile.WriteValue(driverID, astrometricAccuracyProfileName, wisesite.astrometricAccuracy == Accuracy.Full ? "Full" : "Reduced");
-                driverProfile.WriteValue(driverID, debugLevelProfileName, wisetele.debugger.Level.ToString());
+                //driverProfile.WriteValue(driverID, debugLevelProfileName, wisetele.debugger.Level.ToString());
                 driverProfile.WriteValue(driverID, enslaveDomeProfileName, wisetele._enslaveDome.ToString());
                 driverProfile.WriteValue(driverID, calculateRefractionProfileName, wisetele._calculateRefraction.ToString());
             }

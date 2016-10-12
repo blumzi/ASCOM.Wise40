@@ -96,21 +96,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ActiveSlewers.cs" />
+    <Compile Include="Slewers.cs" />
     <Compile Include="AxisMonitor.cs" />
-    <Compile Include="DaqsForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="DaqsForm.Designer.cs">
-      <DependentUpon>DaqsForm.cs</DependentUpon>
-    </Compile>
     <Compile Include="DomeSlaveDriver.cs" />
     <Compile Include="Driver.cs" />
-    <Compile Include="Handpad.cs">
+    <Compile Include="TelescopeHandpad.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Handpad.Designer.cs">
-      <DependentUpon>Handpad.cs</DependentUpon>
+    <Compile Include="TelescopeHandpad.Designer.cs">
+      <DependentUpon>TelescopeHandpad.cs</DependentUpon>
     </Compile>
     <Compile Include="Movement.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -141,11 +135,8 @@
     <Compile Include="WiseTele.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="DaqsForm.resx">
-      <DependentUpon>DaqsForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Handpad.resx">
-      <DependentUpon>Handpad.cs</DependentUpon>
+    <EmbeddedResource Include="TelescopeHandpad.resx">
+      <DependentUpon>TelescopeHandpad.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <SubType>Designer</SubType>

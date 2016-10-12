@@ -98,11 +98,11 @@ namespace ASCOM.Wise40
             }
         }
 
-        private void DaqsForm_VisibleChanged(object sender, EventArgs e)
-        {
-            Form form = sender as Form;
+        //private void DaqsForm_VisibleChanged(object sender, EventArgs e)
+        //{
+        //    Form form = sender as Form;
 
-            timerDaqsRefresh.Enabled = form.Visible;
-        }
+        //    timerDaqsRefresh.Enabled = form.Visible;
+        //}
     }
 }

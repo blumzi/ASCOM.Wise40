@@ -11,14 +11,14 @@ using System.Threading;
 
 namespace ASCOM.Wise40
 {
-    class DomeSlaveDriver: IConnectable
+    public class DomeSlaveDriver: IConnectable
     {
         private static WiseDome wisedome = WiseDome.Instance;
+        private static WiseTele wisetele = WiseTele.Instance;
         private bool _connected = false;
         private ASCOM.Astrometry.NOVAS.NOVAS31 novas31;
         private AstroUtils astroutils;
         AutoResetEvent _arrivedAtAz = new AutoResetEvent(false);
-        private bool _slewing = false;
         private Debugger debugger;
 
         public static readonly DomeSlaveDriver instance = new DomeSlaveDriver(); // Singleton
@@ -55,7 +55,6 @@ namespace ASCOM.Wise40
             _arrivedAtAz = new AutoResetEvent(false);
             wisedome.init();
             wisedome.SetArrivedAtAzEvent(_arrivedAtAz);
-            wisedome.SetLogger(WiseTele.Instance.traceLogger);
             wisesite.init();
 
             _initialized = true;
@@ -81,28 +80,58 @@ namespace ASCOM.Wise40
 
         public void SlewToAz(double az)
         {
-            if (WiseTele._driverInitiatedSlewing)
-                WiseTele.activeSlewers.Add(ActiveSlewers.SlewerType.SlewerDome);
-
-            _slewing = true;
+            if (wisetele == null)
+                wisetele = WiseTele.Instance;
+            
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver: Asking dome to SlewToAzimuth({0})", new Angle(az, Angle.Type.Az));
             #endregion
-            wisedome.SlewToAzimuth(az);
-            #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver: Waiting for dome to arrive to target az");
-            #endregion
-            _arrivedAtAz.WaitOne();
-            _slewing = false;
-
-            if (WiseTele._driverInitiatedSlewing)
-                WiseTele.activeSlewers.Delete(ActiveSlewers.SlewerType.SlewerDome, ref WiseTele._driverInitiatedSlewing);
+            try
+            {
+                wisedome.SlewToAzimuth(az);
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver: Waiting for dome to arrive to target az");
+                #endregion
+                _arrivedAtAz.WaitOne();
+            }
+            catch (Exception ex)
+            {
+                wisedome.AbortSlew();
+                throw ex;
+            }
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver: Dome arrived to {0}", new Angle(az, Angle.Type.Az));
             #endregion
         }
 
-        public void SlewToCoords(Angle ra, Angle dec)
+        public void Park()
+        {
+            if (wisetele == null)
+                wisetele = WiseTele.Instance;
+
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver: Asking dome to Park");
+            #endregion
+            try
+            {
+                wisedome.Park();
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver: Waiting for dome to arrive to target az");
+                #endregion
+                _arrivedAtAz.WaitOne();
+            }
+            catch (Exception ex)
+            {
+                wisedome.AbortSlew();
+                throw ex;
+            }
+            
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver: Dome is Parked");
+            #endregion
+        }
+
+        public void SlewToAz(Angle ra, Angle dec)
         {
             double rar = 0, decr = 0, az = 0, zd = 0;
 
@@ -122,33 +151,14 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return _slewing;
-            }
-        }
-
-        public void SlewToPark()
-        {
-            if (wisedome.CanPark) {
-                _slewing = true;
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver: Asking dome to Park()");
-                #endregion
-                wisedome.Park();
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver: Waiting for dome to arrive Park");
-                #endregion
-                _arrivedAtAz.WaitOne();
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver: Dome arrived at Park.");
-                #endregion
-                _slewing = false;
+                return wisetele.slewers.Active(Slewers.Type.Dome);
             }
         }
 
         public void AbortSlew()
         {
             wisedome.AbortSlew();
-            WiseTele.activeSlewers.Delete(ActiveSlewers.SlewerType.SlewerDome, ref WiseTele._driverInitiatedSlewing);
+            wisetele.slewers.Delete(Slewers.Type.Dome, ref wisetele._driverInitiatedSlewing);
         }
 
         public string Azimuth
@@ -185,6 +195,11 @@ namespace ASCOM.Wise40
             wisedome.CloseShutter();
         }
 
+        public void StopShutter()
+        {
+            wisedome.ShutterStop();
+        }
+
         public string ShutterStatus
         {
             get
@@ -194,16 +209,16 @@ namespace ASCOM.Wise40
 
                 switch (wisedome.ShutterStatus)
                 {
-                    case DeviceInterface.ShutterState.shutterClosed:
-                        return "Closed";
+                    //case DeviceInterface.ShutterState.shutterClosed:
+                    //    return "Closed";
                     case DeviceInterface.ShutterState.shutterClosing:
                         return "Closing";
-                    case DeviceInterface.ShutterState.shutterOpen:
-                        return "Open";
+                    //case DeviceInterface.ShutterState.shutterOpen:
+                    //    return "Open";
                     case DeviceInterface.ShutterState.shutterOpening:
                         return "Opening";
                     default:
-                        return "Unknown";
+                        return null;
                 }
             }
         }

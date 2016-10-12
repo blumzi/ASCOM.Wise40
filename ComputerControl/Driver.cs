@@ -65,12 +65,7 @@ namespace ASCOM.Wise40.ComputerControl
         /// <summary>
         /// Driver description that displays in the ASCOM Chooser.
         /// </summary>
-        private static string driverDescription = "ASCOM Wise40.ComputerControl.";
-        
-        internal static string traceStateProfileName = "Trace Level";
-        internal static string traceStateDefault = "false";
-        
-        internal static bool traceState;
+        private static string driverDescription = "ASCOM Wise40.ComputerControl.";       
 
         /// <summary>
         /// Private variable to hold the connected state
@@ -91,9 +86,10 @@ namespace ASCOM.Wise40.ComputerControl
         public SafetyMonitor()
         {
             ReadProfile(); // Read device configuration from the ASCOM Profile store
+            Wise40.Common.Debugger debugger = Wise40.Common.Debugger.Instance;
 
             tl = new TraceLogger("", "Wise40.ComputerControl");
-            tl.Enabled = traceState;
+            tl.Enabled = debugger.Tracing;
             tl.LogMessage("SafetyMonitor", "Starting initialisation");
 
             _connected = false;
@@ -375,7 +371,6 @@ namespace ASCOM.Wise40.ComputerControl
             using (Profile driverProfile = new Profile())
             {
                 driverProfile.DeviceType = "SafetyMonitor";
-                traceState = Convert.ToBoolean(driverProfile.GetValue(driverID, traceStateProfileName, string.Empty, traceStateDefault));
             }
         }
 
@@ -387,7 +382,6 @@ namespace ASCOM.Wise40.ComputerControl
             using (Profile driverProfile = new Profile())
             {
                 driverProfile.DeviceType = "SafetyMonitor";
-                driverProfile.WriteValue(driverID, traceStateProfileName, traceState.ToString());
             }
         }
 

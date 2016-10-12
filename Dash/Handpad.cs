@@ -18,6 +18,7 @@ namespace ASCOM.Wise40
 {
     public partial class HandpadForm : Form
     {
+        public Dash.FormDash dashForm;
         public DaqsForm daqsForm;
         private static WiseTele wisetele = WiseTele.Instance;
         private double handpadRate = Const.rateSlew;
@@ -26,7 +27,6 @@ namespace ASCOM.Wise40
         private static Debugger debugger = Debugger.Instance;
         private static DomeSlaveDriver domeSlaveDriver = DomeSlaveDriver.Instance;
         private static WiseFocuser wisefocuser = WiseFocuser.Instance;
-        private DateTime statusDisplayExpiration = new DateTime();
         public enum Severity { None, Good, Warning, Error };
 
         private class TimedMovementArg
@@ -82,14 +82,15 @@ namespace ASCOM.Wise40
             }
         }
 
-        private List<TimedMovementResult> results;
-        private bool resultsAvailable = false;
+        //private List<TimedMovementResult> results;
+        //private bool resultsAvailable = false;
 
-        public HandpadForm()
+        public HandpadForm(Dash.FormDash dashForm)
         {
             InitializeComponent();
+            this.dashForm = dashForm;
+            wisetele.init();
             checkBoxTrack.Checked = wisetele.Tracking;
-            results = new List<TimedMovementResult>();
             wisesite.init();
             WiseDome.Instance.init();
             wisefocuser.init();
@@ -123,74 +124,18 @@ namespace ASCOM.Wise40
             wisetele.Tracking = ((CheckBox)sender).Checked;
         }
 
-        private void buttonHardware_Click(object sender, EventArgs e)
-        {
-            Button button = (Button)sender;
-
-            if (daqsForm == null)
-            {
-                daqsForm = new DaqsForm();
-                daqsForm.Visible = true;
-                buttonHardware.Text = "Hide hardware";
-            }
-            else
-            {
-                if (daqsForm.Visible)
-                {
-                    buttonHardware.Text = "Show hardware";
-                    daqsForm.Visible = false;
-                }
-                else
-                {
-                    buttonHardware.Text = "Hide hardware";
-                    daqsForm.Visible = true;
-                }
-            }
-        }
-
-        private void buttonDome_Click(object sender, EventArgs e)
-        {
-            if (panelDome.Visible)
-            {
-                buttonDome.Text = "Show Dome";
-                panelDome.Visible = false;
-            }
-            else
-            {
-                buttonDome.Text = "Hide Dome";
-                panelDome.Visible = true;
-            }
-        }
-
-        private void buttonFocuser_Click(object sender, EventArgs e)
-        {
-            if (panelFocuser.Visible)
-            {
-                buttonFocuser.Text = "Show Focuser";
-                panelFocuser.Visible = false;
-            }
-            else
-            {
-                buttonFocuser.Text = "Hide Focuser";
-                panelFocuser.Visible = true;
-            }
-        }
 
         private void buttonStop_Click(object sender, EventArgs e)
         {
             wisetele.Stop();
         }
 
-        private void RefreshDisplay()
+        public void RefreshDisplay()
         {
-            if (!panelControls.Visible)
-                return;
-
             DateTime now = DateTime.Now;
             DateTime utc = now.ToUniversalTime();
             ASCOM.Utilities.Util u = new Utilities.Util();
-
-            labelDate.Text = utc.ToLongDateString();
+            
             labelLTValue.Text = now.TimeOfDay.ToString(@"hh\hmm\mss\.f\s");
             labelUTValue.Text = utc.TimeOfDay.ToString(@"hh\hmm\mss\.f\s");
             labelSiderealValue.Text = wisesite.LocalSiderealTime.ToString();
@@ -199,71 +144,60 @@ namespace ASCOM.Wise40
             labelDeclinationValue.Text = Angle.FromDegrees(wisetele.Declination).ToNiceString();
             labelHourAngleValue.Text = Angle.FromHours(wisetele.HourAngle, Angle.Type.HA).ToNiceString();
 
-            labelNewRA.Text = "";
-            labelNewRARadians.Text = Angle.FromHours(wisetele.RightAscension).Radians.ToString();
-            labelNewDec.Text = "";
-            labelNewDecRadians.Text = Angle.FromDegrees(wisetele.Declination).Radians.ToString();
-
             labelAltitudeValue.Text = Angle.FromDegrees(wisetele.Altitude).ToNiceString();
             labelAzimuthValue.Text = Angle.FromDegrees(wisetele.Azimuth).ToNiceString();
-
-            labelHAEncValue.Text = wisetele.HAEncoder.Value.ToString();
-            labelDecEncValue.Text = wisetele.DecEncoder.Value.ToString();
-
-            axisValue.Text = wisetele.HAEncoder.AxisValue.ToString();
-            wormValue.Text = wisetele.HAEncoder.WormValue.ToString();
 
             string why;
             if (wisesite.computerControl == null)
             {
-                labelComputerControl.ForeColor = Color.Yellow;
+                dashForm.labelDashComputerControl.ForeColor = Color.Yellow;
                 why = "Cannot read the computer control switch!";
             } else if (wisesite.computerControl.IsSafe)
             {
-                labelComputerControl.ForeColor = Color.Green;
+                dashForm.labelDashComputerControl.ForeColor = Color.Green;
                 why = "Computer control is enabled.";
             } else
             {
-                labelComputerControl.ForeColor = Color.Red;
+                dashForm.labelDashComputerControl.ForeColor = Color.Red;
                 why = why = "Computer control switch is OFF!";
             }
-            toolTip.SetToolTip(labelComputerControl, why);
+            toolTip.SetToolTip(dashForm.labelDashComputerControl, why);
 
             if (wisesite.safeToOpen == null)
             {
-                labelSafeToOpen.ForeColor = Color.Yellow;
+                dashForm.labelDashSafeToOpen.ForeColor = Color.Yellow;
                 why = "Cannot connect to the safeToOpen driver!";
             }
             else if (wisesite.safeToOpen.IsSafe)
             {
-                labelSafeToOpen.ForeColor = Color.Green;
+                dashForm.labelDashSafeToOpen.ForeColor = Color.Green;
                 why = "Conditions are safe to open the dome.";
             }
             else
             {
-                labelSafeToOpen.ForeColor = Color.Red;
+                dashForm.labelDashSafeToOpen.ForeColor = Color.Red;
                 why = wisesite.safeToOpen.CommandString("unsafeReasons", false);
             }
-            toolTip.SetToolTip(labelSafeToOpen, why);
+            toolTip.SetToolTip(dashForm.labelDashSafeToOpen, why);
 
             if (wisesite.safeToImage == null)
             {
-                labelSafeToImage.ForeColor = Color.Yellow;
+                dashForm.labelDashSafeToImage.ForeColor = Color.Yellow;
                 why = "Cannot connect to the safeToImage driver!";
             } else if (wisesite.safeToImage.IsSafe)
             {
-                labelSafeToImage.ForeColor = Color.Green;
+                dashForm.labelDashSafeToImage.ForeColor = Color.Green;
                 why = "Conditions are safe to image.";
             } else
             {
-                labelSafeToImage.ForeColor = Color.Red;
+                dashForm.labelDashSafeToImage.ForeColor = Color.Red;
                 why = wisesite.safeToImage.CommandString("unsafeReasons", false);
             }
-            toolTip.SetToolTip(labelSafeToImage, why);
+            toolTip.SetToolTip(dashForm.labelDashSafeToImage, why);
 
             checkBoxPrimaryIsActive.Checked = wisetele.AxisIsMoving(TelescopeAxes.axisPrimary);
             checkBoxSecondaryIsActive.Checked = wisetele.AxisIsMoving(TelescopeAxes.axisSecondary);
-            string activeSlewers = Wise40.WiseTele.activeSlewers.ToString();
+            string activeSlewers = wisetele.activeSlewers.ToString();
             checkBoxSlewingIsActive.Text = (activeSlewers == string.Empty) ? "Slewing" : "Slewing (" + activeSlewers + ")";
             checkBoxSlewingIsActive.Checked = wisetele.Slewing;
             checkBoxTrackingIsActive.Checked = wisetele.Tracking;
@@ -294,27 +228,6 @@ namespace ASCOM.Wise40
                     WiseTele.RateName(m.currentRate).Replace("rate", "");
 
             checkBoxTrack.Checked = wisetele.Tracking;
-
-            if (scopeBackgroundMover != null && scopeBackgroundMover.IsBusy)
-                TextBoxLog.Text = "Working ...";
-
-            if (resultsAvailable)
-            {
-                TextBoxLog.Clear();
-                if (results.Count == 0)
-                    TextBoxLog.Text = "Cancelled by user!";
-                else
-                {
-                    TelescopeAxes axis = results[0].axis;
-
-                    for (int i = 0; i < results.Count; i++)
-                    {
-                        TextBoxLog.Text += string.Format("[{0}]: ({2})\r\n{1}",
-                            i, results[i].ToString(), results[i].cancelled ? "cancelled" : "completed");
-                    }
-                }
-                resultsAvailable = false;
-            }
 
             if (panelDome.Visible)
             {
@@ -387,19 +300,6 @@ namespace ASCOM.Wise40
             displayRefreshTimer.Enabled = ((Form)sender).Visible ? true : false;
         }
 
-        private void buttonHandpad_Click(object sender, EventArgs e)
-        {
-            if (panelDebug.Visible)
-            {
-                buttonStudy.Text = "Show Study";
-                panelDebug.Visible = false;
-            } else
-            {
-                buttonStudy.Text = "Hide Study";
-                panelDebug.Visible = true;
-            }
-        }
-
         public void directionButton_MouseDown(object sender, MouseEventArgs e)
         {
             Button button = (Button)sender;
@@ -436,7 +336,7 @@ namespace ASCOM.Wise40
                 }
             } catch (Exception ex)
             {
-                Status(ex.Message, 2000, Severity.Error);
+                //dashForm.DashStatus(ex.Message, 2000, Dash.FormDash.Severity.Error);
             }
         }
 
@@ -555,14 +455,14 @@ namespace ASCOM.Wise40
             return bgResults;
         }
 
-        private void scopeBackgroundMover_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-        {
-            if (e.Cancelled)
-                results = new List<TimedMovementResult>();
-            else
-                results = (List<TimedMovementResult>)e.Result;
-            resultsAvailable = true;
-        }
+        //private void scopeBackgroundMover_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        //{
+        //    if (e.Cancelled)
+        //        results = new List<TimedMovementResult>();
+        //    else
+        //        results = (List<TimedMovementResult>)e.Result;
+        //    resultsAvailable = true;
+        //}
 
         private void scopeBackgroundMover_DoWork(object sender, DoWorkEventArgs e)
         {
@@ -576,82 +476,37 @@ namespace ASCOM.Wise40
                 e.Result = results;
         }
 
-        private void MakeSteps(TelescopeAxes axis, double rate, int millis, int nsteps)
-        {
-            scopeBackgroundMover = new BackgroundWorker();
+        //private void MakeSteps(TelescopeAxes axis, double rate, int millis, int nsteps)
+        //{
+        //    scopeBackgroundMover = new BackgroundWorker();
 
-            scopeBackgroundMover.WorkerSupportsCancellation = true;
-            scopeBackgroundMover.RunWorkerCompleted += new RunWorkerCompletedEventHandler(scopeBackgroundMover_RunWorkerCompleted);
-            scopeBackgroundMover.DoWork += new DoWorkEventHandler(scopeBackgroundMover_DoWork);
+        //    scopeBackgroundMover.WorkerSupportsCancellation = true;
+        //    scopeBackgroundMover.RunWorkerCompleted += new RunWorkerCompletedEventHandler(scopeBackgroundMover_RunWorkerCompleted);
+        //    scopeBackgroundMover.DoWork += new DoWorkEventHandler(scopeBackgroundMover_DoWork);
 
-            scopeBackgroundMover.RunWorkerAsync(new TimedMovementArg() { axis = axis, rate = rate, millis = millis, nsteps = nsteps });
-        }
+        //    scopeBackgroundMover.RunWorkerAsync(new TimedMovementArg() { axis = axis, rate = rate, millis = millis, nsteps = nsteps });
+        //}
 
-        private void buttonGo_Click(object sender, EventArgs e)
-        {
-            int nSteps, millis;
-            TelescopeAxes axis;
-            double rate = 0.0;
+        //private void buttonSaveResults_Click(object sender, EventArgs e)
+        //{
 
-            int.TryParse(numericUpDownStepCount.Text, out nSteps);
-            int.TryParse(textBoxMillis.Text, out millis);
+        //    string path = @"c:/Logs/MovementStudy.txt";
 
-            if (nSteps <= 0)
-            {
-                MessageBox.Show("Number of steps must be at least 1.", "Error");
-                return;
-            }
+        //    if (!File.Exists(path))
+        //        using (StreamWriter sw = File.CreateText(path))
+        //            sw.WriteLine("# Movement Study Results for Wise40.");
 
-            if (millis < 1)
-            {
-                MessageBox.Show("Millis must be at least 1.", "Error");
-                return;
-            }
+        //    using (StreamWriter sw = File.AppendText(path))
+        //    {
+        //        sw.WriteLine("");
+        //        sw.WriteLine(string.Format("# {0}", DateTime.Now));
 
-            if (radioButtonAxisHA.Checked)
-                axis = TelescopeAxes.axisPrimary;
-            else
-                axis = TelescopeAxes.axisSecondary;
-
-            if (radioButtonSpeedGuide.Checked)
-                rate = Const.rateGuide;
-            else if (radioButtonSpeedSlew.Checked)
-                rate = Const.rateSlew;
-            else if (radioButtonSpeedSet.Checked)
-                rate = Const.rateSet;
-
-            if (radioButtonDirDown.Checked)
-                rate = -rate;
-
-            try
-            {
-                MakeSteps(axis, rate, millis, nSteps);
-            } catch (Exception ex)
-            {
-                Status(ex.Message, 2000, Severity.Warning);
-            }
-        }
-
-        private void buttonSaveResults_Click(object sender, EventArgs e)
-        {
-
-            string path = @"c:/Logs/MovementStudy.txt";
-
-            if (!File.Exists(path))
-                using (StreamWriter sw = File.CreateText(path))
-                    sw.WriteLine("# Movement Study Results for Wise40.");
-
-            using (StreamWriter sw = File.AppendText(path))
-            {
-                sw.WriteLine("");
-                sw.WriteLine(string.Format("# {0}", DateTime.Now));
-
-                foreach (TimedMovementResult res in results)
-                {
-                    sw.WriteLine(res.ToString());
-                }
-            }
-        }
+        //        foreach (TimedMovementResult res in results)
+        //        {
+        //            sw.WriteLine(res.ToString());
+        //        }
+        //    }
+        //}
 
         private void displayTimer_Tick(object sender, EventArgs e)
         {
@@ -662,7 +517,7 @@ namespace ASCOM.Wise40
         {
             if (!wisetele.Tracking)
             {
-                Status("Telescope is NOT tracking!", 1000, Severity.Error);
+                //dashForm.DashStatus("Telescope is NOT tracking!", 1000, Dash.FormDash.Severity.Error);
                 return;
             }
 
@@ -671,7 +526,7 @@ namespace ASCOM.Wise40
                 wisetele.SlewToCoordinatesAsync(new Angle(textBoxRA.Text).Hours, new Angle(textBoxDec.Text).Degrees);
             } catch (Exception ex)
             {
-                Status(ex.Message, 2000, Severity.Error);
+                //dashForm.DashStatus(ex.Message, 2000, Dash.FormDash.Severity.Error);
             }
         }
 
@@ -717,7 +572,7 @@ namespace ASCOM.Wise40
                 WiseDome.Instance.OpenShutter();
             } catch (Exception ex)
             {
-                Status(ex.Message, 1000, Severity.Error);
+                //dashForm.DashStatus(ex.Message, 1000, Dash.FormDash.Severity.Error);
             }                     
         }
 
@@ -728,24 +583,10 @@ namespace ASCOM.Wise40
                 WiseDome.Instance.CloseShutter();
             } catch (Exception ex)
             {
-                Status(ex.Message, 1000, Severity.Error);
+                //dashForm.DashStatus(ex.Message, 1000, Dash.FormDash.Severity.Error);
             }
         }
-
-        private void buttonWeather_Click(object sender, EventArgs e)
-        {
-            if (groupBoxWeather.Visible)
-            {
-                buttonWeather.Text = "Show Weather";
-                groupBoxWeather.Visible = false;
-            }
-            else
-            {
-                buttonWeather.Text = "Hide Weather";
-                groupBoxWeather.Visible = true;
-            }
-        }
-
+        #region copyme
         private void checkBoxEnslaveDome_CheckedChanged(object sender, EventArgs e)
         {
             wisetele._enslaveDome = checkBoxEnslaveDome.Checked;
@@ -758,7 +599,7 @@ namespace ASCOM.Wise40
                 domeSlaveDriver.OpenShutter();
             } catch (Exception ex)
             {
-                Status(ex.Message, 1000, Severity.Error);  
+                //dashForm.DashStatus(ex.Message, 1000, Dash.FormDash.Severity.Error);  
             }
         }
 
@@ -769,60 +610,13 @@ namespace ASCOM.Wise40
                 domeSlaveDriver.CloseShutter();
             } catch (Exception ex)
             {
-                Status(ex.Message, 1000, Severity.Error);
-            }
-        }
-
-        private void Status(string s, int millis = 0, Severity severity = Severity.None)
-        {
-            Dictionary<Severity, Color> colors = new Dictionary<Severity, Color>()
-            {
-                { Severity.None, Color.FromArgb(176, 161, 142) },
-                { Severity.Warning, Color.LightGoldenrodYellow },
-                { Severity.Error, Color.IndianRed },
-                { Severity.Good, Color.Green },
-            };
-
-            labelStatus.ForeColor = colors[severity];
-            labelStatus.Text = s;
-            if (millis > 0)
-            {
-                statusDisplayExpiration = DateTime.Now.AddMilliseconds(millis);
-                timerStatus.Start();
-            }
-        }
-
-        private void timerStatus_Tick(object sender, EventArgs e)
-        {
-            DateTime now = DateTime.Now;
-
-            if (now.CompareTo(statusDisplayExpiration) > 0)
-            {
-                labelStatus.Text = "";
-                statusDisplayExpiration = now;
-                timerStatus.Stop();
+                //dashForm.DashStatus(ex.Message, 1000, Dash.FormDash.Severity.Error);
             }
         }
 
         private void labelConfDomeSlaved_Click(object sender, EventArgs e)
         {
 
-        }
-
-        private void buttonSafety_Click(object sender, EventArgs e)
-        {
-            Button button = (Button)sender;
-
-            if (groupBoxSafety.Visible)
-            {
-                buttonSafety.Text = "Show safety";
-                groupBoxSafety.Visible = false;
-            }
-            else
-            {
-                buttonSafety.Text = "Hide safety";
-                groupBoxSafety.Visible = true;
-            }
         }
 
         private void textBoxDomeAzGo_Validated(object sender, EventArgs e)
@@ -922,7 +716,7 @@ namespace ASCOM.Wise40
 
             if (pos < 0 || pos >= wisefocuser.MaxStep)
             {
-                Status("Bad focuser target position", 1000, Severity.Error);
+                //dashForm.DashStatus("Bad focuser target position", 1000, Dash.FormDash.Severity.Error);
                 box.Text = string.Empty;
             }
         }
@@ -936,5 +730,6 @@ namespace ASCOM.Wise40
         {
             wisefocuser.Move(WiseFocuser.Direction.AllDown);
         }
+#endregion
     }
 }

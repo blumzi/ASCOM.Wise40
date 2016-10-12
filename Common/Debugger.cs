@@ -5,13 +5,17 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Diagnostics;
+using System.Windows.Forms;
 
 namespace ASCOM.Wise40.Common
 {
     public class Debugger
     {
         private static readonly Debugger instance = new Debugger(); // Singleton
+        private ListBox listBox;
+        private bool _appendToWindow = false;
         private static bool _initialized = false;
+        private static bool _tracing = false;
 
         static Debugger()
         {
@@ -29,7 +33,8 @@ namespace ASCOM.Wise40.Common
             }
         }
 
-        public enum DebugLevel
+        [FlagsAttribute]
+        public enum DebugLevel : int
         {
             DebugASCOM = (1 << 0),
             DebugDevice = (1 << 1),
@@ -40,19 +45,21 @@ namespace ASCOM.Wise40.Common
             DebugEncoders = (1 << 6),
 
             DebugAll = DebugEncoders | DebugAxes | DebugMotors | DebugExceptions | DebugDevice | DebugASCOM | DebugLogic,
+            DebugNone = 0,
         };
 
         public static string[] indents = new string[(int)DebugLevel.DebugEncoders + 1];
 
-        private static uint _level;
+        private static DebugLevel _currentLevel;
 
-        public void init(uint level = 0)
+        public void init(DebugLevel level = 0)
         {
             if (_initialized)
                 return;
 
+            ReadProfile();
             if (level != 0)
-                _level = level;
+                _currentLevel = level;
 
             indents[(int)DebugLevel.DebugASCOM] = "      ";
             indents[(int)DebugLevel.DebugDevice] = ">     ";
@@ -65,6 +72,17 @@ namespace ASCOM.Wise40.Common
             _initialized = true;
         }
 
+        public void SetWindow(ListBox list, bool append = false)
+        {
+            listBox = list;
+            _appendToWindow = append;
+        }
+
+        public void AppendToWindow(bool append)
+        {
+            _appendToWindow = append;
+        }
+
         /// <summary>
         /// Checks if the specifies level is debugged.
         /// </summary>
@@ -72,7 +90,7 @@ namespace ASCOM.Wise40.Common
         /// <returns></returns>
         public bool Debugging(DebugLevel l)
         {
-            return (_level & (uint)l) != 0;
+            return (_currentLevel & l) != 0;
         }
 
         public void WriteLine(DebugLevel level, string fmt, params object[] o)
@@ -81,26 +99,89 @@ namespace ASCOM.Wise40.Common
             {
                 DateTime now = DateTime.Now;
                 string msg = string.Format(fmt, o);
-
-               System.Diagnostics.Debug.WriteLine(string.Format("{0,4} {1,4} {2}/{3}/{4} {5} {6,-25} {7}",
+                string line = string.Format("{0,4} {1,4} {2}/{3}/{4} {5} {6,-25} {7}",
                     Thread.CurrentThread.ManagedThreadId.ToString(),
                     (Task.CurrentId.HasValue ? Task.CurrentId.Value : -1).ToString(),
                     now.Day, now.Month, now.Year, now.TimeOfDay,
                     indents[(int)level] + " " + level.ToString() + ":",
-                    msg));
+                    msg);
+
+               System.Diagnostics.Debug.WriteLine(line);
+                if (listBox != null && _appendToWindow)
+                {
+                    if (listBox.InvokeRequired)
+                    {
+                        listBox.Invoke(new Action(() =>
+                        {
+                            listBox.Items.Add(line);
+                            listBox.Update();
+                        }));
+                    }
+                    else
+                    {
+                        listBox.Items.Add(line);
+                        listBox.Update();
+                    }
+                }
             }
         }
 
-        public uint Level
+        public DebugLevel Level
         {
             get
             {
-                return _level;
+                return _currentLevel;
+            }
+        }
+
+        public void StartDebugging(DebugLevel levels)
+        {
+            _currentLevel |= levels;
+        }
+
+        public void StopDebugging(DebugLevel levels)
+        {
+            _currentLevel &= ~levels;
+        }
+
+        internal static string driverID = "ASCOM.Wise40.Settings";
+        internal static string deviceType = "Telescope";
+
+        public void WriteProfile()
+        {
+            using (ASCOM.Utilities.Profile p = new Utilities.Profile())
+            {
+                if (!p.IsRegistered(driverID))
+                    p.Register(driverID, "Wise40 global settings");
+                p.DeviceType = deviceType;
+                p.WriteValue(driverID, "DebugLevel", ((uint)Level).ToString());
+                p.WriteValue(driverID, "Tracing", _tracing.ToString());
+            }
+        }
+
+        public void ReadProfile()
+        {
+            using (ASCOM.Utilities.Profile p = new Utilities.Profile())
+            {
+                p.DeviceType = deviceType;
+                if (p.IsRegistered(driverID))
+                {
+                    _currentLevel |= (DebugLevel)Convert.ToUInt32(p.GetValue(driverID, "DebugLevel", string.Empty, "0"));
+                    _tracing = Convert.ToBoolean(p.GetValue(driverID, "Tracing", string.Empty, "false"));
+                }
+            }
+        }
+
+        public bool Tracing
+        {
+            get
+            {
+                return _tracing;
             }
 
             set
             {
-                _level = value;
+                _tracing = value;
             }
         }
     }

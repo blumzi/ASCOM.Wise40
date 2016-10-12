@@ -14,10 +14,10 @@ namespace ASCOM.Wise40
         private bool _calibrated = false;
 
         // Simulation stuff
-        private int simulatedValue = 0;                     // the simulated dome encoder value
+        private int simulatedValue = 0;                         // the simulated dome encoder value
         private Angle simulatedStuckAzimuth;
-        private DateTime endSimulatedStuck;                 // time when the dome-stuck simulation should end
-        private System.Timers.Timer simulationTimer;        // times simulated-dome events
+        private DateTime endSimulatedStuck;                     // time when the dome-stuck simulation should end
+        private System.Threading.Timer simulationTimer;        // times simulated-dome events
         private const int _simulatedEncoderTicksPerSecond = 6;
 
         private uint _caliTicks;
@@ -66,10 +66,10 @@ namespace ASCOM.Wise40
             if (Simulated)
             {
                 simulatedValue = 0;
-                simulatedStuckAzimuth = Angle.invalid;
-                simulationTimer = new System.Timers.Timer(1000 / 6);
-                simulationTimer.Elapsed += onSimulationTimer;
-                simulationTimer.Enabled = true;
+                simulatedStuckAzimuth = Angle.invalidAz;
+                int simulationTimeout = 1000 / _simulatedEncoderTicksPerSecond;
+                simulationTimer = new System.Threading.Timer(new System.Threading.TimerCallback(onSimulationTimer));
+                simulationTimer.Change(simulationTimeout, simulationTimeout);
             }
             _initialized = true;
         }
@@ -78,15 +78,15 @@ namespace ASCOM.Wise40
         {
             _movingDirection = dir;
         }
-
-        private void onSimulationTimer(object sender, System.Timers.ElapsedEventArgs e)
+        
+        private void onSimulationTimer(object state)
         {
             if (! Connected)
                 return;
 
             DateTime rightNow = DateTime.Now;
 
-            if (instance.simulatedStuckAzimuth != Angle.invalid)                // A simulatedStuck is required
+            if (instance.simulatedStuckAzimuth != Angle.invalidAz)                // A simulatedStuck is required
             {
                 if (Math.Abs(instance.Azimuth.Degrees - simulatedStuckAzimuth.Degrees) <= 1.0)       // we're in the vicinity of the simulatedStuckAzimuth
                 {
@@ -97,7 +97,7 @@ namespace ASCOM.Wise40
                         return;                                             // not yet - don't modify simulatedValue
                     else
                     {
-                        simulatedStuckAzimuth = Angle.invalid;
+                        simulatedStuckAzimuth = Angle.invalidAz;
                         endSimulatedStuck = DateTime.MinValue;
                     }
                 }
@@ -155,7 +155,7 @@ namespace ASCOM.Wise40
                 Angle az;
 
                 if (!_calibrated)
-                    return Angle.invalid;
+                    return Angle.invalidAz;
 
                 currTicks = Value;
                 if (currTicks == _caliTicks)
