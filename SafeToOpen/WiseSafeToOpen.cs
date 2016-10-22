@@ -257,30 +257,30 @@ namespace ASCOM.Wise40.SafeToOpen
                 List<string> reasons = new List<string>();
 
                 if (boltwood == null)
-                    reasons.Add("No connection to boltwood station");
+                    reasons.Add("No connection to the Boltwood station");
                 else
                 {
                     int light = Convert.ToInt32(boltwood.CommandString("daylight", true));
                     if (ageMaxSeconds > 0 && boltwood.TimeSinceLastUpdate("") > ageMaxSeconds)
-                        reasons.Add(string.Format("boltwood data is older than {0} seconds", ageMaxSeconds));
+                        reasons.Add(string.Format("boltwood - data is older than {0} seconds", ageMaxSeconds));
                     if ((int)boltwood.CloudCover > (int)cloudsMax)
-                        reasons.Add(string.Format("boltwood CloudCover {0} is greater than {1}", (int)boltwood.CloudCover > (int)cloudsMax));
+                        reasons.Add(string.Format("boltwood - CloudCover {0} is greater than {1}", (int)boltwood.CloudCover > (int)cloudsMax));
                     if (light > (int)lightMax)
-                        reasons.Add(string.Format("boltwood DayLight {0} is greater than {1}", light, lightMax));
+                        reasons.Add(string.Format("boltwood - DayLight {0} is greater than {1}", light, lightMax));
                 }
 
                 if (vantagePro == null)
-                    reasons.Add("No connection to vantagePro station");
+                    reasons.Add("No connection to the VantagePro station");
                 else
                 {
                     if (ageMaxSeconds > 0 && vantagePro.TimeSinceLastUpdate("") > ageMaxSeconds)
-                        reasons.Add(string.Format("vantagePro data is older than {0} seconds", ageMaxSeconds));
+                        reasons.Add(string.Format("vantagePro - data is older than {0} seconds", ageMaxSeconds));
                     if (vantagePro.WindSpeed > windMax)
-                        reasons.Add(string.Format("vantagePro WindSpeed {0} is greater than {1}", vantagePro.WindSpeed, windMax));
+                        reasons.Add(string.Format("vantagePro - WindSpeed {0} is greater than {1}", vantagePro.WindSpeed, windMax));
                     if (vantagePro.Humidity > humidityMax)
-                        reasons.Add(string.Format("vantagePro Humidity {0} is greater than {1}", vantagePro.Humidity, humidityMax));
+                        reasons.Add(string.Format("vantagePro - Humidity {0} is greater than {1}", vantagePro.Humidity, humidityMax));
                     if (vantagePro.RainRate > rainMax)
-                        reasons.Add(string.Format("vantagePro RainRate {0} is greater than {1}", vantagePro.RainRate, rainMax));
+                        reasons.Add(string.Format("vantagePro - RainRate {0} is greater than {1}", vantagePro.RainRate, rainMax));
                 }
                 return reasons;
             }

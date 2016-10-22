@@ -13,7 +13,6 @@ namespace ASCOM.Vantage
     [ComVisible(false)]					// Form not registered for COM!
     public partial class SetupDialogForm : Form
     {
-        private bool traceState;
         private string reportFile;
 
         public SetupDialogForm(string reportFile)
