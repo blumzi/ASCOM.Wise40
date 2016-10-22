@@ -16,6 +16,7 @@ namespace ASCOM.Wise40.Common
 
         public enum CardinalDirection { North = 0, East = 1, South = 2, West = 3 };
         public enum AxisDirection { None = 0, Increasing = 1, Decreasing = -1 };
+        public enum TriStateStatus { Good = 1, Warning = 2, Error = 3 };
 
         public const double rateStopped = 0.0;
         public const double rateSlew = 2.0;                           // two degrees/sec

@@ -1,6 +1,6 @@
 ﻿namespace ASCOM.Wise40
 {
-    partial class DaqsForm
+    partial class HardwareForm
     {
         /// <summary>
         /// Required designer variable.
@@ -207,7 +207,7 @@
             this.cbBoard0FirstPortAbit2 = new System.Windows.Forms.CheckBox();
             this.cbBoard0FirstPortAbit4 = new System.Windows.Forms.CheckBox();
             this.cbBoard0FirstPortAbit3 = new System.Windows.Forms.CheckBox();
-            this.timerDaqsRefresh = new System.Windows.Forms.Timer(this.components);
+            this.timerHardwareRefresh = new System.Windows.Forms.Timer(this.components);
             this.panelHardware.SuspendLayout();
             this.gbBoard1.SuspendLayout();
             this.groupBox24.SuspendLayout();
@@ -2401,21 +2401,22 @@
             this.cbBoard0FirstPortAbit3.Text = "checkBox16";
             this.cbBoard0FirstPortAbit3.UseVisualStyleBackColor = true;
             // 
-            // timerDaqsRefresh
+            // timerHardwareRefresh
             // 
-            this.timerDaqsRefresh.Tick += new System.EventHandler(this.timerDaqsRefresh_Tick);
+            this.timerHardwareRefresh.Tick += new System.EventHandler(this.timerHardwareRefresh_Tick);
             // 
-            // DaqsForm
+            // HardwareForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(895, 582);
             this.Controls.Add(this.panelHardware);
             this.Location = new System.Drawing.Point(100, 100);
-            this.Name = "DaqsForm";
+            this.Name = "HardwareForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Wise40 Hardware Monitor";
             this.TopMost = true;
+            //this.VisibleChanged += new System.EventHandler(this.HardwareForm_VisibleChanged);
             this.panelHardware.ResumeLayout(false);
             this.gbBoard1.ResumeLayout(false);
             this.groupBox24.ResumeLayout(false);
@@ -2657,6 +2658,6 @@
         private System.Windows.Forms.CheckBox cbBoard0FirstPortAbit2;
         private System.Windows.Forms.CheckBox cbBoard0FirstPortAbit4;
         private System.Windows.Forms.CheckBox cbBoard0FirstPortAbit3;
-        private System.Windows.Forms.Timer timerDaqsRefresh;
+        private System.Windows.Forms.Timer timerHardwareRefresh;
     }
 }

@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Drawing;
 
+using ASCOM.Wise40.Common;
+
 namespace Dash
 {
     class Statuser
@@ -14,35 +16,28 @@ namespace Dash
         public static Dictionary<Severity, Color> colors = new Dictionary<Severity, Color>()
             {
                 { Severity.Normal, Color.FromArgb(176, 161, 142) },
-                { Severity.Warning, Color.LightGoldenrodYellow },
+                { Severity.Warning, Color.LightYellow },
                 { Severity.Error, Color.IndianRed },
                 { Severity.Good, Color.Green },
             };
 
         private Label label;
-        private ToolStripStatusLabel toolStripStatusLabel;
+        private ToolTip toolTip;
         private DateTime expiration;
         private System.Windows.Forms.Timer timer;
 
-        public Statuser(Label label)
+        public Statuser(Label label, ToolTip tooltip = null)
         {
             this.label = label;
             timer = new Timer();
             timer.Interval = 100;
             timer.Tick += Tick;
+            toolTip = tooltip;
         }
 
-        public Statuser(ToolStripStatusLabel label)
+        public void Show(string s, int millis = 0, Severity severity = Severity.Normal, bool silent = false)
         {
-            this.toolStripStatusLabel = label;
-            timer = new Timer();
-            timer.Interval = 100;
-            timer.Tick += Tick;
-        }
-
-        public void Show(string s, int millis = 0, Severity severity = Severity.Normal)
-        {
-            if (severity == Severity.Error)
+            if (severity == Severity.Error && !silent)
                 System.Media.SystemSounds.Beep.Play();
 
             if (s == null)
@@ -52,10 +47,6 @@ namespace Dash
             {
                 label.ForeColor = colors[severity];
                 label.Text = s;
-            } else if (toolStripStatusLabel != null)
-            {
-                toolStripStatusLabel.ForeColor = colors[severity];
-                toolStripStatusLabel.Text = s;
             }
 
             if (millis > 0)
@@ -65,6 +56,11 @@ namespace Dash
             }
         }
 
+        public void SetToolTip(string tip)
+        {
+            toolTip.SetToolTip(label, tip);
+        }
+
         private void Tick(object sender, EventArgs e)
         {
             DateTime now = DateTime.Now;
@@ -72,9 +68,24 @@ namespace Dash
             if (now.CompareTo(expiration) > 0)
             {
                 label.Text = "";
+                toolTip.SetToolTip(label, "");
                 expiration = now;
                 timer.Stop();
             }
+        }
+
+        public static Color TriStateColor(Const.TriStateStatus stat)
+        {
+            switch (stat)
+            {
+                case Const.TriStateStatus.Error:
+                    return colors[Severity.Error];
+                case Const.TriStateStatus.Good:
+                    return colors[Severity.Good];
+                case Const.TriStateStatus.Warning:
+                    return colors[Severity.Warning];
+            }
+            return colors[Severity.Normal];
         }
     }
 }

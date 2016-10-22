@@ -13,6 +13,7 @@ using ASCOM.DriverAccess;
 using ASCOM.Wise40;
 using ASCOM.Wise40.Common;
 using ASCOM.Wise40.Hardware;
+using ASCOM.Wise40.SafeToOpen;
 
 namespace Dash
 {
@@ -23,6 +24,9 @@ namespace Dash
         WiseFocuser wisefocuser = WiseFocuser.Instance;
         Hardware hardware = Hardware.Instance;
         WiseSite wisesite = WiseSite.Instance;
+        WiseSafeToOpen wisesafetoopen = WiseSafeToOpen.Instance;
+        ObservingConditions boltwood = new ASCOM.DriverAccess.ObservingConditions("ASCOM.CloudSensor.ObservingConditions");
+
         DomeSlaveDriver domeSlaveDriver = DomeSlaveDriver.Instance;
         DebuggingForm debuggingForm = new DebuggingForm();
         Debugger debugger = Debugger.Instance;
@@ -43,6 +47,9 @@ namespace Dash
             wisedome.Connected = true;
             wisefocuser.init();
             wisefocuser.Connected = true;
+            wisesafetoopen.init();
+            wisesafetoopen.Connected = true;
+            boltwood.Connected = true;
 
             InitializeComponent();
 
@@ -60,7 +67,7 @@ namespace Dash
             domeStatus = new Statuser(labelDomeStatus);
             shutterStatus = new Statuser(labelDomeShutterStatus);
             focuserStatus = new Statuser(labelFocuserStatus);
-            weatherStatus = new Statuser(labelWeatherStatus);
+            weatherStatus = new Statuser(labelWeatherStatus, toolTip);
 
             menuStrip.RenderMode = ToolStripRenderMode.ManagerRenderMode;
             ToolStripManager.Renderer = new Wise40ToolstripRenderer();
@@ -220,17 +227,24 @@ namespace Dash
             {
                 string nc = "???";
 
-                labelAgeValue.Text = nc;
-                labelCloudCoverValue.Text = nc;
-                labelCloudCoverValue.Text = nc;
-                labelDewPointValue.Text = nc;
-                labelSkyTempValue.Text = nc;
-                labelTempValue.Text = nc;
-                labelHumidityValue.Text = nc;
-                labelPressureValue.Text = nc;
-                labelRainRateValue.Text = nc;
-                labelWindSpeedValue.Text = nc;
-                labelWindDirValue.Text = nc;
+                List<Label> labels = new List<Label>() {
+                    labelAgeValue,
+                    labelCloudCoverValue,
+                    labelDewPointValue,
+                    labelSkyTempValue,
+                    labelTempValue,
+                    labelHumidityValue,
+                    labelPressureValue,
+                    labelRainRateValue,
+                    labelWindSpeedValue,
+                    labelWindDirValue,
+                };
+
+                foreach (var label in labels)
+                {
+                    label.Text = nc;
+                    label.ForeColor = Statuser.colors[Statuser.Severity.Warning];
+                }
             }
             else
             {
@@ -238,7 +252,18 @@ namespace Dash
                 {
                     ObservingConditions oc = wisesite.observingConditions;
 
+                    #region ObservingConditions Informational
                     labelAgeValue.Text = ((int)Math.Round(oc.TimeSinceLastUpdate(""), 2)).ToString() + "sec";
+                    labelDewPointValue.Text = oc.DewPoint.ToString() + "°C";
+                    labelSkyTempValue.Text = oc.SkyTemperature.ToString() + "°C";
+                    labelTempValue.Text = oc.Temperature.ToString() + "°C";
+                    labelPressureValue.Text = oc.Pressure.ToString() + "mB";
+                    labelWindDirValue.Text = oc.WindDirection.ToString() + "°";
+                    #endregion
+
+                    #region ObservingConditions governed by SafeToOpen
+                    labelHumidityValue.Text = oc.Humidity.ToString() + "%";
+                    labelHumidityValue.ForeColor = Statuser.TriStateColor(wisesafetoopen.isSafeHumidity);
 
                     double d = oc.CloudCover;
                     if (d == 0.0)
@@ -249,15 +274,38 @@ namespace Dash
                         labelCloudCoverValue.Text = "VeryCloudy";
                     else
                         labelCloudCoverValue.Text = "Unknown";
+                    labelCloudCoverValue.ForeColor = Statuser.TriStateColor(wisesafetoopen.isSafeCloudCover);
 
-                    labelDewPointValue.Text = oc.DewPoint.ToString() + "°C";
-                    labelSkyTempValue.Text = oc.SkyTemperature.ToString() + "°C";
-                    labelTempValue.Text = oc.Temperature.ToString() + "°C";
-                    labelHumidityValue.Text = oc.Humidity.ToString() + "%";
-                    labelPressureValue.Text = oc.Pressure.ToString() + "mB";
-                    labelRainRateValue.Text = (oc.RainRate > 0.0) ? "Wet" : "Dry";
+                    string light = "Unknown";
+                    switch (Convert.ToInt32(boltwood.CommandString("daylight", true)))
+                    {
+                        case 0:
+                            light = "Unknown"; break;
+                        case 1:
+                            light = "Dark"; break;
+                        case 2:
+                            light = "Light"; break;
+                        case 3:
+                            light = "VeryLight"; break;
+                    }
+                    labelLightValue.Text = light;
+                    labelLightValue.ForeColor = Statuser.TriStateColor(wisesafetoopen.isSafeLight);
+
                     labelWindSpeedValue.Text = oc.WindSpeed.ToString() + "m/s";
-                    labelWindDirValue.Text = oc.WindDirection.ToString() + "°";
+                    labelWindSpeedValue.ForeColor = Statuser.TriStateColor(wisesafetoopen.isSafeWindSpeed);
+
+                    labelRainRateValue.Text = (oc.RainRate > 0.0) ? "Wet" : "Dry";
+                    labelRainRateValue.ForeColor = Statuser.TriStateColor(wisesafetoopen.isSafeRain);
+
+                    if (wisesafetoopen.IsSafe)
+                    {
+                        weatherStatus.SetToolTip("");
+                    } else
+                    {
+                        weatherStatus.Show("Not safe to open", 0, Statuser.Severity.Error, true);
+                        weatherStatus.SetToolTip(string.Join("\r\n", wisesafetoopen.UnsafeReasons));
+                    }
+                    #endregion
                 }
                 catch (ASCOM.PropertyNotImplementedException ex)
                 {
@@ -277,8 +325,8 @@ namespace Dash
         #region MainMenu
         private void digitalIOCardsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            ASCOM.Wise40.DaqsForm daqsForm = new ASCOM.Wise40.DaqsForm();
-            daqsForm.Visible = true;
+            ASCOM.Wise40.HardwareForm hardwareForm = new ASCOM.Wise40.HardwareForm();
+            hardwareForm.Visible = true;
         }
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
