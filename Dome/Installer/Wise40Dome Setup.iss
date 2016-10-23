@@ -5,7 +5,7 @@
 [Setup]
 AppID={{f86848a3-b655-4564-aa8a-013046f82a88}
 AppName=ASCOM Wise40 Dome Driver
-AppVerName=ASCOM CloudSensor ObservingConditions Driver 6.2.0.0
+AppVerName=ASCOM Wise40Dome Dome Driver 6.2.0.0
 AppVersion=6.2.0.0
 AppPublisher=Arie Blumenzweig <blumzi@013.net>
 AppPublisherURL=mailto:blumzi@013.net
@@ -34,10 +34,8 @@ Name: "{cf}\ASCOM\Uninstall\Dome\Wise40Dome"
 ; TODO: Add subfolders below {app} as needed (e.g. Name: "{app}\MyFolder")
 
 [Files]
-Source: "C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Dome\bin\Debug\ASCOM.Wise40.Dome.dll"; DestDir: "{app}"
-; Require a read-me HTML to appear after installation, maybe driver's Help doc
-Source: "C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Dome\Installer\ReadMe.html"; DestDir: "{app}"; Flags: isreadme
-; TODO: Add other files needed by your driver here (add subfolders above)
+Source: "{#SolutionDir}\Dome\bin\Debug\ASCOM.Wise40.Dome.dll"; DestDir: "{app}"
+Source: "{#SolutionDir}\Dome\Installer\ReadMe.html"; DestDir: "{app}"; Flags: isreadme
 
 
 ; Only if driver is .NET

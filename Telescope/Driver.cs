@@ -92,12 +92,6 @@ namespace ASCOM.Wise40
 
         private Astrometry.NOVAS.NOVAS31 novas31 = new Astrometry.NOVAS.NOVAS31();
 
-        /// <summary>
-        /// Private variable to hold the trace logger object (creates a diagnostic log file with information that you specify)
-        /// </summary>
-        
-        public TelescopeHandpadForm handpad;
-
         private Common.Debugger debugger = Common.Debugger.Instance;
 
         private WiseTele wisetele = WiseTele.Instance;
@@ -134,22 +128,17 @@ namespace ASCOM.Wise40
         /// </summary>
         public void SetupDialog()
         {
-            if (wisetele.Connected)
+            using (TelescopeSetupDialogForm F = new TelescopeSetupDialogForm(wisetele.traceLogger.Enabled,
+                wisetele.debugger.Level,
+                wisesite.astrometricAccuracy,
+                wisetele._enslaveDome))
             {
-                handpad = new TelescopeHandpadForm();
-                handpad.ShowDialog();
-            } else
-                using (TelescopeSetupDialogForm F = new TelescopeSetupDialogForm(wisetele.traceLogger.Enabled,
-                    wisetele.debugger.Level,
-                    wisesite.astrometricAccuracy,
-                    wisetele._enslaveDome))
+                var result = F.ShowDialog();
+                if (result == System.Windows.Forms.DialogResult.OK)
                 {
-                    var result = F.ShowDialog();
-                    if (result == System.Windows.Forms.DialogResult.OK)
-                    {
-                        WriteProfile(); // Persist device configuration values to the ASCOM Profile store
-                    }
+                    WriteProfile(); // Persist device configuration values to the ASCOM Profile store
                 }
+            }
         }
 
         public ArrayList SupportedActions

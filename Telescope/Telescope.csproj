@@ -100,12 +100,6 @@
     <Compile Include="AxisMonitor.cs" />
     <Compile Include="DomeSlaveDriver.cs" />
     <Compile Include="Driver.cs" />
-    <Compile Include="TelescopeHandpad.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="TelescopeHandpad.Designer.cs">
-      <DependentUpon>TelescopeHandpad.cs</DependentUpon>
-    </Compile>
     <Compile Include="Movement.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
@@ -135,9 +129,6 @@
     <Compile Include="WiseTele.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="TelescopeHandpad.resx">
-      <DependentUpon>TelescopeHandpad.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <SubType>Designer</SubType>
       <Generator>ResXFileCodeGenerator</Generator>
@@ -206,7 +197,7 @@
     </PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PostBuildEvent>rem "C:\Program Files (x86)\Inno Setup 5\ISCC.exe" /Q /O"$(SolutionDir)\Deliveries" "$(ProjectDir)\Installer\Wise40Telescope Setup.iss"</PostBuildEvent>
+    <PostBuildEvent>"C:\Program Files (x86)\Inno Setup 5\ISCC.exe" "/DSolutionDir=$(SolutionDir)"  /O"$(SolutionDir)\Deliveries" "$(ProjectDir)\Installer\Wise40Telescope Setup.iss"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

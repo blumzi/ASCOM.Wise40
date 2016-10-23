@@ -34,12 +34,8 @@ Name: "{cf}\ASCOM\Uninstall\SafetyMonitor\SafeToImage"
 ; TODO: Add subfolders below {app} as needed (e.g. Name: "{app}\MyFolder")
 
 [Files]
-Source: "C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\SafeToImage\bin\Debug\SafeToImage.dll"; DestDir: "{app}"
-;Source: {TargetPath}; DestDir: "{app}"
-; Require a read-me HTML to appear after installation, maybe driver's Help doc
-Source: {ProjectDir}\Installer\ReadMe.html; DestDir: "{app}"; Flags: isreadme
-; TODO: Add other files needed by your driver here (add subfolders above)
-
+Source: "{#SolutionDir}\SafeToImage\bin\Debug\ASCOM.Wise40.SafeToImage.SafetyMonitor.dll"; DestDir: "{app}"
+Source: "{#SolutionDir}\SafeToImage\Installer\ReadMe.html"; DestDir: "{app}"; Flags: isreadme
 
 ; Only if driver is .NET
 [Run]
@@ -55,8 +51,8 @@ Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40
 ; Only for .NET assembly/in-proc drivers
 Filename: "{dotnet4032}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Wise40.SafeToImage.dll"""; Flags: runhidden 32bit
 ; This helps to give a clean uninstall
-Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.SafeToImage.dll"""; Flags: runhidden 64bit; Check: IsWin64
-Filename: "{dotnet4064}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Wise40.SafeToImage.dll"""; Flags: runhidden 64bit; Check: IsWin64
+Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.SafeToImage.SafetyMonitor.dll"""; Flags: runhidden 64bit; Check: IsWin64
+Filename: "{dotnet4064}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Wise40.SafeToImage.SafetyMonitor.dll"""; Flags: runhidden 64bit; Check: IsWin64
 
 
 

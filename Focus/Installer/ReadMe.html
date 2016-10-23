@@ -1,0 +1,53 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+</head>
+<body>
+    <center><h1>Wise40 ASCOM Focuser driver</h1></center>
+    <center>
+        <b><a href="https://physics.tau.ac.il/astrophysics/wise_observatory">Wise Observatory</a></b>
+        <br />
+        <br />Raymond & Beverly Sackler Faculty of Exact Sciences
+        <br /> School of Physics & Astronomy
+        <br />Department of Astrophysics
+        <br />
+        <br />Tel Aviv University
+        <br />Israel
+        <br />
+        <br />Arie Blumenzweig<address>blumzi@013.net</address>
+    </center>
+
+
+    <h2>Abstract</h2>
+    <p>
+        This is an ASCOM Focuser driver for the Wise Observatory.
+    </p>
+    <p>The driver's <i>IsSafe</i> method should be called before any of the observatory's computer-controlled parts is controlled.</p>
+
+    <h2>Hardware</h2>
+    <p>The Wise 40" Focuser has:
+        <ul>
+            <li>A Up/Down motor</li>
+            <li>A multi-turn absolute encoder</li>
+    </ul>
+    </p>
+
+    <h2>Software</h2>
+    <p>
+        The driver provides the ASCOM:
+        <ul>
+            <li><code>Position</code> property</li>
+            <li>The <code>Move(position)</code> method</li>
+        </ul>
+    </p>
+
+    <h3>Setup</h3>
+    <p>The driver has no configurable parameters.</p>
+
+    <h3>ASCOM Compliance</h3>
+    <p>The driver passes the ASCOM 6.2 Compliance test.</p>
+</body>
+</html>

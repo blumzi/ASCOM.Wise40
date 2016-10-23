@@ -4,8 +4,8 @@
 ;
 [Setup]
 AppID={{f86848a3-b655-4564-aa8a-013046f82a88}
-AppName=ASCOM ComputerControl SafetyMonitor Driver
-AppVerName="ASCOM {param:ProjectName} SafetyMonitor Driver 6.2.0.0"
+AppName=Wise40 Dashboard
+AppVerName="Wise40 {param:ProjectName} Dashboard 6.2.0.0"
 AppVersion=6.2.0.0
 AppPublisher=Arie Blumenzweig <blumzi@013.net>
 AppPublisherURL=mailto:blumzi@013.net
@@ -13,39 +13,36 @@ AppSupportURL=http://tech.groups.yahoo.com/group/ASCOM-Talk/
 AppUpdatesURL=http://ascom-standards.org/
 VersionInfoVersion=1.0.0
 MinVersion=0,5.0.2195sp4
-DefaultDirName="{cf}\ASCOM\SafetyMonitor"
+DefaultDirName="{cf}\ASCOM\Dash"
 DisableDirPage=yes
 DisableProgramGroupPage=yes
 OutputDir="."
-OutputBaseFilename="ComputerControl Setup"
+OutputBaseFilename="Dash Setup"
 Compression=lzma
 SolidCompression=yes
 ; Put there by Platform if Driver Installer Support selected
 WizardImageFile="C:\Program Files (x86)\ASCOM\Platform 6 Developer Components\Installer Generator\Resources\WizardImage.bmp"
 LicenseFile="C:\Program Files (x86)\ASCOM\Platform 6 Developer Components\Installer Generator\Resources\CreativeCommons.txt"
-; {cf}\ASCOM\Uninstall\ComputerControl folder created by Platform, always
-UninstallFilesDir="{cf}\ASCOM\Uninstall\SafetyMonitor\ComputerControl"
+; {cf}\ASCOM\Uninstall\Dash folder created by Platform, always
+UninstallFilesDir="{cf}\ASCOM\Uninstall\Dash"
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Dirs]
-Name: "{cf}\ASCOM\Uninstall\SafetyMonitor\ComputerControl"
+Name: "{cf}\ASCOM\Uninstall\Dash"
 ; TODO: Add subfolders below {app} as needed (e.g. Name: "{app}\MyFolder")
 
 [Files]
-Source: "C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\ComputerControl\bin\Debug\ASCOM.Wise40.ComputerControl.SafetyMonitor.dll"; DestDir: "{app}"
-;Source: {TargetPath}; DestDir: "{app}"
-; Require a read-me HTML to appear after installation, maybe driver's Help doc
-Source: "C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\ComputerControl\\Installer\ReadMe.html"; DestDir: "{app}"; Flags: isreadme
-; TODO: Add other files needed by your driver here (add subfolders above)
+Source: "{#SolutionDir}\Dash\bin\Debug\Dash.exe"; DestDir: "{app}"
+Source: "{#SolutionDir}\Dash\Installer\ReadMe.html"; DestDir: "{app}"; Flags: isreadme
 
 
 ; Only if driver is .NET
 [Run]
 ; Only for .NET assembly/in-proc drivers
-Filename: "{dotnet4032}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.ComputerControl.SafetyMonitor.dll"""; Flags: runhidden 32bit
-Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.ComputerControl.SafetyMonitor.dll"""; Flags: runhidden 64bit; Check: IsWin64
+;Filename: "{dotnet4032}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.Focuser.dll"""; Flags: runhidden 32bit
+;Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.Focuser.dll"""; Flags: runhidden 64bit; Check: IsWin64
 
 
 
@@ -53,10 +50,10 @@ Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40
 ; Only if driver is .NET
 [UninstallRun]
 ; Only for .NET assembly/in-proc drivers
-Filename: "{dotnet4032}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Wise40.ComputerControl.SafetyMonitor.dll"""; Flags: runhidden 32bit
+;Filename: "{dotnet4032}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Wise40.Focuser.dll"""; Flags: runhidden 32bit
 ; This helps to give a clean uninstall
-Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.ComputerControl.SafetyMonitor.dll"""; Flags: runhidden 64bit; Check: IsWin64
-Filename: "{dotnet4064}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Wise40.ComputerControl.SafetyMonitor.dll"""; Flags: runhidden 64bit; Check: IsWin64
+;Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.Focuser.dll"""; Flags: runhidden 64bit; Check: IsWin64
+;Filename: "{dotnet4064}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Wise40.Focuser.dll"""; Flags: runhidden 64bit; Check: IsWin64
 
 
 

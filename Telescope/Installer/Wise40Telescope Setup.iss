@@ -34,11 +34,8 @@ Name: "{cf}\ASCOM\Uninstall\Telescope\Wise40Telescope"
 ; TODO: Add subfolders below {app} as needed (e.g. Name: "{app}\MyFolder")
 
 [Files]
-Source: "C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Telescope\bin\Debug\ASCOM.Wise40.Telescope.dll"; DestDir: "{app}"
-; Require a read-me HTML to appear after installation, maybe driver's Help doc
-Source: "C:\Users\Blumzi\Documents\Visual Studio 2015\Projects\Wise40\Telescope\Installer\ReadMe.html"; DestDir: "{app}"; Flags: isreadme
-; TODO: Add other files needed by your driver here (add subfolders above)
-
+Source: "{#SolutionDir}\Telescope\bin\Debug\ASCOM.Wise40.Telescope.dll"; DestDir: "{app}"
+Source: "{#SolutionDir}\Telescope\Installer\ReadMe.html"; DestDir: "{app}"; Flags: isreadme
 
 ; Only if driver is .NET
 [Run]

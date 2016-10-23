@@ -126,7 +126,7 @@
     </None>
     <Content Include="ASCOM.ico" />
     <Content Include="Installer\ReadMe.html" />
-    <Content Include="Installer\ComputerControl Setup.iss" />
+    <Content Include="Installer\ComputerControl.iss" />
     <Content Include="ReadMe.htm" />
     <None Include="Resources\ASCOM.bmp" />
   </ItemGroup>
@@ -161,6 +161,10 @@
   <PropertyGroup>
     <PreBuildEvent>
     </PreBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent>"C:\Program Files (x86)\Inno Setup 5\ISCC.exe" "/DSolutionDir=$(SolutionDir)" "/O$(SolutionDir)\Deliveries" "$(ProjectDir)Installer\ComputerControl.iss" 
+</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
