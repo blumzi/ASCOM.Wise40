@@ -4,7 +4,7 @@
 ;
 [Setup]
 AppID={{f86848a3-b655-4564-aa8a-013046f82a88}
-AppName=Wise40 Dashboard
+AppName="Wise40 Dashboard"
 AppVerName="Wise40 {param:ProjectName} Dashboard 6.2.0.0"
 AppVersion=6.2.0.0
 AppPublisher=Arie Blumenzweig <blumzi@013.net>
@@ -13,7 +13,7 @@ AppSupportURL=http://tech.groups.yahoo.com/group/ASCOM-Talk/
 AppUpdatesURL=http://ascom-standards.org/
 VersionInfoVersion=1.0.0
 MinVersion=0,5.0.2195sp4
-DefaultDirName="{cf}\ASCOM\Dash"
+DefaultDirName="{pf32}\Wise40\Dash"
 DisableDirPage=yes
 DisableProgramGroupPage=yes
 OutputDir="."
@@ -24,13 +24,14 @@ SolidCompression=yes
 WizardImageFile="C:\Program Files (x86)\ASCOM\Platform 6 Developer Components\Installer Generator\Resources\WizardImage.bmp"
 LicenseFile="C:\Program Files (x86)\ASCOM\Platform 6 Developer Components\Installer Generator\Resources\CreativeCommons.txt"
 ; {cf}\ASCOM\Uninstall\Dash folder created by Platform, always
-UninstallFilesDir="{cf}\ASCOM\Uninstall\Dash"
+UninstallFilesDir="{pf32}\Wise40\Dash\Uninstall"
+SetupLogging=yes
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Dirs]
-Name: "{cf}\ASCOM\Uninstall\Dash"
+Name: "{pf32}\Wise40\Dash\Uninstall"
 ; TODO: Add subfolders below {app} as needed (e.g. Name: "{app}\MyFolder")
 
 [Files]
@@ -41,22 +42,10 @@ Source: "{#SolutionDir}\Dash\Installer\ReadMe.html"; DestDir: "{app}"; Flags: is
 ; Only if driver is .NET
 [Run]
 ; Only for .NET assembly/in-proc drivers
-;Filename: "{dotnet4032}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.Focuser.dll"""; Flags: runhidden 32bit
-;Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.Focuser.dll"""; Flags: runhidden 64bit; Check: IsWin64
-
-
-
 
 ; Only if driver is .NET
 [UninstallRun]
 ; Only for .NET assembly/in-proc drivers
-;Filename: "{dotnet4032}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Wise40.Focuser.dll"""; Flags: runhidden 32bit
-; This helps to give a clean uninstall
-;Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.Focuser.dll"""; Flags: runhidden 64bit; Check: IsWin64
-;Filename: "{dotnet4064}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Wise40.Focuser.dll"""; Flags: runhidden 64bit; Check: IsWin64
-
-
-
 
 [CODE]
 //
