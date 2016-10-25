@@ -28,5 +28,7 @@ namespace ASCOM.Wise40.Common
 
         public const double defaultReadTimeoutMillis = 2000.0;
         public const int defaultReadRetries = 20;
+
+        public const string crnl = "\r\n";
     }
 }

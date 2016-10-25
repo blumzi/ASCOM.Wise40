@@ -2084,6 +2084,7 @@
             this.ClientSize = new System.Drawing.Size(917, 705);
             this.Controls.Add(this.tableLayoutMain);
             this.DoubleBuffered = true;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip;
             this.MaximizeBox = false;
             this.Name = "FormDash";

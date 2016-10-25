@@ -164,7 +164,7 @@ namespace ASCOM.Wise40.SafeToOpen
             // you need something to ensure that only one command is in progress at a time
 
             if (command == "unsafeReasons")
-                return string.Join("\r\n", UnsafeReasons);
+                return string.Join(Const.crnl, UnsafeReasons);
 
             return string.Empty;
         }

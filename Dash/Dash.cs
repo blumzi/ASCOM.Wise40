@@ -108,7 +108,7 @@ namespace Dash
             DateTime localTime = now.ToLocalTime();
             ASCOM.Utilities.Util u = new ASCOM.Utilities.Util();
 
-            labelDate.Text = localTime.ToLongDateString() + "\r\n" + localTime.ToLongTimeString();
+            labelDate.Text = localTime.ToLongDateString() + Const.crnl + localTime.ToLongTimeString();
 
             #region RefreshTelescope
             labelLTValue.Text = now.TimeOfDay.ToString(@"hh\hmm\mss\.f\s");
@@ -160,57 +160,57 @@ namespace Dash
             #endregion
 
             #region RefreshSafety
-            string why;
+            string tip;
             if (wisesite.computerControl == null)
             {
                 labelDashComputerControl.ForeColor = Statuser.colors[Statuser.Severity.Warning];
-                why = "Cannot read the computer control switch!";
+                tip = "Cannot read the computer control switch!";
             }
             else if (wisesite.computerControl.IsSafe)
             {
                 labelDashComputerControl.ForeColor = Statuser.colors[Statuser.Severity.Good];
-                why = "Computer control is enabled.";
+                tip = "Computer control is enabled.";
             }
             else
             {
                 labelDashComputerControl.ForeColor = Statuser.colors[Statuser.Severity.Error];
-                why = why = "Computer control switch is OFF!";
+                tip = "Computer control switch is OFF!";
             }
-            toolTip.SetToolTip(labelDashComputerControl, why);
+            toolTip.SetToolTip(labelDashComputerControl, tip);
 
             if (wisesite.safeToOpen == null)
             {
                 labelDashSafeToOpen.ForeColor = Statuser.colors[Statuser.Severity.Warning];
-                why = "Cannot connect to the safeToOpen driver!";
+                tip = "Cannot connect to the safeToOpen driver!";
             }
             else if (wisesite.safeToOpen.IsSafe)
             {
                 labelDashSafeToOpen.ForeColor = Statuser.colors[Statuser.Severity.Good];
-                why = "Conditions are safe to open the dome.";
+                tip = "Conditions are safe to open the dome.";
             }
             else
             {
                 labelDashSafeToOpen.ForeColor = Statuser.colors[Statuser.Severity.Error];
-                why = wisesite.safeToOpen.CommandString("unsafeReasons", false);
+                tip = wisesite.safeToOpen.CommandString("unsafeReasons", false);
             }
-            toolTip.SetToolTip(labelDashSafeToOpen, why);
+            toolTip.SetToolTip(labelDashSafeToOpen, tip);
 
             if (wisesite.safeToImage == null)
             {
                 labelDashSafeToImage.ForeColor = Statuser.colors[Statuser.Severity.Warning];
-                why = "Cannot connect to the safeToImage driver!";
+                tip = "Cannot connect to the safeToImage driver!";
             }
             else if (wisesite.safeToImage.IsSafe)
             {
                 labelDashSafeToImage.ForeColor = Statuser.colors[Statuser.Severity.Good];
-                why = "Conditions are safe to image.";
+                tip = "Conditions are safe to image.";
             }
             else
             {
                 labelDashSafeToImage.ForeColor = Statuser.colors[Statuser.Severity.Error];
-                why = wisesite.safeToImage.CommandString("unsafeReasons", false);
+                tip = wisesite.safeToImage.CommandString("unsafeReasons", false);
             }
-            toolTip.SetToolTip(labelDashSafeToImage, why);
+            toolTip.SetToolTip(labelDashSafeToImage, tip);
             #endregion
 
             #region RefreshDome
@@ -303,7 +303,7 @@ namespace Dash
                     } else
                     {
                         weatherStatus.Show("Not safe to open", 0, Statuser.Severity.Error, true);
-                        weatherStatus.SetToolTip(string.Join("\r\n", wisesafetoopen.UnsafeReasons));
+                        weatherStatus.SetToolTip(string.Join(Const.crnl, wisesafetoopen.UnsafeReasons));
                     }
                     #endregion
                 }
