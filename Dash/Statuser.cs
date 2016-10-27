@@ -68,7 +68,8 @@ namespace Dash
             if (now.CompareTo(expiration) > 0)
             {
                 label.Text = "";
-                toolTip.SetToolTip(label, "");
+                if (toolTip != null)
+                    toolTip.SetToolTip(label, "");
                 expiration = now;
                 timer.Stop();
             }

@@ -114,10 +114,11 @@ namespace ASCOM.CloudSensor
             utilities = new Util(); //Initialise util object
             astroUtilities = new AstroUtils(); // Initialise astro utilities object
 
-            if (_dataFile == null || _dataFile == string.Empty)
-                throw new InvalidValueException("Null or empty data file name");
+            //if (_dataFile == null || _dataFile == string.Empty)
+            //    throw new InvalidValueException("Null or empty data file name");
 
-            GetSensorData();
+            if (_dataFile != null && _dataFile != string.Empty)
+                GetSensorData();
 
             tl.LogMessage("ObservingConditions", "Completed initialisation");
         }

@@ -107,8 +107,6 @@ namespace ASCOM.Vantage
         public ObservingConditions()
         {
             ReadProfile(); // Read device configuration from the ASCOM Profile store
-            if (_reportFile == null || _reportFile == string.Empty || !File.Exists(_reportFile))
-                    throw new InvalidValueException("Null or empty report file name");
 
             tl = new TraceLogger("", "Vantage");
             tl.Enabled = debugger.Tracing;
@@ -119,7 +117,8 @@ namespace ASCOM.Vantage
             astroUtilities = new AstroUtils(); // Initialise astro utilities object
 
             tl.LogMessage("ObservingConditions", "Completed initialisation");
-            Refresh();
+            if (_reportFile != null && _reportFile != string.Empty && File.Exists(_reportFile))
+                Refresh();
         }
 
 

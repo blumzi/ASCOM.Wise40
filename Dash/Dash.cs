@@ -34,6 +34,7 @@ namespace Dash
         Statuser dashStatus, telescopeStatus, domeStatus, shutterStatus, focuserStatus, weatherStatus;
 
         private double handpadRate = Const.rateSlew;
+        private bool _safetyOverride = false;
 
         private List<ToolStripMenuItem> debugMenuItems;
 
@@ -178,23 +179,33 @@ namespace Dash
             }
             toolTip.SetToolTip(labelDashComputerControl, tip);
 
-            if (wisesite.safeToOpen == null)
-            {
-                labelDashSafeToOpen.ForeColor = Statuser.colors[Statuser.Severity.Warning];
-                tip = "Cannot connect to the safeToOpen driver!";
-            }
-            else if (wisesite.safeToOpen.IsSafe)
+            tip = null;
+            if (_safetyOverride)
             {
                 labelDashSafeToOpen.ForeColor = Statuser.colors[Statuser.Severity.Good];
-                tip = "Conditions are safe to open the dome.";
+                tip = "Safety is Overriden (by Settings)";
             }
             else
             {
-                labelDashSafeToOpen.ForeColor = Statuser.colors[Statuser.Severity.Error];
-                tip = wisesite.safeToOpen.CommandString("unsafeReasons", false);
+                if (wisesite.safeToOpen == null)
+                {
+                    labelDashSafeToOpen.ForeColor = Statuser.colors[Statuser.Severity.Warning];
+                    tip = "Cannot connect to the safeToOpen driver!";
+                }
+                else if (wisesite.safeToOpen.IsSafe)
+                {
+                    labelDashSafeToOpen.ForeColor = Statuser.colors[Statuser.Severity.Good];
+                    tip = "Conditions are safe to open the dome.";
+                }
+                else
+                {
+                    labelDashSafeToOpen.ForeColor = Statuser.colors[Statuser.Severity.Error];
+                    //tip = wisesite.safeToOpen.CommandString("unsafeReasons", false);
+                }
             }
             toolTip.SetToolTip(labelDashSafeToOpen, tip);
 
+            tip = null;
             if (wisesite.safeToImage == null)
             {
                 labelDashSafeToImage.ForeColor = Statuser.colors[Statuser.Severity.Warning];
@@ -208,7 +219,8 @@ namespace Dash
             else
             {
                 labelDashSafeToImage.ForeColor = Statuser.colors[Statuser.Severity.Error];
-                tip = wisesite.safeToImage.CommandString("unsafeReasons", false);
+                //tip = wisesite.safeToImage.CommandString("unsafeReasons", false);
+                tip = "unsafeReasons";
             }
             toolTip.SetToolTip(labelDashSafeToImage, tip);
             #endregion
@@ -302,7 +314,10 @@ namespace Dash
                         weatherStatus.SetToolTip("");
                     } else
                     {
-                        weatherStatus.Show("Not safe to open", 0, Statuser.Severity.Error, true);
+                        if (_safetyOverride)
+                            weatherStatus.Show("Safe to open (safety override)", 0, Statuser.Severity.Good);
+                        else
+                            weatherStatus.Show("Not safe to open", 0, Statuser.Severity.Error, true);
                         weatherStatus.SetToolTip(string.Join(Const.crnl, wisesafetoopen.UnsafeReasons));
                     }
                     #endregion
@@ -832,6 +847,21 @@ namespace Dash
                 debugger.Tracing = true;
             }
             item.Invalidate();
+        }
+
+        private void safetyOverrideToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            string menuText = "Safety Override (current session)";
+            if (_safetyOverride)
+            {
+                _safetyOverride = false;
+                safetyOverrideToolStripMenuItem.Text = menuText;
+            }
+            else
+            {
+                safetyOverrideToolStripMenuItem.Text = menuText + " ✓";
+                _safetyOverride = true;
+            }
         }
         #endregion
     }
