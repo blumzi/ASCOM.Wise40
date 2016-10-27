@@ -2416,7 +2416,7 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Wise40 Hardware Monitor";
             this.TopMost = true;
-            //this.VisibleChanged += new System.EventHandler(this.HardwareForm_VisibleChanged);
+            this.VisibleChanged += new System.EventHandler(this.HardwareForm_VisibleChanged);
             this.panelHardware.ResumeLayout(false);
             this.gbBoard1.ResumeLayout(false);
             this.groupBox24.ResumeLayout(false);

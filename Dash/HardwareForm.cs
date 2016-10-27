@@ -97,5 +97,12 @@ namespace ASCOM.Wise40
                 }
             }
         }
+
+        private void HardwareForm_VisibleChanged(object sender, EventArgs e)
+        {
+            Form form = sender as Form;
+
+            timerHardwareRefresh.Enabled = form.Visible;
+        }
     }
 }
