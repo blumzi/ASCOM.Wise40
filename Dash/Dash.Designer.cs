@@ -54,7 +54,7 @@
             this.buttonFullCloseShutter = new System.Windows.Forms.Button();
             this.buttonFullOpenShutter = new System.Windows.Forms.Button();
             this.labelDomeShutterStatus = new System.Windows.Forms.Label();
-            this.textBoxDomeAzGo = new System.Windows.Forms.TextBox();
+            this.textBoxDomeAzValue = new System.Windows.Forms.TextBox();
             this.buttonDomeAzGo = new System.Windows.Forms.Button();
             this.buttonDomeRight = new System.Windows.Forms.Button();
             this.buttonDomeStop = new System.Windows.Forms.Button();
@@ -170,6 +170,7 @@
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
             this.safetyOverrideToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
+            this.button1 = new System.Windows.Forms.Button();
             this.tableLayoutMain.SuspendLayout();
             this.groupBoxFocuser.SuspendLayout();
             this.groupBoxDomeGroup.SuspendLayout();
@@ -377,12 +378,13 @@
             // 
             // groupBoxDomeGroup
             // 
+            this.groupBoxDomeGroup.Controls.Add(this.button1);
             this.groupBoxDomeGroup.Controls.Add(this.buttonDomePark);
             this.groupBoxDomeGroup.Controls.Add(this.button2);
             this.groupBoxDomeGroup.Controls.Add(this.buttonVent);
             this.groupBoxDomeGroup.Controls.Add(this.buttonCalibrateDome);
             this.groupBoxDomeGroup.Controls.Add(this.groupBox7);
-            this.groupBoxDomeGroup.Controls.Add(this.textBoxDomeAzGo);
+            this.groupBoxDomeGroup.Controls.Add(this.textBoxDomeAzValue);
             this.groupBoxDomeGroup.Controls.Add(this.buttonDomeAzGo);
             this.groupBoxDomeGroup.Controls.Add(this.buttonDomeRight);
             this.groupBoxDomeGroup.Controls.Add(this.buttonDomeStop);
@@ -554,15 +556,16 @@
             this.labelDomeShutterStatus.TabIndex = 19;
             this.labelDomeShutterStatus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // textBoxDomeAzGo
+            // textBoxDomeAzValue
             // 
-            this.textBoxDomeAzGo.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.textBoxDomeAzGo.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.textBoxDomeAzGo.Location = new System.Drawing.Point(221, 26);
-            this.textBoxDomeAzGo.Name = "textBoxDomeAzGo";
-            this.textBoxDomeAzGo.Size = new System.Drawing.Size(36, 20);
-            this.textBoxDomeAzGo.TabIndex = 25;
-            this.textBoxDomeAzGo.Validated += new System.EventHandler(this.textBoxDomeAzGo_Validated);
+            this.textBoxDomeAzValue.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.textBoxDomeAzValue.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.textBoxDomeAzValue.Location = new System.Drawing.Point(231, 26);
+            this.textBoxDomeAzValue.Name = "textBoxDomeAzValue";
+            this.textBoxDomeAzValue.Size = new System.Drawing.Size(36, 20);
+            this.textBoxDomeAzValue.TabIndex = 25;
+            this.textBoxDomeAzValue.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.textBoxDomeAzValue.Validated += new System.EventHandler(this.textBoxDomeAzGo_Validated);
             // 
             // buttonDomeAzGo
             // 
@@ -570,7 +573,7 @@
             this.buttonDomeAzGo.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonDomeAzGo.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonDomeAzGo.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonDomeAzGo.Location = new System.Drawing.Point(261, 25);
+            this.buttonDomeAzGo.Location = new System.Drawing.Point(271, 25);
             this.buttonDomeAzGo.Name = "buttonDomeAzGo";
             this.buttonDomeAzGo.Size = new System.Drawing.Size(34, 23);
             this.buttonDomeAzGo.TabIndex = 24;
@@ -627,7 +630,7 @@
             this.labelDomeAzimuthValue.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.labelDomeAzimuthValue.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelDomeAzimuthValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelDomeAzimuthValue.Location = new System.Drawing.Point(69, 26);
+            this.labelDomeAzimuthValue.Location = new System.Drawing.Point(53, 26);
             this.labelDomeAzimuthValue.Name = "labelDomeAzimuthValue";
             this.labelDomeAzimuthValue.Size = new System.Drawing.Size(128, 20);
             this.labelDomeAzimuthValue.TabIndex = 17;
@@ -650,7 +653,7 @@
             this.label17.AutoSize = true;
             this.label17.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label17.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label17.Location = new System.Drawing.Point(31, 27);
+            this.label17.Location = new System.Drawing.Point(15, 27);
             this.label17.Name = "label17";
             this.label17.Size = new System.Drawing.Size(35, 18);
             this.label17.TabIndex = 16;
@@ -1428,7 +1431,7 @@
             // tracingToolStripMenuItem
             // 
             this.tracingToolStripMenuItem.Name = "tracingToolStripMenuItem";
-            this.tracingToolStripMenuItem.Size = new System.Drawing.Size(160, 22);
+            this.tracingToolStripMenuItem.Size = new System.Drawing.Size(254, 22);
             this.tracingToolStripMenuItem.Text = "Tracing";
             this.tracingToolStripMenuItem.ToolTipText = "Toggle tracing";
             this.tracingToolStripMenuItem.Click += new System.EventHandler(this.tracingToolStripMenuItem_Click);
@@ -1446,13 +1449,13 @@
             this.debugAllToolStripMenuItem,
             this.debugNoneToolStripMenuItem});
             this.debuggingToolStripMenuItem1.Name = "debuggingToolStripMenuItem1";
-            this.debuggingToolStripMenuItem1.Size = new System.Drawing.Size(160, 22);
+            this.debuggingToolStripMenuItem1.Size = new System.Drawing.Size(254, 22);
             this.debuggingToolStripMenuItem1.Text = "Debugging";
             // 
             // debugASCOMToolStripMenuItem
             // 
             this.debugASCOMToolStripMenuItem.Name = "debugASCOMToolStripMenuItem";
-            this.debugASCOMToolStripMenuItem.Size = new System.Drawing.Size(134, 22);
+            this.debugASCOMToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.debugASCOMToolStripMenuItem.Text = "ASCOM";
             this.debugASCOMToolStripMenuItem.ToolTipText = "Debug ASCOM traffic";
             this.debugASCOMToolStripMenuItem.Click += new System.EventHandler(this.debugSelectedToolStripMenuItem_Click);
@@ -1460,14 +1463,14 @@
             // debugDeviceToolStripMenuItem
             // 
             this.debugDeviceToolStripMenuItem.Name = "debugDeviceToolStripMenuItem";
-            this.debugDeviceToolStripMenuItem.Size = new System.Drawing.Size(134, 22);
+            this.debugDeviceToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.debugDeviceToolStripMenuItem.Text = "Device";
             this.debugDeviceToolStripMenuItem.Click += new System.EventHandler(this.debugSelectedToolStripMenuItem_Click);
             // 
             // debugAxesToolStripMenuItem
             // 
             this.debugAxesToolStripMenuItem.Name = "debugAxesToolStripMenuItem";
-            this.debugAxesToolStripMenuItem.Size = new System.Drawing.Size(134, 22);
+            this.debugAxesToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.debugAxesToolStripMenuItem.Text = "Axes";
             this.debugAxesToolStripMenuItem.ToolTipText = "Debug axis movements";
             this.debugAxesToolStripMenuItem.Click += new System.EventHandler(this.debugSelectedToolStripMenuItem_Click);
@@ -1475,7 +1478,7 @@
             // debugEncodersToolStripMenuItem
             // 
             this.debugEncodersToolStripMenuItem.Name = "debugEncodersToolStripMenuItem";
-            this.debugEncodersToolStripMenuItem.Size = new System.Drawing.Size(134, 22);
+            this.debugEncodersToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.debugEncodersToolStripMenuItem.Text = "Encoders";
             this.debugEncodersToolStripMenuItem.ToolTipText = "Debug encoder changes";
             this.debugEncodersToolStripMenuItem.Click += new System.EventHandler(this.debugSelectedToolStripMenuItem_Click);
@@ -1492,7 +1495,7 @@
             // debugLogicToolStripMenuItem
             // 
             this.debugLogicToolStripMenuItem.Name = "debugLogicToolStripMenuItem";
-            this.debugLogicToolStripMenuItem.Size = new System.Drawing.Size(134, 22);
+            this.debugLogicToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.debugLogicToolStripMenuItem.Text = "Logic";
             this.debugLogicToolStripMenuItem.ToolTipText = "Debug driver logic";
             this.debugLogicToolStripMenuItem.Click += new System.EventHandler(this.debugSelectedToolStripMenuItem_Click);
@@ -1500,13 +1503,13 @@
             // toolStripMenuItem4
             // 
             this.toolStripMenuItem4.Name = "toolStripMenuItem4";
-            this.toolStripMenuItem4.Size = new System.Drawing.Size(134, 22);
+            this.toolStripMenuItem4.Size = new System.Drawing.Size(152, 22);
             this.toolStripMenuItem4.Text = " ";
             // 
             // debugAllToolStripMenuItem
             // 
             this.debugAllToolStripMenuItem.Name = "debugAllToolStripMenuItem";
-            this.debugAllToolStripMenuItem.Size = new System.Drawing.Size(134, 22);
+            this.debugAllToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.debugAllToolStripMenuItem.Text = "All";
             this.debugAllToolStripMenuItem.ToolTipText = "Turn on all debugging levels";
             this.debugAllToolStripMenuItem.Click += new System.EventHandler(this.debugAllToolStripMenuItem_Click);
@@ -1514,7 +1517,7 @@
             // debugNoneToolStripMenuItem
             // 
             this.debugNoneToolStripMenuItem.Name = "debugNoneToolStripMenuItem";
-            this.debugNoneToolStripMenuItem.Size = new System.Drawing.Size(134, 22);
+            this.debugNoneToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.debugNoneToolStripMenuItem.Text = "None";
             this.debugNoneToolStripMenuItem.ToolTipText = "Turn off all debugging levels";
             this.debugNoneToolStripMenuItem.Click += new System.EventHandler(this.debugNoneToolStripMenuItem_Click);
@@ -1522,13 +1525,13 @@
             // toolStripMenuItem3
             // 
             this.toolStripMenuItem3.Name = "toolStripMenuItem3";
-            this.toolStripMenuItem3.Size = new System.Drawing.Size(160, 22);
+            this.toolStripMenuItem3.Size = new System.Drawing.Size(254, 22);
             this.toolStripMenuItem3.Text = "  ";
             // 
             // saveToProfileToolStripMenuItem
             // 
             this.saveToProfileToolStripMenuItem.Name = "saveToProfileToolStripMenuItem";
-            this.saveToProfileToolStripMenuItem.Size = new System.Drawing.Size(160, 22);
+            this.saveToProfileToolStripMenuItem.Size = new System.Drawing.Size(254, 22);
             this.saveToProfileToolStripMenuItem.Text = "Save To Profile";
             this.saveToProfileToolStripMenuItem.ToolTipText = "Save settings to the persistent profile";
             this.saveToProfileToolStripMenuItem.Click += new System.EventHandler(this.saveToProfileToolStripMenuItem_Click);
@@ -2091,8 +2094,22 @@
             // toolStripMenuItem2
             // 
             this.toolStripMenuItem2.Name = "toolStripMenuItem2";
-            this.toolStripMenuItem2.Size = new System.Drawing.Size(256, 22);
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(254, 22);
             this.toolStripMenuItem2.Text = "  ";
+            // 
+            // button1
+            // 
+            this.button1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.button1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.button1.Location = new System.Drawing.Point(194, 25);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(34, 23);
+            this.button1.TabIndex = 31;
+            this.button1.Text = "Set";
+            this.button1.UseVisualStyleBackColor = false;
+            this.button1.Click += new System.EventHandler(this.buttonDomeAzSet_Click);
             // 
             // FormDash
             // 
@@ -2208,7 +2225,7 @@
         private System.Windows.Forms.Button buttonFullCloseShutter;
         private System.Windows.Forms.Button buttonFullOpenShutter;
         private System.Windows.Forms.Label labelDomeShutterStatus;
-        private System.Windows.Forms.TextBox textBoxDomeAzGo;
+        private System.Windows.Forms.TextBox textBoxDomeAzValue;
         private System.Windows.Forms.Button buttonDomeAzGo;
         private System.Windows.Forms.Button buttonDomeRight;
         private System.Windows.Forms.Button buttonDomeStop;
@@ -2279,6 +2296,7 @@
         private System.Windows.Forms.Label labelLightValue;
         private System.Windows.Forms.ToolStripMenuItem safetyOverrideToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem2;
+        private System.Windows.Forms.Button button1;
     }
 }
 

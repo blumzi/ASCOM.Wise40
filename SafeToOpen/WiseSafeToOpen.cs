@@ -311,7 +311,14 @@ namespace ASCOM.Wise40.SafeToOpen
         {
             get
             {
-                int light = Convert.ToInt32(boltwood.CommandString("daylight", true));
+                Dictionary<string, int> dayConditions = new Dictionary<string, int>
+                {
+                    {"dayUnknown", 0 },
+                    {"dayDark", 1 },
+                    {"dayLight", 2 },
+                    {"dayVeryLight", 3 },
+                };
+                int light = dayConditions[boltwood.CommandString("daylight", true)];
                 return (light != 0) && (light < (int)lightMax);
             }
         }

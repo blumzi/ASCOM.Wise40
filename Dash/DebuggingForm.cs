@@ -42,12 +42,12 @@ namespace Dash
             {
                 debugger.AppendToWindow(false);
                 _updateMessagesWindow = false;
-                item.Text = "UpdateWindow";
+                item.Text = "KeepUpdated";
             } else
             {
                 debugger.AppendToWindow(true);
                 _updateMessagesWindow = true;
-                item.Text = "StopUpdating";
+                item.Text = "KeepUpdated" + Const.checkmark;
             }
         }
 

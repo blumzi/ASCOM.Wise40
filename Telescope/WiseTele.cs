@@ -178,7 +178,7 @@ namespace ASCOM.Wise40
         public bool _calculateRefraction = true;
         private string calculateRefractionProfileName = "Calculate refraction";
 
-        public bool _driverInitiatedSlewing = false;
+        //public bool _driverInitiatedSlewing = false;
 
         private static WiseComputerControl wiseComputerControl = WiseComputerControl.Instance;
 
@@ -650,11 +650,8 @@ namespace ASCOM.Wise40
         {
             if (AtPark)
                 throw new InvalidOperationException("Cannot AbortSlew while AtPark");
-
-            if (!_driverInitiatedSlewing)
-                return;
+            
             Stop();
-            _driverInitiatedSlewing = false;
             #region trace
             traceLogger.LogMessage("AbortSlew", "");
             #endregion
@@ -880,7 +877,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                bool ret = _driverInitiatedSlewing;
+                bool ret = slewers.Count > 0;
                 #region trace
                 traceLogger.LogMessage("Slewing Get", ret.ToString());
                 #endregion
@@ -923,17 +920,8 @@ namespace ASCOM.Wise40
 
             Const.AxisDirection direction = (Rate == Const.rateStopped) ? Const.AxisDirection.None :
                 (Rate < 0.0) ? Const.AxisDirection.Decreasing : Const.AxisDirection.Increasing;
-
-            _driverInitiatedSlewing = (Rate == Const.rateStopped) ? false : true;
-
-            try
-            {
-                _moveAxis(Axis, Rate, direction, true);
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
+            
+            _moveAxis(Axis, Rate, direction, true);
         }
 
         private void StopAxis(TelescopeAxes axis)
@@ -1003,7 +991,6 @@ namespace ASCOM.Wise40
                 throw new InvalidValueException(string.Format("_moveAxis({0}, {1}): Invalid rate.", Axis, Rate));
 
             if (!axisStatusMonitors[Axis].CanMoveAtRate(absRate))
-            //if (! readyToSlew.Ready(absRate))
             {
                 string msg = string.Format("Cannot _moveAxis({0}, {1}) ({2}) while {3} is moving at {4}",
                     Axis, RateName(Rate), axisDirectionName[Axis][direction], otherAxis, RateName(currMovement[otherAxis].rate));
@@ -1081,8 +1068,6 @@ namespace ASCOM.Wise40
 
             if (!wiseComputerControl.IsSafe)
                 throw new InvalidOperationException("Computer control switch is OFF (not safe)");
-
-            _driverInitiatedSlewing = true;
 
             _slewToCoordinatesAsync(_targetRightAscension, _targetDeclination);
         }
@@ -1221,7 +1206,7 @@ namespace ASCOM.Wise40
             if (AtPark)
                 return;
 
-            _driverInitiatedSlewing = true;
+            //_driverInitiatedSlewing = true;
             Angle ra = wisesite.LocalSiderealTime;
             Angle dec = wisesite.Latitude;
             _slewToCoordinatesAsync(ra, dec);
@@ -1237,7 +1222,7 @@ namespace ASCOM.Wise40
             Thread.Sleep(20);  // wait for workers to be born
             try
             {
-                while (slewers.ToString() != string.Empty)
+                while (slewers.Count != 0)
                 {
                     int millis = 500;
 
@@ -1258,7 +1243,6 @@ namespace ASCOM.Wise40
                     return false;
                 }));
             }
-            _driverInitiatedSlewing = false;
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "_slewToCoordinatesSync: ({0}, {1}), done.", RightAscension, Declination);
             #endregion debug
@@ -1298,7 +1282,11 @@ namespace ASCOM.Wise40
                         break;  // NOTE: this breaks the switch, not the loop
                 }
             }
-            while (!done);            
+            while (!done);
+
+            slewers.Delete(axis == TelescopeAxes.axisPrimary ?
+                Slewers.Type.Ra :
+                Slewers.Type.Dec);
         }
 
         private void StopAxisAndWaitForHalt(TelescopeAxes axis)
@@ -1531,67 +1519,21 @@ namespace ASCOM.Wise40
         {
             _genericDomeSlewer(() => domeSlaveDriver.SlewToAz(ra, dec));
         }
-
-        //public void DomeSlewer(Angle ra, Angle dec)
-        //{
-        //    SlewerTask domeSlewer = new SlewerTask() { type = Slewers.Type.Dome };
-        //    domeSlewer.task = Task.Run(() => {
-        //            try
-        //            {
-        //                domeSlaveDriver.SlewToAz(ra, dec);
-        //            }
-        //            catch (OperationCanceledException)
-        //            {
-        //                domeSlaveDriver.AbortSlew();
-        //            }
-        //        },
-        //        slewingCancellationToken
-        //    );
-        //    slewers.Add(domeSlewer);
-        //}
-
-        //public void DomeSlewer(double az)
-        //{
-        //    SlewerTask domeSlewer = new SlewerTask() { type = Slewers.Type.Dome };
-        //    domeSlewer.task = Task.Run(() =>
-        //    {
-        //        try
-        //        {
-        //            domeSlaveDriver.SlewToAz(az);
-        //        }
-        //        catch (OperationCanceledException)
-        //        {
-        //            domeSlaveDriver.AbortSlew();
-        //        }
-        //    }, slewingCancellationToken);
-        //    slewers.Add(domeSlewer);
-        //}
+        
         public void DomeSlewer(double az)
         {
             _genericDomeSlewer(() => domeSlaveDriver.SlewToAz(az));
         }
 
-        //public void DomeParker()
-        //{
-        //    SlewerTask domeSlewer = new SlewerTask() { type = Slewers.Type.Dome };
-        //    domeSlewer.task = Task.Run(() =>
-        //    {
-        //        try
-        //        {
-        //            domeSlaveDriver.Park();
-        //        }
-        //        catch (OperationCanceledException)
-        //        {
-        //            domeSlaveDriver.AbortSlew();
-        //        }
-        //    }, slewingCancellationToken);
-        //    slewers.Add(domeSlewer);
-        //}
         public void DomeParker()
         {
             _genericDomeSlewer(() => domeSlaveDriver.Park());
         }
 
+        public void DomeCalibrator()
+        {
+            _genericDomeSlewer(() => domeSlaveDriver.Calibrate());
+        }
 
         private void _slewToCoordinatesAsync(Angle RightAscension, Angle Declination)
         {
@@ -1605,8 +1547,7 @@ namespace ASCOM.Wise40
                 {
                     DomeSlewer(RightAscension, Declination);
                 }
-
-                //readyToSlew.Reset();
+                
                 SlewerTask raSlewer = new SlewerTask()
                 {
                     type = Slewers.Type.Ra,
@@ -1667,9 +1608,6 @@ namespace ASCOM.Wise40
 
             if (!wiseComputerControl.IsSafe)
                 throw new InvalidOperationException("Computer control switch is OFF (not safe)");
-
-            _driverInitiatedSlewing = true;
-
             try
             {
                 _slewToCoordinatesSync(ra, dec);
@@ -1706,8 +1644,6 @@ namespace ASCOM.Wise40
 
             if (!wiseComputerControl.IsSafe)
                 throw new InvalidOperationException("Computer control switch is OFF (not safe)");
-
-            _driverInitiatedSlewing = true;
 
             try
             {
@@ -1905,18 +1841,7 @@ namespace ASCOM.Wise40
 
             if (!wiseComputerControl.IsSafe)
                 throw new InvalidOperationException("Computer control switch is OFF (not safe)");
-
-            _driverInitiatedSlewing = true;
-
-            try
-            {
-                SlewToCoordinates(TargetRightAscension, TargetDeclination); // sync
-            }
-            catch (Exception e)
-            {
-                _driverInitiatedSlewing = false;
-                throw e;
-            }
+            SlewToCoordinates(TargetRightAscension, TargetDeclination); // sync
         }
 
         public void SyncToAltAz(double Azimuth, double Altitude)

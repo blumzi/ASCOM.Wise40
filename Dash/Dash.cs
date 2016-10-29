@@ -95,9 +95,9 @@ namespace Dash
                 checkedItems.Add(debugExceptionsToolStripMenuItem);
 
             foreach (var item in checkedItems)
-                item.Text += " ✓";
+                item.Text += Const.checkmark;
 
-            tracingToolStripMenuItem.Text = debugger.Tracing ? "Tracing ✓" : "Tracing";
+            tracingToolStripMenuItem.Text = debugger.Tracing ? "Tracing" + Const.checkmark : "Tracing";
         }
         #endregion
 
@@ -127,8 +127,8 @@ namespace Dash
 
             checkBoxPrimaryIsActive.Checked = wisetele.AxisIsMoving(TelescopeAxes.axisPrimary);
             checkBoxSecondaryIsActive.Checked = wisetele.AxisIsMoving(TelescopeAxes.axisSecondary);
-            string activeSlewers = wisetele.slewers.ToString();
-            checkBoxSlewingIsActive.Text = (activeSlewers == string.Empty) ? "Slewing" : "Slewing (" + activeSlewers + ")";
+            checkBoxSlewingIsActive.Text = (wisetele.slewers.Count == 0) ? "Slewing" :
+                "Slewing (" + wisetele.slewers.ToString() + ")";
             checkBoxSlewingIsActive.Checked = wisetele.Slewing;
             checkBoxTrackingIsActive.Checked = wisetele.Tracking;
 
@@ -206,7 +206,7 @@ namespace Dash
             toolTip.SetToolTip(labelDashSafeToOpen, tip);
 
             tip = null;
-            if (wisesite.safeToImage == null)
+            if (true || wisesite.safeToImage == null)
             {
                 labelDashSafeToImage.ForeColor = Statuser.colors[Statuser.Severity.Warning];
                 tip = "Cannot connect to the safeToImage driver!";
@@ -288,18 +288,7 @@ namespace Dash
                         labelCloudCoverValue.Text = "Unknown";
                     labelCloudCoverValue.ForeColor = Statuser.TriStateColor(wisesafetoopen.isSafeCloudCover);
 
-                    string light = "Unknown";
-                    switch (Convert.ToInt32(boltwood.CommandString("daylight", true)))
-                    {
-                        case 0:
-                            light = "Unknown"; break;
-                        case 1:
-                            light = "Dark"; break;
-                        case 2:
-                            light = "Light"; break;
-                        case 3:
-                            light = "VeryLight"; break;
-                    }
+                    string light = boltwood.CommandString("daylight", true);
                     labelLightValue.Text = light;
                     labelLightValue.ForeColor = Statuser.TriStateColor(wisesafetoopen.isSafeLight);
 
@@ -439,7 +428,7 @@ namespace Dash
 
             try
             {
-                telescopeStatus.Show(string.Format("Slewing to {0}/{1}", new Angle(textBoxRA.Text), new Angle(textBoxDec.Text)),
+                telescopeStatus.Show(string.Format("Slewing to ra: {0} dec: {1}", new Angle(textBoxRA.Text), new Angle(textBoxDec.Text)),
                     0, Statuser.Severity.Good);
                 wisetele.SlewToCoordinatesAsync(new Angle(textBoxRA.Text).Hours, new Angle(textBoxDec.Text).Degrees);
             }
@@ -619,17 +608,31 @@ namespace Dash
                 tb.Text = "";
             }
         }
+        private void buttonDomeAzSet_Click(object sender, EventArgs e)
+        {
+            if (textBoxDomeAzValue.Text == string.Empty)
+                return;
+
+            double az = Convert.ToDouble(textBoxDomeAzValue.Text);
+            if (az < 0.0 || az >= 360.0)
+            {
+                domeStatus.Show(string.Format("Invalid azimuth: {0}", textBoxDomeAzValue.Text), 2000, Statuser.Severity.Error);
+                textBoxDomeAzValue.Text = "";
+            }
+
+            wisedome.Azimuth = Angle.FromDegrees(az, Angle.Type.Az);
+        }
 
         private void buttonDomeAzGo_Click(object sender, EventArgs e)
         {
-            if (textBoxDomeAzGo.Text == string.Empty)
+            if (textBoxDomeAzValue.Text == string.Empty)
                 return;
 
-            double az = Convert.ToDouble(textBoxDomeAzGo.Text);
+            double az = Convert.ToDouble(textBoxDomeAzValue.Text);
             if (az < 0.0 || az >= 360.0)
             {
-                domeStatus.Show(string.Format("Invalid azimuth: {0}", textBoxDomeAzGo.Text), 2000, Statuser.Severity.Error);
-                textBoxDomeAzGo.Text = "";
+                domeStatus.Show(string.Format("Invalid azimuth: {0}", textBoxDomeAzValue.Text), 2000, Statuser.Severity.Error);
+                textBoxDomeAzValue.Text = "";
             }
 
             wisetele.DomeSlewer(az);
@@ -778,8 +781,8 @@ namespace Dash
 
             foreach (var item in debugMenuItems)
             {
-                if (! item.Text.EndsWith(" ✓"))
-                    item.Text += " ✓";
+                if (! item.Text.EndsWith(Const.checkmark))
+                    item.Text += Const.checkmark;
             }
         }
 
@@ -789,7 +792,7 @@ namespace Dash
 
             foreach (var item in debugMenuItems)
             {
-                if (item.Text.EndsWith(" ✓"))
+                if (item.Text.EndsWith(Const.checkmark))
                     item.Text = item.Text.Remove(item.Text.IndexOf(' '));
             }
         }
@@ -819,7 +822,7 @@ namespace Dash
             }
             else
             {
-                item.Text += " ✓";
+                item.Text += Const.checkmark;
                 debugger.StartDebugging(selectedLevel);
             }
             item.Invalidate();
@@ -859,7 +862,7 @@ namespace Dash
             }
             else
             {
-                safetyOverrideToolStripMenuItem.Text = menuText + " ✓";
+                safetyOverrideToolStripMenuItem.Text = menuText + Const.checkmark;
                 _safetyOverride = true;
             }
         }

@@ -31,7 +31,7 @@ namespace ASCOM.Wise40
         private Hardware.Hardware hw = Hardware.Hardware.Instance;
         private static WiseSite wisesite = WiseSite.Instance;
 
-        private static Object _lock = new object();
+        private Object _lock = new object();
 
         public WiseHAEncoder(string name)
         {
