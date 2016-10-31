@@ -116,6 +116,10 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Documents\Images\Setup\Data File Selection.PNG" />
+    <Content Include="Documents\Images\Setup\Main Screen.PNG" />
+    <Content Include="Documents\Images\Setup\Setup Screen.PNG" />
+    <Content Include="Documents\Images\Setup\Templated and generated files.PNG" />
     <Content Include="Installer\CloudSensor Setup.iss" />
     <Content Include="Installer\ReadMe.html" />
     <Content Include="Sample Files\ClarityII-data.txt" />

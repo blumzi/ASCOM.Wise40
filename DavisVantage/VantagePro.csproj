@@ -95,12 +95,17 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="ASCOMDriverTemplate.snk" />
+    <None Include="Documents\Template Descriptions.rtf" />
     <None Include="Properties\Settings.settings" />
     <AdditionalFiles Include="Template and Sample\Weather_Wise40_Vantage_Pro.htx" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="ASCOM.ico" />
     <Content Include="ASCOM.png" />
+    <Content Include="Documents\Images\Setup\Data Upload fort Profile 1.PNG" />
+    <Content Include="Documents\Images\Setup\Internet Connection Settings.PNG" />
+    <Content Include="Documents\Images\Setup\Internet Settings.PNG" />
+    <Content Include="Documents\Images\Setup\Weather Template Files for Data Upload Profile 1.PNG" />
     <Content Include="Installer\ReadMe.html" />
     <Content Include="Installer\VantagePro Setup.iss" />
     <Content Include="ReadMe.htm" />
