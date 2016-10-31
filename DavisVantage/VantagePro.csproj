@@ -96,7 +96,7 @@
     <None Include="app.config" />
     <None Include="ASCOMDriverTemplate.snk" />
     <None Include="Properties\Settings.settings" />
-    <Content Include="Template and Sample\Weather_Wise40_Vantage_Pro.htx" />
+    <AdditionalFiles Include="Template and Sample\Weather_Wise40_Vantage_Pro.htx" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="ASCOM.ico" />
