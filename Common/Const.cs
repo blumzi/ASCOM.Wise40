@@ -30,5 +30,6 @@ namespace ASCOM.Wise40.Common
         public const int defaultReadRetries = 20;
 
         public const string crnl = "\r\n";
+        public const string checkmark = " ✓";
     }
 }

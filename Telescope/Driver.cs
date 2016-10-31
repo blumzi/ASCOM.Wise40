@@ -68,13 +68,17 @@ namespace ASCOM.Wise40
         /// </summary>
         internal static string driverID = "ASCOM.Wise40.Telescope";
 
-        //public static bool _trace = true;   // TODO: fix profile value
-
         internal static string debugLevelProfileName = "Debug Level";
         internal static string astrometricAccuracyProfileName = "Astrometric accuracy";
         internal static string traceStateProfileName = "Trace";
         internal static string enslaveDomeProfileName = "Enslave Dome";
         internal static string calculateRefractionProfileName = "Calculate refraction";
+
+        /// <summary>
+        /// Remembers if the ASCOM driver has initiated a SlewXXX or MoveAxis
+        /// </summary>
+        private bool _driverInitiatedSlew = false;
+
         /// <summary>
         /// Private variable to hold the connected state
         /// </summary>
@@ -242,6 +246,7 @@ namespace ASCOM.Wise40
         public void AbortSlew()
         {
             wisetele.AbortSlew();
+            _driverInitiatedSlew = false;
         }
 
         public AlignmentModes AlignmentMode
@@ -534,7 +539,15 @@ namespace ASCOM.Wise40
 
         public void MoveAxis(TelescopeAxes Axis, double Rate)
         {
-            wisetele.MoveAxis(Axis, Rate);
+            try
+            {
+                _driverInitiatedSlew = true;
+                wisetele.MoveAxis(Axis, Rate);
+            } catch
+            {
+                _driverInitiatedSlew = false;
+            }
+                    
         }
 
         public void Park()
@@ -644,40 +657,109 @@ namespace ASCOM.Wise40
 
         public void SlewToAltAz(double Azimuth, double Altitude)
         {
-            wisetele.SlewToAltAz(Azimuth, Altitude);
+            try
+            {
+                _driverInitiatedSlew = true;
+                wisetele.SlewToAltAz(Azimuth, Altitude);
+            } catch
+            {
+                throw;
+            } finally
+            {
+                _driverInitiatedSlew = false;
+            }
         }
 
         public void SlewToAltAzAsync(double Azimuth, double Altitude)
-        {
-            wisetele.SlewToAltAzAsync(Azimuth, Altitude);
+        {            
+            try
+            {
+                _driverInitiatedSlew = true;
+                wisetele.SlewToAltAzAsync(Azimuth, Altitude);
+            }
+            catch
+            {
+                throw;
+            }
+            finally
+            {
+                _driverInitiatedSlew = false;
+            }
         }
 
         public void SlewToCoordinates(double RightAscension, double Declination)
         {
-
-            wisetele.SlewToCoordinates(RightAscension, Declination);
+            try
+            {
+                _driverInitiatedSlew = true;
+                wisetele.SlewToCoordinates(RightAscension, Declination);
+            }
+            catch
+            {
+                throw;
+            }
+            finally
+            {
+                _driverInitiatedSlew = false;
+            }
         }
 
         public void SlewToCoordinatesAsync(double RightAscension, double Declination)
         {
-            wisetele.SlewToCoordinatesAsync(RightAscension, Declination);
+            try
+            {
+                _driverInitiatedSlew = true;
+                wisetele.SlewToCoordinatesAsync(RightAscension, Declination);
+            }
+            catch
+            {
+                throw;
+            }
+            finally
+            {
+                _driverInitiatedSlew = false;
+            }
         }
 
         public void SlewToTarget()
         {
-            wisetele.SlewToTarget();
+            try
+            {
+                _driverInitiatedSlew = true;
+                wisetele.SlewToTarget();
+            }
+            catch
+            {
+                throw;
+            }
+            finally
+            {
+                _driverInitiatedSlew = false;
+            }
         }
 
         public void SlewToTargetAsync()
         {
-            wisetele.SlewToTargetAsync();
+            try
+            {
+                _driverInitiatedSlew = true;
+                wisetele.SlewToTargetAsync();
+            }
+            catch
+            {
+                throw;
+            }
+            finally
+            {
+                _driverInitiatedSlew = false;
+            }
         }
 
         public bool Slewing
         {
             get
             {
-                return wisetele.Slewing;
+                return _driverInitiatedSlew || wisetele.Slewing;
             }
         }
 

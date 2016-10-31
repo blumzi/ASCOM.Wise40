@@ -289,10 +289,13 @@ namespace ASCOM.Wise40.Common
             {
                 if (_periodic)
                 {
-                    while (value > 2 * pi)
-                        value -= 2 * pi;
-                    while (value < -2 * pi)
-                        value += 2 * pi;
+                    if (!double.IsInfinity(value))
+                    {
+                        while (value > 2 * pi)
+                            value -= 2 * pi;
+                        while (value < -2 * pi)
+                            value += 2 * pi;
+                    }
                 }
                 _radians = value;
             }

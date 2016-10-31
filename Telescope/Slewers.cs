@@ -43,44 +43,29 @@ namespace ASCOM.Wise40
             #endregion
         }
 
-        public void Delete(WiseTele.SlewerTask slewer, ref bool makeFalseIfEmpty)
+        public void Delete(Slewers.Type type)
         {
             string before;
+            WiseTele.SlewerTask slewerTask;
 
             lock (_lock)
             {
                 before = ToString();
-                _active.Remove(slewer);
-                if (_active.Count() == 0)
-                {
-                    makeFalseIfEmpty = false;
-                }
+
+                slewerTask = _active.Find((s) => s.type == type);
+                _active.Remove(slewerTask);
             }
             #region debug
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugAxes,
-                "ActiveSlewers: deleted {0}, \"{1}\" => \"{2}\"", slewer.ToString(), before, this.ToString());
+                "ActiveSlewers: deleted {0}, \"{1}\" => \"{2}\"", type.ToString(), before, this.ToString());
             #endregion
         }
-        public void Delete(Slewers.Type t, ref bool makeFalseIfEmpty)
-        {
-            string before;
-            WiseTele.SlewerTask slewer;
 
-            lock (_lock)
-            {
-                before = ToString();
-                //_active.Remove(slewer);
-                slewer = _active.Find((a) => a.type == t);
-                _active.Remove(slewer);
-                if (_active.Count() == 0)
-                {
-                    makeFalseIfEmpty = false;
-                }
+        public int Count
+        {
+            get {
+                return _active.Count;
             }
-            #region debug
-            debugger.WriteLine(Common.Debugger.DebugLevel.DebugAxes,
-                "ActiveSlewers: deleted {0}, \"{1}\" => \"{2}\"", slewer.ToString(), before, this.ToString());
-            #endregion
         }
 
         public override string ToString()

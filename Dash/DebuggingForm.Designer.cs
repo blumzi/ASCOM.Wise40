@@ -29,11 +29,11 @@
         private void InitializeComponent()
         {
             this.menuStripDebugging = new System.Windows.Forms.MenuStrip();
+            this.followToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.markToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.clearToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveToFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.markToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.listBoxDebugMessages = new System.Windows.Forms.ListBox();
-            this.followToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStripDebugging.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -49,6 +49,22 @@
             this.menuStripDebugging.Size = new System.Drawing.Size(1238, 24);
             this.menuStripDebugging.TabIndex = 0;
             this.menuStripDebugging.Text = "menuStrip1";
+            // 
+            // followToolStripMenuItem
+            // 
+            this.followToolStripMenuItem.Font = new System.Drawing.Font("Segoe UI", 9F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))));
+            this.followToolStripMenuItem.Name = "followToolStripMenuItem";
+            this.followToolStripMenuItem.Size = new System.Drawing.Size(94, 20);
+            this.followToolStripMenuItem.Text = "KeepUpdated";
+            this.followToolStripMenuItem.Click += new System.EventHandler(this.followToolStripMenuItem_Click);
+            // 
+            // markToolStripMenuItem
+            // 
+            this.markToolStripMenuItem.Font = new System.Drawing.Font("Segoe UI", 9F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))));
+            this.markToolStripMenuItem.Name = "markToolStripMenuItem";
+            this.markToolStripMenuItem.Size = new System.Drawing.Size(48, 20);
+            this.markToolStripMenuItem.Text = "Mark";
+            this.markToolStripMenuItem.Click += new System.EventHandler(this.markToolStripMenuItem_Click);
             // 
             // clearToolStripMenuItem
             // 
@@ -66,14 +82,6 @@
             this.saveToFileToolStripMenuItem.Text = "SaveToFile";
             this.saveToFileToolStripMenuItem.Click += new System.EventHandler(this.saveToFileToolStripMenuItem_Click);
             // 
-            // markToolStripMenuItem
-            // 
-            this.markToolStripMenuItem.Font = new System.Drawing.Font("Segoe UI", 9F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))));
-            this.markToolStripMenuItem.Name = "markToolStripMenuItem";
-            this.markToolStripMenuItem.Size = new System.Drawing.Size(48, 20);
-            this.markToolStripMenuItem.Text = "Mark";
-            this.markToolStripMenuItem.Click += new System.EventHandler(this.markToolStripMenuItem_Click);
-            // 
             // listBoxDebugMessages
             // 
             this.listBoxDebugMessages.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
@@ -86,14 +94,6 @@
             this.listBoxDebugMessages.Name = "listBoxDebugMessages";
             this.listBoxDebugMessages.Size = new System.Drawing.Size(1238, 420);
             this.listBoxDebugMessages.TabIndex = 1;
-            // 
-            // followToolStripMenuItem
-            // 
-            this.followToolStripMenuItem.Font = new System.Drawing.Font("Segoe UI", 9F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))));
-            this.followToolStripMenuItem.Name = "followToolStripMenuItem";
-            this.followToolStripMenuItem.Size = new System.Drawing.Size(107, 20);
-            this.followToolStripMenuItem.Text = "UpdateWindow";
-            this.followToolStripMenuItem.Click += new System.EventHandler(this.followToolStripMenuItem_Click);
             // 
             // DebuggingForm
             // 

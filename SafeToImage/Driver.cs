@@ -295,8 +295,16 @@ namespace ASCOM.Wise40.SafeToImage
 
                 if (boltwood == null || vantagePro == null)
                     return false;
+                Dictionary<string, int> dayConditions = new Dictionary<string, int>
+                {
+                    {"dayUnknown", 0 },
+                    {"dayDark", 1 },
+                    {"dayLight", 2 },
+                    {"dayVeryLight", 3 },
+                };
 
-                int light = Convert.ToInt32(boltwood.CommandString("daylight", true));
+                int light = dayConditions[boltwood.CommandString("daylight", true)];
+
                 if (ageMaxSeconds > 0 && boltwood.TimeSinceLastUpdate("") > ageMaxSeconds)
                     ret = false;
                 else if ((int)boltwood.CloudCover > (int)cloudsMax)

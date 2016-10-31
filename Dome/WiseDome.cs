@@ -36,6 +36,7 @@ namespace ASCOM.Wise40
             MovingCCW = (1 << 1),
             FindingHome = (1 << 2),
             Parking = (1 << 3),
+            AllMovements = MovingCCW|MovingCW|Parking|FindingHome,
         };
         private DomeState _state;
 
@@ -476,7 +477,7 @@ namespace ASCOM.Wise40
         {
             rightPin.SetOff();
             leftPin.SetOff();
-            UnsetDomeState(DomeState.MovingCCW | DomeState.MovingCCW);
+            UnsetDomeState(DomeState.AllMovements);
             _movementTimer.Change(0, 0);
             domeEncoder.setMovement(Direction.None);
             #region debug
@@ -701,10 +702,10 @@ namespace ASCOM.Wise40
         {
             get
             {
-                string ret = null;
+                string ret = string.Empty;
 
                 if (!DomeIsMoving)
-                    return null;
+                    return ret;
 
                 if (DomeStateIsOn(DomeState.MovingCW))
                     ret = "Moving CW";
@@ -803,9 +804,9 @@ namespace ASCOM.Wise40
                 #endregion
                 throw new ASCOM.InvalidOperationException("Not safe to open shutter!");
             }
-
+            #region trace
             tl.LogMessage("Dome: OpenShutter", "");
-
+            #endregion
             ShutterStop();
             StartOpeningShutter();
         }
@@ -814,16 +815,18 @@ namespace ASCOM.Wise40
         {
             if (Slewing)
                 throw new ASCOM.InvalidOperationException("Cannot CloseShutter, dome is slewing!");
-
+            #region trace
             tl.LogMessage("Dome: CloseShutter", "");
-
+            #endregion
             ShutterStop();
             StartClosingShutter();
         }
 
         public void AbortSlew()
         {
+            #region trace
             tl.LogMessage("Dome: AbortSlew", "");
+            #endregion
             Stop();
         }
 
@@ -831,7 +834,9 @@ namespace ASCOM.Wise40
         {
             get
             {
+                #region trace
                 tl.LogMessage("Dome: Altitude Get", "Not implemented");
+                #endregion
                 throw new ASCOM.PropertyNotImplementedException("Altitude", false);
             }
         }
@@ -850,7 +855,9 @@ namespace ASCOM.Wise40
         {
             get
             {
+                #region trace
                 tl.LogMessage("Dome: CanFindHome Get", true.ToString());
+                #endregion
                 return true;
             }
         }
@@ -859,7 +866,9 @@ namespace ASCOM.Wise40
         {
             get
             {
+                #region trace
                 tl.LogMessage("Dome: CanPark Get", true.ToString());
+                #endregion
                 return true;
             }
         }
@@ -868,7 +877,9 @@ namespace ASCOM.Wise40
         {
             get
             {
+                #region trace
                 tl.LogMessage("Dome: CanSetAltitude Get", false.ToString());
+                #endregion
                 return false;
             }
         }
@@ -924,8 +935,9 @@ namespace ASCOM.Wise40
 
             if (degrees < 0.0 || degrees >= 360.0)
                 throw new InvalidValueException(string.Format("Cannot SyncToAzimuth({0}), must be >= 0 and < 360", ang));
-
+            #region trace
             tl.LogMessage("Dome: SyncToAzimuth", ang.ToString());
+            #endregion
             instance.Azimuth = ang;
         }
 
@@ -1071,10 +1083,11 @@ namespace ASCOM.Wise40
                 return;
 
             List<string> lines = new List<string>();
+            DateTime now = DateTime.Now;
 
             lines.Add("#");
             lines.Add(string.Format("# WiseDome calibration data, generated automatically, please don't change!"));
-            lines.Add(string.Format("# Saved: {0}", DateTime.Now.ToLongDateString()));
+            lines.Add(string.Format("# Saved: {0} at {1}", now.ToLongDateString(), now.ToLongTimeString()));
             lines.Add("#");
             lines.Add(string.Format("Encoder: {0}", domeEncoder.Value));
             lines.Add(string.Format("Azimuth: {0}", Azimuth.Degrees.ToString()));

@@ -35,7 +35,7 @@ namespace ASCOM.Wise40.SafeToOpen
         internal static string humidityMaxProfileName = "Humidity Max";
         internal static string ageMaxSecondsProfileName = "Age Max";
 
-        internal static CloudSensor.SensorData.CloudCondition cloudsMax;
+        internal static double cloudsMax;
         internal static double windMax;
         internal static double rainMax;
         internal static CloudSensor.SensorData.DayCondition lightMax;
@@ -256,31 +256,26 @@ namespace ASCOM.Wise40.SafeToOpen
             {
                 List<string> reasons = new List<string>();
 
-                if (boltwood == null)
-                    reasons.Add("No connection to the Boltwood station");
+                if (!_boltwoodIsValid)
+                    reasons.Add("The Boltwood CloudSensor either not responding or data is too old.");
                 else
                 {
-                    int light = Convert.ToInt32(boltwood.CommandString("daylight", true));
-                    if (ageMaxSeconds > 0 && boltwood.TimeSinceLastUpdate("") > ageMaxSeconds)
-                        reasons.Add(string.Format("boltwood - data is older than {0} seconds", ageMaxSeconds));
-                    if ((int)boltwood.CloudCover > (int)cloudsMax)
-                        reasons.Add(string.Format("boltwood - CloudCover {0} is greater than {1}", (int)boltwood.CloudCover > (int)cloudsMax));
-                    if (light > (int)lightMax)
-                        reasons.Add(string.Format("boltwood - DayLight {0} is greater than {1}", light, lightMax));
+                    if (!IsSafeCloudCover)
+                        reasons.Add("Too cloudy.");
+                    if (!IsSafeLight)
+                        reasons.Add("Too much light.");
                 }
 
-                if (vantagePro == null)
-                    reasons.Add("No connection to the VantagePro station");
+                if (!_vantageProIsValid)
+                    reasons.Add("The VantagePro either not responding or data is too old.");
                 else
                 {
-                    if (ageMaxSeconds > 0 && vantagePro.TimeSinceLastUpdate("") > ageMaxSeconds)
-                        reasons.Add(string.Format("vantagePro - data is older than {0} seconds", ageMaxSeconds));
-                    if (vantagePro.WindSpeed > windMax)
-                        reasons.Add(string.Format("vantagePro - WindSpeed {0} is greater than {1}", vantagePro.WindSpeed, windMax));
-                    if (vantagePro.Humidity > humidityMax)
-                        reasons.Add(string.Format("vantagePro - Humidity {0} is greater than {1}", vantagePro.Humidity, humidityMax));
-                    if (vantagePro.RainRate > rainMax)
-                        reasons.Add(string.Format("vantagePro - RainRate {0} is greater than {1}", vantagePro.RainRate, rainMax));
+                    if (!IsSafeWindSpeed)
+                        reasons.Add("Too windy.");
+                    if (!IsSafeHumidity)
+                        reasons.Add("Too humid.");
+                    if (!IsSafeRain)
+                        reasons.Add("Too wet.");
                 }
                 return reasons;
             }
@@ -316,7 +311,15 @@ namespace ASCOM.Wise40.SafeToOpen
         {
             get
             {
-                return Convert.ToInt32(boltwood.CommandString("daylight", true)) <= (int)lightMax;
+                Dictionary<string, int> dayConditions = new Dictionary<string, int>
+                {
+                    {"dayUnknown", 0 },
+                    {"dayDark", 1 },
+                    {"dayLight", 2 },
+                    {"dayVeryLight", 3 },
+                };
+                int light = dayConditions[boltwood.CommandString("daylight", true)];
+                return (light != 0) && (light < (int)lightMax);
             }
         }
 
@@ -324,7 +327,7 @@ namespace ASCOM.Wise40.SafeToOpen
         {
             get
             {
-                return (int)boltwood.CloudCover <= (int)cloudsMax;
+                return boltwood.CloudCover <= cloudsMax;
             }
         }
 
@@ -447,27 +450,7 @@ namespace ASCOM.Wise40.SafeToOpen
             {
                 driverProfile.DeviceType = "SafetyMonitor";
                 traceState = Convert.ToBoolean(driverProfile.GetValue(driverID, traceStateProfileName, string.Empty, traceStateDefault));
-                switch (driverProfile.GetValue(driverID, cloudsMaxProfileName, string.Empty, 0.ToString()))
-                {
-                    case "cloudUnknown":
-                        cloudsMax = CloudSensor.SensorData.CloudCondition.cloudUnknown;
-                        break;
-                    case "cloudClear":
-                        cloudsMax = CloudSensor.SensorData.CloudCondition.cloudClear;
-                        break;
-                    case "cloudCloudy":
-                        cloudsMax = CloudSensor.SensorData.CloudCondition.cloudCloudy;
-                        break;
-                    case "cloudVeryCloudy":
-                        cloudsMax = CloudSensor.SensorData.CloudCondition.cloudVeryCloudy;
-                        break;
-                    case "cloudWet":
-                        cloudsMax = CloudSensor.SensorData.CloudCondition.cloudWet;
-                        break;
-                    default:
-                        cloudsMax = CloudSensor.SensorData.CloudCondition.cloudUnknown;
-                        break;
-                }
+                cloudsMax = Convert.ToDouble(driverProfile.GetValue(driverID, cloudsMaxProfileName, string.Empty, 0.ToString()));                
                 windMax = Convert.ToDouble(driverProfile.GetValue(driverID, windMaxProfileName, string.Empty, 0.0.ToString()));
                 rainMax = Convert.ToDouble(driverProfile.GetValue(driverID, rainMaxProfileName, string.Empty, 0.0.ToString()));
                 humidityMax = Convert.ToDouble(driverProfile.GetValue(driverID, humidityMaxProfileName, string.Empty, 0.0.ToString()));

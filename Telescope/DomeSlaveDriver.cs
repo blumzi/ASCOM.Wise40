@@ -131,6 +131,32 @@ namespace ASCOM.Wise40
             #endregion
         }
 
+        public void Calibrate()
+        {
+            if (wisetele == null)
+                wisetele = WiseTele.Instance;
+
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver: Asking dome to findHome");
+            #endregion
+            try
+            {
+                wisedome.FindHome();
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver: Waiting for dome to findHome");
+                #endregion
+            }
+            catch (Exception ex)
+            {
+                wisedome.AbortSlew();
+                throw ex;
+            }
+
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver: Dome found Home");
+            #endregion
+        }
+
         public void SlewToAz(Angle ra, Angle dec)
         {
             double rar = 0, decr = 0, az = 0, zd = 0;
@@ -158,7 +184,7 @@ namespace ASCOM.Wise40
         public void AbortSlew()
         {
             wisedome.AbortSlew();
-            wisetele.slewers.Delete(Slewers.Type.Dome, ref wisetele._driverInitiatedSlewing);
+            wisetele.slewers.Delete(Slewers.Type.Dome);
         }
 
         public string Azimuth
