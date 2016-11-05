@@ -13,7 +13,7 @@ using ASCOM.DriverAccess;
 using ASCOM.Wise40;
 using ASCOM.Wise40.Common;
 using ASCOM.Wise40.Hardware;
-using ASCOM.Wise40.SafeToOpen;
+using ASCOM.Wise40.SafeToOperate;
 
 namespace Dash
 {
@@ -24,7 +24,7 @@ namespace Dash
         WiseFocuser wisefocuser = WiseFocuser.Instance;
         Hardware hardware = Hardware.Instance;
         WiseSite wisesite = WiseSite.Instance;
-        WiseSafeToOpen wisesafetoopen = WiseSafeToOpen.Instance;
+        WiseSafeToOperate wisesafetoopen = WiseSafeToOperate.Instance(WiseSafeToOperate.Operation.Open);
         ObservingConditions boltwood = new ASCOM.DriverAccess.ObservingConditions("ASCOM.CloudSensor.ObservingConditions");
 
         DomeSlaveDriver domeSlaveDriver = DomeSlaveDriver.Instance;
@@ -34,7 +34,7 @@ namespace Dash
         Statuser dashStatus, telescopeStatus, domeStatus, shutterStatus, focuserStatus, weatherStatus;
 
         private double handpadRate = Const.rateSlew;
-        private bool _safetyOverride = false;
+        private bool _bypassSafety = false;
 
         private List<ToolStripMenuItem> debugMenuItems;
 
@@ -76,8 +76,7 @@ namespace Dash
             telescopeStatus.Show("");
             focuserStatus.Show("");
             weatherStatus.Show("");
-
-            checkBoxTrack.Checked = wisetele.Tracking;
+            
             buttonVent.Text = wisedome.Vent ? "Close Vent" : "Open Vent";
 
             List<ToolStripMenuItem> checkedItems = new List<ToolStripMenuItem>();
@@ -96,8 +95,13 @@ namespace Dash
 
             foreach (var item in checkedItems)
                 item.Text += Const.checkmark;
-
-            tracingToolStripMenuItem.Text = debugger.Tracing ? "Tracing" + Const.checkmark : "Tracing";
+            
+            if (debugger.Tracing)
+                tracingToolStripMenuItem.Text += Const.checkmark;
+            if (wisedome._autoCalibrate)
+                domeAutoCalibrateToolStripMenuItem.Text += Const.checkmark;
+            if (wisetele._enslaveDome)
+                enslaveDomeToolStripMenuItem.Text += Const.checkmark;
         }
         #endregion
 
@@ -157,7 +161,8 @@ namespace Dash
                 checkBoxSecondaryIsActive.Text += ": " + m.Name.Remove(m.Name.IndexOf('M')) + "@" +
                     WiseTele.RateName(m.currentRate).Replace("rate", "");
 
-            checkBoxTrack.Checked = wisetele.Tracking;
+            telescopeStatus.Show(wisetele.Status);
+
             #endregion
 
             #region RefreshSafety
@@ -180,10 +185,10 @@ namespace Dash
             toolTip.SetToolTip(labelDashComputerControl, tip);
 
             tip = null;
-            if (_safetyOverride)
+            if (_bypassSafety)
             {
                 labelDashSafeToOpen.ForeColor = Statuser.colors[Statuser.Severity.Good];
-                tip = "Safety is Overriden (by Settings)";
+                tip = "Safety is bypassed (from Settings)";
             }
             else
             {
@@ -206,29 +211,35 @@ namespace Dash
             toolTip.SetToolTip(labelDashSafeToOpen, tip);
 
             tip = null;
-            if (true || wisesite.safeToImage == null)
-            {
-                labelDashSafeToImage.ForeColor = Statuser.colors[Statuser.Severity.Warning];
-                tip = "Cannot connect to the safeToImage driver!";
-            }
-            else if (wisesite.safeToImage.IsSafe)
+            if (_bypassSafety)
             {
                 labelDashSafeToImage.ForeColor = Statuser.colors[Statuser.Severity.Good];
-                tip = "Conditions are safe to image.";
+                tip = "Safety is bypassed (from Settings)";
             }
             else
             {
-                labelDashSafeToImage.ForeColor = Statuser.colors[Statuser.Severity.Error];
-                //tip = wisesite.safeToImage.CommandString("unsafeReasons", false);
-                tip = "unsafeReasons";
+                if (wisesite.safeToImage == null)
+                {
+                    labelDashSafeToImage.ForeColor = Statuser.colors[Statuser.Severity.Warning];
+                    tip = "Cannot connect to the safeToImage driver!";
+                }
+                else if (wisesite.safeToImage.IsSafe)
+                {
+                    labelDashSafeToImage.ForeColor = Statuser.colors[Statuser.Severity.Good];
+                    tip = "Conditions are safe to image.";
+                }
+                else
+                {
+                    labelDashSafeToImage.ForeColor = Statuser.colors[Statuser.Severity.Error];
+                    //tip = wisesite.safeToImage.CommandString("unsafeReasons", false);
+                }
             }
             toolTip.SetToolTip(labelDashSafeToImage, tip);
             #endregion
 
             #region RefreshDome
             labelDomeAzimuthValue.Text = domeSlaveDriver.Azimuth;
-            if (labelDomeStatus.Text == string.Empty)
-                domeStatus.Show(domeSlaveDriver.Status);
+            domeStatus.Show(domeSlaveDriver.Status);
             if (labelDomeShutterStatus.Text == string.Empty)
                 shutterStatus.Show(domeSlaveDriver.ShutterStatus);
             buttonDomePark.Text = wisedome.AtPark ? "Unpark" : "Park";
@@ -303,8 +314,8 @@ namespace Dash
                         weatherStatus.SetToolTip("");
                     } else
                     {
-                        if (_safetyOverride)
-                            weatherStatus.Show("Safe to open (safety override)", 0, Statuser.Severity.Good);
+                        if (_bypassSafety)
+                            weatherStatus.Show("Safe to open (safety bypassed)", 0, Statuser.Severity.Good);
                         else
                             weatherStatus.Show("Not safe to open", 0, Statuser.Severity.Error, true);
                         weatherStatus.SetToolTip(string.Join(Const.crnl, wisesafetoopen.UnsafeReasons));
@@ -452,12 +463,6 @@ namespace Dash
         private void textBoxDec_MouseDoubleClick(object sender, MouseEventArgs e)
         {
             textBoxDec.Text = Angle.FromDegrees(wisetele.Declination).ToString();
-        }
-
-        private void checkBoxEnslaveDome_CheckedChanged(object sender, EventArgs e)
-        {
-            wisetele._enslaveDome = checkBoxEnslaveDome.Checked;
-            telescopeStatus.Show((wisetele._enslaveDome ? "Started" : "Stopped") + " dome enslaving", 1000, Statuser.Severity.Good);
         }
 
         private void checkBoxTrack_CheckedChanged(object sender, EventArgs e)
@@ -666,12 +671,13 @@ namespace Dash
         {
             domeStatus.Show("Stopped moving", 1000, Statuser.Severity.Good);
             wisedome.Stop();
+            wisetele.DomeStopper();
         }
 
         private void buttonCalibrateDome_Click(object sender, EventArgs e)
         {
             domeStatus.Show("Started dome calibration", 1000, Statuser.Severity.Good);
-            wisedome.FindHome();
+            wisetele.DomeCalibrator();
         }
 
         private void buttonVent_Click(object sender, EventArgs e)
@@ -697,7 +703,7 @@ namespace Dash
                 if (wisedome.AtPark)
                     wisedome.AtPark = false;
                 else
-                    wisedome.Park();
+                    wisetele.DomeParker();
             }
             catch (Exception ex)
             {
@@ -786,6 +792,80 @@ namespace Dash
             }
         }
 
+        private void domeAutoCalibrateToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ToolStripMenuItem item = sender as ToolStripMenuItem;
+            string text = item.Text;
+
+            if (item.Text.EndsWith(Const.checkmark))
+            {
+                wisedome._autoCalibrate = false;
+                item.Text = text.Remove(text.Length - Const.checkmark.Length);
+            } else
+            {
+                wisedome._autoCalibrate = true;
+                item.Text = text + Const.checkmark;
+            }
+        }
+
+        private void enslaveDomeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ToolStripMenuItem item = sender as ToolStripMenuItem;
+
+            if (item.Text.EndsWith(Const.checkmark))
+            {
+                wisetele._enslaveDome = false;
+                item.Text.Remove(item.Text.Length - Const.checkmark.Length);
+            } else
+            {
+                wisetele._enslaveDome = true;
+                item.Text += Const.checkmark;
+            }
+        }
+
+        private void buttonZenith_Click(object sender, EventArgs e)
+        {
+            bool savedEnslaveDome = wisetele._enslaveDome;
+            double ra = wisesite.LocalSiderealTime.Hours;
+            double dec = 90.0 - wisesite.Latitude.Degrees;
+
+            wisetele._enslaveDome = false;
+            wisetele.Tracking = true;
+            try
+            {
+                wisetele.SlewToCoordinatesAsync(ra, dec, false);
+            } catch(Exception ex)
+            {
+                telescopeStatus.Show(ex.Message, 2000, Statuser.Severity.Error);
+            }
+            wisetele._enslaveDome = savedEnslaveDome;
+            wisetele.Tracking = false;
+        }
+
+        private void buttonHandleCover_Click(object sender, EventArgs e)
+        {
+            // Calculate:
+            //  RA: -12h
+            // Dec: 88
+            double coverHA = 0.0;
+            double coverDec = 88.0;
+
+            telescopeStatus.Show("Cover - Not implemeted yet!", 2000, Statuser.Severity.Error);
+        }
+
+        private void buttonFlat_Click(object sender, EventArgs e)
+        {
+            // Flat is at HA: -1:35:59.0, Dec: 41:59:20.0
+            telescopeStatus.Show("Flat - Not implemeted yet!", 2000, Statuser.Severity.Error);
+        }
+
+        private void checkBoxTrack_Click(object sender, EventArgs e)
+        {
+            CheckBox box = sender as CheckBox;
+
+            wisetele.Tracking = box.Checked;
+        }
+
         private void debugNoneToolStripMenuItem_Click(object sender, EventArgs e)
         {
             debugger.StopDebugging(Debugger.DebugLevel.DebugAll);
@@ -834,6 +914,8 @@ namespace Dash
         private void saveToProfileToolStripMenuItem_Click(object sender, EventArgs e)
         {
             debugger.WriteProfile();
+            wisedome.WriteProfile();
+            wisetele.WriteProfile();
         }
 
         private void tracingToolStripMenuItem_Click(object sender, EventArgs e)
@@ -854,16 +936,16 @@ namespace Dash
 
         private void safetyOverrideToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            string menuText = "Safety Override (current session)";
-            if (_safetyOverride)
+            string menuText = "Bypass Safety";
+            if (_bypassSafety)
             {
-                _safetyOverride = false;
+                _bypassSafety = false;
                 safetyOverrideToolStripMenuItem.Text = menuText;
             }
             else
             {
                 safetyOverrideToolStripMenuItem.Text = menuText + Const.checkmark;
-                _safetyOverride = true;
+                _bypassSafety = true;
             }
         }
         #endregion

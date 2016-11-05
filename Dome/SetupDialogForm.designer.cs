@@ -31,15 +31,9 @@ namespace ASCOM.Wise40
             this.cmdOK = new System.Windows.Forms.Button();
             this.cmdCancel = new System.Windows.Forms.Button();
             this.picASCOM = new System.Windows.Forms.PictureBox();
-            this.checkBoxTrace = new System.Windows.Forms.CheckBox();
             this.checkBoxAutoCalibrate = new System.Windows.Forms.CheckBox();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.checkBoxDebugAxes = new System.Windows.Forms.CheckBox();
-            this.checkBoxDebugExceptions = new System.Windows.Forms.CheckBox();
-            this.checkBoxDebugEncoders = new System.Windows.Forms.CheckBox();
             this.label1 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).BeginInit();
-            this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
             // cmdOK
@@ -48,7 +42,7 @@ namespace ASCOM.Wise40
             this.cmdOK.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.cmdOK.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.cmdOK.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.cmdOK.Location = new System.Drawing.Point(224, 152);
+            this.cmdOK.Location = new System.Drawing.Point(224, 94);
             this.cmdOK.Name = "cmdOK";
             this.cmdOK.Size = new System.Drawing.Size(59, 24);
             this.cmdOK.TabIndex = 0;
@@ -62,7 +56,7 @@ namespace ASCOM.Wise40
             this.cmdCancel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.cmdCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.cmdCancel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.cmdCancel.Location = new System.Drawing.Point(224, 182);
+            this.cmdCancel.Location = new System.Drawing.Point(224, 124);
             this.cmdCancel.Name = "cmdCancel";
             this.cmdCancel.Size = new System.Drawing.Size(59, 25);
             this.cmdCancel.TabIndex = 1;
@@ -84,17 +78,6 @@ namespace ASCOM.Wise40
             this.picASCOM.Click += new System.EventHandler(this.BrowseToAscom);
             this.picASCOM.DoubleClick += new System.EventHandler(this.BrowseToAscom);
             // 
-            // checkBoxTrace
-            // 
-            this.checkBoxTrace.AutoSize = true;
-            this.checkBoxTrace.Location = new System.Drawing.Point(24, 80);
-            this.checkBoxTrace.Name = "checkBoxTrace";
-            this.checkBoxTrace.Size = new System.Drawing.Size(54, 17);
-            this.checkBoxTrace.TabIndex = 6;
-            this.checkBoxTrace.TabStop = false;
-            this.checkBoxTrace.Text = "Trace";
-            this.checkBoxTrace.UseVisualStyleBackColor = true;
-            // 
             // checkBoxAutoCalibrate
             // 
             this.checkBoxAutoCalibrate.AutoSize = true;
@@ -106,49 +89,6 @@ namespace ASCOM.Wise40
             this.checkBoxAutoCalibrate.Text = "Auto Calibrate";
             this.checkBoxAutoCalibrate.UseVisualStyleBackColor = true;
             this.checkBoxAutoCalibrate.CheckedChanged += new System.EventHandler(this.checkBoxAutoCalibrate_CheckedChanged);
-            // 
-            // groupBox1
-            // 
-            this.groupBox1.Controls.Add(this.checkBoxDebugAxes);
-            this.groupBox1.Controls.Add(this.checkBoxDebugExceptions);
-            this.groupBox1.Controls.Add(this.checkBoxDebugEncoders);
-            this.groupBox1.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBox1.Location = new System.Drawing.Point(23, 129);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(177, 79);
-            this.groupBox1.TabIndex = 8;
-            this.groupBox1.TabStop = false;
-            this.groupBox1.Text = " Debugged components ";
-            // 
-            // checkBoxDebugAxes
-            // 
-            this.checkBoxDebugAxes.AutoSize = true;
-            this.checkBoxDebugAxes.Location = new System.Drawing.Point(8, 24);
-            this.checkBoxDebugAxes.Name = "checkBoxDebugAxes";
-            this.checkBoxDebugAxes.Size = new System.Drawing.Size(81, 17);
-            this.checkBoxDebugAxes.TabIndex = 2;
-            this.checkBoxDebugAxes.Text = "DebugAxes";
-            this.checkBoxDebugAxes.UseVisualStyleBackColor = true;
-            // 
-            // checkBoxDebugExceptions
-            // 
-            this.checkBoxDebugExceptions.AutoSize = true;
-            this.checkBoxDebugExceptions.Location = new System.Drawing.Point(8, 56);
-            this.checkBoxDebugExceptions.Name = "checkBoxDebugExceptions";
-            this.checkBoxDebugExceptions.Size = new System.Drawing.Size(110, 17);
-            this.checkBoxDebugExceptions.TabIndex = 1;
-            this.checkBoxDebugExceptions.Text = "DebugExceptions";
-            this.checkBoxDebugExceptions.UseVisualStyleBackColor = true;
-            // 
-            // checkBoxDebugEncoders
-            // 
-            this.checkBoxDebugEncoders.AutoSize = true;
-            this.checkBoxDebugEncoders.Location = new System.Drawing.Point(8, 40);
-            this.checkBoxDebugEncoders.Name = "checkBoxDebugEncoders";
-            this.checkBoxDebugEncoders.Size = new System.Drawing.Size(103, 17);
-            this.checkBoxDebugEncoders.TabIndex = 0;
-            this.checkBoxDebugEncoders.Text = "DebugEncoders";
-            this.checkBoxDebugEncoders.UseVisualStyleBackColor = true;
             // 
             // label1
             // 
@@ -164,11 +104,9 @@ namespace ASCOM.Wise40
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.ClientSize = new System.Drawing.Size(294, 217);
+            this.ClientSize = new System.Drawing.Size(294, 159);
             this.Controls.Add(this.label1);
-            this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.checkBoxAutoCalibrate);
-            this.Controls.Add(this.checkBoxTrace);
             this.Controls.Add(this.picASCOM);
             this.Controls.Add(this.cmdCancel);
             this.Controls.Add(this.cmdOK);
@@ -181,8 +119,6 @@ namespace ASCOM.Wise40
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Wise40 Setup";
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).EndInit();
-            this.groupBox1.ResumeLayout(false);
-            this.groupBox1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -193,12 +129,7 @@ namespace ASCOM.Wise40
         private System.Windows.Forms.Button cmdOK;
         private System.Windows.Forms.Button cmdCancel;
         private System.Windows.Forms.PictureBox picASCOM;
-        private System.Windows.Forms.CheckBox checkBoxTrace;
         private System.Windows.Forms.CheckBox checkBoxAutoCalibrate;
-        private System.Windows.Forms.GroupBox groupBox1;
-        private System.Windows.Forms.CheckBox checkBoxDebugEncoders;
-        private System.Windows.Forms.CheckBox checkBoxDebugExceptions;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.CheckBox checkBoxDebugAxes;
     }
 }

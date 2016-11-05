@@ -14,26 +14,19 @@ namespace ASCOM.Wise40
     [ComVisible(false)]					// Form not registered for COM!
     public partial class SetupDialogForm : Form
     {
-        private Dome _dome;
         private WiseDome wisedome = WiseDome.Instance;
 
-        public SetupDialogForm(Dome dome)
+        public SetupDialogForm()
         {
-            _dome = dome;
             InitializeComponent();
 
-            _dome.ReadProfile();
-            checkBoxTrace.Checked = _dome.traceState;
-            checkBoxAutoCalibrate.Checked = (_dome.debugger.Level != 0);
-            checkBoxDebugAxes.Checked = _dome.debugger.Debugging(Debugger.DebugLevel.DebugAxes);
-            checkBoxDebugEncoders.Checked = _dome.debugger.Debugging(Debugger.DebugLevel.DebugEncoders);
-            checkBoxDebugExceptions.Checked = _dome.debugger.Debugging(Debugger.DebugLevel.DebugExceptions);
+            wisedome.ReadProfile();
+            checkBoxAutoCalibrate.Checked = wisedome._autoCalibrate;
         }
 
         private void cmdOK_Click(object sender, EventArgs e) // OK button event handler
         {
-            _dome.traceState = checkBoxTrace.Checked;
-            _dome.WriteProfile();
+            wisedome.WriteProfile();
         }
 
         private void cmdCancel_Click(object sender, EventArgs e) // Cancel button event handler

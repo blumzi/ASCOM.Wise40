@@ -45,7 +45,7 @@ using ASCOM.CloudSensor;
 
 using ASCOM.Wise40.Common;
 
-namespace ASCOM.Wise40.SafeToOpen
+namespace ASCOM.Wise40.SafeToOperate
 {
     //
     // Your driver's DeviceID is ASCOM.Wise40.SafeToOpen.SafetyMonitor
@@ -65,17 +65,21 @@ namespace ASCOM.Wise40.SafeToOpen
     [ClassInterface(ClassInterfaceType.None)]
     public class SafetyMonitor : ISafetyMonitor
     {
-        internal WiseSafeToOpen wisesafetoopen = WiseSafeToOpen.Instance;
+        private static WiseSafeToOperate.Operation _op = WiseSafeToOperate.Operation.Open;
 
-	internal static CloudSensor.SensorData.CloudCondition cloudsMax;
-	internal static int rainMax;
-	internal static CloudSensor.SensorData.DayCondition lightMax;
-	internal static int windMax;
-	internal static int humidityMax;
-	internal static int ageMaxSeconds;
+        public WiseSafeToOperate wisesafetoopen = WiseSafeToOperate.Instance(_op);
+        private static string driverID = "ASCOM.Wise40.SafeToOpen.SafetyMonitor";
+        private static string driverDescription = "ASCOM Wise40 SafeToOpen";
+
+        internal static CloudSensor.SensorData.CloudCondition cloudsMax = SensorData.CloudCondition.cloudUnknown;
+        internal static int rainMax = 0;
+        internal static CloudSensor.SensorData.DayCondition lightMax = SensorData.DayCondition.dayUnknown;
+        internal static int windMax;
+        internal static int humidityMax;
+        internal static int ageMaxSeconds;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Wise40.SafeToOpen"/> class.
+        /// Initializes a new instance of the <see cref="Wise40.SafeToOperate"/> class.
         /// Must be public for COM registration.
         /// </summary>
         public SafetyMonitor()
@@ -107,7 +111,7 @@ namespace ASCOM.Wise40.SafeToOpen
                 var result = F.ShowDialog();
                 if (result == System.Windows.Forms.DialogResult.OK)
                 {
-                    WriteProfile(); // Persist device configuration values to the ASCOM Profile store
+                    wisesafetoopen.WriteProfile(); // Persist device configuration values to the ASCOM Profile store
                 }
             }
         }
@@ -232,11 +236,11 @@ namespace ASCOM.Wise40.SafeToOpen
                 P.DeviceType = "SafetyMonitor";
                 if (bRegister)
                 {
-                    P.Register(WiseSafeToOpen.driverID, WiseSafeToOpen.driverDescription);
+                    P.Register(driverID, driverDescription);
                 }
                 else
                 {
-                    P.Unregister(WiseSafeToOpen.driverID);
+                    P.Unregister(driverID);
                 }
             }
         }
@@ -289,21 +293,6 @@ namespace ASCOM.Wise40.SafeToOpen
 
         #endregion
 
-        /// <summary>
-        /// Read the device configuration from the ASCOM Profile store
-        /// </summary>
-        internal static void ReadProfile()
-        {
-            WiseSafeToOpen.ReadProfile();            
-        }
-
-        /// <summary>
-        /// Write the device configuration to the  ASCOM  Profile store
-        /// </summary>
-        internal static void WriteProfile()
-        {
-            WiseSafeToOpen.WriteProfile();
-        }
         #endregion
     }
 }

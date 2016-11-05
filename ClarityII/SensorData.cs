@@ -56,7 +56,8 @@ namespace ASCOM.CloudSensor
     {
         public double age;
         public DateTime date;
-        public enum TempUnits {
+        public enum TempUnits
+        {
             tempCelsius = 0,
             tempFahrenheit = 1,
         }
@@ -104,7 +105,15 @@ namespace ASCOM.CloudSensor
             cloudWet = 4,
         }
         public CloudCondition cloudCondition;
-        public enum WindCondition {
+        public static Dictionary<CloudCondition, double> doubleCloudCondition = new Dictionary<CloudCondition, double>() {
+                    { CloudCondition.cloudUnknown, 0.0 },
+                    { CloudCondition.cloudClear, 0.0 },
+                    { CloudCondition.cloudCloudy, 50.0 },
+                    { CloudCondition.cloudVeryCloudy, 90.0 },
+                    { CloudCondition.cloudWet, 100.0 },
+                };
+        public enum WindCondition
+        {
             windUnknow = 0,
             windwindCalm = 1,
             windWindy = 2,
@@ -118,13 +127,28 @@ namespace ASCOM.CloudSensor
             rainWet = 2,
             rainRain = 3,
         }
+        public static Dictionary<RainCondition, int> intRainCondition = new Dictionary<RainCondition, int>()
+        {
+            {RainCondition.rainUnknown, 0 },
+            {RainCondition.rainDry, 1 },
+            {RainCondition.rainWet, 2 },
+            {RainCondition.rainRain, 3 },
+        };
         public RainCondition rainCondition;
-        public enum DayCondition {
+        public enum DayCondition
+        {
             dayUnknown = 0,
             dayDark = 1,
             dayLight = 2,
             dayVeryLight = 3,
         }
+        public static Dictionary<DayCondition, int> intDayCondition = new Dictionary<DayCondition, int>()
+        {
+            {DayCondition.dayUnknown, 0 },
+            {DayCondition.dayDark, 1 },
+            {DayCondition.dayLight, 2 },
+            {DayCondition.dayVeryLight, 3 },
+        };
         public DayCondition dayCondition;
         public bool roofCloseRequested;
         public bool alerting;
@@ -132,7 +156,7 @@ namespace ASCOM.CloudSensor
         public SensorData(string data)
         {
             try
-            {                
+            {
                 date = Convert.ToDateTime(data.Substring(0, 22));
                 age = DateTime.Now.Subtract(date).TotalSeconds;
                 switch (data.Substring(23, 1))
@@ -173,7 +197,8 @@ namespace ASCOM.CloudSensor
                 dayCondition = (DayCondition)Convert.ToInt32(data.Substring(99, 1));
                 var x = Convert.ToInt32(data.Substring(101, 1));
                 roofCloseRequested = (x == 1) ? true : false;
-            } catch(Exception e)
+            }
+            catch (Exception e)
             {
                 throw new InvalidValueException(string.Format("Could not parse sensor data, caught: {0}", e.Message));
             }

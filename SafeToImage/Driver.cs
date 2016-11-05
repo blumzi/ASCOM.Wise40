@@ -2,7 +2,7 @@
 // --------------------------------------------------------------------------------
 // TODO fill in this information for your driver, then remove this line!
 //
-// ASCOM SafetyMonitor driver for Wise40.SafeToOpen
+// ASCOM SafetyMonitor driver for Wise40.SafeToImage
 //
 // Description:	Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam 
 //				nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam 
@@ -41,9 +41,11 @@ using System.Globalization;
 using System.Collections;
 
 using ASCOM.DriverAccess;
-using ASCOM.Wise40;
+using ASCOM.CloudSensor;
 
-namespace ASCOM.Wise40.SafeToImage
+using ASCOM.Wise40.Common;
+
+namespace ASCOM.Wise40.SafeToOperate
 {
     //
     // Your driver's DeviceID is ASCOM.Wise40.SafeToImage.SafetyMonitor
@@ -63,70 +65,26 @@ namespace ASCOM.Wise40.SafeToImage
     [ClassInterface(ClassInterfaceType.None)]
     public class SafetyMonitor : ISafetyMonitor
     {
-        /// <summary>
-        /// ASCOM DeviceID (COM ProgID) for this driver.
-        /// The DeviceID is used by ASCOM applications to load the driver at runtime.
-        /// </summary>
-        internal static string driverID = "ASCOM.Wise40.SafeToImage.SafetyMonitor";
-        // TODO Change the descriptive string for your driver then remove this line
-        /// <summary>
-        /// Driver description that displays in the ASCOM Chooser.
-        /// </summary>
+        private static WiseSafeToOperate.Operation _op = WiseSafeToOperate.Operation.Image;
+
+        internal WiseSafeToOperate wisesafetoimage = WiseSafeToOperate.Instance(_op);
+        private static string driverID = "ASCOM.Wise40.SafeToImage.SafetyMonitor";
         private static string driverDescription = "ASCOM Wise40 SafeToImage";
 
-        internal static string traceStateProfileName = "Trace Level";
-        internal static string traceStateDefault = "false";
-
-        internal static string cloudsMaxProfileName = "Clouds Max";
-        internal static string windMaxProfileName = "Wind Max";
-        internal static string rainMaxProfileName = "Rain Max";
-        internal static string lightMaxProfileName = "Light Max";
-        internal static string humidityMaxProfileName = "Humidity Max";
-        internal static string ageMaxSecondsProfileName = "Age Max";
-
-        internal static CloudSensor.SensorData.CloudCondition cloudsMax;
-        internal static double windMax;
-        internal static double rainMax;
-        internal static CloudSensor.SensorData.DayCondition lightMax;
-        internal static double humidityMax;
-        internal static int ageMaxSeconds;
-        internal static bool traceState;
+        internal static CloudSensor.SensorData.CloudCondition cloudsMax = SensorData.CloudCondition.cloudUnknown;
+        internal static int rainMax = 0;
+        internal static CloudSensor.SensorData.DayCondition lightMax = SensorData.DayCondition.dayUnknown;
+        internal static int windMax = 0;
+        internal static int humidityMax = 0;
+        internal static int ageMaxSeconds = 0;
 
         /// <summary>
-        /// Private variable to hold the connected state
-        /// </summary>
-        private bool _connected;
-
-        private Wise40.Common.Debugger debugger = Wise40.Common.Debugger.Instance;
-        private TraceLogger tl;
-
-        private static ObservingConditions boltwood;
-        private static ObservingConditions vantagePro;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Wise40.SafeToImage"/> class.
+        /// Initializes a new instance of the <see cref="Wise40.SafeToOperate"/> class.
         /// Must be public for COM registration.
         /// </summary>
         public SafetyMonitor()
         {
-            ReadProfile(); // Read device configuration from the ASCOM Profile store
-
-            tl = new TraceLogger("", "Wise40.SafeToImage");
-            tl.Enabled = debugger.Tracing;
-            tl.LogMessage("SafetyMonitor", "Starting initialisation");
-
-            _connected = false; // Initialise connected to false
-
-            try
-            {
-                boltwood = new ObservingConditions("ASCOM.CloudSensor.ObservingConditions");
-                vantagePro = new ObservingConditions("ASCOM.Vantage.ObservingConditions");
-            } catch
-            {
-                throw new InvalidOperationException("Could not open weather stations");
-            }
-
-            tl.LogMessage("SafetyMonitor", "Completed initialisation");
+            wisesafetoimage.init();
         }
 
         //
@@ -145,7 +103,7 @@ namespace ASCOM.Wise40.SafeToImage
         {
             // consider only showing the setup dialog if not connected
             // or call a different dialog if connected
-            if (IsConnected)
+            if (wisesafetoimage.Connected)
                 System.Windows.Forms.MessageBox.Show("Already connected, just press OK");
 
             using (SetupDialogForm F = new SetupDialogForm())
@@ -153,7 +111,7 @@ namespace ASCOM.Wise40.SafeToImage
                 var result = F.ShowDialog();
                 if (result == System.Windows.Forms.DialogResult.OK)
                 {
-                    WriteProfile(); // Persist device configuration values to the ASCOM Profile store
+                    wisesafetoimage.WriteProfile(); // Persist device configuration values to the ASCOM Profile store
                 }
             }
         }
@@ -162,72 +120,44 @@ namespace ASCOM.Wise40.SafeToImage
         {
             get
             {
-                tl.LogMessage("SupportedActions Get", "Returning empty arraylist");
-                return new ArrayList();
+                return wisesafetoimage.SupportedActions;
             }
         }
 
         public string Action(string actionName, string actionParameters)
         {
-            throw new ASCOM.ActionNotImplementedException("Action " + actionName + " is not implemented by this driver");
+            return wisesafetoimage.Action(actionName, actionParameters);
         }
 
         public void CommandBlind(string command, bool raw)
         {
-            CheckConnected("CommandBlind");
-            // Call CommandString and return as soon as it finishes
-            this.CommandString(command, raw);
-            // or
-            throw new ASCOM.MethodNotImplementedException("CommandBlind");
-            // DO NOT have both these sections!  One or the other
+            wisesafetoimage.CommandBlind(command, raw);
         }
 
         public bool CommandBool(string command, bool raw)
         {
-            CheckConnected("CommandBool");
-            string ret = CommandString(command, raw);
-            // TODO decode the return string and return true or false
-            // or
-            throw new ASCOM.MethodNotImplementedException("CommandBool");
-            // DO NOT have both these sections!  One or the other
+            return wisesafetoimage.CommandBool(command, raw);
         }
 
         public string CommandString(string command, bool raw)
         {
-            CheckConnected("CommandString");
-            // it's a good idea to put all the low level communication with the device here,
-            // then all communication calls this function
-            // you need something to ensure that only one command is in progress at a time
-
-            throw new ASCOM.MethodNotImplementedException("CommandString");
+            return wisesafetoimage.CommandString(command, raw);
         }
 
         public void Dispose()
         {
-            // Clean up the tracelogger and util objects
-            tl.Enabled = false;
-            tl.Dispose();
-            tl = null;
+            wisesafetoimage.Dispose();
         }
 
         public bool Connected
         {
             get
             {
-                tl.LogMessage("Connected Get", IsConnected.ToString());
-                return IsConnected;
+                return wisesafetoimage.Connected;
             }
             set
             {
-                tl.LogMessage("Connected Set", value.ToString());
-                if (value == IsConnected)
-                    return;
-
-                if (boltwood != null)
-                      boltwood.Connected = value;
-                if (vantagePro != null)
-                    vantagePro.Connected = value;
-                _connected = value;
+                wisesafetoimage.Connected = value;
             }
         }
 
@@ -236,8 +166,7 @@ namespace ASCOM.Wise40.SafeToImage
             // TODO customise this device description
             get
             {
-                tl.LogMessage("Description Get", driverDescription);
-                return driverDescription;
+                return wisesafetoimage.Description;
             }
         }
 
@@ -245,11 +174,7 @@ namespace ASCOM.Wise40.SafeToImage
         {
             get
             {
-                Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-                // TODO customise this driver description
-                string driverInfo = "Implements Wise40 weather max. values, wraps Boltwood CloudSensorII and Davis VantagePro. Version: " + String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
-                tl.LogMessage("DriverInfo Get", driverInfo);
-                return driverInfo;
+                return wisesafetoimage.DriverInfo;
             }
         }
 
@@ -257,10 +182,7 @@ namespace ASCOM.Wise40.SafeToImage
         {
             get
             {
-                Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-                string driverVersion = String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
-                tl.LogMessage("DriverVersion Get", driverVersion);
-                return driverVersion;
+                return wisesafetoimage.DriverVersion;
             }
         }
 
@@ -269,8 +191,7 @@ namespace ASCOM.Wise40.SafeToImage
             // set by the driver wizard
             get
             {
-                tl.LogMessage("InterfaceVersion Get", "1");
-                return Convert.ToInt16("1");
+                return wisesafetoimage.InterfaceVersion;
             }
         }
 
@@ -278,9 +199,7 @@ namespace ASCOM.Wise40.SafeToImage
         {
             get
             {
-                string name = "Short driver name - please customise";
-                tl.LogMessage("Name Get", name);
-                return name;
+                return wisesafetoimage.Name;
             }
         }
 
@@ -291,41 +210,9 @@ namespace ASCOM.Wise40.SafeToImage
         {
             get
             {
-                bool ret = true;
-
-                if (boltwood == null || vantagePro == null)
-                    return false;
-                Dictionary<string, int> dayConditions = new Dictionary<string, int>
-                {
-                    {"dayUnknown", 0 },
-                    {"dayDark", 1 },
-                    {"dayLight", 2 },
-                    {"dayVeryLight", 3 },
-                };
-
-                int light = dayConditions[boltwood.CommandString("daylight", true)];
-
-                if (ageMaxSeconds > 0 && boltwood.TimeSinceLastUpdate("") > ageMaxSeconds)
-                    ret = false;
-                else if ((int)boltwood.CloudCover > (int)cloudsMax)
-                    ret = false;
-                else if (light > (int)lightMax)
-                    ret = false;
-
-                if (ageMaxSeconds > 0 && vantagePro.TimeSinceLastUpdate("") > ageMaxSeconds)
-                    ret = false;
-                else if (vantagePro.WindSpeed > windMax)
-                    ret = false;
-                else if (vantagePro.Humidity > humidityMax)
-                    ret = false;
-                else if (vantagePro.RainRate > rainMax)
-                    ret = false;
-
-                tl.LogMessage("IsSafe Get", ret.ToString());
-                return ret;
+                return wisesafetoimage.IsSafe;
             }
         }
-
         #endregion
 
         #region Private properties and methods
@@ -406,103 +293,6 @@ namespace ASCOM.Wise40.SafeToImage
 
         #endregion
 
-        /// <summary>
-        /// Returns true if there is a valid connection to the driver hardware
-        /// </summary>
-        private bool IsConnected
-        {
-            get
-            {
-                // TODO check that the driver hardware connection exists and is connected to the hardware
-                return _connected;
-            }
-        }
-
-        /// <summary>
-        /// Use this function to throw an exception if we aren't connected to the hardware
-        /// </summary>
-        /// <param name="message"></param>
-        private void CheckConnected(string message)
-        {
-            if (!IsConnected)
-            {
-                throw new ASCOM.NotConnectedException(message);
-            }
-        }
-
-        /// <summary>
-        /// Read the device configuration from the ASCOM Profile store
-        /// </summary>
-        internal static void ReadProfile()
-        {
-            using (Profile driverProfile = new Profile())
-            {
-                driverProfile.DeviceType = "SafetyMonitor";
-                traceState = Convert.ToBoolean(driverProfile.GetValue(driverID, traceStateProfileName, string.Empty, traceStateDefault));
-                switch(driverProfile.GetValue(driverID, cloudsMaxProfileName, string.Empty, "cloudClear")) {
-                    case "cloudUnknown":
-                        cloudsMax = CloudSensor.SensorData.CloudCondition.cloudUnknown;
-                        break;
-                    case "cloudClear":
-                        cloudsMax = CloudSensor.SensorData.CloudCondition.cloudClear;
-                        break;
-                    case "cloudCloudy":
-                        cloudsMax = CloudSensor.SensorData.CloudCondition.cloudCloudy;
-                        break;
-                    case "cloudVeryCloudy":
-                        cloudsMax = CloudSensor.SensorData.CloudCondition.cloudVeryCloudy;
-                        break;
-                    case "cloudWet":
-                        cloudsMax = CloudSensor.SensorData.CloudCondition.cloudWet;
-                        break;
-                    default:
-                        cloudsMax = CloudSensor.SensorData.CloudCondition.cloudUnknown;
-                        break;
-                }
-                windMax = Convert.ToDouble(driverProfile.GetValue(driverID, windMaxProfileName, string.Empty, 0.0.ToString()));
-                rainMax = Convert.ToDouble(driverProfile.GetValue(driverID, rainMaxProfileName, string.Empty, 0.0.ToString()));
-                humidityMax = Convert.ToDouble(driverProfile.GetValue(driverID, humidityMaxProfileName, string.Empty, 70.0.ToString()));
-                ageMaxSeconds = Convert.ToInt32(driverProfile.GetValue(driverID, ageMaxSecondsProfileName, string.Empty, 60.0.ToString()));
-                switch(driverProfile.GetValue(driverID, lightMaxProfileName, string.Empty, "dayDark"))
-                {
-                    case "dayUnknown":
-                        lightMax = CloudSensor.SensorData.DayCondition.dayUnknown;
-                        break;
-                    case "dayDark":
-                        lightMax = CloudSensor.SensorData.DayCondition.dayDark;
-                        break;
-                    case "dayLight":
-                        lightMax = CloudSensor.SensorData.DayCondition.dayLight;
-                        break;
-                    case "dayVeryLight":
-                        lightMax = CloudSensor.SensorData.DayCondition.dayVeryLight;
-                        break;
-                    default:
-                        lightMax = CloudSensor.SensorData.DayCondition.dayUnknown;
-                        break;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Write the device configuration to the  ASCOM  Profile store
-        /// </summary>
-        internal static void WriteProfile()
-        {
-            using (Profile driverProfile = new Profile())
-            {
-                driverProfile.DeviceType = "SafetyMonitor";
-                driverProfile.WriteValue(driverID, traceStateProfileName, traceState.ToString());
-                driverProfile.WriteValue(driverID, cloudsMaxProfileName, cloudsMax.ToString());
-                driverProfile.WriteValue(driverID, windMaxProfileName, windMax.ToString());
-                driverProfile.WriteValue(driverID, rainMaxProfileName, rainMax.ToString());
-                driverProfile.WriteValue(driverID, lightMaxProfileName, lightMax.ToString());
-                driverProfile.WriteValue(driverID, humidityMaxProfileName, humidityMax.ToString());
-                driverProfile.WriteValue(driverID, ageMaxSecondsProfileName, ageMaxSeconds.ToString());
-            }
-        }
-
         #endregion
-
     }
 }

@@ -1,4 +1,4 @@
-namespace ASCOM.Wise40.SafeToOpen
+namespace ASCOM.Wise40.SafeToOperate
 {
     partial class SetupDialogForm
     {
@@ -101,7 +101,7 @@ namespace ASCOM.Wise40.SafeToOpen
             // 
             this.picASCOM.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.picASCOM.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.picASCOM.Image = global::ASCOM.Wise40.SafeToOpen.Properties.Resources.ASCOM;
+//            this.picASCOM.Image = global::ASCOM.Wise40.SafeToOperate.Properties.Resources.ASCOM;
             this.picASCOM.Location = new System.Drawing.Point(321, 9);
             this.picASCOM.Name = "picASCOM";
             this.picASCOM.Size = new System.Drawing.Size(48, 56);

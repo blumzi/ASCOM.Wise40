@@ -73,7 +73,7 @@ namespace Restore_ASCOM_Profiles
             {
                 driverProfile.DeviceType = "SafetyMonitor";
                 driverProfile.WriteValue(driverID, traceStateProfileName, false.ToString());
-                driverProfile.WriteValue(driverID, cloudsMaxProfileName, "50");
+                driverProfile.WriteValue(driverID, cloudsMaxProfileName, "cloudClear");
                 driverProfile.WriteValue(driverID, windMaxProfileName, 100.ToString());
                 driverProfile.WriteValue(driverID, rainMaxProfileName, 0.ToString());
                 driverProfile.WriteValue(driverID, lightMaxProfileName, "dayLight");
@@ -110,15 +110,12 @@ namespace Restore_ASCOM_Profiles
         {
             string driverID = "ASCOM.Wise40.Dome";
             string traceStateProfileName = "Trace Level";
-            //string debugLevelProfileName = "Debug Level";
             string autoCalibrateProfileName = "AutoCalibrate";
-            //int debugLevel = (int)Debugger.DebugLevel.DebugAxes;
 
             using (Profile driverProfile = new Profile())
             {
                 driverProfile.DeviceType = "Dome";
                 driverProfile.WriteValue(driverID, traceStateProfileName, false.ToString());
-                //driverProfile.WriteValue(driverID, debugLevelProfileName, debugLevel.ToString());
                 driverProfile.WriteValue(driverID, autoCalibrateProfileName, true.ToString());
             }
         }

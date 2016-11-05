@@ -214,6 +214,7 @@ namespace ASCOM.CloudSensor
             if (command == "daylight")
             {
                 SensorData.DayCondition dayCondition = SensorData.DayCondition.dayUnknown;
+                GetSensorData();
                 if (sensorData != null)
                     dayCondition = sensorData.dayCondition;
                 return dayCondition.ToString();

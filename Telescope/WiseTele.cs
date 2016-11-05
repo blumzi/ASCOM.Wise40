@@ -1206,7 +1206,6 @@ namespace ASCOM.Wise40
             if (AtPark)
                 return;
 
-            //_driverInitiatedSlewing = true;
             Angle ra = wisesite.LocalSiderealTime;
             Angle dec = wisesite.Latitude;
             _slewToCoordinatesAsync(ra, dec);
@@ -1496,14 +1495,21 @@ namespace ASCOM.Wise40
             return SlewerStatus.CloseEnough;
         }
 
-        private void _genericDomeSlewer(Action action)
+        private void _genericDomeSlewerTask(Action action)
         {
+            if (slewingCancellationTokenSource == null)
+            {
+                slewingCancellationTokenSource = new CancellationTokenSource();
+                slewingCancellationToken = slewingCancellationTokenSource.Token;
+            }
             SlewerTask domeSlewer = new SlewerTask() { type = Slewers.Type.Dome };
             domeSlewer.task = Task.Run(
                 () => {
                     try
                     {
+                        slewers.Add(domeSlewer);
                         action();
+                        slewers.Delete(Slewers.Type.Dome);
                     }
                     catch (OperationCanceledException)
                     {
@@ -1512,27 +1518,31 @@ namespace ASCOM.Wise40
                 },
                 slewingCancellationToken
             );
-            slewers.Add(domeSlewer);
         }
 
         public void DomeSlewer(Angle ra, Angle dec)
         {
-            _genericDomeSlewer(() => domeSlaveDriver.SlewToAz(ra, dec));
+            _genericDomeSlewerTask(() => domeSlaveDriver.SlewToAz(ra, dec));
         }
         
         public void DomeSlewer(double az)
         {
-            _genericDomeSlewer(() => domeSlaveDriver.SlewToAz(az));
+            _genericDomeSlewerTask(() => domeSlaveDriver.SlewToAz(az));
         }
 
         public void DomeParker()
         {
-            _genericDomeSlewer(() => domeSlaveDriver.Park());
+            _genericDomeSlewerTask(() => domeSlaveDriver.Park());
         }
 
         public void DomeCalibrator()
         {
-            _genericDomeSlewer(() => domeSlaveDriver.Calibrate());
+            _genericDomeSlewerTask(() => domeSlaveDriver.Calibrate());
+        }
+
+        public void DomeStopper()
+        {
+            slewingCancellationTokenSource.Cancel();
         }
 
         private void _slewToCoordinatesAsync(Angle RightAscension, Angle Declination)
@@ -1622,7 +1632,7 @@ namespace ASCOM.Wise40
             }
         }
 
-        public void SlewToCoordinatesAsync(double RightAscension, double Declination)
+        public void SlewToCoordinatesAsync(double RightAscension, double Declination, bool doChecks = true)
         {
             TargetRightAscension = RightAscension;
             TargetDeclination = Declination;
@@ -1634,13 +1644,16 @@ namespace ASCOM.Wise40
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "SlewToCoordinatesAsync({0}, {1})", ra, dec);
             #endregion
 
-            if (AtPark)
-                throw new InvalidOperationException("Cannot SlewToCoordinates while AtPark");
+            if (doChecks)
+            {
+                if (AtPark)
+                    throw new InvalidOperationException("Cannot SlewToCoordinates while AtPark");
 
-            if (!Tracking)
-                throw new InvalidOperationException("Cannot SlewToCoordinates while NOT Tracking");
+                if (!Tracking)
+                    throw new InvalidOperationException("Cannot SlewToCoordinates while NOT Tracking");
 
-            CheckSafetyAtCoordinates(ra, dec);
+                CheckSafetyAtCoordinates(ra, dec);
+            }
 
             if (!wiseComputerControl.IsSafe)
                 throw new InvalidOperationException("Computer control switch is OFF (not safe)");
@@ -2370,16 +2383,31 @@ namespace ASCOM.Wise40
         /// <summary>
         /// Write the device configuration to the  ASCOM  Profile store
         /// </summary>
-        internal void WriteProfile()
+        public void WriteProfile()
         {
             using (Profile driverProfile = new Profile())
             {
                 driverProfile.DeviceType = "Telescope";
                 driverProfile.WriteValue(driverID, traceStateProfileName, traceLogger.Enabled.ToString());
                 driverProfile.WriteValue(driverID, astrometricAccuracyProfileName, wisesite.astrometricAccuracy == Accuracy.Full ? "Full" : "Reduced");
-                //driverProfile.WriteValue(driverID, debugLevelProfileName, debugger.Level.ToString());
                 driverProfile.WriteValue(driverID, enslaveDomeProfileName, _enslaveDome.ToString());
                 driverProfile.WriteValue(driverID, calculateRefractionProfileName, _calculateRefraction.ToString());
+            }
+        }
+
+        public string Status
+        {
+            get
+            {
+                string ret = string.Empty;
+
+                if (slewers.Active(Slewers.Type.Dec) || slewers.Active(Slewers.Type.Ra))
+                {
+                    Angle ra = Angle.FromHours(TargetRightAscension, Angle.Type.RA);
+                    Angle dec = Angle.FromDegrees(TargetDeclination, Angle.Type.Dec);
+                    ret = string.Format("Slewing to RA {0} DEC {1}", ra, dec);
+                }
+                return ret;
             }
         }
     }

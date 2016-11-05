@@ -8,7 +8,7 @@ using MccDaq;
 using ASCOM.Utilities;
 using ASCOM.Wise40.Common;
 using ASCOM.Wise40.Hardware;
-using ASCOM.Wise40.SafeToOpen;
+using ASCOM.Wise40.SafeToOperate;
 
 namespace ASCOM.Wise40
 {
@@ -34,9 +34,9 @@ namespace ASCOM.Wise40
             Idle = 0,
             MovingCW = (1 << 0),
             MovingCCW = (1 << 1),
-            FindingHome = (1 << 2),
+            Calibrating = (1 << 2),
             Parking = (1 << 3),
-            AllMovements = MovingCCW|MovingCW|Parking|FindingHome,
+            //AllMovements = MovingCCW|MovingCW|Parking|Calibrating,
         };
         private DomeState _state;
 
@@ -274,26 +274,12 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return DomeStateIsOn(DomeState.MovingCCW | DomeState.MovingCW);
+                return DomeStateIsOn(DomeState.MovingCCW) | DomeStateIsOn(DomeState.MovingCW);
             }
         }
         
         private void onDomeTimer(object state)
         {
-            if (_targetAz != null && arriving(_targetAz))
-            {
-                Stop();
-                _targetAz = null;
-
-                if (DomeStateIsOn(DomeState.Parking))
-                {
-                    UnsetDomeState(DomeState.Parking);
-                    AtPark = true;
-                }
-
-                _arrivedAtAzEvent.Set();
-            }
-
             if (AtCaliPoint)
             {
                 if (_calibrating)
@@ -308,6 +294,20 @@ namespace ASCOM.Wise40
                 }
                 domeEncoder.Calibrate(_homePointAzimuth);
             }
+
+            if (_targetAz != null && arriving(_targetAz))
+            {
+                Stop();
+                _targetAz = null;
+
+                if (DomeStateIsOn(DomeState.Parking))
+                {
+                    UnsetDomeState(DomeState.Parking);
+                    AtPark = true;
+                }
+
+                _arrivedAtAzEvent.Set();
+            }            
         }
         
         private bool ShutterIsMoving
@@ -477,7 +477,7 @@ namespace ASCOM.Wise40
         {
             rightPin.SetOff();
             leftPin.SetOff();
-            UnsetDomeState(DomeState.AllMovements);
+            UnsetDomeState(DomeState.MovingCCW|DomeState.MovingCW);
             _movementTimer.Change(0, 0);
             domeEncoder.setMovement(Direction.None);
             #region debug
@@ -603,13 +603,13 @@ namespace ASCOM.Wise40
                 }
             } else
                 StartMovingCCW();
-            SetDomeState(DomeState.FindingHome);
+            SetDomeState(DomeState.Calibrating);
 
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: FindHomePoint: waiting for _foundCalibration ...");
             #endregion
             _foundCalibration.WaitOne();
-            UnsetDomeState(DomeState.FindingHome);
+            UnsetDomeState(DomeState.Calibrating);
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: FindHomePoint: _foundCalibration was Set()");
             #endregion
@@ -632,7 +632,7 @@ namespace ASCOM.Wise40
             if (wisesite.computerControl != null && !wisesite.computerControl.IsSafe)
                 throw new ASCOM.InvalidOperationException("Wise40 computer control is OFF!");
 
-            Angle toAng = new Angle(degrees);
+            Angle toAng = new Angle(degrees, Angle.Type.Az);
 
             tl.LogMessage("Dome: SlewToAzimuth", toAng.ToString());
 
@@ -712,8 +712,11 @@ namespace ASCOM.Wise40
                 else if (DomeStateIsOn(DomeState.MovingCCW))
                     ret = "Moving CCW";
 
-                if (DomeStateIsOn(DomeState.FindingHome))
-                    ret += " (finding home)";
+                if (_targetAz != null)
+                    ret += string.Format(" to {0}", _targetAz.ToNiceString());
+
+                if (DomeStateIsOn(DomeState.Calibrating))
+                    ret += " (calibrating)";
                 if (DomeStateIsOn(DomeState.Parking))
                     ret += " (parking)";
 
@@ -1148,6 +1151,35 @@ namespace ASCOM.Wise40
             } catch
             {
 
+            }
+        }
+        #endregion
+
+        #region Profile
+        internal static string autoCalibrateProfileName = "AutoCalibrate";
+        internal static string driverID = "ASCOM.Wise40.Dome";
+
+        /// <summary>
+        /// Read the device configuration from the ASCOM Profile store
+        /// </summary>
+        public void ReadProfile()
+        {
+            using (Profile driverProfile = new Profile())
+            {
+                driverProfile.DeviceType = "Dome";
+                _autoCalibrate = Convert.ToBoolean(driverProfile.GetValue(driverID, autoCalibrateProfileName, string.Empty, "false"));
+            }
+        }
+
+        /// <summary>
+        /// Write the device configuration to the  ASCOM  Profile store
+        /// </summary>
+        public void WriteProfile()
+        {
+            using (Profile driverProfile = new Profile())
+            {
+                driverProfile.DeviceType = "Dome";
+                driverProfile.WriteValue(driverID, autoCalibrateProfileName, _autoCalibrate.ToString());
             }
         }
         #endregion

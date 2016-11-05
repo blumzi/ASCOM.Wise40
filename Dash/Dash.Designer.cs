@@ -43,6 +43,7 @@
             this.buttonFocusUp = new System.Windows.Forms.Button();
             this.buttonFocusAllUp = new System.Windows.Forms.Button();
             this.groupBoxDomeGroup = new System.Windows.Forms.GroupBox();
+            this.button1 = new System.Windows.Forms.Button();
             this.buttonDomePark = new System.Windows.Forms.Button();
             this.button2 = new System.Windows.Forms.Button();
             this.buttonVent = new System.Windows.Forms.Button();
@@ -102,9 +103,6 @@
             this.checkBoxSecondaryIsActive = new System.Windows.Forms.CheckBox();
             this.checkBoxTrackingIsActive = new System.Windows.Forms.CheckBox();
             this.checkBoxPrimaryIsActive = new System.Windows.Forms.CheckBox();
-            this.groupBoxTracking = new System.Windows.Forms.GroupBox();
-            this.checkBoxEnslaveDome = new System.Windows.Forms.CheckBox();
-            this.checkBoxTrack = new System.Windows.Forms.CheckBox();
             this.buttonGoCoord = new System.Windows.Forms.Button();
             this.textBoxRA = new System.Windows.Forms.TextBox();
             this.textBoxDec = new System.Windows.Forms.TextBox();
@@ -126,6 +124,8 @@
             this.debugAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.debugNoneToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem3 = new System.Windows.Forms.ToolStripMenuItem();
+            this.safetyOverrideToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
             this.saveToProfileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.viewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.digitalIOCardsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -168,9 +168,15 @@
             this.labelDashStatus = new System.Windows.Forms.Label();
             this.timerRefreshDisplay = new System.Windows.Forms.Timer(this.components);
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
-            this.safetyOverrideToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
-            this.button1 = new System.Windows.Forms.Button();
+            this.domeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.domeAutoCalibrateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.telescopeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.enslaveDomeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.buttonZenith = new System.Windows.Forms.Button();
+            this.buttonHandleCover = new System.Windows.Forms.Button();
+            this.buttonFlat = new System.Windows.Forms.Button();
+            this.label3 = new System.Windows.Forms.Label();
+            this.checkBoxTrack = new System.Windows.Forms.CheckBox();
             this.tableLayoutMain.SuspendLayout();
             this.groupBoxFocuser.SuspendLayout();
             this.groupBoxDomeGroup.SuspendLayout();
@@ -180,7 +186,6 @@
             this.groupBox36.SuspendLayout();
             this.tableLayoutPanelCoordinates.SuspendLayout();
             this.groupBox3.SuspendLayout();
-            this.groupBoxTracking.SuspendLayout();
             this.menuStrip.SuspendLayout();
             this.flowLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxWise)).BeginInit();
@@ -400,6 +405,20 @@
             this.groupBoxDomeGroup.TabIndex = 31;
             this.groupBoxDomeGroup.TabStop = false;
             this.groupBoxDomeGroup.Text = " Dome ";
+            // 
+            // button1
+            // 
+            this.button1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.button1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.button1.Location = new System.Drawing.Point(194, 25);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(34, 23);
+            this.button1.TabIndex = 31;
+            this.button1.Text = "Set";
+            this.button1.UseVisualStyleBackColor = false;
+            this.button1.Click += new System.EventHandler(this.buttonDomeAzSet_Click);
             // 
             // buttonDomePark
             // 
@@ -662,6 +681,11 @@
             // 
             // groupBoxTelescope
             // 
+            this.groupBoxTelescope.Controls.Add(this.checkBoxTrack);
+            this.groupBoxTelescope.Controls.Add(this.label3);
+            this.groupBoxTelescope.Controls.Add(this.buttonFlat);
+            this.groupBoxTelescope.Controls.Add(this.buttonHandleCover);
+            this.groupBoxTelescope.Controls.Add(this.buttonZenith);
             this.groupBoxTelescope.Controls.Add(this.buttonTelescopePark);
             this.groupBoxTelescope.Controls.Add(this.labelTelescopeStatus);
             this.groupBoxTelescope.Controls.Add(this.buttonMainStop);
@@ -669,7 +693,6 @@
             this.groupBoxTelescope.Controls.Add(this.groupBox36);
             this.groupBoxTelescope.Controls.Add(this.tableLayoutPanelCoordinates);
             this.groupBoxTelescope.Controls.Add(this.groupBox3);
-            this.groupBoxTelescope.Controls.Add(this.groupBoxTracking);
             this.groupBoxTelescope.Controls.Add(this.buttonGoCoord);
             this.groupBoxTelescope.Controls.Add(this.textBoxRA);
             this.groupBoxTelescope.Controls.Add(this.textBoxDec);
@@ -692,9 +715,9 @@
             this.buttonTelescopePark.FlatAppearance.BorderSize = 0;
             this.buttonTelescopePark.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.buttonTelescopePark.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.buttonTelescopePark.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.buttonTelescopePark.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonTelescopePark.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonTelescopePark.Location = new System.Drawing.Point(288, 376);
+            this.buttonTelescopePark.Location = new System.Drawing.Point(296, 421);
             this.buttonTelescopePark.Name = "buttonTelescopePark";
             this.buttonTelescopePark.Size = new System.Drawing.Size(80, 32);
             this.buttonTelescopePark.TabIndex = 29;
@@ -724,9 +747,9 @@
             this.buttonMainStop.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonMainStop.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonMainStop.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonMainStop.Location = new System.Drawing.Point(288, 336);
+            this.buttonMainStop.Location = new System.Drawing.Point(275, 296);
             this.buttonMainStop.Name = "buttonMainStop";
-            this.buttonMainStop.Size = new System.Drawing.Size(80, 32);
+            this.buttonMainStop.Size = new System.Drawing.Size(80, 56);
             this.buttonMainStop.TabIndex = 26;
             this.buttonMainStop.Text = "Stop";
             this.buttonMainStop.UseVisualStyleBackColor = false;
@@ -743,7 +766,7 @@
             this.panelDirectionButtons.Controls.Add(this.buttonSouth);
             this.panelDirectionButtons.Controls.Add(this.buttonEast);
             this.panelDirectionButtons.Controls.Add(this.buttonWest);
-            this.panelDirectionButtons.Location = new System.Drawing.Point(112, 296);
+            this.panelDirectionButtons.Location = new System.Drawing.Point(112, 248);
             this.panelDirectionButtons.Name = "panelDirectionButtons";
             this.panelDirectionButtons.Size = new System.Drawing.Size(160, 152);
             this.panelDirectionButtons.TabIndex = 11;
@@ -902,7 +925,7 @@
             this.groupBox36.Controls.Add(this.radioButtonGuide);
             this.groupBox36.Controls.Add(this.radioButtonSet);
             this.groupBox36.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBox36.Location = new System.Drawing.Point(248, 464);
+            this.groupBox36.Location = new System.Drawing.Point(264, 520);
             this.groupBox36.Name = "groupBox36";
             this.groupBox36.Size = new System.Drawing.Size(108, 77);
             this.groupBox36.TabIndex = 12;
@@ -1228,9 +1251,9 @@
             this.groupBox3.Controls.Add(this.checkBoxTrackingIsActive);
             this.groupBox3.Controls.Add(this.checkBoxPrimaryIsActive);
             this.groupBox3.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBox3.Location = new System.Drawing.Point(48, 464);
+            this.groupBox3.Location = new System.Drawing.Point(72, 480);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(168, 152);
+            this.groupBox3.Size = new System.Drawing.Size(168, 120);
             this.groupBox3.TabIndex = 17;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = " Active  ";
@@ -1240,7 +1263,7 @@
             this.checkBoxSlewingIsActive.AutoCheck = false;
             this.checkBoxSlewingIsActive.AutoSize = true;
             this.checkBoxSlewingIsActive.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.checkBoxSlewingIsActive.Location = new System.Drawing.Point(16, 120);
+            this.checkBoxSlewingIsActive.Location = new System.Drawing.Point(16, 96);
             this.checkBoxSlewingIsActive.Name = "checkBoxSlewingIsActive";
             this.checkBoxSlewingIsActive.Size = new System.Drawing.Size(63, 17);
             this.checkBoxSlewingIsActive.TabIndex = 3;
@@ -1252,7 +1275,7 @@
             this.checkBoxSecondaryIsActive.AutoCheck = false;
             this.checkBoxSecondaryIsActive.AutoSize = true;
             this.checkBoxSecondaryIsActive.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.checkBoxSecondaryIsActive.Location = new System.Drawing.Point(16, 56);
+            this.checkBoxSecondaryIsActive.Location = new System.Drawing.Point(16, 48);
             this.checkBoxSecondaryIsActive.Name = "checkBoxSecondaryIsActive";
             this.checkBoxSecondaryIsActive.Size = new System.Drawing.Size(77, 17);
             this.checkBoxSecondaryIsActive.TabIndex = 1;
@@ -1264,7 +1287,7 @@
             this.checkBoxTrackingIsActive.AutoCheck = false;
             this.checkBoxTrackingIsActive.AutoSize = true;
             this.checkBoxTrackingIsActive.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.checkBoxTrackingIsActive.Location = new System.Drawing.Point(16, 88);
+            this.checkBoxTrackingIsActive.Location = new System.Drawing.Point(16, 72);
             this.checkBoxTrackingIsActive.Name = "checkBoxTrackingIsActive";
             this.checkBoxTrackingIsActive.Size = new System.Drawing.Size(68, 17);
             this.checkBoxTrackingIsActive.TabIndex = 2;
@@ -1282,42 +1305,6 @@
             this.checkBoxPrimaryIsActive.TabIndex = 0;
             this.checkBoxPrimaryIsActive.Text = "Primary";
             this.checkBoxPrimaryIsActive.UseVisualStyleBackColor = true;
-            // 
-            // groupBoxTracking
-            // 
-            this.groupBoxTracking.Controls.Add(this.checkBoxEnslaveDome);
-            this.groupBoxTracking.Controls.Add(this.checkBoxTrack);
-            this.groupBoxTracking.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBoxTracking.Location = new System.Drawing.Point(248, 551);
-            this.groupBoxTracking.Name = "groupBoxTracking";
-            this.groupBoxTracking.Size = new System.Drawing.Size(108, 68);
-            this.groupBoxTracking.TabIndex = 0;
-            this.groupBoxTracking.TabStop = false;
-            this.groupBoxTracking.Text = " Tracking ";
-            // 
-            // checkBoxEnslaveDome
-            // 
-            this.checkBoxEnslaveDome.AutoSize = true;
-            this.checkBoxEnslaveDome.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.checkBoxEnslaveDome.Location = new System.Drawing.Point(8, 40);
-            this.checkBoxEnslaveDome.Name = "checkBoxEnslaveDome";
-            this.checkBoxEnslaveDome.Size = new System.Drawing.Size(95, 17);
-            this.checkBoxEnslaveDome.TabIndex = 7;
-            this.checkBoxEnslaveDome.Text = "Enslave Dome";
-            this.checkBoxEnslaveDome.UseVisualStyleBackColor = true;
-            this.checkBoxEnslaveDome.CheckedChanged += new System.EventHandler(this.checkBoxEnslaveDome_CheckedChanged);
-            // 
-            // checkBoxTrack
-            // 
-            this.checkBoxTrack.AutoSize = true;
-            this.checkBoxTrack.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.checkBoxTrack.Location = new System.Drawing.Point(8, 21);
-            this.checkBoxTrack.Name = "checkBoxTrack";
-            this.checkBoxTrack.Size = new System.Drawing.Size(54, 17);
-            this.checkBoxTrack.TabIndex = 6;
-            this.checkBoxTrack.Text = "Track";
-            this.checkBoxTrack.UseVisualStyleBackColor = true;
-            this.checkBoxTrack.CheckedChanged += new System.EventHandler(this.checkBoxTrack_CheckedChanged);
             // 
             // buttonGoCoord
             // 
@@ -1417,11 +1404,13 @@
             // 
             this.toolStripMenuItem1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.toolStripMenuItem1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.telescopeToolStripMenuItem,
+            this.domeToolStripMenuItem,
+            this.toolStripMenuItem3,
             this.tracingToolStripMenuItem,
             this.debuggingToolStripMenuItem1,
-            this.toolStripMenuItem3,
-            this.safetyOverrideToolStripMenuItem,
             this.toolStripMenuItem2,
+            this.safetyOverrideToolStripMenuItem,
             this.saveToProfileToolStripMenuItem});
             this.toolStripMenuItem1.ForeColor = System.Drawing.Color.DarkOrange;
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
@@ -1527,6 +1516,21 @@
             this.toolStripMenuItem3.Name = "toolStripMenuItem3";
             this.toolStripMenuItem3.Size = new System.Drawing.Size(254, 22);
             this.toolStripMenuItem3.Text = "  ";
+            // 
+            // safetyOverrideToolStripMenuItem
+            // 
+            this.safetyOverrideToolStripMenuItem.Name = "safetyOverrideToolStripMenuItem";
+            this.safetyOverrideToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
+            this.safetyOverrideToolStripMenuItem.Text = "Bypass Safety";
+            this.safetyOverrideToolStripMenuItem.ToolTipText = "Bypass Safety Checks\r\n\r\nNOTE:\r\n   Valid only within the current session.\r\n   Will" +
+    " not be saved to the persistent profile.";
+            this.safetyOverrideToolStripMenuItem.Click += new System.EventHandler(this.safetyOverrideToolStripMenuItem_Click);
+            // 
+            // toolStripMenuItem2
+            // 
+            this.toolStripMenuItem2.Name = "toolStripMenuItem2";
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(254, 22);
+            this.toolStripMenuItem2.Text = "  ";
             // 
             // saveToProfileToolStripMenuItem
             // 
@@ -2084,32 +2088,106 @@
             this.timerRefreshDisplay.Enabled = true;
             this.timerRefreshDisplay.Tick += new System.EventHandler(this.RefreshDisplay);
             // 
-            // safetyOverrideToolStripMenuItem
+            // domeToolStripMenuItem
             // 
-            this.safetyOverrideToolStripMenuItem.Name = "safetyOverrideToolStripMenuItem";
-            this.safetyOverrideToolStripMenuItem.Size = new System.Drawing.Size(254, 22);
-            this.safetyOverrideToolStripMenuItem.Text = "Safety Override (current session)";
-            this.safetyOverrideToolStripMenuItem.Click += new System.EventHandler(this.safetyOverrideToolStripMenuItem_Click);
+            this.domeToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.domeAutoCalibrateToolStripMenuItem});
+            this.domeToolStripMenuItem.Name = "domeToolStripMenuItem";
+            this.domeToolStripMenuItem.Size = new System.Drawing.Size(254, 22);
+            this.domeToolStripMenuItem.Text = "Dome";
             // 
-            // toolStripMenuItem2
+            // domeAutoCalibrateToolStripMenuItem
             // 
-            this.toolStripMenuItem2.Name = "toolStripMenuItem2";
-            this.toolStripMenuItem2.Size = new System.Drawing.Size(254, 22);
-            this.toolStripMenuItem2.Text = "  ";
+            this.domeAutoCalibrateToolStripMenuItem.Name = "domeAutoCalibrateToolStripMenuItem";
+            this.domeAutoCalibrateToolStripMenuItem.Size = new System.Drawing.Size(157, 22);
+            this.domeAutoCalibrateToolStripMenuItem.Text = "Auto Calibrate";
+            this.domeAutoCalibrateToolStripMenuItem.ToolTipText = "If asked for Azimuth and not calibrated, \r\nthe dome will automatically search for" +
+    "\r\nthe calibration point.\r\n";
+            this.domeAutoCalibrateToolStripMenuItem.Click += new System.EventHandler(this.domeAutoCalibrateToolStripMenuItem_Click);
             // 
-            // button1
+            // telescopeToolStripMenuItem
             // 
-            this.button1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.button1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.button1.Location = new System.Drawing.Point(194, 25);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(34, 23);
-            this.button1.TabIndex = 31;
-            this.button1.Text = "Set";
-            this.button1.UseVisualStyleBackColor = false;
-            this.button1.Click += new System.EventHandler(this.buttonDomeAzSet_Click);
+            this.telescopeToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.enslaveDomeToolStripMenuItem});
+            this.telescopeToolStripMenuItem.Name = "telescopeToolStripMenuItem";
+            this.telescopeToolStripMenuItem.Size = new System.Drawing.Size(254, 22);
+            this.telescopeToolStripMenuItem.Text = "Telescope";
+            // 
+            // enslaveDomeToolStripMenuItem
+            // 
+            this.enslaveDomeToolStripMenuItem.Name = "enslaveDomeToolStripMenuItem";
+            this.enslaveDomeToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.enslaveDomeToolStripMenuItem.Text = "Enslave Dome";
+            this.enslaveDomeToolStripMenuItem.Click += new System.EventHandler(this.enslaveDomeToolStripMenuItem_Click);
+            // 
+            // buttonZenith
+            // 
+            this.buttonZenith.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonZenith.FlatAppearance.BorderSize = 0;
+            this.buttonZenith.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonZenith.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.buttonZenith.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.buttonZenith.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.buttonZenith.Location = new System.Drawing.Point(71, 421);
+            this.buttonZenith.Name = "buttonZenith";
+            this.buttonZenith.Size = new System.Drawing.Size(64, 32);
+            this.buttonZenith.TabIndex = 31;
+            this.buttonZenith.Text = "Zenith";
+            this.buttonZenith.UseVisualStyleBackColor = false;
+            this.buttonZenith.Click += new System.EventHandler(this.buttonZenith_Click);
+            // 
+            // buttonHandleCover
+            // 
+            this.buttonHandleCover.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonHandleCover.FlatAppearance.BorderSize = 0;
+            this.buttonHandleCover.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonHandleCover.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.buttonHandleCover.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.buttonHandleCover.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.buttonHandleCover.Location = new System.Drawing.Point(144, 421);
+            this.buttonHandleCover.Name = "buttonHandleCover";
+            this.buttonHandleCover.Size = new System.Drawing.Size(64, 32);
+            this.buttonHandleCover.TabIndex = 32;
+            this.buttonHandleCover.Text = "Cover";
+            this.buttonHandleCover.UseVisualStyleBackColor = false;
+            this.buttonHandleCover.Click += new System.EventHandler(this.buttonHandleCover_Click);
+            // 
+            // buttonFlat
+            // 
+            this.buttonFlat.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonFlat.FlatAppearance.BorderSize = 0;
+            this.buttonFlat.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonFlat.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.buttonFlat.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.buttonFlat.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.buttonFlat.Location = new System.Drawing.Point(216, 421);
+            this.buttonFlat.Name = "buttonFlat";
+            this.buttonFlat.Size = new System.Drawing.Size(72, 32);
+            this.buttonFlat.TabIndex = 33;
+            this.buttonFlat.Text = "Flat";
+            this.buttonFlat.UseVisualStyleBackColor = false;
+            this.buttonFlat.Click += new System.EventHandler(this.buttonFlat_Click);
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(23, 424);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(36, 26);
+            this.label3.TabIndex = 34;
+            this.label3.Text = "Goto \r\npreset";
+            this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // checkBoxTrack
+            // 
+            this.checkBoxTrack.AutoSize = true;
+            this.checkBoxTrack.Location = new System.Drawing.Point(264, 488);
+            this.checkBoxTrack.Name = "checkBoxTrack";
+            this.checkBoxTrack.Size = new System.Drawing.Size(54, 17);
+            this.checkBoxTrack.TabIndex = 35;
+            this.checkBoxTrack.Text = "Track";
+            this.checkBoxTrack.UseVisualStyleBackColor = true;
+            this.checkBoxTrack.Click += new System.EventHandler(this.checkBoxTrack_Click);
             // 
             // FormDash
             // 
@@ -2141,8 +2219,6 @@
             this.tableLayoutPanelCoordinates.PerformLayout();
             this.groupBox3.ResumeLayout(false);
             this.groupBox3.PerformLayout();
-            this.groupBoxTracking.ResumeLayout(false);
-            this.groupBoxTracking.PerformLayout();
             this.menuStrip.ResumeLayout(false);
             this.menuStrip.PerformLayout();
             this.flowLayoutPanel1.ResumeLayout(false);
@@ -2211,9 +2287,6 @@
         private System.Windows.Forms.CheckBox checkBoxSecondaryIsActive;
         private System.Windows.Forms.CheckBox checkBoxTrackingIsActive;
         private System.Windows.Forms.CheckBox checkBoxPrimaryIsActive;
-        private System.Windows.Forms.GroupBox groupBoxTracking;
-        private System.Windows.Forms.CheckBox checkBoxEnslaveDome;
-        private System.Windows.Forms.CheckBox checkBoxTrack;
         private System.Windows.Forms.Button buttonGoCoord;
         private System.Windows.Forms.TextBox textBoxRA;
         private System.Windows.Forms.TextBox textBoxDec;
@@ -2297,6 +2370,15 @@
         private System.Windows.Forms.ToolStripMenuItem safetyOverrideToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem2;
         private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.ToolStripMenuItem domeToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem domeAutoCalibrateToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem telescopeToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem enslaveDomeToolStripMenuItem;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Button buttonFlat;
+        private System.Windows.Forms.Button buttonHandleCover;
+        private System.Windows.Forms.Button buttonZenith;
+        private System.Windows.Forms.CheckBox checkBoxTrack;
     }
 }
 

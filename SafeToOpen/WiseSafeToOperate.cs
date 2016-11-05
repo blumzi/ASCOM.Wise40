@@ -10,20 +10,23 @@ using ASCOM;
 using ASCOM.Utilities;
 using ASCOM.Wise40.Common;
 
-namespace ASCOM.Wise40.SafeToOpen
+namespace ASCOM.Wise40.SafeToOperate
 {
-    public class WiseSafeToOpen
+    public class WiseSafeToOperate
     {
+        public enum Operation { Open, Image };
+        private Operation _op;
+
         /// <summary>
         /// ASCOM DeviceID (COM ProgID) for this driver.
         /// The DeviceID is used by ASCOM applications to load the driver at runtime.
         /// </summary>
-        internal static string driverID = "ASCOM.Wise40.SafeToOpen.SafetyMonitor";
+        internal string driverID;
         // TODO Change the descriptive string for your driver then remove this line
         /// <summary>
         /// Driver description that displays in the ASCOM Chooser.
         /// </summary>
-        internal static string driverDescription = "ASCOM Wise40 SafeToOpen.";
+        public string driverDescription = "ASCOM Wise40 SafeToOpen.";
 
         internal static string traceStateProfileName = "Trace Level";
         internal static string traceStateDefault = "false";
@@ -35,13 +38,12 @@ namespace ASCOM.Wise40.SafeToOpen
         internal static string humidityMaxProfileName = "Humidity Max";
         internal static string ageMaxSecondsProfileName = "Age Max";
 
-        internal static double cloudsMax;
-        internal static double windMax;
-        internal static double rainMax;
-        internal static CloudSensor.SensorData.DayCondition lightMax;
-        internal static double humidityMax;
-        internal static int ageMaxSeconds;
-        internal static bool traceState;
+        public double cloudsMax;
+        public double windMax;
+        public double rainMax;
+        public CloudSensor.SensorData.DayCondition lightMax;
+        public double humidityMax;
+        public int ageMaxSeconds;
 
         /// <summary>
         /// Private variable to hold the connected state
@@ -54,27 +56,30 @@ namespace ASCOM.Wise40.SafeToOpen
         private static ASCOM.DriverAccess.ObservingConditions boltwood;
         private static ASCOM.DriverAccess.ObservingConditions vantagePro;
 
-        private static WiseSafeToOpen _instance = new WiseSafeToOpen();
-        public static WiseSafeToOpen Instance
+        private static WiseSafeToOperate _instanceOpen = new WiseSafeToOperate(Operation.Open);
+        private static WiseSafeToOperate _instanceImage = new WiseSafeToOperate(Operation.Image);
+
+        public static WiseSafeToOperate Instance(Operation op)
         {
-            get
-            {
-                return _instance;
-            }
+            return op == Operation.Open ? _instanceOpen : _instanceImage;
         }
 
-        public WiseSafeToOpen()
+        public WiseSafeToOperate(Operation op)
         {
+            _op = op;
         }
 
-        static WiseSafeToOpen()
-        {
-        }
+        //static WiseSafeToOperate(Operation op)
+        //{
+        //    _op = op;
+        //}
 
         public void init() {
+            driverID = "ASCOM.Wise40.SafeTo" + ((_op == Operation.Open) ? "Open" : "Image") + ".SafetyMonitor";
+            driverDescription = "ASCOM Wise40 SafeTo" + ((_op == Operation.Open) ? "Open" : "Image");
             ReadProfile(); // Read device configuration from the ASCOM Profile store
 
-            tl = new TraceLogger("", "Wise40.SafeToOpen");
+            tl = new TraceLogger("", _op == Operation.Open ? "Wise40.SafeToOpen" : "Wise40.SafeToImage");
             tl.Enabled = debugger.Tracing;
             tl.LogMessage("SafetyMonitor", "Starting initialisation");
 
@@ -242,7 +247,7 @@ namespace ASCOM.Wise40.SafeToOpen
         {
             get
             {
-                string name = "Wise40 SafeToOpen";
+                string name = "Wise40 SafeTo" + ((_op == Operation.Open) ?  "Open" : "Image");
                 tl.LogMessage("Name Get", name);
                 return name;
             }
@@ -444,13 +449,15 @@ namespace ASCOM.Wise40.SafeToOpen
         /// <summary>
         /// Read the device configuration from the ASCOM Profile store
         /// </summary>
-        internal static void ReadProfile()
+        public void ReadProfile()
         {
             using (Profile driverProfile = new Profile())
             {
-                driverProfile.DeviceType = "SafetyMonitor";
-                traceState = Convert.ToBoolean(driverProfile.GetValue(driverID, traceStateProfileName, string.Empty, traceStateDefault));
-                cloudsMax = Convert.ToDouble(driverProfile.GetValue(driverID, cloudsMaxProfileName, string.Empty, 0.ToString()));                
+                driverProfile.DeviceType = "SafetyMonitor";                
+
+                CloudSensor.SensorData.CloudCondition cloudValue = (CloudSensor.SensorData.CloudCondition)Enum.Parse(typeof(CloudSensor.SensorData.CloudCondition), driverProfile.GetValue(driverID, cloudsMaxProfileName, string.Empty, CloudSensor.SensorData.CloudCondition.cloudClear.ToString()));
+                cloudsMax = CloudSensor.SensorData.doubleCloudCondition[cloudValue];     
+                           
                 windMax = Convert.ToDouble(driverProfile.GetValue(driverID, windMaxProfileName, string.Empty, 0.0.ToString()));
                 rainMax = Convert.ToDouble(driverProfile.GetValue(driverID, rainMaxProfileName, string.Empty, 0.0.ToString()));
                 humidityMax = Convert.ToDouble(driverProfile.GetValue(driverID, humidityMaxProfileName, string.Empty, 0.0.ToString()));
@@ -479,12 +486,11 @@ namespace ASCOM.Wise40.SafeToOpen
         /// <summary>
         /// Write the device configuration to the  ASCOM  Profile store
         /// </summary>
-        internal static void WriteProfile()
+        public void WriteProfile()
         {
             using (Profile driverProfile = new Profile())
             {
                 driverProfile.DeviceType = "SafetyMonitor";
-                driverProfile.WriteValue(driverID, traceStateProfileName, traceState.ToString());
                 driverProfile.WriteValue(driverID, cloudsMaxProfileName, cloudsMax.ToString());
                 driverProfile.WriteValue(driverID, windMaxProfileName, windMax.ToString());
                 driverProfile.WriteValue(driverID, rainMaxProfileName, rainMax.ToString());

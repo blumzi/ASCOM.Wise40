@@ -71,11 +71,6 @@ namespace ASCOM.Wise40
         /// </summary>
         private static string driverDescription = "Wise40 Dome";
 
-        internal static string traceStateProfileName = "Trace Level";
-        internal static string debugLevelProfileName = "Debug Level";
-        internal static string autoCalibrateProfileName = "AutoCalibrate";
-
-        public bool traceState;
         public Common.Debugger debugger = Common.Debugger.Instance;
 
         /// <summary>
@@ -103,7 +98,7 @@ namespace ASCOM.Wise40
         /// </summary>
         public Dome()
         {
-            ReadProfile(); // Read device configuration from the ASCOM Profile store
+            wisedome.ReadProfile(); // Read device configuration from the ASCOM Profile store
 
             tl = new TraceLogger("", "Dome");
             tl.Enabled = debugger.Tracing;
@@ -138,12 +133,12 @@ namespace ASCOM.Wise40
             if (wisedome.Connected)
                 System.Windows.Forms.MessageBox.Show("Already connected, just press OK");
 
-            using (SetupDialogForm F = new SetupDialogForm(this))
+            using (SetupDialogForm F = new SetupDialogForm())
             {
                 var result = F.ShowDialog();
                 if (result == System.Windows.Forms.DialogResult.OK)
                 {
-                    WriteProfile(); // Persist device configuration values to the ASCOM Profile store
+                    wisedome.WriteProfile(); // Persist device configuration values to the ASCOM Profile store
                 }
             }
         }
@@ -500,32 +495,31 @@ namespace ASCOM.Wise40
 
         #endregion
 
-        /// <summary>
-        /// Read the device configuration from the ASCOM Profile store
-        /// </summary>
-        internal void ReadProfile()
-        {
-            using (Profile driverProfile = new Profile())
-            {
-                driverProfile.DeviceType = "Dome";
-                traceState = Convert.ToBoolean(driverProfile.GetValue(driverID, traceStateProfileName, string.Empty, "false"));
-                wisedome._autoCalibrate = Convert.ToBoolean(driverProfile.GetValue(driverID, autoCalibrateProfileName, string.Empty, "false"));
-            }
-        }
+        //internal static string autoCalibrateProfileName = "AutoCalibrate";
 
-        /// <summary>
-        /// Write the device configuration to the  ASCOM  Profile store
-        /// </summary>
-        internal void WriteProfile()
-        {
-            using (Profile driverProfile = new Profile())
-            {
-                driverProfile.DeviceType = "Dome";
-                driverProfile.WriteValue(driverID, traceStateProfileName, traceState.ToString());
-                //driverProfile.WriteValue(driverID, debugLevelProfileName, debugger.Level.ToString());
-                driverProfile.WriteValue(driverID, autoCalibrateProfileName, wisedome._autoCalibrate.ToString());
-            }
-        }
+        ///// <summary>
+        ///// Read the device configuration from the ASCOM Profile store
+        ///// </summary>
+        //internal void ReadProfile()
+        //{
+        //    using (Profile driverProfile = new Profile())
+        //    {
+        //        driverProfile.DeviceType = "Dome";
+        //        wisedome._autoCalibrate = Convert.ToBoolean(driverProfile.GetValue(driverID, autoCalibrateProfileName, string.Empty, "false"));
+        //    }
+        //}
+
+        ///// <summary>
+        ///// Write the device configuration to the  ASCOM  Profile store
+        ///// </summary>
+        //internal void WriteProfile()
+        //{
+        //    using (Profile driverProfile = new Profile())
+        //    {
+        //        driverProfile.DeviceType = "Dome";
+        //        driverProfile.WriteValue(driverID, autoCalibrateProfileName, wisedome._autoCalibrate.ToString());
+        //    }
+        //}
 
         #endregion
 

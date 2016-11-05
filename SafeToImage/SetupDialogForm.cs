@@ -6,13 +6,15 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
 using ASCOM.Utilities;
-using ASCOM.Wise40.SafeToImage;
+using ASCOM.Wise40.SafeToOperate;
 
 namespace ASCOM.Wise40.SafeToImage
 {
     [ComVisible(false)]					// Form not registered for COM!
     public partial class SetupDialogForm : Form
     {
+        WiseSafeToOperate wisesafetoimage = WiseSafeToOperate.Instance(WiseSafeToOperate.Operation.Open);
+
         public SetupDialogForm()
         {
             InitializeComponent();
@@ -40,16 +42,16 @@ namespace ASCOM.Wise40.SafeToImage
             } else
             {
                 textBoxAge.ForeColor = okColor;
-                SafetyMonitor.ageMaxSeconds = i;
+                wisesafetoimage.ageMaxSeconds = i;
             }
-            SafetyMonitor.cloudsMax = (CloudSensor.SensorData.CloudCondition)comboBoxCloud.SelectedIndex;
-            SafetyMonitor.rainMax = comboBoxRain.SelectedIndex;
-            SafetyMonitor.lightMax = (CloudSensor.SensorData.DayCondition)comboBoxLight.SelectedIndex;
+            wisesafetoimage.cloudsMax = CloudSensor.SensorData.doubleCloudCondition[(CloudSensor.SensorData.CloudCondition)comboBoxCloud.SelectedIndex];
+            wisesafetoimage.rainMax = comboBoxRain.SelectedIndex;
+            wisesafetoimage.lightMax = (CloudSensor.SensorData.DayCondition)comboBoxLight.SelectedIndex;
             i = Convert.ToInt32(textBoxHumidity.Text);
             if (i >= 0 && i <= 100)
             {
                 textBoxHumidity.ForeColor = okColor;
-                SafetyMonitor.humidityMax = i;
+                wisesafetoimage.humidityMax = i;
             }
             else
             {
@@ -60,7 +62,7 @@ namespace ASCOM.Wise40.SafeToImage
             if (i >= 0)
             {
                 textBoxWind.ForeColor = okColor;
-                SafetyMonitor.windMax = i;
+                wisesafetoimage.windMax = i;
             }
             else
             {
@@ -69,7 +71,7 @@ namespace ASCOM.Wise40.SafeToImage
             }
 
             if (valid)
-                SafetyMonitor.WriteProfile();
+                wisesafetoimage.WriteProfile();
         }
 
         private void cmdCancel_Click(object sender, EventArgs e) // Cancel button event handler
@@ -96,14 +98,14 @@ namespace ASCOM.Wise40.SafeToImage
 
         private void InitUI()
         {
-            SafetyMonitor.ReadProfile();
+            wisesafetoimage.ReadProfile();
             
-            comboBoxCloud.SelectedIndex = (int)SafetyMonitor.cloudsMax;
-            comboBoxRain.SelectedIndex = (int)SafetyMonitor.rainMax;
-            comboBoxLight.SelectedIndex = (int)SafetyMonitor.lightMax;
-            textBoxWind.Text = SafetyMonitor.windMax.ToString();
-            textBoxHumidity.Text = SafetyMonitor.humidityMax.ToString();
-            textBoxAge.Text = SafetyMonitor.ageMaxSeconds.ToString();
+            comboBoxCloud.SelectedIndex = (int)wisesafetoimage.cloudsMax;
+            comboBoxRain.SelectedIndex = (int)wisesafetoimage.rainMax;
+            comboBoxLight.SelectedIndex = (int)wisesafetoimage.lightMax;
+            textBoxWind.Text = wisesafetoimage.windMax.ToString();
+            textBoxHumidity.Text = wisesafetoimage.humidityMax.ToString();
+            textBoxAge.Text = wisesafetoimage.ageMaxSeconds.ToString();
         }
 
         private void textBoxWind_Validating(object sender, CancelEventArgs e)
