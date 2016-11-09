@@ -109,6 +109,11 @@ namespace ASCOM.Wise40
         {
             public Slewers.Type type;
             public Task task;
+
+            public override string ToString()
+            {
+                return type.ToString();
+            }
         }
 
         private static CancellationTokenSource slewingCancellationTokenSource;
@@ -824,7 +829,7 @@ namespace ASCOM.Wise40
                     ax.Handle((Func<Exception, bool>)((ex) =>
                     {
                         #region debug
-                        debugger.WriteLine((Debugger.DebugLevel)Debugger.DebugLevel.DebugLogic,
+                        debugger.WriteLine((Debugger.DebugLevel)Debugger.DebugLevel.DebugExceptions,
                             "Stop: got {0}", ex.Message);
                         #endregion debug
                         if (ex is ObjectDisposedException)
@@ -877,7 +882,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                bool ret = slewers.Count > 0;
+                bool ret = slewers.Count > 0 || DirectionMotorsAreActive;
                 #region trace
                 traceLogger.LogMessage("Slewing Get", ret.ToString());
                 #endregion
@@ -950,7 +955,15 @@ namespace ASCOM.Wise40
             #endregion debug
         }
 
-        private void _moveAxis(
+        /// <summary>
+        /// Tries to start/stop the relevant motors.
+        /// </summary>
+        /// <param name="Axis"></param>
+        /// <param name="Rate"></param>
+        /// <param name="direction"></param>
+        /// <param name="stopTracking"></param>
+        /// <returns>The required action was performed.</returns>
+        private bool _moveAxis(
             TelescopeAxes Axis,
             double Rate,
             Const.AxisDirection direction = Const.AxisDirection.None,
@@ -983,7 +996,7 @@ namespace ASCOM.Wise40
                 debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "_moveAxis({0}, {1}): done.",
                     Axis, RateName(Rate));
                 #endregion
-                return;
+                return true;
             }
 
             double absRate = Math.Abs(Rate);
@@ -996,9 +1009,9 @@ namespace ASCOM.Wise40
                     Axis, RateName(Rate), axisDirectionName[Axis][direction], otherAxis, RateName(currMovement[otherAxis].rate));
 
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, msg);
+                debugger.WriteLine(Debugger.DebugLevel.DebugExceptions, msg);
                 #endregion debug
-                throw new InvalidValueException(msg);
+                return false;
             }
 
             try
@@ -1007,8 +1020,12 @@ namespace ASCOM.Wise40
             }
             catch (Exception e)
             {
-                throw new InvalidValueException(string.Format("Don't know how to _moveAxis({0}, {1}) (no mover) ({2}) [{3}]",
-                    Axis, RateName(Rate), axisDirectionName[Axis][direction], e.Message));
+                string msg = string.Format("Don't know how to _moveAxis({0}, {1}) (no mover) ({2}) [{3}]",
+                    Axis, RateName(Rate), axisDirectionName[Axis][direction], e.Message);
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugExceptions, msg);
+                #endregion debug
+                return false;
             }
 
             #region debug
@@ -1031,6 +1048,7 @@ namespace ASCOM.Wise40
                 m.SetOn(Rate);
             }
             safetyMonitorTimer.EnableIfNeeded();
+            return true;
         }
 
         public bool IsPulseGuiding
@@ -1208,7 +1226,8 @@ namespace ASCOM.Wise40
 
             Angle ra = wisesite.LocalSiderealTime;
             Angle dec = wisesite.Latitude;
-            _slewToCoordinatesAsync(ra, dec);
+
+            _slewToCoordinatesSync(ra, dec);
             AtPark = true;
         }
 
@@ -1217,34 +1236,27 @@ namespace ASCOM.Wise40
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "_slewToCoordinatesSync: ({0}, {1}), called.", RightAscension, Declination);
             #endregion debug
-            _slewToCoordinatesAsync(RightAscension, Declination);
-            Thread.Sleep(20);  // wait for workers to be born
             try
             {
-                while (slewers.Count != 0)
+                Task.Run(() =>
                 {
-                    int millis = 500;
-
-                    #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "_slewToCoordinatesSync: ({0}, {1}), waiting {2} millis for {3} slewers ...",
-                        RightAscension, Declination, millis, slewers.ToString());
-                    #endregion debug
-                    Task.WaitAll(slewers.ToArray(), millis, slewingCancellationToken);
-                }
+                    _slewToCoordinatesAsync(RightAscension, Declination);
+                }, slewingCancellationToken);
             } catch (AggregateException ae)
             {
                 ae.Handle((Func<Exception, bool>)((ex) =>
                 {
                     #region debug
-                    debugger.WriteLine((Debugger.DebugLevel)Debugger.DebugLevel.DebugLogic,
+                    debugger.WriteLine((Debugger.DebugLevel)Debugger.DebugLevel.DebugExceptions,
                         "_slewToCoordinatesSync: Caught \"{0}\"", ex.Message);
                     #endregion
                     return false;
                 }));
             }
-            #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "_slewToCoordinatesSync: ({0}, {1}), done.", RightAscension, Declination);
-            #endregion debug
+
+            Thread.Sleep(20);
+            while (slewers.Count > 0)
+                Thread.Sleep(200);
         }
 
         private enum SlewerStatus { Undefined, CloseEnough, ChangedDirection, Canceled };
@@ -1362,39 +1374,23 @@ namespace ASCOM.Wise40
                         #endregion debug
                         continue;   // this rate is no good, try the next one
                     }
-
-                    //
-                    // Wait till this axis is allowed to move at the current rate.
-                    //
-                    while (!axisStatus.CanMoveAtRate(rate))
-                    {
-                        const int syncMillis = 500;
-                        #region debug
-                        debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                           "{0} at {1}: waiting {2} millis for the other axis ...",
-                           cm.taskName, RateName(rate), syncMillis);
-                        #endregion debug
-
-                        slewingCancellationToken.ThrowIfCancellationRequested();
-                        Thread.Sleep(syncMillis);
-                    }
-
-                    //
+                    
                     // Set the axis in motion at the current rate ...
-                    //
                     cm.rate = rate;
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
                         "{0} at {1}: cm.start: {2}, cm.target: {3}, shortest.angle: {4}, cm.direction: {5}",
                         cm.taskName, RateName(cm.rate), cm.start, cm.target, shortest.angle, cm.direction);
                     #endregion debug
+                    while (!_moveAxis(axis, cm.rate, cm.direction, false))
+                    {
+                        const int syncMillis = 500;
 
-                    slewingCancellationToken.ThrowIfCancellationRequested();
-                    _moveAxis(axis, cm.rate, cm.direction, false);
-
-                    //
+                        slewingCancellationToken.ThrowIfCancellationRequested();
+                        Thread.Sleep(syncMillis);
+                    }
+                    
                     // ... and wait for it to arrive at target
-                    //
                     ShortestDistanceResult remainingDistance = null;
                     bool closestAtCurrentRate = false;
 
@@ -1480,7 +1476,7 @@ namespace ASCOM.Wise40
             catch (OperationCanceledException)
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                debugger.WriteLine(Debugger.DebugLevel.DebugExceptions,
                     "{0} at {1}: Slew cancelled at {2}", cm.taskName, RateName(cm.rate), currPosition);
                 #endregion debug
                 StopAxisAndWaitForHalt(axis);
@@ -1584,7 +1580,7 @@ namespace ASCOM.Wise40
                 ae.Handle((Func<Exception, bool>)((ex) =>
                 {
                     #region debug
-                    debugger.WriteLine((Debugger.DebugLevel)Debugger.DebugLevel.DebugLogic,
+                    debugger.WriteLine((Debugger.DebugLevel)Debugger.DebugLevel.DebugExceptions,
                         "_slewToCoordinatesAsync: Caught {0}", ex.Message);
                     #endregion
                     return false;

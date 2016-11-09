@@ -39,7 +39,7 @@ namespace ASCOM.Wise40
             }
             #region debug
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugAxes,
-                "ActiveSlewers: added {0}, \"{1}\" => \"{2}\"", slewer.ToString(), before, this.ToString());
+                "ActiveSlewers: added {0}, \"{1}\" => \"{2}\" ({3})", slewer.ToString(), before, this.ToString(), _active.GetHashCode());
             #endregion
         }
 
@@ -57,13 +57,18 @@ namespace ASCOM.Wise40
             }
             #region debug
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugAxes,
-                "ActiveSlewers: deleted {0}, \"{1}\" => \"{2}\"", type.ToString(), before, this.ToString());
+                "ActiveSlewers: deleted {0}, \"{1}\" => \"{2}\" ({3})", type.ToString(), before, this.ToString(), _active.GetHashCode());
             #endregion
         }
 
         public int Count
         {
-            get {
+            get
+            {
+                #region debug
+                debugger.WriteLine(Common.Debugger.DebugLevel.DebugAxes,
+                    "ActiveSlewers: Count {0} \"{1}\" ({2})", _active.Count, this.ToString(), _active.GetHashCode());
+                #endregion
                 return _active.Count;
             }
         }

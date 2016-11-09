@@ -121,8 +121,11 @@ namespace ASCOM.Wise40
 
         private void StopMovementChecker()
         {
-            movementCheckerCancellationTokenSource.Cancel();
-            movementCheckerTimer.Change(Timeout.Infinite, Timeout.Infinite);
+            if (movementCheckerCancellationTokenSource != null)
+                movementCheckerCancellationTokenSource.Cancel();
+
+            if(movementCheckerTimer != null)
+                movementCheckerTimer.Change(Timeout.Infinite, Timeout.Infinite);
         }
 
         public void Connect(bool value)

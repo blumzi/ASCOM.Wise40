@@ -539,6 +539,13 @@ namespace ASCOM.Wise40
 
         public void MoveAxis(TelescopeAxes Axis, double Rate)
         {
+            if (Rate == Const.rateStopped)
+            {
+                _driverInitiatedSlew = false;
+                wisetele.MoveAxis(Axis, Rate);
+                return;
+            }
+
             try
             {
                 _driverInitiatedSlew = true;
@@ -546,8 +553,9 @@ namespace ASCOM.Wise40
             } catch
             {
                 _driverInitiatedSlew = false;
+                throw;
             }
-                    
+            _driverInitiatedSlew = false;
         }
 
         public void Park()
@@ -663,11 +671,10 @@ namespace ASCOM.Wise40
                 wisetele.SlewToAltAz(Azimuth, Altitude);
             } catch
             {
-                throw;
-            } finally
-            {
                 _driverInitiatedSlew = false;
+                throw;
             }
+            _driverInitiatedSlew = false;
         }
 
         public void SlewToAltAzAsync(double Azimuth, double Altitude)
@@ -679,12 +686,10 @@ namespace ASCOM.Wise40
             }
             catch
             {
+                _driverInitiatedSlew = false;
                 throw;
             }
-            finally
-            {
-                _driverInitiatedSlew = false;
-            }
+            _driverInitiatedSlew = false;
         }
 
         public void SlewToCoordinates(double RightAscension, double Declination)
@@ -696,12 +701,10 @@ namespace ASCOM.Wise40
             }
             catch
             {
+                _driverInitiatedSlew = false;
                 throw;
             }
-            finally
-            {
-                _driverInitiatedSlew = false;
-            }
+            _driverInitiatedSlew = false;
         }
 
         public void SlewToCoordinatesAsync(double RightAscension, double Declination)
@@ -713,12 +716,10 @@ namespace ASCOM.Wise40
             }
             catch
             {
+                _driverInitiatedSlew = false;
                 throw;
             }
-            finally
-            {
-                _driverInitiatedSlew = false;
-            }
+            _driverInitiatedSlew = false;
         }
 
         public void SlewToTarget()
@@ -730,12 +731,10 @@ namespace ASCOM.Wise40
             }
             catch
             {
+                _driverInitiatedSlew = false;
                 throw;
             }
-            finally
-            {
-                _driverInitiatedSlew = false;
-            }
+            _driverInitiatedSlew = false;
         }
 
         public void SlewToTargetAsync()
@@ -747,12 +746,10 @@ namespace ASCOM.Wise40
             }
             catch
             {
+                _driverInitiatedSlew = false;
                 throw;
             }
-            finally
-            {
-                _driverInitiatedSlew = false;
-            }
+            _driverInitiatedSlew = false;
         }
 
         public bool Slewing
