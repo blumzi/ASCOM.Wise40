@@ -37,6 +37,7 @@ namespace Dash
         private bool _bypassSafety = false;
 
         private List<ToolStripMenuItem> debugMenuItems;
+        private Dictionary<object, string> alteredItems = new Dictionary<object, string>();
 
         #region Initialization
         public FormDash()
@@ -93,15 +94,48 @@ namespace Dash
             if (debugger.Debugging(Debugger.DebugLevel.DebugExceptions))
                 checkedItems.Add(debugExceptionsToolStripMenuItem);
 
-            foreach (var item in checkedItems)
-                item.Text += Const.checkmark;
-            
             if (debugger.Tracing)
-                tracingToolStripMenuItem.Text += Const.checkmark;
+                checkedItems.Add(tracingToolStripMenuItem);
             if (wisedome._autoCalibrate)
-                domeAutoCalibrateToolStripMenuItem.Text += Const.checkmark;
+                checkedItems.Add(domeAutoCalibrateToolStripMenuItem);
             if (wisetele._enslaveDome)
-                enslaveDomeToolStripMenuItem.Text += Const.checkmark;
+                checkedItems.Add(enslaveDomeToolStripMenuItem);
+
+            foreach (var item in checkedItems)
+            {
+                item.Text += Const.checkmark;
+                item.Tag = true;
+            }
+
+            ToolStripTextBox tb;
+            using (ASCOM.Utilities.Profile driverProfile = new ASCOM.Utilities.Profile())
+            {
+                driverProfile.DeviceType = "ObservingConditions";
+                string dataFile = driverProfile.GetValue("ASCOM.CloudSensor.ObservingConditions", "Data File", string.Empty, string.Empty);
+                tb = toolStripTextBoxCloudSensorDataFile;
+
+                tb.MaxLength = 256;
+                tb.Size = new System.Drawing.Size(300, 25);
+                tb.Text = dataFile;
+                tb.Tag = dataFile;
+                tb.BackColor = Color.FromArgb(64, 64, 64);
+                tb.ForeColor = Color.FromArgb(176, 161, 142);
+            }
+
+
+            using (ASCOM.Utilities.Profile driverProfile = new ASCOM.Utilities.Profile())
+            {
+                driverProfile.DeviceType = "ObservingConditions";
+                string reportFile = driverProfile.GetValue("ASCOM.Vantage.ObservingConditions", "Report File", string.Empty, string.Empty);
+                tb = toolStripTextBoxVantagePro2ReportFile;
+
+                tb.MaxLength = 256;
+                tb.Size = new System.Drawing.Size(300, 25);
+                tb.Text = reportFile;
+                tb.Tag = reportFile;
+                tb.BackColor = Color.FromArgb(64, 64, 64);
+                tb.ForeColor = Color.FromArgb(176, 161, 142);
+            }
         }
         #endregion
 
@@ -806,6 +840,8 @@ namespace Dash
                 wisedome._autoCalibrate = true;
                 item.Text = text + Const.checkmark;
             }
+            item.Invalidate();
+            UpdateAlteredItems(item, "Dome");
         }
 
         private void enslaveDomeToolStripMenuItem_Click(object sender, EventArgs e)
@@ -821,6 +857,8 @@ namespace Dash
                 wisetele._enslaveDome = true;
                 item.Text += Const.checkmark;
             }
+            item.Invalidate();
+            UpdateAlteredItems(item, "Telescope");
         }
 
         private void buttonZenith_Click(object sender, EventArgs e)
@@ -842,21 +880,36 @@ namespace Dash
             wisetele.Tracking = false;
         }
 
+        private void MoveToPresetCoords(Angle ha, Angle dec)
+        {
+            Angle ra = wisesite.LocalSiderealTime - ha;
+            bool savedEnslaveDome = wisetele._enslaveDome;
+
+            wisetele._enslaveDome = false;
+            wisetele.Tracking = true;
+            try
+            {
+                wisetele.SlewToCoordinatesAsync(ra.Hours, dec.Degrees, false);
+                wisetele.DomeSlewer(90.0);
+            }
+            catch (Exception ex)
+            {
+                telescopeStatus.Show(ex.Message, 2000, Statuser.Severity.Error);
+            }
+            wisetele._enslaveDome = savedEnslaveDome;
+            wisetele.Tracking = false;
+        }
+
         private void buttonHandleCover_Click(object sender, EventArgs e)
         {
-            // Calculate:
-            //  RA: -12h
-            // Dec: 88
-            double coverHA = 0.0;
-            double coverDec = 88.0;
-
-            telescopeStatus.Show("Cover - Not implemeted yet!", 2000, Statuser.Severity.Error);
+            telescopeStatus.Show("Moving to cover station", 2000, Statuser.Severity.Good);
+            MoveToPresetCoords(new Angle("11h55m00.0s"), new Angle("88:00:00.0"));
         }
 
         private void buttonFlat_Click(object sender, EventArgs e)
         {
-            // Flat is at HA: -1:35:59.0, Dec: 41:59:20.0
-            telescopeStatus.Show("Flat - Not implemeted yet!", 2000, Statuser.Severity.Error);
+            telescopeStatus.Show("Moving to Zenith", 2000, Statuser.Severity.Good);
+            MoveToPresetCoords(new Angle("-1h35m59.0s"), new Angle("41:59:20.0"));
         }
 
         private void checkBoxTrack_Click(object sender, EventArgs e)
@@ -906,9 +959,44 @@ namespace Dash
                 debugger.StartDebugging(selectedLevel);
             }
             item.Invalidate();
+            UpdateAlteredItems(item, "Debugging");
+
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "New debug level: {0}", debugger.Level);
             #endregion
+        }
+
+        private void UpdateAlteredItems(ToolStripMenuItem item, string title)
+        {
+            bool originalSetting = (item.Tag == null) ? false : (bool)item.Tag;
+            bool currentSetting = item.Text.EndsWith(Const.checkmark);
+            if (originalSetting == currentSetting)
+            {
+                if (alteredItems.ContainsKey(item))
+                    alteredItems.Remove(item);
+            }
+            else
+            {
+                if (!alteredItems.ContainsKey(item))
+                    alteredItems[item] = title;
+            }
+
+            string tip = "To be saved to profile:" + Const.crnl + Const.crnl;
+            foreach (var key in alteredItems.Keys)
+            {
+                string text = ((ToolStripMenuItem)key).Text;
+                string mark;
+
+                if (text.EndsWith(Const.checkmark))
+                {
+                    text = text.Remove(text.Length - Const.checkmark.Length);
+                    mark = "+";
+                }
+                else
+                    mark = "-";
+                tip += string.Format("  {0,-20} {1} {2}", alteredItems[key] + ":", mark, text) + Const.crnl;
+            }
+            saveToProfileToolStripMenuItem.ToolTipText = tip;
         }
 
         private void saveToProfileToolStripMenuItem_Click(object sender, EventArgs e)
@@ -916,6 +1004,24 @@ namespace Dash
             debugger.WriteProfile();
             wisedome.WriteProfile();
             wisetele.WriteProfile();
+
+            if ((string) toolStripTextBoxCloudSensorDataFile.Tag != toolStripTextBoxCloudSensorDataFile.Text)
+            {
+                using (ASCOM.Utilities.Profile driverProfile = new ASCOM.Utilities.Profile())
+                {
+                    driverProfile.DeviceType = "ObservingConditions";
+                    driverProfile.WriteValue("ASCOM.CloudSensor.ObservingConditions", "Data File", toolStripTextBoxCloudSensorDataFile.Text);
+                }
+            }
+
+            if ((string) toolStripTextBoxVantagePro2ReportFile.Tag != toolStripTextBoxVantagePro2ReportFile.Text)
+            {
+                using (ASCOM.Utilities.Profile driverProfile = new ASCOM.Utilities.Profile())
+                {
+                    driverProfile.DeviceType = "ObservingConditions";
+                    driverProfile.WriteValue("ASCOM.Vantage.ObservingConditions", "Report File", toolStripTextBoxVantagePro2ReportFile.Text);
+                }
+            }
         }
 
         private void tracingToolStripMenuItem_Click(object sender, EventArgs e)
@@ -928,10 +1034,11 @@ namespace Dash
                 debugger.Tracing = false;
             } else
             {
-                item.Text = "Tracing ✓";
+                item.Text = "Tracing" + Const.checkmark;
                 debugger.Tracing = true;
             }
             item.Invalidate();
+            UpdateAlteredItems(item, "Tracing");
         }
 
         private void safetyOverrideToolStripMenuItem_Click(object sender, EventArgs e)
