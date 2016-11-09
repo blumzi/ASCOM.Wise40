@@ -149,6 +149,6 @@
     <VisualStudio AllowExistingFolder="true" />
   </ProjectExtensions>
   <PropertyGroup>
-    <PostBuildEvent>"C:\Program Files (x86)\Inno Setup 5\ISCC.exe" "/DSolutionDir=$(SolutionDir)" "/O$(SolutionDir)\Deliveries"  "$(ProjectDir)\Installer\$(ProjectName) Setup.iss"</PostBuildEvent>
+    <PostBuildEvent>rem "C:\Program Files (x86)\Inno Setup 5\ISCC.exe" "/DSolutionDir=$(SolutionDir)" "/O$(SolutionDir)\Deliveries"  "$(ProjectDir)\Installer\$(ProjectName) Setup.iss"</PostBuildEvent>
   </PropertyGroup>
 </Project>
