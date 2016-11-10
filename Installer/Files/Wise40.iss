@@ -23,6 +23,7 @@ OutputBaseFilename="Wise40 Setup"
 Compression=lzma
 SolidCompression=yes
 SetupLogging=yes
+SetupIconFile=ASCOM.ico
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -46,8 +47,8 @@ Source: "{#SolutionDir}\SafeToImage\bin\Debug\ASCOM.Wise40.SafeToImage.SafetyMon
 Source: "{#SolutionDir}\SafeToOpen\bin\Debug\ASCOM.Wise40.SafeToOpen.SafetyMonitor.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SolutionDir}\Telescope\bin\Debug\ASCOM.Wise40.Telescope.dll"; DestDir: "{app}"; Flags: ignoreversion
 
-Source: "C:\temp\clarityII-data.txt"; DestDir: "{app}"; AfterInstall: CopyToTemp('c:\temp\clarityII-data.txt')
-Source: "C:\temp\Weather_Wise40_Vantage_Pro.htm"; DestDir: "{app}";  AfterInstall: CopyToTemp('c:\temp\Weather_Wise40_Vantage_Pro.htm')
+Source: "{#SolutionDir}\ClarityII\Sample Files\clarityII-data.txt"; DestDir: "{app}"; AfterInstall: CopyToTemp('c:\temp\clarityII-data.txt')
+Source: "{#SolutionDir}\DavisVantage\Sample Files\Weather_Wise40_Vantage_Pro.htm"; DestDir: "{app}";  AfterInstall: CopyToTemp('c:\temp\Weather_Wise40_Vantage_Pro.htm')
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
@@ -55,6 +56,17 @@ Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
 Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: quicklaunchicon
+
+; [Components]
+; Name: "Dashboard"; Description: "The Wise40 Dashboard"; Types: full;
+; Name: "Telescope"; DEscription: "The Wise40 ASCOM Telescope driver"; Types: full;
+; Name: "Focuser"; Description: "The Wise40 ASCOM Focuser driver"; Types: full;
+; Name: "Dome"; Description: "The Wise40 ASCOM Dome driver"; Types: full;
+; Name: "Computer Control"; Description: "The Wise40 ASCOM ComputerControl SafetyMonitor driver"; Types: full;
+; Name: "SafeToOpen"; Description: "The Wise40 ASCOM SafeToOpen SafetyMonitor driver"; Types: full;
+; Name: "SafeToImage"; Description: "The Wise40 ASCOM SafeToImage SafetyMonitor driver"; Types: full;
+; Name: "Boltwood CloudSensor"; Description: "The Wise40 ASCOM CloudSensor ObservingConditions driver"; Types: full;
+; Name: "Davis VantagePro2"; Description: "The Wise40 ASCOM VantagePro2 ObservingConditions driver"; Types: full;
 
 [Run]
 Filename: "{dotnet4032}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.ClarityII.ObservingConditions.dll"""; Flags: runhidden 32bit
@@ -185,8 +197,6 @@ procedure CopyToTemp(dst: String);
 begin
     if GetComputerNameString <> 'dome-ctlr' then
 	begin
-       FileCopy(CurrentFileName, dst, False);
+       FileCopy(ExpandConstant(CurrentFileName), dst, False);
 	end;
 end;
-
-

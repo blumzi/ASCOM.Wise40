@@ -106,6 +106,7 @@
     <Content Include="Documents\Images\Setup\Internet Connection Settings.PNG" />
     <Content Include="Documents\Images\Setup\Internet Settings.PNG" />
     <Content Include="Documents\Images\Setup\Weather Template Files for Data Upload Profile 1.PNG" />
+    <Content Include="Sample Files\Weather_Wise40_Vantage_Pro.htm" />
     <Content Include="Installer\ReadMe.html" />
     <Content Include="Installer\VantagePro Setup.iss" />
     <Content Include="ReadMe.htm" />
