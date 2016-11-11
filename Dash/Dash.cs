@@ -930,6 +930,11 @@ namespace Dash
             }
         }
 
+        private void wise40WikiToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            System.Diagnostics.Process.Start("https://github.com/blumzi/ASCOM.Wise40/wiki");
+        }
+
         private void debugSelectedToolStripMenuItem_Click(object sender, EventArgs e)
         {
             ToolStripMenuItem item = sender as ToolStripMenuItem;

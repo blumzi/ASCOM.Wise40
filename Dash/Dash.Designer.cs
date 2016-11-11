@@ -183,6 +183,8 @@
             this.labelDashStatus = new System.Windows.Forms.Label();
             this.timerRefreshDisplay = new System.Windows.Forms.Timer(this.components);
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
+            this.wise40WikiToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.aboutToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.tableLayoutMain.SuspendLayout();
             this.groupBoxFocuser.SuspendLayout();
             this.groupBoxDomeGroup.SuspendLayout();
@@ -1720,11 +1722,13 @@
             // aboutToolStripMenuItem
             // 
             this.aboutToolStripMenuItem.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
+            this.aboutToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.wise40WikiToolStripMenuItem,
+            this.aboutToolStripMenuItem1});
             this.aboutToolStripMenuItem.ForeColor = System.Drawing.Color.DarkOrange;
             this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
-            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(53, 21);
-            this.aboutToolStripMenuItem.Text = "About";
-            this.aboutToolStripMenuItem.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
+            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(45, 21);
+            this.aboutToolStripMenuItem.Text = "Help";
             // 
             // flowLayoutPanel1
             // 
@@ -2239,6 +2243,20 @@
             this.timerRefreshDisplay.Enabled = true;
             this.timerRefreshDisplay.Tick += new System.EventHandler(this.RefreshDisplay);
             // 
+            // wise40WikiToolStripMenuItem
+            // 
+            this.wise40WikiToolStripMenuItem.Name = "wise40WikiToolStripMenuItem";
+            this.wise40WikiToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
+            this.wise40WikiToolStripMenuItem.Text = "The Wise40 Wiki";
+            this.wise40WikiToolStripMenuItem.Click += new System.EventHandler(this.wise40WikiToolStripMenuItem_Click);
+            // 
+            // aboutToolStripMenuItem1
+            // 
+            this.aboutToolStripMenuItem1.Name = "aboutToolStripMenuItem1";
+            this.aboutToolStripMenuItem1.Size = new System.Drawing.Size(152, 22);
+            this.aboutToolStripMenuItem1.Text = "About";
+            this.aboutToolStripMenuItem1.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
+            // 
             // FormDash
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
@@ -2435,6 +2453,8 @@
         private System.Windows.Forms.ToolStripMenuItem vantagePro2ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem reportFileToolStripMenuItem;
         private System.Windows.Forms.ToolStripTextBox toolStripTextBoxVantagePro2ReportFile;
+        private System.Windows.Forms.ToolStripMenuItem wise40WikiToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem1;
     }
 }
 
