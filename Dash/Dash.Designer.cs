@@ -146,6 +146,8 @@
             this.digitalIOCardsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.debuggingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.wise40WikiToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.aboutToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
             this.label1 = new System.Windows.Forms.Label();
             this.labelTitle = new System.Windows.Forms.Label();
@@ -183,8 +185,6 @@
             this.labelDashStatus = new System.Windows.Forms.Label();
             this.timerRefreshDisplay = new System.Windows.Forms.Timer(this.components);
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
-            this.wise40WikiToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.aboutToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.tableLayoutMain.SuspendLayout();
             this.groupBoxFocuser.SuspendLayout();
             this.groupBoxDomeGroup.SuspendLayout();
@@ -947,6 +947,7 @@
             this.buttonStop.TabIndex = 4;
             this.buttonStop.Text = "Stop";
             this.buttonStop.UseVisualStyleBackColor = false;
+            this.buttonStop.Click += new System.EventHandler(this.buttonTelescopeStop_Click);
             this.buttonStop.MouseDown += new System.Windows.Forms.MouseEventHandler(this.directionButton_MouseDown);
             this.buttonStop.MouseUp += new System.Windows.Forms.MouseEventHandler(this.directionButton_MouseUp);
             // 
@@ -1730,6 +1731,20 @@
             this.aboutToolStripMenuItem.Size = new System.Drawing.Size(45, 21);
             this.aboutToolStripMenuItem.Text = "Help";
             // 
+            // wise40WikiToolStripMenuItem
+            // 
+            this.wise40WikiToolStripMenuItem.Name = "wise40WikiToolStripMenuItem";
+            this.wise40WikiToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
+            this.wise40WikiToolStripMenuItem.Text = "The Wise40 Wiki";
+            this.wise40WikiToolStripMenuItem.Click += new System.EventHandler(this.wise40WikiToolStripMenuItem_Click);
+            // 
+            // aboutToolStripMenuItem1
+            // 
+            this.aboutToolStripMenuItem1.Name = "aboutToolStripMenuItem1";
+            this.aboutToolStripMenuItem1.Size = new System.Drawing.Size(168, 22);
+            this.aboutToolStripMenuItem1.Text = "About";
+            this.aboutToolStripMenuItem1.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
+            // 
             // flowLayoutPanel1
             // 
             this.flowLayoutPanel1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
@@ -2242,20 +2257,6 @@
             // 
             this.timerRefreshDisplay.Enabled = true;
             this.timerRefreshDisplay.Tick += new System.EventHandler(this.RefreshDisplay);
-            // 
-            // wise40WikiToolStripMenuItem
-            // 
-            this.wise40WikiToolStripMenuItem.Name = "wise40WikiToolStripMenuItem";
-            this.wise40WikiToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
-            this.wise40WikiToolStripMenuItem.Text = "The Wise40 Wiki";
-            this.wise40WikiToolStripMenuItem.Click += new System.EventHandler(this.wise40WikiToolStripMenuItem_Click);
-            // 
-            // aboutToolStripMenuItem1
-            // 
-            this.aboutToolStripMenuItem1.Name = "aboutToolStripMenuItem1";
-            this.aboutToolStripMenuItem1.Size = new System.Drawing.Size(152, 22);
-            this.aboutToolStripMenuItem1.Text = "About";
-            this.aboutToolStripMenuItem1.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
             // 
             // FormDash
             // 

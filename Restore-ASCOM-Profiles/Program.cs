@@ -20,6 +20,7 @@ namespace Restore_ASCOM_Profiles
             WriteSafeToOpenProfile();
             WriteSafeToImageProfile();
             WriteDomeProfile();
+            WriteTelescopeProfile();
 
             Environment.Exit(0);
         }
@@ -117,6 +118,18 @@ namespace Restore_ASCOM_Profiles
                 driverProfile.DeviceType = "Dome";
                 driverProfile.WriteValue(driverID, traceStateProfileName, false.ToString());
                 driverProfile.WriteValue(driverID, autoCalibrateProfileName, true.ToString());
+            }
+        }
+
+        internal static void WriteTelescopeProfile()
+        {
+            string driverID = "ASCOM.Wise40.Telescope";
+            string enslaveDomeProfileName = "Enslave Dome";
+
+            using (Profile driverProfile = new Profile())
+            {
+                driverProfile.DeviceType = "Telescope";
+                driverProfile.WriteValue(driverID, enslaveDomeProfileName, true.ToString());
             }
         }
     }

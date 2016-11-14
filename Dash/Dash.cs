@@ -531,8 +531,16 @@ namespace Dash
                     wisetele.AtPark = false;
                 else
                 {
+                    bool saveTracking = wisetele.Tracking;
+                    wisetele.Tracking = true;
                     telescopeStatus.Show("Parking", 0, Statuser.Severity.Good);
-                    wisetele.Park();
+                    wisetele.ParkFromGui();
+                    while (wisetele.Slewing)
+                    {
+                        Application.DoEvents();
+                    }
+                    wisetele.AtPark = true;
+                    wisetele.Tracking = saveTracking;
                     telescopeStatus.Show("");
                 }
             }

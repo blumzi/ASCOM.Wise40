@@ -1227,8 +1227,40 @@ namespace ASCOM.Wise40
             Angle ra = wisesite.LocalSiderealTime;
             Angle dec = wisesite.Latitude;
 
+            bool saveEnslaveDome = _enslaveDome;
+            if (saveEnslaveDome)
+            {
+                _enslaveDome = false;
+                DomeParker();
+            }
             _slewToCoordinatesSync(ra, dec);
             AtPark = true;
+            _enslaveDome = saveEnslaveDome;
+        }
+
+        public void ParkFromGui()
+        {
+            #region trace
+            traceLogger.LogMessage("Park", "");
+            #endregion
+            #region debug
+            debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, "Park");
+            #endregion debug
+            if (AtPark)
+                return;
+
+            Angle ra = wisesite.LocalSiderealTime;
+            Angle dec = wisesite.Latitude;
+
+            bool saveEnslaveDome = _enslaveDome;
+
+            if (saveEnslaveDome)
+            {
+                _enslaveDome = false;
+                DomeParker();
+            }
+            SlewToCoordinatesAsync(ra.Hours, dec.Degrees, false);
+            _enslaveDome = saveEnslaveDome;
         }
 
         private void _slewToCoordinatesSync(Angle RightAscension, Angle Declination)
