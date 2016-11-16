@@ -29,7 +29,6 @@ namespace Restore_ASCOM_Profiles
         {
             string driverID = "ASCOM.CloudSensor.ObservingConditions";
             string dataFileProfileName = "Data File";
-            string traceStateProfileName = "Trace Level";
             string dataFile = realMachine ? 
                 "z:/clarityII-data.txt" :
                 "c:/temp/clarityII-data.txt";
@@ -37,7 +36,6 @@ namespace Restore_ASCOM_Profiles
             using (Profile driverProfile = new Profile())
             {
                 driverProfile.DeviceType = "ObservingConditions";
-                driverProfile.WriteValue(driverID, traceStateProfileName, false.ToString());
                 driverProfile.WriteValue(driverID, dataFileProfileName, dataFile);
             }
         }
@@ -46,7 +44,6 @@ namespace Restore_ASCOM_Profiles
         {
             string driverID = "ASCOM.Vantage.ObservingConditions";
             string reportFileProfileName = "Report File";
-            string traceStateProfileName = "Trace Level";
             string reportFile = realMachine ?
                 "y:/Weather_Wise40_Vantage_Pro.htm" :
                 "c:/temp/Weather_Wise40_Vantage_Pro.htm";
@@ -54,7 +51,6 @@ namespace Restore_ASCOM_Profiles
             using (Profile driverProfile = new Profile())
             {
                 driverProfile.DeviceType = "ObservingConditions";
-                driverProfile.WriteValue(driverID, traceStateProfileName, false.ToString());
                 driverProfile.WriteValue(driverID, reportFileProfileName, reportFile);
             }
         }
@@ -62,7 +58,6 @@ namespace Restore_ASCOM_Profiles
         internal static void WriteSafeToOpenProfile()
         {
             string driverID = "ASCOM.Wise40.SafeToOpen.SafetyMonitor";
-            string traceStateProfileName = "Trace Level";
             string cloudsMaxProfileName = "Clouds Max";
             string windMaxProfileName = "Wind Max";
             string rainMaxProfileName = "Rain Max";
@@ -73,7 +68,6 @@ namespace Restore_ASCOM_Profiles
             using (Profile driverProfile = new Profile())
             {
                 driverProfile.DeviceType = "SafetyMonitor";
-                driverProfile.WriteValue(driverID, traceStateProfileName, false.ToString());
                 driverProfile.WriteValue(driverID, cloudsMaxProfileName, "cloudClear");
                 driverProfile.WriteValue(driverID, windMaxProfileName, 100.ToString());
                 driverProfile.WriteValue(driverID, rainMaxProfileName, 0.ToString());
@@ -86,7 +80,6 @@ namespace Restore_ASCOM_Profiles
         internal static void WriteSafeToImageProfile()
         {
             string driverID = "ASCOM.Wise40.SafeToImage.SafetyMonitor";
-            string traceStateProfileName = "Trace Level";
             string cloudsMaxProfileName = "Clouds Max";
             string windMaxProfileName = "Wind Max";
             string rainMaxProfileName = "Rain Max";
@@ -97,7 +90,6 @@ namespace Restore_ASCOM_Profiles
             using (Profile driverProfile = new Profile())
             {
                 driverProfile.DeviceType = "SafetyMonitor";
-                driverProfile.WriteValue(driverID, traceStateProfileName, false.ToString());
                 driverProfile.WriteValue(driverID, cloudsMaxProfileName, "cloudClear");
                 driverProfile.WriteValue(driverID, windMaxProfileName, 100.ToString());
                 driverProfile.WriteValue(driverID, rainMaxProfileName, 0.ToString());
@@ -110,13 +102,11 @@ namespace Restore_ASCOM_Profiles
         internal static void WriteDomeProfile()
         {
             string driverID = "ASCOM.Wise40.Dome";
-            string traceStateProfileName = "Trace Level";
             string autoCalibrateProfileName = "AutoCalibrate";
 
             using (Profile driverProfile = new Profile())
             {
                 driverProfile.DeviceType = "Dome";
-                driverProfile.WriteValue(driverID, traceStateProfileName, false.ToString());
                 driverProfile.WriteValue(driverID, autoCalibrateProfileName, true.ToString());
             }
         }
@@ -125,10 +115,12 @@ namespace Restore_ASCOM_Profiles
         {
             string driverID = "ASCOM.Wise40.Telescope";
             string enslaveDomeProfileName = "Enslave Dome";
+            string traceStateProfileName = "Trace Level";
 
             using (Profile driverProfile = new Profile())
             {
                 driverProfile.DeviceType = "Telescope";
+                driverProfile.WriteValue(driverID, traceStateProfileName, false.ToString());
                 driverProfile.WriteValue(driverID, enslaveDomeProfileName, true.ToString());
             }
         }

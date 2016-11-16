@@ -461,25 +461,10 @@ namespace ASCOM.Wise40.SafeToOperate
                 windMax = Convert.ToDouble(driverProfile.GetValue(driverID, windMaxProfileName, string.Empty, 0.0.ToString()));
                 rainMax = Convert.ToDouble(driverProfile.GetValue(driverID, rainMaxProfileName, string.Empty, 0.0.ToString()));
                 humidityMax = Convert.ToDouble(driverProfile.GetValue(driverID, humidityMaxProfileName, string.Empty, 0.0.ToString()));
-                ageMaxSeconds = Convert.ToInt32(driverProfile.GetValue(driverID, ageMaxSecondsProfileName, string.Empty, 0.0.ToString()));
-                switch (driverProfile.GetValue(driverID, lightMaxProfileName, string.Empty, 0.ToString()))
-                {
-                    case "dayUnknown":
-                        lightMax = CloudSensor.SensorData.DayCondition.dayUnknown;
-                        break;
-                    case "dayDark":
-                        lightMax = CloudSensor.SensorData.DayCondition.dayDark;
-                        break;
-                    case "dayLight":
-                        lightMax = CloudSensor.SensorData.DayCondition.dayLight;
-                        break;
-                    case "dayVeryLight":
-                        lightMax = CloudSensor.SensorData.DayCondition.dayVeryLight;
-                        break;
-                    default:
-                        lightMax = CloudSensor.SensorData.DayCondition.dayUnknown;
-                        break;
-                }
+                ageMaxSeconds = Convert.ToInt32(driverProfile.GetValue(driverID, ageMaxSecondsProfileName, string.Empty, 0.ToString()));
+                lightMax = (CloudSensor.SensorData.DayCondition)
+                    Enum.Parse(typeof(CloudSensor.SensorData.DayCondition),
+                        driverProfile.GetValue(driverID, lightMaxProfileName, string.Empty, "dayUnknown"));
             }
         }
 
