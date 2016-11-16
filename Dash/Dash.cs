@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -1069,6 +1070,28 @@ namespace Dash
                 safetyOverrideToolStripMenuItem.Text = menuText + Const.checkmark;
                 _bypassSafety = true;
             }
+        }
+
+        private void HandleUnhandledException(Exception e)
+        {
+            wisetele.Stop();
+            wisedome.Stop();
+            wisedome.ShutterStop();
+
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugExceptions, "Unhandled exception: {0}, Application will exit!", e.Message);
+            #endregion
+            Application.Exit();
+        }
+
+        public void HandleThreadException(object sender, ThreadExceptionEventArgs e)
+        {
+            HandleUnhandledException(e.Exception);
+        }
+
+        public void HandleDomainUnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            HandleUnhandledException(e.ExceptionObject as Exception);
         }
         #endregion
     }
