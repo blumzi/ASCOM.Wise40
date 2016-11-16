@@ -311,7 +311,7 @@ namespace ASCOM.Wise40
         {
             if (ShutterIsMoving)
             {
-                _shutterTimer.Change(0, 0);
+                _shutterTimer.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
                 ShutterStop();
             }
         }
@@ -414,7 +414,7 @@ namespace ASCOM.Wise40
                     forwardPin.SetOn();
                     _stuckPhase = StuckPhase.NotStuck;
                     _isStuck = false;
-                    _stuckTimer.Change(0, 0);
+                    _stuckTimer.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
                     nextStuckEvent = rightNow.AddYears(100);
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: stuck: {0}, phase4: resumed original motion", instance.Azimuth);
@@ -467,7 +467,7 @@ namespace ASCOM.Wise40
             rightPin.SetOff();
             leftPin.SetOff();
             UnsetDomeState(DomeState.MovingCCW|DomeState.MovingCW);
-            _movementTimer.Change(0, 0);
+            _movementTimer.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
             domeEncoder.setMovement(Direction.None);
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: Stopped");
