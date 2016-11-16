@@ -183,8 +183,6 @@ namespace ASCOM.Wise40
         public bool _calculateRefraction = true;
         private string calculateRefractionProfileName = "Calculate refraction";
 
-        //public bool _driverInitiatedSlewing = false;
-
         private static WiseComputerControl wiseComputerControl = WiseComputerControl.Instance;
 
         public static string RateName(double rate)
