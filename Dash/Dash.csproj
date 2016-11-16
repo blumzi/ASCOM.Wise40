@@ -63,6 +63,10 @@
     <Reference Include="ASCOM.Vantage.ObservingConditions">
       <HintPath>..\DavisVantage\bin\Debug\ASCOM.Vantage.ObservingConditions.dll</HintPath>
     </Reference>
+    <Reference Include="ASCOM.Wise40.SafeToOpen.SafetyMonitor, Version=6.2.6164.32379, Culture=neutral, PublicKeyToken=5a596dde3293c610, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\SafeToOpen\bin\Debug\ASCOM.Wise40.SafeToOpen.SafetyMonitor.dll</HintPath>
+    </Reference>
     <Reference Include="MccDaq, Version=2.5.0.0, Culture=neutral, PublicKeyToken=a37eefcf5c6ca10a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Hardware\Measurement Computing\DAQ\MccDaq.dll</HintPath>
@@ -171,10 +175,6 @@
     <ProjectReference Include="..\SafeToImage\SafeToImage.csproj">
       <Project>{990e4dfa-414e-4c05-89c0-6f18a5c6fa94}</Project>
       <Name>SafeToImage</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\SafeToOpen\SafeToOpen.csproj">
-      <Project>{7fa766d4-8f97-4d9f-8f62-f25c84c01ff2}</Project>
-      <Name>SafeToOpen</Name>
     </ProjectReference>
     <ProjectReference Include="..\Telescope\Telescope.csproj">
       <Project>{e27802fc-efb5-4deb-bd4d-013f44a0813c}</Project>

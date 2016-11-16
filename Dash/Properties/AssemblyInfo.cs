@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("Dash")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("The Wise40 ASCOM Suite Dashboard")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Dash")]
-[assembly: AssemblyCopyright("Copyright ©  2016")]
+[assembly: AssemblyCompany("Department of Astrophysics, School of Physics & Astronomy, Tel Aviv University, Israel")]
+[assembly: AssemblyProduct("Wise40 ASCOM Suite")]
+[assembly: AssemblyCopyright("Copyright © 2016 Department of Astrophysics, School of Physics & Astronomy, Tel Aviv University, Israel")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
