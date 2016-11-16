@@ -29,7 +29,7 @@ namespace ASCOM.Wise40
         private bool _calibrating = false;
         public bool _autoCalibrate = false;
         private bool _isStuck;
-
+        public bool _bypassSafety = false;
 
         [FlagsAttribute] public enum DomeState {
             Idle = 0,
@@ -122,8 +122,7 @@ namespace ASCOM.Wise40
 
                 homePin = new WisePin("DomeCalib", hw.domeboard, DigitalPortType.FirstPortCL, 0, DigitalPortDirection.DigitalIn);
                 ventPin = new WisePin("DomeVent", hw.teleboard, DigitalPortType.ThirdPortCL, 0, DigitalPortDirection.DigitalOut);
-
-                domeEncoder = WiseDomeEncoder.Instance;
+                
                 domeEncoder.init();
 
                 connectables.Add(openPin);
@@ -793,7 +792,7 @@ namespace ASCOM.Wise40
             if (Slewing)
                 err += "Cannot OpenShutter, dome is slewing!";
 
-            if (!bypassSafety && (wisesite.safeToOpen != null && !wisesite.safeToOpen.IsSafe))
+            if (!bypassSafety && !_bypassSafety && (wisesite.safeToOpen != null && !wisesite.safeToOpen.IsSafe))
                 err += "Not safeToOpen: " + wisesite.safeToOpen.CommandString("unsafeReasons", false);
 
             if (err == null)
@@ -1165,6 +1164,7 @@ namespace ASCOM.Wise40
 
         #region Profile
         internal static string autoCalibrateProfileName = "AutoCalibrate";
+        internal static string bypassSafetyProfileName = "Bypass Safety";
         internal static string driverID = "ASCOM.Wise40.Dome";
 
         /// <summary>
@@ -1176,6 +1176,7 @@ namespace ASCOM.Wise40
             {
                 driverProfile.DeviceType = "Dome";
                 _autoCalibrate = Convert.ToBoolean(driverProfile.GetValue(driverID, autoCalibrateProfileName, string.Empty, "false"));
+                _bypassSafety = Convert.ToBoolean(driverProfile.GetValue(driverID, bypassSafetyProfileName, string.Empty, "false"));
             }
         }
 
@@ -1188,6 +1189,7 @@ namespace ASCOM.Wise40
             {
                 driverProfile.DeviceType = "Dome";
                 driverProfile.WriteValue(driverID, autoCalibrateProfileName, _autoCalibrate.ToString());
+                driverProfile.WriteValue(driverID, bypassSafetyProfileName, _bypassSafety.ToString());
             }
         }
         #endregion

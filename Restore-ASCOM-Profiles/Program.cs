@@ -93,7 +93,7 @@ namespace Restore_ASCOM_Profiles
                 driverProfile.WriteValue(driverID, cloudsMaxProfileName, "cloudClear");
                 driverProfile.WriteValue(driverID, windMaxProfileName, 100.ToString());
                 driverProfile.WriteValue(driverID, rainMaxProfileName, 0.ToString());
-                driverProfile.WriteValue(driverID, lightMaxProfileName, "darkLight");
+                driverProfile.WriteValue(driverID, lightMaxProfileName, "dayLight");
                 driverProfile.WriteValue(driverID, humidityMaxProfileName, 70.ToString());
                 driverProfile.WriteValue(driverID, ageMaxSecondsProfileName, 0.ToString());
             }
@@ -102,12 +102,14 @@ namespace Restore_ASCOM_Profiles
         internal static void WriteDomeProfile()
         {
             string driverID = "ASCOM.Wise40.Dome";
-            string autoCalibrateProfileName = "AutoCalibrate";
+            string bypassSafetyProfileName = "AutoCalibrate";
+            string autoCalibrateProfileName = "Bypass Safety";
 
             using (Profile driverProfile = new Profile())
             {
                 driverProfile.DeviceType = "Dome";
                 driverProfile.WriteValue(driverID, autoCalibrateProfileName, true.ToString());
+                driverProfile.WriteValue(driverID, bypassSafetyProfileName, false.ToString());
             }
         }
 

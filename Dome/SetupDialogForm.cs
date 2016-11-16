@@ -22,6 +22,7 @@ namespace ASCOM.Wise40
 
             wisedome.ReadProfile();
             checkBoxAutoCalibrate.Checked = wisedome._autoCalibrate;
+            checkBoxBypassSafety.Checked = wisedome._bypassSafety;
         }
 
         private void cmdOK_Click(object sender, EventArgs e) // OK button event handler
@@ -54,6 +55,11 @@ namespace ASCOM.Wise40
         private void checkBoxAutoCalibrate_CheckedChanged(object sender, EventArgs e)
         {
             wisedome._autoCalibrate = (sender as CheckBox).Checked;
+        }
+
+        private void checkBoxBypassSafety_CheckedChanged(object sender, EventArgs e)
+        {
+            wisedome._bypassSafety = (sender as CheckBox).Checked;
         }
     }
 }

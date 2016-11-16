@@ -33,6 +33,7 @@ namespace ASCOM.Wise40
             this.picASCOM = new System.Windows.Forms.PictureBox();
             this.checkBoxAutoCalibrate = new System.Windows.Forms.CheckBox();
             this.label1 = new System.Windows.Forms.Label();
+            this.checkBoxBypassSafety = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).BeginInit();
             this.SuspendLayout();
             // 
@@ -81,7 +82,7 @@ namespace ASCOM.Wise40
             // checkBoxAutoCalibrate
             // 
             this.checkBoxAutoCalibrate.AutoSize = true;
-            this.checkBoxAutoCalibrate.Location = new System.Drawing.Point(23, 105);
+            this.checkBoxAutoCalibrate.Location = new System.Drawing.Point(24, 96);
             this.checkBoxAutoCalibrate.Name = "checkBoxAutoCalibrate";
             this.checkBoxAutoCalibrate.Size = new System.Drawing.Size(92, 17);
             this.checkBoxAutoCalibrate.TabIndex = 7;
@@ -99,12 +100,25 @@ namespace ASCOM.Wise40
             this.label1.TabIndex = 9;
             this.label1.Text = "Wise40 Dome driver setup";
             // 
+            // checkBoxBypassSafety
+            // 
+            this.checkBoxBypassSafety.AutoSize = true;
+            this.checkBoxBypassSafety.Location = new System.Drawing.Point(25, 119);
+            this.checkBoxBypassSafety.Name = "checkBoxBypassSafety";
+            this.checkBoxBypassSafety.Size = new System.Drawing.Size(93, 17);
+            this.checkBoxBypassSafety.TabIndex = 10;
+            this.checkBoxBypassSafety.TabStop = false;
+            this.checkBoxBypassSafety.Text = "Bypass Safety";
+            this.checkBoxBypassSafety.UseVisualStyleBackColor = true;
+            this.checkBoxBypassSafety.CheckedChanged += new System.EventHandler(this.checkBoxBypassSafety_CheckedChanged);
+            // 
             // SetupDialogForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.ClientSize = new System.Drawing.Size(294, 159);
+            this.Controls.Add(this.checkBoxBypassSafety);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.checkBoxAutoCalibrate);
             this.Controls.Add(this.picASCOM);
@@ -131,5 +145,6 @@ namespace ASCOM.Wise40
         private System.Windows.Forms.PictureBox picASCOM;
         private System.Windows.Forms.CheckBox checkBoxAutoCalibrate;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.CheckBox checkBoxBypassSafety;
     }
 }
