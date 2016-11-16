@@ -6,6 +6,7 @@ using System.Globalization;
 
 using MccDaq;
 using ASCOM.Utilities;
+using ASCOM.DeviceInterface;
 using ASCOM.Wise40.Common;
 using ASCOM.Wise40.Hardware;
 using ASCOM.Wise40.SafeToOperate;
@@ -38,9 +39,7 @@ namespace ASCOM.Wise40
             Parking = (1 << 3),
             //AllMovements = MovingCCW|MovingCW|Parking|Calibrating,
         };
-        private DomeState _state;
-
-        public enum ShutterState { Idle, Opening, Open, Closing, Closed };
+        private DomeState _state;        
         private ShutterState _shutterState;
 
         private enum StuckPhase { NotStuck, FirstStop, GoBackward, SecondStop, ResumeForward };
@@ -163,7 +162,7 @@ namespace ASCOM.Wise40
 
             _calibrating = false;
             _state = DomeState.Idle;
-            _shutterState = ShutterState.Closed;
+            _shutterState = ShutterState.shutterClosed;
             
             _domeTimer = new System.Threading.Timer(new TimerCallback(onDomeTimer));
             _domeTimer.Change(_domeTimeout, _domeTimeout);
@@ -314,16 +313,15 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return _shutterState == ShutterState.Opening || _shutterState == ShutterState.Closing;
+                return _shutterState == ShutterState.shutterOpening || _shutterState == ShutterState.shutterClosing;
             }
         }
         private void onShutterTimer(object state)
         {
             if (ShutterIsMoving)
             {
-                ShutterStop();
-                //_shutterTimer.Enabled = false;
                 _shutterTimer.Change(0, 0);
+                ShutterStop();
             }
         }
         
@@ -488,14 +486,14 @@ namespace ASCOM.Wise40
         public void StartOpeningShutter()
         {
             openPin.SetOn();
-            _shutterState = ShutterState.Opening;
+            _shutterState = ShutterState.shutterOpening;
             _shutterTimer.Change(_shutterTimeout, _shutterTimeout);
         }
 
         public void StartClosingShutter()
         {
             closePin.SetOn();
-            _shutterState = ShutterState.Closing;
+            _shutterState = ShutterState.shutterClosing;
             _shutterTimer.Change(_shutterTimeout, _shutterTimeout);
         }
 
@@ -503,14 +501,14 @@ namespace ASCOM.Wise40
         {
             switch (_shutterState)
             {
-                case ShutterState.Opening:
+                case ShutterState.shutterOpening:
                     openPin.SetOff();
-                    _shutterState = ShutterState.Open;
+                    _shutterState = ShutterState.shutterOpen;
                     break;
 
-                case ShutterState.Closing:
+                case ShutterState.shutterClosing:
                     closePin.SetOff();
-                    _shutterState = ShutterState.Closed;
+                    _shutterState = ShutterState.shutterClosed;
                     break;
             }
         }
@@ -796,33 +794,63 @@ namespace ASCOM.Wise40
 
         public void OpenShutter()
         {
+            string err = null;
+
             if (Slewing)
-                throw new ASCOM.InvalidOperationException("Cannot OpenShutter, dome is slewing!");
+                err += "Cannot OpenShutter, dome is slewing!";
 
             if (wisesite.safeToOpen != null && !wisesite.safeToOpen.IsSafe)
+                err += "Not safeToOpen: " + wisesite.safeToOpen.CommandString("unsafeReasons", false);
+
+            if (err == null)
             {
                 #region trace
-                tl.LogMessage("Dome", string.Format("Unsafe to open shutter ({0})",
-                    wisesite.safeToOpen.CommandString("unsafeReasons", false)));
+                tl.LogMessage("Dome: OpenShutter", "");
                 #endregion
-                throw new ASCOM.InvalidOperationException("Not safe to open shutter!");
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugASCOM, "WiseDome: OpenShutter: Cannot open shutter: " + err);
+                #endregion
+                _shutterState = ShutterState.shutterError;
+            } else
+            {
+                #region trace
+                tl.LogMessage("Dome: OpenShutter", err);
+                #endregion
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugASCOM, "WiseDome: OpenShutter: opening shutter: ");
+                #endregion
+                ShutterStop();
+                StartOpeningShutter();
             }
-            #region trace
-            tl.LogMessage("Dome: OpenShutter", "");
-            #endregion
-            ShutterStop();
-            StartOpeningShutter();
         }
 
         public void CloseShutter()
         {
+            string err = null;
+
             if (Slewing)
-                throw new ASCOM.InvalidOperationException("Cannot CloseShutter, dome is slewing!");
-            #region trace
-            tl.LogMessage("Dome: CloseShutter", "");
-            #endregion
-            ShutterStop();
-            StartClosingShutter();
+                err = "Cannot CloseShutter, dome is slewing!";
+
+            if (err == null)
+            {
+                #region trace
+                tl.LogMessage("Dome: CloseShutter", "");
+                #endregion
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugASCOM, "CloseShutter: started closing");
+                #endregion
+                ShutterStop();
+                StartClosingShutter();
+            } else
+            {
+                #region trace
+                tl.LogMessage("Dome: CloseShutter", err);
+                #endregion
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugASCOM, "CloseShutter: " + err);
+                #endregion
+                _shutterState = ShutterState.shutterError;
+            }
         }
 
         public void AbortSlew()
@@ -956,27 +984,11 @@ namespace ASCOM.Wise40
             throw new ASCOM.MethodNotImplementedException("SetPark");
         }
 
-        public ASCOM.DeviceInterface.ShutterState ShutterStatus
+        public ASCOM.DeviceInterface.ShutterState ShutterState
         {
             get
             {
-                ASCOM.DeviceInterface.ShutterState ret = DeviceInterface.ShutterState.shutterError;
-
-                switch (_shutterState)
-                {
-                    case WiseDome.ShutterState.Closed:
-                        ret = DeviceInterface.ShutterState.shutterClosed;
-                        break;
-                    case WiseDome.ShutterState.Closing:
-                        ret = DeviceInterface.ShutterState.shutterClosing;
-                        break;
-                    case WiseDome.ShutterState.Open:
-                        ret = DeviceInterface.ShutterState.shutterOpen;
-                        break;
-                    case WiseDome.ShutterState.Opening:
-                        ret = DeviceInterface.ShutterState.shutterOpening;
-                        break;
-                }
+                ASCOM.DeviceInterface.ShutterState ret = _shutterState;
                 tl.LogMessage("Dome: ShutterState get", ret.ToString());
                 return ret;
             }

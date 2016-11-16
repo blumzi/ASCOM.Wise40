@@ -233,19 +233,7 @@ namespace ASCOM.Wise40
                 if (!Connected)
                     return "Not connected";
 
-                switch (wisedome.ShutterStatus)
-                {
-                    //case DeviceInterface.ShutterState.shutterClosed:
-                    //    return "Closed";
-                    case DeviceInterface.ShutterState.shutterClosing:
-                        return "Closing";
-                    //case DeviceInterface.ShutterState.shutterOpen:
-                    //    return "Open";
-                    case DeviceInterface.ShutterState.shutterOpening:
-                        return "Opening";
-                    default:
-                        return null;
-                }
+                return wisedome.ShutterState.ToString().Substring("shutter".Length);
             }
         }
     }

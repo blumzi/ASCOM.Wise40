@@ -375,7 +375,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return wisedome.ShutterStatus;
+                return wisedome.ShutterState;
             }
         }
 
