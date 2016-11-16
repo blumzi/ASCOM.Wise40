@@ -28,7 +28,7 @@ namespace ASCOM.Wise40
         
         private Hardware.Hardware hw = Hardware.Hardware.Instance;
 
-        private static readonly WiseDomeEncoder instance = new WiseDomeEncoder(); // Singleton
+        private static readonly WiseDomeEncoder _instance = new WiseDomeEncoder(); // Singleton
 
         private object _lock = new object();
         // Explicit static constructor to tell C# compiler
@@ -45,7 +45,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return instance;
+                return _instance;
             }
         }
 
@@ -81,14 +81,14 @@ namespace ASCOM.Wise40
         
         private void onSimulationTimer(object state)
         {
-            if (! Connected)
+            if (! Simulated)
                 return;
 
             DateTime rightNow = DateTime.Now;
 
-            if (instance.simulatedStuckAzimuth != Angle.invalidAz)                // A simulatedStuck is required
+            if (_instance.simulatedStuckAzimuth != Angle.invalidAz)                // A simulatedStuck is required
             {
-                if (Math.Abs(instance.Azimuth.Degrees - simulatedStuckAzimuth.Degrees) <= 1.0)       // we're in the vicinity of the simulatedStuckAzimuth
+                if (Math.Abs(_instance.Azimuth.Degrees - simulatedStuckAzimuth.Degrees) <= 1.0)       // we're in the vicinity of the simulatedStuckAzimuth
                 {
                     if (endSimulatedStuck.Equals(DateTime.MinValue))        // endSimulatedStuck is not set
                         endSimulatedStuck = rightNow.AddSeconds(3);         // set it to (now + 3sec)
@@ -103,21 +103,21 @@ namespace ASCOM.Wise40
                 }
             }
 
-            switch (instance._movingDirection)
+            switch (_instance._movingDirection)
             {
                 case WiseDome.Direction.CCW:
-                    instance.simulatedValue++;
+                    _instance.simulatedValue++;
                     break;
 
                 case WiseDome.Direction.CW:
-                    instance.simulatedValue--;
+                    _instance.simulatedValue--;
                     break;
             }
 
-            if (instance.simulatedValue < 0)
-                instance.simulatedValue = 1023;
-            if (instance.simulatedValue > 1023)
-                instance.simulatedValue = 0;
+            if (_instance.simulatedValue < 0)
+                _instance.simulatedValue = 1023;
+            if (_instance.simulatedValue > 1023)
+                _instance.simulatedValue = 0;
         }
 
 
