@@ -473,9 +473,11 @@ namespace Dash
 
             try
             {
-                telescopeStatus.Show(string.Format("Slewing to ra: {0} dec: {1}", new Angle(textBoxRA.Text), new Angle(textBoxDec.Text)),
+                string raText = textBoxRA.Text.Replace(':', 'h').Replace(':', 'm') + 's';
+
+                telescopeStatus.Show(string.Format("Slewing to ra: {0} dec: {1}", new Angle(raText), new Angle(textBoxDec.Text)),
                     0, Statuser.Severity.Good);
-                wisetele.SlewToCoordinatesAsync(new Angle(textBoxRA.Text).Hours, new Angle(textBoxDec.Text).Degrees);
+                wisetele.SlewToCoordinatesAsync(new Angle(raText).Hours, new Angle(textBoxDec.Text).Degrees);
             }
             catch (Exception ex)
             {
@@ -491,7 +493,7 @@ namespace Dash
 
         private void textBoxRA_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            textBoxRA.Text = Angle.FromHours(wisetele.RightAscension).ToString();
+            textBoxRA.Text = Angle.FromHours(wisetele.RightAscension).ToString().Replace('h', ':').Replace('m', ':').Replace('s', ' ');
         }
 
         private void textBoxDec_MouseDoubleClick(object sender, MouseEventArgs e)
