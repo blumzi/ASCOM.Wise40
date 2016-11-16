@@ -796,15 +796,6 @@ namespace ASCOM.Wise40
             if (err == null)
             {
                 #region trace
-                tl.LogMessage("Dome: OpenShutter", "");
-                #endregion
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugASCOM, "WiseDome: OpenShutter: Cannot open shutter: " + err);
-                #endregion
-                _shutterState = ShutterState.shutterError;
-            } else
-            {
-                #region trace
                 tl.LogMessage("Dome: OpenShutter", err);
                 #endregion
                 #region debug
@@ -812,6 +803,16 @@ namespace ASCOM.Wise40
                 #endregion
                 ShutterStop();
                 StartOpeningShutter();
+                Vent = true;
+            } else
+            {
+                #region trace
+                tl.LogMessage("Dome: OpenShutter", "");
+                #endregion
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugASCOM, "WiseDome: OpenShutter: Cannot open shutter: " + err);
+                #endregion
+                _shutterState = ShutterState.shutterError;
             }
         }
 
@@ -832,6 +833,7 @@ namespace ASCOM.Wise40
                 #endregion
                 ShutterStop();
                 StartClosingShutter();
+                Vent = false;
             } else
             {
                 #region trace
