@@ -275,9 +275,10 @@ namespace Dash
             #region RefreshDome
             labelDomeAzimuthValue.Text = domeSlaveDriver.Azimuth;
             domeStatus.Show(domeSlaveDriver.Status);
-            if (labelDomeShutterStatus.Text == string.Empty)
+            //if (labelDomeShutterStatus.Text == string.Empty)
                 shutterStatus.Show(domeSlaveDriver.ShutterStatus);
             buttonDomePark.Text = wisedome.AtPark ? "Unpark" : "Park";
+            buttonVent.Text = wisedome.Vent ? "Close Vent" : "Open Vent";
             #endregion
 
             #region RefreshWeather
@@ -561,7 +562,7 @@ namespace Dash
             try
             {
                 if (open)
-                    domeSlaveDriver.OpenShutter();
+                    domeSlaveDriver.OpenShutter(_bypassSafety);
                 else
                     domeSlaveDriver.CloseShutter();
             }

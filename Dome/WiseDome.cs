@@ -40,7 +40,7 @@ namespace ASCOM.Wise40
             //AllMovements = MovingCCW|MovingCW|Parking|Calibrating,
         };
         private DomeState _state;        
-        private ShutterState _shutterState;
+        private ShutterState _shutterState = ShutterState.shutterClosed;
 
         private enum StuckPhase { NotStuck, FirstStop, GoBackward, SecondStop, ResumeForward };
         private StuckPhase _stuckPhase;
@@ -307,6 +307,7 @@ namespace ASCOM.Wise40
                 return _shutterState == ShutterState.shutterOpening || _shutterState == ShutterState.shutterClosing;
             }
         }
+
         private void onShutterTimer(object state)
         {
             if (ShutterIsMoving)
@@ -478,14 +479,16 @@ namespace ASCOM.Wise40
         {
             openPin.SetOn();
             _shutterState = ShutterState.shutterOpening;
-            _shutterTimer.Change(_shutterTimeout, _shutterTimeout);
+            _shutterTimer.Change(0, _shutterTimeout);
+            Vent = true;
         }
 
         public void StartClosingShutter()
         {
             closePin.SetOn();
             _shutterState = ShutterState.shutterClosing;
-            _shutterTimer.Change(_shutterTimeout, _shutterTimeout);
+            _shutterTimer.Change(0, _shutterTimeout);
+            Vent = false;
         }
 
         public void ShutterStop()
@@ -783,14 +786,14 @@ namespace ASCOM.Wise40
             SlewToAzimuth(_parkAzimuth);
         }
 
-        public void OpenShutter()
+        public void OpenShutter(bool bypassSafety = false)
         {
             string err = null;
 
             if (Slewing)
                 err += "Cannot OpenShutter, dome is slewing!";
 
-            if (wisesite.safeToOpen != null && !wisesite.safeToOpen.IsSafe)
+            if (!bypassSafety && (wisesite.safeToOpen != null && !wisesite.safeToOpen.IsSafe))
                 err += "Not safeToOpen: " + wisesite.safeToOpen.CommandString("unsafeReasons", false);
 
             if (err == null)
@@ -803,7 +806,6 @@ namespace ASCOM.Wise40
                 #endregion
                 ShutterStop();
                 StartOpeningShutter();
-                Vent = true;
             } else
             {
                 #region trace
@@ -833,7 +835,6 @@ namespace ASCOM.Wise40
                 #endregion
                 ShutterStop();
                 StartClosingShutter();
-                Vent = false;
             } else
             {
                 #region trace
@@ -977,12 +978,14 @@ namespace ASCOM.Wise40
             throw new ASCOM.MethodNotImplementedException("SetPark");
         }
 
-        public ASCOM.DeviceInterface.ShutterState ShutterState
+        public ShutterState ShutterState
         {
             get
             {
-                ASCOM.DeviceInterface.ShutterState ret = _shutterState;
+                ShutterState ret = _shutterState;
+                #region trace
                 tl.LogMessage("Dome: ShutterState get", ret.ToString());
+                #endregion
                 return ret;
             }
         }

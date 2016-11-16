@@ -211,9 +211,9 @@ namespace ASCOM.Wise40
             }
         }
 
-        public void OpenShutter()
+        public void OpenShutter(bool bypassSafety = false)
         {
-            wisedome.OpenShutter();
+            wisedome.OpenShutter(bypassSafety);
         }
 
         public void CloseShutter()
@@ -233,7 +233,8 @@ namespace ASCOM.Wise40
                 if (!Connected)
                     return "Not connected";
 
-                return wisedome.ShutterState.ToString().Substring("shutter".Length);
+                string state = wisedome.ShutterState.ToString();
+                return (state == "shutterError" ? String.Empty : wisedome.ShutterState.ToString().Substring("shutter".Length));
             }
         }
     }
