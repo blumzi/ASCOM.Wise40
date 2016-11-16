@@ -1404,7 +1404,7 @@
             // 
             this.textBoxRA.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.textBoxRA.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.textBoxRA.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.textBoxRA.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.textBoxRA.Location = new System.Drawing.Point(80, 208);
             this.textBoxRA.Margin = new System.Windows.Forms.Padding(7, 3, 3, 3);
             this.textBoxRA.Name = "textBoxRA";
@@ -1416,7 +1416,7 @@
             // 
             this.textBoxDec.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.textBoxDec.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.textBoxDec.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.textBoxDec.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.textBoxDec.Location = new System.Drawing.Point(198, 208);
             this.textBoxDec.Margin = new System.Windows.Forms.Padding(7, 3, 3, 3);
             this.textBoxDec.Name = "textBoxDec";
