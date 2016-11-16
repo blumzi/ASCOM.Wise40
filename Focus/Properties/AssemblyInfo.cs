@@ -11,8 +11,8 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyDescription("ASCOM Focuser driver for Wise40")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("The ASCOM Initiative")]
-[assembly: AssemblyProduct("Wise40 ASCOM Suite")]
-[assembly: AssemblyCopyright("Copyright © 2016 Department of Astrophysics, School of Physics & Astronomy, Tel Aviv University, Israel")]
+[assembly: AssemblyProduct("ASCOM Focuser driver for Wise40")]
+[assembly: AssemblyCopyright("Copyright © 2016 The ASCOM Initiative")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -35,5 +35,5 @@ using System.Runtime.InteropServices;
 // by using the '*' as shown below:
 //
 // TODO - Set your driver's version here
-[assembly: AssemblyVersion("0.1.*")]
-[assembly: AssemblyFileVersion("0.1.0.0")]
+[assembly: AssemblyVersion("6.2.*")]
+[assembly: AssemblyFileVersion("6.2.0.0")]

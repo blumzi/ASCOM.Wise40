@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("ASCOM.Wise40.Hardware")]
-[assembly: AssemblyDescription("Classes for the Wise40 Observatory hardware")]
+[assembly: AssemblyDescription("Drivers for the Wise40 Observatory hardware")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Tel Aviv University, Astrophysics Department")]
-[assembly: AssemblyProduct("Wise40 ASCOM Suite")]
-[assembly: AssemblyCopyright("Copyright © 2016 Department of Astrophysics, School of Physics & Astronomy, Tel Aviv University, Israel")]
+[assembly: AssemblyProduct("ASCOM drivers for the Wise40 Observatory")]
+[assembly: AssemblyCopyright("Copyright ©  2015")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -32,5 +32,5 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("0.1.0.0")]
-[assembly: AssemblyFileVersion("0.1.0.0")]
+[assembly: AssemblyVersion("1.0.0.0")]
+[assembly: AssemblyFileVersion("1.0.0.0")]
