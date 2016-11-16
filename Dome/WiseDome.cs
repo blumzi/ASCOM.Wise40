@@ -108,16 +108,7 @@ namespace ASCOM.Wise40
             Name = "Wise40 Dome";
             tl = new TraceLogger("", "Dome");
             tl.Enabled = debugger.Tracing;
-
-            using (Profile profile = new Profile())
-            {
-                string driverID = "ASCOM.Wise40.Dome";
-
-                profile.DeviceType = "Dome";
-                tl.Enabled = Convert.ToBoolean(profile.GetValue(driverID, "Trace Level", string.Empty, "false"));
-                _autoCalibrate = Convert.ToBoolean(profile.GetValue(driverID, "AutoCalibrate", string.Empty, "false"));
-            }
-
+            ReadProfile();
             hw.init();
 
             try {
