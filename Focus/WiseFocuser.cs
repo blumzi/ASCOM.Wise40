@@ -14,6 +14,7 @@ namespace ASCOM.Wise40
 {
     public class WiseFocuser : WiseObject, IDisposable, IConnectable
     {
+        private Version version = new Version(0, 1);
         private static readonly WiseFocuser instance = new WiseFocuser();
         private bool _initialized = false;
         private bool _connected = false;
@@ -457,7 +458,7 @@ namespace ASCOM.Wise40
             {
                 Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
                 // TODO customise this driver description
-                string driverInfo = "Information about the driver itself. Version: " + String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
+                string driverInfo = "Information about the driver itself. Version: " + DriverVersion;
                 #region trace
                 traceLogger.LogMessage("DriverInfo Get", driverInfo);
                 #endregion
@@ -469,7 +470,6 @@ namespace ASCOM.Wise40
         {
             get
             {
-                Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
                 string driverVersion = String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
                 #region trace
                 traceLogger.LogMessage("DriverVersion Get", driverVersion);

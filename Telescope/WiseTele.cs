@@ -55,6 +55,7 @@ namespace ASCOM.Wise40
         /// Driver description that displays in the ASCOM Chooser.
         /// </summary>
         public static string driverDescription = "Wise40 Telescope";
+        private Version version = new Version(0, 1);
 
         private static NOVAS31 novas31;
         private static Util ascomutils;
@@ -2353,8 +2354,7 @@ namespace ASCOM.Wise40
             get
             {
                 Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-                string driverInfo = "First ASCOM driver for the Wise40 telescope. Version: " +
-                    String.Format(System.Globalization.CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
+                string driverInfo = "First ASCOM driver for the Wise40 telescope. Version: " + DriverVersion;
                 #region trace
                 traceLogger.LogMessage("DriverInfo Get", driverInfo);
                 #endregion
@@ -2366,7 +2366,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+
                 string driverVersion = String.Format(System.Globalization.CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
                 #region trace
                 traceLogger.LogMessage("DriverVersion Get", driverVersion);

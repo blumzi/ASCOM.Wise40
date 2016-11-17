@@ -63,6 +63,8 @@ namespace ASCOM.Vantage
     [ClassInterface(ClassInterfaceType.None)]
     public class ObservingConditions : IObservingConditions
     {
+        private Version version = new Version(0, 1);
+
         /// <summary>
         /// ASCOM DeviceID (COM ProgID) for this driver.
         /// The DeviceID is used by ASCOM applications to load the driver at runtime.
@@ -248,7 +250,7 @@ namespace ASCOM.Vantage
             {
                 Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
                 // TODO customise this driver description
-                string driverInfo = "Parses a generated WeatherLink HTML report. Version: " + String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
+                string driverInfo = "Parses a generated WeatherLink HTML report. Version: " + DriverVersion;
                 tl.LogMessage("DriverInfo Get", driverInfo);
                 return driverInfo;
             }
@@ -258,7 +260,6 @@ namespace ASCOM.Vantage
         {
             get
             {
-                Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
                 string driverVersion = String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
                 tl.LogMessage("DriverVersion Get", driverVersion);
                 return driverVersion;

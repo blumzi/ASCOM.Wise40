@@ -14,6 +14,7 @@ namespace ASCOM.Wise40.SafeToOperate
 {
     public class WiseSafeToOperate
     {
+        private Version version = new Version(0, 1);
         public enum Operation { Open, Image };
         private Operation _op;
 
@@ -212,8 +213,7 @@ namespace ASCOM.Wise40.SafeToOperate
         {
             get
             {
-                Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-                string driverInfo = "Implements Wise40 weather max. values, wraps Boltwood CloudSensorII and Davis VantagePro. Version: " + String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
+                string driverInfo = "Implements Wise40 weather max. values, wraps Boltwood CloudSensorII and Davis VantagePro. Version: " + DriverVersion;
                 tl.LogMessage("DriverInfo Get", driverInfo);
                 return driverInfo;
             }
@@ -223,7 +223,6 @@ namespace ASCOM.Wise40.SafeToOperate
         {
             get
             {
-                Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
                 string driverVersion = String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
                 tl.LogMessage("DriverVersion Get", driverVersion);
                 return driverVersion;

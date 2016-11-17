@@ -20,13 +20,13 @@ namespace Dash
 {
     public partial class FormDash : Form
     {
-        WiseTele wisetele = WiseTele.Instance;
-        WiseDome wisedome = WiseDome.Instance;
-        WiseFocuser wisefocuser = WiseFocuser.Instance;
+        public WiseTele wisetele = WiseTele.Instance;
+        public WiseDome wisedome = WiseDome.Instance;
+        public WiseFocuser wisefocuser = WiseFocuser.Instance;
         Hardware hardware = Hardware.Instance;
-        WiseSite wisesite = WiseSite.Instance;
-        WiseSafeToOperate wisesafetoopen = WiseSafeToOperate.Instance(WiseSafeToOperate.Operation.Open);
-        ObservingConditions boltwood = new ASCOM.DriverAccess.ObservingConditions("ASCOM.CloudSensor.ObservingConditions");
+        public WiseSite wisesite = WiseSite.Instance;
+        public WiseSafeToOperate wisesafetoopen = WiseSafeToOperate.Instance(WiseSafeToOperate.Operation.Open);
+        public ObservingConditions boltwood = new ASCOM.DriverAccess.ObservingConditions("ASCOM.CloudSensor.ObservingConditions");
 
         DomeSlaveDriver domeSlaveDriver = DomeSlaveDriver.Instance;
         DebuggingForm debuggingForm = new DebuggingForm();
@@ -387,7 +387,7 @@ namespace Dash
 
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            AboutForm form = new AboutForm();
+            AboutForm form = new AboutForm(this);
             form.Visible = true;
         }
         #endregion

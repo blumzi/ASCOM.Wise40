@@ -50,6 +50,10 @@
     <ApplicationIcon>WiseObs.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ASCOM.ClarityII.ObservingConditions, Version=6.2.6165.21329, Culture=neutral, PublicKeyToken=5a596dde3293c610, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\ClarityII\bin\Debug\ASCOM.ClarityII.ObservingConditions.dll</HintPath>
+    </Reference>
     <Reference Include="ASCOM.DeviceInterfaces, Version=6.0.0.0, Culture=neutral, PublicKeyToken=565de7938946fba7, processorArchitecture=MSIL" />
     <Reference Include="ASCOM.DriverAccess, Version=6.0.0.0, Culture=neutral, PublicKeyToken=565de7938946fba7, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>

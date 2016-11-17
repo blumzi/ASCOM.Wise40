@@ -15,6 +15,8 @@ namespace ASCOM.Wise40
 {
     public class WiseDome : WiseObject, IConnectable, IDisposable {
 
+        private Version version = new Version(0, 1);
+
         private static readonly WiseDome instance = new WiseDome(); // Singleton
         private static WiseSite wisesite = WiseSite.Instance;
         private static bool _initialized = false;
@@ -1067,8 +1069,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-                string driverInfo = "First draft, Version: " + string.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
+                string driverInfo = "First draft, Version: " + DriverVersion;
                 tl.LogMessage("Dome: DriverInfo Get", driverInfo);
                 return driverInfo;
             }
@@ -1078,7 +1079,6 @@ namespace ASCOM.Wise40
         {
             get
             {
-                Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
                 string driverVersion = String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
                 tl.LogMessage("Dome: DriverVersion Get", driverVersion);
                 return driverVersion;
