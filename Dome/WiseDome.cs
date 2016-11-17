@@ -166,8 +166,6 @@ namespace ASCOM.Wise40
 
             wisesite.init();
 
-            RestoreCalibrationData();
-
             _initialized = true;
 
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: init() done.");
@@ -222,6 +220,9 @@ namespace ASCOM.Wise40
                     return;
 
                 _connected = value;
+
+                if (_connected == true)
+                    RestoreCalibrationData();
             }
         }
 
@@ -267,6 +268,10 @@ namespace ASCOM.Wise40
             }
         }
         
+        /// <summary>
+        /// The dome timer is always enabled, at 100 millisec intervals.
+        /// </summary>
+        /// <param name="state"></param>
         private void onDomeTimer(object state)
         {
             if (AtCaliPoint)
@@ -316,11 +321,20 @@ namespace ASCOM.Wise40
             }
         }
         
+        /// <summary>
+        /// The movement timer is activated when the dome starts moving either CW or CCW, and 
+        ///   gets disabled by Stop().
+        ///   
+        /// The handler decides whether the dome encoder has changed, or the dome seems to be stuck.
+        /// </summary>
+        /// <param name="state"></param>
         private void onMovementTimer(object state)
         {
             uint currTicks, deltaTicks;
             const int leastExpectedTicks = 2;  // least number of Ticks expected to change in two seconds
-            
+
+            SaveCalibrationData();
+
             // the movementTimer should not be Enabled unless the dome is moving
             if (_isStuck || ! DomeIsMoving)
                 return;
@@ -362,8 +376,6 @@ namespace ASCOM.Wise40
             //}
 
             _prevTicks = currTicks;
-
-            SaveCalibrationData();
         }
 
         
@@ -1097,7 +1109,8 @@ namespace ASCOM.Wise40
 
             lines.Add("#");
             lines.Add(string.Format("# WiseDome calibration data, generated automatically, please don't change!"));
-            lines.Add(string.Format("# Saved: {0} at {1}", now.ToLongDateString(), now.ToLongTimeString()));
+            lines.Add("#");
+            lines.Add(string.Format("# Saved: {0}", now.ToLocalTime()));
             lines.Add("#");
             lines.Add(string.Format("Encoder: {0}", domeEncoder.Value));
             lines.Add(string.Format("Azimuth: {0}", Azimuth.Degrees.ToString()));
@@ -1134,30 +1147,26 @@ namespace ASCOM.Wise40
                 {
                     domeEncoder.Value = savedEncoderValue;
                     domeEncoder.Calibrate(Angle.FromDegrees(savedAzimuth));
-                    #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Restored calibration data from \"{0}\", Azimuth: {1}",
-                        calibrationDataFilePath, savedAzimuth);
-                    #endregion
                 }
                 else if (savedEncoderValue == domeEncoder.Value)
                 {
                     domeEncoder.Calibrate(Angle.FromDegrees(savedAzimuth));
-                    #region trace
-                    tl.LogMessage("Dome", string.Format("Restored calibration data from \"{0}\", Azimuth: {1}", calibrationDataFilePath, savedAzimuth));
-                    #endregion
-                    #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Restored calibration data from \"{0}\", Azimuth: {1}",
-                        calibrationDataFilePath, savedAzimuth);
-                    #endregion
                 }
+                #region trace
+                tl.LogMessage("Dome", string.Format("Restored calibration data from \"{0}\", Azimuth: {1}", calibrationDataFilePath, savedAzimuth));
+                #endregion
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Restored calibration data from \"{0}\", Azimuth: {1}",
+                    calibrationDataFilePath, savedAzimuth);
+                #endregion
             }
 
             try
             {
+                // Discard the used file, let new ones be created.
                 System.IO.File.Delete(calibrationDataFilePath);
             } catch
             {
-
             }
         }
         #endregion

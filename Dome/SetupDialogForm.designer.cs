@@ -68,7 +68,6 @@ namespace ASCOM.Wise40
             // picASCOM
             // 
             this.picASCOM.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.picASCOM.Cursor = System.Windows.Forms.Cursors.Hand;
             this.picASCOM.Image = global::ASCOM.Wise40.Properties.Resources.ASCOM;
             this.picASCOM.Location = new System.Drawing.Point(232, 16);
             this.picASCOM.Name = "picASCOM";
@@ -105,10 +104,10 @@ namespace ASCOM.Wise40
             this.checkBoxBypassSafety.AutoSize = true;
             this.checkBoxBypassSafety.Location = new System.Drawing.Point(25, 119);
             this.checkBoxBypassSafety.Name = "checkBoxBypassSafety";
-            this.checkBoxBypassSafety.Size = new System.Drawing.Size(93, 17);
+            this.checkBoxBypassSafety.Size = new System.Drawing.Size(124, 17);
             this.checkBoxBypassSafety.TabIndex = 10;
             this.checkBoxBypassSafety.TabStop = false;
-            this.checkBoxBypassSafety.Text = "Bypass Safety";
+            this.checkBoxBypassSafety.Text = "Bypass SafeToOpen";
             this.checkBoxBypassSafety.UseVisualStyleBackColor = true;
             this.checkBoxBypassSafety.CheckedChanged += new System.EventHandler(this.checkBoxBypassSafety_CheckedChanged);
             // 
