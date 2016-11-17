@@ -127,7 +127,7 @@
             this.vantagePro2ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.reportFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripTextBoxVantagePro2ReportFile = new System.Windows.Forms.ToolStripTextBox();
-            this.toolStripMenuItem3 = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItemSafeToOpen = new System.Windows.Forms.ToolStripMenuItem();
             this.tracingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.debuggingToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.debugASCOMToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -185,6 +185,7 @@
             this.labelDashStatus = new System.Windows.Forms.Label();
             this.timerRefreshDisplay = new System.Windows.Forms.Timer(this.components);
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
+            this.toolStripMenuItem5 = new System.Windows.Forms.ToolStripMenuItem();
             this.tableLayoutMain.SuspendLayout();
             this.groupBoxFocuser.SuspendLayout();
             this.groupBoxDomeGroup.SuspendLayout();
@@ -1486,7 +1487,8 @@
             this.domeToolStripMenuItem,
             this.cloudSensorToolStripMenuItem,
             this.vantagePro2ToolStripMenuItem,
-            this.toolStripMenuItem3,
+            this.toolStripMenuItemSafeToOpen,
+            this.toolStripMenuItem5,
             this.tracingToolStripMenuItem,
             this.debuggingToolStripMenuItem1,
             this.toolStripMenuItem2,
@@ -1563,7 +1565,7 @@
             this.reportFileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripTextBoxVantagePro2ReportFile});
             this.reportFileToolStripMenuItem.Name = "reportFileToolStripMenuItem";
-            this.reportFileToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
+            this.reportFileToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.reportFileToolStripMenuItem.Text = "Report File";
             // 
             // toolStripTextBoxVantagePro2ReportFile
@@ -1571,11 +1573,12 @@
             this.toolStripTextBoxVantagePro2ReportFile.Name = "toolStripTextBoxVantagePro2ReportFile";
             this.toolStripTextBoxVantagePro2ReportFile.Size = new System.Drawing.Size(100, 23);
             // 
-            // toolStripMenuItem3
+            // toolStripMenuItemSafeToOpen
             // 
-            this.toolStripMenuItem3.Name = "toolStripMenuItem3";
-            this.toolStripMenuItem3.Size = new System.Drawing.Size(158, 22);
-            this.toolStripMenuItem3.Text = "  ";
+            this.toolStripMenuItemSafeToOpen.Name = "toolStripMenuItemSafeToOpen";
+            this.toolStripMenuItemSafeToOpen.Size = new System.Drawing.Size(158, 22);
+            this.toolStripMenuItemSafeToOpen.Text = "SafeToOpen";
+            this.toolStripMenuItemSafeToOpen.Click += new System.EventHandler(this.toolStripMenuItemSafeToOpen_Click);
             // 
             // tracingToolStripMenuItem
             // 
@@ -2258,6 +2261,12 @@
             this.timerRefreshDisplay.Enabled = true;
             this.timerRefreshDisplay.Tick += new System.EventHandler(this.RefreshDisplay);
             // 
+            // toolStripMenuItem5
+            // 
+            this.toolStripMenuItem5.Name = "toolStripMenuItem5";
+            this.toolStripMenuItem5.Size = new System.Drawing.Size(158, 22);
+            this.toolStripMenuItem5.Text = "  ";
+            // 
             // FormDash
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
@@ -2432,7 +2441,7 @@
         private System.Windows.Forms.ToolStripMenuItem debugAllToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem debugNoneToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem saveToProfileToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem3;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemSafeToOpen;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem4;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label labelLightValue;
@@ -2456,6 +2465,7 @@
         private System.Windows.Forms.ToolStripTextBox toolStripTextBoxVantagePro2ReportFile;
         private System.Windows.Forms.ToolStripMenuItem wise40WikiToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem1;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem5;
     }
 }
 

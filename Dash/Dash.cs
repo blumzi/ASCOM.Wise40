@@ -1058,6 +1058,11 @@ namespace Dash
             UpdateAlteredItems(item, "Tracing");
         }
 
+        private void toolStripMenuItemSafeToOpen_Click(object sender, EventArgs e)
+        {
+            new ASCOM.Wise40.SafeToOperate.SetupDialogForm().Show();
+        }
+
         private void safetyOverrideToolStripMenuItem_Click(object sender, EventArgs e)
         {
             string menuText = "Bypass Safety";
