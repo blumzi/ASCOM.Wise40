@@ -1073,26 +1073,34 @@ namespace Dash
             }
         }
 
-        private void HandleUnhandledException(Exception e)
+        public void StopEverything(Exception e = null)
         {
             wisetele.Stop();
             wisedome.Stop();
             wisedome.ShutterStop();
-
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugExceptions, "Unhandled exception: {0}, Application will exit!", e.Message);
+            string msg = "StopEverything: ";
+            if (e != null)
+                msg += string.Format("Exception: {0}, ", e.Message);
+            msg += "Application will exit!";
+            debugger.WriteLine(Debugger.DebugLevel.DebugExceptions, msg);
             #endregion
             Application.Exit();
         }
 
+        public void OnApplicationExit(object sender, EventArgs e)
+        {
+            StopEverything();
+        }
+
         public void HandleThreadException(object sender, ThreadExceptionEventArgs e)
         {
-            HandleUnhandledException(e.Exception);
+            StopEverything(e.Exception);
         }
 
         public void HandleDomainUnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
-            HandleUnhandledException(e.ExceptionObject as Exception);
+            StopEverything(e.ExceptionObject as Exception);
         }
         #endregion
     }

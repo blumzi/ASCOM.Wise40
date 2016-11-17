@@ -24,12 +24,14 @@ namespace Dash
             Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
             formDash = new FormDash();
 
+            Application.ApplicationExit += new EventHandler(formDash.OnApplicationExit);
+
             // Add the event handler for handling UI thread exceptions to the event.
             Application.ThreadException += new ThreadExceptionEventHandler(formDash.HandleThreadException);
 
             // Add the event handler for handling non-UI thread exceptions to the event. 
-            //AppDomain.CurrentDomain.UnhandledException +=
-            //    new UnhandledExceptionEventHandler(formDash.HandleDomainUnhandledException);
+            AppDomain.CurrentDomain.UnhandledException +=
+                new UnhandledExceptionEventHandler(formDash.HandleDomainUnhandledException);
 
             Application.Run(formDash);
         }
