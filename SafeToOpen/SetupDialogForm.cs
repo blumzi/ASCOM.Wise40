@@ -20,10 +20,10 @@ namespace ASCOM.Wise40.SafeToOperate
             InitializeComponent();
             // Initialise current values of user settings from the ASCOM Profile
             InitUI();
-            toolTip1.SetToolTip(textBoxHumidity, "0 to 100");
-            toolTip1.SetToolTip(textBoxAge, "0 to use data of any age");
-            toolTip1.SetToolTip(textBoxHumidity, "between 0 and 100");
-            toolTip1.SetToolTip(textBoxWind, "greter than 0");
+            toolTip1.SetToolTip(textBoxHumidity, "0 to 100 (%)");
+            toolTip1.SetToolTip(textBoxAge, "0 to use data of any age (sec)");
+            toolTip1.SetToolTip(textBoxHumidity, "between 0 and 100 (%)");
+            toolTip1.SetToolTip(textBoxWind, "greter than 0 (mps)");
         }
 
         private void cmdOK_Click(object sender, EventArgs e) // OK button event handler
@@ -43,9 +43,14 @@ namespace ASCOM.Wise40.SafeToOperate
             {
                 SafetyMonitor.ageMaxSeconds = i;
             }
-            wisesafetoopen.cloudsMax = CloudSensor.SensorData.doubleCloudCondition[(CloudSensor.SensorData.CloudCondition)comboBoxCloud.SelectedIndex];
+            wisesafetoopen.cloudsMaxEnum = (CloudSensor.SensorData.CloudCondition)comboBoxCloud.SelectedIndex;
+            wisesafetoopen.cloudsMaxValue = CloudSensor.SensorData.doubleCloudCondition[wisesafetoopen.cloudsMaxEnum];
+
             wisesafetoopen.rainMax = comboBoxRain.SelectedIndex;
-            wisesafetoopen.lightMax = (CloudSensor.SensorData.DayCondition)comboBoxLight.SelectedIndex;
+
+            wisesafetoopen.lightMaxEnum = (CloudSensor.SensorData.DayCondition)comboBoxLight.SelectedIndex;
+            wisesafetoopen.lightMaxValue = (int)wisesafetoopen.lightMaxEnum;
+
             i = Convert.ToInt32(textBoxHumidity.Text);
             if (i >= 0 && i <= 100)
             {
@@ -97,12 +102,12 @@ namespace ASCOM.Wise40.SafeToOperate
         {
             wisesafetoopen.ReadProfile();
             
-            comboBoxCloud.SelectedIndex = (int)SafetyMonitor.cloudsMax;
-            comboBoxRain.SelectedIndex = (int)SafetyMonitor.rainMax;
-            comboBoxLight.SelectedIndex = (int)SafetyMonitor.lightMax;
-            textBoxWind.Text = SafetyMonitor.windMax.ToString();
-            textBoxHumidity.Text = SafetyMonitor.humidityMax.ToString();
-            textBoxAge.Text = SafetyMonitor.ageMaxSeconds.ToString();
+            comboBoxCloud.SelectedIndex = (int)wisesafetoopen.cloudsMaxEnum;
+            comboBoxRain.SelectedIndex = (int)wisesafetoopen.rainMax;
+            comboBoxLight.SelectedIndex = (int)wisesafetoopen.lightMaxEnum;
+            textBoxWind.Text = wisesafetoopen.windMax.ToString();
+            textBoxHumidity.Text = wisesafetoopen.humidityMax.ToString();
+            textBoxAge.Text = wisesafetoopen.ageMaxSeconds.ToString();
         }
 
         private void textBoxWind_Validating(object sender, CancelEventArgs e)

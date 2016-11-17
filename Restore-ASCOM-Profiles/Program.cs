@@ -69,10 +69,10 @@ namespace Restore_ASCOM_Profiles
             {
                 driverProfile.DeviceType = "SafetyMonitor";
                 driverProfile.WriteValue(driverID, cloudsMaxProfileName, "cloudClear");
-                driverProfile.WriteValue(driverID, windMaxProfileName, 100.ToString());
+                driverProfile.WriteValue(driverID, windMaxProfileName, 40.ToString());
                 driverProfile.WriteValue(driverID, rainMaxProfileName, 0.ToString());
-                driverProfile.WriteValue(driverID, lightMaxProfileName, "dayLight");
-                driverProfile.WriteValue(driverID, humidityMaxProfileName, 70.ToString());
+                driverProfile.WriteValue(driverID, lightMaxProfileName, "dayDark");
+                driverProfile.WriteValue(driverID, humidityMaxProfileName, 90.ToString());
                 driverProfile.WriteValue(driverID, ageMaxSecondsProfileName, 0.ToString());
             }
         }
@@ -93,7 +93,7 @@ namespace Restore_ASCOM_Profiles
                 driverProfile.WriteValue(driverID, cloudsMaxProfileName, "cloudClear");
                 driverProfile.WriteValue(driverID, windMaxProfileName, 40.ToString());
                 driverProfile.WriteValue(driverID, rainMaxProfileName, 0.ToString());
-                driverProfile.WriteValue(driverID, lightMaxProfileName, "dayLight");
+                driverProfile.WriteValue(driverID, lightMaxProfileName, "dayDark");
                 driverProfile.WriteValue(driverID, humidityMaxProfileName, 90.ToString());
                 driverProfile.WriteValue(driverID, ageMaxSecondsProfileName, 0.ToString());
             }

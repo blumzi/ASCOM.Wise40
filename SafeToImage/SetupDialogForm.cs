@@ -44,9 +44,11 @@ namespace ASCOM.Wise40.SafeToImage
                 textBoxAge.ForeColor = okColor;
                 wisesafetoimage.ageMaxSeconds = i;
             }
-            wisesafetoimage.cloudsMax = CloudSensor.SensorData.doubleCloudCondition[(CloudSensor.SensorData.CloudCondition)comboBoxCloud.SelectedIndex];
+            wisesafetoimage.cloudsMaxEnum = (CloudSensor.SensorData.CloudCondition)comboBoxCloud.SelectedIndex;
+            wisesafetoimage.cloudsMaxValue = CloudSensor.SensorData.doubleCloudCondition[wisesafetoimage.cloudsMaxEnum];
             wisesafetoimage.rainMax = comboBoxRain.SelectedIndex;
-            wisesafetoimage.lightMax = (CloudSensor.SensorData.DayCondition)comboBoxLight.SelectedIndex;
+            wisesafetoimage.lightMaxEnum = (CloudSensor.SensorData.DayCondition)comboBoxLight.SelectedIndex;
+            wisesafetoimage.lightMaxValue = (int)wisesafetoimage.lightMaxEnum;
             i = Convert.ToInt32(textBoxHumidity.Text);
             if (i >= 0 && i <= 100)
             {
@@ -100,9 +102,9 @@ namespace ASCOM.Wise40.SafeToImage
         {
             wisesafetoimage.ReadProfile();
             
-            comboBoxCloud.SelectedIndex = (int)wisesafetoimage.cloudsMax;
+            comboBoxCloud.SelectedIndex = (int)wisesafetoimage.cloudsMaxEnum;
             comboBoxRain.SelectedIndex = (int)wisesafetoimage.rainMax;
-            comboBoxLight.SelectedIndex = (int)wisesafetoimage.lightMax;
+            comboBoxLight.SelectedIndex = (int)wisesafetoimage.lightMaxEnum;
             textBoxWind.Text = wisesafetoimage.windMax.ToString();
             textBoxHumidity.Text = wisesafetoimage.humidityMax.ToString();
             textBoxAge.Text = wisesafetoimage.ageMaxSeconds.ToString();

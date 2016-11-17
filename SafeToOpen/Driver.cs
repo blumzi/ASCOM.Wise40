@@ -65,9 +65,9 @@ namespace ASCOM.Wise40.SafeToOperate
     [ClassInterface(ClassInterfaceType.None)]
     public class SafetyMonitor : ISafetyMonitor
     {
-        private static WiseSafeToOperate.Operation _op = WiseSafeToOperate.Operation.Open;
+        private static WiseSafeToOperate.Operation _op;
 
-        public WiseSafeToOperate wisesafetoopen = WiseSafeToOperate.Instance(_op);
+        public WiseSafeToOperate wisesafetoopen;
         private static string driverID = "ASCOM.Wise40.SafeToOpen.SafetyMonitor";
         private static string driverDescription = "ASCOM Wise40 SafeToOpen";
 
@@ -84,6 +84,8 @@ namespace ASCOM.Wise40.SafeToOperate
         /// </summary>
         public SafetyMonitor()
         {
+            _op = WiseSafeToOperate.Operation.Open;
+            wisesafetoopen = WiseSafeToOperate.Instance(_op);
             wisesafetoopen.init();
         }
 

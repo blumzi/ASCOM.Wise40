@@ -26,10 +26,7 @@ namespace ASCOM.Wise40.SafeToOperate
         /// <summary>
         /// Driver description that displays in the ASCOM Chooser.
         /// </summary>
-        public string driverDescription = "ASCOM Wise40 SafeToOpen.";
-
-        internal static string traceStateProfileName = "Trace Level";
-        internal static string traceStateDefault = "false";
+        public string driverDescription;
 
         internal static string cloudsMaxProfileName = "Clouds Max";
         internal static string windMaxProfileName = "Wind Max";
@@ -38,10 +35,13 @@ namespace ASCOM.Wise40.SafeToOperate
         internal static string humidityMaxProfileName = "Humidity Max";
         internal static string ageMaxSecondsProfileName = "Age Max";
 
-        public double cloudsMax;
+        public CloudSensor.SensorData.CloudCondition cloudsMaxEnum;
+        public CloudSensor.SensorData.DayCondition lightMaxEnum;
+
+        public double cloudsMaxValue;
         public double windMax;
         public double rainMax;
-        public CloudSensor.SensorData.DayCondition lightMax;
+        public int lightMaxValue;
         public double humidityMax;
         public int ageMaxSeconds;
 
@@ -67,13 +67,9 @@ namespace ASCOM.Wise40.SafeToOperate
         public WiseSafeToOperate(Operation op)
         {
             _op = op;
+            init();
         }
-
-        //static WiseSafeToOperate(Operation op)
-        //{
-        //    _op = op;
-        //}
-
+        
         public void init() {
             driverID = "ASCOM.Wise40.SafeTo" + ((_op == Operation.Open) ? "Open" : "Image") + ".SafetyMonitor";
             driverDescription = "ASCOM Wise40 SafeTo" + ((_op == Operation.Open) ? "Open" : "Image");
@@ -324,7 +320,7 @@ namespace ASCOM.Wise40.SafeToOperate
                     {"dayVeryLight", 3 },
                 };
                 int light = dayConditions[boltwood.CommandString("daylight", true)];
-                return (light != 0) && (light < (int)lightMax);
+                return (light != 0) && (light <= lightMaxValue);
             }
         }
 
@@ -332,7 +328,7 @@ namespace ASCOM.Wise40.SafeToOperate
         {
             get
             {
-                return boltwood.CloudCover <= cloudsMax;
+                return boltwood.CloudCover <= cloudsMaxValue;
             }
         }
 
@@ -455,16 +451,20 @@ namespace ASCOM.Wise40.SafeToOperate
             {
                 driverProfile.DeviceType = "SafetyMonitor";                
 
-                CloudSensor.SensorData.CloudCondition cloudValue = (CloudSensor.SensorData.CloudCondition)Enum.Parse(typeof(CloudSensor.SensorData.CloudCondition), driverProfile.GetValue(driverID, cloudsMaxProfileName, string.Empty, CloudSensor.SensorData.CloudCondition.cloudClear.ToString()));
-                cloudsMax = CloudSensor.SensorData.doubleCloudCondition[cloudValue];     
+                cloudsMaxEnum = (CloudSensor.SensorData.CloudCondition)
+                    Enum.Parse(typeof(CloudSensor.SensorData.CloudCondition),
+                        driverProfile.GetValue(driverID, cloudsMaxProfileName, string.Empty, CloudSensor.SensorData.CloudCondition.cloudClear.ToString()));
+                cloudsMaxValue = CloudSensor.SensorData.doubleCloudCondition[cloudsMaxEnum];     
                            
                 windMax = Convert.ToDouble(driverProfile.GetValue(driverID, windMaxProfileName, string.Empty, 0.0.ToString()));
                 rainMax = Convert.ToDouble(driverProfile.GetValue(driverID, rainMaxProfileName, string.Empty, 0.0.ToString()));
                 humidityMax = Convert.ToDouble(driverProfile.GetValue(driverID, humidityMaxProfileName, string.Empty, 0.0.ToString()));
                 ageMaxSeconds = Convert.ToInt32(driverProfile.GetValue(driverID, ageMaxSecondsProfileName, string.Empty, 0.ToString()));
-                lightMax = (CloudSensor.SensorData.DayCondition)
+
+                lightMaxEnum = (CloudSensor.SensorData.DayCondition)
                     Enum.Parse(typeof(CloudSensor.SensorData.DayCondition),
                         driverProfile.GetValue(driverID, lightMaxProfileName, string.Empty, "dayUnknown"));
+                lightMaxValue = (int)lightMaxEnum;
             }
         }
 
@@ -476,10 +476,10 @@ namespace ASCOM.Wise40.SafeToOperate
             using (Profile driverProfile = new Profile())
             {
                 driverProfile.DeviceType = "SafetyMonitor";
-                driverProfile.WriteValue(driverID, cloudsMaxProfileName, cloudsMax.ToString());
+                driverProfile.WriteValue(driverID, cloudsMaxProfileName, cloudsMaxEnum.ToString());
                 driverProfile.WriteValue(driverID, windMaxProfileName, windMax.ToString());
                 driverProfile.WriteValue(driverID, rainMaxProfileName, rainMax.ToString());
-                driverProfile.WriteValue(driverID, lightMaxProfileName, lightMax.ToString());
+                driverProfile.WriteValue(driverID, lightMaxProfileName, lightMaxEnum.ToString());
                 driverProfile.WriteValue(driverID, humidityMaxProfileName, humidityMax.ToString());
                 driverProfile.WriteValue(driverID, ageMaxSecondsProfileName, ageMaxSeconds.ToString());
             }
