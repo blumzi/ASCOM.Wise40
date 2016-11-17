@@ -91,10 +91,10 @@ namespace Restore_ASCOM_Profiles
             {
                 driverProfile.DeviceType = "SafetyMonitor";
                 driverProfile.WriteValue(driverID, cloudsMaxProfileName, "cloudClear");
-                driverProfile.WriteValue(driverID, windMaxProfileName, 100.ToString());
+                driverProfile.WriteValue(driverID, windMaxProfileName, 40.ToString());
                 driverProfile.WriteValue(driverID, rainMaxProfileName, 0.ToString());
                 driverProfile.WriteValue(driverID, lightMaxProfileName, "dayLight");
-                driverProfile.WriteValue(driverID, humidityMaxProfileName, 70.ToString());
+                driverProfile.WriteValue(driverID, humidityMaxProfileName, 90.ToString());
                 driverProfile.WriteValue(driverID, ageMaxSecondsProfileName, 0.ToString());
             }
         }
@@ -102,14 +102,14 @@ namespace Restore_ASCOM_Profiles
         internal static void WriteDomeProfile()
         {
             string driverID = "ASCOM.Wise40.Dome";
-            string bypassSafetyProfileName = "AutoCalibrate";
-            string autoCalibrateProfileName = "Bypass Safety";
+            string autoCalibrateProfileName = "AutoCalibrate";
+            string bypassSafetyProfileName = "Bypass Safety";
 
             using (Profile driverProfile = new Profile())
             {
                 driverProfile.DeviceType = "Dome";
                 driverProfile.WriteValue(driverID, autoCalibrateProfileName, true.ToString());
-                driverProfile.WriteValue(driverID, bypassSafetyProfileName, false.ToString());
+                driverProfile.WriteValue(driverID, bypassSafetyProfileName, true.ToString());
             }
         }
 
@@ -118,12 +118,14 @@ namespace Restore_ASCOM_Profiles
             string driverID = "ASCOM.Wise40.Telescope";
             string enslaveDomeProfileName = "Enslave Dome";
             string traceStateProfileName = "Trace Level";
+            string debugLevelProfileName = "Debug Level";
 
             using (Profile driverProfile = new Profile())
             {
                 driverProfile.DeviceType = "Telescope";
                 driverProfile.WriteValue(driverID, traceStateProfileName, false.ToString());
                 driverProfile.WriteValue(driverID, enslaveDomeProfileName, true.ToString());
+                driverProfile.WriteValue(driverID, debugLevelProfileName, "DebugAxes|DebugMotors|DebugExceptions|DebugASCOM|DebugLogic");
             }
         }
     }

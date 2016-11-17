@@ -45,6 +45,7 @@ namespace ASCOM.Wise40.Common
             DebugEncoders = (1 << 6),
 
             DebugAll = DebugEncoders | DebugAxes | DebugMotors | DebugExceptions | DebugDevice | DebugASCOM | DebugLogic,
+            DebugDefault = DebugAxes | DebugMotors | DebugExceptions | DebugASCOM | DebugLogic,
             DebugNone = 0,
         };
 
@@ -166,7 +167,7 @@ namespace ASCOM.Wise40.Common
                 p.DeviceType = deviceType;
                 if (p.IsRegistered(driverID))
                 {
-                    _currentLevel |= (DebugLevel)Convert.ToUInt32(p.GetValue(driverID, "DebugLevel", string.Empty, "0"));
+                    _currentLevel = (DebugLevel) Enum.Parse(typeof(DebugLevel), p.GetValue(driverID, "DebugLevel", string.Empty, DebugLevel.DebugDefault.ToString()));
                     _tracing = Convert.ToBoolean(p.GetValue(driverID, "Tracing", string.Empty, "false"));
                 }
             }
