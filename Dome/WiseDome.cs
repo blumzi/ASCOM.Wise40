@@ -108,6 +108,7 @@ namespace ASCOM.Wise40
                 return;
 
             Name = "Wise40 Dome";
+            debugger.init();
             tl = new TraceLogger("", "Dome");
             tl.Enabled = debugger.Tracing;
             ReadProfile();
@@ -214,17 +215,18 @@ namespace ASCOM.Wise40
                 tl.LogMessage("Dome: Connected Get", _connected.ToString());
                 return _connected;
             }
+
             set
             {
                 tl.LogMessage("Dome: Connected Set", value.ToString());
+
+                if (value == true)
+                    RestoreCalibrationData();
 
                 if (value == _connected)
                     return;
 
                 _connected = value;
-
-                if (_connected == true)
-                    RestoreCalibrationData();
             }
         }
 
@@ -318,7 +320,7 @@ namespace ASCOM.Wise40
         {
             if (ShutterIsMoving)
             {
-                _shutterTimer.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+                _shutterTimer.Change(Timeout.Infinite, Timeout.Infinite);
                 ShutterStop();
             }
         }
@@ -483,6 +485,18 @@ namespace ASCOM.Wise40
             UnsetDomeState(DomeState.MovingCCW|DomeState.MovingCW);
             _movementTimer.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
             domeEncoder.setMovement(Direction.None);
+
+            for (int tries = 10; tries > 0; tries--)
+            {
+                uint prev = domeEncoder.Value;
+                Thread.Sleep(500);
+                uint curr = domeEncoder.Value;
+                if (prev == curr)
+                    break;
+            }
+            if (Calibrated)
+                SaveCalibrationData();
+
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: Stopped");
             #endregion
@@ -492,7 +506,7 @@ namespace ASCOM.Wise40
         {
             openPin.SetOn();
             _shutterState = ShutterState.shutterOpening;
-            _shutterTimer.Change(0, _shutterTimeout);
+            _shutterTimer.Change(_shutterTimeout, Timeout.Infinite);
             Vent = true;
         }
 
@@ -500,7 +514,7 @@ namespace ASCOM.Wise40
         {
             closePin.SetOn();
             _shutterState = ShutterState.shutterClosing;
-            _shutterTimer.Change(0, _shutterTimeout);
+            _shutterTimer.Change(_shutterTimeout, Timeout.Infinite);
             Vent = false;
         }
 
@@ -561,6 +575,7 @@ namespace ASCOM.Wise40
                 tl.LogMessage("Dome: Azimuth Set", value.ToString());
                 #endregion
                 domeEncoder.Calibrate(value);
+                SaveCalibrationData();
             }
         }
 
@@ -1150,7 +1165,7 @@ namespace ASCOM.Wise40
                 }
                 else if (savedEncoderValue == domeEncoder.Value)
                 {
-                    domeEncoder.Calibrate(Angle.FromDegrees(savedAzimuth));
+                    domeEncoder.Calibrate(Angle.FromDegrees(savedAzimuth, Angle.Type.Az));
                 }
                 #region trace
                 tl.LogMessage("Dome", string.Format("Restored calibration data from \"{0}\", Azimuth: {1}", calibrationDataFilePath, savedAzimuth));
@@ -1159,14 +1174,6 @@ namespace ASCOM.Wise40
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Restored calibration data from \"{0}\", Azimuth: {1}",
                     calibrationDataFilePath, savedAzimuth);
                 #endregion
-            }
-
-            try
-            {
-                // Discard the used file, let new ones be created.
-                System.IO.File.Delete(calibrationDataFilePath);
-            } catch
-            {
             }
         }
         #endregion
