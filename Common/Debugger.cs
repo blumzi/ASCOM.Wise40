@@ -44,8 +44,9 @@ namespace ASCOM.Wise40.Common
             DebugMotors = (1 << 5),
             DebugEncoders = (1 << 6),
 
-            DebugAll = DebugEncoders | DebugAxes | DebugMotors | DebugExceptions | DebugDevice | DebugASCOM | DebugLogic,
             DebugDefault = DebugAxes | DebugMotors | DebugExceptions | DebugASCOM | DebugLogic,
+
+            DebugAll = DebugEncoders | DebugAxes | DebugMotors | DebugExceptions | DebugDevice | DebugASCOM | DebugLogic,
             DebugNone = 0,
         };
 
@@ -145,7 +146,7 @@ namespace ASCOM.Wise40.Common
             _currentLevel &= ~levels;
         }
 
-        internal static string driverID = "ASCOM.Wise40.Settings";
+        internal static string driverID = "ASCOM.Wise40.Telescope";
         internal static string deviceType = "Telescope";
 
         public void WriteProfile()
@@ -155,7 +156,7 @@ namespace ASCOM.Wise40.Common
                 if (!p.IsRegistered(driverID))
                     p.Register(driverID, "Wise40 global settings");
                 p.DeviceType = deviceType;
-                p.WriteValue(driverID, "DebugLevel", ((uint)Level).ToString());
+                p.WriteValue(driverID, "DebugLevel", Level.ToString());
                 p.WriteValue(driverID, "Tracing", _tracing.ToString());
             }
         }
@@ -167,7 +168,10 @@ namespace ASCOM.Wise40.Common
                 p.DeviceType = deviceType;
                 if (p.IsRegistered(driverID))
                 {
-                    _currentLevel = (DebugLevel) Enum.Parse(typeof(DebugLevel), p.GetValue(driverID, "DebugLevel", string.Empty, DebugLevel.DebugDefault.ToString()));
+                    Debugger.DebugLevel defaultDebugLevel = Debugger.DebugLevel.DebugAxes | Debugger.DebugLevel.DebugMotors | Debugger.DebugLevel.DebugExceptions | Debugger.DebugLevel.DebugASCOM | Debugger.DebugLevel.DebugLogic;
+
+                    //_currentLevel = (DebugLevel) Enum.Parse(typeof(DebugLevel), p.GetValue(driverID, "DebugLevel", string.Empty));
+                    _currentLevel = DebugLevel.DebugDefault;
                     _tracing = Convert.ToBoolean(p.GetValue(driverID, "Tracing", string.Empty, "false"));
                 }
             }

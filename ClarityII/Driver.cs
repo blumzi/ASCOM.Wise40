@@ -73,11 +73,8 @@ namespace ASCOM.CloudSensor
         private static string driverDescription = "ASCOM CloudSensor ObservingConditions Driver.";
 
         internal static string dataFileProfileName = "Data File"; // Constants used for Profile persistence
-        internal static string traceStateProfileName = "Trace Level";
-        internal static string traceStateDefault = "false";
 
         public string _dataFile; // Variables to hold the currrent device configuration
-        public bool _traceState;
 
         /// <summary>
         /// Private variable to hold the connected state
@@ -785,7 +782,6 @@ namespace ASCOM.CloudSensor
             using (Profile driverProfile = new Profile())
             {
                 driverProfile.DeviceType = "ObservingConditions";
-                _traceState = Convert.ToBoolean(driverProfile.GetValue(driverID, traceStateProfileName, string.Empty, traceStateDefault));
                 _dataFile = driverProfile.GetValue(driverID, dataFileProfileName, string.Empty, string.Empty);
             }
         }
@@ -798,7 +794,6 @@ namespace ASCOM.CloudSensor
             using (Profile driverProfile = new Profile())
             {
                 driverProfile.DeviceType = "ObservingConditions";
-                driverProfile.WriteValue(driverID, traceStateProfileName, _traceState.ToString());
                 driverProfile.WriteValue(driverID, dataFileProfileName, _dataFile);
             }
         }

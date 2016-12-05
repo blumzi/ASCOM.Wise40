@@ -27,7 +27,6 @@ namespace ASCOM.CloudSensor
             // Place any validation constraint checks here
             // Update the state variables with results from the dialogue
             _oc._dataFile = labelDataFileValue.Text;
-            _oc._traceState = chkTrace.Checked;
         }
 
         private void cmdCancel_Click(object sender, EventArgs e) // Cancel button event handler
@@ -54,7 +53,6 @@ namespace ASCOM.CloudSensor
 
         private void InitUI()
         {
-            chkTrace.Checked = _oc._traceState;
             labelDataFileValue.Text = _oc._dataFile;          
         }
 

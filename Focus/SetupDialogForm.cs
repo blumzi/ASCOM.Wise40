@@ -23,9 +23,6 @@ namespace ASCOM.Wise40
 
         private void cmdOK_Click(object sender, EventArgs e) // OK button event handler
         {
-            // Place any validation constraint checks here
-            // Update the state variables with results from the dialogue
-            wisefocuser.traceLogger.Enabled = chkTrace.Checked;
         }
 
         private void cmdCancel_Click(object sender, EventArgs e) // Cancel button event handler
@@ -52,7 +49,6 @@ namespace ASCOM.Wise40
 
         private void InitUI()
         {
-            chkTrace.Checked = wisefocuser.traceLogger.Enabled;
         }
     }
 }

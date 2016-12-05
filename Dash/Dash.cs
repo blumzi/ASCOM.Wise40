@@ -43,6 +43,7 @@ namespace Dash
         #region Initialization
         public FormDash()
         {
+            debugger.init();
             hardware.init();
             wisetele.init();
             wisetele.Connected = true;
@@ -106,6 +107,7 @@ namespace Dash
             {
                 item.Text += Const.checkmark;
                 item.Tag = true;
+                item.Invalidate();
             }
 
             ToolStripTextBox tb;

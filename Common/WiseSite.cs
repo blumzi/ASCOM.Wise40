@@ -187,9 +187,10 @@ namespace ASCOM.Wise40
                 return;
             }
             DateTime now = DateTime.Now;
+            int month = now.Month - 1;
 
-            onSurface.Temperature = averageTemperatures[now.Month];
-            onSurface.Pressure = averagePressures[now.Month];
+            onSurface.Temperature = averageTemperatures[month];
+            onSurface.Pressure = averagePressures[month];
 
             if (observingConditions != null && DateTime.Now.Subtract(lastOCFetch).TotalMinutes > freqOCFetchMinutes)
             {

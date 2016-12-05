@@ -21,6 +21,7 @@ namespace Restore_ASCOM_Profiles
             WriteSafeToImageProfile();
             WriteDomeProfile();
             WriteTelescopeProfile();
+            WriteOCHProfile();
 
             Environment.Exit(0);
         }
@@ -117,8 +118,8 @@ namespace Restore_ASCOM_Profiles
         {
             string driverID = "ASCOM.Wise40.Telescope";
             string enslaveDomeProfileName = "Enslave Dome";
-            string traceStateProfileName = "Trace Level";
-            string debugLevelProfileName = "Debug Level";
+            string traceStateProfileName = "Tracing";
+            string debugLevelProfileName = "DebugLevel";
 
             using (Profile driverProfile = new Profile())
             {
@@ -126,6 +127,52 @@ namespace Restore_ASCOM_Profiles
                 driverProfile.WriteValue(driverID, traceStateProfileName, false.ToString());
                 driverProfile.WriteValue(driverID, enslaveDomeProfileName, true.ToString());
                 driverProfile.WriteValue(driverID, debugLevelProfileName, "DebugAxes|DebugMotors|DebugExceptions|DebugASCOM|DebugLogic");
+            }
+        }
+
+        internal static void WriteOCHProfile()
+        {
+            string driverID = "ASCOM.OCH.ObservingConditions";
+
+            using (Profile driverProfile = new Profile())
+            {
+                driverProfile.DeviceType = "ObservingConditions";
+
+                driverProfile.WriteValue(driverID, "Device Mode", "Real", "CloudCover");
+                driverProfile.WriteValue(driverID, "ProgID", "ASCOM.CloudSensor.ObservingConditions", "CloudCover");
+                driverProfile.WriteValue(driverID, "Switch Number", "0", "CloudCover");
+
+                driverProfile.WriteValue(driverID, "Device Mode", "Real", "DewPoint");
+                driverProfile.WriteValue(driverID, "ProgID", "ASCOM.Vantage.ObservingConditions", "DewPoint");
+                driverProfile.WriteValue(driverID, "Switch Number", "0", "DewPoint");
+
+                driverProfile.WriteValue(driverID, "Device Mode", "Real", "Humidity");
+                driverProfile.WriteValue(driverID, "ProgID", "ASCOM.Vantage.ObservingConditions", "Humidity");
+                driverProfile.WriteValue(driverID, "Switch Number", "0", "Humidity");
+
+                driverProfile.WriteValue(driverID, "Device Mode", "Real", "Pressure");
+                driverProfile.WriteValue(driverID, "ProgID", "ASCOM.Vantage.ObservingConditions", "Pressure");
+                driverProfile.WriteValue(driverID, "Switch Number", "0", "Pressure");
+
+                driverProfile.WriteValue(driverID, "Device Mode", "Real", "RainRate");
+                driverProfile.WriteValue(driverID, "ProgID", "ASCOM.Vantage.ObservingConditions", "RainRate");
+                driverProfile.WriteValue(driverID, "Switch Number", "0", "RainRate");
+
+                driverProfile.WriteValue(driverID, "Device Mode", "Real", "SkyTemperature");
+                driverProfile.WriteValue(driverID, "ProgID", "ASCOM.CloudSensor.ObservingConditions", "SkyTemperature");
+                driverProfile.WriteValue(driverID, "Switch Number", "0", "SkyTemperature");
+
+                driverProfile.WriteValue(driverID, "Device Mode", "Real", "Temperature");
+                driverProfile.WriteValue(driverID, "ProgID", "ASCOM.Vantage.ObservingConditions", "Temperature");
+                driverProfile.WriteValue(driverID, "Switch Number", "0", "Temperature");
+
+                driverProfile.WriteValue(driverID, "Device Mode", "Real", "WindDirection");
+                driverProfile.WriteValue(driverID, "ProgID", "ASCOM.Vantage.ObservingConditions", "WindDirection");
+                driverProfile.WriteValue(driverID, "Switch Number", "0", "WindDirection");
+
+                driverProfile.WriteValue(driverID, "Device Mode", "Real", "WindSpeed");
+                driverProfile.WriteValue(driverID, "ProgID", "ASCOM.Vantage.ObservingConditions", "WindSpeed");
+                driverProfile.WriteValue(driverID, "Switch Number", "0", "WindSpeed");
             }
         }
     }

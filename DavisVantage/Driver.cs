@@ -76,9 +76,7 @@ namespace ASCOM.Vantage
         /// </summary>
         private static string driverDescription = "ASCOM VantagePro at Wise40.";
 
-        internal static string reportFileProfileName = "Report File"; // Constants used for Profile persistence
-        internal static string traceStateProfileName = "Trace Level";
-        internal static string traceStateDefault = "false";
+        internal static string reportFileProfileName = "Report File";
 
         internal static string _reportFile;
 

@@ -89,7 +89,7 @@ namespace ASCOM.Wise40.ComputerControl
             ReadProfile(); // Read device configuration from the ASCOM Profile store
             Wise40.Common.Debugger debugger = Wise40.Common.Debugger.Instance;
 
-            tl = new TraceLogger("", "Wise40.ComputerControl");
+            tl = new TraceLogger("", "ComputerControl");
             tl.Enabled = debugger.Tracing;
             tl.LogMessage("SafetyMonitor", "Starting initialisation");
 

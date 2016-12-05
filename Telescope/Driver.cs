@@ -67,10 +67,8 @@ namespace ASCOM.Wise40
         /// The DeviceID is used by ASCOM applications to load the driver at runtime.
         /// </summary>
         internal static string driverID = "ASCOM.Wise40.Telescope";
-
-        internal static string debugLevelProfileName = "Debug Level";
+        
         internal static string astrometricAccuracyProfileName = "Astrometric accuracy";
-        internal static string traceStateProfileName = "Trace";
         internal static string enslaveDomeProfileName = "Enslave Dome";
         internal static string calculateRefractionProfileName = "Calculate refraction";
 
@@ -953,7 +951,6 @@ namespace ASCOM.Wise40
             using (Profile driverProfile = new Profile())
             {
                 driverProfile.DeviceType = "Telescope";
-                wisetele.traceLogger.Enabled = Convert.ToBoolean(driverProfile.GetValue(driverID, traceStateProfileName, string.Empty, "false"));
                 wisetele._enslaveDome = Convert.ToBoolean(driverProfile.GetValue(driverID, enslaveDomeProfileName, string.Empty, "false"));
                 wisesite.astrometricAccuracy = 
                     driverProfile.GetValue(driverID, astrometricAccuracyProfileName, string.Empty, "Full") == "Full" ?
@@ -970,9 +967,7 @@ namespace ASCOM.Wise40
             using (Profile driverProfile = new Profile())
             {
                 driverProfile.DeviceType = "Telescope";
-                driverProfile.WriteValue(driverID, traceStateProfileName, wisetele.traceLogger.Enabled.ToString());
                 driverProfile.WriteValue(driverID, astrometricAccuracyProfileName, wisesite.astrometricAccuracy == Accuracy.Full ? "Full" : "Reduced");
-                //driverProfile.WriteValue(driverID, debugLevelProfileName, wisetele.debugger.Level.ToString());
                 driverProfile.WriteValue(driverID, enslaveDomeProfileName, wisetele._enslaveDome.ToString());
                 driverProfile.WriteValue(driverID, calculateRefractionProfileName, wisetele._calculateRefraction.ToString());
             }

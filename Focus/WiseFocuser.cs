@@ -55,7 +55,6 @@ namespace ASCOM.Wise40
         private WiseSite wisesite = WiseSite.Instance;
 
         internal static string driverID = "ASCOM.Wise40.Focuser";
-        internal static string debugLevelProfileName = "Debug Level";
 
         private static string driverDescription = "ASCOM Wise40 Focuser";
 

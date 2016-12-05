@@ -144,10 +144,9 @@ namespace ASCOM.Wise40
 
         private Hardware.Hardware hardware = Hardware.Hardware.Instance;
         internal static string driverID = "ASCOM.Wise40.Telescope";
-        internal static string debugLevelProfileName = "Debug Level";
         internal static string astrometricAccuracyProfileName = "Astrometric accuracy";
-        internal static string traceStateProfileName = "Trace";
         internal static string enslaveDomeProfileName = "Enslave Dome";
+        internal static string traceStateProfileName = "Tracing";
 
         public class MovementParameters
         {
@@ -391,6 +390,7 @@ namespace ASCOM.Wise40
             ReadProfile();
             debugger.init();
             traceLogger = new TraceLogger("", "Tele");
+            traceLogger.Enabled = debugger.Tracing;
             novas31 = new NOVAS31();
             ascomutils = new Util();
             astroutils = new Astrometry.AstroUtils.AstroUtils();
@@ -1224,7 +1224,7 @@ namespace ASCOM.Wise40
                 return;
 
             Angle ra = wisesite.LocalSiderealTime;
-            Angle dec = wisesite.Latitude;
+            Angle dec = Angle.FromDegrees(66.0, Angle.Type.Dec);
 
             bool saveEnslaveDome = _enslaveDome;
             if (saveEnslaveDome)
@@ -1249,7 +1249,7 @@ namespace ASCOM.Wise40
                 return;
 
             Angle ra = wisesite.LocalSiderealTime;
-            Angle dec = wisesite.Latitude;
+            Angle dec = Angle.FromDegrees(66.0, Angle.Type.Dec);
 
             bool saveEnslaveDome = _enslaveDome;
 

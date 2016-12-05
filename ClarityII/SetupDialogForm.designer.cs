@@ -32,7 +32,6 @@ namespace ASCOM.CloudSensor
             this.cmdCancel = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.picASCOM = new System.Windows.Forms.PictureBox();
-            this.chkTrace = new System.Windows.Forms.CheckBox();
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.labelDataFileValue = new System.Windows.Forms.Label();
             this.groupBoxDataFile = new System.Windows.Forms.GroupBox();
@@ -87,19 +86,8 @@ namespace ASCOM.CloudSensor
             this.picASCOM.Click += new System.EventHandler(this.BrowseToAscom);
             this.picASCOM.DoubleClick += new System.EventHandler(this.BrowseToAscom);
             // 
-            // chkTrace
-            // 
-            this.chkTrace.AutoSize = true;
-            this.chkTrace.Location = new System.Drawing.Point(16, 128);
-            this.chkTrace.Name = "chkTrace";
-            this.chkTrace.Size = new System.Drawing.Size(69, 17);
-            this.chkTrace.TabIndex = 6;
-            this.chkTrace.Text = "Trace on";
-            this.chkTrace.UseVisualStyleBackColor = true;
-            // 
             // openFileDialog
             // 
-            this.openFileDialog.FileName = "";
             this.openFileDialog.Title = " ClarityII data file ";
             this.openFileDialog.FileOk += new System.ComponentModel.CancelEventHandler(this.openFileDialog1_FileOk);
             // 
@@ -138,7 +126,6 @@ namespace ASCOM.CloudSensor
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(350, 175);
             this.Controls.Add(this.groupBoxDataFile);
-            this.Controls.Add(this.chkTrace);
             this.Controls.Add(this.picASCOM);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.cmdCancel);
@@ -163,7 +150,6 @@ namespace ASCOM.CloudSensor
         private System.Windows.Forms.Button cmdCancel;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.PictureBox picASCOM;
-        private System.Windows.Forms.CheckBox chkTrace;
         private System.Windows.Forms.OpenFileDialog openFileDialog;
         private System.Windows.Forms.Label labelDataFileValue;
         private System.Windows.Forms.GroupBox groupBoxDataFile;
