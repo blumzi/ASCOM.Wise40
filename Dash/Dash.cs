@@ -40,6 +40,8 @@ namespace Dash
         private List<ToolStripMenuItem> debugMenuItems;
         private Dictionary<object, string> alteredItems = new Dictionary<object, string>();
 
+        private MotionStudy study;
+
         #region Initialization
         public FormDash()
         {
@@ -398,30 +400,39 @@ namespace Dash
         public void directionButton_MouseDown(object sender, MouseEventArgs e)
         {
             Button button = (Button)sender;
+            string rateName = WiseTele.RateName(handpadRate).Remove(0, 4);
 
             try
             {
-                string atRate = string.Format(" at rate {0}", WiseTele.RateName(handpadRate).Remove(0, 4));
+                string atRate = string.Format(" at rate {0}", rateName);
 
                 if (button == buttonNorth)
                 {
                     telescopeStatus.Show("Moving North" + atRate, 0, Statuser.Severity.Good);
                     wisetele.MoveAxis(TelescopeAxes.axisSecondary, handpadRate);
+                    if (checkBoxMotionStudy.Visible && checkBoxMotionStudy.Checked)
+                        study = new MotionStudy(TelescopeAxes.axisSecondary, handpadRate);
                 }
                 else if (button == buttonSouth)
                 {
                     telescopeStatus.Show("Moving South" + atRate, 0, Statuser.Severity.Good);
                     wisetele.MoveAxis(TelescopeAxes.axisSecondary, -handpadRate);
+                    if (checkBoxMotionStudy.Visible && checkBoxMotionStudy.Checked)
+                        study = new MotionStudy(TelescopeAxes.axisSecondary, -handpadRate);
                 }
                 else if (button == buttonEast)
                 {
                     telescopeStatus.Show("Moving East" + atRate, 0, Statuser.Severity.Good);
                     wisetele.MoveAxis(TelescopeAxes.axisPrimary, handpadRate);
+                    if (checkBoxMotionStudy.Visible && checkBoxMotionStudy.Checked)
+                        study = new MotionStudy(TelescopeAxes.axisPrimary, handpadRate);
                 }
                 else if (button == buttonWest)
                 {
                     telescopeStatus.Show("Moving West" + atRate, 0, Statuser.Severity.Good);
                     wisetele.MoveAxis(TelescopeAxes.axisPrimary, -handpadRate);
+                    if (checkBoxMotionStudy.Visible && checkBoxMotionStudy.Checked)
+                        study = new MotionStudy(TelescopeAxes.axisPrimary, -handpadRate);
                 }
                 else if (button == buttonNE)
                 {
@@ -458,6 +469,8 @@ namespace Dash
         {
             wisetele.Stop();
             telescopeStatus.Show("Stopped", 1000, Statuser.Severity.Good);
+            if (study != null)
+                study.Dispose();
         }
 
         private void debuggingToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1063,6 +1076,17 @@ namespace Dash
         private void toolStripMenuItemSafeToOpen_Click(object sender, EventArgs e)
         {
             new ASCOM.Wise40.SafeToOperate.SetupDialogForm().Show();
+        }
+
+        private void motionStudyToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void motionStudyToolStripMenuItem_Click_1(object sender, EventArgs e)
+        {
+            checkBoxMotionStudy.Visible = !checkBoxMotionStudy.Visible;
+            checkBoxMotionStudy.Invalidate();
         }
 
         private void safetyOverrideToolStripMenuItem_Click(object sender, EventArgs e)

@@ -113,6 +113,7 @@
     <Compile Include="HardwareForm.Designer.cs">
       <DependentUpon>HardwareForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="MotionStudy.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Statuser.cs" />
