@@ -82,7 +82,7 @@ namespace ASCOM.Wise40
         {
             if (wisetele == null)
                 wisetele = WiseTele.Instance;
-            
+
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver: Asking dome to SlewToAzimuth({0})", new Angle(az, Angle.Type.Az));
             #endregion
@@ -125,7 +125,7 @@ namespace ASCOM.Wise40
                 wisedome.AbortSlew();
                 throw ex;
             }
-            
+
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver: Dome is Parked");
             #endregion
@@ -159,18 +159,17 @@ namespace ASCOM.Wise40
 
         public void SlewToAz(Angle ra, Angle dec)
         {
-            double rar = 0, decr = 0, az = 0, zd = 0;
+            Angle ha = Angle.FromHours(ra.Hours - wisesite.LocalSiderealTime.Hours);
+            double haRadians = Angle.Hours2Rad(ha.Hours);
+            double decRadians = dec.Radians;
+            double domeAz = Angle.Rad2Deg(ScopeCoordToDomeAz(haRadians, decRadians));
 
-            wisesite.prepareRefractionData(WiseTele.Instance._calculateRefraction);
-            instance.novas31.Equ2Hor(instance.astroutils.JulianDateUT1(0), 0,
-                wisesite.astrometricAccuracy,
-                0, 0,
-                wisesite.onSurface,
-                ra.Hours, dec.Degrees,
-                wisesite.refractionOption,
-                ref zd, ref az, ref rar, ref decr);
-
-            SlewToAz(az);
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                "DomeSlaveDriver: SlewToAz ra: {0}, dec: {1} => ha: {2}, dec: {1} => {3}",
+                ra.ToString(), dec.ToString(), ha.ToString(), domeAz.ToString());
+            #endregion
+            SlewToAz(domeAz);
         }
 
         public bool Slewing
@@ -236,6 +235,71 @@ namespace ASCOM.Wise40
                 string state = wisedome.ShutterState.ToString();
                 return (state == "shutterError" ? String.Empty : wisedome.ShutterState.ToString().Substring("shutter".Length));
             }
+        }
+
+        /// <summary>
+        /// Calculates the Dome Azimuth for a GEM scope's (HA, Dec)
+        /// Adapted from VisualBasic (see Documents\DomeSync.txt)
+        /// </summary>
+        /// <param name="HA">Scope's HourAngle</param>
+        /// <param name="Dec">Scope's Declination</param>
+        /// <returns></returns>
+        public double ScopeCoordToDomeAz(double HA, double Dec)
+        {
+            double phi = wisesite.Latitude.Radians;
+            double Xdome0 = 0.0;    // shift of scope pivot point from dome center - X axis
+            double Ydome0 = 0.0;    // shift of scope pivot point from dome center - Y axis
+            double Zdome0 = 0.0;    // shift of scope pivot point from dome center - Z axis
+            double rDecAxis = 1200; // optical axis offset from RA axis
+            double rDome = 5000;    // dome radius
+            double pi = Math.PI;
+
+            double A = Xdome0 + rDecAxis * Math.Cos(phi - pi / 2) * Math.Sin(HA - pi);
+            double B = Ydome0 + rDecAxis * Math.Cos(HA - pi);
+            double C = Zdome0 - rDecAxis * Math.Sin(phi - pi / 2) * Math.Sin(HA - pi);
+            double D = Math.Cos(phi - pi / 2) * Math.Cos(Dec) * Math.Cos(-HA) + Math.Sin(phi - pi / 2) * Math.Sin(Dec);
+            double E = Math.Cos(Dec) * Math.Sin(-HA);
+            double F = -Math.Sin(phi - pi / 2) * Math.Cos(Dec) * Math.Cos(-HA) + Math.Cos(phi - pi / 2) * Math.Sin(Dec);
+
+            double knum = -(A * D + B * E + C * F) +
+                        Math.Sqrt(Math.Pow(A * D + B * E + C * F, 2) +
+                        (Math.Pow(D, 2) + Math.Pow(E, 2) + Math.Pow(F, 2)) * (Math.Pow(rDome, 2) - Math.Pow(A, 2) - Math.Pow(B, 2) - Math.Pow(C, 2)));
+
+            double k = knum / (Math.Pow(D, 2) + Math.Pow(E, 2) + Math.Pow(F, 2));
+            double Xdome = A + D * k;
+            Xdome = -Xdome;
+            double Ydome = B + E * k;
+            double Zdome = C + F * k;
+            double dome_A = -Atn2(Ydome, Xdome);
+            dome_A = -dome_A;
+
+            if (dome_A < 0)
+                dome_A = 2 * Math.PI + dome_A;
+
+            return dome_A;
+        }
+
+        private double Asin(double ang)
+        {
+            if (ang == 1 || ang == -1)
+            {
+                return (Math.PI / 2) * Math.Sign(ang);
+            }
+            return Math.Atan(ang / Math.Sqrt(-ang * ang + 1));
+        }
+
+        private double Atn2(double num, double denom)
+        {
+            if (denom == 0)
+            {
+                return (Math.PI / 2) + Math.Sign(num);
+            }
+
+            if (denom > 0)
+                return Math.Atan(num / denom);
+            else
+                return Math.Atan(num / denom) + Math.PI;
+
         }
     }
 }

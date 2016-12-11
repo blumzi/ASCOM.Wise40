@@ -145,12 +145,14 @@
     </None>
     <None Include="ASCOM.png" />
     <None Include="ASCOMDriverTemplate.snk" />
+    <None Include="Documents\dome_synchronisation.pdf" />
     <None Include="Properties\DataSources\ASCOM.Wise40.Hardware.WiseDaq.datasource" />
     <None Include="Properties\Settings.settings">
       <Generator>PublicSettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <Content Include="ASCOM.ico" />
+    <Content Include="Documents\DomeSync.txt" />
     <Content Include="Installer\ReadMe.html" />
     <Content Include="Installer\Wise40Telescope Setup.iss" />
     <Content Include="ReadMe.htm" />
