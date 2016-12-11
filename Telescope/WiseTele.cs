@@ -1773,7 +1773,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                AlignmentModes mode = AlignmentModes.algPolar;
+                AlignmentModes mode = AlignmentModes.algGermanPolar;
 
                 #region trace
                 traceLogger.LogMessage("AlignmentMode Get", mode.ToString());
