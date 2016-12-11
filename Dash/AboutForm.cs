@@ -45,10 +45,11 @@ namespace Dash
             labelTelescopeVersion.Text = _dash.wisetele.DriverVersion;
             labelDomeVersion.Text = _dash.wisedome.DriverVersion;
             labelFocuserVersion.Text = _dash.wisefocuser.DriverVersion;
-            labelSafeToOpenVersion.Text = _dash.wisefocuser.DriverVersion;            
+            labelSafeToOpenVersion.Text = _dash.wisesite.safeToOpen.DriverVersion;            
             labelBoltwoodVersion.Text = _dash.boltwood.DriverVersion;
             labelComputerControlVersion.Text = _dash.wisesite.computerControl.DriverVersion;
             labelVantageProVersion.Text = (new ObservingConditions("ASCOM.Vantage.ObservingConditions")).DriverVersion;
+            labelFilterWheelVersion.Text = _dash.wisefilterwheel.DriverVersion;
         }
 
         private void button1_Click(object sender, EventArgs e)

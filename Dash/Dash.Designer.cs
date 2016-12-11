@@ -64,6 +64,7 @@
             this.labelDomeStatus = new System.Windows.Forms.Label();
             this.label17 = new System.Windows.Forms.Label();
             this.groupBoxTelescope = new System.Windows.Forms.GroupBox();
+            this.checkBoxMotionStudy = new System.Windows.Forms.CheckBox();
             this.checkBoxTrack = new System.Windows.Forms.CheckBox();
             this.label3 = new System.Windows.Forms.Label();
             this.buttonFlat = new System.Windows.Forms.Button();
@@ -128,7 +129,7 @@
             this.reportFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripTextBoxVantagePro2ReportFile = new System.Windows.Forms.ToolStripTextBox();
             this.toolStripMenuItemSafeToOpen = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripMenuItem5 = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItemFilterWheel = new System.Windows.Forms.ToolStripMenuItem();
             this.tracingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.debuggingToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.debugASCOMToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -146,6 +147,7 @@
             this.viewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.digitalIOCardsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.debuggingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.motionStudyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.wise40WikiToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
@@ -186,8 +188,7 @@
             this.labelDashStatus = new System.Windows.Forms.Label();
             this.timerRefreshDisplay = new System.Windows.Forms.Timer(this.components);
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
-            this.checkBoxMotionStudy = new System.Windows.Forms.CheckBox();
-            this.motionStudyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem3 = new System.Windows.Forms.ToolStripMenuItem();
             this.tableLayoutMain.SuspendLayout();
             this.groupBoxFocuser.SuspendLayout();
             this.groupBoxDomeGroup.SuspendLayout();
@@ -720,6 +721,17 @@
             this.groupBoxTelescope.TabIndex = 30;
             this.groupBoxTelescope.TabStop = false;
             this.groupBoxTelescope.Text = " Telescope ";
+            // 
+            // checkBoxMotionStudy
+            // 
+            this.checkBoxMotionStudy.AutoSize = true;
+            this.checkBoxMotionStudy.Location = new System.Drawing.Point(289, 368);
+            this.checkBoxMotionStudy.Name = "checkBoxMotionStudy";
+            this.checkBoxMotionStudy.Size = new System.Drawing.Size(53, 17);
+            this.checkBoxMotionStudy.TabIndex = 36;
+            this.checkBoxMotionStudy.Text = "Study";
+            this.checkBoxMotionStudy.UseVisualStyleBackColor = true;
+            this.checkBoxMotionStudy.Visible = false;
             // 
             // checkBoxTrack
             // 
@@ -1491,7 +1503,8 @@
             this.cloudSensorToolStripMenuItem,
             this.vantagePro2ToolStripMenuItem,
             this.toolStripMenuItemSafeToOpen,
-            this.toolStripMenuItem5,
+            this.toolStripMenuItemFilterWheel,
+            this.toolStripMenuItem3,
             this.tracingToolStripMenuItem,
             this.debuggingToolStripMenuItem1,
             this.toolStripMenuItem2,
@@ -1583,11 +1596,12 @@
             this.toolStripMenuItemSafeToOpen.Text = "SafeToOpen";
             this.toolStripMenuItemSafeToOpen.Click += new System.EventHandler(this.toolStripMenuItemSafeToOpen_Click);
             // 
-            // toolStripMenuItem5
+            // toolStripMenuItemFilterWheel
             // 
-            this.toolStripMenuItem5.Name = "toolStripMenuItem5";
-            this.toolStripMenuItem5.Size = new System.Drawing.Size(158, 22);
-            this.toolStripMenuItem5.Text = "  ";
+            this.toolStripMenuItemFilterWheel.Name = "toolStripMenuItemFilterWheel";
+            this.toolStripMenuItemFilterWheel.Size = new System.Drawing.Size(158, 22);
+            this.toolStripMenuItemFilterWheel.Text = "Filter Wheel";
+            this.toolStripMenuItemFilterWheel.Click += new System.EventHandler(this.toolStripMenuItemFilterWheel_Click);
             // 
             // tracingToolStripMenuItem
             // 
@@ -1732,6 +1746,14 @@
             this.debuggingToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
             this.debuggingToolStripMenuItem.Text = "Debugging";
             this.debuggingToolStripMenuItem.Click += new System.EventHandler(this.debuggingToolStripMenuItem_Click);
+            // 
+            // motionStudyToolStripMenuItem
+            // 
+            this.motionStudyToolStripMenuItem.ForeColor = System.Drawing.Color.DarkOrange;
+            this.motionStudyToolStripMenuItem.Name = "motionStudyToolStripMenuItem";
+            this.motionStudyToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
+            this.motionStudyToolStripMenuItem.Text = "Motion Study";
+            this.motionStudyToolStripMenuItem.Click += new System.EventHandler(this.motionStudyToolStripMenuItem_Click_1);
             // 
             // aboutToolStripMenuItem
             // 
@@ -2271,24 +2293,11 @@
             this.timerRefreshDisplay.Enabled = true;
             this.timerRefreshDisplay.Tick += new System.EventHandler(this.RefreshDisplay);
             // 
-            // checkBoxMotionStudy
+            // toolStripMenuItem3
             // 
-            this.checkBoxMotionStudy.AutoSize = true;
-            this.checkBoxMotionStudy.Location = new System.Drawing.Point(289, 368);
-            this.checkBoxMotionStudy.Name = "checkBoxMotionStudy";
-            this.checkBoxMotionStudy.Size = new System.Drawing.Size(53, 17);
-            this.checkBoxMotionStudy.TabIndex = 36;
-            this.checkBoxMotionStudy.Text = "Study";
-            this.checkBoxMotionStudy.UseVisualStyleBackColor = true;
-            this.checkBoxMotionStudy.Visible = false;
-            // 
-            // motionStudyToolStripMenuItem
-            // 
-            this.motionStudyToolStripMenuItem.ForeColor = System.Drawing.Color.DarkOrange;
-            this.motionStudyToolStripMenuItem.Name = "motionStudyToolStripMenuItem";
-            this.motionStudyToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
-            this.motionStudyToolStripMenuItem.Text = "Motion Study";
-            this.motionStudyToolStripMenuItem.Click += new System.EventHandler(this.motionStudyToolStripMenuItem_Click_1);
+            this.toolStripMenuItem3.Name = "toolStripMenuItem3";
+            this.toolStripMenuItem3.Size = new System.Drawing.Size(158, 22);
+            this.toolStripMenuItem3.Text = "  ";
             // 
             // FormDash
             // 
@@ -2488,9 +2497,10 @@
         private System.Windows.Forms.ToolStripTextBox toolStripTextBoxVantagePro2ReportFile;
         private System.Windows.Forms.ToolStripMenuItem wise40WikiToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem1;
-        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem5;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemFilterWheel;
         private System.Windows.Forms.CheckBox checkBoxMotionStudy;
         private System.Windows.Forms.ToolStripMenuItem motionStudyToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem3;
     }
 }
 

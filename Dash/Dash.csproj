@@ -169,6 +169,10 @@
       <Project>{64308775-bd4a-469c-bcab-3ed830b811af}</Project>
       <Name>Dome</Name>
     </ProjectReference>
+    <ProjectReference Include="..\FilterWheel\FilterWheel.csproj">
+      <Project>{371009f1-23d3-41ea-a431-dfd1c08d6caa}</Project>
+      <Name>FilterWheel</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Focus\Focuser.csproj">
       <Project>{d49ae541-3d66-4ef4-8a07-69357070718b}</Project>
       <Name>Focuser</Name>

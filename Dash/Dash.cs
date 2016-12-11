@@ -27,6 +27,7 @@ namespace Dash
         public WiseSite wisesite = WiseSite.Instance;
         public WiseSafeToOperate wisesafetoopen = WiseSafeToOperate.Instance(WiseSafeToOperate.Operation.Open);
         public ObservingConditions boltwood = new ASCOM.DriverAccess.ObservingConditions("ASCOM.CloudSensor.ObservingConditions");
+        public WiseFilterWheel wisefilterwheel = WiseFilterWheel.Instance;
 
         DomeSlaveDriver domeSlaveDriver = DomeSlaveDriver.Instance;
         DebuggingForm debuggingForm = new DebuggingForm();
@@ -1087,6 +1088,11 @@ namespace Dash
         {
             checkBoxMotionStudy.Visible = !checkBoxMotionStudy.Visible;
             checkBoxMotionStudy.Invalidate();
+        }
+
+        private void toolStripMenuItemFilterWheel_Click(object sender, EventArgs e)
+        {
+            new ASCOM.Wise40.FilterWheelSetupDialogForm().Show();
         }
 
         private void safetyOverrideToolStripMenuItem_Click(object sender, EventArgs e)
