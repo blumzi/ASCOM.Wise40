@@ -97,6 +97,8 @@ namespace ASCOM.Wise40
         private static Angle primarySafetyBackoff = new Angle("00h05m00.0s");
         private static Angle secondarySafetyBackoff = new Angle("00:05:00.0");
 
+        private ReadyToSlewFlags readyToSlew = new ReadyToSlewFlags();
+
         /// <summary>
         /// Usually two or three tasks are used to perform a slew:
         /// - if the dome is slaved, a dome slewer
@@ -1299,6 +1301,7 @@ namespace ASCOM.Wise40
                 direction = Const.AxisDirection.None
             };
             Movement cm = instance.currMovement[axis];
+            int waitForOtherAxisMillis = 500;
 
             cm.taskName = (axis == TelescopeAxes.axisPrimary) ? "primarySlewer" : "secondarySlewer";
             cm.target = targetAngle;
@@ -1307,24 +1310,40 @@ namespace ASCOM.Wise40
             #endregion
 
             SlewerStatus status;
-            bool done = false;
-            do
+
+            foreach (var rate in rates)
             {
-                status = SlewCloser(axis);
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0} SlewCloser({1}) => {2}", cm.taskName, axis, status.ToString());
-                #endregion
-                switch (status)
+                bool done = false;
+
+                readyToSlew.AxisIsReady(axis, rate);
+                while (! readyToSlew.AxesAreReady(rate))
                 {
-                    case SlewerStatus.CloseEnough:
-                    case SlewerStatus.Canceled:
-                        done = true;
-                        break;
-                    case SlewerStatus.ChangedDirection:
-                        break;  // NOTE: this breaks the switch, not the loop
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, string.Format("{0} at {1}: Waiting {2} millis for other axis ...",
+                        cm.taskName, RateName(rate), waitForOtherAxisMillis));
+                    #endregion
+                    Thread.Sleep(waitForOtherAxisMillis);
                 }
+
+                do
+                {
+                    status = SlewCloser(axis, rate);
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0} SlewCloser({1}, {2}) => {3}",
+                        cm.taskName, axis, RateName(rate), status.ToString());
+                    #endregion
+                    switch (status)
+                    {
+                        case SlewerStatus.CloseEnough:
+                        case SlewerStatus.Canceled:
+                            done = true;
+                            break;
+                        case SlewerStatus.ChangedDirection:
+                            break;  // NOTE: this breaks the switch, not the loop
+                    }
+                }
+                while (!done);
             }
-            while (!done);
 
             slewers.Delete(axis == TelescopeAxes.axisPrimary ?
                 Slewers.Type.Ra :
@@ -1358,7 +1377,7 @@ namespace ASCOM.Wise40
             #endregion debug
         }
 
-        private SlewerStatus SlewCloser(TelescopeAxes axis)
+        private SlewerStatus SlewCloser(TelescopeAxes axis, double rate)
         {
             Movement cm = Instance.currMovement[axis];
             Angle currPosition = new Angle(0.0);
@@ -1373,134 +1392,131 @@ namespace ASCOM.Wise40
 
             try
             {
-                // Cascade down through the available rates
-                foreach (var rate in rates)
+                mp = movementParameters[axis][rate];
+
+                slewingCancellationToken.ThrowIfCancellationRequested();
+
+                cm.start = (axis == TelescopeAxes.axisPrimary) ?
+                    Angle.FromHours(RightAscension, Angle.Type.RA) :
+                    Angle.FromDegrees(Declination, Angle.Type.Dec);
+
+                var shortest = cm.start.ShortestDistance(cm.target);
+                cm.direction = shortest.direction;
+
+                Angle minimalMovementAngle = mp.minimalMovement + mp.stopMovement;
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                    "{0} at {1}: minimalMovementAngle: {2}",
+                    cm.taskName, RateName(rate), minimalMovementAngle);
+                #endregion debug
+
+                if (shortest.angle < minimalMovementAngle)
                 {
-                    mp = movementParameters[axis][rate];
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                        "{0} at {1}: Not moving, too short ({2} < {3}, {4} < {5})",
+                        cm.taskName, RateName(rate),
+                        shortest.angle, minimalMovementAngle,
+                        shortest.angle.Degrees, minimalMovementAngle.Degrees);
+                    #endregion debug
+                    return SlewerStatus.CloseEnough;
+                }
+
+                // Set the axis in motion at the current rate ...
+                cm.rate = rate;
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                    "{0} at {1}: cm.start: {2}, cm.target: {3}, shortest.angle: {4}, cm.direction: {5}",
+                    cm.taskName, RateName(cm.rate), cm.start, cm.target, shortest.angle, cm.direction);
+                #endregion debug
+                while (!_moveAxis(axis, cm.rate, cm.direction, false))
+                {
+                    const int syncMillis = 500;
+
+                    slewingCancellationToken.ThrowIfCancellationRequested();
+                    Thread.Sleep(syncMillis);
+                }
+
+                // ... and wait for it to arrive at target
+                ShortestDistanceResult remainingDistance = null;
+                bool closestAtCurrentRate = false;
+
+                while (!closestAtCurrentRate)
+                {
+                    const int waitMillis = 10;    // TODO: make it configurable or constant
 
                     slewingCancellationToken.ThrowIfCancellationRequested();
 
-                    cm.start = (axis == TelescopeAxes.axisPrimary) ?
-                        Angle.FromHours(RightAscension, Angle.Type.RA) :
-                        Angle.FromDegrees(Declination, Angle.Type.Dec);
+                    currPosition = (axis == TelescopeAxes.axisPrimary) ?
+                        Angle.FromHours(instance.RightAscension, Angle.Type.RA) :
+                        Angle.FromDegrees(instance.Declination, Angle.Type.Dec);
+                    remainingDistance = currPosition.ShortestDistance(cm.target);
 
-                    var shortest = cm.start.ShortestDistance(cm.target);
-                    cm.direction = shortest.direction;
-
-                    Angle minimalMovementAngle = mp.minimalMovement + mp.stopMovement;
-                    #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                        "{0} at {1}: minimalMovementAngle: {2}",
-                        cm.taskName, RateName(rate), minimalMovementAngle);
-                    #endregion debug
-
-                    if (shortest.angle < minimalMovementAngle)
+                    if (cm.direction != remainingDistance.direction)
                     {
+                        closestAtCurrentRate = true;
                         #region debug
                         debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                            "{0} at {1}: Not moving, too short ({2} < {3}, {4} < {5})",
-                            cm.taskName, RateName(rate),
-                            shortest.angle, minimalMovementAngle,
-                            shortest.angle.Degrees, minimalMovementAngle.Degrees);
-                        #endregion debug
-                        continue;   // this rate is no good, try the next one
+                            "{0} at {1}: at {2}, direction changed while moving {3} => {4}, returning ChangedDirection",
+                            cm.taskName, RateName(cm.rate), currPosition,
+                            cm.direction.ToString(), remainingDistance.direction.ToString()
+                            );
+                        #endregion
+                        StopAxisAndWaitForHalt(axis);
+                        //
+                        // We have moved as close as possible in the current axis direction.
+                        // Let the calling routine call us again to try all the cascading rates in the 
+                        //  opposite axis direction.
+                        //
+                        cm.direction = remainingDistance.direction;
+                        return SlewerStatus.ChangedDirection;
                     }
-                    
-                    // Set the axis in motion at the current rate ...
-                    cm.rate = rate;
-                    #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                        "{0} at {1}: cm.start: {2}, cm.target: {3}, shortest.angle: {4}, cm.direction: {5}",
-                        cm.taskName, RateName(cm.rate), cm.start, cm.target, shortest.angle, cm.direction);
-                    #endregion debug
-                    while (!_moveAxis(axis, cm.rate, cm.direction, false))
+                    else if (remainingDistance.angle <= mp.stopMovement)
                     {
-                        const int syncMillis = 500;
+                        closestAtCurrentRate = true;
+                        #region debug
+                        debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                            "{0} at {1}: stopping at {2}, ({3} from cm.target: {4}): closest at this rate: remainingDistance.angle {5} <= mp.stopMovement {6}",
+                            cm.taskName, RateName(cm.rate), currPosition,
+                            remainingDistance.angle, cm.target,
+                            remainingDistance.angle, mp.stopMovement);
+                        #endregion
+                        StopAxisAndWaitForHalt(axis);
 
-                        slewingCancellationToken.ThrowIfCancellationRequested();
-                        Thread.Sleep(syncMillis);
-                    }
-                    
-                    // ... and wait for it to arrive at target
-                    ShortestDistanceResult remainingDistance = null;
-                    bool closestAtCurrentRate = false;
-
-                    while (!closestAtCurrentRate)
-                    {
-                        const int waitMillis = 10;    // TODO: make it configurable or constant
-
-                        slewingCancellationToken.ThrowIfCancellationRequested();
-
-                        currPosition = (axis == TelescopeAxes.axisPrimary) ?
+                        Angle angleAfterStopping = (axis == TelescopeAxes.axisPrimary) ?
                             Angle.FromHours(instance.RightAscension, Angle.Type.RA) :
                             Angle.FromDegrees(instance.Declination, Angle.Type.Dec);
-                        remainingDistance = currPosition.ShortestDistance(cm.target);
+                        ShortestDistanceResult statusAfterStopping = angleAfterStopping.ShortestDistance(cm.target);
 
-                        if (cm.direction != remainingDistance.direction)
-                        {
-                            closestAtCurrentRate = true;
-                            #region debug
-                            debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                                "{0} at {1}: at {2}, direction changed while moving {3} => {4}, returning ChangedDirection",
-                                cm.taskName, RateName(cm.rate), currPosition,
-                                cm.direction.ToString(), remainingDistance.direction.ToString()
-                                );
-                            #endregion
-                            StopAxisAndWaitForHalt(axis);
-                            //
-                            // We have moved as close as possible in the current axis direction.
-                            // Let the calling routine call us again to try all the cascading rates in the 
-                            //  opposite axis direction.
-                            //
-                            cm.direction = remainingDistance.direction;
-                            return SlewerStatus.ChangedDirection;
-                        }
-                        else if (remainingDistance.angle <= mp.stopMovement)
-                        {
-                            closestAtCurrentRate = true;
-                            #region debug
-                            debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                                "{0} at {1}: stopping at {2}, ({3} from cm.target: {4}): closest at this rate: remainingDistance.angle {5} <= mp.stopMovement {6}",
-                                cm.taskName, RateName(cm.rate), currPosition,
-                                remainingDistance.angle, cm.target,
-                                remainingDistance.angle, mp.stopMovement);
-                            #endregion
-                            StopAxisAndWaitForHalt(axis);
-
-                            Angle angleAfterStopping = (axis == TelescopeAxes.axisPrimary) ?
-                                Angle.FromHours(instance.RightAscension, Angle.Type.RA) :
-                                Angle.FromDegrees(instance.Declination, Angle.Type.Dec);
-                            ShortestDistanceResult statusAfterStopping = angleAfterStopping.ShortestDistance(cm.target);
-
-                            if (statusAfterStopping.direction == cm.direction)
-                                continue;   // cascade to the next lower rate
-                            else {
-                                #region debug
-                                debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                                    "{0} at {1}: at {2}, direction changed after stopping {3} => {4}, returning ChangedDirection",
-                                    cm.taskName, RateName(cm.rate), angleAfterStopping,
-                                    cm.direction.ToString(), statusAfterStopping.direction.ToString()
-                                    );
-                                #endregion
-                                cm.direction = statusAfterStopping.direction;
-                                return SlewerStatus.ChangedDirection;
-                            }
-                        }
+                        if (statusAfterStopping.direction == cm.direction)
+                            continue;   // cascade to the next lower rate
                         else
                         {
-                            // Not there yet, continue waiting
                             #region debug
                             debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                                    "{0} at {1}: at {2} ({10}), moving ==> target: {3}, remaining (Angle: {4}, radians: {5}, direction: {6}), stopMovement: ({7}, {8}), sleeping {9} millis ...",
-                                    cm.taskName, RateName(cm.rate), currPosition,
-                                    cm.target,
-                                    remainingDistance.angle, remainingDistance.angle.Radians, remainingDistance.direction,
-                                    mp.stopMovement, mp.stopMovement.Radians,
-                                    waitMillis, currPosition.Radians);
-                            #endregion debug
-                            slewingCancellationToken.ThrowIfCancellationRequested();
-                            Thread.Sleep(waitMillis);
+                                "{0} at {1}: at {2}, direction changed after stopping {3} => {4}, returning ChangedDirection",
+                                cm.taskName, RateName(cm.rate), angleAfterStopping,
+                                cm.direction.ToString(), statusAfterStopping.direction.ToString()
+                                );
+                            #endregion
+                            cm.direction = statusAfterStopping.direction;
+                            return SlewerStatus.ChangedDirection;
                         }
+                    }
+                    else
+                    {
+                        // Not there yet, continue waiting
+                        #region debug
+                        debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                                "{0} at {1}: at {2} ({10}), moving ==> target: {3}, remaining (Angle: {4}, radians: {5}, direction: {6}), stopMovement: ({7}, {8}), sleeping {9} millis ...",
+                                cm.taskName, RateName(cm.rate), currPosition,
+                                cm.target,
+                                remainingDistance.angle, remainingDistance.angle.Radians, remainingDistance.direction,
+                                mp.stopMovement, mp.stopMovement.Radians,
+                                waitMillis, currPosition.Radians);
+                        #endregion debug
+                        slewingCancellationToken.ThrowIfCancellationRequested();
+                        Thread.Sleep(waitMillis);
                     }
                 }
             }
@@ -1577,7 +1593,8 @@ namespace ASCOM.Wise40
             slewers.Clear();
             slewingCancellationTokenSource = new CancellationTokenSource();
             slewingCancellationToken = slewingCancellationTokenSource.Token;
-            
+            readyToSlew.Reset();
+
             try
             {
                 if (instance._enslaveDome)
@@ -2391,9 +2408,6 @@ namespace ASCOM.Wise40
         /// </summary>
         internal void ReadProfile()
         {
-            //int defaultDebugLevel = (int)Debugger.DebugLevel.DebugASCOM + 
-            //                        (int)Debugger.DebugLevel.DebugAxes + 
-            //                        (int)Debugger.DebugLevel.DebugLogic;
             using (Profile driverProfile = new Profile())
             {
                 driverProfile.DeviceType = "Telescope";

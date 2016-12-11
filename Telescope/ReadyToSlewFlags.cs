@@ -6,11 +6,14 @@ using System.Threading.Tasks;
 
 using ASCOM.Wise40.Common;
 using System.Threading;
+using ASCOM.DeviceInterface;
 
 namespace ASCOM.Wise40
 {
     public class ReadyToSlewFlags
     {
+        private Debugger debugger = Debugger.Instance;
+
         private long readyForSlew = 0;
         private long readyForSet = 0;
         private long readyForGuide = 0;
@@ -24,14 +27,20 @@ namespace ASCOM.Wise40
             readyForGuide = 0;
         }
 
-        public void Increment(double rate)
+        public void AxisIsReady(TelescopeAxes axis, double rate)
         {
+            long newValue = -1;
+
             if (rate == Const.rateSlew)
-                Interlocked.Increment(ref readyForSlew);
+                newValue = Interlocked.Increment(ref readyForSlew);
             else if (rate == Const.rateSet)
-                Interlocked.Increment(ref readyForSet);
+                newValue = Interlocked.Increment(ref readyForSet);
             else if (rate == Const.rateGuide)
-                Interlocked.Increment(ref readyForGuide);
+                newValue = Interlocked.Increment(ref readyForGuide);
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "AxisIsReady: {0} at {1} (newValue: {2})",
+                axis.ToString(), WiseTele.RateName(rate), newValue);
+            #endregion
         }
 
         public int Get(double rate)
@@ -48,9 +57,16 @@ namespace ASCOM.Wise40
             return (int)ret;
         }
 
-        public bool Ready(double rate)
+        public bool AxesAreReady(double rate)
         {
-            return Get(rate) == 2;
+            int nReady = Get(rate);
+            bool ret = nReady == 2;
+
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "AxesAreReady: at {0} ({1}) => {2}",
+                WiseTele.RateName(rate), nReady, ret);
+            #endregion
+            return ret;
         }
     };
 }
