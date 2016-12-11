@@ -1161,7 +1161,7 @@ namespace ASCOM.Wise40
                 if (Simulated)
                 {
                     domeEncoder.Value = savedEncoderValue;
-                    domeEncoder.Calibrate(Angle.FromDegrees(savedAzimuth));
+                    domeEncoder.Calibrate(Angle.FromDegrees(savedAzimuth, Angle.Type.Az));
                 }
                 else if (savedEncoderValue == domeEncoder.Value)
                 {
