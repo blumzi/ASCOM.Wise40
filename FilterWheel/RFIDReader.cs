@@ -23,7 +23,7 @@ namespace ASCOM.Wise40
         public RFIDReader() { }
         static RFIDReader() { }
 
-        private const string dummyID = "DEADBEEF4";
+        private const string dummyID = "DEADBEEF83";
 
         public string UUID
         {

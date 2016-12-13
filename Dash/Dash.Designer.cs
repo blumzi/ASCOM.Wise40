@@ -130,6 +130,7 @@
             this.toolStripTextBoxVantagePro2ReportFile = new System.Windows.Forms.ToolStripTextBox();
             this.toolStripMenuItemSafeToOpen = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItemFilterWheel = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem3 = new System.Windows.Forms.ToolStripMenuItem();
             this.tracingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.debuggingToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.debugASCOMToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -188,7 +189,7 @@
             this.labelDashStatus = new System.Windows.Forms.Label();
             this.timerRefreshDisplay = new System.Windows.Forms.Timer(this.components);
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
-            this.toolStripMenuItem3 = new System.Windows.Forms.ToolStripMenuItem();
+            this.filterWheelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tableLayoutMain.SuspendLayout();
             this.groupBoxFocuser.SuspendLayout();
             this.groupBoxDomeGroup.SuspendLayout();
@@ -1603,6 +1604,12 @@
             this.toolStripMenuItemFilterWheel.Text = "Filter Wheel";
             this.toolStripMenuItemFilterWheel.Click += new System.EventHandler(this.toolStripMenuItemFilterWheel_Click);
             // 
+            // toolStripMenuItem3
+            // 
+            this.toolStripMenuItem3.Name = "toolStripMenuItem3";
+            this.toolStripMenuItem3.Size = new System.Drawing.Size(158, 22);
+            this.toolStripMenuItem3.Text = "  ";
+            // 
             // tracingToolStripMenuItem
             // 
             this.tracingToolStripMenuItem.Name = "tracingToolStripMenuItem";
@@ -1725,7 +1732,8 @@
             this.viewToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.digitalIOCardsToolStripMenuItem,
             this.debuggingToolStripMenuItem,
-            this.motionStudyToolStripMenuItem});
+            this.motionStudyToolStripMenuItem,
+            this.filterWheelToolStripMenuItem});
             this.viewToolStripMenuItem.ForeColor = System.Drawing.Color.DarkOrange;
             this.viewToolStripMenuItem.Name = "viewToolStripMenuItem";
             this.viewToolStripMenuItem.Size = new System.Drawing.Size(47, 21);
@@ -2293,11 +2301,13 @@
             this.timerRefreshDisplay.Enabled = true;
             this.timerRefreshDisplay.Tick += new System.EventHandler(this.RefreshDisplay);
             // 
-            // toolStripMenuItem3
+            // filterWheelToolStripMenuItem
             // 
-            this.toolStripMenuItem3.Name = "toolStripMenuItem3";
-            this.toolStripMenuItem3.Size = new System.Drawing.Size(158, 22);
-            this.toolStripMenuItem3.Text = "  ";
+            this.filterWheelToolStripMenuItem.ForeColor = System.Drawing.Color.DarkOrange;
+            this.filterWheelToolStripMenuItem.Name = "filterWheelToolStripMenuItem";
+            this.filterWheelToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
+            this.filterWheelToolStripMenuItem.Text = "Filter Wheel";
+            this.filterWheelToolStripMenuItem.Click += new System.EventHandler(this.filterWheelToolStripMenuItem_Click);
             // 
             // FormDash
             // 
@@ -2501,6 +2511,7 @@
         private System.Windows.Forms.CheckBox checkBoxMotionStudy;
         private System.Windows.Forms.ToolStripMenuItem motionStudyToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem3;
+        private System.Windows.Forms.ToolStripMenuItem filterWheelToolStripMenuItem;
     }
 }
 

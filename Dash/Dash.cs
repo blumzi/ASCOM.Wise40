@@ -32,6 +32,7 @@ namespace Dash
         DomeSlaveDriver domeSlaveDriver = DomeSlaveDriver.Instance;
         DebuggingForm debuggingForm = new DebuggingForm();
         Debugger debugger = Debugger.Instance;
+        FilterWheelForm filterWheelForm = new FilterWheelForm();
 
         Statuser dashStatus, telescopeStatus, domeStatus, shutterStatus, focuserStatus, weatherStatus;
 
@@ -57,6 +58,8 @@ namespace Dash
             wisesafetoopen.init();
             wisesafetoopen.Connected = true;
             boltwood.Connected = true;
+            wisefilterwheel.init();
+            wisefilterwheel.Connected = true;
 
             InitializeComponent();
 
@@ -1093,6 +1096,12 @@ namespace Dash
         private void toolStripMenuItemFilterWheel_Click(object sender, EventArgs e)
         {
             new ASCOM.Wise40.FilterWheelSetupDialogForm().Show();
+        }
+
+        private void filterWheelToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            wisefilterwheel.init();
+            new FilterWheelForm().Show();
         }
 
         private void safetyOverrideToolStripMenuItem_Click(object sender, EventArgs e)

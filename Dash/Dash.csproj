@@ -107,6 +107,12 @@
     <Compile Include="DebuggingForm.Designer.cs">
       <DependentUpon>DebuggingForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="FilterWheelForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FilterWheelForm.Designer.cs">
+      <DependentUpon>FilterWheelForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="HardwareForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -126,6 +132,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="DebuggingForm.resx">
       <DependentUpon>DebuggingForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FilterWheelForm.resx">
+      <DependentUpon>FilterWheelForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="HardwareForm.resx">
       <DependentUpon>HardwareForm.cs</DependentUpon>

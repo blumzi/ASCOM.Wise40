@@ -91,6 +91,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Installer", "Installer\Inst
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FilterWheel", "FilterWheel\FilterWheel.csproj", "{371009F1-23D3-41EA-A431-DFD1C08D6CAA}"
+	ProjectSection(ProjectDependencies) = postProject
+		{B76546E7-9832-4D28-B412-B34CA1C6177C} = {B76546E7-9832-4D28-B412-B34CA1C6177C}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -21,6 +21,7 @@ namespace ASCOM.Wise40
         private RFIDReader RFIDReader = RFIDReader.Instance;
 
         private bool _connected = false;
+        private short _simulatedPosition = 2;
         
         private static bool _initialized = false;
 
@@ -30,14 +31,14 @@ namespace ASCOM.Wise40
         private static string driverDescription = "ASCOM FilterWheel Driver for Wise40.";
 
         public struct FWPosition {
-            public string name;
+            public string filterName;
             public string uuid;
-            public int offset;
+            public int filterOffset;
 
             public FWPosition(string n, int o, string u)
             {
-                name = n;
-                offset = o;
+                filterName = n;
+                filterOffset = o;
                 uuid = u;
             }
         };
@@ -53,13 +54,13 @@ namespace ASCOM.Wise40
                 this.positions = new FWPosition[npos];
                 for (int i = 0; i < npos; i++)
                 {
-                    positions[i].name = positions[i].uuid = string.Empty;
-                    positions[i].offset = 0;
+                    positions[i].filterName = positions[i].uuid = string.Empty;
+                    positions[i].filterOffset = 0;
                 }
             }
         }
 
-        private Wheel wheel;
+        public Wheel wheel;
         public Wheel wheel8 = new Wheel("Wheel8", 8);
         public Wheel wheel4 = new Wheel("Wheel4", 4);
 
@@ -110,10 +111,10 @@ namespace ASCOM.Wise40
                 {
                     for (int pos = 0; pos < w.positions.Length; pos++)
                     {
-                        subKey = string.Format("{0}/{1}", w.name, pos + 1);
+                        subKey = string.Format("{0}/Position{1}", w.name, pos + 1);
 
-                        w.positions[pos].name = driverProfile.GetValue(driverID, "Name", subKey, string.Empty);
-                        w.positions[pos].offset = Convert.ToInt32(driverProfile.GetValue(driverID, "Focus Offset", subKey, 0.ToString()));
+                        w.positions[pos].filterName = driverProfile.GetValue(driverID, "Name", subKey, string.Empty);
+                        w.positions[pos].filterOffset = Convert.ToInt32(driverProfile.GetValue(driverID, "Focus Offset", subKey, 0.ToString()));
                         w.positions[pos].uuid = driverProfile.GetValue(driverID, "RFID", subKey, string.Empty);
                     }
                 }
@@ -131,10 +132,10 @@ namespace ASCOM.Wise40
                 {
                     for (int pos = 0; pos < w.positions.Length; pos++)
                     {
-                        subKey = string.Format("{0}/{1}", w.name, pos + 1);
+                        subKey = string.Format("{0}/Position{1}", w.name, pos + 1);
 
-                        driverProfile.WriteValue(driverID, "Name", w.positions[pos].name, subKey);
-                        driverProfile.WriteValue(driverID, "Focus Offset", w.positions[pos].offset.ToString(), subKey);
+                        driverProfile.WriteValue(driverID, "Name", w.positions[pos].filterName, subKey);
+                        driverProfile.WriteValue(driverID, "Focus Offset", w.positions[pos].filterOffset.ToString(), subKey);
                         driverProfile.WriteValue(driverID, "RFID", w.positions[pos].uuid, subKey);
                     }
                 }
@@ -289,8 +290,8 @@ namespace ASCOM.Wise40
 
                 foreach (FWPosition position in wheel.positions) // Write filter offsets to the log
                 {
-                    focusOffsets.Add(position.offset);
-                    traceLogger.LogMessage("FocusOffsets Get", position.offset.ToString());
+                    focusOffsets.Add(position.filterOffset);
+                    traceLogger.LogMessage("FocusOffsets Get", position.filterOffset.ToString());
                 }
 
                 return focusOffsets.ToArray();
@@ -304,8 +305,8 @@ namespace ASCOM.Wise40
                 List<string> names = new List<string>();
                 foreach (FWPosition position in wheel.positions)
                 {
-                    traceLogger.LogMessage("Names Get", position.name);
-                    names.Add(position.name);
+                    traceLogger.LogMessage("Names Get", position.filterName);
+                    names.Add(position.filterName);
                 }
 
                 return names.ToArray();
@@ -316,25 +317,40 @@ namespace ASCOM.Wise40
         {
             get
             {
-                string uuid = RFIDReader.UUID;
-                short ret = -1;
+                if (!Connected)
+                    throw (new NotConnectedException("Not connected"));
 
-                for (short i = 0; i < wheel.positions.Length; i++)
+                if (Simulated)
                 {
-                    if (uuid == wheel.positions[i].uuid)
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "GetCurrentPosition: {0}", _simulatedPosition);
+                    #endregion
+                    return _simulatedPosition;
+                } else
+                {
+                    string uuid = RFIDReader.UUID;
+                    short ret = -1;
+
+                    for (short i = 0; i < wheel.positions.Length; i++)
                     {
-                        ret = i;
-                        break;
+                        if (uuid == wheel.positions[i].uuid)
+                        {
+                            ret = ++i;
+                            break;
+                        }
                     }
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "GetCurrentPosition: {0}", ret);
+                    #endregion
+                    return ret;
                 }
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "GetCurrentPosition: {0}", ret);
-                #endregion
-                return ret;
             }
 
             set
             {
+                if (!Connected)
+                    throw (new NotConnectedException("Not connected"));
+
                 int nPositions = wheel.positions.Length;
 
                 traceLogger.LogMessage("Position Set", value.ToString());
@@ -343,12 +359,25 @@ namespace ASCOM.Wise40
                     traceLogger.LogMessage("", "Throwing InvalidValueException - Position: " + value.ToString() + ", Range: 0 to " + (nPositions - 1).ToString());
                     throw new InvalidValueException("Position", value.ToString(), "0 to " + (nPositions - 1).ToString());
                 }
-                /*
-                 * TODO: Tell the filter wheel to go to position <value>
-                 */
-                //fwPosition = value;
+
+                if (Simulated)
+                {
+                    _simulatedPosition = value;
+                } else {
+                    /*
+                     * TODO: Tell the filter wheel to go to position <value>
+                     */
+                }
             }
         }
         #endregion
+
+        public int Positions
+        {
+            get
+            {
+                return wheel.positions.Length;
+            }
+        }
     }
 }

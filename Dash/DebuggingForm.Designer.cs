@@ -103,6 +103,8 @@
             this.Controls.Add(this.listBoxDebugMessages);
             this.Controls.Add(this.menuStripDebugging);
             this.MainMenuStrip = this.menuStripDebugging;
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
             this.Name = "DebuggingForm";
             this.Text = "DebuggingForm";
             this.menuStripDebugging.ResumeLayout(false);

@@ -223,9 +223,9 @@ namespace ASCOM.Wise40
             this.textBoxWheel8Name7.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxWheel8Name7.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.textBoxWheel8Name7.BackColor = System.Drawing.SystemColors.ControlLight;
             this.textBoxWheel8Name7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxWheel8Name7.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.textBoxWheel8Name7.ForeColor = System.Drawing.SystemColors.ControlText;
             this.textBoxWheel8Name7.Location = new System.Drawing.Point(43, 211);
             this.textBoxWheel8Name7.Name = "textBoxWheel8Name7";
             this.textBoxWheel8Name7.Size = new System.Drawing.Size(262, 20);
@@ -236,9 +236,9 @@ namespace ASCOM.Wise40
             this.textBoxWheel8Name6.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxWheel8Name6.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.textBoxWheel8Name6.BackColor = System.Drawing.SystemColors.ControlLight;
             this.textBoxWheel8Name6.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxWheel8Name6.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.textBoxWheel8Name6.ForeColor = System.Drawing.SystemColors.ControlText;
             this.textBoxWheel8Name6.Location = new System.Drawing.Point(43, 185);
             this.textBoxWheel8Name6.Name = "textBoxWheel8Name6";
             this.textBoxWheel8Name6.Size = new System.Drawing.Size(262, 20);
@@ -249,9 +249,9 @@ namespace ASCOM.Wise40
             this.textBoxWheel8Name5.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxWheel8Name5.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.textBoxWheel8Name5.BackColor = System.Drawing.SystemColors.ControlLight;
             this.textBoxWheel8Name5.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxWheel8Name5.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.textBoxWheel8Name5.ForeColor = System.Drawing.SystemColors.ControlText;
             this.textBoxWheel8Name5.Location = new System.Drawing.Point(43, 159);
             this.textBoxWheel8Name5.Name = "textBoxWheel8Name5";
             this.textBoxWheel8Name5.Size = new System.Drawing.Size(262, 20);
@@ -262,9 +262,9 @@ namespace ASCOM.Wise40
             this.textBoxWheel8Name4.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxWheel8Name4.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.textBoxWheel8Name4.BackColor = System.Drawing.SystemColors.ControlLight;
             this.textBoxWheel8Name4.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxWheel8Name4.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.textBoxWheel8Name4.ForeColor = System.Drawing.SystemColors.ControlText;
             this.textBoxWheel8Name4.Location = new System.Drawing.Point(43, 133);
             this.textBoxWheel8Name4.Name = "textBoxWheel8Name4";
             this.textBoxWheel8Name4.Size = new System.Drawing.Size(262, 20);
@@ -275,9 +275,9 @@ namespace ASCOM.Wise40
             this.textBoxWheel8Name3.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxWheel8Name3.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.textBoxWheel8Name3.BackColor = System.Drawing.SystemColors.ControlLight;
             this.textBoxWheel8Name3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxWheel8Name3.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.textBoxWheel8Name3.ForeColor = System.Drawing.SystemColors.ControlText;
             this.textBoxWheel8Name3.Location = new System.Drawing.Point(43, 107);
             this.textBoxWheel8Name3.Name = "textBoxWheel8Name3";
             this.textBoxWheel8Name3.Size = new System.Drawing.Size(262, 20);
@@ -289,9 +289,9 @@ namespace ASCOM.Wise40
             this.textBoxWheel8Name2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxWheel8Name2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.textBoxWheel8Name2.BackColor = System.Drawing.SystemColors.ControlLight;
             this.textBoxWheel8Name2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxWheel8Name2.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.textBoxWheel8Name2.ForeColor = System.Drawing.SystemColors.ControlText;
             this.textBoxWheel8Name2.Location = new System.Drawing.Point(43, 81);
             this.textBoxWheel8Name2.Name = "textBoxWheel8Name2";
             this.textBoxWheel8Name2.Size = new System.Drawing.Size(262, 20);
@@ -302,9 +302,9 @@ namespace ASCOM.Wise40
             this.textBoxWheel8Name1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxWheel8Name1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.textBoxWheel8Name1.BackColor = System.Drawing.SystemColors.ControlLight;
             this.textBoxWheel8Name1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxWheel8Name1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.textBoxWheel8Name1.ForeColor = System.Drawing.SystemColors.ControlText;
             this.textBoxWheel8Name1.Location = new System.Drawing.Point(43, 55);
             this.textBoxWheel8Name1.Name = "textBoxWheel8Name1";
             this.textBoxWheel8Name1.Size = new System.Drawing.Size(262, 20);
@@ -315,133 +315,139 @@ namespace ASCOM.Wise40
             this.textBoxWheel8Offset7.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxWheel8Offset7.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.textBoxWheel8Offset7.BackColor = System.Drawing.SystemColors.Control;
             this.textBoxWheel8Offset7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxWheel8Offset7.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.textBoxWheel8Offset7.ForeColor = System.Drawing.SystemColors.ControlText;
             this.textBoxWheel8Offset7.Location = new System.Drawing.Point(311, 211);
             this.textBoxWheel8Offset7.Name = "textBoxWheel8Offset7";
             this.textBoxWheel8Offset7.Size = new System.Drawing.Size(54, 20);
             this.textBoxWheel8Offset7.TabIndex = 42;
+            this.textBoxWheel8Offset7.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
             // textBoxWheel8Offset6
             // 
             this.textBoxWheel8Offset6.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxWheel8Offset6.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.textBoxWheel8Offset6.BackColor = System.Drawing.SystemColors.Control;
             this.textBoxWheel8Offset6.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxWheel8Offset6.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.textBoxWheel8Offset6.ForeColor = System.Drawing.SystemColors.ControlText;
             this.textBoxWheel8Offset6.Location = new System.Drawing.Point(311, 185);
             this.textBoxWheel8Offset6.Name = "textBoxWheel8Offset6";
             this.textBoxWheel8Offset6.Size = new System.Drawing.Size(54, 20);
             this.textBoxWheel8Offset6.TabIndex = 41;
+            this.textBoxWheel8Offset6.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
             // textBoxWheel8Offset5
             // 
             this.textBoxWheel8Offset5.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxWheel8Offset5.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.textBoxWheel8Offset5.BackColor = System.Drawing.SystemColors.Control;
             this.textBoxWheel8Offset5.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxWheel8Offset5.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.textBoxWheel8Offset5.ForeColor = System.Drawing.SystemColors.ControlText;
             this.textBoxWheel8Offset5.Location = new System.Drawing.Point(311, 159);
             this.textBoxWheel8Offset5.Name = "textBoxWheel8Offset5";
             this.textBoxWheel8Offset5.Size = new System.Drawing.Size(54, 20);
             this.textBoxWheel8Offset5.TabIndex = 40;
+            this.textBoxWheel8Offset5.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
             // textBoxWheel8Offset4
             // 
             this.textBoxWheel8Offset4.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxWheel8Offset4.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.textBoxWheel8Offset4.BackColor = System.Drawing.SystemColors.Control;
             this.textBoxWheel8Offset4.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxWheel8Offset4.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.textBoxWheel8Offset4.ForeColor = System.Drawing.SystemColors.ControlText;
             this.textBoxWheel8Offset4.Location = new System.Drawing.Point(311, 133);
             this.textBoxWheel8Offset4.Name = "textBoxWheel8Offset4";
             this.textBoxWheel8Offset4.Size = new System.Drawing.Size(54, 20);
             this.textBoxWheel8Offset4.TabIndex = 39;
+            this.textBoxWheel8Offset4.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
             // textBoxWheel8Offset3
             // 
             this.textBoxWheel8Offset3.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxWheel8Offset3.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.textBoxWheel8Offset3.BackColor = System.Drawing.SystemColors.Control;
             this.textBoxWheel8Offset3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxWheel8Offset3.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.textBoxWheel8Offset3.ForeColor = System.Drawing.SystemColors.ControlText;
             this.textBoxWheel8Offset3.Location = new System.Drawing.Point(311, 107);
             this.textBoxWheel8Offset3.Name = "textBoxWheel8Offset3";
             this.textBoxWheel8Offset3.Size = new System.Drawing.Size(54, 20);
             this.textBoxWheel8Offset3.TabIndex = 38;
             this.textBoxWheel8Offset3.Text = "750";
+            this.textBoxWheel8Offset3.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
             // textBoxWheel8Offset2
             // 
             this.textBoxWheel8Offset2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxWheel8Offset2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.textBoxWheel8Offset2.BackColor = System.Drawing.SystemColors.Control;
             this.textBoxWheel8Offset2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxWheel8Offset2.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.textBoxWheel8Offset2.ForeColor = System.Drawing.SystemColors.ControlText;
             this.textBoxWheel8Offset2.Location = new System.Drawing.Point(311, 81);
             this.textBoxWheel8Offset2.Name = "textBoxWheel8Offset2";
             this.textBoxWheel8Offset2.Size = new System.Drawing.Size(54, 20);
             this.textBoxWheel8Offset2.TabIndex = 37;
+            this.textBoxWheel8Offset2.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
             // textBoxWheel8Offset1
             // 
             this.textBoxWheel8Offset1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxWheel8Offset1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.textBoxWheel8Offset1.BackColor = System.Drawing.SystemColors.Control;
             this.textBoxWheel8Offset1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxWheel8Offset1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.textBoxWheel8Offset1.ForeColor = System.Drawing.SystemColors.ControlText;
             this.textBoxWheel8Offset1.Location = new System.Drawing.Point(311, 55);
             this.textBoxWheel8Offset1.Name = "textBoxWheel8Offset1";
             this.textBoxWheel8Offset1.Size = new System.Drawing.Size(54, 20);
             this.textBoxWheel8Offset1.TabIndex = 36;
+            this.textBoxWheel8Offset1.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
             // textBoxWheel8RFID0
             // 
             this.textBoxWheel8RFID0.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxWheel8RFID0.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.textBoxWheel8RFID0.BackColor = System.Drawing.SystemColors.Control;
             this.textBoxWheel8RFID0.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxWheel8RFID0.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.textBoxWheel8RFID0.ForeColor = System.Drawing.SystemColors.ControlText;
             this.textBoxWheel8RFID0.Location = new System.Drawing.Point(371, 29);
             this.textBoxWheel8RFID0.Name = "textBoxWheel8RFID0";
             this.textBoxWheel8RFID0.Size = new System.Drawing.Size(114, 20);
             this.textBoxWheel8RFID0.TabIndex = 22;
-            this.textBoxWheel8RFID0.Text = "DEADBEEF1";
             // 
             // textBoxWheel8Offset0
             // 
             this.textBoxWheel8Offset0.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxWheel8Offset0.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.textBoxWheel8Offset0.BackColor = System.Drawing.SystemColors.Control;
             this.textBoxWheel8Offset0.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxWheel8Offset0.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.textBoxWheel8Offset0.ForeColor = System.Drawing.SystemColors.ControlText;
             this.textBoxWheel8Offset0.Location = new System.Drawing.Point(311, 29);
             this.textBoxWheel8Offset0.Name = "textBoxWheel8Offset0";
             this.textBoxWheel8Offset0.Size = new System.Drawing.Size(54, 20);
             this.textBoxWheel8Offset0.TabIndex = 21;
+            this.textBoxWheel8Offset0.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
             // textBoxWheel8RFID1
             // 
             this.textBoxWheel8RFID1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxWheel8RFID1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.textBoxWheel8RFID1.BackColor = System.Drawing.SystemColors.Control;
             this.textBoxWheel8RFID1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxWheel8RFID1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.textBoxWheel8RFID1.ForeColor = System.Drawing.SystemColors.ControlText;
             this.textBoxWheel8RFID1.Location = new System.Drawing.Point(371, 55);
             this.textBoxWheel8RFID1.Name = "textBoxWheel8RFID1";
             this.textBoxWheel8RFID1.Size = new System.Drawing.Size(114, 20);
             this.textBoxWheel8RFID1.TabIndex = 17;
-            this.textBoxWheel8RFID1.Text = "DEADBEEF2";
             // 
             // label2
             // 
@@ -563,13 +569,14 @@ namespace ASCOM.Wise40
             // 
             // label11
             // 
-            this.label11.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left)));
+            this.label11.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.label11.AutoSize = true;
             this.label11.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label11.Location = new System.Drawing.Point(311, 0);
             this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(41, 26);
+            this.label11.Size = new System.Drawing.Size(54, 26);
             this.label11.TabIndex = 9;
             this.label11.Text = "Focus\r\nOffset";
             this.label11.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -595,9 +602,9 @@ namespace ASCOM.Wise40
             this.label9.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label9.Location = new System.Drawing.Point(43, 0);
             this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(71, 26);
+            this.label9.Size = new System.Drawing.Size(35, 26);
             this.label9.TabIndex = 7;
-            this.label9.Text = "Filter Name";
+            this.label9.Text = "Filter";
             this.label9.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // textBoxWheel8RFID2
@@ -605,93 +612,88 @@ namespace ASCOM.Wise40
             this.textBoxWheel8RFID2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxWheel8RFID2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.textBoxWheel8RFID2.BackColor = System.Drawing.SystemColors.Control;
             this.textBoxWheel8RFID2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxWheel8RFID2.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.textBoxWheel8RFID2.ForeColor = System.Drawing.SystemColors.ControlText;
             this.textBoxWheel8RFID2.Location = new System.Drawing.Point(371, 81);
             this.textBoxWheel8RFID2.Name = "textBoxWheel8RFID2";
             this.textBoxWheel8RFID2.Size = new System.Drawing.Size(114, 20);
             this.textBoxWheel8RFID2.TabIndex = 13;
-            this.textBoxWheel8RFID2.Text = "DEADBEEF3";
             // 
             // textBoxWheel8RFID3
             // 
             this.textBoxWheel8RFID3.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxWheel8RFID3.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.textBoxWheel8RFID3.BackColor = System.Drawing.SystemColors.Control;
             this.textBoxWheel8RFID3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxWheel8RFID3.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.textBoxWheel8RFID3.ForeColor = System.Drawing.SystemColors.ControlText;
             this.textBoxWheel8RFID3.Location = new System.Drawing.Point(371, 107);
             this.textBoxWheel8RFID3.Name = "textBoxWheel8RFID3";
             this.textBoxWheel8RFID3.Size = new System.Drawing.Size(114, 20);
             this.textBoxWheel8RFID3.TabIndex = 15;
-            this.textBoxWheel8RFID3.Text = "DEADBEEF4";
+            this.textBoxWheel8RFID3.Text = "DEADBEEF84";
             // 
             // textBoxWheel8RFID4
             // 
             this.textBoxWheel8RFID4.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxWheel8RFID4.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.textBoxWheel8RFID4.BackColor = System.Drawing.SystemColors.Control;
             this.textBoxWheel8RFID4.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxWheel8RFID4.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.textBoxWheel8RFID4.ForeColor = System.Drawing.SystemColors.ControlText;
             this.textBoxWheel8RFID4.Location = new System.Drawing.Point(371, 133);
             this.textBoxWheel8RFID4.Name = "textBoxWheel8RFID4";
             this.textBoxWheel8RFID4.Size = new System.Drawing.Size(114, 20);
             this.textBoxWheel8RFID4.TabIndex = 18;
-            this.textBoxWheel8RFID4.Text = "DEADBEEF5";
             // 
             // textBoxWheel8RFID5
             // 
             this.textBoxWheel8RFID5.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxWheel8RFID5.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.textBoxWheel8RFID5.BackColor = System.Drawing.SystemColors.Control;
             this.textBoxWheel8RFID5.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxWheel8RFID5.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.textBoxWheel8RFID5.ForeColor = System.Drawing.SystemColors.ControlText;
             this.textBoxWheel8RFID5.Location = new System.Drawing.Point(371, 159);
             this.textBoxWheel8RFID5.Name = "textBoxWheel8RFID5";
             this.textBoxWheel8RFID5.Size = new System.Drawing.Size(114, 20);
             this.textBoxWheel8RFID5.TabIndex = 14;
-            this.textBoxWheel8RFID5.Text = "DEADBEEF6";
             // 
             // textBoxWheel8RFID7
             // 
             this.textBoxWheel8RFID7.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxWheel8RFID7.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.textBoxWheel8RFID7.BackColor = System.Drawing.SystemColors.Control;
             this.textBoxWheel8RFID7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxWheel8RFID7.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.textBoxWheel8RFID7.ForeColor = System.Drawing.SystemColors.ControlText;
             this.textBoxWheel8RFID7.Location = new System.Drawing.Point(371, 211);
             this.textBoxWheel8RFID7.Name = "textBoxWheel8RFID7";
             this.textBoxWheel8RFID7.Size = new System.Drawing.Size(114, 20);
             this.textBoxWheel8RFID7.TabIndex = 19;
-            this.textBoxWheel8RFID7.Text = "DEADBEEF8";
             // 
             // textBoxWheel8RFID6
             // 
             this.textBoxWheel8RFID6.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxWheel8RFID6.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.textBoxWheel8RFID6.BackColor = System.Drawing.SystemColors.Control;
             this.textBoxWheel8RFID6.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxWheel8RFID6.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.textBoxWheel8RFID6.ForeColor = System.Drawing.SystemColors.ControlText;
             this.textBoxWheel8RFID6.Location = new System.Drawing.Point(371, 185);
             this.textBoxWheel8RFID6.Name = "textBoxWheel8RFID6";
             this.textBoxWheel8RFID6.Size = new System.Drawing.Size(114, 20);
             this.textBoxWheel8RFID6.TabIndex = 20;
-            this.textBoxWheel8RFID6.Text = "DEADBEEF7";
             // 
             // textBoxWheel8Name0
             // 
             this.textBoxWheel8Name0.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxWheel8Name0.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.textBoxWheel8Name0.BackColor = System.Drawing.SystemColors.ControlLight;
             this.textBoxWheel8Name0.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxWheel8Name0.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.textBoxWheel8Name0.ForeColor = System.Drawing.SystemColors.ControlText;
             this.textBoxWheel8Name0.Location = new System.Drawing.Point(43, 29);
             this.textBoxWheel8Name0.Name = "textBoxWheel8Name0";
             this.textBoxWheel8Name0.Size = new System.Drawing.Size(262, 20);
@@ -752,9 +754,9 @@ namespace ASCOM.Wise40
             this.textBoxWheel4Name3.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxWheel4Name3.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.textBoxWheel4Name3.BackColor = System.Drawing.SystemColors.ControlLight;
             this.textBoxWheel4Name3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxWheel4Name3.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.textBoxWheel4Name3.ForeColor = System.Drawing.SystemColors.ControlText;
             this.textBoxWheel4Name3.Location = new System.Drawing.Point(43, 107);
             this.textBoxWheel4Name3.Name = "textBoxWheel4Name3";
             this.textBoxWheel4Name3.Size = new System.Drawing.Size(262, 20);
@@ -765,9 +767,9 @@ namespace ASCOM.Wise40
             this.textBoxWheel4Name2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxWheel4Name2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.textBoxWheel4Name2.BackColor = System.Drawing.SystemColors.ControlLight;
             this.textBoxWheel4Name2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxWheel4Name2.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.textBoxWheel4Name2.ForeColor = System.Drawing.SystemColors.ControlText;
             this.textBoxWheel4Name2.Location = new System.Drawing.Point(43, 81);
             this.textBoxWheel4Name2.Name = "textBoxWheel4Name2";
             this.textBoxWheel4Name2.Size = new System.Drawing.Size(262, 20);
@@ -779,9 +781,9 @@ namespace ASCOM.Wise40
             this.textBoxWheel4Name1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxWheel4Name1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.textBoxWheel4Name1.BackColor = System.Drawing.SystemColors.ControlLight;
             this.textBoxWheel4Name1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxWheel4Name1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.textBoxWheel4Name1.ForeColor = System.Drawing.SystemColors.ControlText;
             this.textBoxWheel4Name1.Location = new System.Drawing.Point(43, 55);
             this.textBoxWheel4Name1.Name = "textBoxWheel4Name1";
             this.textBoxWheel4Name1.Size = new System.Drawing.Size(262, 20);
@@ -792,81 +794,83 @@ namespace ASCOM.Wise40
             this.textBoxWheel4Offset3.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxWheel4Offset3.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.textBoxWheel4Offset3.BackColor = System.Drawing.SystemColors.Control;
             this.textBoxWheel4Offset3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxWheel4Offset3.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.textBoxWheel4Offset3.ForeColor = System.Drawing.SystemColors.ControlText;
             this.textBoxWheel4Offset3.Location = new System.Drawing.Point(311, 107);
             this.textBoxWheel4Offset3.Name = "textBoxWheel4Offset3";
             this.textBoxWheel4Offset3.Size = new System.Drawing.Size(54, 20);
             this.textBoxWheel4Offset3.TabIndex = 38;
+            this.textBoxWheel4Offset3.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
             // textBoxWheel4Offset2
             // 
             this.textBoxWheel4Offset2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxWheel4Offset2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.textBoxWheel4Offset2.BackColor = System.Drawing.SystemColors.Control;
             this.textBoxWheel4Offset2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxWheel4Offset2.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.textBoxWheel4Offset2.ForeColor = System.Drawing.SystemColors.ControlText;
             this.textBoxWheel4Offset2.Location = new System.Drawing.Point(311, 81);
             this.textBoxWheel4Offset2.Name = "textBoxWheel4Offset2";
             this.textBoxWheel4Offset2.Size = new System.Drawing.Size(54, 20);
             this.textBoxWheel4Offset2.TabIndex = 37;
             this.textBoxWheel4Offset2.Text = "535";
+            this.textBoxWheel4Offset2.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
             // textBoxWheel4Offset1
             // 
             this.textBoxWheel4Offset1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxWheel4Offset1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.textBoxWheel4Offset1.BackColor = System.Drawing.SystemColors.Control;
             this.textBoxWheel4Offset1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxWheel4Offset1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.textBoxWheel4Offset1.ForeColor = System.Drawing.SystemColors.ControlText;
             this.textBoxWheel4Offset1.Location = new System.Drawing.Point(311, 55);
             this.textBoxWheel4Offset1.Name = "textBoxWheel4Offset1";
             this.textBoxWheel4Offset1.Size = new System.Drawing.Size(54, 20);
             this.textBoxWheel4Offset1.TabIndex = 36;
+            this.textBoxWheel4Offset1.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
             // textBoxWheel4RFID0
             // 
             this.textBoxWheel4RFID0.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxWheel4RFID0.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.textBoxWheel4RFID0.BackColor = System.Drawing.SystemColors.Control;
             this.textBoxWheel4RFID0.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxWheel4RFID0.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.textBoxWheel4RFID0.ForeColor = System.Drawing.SystemColors.ControlText;
             this.textBoxWheel4RFID0.Location = new System.Drawing.Point(371, 29);
             this.textBoxWheel4RFID0.Name = "textBoxWheel4RFID0";
             this.textBoxWheel4RFID0.Size = new System.Drawing.Size(114, 20);
             this.textBoxWheel4RFID0.TabIndex = 22;
-            this.textBoxWheel4RFID0.Text = "CAFEBABE1";
             // 
             // textBoxWheel4Offset0
             // 
             this.textBoxWheel4Offset0.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxWheel4Offset0.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.textBoxWheel4Offset0.BackColor = System.Drawing.SystemColors.Control;
             this.textBoxWheel4Offset0.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxWheel4Offset0.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.textBoxWheel4Offset0.ForeColor = System.Drawing.SystemColors.ControlText;
             this.textBoxWheel4Offset0.Location = new System.Drawing.Point(311, 29);
             this.textBoxWheel4Offset0.Name = "textBoxWheel4Offset0";
             this.textBoxWheel4Offset0.Size = new System.Drawing.Size(54, 20);
             this.textBoxWheel4Offset0.TabIndex = 21;
+            this.textBoxWheel4Offset0.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
             // textBoxWheel4RFID1
             // 
             this.textBoxWheel4RFID1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxWheel4RFID1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.textBoxWheel4RFID1.BackColor = System.Drawing.SystemColors.Control;
             this.textBoxWheel4RFID1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxWheel4RFID1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.textBoxWheel4RFID1.ForeColor = System.Drawing.SystemColors.ControlText;
             this.textBoxWheel4RFID1.Location = new System.Drawing.Point(371, 55);
             this.textBoxWheel4RFID1.Name = "textBoxWheel4RFID1";
             this.textBoxWheel4RFID1.Size = new System.Drawing.Size(114, 20);
             this.textBoxWheel4RFID1.TabIndex = 17;
-            this.textBoxWheel4RFID1.Text = "CAFEBABE2";
             // 
             // label14
             // 
@@ -936,13 +940,14 @@ namespace ASCOM.Wise40
             // 
             // label23
             // 
-            this.label23.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left)));
+            this.label23.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.label23.AutoSize = true;
             this.label23.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label23.Location = new System.Drawing.Point(311, 0);
             this.label23.Name = "label23";
-            this.label23.Size = new System.Drawing.Size(41, 26);
+            this.label23.Size = new System.Drawing.Size(54, 26);
             this.label23.TabIndex = 9;
             this.label23.Text = "Focus\r\nOffset";
             this.label23.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -968,9 +973,9 @@ namespace ASCOM.Wise40
             this.label25.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label25.Location = new System.Drawing.Point(43, 0);
             this.label25.Name = "label25";
-            this.label25.Size = new System.Drawing.Size(71, 26);
+            this.label25.Size = new System.Drawing.Size(35, 26);
             this.label25.TabIndex = 7;
-            this.label25.Text = "Filter Name";
+            this.label25.Text = "Filter";
             this.label25.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // textBoxWheel4RFID2
@@ -978,37 +983,36 @@ namespace ASCOM.Wise40
             this.textBoxWheel4RFID2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxWheel4RFID2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.textBoxWheel4RFID2.BackColor = System.Drawing.SystemColors.Control;
             this.textBoxWheel4RFID2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxWheel4RFID2.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.textBoxWheel4RFID2.ForeColor = System.Drawing.SystemColors.ControlText;
             this.textBoxWheel4RFID2.Location = new System.Drawing.Point(371, 81);
             this.textBoxWheel4RFID2.Name = "textBoxWheel4RFID2";
             this.textBoxWheel4RFID2.Size = new System.Drawing.Size(114, 20);
             this.textBoxWheel4RFID2.TabIndex = 13;
-            this.textBoxWheel4RFID2.Text = "CAFEBABE3";
+            this.textBoxWheel4RFID2.Text = "CAFEBABE43";
             // 
             // textBoxWheel4RFID3
             // 
             this.textBoxWheel4RFID3.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxWheel4RFID3.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.textBoxWheel4RFID3.BackColor = System.Drawing.SystemColors.Control;
             this.textBoxWheel4RFID3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxWheel4RFID3.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.textBoxWheel4RFID3.ForeColor = System.Drawing.SystemColors.ControlText;
             this.textBoxWheel4RFID3.Location = new System.Drawing.Point(371, 107);
             this.textBoxWheel4RFID3.Name = "textBoxWheel4RFID3";
             this.textBoxWheel4RFID3.Size = new System.Drawing.Size(114, 20);
             this.textBoxWheel4RFID3.TabIndex = 15;
-            this.textBoxWheel4RFID3.Text = "CAFEBABE4";
             // 
             // textBoxWheel4Name0
             // 
             this.textBoxWheel4Name0.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxWheel4Name0.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.textBoxWheel4Name0.BackColor = System.Drawing.SystemColors.ControlLight;
             this.textBoxWheel4Name0.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxWheel4Name0.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.textBoxWheel4Name0.ForeColor = System.Drawing.SystemColors.ControlText;
             this.textBoxWheel4Name0.Location = new System.Drawing.Point(43, 29);
             this.textBoxWheel4Name0.Name = "textBoxWheel4Name0";
             this.textBoxWheel4Name0.Size = new System.Drawing.Size(262, 20);
@@ -1035,6 +1039,7 @@ namespace ASCOM.Wise40
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Wise40 Setup";
+            this.Load += new System.EventHandler(this.FilterWheelSetupDialogForm_Load);
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).EndInit();
             this.groupBox1.ResumeLayout(false);
             this.tableLayoutPanel1.ResumeLayout(false);

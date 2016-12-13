@@ -65,6 +65,7 @@
     <Compile Include="Angle.cs" />
     <Compile Include="Const.cs" />
     <Compile Include="Coordinates.cs" />
+    <Compile Include="CueProvider.cs" />
     <Compile Include="Debugger.cs" />
     <Compile Include="DMS.cs" />
     <Compile Include="FixedSizeQueue.cs" />
