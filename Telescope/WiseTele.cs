@@ -1958,10 +1958,11 @@ namespace ASCOM.Wise40
 
         public PierSide DestinationSideOfPier(double RightAscension, double Declination)
         {
+            PierSide ret = PierSide.pierEast;
             #region trace
-            traceLogger.LogMessage("DestinationSideOfPier Get", "Not implemented");
+            traceLogger.LogMessage("DestinationSideOfPier Get", ret.ToString());
             #endregion
-            throw new ASCOM.PropertyNotImplementedException("DestinationSideOfPier", false);
+            return ret;
         }
 
         public bool CanPark
@@ -2299,10 +2300,11 @@ namespace ASCOM.Wise40
 
             set
             {
+                if (value != PierSide.pierEast)
+                    throw new InvalidValueException("Only pierEast is valid!");
                 #region trace
-                traceLogger.LogMessage("SideOfPier Set", "Not implemented");
+                traceLogger.LogMessage("SideOfPier Set", string.Format("Silently ignoring {0}", value.ToString()));
                 #endregion
-                throw new ASCOM.PropertyNotImplementedException("SideOfPier", true);
             }
         }
 

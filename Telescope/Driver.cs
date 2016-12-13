@@ -597,6 +597,7 @@ namespace ASCOM.Wise40
             {
                 return wisetele.SideOfPier;
             }
+
             set
             {
                 wisetele.SideOfPier = value;
