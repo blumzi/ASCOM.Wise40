@@ -149,6 +149,7 @@
             this.digitalIOCardsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.debuggingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.motionStudyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.filterWheelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.wise40WikiToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
@@ -189,7 +190,7 @@
             this.labelDashStatus = new System.Windows.Forms.Label();
             this.timerRefreshDisplay = new System.Windows.Forms.Timer(this.components);
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
-            this.filterWheelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.syncVentWithShutterToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tableLayoutMain.SuspendLayout();
             this.groupBoxFocuser.SuspendLayout();
             this.groupBoxDomeGroup.SuspendLayout();
@@ -1534,7 +1535,8 @@
             // domeToolStripMenuItem
             // 
             this.domeToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.domeAutoCalibrateToolStripMenuItem});
+            this.domeAutoCalibrateToolStripMenuItem,
+            this.syncVentWithShutterToolStripMenuItem});
             this.domeToolStripMenuItem.Name = "domeToolStripMenuItem";
             this.domeToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
             this.domeToolStripMenuItem.Text = "Dome";
@@ -1542,7 +1544,7 @@
             // domeAutoCalibrateToolStripMenuItem
             // 
             this.domeAutoCalibrateToolStripMenuItem.Name = "domeAutoCalibrateToolStripMenuItem";
-            this.domeAutoCalibrateToolStripMenuItem.Size = new System.Drawing.Size(157, 22);
+            this.domeAutoCalibrateToolStripMenuItem.Size = new System.Drawing.Size(194, 22);
             this.domeAutoCalibrateToolStripMenuItem.Text = "Auto Calibrate";
             this.domeAutoCalibrateToolStripMenuItem.ToolTipText = "If asked for Azimuth and not calibrated, \r\nthe dome will automatically search for" +
     "\r\nthe calibration point.\r\n";
@@ -1762,6 +1764,14 @@
             this.motionStudyToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
             this.motionStudyToolStripMenuItem.Text = "Motion Study";
             this.motionStudyToolStripMenuItem.Click += new System.EventHandler(this.motionStudyToolStripMenuItem_Click_1);
+            // 
+            // filterWheelToolStripMenuItem
+            // 
+            this.filterWheelToolStripMenuItem.ForeColor = System.Drawing.Color.DarkOrange;
+            this.filterWheelToolStripMenuItem.Name = "filterWheelToolStripMenuItem";
+            this.filterWheelToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
+            this.filterWheelToolStripMenuItem.Text = "Filter Wheel";
+            this.filterWheelToolStripMenuItem.Click += new System.EventHandler(this.filterWheelToolStripMenuItem_Click);
             // 
             // aboutToolStripMenuItem
             // 
@@ -2301,13 +2311,12 @@
             this.timerRefreshDisplay.Enabled = true;
             this.timerRefreshDisplay.Tick += new System.EventHandler(this.RefreshDisplay);
             // 
-            // filterWheelToolStripMenuItem
+            // syncVentWithShutterToolStripMenuItem
             // 
-            this.filterWheelToolStripMenuItem.ForeColor = System.Drawing.Color.DarkOrange;
-            this.filterWheelToolStripMenuItem.Name = "filterWheelToolStripMenuItem";
-            this.filterWheelToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
-            this.filterWheelToolStripMenuItem.Text = "Filter Wheel";
-            this.filterWheelToolStripMenuItem.Click += new System.EventHandler(this.filterWheelToolStripMenuItem_Click);
+            this.syncVentWithShutterToolStripMenuItem.Name = "syncVentWithShutterToolStripMenuItem";
+            this.syncVentWithShutterToolStripMenuItem.Size = new System.Drawing.Size(194, 22);
+            this.syncVentWithShutterToolStripMenuItem.Text = "SyncVentWithShutter";
+            this.syncVentWithShutterToolStripMenuItem.Click += new System.EventHandler(this.syncVentWithShutterToolStripMenuItem_Click);
             // 
             // FormDash
             // 
@@ -2512,6 +2521,7 @@
         private System.Windows.Forms.ToolStripMenuItem motionStudyToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem3;
         private System.Windows.Forms.ToolStripMenuItem filterWheelToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem syncVentWithShutterToolStripMenuItem;
     }
 }
 
