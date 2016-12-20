@@ -119,8 +119,10 @@ namespace ASCOM.Wise40
             }
         }
 
-        private static CancellationTokenSource slewingCancellationTokenSource;
-        private static CancellationToken slewingCancellationToken;
+        private static CancellationTokenSource telescopeSlewingCancellationTokenSource = new CancellationTokenSource();
+        private static CancellationTokenSource domeSlewingCancellationTokenSource = new CancellationTokenSource();
+        private static CancellationToken telescopeSlewingCancellationToken = telescopeSlewingCancellationTokenSource.Token;
+        private static CancellationToken domeSlewingCancellationToken = domeSlewingCancellationTokenSource.Token;
         public Slewers slewers = Slewers.Instance;
 
         private AxisMonitor primaryStatusMonitor, secondaryStatusMonitor;
@@ -819,11 +821,29 @@ namespace ASCOM.Wise40
         /// </summary>
         public void Stop()
         {
-            if (slewingCancellationTokenSource != null)
+            try
+            {
+                telescopeSlewingCancellationTokenSource.Cancel();
+            }
+            catch (AggregateException ax)
+            {
+                ax.Handle((Func<Exception, bool>)((ex) =>
+                {
+                        #region debug
+                        debugger.WriteLine((Debugger.DebugLevel)Debugger.DebugLevel.DebugExceptions,
+                        "Stop: telescope slewing cancellation got {0}", ex.Message);
+                        #endregion debug
+                        if (ex is ObjectDisposedException)
+                        return true;
+                    return false;
+                }));
+            }
+
+            if (_enslaveDome)
             {
                 try
                 {
-                    slewingCancellationTokenSource.Cancel();
+                    domeSlewingCancellationTokenSource.Cancel();
                 }
                 catch (AggregateException ax)
                 {
@@ -831,7 +851,7 @@ namespace ASCOM.Wise40
                     {
                         #region debug
                         debugger.WriteLine((Debugger.DebugLevel)Debugger.DebugLevel.DebugExceptions,
-                            "Stop: got {0}", ex.Message);
+                        "Stop: dome slewing cancellation got {0}", ex.Message);
                         #endregion debug
                         if (ex is ObjectDisposedException)
                             return true;
@@ -1227,6 +1247,8 @@ namespace ASCOM.Wise40
 
             Angle ra = wisesite.LocalSiderealTime;
             Angle dec = Angle.FromDegrees(66.0, Angle.Type.Dec);
+            //telescopSlewingCancellationTokenSource = new CancellationTokenSource();
+            //telescopSlewingCancellationToken = telescopSlewingCancellationTokenSource.Token;
 
             bool saveEnslaveDome = _enslaveDome;
             if (saveEnslaveDome)
@@ -1252,6 +1274,8 @@ namespace ASCOM.Wise40
 
             Angle ra = wisesite.LocalSiderealTime;
             Angle dec = Angle.FromDegrees(66.0, Angle.Type.Dec);
+            //telescopeSlewingCancellationTokenSource = new CancellationTokenSource();
+            //telescopSlewingCancellationToken = telescopeSlewingCancellationTokenSource.Token;
 
             bool saveEnslaveDome = _enslaveDome;
 
@@ -1274,7 +1298,7 @@ namespace ASCOM.Wise40
                 Task.Run(() =>
                 {
                     _slewToCoordinatesAsync(RightAscension, Declination);
-                }, slewingCancellationToken);
+                }, telescopeSlewingCancellationToken);
             } catch (AggregateException ae)
             {
                 ae.Handle((Func<Exception, bool>)((ex) =>
@@ -1394,7 +1418,7 @@ namespace ASCOM.Wise40
             {
                 mp = movementParameters[axis][rate];
 
-                slewingCancellationToken.ThrowIfCancellationRequested();
+                telescopeSlewingCancellationToken.ThrowIfCancellationRequested();
 
                 cm.start = (axis == TelescopeAxes.axisPrimary) ?
                     Angle.FromHours(RightAscension, Angle.Type.RA) :
@@ -1433,7 +1457,7 @@ namespace ASCOM.Wise40
                 {
                     const int syncMillis = 500;
 
-                    slewingCancellationToken.ThrowIfCancellationRequested();
+                    telescopeSlewingCancellationToken.ThrowIfCancellationRequested();
                     Thread.Sleep(syncMillis);
                 }
 
@@ -1445,7 +1469,7 @@ namespace ASCOM.Wise40
                 {
                     const int waitMillis = 10;    // TODO: make it configurable or constant
 
-                    slewingCancellationToken.ThrowIfCancellationRequested();
+                    telescopeSlewingCancellationToken.ThrowIfCancellationRequested();
 
                     currPosition = (axis == TelescopeAxes.axisPrimary) ?
                         Angle.FromHours(instance.RightAscension, Angle.Type.RA) :
@@ -1515,7 +1539,7 @@ namespace ASCOM.Wise40
                                 mp.stopMovement, mp.stopMovement.Radians,
                                 waitMillis, currPosition.Radians);
                         #endregion debug
-                        slewingCancellationToken.ThrowIfCancellationRequested();
+                        telescopeSlewingCancellationToken.ThrowIfCancellationRequested();
                         Thread.Sleep(waitMillis);
                     }
                 }
@@ -1538,28 +1562,40 @@ namespace ASCOM.Wise40
             return SlewerStatus.CloseEnough;
         }
 
+        private static SlewerTask domeSlewer;
+
+        private static void checkDomeActionAborted(object StateObject)
+        {
+            if (domeSlewingCancellationToken.IsCancellationRequested)
+            {
+                instance.domeSlaveDriver.AbortSlew();
+                instance.slewers.Delete(Slewers.Type.Dome);
+                domeSlewTimer.Change(Timeout.Infinite, Timeout.Infinite);
+            }
+        }
+
+        private static System.Threading.Timer domeSlewTimer = new System.Threading.Timer(new TimerCallback(checkDomeActionAborted));
+
         private void _genericDomeSlewerTask(Action action)
         {
-            if (slewingCancellationTokenSource == null)
-            {
-                slewingCancellationTokenSource = new CancellationTokenSource();
-                slewingCancellationToken = slewingCancellationTokenSource.Token;
-            }
-            SlewerTask domeSlewer = new SlewerTask() { type = Slewers.Type.Dome };
+            domeSlewer = new SlewerTask() { type = Slewers.Type.Dome };
             domeSlewer.task = Task.Run(
                 () => {
                     try
                     {
+                        domeSlewTimer.Change(100, 100);
                         slewers.Add(domeSlewer);
                         action();
                         slewers.Delete(Slewers.Type.Dome);
+                        domeSlewTimer.Change(Timeout.Infinite, Timeout.Infinite);
                     }
                     catch (OperationCanceledException)
                     {
                         domeSlaveDriver.AbortSlew();
+                        domeSlewTimer.Change(Timeout.Infinite, Timeout.Infinite);
                     }
                 },
-                slewingCancellationToken
+                domeSlewingCancellationToken
             );
         }
 
@@ -1585,14 +1621,14 @@ namespace ASCOM.Wise40
 
         public void DomeStopper()
         {
-            slewingCancellationTokenSource.Cancel();
+            domeSlewingCancellationTokenSource.Cancel();
         }
 
         private void _slewToCoordinatesAsync(Angle RightAscension, Angle Declination)
         {
             slewers.Clear();
-            slewingCancellationTokenSource = new CancellationTokenSource();
-            slewingCancellationToken = slewingCancellationTokenSource.Token;
+            //telescopeSlewingCancellationTokenSource = new CancellationTokenSource();
+            //telescopeSlewingCancellationToken = telescopeSlewingCancellationTokenSource.Token;
             readyToSlew.Reset();
 
             try
@@ -1608,7 +1644,7 @@ namespace ASCOM.Wise40
                     task = Task.Run(() =>
                     {
                         Slewer(TelescopeAxes.axisPrimary, RightAscension);
-                    }, slewingCancellationToken)
+                    }, telescopeSlewingCancellationToken)
                 };
                 slewers.Add(raSlewer);
 
@@ -1618,7 +1654,7 @@ namespace ASCOM.Wise40
                     task = Task.Run(() =>
                             {
                                 Slewer(TelescopeAxes.axisSecondary, Declination);
-                            }, slewingCancellationToken)
+                            }, telescopeSlewingCancellationToken)
                 };
                 slewers.Add(decSlewer);
 
@@ -1662,6 +1698,7 @@ namespace ASCOM.Wise40
 
             if (!wiseComputerControl.IsSafe)
                 throw new InvalidOperationException("Computer control switch is OFF (not safe)");
+
             try
             {
                 _slewToCoordinatesSync(ra, dec);
