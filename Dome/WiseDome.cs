@@ -32,6 +32,7 @@ namespace ASCOM.Wise40
         public bool _autoCalibrate = false;
         private bool _isStuck;
         public bool _bypassSafety = false;
+        public bool _syncVentWithShutter = false;
 
         [FlagsAttribute] public enum DomeState {
             Idle = 0,
@@ -298,6 +299,7 @@ namespace ASCOM.Wise40
                 Stop();
                 _targetAz = null;
 
+                //domeSlewer.task.Dispose();
                 if (DomeStateIsOn(DomeState.Parking))
                 {
                     UnsetDomeState(DomeState.Parking);
@@ -507,7 +509,8 @@ namespace ASCOM.Wise40
             openPin.SetOn();
             _shutterState = ShutterState.shutterOpening;
             _shutterTimer.Change(_shutterTimeout, Timeout.Infinite);
-            Vent = true;
+            if (_syncVentWithShutter)
+                Vent = true;
         }
 
         public void StartClosingShutter()
@@ -515,7 +518,8 @@ namespace ASCOM.Wise40
             closePin.SetOn();
             _shutterState = ShutterState.shutterClosing;
             _shutterTimer.Change(_shutterTimeout, Timeout.Infinite);
-            Vent = false;
+            if (_syncVentWithShutter)
+                Vent = false;
         }
 
         public void ShutterStop()
@@ -1181,6 +1185,7 @@ namespace ASCOM.Wise40
         #region Profile
         internal static string autoCalibrateProfileName = "AutoCalibrate";
         internal static string bypassSafetyProfileName = "Bypass Safety";
+        internal static string syncVentWithShutterProfileName = "Sync Vent With Shutter";
         internal static string driverID = "ASCOM.Wise40.Dome";
 
         /// <summary>
@@ -1193,6 +1198,7 @@ namespace ASCOM.Wise40
                 driverProfile.DeviceType = "Dome";
                 _autoCalibrate = Convert.ToBoolean(driverProfile.GetValue(driverID, autoCalibrateProfileName, string.Empty, "false"));
                 _bypassSafety = Convert.ToBoolean(driverProfile.GetValue(driverID, bypassSafetyProfileName, string.Empty, "false"));
+                _syncVentWithShutter = Convert.ToBoolean(driverProfile.GetValue(driverID, syncVentWithShutterProfileName, string.Empty, "false"));
             }
         }
 
@@ -1206,6 +1212,7 @@ namespace ASCOM.Wise40
                 driverProfile.DeviceType = "Dome";
                 driverProfile.WriteValue(driverID, autoCalibrateProfileName, _autoCalibrate.ToString());
                 driverProfile.WriteValue(driverID, bypassSafetyProfileName, _bypassSafety.ToString());
+                driverProfile.WriteValue(driverID, syncVentWithShutterProfileName, _syncVentWithShutter.ToString());
             }
         }
         #endregion
