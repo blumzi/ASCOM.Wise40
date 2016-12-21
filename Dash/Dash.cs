@@ -108,6 +108,8 @@ namespace Dash
                 checkedItems.Add(domeAutoCalibrateToolStripMenuItem);
             if (wisetele._enslaveDome)
                 checkedItems.Add(enslaveDomeToolStripMenuItem);
+            if (wisedome._syncVentWithShutter)
+                checkedItems.Add(syncVentWithShutterToolStripMenuItem);
 
             foreach (var item in checkedItems)
             {
@@ -355,6 +357,7 @@ namespace Dash
 
                     if (wisesafetoopen.IsSafe)
                     {
+                        weatherStatus.Show("Safe to open", 0, Statuser.Severity.Good);
                         weatherStatus.SetToolTip("");
                     } else
                     {
@@ -1104,6 +1107,25 @@ namespace Dash
             new FilterWheelForm().Show();
         }
 
+        private void syncVentWithShutterToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ToolStripMenuItem item = sender as ToolStripMenuItem;
+            string text = item.Text;
+
+            if (item.Text.EndsWith(Const.checkmark))
+            {
+                wisedome._syncVentWithShutter = false;
+                item.Text = text.Remove(text.Length - Const.checkmark.Length);
+            }
+            else
+            {
+                wisedome._syncVentWithShutter = true;
+                item.Text = text + Const.checkmark;
+            }
+            item.Invalidate();
+            UpdateAlteredItems(item, "Dome");
+        }
+
         private void safetyOverrideToolStripMenuItem_Click(object sender, EventArgs e)
         {
             string menuText = "Bypass Safety";
@@ -1121,9 +1143,14 @@ namespace Dash
 
         public void StopEverything(Exception e = null)
         {
-            wisetele.Stop();
-            wisedome.Stop();
-            wisedome.ShutterStop();
+            try
+            {
+                wisetele.Stop();
+                wisetele.Tracking = false;
+                wisedome.Stop();
+                wisedome.ShutterStop();
+            }
+            catch { }
             #region debug
             string msg = "StopEverything: ";
             if (e != null)

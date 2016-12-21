@@ -105,12 +105,14 @@ namespace Restore_ASCOM_Profiles
             string driverID = "ASCOM.Wise40.Dome";
             string autoCalibrateProfileName = "AutoCalibrate";
             string bypassSafetyProfileName = "Bypass Safety";
+            string syncVentWithShutterProfileName = "Sync Vent With Shutter";
 
             using (Profile driverProfile = new Profile())
             {
                 driverProfile.DeviceType = "Dome";
                 driverProfile.WriteValue(driverID, autoCalibrateProfileName, true.ToString());
                 driverProfile.WriteValue(driverID, bypassSafetyProfileName, true.ToString());
+                driverProfile.WriteValue(driverID, syncVentWithShutterProfileName, false.ToString());
             }
         }
 
