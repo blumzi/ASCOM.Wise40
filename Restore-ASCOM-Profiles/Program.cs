@@ -6,15 +6,24 @@ using System.Threading.Tasks;
 
 using ASCOM.Utilities;
 using ASCOM.Wise40.Common;
+using System.Windows.Forms;
 
 namespace Restore_ASCOM_Profiles
 {
-    class Program
+    public class Program
     {
         private static bool realMachine = Environment.MachineName.ToLower() == "dome-ctlr";
+        public enum Mode { LCOGT, ACP, Wise };
+        public static Mode mode = Mode.Wise;
 
         static void Main(string[] args)
         {
+            if (args.Length > 0)
+            {
+                Mode m;
+                if (Enum.TryParse<Mode>(args[0], out m))
+                    mode = m;
+            }
             WriteCloudSensorProfile();
             WriteVantageProProfile();
             WriteSafeToOpenProfile();
@@ -22,6 +31,10 @@ namespace Restore_ASCOM_Profiles
             WriteDomeProfile();
             WriteTelescopeProfile();
             WriteOCHProfile();
+
+            string message = string.Format("ASCOM Profiles for Wise40 drivers have been restored to mode \"{0}\".", mode.ToString());
+            Console.WriteLine(message);
+            MessageBox.Show(message);
 
             Environment.Exit(0);
         }
@@ -112,7 +125,7 @@ namespace Restore_ASCOM_Profiles
                 driverProfile.DeviceType = "Dome";
                 driverProfile.WriteValue(driverID, autoCalibrateProfileName, true.ToString());
                 driverProfile.WriteValue(driverID, bypassSafetyProfileName, true.ToString());
-                driverProfile.WriteValue(driverID, syncVentWithShutterProfileName, false.ToString());
+                driverProfile.WriteValue(driverID, syncVentWithShutterProfileName, mode == Mode.Wise ? false.ToString() : true.ToString());
             }
         }
 
@@ -127,7 +140,7 @@ namespace Restore_ASCOM_Profiles
             {
                 driverProfile.DeviceType = "Telescope";
                 driverProfile.WriteValue(driverID, traceStateProfileName, false.ToString());
-                driverProfile.WriteValue(driverID, enslaveDomeProfileName, true.ToString());
+                driverProfile.WriteValue(driverID, enslaveDomeProfileName, mode == Mode.ACP ? false.ToString() : true.ToString());
                 driverProfile.WriteValue(driverID, debugLevelProfileName, "DebugAxes|DebugMotors|DebugExceptions|DebugASCOM|DebugLogic");
             }
         }
