@@ -15,6 +15,7 @@ namespace ASCOM.Wise40
     public partial class FilterWheelSetupDialogForm : Form
     {
         WiseFilterWheel wisefilterwheel = WiseFilterWheel.Instance;
+        private CueBanner cueBanner = new CueBanner();
 
         public FilterWheelSetupDialogForm()
         {
