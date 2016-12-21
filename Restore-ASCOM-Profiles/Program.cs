@@ -12,16 +12,16 @@ namespace Restore_ASCOM_Profiles
 {
     public class Program
     {
-        private static bool realMachine = Environment.MachineName.ToLower() == "dome-ctlr";
-        public enum Mode { LCOGT, ACP, Wise };
-        public static Mode mode = Mode.Wise;
+        private static bool realMachine = Environment.MachineName.ToUpper() == "dome-ctlr";
+        public enum Mode { LCOGT, ACP, WISE };
+        public static Mode mode = Mode.WISE;
 
         static void Main(string[] args)
         {
             if (args.Length > 0)
             {
                 Mode m;
-                if (Enum.TryParse<Mode>(args[0], out m))
+                if (Enum.TryParse<Mode>(args[0].ToUpper(), out m))
                     mode = m;
             }
             WriteCloudSensorProfile();
@@ -125,7 +125,7 @@ namespace Restore_ASCOM_Profiles
                 driverProfile.DeviceType = "Dome";
                 driverProfile.WriteValue(driverID, autoCalibrateProfileName, true.ToString());
                 driverProfile.WriteValue(driverID, bypassSafetyProfileName, true.ToString());
-                driverProfile.WriteValue(driverID, syncVentWithShutterProfileName, mode == Mode.Wise ? false.ToString() : true.ToString());
+                driverProfile.WriteValue(driverID, syncVentWithShutterProfileName, mode == Mode.WISE ? false.ToString() : true.ToString());
             }
         }
 
