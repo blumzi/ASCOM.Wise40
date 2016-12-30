@@ -95,7 +95,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FilterWheel", "FilterWheel\
 		{B76546E7-9832-4D28-B412-B34CA1C6177C} = {B76546E7-9832-4D28-B412-B34CA1C6177C}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FilterWheelArduino", "FilterWheelArduino\FilterWheelArduino.vcxproj", "{C5F80730-F44F-4478-BDAE-6634EFC2CA88}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FWArduino", "FWArduino\FWArduino.vcxproj", "{B2544205-8EF3-4E81-BFD7-55CB6A15CBAC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -234,12 +234,12 @@ Global
 		{371009F1-23D3-41EA-A431-DFD1C08D6CAA}.Release|Any CPU.Build.0 = Release|Any CPU
 		{371009F1-23D3-41EA-A431-DFD1C08D6CAA}.Release|x86.ActiveCfg = Release|Any CPU
 		{371009F1-23D3-41EA-A431-DFD1C08D6CAA}.Release|x86.Build.0 = Release|Any CPU
-		{C5F80730-F44F-4478-BDAE-6634EFC2CA88}.Debug|Any CPU.ActiveCfg = Debug|Win32
-		{C5F80730-F44F-4478-BDAE-6634EFC2CA88}.Debug|x86.ActiveCfg = Debug|Win32
-		{C5F80730-F44F-4478-BDAE-6634EFC2CA88}.Debug|x86.Build.0 = Debug|Win32
-		{C5F80730-F44F-4478-BDAE-6634EFC2CA88}.Release|Any CPU.ActiveCfg = Release|Win32
-		{C5F80730-F44F-4478-BDAE-6634EFC2CA88}.Release|x86.ActiveCfg = Release|Win32
-		{C5F80730-F44F-4478-BDAE-6634EFC2CA88}.Release|x86.Build.0 = Release|Win32
+		{B2544205-8EF3-4E81-BFD7-55CB6A15CBAC}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{B2544205-8EF3-4E81-BFD7-55CB6A15CBAC}.Debug|x86.ActiveCfg = Debug|Win32
+		{B2544205-8EF3-4E81-BFD7-55CB6A15CBAC}.Debug|x86.Build.0 = Debug|Win32
+		{B2544205-8EF3-4E81-BFD7-55CB6A15CBAC}.Release|Any CPU.ActiveCfg = Release|Win32
+		{B2544205-8EF3-4E81-BFD7-55CB6A15CBAC}.Release|x86.ActiveCfg = Release|Win32
+		{B2544205-8EF3-4E81-BFD7-55CB6A15CBAC}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
