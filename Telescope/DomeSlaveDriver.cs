@@ -159,10 +159,10 @@ namespace ASCOM.Wise40
 
         public void SlewToAz(Angle ra, Angle dec)
         {
-            Angle ha = Angle.FromHours(ra.Hours - wisesite.LocalSiderealTime.Hours);
-            double haRadians = Angle.Hours2Rad(ha.Hours);
+            Angle ha = wisesite.LocalSiderealTime - ra; 
+            double haRadians = ha.Radians;
             double decRadians = dec.Radians;
-            double domeAz = Angle.Rad2Deg(ScopeCoordToDomeAz(haRadians, decRadians));
+            double domeAz = Angle.FromRadians(ScopeCoordToDomeAz(haRadians, decRadians)).Degrees;
 
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
@@ -275,17 +275,11 @@ namespace ASCOM.Wise40
 
             if (dome_A < 0)
                 dome_A = 2 * Math.PI + dome_A;
+            #region trace
+            wisetele.traceLogger.LogMessage("ScopeCoordToDomeAz", string.Format("ha: {0}, dec: {1} => az: {2}", HA.ToString(), Dec.ToString(), dome_A.ToString()));
+            #endregion
 
             return dome_A;
-        }
-
-        private double Asin(double ang)
-        {
-            if (ang == 1 || ang == -1)
-            {
-                return (Math.PI / 2) * Math.Sign(ang);
-            }
-            return Math.Atan(ang / Math.Sqrt(-ang * ang + 1));
         }
 
         private double Atn2(double num, double denom)
