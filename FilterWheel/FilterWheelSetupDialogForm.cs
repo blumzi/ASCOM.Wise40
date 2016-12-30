@@ -15,7 +15,6 @@ namespace ASCOM.Wise40
     public partial class FilterWheelSetupDialogForm : Form
     {
         WiseFilterWheel wisefilterwheel = WiseFilterWheel.Instance;
-        private CueBanner cueBanner = new CueBanner();
 
         public FilterWheelSetupDialogForm()
         {
@@ -46,6 +45,7 @@ namespace ASCOM.Wise40
                     w.positions[i].uuid = tb.Text ?? string.Empty;
                 }
             }
+            wisefilterwheel.port = comboBoxPort.Text;
 
             wisefilterwheel.WriteProfile();
             Close();
@@ -93,6 +93,9 @@ namespace ASCOM.Wise40
                     tb.Text = w.positions[i].uuid ?? string.Empty;
                 }
             }
+            comboBoxPort.Items.AddRange(System.IO.Ports.SerialPort.GetPortNames());
+            if (!String.IsNullOrEmpty(wisefilterwheel.port) && comboBoxPort.Items.Contains(wisefilterwheel.port))
+                comboBoxPort.Text = wisefilterwheel.port;
         }
 
         private void FilterWheelSetupDialogForm_Load(object sender, EventArgs e)

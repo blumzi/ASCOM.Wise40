@@ -92,6 +92,8 @@ namespace ASCOM.Wise40
             this.textBoxWheel4RFID2 = new System.Windows.Forms.TextBox();
             this.textBoxWheel4RFID3 = new System.Windows.Forms.TextBox();
             this.textBoxWheel4Name0 = new System.Windows.Forms.TextBox();
+            this.comboBoxPort = new System.Windows.Forms.ComboBox();
+            this.label19 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
@@ -105,7 +107,7 @@ namespace ASCOM.Wise40
             this.cmdOK.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.cmdOK.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.cmdOK.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.cmdOK.Location = new System.Drawing.Point(532, 435);
+            this.cmdOK.Location = new System.Drawing.Point(532, 477);
             this.cmdOK.Name = "cmdOK";
             this.cmdOK.Size = new System.Drawing.Size(59, 24);
             this.cmdOK.TabIndex = 0;
@@ -119,7 +121,7 @@ namespace ASCOM.Wise40
             this.cmdCancel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.cmdCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.cmdCancel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.cmdCancel.Location = new System.Drawing.Point(532, 465);
+            this.cmdCancel.Location = new System.Drawing.Point(532, 507);
             this.cmdCancel.Name = "cmdCancel";
             this.cmdCancel.Size = new System.Drawing.Size(59, 25);
             this.cmdCancel.TabIndex = 1;
@@ -134,13 +136,14 @@ namespace ASCOM.Wise40
             this.label1.Size = new System.Drawing.Size(188, 31);
             this.label1.TabIndex = 2;
             this.label1.Text = "Wise40 FilterWheel";
+            this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // picASCOM
             // 
             this.picASCOM.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.picASCOM.Cursor = System.Windows.Forms.Cursors.Hand;
             this.picASCOM.Image = global::ASCOM.Wise40.Properties.Resources.ASCOM;
-            this.picASCOM.Location = new System.Drawing.Point(536, 56);
+            this.picASCOM.Location = new System.Drawing.Point(536, 16);
             this.picASCOM.Name = "picASCOM";
             this.picASCOM.Size = new System.Drawing.Size(48, 56);
             this.picASCOM.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
@@ -153,7 +156,7 @@ namespace ASCOM.Wise40
             // 
             this.groupBox1.Controls.Add(this.tableLayoutPanel1);
             this.groupBox1.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBox1.Location = new System.Drawing.Point(16, 48);
+            this.groupBox1.Location = new System.Drawing.Point(16, 88);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(504, 272);
             this.groupBox1.TabIndex = 4;
@@ -704,7 +707,7 @@ namespace ASCOM.Wise40
             // 
             this.groupBox2.Controls.Add(this.tableLayoutPanel2);
             this.groupBox2.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBox2.Location = new System.Drawing.Point(16, 328);
+            this.groupBox2.Location = new System.Drawing.Point(16, 368);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Size = new System.Drawing.Size(504, 160);
             this.groupBox2.TabIndex = 17;
@@ -1019,12 +1022,31 @@ namespace ASCOM.Wise40
             this.textBoxWheel4Name0.TabIndex = 12;
             this.textBoxWheel4Name0.Tag = "0";
             // 
+            // comboBoxPort
+            // 
+            this.comboBoxPort.FormattingEnabled = true;
+            this.comboBoxPort.Location = new System.Drawing.Point(96, 49);
+            this.comboBoxPort.Name = "comboBoxPort";
+            this.comboBoxPort.Size = new System.Drawing.Size(72, 21);
+            this.comboBoxPort.TabIndex = 18;
+            // 
+            // label19
+            // 
+            this.label19.Location = new System.Drawing.Point(16, 48);
+            this.label19.Name = "label19";
+            this.label19.Size = new System.Drawing.Size(68, 23);
+            this.label19.TabIndex = 19;
+            this.label19.Text = "Arduino Port";
+            this.label19.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
             // FilterWheelSetupDialogForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.ClientSize = new System.Drawing.Size(601, 498);
+            this.ClientSize = new System.Drawing.Size(601, 540);
+            this.Controls.Add(this.label19);
+            this.Controls.Add(this.comboBoxPort);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.picASCOM);
@@ -1118,5 +1140,7 @@ namespace ASCOM.Wise40
         private System.Windows.Forms.TextBox textBoxWheel4RFID2;
         private System.Windows.Forms.TextBox textBoxWheel4RFID3;
         private System.Windows.Forms.TextBox textBoxWheel4Name0;
+        private System.Windows.Forms.ComboBox comboBoxPort;
+        private System.Windows.Forms.Label label19;
     }
 }

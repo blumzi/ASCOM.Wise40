@@ -29,6 +29,7 @@ namespace ASCOM.Wise40
         static WiseFilterWheel() { }
         internal static string driverID = "ASCOM.Wise40.FilterWheel";
         private static string driverDescription = "ASCOM FilterWheel Driver for Wise40.";
+        public string port;
 
         public struct FWPosition {
             public string filterName;
@@ -118,6 +119,7 @@ namespace ASCOM.Wise40
                         w.positions[pos].uuid = driverProfile.GetValue(driverID, "RFID", subKey, string.Empty);
                     }
                 }
+                port = driverProfile.GetValue(driverID, "Port", string.Empty, string.Empty);
             }
         }
 
@@ -139,6 +141,7 @@ namespace ASCOM.Wise40
                         driverProfile.WriteValue(driverID, "RFID", w.positions[pos].uuid, subKey);
                     }
                 }
+                driverProfile.WriteValue(driverID, "Port", port);
             }
         }
 
