@@ -24,7 +24,7 @@ namespace Dash
 
         private void RefreshWheelInfo()
         {
-            labelCurrentWheelValue.Text = string.IsNullOrEmpty(wisefilterwheel.wheel.name) ? "Unknown" : wisefilterwheel.wheel.name;
+            labelCurrentWheelValue.Text = string.IsNullOrEmpty(WiseFilterWheel.currentWheel.name) ? "Unknown" : WiseFilterWheel.currentWheel.name;
             short position = wisefilterwheel.Position;
 
             if (position == -1)
@@ -43,7 +43,7 @@ namespace Dash
 
             for (int i = 0; i < nFilters; i++)
             {
-                Label label = (Label)table.Controls.Find(string.Format("label{0}Filter{1}", wisefilterwheel.wheel.name, i), true)[0];
+                Label label = (Label)table.Controls.Find(string.Format("label{0}Filter{1}", WiseFilterWheel.currentWheel.name, i), true)[0];
                 label.Text = FilterName(wisefilterwheel.Names[i]);
                 label.ForeColor = (i == position) ? Color.DarkOrange : Color.FromArgb(176, 161, 142);
             }

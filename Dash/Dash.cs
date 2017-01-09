@@ -1126,6 +1126,13 @@ namespace Dash
             UpdateAlteredItems(item, "Dome");
         }
 
+        private void resetFocusEncoderToZeroToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var result = MessageBox.Show("Are you sure you want to set the focus encoder to Zero?", "Reset focus encoder");
+            if (result == DialogResult.OK)
+                wisefocuser.SetZero();
+        }
+
         private void safetyOverrideToolStripMenuItem_Click(object sender, EventArgs e)
         {
             string menuText = "Bypass Safety";

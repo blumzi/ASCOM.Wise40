@@ -31,6 +31,7 @@ namespace Restore_ASCOM_Profiles
             WriteDomeProfile();
             WriteTelescopeProfile();
             WriteOCHProfile();
+            WriteFilterWheelProfile();
 
             string message = string.Format("ASCOM Profiles for Wise40 drivers have been restored to mode \"{0}\".", mode.ToString());
             Console.WriteLine(message);
@@ -188,6 +189,18 @@ namespace Restore_ASCOM_Profiles
                 driverProfile.WriteValue(driverID, "Device Mode", "Real", "WindSpeed");
                 driverProfile.WriteValue(driverID, "ProgID", "ASCOM.Vantage.ObservingConditions", "WindSpeed");
                 driverProfile.WriteValue(driverID, "Switch Number", "0", "WindSpeed");
+            }
+        }
+
+        internal static void WriteFilterWheelProfile()
+        {
+            string driverID = "ASCOM.Wise40.FilterWheel";
+
+            using (Profile driverProfile = new Profile())
+            {
+                driverProfile.DeviceType = "FilterWheel";
+
+                driverProfile.WriteValue(driverID, "Port", "COM4");
             }
         }
     }

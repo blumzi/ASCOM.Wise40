@@ -29,7 +29,7 @@
 //		- there is no tag, e.g. in odd positions on a 4-filter wheel
 //		- the existing tag is faulty
 //
-// revolution:
+// revolution: 
 //		- 200 steps
 //
 //	speed:
@@ -69,6 +69,7 @@
 
 #include <Stepper.h>
 #include "Id12la.h"
+#include "Ascii.h"
 #define STEPPER_STEPS_PER_WHEEL8	1600
 #define STEPPER_STEPS_PER_REV		 200
 #define STEPPER_NORMAL_SPEED		  37
@@ -128,14 +129,14 @@ again:
 		*p = 0;
 
 	// skip characters until we get a STX
-	Serial.find(AsciiTable::STX);
+	Serial.find(Ascii::STX);
 
 	// store all characters up to ETX (or no more space in inBuf)
 	for (p = inBuf; (unsigned)(p - inBuf) < sizeof(inBuf); p++)
-		if ((*p = Serial.read()) == AsciiTable::ETX)
+		if ((*p = Serial.read()) == Ascii::ETX)
 			break;
 
-	if (*p != AsciiTable::ETX)
+	if (*p != Ascii::ETX)
 		goto again;	// reached limit of inBuf without getting an ETX, start all over
 
 	// TODO: checksum
@@ -148,9 +149,9 @@ again:
 // Sends a packet to the PC
 //
 void sendPacket(String payload) {
-	Serial.write(AsciiTable::STX);
+	Serial.write(Ascii::STX);
 	Serial.print(payload);
-	Serial.write(AsciiTable::ETX);
+	Serial.write(Ascii::ETX);
 }
 
 //

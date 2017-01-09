@@ -22,7 +22,7 @@ namespace Dash
 
         System.Threading.Timer timer;
         private static WiseTele wisetele = WiseTele.Instance;
-        private static int samplingIntervalMillis = 100;
+        private int samplingIntervalMillis;
         private static int count = 0;
         DateTime start;
 
@@ -54,10 +54,11 @@ namespace Dash
             dataPoints.Add(new DataPoint(DateTime.Now.Subtract(start).TotalMilliseconds, value));
         }
 
-        public MotionStudy(TelescopeAxes axis, double rate)
+        public MotionStudy(TelescopeAxes axis, double rate, int intervalMillis = 100)
         {
             this.axis = axis;
             this.rate = rate;
+            samplingIntervalMillis = intervalMillis;
             start = DateTime.Now;
             dataPoints = new List<DataPoint>();
             TimerCallback TimerCallback = new TimerCallback(sampleMotion);
@@ -68,7 +69,7 @@ namespace Dash
         public void Dispose()
         {
             DateTime motorStop = DateTime.Now;
-            DateTime axisStop;
+            DateTime axisStop; 
             double startValue, motorStopValue, axisStopValue;
             DataPoint[] arr = dataPoints.ToArray();
 

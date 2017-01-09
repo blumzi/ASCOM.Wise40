@@ -85,7 +85,7 @@ namespace ASCOM.Wise40
 
             pinDown = new WisePin("FocusDown", hardware.miscboard, DigitalPortType.FirstPortCH, 0, DigitalPortDirection.DigitalOut);
             pinUp = new WisePin("FocusUp", hardware.miscboard, DigitalPortType.FirstPortCH, 1, DigitalPortDirection.DigitalOut);
-            encoder = new WiseFocuserEnc();
+            encoder = new WiseFocuserEnc(/* true */);
             
             connectables.AddRange(new List<IConnectable> { instance.pinUp, instance.pinDown, instance.encoder });
             disposables.AddRange(new List<IDisposable> { instance.pinUp, instance.pinDown, instance.encoder });
@@ -548,6 +548,11 @@ namespace ASCOM.Wise40
                 }
                 return ret;
             }
+        }
+
+        public void SetZero()
+        {
+            encoder.SetZero();
         }
     }
 }

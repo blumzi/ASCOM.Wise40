@@ -1,6 +1,6 @@
 #pragma once
 
-class AsciiTable {
+class Ascii {
 public:
 	static const int STX = 2;
 	static const int ETX = 3;

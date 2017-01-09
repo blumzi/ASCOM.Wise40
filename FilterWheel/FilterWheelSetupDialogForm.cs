@@ -29,7 +29,7 @@ namespace ASCOM.Wise40
         {
             Form F = this.FindForm();
 
-            foreach (WiseFilterWheel.Wheel w in new List<WiseFilterWheel.Wheel> { wisefilterwheel.wheel8, wisefilterwheel.wheel4 })
+            foreach (var w in WiseFilterWheel.wheels)
             {
                 for (int i = 0; i < w.positions.Length; i++)
                 {
@@ -42,7 +42,7 @@ namespace ASCOM.Wise40
                     w.positions[i].filterOffset = tb.Text == string.Empty ? 0 : Convert.ToInt32(tb.Text);
 
                     tb = (TextBox)F.Controls.Find(string.Format("textBox{0}RFID{1}", w.name, i), true)[0];
-                    w.positions[i].uuid = tb.Text ?? string.Empty;
+                    w.positions[i].tag = tb.Text ?? string.Empty;
                 }
             }
             wisefilterwheel.port = comboBoxPort.Text;
@@ -77,7 +77,7 @@ namespace ASCOM.Wise40
         {
             Form F = this.FindForm();
 
-            foreach (WiseFilterWheel.Wheel w in new List<WiseFilterWheel.Wheel> { wisefilterwheel.wheel8, wisefilterwheel.wheel4 })
+            foreach (var w in WiseFilterWheel.wheels)
             {
                 for (int i = 0; i < w.positions.Length; i++)
                 {
@@ -90,7 +90,7 @@ namespace ASCOM.Wise40
                     tb.Text = w.positions[i].filterOffset.ToString();
 
                     tb = (TextBox)F.Controls.Find(string.Format("textBox{0}RFID{1}", w.name, i), true)[0];
-                    tb.Text = w.positions[i].uuid ?? string.Empty;
+                    tb.Text = w.positions[i].tag ?? string.Empty;
                 }
             }
             comboBoxPort.Items.AddRange(System.IO.Ports.SerialPort.GetPortNames());
@@ -102,7 +102,7 @@ namespace ASCOM.Wise40
         {
             Form F = this.FindForm();
 
-            foreach (WiseFilterWheel.Wheel w in new List<WiseFilterWheel.Wheel> { wisefilterwheel.wheel8, wisefilterwheel.wheel4 })
+            foreach (var w in WiseFilterWheel.wheels)
             {
                 for (int i = 0; i < w.positions.Length; i++)
                 {

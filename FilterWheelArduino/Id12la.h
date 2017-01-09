@@ -1,3 +1,7 @@
+#pragma once
+
+#include "Ascii.h"
+
 // determine board type
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__)
 # define _ARDUINO_ UNO
@@ -27,10 +31,10 @@
 
 class Id12la {
   private:
-    static const int STX = 2;
-    static const int ETX = 3;
-    static const int NL = 10;
-    static const int CR = 13;
+    //static const int STX = 2;
+    //static const int ETX = 3;
+    //static const int NL = 10;
+    //static const int CR = 13;
 
     static const int TagPayloadBytes = 10;
     static const int TagAllBytes = TagPayloadBytes + 7; // [STX][Payload(10)][CHK(2)][NL][CR][ETX][NULL]
@@ -121,11 +125,11 @@ class Id12la {
       if (nbytes != TagAllBytes)
         return false;
 
-      for (p = buf; (unsigned int) (p - buf) < sizeof(buf); p++) {
-        //debug("buf["); debug(p - buf); debug("] = "); Serial.print(*p, HEX); debug(", "); Serial.println(*p, BIN);
-      }
+      //for (p = buf; (unsigned int) (p - buf) < sizeof(buf); p++) {
+      //  debug("buf["); debug(p - buf); debug("] = "); Serial.print(*p, HEX); debug(", "); Serial.println(*p, BIN);
+      //}
 
-      if (buf[0] != STX || buf[13] != CR || buf[14] != NL || buf[15] != ETX)
+      if (buf[0] != Ascii::STX || buf[13] != Ascii::CR || buf[14] != Ascii::NL || buf[15] != Ascii::ETX)
         return false;
 
       for (computedSum = 0, p = buf + 1; p - (buf + 1) < TagPayloadBytes; p += 2)

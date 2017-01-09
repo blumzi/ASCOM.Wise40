@@ -122,6 +122,7 @@
             this.enslaveDomeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.domeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.domeAutoCalibrateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.syncVentWithShutterToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.cloudSensorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.dataFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripTextBoxCloudSensorDataFile = new System.Windows.Forms.ToolStripTextBox();
@@ -190,7 +191,8 @@
             this.labelDashStatus = new System.Windows.Forms.Label();
             this.timerRefreshDisplay = new System.Windows.Forms.Timer(this.components);
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
-            this.syncVentWithShutterToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem5 = new System.Windows.Forms.ToolStripMenuItem();
+            this.resetFocusEncoderToZeroToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tableLayoutMain.SuspendLayout();
             this.groupBoxFocuser.SuspendLayout();
             this.groupBoxDomeGroup.SuspendLayout();
@@ -272,7 +274,7 @@
             this.buttonFocusGoto.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonFocusGoto.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonFocusGoto.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonFocusGoto.Location = new System.Drawing.Point(16, 80);
+            this.buttonFocusGoto.Location = new System.Drawing.Point(16, 71);
             this.buttonFocusGoto.Name = "buttonFocusGoto";
             this.buttonFocusGoto.Size = new System.Drawing.Size(52, 23);
             this.buttonFocusGoto.TabIndex = 21;
@@ -299,7 +301,7 @@
             this.textBoxFocusGotoPosition.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.textBoxFocusGotoPosition.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.textBoxFocusGotoPosition.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxFocusGotoPosition.Location = new System.Drawing.Point(72, 81);
+            this.textBoxFocusGotoPosition.Location = new System.Drawing.Point(72, 72);
             this.textBoxFocusGotoPosition.Name = "textBoxFocusGotoPosition";
             this.textBoxFocusGotoPosition.Size = new System.Drawing.Size(71, 21);
             this.textBoxFocusGotoPosition.TabIndex = 22;
@@ -1507,6 +1509,7 @@
             this.toolStripMenuItemSafeToOpen,
             this.toolStripMenuItemFilterWheel,
             this.toolStripMenuItem3,
+            this.toolStripMenuItem5,
             this.tracingToolStripMenuItem,
             this.debuggingToolStripMenuItem1,
             this.toolStripMenuItem2,
@@ -1549,6 +1552,13 @@
             this.domeAutoCalibrateToolStripMenuItem.ToolTipText = "If asked for Azimuth and not calibrated, \r\nthe dome will automatically search for" +
     "\r\nthe calibration point.\r\n";
             this.domeAutoCalibrateToolStripMenuItem.Click += new System.EventHandler(this.domeAutoCalibrateToolStripMenuItem_Click);
+            // 
+            // syncVentWithShutterToolStripMenuItem
+            // 
+            this.syncVentWithShutterToolStripMenuItem.Name = "syncVentWithShutterToolStripMenuItem";
+            this.syncVentWithShutterToolStripMenuItem.Size = new System.Drawing.Size(194, 22);
+            this.syncVentWithShutterToolStripMenuItem.Text = "SyncVentWithShutter";
+            this.syncVentWithShutterToolStripMenuItem.Click += new System.EventHandler(this.syncVentWithShutterToolStripMenuItem_Click);
             // 
             // cloudSensorToolStripMenuItem
             // 
@@ -1608,9 +1618,11 @@
             // 
             // toolStripMenuItem3
             // 
+            this.toolStripMenuItem3.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.resetFocusEncoderToZeroToolStripMenuItem});
             this.toolStripMenuItem3.Name = "toolStripMenuItem3";
             this.toolStripMenuItem3.Size = new System.Drawing.Size(158, 22);
-            this.toolStripMenuItem3.Text = "  ";
+            this.toolStripMenuItem3.Text = "Focus";
             // 
             // tracingToolStripMenuItem
             // 
@@ -2311,12 +2323,18 @@
             this.timerRefreshDisplay.Enabled = true;
             this.timerRefreshDisplay.Tick += new System.EventHandler(this.RefreshDisplay);
             // 
-            // syncVentWithShutterToolStripMenuItem
+            // toolStripMenuItem5
             // 
-            this.syncVentWithShutterToolStripMenuItem.Name = "syncVentWithShutterToolStripMenuItem";
-            this.syncVentWithShutterToolStripMenuItem.Size = new System.Drawing.Size(194, 22);
-            this.syncVentWithShutterToolStripMenuItem.Text = "SyncVentWithShutter";
-            this.syncVentWithShutterToolStripMenuItem.Click += new System.EventHandler(this.syncVentWithShutterToolStripMenuItem_Click);
+            this.toolStripMenuItem5.Name = "toolStripMenuItem5";
+            this.toolStripMenuItem5.Size = new System.Drawing.Size(158, 22);
+            this.toolStripMenuItem5.Text = "  ";
+            // 
+            // resetFocusEncoderToZeroToolStripMenuItem
+            // 
+            this.resetFocusEncoderToZeroToolStripMenuItem.Name = "resetFocusEncoderToZeroToolStripMenuItem";
+            this.resetFocusEncoderToZeroToolStripMenuItem.Size = new System.Drawing.Size(194, 22);
+            this.resetFocusEncoderToZeroToolStripMenuItem.Text = "Reset Encoder to Zero";
+            this.resetFocusEncoderToZeroToolStripMenuItem.Click += new System.EventHandler(this.resetFocusEncoderToZeroToolStripMenuItem_Click);
             // 
             // FormDash
             // 
@@ -2522,6 +2540,8 @@
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem3;
         private System.Windows.Forms.ToolStripMenuItem filterWheelToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem syncVentWithShutterToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem resetFocusEncoderToZeroToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem5;
     }
 }
 
