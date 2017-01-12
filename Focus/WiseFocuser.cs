@@ -221,6 +221,7 @@ namespace ASCOM.Wise40
                 return pos;
             }
         }
+
         public int Position
         {
             get
@@ -525,7 +526,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                string ret = "";
+                string ret = "Idle";
 
                 switch (_status)
                 {
@@ -540,10 +541,10 @@ namespace ASCOM.Wise40
                             ret += string.Format(" to {0}", targetPos);
                         break;
                     case FocuserStatus.MovingAllUp:
-                        ret = "Moving All Up";
+                        ret = string.Format("Moving All Up to {0}", MaxStep);
                         break;
                     case FocuserStatus.MovingAllDown:
-                        ret = "Moving All Down";
+                        ret = "Moving All Down to 0";
                         break;
                 }
                 return ret;

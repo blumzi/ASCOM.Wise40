@@ -378,8 +378,7 @@ namespace Dash
 
             #region RefreshFocuser
             labelFocusCurrentValue.Text = wisefocuser.position.ToString();
-            if (labelFocuserStatus.Text == string.Empty)
-                focuserStatus.Show(wisefocuser.Status);
+            focuserStatus.Show(wisefocuser.Status);
             #endregion
         }
         #endregion
@@ -1131,6 +1130,26 @@ namespace Dash
             var result = MessageBox.Show("Are you sure you want to set the focus encoder to Zero?", "Reset focus encoder");
             if (result == DialogResult.OK)
                 wisefocuser.SetZero();
+        }
+
+        private void buttonFocusIncrease_Click(object sender, EventArgs e)
+        {
+            int newPos = wisefocuser.Position + Convert.ToInt32(comboBoxFocusStep.Text);
+            if (newPos > wisefocuser.MaxStep)
+                newPos = wisefocuser.MaxStep;
+
+            if (newPos != wisefocuser.Position)
+                wisefocuser.Move(newPos);
+        }
+
+        private void buttonFocusDecrease_Click(object sender, EventArgs e)
+        {
+            int newPos = wisefocuser.Position - Convert.ToInt32(comboBoxFocusStep.Text);
+            if (newPos < 0)
+                newPos = 0;
+
+            if (newPos != wisefocuser.Position)
+                wisefocuser.Move(newPos);
         }
 
         private void safetyOverrideToolStripMenuItem_Click(object sender, EventArgs e)

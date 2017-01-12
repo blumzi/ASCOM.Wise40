@@ -32,6 +32,9 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormDash));
             this.tableLayoutMain = new System.Windows.Forms.TableLayoutPanel();
             this.groupBoxFocuser = new System.Windows.Forms.GroupBox();
+            this.comboBoxFocusStep = new System.Windows.Forms.ComboBox();
+            this.buttonFocusIncrease = new System.Windows.Forms.Button();
+            this.buttonFocusDecrease = new System.Windows.Forms.Button();
             this.labelFocuserStatus = new System.Windows.Forms.Label();
             this.buttonFocusGoto = new System.Windows.Forms.Button();
             this.label11 = new System.Windows.Forms.Label();
@@ -132,6 +135,8 @@
             this.toolStripMenuItemSafeToOpen = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItemFilterWheel = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem3 = new System.Windows.Forms.ToolStripMenuItem();
+            this.resetFocusEncoderToZeroToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem5 = new System.Windows.Forms.ToolStripMenuItem();
             this.tracingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.debuggingToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.debugASCOMToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -191,8 +196,7 @@
             this.labelDashStatus = new System.Windows.Forms.Label();
             this.timerRefreshDisplay = new System.Windows.Forms.Timer(this.components);
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
-            this.toolStripMenuItem5 = new System.Windows.Forms.ToolStripMenuItem();
-            this.resetFocusEncoderToZeroToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.panel1 = new System.Windows.Forms.Panel();
             this.tableLayoutMain.SuspendLayout();
             this.groupBoxFocuser.SuspendLayout();
             this.groupBoxDomeGroup.SuspendLayout();
@@ -207,6 +211,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxWise)).BeginInit();
             this.groupBoxWeather.SuspendLayout();
             this.tableLayoutPanelWeather.SuspendLayout();
+            this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
             // tableLayoutMain
@@ -237,6 +242,9 @@
             // 
             // groupBoxFocuser
             // 
+            this.groupBoxFocuser.Controls.Add(this.comboBoxFocusStep);
+            this.groupBoxFocuser.Controls.Add(this.buttonFocusIncrease);
+            this.groupBoxFocuser.Controls.Add(this.buttonFocusDecrease);
             this.groupBoxFocuser.Controls.Add(this.labelFocuserStatus);
             this.groupBoxFocuser.Controls.Add(this.buttonFocusGoto);
             this.groupBoxFocuser.Controls.Add(this.label11);
@@ -256,6 +264,62 @@
             this.groupBoxFocuser.TabStop = false;
             this.groupBoxFocuser.Text = " Focuser ";
             // 
+            // comboBoxFocusStep
+            // 
+            this.comboBoxFocusStep.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.comboBoxFocusStep.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.comboBoxFocusStep.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.comboBoxFocusStep.FormattingEnabled = true;
+            this.comboBoxFocusStep.Items.AddRange(new object[] {
+            "1",
+            "3",
+            "5",
+            "10",
+            "50",
+            "100",
+            "150",
+            "200"});
+            this.comboBoxFocusStep.Location = new System.Drawing.Point(40, 86);
+            this.comboBoxFocusStep.Margin = new System.Windows.Forms.Padding(0);
+            this.comboBoxFocusStep.Name = "comboBoxFocusStep";
+            this.comboBoxFocusStep.Size = new System.Drawing.Size(72, 21);
+            this.comboBoxFocusStep.TabIndex = 33;
+            this.comboBoxFocusStep.Text = "5";
+            // 
+            // buttonFocusIncrease
+            // 
+            this.buttonFocusIncrease.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonFocusIncrease.AutoSize = true;
+            this.buttonFocusIncrease.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.buttonFocusIncrease.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonFocusIncrease.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.buttonFocusIncrease.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.buttonFocusIncrease.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.buttonFocusIncrease.Location = new System.Drawing.Point(120, 85);
+            this.buttonFocusIncrease.Name = "buttonFocusIncrease";
+            this.buttonFocusIncrease.Size = new System.Drawing.Size(24, 23);
+            this.buttonFocusIncrease.TabIndex = 32;
+            this.buttonFocusIncrease.Text = "+";
+            this.buttonFocusIncrease.UseVisualStyleBackColor = false;
+            this.buttonFocusIncrease.Click += new System.EventHandler(this.buttonFocusIncrease_Click);
+            // 
+            // buttonFocusDecrease
+            // 
+            this.buttonFocusDecrease.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonFocusDecrease.AutoSize = true;
+            this.buttonFocusDecrease.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.buttonFocusDecrease.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonFocusDecrease.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.buttonFocusDecrease.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.buttonFocusDecrease.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.buttonFocusDecrease.Location = new System.Drawing.Point(16, 85);
+            this.buttonFocusDecrease.Name = "buttonFocusDecrease";
+            this.buttonFocusDecrease.Size = new System.Drawing.Size(21, 23);
+            this.buttonFocusDecrease.TabIndex = 31;
+            this.buttonFocusDecrease.Text = "-";
+            this.buttonFocusDecrease.UseVisualStyleBackColor = false;
+            this.buttonFocusDecrease.Click += new System.EventHandler(this.buttonFocusDecrease_Click);
+            // 
             // labelFocuserStatus
             // 
             this.labelFocuserStatus.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
@@ -266,6 +330,7 @@
             this.labelFocuserStatus.Size = new System.Drawing.Size(312, 20);
             this.labelFocuserStatus.TabIndex = 30;
             this.labelFocuserStatus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.toolTip.SetToolTip(this.labelFocuserStatus, "Focuser status");
             // 
             // buttonFocusGoto
             // 
@@ -274,7 +339,7 @@
             this.buttonFocusGoto.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonFocusGoto.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonFocusGoto.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonFocusGoto.Location = new System.Drawing.Point(16, 71);
+            this.buttonFocusGoto.Location = new System.Drawing.Point(16, 55);
             this.buttonFocusGoto.Name = "buttonFocusGoto";
             this.buttonFocusGoto.Size = new System.Drawing.Size(52, 23);
             this.buttonFocusGoto.TabIndex = 21;
@@ -288,7 +353,7 @@
             this.label11.AutoSize = true;
             this.label11.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))));
             this.label11.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label11.Location = new System.Drawing.Point(8, 34);
+            this.label11.Location = new System.Drawing.Point(8, 24);
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(81, 18);
             this.label11.TabIndex = 19;
@@ -301,7 +366,7 @@
             this.textBoxFocusGotoPosition.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.textBoxFocusGotoPosition.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.textBoxFocusGotoPosition.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxFocusGotoPosition.Location = new System.Drawing.Point(72, 72);
+            this.textBoxFocusGotoPosition.Location = new System.Drawing.Point(72, 56);
             this.textBoxFocusGotoPosition.Name = "textBoxFocusGotoPosition";
             this.textBoxFocusGotoPosition.Size = new System.Drawing.Size(71, 21);
             this.textBoxFocusGotoPosition.TabIndex = 22;
@@ -314,9 +379,9 @@
             this.buttonFocusDown.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonFocusDown.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonFocusDown.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonFocusDown.Location = new System.Drawing.Point(160, 72);
+            this.buttonFocusDown.Location = new System.Drawing.Point(152, 68);
             this.buttonFocusDown.Name = "buttonFocusDown";
-            this.buttonFocusDown.Size = new System.Drawing.Size(54, 38);
+            this.buttonFocusDown.Size = new System.Drawing.Size(54, 40);
             this.buttonFocusDown.TabIndex = 25;
             this.buttonFocusDown.Text = "Down";
             this.buttonFocusDown.UseVisualStyleBackColor = false;
@@ -329,7 +394,7 @@
             this.labelFocusCurrentValue.AutoSize = true;
             this.labelFocusCurrentValue.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F);
             this.labelFocusCurrentValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelFocusCurrentValue.Location = new System.Drawing.Point(104, 34);
+            this.labelFocusCurrentValue.Location = new System.Drawing.Point(104, 24);
             this.labelFocusCurrentValue.Name = "labelFocusCurrentValue";
             this.labelFocusCurrentValue.Size = new System.Drawing.Size(35, 18);
             this.labelFocusCurrentValue.TabIndex = 20;
@@ -343,9 +408,9 @@
             this.buttonFocuserStop.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonFocuserStop.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonFocuserStop.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonFocuserStop.Location = new System.Drawing.Point(272, 24);
+            this.buttonFocuserStop.Location = new System.Drawing.Point(264, 24);
             this.buttonFocuserStop.Name = "buttonFocuserStop";
-            this.buttonFocuserStop.Size = new System.Drawing.Size(51, 88);
+            this.buttonFocuserStop.Size = new System.Drawing.Size(51, 84);
             this.buttonFocuserStop.TabIndex = 28;
             this.buttonFocuserStop.Text = "Stop";
             this.buttonFocuserStop.UseVisualStyleBackColor = false;
@@ -358,9 +423,9 @@
             this.buttonFocusAllDown.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonFocusAllDown.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonFocusAllDown.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonFocusAllDown.Location = new System.Drawing.Point(216, 72);
+            this.buttonFocusAllDown.Location = new System.Drawing.Point(208, 68);
             this.buttonFocusAllDown.Name = "buttonFocusAllDown";
-            this.buttonFocusAllDown.Size = new System.Drawing.Size(54, 38);
+            this.buttonFocusAllDown.Size = new System.Drawing.Size(54, 40);
             this.buttonFocusAllDown.TabIndex = 24;
             this.buttonFocusAllDown.Text = "All\r\nDown";
             this.buttonFocusAllDown.UseVisualStyleBackColor = false;
@@ -373,9 +438,9 @@
             this.buttonFocusUp.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonFocusUp.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonFocusUp.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonFocusUp.Location = new System.Drawing.Point(160, 24);
+            this.buttonFocusUp.Location = new System.Drawing.Point(152, 24);
             this.buttonFocusUp.Name = "buttonFocusUp";
-            this.buttonFocusUp.Size = new System.Drawing.Size(54, 38);
+            this.buttonFocusUp.Size = new System.Drawing.Size(54, 40);
             this.buttonFocusUp.TabIndex = 26;
             this.buttonFocusUp.Text = "Up";
             this.buttonFocusUp.UseVisualStyleBackColor = false;
@@ -389,9 +454,9 @@
             this.buttonFocusAllUp.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonFocusAllUp.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonFocusAllUp.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonFocusAllUp.Location = new System.Drawing.Point(216, 24);
+            this.buttonFocusAllUp.Location = new System.Drawing.Point(208, 24);
             this.buttonFocusAllUp.Name = "buttonFocusAllUp";
-            this.buttonFocusAllUp.Size = new System.Drawing.Size(54, 38);
+            this.buttonFocusAllUp.Size = new System.Drawing.Size(54, 40);
             this.buttonFocusAllUp.TabIndex = 23;
             this.buttonFocusAllUp.Text = "All\r\nUp";
             this.buttonFocusAllUp.UseVisualStyleBackColor = false;
@@ -590,6 +655,7 @@
             this.labelDomeShutterStatus.Size = new System.Drawing.Size(296, 20);
             this.labelDomeShutterStatus.TabIndex = 19;
             this.labelDomeShutterStatus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.toolTip.SetToolTip(this.labelDomeShutterStatus, "Shutter status");
             // 
             // textBoxDomeAzValue
             // 
@@ -682,6 +748,7 @@
             this.labelDomeStatus.Size = new System.Drawing.Size(312, 20);
             this.labelDomeStatus.TabIndex = 19;
             this.labelDomeStatus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.toolTip.SetToolTip(this.labelDomeStatus, "Dome status");
             // 
             // label17
             // 
@@ -697,13 +764,9 @@
             // 
             // groupBoxTelescope
             // 
+            this.groupBoxTelescope.Controls.Add(this.panel1);
             this.groupBoxTelescope.Controls.Add(this.checkBoxMotionStudy);
             this.groupBoxTelescope.Controls.Add(this.checkBoxTrack);
-            this.groupBoxTelescope.Controls.Add(this.label3);
-            this.groupBoxTelescope.Controls.Add(this.buttonFlat);
-            this.groupBoxTelescope.Controls.Add(this.buttonHandleCover);
-            this.groupBoxTelescope.Controls.Add(this.buttonZenith);
-            this.groupBoxTelescope.Controls.Add(this.buttonTelescopePark);
             this.groupBoxTelescope.Controls.Add(this.labelTelescopeStatus);
             this.groupBoxTelescope.Controls.Add(this.buttonMainStop);
             this.groupBoxTelescope.Controls.Add(this.panelDirectionButtons);
@@ -751,7 +814,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(23, 424);
+            this.label3.Location = new System.Drawing.Point(2, 19);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(36, 26);
             this.label3.TabIndex = 34;
@@ -766,7 +829,7 @@
             this.buttonFlat.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonFlat.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonFlat.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonFlat.Location = new System.Drawing.Point(216, 421);
+            this.buttonFlat.Location = new System.Drawing.Point(193, 16);
             this.buttonFlat.Name = "buttonFlat";
             this.buttonFlat.Size = new System.Drawing.Size(72, 32);
             this.buttonFlat.TabIndex = 33;
@@ -782,7 +845,7 @@
             this.buttonHandleCover.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonHandleCover.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonHandleCover.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonHandleCover.Location = new System.Drawing.Point(144, 421);
+            this.buttonHandleCover.Location = new System.Drawing.Point(120, 16);
             this.buttonHandleCover.Name = "buttonHandleCover";
             this.buttonHandleCover.Size = new System.Drawing.Size(64, 32);
             this.buttonHandleCover.TabIndex = 32;
@@ -798,7 +861,7 @@
             this.buttonZenith.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonZenith.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonZenith.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonZenith.Location = new System.Drawing.Point(71, 421);
+            this.buttonZenith.Location = new System.Drawing.Point(47, 16);
             this.buttonZenith.Name = "buttonZenith";
             this.buttonZenith.Size = new System.Drawing.Size(64, 32);
             this.buttonZenith.TabIndex = 31;
@@ -814,7 +877,7 @@
             this.buttonTelescopePark.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonTelescopePark.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonTelescopePark.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonTelescopePark.Location = new System.Drawing.Point(296, 421);
+            this.buttonTelescopePark.Location = new System.Drawing.Point(274, 16);
             this.buttonTelescopePark.Name = "buttonTelescopePark";
             this.buttonTelescopePark.Size = new System.Drawing.Size(80, 32);
             this.buttonTelescopePark.TabIndex = 29;
@@ -833,8 +896,8 @@
             this.labelTelescopeStatus.Name = "labelTelescopeStatus";
             this.labelTelescopeStatus.Size = new System.Drawing.Size(372, 20);
             this.labelTelescopeStatus.TabIndex = 28;
-            this.labelTelescopeStatus.Text = "telescope status";
             this.labelTelescopeStatus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.toolTip.SetToolTip(this.labelTelescopeStatus, "Telescope status");
             // 
             // buttonMainStop
             // 
@@ -844,9 +907,9 @@
             this.buttonMainStop.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonMainStop.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonMainStop.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonMainStop.Location = new System.Drawing.Point(275, 296);
+            this.buttonMainStop.Location = new System.Drawing.Point(272, 304);
             this.buttonMainStop.Name = "buttonMainStop";
-            this.buttonMainStop.Size = new System.Drawing.Size(80, 56);
+            this.buttonMainStop.Size = new System.Drawing.Size(58, 40);
             this.buttonMainStop.TabIndex = 26;
             this.buttonMainStop.Text = "Stop";
             this.buttonMainStop.UseVisualStyleBackColor = false;
@@ -1412,7 +1475,7 @@
             this.buttonGoCoord.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonGoCoord.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonGoCoord.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonGoCoord.Location = new System.Drawing.Point(286, 203);
+            this.buttonGoCoord.Location = new System.Drawing.Point(288, 205);
             this.buttonGoCoord.Name = "buttonGoCoord";
             this.buttonGoCoord.Size = new System.Drawing.Size(58, 32);
             this.buttonGoCoord.TabIndex = 25;
@@ -1437,7 +1500,7 @@
             this.textBoxDec.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.textBoxDec.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.textBoxDec.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxDec.Location = new System.Drawing.Point(198, 208);
+            this.textBoxDec.Location = new System.Drawing.Point(200, 208);
             this.textBoxDec.Margin = new System.Windows.Forms.Padding(7, 3, 3, 3);
             this.textBoxDec.Name = "textBoxDec";
             this.textBoxDec.Size = new System.Drawing.Size(75, 23);
@@ -1623,6 +1686,19 @@
             this.toolStripMenuItem3.Name = "toolStripMenuItem3";
             this.toolStripMenuItem3.Size = new System.Drawing.Size(158, 22);
             this.toolStripMenuItem3.Text = "Focus";
+            // 
+            // resetFocusEncoderToZeroToolStripMenuItem
+            // 
+            this.resetFocusEncoderToZeroToolStripMenuItem.Name = "resetFocusEncoderToZeroToolStripMenuItem";
+            this.resetFocusEncoderToZeroToolStripMenuItem.Size = new System.Drawing.Size(194, 22);
+            this.resetFocusEncoderToZeroToolStripMenuItem.Text = "Reset Encoder to Zero";
+            this.resetFocusEncoderToZeroToolStripMenuItem.Click += new System.EventHandler(this.resetFocusEncoderToZeroToolStripMenuItem_Click);
+            // 
+            // toolStripMenuItem5
+            // 
+            this.toolStripMenuItem5.Name = "toolStripMenuItem5";
+            this.toolStripMenuItem5.Size = new System.Drawing.Size(158, 22);
+            this.toolStripMenuItem5.Text = "  ";
             // 
             // tracingToolStripMenuItem
             // 
@@ -1943,6 +2019,7 @@
             this.labelWeatherStatus.Size = new System.Drawing.Size(312, 20);
             this.labelWeatherStatus.TabIndex = 32;
             this.labelWeatherStatus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.toolTip.SetToolTip(this.labelWeatherStatus, "Weather status");
             // 
             // tableLayoutPanelWeather
             // 
@@ -2317,24 +2394,24 @@
             this.labelDashStatus.Name = "labelDashStatus";
             this.labelDashStatus.Size = new System.Drawing.Size(731, 23);
             this.labelDashStatus.TabIndex = 34;
+            this.toolTip.SetToolTip(this.labelDashStatus, "Dashboard status");
             // 
             // timerRefreshDisplay
             // 
             this.timerRefreshDisplay.Enabled = true;
             this.timerRefreshDisplay.Tick += new System.EventHandler(this.RefreshDisplay);
             // 
-            // toolStripMenuItem5
+            // panel1
             // 
-            this.toolStripMenuItem5.Name = "toolStripMenuItem5";
-            this.toolStripMenuItem5.Size = new System.Drawing.Size(158, 22);
-            this.toolStripMenuItem5.Text = "  ";
-            // 
-            // resetFocusEncoderToZeroToolStripMenuItem
-            // 
-            this.resetFocusEncoderToZeroToolStripMenuItem.Name = "resetFocusEncoderToZeroToolStripMenuItem";
-            this.resetFocusEncoderToZeroToolStripMenuItem.Size = new System.Drawing.Size(194, 22);
-            this.resetFocusEncoderToZeroToolStripMenuItem.Text = "Reset Encoder to Zero";
-            this.resetFocusEncoderToZeroToolStripMenuItem.Click += new System.EventHandler(this.resetFocusEncoderToZeroToolStripMenuItem_Click);
+            this.panel1.Controls.Add(this.buttonTelescopePark);
+            this.panel1.Controls.Add(this.buttonFlat);
+            this.panel1.Controls.Add(this.buttonHandleCover);
+            this.panel1.Controls.Add(this.label3);
+            this.panel1.Controls.Add(this.buttonZenith);
+            this.panel1.Location = new System.Drawing.Point(24, 416);
+            this.panel1.Name = "panel1";
+            this.panel1.Size = new System.Drawing.Size(360, 56);
+            this.panel1.TabIndex = 37;
             // 
             // FormDash
             // 
@@ -2373,6 +2450,8 @@
             this.groupBoxWeather.ResumeLayout(false);
             this.tableLayoutPanelWeather.ResumeLayout(false);
             this.tableLayoutPanelWeather.PerformLayout();
+            this.panel1.ResumeLayout(false);
+            this.panel1.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -2542,6 +2621,10 @@
         private System.Windows.Forms.ToolStripMenuItem syncVentWithShutterToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem resetFocusEncoderToZeroToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem5;
+        private System.Windows.Forms.ComboBox comboBoxFocusStep;
+        private System.Windows.Forms.Button buttonFocusIncrease;
+        private System.Windows.Forms.Button buttonFocusDecrease;
+        private System.Windows.Forms.Panel panel1;
     }
 }
 

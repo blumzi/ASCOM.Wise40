@@ -6,11 +6,10 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Drawing;
 
-using ASCOM.Wise40.Common;
 
-namespace Dash
+namespace ASCOM.Wise40.Common
 {
-    class Statuser
+    public class Statuser
     {
         public enum Severity { Normal, Good, Warning, Error };
         public static Dictionary<Severity, Color> colors = new Dictionary<Severity, Color>()
