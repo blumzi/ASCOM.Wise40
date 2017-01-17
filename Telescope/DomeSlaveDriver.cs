@@ -162,7 +162,7 @@ namespace ASCOM.Wise40
             Angle ha = wisesite.LocalSiderealTime - ra; 
             double haRadians = ha.Radians;
             double decRadians = dec.Radians;
-            double domeAz = Angle.FromRadians(ScopeCoordToDomeAz(haRadians, decRadians)).Degrees;
+            double domeAz = Angle.FromRadians(ScopeCoordToDomeAz(haRadians, decRadians), Angle.Type.Az).Degrees;
 
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
@@ -254,12 +254,13 @@ namespace ASCOM.Wise40
             double rDome = 5000;    // dome radius
             double pi = Math.PI;
 
-            double A = Xdome0 + rDecAxis * Math.Cos(phi - pi / 2) * Math.Sin(HA - pi);
+            HA += Math.PI;  // From -12..12 to 0..24 hours
+            double A = Xdome0 + rDecAxis * Math.Cos(phi - pi / 2.0) * Math.Sin(HA - pi);
             double B = Ydome0 + rDecAxis * Math.Cos(HA - pi);
-            double C = Zdome0 - rDecAxis * Math.Sin(phi - pi / 2) * Math.Sin(HA - pi);
-            double D = Math.Cos(phi - pi / 2) * Math.Cos(Dec) * Math.Cos(-HA) + Math.Sin(phi - pi / 2) * Math.Sin(Dec);
+            double C = Zdome0 - rDecAxis * Math.Sin(phi - pi / 2.0) * Math.Sin(HA - pi);
+            double D = Math.Cos(phi - pi / 2.0) * Math.Cos(Dec) * Math.Cos(-HA) + Math.Sin(phi - pi / 2.0) * Math.Sin(Dec);
             double E = Math.Cos(Dec) * Math.Sin(-HA);
-            double F = -Math.Sin(phi - pi / 2) * Math.Cos(Dec) * Math.Cos(-HA) + Math.Cos(phi - pi / 2) * Math.Sin(Dec);
+            double F = -Math.Sin(phi - pi / 2.0) * Math.Cos(Dec) * Math.Cos(-HA) + Math.Cos(phi - pi / 2.0) * Math.Sin(Dec);
 
             double knum = -(A * D + B * E + C * F) +
                         Math.Sqrt(Math.Pow(A * D + B * E + C * F, 2) +
@@ -270,30 +271,22 @@ namespace ASCOM.Wise40
             Xdome = -Xdome;
             double Ydome = B + E * k;
             double Zdome = C + F * k;
-            double dome_A = -Atn2(Ydome, Xdome);
-            dome_A = -dome_A;
+            double dome_A = -Math.Atan2(Ydome, Xdome);
+            //dome_A = -dome_A;
 
             if (dome_A < 0)
                 dome_A = 2 * Math.PI + dome_A;
+            #region debug            
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, string.Format("ScopeCoordToDomeAz: ha: {0} ({1}), dec: {2} ({3}) => az: {4} ({5})",
+                HA.ToString(), Angle.FromRadians(HA, Angle.Type.HA).ToString(),
+                Dec.ToString(), Angle.FromRadians(Dec, Angle.Type.Dec).ToString(),
+                dome_A.ToString(), Angle.FromRadians(dome_A, Angle.Type.Az).ToNiceString()));
+            #endregion
             #region trace
-            wisetele.traceLogger.LogMessage("ScopeCoordToDomeAz", string.Format("ha: {0}, dec: {1} => az: {2}", HA.ToString(), Dec.ToString(), dome_A.ToString()));
+            //wisetele.traceLogger.LogMessage("ScopeCoordToDomeAz", string.Format("ha: {0}, dec: {1} => az: {2}", HA.ToString(), Dec.ToString(), dome_A.ToString()));
             #endregion
 
             return dome_A;
-        }
-
-        private double Atn2(double num, double denom)
-        {
-            if (denom == 0)
-            {
-                return (Math.PI / 2) + Math.Sign(num);
-            }
-
-            if (denom > 0)
-                return Math.Atan(num / denom);
-            else
-                return Math.Atan(num / denom) + Math.PI;
-
         }
     }
 }
