@@ -38,6 +38,7 @@ namespace Dash
 
         private double handpadRate = Const.rateSlew;
         private bool _bypassSafety = false;
+        private bool _saveFocusUpperLimit = false, _saveFocusLowerLimit = false;
 
         private List<ToolStripMenuItem> debugMenuItems;
         private Dictionary<object, string> alteredItems = new Dictionary<object, string>();
@@ -812,7 +813,7 @@ namespace Dash
 
             try
             {
-                wisefocuser.Move(Convert.ToInt32(textBoxFocusGotoPosition.Text));
+                wisefocuser.Move(Convert.ToUInt32(textBoxFocusGotoPosition.Text));
             } catch (Exception ex)
             {
                 focuserStatus.Show(ex.Message, 1000, Statuser.Severity.Error);
@@ -1042,6 +1043,8 @@ namespace Dash
             debugger.WriteProfile();
             wisedome.WriteProfile();
             wisetele.WriteProfile();
+            if (_saveFocusUpperLimit || _saveFocusLowerLimit)
+                wisefocuser.WriteProfile();
 
             if ((string) toolStripTextBoxCloudSensorDataFile.Tag != toolStripTextBoxCloudSensorDataFile.Text)
             {
@@ -1134,9 +1137,9 @@ namespace Dash
 
         private void buttonFocusIncrease_Click(object sender, EventArgs e)
         {
-            int newPos = wisefocuser.Position + Convert.ToInt32(comboBoxFocusStep.Text);
-            if (newPos > wisefocuser.MaxStep)
-                newPos = wisefocuser.MaxStep;
+            uint newPos = wisefocuser.Position + Convert.ToUInt32(comboBoxFocusStep.Text);
+            if (newPos > wisefocuser.UpperLimit)
+                newPos = wisefocuser.UpperLimit;
 
             if (newPos != wisefocuser.Position)
                 wisefocuser.Move(newPos);
@@ -1144,12 +1147,50 @@ namespace Dash
 
         private void buttonFocusDecrease_Click(object sender, EventArgs e)
         {
-            int newPos = wisefocuser.Position - Convert.ToInt32(comboBoxFocusStep.Text);
-            if (newPos < 0)
-                newPos = 0;
+            uint newPos = wisefocuser.Position - Convert.ToUInt32(comboBoxFocusStep.Text);
+            if (newPos < wisefocuser.LowerLimit)
+                newPos = wisefocuser.LowerLimit;
 
             if (newPos != wisefocuser.Position)
                 wisefocuser.Move(newPos);
+        }
+
+        private void saveFocusEncoderUpperLimitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            wisefocuser.UpperLimit = wisefocuser.Position;
+            ToolStripMenuItem item = sender as ToolStripMenuItem;
+
+            if (item.Text.EndsWith(Const.checkmark))
+            {
+                _saveFocusUpperLimit = false;
+                item.Text = item.Text.Remove(item.Text.Length - Const.checkmark.Length);
+            }
+            else
+            {
+                _saveFocusUpperLimit = true;
+                item.Text += Const.checkmark;
+            }
+            item.Invalidate();
+            UpdateAlteredItems(item, string.Format("Focus: {0}", wisefocuser.UpperLimit));
+        }
+
+        private void saveFocusEncoderLowerLimitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            wisefocuser.LowerLimit = wisefocuser.Position;
+            ToolStripMenuItem item = sender as ToolStripMenuItem;
+
+            if (item.Text.EndsWith(Const.checkmark))
+            {
+                _saveFocusLowerLimit = false;
+                item.Text = item.Text.Remove(item.Text.Length - Const.checkmark.Length);
+            }
+            else
+            {
+                _saveFocusLowerLimit = true;
+                item.Text += Const.checkmark;
+            }
+            item.Invalidate();
+            UpdateAlteredItems(item, string.Format("Focus: {0}", wisefocuser.LowerLimit));
         }
 
         private void safetyOverrideToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1175,6 +1216,7 @@ namespace Dash
                 wisetele.Tracking = false;
                 wisedome.Stop();
                 wisedome.ShutterStop();
+                wisefocuser.Stop();
             }
             catch { }
             #region debug

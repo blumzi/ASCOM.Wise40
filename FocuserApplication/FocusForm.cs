@@ -29,9 +29,9 @@ namespace FocuserApplication
         #region FocuserControl
         private void buttonFocusIncrease_Click(object sender, EventArgs e)
         {
-            int newPos = wisefocuser.Position + Convert.ToInt32(comboBoxFocusStep.Text);
-            if (newPos > wisefocuser.MaxStep)
-                newPos = wisefocuser.MaxStep;
+            uint newPos = wisefocuser.Position + Convert.ToUInt32(comboBoxFocusStep.Text);
+            if (newPos > wisefocuser.UpperLimit)
+                newPos = wisefocuser.UpperLimit;
 
             if (newPos != wisefocuser.Position)
                 wisefocuser.Move(newPos);
@@ -39,7 +39,7 @@ namespace FocuserApplication
 
         private void buttonFocusDecrease_Click(object sender, EventArgs e)
         {
-            int newPos = wisefocuser.Position - Convert.ToInt32(comboBoxFocusStep.Text);
+            uint newPos = wisefocuser.Position - Convert.ToUInt32(comboBoxFocusStep.Text);
             if (newPos < 0)
                 newPos = 0;
 
@@ -79,7 +79,7 @@ namespace FocuserApplication
 
             try
             {
-                int newPos = Convert.ToInt32(textBoxFocusGotoPosition.Text);
+                uint newPos = Convert.ToUInt32(textBoxFocusGotoPosition.Text);
                 wisefocuser.Move(newPos);
             }
             catch (Exception ex)

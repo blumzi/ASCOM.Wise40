@@ -67,13 +67,14 @@
             this.labelDomeStatus = new System.Windows.Forms.Label();
             this.label17 = new System.Windows.Forms.Label();
             this.groupBoxTelescope = new System.Windows.Forms.GroupBox();
-            this.checkBoxMotionStudy = new System.Windows.Forms.CheckBox();
-            this.checkBoxTrack = new System.Windows.Forms.CheckBox();
-            this.label3 = new System.Windows.Forms.Label();
+            this.panel1 = new System.Windows.Forms.Panel();
+            this.buttonTelescopePark = new System.Windows.Forms.Button();
             this.buttonFlat = new System.Windows.Forms.Button();
             this.buttonHandleCover = new System.Windows.Forms.Button();
+            this.label3 = new System.Windows.Forms.Label();
             this.buttonZenith = new System.Windows.Forms.Button();
-            this.buttonTelescopePark = new System.Windows.Forms.Button();
+            this.checkBoxMotionStudy = new System.Windows.Forms.CheckBox();
+            this.checkBoxTrack = new System.Windows.Forms.CheckBox();
             this.labelTelescopeStatus = new System.Windows.Forms.Label();
             this.buttonMainStop = new System.Windows.Forms.Button();
             this.panelDirectionButtons = new System.Windows.Forms.Panel();
@@ -136,6 +137,7 @@
             this.toolStripMenuItemFilterWheel = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem3 = new System.Windows.Forms.ToolStripMenuItem();
             this.resetFocusEncoderToZeroToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.saveMaximumToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem5 = new System.Windows.Forms.ToolStripMenuItem();
             this.tracingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.debuggingToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
@@ -196,12 +198,13 @@
             this.labelDashStatus = new System.Windows.Forms.Label();
             this.timerRefreshDisplay = new System.Windows.Forms.Timer(this.components);
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
-            this.panel1 = new System.Windows.Forms.Panel();
+            this.toolStripMenuItem6 = new System.Windows.Forms.ToolStripMenuItem();
             this.tableLayoutMain.SuspendLayout();
             this.groupBoxFocuser.SuspendLayout();
             this.groupBoxDomeGroup.SuspendLayout();
             this.groupBox7.SuspendLayout();
             this.groupBoxTelescope.SuspendLayout();
+            this.panel1.SuspendLayout();
             this.panelDirectionButtons.SuspendLayout();
             this.groupBox36.SuspendLayout();
             this.tableLayoutPanelCoordinates.SuspendLayout();
@@ -211,7 +214,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxWise)).BeginInit();
             this.groupBoxWeather.SuspendLayout();
             this.tableLayoutPanelWeather.SuspendLayout();
-            this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
             // tableLayoutMain
@@ -279,7 +281,7 @@
             "100",
             "150",
             "200"});
-            this.comboBoxFocusStep.Location = new System.Drawing.Point(40, 86);
+            this.comboBoxFocusStep.Location = new System.Drawing.Point(42, 86);
             this.comboBoxFocusStep.Margin = new System.Windows.Forms.Padding(0);
             this.comboBoxFocusStep.Name = "comboBoxFocusStep";
             this.comboBoxFocusStep.Size = new System.Drawing.Size(72, 21);
@@ -394,12 +396,12 @@
             this.labelFocusCurrentValue.AutoSize = true;
             this.labelFocusCurrentValue.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F);
             this.labelFocusCurrentValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelFocusCurrentValue.Location = new System.Drawing.Point(104, 24);
+            this.labelFocusCurrentValue.Location = new System.Drawing.Point(96, 24);
             this.labelFocusCurrentValue.Name = "labelFocusCurrentValue";
             this.labelFocusCurrentValue.Size = new System.Drawing.Size(35, 18);
             this.labelFocusCurrentValue.TabIndex = 20;
             this.labelFocusCurrentValue.Text = "960";
-            this.labelFocusCurrentValue.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.labelFocusCurrentValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // buttonFocuserStop
             // 
@@ -789,37 +791,33 @@
             this.groupBoxTelescope.TabStop = false;
             this.groupBoxTelescope.Text = " Telescope ";
             // 
-            // checkBoxMotionStudy
+            // panel1
             // 
-            this.checkBoxMotionStudy.AutoSize = true;
-            this.checkBoxMotionStudy.Location = new System.Drawing.Point(289, 368);
-            this.checkBoxMotionStudy.Name = "checkBoxMotionStudy";
-            this.checkBoxMotionStudy.Size = new System.Drawing.Size(53, 17);
-            this.checkBoxMotionStudy.TabIndex = 36;
-            this.checkBoxMotionStudy.Text = "Study";
-            this.checkBoxMotionStudy.UseVisualStyleBackColor = true;
-            this.checkBoxMotionStudy.Visible = false;
+            this.panel1.Controls.Add(this.buttonTelescopePark);
+            this.panel1.Controls.Add(this.buttonFlat);
+            this.panel1.Controls.Add(this.buttonHandleCover);
+            this.panel1.Controls.Add(this.label3);
+            this.panel1.Controls.Add(this.buttonZenith);
+            this.panel1.Location = new System.Drawing.Point(24, 416);
+            this.panel1.Name = "panel1";
+            this.panel1.Size = new System.Drawing.Size(360, 56);
+            this.panel1.TabIndex = 37;
             // 
-            // checkBoxTrack
+            // buttonTelescopePark
             // 
-            this.checkBoxTrack.AutoSize = true;
-            this.checkBoxTrack.Location = new System.Drawing.Point(264, 488);
-            this.checkBoxTrack.Name = "checkBoxTrack";
-            this.checkBoxTrack.Size = new System.Drawing.Size(54, 17);
-            this.checkBoxTrack.TabIndex = 35;
-            this.checkBoxTrack.Text = "Track";
-            this.checkBoxTrack.UseVisualStyleBackColor = true;
-            this.checkBoxTrack.Click += new System.EventHandler(this.checkBoxTrack_Click);
-            // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(2, 19);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(36, 26);
-            this.label3.TabIndex = 34;
-            this.label3.Text = "Goto \r\npreset";
-            this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.buttonTelescopePark.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonTelescopePark.FlatAppearance.BorderSize = 0;
+            this.buttonTelescopePark.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonTelescopePark.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.buttonTelescopePark.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.buttonTelescopePark.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.buttonTelescopePark.Location = new System.Drawing.Point(274, 16);
+            this.buttonTelescopePark.Name = "buttonTelescopePark";
+            this.buttonTelescopePark.Size = new System.Drawing.Size(80, 32);
+            this.buttonTelescopePark.TabIndex = 29;
+            this.buttonTelescopePark.Text = "Park?";
+            this.buttonTelescopePark.UseVisualStyleBackColor = false;
+            this.buttonTelescopePark.Click += new System.EventHandler(this.buttonTelescopePark_Click);
             // 
             // buttonFlat
             // 
@@ -853,6 +851,16 @@
             this.buttonHandleCover.UseVisualStyleBackColor = false;
             this.buttonHandleCover.Click += new System.EventHandler(this.buttonHandleCover_Click);
             // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(2, 19);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(36, 26);
+            this.label3.TabIndex = 34;
+            this.label3.Text = "Goto \r\npreset";
+            this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
             // buttonZenith
             // 
             this.buttonZenith.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
@@ -869,21 +877,27 @@
             this.buttonZenith.UseVisualStyleBackColor = false;
             this.buttonZenith.Click += new System.EventHandler(this.buttonZenith_Click);
             // 
-            // buttonTelescopePark
+            // checkBoxMotionStudy
             // 
-            this.buttonTelescopePark.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.buttonTelescopePark.FlatAppearance.BorderSize = 0;
-            this.buttonTelescopePark.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.buttonTelescopePark.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.buttonTelescopePark.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.buttonTelescopePark.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonTelescopePark.Location = new System.Drawing.Point(274, 16);
-            this.buttonTelescopePark.Name = "buttonTelescopePark";
-            this.buttonTelescopePark.Size = new System.Drawing.Size(80, 32);
-            this.buttonTelescopePark.TabIndex = 29;
-            this.buttonTelescopePark.Text = "Park?";
-            this.buttonTelescopePark.UseVisualStyleBackColor = false;
-            this.buttonTelescopePark.Click += new System.EventHandler(this.buttonTelescopePark_Click);
+            this.checkBoxMotionStudy.AutoSize = true;
+            this.checkBoxMotionStudy.Location = new System.Drawing.Point(289, 368);
+            this.checkBoxMotionStudy.Name = "checkBoxMotionStudy";
+            this.checkBoxMotionStudy.Size = new System.Drawing.Size(53, 17);
+            this.checkBoxMotionStudy.TabIndex = 36;
+            this.checkBoxMotionStudy.Text = "Study";
+            this.checkBoxMotionStudy.UseVisualStyleBackColor = true;
+            this.checkBoxMotionStudy.Visible = false;
+            // 
+            // checkBoxTrack
+            // 
+            this.checkBoxTrack.AutoSize = true;
+            this.checkBoxTrack.Location = new System.Drawing.Point(264, 488);
+            this.checkBoxTrack.Name = "checkBoxTrack";
+            this.checkBoxTrack.Size = new System.Drawing.Size(54, 17);
+            this.checkBoxTrack.TabIndex = 35;
+            this.checkBoxTrack.Text = "Track";
+            this.checkBoxTrack.UseVisualStyleBackColor = true;
+            this.checkBoxTrack.Click += new System.EventHandler(this.checkBoxTrack_Click);
             // 
             // labelTelescopeStatus
             // 
@@ -1682,7 +1696,9 @@
             // toolStripMenuItem3
             // 
             this.toolStripMenuItem3.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.resetFocusEncoderToZeroToolStripMenuItem});
+            this.resetFocusEncoderToZeroToolStripMenuItem,
+            this.toolStripMenuItem6,
+            this.saveMaximumToolStripMenuItem});
             this.toolStripMenuItem3.Name = "toolStripMenuItem3";
             this.toolStripMenuItem3.Size = new System.Drawing.Size(158, 22);
             this.toolStripMenuItem3.Text = "Focus";
@@ -1690,9 +1706,18 @@
             // resetFocusEncoderToZeroToolStripMenuItem
             // 
             this.resetFocusEncoderToZeroToolStripMenuItem.Name = "resetFocusEncoderToZeroToolStripMenuItem";
-            this.resetFocusEncoderToZeroToolStripMenuItem.Size = new System.Drawing.Size(194, 22);
-            this.resetFocusEncoderToZeroToolStripMenuItem.Text = "Reset Encoder to Zero";
+            this.resetFocusEncoderToZeroToolStripMenuItem.Size = new System.Drawing.Size(181, 22);
+            this.resetFocusEncoderToZeroToolStripMenuItem.Text = "Set Encoder to Zero";
             this.resetFocusEncoderToZeroToolStripMenuItem.Click += new System.EventHandler(this.resetFocusEncoderToZeroToolStripMenuItem_Click);
+            // 
+            // saveMaximumToolStripMenuItem
+            // 
+            this.saveMaximumToolStripMenuItem.Name = "saveMaximumToolStripMenuItem";
+            this.saveMaximumToolStripMenuItem.Size = new System.Drawing.Size(181, 22);
+            this.saveMaximumToolStripMenuItem.Text = "Save LowerLimit";
+            this.saveMaximumToolStripMenuItem.ToolTipText = "Saves the current focus encoder value to the ASCOM profile\r\n as the focus UpperLi" +
+    "mit.";
+            this.saveMaximumToolStripMenuItem.Click += new System.EventHandler(this.saveFocusEncoderLowerLimitToolStripMenuItem_Click);
             // 
             // toolStripMenuItem5
             // 
@@ -2401,17 +2426,14 @@
             this.timerRefreshDisplay.Enabled = true;
             this.timerRefreshDisplay.Tick += new System.EventHandler(this.RefreshDisplay);
             // 
-            // panel1
+            // toolStripMenuItem6
             // 
-            this.panel1.Controls.Add(this.buttonTelescopePark);
-            this.panel1.Controls.Add(this.buttonFlat);
-            this.panel1.Controls.Add(this.buttonHandleCover);
-            this.panel1.Controls.Add(this.label3);
-            this.panel1.Controls.Add(this.buttonZenith);
-            this.panel1.Location = new System.Drawing.Point(24, 416);
-            this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(360, 56);
-            this.panel1.TabIndex = 37;
+            this.toolStripMenuItem6.Name = "toolStripMenuItem6";
+            this.toolStripMenuItem6.Size = new System.Drawing.Size(181, 22);
+            this.toolStripMenuItem6.Text = "Save UpperLimit";
+            this.toolStripMenuItem6.ToolTipText = "Saves the current focus encoder value to the ASCOM profile\r\n as the focus UpperLi" +
+    "mit.";
+            this.toolStripMenuItem6.Click += new System.EventHandler(this.saveFocusEncoderUpperLimitToolStripMenuItem_Click);
             // 
             // FormDash
             // 
@@ -2436,6 +2458,8 @@
             this.groupBox7.PerformLayout();
             this.groupBoxTelescope.ResumeLayout(false);
             this.groupBoxTelescope.PerformLayout();
+            this.panel1.ResumeLayout(false);
+            this.panel1.PerformLayout();
             this.panelDirectionButtons.ResumeLayout(false);
             this.groupBox36.ResumeLayout(false);
             this.groupBox36.PerformLayout();
@@ -2450,8 +2474,6 @@
             this.groupBoxWeather.ResumeLayout(false);
             this.tableLayoutPanelWeather.ResumeLayout(false);
             this.tableLayoutPanelWeather.PerformLayout();
-            this.panel1.ResumeLayout(false);
-            this.panel1.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -2625,6 +2647,8 @@
         private System.Windows.Forms.Button buttonFocusIncrease;
         private System.Windows.Forms.Button buttonFocusDecrease;
         private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.ToolStripMenuItem saveMaximumToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem6;
     }
 }
 

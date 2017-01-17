@@ -240,20 +240,20 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return wisefocuser.MaxStep;
+                return (int)wisefocuser.UpperLimit;
             }
         }
 
         public void Move(int Position)
         {
-            wisefocuser.Move(Position);
+            wisefocuser.Move((uint)Position);
         }
 
         public int Position
         {
             get
             {
-                return wisefocuser.Position; // Return the focuser position
+                return (int)wisefocuser.Position; // Return the focuser position
             }
         }
 

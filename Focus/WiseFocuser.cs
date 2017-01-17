@@ -35,15 +35,7 @@ namespace ASCOM.Wise40
         
         Dictionary<Direction, MotionParameter> motionParameters;
         
-#if MULTI_TURN_ENCODER
-        private const int focuserSteps = 10000;     // TBD: actual value at max position
-#else
-        private const int focuserSteps = 128;
-#endif
-        private int targetPos;
-        
-        private System.Threading.Timer simulationTimer;
-        private int simulatedMotionTimeout = 100;       // millis between simulated encoder bumping events
+        private uint targetPos;
 
         private System.Threading.Timer movementTimer;   // Should be ON only when the focuser is moving
         private int movementTimeout = 50;               // millis between movement monitoring events
@@ -68,7 +60,7 @@ namespace ASCOM.Wise40
             }
         }
 
-        public void init()
+        public void init(bool multiTurn = false)
         {
             if (_initialized)
                 return;
@@ -76,6 +68,7 @@ namespace ASCOM.Wise40
             Name = "WiseFocuser";
             _status = FocuserStatus.Idle;
 
+            encoder = new WiseFocuserEnc(true);
             ReadProfile();
             debugger.init(Debugger.DebugLevel.DebugLogic | Debugger.DebugLevel.DebugEncoders);
             traceLogger = new TraceLogger("", "Focuser");
@@ -85,14 +78,9 @@ namespace ASCOM.Wise40
 
             pinDown = new WisePin("FocusDown", hardware.miscboard, DigitalPortType.FirstPortCH, 0, DigitalPortDirection.DigitalOut);
             pinUp = new WisePin("FocusUp", hardware.miscboard, DigitalPortType.FirstPortCH, 1, DigitalPortDirection.DigitalOut);
-            encoder = new WiseFocuserEnc(/* true */);
             
             connectables.AddRange(new List<IConnectable> { instance.pinUp, instance.pinDown, instance.encoder });
-            disposables.AddRange(new List<IDisposable> { instance.pinUp, instance.pinDown, instance.encoder });
-
-
-            System.Threading.TimerCallback simulationTimerCallback = new System.Threading.TimerCallback(SimulateMovement);
-            simulationTimer = new System.Threading.Timer(simulationTimerCallback);
+            disposables.AddRange(new List<IDisposable> { instance.pinUp, instance.pinDown, instance.encoder });            
 
             System.Threading.TimerCallback movementTimerCallback = new System.Threading.TimerCallback(MonitorMovement);
             movementTimer = new System.Threading.Timer(movementTimerCallback);
@@ -147,14 +135,23 @@ namespace ASCOM.Wise40
             using (Profile driverProfile = new Profile())
             {
                 driverProfile.DeviceType = "Focuser";
+                
+                encoder.UpperLimit = Convert.ToUInt32(driverProfile.GetValue(driverID, "Upper Limit", string.Empty, encoder.UpperLimit.ToString()));
+                encoder.LowerLimit = Convert.ToUInt32(driverProfile.GetValue(driverID, "Lower Limit", string.Empty, encoder.LowerLimit.ToString()));
             }
         }
 
         /// <summary>
         /// Write the device configuration to the  ASCOM  Profile store
         /// </summary>
-        internal void WriteProfile()
+        public void WriteProfile()
         {
+            using (Profile driverProfile = new Profile())
+            {
+                driverProfile.DeviceType = "Focuser";
+                driverProfile.WriteValue(driverID, "Upper Limit", encoder.UpperLimit.ToString());
+                driverProfile.WriteValue(driverID, "Lower Limit", encoder.LowerLimit.ToString());
+            }
         }
 
         public double Temperature
@@ -210,11 +207,11 @@ namespace ASCOM.Wise40
             }
         }
 
-        public int position
+        public uint position
         {
             get
             {
-                int pos = (int)encoder.Value;
+                uint pos = encoder.Value;
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "Focuser: position: {0}", pos);
                 #endregion
@@ -222,7 +219,7 @@ namespace ASCOM.Wise40
             }
         }
 
-        public int Position
+        public uint Position
         {
             get
             {
@@ -250,9 +247,8 @@ namespace ASCOM.Wise40
         {
             pinUp.SetOff();
             pinDown.SetOff();
-            if (Simulated)
-                simulationTimer.Change(0, 0);
             movementTimer.Change(0, 0);
+            targetPos = 0;
             _status = FocuserStatus.Idle;
         }
 
@@ -309,9 +305,9 @@ namespace ASCOM.Wise40
                 if (!Connected)
                     throw new NotConnectedException("");
                 #region trace
-                traceLogger.LogMessage("MaxIncrement Get", focuserSteps.ToString());
+                traceLogger.LogMessage("MaxIncrement Get", UpperLimit.ToString());
                 #endregion
-                return focuserSteps; // Maximum change in one move
+                return (int) UpperLimit; // Maximum change in one move
             }
         }
 
@@ -322,9 +318,9 @@ namespace ASCOM.Wise40
                 if (!Connected)
                     throw new NotConnectedException("");
                 #region trace
-                traceLogger.LogMessage("MaxStep Get", focuserSteps.ToString());
+                traceLogger.LogMessage("MaxStep Get", UpperLimit.ToString());
                 #endregion
-                return focuserSteps; // Maximum extent of the focuser, so position range is 0 to 10,000
+                return (int) UpperLimit; // Maximum extent of the focuser, so position range is 0 to 10,000
             }
         }
 
@@ -333,33 +329,31 @@ namespace ASCOM.Wise40
             switch (dir)
             {
                 case Direction.Up:
-                    targetPos = -1;
+                    targetPos = UpperLimit;
                     pinUp.SetOn();
                     _status = FocuserStatus.MovingUp;
                     break;
                 case Direction.Down:
-                    targetPos = -1;
+                    targetPos = LowerLimit;
                     pinDown.SetOn();
                     _status = FocuserStatus.MovingDown;
                     break;
                 case Direction.AllUp:
-                    targetPos = int.MaxValue;
+                    targetPos = UpperLimit;
                     pinUp.SetOn();
                     _status = FocuserStatus.MovingAllUp;
                     break;
                 case Direction.AllDown:
-                    targetPos = int.MinValue;
+                    targetPos = LowerLimit;
                     pinDown.SetOn();
                     _status = FocuserStatus.MovingAllDown;
                     break;
             }
-
-            if (Simulated)
-                simulationTimer.Change(simulatedMotionTimeout, simulatedMotionTimeout);
+            
             movementTimer.Change(movementTimeout, movementTimeout);
         }
 
-        public void Move(int pos)
+        public void Move(uint pos)
         {
             #region trace
             traceLogger.LogMessage("Move", Position.ToString());
@@ -370,7 +364,7 @@ namespace ASCOM.Wise40
             if (TempComp)
                 throw new InvalidOperationException("Cannot Move while TempComp == true");
 
-            int currentPos = Position;
+            uint currentPos = Position;
 
             if (currentPos == pos)
                 return;
@@ -378,7 +372,7 @@ namespace ASCOM.Wise40
             targetPos = pos;
             if (targetPos > currentPos)
             {
-                _status = FocuserStatus.MovingUp;
+                _status = FocuserStatus.MovingUp;     
                 pinUp.SetOn();
             }
             else
@@ -386,9 +380,7 @@ namespace ASCOM.Wise40
                 _status = FocuserStatus.MovingDown;
                 pinDown.SetOn();
             }
-
-            if (Simulated)
-                simulationTimer.Change(simulatedMotionTimeout, simulatedMotionTimeout);
+            
             movementTimer.Change(movementTimeout, movementTimeout);
         }
 
@@ -440,7 +432,6 @@ namespace ASCOM.Wise40
 
         public string Description
         {
-            // TODO customise this device description
             get
             {
                 if (! Connected)
@@ -456,8 +447,6 @@ namespace ASCOM.Wise40
         {
             get
             {
-                Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-                // TODO customise this driver description
                 string driverInfo = "Information about the driver itself. Version: " + DriverVersion;
                 #region trace
                 traceLogger.LogMessage("DriverInfo Get", driverInfo);
@@ -489,35 +478,16 @@ namespace ASCOM.Wise40
             }
         }
 
-        private void SimulateMovement(object StateObject)
-        {
-            Direction dir = pinUp.isOn ? Direction.Up : (pinDown.isOn ? Direction.Down : Direction.None);
-
-            switch (dir)
-            {
-                case Direction.Up:
-                case Direction.AllUp:
-                    if (encoder.Value < MaxStep)
-                        encoder.Value++;
-                    break;
-                case Direction.Down:
-                case Direction.AllDown:
-                    if (encoder.Value > 0)
-                        encoder.Value--;
-                    break;
-            }
-        }
-
         private void MonitorMovement(object StateObject)
         {
-            if (pinUp.isOn && targetPos != -1 && targetPos != int.MaxValue)
+            if (pinUp.isOn)
             {
-                if (targetPos - Position <= (Simulated ? 0 : motionParameters[Direction.Up].stoppingDistance))
+                if (targetPos - Position <= motionParameters[Direction.Up].stoppingDistance)
                     Stop();
             }
-            else if (pinDown.isOn && targetPos != -1 && targetPos != int.MinValue)
+            else if (pinDown.isOn)
             {
-                if (Position - targetPos <= (Simulated ? 0 : motionParameters[Direction.Down].stoppingDistance))
+                if (Position - targetPos <= motionParameters[Direction.Down].stoppingDistance)
                     Stop();
             }
         }
@@ -532,19 +502,15 @@ namespace ASCOM.Wise40
                 {
                     case FocuserStatus.MovingUp:
                         ret = "Moving Up";
-                        if (targetPos != -1)
-                            ret += string.Format(" to {0}", targetPos);
                         break;
                     case FocuserStatus.MovingDown:
                         ret = "Moving Down";
-                        if (targetPos != -1)
-                            ret += string.Format(" to {0}", targetPos);
                         break;
                     case FocuserStatus.MovingAllUp:
-                        ret = string.Format("Moving All Up to {0}", MaxStep);
+                        ret = string.Format("Moving All Up to {0}", UpperLimit);
                         break;
                     case FocuserStatus.MovingAllDown:
-                        ret = "Moving All Down to 0";
+                        ret = string.Format("Moving All Down to {0}", LowerLimit);
                         break;
                 }
                 return ret;
@@ -554,6 +520,32 @@ namespace ASCOM.Wise40
         public void SetZero()
         {
             encoder.SetZero();
+        }
+
+        public uint UpperLimit
+        {
+            get
+            {
+                return encoder.UpperLimit;
+            }
+
+            set
+            {
+                encoder.UpperLimit = value;
+            }
+        }
+
+        public uint LowerLimit
+        {
+            get
+            {
+                return encoder.LowerLimit;
+            }
+
+            set
+            {
+                encoder.LowerLimit = value;
+            }
         }
     }
 }

@@ -17,34 +17,65 @@ namespace ASCOM.Wise40
         private WisePin pinZero, pinLatch;
         private Hardware.Hardware hardware = Hardware.Hardware.Instance;
 
-        private readonly uint maxPos = (1 << 12);
-        private readonly uint maxTurns = (1 << 13);
+        //
+        // 17 Jan 2017 - Arie Blumenzweig
+        //  The code below is for the Posital/Fraba multi-turn parallel encoder, model OCD-PPA1B-0812-C060-PRT we have purchassed in Jan 2017.
+        //
+        //   NOTES:
+        //     - The encoder family has an optional Preset pin that can be used to set the Zero point.  We have mistakenly ordered
+        //         the PP (push-pull) version without the P1 (preset option).  The code still implements pinZero, which is not really used.
+        //         In the future we may either:
+        //              - get another encoder (not really likely to happen) or
+        //              - use the wire for one more turn-bit.
+        //
+        //     - The encoder's family allows for up to 12 position bits and 13 turn bits.
+        //     - This specific model has 12 position bits and 8 turn bits.
+        //     - We use all the 12 position bits but only 4 turn-bits, due to wires-in-the-cable and DIO24 pins availability.
+        //
+        //   Ultimately we get 4096 positions in a turn and up to 16 turns (we estimate only about 7-8 turns to be physically required)
+        //
+        //  The upper and lower limits are maintained via software.  They have default natural values but these are overriden by values in the 
+        //  focuser's ASCOM profile.
+        //
+        private static readonly int posBits = 12;
+        private static readonly int turnBits = 4;
+
+        private static readonly uint maxPos = (uint) (1 << posBits);
+        private static readonly uint maxTurns = (uint) (1 << turnBits);
+        private static readonly uint posMask = maxPos - 1;
+        private static readonly uint turnsMask = maxTurns - 1;
 
         private uint _daqsValue;
         private bool _connected = false;
         private bool _multiTurn = false;
+        private uint _upperLimit, _lowerLimit;
 
         List<IConnectable> connectables = new List<IConnectable>();
         List<IDisposable> disposables = new List<IDisposable>();
-        
+
         public WiseFocuserEnc(bool multiTurn = false)
         {
             Name = "FocusEnc";
             this._multiTurn = multiTurn;
-            if (this._multiTurn) {
+            if (this._multiTurn)
+            {
                 pinLatch = new WisePin("FocusLatch", hardware.miscboard, DigitalPortType.FirstPortCH, 3, DigitalPortDirection.DigitalOut);
                 pinZero = new WisePin("FocusZero", hardware.miscboard, DigitalPortType.FirstPortCH, 2, DigitalPortDirection.DigitalOut);
                 base.init("FocusEnc",
-                    1 << 21,
+                    1 << (posBits + turnBits),
                     new List<WiseEncSpec>() {
-                        new WiseEncSpec() { brd = hardware.miscboard, port = DigitalPortType.FirstPortCL, mask = 0xf },
                         new WiseEncSpec() { brd = hardware.miscboard, port = DigitalPortType.FirstPortA,  mask = 0xff },
                         new WiseEncSpec() { brd = hardware.miscboard, port = DigitalPortType.FirstPortB,  mask = 0xff },
                         }
                 );
                 connectables.AddRange(new List<IConnectable>() { pinLatch, pinZero });
                 disposables.AddRange(new List<IDisposable>() { pinLatch, pinZero });
-            } else {
+
+                UpperLimit = maxPos * maxTurns; // max value that the hardware can read, disregarding the upper limit switch
+                LowerLimit = 0;
+            }
+            else
+            {
                 base.init("FocusEnc",
                     1 << 7,
                     new List<WiseEncSpec>() {
@@ -52,6 +83,9 @@ namespace ASCOM.Wise40
                         },
                     true
                     );
+
+                UpperLimit = 128;
+                LowerLimit = 0;
             }
         }
 
@@ -59,24 +93,21 @@ namespace ASCOM.Wise40
         {
             get
             {
-                uint turns, pos;
-
-                if (!Simulated)
-                {
-                    if (_multiTurn)
-                    {
-                        pinLatch.SetOn();
-                        // delay??
-                    }
-                    _daqsValue = base.Value;
-                    if (_multiTurn)
-                        pinLatch.SetOff();
-                }
+                uint turns, pos, ret;
 
                 if (_multiTurn)
                 {
-                    pos = _daqsValue & 0xfff;
-                    turns = (_daqsValue >> 12) & 0x1fff;
+                    pinLatch.SetOn();
+                    Thread.Sleep(1); 
+                }
+                _daqsValue = base.Value;
+                if (_multiTurn)
+                    pinLatch.SetOff();
+
+                if (_multiTurn)
+                {
+                    pos = _daqsValue & posMask;
+                    turns = (_daqsValue >> posBits) & turnsMask;
                 }
                 else
                 {
@@ -84,30 +115,26 @@ namespace ASCOM.Wise40
                     turns = 0;
                 }
 
-                return (turns * maxPos) + pos;
+                ret = (turns * maxPos) + pos;
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "FocusEnc get: pos: {0}, turn: {1} => {2}", pos, turns, ret);
+                #endregion
+                return ret;
             }
 
             set
             {
-                if (Simulated)
-                {
-                    if (_multiTurn) {
-                        uint pos = value % maxPos;
-                        uint turns = value / maxPos;
-                        _daqsValue = (turns << 12) | pos;
-                    } else
-                        _daqsValue = value % maxPos;
-                }
+                
             }
         }
-        
+
         public void SetZero()
         {
             if (!_multiTurn)
                 return;
             pinZero.SetOn();
             Thread.Sleep(150);
-            pinZero.SetOff();    
+            pinZero.SetOff();
         }
 
         public new void Dispose()
@@ -137,5 +164,32 @@ namespace ASCOM.Wise40
                 _connected = value;
             }
         }
+
+        public uint UpperLimit
+        {
+            get
+            {
+                return _upperLimit;
+            }
+
+            set
+            {
+                _upperLimit = value;
+            }
+        }
+
+        public uint LowerLimit
+        {
+            get
+            {
+                return _lowerLimit;
+            }
+
+            set
+            {
+                _lowerLimit = value;
+            }
+        }
+
     }
 }
