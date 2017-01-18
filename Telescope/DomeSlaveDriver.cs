@@ -11,13 +11,13 @@ using System.Threading;
 
 namespace ASCOM.Wise40
 {
-    public class DomeSlaveDriver: IConnectable
+    public class DomeSlaveDriver : IConnectable
     {
         private static WiseDome wisedome = WiseDome.Instance;
         private static WiseTele wisetele = WiseTele.Instance;
         private bool _connected = false;
-        private ASCOM.Astrometry.NOVAS.NOVAS31 novas31;
-        private AstroUtils astroutils;
+        private ASCOM.Astrometry.NOVAS.NOVAS31 novas31 = new Astrometry.NOVAS.NOVAS31();
+        private AstroUtils astroutils = new AstroUtils();
         AutoResetEvent _arrivedAtAz = new AutoResetEvent(false);
         private Debugger debugger;
 
@@ -159,17 +159,14 @@ namespace ASCOM.Wise40
 
         public void SlewToAz(Angle ra, Angle dec)
         {
-            Angle ha = wisesite.LocalSiderealTime - ra; 
-            double haRadians = ha.Radians;
-            double decRadians = dec.Radians;
-            double domeAz = Angle.FromRadians(ScopeCoordToDomeAz(haRadians, decRadians), Angle.Type.Az).Degrees;
+            Angle domeAz = CalculateDomeAzimuth(ra, dec);
 
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                "DomeSlaveDriver: SlewToAz ra: {0}, dec: {1} => ha: {2}, dec: {1} => {3}",
-                ra.ToString(), dec.ToString(), ha.ToString(), domeAz.ToString());
+                "DomeSlaveDriver: SlewToAz ra: {0}, dec: {1} => {3}",
+                ra.ToString(), dec.ToString(), domeAz.ToNiceString());
             #endregion
-            SlewToAz(domeAz);
+            SlewToAz(domeAz.Degrees);
         }
 
         public bool Slewing
@@ -237,6 +234,7 @@ namespace ASCOM.Wise40
             }
         }
 
+#if False
         /// <summary>
         /// Calculates the Dome Azimuth for a GEM scope's (HA, Dec)
         /// Adapted from VisualBasic (see Documents\DomeSync.txt)
@@ -287,6 +285,66 @@ namespace ASCOM.Wise40
             #endregion
 
             return dome_A;
+        }
+#endif
+
+        /// <summary>
+        /// Calculates the dome azimuth for a given telescope position.
+        /// NOTE: Code taken from Time_Coord.pas in teh RemoteCommander Delphi project
+        /// </summary>
+        /// <param name="targetHA">radians, positive to west</param>
+        /// <param name="targetAz">radians, positive to east</param>
+        /// <param name="targetAlt">radians</param>
+        /// <returns>DomeAz - degrees, positive to east</returns>
+        public Angle CalculateDomeAzimuth(Angle ra, Angle dec)
+        {
+            const double X0 = 0.0;  // meters
+            const double Y0 = 0.0;  // meters
+            const double Z0 = 0.0;  // meters
+            const double R = 5.0;   // meters - dome radius
+            const double L = 1.2;   // meters - optical axis offset from ra axis
+            const double SiteNorthLat = 0.534024354440983; //+30:35:50.43;
+
+            double Lx, Ly, Lz, Px, Py, Pz, PL, QA, QB, QC, A1, Rx1, Ry1, DomeAz;
+            double rar = 0, decr = 0, targetHA, targetAlt, targetAz = 0, zd = 0;
+            
+            wisesite.prepareRefractionData(true);
+            novas31.Equ2Hor(astroutils.JulianDateUT1(0), 0,
+                wisesite.astrometricAccuracy,
+                0, 0,
+                wisesite.onSurface,
+                ra.Hours, dec.Degrees,
+                wisesite.refractionOption,
+                ref zd, ref targetAz, ref rar, ref decr);
+
+            targetHA = (wisesite.LocalSiderealTime - ra).Radians;
+            targetAz = Angle.FromDegrees(targetAz).Radians;
+            targetAlt = Angle.FromDegrees(90.0 - zd).Radians;
+
+            Lx = X0 - Math.Sin(SiteNorthLat) * Math.Sin(-targetHA) * L;
+            Ly = Y0 + Math.Cos(-targetHA) * L;
+            Lz = Z0 + Math.Cos(SiteNorthLat) * Math.Sin(-targetHA) * L;
+
+            Px = Math.Cos(-targetAz) * Math.Cos(targetAlt);
+            Py = Math.Sin(-targetAz) * Math.Cos(targetAlt);
+            Pz = Math.Sin(targetAlt);
+
+            PL = Px * Lx + Py * Ly + Pz * Lz;
+
+            QA = 1;
+            QB = 2 * PL;
+            QC = L * L - R * R;
+            A1 = (-QB + Math.Sqrt(QB * QB - 4 * QA * QC)) / (2 * QA);
+
+            Rx1 = A1 * Px - Lx;
+            Ry1 = A1 * Py - Ly;
+            
+            DomeAz = -Math.Atan2(Ry1, Rx1);
+
+            if (DomeAz < 0)
+               DomeAz  += 2 * Math.PI;
+
+            return Angle.FromRadians(DomeAz);
         }
     }
 }

@@ -52,18 +52,25 @@
     </When>
     <Otherwise>
       <ItemGroup>
-        <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework" />
+        <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework">
+          <Private>False</Private>
+        </Reference>
       </ItemGroup>
     </Otherwise>
   </Choose>
   <ItemGroup>
     <Compile Include="AngleTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ScopeCoordToDomeAz.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj">
       <Project>{b76546e7-9832-4d28-b412-b34ca1c6177c}</Project>
       <Name>Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Telescope\Telescope.csproj">
+      <Project>{e27802fc-efb5-4deb-bd4d-013f44a0813c}</Project>
+      <Name>Telescope</Name>
     </ProjectReference>
   </ItemGroup>
   <Choose>
