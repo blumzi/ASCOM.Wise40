@@ -172,11 +172,6 @@
             this.pictureBoxWise = new System.Windows.Forms.PictureBox();
             this.labelDate = new System.Windows.Forms.Label();
             this.labelComputerControl = new System.Windows.Forms.Label();
-            this.groupBox3 = new System.Windows.Forms.GroupBox();
-            this.checkBoxSlewingIsActive = new System.Windows.Forms.CheckBox();
-            this.checkBoxSecondaryIsActive = new System.Windows.Forms.CheckBox();
-            this.checkBoxTrackingIsActive = new System.Windows.Forms.CheckBox();
-            this.checkBoxPrimaryIsActive = new System.Windows.Forms.CheckBox();
             this.groupBoxWeather = new System.Windows.Forms.GroupBox();
             this.labelWeatherStatus = new System.Windows.Forms.Label();
             this.tableLayoutPanelWeather = new System.Windows.Forms.TableLayoutPanel();
@@ -222,7 +217,6 @@
             this.menuStrip.SuspendLayout();
             this.flowLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxWise)).BeginInit();
-            this.groupBox3.SuspendLayout();
             this.groupBoxWeather.SuspendLayout();
             this.tableLayoutPanelWeather.SuspendLayout();
             this.annunciatorPanel2.SuspendLayout();
@@ -2027,7 +2021,6 @@
             this.flowLayoutPanel1.Controls.Add(this.labelDate);
             this.flowLayoutPanel1.Controls.Add(this.labelComputerControl);
             this.flowLayoutPanel1.Controls.Add(this.annunciatorPanel2);
-            this.flowLayoutPanel1.Controls.Add(this.groupBox3);
             this.flowLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.flowLayoutPanel1.Location = new System.Drawing.Point(3, 28);
             this.flowLayoutPanel1.Name = "flowLayoutPanel1";
@@ -2091,69 +2084,6 @@
             this.labelComputerControl.TabIndex = 28;
             this.labelComputerControl.Text = "ComputerControl";
             this.labelComputerControl.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // groupBox3
-            // 
-            this.groupBox3.Controls.Add(this.checkBoxSlewingIsActive);
-            this.groupBox3.Controls.Add(this.checkBoxSecondaryIsActive);
-            this.groupBox3.Controls.Add(this.checkBoxTrackingIsActive);
-            this.groupBox3.Controls.Add(this.checkBoxPrimaryIsActive);
-            this.groupBox3.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBox3.Location = new System.Drawing.Point(3, 427);
-            this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(168, 120);
-            this.groupBox3.TabIndex = 17;
-            this.groupBox3.TabStop = false;
-            this.groupBox3.Text = " Active  ";
-            this.groupBox3.Visible = false;
-            // 
-            // checkBoxSlewingIsActive
-            // 
-            this.checkBoxSlewingIsActive.AutoCheck = false;
-            this.checkBoxSlewingIsActive.AutoSize = true;
-            this.checkBoxSlewingIsActive.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.checkBoxSlewingIsActive.Location = new System.Drawing.Point(16, 96);
-            this.checkBoxSlewingIsActive.Name = "checkBoxSlewingIsActive";
-            this.checkBoxSlewingIsActive.Size = new System.Drawing.Size(63, 17);
-            this.checkBoxSlewingIsActive.TabIndex = 3;
-            this.checkBoxSlewingIsActive.Text = "Slewing";
-            this.checkBoxSlewingIsActive.UseVisualStyleBackColor = true;
-            // 
-            // checkBoxSecondaryIsActive
-            // 
-            this.checkBoxSecondaryIsActive.AutoCheck = false;
-            this.checkBoxSecondaryIsActive.AutoSize = true;
-            this.checkBoxSecondaryIsActive.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.checkBoxSecondaryIsActive.Location = new System.Drawing.Point(16, 48);
-            this.checkBoxSecondaryIsActive.Name = "checkBoxSecondaryIsActive";
-            this.checkBoxSecondaryIsActive.Size = new System.Drawing.Size(77, 17);
-            this.checkBoxSecondaryIsActive.TabIndex = 1;
-            this.checkBoxSecondaryIsActive.Text = "Secondary";
-            this.checkBoxSecondaryIsActive.UseVisualStyleBackColor = true;
-            // 
-            // checkBoxTrackingIsActive
-            // 
-            this.checkBoxTrackingIsActive.AutoCheck = false;
-            this.checkBoxTrackingIsActive.AutoSize = true;
-            this.checkBoxTrackingIsActive.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.checkBoxTrackingIsActive.Location = new System.Drawing.Point(16, 72);
-            this.checkBoxTrackingIsActive.Name = "checkBoxTrackingIsActive";
-            this.checkBoxTrackingIsActive.Size = new System.Drawing.Size(68, 17);
-            this.checkBoxTrackingIsActive.TabIndex = 2;
-            this.checkBoxTrackingIsActive.Text = "Tracking";
-            this.checkBoxTrackingIsActive.UseVisualStyleBackColor = true;
-            // 
-            // checkBoxPrimaryIsActive
-            // 
-            this.checkBoxPrimaryIsActive.AutoCheck = false;
-            this.checkBoxPrimaryIsActive.AutoSize = true;
-            this.checkBoxPrimaryIsActive.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.checkBoxPrimaryIsActive.Location = new System.Drawing.Point(16, 24);
-            this.checkBoxPrimaryIsActive.Name = "checkBoxPrimaryIsActive";
-            this.checkBoxPrimaryIsActive.Size = new System.Drawing.Size(60, 17);
-            this.checkBoxPrimaryIsActive.TabIndex = 0;
-            this.checkBoxPrimaryIsActive.Text = "Primary";
-            this.checkBoxPrimaryIsActive.UseVisualStyleBackColor = true;
             // 
             // groupBoxWeather
             // 
@@ -2657,8 +2587,6 @@
             this.menuStrip.PerformLayout();
             this.flowLayoutPanel1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxWise)).EndInit();
-            this.groupBox3.ResumeLayout(false);
-            this.groupBox3.PerformLayout();
             this.groupBoxWeather.ResumeLayout(false);
             this.tableLayoutPanelWeather.ResumeLayout(false);
             this.tableLayoutPanelWeather.PerformLayout();
@@ -2716,11 +2644,6 @@
         private System.Windows.Forms.Label labelDeclinationValue;
         private System.Windows.Forms.Label labelAzimuthValue;
         private System.Windows.Forms.Label labelDeclination;
-        private System.Windows.Forms.GroupBox groupBox3;
-        private System.Windows.Forms.CheckBox checkBoxSlewingIsActive;
-        private System.Windows.Forms.CheckBox checkBoxSecondaryIsActive;
-        private System.Windows.Forms.CheckBox checkBoxTrackingIsActive;
-        private System.Windows.Forms.CheckBox checkBoxPrimaryIsActive;
         private System.Windows.Forms.Button buttonGoCoord;
         private System.Windows.Forms.TextBox textBoxRA;
         private System.Windows.Forms.TextBox textBoxDec;

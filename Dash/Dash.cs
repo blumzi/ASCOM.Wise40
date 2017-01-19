@@ -178,13 +178,6 @@ namespace Dash
 
             buttonTelescopePark.Text = wisetele.AtPark ? "Unpark" : "Park";
 
-            checkBoxPrimaryIsActive.Checked = wisetele.AxisIsMoving(TelescopeAxes.axisPrimary);
-            checkBoxSecondaryIsActive.Checked = wisetele.AxisIsMoving(TelescopeAxes.axisSecondary);
-            checkBoxSlewingIsActive.Text = (wisetele.slewers.Count == 0) ? "Slewing" :
-                "Slewing (" + wisetele.slewers.ToString() + ")";
-            checkBoxSlewingIsActive.Checked = wisetele.Slewing;
-            checkBoxTrackingIsActive.Checked = wisetele.Tracking;
-
             annunciatorTrack.Cadence = wisetele.Tracking ? ASCOM.Controls.CadencePattern.SteadyOn : ASCOM.Controls.CadencePattern.SteadyOff;
             annunciatorSlew.Cadence = wisetele.Slewing ? ASCOM.Controls.CadencePattern.SteadyOn : ASCOM.Controls.CadencePattern.SteadyOff;
             annunciatorDome.Cadence = wisedome.Slewing ? ASCOM.Controls.CadencePattern.BlinkFast : ASCOM.Controls.CadencePattern.SteadyOff;
@@ -200,14 +193,8 @@ namespace Dash
                     m = wisetele.EastMotor;
 
                 if (m == null)
-                {
-                    checkBoxPrimaryIsActive.Text = "Primary";
-                    annunciatorPrimary.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
-                } else
-                {
-                    checkBoxPrimaryIsActive.Text += ": " + m.Name.Remove(m.Name.IndexOf('M')) + "@" +
-                        WiseTele.RateName(m.currentRate).Replace("rate", "");
-                    
+                    annunciatorPrimary.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;else
+                {                    
                     if (m.currentRate == Const.rateSlew)
                         annunciatorPrimary.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
                     else if (m.currentRate == Const.rateSet)
@@ -226,15 +213,9 @@ namespace Dash
                     m = wisetele.SouthMotor;
 
                 if (m == null)
-                {
-                    checkBoxSecondaryIsActive.Text = "Secondary";
                     annunciatorSecondary.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
-                }
                 else
                 {
-                    checkBoxSecondaryIsActive.Text += ": " + m.Name.Remove(m.Name.IndexOf('M')) + "@" +
-                        WiseTele.RateName(m.currentRate).Replace("rate", "");
-
                     if (m.currentRate == Const.rateSlew)
                         annunciatorSecondary.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
                     else if (m.currentRate == Const.rateSet)
@@ -242,11 +223,6 @@ namespace Dash
                     else if (m.currentRate == Const.rateGuide)
                         annunciatorSecondary.Cadence = ASCOM.Controls.CadencePattern.BlinkSlow;
                 }
-
-                checkBoxSecondaryIsActive.Text = "Secondary";
-                if (m != null)
-                    checkBoxSecondaryIsActive.Text += ": " + m.Name.Remove(m.Name.IndexOf('M')) + "@" +
-                        WiseTele.RateName(m.currentRate).Replace("rate", "");
             }
 
             telescopeStatus.Show(wisetele.Status);
