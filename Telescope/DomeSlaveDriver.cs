@@ -290,12 +290,11 @@ namespace ASCOM.Wise40
 
         /// <summary>
         /// Calculates the dome azimuth for a given telescope position.
-        /// NOTE: Code taken from Time_Coord.pas in teh RemoteCommander Delphi project
+        /// NOTE: Code adapted from Time_Coord.pas in the RemoteCommander Delphi project
         /// </summary>
-        /// <param name="targetHA">radians, positive to west</param>
-        /// <param name="targetAz">radians, positive to east</param>
-        /// <param name="targetAlt">radians</param>
-        /// <returns>DomeAz - degrees, positive to east</returns>
+        /// <param name="ra">Angle, target RA</param>
+        /// <param name="dec">Angle, target DEC</param>
+        /// <returns>Angle, dome azimuth</returns>
         public Angle CalculateDomeAzimuth(Angle ra, Angle dec)
         {
             const double X0 = 0.0;  // meters
