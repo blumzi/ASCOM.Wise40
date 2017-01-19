@@ -148,6 +148,9 @@ namespace Dash
                 tb.BackColor = Color.FromArgb(64, 64, 64);
                 tb.ForeColor = Color.FromArgb(176, 161, 142);
             }
+
+            buttonFocusAllUp.Text = wisefocuser.UpperLimit.ToString();
+            buttonFocusAllDown.Text = wisefocuser.LowerLimit.ToString();
         }
         #endregion
 
@@ -181,7 +184,6 @@ namespace Dash
                 "Slewing (" + wisetele.slewers.ToString() + ")";
             checkBoxSlewingIsActive.Checked = wisetele.Slewing;
             checkBoxTrackingIsActive.Checked = wisetele.Tracking;
-            checkBoxTrack.Checked = wisetele.Tracking;
 
             annunciatorTrack.Cadence = wisetele.Tracking ? ASCOM.Controls.CadencePattern.SteadyOn : ASCOM.Controls.CadencePattern.SteadyOff;
             annunciatorSlew.Cadence = wisetele.Slewing ? ASCOM.Controls.CadencePattern.SteadyOn : ASCOM.Controls.CadencePattern.SteadyOff;
@@ -1222,6 +1224,11 @@ namespace Dash
             }
             item.Invalidate();
             UpdateAlteredItems(item, string.Format("Focus: {0}", wisefocuser.UpperLimit));
+        }
+
+        private void buttonTrack_Click(object sender, EventArgs e)
+        {
+            wisetele.Tracking = !wisetele.Tracking;
         }
 
         private void saveFocusEncoderLowerLimitToolStripMenuItem_Click(object sender, EventArgs e)
