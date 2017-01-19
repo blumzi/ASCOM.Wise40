@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 
 using ASCOM.Wise40;
+using ASCOM.Wise40.Common;
 
 namespace Dash
 {

@@ -163,7 +163,7 @@ namespace ASCOM.Wise40
 
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                "DomeSlaveDriver: SlewToAz ra: {0}, dec: {1} => {3}",
+                "DomeSlaveDriver: SlewToAz ra: {0}, dec: {1} => {2}",
                 ra.ToString(), dec.ToString(), domeAz.ToNiceString());
             #endregion
             SlewToAz(domeAz.Degrees);

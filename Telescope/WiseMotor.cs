@@ -130,7 +130,9 @@ namespace ASCOM.Wise40.Hardware
         {
             get
             {
-                foreach (WisePin pin in new List<WisePin>() { motorPin, guideMotorPin })
+                List<WisePin> pins = new List<WisePin>() { motorPin, guideMotorPin };
+
+                foreach (var pin in pins)
                     if (pin != null && pin.isOn)
                         return true;
                 return false;

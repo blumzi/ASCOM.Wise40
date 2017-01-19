@@ -167,9 +167,6 @@
             this.pictureBoxWise = new System.Windows.Forms.PictureBox();
             this.labelDate = new System.Windows.Forms.Label();
             this.labelComputerControl = new System.Windows.Forms.Label();
-            this.labelDashComputerControl = new System.Windows.Forms.Label();
-            this.labelDashSafeToOpen = new System.Windows.Forms.Label();
-            this.labelDashSafeToImage = new System.Windows.Forms.Label();
             this.groupBoxWeather = new System.Windows.Forms.GroupBox();
             this.labelWeatherStatus = new System.Windows.Forms.Label();
             this.tableLayoutPanelWeather = new System.Windows.Forms.TableLayoutPanel();
@@ -199,6 +196,18 @@
             this.timerRefreshDisplay = new System.Windows.Forms.Timer(this.components);
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
             this.toolStripMenuItem6 = new System.Windows.Forms.ToolStripMenuItem();
+            this.annunciatorPanel1 = new ASCOM.Controls.AnnunciatorPanel();
+            this.annunciatorTrack = new ASCOM.Controls.Annunciator();
+            this.annunciatorSlew = new ASCOM.Controls.Annunciator();
+            this.annunciatorPrimary = new ASCOM.Controls.Annunciator();
+            this.annunciatorSecondary = new ASCOM.Controls.Annunciator();
+            this.annunciatorDome = new ASCOM.Controls.Annunciator();
+            this.annunciatorFocus = new ASCOM.Controls.Annunciator();
+            this.annunciator7 = new ASCOM.Controls.Annunciator();
+            this.ledIndicatorComputerControl = new ASCOM.Controls.LedIndicator();
+            this.ledIndicatorSafeToOpen = new ASCOM.Controls.LedIndicator();
+            this.ledIndicatorSafeToImage = new ASCOM.Controls.LedIndicator();
+            this.annunciatorWeather = new ASCOM.Controls.Annunciator();
             this.tableLayoutMain.SuspendLayout();
             this.groupBoxFocuser.SuspendLayout();
             this.groupBoxDomeGroup.SuspendLayout();
@@ -214,6 +223,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxWise)).BeginInit();
             this.groupBoxWeather.SuspendLayout();
             this.tableLayoutPanelWeather.SuspendLayout();
+            this.annunciatorPanel1.SuspendLayout();
             this.SuspendLayout();
             // 
             // tableLayoutMain
@@ -774,7 +784,7 @@
             this.groupBoxTelescope.Controls.Add(this.panelDirectionButtons);
             this.groupBoxTelescope.Controls.Add(this.groupBox36);
             this.groupBoxTelescope.Controls.Add(this.tableLayoutPanelCoordinates);
-            this.groupBoxTelescope.Controls.Add(this.groupBox3);
+            this.groupBoxTelescope.Controls.Add(this.annunciatorPanel1);
             this.groupBoxTelescope.Controls.Add(this.buttonGoCoord);
             this.groupBoxTelescope.Controls.Add(this.textBoxRA);
             this.groupBoxTelescope.Controls.Add(this.textBoxDec);
@@ -798,9 +808,9 @@
             this.panel1.Controls.Add(this.buttonHandleCover);
             this.panel1.Controls.Add(this.label3);
             this.panel1.Controls.Add(this.buttonZenith);
-            this.panel1.Location = new System.Drawing.Point(24, 416);
+            this.panel1.Location = new System.Drawing.Point(72, 424);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(360, 56);
+            this.panel1.Size = new System.Drawing.Size(200, 96);
             this.panel1.TabIndex = 37;
             // 
             // buttonTelescopePark
@@ -811,9 +821,9 @@
             this.buttonTelescopePark.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonTelescopePark.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonTelescopePark.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonTelescopePark.Location = new System.Drawing.Point(274, 16);
+            this.buttonTelescopePark.Location = new System.Drawing.Point(120, 56);
             this.buttonTelescopePark.Name = "buttonTelescopePark";
-            this.buttonTelescopePark.Size = new System.Drawing.Size(80, 32);
+            this.buttonTelescopePark.Size = new System.Drawing.Size(64, 32);
             this.buttonTelescopePark.TabIndex = 29;
             this.buttonTelescopePark.Text = "Park?";
             this.buttonTelescopePark.UseVisualStyleBackColor = false;
@@ -827,9 +837,9 @@
             this.buttonFlat.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonFlat.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonFlat.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonFlat.Location = new System.Drawing.Point(193, 16);
+            this.buttonFlat.Location = new System.Drawing.Point(120, 16);
             this.buttonFlat.Name = "buttonFlat";
-            this.buttonFlat.Size = new System.Drawing.Size(72, 32);
+            this.buttonFlat.Size = new System.Drawing.Size(64, 32);
             this.buttonFlat.TabIndex = 33;
             this.buttonFlat.Text = "Flat";
             this.buttonFlat.UseVisualStyleBackColor = false;
@@ -843,7 +853,7 @@
             this.buttonHandleCover.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonHandleCover.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonHandleCover.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonHandleCover.Location = new System.Drawing.Point(120, 16);
+            this.buttonHandleCover.Location = new System.Drawing.Point(48, 56);
             this.buttonHandleCover.Name = "buttonHandleCover";
             this.buttonHandleCover.Size = new System.Drawing.Size(64, 32);
             this.buttonHandleCover.TabIndex = 32;
@@ -854,7 +864,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(2, 19);
+            this.label3.Location = new System.Drawing.Point(8, 40);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(36, 26);
             this.label3.TabIndex = 34;
@@ -869,7 +879,7 @@
             this.buttonZenith.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonZenith.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonZenith.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonZenith.Location = new System.Drawing.Point(47, 16);
+            this.buttonZenith.Location = new System.Drawing.Point(48, 16);
             this.buttonZenith.Name = "buttonZenith";
             this.buttonZenith.Size = new System.Drawing.Size(64, 32);
             this.buttonZenith.TabIndex = 31;
@@ -880,7 +890,7 @@
             // checkBoxMotionStudy
             // 
             this.checkBoxMotionStudy.AutoSize = true;
-            this.checkBoxMotionStudy.Location = new System.Drawing.Point(289, 368);
+            this.checkBoxMotionStudy.Location = new System.Drawing.Point(280, 272);
             this.checkBoxMotionStudy.Name = "checkBoxMotionStudy";
             this.checkBoxMotionStudy.Size = new System.Drawing.Size(53, 17);
             this.checkBoxMotionStudy.TabIndex = 36;
@@ -891,7 +901,7 @@
             // checkBoxTrack
             // 
             this.checkBoxTrack.AutoSize = true;
-            this.checkBoxTrack.Location = new System.Drawing.Point(264, 488);
+            this.checkBoxTrack.Location = new System.Drawing.Point(165, 402);
             this.checkBoxTrack.Name = "checkBoxTrack";
             this.checkBoxTrack.Size = new System.Drawing.Size(54, 17);
             this.checkBoxTrack.TabIndex = 35;
@@ -1100,9 +1110,9 @@
             this.groupBox36.Controls.Add(this.radioButtonGuide);
             this.groupBox36.Controls.Add(this.radioButtonSet);
             this.groupBox36.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBox36.Location = new System.Drawing.Point(264, 520);
+            this.groupBox36.Location = new System.Drawing.Point(40, 288);
             this.groupBox36.Name = "groupBox36";
-            this.groupBox36.Size = new System.Drawing.Size(108, 77);
+            this.groupBox36.Size = new System.Drawing.Size(64, 77);
             this.groupBox36.TabIndex = 12;
             this.groupBox36.TabStop = false;
             this.groupBox36.Text = " Speed ";
@@ -1426,12 +1436,13 @@
             this.groupBox3.Controls.Add(this.checkBoxTrackingIsActive);
             this.groupBox3.Controls.Add(this.checkBoxPrimaryIsActive);
             this.groupBox3.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBox3.Location = new System.Drawing.Point(72, 480);
+            this.groupBox3.Location = new System.Drawing.Point(3, 409);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Size = new System.Drawing.Size(168, 120);
             this.groupBox3.TabIndex = 17;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = " Active  ";
+            this.groupBox3.Visible = false;
             // 
             // checkBoxSlewingIsActive
             // 
@@ -1919,9 +1930,10 @@
             this.flowLayoutPanel1.Controls.Add(this.pictureBoxWise);
             this.flowLayoutPanel1.Controls.Add(this.labelDate);
             this.flowLayoutPanel1.Controls.Add(this.labelComputerControl);
-            this.flowLayoutPanel1.Controls.Add(this.labelDashComputerControl);
-            this.flowLayoutPanel1.Controls.Add(this.labelDashSafeToOpen);
-            this.flowLayoutPanel1.Controls.Add(this.labelDashSafeToImage);
+            this.flowLayoutPanel1.Controls.Add(this.ledIndicatorComputerControl);
+            this.flowLayoutPanel1.Controls.Add(this.ledIndicatorSafeToOpen);
+            this.flowLayoutPanel1.Controls.Add(this.ledIndicatorSafeToImage);
+            this.flowLayoutPanel1.Controls.Add(this.groupBox3);
             this.flowLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.flowLayoutPanel1.Location = new System.Drawing.Point(3, 28);
             this.flowLayoutPanel1.Name = "flowLayoutPanel1";
@@ -1985,39 +1997,6 @@
             this.labelComputerControl.TabIndex = 28;
             this.labelComputerControl.Text = "ComputerControl";
             this.labelComputerControl.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // labelDashComputerControl
-            // 
-            this.labelDashComputerControl.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelDashComputerControl.ForeColor = System.Drawing.Color.DarkOrange;
-            this.labelDashComputerControl.Location = new System.Drawing.Point(3, 339);
-            this.labelDashComputerControl.Name = "labelDashComputerControl";
-            this.labelDashComputerControl.Size = new System.Drawing.Size(165, 23);
-            this.labelDashComputerControl.TabIndex = 1;
-            this.labelDashComputerControl.Text = "ComputerControl";
-            this.labelDashComputerControl.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // labelDashSafeToOpen
-            // 
-            this.labelDashSafeToOpen.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelDashSafeToOpen.ForeColor = System.Drawing.Color.DarkOrange;
-            this.labelDashSafeToOpen.Location = new System.Drawing.Point(3, 362);
-            this.labelDashSafeToOpen.Name = "labelDashSafeToOpen";
-            this.labelDashSafeToOpen.Size = new System.Drawing.Size(165, 23);
-            this.labelDashSafeToOpen.TabIndex = 31;
-            this.labelDashSafeToOpen.Text = "SafeToOpen";
-            this.labelDashSafeToOpen.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // labelDashSafeToImage
-            // 
-            this.labelDashSafeToImage.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelDashSafeToImage.ForeColor = System.Drawing.Color.DarkOrange;
-            this.labelDashSafeToImage.Location = new System.Drawing.Point(3, 385);
-            this.labelDashSafeToImage.Name = "labelDashSafeToImage";
-            this.labelDashSafeToImage.Size = new System.Drawing.Size(165, 23);
-            this.labelDashSafeToImage.TabIndex = 32;
-            this.labelDashSafeToImage.Text = "SafeToImage";
-            this.labelDashSafeToImage.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // groupBoxWeather
             // 
@@ -2435,6 +2414,188 @@
     "mit.";
             this.toolStripMenuItem6.Click += new System.EventHandler(this.saveFocusEncoderUpperLimitToolStripMenuItem_Click);
             // 
+            // annunciatorPanel1
+            // 
+            this.annunciatorPanel1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
+            this.annunciatorPanel1.Controls.Add(this.annunciatorTrack);
+            this.annunciatorPanel1.Controls.Add(this.annunciator7);
+            this.annunciatorPanel1.Controls.Add(this.annunciatorSlew);
+            this.annunciatorPanel1.Controls.Add(this.annunciatorPrimary);
+            this.annunciatorPanel1.Controls.Add(this.annunciatorSecondary);
+            this.annunciatorPanel1.Controls.Add(this.annunciatorDome);
+            this.annunciatorPanel1.Controls.Add(this.annunciatorWeather);
+            this.annunciatorPanel1.Controls.Add(this.annunciatorFocus);
+            this.annunciatorPanel1.Location = new System.Drawing.Point(107, 536);
+            this.annunciatorPanel1.Name = "annunciatorPanel1";
+            this.annunciatorPanel1.Size = new System.Drawing.Size(170, 56);
+            this.annunciatorPanel1.TabIndex = 38;
+            // 
+            // annunciatorTrack
+            // 
+            this.annunciatorTrack.ActiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(192)))), ((int)(((byte)(192)))));
+            this.annunciatorTrack.AutoSize = true;
+            this.annunciatorTrack.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
+            this.annunciatorTrack.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            this.annunciatorTrack.Font = new System.Drawing.Font("Consolas", 10F);
+            this.annunciatorTrack.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciatorTrack.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciatorTrack.Location = new System.Drawing.Point(3, 0);
+            this.annunciatorTrack.Mute = false;
+            this.annunciatorTrack.Name = "annunciatorTrack";
+            this.annunciatorTrack.Size = new System.Drawing.Size(48, 17);
+            this.annunciatorTrack.TabIndex = 0;
+            this.annunciatorTrack.Text = "TRACK";
+            // 
+            // annunciatorSlew
+            // 
+            this.annunciatorSlew.ActiveColor = System.Drawing.Color.Yellow;
+            this.annunciatorSlew.AutoSize = true;
+            this.annunciatorSlew.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
+            this.annunciatorSlew.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            this.annunciatorSlew.Font = new System.Drawing.Font("Consolas", 10F);
+            this.annunciatorSlew.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciatorSlew.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciatorSlew.Location = new System.Drawing.Point(3, 17);
+            this.annunciatorSlew.Mute = false;
+            this.annunciatorSlew.Name = "annunciatorSlew";
+            this.annunciatorSlew.Size = new System.Drawing.Size(40, 17);
+            this.annunciatorSlew.TabIndex = 1;
+            this.annunciatorSlew.Text = "SLEW";
+            // 
+            // annunciatorPrimary
+            // 
+            this.annunciatorPrimary.ActiveColor = System.Drawing.Color.Maroon;
+            this.annunciatorPrimary.AutoSize = true;
+            this.annunciatorPrimary.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
+            this.annunciatorPrimary.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            this.annunciatorPrimary.Font = new System.Drawing.Font("Consolas", 10F);
+            this.annunciatorPrimary.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciatorPrimary.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciatorPrimary.Location = new System.Drawing.Point(49, 17);
+            this.annunciatorPrimary.Mute = false;
+            this.annunciatorPrimary.Name = "annunciatorPrimary";
+            this.annunciatorPrimary.Size = new System.Drawing.Size(24, 17);
+            this.annunciatorPrimary.TabIndex = 2;
+            this.annunciatorPrimary.Text = "RA";
+            // 
+            // annunciatorSecondary
+            // 
+            this.annunciatorSecondary.ActiveColor = System.Drawing.Color.Chocolate;
+            this.annunciatorSecondary.AutoSize = true;
+            this.annunciatorSecondary.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
+            this.annunciatorSecondary.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            this.annunciatorSecondary.Font = new System.Drawing.Font("Consolas", 10F);
+            this.annunciatorSecondary.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciatorSecondary.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciatorSecondary.Location = new System.Drawing.Point(79, 17);
+            this.annunciatorSecondary.Mute = false;
+            this.annunciatorSecondary.Name = "annunciatorSecondary";
+            this.annunciatorSecondary.Size = new System.Drawing.Size(32, 17);
+            this.annunciatorSecondary.TabIndex = 3;
+            this.annunciatorSecondary.Text = "DEC";
+            // 
+            // annunciatorDome
+            // 
+            this.annunciatorDome.ActiveColor = System.Drawing.Color.Green;
+            this.annunciatorDome.AutoSize = true;
+            this.annunciatorDome.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
+            this.annunciatorDome.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            this.annunciatorDome.Font = new System.Drawing.Font("Consolas", 10F);
+            this.annunciatorDome.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciatorDome.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciatorDome.Location = new System.Drawing.Point(117, 17);
+            this.annunciatorDome.Mute = false;
+            this.annunciatorDome.Name = "annunciatorDome";
+            this.annunciatorDome.Size = new System.Drawing.Size(40, 17);
+            this.annunciatorDome.TabIndex = 4;
+            this.annunciatorDome.Text = "DOME";
+            // 
+            // annunciatorFocus
+            // 
+            this.annunciatorFocus.ActiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
+            this.annunciatorFocus.AutoSize = true;
+            this.annunciatorFocus.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
+            this.annunciatorFocus.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            this.annunciatorFocus.Font = new System.Drawing.Font("Consolas", 10F);
+            this.annunciatorFocus.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciatorFocus.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciatorFocus.Location = new System.Drawing.Point(73, 34);
+            this.annunciatorFocus.Mute = false;
+            this.annunciatorFocus.Name = "annunciatorFocus";
+            this.annunciatorFocus.Size = new System.Drawing.Size(48, 17);
+            this.annunciatorFocus.TabIndex = 5;
+            this.annunciatorFocus.Text = "FOCUS";
+            // 
+            // annunciator7
+            // 
+            this.annunciator7.ActiveColor = System.Drawing.Color.DarkOrange;
+            this.annunciator7.AutoSize = true;
+            this.annunciator7.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
+            this.annunciator7.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            this.annunciator7.Font = new System.Drawing.Font("Consolas", 10F);
+            this.annunciator7.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciator7.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciator7.Location = new System.Drawing.Point(57, 0);
+            this.annunciator7.Mute = false;
+            this.annunciator7.Name = "annunciator7";
+            this.annunciator7.Size = new System.Drawing.Size(104, 17);
+            this.annunciator7.TabIndex = 6;
+            this.annunciator7.Text = "FILTER WHEEL";
+            // 
+            // ledIndicatorComputerControl
+            // 
+            this.ledIndicatorComputerControl.Cadence = ASCOM.Controls.CadencePattern.BlinkSlow;
+            this.ledIndicatorComputerControl.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
+            this.ledIndicatorComputerControl.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.ledIndicatorComputerControl.LabelText = "Computer control";
+            this.ledIndicatorComputerControl.Location = new System.Drawing.Point(20, 342);
+            this.ledIndicatorComputerControl.Margin = new System.Windows.Forms.Padding(20, 3, 3, 3);
+            this.ledIndicatorComputerControl.Name = "ledIndicatorComputerControl";
+            this.ledIndicatorComputerControl.Size = new System.Drawing.Size(156, 16);
+            this.ledIndicatorComputerControl.Status = ASCOM.Controls.TrafficLight.Yellow;
+            this.ledIndicatorComputerControl.TabIndex = 33;
+            // 
+            // ledIndicatorSafeToOpen
+            // 
+            this.ledIndicatorSafeToOpen.Cadence = ASCOM.Controls.CadencePattern.BlinkSlow;
+            this.ledIndicatorSafeToOpen.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
+            this.ledIndicatorSafeToOpen.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.ledIndicatorSafeToOpen.LabelText = "Safe to open";
+            this.ledIndicatorSafeToOpen.Location = new System.Drawing.Point(20, 364);
+            this.ledIndicatorSafeToOpen.Margin = new System.Windows.Forms.Padding(20, 3, 3, 3);
+            this.ledIndicatorSafeToOpen.Name = "ledIndicatorSafeToOpen";
+            this.ledIndicatorSafeToOpen.Size = new System.Drawing.Size(140, 16);
+            this.ledIndicatorSafeToOpen.Status = ASCOM.Controls.TrafficLight.Yellow;
+            this.ledIndicatorSafeToOpen.TabIndex = 34;
+            // 
+            // ledIndicatorSafeToImage
+            // 
+            this.ledIndicatorSafeToImage.Cadence = ASCOM.Controls.CadencePattern.BlinkSlow;
+            this.ledIndicatorSafeToImage.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
+            this.ledIndicatorSafeToImage.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.ledIndicatorSafeToImage.LabelText = "Safe to image";
+            this.ledIndicatorSafeToImage.Location = new System.Drawing.Point(20, 386);
+            this.ledIndicatorSafeToImage.Margin = new System.Windows.Forms.Padding(20, 3, 3, 3);
+            this.ledIndicatorSafeToImage.Name = "ledIndicatorSafeToImage";
+            this.ledIndicatorSafeToImage.Size = new System.Drawing.Size(148, 17);
+            this.ledIndicatorSafeToImage.Status = ASCOM.Controls.TrafficLight.Yellow;
+            this.ledIndicatorSafeToImage.TabIndex = 35;
+            // 
+            // annunciatorWeather
+            // 
+            this.annunciatorWeather.ActiveColor = System.Drawing.Color.Blue;
+            this.annunciatorWeather.AutoSize = true;
+            this.annunciatorWeather.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
+            this.annunciatorWeather.Font = new System.Drawing.Font("Consolas", 10F);
+            this.annunciatorWeather.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciatorWeather.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciatorWeather.Location = new System.Drawing.Point(3, 34);
+            this.annunciatorWeather.Mute = false;
+            this.annunciatorWeather.Name = "annunciatorWeather";
+            this.annunciatorWeather.Size = new System.Drawing.Size(64, 17);
+            this.annunciatorWeather.TabIndex = 7;
+            this.annunciatorWeather.Text = "WEATHER";
+            // 
             // FormDash
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
@@ -2474,6 +2635,8 @@
             this.groupBoxWeather.ResumeLayout(false);
             this.tableLayoutPanelWeather.ResumeLayout(false);
             this.tableLayoutPanelWeather.PerformLayout();
+            this.annunciatorPanel1.ResumeLayout(false);
+            this.annunciatorPanel1.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -2492,9 +2655,6 @@
         private System.Windows.Forms.Label labelTitle;
         private System.Windows.Forms.Label labelComputerControl;
         private System.Windows.Forms.Label label1;
-        public System.Windows.Forms.Label labelDashComputerControl;
-        public System.Windows.Forms.Label labelDashSafeToOpen;
-        public System.Windows.Forms.Label labelDashSafeToImage;
         private System.Windows.Forms.ToolStripMenuItem viewToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem digitalIOCardsToolStripMenuItem;
         private System.Windows.Forms.GroupBox groupBoxTelescope;
@@ -2649,6 +2809,18 @@
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.ToolStripMenuItem saveMaximumToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem6;
+        private ASCOM.Controls.LedIndicator ledIndicatorComputerControl;
+        private ASCOM.Controls.LedIndicator ledIndicatorSafeToOpen;
+        private ASCOM.Controls.LedIndicator ledIndicatorSafeToImage;
+        private ASCOM.Controls.AnnunciatorPanel annunciatorPanel1;
+        private ASCOM.Controls.Annunciator annunciatorTrack;
+        private ASCOM.Controls.Annunciator annunciatorSlew;
+        private ASCOM.Controls.Annunciator annunciatorDome;
+        private ASCOM.Controls.Annunciator annunciatorPrimary;
+        private ASCOM.Controls.Annunciator annunciatorSecondary;
+        private ASCOM.Controls.Annunciator annunciatorFocus;
+        private ASCOM.Controls.Annunciator annunciator7;
+        private ASCOM.Controls.Annunciator annunciatorWeather;
     }
 }
 

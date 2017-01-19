@@ -86,7 +86,7 @@ namespace Dash
             telescopeStatus.Show("");
             focuserStatus.Show("");
             weatherStatus.Show("");
-            
+
             buttonVent.Text = wisedome.Vent ? "Close Vent" : "Open Vent";
 
             List<ToolStripMenuItem> checkedItems = new List<ToolStripMenuItem>();
@@ -181,31 +181,71 @@ namespace Dash
                 "Slewing (" + wisetele.slewers.ToString() + ")";
             checkBoxSlewingIsActive.Checked = wisetele.Slewing;
             checkBoxTrackingIsActive.Checked = wisetele.Tracking;
+            checkBoxTrack.Checked = wisetele.Tracking;
+
+            annunciatorTrack.Cadence = wisetele.Tracking ? ASCOM.Controls.CadencePattern.SteadyOn : ASCOM.Controls.CadencePattern.SteadyOff;
+            annunciatorSlew.Cadence = wisetele.Slewing ? ASCOM.Controls.CadencePattern.SteadyOn : ASCOM.Controls.CadencePattern.SteadyOff;
+            annunciatorDome.Cadence = wisedome.Slewing ? ASCOM.Controls.CadencePattern.BlinkFast : ASCOM.Controls.CadencePattern.SteadyOff;
 
             WiseVirtualMotor m;
 
-            m = null;
-            if (wisetele.WestMotor.isOn)
-                m = wisetele.WestMotor;
-            else if (wisetele.EastMotor.isOn)
-                m = wisetele.EastMotor;
+            if (wisetele.slewers.Active(Slewers.Type.Ra))
+            {
+                m = null;
+                if (wisetele.WestMotor.isOn)
+                    m = wisetele.WestMotor;
+                else if (wisetele.EastMotor.isOn)
+                    m = wisetele.EastMotor;
 
-            checkBoxPrimaryIsActive.Text = "Primary";
-            if (m != null)
-                checkBoxPrimaryIsActive.Text += ": " + m.Name.Remove(m.Name.IndexOf('M')) + "@" +
-                    WiseTele.RateName(m.currentRate).Replace("rate", "");
+                if (m == null)
+                {
+                    checkBoxPrimaryIsActive.Text = "Primary";
+                    annunciatorPrimary.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+                } else
+                {
+                    checkBoxPrimaryIsActive.Text += ": " + m.Name.Remove(m.Name.IndexOf('M')) + "@" +
+                        WiseTele.RateName(m.currentRate).Replace("rate", "");
+                    
+                    if (m.currentRate == Const.rateSlew)
+                        annunciatorPrimary.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+                    else if (m.currentRate == Const.rateSet)
+                        annunciatorPrimary.Cadence = ASCOM.Controls.CadencePattern.BlinkFast;
+                    else if (m.currentRate == Const.rateGuide)
+                        annunciatorPrimary.Cadence = ASCOM.Controls.CadencePattern.BlinkSlow;
+                }
+            }
 
-            m = null;
-            if (wisetele.NorthMotor.isOn)
-                m = wisetele.NorthMotor;
-            else if (wisetele.SouthMotor.isOn)
-                m = wisetele.SouthMotor;
+            if (wisetele.slewers.Active(Slewers.Type.Dec))
+            {
+                m = null;
+                if (wisetele.NorthMotor.isOn)
+                    m = wisetele.NorthMotor;
+                else if (wisetele.SouthMotor.isOn)
+                    m = wisetele.SouthMotor;
 
+                if (m == null)
+                {
+                    checkBoxSecondaryIsActive.Text = "Secondary";
+                    annunciatorSecondary.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+                }
+                else
+                {
+                    checkBoxSecondaryIsActive.Text += ": " + m.Name.Remove(m.Name.IndexOf('M')) + "@" +
+                        WiseTele.RateName(m.currentRate).Replace("rate", "");
 
-            checkBoxSecondaryIsActive.Text = "Secondary";
-            if (m != null)
-                checkBoxSecondaryIsActive.Text += ": " + m.Name.Remove(m.Name.IndexOf('M')) + "@" +
-                    WiseTele.RateName(m.currentRate).Replace("rate", "");
+                    if (m.currentRate == Const.rateSlew)
+                        annunciatorSecondary.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+                    else if (m.currentRate == Const.rateSet)
+                        annunciatorSecondary.Cadence = ASCOM.Controls.CadencePattern.BlinkFast;
+                    else if (m.currentRate == Const.rateGuide)
+                        annunciatorSecondary.Cadence = ASCOM.Controls.CadencePattern.BlinkSlow;
+                }
+
+                checkBoxSecondaryIsActive.Text = "Secondary";
+                if (m != null)
+                    checkBoxSecondaryIsActive.Text += ": " + m.Name.Remove(m.Name.IndexOf('M')) + "@" +
+                        WiseTele.RateName(m.currentRate).Replace("rate", "");
+            }
 
             telescopeStatus.Show(wisetele.Status);
 
@@ -215,79 +255,82 @@ namespace Dash
             string tip;
             if (wisesite.computerControl == null)
             {
-                labelDashComputerControl.ForeColor = Statuser.colors[Statuser.Severity.Warning];
+                ledIndicatorComputerControl.Status = ASCOM.Controls.TrafficLight.Yellow;
                 tip = "Cannot read the computer control switch!";
             }
             else if (wisesite.computerControl.IsSafe)
             {
-                labelDashComputerControl.ForeColor = Statuser.colors[Statuser.Severity.Good];
+                ledIndicatorComputerControl.Status = ASCOM.Controls.TrafficLight.Green;
                 tip = "Computer control is enabled.";
             }
             else
             {
-                labelDashComputerControl.ForeColor = Statuser.colors[Statuser.Severity.Error];
+                ledIndicatorComputerControl.Status = ASCOM.Controls.TrafficLight.Red;
                 tip = "Computer control switch is OFF!";
             }
-            toolTip.SetToolTip(labelDashComputerControl, tip);
+            toolTip.SetToolTip(ledIndicatorComputerControl, tip);
 
             tip = null;
             if (_bypassSafety)
             {
-                labelDashSafeToOpen.ForeColor = Statuser.colors[Statuser.Severity.Good];
+                ledIndicatorComputerControl.Status = ASCOM.Controls.TrafficLight.Green;
                 tip = "Safety is bypassed (from Settings)";
             }
             else
             {
                 if (wisesite.safeToOpen == null)
                 {
-                    labelDashSafeToOpen.ForeColor = Statuser.colors[Statuser.Severity.Warning];
+                    ledIndicatorComputerControl.Status = ASCOM.Controls.TrafficLight.Yellow;
                     tip = "Cannot connect to the safeToOpen driver!";
                 }
                 else if (wisesite.safeToOpen.IsSafe)
                 {
-                    labelDashSafeToOpen.ForeColor = Statuser.colors[Statuser.Severity.Good];
+                    ledIndicatorComputerControl.Status = ASCOM.Controls.TrafficLight.Green;
                     tip = "Conditions are safe to open the dome.";
                 }
                 else
                 {
-                    labelDashSafeToOpen.ForeColor = Statuser.colors[Statuser.Severity.Error];
+                    ledIndicatorComputerControl.Status = ASCOM.Controls.TrafficLight.Red;
                     //tip = wisesite.safeToOpen.CommandString("unsafeReasons", false);
                 }
             }
-            toolTip.SetToolTip(labelDashSafeToOpen, tip);
+            toolTip.SetToolTip(ledIndicatorComputerControl, tip);
 
             tip = null;
             if (_bypassSafety)
             {
-                labelDashSafeToImage.ForeColor = Statuser.colors[Statuser.Severity.Good];
+                ledIndicatorSafeToImage.Status = ASCOM.Controls.TrafficLight.Green;
                 tip = "Safety is bypassed (from Settings)";
             }
             else
             {
                 if (wisesite.safeToImage == null)
                 {
-                    labelDashSafeToImage.ForeColor = Statuser.colors[Statuser.Severity.Warning];
+                    ledIndicatorSafeToImage.Status = ASCOM.Controls.TrafficLight.Yellow;
                     tip = "Cannot connect to the safeToImage driver!";
                 }
                 else if (wisesite.safeToImage.IsSafe)
                 {
-                    labelDashSafeToImage.ForeColor = Statuser.colors[Statuser.Severity.Good];
+                    ledIndicatorSafeToImage.Status = ASCOM.Controls.TrafficLight.Green;
                     tip = "Conditions are safe to image.";
                 }
                 else
                 {
-                    labelDashSafeToImage.ForeColor = Statuser.colors[Statuser.Severity.Error];
+                    ledIndicatorSafeToImage.Status = ASCOM.Controls.TrafficLight.Red;
                     //tip = wisesite.safeToImage.CommandString("unsafeReasons", false);
                 }
             }
-            toolTip.SetToolTip(labelDashSafeToImage, tip);
+            toolTip.SetToolTip(ledIndicatorSafeToImage, tip);
+
+            //ledIndicatorComputerControl.Refresh();
+            //ledIndicatorSafeToImage.Refresh();
+            //ledIndicatorSafeToOpen.Refresh();
             #endregion
 
             #region RefreshDome
             labelDomeAzimuthValue.Text = domeSlaveDriver.Azimuth;
             domeStatus.Show(domeSlaveDriver.Status);
-            //if (labelDomeShutterStatus.Text == string.Empty)
-                shutterStatus.Show(domeSlaveDriver.ShutterStatus);
+            shutterStatus.Show(domeSlaveDriver.ShutterStatus);
             buttonDomePark.Text = wisedome.AtPark ? "Unpark" : "Park";
             buttonVent.Text = wisedome.Vent ? "Close Vent" : "Open Vent";
             #endregion
@@ -360,7 +403,8 @@ namespace Dash
                     {
                         weatherStatus.Show("Safe to open", 0, Statuser.Severity.Good);
                         weatherStatus.SetToolTip("");
-                    } else
+                    }
+                    else
                     {
                         if (_bypassSafety)
                             weatherStatus.Show("Safe to open (safety bypassed)", 0, Statuser.Severity.Good);
@@ -380,6 +424,7 @@ namespace Dash
             #region RefreshFocuser
             labelFocusCurrentValue.Text = wisefocuser.position.ToString();
             focuserStatus.Show(wisefocuser.Status);
+            annunciatorFocus.Cadence = wisefocuser.Status.StartsWith("Moving") ? ASCOM.Controls.CadencePattern.BlinkFast : ASCOM.Controls.CadencePattern.SteadyOff;
             #endregion
         }
         #endregion
@@ -814,7 +859,8 @@ namespace Dash
             try
             {
                 wisefocuser.Move(Convert.ToUInt32(textBoxFocusGotoPosition.Text));
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 focuserStatus.Show(ex.Message, 1000, Statuser.Severity.Error);
             }
@@ -855,7 +901,7 @@ namespace Dash
 
             foreach (var item in debugMenuItems)
             {
-                if (! item.Text.EndsWith(Const.checkmark))
+                if (!item.Text.EndsWith(Const.checkmark))
                     item.Text += Const.checkmark;
             }
         }
@@ -869,7 +915,8 @@ namespace Dash
             {
                 wisedome._autoCalibrate = false;
                 item.Text = text.Remove(text.Length - Const.checkmark.Length);
-            } else
+            }
+            else
             {
                 wisedome._autoCalibrate = true;
                 item.Text = text + Const.checkmark;
@@ -886,7 +933,8 @@ namespace Dash
             {
                 wisetele._enslaveDome = false;
                 item.Text.Remove(item.Text.Length - Const.checkmark.Length);
-            } else
+            }
+            else
             {
                 wisetele._enslaveDome = true;
                 item.Text += Const.checkmark;
@@ -906,7 +954,8 @@ namespace Dash
             try
             {
                 wisetele.SlewToCoordinatesAsync(ra, dec, false);
-            } catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 telescopeStatus.Show(ex.Message, 2000, Statuser.Severity.Error);
             }
@@ -1046,7 +1095,7 @@ namespace Dash
             if (_saveFocusUpperLimit || _saveFocusLowerLimit)
                 wisefocuser.WriteProfile();
 
-            if ((string) toolStripTextBoxCloudSensorDataFile.Tag != toolStripTextBoxCloudSensorDataFile.Text)
+            if ((string)toolStripTextBoxCloudSensorDataFile.Tag != toolStripTextBoxCloudSensorDataFile.Text)
             {
                 using (ASCOM.Utilities.Profile driverProfile = new ASCOM.Utilities.Profile())
                 {
@@ -1055,7 +1104,7 @@ namespace Dash
                 }
             }
 
-            if ((string) toolStripTextBoxVantagePro2ReportFile.Tag != toolStripTextBoxVantagePro2ReportFile.Text)
+            if ((string)toolStripTextBoxVantagePro2ReportFile.Tag != toolStripTextBoxVantagePro2ReportFile.Text)
             {
                 using (ASCOM.Utilities.Profile driverProfile = new ASCOM.Utilities.Profile())
                 {
@@ -1073,7 +1122,8 @@ namespace Dash
             {
                 item.Text = "Tracing";
                 debugger.Tracing = false;
-            } else
+            }
+            else
             {
                 item.Text = "Tracing" + Const.checkmark;
                 debugger.Tracing = true;

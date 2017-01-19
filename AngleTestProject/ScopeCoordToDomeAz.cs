@@ -67,38 +67,37 @@ namespace AngleTestProject
         public void TestMethod1()
         {
             Angle Az, Ha, Dec;
-            double pi = Math.PI;
             Angle LST = WiseSite.Instance.LocalSiderealTime;
 
             Ha = LST;
             Dec = Angle.FromDegrees(65, Angle.Type.Dec);
-            Az = Angle.FromDegrees(domeSlaveDriver.CalculateDomeAzimuth(Ha, Dec), Angle.Type.Az);
+            Az = domeSlaveDriver.CalculateDomeAzimuth(Ha, Dec);
             Console.WriteLine(string.Format("{0}, {1} => {2}", Ha.ToString(), Dec.ToString(), Az.ToNiceString()));
 
             Ha = LST;
             Dec = Angle.FromDegrees(25, Angle.Type.Dec);
-            Az = Angle.FromDegrees(domeSlaveDriver.CalculateDomeAzimuth(Ha, Dec), Angle.Type.Az);
+            Az = domeSlaveDriver.CalculateDomeAzimuth(Ha, Dec);
             Console.WriteLine(string.Format("{0}, {1} => {2}", Ha.ToString(), Dec.ToString(), Az.ToNiceString()));
 
             Ha = LST;
             Dec = Angle.FromDegrees(-15, Angle.Type.Dec);
-            Az = Angle.FromDegrees(domeSlaveDriver.CalculateDomeAzimuth(Ha, Dec), Angle.Type.Az);
+            Az = domeSlaveDriver.CalculateDomeAzimuth(Ha, Dec);
             Console.WriteLine(string.Format("{0}, {1} => {2}", Ha.ToString(), Dec.ToString(), Az.ToNiceString()));
 
             Ha = LST;
             Dec = Angle.FromDegrees(0, Angle.Type.Dec);
-            Az = Angle.FromDegrees(domeSlaveDriver.CalculateDomeAzimuth(Ha, Dec), Angle.Type.Az);
+            Az = domeSlaveDriver.CalculateDomeAzimuth(Ha, Dec);
             Console.WriteLine(string.Format("{0}, {1} => {2}", Ha.ToString(), Dec.ToString(), Az.ToNiceString()));
 
 
             Ha = LST + Angle.FromHours(4);
             Dec = Angle.FromRadians(0, Angle.Type.Dec);
-            Az = Angle.FromRadians(domeSlaveDriver.CalculateDomeAzimuth(Ha, Dec), Angle.Type.Az);
+            Az = domeSlaveDriver.CalculateDomeAzimuth(Ha, Dec);
             Console.WriteLine(string.Format("{0}, {1} => {2}", Ha.ToString(), Dec.ToString(), Az.ToNiceString()));
 
             Ha = Angle.FromHours(-3.25);
             Dec = Angle.FromRadians(0, Angle.Type.Dec);
-            Az = Angle.FromRadians(domeSlaveDriver.CalculateDomeAzimuth(Ha, Dec), Angle.Type.Az);
+            Az = domeSlaveDriver.CalculateDomeAzimuth(Ha, Dec);
             Console.WriteLine(string.Format("{0}, {1} => {2}", Ha.ToString(), Dec.ToString(), Az.ToNiceString()));
         }
     }
