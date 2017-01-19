@@ -257,76 +257,72 @@ namespace Dash
             string tip;
             if (wisesite.computerControl == null)
             {
-                ledIndicatorComputerControl.Status = ASCOM.Controls.TrafficLight.Yellow;
+                annunciatorComputerControl.Cadence = ASCOM.Controls.CadencePattern.BlinkSlow;
                 tip = "Cannot read the computer control switch!";
             }
             else if (wisesite.computerControl.IsSafe)
             {
-                ledIndicatorComputerControl.Status = ASCOM.Controls.TrafficLight.Green;
+                annunciatorComputerControl.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
                 tip = "Computer control is enabled.";
             }
             else
             {
-                ledIndicatorComputerControl.Status = ASCOM.Controls.TrafficLight.Red;
+                annunciatorComputerControl.Cadence = ASCOM.Controls.CadencePattern.BlinkFast;
                 tip = "Computer control switch is OFF!";
             }
-            toolTip.SetToolTip(ledIndicatorComputerControl, tip);
+            toolTip.SetToolTip(annunciatorComputerControl, tip);
 
             tip = null;
             if (_bypassSafety)
             {
-                ledIndicatorComputerControl.Status = ASCOM.Controls.TrafficLight.Green;
+                annunciatorSafeToOpen.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
                 tip = "Safety is bypassed (from Settings)";
             }
             else
             {
                 if (wisesite.safeToOpen == null)
                 {
-                    ledIndicatorComputerControl.Status = ASCOM.Controls.TrafficLight.Yellow;
+                    annunciatorSafeToOpen.Cadence = ASCOM.Controls.CadencePattern.BlinkSlow;
                     tip = "Cannot connect to the safeToOpen driver!";
                 }
                 else if (wisesite.safeToOpen.IsSafe)
                 {
-                    ledIndicatorComputerControl.Status = ASCOM.Controls.TrafficLight.Green;
+                    annunciatorSafeToOpen.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
                     tip = "Conditions are safe to open the dome.";
                 }
                 else
                 {
-                    ledIndicatorComputerControl.Status = ASCOM.Controls.TrafficLight.Red;
+                    annunciatorSafeToOpen.Cadence = ASCOM.Controls.CadencePattern.BlinkFast;
                     //tip = wisesite.safeToOpen.CommandString("unsafeReasons", false);
                 }
             }
-            toolTip.SetToolTip(ledIndicatorComputerControl, tip);
+            toolTip.SetToolTip(annunciatorSafeToOpen, tip);
 
             tip = null;
             if (_bypassSafety)
             {
-                ledIndicatorSafeToImage.Status = ASCOM.Controls.TrafficLight.Green;
+                annunciatorSafeToImage.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
                 tip = "Safety is bypassed (from Settings)";
             }
             else
             {
                 if (wisesite.safeToImage == null)
                 {
-                    ledIndicatorSafeToImage.Status = ASCOM.Controls.TrafficLight.Yellow;
+                    annunciatorSafeToImage.Cadence = ASCOM.Controls.CadencePattern.BlinkSlow;
                     tip = "Cannot connect to the safeToImage driver!";
                 }
                 else if (wisesite.safeToImage.IsSafe)
                 {
-                    ledIndicatorSafeToImage.Status = ASCOM.Controls.TrafficLight.Green;
+                    annunciatorSafeToImage.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
                     tip = "Conditions are safe to image.";
                 }
                 else
                 {
-                    ledIndicatorSafeToImage.Status = ASCOM.Controls.TrafficLight.Red;
+                    annunciatorSafeToImage.Cadence = ASCOM.Controls.CadencePattern.BlinkFast;
                     //tip = wisesite.safeToImage.CommandString("unsafeReasons", false);
                 }
             }
-            toolTip.SetToolTip(ledIndicatorSafeToImage, tip);
-
-            //ledIndicatorComputerControl.Refresh();
-            //ledIndicatorSafeToImage.Refresh();
-            //ledIndicatorSafeToOpen.Refresh();
+            toolTip.SetToolTip(annunciatorSafeToImage, tip);
             #endregion
 
             #region RefreshDome

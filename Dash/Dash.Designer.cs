@@ -172,9 +172,6 @@
             this.pictureBoxWise = new System.Windows.Forms.PictureBox();
             this.labelDate = new System.Windows.Forms.Label();
             this.labelComputerControl = new System.Windows.Forms.Label();
-            this.ledIndicatorComputerControl = new ASCOM.Controls.LedIndicator();
-            this.ledIndicatorSafeToOpen = new ASCOM.Controls.LedIndicator();
-            this.ledIndicatorSafeToImage = new ASCOM.Controls.LedIndicator();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.checkBoxSlewingIsActive = new System.Windows.Forms.CheckBox();
             this.checkBoxSecondaryIsActive = new System.Windows.Forms.CheckBox();
@@ -208,6 +205,10 @@
             this.labelDashStatus = new System.Windows.Forms.Label();
             this.timerRefreshDisplay = new System.Windows.Forms.Timer(this.components);
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
+            this.annunciatorPanel2 = new ASCOM.Controls.AnnunciatorPanel();
+            this.annunciatorComputerControl = new ASCOM.Controls.Annunciator();
+            this.annunciatorSafeToOpen = new ASCOM.Controls.Annunciator();
+            this.annunciatorSafeToImage = new ASCOM.Controls.Annunciator();
             this.tableLayoutMain.SuspendLayout();
             this.groupBoxFocuser.SuspendLayout();
             this.groupBoxDomeGroup.SuspendLayout();
@@ -224,6 +225,7 @@
             this.groupBox3.SuspendLayout();
             this.groupBoxWeather.SuspendLayout();
             this.tableLayoutPanelWeather.SuspendLayout();
+            this.annunciatorPanel2.SuspendLayout();
             this.SuspendLayout();
             // 
             // tableLayoutMain
@@ -2024,9 +2026,7 @@
             this.flowLayoutPanel1.Controls.Add(this.pictureBoxWise);
             this.flowLayoutPanel1.Controls.Add(this.labelDate);
             this.flowLayoutPanel1.Controls.Add(this.labelComputerControl);
-            this.flowLayoutPanel1.Controls.Add(this.ledIndicatorComputerControl);
-            this.flowLayoutPanel1.Controls.Add(this.ledIndicatorSafeToOpen);
-            this.flowLayoutPanel1.Controls.Add(this.ledIndicatorSafeToImage);
+            this.flowLayoutPanel1.Controls.Add(this.annunciatorPanel2);
             this.flowLayoutPanel1.Controls.Add(this.groupBox3);
             this.flowLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.flowLayoutPanel1.Location = new System.Drawing.Point(3, 28);
@@ -2075,7 +2075,7 @@
             this.labelDate.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
             this.labelDate.Location = new System.Drawing.Point(3, 251);
             this.labelDate.Name = "labelDate";
-            this.labelDate.Size = new System.Drawing.Size(173, 88);
+            this.labelDate.Size = new System.Drawing.Size(173, 85);
             this.labelDate.TabIndex = 23;
             this.labelDate.Text = "Feb 16, 2016 12:51:00";
             this.labelDate.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -2085,51 +2085,12 @@
             this.labelComputerControl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.labelComputerControl.Location = new System.Drawing.Point(3, 339);
+            this.labelComputerControl.Location = new System.Drawing.Point(3, 336);
             this.labelComputerControl.Name = "labelComputerControl";
             this.labelComputerControl.Size = new System.Drawing.Size(149, 0);
             this.labelComputerControl.TabIndex = 28;
             this.labelComputerControl.Text = "ComputerControl";
             this.labelComputerControl.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // ledIndicatorComputerControl
-            // 
-            this.ledIndicatorComputerControl.Cadence = ASCOM.Controls.CadencePattern.BlinkSlow;
-            this.ledIndicatorComputerControl.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
-            this.ledIndicatorComputerControl.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.ledIndicatorComputerControl.LabelText = "Computer control";
-            this.ledIndicatorComputerControl.Location = new System.Drawing.Point(20, 342);
-            this.ledIndicatorComputerControl.Margin = new System.Windows.Forms.Padding(20, 3, 3, 3);
-            this.ledIndicatorComputerControl.Name = "ledIndicatorComputerControl";
-            this.ledIndicatorComputerControl.Size = new System.Drawing.Size(156, 16);
-            this.ledIndicatorComputerControl.Status = ASCOM.Controls.TrafficLight.Yellow;
-            this.ledIndicatorComputerControl.TabIndex = 33;
-            // 
-            // ledIndicatorSafeToOpen
-            // 
-            this.ledIndicatorSafeToOpen.Cadence = ASCOM.Controls.CadencePattern.BlinkSlow;
-            this.ledIndicatorSafeToOpen.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
-            this.ledIndicatorSafeToOpen.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.ledIndicatorSafeToOpen.LabelText = "Safe to open";
-            this.ledIndicatorSafeToOpen.Location = new System.Drawing.Point(20, 364);
-            this.ledIndicatorSafeToOpen.Margin = new System.Windows.Forms.Padding(20, 3, 3, 3);
-            this.ledIndicatorSafeToOpen.Name = "ledIndicatorSafeToOpen";
-            this.ledIndicatorSafeToOpen.Size = new System.Drawing.Size(140, 16);
-            this.ledIndicatorSafeToOpen.Status = ASCOM.Controls.TrafficLight.Yellow;
-            this.ledIndicatorSafeToOpen.TabIndex = 34;
-            // 
-            // ledIndicatorSafeToImage
-            // 
-            this.ledIndicatorSafeToImage.Cadence = ASCOM.Controls.CadencePattern.BlinkSlow;
-            this.ledIndicatorSafeToImage.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
-            this.ledIndicatorSafeToImage.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.ledIndicatorSafeToImage.LabelText = "Safe to image";
-            this.ledIndicatorSafeToImage.Location = new System.Drawing.Point(20, 386);
-            this.ledIndicatorSafeToImage.Margin = new System.Windows.Forms.Padding(20, 3, 3, 3);
-            this.ledIndicatorSafeToImage.Name = "ledIndicatorSafeToImage";
-            this.ledIndicatorSafeToImage.Size = new System.Drawing.Size(148, 17);
-            this.ledIndicatorSafeToImage.Status = ASCOM.Controls.TrafficLight.Yellow;
-            this.ledIndicatorSafeToImage.TabIndex = 35;
             // 
             // groupBox3
             // 
@@ -2138,7 +2099,7 @@
             this.groupBox3.Controls.Add(this.checkBoxTrackingIsActive);
             this.groupBox3.Controls.Add(this.checkBoxPrimaryIsActive);
             this.groupBox3.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBox3.Location = new System.Drawing.Point(3, 409);
+            this.groupBox3.Location = new System.Drawing.Point(3, 427);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Size = new System.Drawing.Size(168, 120);
             this.groupBox3.TabIndex = 17;
@@ -2601,6 +2562,65 @@
             this.timerRefreshDisplay.Enabled = true;
             this.timerRefreshDisplay.Tick += new System.EventHandler(this.RefreshDisplay);
             // 
+            // annunciatorPanel2
+            // 
+            this.annunciatorPanel2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
+            this.annunciatorPanel2.Controls.Add(this.annunciatorComputerControl);
+            this.annunciatorPanel2.Controls.Add(this.annunciatorSafeToOpen);
+            this.annunciatorPanel2.Controls.Add(this.annunciatorSafeToImage);
+            this.annunciatorPanel2.Location = new System.Drawing.Point(3, 339);
+            this.annunciatorPanel2.Name = "annunciatorPanel2";
+            this.annunciatorPanel2.Size = new System.Drawing.Size(165, 82);
+            this.annunciatorPanel2.TabIndex = 36;
+            // 
+            // annunciatorComputerControl
+            // 
+            this.annunciatorComputerControl.ActiveColor = System.Drawing.Color.Green;
+            this.annunciatorComputerControl.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
+            this.annunciatorComputerControl.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            this.annunciatorComputerControl.Font = new System.Drawing.Font("Consolas", 10F);
+            this.annunciatorComputerControl.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciatorComputerControl.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciatorComputerControl.Location = new System.Drawing.Point(3, 0);
+            this.annunciatorComputerControl.Mute = false;
+            this.annunciatorComputerControl.Name = "annunciatorComputerControl";
+            this.annunciatorComputerControl.Size = new System.Drawing.Size(157, 23);
+            this.annunciatorComputerControl.TabIndex = 0;
+            this.annunciatorComputerControl.Text = "Computer Control";
+            this.annunciatorComputerControl.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // annunciatorSafeToOpen
+            // 
+            this.annunciatorSafeToOpen.ActiveColor = System.Drawing.Color.Green;
+            this.annunciatorSafeToOpen.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
+            this.annunciatorSafeToOpen.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            this.annunciatorSafeToOpen.Font = new System.Drawing.Font("Consolas", 10F);
+            this.annunciatorSafeToOpen.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciatorSafeToOpen.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciatorSafeToOpen.Location = new System.Drawing.Point(3, 23);
+            this.annunciatorSafeToOpen.Mute = false;
+            this.annunciatorSafeToOpen.Name = "annunciatorSafeToOpen";
+            this.annunciatorSafeToOpen.Size = new System.Drawing.Size(157, 23);
+            this.annunciatorSafeToOpen.TabIndex = 1;
+            this.annunciatorSafeToOpen.Text = "Safe To Open";
+            this.annunciatorSafeToOpen.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // annunciatorSafeToImage
+            // 
+            this.annunciatorSafeToImage.ActiveColor = System.Drawing.Color.Green;
+            this.annunciatorSafeToImage.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
+            this.annunciatorSafeToImage.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            this.annunciatorSafeToImage.Font = new System.Drawing.Font("Consolas", 10F);
+            this.annunciatorSafeToImage.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciatorSafeToImage.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciatorSafeToImage.Location = new System.Drawing.Point(3, 46);
+            this.annunciatorSafeToImage.Mute = false;
+            this.annunciatorSafeToImage.Name = "annunciatorSafeToImage";
+            this.annunciatorSafeToImage.Size = new System.Drawing.Size(157, 23);
+            this.annunciatorSafeToImage.TabIndex = 2;
+            this.annunciatorSafeToImage.Text = "Safe To Image";
+            this.annunciatorSafeToImage.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
             // FormDash
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
@@ -2642,6 +2662,7 @@
             this.groupBoxWeather.ResumeLayout(false);
             this.tableLayoutPanelWeather.ResumeLayout(false);
             this.tableLayoutPanelWeather.PerformLayout();
+            this.annunciatorPanel2.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -2813,9 +2834,6 @@
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.ToolStripMenuItem saveMaximumToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem6;
-        private ASCOM.Controls.LedIndicator ledIndicatorComputerControl;
-        private ASCOM.Controls.LedIndicator ledIndicatorSafeToOpen;
-        private ASCOM.Controls.LedIndicator ledIndicatorSafeToImage;
         private ASCOM.Controls.AnnunciatorPanel annunciatorPanel1;
         private ASCOM.Controls.Annunciator annunciatorTrack;
         private ASCOM.Controls.Annunciator annunciatorSlew;
@@ -2826,6 +2844,10 @@
         private ASCOM.Controls.Annunciator annunciator7;
         private ASCOM.Controls.Annunciator annunciatorWeather;
         private System.Windows.Forms.Button buttonTrack;
+        private ASCOM.Controls.AnnunciatorPanel annunciatorPanel2;
+        private ASCOM.Controls.Annunciator annunciatorComputerControl;
+        private ASCOM.Controls.Annunciator annunciatorSafeToOpen;
+        private ASCOM.Controls.Annunciator annunciatorSafeToImage;
     }
 }
 
