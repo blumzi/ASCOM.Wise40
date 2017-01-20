@@ -149,8 +149,8 @@ namespace Dash
                 tb.ForeColor = Color.FromArgb(176, 161, 142);
             }
 
-            buttonFocusAllUp.Text = wisefocuser.UpperLimit.ToString();
-            buttonFocusAllDown.Text = wisefocuser.LowerLimit.ToString();
+            buttonFocusAllUp.Text = "\u21c8  " + wisefocuser.UpperLimit.ToString();
+            buttonFocusAllDown.Text = wisefocuser.LowerLimit.ToString() + "  \u21ca";
         }
         #endregion
 
@@ -182,48 +182,59 @@ namespace Dash
             annunciatorSlew.Cadence = wisetele.Slewing ? ASCOM.Controls.CadencePattern.SteadyOn : ASCOM.Controls.CadencePattern.SteadyOff;
             annunciatorDome.Cadence = wisedome.Slewing ? ASCOM.Controls.CadencePattern.BlinkFast : ASCOM.Controls.CadencePattern.SteadyOff;
 
-            WiseVirtualMotor m;
+            WiseVirtualMotor primaryMotor = null, secondaryMotor = null;
+            double currentRate = Const.rateStopped;
 
             if (wisetele.slewers.Active(Slewers.Type.Ra))
             {
-                m = null;
+                primaryMotor = null;
                 if (wisetele.WestMotor.isOn)
-                    m = wisetele.WestMotor;
+                    primaryMotor = wisetele.WestMotor;
                 else if (wisetele.EastMotor.isOn)
-                    m = wisetele.EastMotor;
+                    primaryMotor = wisetele.EastMotor;
 
-                if (m == null)
+                if (primaryMotor == null)
                     annunciatorPrimary.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;else
-                {                    
-                    if (m.currentRate == Const.rateSlew)
+                {
+                    currentRate = primaryMotor.currentRate;                    
+                    if (primaryMotor.currentRate == Const.rateSlew)
                         annunciatorPrimary.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
-                    else if (m.currentRate == Const.rateSet)
+                    else if (primaryMotor.currentRate == Const.rateSet)
                         annunciatorPrimary.Cadence = ASCOM.Controls.CadencePattern.BlinkFast;
-                    else if (m.currentRate == Const.rateGuide)
+                    else if (primaryMotor.currentRate == Const.rateGuide)
                         annunciatorPrimary.Cadence = ASCOM.Controls.CadencePattern.BlinkSlow;
                 }
             }
 
             if (wisetele.slewers.Active(Slewers.Type.Dec))
             {
-                m = null;
+                secondaryMotor = null;
                 if (wisetele.NorthMotor.isOn)
-                    m = wisetele.NorthMotor;
+                    secondaryMotor = wisetele.NorthMotor;
                 else if (wisetele.SouthMotor.isOn)
-                    m = wisetele.SouthMotor;
+                    secondaryMotor = wisetele.SouthMotor;
 
-                if (m == null)
+                if (secondaryMotor == null)
                     annunciatorSecondary.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
                 else
                 {
-                    if (m.currentRate == Const.rateSlew)
+                    currentRate = secondaryMotor.currentRate;
+                    if (secondaryMotor.currentRate == Const.rateSlew)
                         annunciatorSecondary.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
-                    else if (m.currentRate == Const.rateSet)
+                    else if (secondaryMotor.currentRate == Const.rateSet)
                         annunciatorSecondary.Cadence = ASCOM.Controls.CadencePattern.BlinkFast;
-                    else if (m.currentRate == Const.rateGuide)
+                    else if (secondaryMotor.currentRate == Const.rateGuide)
                         annunciatorSecondary.Cadence = ASCOM.Controls.CadencePattern.BlinkSlow;
                 }
             }
+            
+            annunciatorRateSlew.Cadence = annunciatorRateSet.Cadence = annunciatorRateGuide.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            if (currentRate == Const.rateSlew)
+                annunciatorRateSlew.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+            else if (currentRate == Const.rateSet)
+                annunciatorRateSet.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+            else if (currentRate == Const.rateGuide)
+                annunciatorRateGuide.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
 
             telescopeStatus.Show(wisetele.Status);
 
@@ -243,7 +254,7 @@ namespace Dash
             }
             else
             {
-                annunciatorComputerControl.Cadence = ASCOM.Controls.CadencePattern.BlinkFast;
+                annunciatorComputerControl.Cadence = ASCOM.Controls.CadencePattern.BlinkSlow;
                 tip = "Computer control switch is OFF!";
             }
             toolTip.SetToolTip(annunciatorComputerControl, tip);
@@ -268,7 +279,7 @@ namespace Dash
                 }
                 else
                 {
-                    annunciatorSafeToOpen.Cadence = ASCOM.Controls.CadencePattern.BlinkFast;
+                    annunciatorSafeToOpen.Cadence = ASCOM.Controls.CadencePattern.BlinkSlow;
                     //tip = wisesite.safeToOpen.CommandString("unsafeReasons", false);
                 }
             }
@@ -294,7 +305,7 @@ namespace Dash
                 }
                 else
                 {
-                    annunciatorSafeToImage.Cadence = ASCOM.Controls.CadencePattern.BlinkFast;
+                    annunciatorSafeToImage.Cadence = ASCOM.Controls.CadencePattern.BlinkSlow;
                     //tip = wisesite.safeToImage.CommandString("unsafeReasons", false);
                 }
             }
