@@ -3,56 +3,74 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading;
+
+using ASCOM.Wise40.Common;
 
 namespace ASCOM.Wise40
 {
     public class ArduinoInterface
     {
-        private bool _connected = false;
+        private ASCOM.Wise40.Common.Debugger debugger = Debugger.Instance;
+        private static readonly ArduinoInterface _instance = new ArduinoInterface();
+
+        private bool _initialized = false;
         private string port;
+        private Object serialLock = new Object();
 
         private System.IO.Ports.SerialPort serial;
         private const char stx = (char)2;
         private const char etx = (char)3;
+        private const char cr = (char)13;
+        private const char nl = (char)10;
         private string Stx = stx.ToString();
         private string Etx = etx.ToString();
 
-        public enum Direction { CW, CCW };
+        public enum StepperDirection { CW, CCW };
+        public enum ArduinoStatus {  Idle, Connecting, Communicating, Moving };
+        private ArduinoStatus _status = ArduinoStatus.Idle;
 
         public bool Connected
         {
             get
             {
-                return _connected;
+                if (serial == null)
+                    return false;
+                return serial.IsOpen;
             }
 
             set
             {
-                if (value == _connected)
+                if (value == serial.IsOpen)
                     return;
 
                 if (value)
                 {
-                    serial = new System.IO.Ports.SerialPort(port, 57600);
-                    try
+                    if (!serial.IsOpen)
                     {
-                        serial.Open();
-                    }
-                    catch (Exception ex)
-                    {
-                        //throw new InvalidOperationException(ex.Message);
+                        try
+                        {
+                            _status = ArduinoStatus.Connecting;
+                            serial.Open();
+                            serial.ReadExisting();  // flush
+                            _status = ArduinoStatus.Idle;
+                        }
+                        catch (Exception ex)
+                        {
+                            throw new InvalidOperationException(ex.Message);
+                        }
                     }
                 } else
                 {
-                    serial.Dispose();
-                    serial = null;
+                    serial.Close();
                 }
             }
         }
 
         private string mkPacket(string payload)
         {
-            return stx + payload + etx;
+            return payload + cr;
+            //return stx + payload + cr + nl + etx;
             // TODO: checksum
         }
 
@@ -61,37 +79,90 @@ namespace ASCOM.Wise40
             if (!serial.IsOpen)
                 return string.Empty;
 
-            while (serial.ReadChar() != stx)
-                ;
-            return serial.ReadTo(Etx);
-            // TODO: checksum
+            string msg = serial.ReadLine();
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "getPacket: got: [{0}]", msg);
+            return msg;
         }
 
-        public ArduinoInterface(string port)
+        public static ArduinoInterface Instance
         {
-            this.port = port;
-        }
-
-        public string getPosition(string reply = null)
-        {
-            if (!serial.IsOpen)
-                return string.Empty;
-
-            if (reply == null)
+            get
             {
-                serial.Write(mkPacket("get-position"));
-                reply = getPacket();
+                return _instance;
             }
-
-            if (!reply.StartsWith("position:") || reply == "position:no-tag")
-                return string.Empty;
-            return reply.Substring("position:".Length);
         }
 
-        public string move(Direction dir, int nPos = 1)
+        public ArduinoInterface()
         {
-            serial.Write(mkPacket("move" + ((dir == Direction.CW) ? "CW" : "CCW") + ":" + nPos.ToString()));
-            return getPosition(getPacket());
+        }
+
+        public void init(string port)
+        {
+            if (_initialized)
+                return;
+            serial = new System.IO.Ports.SerialPort(port, 57600);
+            debugger.StartDebugging(Debugger.DebugLevel.DebugLogic);
+            this.port = port;
+            _initialized = true;
+        }
+
+        private string Communicate(string command, bool waitForReply = true, ArduinoStatus interimStatus = ArduinoStatus.Communicating)
+        {
+            string reply = string.Empty;
+            char[] crnls = { '\r', '\n' };
+            ArduinoStatus prevStatus = _status;
+            _status = interimStatus;
+            string packet = mkPacket(command);
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Arduino: Communicate: Sending \"{0}\" ...", command);
+            lock (serialLock)
+            {
+                serial.Write(packet);
+                if (waitForReply)
+                {
+                    Thread.Sleep(1000);
+                    reply = getPacket().TrimEnd(crnls);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Arduino: Communicate(\"{0}\") ==> \"{1}\"", command, reply);
+                }
+            }
+            _status = prevStatus;
+            return reply;
+        }
+
+        public string getPosition()
+        {
+            string reply = Communicate("get-tag", true);
+
+            if (reply == string.Empty || reply == "tag:no-tag" || reply.StartsWith("error:"))
+                return "Unknown";
+            return reply.Substring("tag:".Length);
+        }
+
+        public string move(StepperDirection dir, int nPos = 1)
+        {
+            string command = string.Format("move-{0}:{1}", (dir == StepperDirection.CW) ? "cw" : "ccw", nPos.ToString());
+            string reply = Communicate(command, true, ArduinoStatus.Moving);
+
+
+            if (reply == string.Empty || reply == "tag:no-tag" || reply.StartsWith("error:"))
+                return "Unknown";
+            return reply.Substring("tag:".Length);
+        }
+
+        public string Status
+        {
+            get
+            {
+                switch (_status)
+                {
+                    case ArduinoStatus.Communicating:
+                        return "Communicating";
+                    case ArduinoStatus.Moving:
+                        return "Moving";
+                    case ArduinoStatus.Idle:
+                    default:
+                        return "Idle";
+                }
+            }
         }
     }
 }

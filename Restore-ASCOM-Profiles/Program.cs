@@ -136,11 +136,13 @@ namespace Restore_ASCOM_Profiles
             string enslaveDomeProfileName = "Enslave Dome";
             string traceStateProfileName = "Tracing";
             string debugLevelProfileName = "DebugLevel";
+            string studyMotionProfileName = "StudyMotion";
 
             using (Profile driverProfile = new Profile())
             {
                 driverProfile.DeviceType = "Telescope";
                 driverProfile.WriteValue(driverID, traceStateProfileName, true.ToString());
+                driverProfile.WriteValue(driverID, studyMotionProfileName, true.ToString());
                 driverProfile.WriteValue(driverID, enslaveDomeProfileName, mode == Mode.ACP ? false.ToString() : true.ToString());
                 driverProfile.WriteValue(driverID, debugLevelProfileName, "DebugAxes|DebugMotors|DebugExceptions|DebugASCOM|DebugLogic");
             }
@@ -200,7 +202,25 @@ namespace Restore_ASCOM_Profiles
             {
                 driverProfile.DeviceType = "FilterWheel";
 
-                driverProfile.WriteValue(driverID, "Port", "COM4");
+                driverProfile.WriteValue(driverID, "Port", "COM5");
+
+                driverProfile.WriteValue(driverID, "RFID", "7F000817F7", "Wheel4/Position1");
+                driverProfile.WriteValue(driverID, "Filter Name", "R", "Wheel4/Position1");
+
+                driverProfile.WriteValue(driverID, "RFID", "7F0007F75E", "Wheel8/Position1");
+                driverProfile.WriteValue(driverID, "Filter Name", "B", "Wheel8/Position1");
+
+                driverProfile.WriteValue(driverID, "Name", "R", "Filter0");
+                driverProfile.WriteValue(driverID, "Description", "Red filter", "Filter0");
+                driverProfile.WriteValue(driverID, "Offset", "123", "Filter0");
+
+                driverProfile.WriteValue(driverID, "Name", "G", "Filter1");
+                driverProfile.WriteValue(driverID, "Description", "Green filter", "Filter1");
+                driverProfile.WriteValue(driverID, "Offset", "-123", "Filter1");
+
+                driverProfile.WriteValue(driverID, "Name", "B", "Filter2");
+                driverProfile.WriteValue(driverID, "Description", "Blue filter", "Filter2");
+                driverProfile.WriteValue(driverID, "Offset", "17", "Filter2");
             }
         }
     }

@@ -34,7 +34,7 @@ namespace Dash
         Debugger debugger = Debugger.Instance;
         FilterWheelForm filterWheelForm = new FilterWheelForm();
 
-        Statuser dashStatus, telescopeStatus, domeStatus, shutterStatus, focuserStatus, weatherStatus;
+        Statuser dashStatus, telescopeStatus, domeStatus, shutterStatus, focuserStatus, weatherStatus, filterWheelStatus;
 
         private double handpadRate = Const.rateSlew;
         private bool _bypassSafety = false;
@@ -42,8 +42,6 @@ namespace Dash
 
         private List<ToolStripMenuItem> debugMenuItems;
         private Dictionary<object, string> alteredItems = new Dictionary<object, string>();
-
-        private MotionStudy study;
 
         #region Initialization
         public FormDash()
@@ -79,6 +77,7 @@ namespace Dash
             shutterStatus = new Statuser(labelDomeShutterStatus);
             focuserStatus = new Statuser(labelFocuserStatus);
             weatherStatus = new Statuser(labelWeatherStatus, toolTip);
+            filterWheelStatus = new Statuser(labelFilterWheelStatus);
 
             menuStrip.RenderMode = ToolStripRenderMode.ManagerRenderMode;
             ToolStripManager.Renderer = new Wise40ToolstripRenderer();
@@ -151,6 +150,8 @@ namespace Dash
 
             buttonFocusAllUp.Text = "\u21c8  " + wisefocuser.UpperLimit.ToString();
             buttonFocusAllDown.Text = wisefocuser.LowerLimit.ToString() + "  \u21ca";
+
+            LoadFilterWheelInformation();
         }
         #endregion
 
@@ -194,16 +195,12 @@ namespace Dash
                     primaryMotor = wisetele.EastMotor;
 
                 if (primaryMotor == null)
-                    annunciatorPrimary.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;else
+                    annunciatorPrimary.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+                else
                 {
-                    currentRate = primaryMotor.currentRate;                    
-                    if (primaryMotor.currentRate == Const.rateSlew)
-                        annunciatorPrimary.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
-                    else if (primaryMotor.currentRate == Const.rateSet)
-                        annunciatorPrimary.Cadence = ASCOM.Controls.CadencePattern.BlinkFast;
-                    else if (primaryMotor.currentRate == Const.rateGuide)
-                        annunciatorPrimary.Cadence = ASCOM.Controls.CadencePattern.BlinkSlow;
-                }
+                    annunciatorPrimary.Cadence = ASCOM.Controls.CadencePattern.BlinkFast;
+                    currentRate = primaryMotor.currentRate;
+                }               
             }
 
             if (wisetele.slewers.Active(Slewers.Type.Dec))
@@ -218,13 +215,8 @@ namespace Dash
                     annunciatorSecondary.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
                 else
                 {
+                    annunciatorSecondary.Cadence = ASCOM.Controls.CadencePattern.BlinkFast;
                     currentRate = secondaryMotor.currentRate;
-                    if (secondaryMotor.currentRate == Const.rateSlew)
-                        annunciatorSecondary.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
-                    else if (secondaryMotor.currentRate == Const.rateSet)
-                        annunciatorSecondary.Cadence = ASCOM.Controls.CadencePattern.BlinkFast;
-                    else if (secondaryMotor.currentRate == Const.rateGuide)
-                        annunciatorSecondary.Cadence = ASCOM.Controls.CadencePattern.BlinkSlow;
                 }
             }
             
@@ -411,6 +403,15 @@ namespace Dash
             focuserStatus.Show(wisefocuser.Status);
             annunciatorFocus.Cadence = wisefocuser.Status.StartsWith("Moving") ? ASCOM.Controls.CadencePattern.BlinkFast : ASCOM.Controls.CadencePattern.SteadyOff;
             #endregion
+
+            #region RefreshFilterWheel              
+            labelFilterWheelName.Text = string.Format("{0} ({1} filters)", wisefilterwheel.currentWheel.name, wisefilterwheel.currentWheel.positions.Length);
+            labelFilterWheelPosition.Text = (wisefilterwheel.currentWheel.position + 1).ToString();
+            string fwstat = wisefilterwheel.Status;
+            annunciatorFilterWheel.Cadence = (fwstat == "Idle") ? ASCOM.Controls.CadencePattern.SteadyOff :
+                (fwstat == "Moving") ? ASCOM.Controls.CadencePattern.BlinkSlow : ASCOM.Controls.CadencePattern.BlinkFast;
+            filterWheelStatus.Show(fwstat);
+            #endregion
         }
         #endregion
 
@@ -447,29 +448,21 @@ namespace Dash
                 {
                     telescopeStatus.Show("Moving North" + atRate, 0, Statuser.Severity.Good);
                     wisetele.MoveAxis(TelescopeAxes.axisSecondary, handpadRate);
-                    if (checkBoxMotionStudy.Visible && checkBoxMotionStudy.Checked)
-                        study = new MotionStudy(TelescopeAxes.axisSecondary, handpadRate);
                 }
                 else if (button == buttonSouth)
                 {
                     telescopeStatus.Show("Moving South" + atRate, 0, Statuser.Severity.Good);
                     wisetele.MoveAxis(TelescopeAxes.axisSecondary, -handpadRate);
-                    if (checkBoxMotionStudy.Visible && checkBoxMotionStudy.Checked)
-                        study = new MotionStudy(TelescopeAxes.axisSecondary, -handpadRate);
                 }
                 else if (button == buttonEast)
                 {
                     telescopeStatus.Show("Moving East" + atRate, 0, Statuser.Severity.Good);
                     wisetele.MoveAxis(TelescopeAxes.axisPrimary, handpadRate);
-                    if (checkBoxMotionStudy.Visible && checkBoxMotionStudy.Checked)
-                        study = new MotionStudy(TelescopeAxes.axisPrimary, handpadRate);
                 }
                 else if (button == buttonWest)
                 {
                     telescopeStatus.Show("Moving West" + atRate, 0, Statuser.Severity.Good);
                     wisetele.MoveAxis(TelescopeAxes.axisPrimary, -handpadRate);
-                    if (checkBoxMotionStudy.Visible && checkBoxMotionStudy.Checked)
-                        study = new MotionStudy(TelescopeAxes.axisPrimary, -handpadRate);
                 }
                 else if (button == buttonNE)
                 {
@@ -506,8 +499,6 @@ namespace Dash
         {
             wisetele.Stop();
             telescopeStatus.Show("Stopped", 1000, Statuser.Severity.Good);
-            if (study != null)
-                study.Dispose();
         }
 
         private void debuggingToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1039,6 +1030,29 @@ namespace Dash
             #endregion
         }
 
+        private void LoadFilterWheelInformation()
+        {
+            comboBoxFilterWheelPositions.Items.Clear();
+            for (int pos = 0; pos < wisefilterwheel.currentWheel.positions.Length; pos++)
+            {
+                string filterName = wisefilterwheel.currentWheel.positions[pos].filterName;
+                string item;
+                if (filterName == string.Empty)
+                    item = string.Format("{0} - Clear", pos + 1);
+                else {
+                    string desc = wisefilterwheel.filterInventory.Find((x) => x.Name == filterName).Description;
+
+                    item = string.Format("{0} - {1}: {2}", pos + 1, filterName, desc);
+                }
+                comboBoxFilterWheelPositions.Items.Add(item);
+                if (pos == wisefilterwheel.currentWheel.position)
+                    comboBoxFilterWheelPositions.Text = item;
+            }
+            comboBoxFilterWheelPositions.Invalidate();
+            labelFilterWheelName.Text = wisefilterwheel.currentWheel.name;
+            labelFilterWheelPosition.Text = (wisefilterwheel.currentWheel.position + 1).ToString();
+        }
+
         private void UpdateAlteredItems(ToolStripMenuItem item, string title)
         {
             bool originalSetting = (item.Tag == null) ? false : (bool)item.Tag;
@@ -1122,17 +1136,6 @@ namespace Dash
             new ASCOM.Wise40.SafeToOperate.SetupDialogForm().Show();
         }
 
-        private void motionStudyToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void motionStudyToolStripMenuItem_Click_1(object sender, EventArgs e)
-        {
-            checkBoxMotionStudy.Visible = !checkBoxMotionStudy.Visible;
-            checkBoxMotionStudy.Invalidate();
-        }
-
         private void toolStripMenuItemFilterWheel_Click(object sender, EventArgs e)
         {
             new ASCOM.Wise40.FilterWheelSetupDialogForm().Show();
@@ -1207,6 +1210,18 @@ namespace Dash
             }
             item.Invalidate();
             UpdateAlteredItems(item, string.Format("Focus: {0}", wisefocuser.UpperLimit));
+        }
+
+        private void filterWheelRefreshToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            wisefilterwheel.Connected = false;
+            wisefilterwheel.Connected = true;
+            LoadFilterWheelInformation();
+        }
+
+        private void buttonFilterWheelGo_Click(object sender, EventArgs e)
+        {
+            wisefilterwheel.Position = (short) comboBoxFilterWheelPositions.SelectedIndex;
         }
 
         private void buttonTrack_Click(object sender, EventArgs e)

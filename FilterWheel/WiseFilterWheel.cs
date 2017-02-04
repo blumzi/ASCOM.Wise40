@@ -17,9 +17,7 @@ namespace ASCOM.Wise40
         private static readonly WiseFilterWheel _instance = new WiseFilterWheel();
 
         public TraceLogger traceLogger = new TraceLogger();
-        public Debugger debugger = Debugger.Instance;
-
-        private bool _connected = false;
+        public Debugger debugger = Debugger.Instance;        
 
         private static bool _initialized = false;
 
@@ -27,27 +25,26 @@ namespace ASCOM.Wise40
         static WiseFilterWheel() { }
         internal static string driverID = "ASCOM.Wise40.FilterWheel";
         private static string driverDescription = "ASCOM FilterWheel Driver for Wise40.";
-        private ArduinoInterface arduino;
+        private ArduinoInterface arduino = ArduinoInterface.Instance;
         public string port;
 
-        public enum WheelType { Invalid, Wheel8, Wheel4 };
-        public static Wheel currentWheel;
+        public enum WheelType { Unknown, Wheel8, Wheel4 };
+        public Wheel currentWheel;
         public static Wheel wheel8 = new Wheel(WheelType.Wheel8);
         public static Wheel wheel4 = new Wheel(WheelType.Wheel4);
-        public static Wheel wheelInvalid = new Wheel(WheelType.Invalid);
-        public static List<Wheel> wheels = new List<Wheel>() { wheel8, wheel4 };
-        private int currentPosition;
+        public static Wheel wheelUnknown = new Wheel(WheelType.Unknown);
+        public static List<Wheel> knownWheels = new List<Wheel>() { wheel8, wheel4 };
+
+        public List<Filter> filterInventory;
 
         public struct FWPosition
         {
             public string filterName;
             public string tag;
-            public int filterOffset;
 
-            public FWPosition(string n, int o, string u)
+            public FWPosition(string n, string u)
             {
                 filterName = n;
-                filterOffset = o;
                 tag = u;
             }
         };
@@ -57,6 +54,7 @@ namespace ASCOM.Wise40
             public WheelType type;
             public FWPosition[] positions;
             public string name;
+            public short position;
 
             public Wheel(WheelType type)
             {
@@ -72,21 +70,31 @@ namespace ASCOM.Wise40
                 for (int i = 0; i < this.positions.Length; i++)
                 {
                     this.positions[i].filterName = this.positions[i].tag = string.Empty;
-                    this.positions[i].filterOffset = 0;
                 }
+                position = -1;
             }
 
         }
 
-        public Tuple<Wheel, int> lookupWheelPosition(string tag)
+        Wheel lookupWheel(string tag)
         {
-            foreach (var wheel in wheels)
+            Wheel ret = wheelUnknown;
+
+            foreach (var wheel in knownWheels)
             {
-                for (int pos = 0; pos < wheel.positions.Length; pos++)
+                for (short pos = 0; pos < wheel.positions.Length; pos++)
                     if (tag == wheel.positions[pos].tag)
-                        return Tuple.Create(wheel, pos);
+                    {
+                        ret = wheel;
+                        ret.position = pos;
+                        #region debug
+                        debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "lookupWheel({0}) ==> wheel: {1}, position: {2}",
+                            tag, ret.name, ret.position);
+                        #endregion
+                        return ret;
+                    }
             }
-            return Tuple.Create(wheelInvalid, -1);
+            return ret;
         }
 
         public string DriverID
@@ -113,39 +121,51 @@ namespace ASCOM.Wise40
             traceLogger.LogMessage("WiseFilterWheel", "Starting initialisation");
             Connected = false;
             ReadProfile();
-            arduino = new ArduinoInterface(port);
-            arduino.Connected = true;
-            string currentTag = arduino.getPosition();
+            arduino.init(port);
+            Connected = true;
 
-            Tuple<Wheel, int> t = lookupWheelPosition(currentTag);
-            if (t.Item1.type != WheelType.Invalid)
-            {
-                currentWheel = t.Item1;
-                currentPosition = t.Item2;
-            }
+            currentWheel = lookupWheel(arduino.getPosition());
             traceLogger.LogMessage("WiseFilterWheel", "Completed initialisation");
         }
 
-        public void ReadProfile()
+        public void reInit()
+        {
+            currentWheel = lookupWheel(arduino.getPosition());
+            traceLogger.LogMessage("WiseFilterWheel", "refreshed");
+        }
+
+        public static void ReadProfile()
         {
             using (Profile driverProfile = new Profile())
             {
                 driverProfile.DeviceType = "FilterWheel";
                 string subKey;
 
-                foreach (Wheel w in wheels)
+                foreach (Wheel w in knownWheels)
                 {
                     string name = "Wheel" + ((w.type == WheelType.Wheel4) ? "4" : "8");
                     for (int pos = 0; pos < w.positions.Length; pos++)
                     {
                         subKey = string.Format("{0}/Position{1}", name, pos + 1);
-
-                        w.positions[pos].filterName = driverProfile.GetValue(driverID, "Name", subKey, string.Empty);
-                        w.positions[pos].filterOffset = Convert.ToInt32(driverProfile.GetValue(driverID, "Focus Offset", subKey, 0.ToString()));
+                        w.positions[pos].filterName = driverProfile.GetValue(driverID, "Filter Name", subKey, string.Empty);
                         w.positions[pos].tag = driverProfile.GetValue(driverID, "RFID", subKey, string.Empty);
                     }
                 }
-                port = driverProfile.GetValue(driverID, "Port", string.Empty, string.Empty);
+                _instance.port = driverProfile.GetValue(driverID, "Port", string.Empty, string.Empty);
+
+                _instance.filterInventory = new List<Filter>();
+                foreach (var sk in driverProfile.SubKeys(driverID))
+                {
+                    KeyValuePair kv = sk as KeyValuePair;
+                    if (kv.Key.StartsWith("Filter"))
+                    {
+                        string name = driverProfile.GetValue(driverID, "Name", kv.Key, string.Empty);
+                        string description = driverProfile.GetValue(driverID, "Description", kv.Key, string.Empty);
+                        int offset = Convert.ToInt32(driverProfile.GetValue(driverID, "Offset", kv.Key, string.Empty));
+
+                        _instance.filterInventory.Add(new Filter(name, description, offset));
+                    }
+                }
             }
         }
 
@@ -163,8 +183,7 @@ namespace ASCOM.Wise40
                     {
                         subKey = string.Format("{0}/Position{1}", name, pos + 1);
 
-                        driverProfile.WriteValue(driverID, "Name", w.positions[pos].filterName, subKey);
-                        driverProfile.WriteValue(driverID, "Focus Offset", w.positions[pos].filterOffset.ToString(), subKey);
+                        driverProfile.WriteValue(driverID, "Filter Name", w.positions[pos].filterName, subKey);
                         driverProfile.WriteValue(driverID, "RFID", w.positions[pos].tag, subKey);
                     }
                 }
@@ -176,17 +195,20 @@ namespace ASCOM.Wise40
         {
             get
             {
-                traceLogger.LogMessage("Connected Get", _connected.ToString());
-                return _connected;
+                bool connected = arduino.Connected;
+
+                traceLogger.LogMessage("Connected Get", connected.ToString());
+                return connected;
             }
 
             set
             {
                 traceLogger.LogMessage("Connected Set", value.ToString());
-                if (value == _connected)
+                if (value == arduino.Connected)
                     return;
-                _connected = value;
                 arduino.Connected = value;
+                if (value == true)
+                    currentWheel = lookupWheel(arduino.getPosition());
             }
         }
 
@@ -257,7 +279,7 @@ namespace ASCOM.Wise40
         /// <param name="message"></param>
         private void CheckConnected(string message)
         {
-            if (!_connected)
+            if (Connected)
             {
                 throw new ASCOM.NotConnectedException(message);
             }
@@ -267,7 +289,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                string name = "Wise40 FilterWheel";
+                string name = string.Format("{0} ({1} slots)", currentWheel.name, currentWheel.positions.Length);
                 traceLogger.LogMessage("Name Get", name);
                 return name;
             }
@@ -298,7 +320,7 @@ namespace ASCOM.Wise40
         {
             // consider only showing the setup dialog if not connected
             // or call a different dialog if connected
-            if (_connected)
+            if (Connected)
                 System.Windows.Forms.MessageBox.Show("Already connected, just press OK");
 
             using (FilterWheelSetupDialogForm F = new FilterWheelSetupDialogForm())
@@ -321,10 +343,10 @@ namespace ASCOM.Wise40
 
                 foreach (FWPosition position in currentWheel.positions) // Write filter offsets to the log
                 {
-                    focusOffsets.Add(position.filterOffset);
-                    traceLogger.LogMessage("FocusOffsets Get", position.filterOffset.ToString());
+                    int offset = (position.filterName == string.Empty) ? 0 :
+                                    filterInventory.Find((x) => x.Name == position.filterName).Offset;
+                    focusOffsets.Add(offset);
                 }
-
                 return focusOffsets.ToArray();
             }
         }
@@ -334,6 +356,8 @@ namespace ASCOM.Wise40
             get
             {
                 List<string> names = new List<string>();
+                if (currentWheel.positions == null)
+                    return names.ToArray();
                 foreach (FWPosition position in currentWheel.positions)
                 {
                     traceLogger.LogMessage("Names Get", position.filterName);
@@ -350,18 +374,11 @@ namespace ASCOM.Wise40
             {
                 short ret = -1;
                 if (!Connected)
-                    throw (new NotConnectedException("Not connected"));
+                    throw new NotConnectedException("Not connected");
 
-                string tag = arduino.getPosition();
-                Tuple<Wheel, int> t = lookupWheelPosition(tag);
-                if (t.Item1.type != WheelType.Invalid)
-                {
-                    currentWheel = t.Item1;
-                    currentPosition = t.Item2;
-                    ret = (short)currentPosition;
-                }
+                ret = currentWheel.position;
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "GetCurrentPosition: {0}", ret);
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "GetCurrentPosition: {0}", ret);
                 #endregion
                 return ret;
             }
@@ -374,7 +391,7 @@ namespace ASCOM.Wise40
                 int nPositions = currentWheel.positions.Length;
                 short targetPosition = value;
 
-                if (targetPosition == currentPosition)
+                if (targetPosition == currentWheel.position)
                     return;
 
                 traceLogger.LogMessage("Position Set", targetPosition.ToString());
@@ -385,20 +402,20 @@ namespace ASCOM.Wise40
                 }
 
                 int cw, ccw;    // # of positions to move
-                if (targetPosition > currentPosition)
+                if (targetPosition > currentWheel.position)
                 {
-                    cw = targetPosition - currentPosition;
-                    ccw = currentPosition + currentWheel.positions.Length - targetPosition;
+                    cw = targetPosition - currentWheel.position;
+                    ccw = currentWheel.position + nPositions - targetPosition;
                 } else
                 {
-                    cw = currentPosition - targetPosition;
-                    ccw = targetPosition + nPositions - currentPosition;
+                    cw = currentWheel.position - targetPosition;
+                    ccw = targetPosition + nPositions - currentWheel.position;
                 }
 
-                if (cw > ccw)
-                    arduino.move(ArduinoInterface.Direction.CW, (nPositions == 4) ? 2 * cw : cw);
+                if (cw < ccw)
+                    arduino.move(ArduinoInterface.StepperDirection.CW, (nPositions == 4) ? 2 * cw : cw);
                 else
-                    arduino.move(ArduinoInterface.Direction.CCW, (nPositions == 4) ? 2 * ccw : ccw);
+                    arduino.move(ArduinoInterface.StepperDirection.CCW, (nPositions == 4) ? 2 * ccw : ccw);
             }
         }
         #endregion
@@ -408,6 +425,14 @@ namespace ASCOM.Wise40
             get
             {
                 return currentWheel.positions.Length;
+            }
+        }
+
+        public string Status
+        {
+            get
+            {
+                return arduino.Status;
             }
         }
     }

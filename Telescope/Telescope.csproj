@@ -96,6 +96,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MotionStudy.cs" />
     <Compile Include="Slewers.cs" />
     <Compile Include="AxisMonitor.cs" />
     <Compile Include="DomeSlaveDriver.cs" />

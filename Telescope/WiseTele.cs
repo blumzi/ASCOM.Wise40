@@ -187,6 +187,9 @@ namespace ASCOM.Wise40
         public bool _calculateRefraction = true;
         private string calculateRefractionProfileName = "Calculate refraction";
 
+        private bool _studyMotion = false;
+        Dictionary<TelescopeAxes, MotionStudy> motionStudy = new Dictionary<TelescopeAxes, MotionStudy>();
+
         private static WiseComputerControl wiseComputerControl = WiseComputerControl.Instance;
 
         public static string RateName(double rate)
@@ -206,7 +209,7 @@ namespace ASCOM.Wise40
                 return names[rate];
             return rate.ToString();
         }
-
+        
         public double TargetDeclination
         {
             get
@@ -1060,6 +1063,10 @@ namespace ASCOM.Wise40
             Angle currPosition = (Axis == TelescopeAxes.axisPrimary) ?
                 Angle.FromHours(instance.RightAscension, Angle.Type.RA) :
                 Angle.FromDegrees(instance.Declination, Angle.Type.Dec);
+
+            if (_studyMotion)
+                motionStudy[Axis] = new MotionStudy(Axis, absRate);
+
             foreach (WiseVirtualMotor m in mover.motors)
             {
                 #region debug
@@ -1378,6 +1385,12 @@ namespace ASCOM.Wise40
         {
             Movement cm = instance.currMovement[axis];
             StopAxis(axis);
+
+            if (_studyMotion && motionStudy[axis] != null)
+            {
+                motionStudy[axis].Dispose();
+                motionStudy[axis] = null;
+            }
 
             #region debug
             Angle a = (axis == TelescopeAxes.axisPrimary) ?
@@ -2456,6 +2469,7 @@ namespace ASCOM.Wise40
                         Accuracy.Full :
                         Accuracy.Reduced;
                 _calculateRefraction = Convert.ToBoolean(driverProfile.GetValue(driverID, calculateRefractionProfileName, string.Empty, "true"));
+                _studyMotion = Convert.ToBoolean(driverProfile.GetValue(driverID, "StudyMotion", string.Empty, "false"));
             }
         }
 

@@ -13,7 +13,19 @@
 # Cannot detect the ARDUINO board type
 #endif
 
+#if _ARDUINO_ == UNO
+#include <SoftwareSerial.h>
+#endif
 
+#define DEBUG
+
+#ifdef DEBUG
+# define debug(x) Serial.print(x)
+# define debugln(x) Serial.println(x)
+#else
+# define debug(x)
+# define debugln(x)
+#endif
 
 #define BINARY(p)  (((ascii2bin[*(p)] & 0xf) << 4) | (ascii2bin[*((p)+1)]))
 
@@ -30,6 +42,10 @@ class Id12la {
     uint8_t resetPin;
     uint8_t ascii2bin['F'];
 
+#if _ARDUINO_ == UNO
+    uint8_t rxPin, txPin;
+    SoftwareSerial *reader;
+#endif
     uint8_t buf[TagAllBytes];
     uint8_t tag[TagPayloadBytes + 1];
     int nbytes;
@@ -41,29 +57,29 @@ class Id12la {
       ascii2bin['C'] = 0xc; ascii2bin['D'] = 0xd; ascii2bin['E'] = 0xe; ascii2bin['F'] = 0xf;
     }
 
-//#if _ARDUINO_ == UNO
-//  private:
-//    void init(uint8_t rxPin, uint8_t txPin, uint8_t resetPin) {
-//      this->rxPin = rxPin;
-//      this->txPin = txPin;
-//      this->resetPin = resetPin;
-//
-//      pinMode(this->resetPin, OUTPUT);
-//      digitalWrite(this->resetPin, LOW);
-//      initAscii();
-//    }
-//
-//  public:
-//    Id12la(uint8_t rxPin, uint8_t txPin, uint8_t resetPin) {
-//      reader = new SoftwareSerial(rxPin, txPin);
-//      reader->begin(9600);
-//      while (!reader)
-//        ;
-//      this->rxPin = rxPin;
-//      this->txPin = txPin;
-//      init(rxPin, txPin, resetPin);
-//    }
-//#elif _ARDUINO_ == MEGA
+#if _ARDUINO_ == UNO
+  private:
+    void init(uint8_t rxPin, uint8_t txPin, uint8_t resetPin) {
+      this->rxPin = rxPin;
+      this->txPin = txPin;
+      this->resetPin = resetPin;
+
+      pinMode(this->resetPin, OUTPUT);
+      digitalWrite(this->resetPin, LOW);
+      initAscii();
+    }
+
+  public:
+    Id12la(uint8_t rxPin, uint8_t txPin, uint8_t resetPin) {
+      reader = new SoftwareSerial(rxPin, txPin);
+      reader->begin(9600);
+      while (!reader)
+        ;
+      this->rxPin = rxPin;
+      this->txPin = txPin;
+      init(rxPin, txPin, resetPin);
+    }
+#elif _ARDUINO_ == MEGA
     //
     // On the MEGA we use Serial1 (rx=19, tx=18) to talk
     //  to the RFID reader
@@ -84,7 +100,7 @@ class Id12la {
         ;
       init(resetPin);
     }
-//#endif
+#endif
 
   private:
     void resetReader() {
@@ -127,20 +143,20 @@ class Id12la {
 
     int availableBytes() {
       return
-//#if _ARDUINO_ == UNO
-//        reader->available();
-//#elif _ARDUINO_ == MEGA
+#if _ARDUINO_ == UNO
+        reader->available();
+#elif _ARDUINO_ == MEGA
         Serial1.available();
-//#endif
+#endif
     }
 
     uint8_t readByte() {
       uint8_t b =
-//#if _ARDUINO_ == UNO
-//        reader->read();
-//#elif _ARDUINO_ == MEGA
+#if _ARDUINO_ == UNO
+        reader->read();
+#elif _ARDUINO_ == MEGA
         Serial1.read();
-//#endif
+#endif
       //debug("byte: "); Serial.print(b, HEX); debug(", "); Serial.println(b, BIN);
       return b;
     }

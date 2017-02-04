@@ -67,29 +67,33 @@
 //			- The arduino will perform exactly the same procedure as for the 'get-position' command
 //
 
+#define DEBUG
+
+#ifdef DEBUG
+# define debug(x) Serial.print(x)
+# define debugln(x) Serial.println(x)
+#else
+# define debug(x)
+# define debugln(x)
+#endif
+
 #include <Stepper.h>
 #include "Id12la.h"
 #include "Ascii.h"
+
 #define STEPPER_STEPS_PER_WHEEL8	1600
 #define STEPPER_STEPS_PER_REV		 200
 #define STEPPER_NORMAL_SPEED		  37
-// constants
-#if _ARDUINO_ == UNO
-#define STEPPER_PIN_1		47
-#define STEPPER_PIN_2		51
-#define STEPPER_COMMON_PIN	53
-#define PHOTO_GATE_PIN		 8
-#define PHOTO_HIGH_PIN		34
-#define PHOTO_LOW_PIN		26
-#elif _ARDUINO_ == MEGA
-#define STEPPER_PIN_1		51
-#define STEPPER_PIN_2		47
-#define STEPPER_COMMON_PIN	53
 
-#define PHOTO_GATE_PIN		30
-#define PHOTO_HIGH_PIN		34
-#define PHOTO_LOW_PIN		26
-#endif
+#define STEPPER_PIN_1				51
+#define STEPPER_PIN_2				47
+#define STEPPER_COMMON_PIN			53
+
+#define PHOTO_GATE_PIN				30
+#define PHOTO_HIGH_PIN				34
+#define PHOTO_LOW_PIN				26
+
+#define	RFID_RESET_PIN				13
 
 #define CW(steps) (steps)		// clock-wise direction
 #define CCW(steps) (-(steps))	// counter-clock-wise direction
@@ -110,17 +114,13 @@ int direct;
 int i;
 char inBuf[256], outBuf[256];
 
-#if _ARDUINO_ == UNO
-Id12la tagReader(10, 11, 13);
-#elif _ARDUINO_ == MEGA
-Id12la tagReader(13);	// TBD: RFID reset pin on MEGA
-#endif
+Id12la tagReader(RFID_RESET_PIN);
 
 //
 // reads a packet from the PC, on the Serial port
 // blocks until a good packet is received (bad packets are silently discarded)
 //
-String readPacket() {
+String readHostPacket() {
 	char *p;
 
 again:
@@ -148,7 +148,7 @@ again:
 //
 // Sends a packet to the PC
 //
-void sendPacket(String payload) {
+void sendPacketToHost(String payload) {
 	Serial.write(Ascii::STX);
 	Serial.print(payload);
 	Serial.write(Ascii::ETX);
@@ -177,10 +177,14 @@ bool searchForOpticalSlit(int maxSteps = STEPPER_STEPS_PER_REV, int stepsPerMove
 }
 
 void setup() {
-	stepper.setSpeed(STEPPER_NORMAL_SPEED);//define  the stepper speed
+	//stepper.setSpeed(STEPPER_NORMAL_SPEED);//define  the stepper speed
 
 	Serial.begin(57600);	// opens serial port, sets data rate to 9600 bps
-	Serial.flush();
+	while (!Serial)
+		;
+	delay(2000);
+	Serial.println("hello world ...");
+	//Serial.flush();
 
 	pinMode(PHOTO_HIGH_PIN, OUTPUT);
 	pinMode(PHOTO_LOW_PIN, OUTPUT);
@@ -191,7 +195,8 @@ void setup() {
 	digitalWrite(PHOTO_LOW_PIN, LOW);
 	digitalWrite(STEPPER_COMMON_PIN, HIGH);
 
-	Serial.println("filter wheel ready ...");
+	delay(2000);
+	debugln("filter wheel ready ...");
 	
 	searchForOpticalSlit();
 }
@@ -224,7 +229,7 @@ String doMove(int nPos) {
 void loop() {
 	String command, reply;
 
-	command = readPacket();
+	command = readHostPacket();
 
 	if (command.startsWith("get-position", 0)) {
 		reply = doGetPosition();
@@ -243,5 +248,5 @@ void loop() {
 			reply = doMove(-nPos);
 	}
 	if (reply.length() > 0)
-		sendPacket(reply);
+		sendPacketToHost(reply);
 }
