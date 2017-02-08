@@ -46,9 +46,9 @@ namespace ASCOM.Wise40
                     w.positions[i].tag = tb.Text ?? string.Empty;
                 }
             }
-            wisefilterwheel.port = comboBoxPort.Text;
+            WiseFilterWheel.port = comboBoxPort.Text;
 
-            wisefilterwheel.WriteProfile();
+            WiseFilterWheel.WriteProfile();
             Close();
         }
 
@@ -89,10 +89,10 @@ namespace ASCOM.Wise40
                     if (w.positions[i].filterName == string.Empty)
                         cb.Text = string.Empty;
                     else {
-                        Filter f = wisefilterwheel.filterInventory.Find((x) => x.Name == w.positions[i].filterName);
+                        Filter f = WiseFilterWheel.filterInventory.Find((x) => x.Name == w.positions[i].filterName);
                         cb.Text = string.Format("{0}: {1}", f.Name, f.Description);
                     }
-                    foreach (Filter f in wisefilterwheel.filterInventory)
+                    foreach (Filter f in WiseFilterWheel.filterInventory)
                         cb.Items.Add(string.Format("{0}: {1}", f.Name, f.Description));
 
                     TextBox tb;
@@ -102,8 +102,8 @@ namespace ASCOM.Wise40
                 }
             }
             comboBoxPort.Items.AddRange(System.IO.Ports.SerialPort.GetPortNames());
-            if (!String.IsNullOrEmpty(wisefilterwheel.port) && comboBoxPort.Items.Contains(wisefilterwheel.port))
-                comboBoxPort.Text = wisefilterwheel.port;
+            if (!String.IsNullOrEmpty(WiseFilterWheel.port) && comboBoxPort.Items.Contains(WiseFilterWheel.port))
+                comboBoxPort.Text = WiseFilterWheel.port;
         }
 
         private void FilterWheelSetupDialogForm_Load(object sender, EventArgs e)

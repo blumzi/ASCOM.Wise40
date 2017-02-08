@@ -1040,7 +1040,7 @@ namespace Dash
                 if (filterName == string.Empty)
                     item = string.Format("{0} - Clear", pos + 1);
                 else {
-                    string desc = wisefilterwheel.filterInventory.Find((x) => x.Name == filterName).Description;
+                    string desc = WiseFilterWheel.filterInventory.Find((x) => x.Name == filterName).Description;
 
                     item = string.Format("{0} - {1}: {2}", pos + 1, filterName, desc);
                 }
@@ -1222,6 +1222,12 @@ namespace Dash
         private void buttonFilterWheelGo_Click(object sender, EventArgs e)
         {
             wisefilterwheel.Position = (short) comboBoxFilterWheelPositions.SelectedIndex;
+        }
+
+        private void manageFilterInventoryToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            wisefilterwheel.init();
+            new FiltersForm().Show();
         }
 
         private void buttonTrack_Click(object sender, EventArgs e)

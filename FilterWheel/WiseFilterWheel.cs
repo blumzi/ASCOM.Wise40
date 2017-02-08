@@ -26,7 +26,7 @@ namespace ASCOM.Wise40
         internal static string driverID = "ASCOM.Wise40.FilterWheel";
         private static string driverDescription = "ASCOM FilterWheel Driver for Wise40.";
         private ArduinoInterface arduino = ArduinoInterface.Instance;
-        public string port;
+        public static string port;
 
         public enum WheelType { Unknown, Wheel8, Wheel4 };
         public Wheel currentWheel;
@@ -35,7 +35,7 @@ namespace ASCOM.Wise40
         public static Wheel wheelUnknown = new Wheel(WheelType.Unknown);
         public static List<Wheel> knownWheels = new List<Wheel>() { wheel8, wheel4 };
 
-        public List<Filter> filterInventory;
+        public static List<Filter> filterInventory;
 
         public struct FWPosition
         {
@@ -121,7 +121,7 @@ namespace ASCOM.Wise40
             traceLogger.LogMessage("WiseFilterWheel", "Starting initialisation");
             Connected = false;
             ReadProfile();
-            arduino.init(port);
+            arduino.init(WiseFilterWheel.port);
             Connected = true;
 
             currentWheel = lookupWheel(arduino.getPosition());
@@ -151,9 +151,9 @@ namespace ASCOM.Wise40
                         w.positions[pos].tag = driverProfile.GetValue(driverID, "RFID", subKey, string.Empty);
                     }
                 }
-                _instance.port = driverProfile.GetValue(driverID, "Port", string.Empty, string.Empty);
+                port = driverProfile.GetValue(driverID, "Port", string.Empty, string.Empty);
 
-                _instance.filterInventory = new List<Filter>();
+                WiseFilterWheel.filterInventory = new List<Filter>();
                 foreach (var sk in driverProfile.SubKeys(driverID))
                 {
                     KeyValuePair kv = sk as KeyValuePair;
@@ -163,13 +163,13 @@ namespace ASCOM.Wise40
                         string description = driverProfile.GetValue(driverID, "Description", kv.Key, string.Empty);
                         int offset = Convert.ToInt32(driverProfile.GetValue(driverID, "Offset", kv.Key, string.Empty));
 
-                        _instance.filterInventory.Add(new Filter(name, description, offset));
+                        WiseFilterWheel.filterInventory.Add(new Filter(name, description, offset));
                     }
                 }
             }
         }
 
-        public void WriteProfile()
+        public static void WriteProfile()
         {
             using (Profile driverProfile = new Profile())
             {
@@ -187,7 +187,7 @@ namespace ASCOM.Wise40
                         driverProfile.WriteValue(driverID, "RFID", w.positions[pos].tag, subKey);
                     }
                 }
-                driverProfile.WriteValue(driverID, "Port", port);
+                driverProfile.WriteValue(driverID, "Port", WiseFilterWheel.port);
             }
         }
 

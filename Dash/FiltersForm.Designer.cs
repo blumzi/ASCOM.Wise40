@@ -34,6 +34,11 @@
             this.buttonSort = new System.Windows.Forms.Button();
             this.buttonOK = new System.Windows.Forms.Button();
             this.buttonCancel = new System.Windows.Forms.Button();
+            this.dataGridView = new System.Windows.Forms.DataGridView();
+            this.Name = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Description = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Offset = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).BeginInit();
             this.SuspendLayout();
             // 
             // label1
@@ -113,6 +118,39 @@
             this.buttonCancel.Text = "Cancel";
             this.buttonCancel.UseVisualStyleBackColor = false;
             // 
+            // dataGridView
+            // 
+            this.dataGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dataGridView.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.Name,
+            this.Description,
+            this.Offset});
+            this.dataGridView.Location = new System.Drawing.Point(24, 96);
+            this.dataGridView.Name = "dataGridView";
+            this.dataGridView.Size = new System.Drawing.Size(480, 150);
+            this.dataGridView.TabIndex = 35;
+            // 
+            // Name
+            // 
+            this.Name.DataPropertyName = "Name";
+            this.Name.HeaderText = "Name";
+            this.Name.Name = "Name";
+            this.Name.ToolTipText = "Short name of the filter";
+            // 
+            // Description
+            // 
+            this.Description.DataPropertyName = "Description";
+            this.Description.HeaderText = "Description";
+            this.Description.Name = "Description";
+            this.Description.ToolTipText = "Short description of the filter";
+            // 
+            // Offset
+            // 
+            this.Offset.DataPropertyName = "Offset";
+            this.Offset.HeaderText = "Offset";
+            this.Offset.Name = "Offset";
+            this.Offset.ToolTipText = "Filter offset";
+            // 
             // FiltersForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -120,7 +158,7 @@
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.CancelButton = this.buttonCancel;
             this.ClientSize = new System.Drawing.Size(666, 383);
-            this.ControlBox = false;
+            this.Controls.Add(this.dataGridView);
             this.Controls.Add(this.buttonCancel);
             this.Controls.Add(this.buttonOK);
             this.Controls.Add(this.buttonSort);
@@ -128,8 +166,8 @@
             this.Controls.Add(this.buttonAdd);
             this.Controls.Add(this.label1);
             this.ForeColor = System.Drawing.Color.DarkOrange;
-            this.Name = "FiltersForm";
             this.Text = "Wise40 Filters";
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -142,5 +180,9 @@
         private System.Windows.Forms.Button buttonSort;
         private System.Windows.Forms.Button buttonOK;
         private System.Windows.Forms.Button buttonCancel;
+        private System.Windows.Forms.DataGridView dataGridView;
+        private new System.Windows.Forms.DataGridViewTextBoxColumn Name;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Description;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Offset;
     }
 }

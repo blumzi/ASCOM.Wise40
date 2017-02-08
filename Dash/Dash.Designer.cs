@@ -216,6 +216,7 @@
             this.labelRainRateValue = new System.Windows.Forms.Label();
             this.timerRefreshDisplay = new System.Windows.Forms.Timer(this.components);
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
+            this.manageFilterInventoryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tableLayoutMain.SuspendLayout();
             this.groupBoxFocuser.SuspendLayout();
             this.groupBoxDomeGroup.SuspendLayout();
@@ -1638,7 +1639,8 @@
             // 
             this.toolStripMenuItemFilterWheel.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.settingsToolStripMenuItem,
-            this.filterWheelRefreshToolStripMenuItem});
+            this.filterWheelRefreshToolStripMenuItem,
+            this.manageFilterInventoryToolStripMenuItem});
             this.toolStripMenuItemFilterWheel.Name = "toolStripMenuItemFilterWheel";
             this.toolStripMenuItemFilterWheel.Size = new System.Drawing.Size(158, 22);
             this.toolStripMenuItemFilterWheel.Text = "Filter Wheel";
@@ -1647,14 +1649,14 @@
             // settingsToolStripMenuItem
             // 
             this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
-            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(119, 22);
+            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(206, 22);
             this.settingsToolStripMenuItem.Text = "Settings";
             this.settingsToolStripMenuItem.Click += new System.EventHandler(this.toolStripMenuItemFilterWheel_Click);
             // 
             // filterWheelRefreshToolStripMenuItem
             // 
             this.filterWheelRefreshToolStripMenuItem.Name = "filterWheelRefreshToolStripMenuItem";
-            this.filterWheelRefreshToolStripMenuItem.Size = new System.Drawing.Size(184, 22);
+            this.filterWheelRefreshToolStripMenuItem.Size = new System.Drawing.Size(206, 22);
             this.filterWheelRefreshToolStripMenuItem.Text = "Wheel was changed";
             this.filterWheelRefreshToolStripMenuItem.Click += new System.EventHandler(this.filterWheelRefreshToolStripMenuItem_Click);
             // 
@@ -2730,6 +2732,13 @@
             this.timerRefreshDisplay.Enabled = true;
             this.timerRefreshDisplay.Tick += new System.EventHandler(this.RefreshDisplay);
             // 
+            // manageFilterInventoryToolStripMenuItem
+            // 
+            this.manageFilterInventoryToolStripMenuItem.Name = "manageFilterInventoryToolStripMenuItem";
+            this.manageFilterInventoryToolStripMenuItem.Size = new System.Drawing.Size(206, 22);
+            this.manageFilterInventoryToolStripMenuItem.Text = "Manage filter inventory";
+            this.manageFilterInventoryToolStripMenuItem.Click += new System.EventHandler(this.manageFilterInventoryToolStripMenuItem_Click);
+            // 
             // FormDash
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
@@ -2964,6 +2973,7 @@
         private System.Windows.Forms.Button buttonFilterWheelGo;
         private System.Windows.Forms.ToolStripMenuItem settingsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem filterWheelRefreshToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem manageFilterInventoryToolStripMenuItem;
     }
 }
 
