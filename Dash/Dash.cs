@@ -410,7 +410,8 @@ namespace Dash
             string fwstat = wisefilterwheel.Status;
             annunciatorFilterWheel.Cadence = (fwstat == "Idle") ? ASCOM.Controls.CadencePattern.SteadyOff :
                 (fwstat == "Moving") ? ASCOM.Controls.CadencePattern.BlinkSlow : ASCOM.Controls.CadencePattern.BlinkFast;
-            filterWheelStatus.Show(fwstat);
+            if (fwstat != "Idle")
+                filterWheelStatus.Show(fwstat);
             #endregion
         }
         #endregion
@@ -1040,9 +1041,14 @@ namespace Dash
                 if (filterName == string.Empty)
                     item = string.Format("{0} - Clear", pos + 1);
                 else {
-                    string desc = WiseFilterWheel.filterInventory.Find((x) => x.Name == filterName).Description;
+                    if (wisefilterwheel.currentWheel.type == WiseFilterWheel.WheelType.Simulated)
+                    {
+                        item = string.Format("{0} - {1}", pos + 1, filterName);
+                    } else {
+                        string desc = WiseFilterWheel.filterInventory.Find((x) => x.Name == filterName).Description;
 
-                    item = string.Format("{0} - {1}: {2}", pos + 1, filterName, desc);
+                        item = string.Format("{0} - {1}: {2}", pos + 1, filterName, desc);
+                    }
                 }
                 comboBoxFilterWheelPositions.Items.Add(item);
                 if (pos == wisefilterwheel.currentWheel.position)
@@ -1217,11 +1223,15 @@ namespace Dash
             wisefilterwheel.Connected = false;
             wisefilterwheel.Connected = true;
             LoadFilterWheelInformation();
+            filterWheelStatus.Show("Reloaded", 1000, Statuser.Severity.Good);
         }
 
         private void buttonFilterWheelGo_Click(object sender, EventArgs e)
         {
-            wisefilterwheel.Position = (short) comboBoxFilterWheelPositions.SelectedIndex;
+            short targetPosition = (short)comboBoxFilterWheelPositions.SelectedIndex;
+
+            filterWheelStatus.Show(string.Format("Moving to position {0}", targetPosition + 1), 1000, Statuser.Severity.Good);
+            wisefilterwheel.Position = targetPosition;
         }
 
         private void manageFilterInventoryToolStripMenuItem_Click(object sender, EventArgs e)

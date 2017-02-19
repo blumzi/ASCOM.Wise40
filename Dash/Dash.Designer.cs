@@ -131,6 +131,7 @@
             this.toolStripMenuItemFilterWheel = new System.Windows.Forms.ToolStripMenuItem();
             this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.filterWheelRefreshToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.manageFilterInventoryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem3 = new System.Windows.Forms.ToolStripMenuItem();
             this.resetFocusEncoderToZeroToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem6 = new System.Windows.Forms.ToolStripMenuItem();
@@ -216,7 +217,6 @@
             this.labelRainRateValue = new System.Windows.Forms.Label();
             this.timerRefreshDisplay = new System.Windows.Forms.Timer(this.components);
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
-            this.manageFilterInventoryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tableLayoutMain.SuspendLayout();
             this.groupBoxFocuser.SuspendLayout();
             this.groupBoxDomeGroup.SuspendLayout();
@@ -1660,6 +1660,13 @@
             this.filterWheelRefreshToolStripMenuItem.Text = "Wheel was changed";
             this.filterWheelRefreshToolStripMenuItem.Click += new System.EventHandler(this.filterWheelRefreshToolStripMenuItem_Click);
             // 
+            // manageFilterInventoryToolStripMenuItem
+            // 
+            this.manageFilterInventoryToolStripMenuItem.Name = "manageFilterInventoryToolStripMenuItem";
+            this.manageFilterInventoryToolStripMenuItem.Size = new System.Drawing.Size(206, 22);
+            this.manageFilterInventoryToolStripMenuItem.Text = "Manage filter inventory";
+            this.manageFilterInventoryToolStripMenuItem.Click += new System.EventHandler(this.manageFilterInventoryToolStripMenuItem_Click);
+            // 
             // toolStripMenuItem3
             // 
             this.toolStripMenuItem3.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -2257,11 +2264,12 @@
             // labelFilterWheelName
             // 
             this.labelFilterWheelName.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.labelFilterWheelName.AutoSize = true;
             this.labelFilterWheelName.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F);
             this.labelFilterWheelName.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.labelFilterWheelName.Location = new System.Drawing.Point(120, 32);
             this.labelFilterWheelName.Name = "labelFilterWheelName";
-            this.labelFilterWheelName.Size = new System.Drawing.Size(72, 18);
+            this.labelFilterWheelName.Size = new System.Drawing.Size(20, 18);
             this.labelFilterWheelName.TabIndex = 42;
             this.labelFilterWheelName.Text = "??";
             this.labelFilterWheelName.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -2731,13 +2739,6 @@
             // 
             this.timerRefreshDisplay.Enabled = true;
             this.timerRefreshDisplay.Tick += new System.EventHandler(this.RefreshDisplay);
-            // 
-            // manageFilterInventoryToolStripMenuItem
-            // 
-            this.manageFilterInventoryToolStripMenuItem.Name = "manageFilterInventoryToolStripMenuItem";
-            this.manageFilterInventoryToolStripMenuItem.Size = new System.Drawing.Size(206, 22);
-            this.manageFilterInventoryToolStripMenuItem.Text = "Manage filter inventory";
-            this.manageFilterInventoryToolStripMenuItem.Click += new System.EventHandler(this.manageFilterInventoryToolStripMenuItem_Click);
             // 
             // FormDash
             // 

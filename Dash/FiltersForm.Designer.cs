@@ -120,6 +120,8 @@
             // 
             // dataGridView
             // 
+            this.dataGridView.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.dataGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dataGridView.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.Name,
@@ -127,6 +129,7 @@
             this.Offset});
             this.dataGridView.Location = new System.Drawing.Point(24, 96);
             this.dataGridView.Name = "dataGridView";
+            this.dataGridView.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.dataGridView.Size = new System.Drawing.Size(480, 150);
             this.dataGridView.TabIndex = 35;
             // 
@@ -166,6 +169,7 @@
             this.Controls.Add(this.buttonAdd);
             this.Controls.Add(this.label1);
             this.ForeColor = System.Drawing.Color.DarkOrange;
+            //this.Name = "FiltersForm";
             this.Text = "Wise40 Filters";
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).EndInit();
             this.ResumeLayout(false);

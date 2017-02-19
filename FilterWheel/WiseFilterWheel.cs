@@ -20,6 +20,7 @@ namespace ASCOM.Wise40
         public Debugger debugger = Debugger.Instance;        
 
         private static bool _initialized = false;
+        private static bool _connected = false; // simulated
 
         public WiseFilterWheel() { }
         static WiseFilterWheel() { }
@@ -28,12 +29,13 @@ namespace ASCOM.Wise40
         private ArduinoInterface arduino = ArduinoInterface.Instance;
         public static string port;
 
-        public enum WheelType { Unknown, Wheel8, Wheel4 };
+        public enum WheelType { Unknown, Wheel8, Wheel4, Simulated };
         public Wheel currentWheel;
         public static Wheel wheel8 = new Wheel(WheelType.Wheel8);
         public static Wheel wheel4 = new Wheel(WheelType.Wheel4);
         public static Wheel wheelUnknown = new Wheel(WheelType.Unknown);
-        public static List<Wheel> knownWheels = new List<Wheel>() { wheel8, wheel4 };
+        public static Wheel wheelSimulated = new Wheel(WheelType.Simulated);
+        public static List<Wheel> knownWheels = new List<Wheel>() { wheel8, wheel4, wheelSimulated };
 
         public static List<Filter> filterInventory;
 
@@ -63,15 +65,22 @@ namespace ASCOM.Wise40
                     this.positions = new FWPosition[4];
                 else if (type == WheelType.Wheel8)
                     this.positions = new FWPosition[8];
+                else if (type == WheelType.Simulated)
+                    this.positions = new FWPosition[8];
                 else
                     this.positions = new FWPosition[0];
-                name = "Wheel" + positions.Length.ToString();
+                name = "Wheel" + ((type == WheelType.Simulated) ? "Simulated" : positions.Length.ToString());
 
                 for (int i = 0; i < this.positions.Length; i++)
                 {
-                    this.positions[i].filterName = this.positions[i].tag = string.Empty;
+                    if (type == WheelType.Simulated)
+                    {
+                        this.positions[i].filterName = string.Format("SimulatedFilter#{0}", i);
+                        this.positions[i].tag = string.Format("SimulatedTag#{0}", i);
+                    } else
+                        this.positions[i].filterName = this.positions[i].tag = string.Empty;
                 }
-                position = -1;
+                position = (short) ((type == WheelType.Simulated) ? 0 : -1);
             }
 
         }
@@ -117,20 +126,22 @@ namespace ASCOM.Wise40
         {
             if (_initialized)
                 return;
+            Simulated = true;   // Force simulated mode at home
 
             traceLogger.LogMessage("WiseFilterWheel", "Starting initialisation");
             Connected = false;
             ReadProfile();
-            arduino.init(WiseFilterWheel.port);
+            if (! Simulated)
+                arduino.init(WiseFilterWheel.port);
             Connected = true;
-
-            currentWheel = lookupWheel(arduino.getPosition());
+            
             traceLogger.LogMessage("WiseFilterWheel", "Completed initialisation");
+            _initialized = true;
         }
 
         public void reInit()
         {
-            currentWheel = lookupWheel(arduino.getPosition());
+            currentWheel = lookupWheel(Simulated ? "SimulatedTag#0" : arduino.getPosition());
             traceLogger.LogMessage("WiseFilterWheel", "refreshed");
         }
 
@@ -143,15 +154,23 @@ namespace ASCOM.Wise40
 
                 foreach (Wheel w in knownWheels)
                 {
-                    string name = "Wheel" + ((w.type == WheelType.Wheel4) ? "4" : "8");
+                    string name = "Wheel" + ((w.type == WheelType.Simulated) ? "Simulated" : w.positions.Length.ToString());
                     for (int pos = 0; pos < w.positions.Length; pos++)
                     {
                         subKey = string.Format("{0}/Position{1}", name, pos + 1);
-                        w.positions[pos].filterName = driverProfile.GetValue(driverID, "Filter Name", subKey, string.Empty);
-                        w.positions[pos].tag = driverProfile.GetValue(driverID, "RFID", subKey, string.Empty);
+                        if (w.type == WheelType.Simulated)
+                        {
+                            w.positions[pos].filterName = string.Format("SimulatedFilter#{0}", pos);
+                            w.positions[pos].tag = string.Format("SimulatedTag#{0}", pos);
+                        }
+                        else
+                        {
+                            w.positions[pos].filterName = driverProfile.GetValue(driverID, "Filter Name", subKey, string.Empty);
+                            w.positions[pos].tag = driverProfile.GetValue(driverID, "RFID", subKey, string.Empty);
+                        }
                     }
                 }
-                port = driverProfile.GetValue(driverID, "Port", string.Empty, string.Empty);
+                port = _instance.Simulated ? "NoPort" : driverProfile.GetValue(driverID, "Port", string.Empty, string.Empty);
 
                 WiseFilterWheel.filterInventory = new List<Filter>();
                 foreach (var sk in driverProfile.SubKeys(driverID))
@@ -195,6 +214,9 @@ namespace ASCOM.Wise40
         {
             get
             {
+                if (Simulated)
+                    return _connected;
+
                 bool connected = arduino.Connected;
 
                 traceLogger.LogMessage("Connected Get", connected.ToString());
@@ -204,6 +226,16 @@ namespace ASCOM.Wise40
             set
             {
                 traceLogger.LogMessage("Connected Set", value.ToString());
+
+                if (Simulated)
+                {
+                    if (value == _connected)
+                        return;
+                    _connected = value;
+                    currentWheel = lookupWheel("SimulatedTag#0");
+                    return;
+                }
+
                 if (value == arduino.Connected)
                     return;
                 arduino.Connected = value;
@@ -401,6 +433,12 @@ namespace ASCOM.Wise40
                     throw new InvalidValueException("Position", targetPosition.ToString(), "0 to " + (nPositions - 1).ToString());
                 }
 
+                if (currentWheel.type == WheelType.Simulated)
+                {
+                    currentWheel.position = targetPosition;
+                    return;
+                }
+
                 int cw, ccw;    // # of positions to move
                 if (targetPosition > currentWheel.position)
                 {
@@ -432,7 +470,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return arduino.Status;
+                return Simulated ? "Idle" : arduino.Status;
             }
         }
     }

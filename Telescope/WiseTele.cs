@@ -98,6 +98,8 @@ namespace ASCOM.Wise40
         private static Angle secondarySafetyBackoff = new Angle("00:05:00.0");
 
         private ReadyToSlewFlags readyToSlew = new ReadyToSlewFlags();
+        System.Threading.Timer trackingTimer;
+        const int trackingDomeAdjustmentInterval = 30 * 1000;   // half a minute
 
         /// <summary>
         /// Usually two or three tasks are used to perform a slew:
@@ -481,6 +483,7 @@ namespace ASCOM.Wise40
             #endregion
 
             safetyMonitorTimer = new SafetyMonitorTimer();
+            trackingTimer = new System.Threading.Timer(new System.Threading.TimerCallback(AdjustDomePositionWhileTracking));
 
             #region realMovementParameters
             instance.realMovementParameters = new Dictionary<TelescopeAxes, Dictionary<double, MovementParameters>>();
@@ -757,6 +760,16 @@ namespace ASCOM.Wise40
             }
         }
 
+        private void AdjustDomePositionWhileTracking(object StateObject)
+        {
+            if (! Tracking)
+            {
+                trackingTimer.Change(Timeout.Infinite, Timeout.Infinite);
+                return;
+            }
+            DomeSlewer(Angle.FromHours(RightAscension), Angle.FromDegrees(Declination));
+        }
+
         public bool Tracking
         {
             get
@@ -794,6 +807,11 @@ namespace ASCOM.Wise40
                         TrackingMotor.SetOff();
                 }
                 safetyMonitorTimer.EnableIfNeeded();
+
+                if (value)
+                    trackingTimer.Change(trackingDomeAdjustmentInterval, trackingDomeAdjustmentInterval);
+                else
+                    trackingTimer.Change(Timeout.Infinite, Timeout.Infinite);
             }
         }
 
