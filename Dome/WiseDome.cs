@@ -23,7 +23,8 @@ namespace ASCOM.Wise40
 
         private WisePin leftPin, rightPin;
         private WisePin openPin, closePin;
-        private WisePin homePin, ventPin;
+        private WisePin[] caliPins = new WisePin[3];
+        private WisePin ventPin;
         private static WiseDomeEncoder domeEncoder = WiseDomeEncoder.Instance;
         private List<IConnectable> connectables;
         private List<IDisposable> disposables;
@@ -53,7 +54,24 @@ namespace ASCOM.Wise40
         private uint _prevTicks;      // for Stuck checks
         private DateTime nextStuckEvent;
 
-        private Angle _homePointAzimuth = new Angle(254.6, Angle.Type.Az);
+        public class CalibrationPoint {
+            public WisePin pin;
+            public Angle az;
+
+            public CalibrationPoint(WisePin _pin, Angle _az)
+            {
+                pin = _pin;
+                az = _az;
+            }
+        };
+        private List<CalibrationPoint> calibrationPoints = new List<CalibrationPoint>(); 
+        
+        private Angle[] _caliPointAzimuth =
+        {
+            new Angle(254.6, Angle.Type.Az),
+            new Angle( 18.0, Angle.Type.Az),
+            new Angle(133.0, Angle.Type.Az),
+        };
         public const int TicksPerDomeRevolution = 1018;
 
         public const double DegreesPerTick = 360.0 / TicksPerDomeRevolution;
@@ -124,7 +142,14 @@ namespace ASCOM.Wise40
                 leftPin = new WisePin("DomeLeft", hw.domeboard, DigitalPortType.FirstPortA, 2, DigitalPortDirection.DigitalOut);
                 rightPin = new WisePin("DomeRight", hw.domeboard, DigitalPortType.FirstPortA, 3, DigitalPortDirection.DigitalOut);
 
-                homePin = new WisePin("DomeCalib", hw.domeboard, DigitalPortType.FirstPortCL, 0, DigitalPortDirection.DigitalIn);
+                caliPins[0] = new WisePin("DomeCali0", hw.domeboard, DigitalPortType.FirstPortCL, 0, DigitalPortDirection.DigitalIn);
+                caliPins[1] = new WisePin("DomeCalib", hw.domeboard, DigitalPortType.FirstPortCL, 1, DigitalPortDirection.DigitalIn);
+                caliPins[2] = new WisePin("DomeCalib", hw.domeboard, DigitalPortType.FirstPortCL, 2, DigitalPortDirection.DigitalIn);
+
+                calibrationPoints.Add(new CalibrationPoint(caliPins[0], new Angle(254.6, Angle.Type.Az)));
+                calibrationPoints.Add(new CalibrationPoint(caliPins[1], new Angle(133.0, Angle.Type.Az)));
+                calibrationPoints.Add(new CalibrationPoint(caliPins[2], new Angle( 18.0, Angle.Type.Az)));
+
                 ventPin = new WisePin("DomeVent", hw.teleboard, DigitalPortType.ThirdPortCL, 0, DigitalPortDirection.DigitalOut);
                 
                 domeEncoder.init();
@@ -133,7 +158,8 @@ namespace ASCOM.Wise40
                 connectables.Add(closePin);
                 connectables.Add(leftPin);
                 connectables.Add(rightPin);
-                connectables.Add(homePin);
+                for (int i = 0; i < 3; i++)
+                    connectables.Add(caliPins[i]);
                 connectables.Add(ventPin);
                 connectables.Add(domeEncoder);
 
@@ -141,7 +167,8 @@ namespace ASCOM.Wise40
                 disposables.Add(closePin);
                 disposables.Add(leftPin);
                 disposables.Add(rightPin);
-                disposables.Add(homePin);
+                for (int i = 0; i < 3; i++)
+                    disposables.Add(caliPins[i]);
                 disposables.Add(ventPin);
             }
             catch (WiseException e)
@@ -279,7 +306,9 @@ namespace ASCOM.Wise40
         /// <param name="state"></param>
         private void onDomeTimer(object state)
         {
-            if (AtCaliPoint)
+            CalibrationPoint cp;
+
+            if ((cp = CurrentCaliPoint) != null)
             {
                 if (_calibrating)
                 {
@@ -287,11 +316,12 @@ namespace ASCOM.Wise40
                     Thread.Sleep(2000);     // settle down
                     _calibrating = false;
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: Setting _foundCalibration ...");
+                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                        "WiseDome: Setting _foundCalibration[{0}] == {1} ...", cp, cp.az.ToNiceString());
                     #endregion
                     _foundCalibration.Set();
                 }
-                domeEncoder.Calibrate(_homePointAzimuth);
+                domeEncoder.Calibrate(cp.az);
             }
 
             if (_targetAz != null && arriving(_targetAz))
@@ -538,11 +568,30 @@ namespace ASCOM.Wise40
             }
         }
 
-        public bool AtCaliPoint
+        public CalibrationPoint CurrentCaliPoint
         {
             get
             {
-                return (Simulated) ? domeEncoder.Value == 10 : homePin.isOff;
+                if (Simulated)
+                {
+                    switch (domeEncoder.Value)
+                    {
+                        case 10:
+                            return calibrationPoints[0];
+                        case 20:
+                            return calibrationPoints[1];
+                        case 30:
+                            return calibrationPoints[2];
+                        default:
+                            return null;
+                    }
+                } else
+                {
+                    foreach (var cp in calibrationPoints)
+                        if (cp.pin.isOff)
+                            return cp;
+                    return null;
+                }
             }
         }
 
@@ -619,8 +668,14 @@ namespace ASCOM.Wise40
 
             if (Calibrated)
             {
-                ShortestDistanceResult shortest = instance.Azimuth.ShortestDistance(_homePointAzimuth);
-
+                List<ShortestDistanceResult> results = new List<ShortestDistanceResult>();
+                foreach (var cp in calibrationPoints)
+                    results.Add(instance.Azimuth.ShortestDistance(cp.az));
+                ShortestDistanceResult shortest = new ShortestDistanceResult(new Angle(360.0, Angle.Type.Alt), Const.AxisDirection.None);
+                foreach (var res in results)
+                    if (res.angle < shortest.angle)
+                        shortest = res;
+                
                 switch (shortest.direction) {
                     case Const.AxisDirection.Decreasing: StartMovingCCW(); break ;
                     case Const.AxisDirection.Increasing:  StartMovingCW(); break;
@@ -902,7 +957,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                bool atHome = AtCaliPoint;
+                bool atHome = (CurrentCaliPoint == calibrationPoints[0]);
 
                 tl.LogMessage("Dome: AtHome Get", atHome.ToString());
                 return atHome;

@@ -217,6 +217,7 @@
             this.labelRainRateValue = new System.Windows.Forms.Label();
             this.timerRefreshDisplay = new System.Windows.Forms.Timer(this.components);
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
+            this.annunciatorPlatform = new ASCOM.Controls.Annunciator();
             this.tableLayoutMain.SuspendLayout();
             this.groupBoxFocuser.SuspendLayout();
             this.groupBoxDomeGroup.SuspendLayout();
@@ -1964,11 +1965,12 @@
             // 
             this.annunciatorPanelSafety.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.annunciatorPanelSafety.Controls.Add(this.annunciatorComputerControl);
+            this.annunciatorPanelSafety.Controls.Add(this.annunciatorPlatform);
             this.annunciatorPanelSafety.Controls.Add(this.annunciatorSafeToOpen);
             this.annunciatorPanelSafety.Controls.Add(this.annunciatorSafeToImage);
             this.annunciatorPanelSafety.Location = new System.Drawing.Point(3, 339);
             this.annunciatorPanelSafety.Name = "annunciatorPanelSafety";
-            this.annunciatorPanelSafety.Size = new System.Drawing.Size(165, 82);
+            this.annunciatorPanelSafety.Size = new System.Drawing.Size(165, 98);
             this.annunciatorPanelSafety.TabIndex = 36;
             // 
             // annunciatorComputerControl
@@ -1995,7 +1997,7 @@
             this.annunciatorSafeToOpen.Font = new System.Drawing.Font("Consolas", 10F);
             this.annunciatorSafeToOpen.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorSafeToOpen.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorSafeToOpen.Location = new System.Drawing.Point(3, 23);
+            this.annunciatorSafeToOpen.Location = new System.Drawing.Point(3, 46);
             this.annunciatorSafeToOpen.Mute = false;
             this.annunciatorSafeToOpen.Name = "annunciatorSafeToOpen";
             this.annunciatorSafeToOpen.Size = new System.Drawing.Size(157, 23);
@@ -2011,7 +2013,7 @@
             this.annunciatorSafeToImage.Font = new System.Drawing.Font("Consolas", 10F);
             this.annunciatorSafeToImage.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorSafeToImage.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorSafeToImage.Location = new System.Drawing.Point(3, 46);
+            this.annunciatorSafeToImage.Location = new System.Drawing.Point(3, 69);
             this.annunciatorSafeToImage.Mute = false;
             this.annunciatorSafeToImage.Name = "annunciatorSafeToImage";
             this.annunciatorSafeToImage.Size = new System.Drawing.Size(157, 23);
@@ -2021,9 +2023,9 @@
             // 
             // labelFiller
             // 
-            this.labelFiller.Location = new System.Drawing.Point(3, 424);
+            this.labelFiller.Location = new System.Drawing.Point(3, 440);
             this.labelFiller.Name = "labelFiller";
-            this.labelFiller.Size = new System.Drawing.Size(173, 133);
+            this.labelFiller.Size = new System.Drawing.Size(173, 95);
             this.labelFiller.TabIndex = 39;
             // 
             // annunciatorPanelStatus
@@ -2040,7 +2042,7 @@
             this.annunciatorPanelStatus.Controls.Add(this.annunciatorFilterWheel);
             this.annunciatorPanelStatus.Controls.Add(this.annunciatorFocus);
             this.annunciatorPanelStatus.Controls.Add(this.annunciatorWeather);
-            this.annunciatorPanelStatus.Location = new System.Drawing.Point(10, 560);
+            this.annunciatorPanelStatus.Location = new System.Drawing.Point(10, 538);
             this.annunciatorPanelStatus.Margin = new System.Windows.Forms.Padding(10, 3, 3, 3);
             this.annunciatorPanelStatus.Name = "annunciatorPanelStatus";
             this.annunciatorPanelStatus.Size = new System.Drawing.Size(166, 93);
@@ -2740,6 +2742,22 @@
             this.timerRefreshDisplay.Enabled = true;
             this.timerRefreshDisplay.Tick += new System.EventHandler(this.RefreshDisplay);
             // 
+            // annunciatorPlatform
+            // 
+            this.annunciatorPlatform.ActiveColor = System.Drawing.Color.Green;
+            this.annunciatorPlatform.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
+            this.annunciatorPlatform.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            this.annunciatorPlatform.Font = new System.Drawing.Font("Consolas", 10F);
+            this.annunciatorPlatform.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciatorPlatform.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciatorPlatform.Location = new System.Drawing.Point(3, 23);
+            this.annunciatorPlatform.Mute = false;
+            this.annunciatorPlatform.Name = "annunciatorPlatform";
+            this.annunciatorPlatform.Size = new System.Drawing.Size(157, 23);
+            this.annunciatorPlatform.TabIndex = 3;
+            this.annunciatorPlatform.Text = "Platform";
+            this.annunciatorPlatform.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
             // FormDash
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
@@ -2975,6 +2993,7 @@
         private System.Windows.Forms.ToolStripMenuItem settingsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem filterWheelRefreshToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem manageFilterInventoryToolStripMenuItem;
+        private ASCOM.Controls.Annunciator annunciatorPlatform;
     }
 }
 

@@ -88,7 +88,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ArduinoInterface.cs" />
-    <Compile Include="Crc16Ccitt.cs" />
     <Compile Include="Driver.cs" />
     <Compile Include="Filter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
