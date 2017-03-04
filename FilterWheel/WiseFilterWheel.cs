@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 
@@ -122,27 +123,36 @@ namespace ASCOM.Wise40
             }
         }
 
+        void onCommunicationComplete(object sender, ArduinoInterface.CommunicationCompleteEventArgs e)
+        {
+            string tag = arduino.Tag;
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, string.Format("WiseFilterWheel.onCommunicationComplete: tag: \"{0}\"", tag));
+            #endregion
+            if (tag != null) {
+                currentWheel = lookupWheel(tag);
+                RaiseWheelOrPositionChanged();
+            }
+        }
+
         public void init()
         {
             if (_initialized)
                 return;
-            Simulated = true;   // Force simulated mode at home
 
+            Simulated = false;
             traceLogger.LogMessage("WiseFilterWheel", "Starting initialisation");
             Connected = false;
             ReadProfile();
             if (! Simulated)
                 arduino.init(WiseFilterWheel.port);
+
+            arduino.communicationCompleteHandler += onCommunicationComplete;
             Connected = true;
-            
+            arduino.StartReadingTag();
+
             traceLogger.LogMessage("WiseFilterWheel", "Completed initialisation");
             _initialized = true;
-        }
-
-        public void reInit()
-        {
-            currentWheel = lookupWheel(Simulated ? "SimulatedTag#0" : arduino.getPosition());
-            traceLogger.LogMessage("WiseFilterWheel", "refreshed");
         }
 
         public static void ReadProfile()
@@ -239,8 +249,8 @@ namespace ASCOM.Wise40
                 if (value == arduino.Connected)
                     return;
                 arduino.Connected = value;
-                if (value == true)
-                    currentWheel = lookupWheel(arduino.getPosition());
+                if (value == true)                
+                        currentWheel = Simulated ? wheelSimulated : wheelUnknown;
             }
         }
 
@@ -404,11 +414,21 @@ namespace ASCOM.Wise40
         {
             get
             {
-                short ret = -1;
+                short ret;
+
                 if (!Connected)
                     throw new NotConnectedException("Not connected");
 
+                if (currentWheel.type == WheelType.Simulated)
+                    return currentWheel.position;
+
+                string tag = arduino.Tag;
+                if (tag == null)            // the arduino is busy
+                    return -1;
+                
+                currentWheel = lookupWheel(tag);
                 ret = currentWheel.position;
+                
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "GetCurrentPosition: {0}", ret);
                 #endregion
@@ -450,10 +470,17 @@ namespace ASCOM.Wise40
                     ccw = targetPosition + nPositions - currentWheel.position;
                 }
 
-                if (cw < ccw)
-                    arduino.move(ArduinoInterface.StepperDirection.CW, (nPositions == 4) ? 2 * cw : cw);
-                else
-                    arduino.move(ArduinoInterface.StepperDirection.CCW, (nPositions == 4) ? 2 * ccw : ccw);
+                int slots = (cw < ccw) ? cw : ccw;
+                ArduinoInterface.StepperDirection dir = (cw < ccw) ?
+                    ArduinoInterface.StepperDirection.CW :
+                    ArduinoInterface.StepperDirection.CCW;
+                if (nPositions == 4)
+                    slots *= 2;
+
+                try
+                {
+                    arduino.StartMoving(dir, slots);
+                } catch (Exception ex) { }
             }
         }
         #endregion
@@ -470,7 +497,35 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return Simulated ? "Idle" : arduino.Status;
+                string status =  Simulated ? "Idle" : arduino.Status;
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, string.Format("WiseFilterWheel status: {0}", status));
+                #endregion
+                return status;
+            }
+        }
+        
+        public event EventHandler wheelOrPositionChanged;
+
+        public void RaiseWheelOrPositionChanged()
+        {
+            EventHandler handler = wheelOrPositionChanged;
+
+            if (null != handler)
+            {
+                foreach (EventHandler singleCast in handler.GetInvocationList())
+                {
+                    ISynchronizeInvoke syncInvoke = singleCast.Target as ISynchronizeInvoke;
+                    try
+                    {
+                        if ((null != syncInvoke) && (syncInvoke.InvokeRequired))
+                            syncInvoke.Invoke(singleCast, new object[] { this, EventArgs.Empty });
+                        else
+                            singleCast(this, EventArgs.Empty);
+                    }
+                    catch
+                    { }
+                }
             }
         }
     }

@@ -34,8 +34,13 @@ namespace ASCOM.Wise40
             this.picASCOM = new System.Windows.Forms.PictureBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
-            this.textBoxWheel8RFID0 = new System.Windows.Forms.TextBox();
-            this.textBoxWheel8RFID1 = new System.Windows.Forms.TextBox();
+            this.comboBox87 = new System.Windows.Forms.ComboBox();
+            this.comboBox86 = new System.Windows.Forms.ComboBox();
+            this.comboBox85 = new System.Windows.Forms.ComboBox();
+            this.comboBox84 = new System.Windows.Forms.ComboBox();
+            this.comboBox83 = new System.Windows.Forms.ComboBox();
+            this.comboBox82 = new System.Windows.Forms.ComboBox();
+            this.comboBox81 = new System.Windows.Forms.ComboBox();
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
@@ -45,41 +50,36 @@ namespace ASCOM.Wise40
             this.label10 = new System.Windows.Forms.Label();
             this.label13 = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
-            this.label12 = new System.Windows.Forms.Label();
             this.label9 = new System.Windows.Forms.Label();
+            this.textBoxWheel8RFID0 = new System.Windows.Forms.TextBox();
+            this.textBoxWheel8RFID1 = new System.Windows.Forms.TextBox();
             this.textBoxWheel8RFID2 = new System.Windows.Forms.TextBox();
+            this.label12 = new System.Windows.Forms.Label();
             this.textBoxWheel8RFID3 = new System.Windows.Forms.TextBox();
             this.textBoxWheel8RFID4 = new System.Windows.Forms.TextBox();
+            this.textBoxWheel8RFID6 = new System.Windows.Forms.TextBox();
             this.textBoxWheel8RFID5 = new System.Windows.Forms.TextBox();
             this.textBoxWheel8RFID7 = new System.Windows.Forms.TextBox();
-            this.textBoxWheel8RFID6 = new System.Windows.Forms.TextBox();
+            this.comboBox80 = new System.Windows.Forms.ComboBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
-            this.textBoxWheel4RFID0 = new System.Windows.Forms.TextBox();
-            this.textBoxWheel4RFID1 = new System.Windows.Forms.TextBox();
+            this.comboBox43 = new System.Windows.Forms.ComboBox();
+            this.comboBox42 = new System.Windows.Forms.ComboBox();
+            this.comboBox41 = new System.Windows.Forms.ComboBox();
             this.label14 = new System.Windows.Forms.Label();
             this.label15 = new System.Windows.Forms.Label();
             this.label16 = new System.Windows.Forms.Label();
             this.label17 = new System.Windows.Forms.Label();
             this.label18 = new System.Windows.Forms.Label();
-            this.label24 = new System.Windows.Forms.Label();
             this.label25 = new System.Windows.Forms.Label();
+            this.label24 = new System.Windows.Forms.Label();
+            this.textBoxWheel4RFID0 = new System.Windows.Forms.TextBox();
+            this.textBoxWheel4RFID1 = new System.Windows.Forms.TextBox();
             this.textBoxWheel4RFID2 = new System.Windows.Forms.TextBox();
             this.textBoxWheel4RFID3 = new System.Windows.Forms.TextBox();
+            this.comboBox40 = new System.Windows.Forms.ComboBox();
             this.comboBoxPort = new System.Windows.Forms.ComboBox();
             this.label19 = new System.Windows.Forms.Label();
-            this.comboBox80 = new System.Windows.Forms.ComboBox();
-            this.comboBox81 = new System.Windows.Forms.ComboBox();
-            this.comboBox82 = new System.Windows.Forms.ComboBox();
-            this.comboBox83 = new System.Windows.Forms.ComboBox();
-            this.comboBox84 = new System.Windows.Forms.ComboBox();
-            this.comboBox85 = new System.Windows.Forms.ComboBox();
-            this.comboBox86 = new System.Windows.Forms.ComboBox();
-            this.comboBox87 = new System.Windows.Forms.ComboBox();
-            this.comboBox40 = new System.Windows.Forms.ComboBox();
-            this.comboBox41 = new System.Windows.Forms.ComboBox();
-            this.comboBox42 = new System.Windows.Forms.ComboBox();
-            this.comboBox43 = new System.Windows.Forms.ComboBox();
             this.checkBoxEditableRFIDs = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).BeginInit();
             this.groupBox1.SuspendLayout();
@@ -199,31 +199,68 @@ namespace ASCOM.Wise40
             this.tableLayoutPanel1.Size = new System.Drawing.Size(488, 240);
             this.tableLayoutPanel1.TabIndex = 5;
             // 
-            // textBoxWheel8RFID0
+            // comboBox87
             // 
-            this.textBoxWheel8RFID0.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxWheel8RFID0.BackColor = System.Drawing.SystemColors.Control;
-            this.textBoxWheel8RFID0.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxWheel8RFID0.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.textBoxWheel8RFID0.Location = new System.Drawing.Point(390, 16);
-            this.textBoxWheel8RFID0.Name = "textBoxWheel8RFID0";
-            this.textBoxWheel8RFID0.Size = new System.Drawing.Size(95, 20);
-            this.textBoxWheel8RFID0.TabIndex = 22;
+            this.comboBox87.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.comboBox87.FormattingEnabled = true;
+            this.comboBox87.Location = new System.Drawing.Point(43, 205);
+            this.comboBox87.Name = "comboBox87";
+            this.comboBox87.Size = new System.Drawing.Size(341, 21);
+            this.comboBox87.TabIndex = 57;
             // 
-            // textBoxWheel8RFID1
+            // comboBox86
             // 
-            this.textBoxWheel8RFID1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxWheel8RFID1.BackColor = System.Drawing.SystemColors.Control;
-            this.textBoxWheel8RFID1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxWheel8RFID1.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.textBoxWheel8RFID1.Location = new System.Drawing.Point(390, 43);
-            this.textBoxWheel8RFID1.Name = "textBoxWheel8RFID1";
-            this.textBoxWheel8RFID1.Size = new System.Drawing.Size(95, 20);
-            this.textBoxWheel8RFID1.TabIndex = 17;
+            this.comboBox86.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.comboBox86.FormattingEnabled = true;
+            this.comboBox86.Location = new System.Drawing.Point(43, 178);
+            this.comboBox86.Name = "comboBox86";
+            this.comboBox86.Size = new System.Drawing.Size(341, 21);
+            this.comboBox86.TabIndex = 56;
+            // 
+            // comboBox85
+            // 
+            this.comboBox85.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.comboBox85.FormattingEnabled = true;
+            this.comboBox85.Location = new System.Drawing.Point(43, 151);
+            this.comboBox85.Name = "comboBox85";
+            this.comboBox85.Size = new System.Drawing.Size(341, 21);
+            this.comboBox85.TabIndex = 55;
+            // 
+            // comboBox84
+            // 
+            this.comboBox84.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.comboBox84.FormattingEnabled = true;
+            this.comboBox84.Location = new System.Drawing.Point(43, 124);
+            this.comboBox84.Name = "comboBox84";
+            this.comboBox84.Size = new System.Drawing.Size(341, 21);
+            this.comboBox84.TabIndex = 54;
+            // 
+            // comboBox83
+            // 
+            this.comboBox83.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.comboBox83.FormattingEnabled = true;
+            this.comboBox83.Location = new System.Drawing.Point(43, 97);
+            this.comboBox83.Name = "comboBox83";
+            this.comboBox83.Size = new System.Drawing.Size(341, 21);
+            this.comboBox83.TabIndex = 53;
+            // 
+            // comboBox82
+            // 
+            this.comboBox82.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.comboBox82.FormattingEnabled = true;
+            this.comboBox82.Location = new System.Drawing.Point(43, 70);
+            this.comboBox82.Name = "comboBox82";
+            this.comboBox82.Size = new System.Drawing.Size(341, 21);
+            this.comboBox82.TabIndex = 52;
+            // 
+            // comboBox81
+            // 
+            this.comboBox81.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.comboBox81.FormattingEnabled = true;
+            this.comboBox81.Location = new System.Drawing.Point(43, 43);
+            this.comboBox81.Name = "comboBox81";
+            this.comboBox81.Size = new System.Drawing.Size(341, 21);
+            this.comboBox81.TabIndex = 51;
             // 
             // label2
             // 
@@ -343,19 +380,6 @@ namespace ASCOM.Wise40
             this.label8.Text = "8";
             this.label8.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // label12
-            // 
-            this.label12.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left)));
-            this.label12.AutoSize = true;
-            this.label12.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label12.Location = new System.Drawing.Point(390, 0);
-            this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(36, 13);
-            this.label12.TabIndex = 10;
-            this.label12.Text = "RFID";
-            this.label12.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
             // label9
             // 
             this.label9.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -369,6 +393,32 @@ namespace ASCOM.Wise40
             this.label9.Text = "Filter";
             this.label9.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
+            // textBoxWheel8RFID0
+            // 
+            this.textBoxWheel8RFID0.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBoxWheel8RFID0.BackColor = System.Drawing.SystemColors.Control;
+            this.textBoxWheel8RFID0.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.textBoxWheel8RFID0.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.textBoxWheel8RFID0.Location = new System.Drawing.Point(390, 16);
+            this.textBoxWheel8RFID0.Name = "textBoxWheel8RFID0";
+            this.textBoxWheel8RFID0.Size = new System.Drawing.Size(95, 20);
+            this.textBoxWheel8RFID0.TabIndex = 22;
+            // 
+            // textBoxWheel8RFID1
+            // 
+            this.textBoxWheel8RFID1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBoxWheel8RFID1.BackColor = System.Drawing.SystemColors.Control;
+            this.textBoxWheel8RFID1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.textBoxWheel8RFID1.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.textBoxWheel8RFID1.Location = new System.Drawing.Point(390, 43);
+            this.textBoxWheel8RFID1.Name = "textBoxWheel8RFID1";
+            this.textBoxWheel8RFID1.Size = new System.Drawing.Size(95, 20);
+            this.textBoxWheel8RFID1.TabIndex = 17;
+            // 
             // textBoxWheel8RFID2
             // 
             this.textBoxWheel8RFID2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -381,6 +431,19 @@ namespace ASCOM.Wise40
             this.textBoxWheel8RFID2.Name = "textBoxWheel8RFID2";
             this.textBoxWheel8RFID2.Size = new System.Drawing.Size(95, 20);
             this.textBoxWheel8RFID2.TabIndex = 13;
+            // 
+            // label12
+            // 
+            this.label12.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
+            this.label12.AutoSize = true;
+            this.label12.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label12.Location = new System.Drawing.Point(390, 0);
+            this.label12.Name = "label12";
+            this.label12.Size = new System.Drawing.Size(36, 13);
+            this.label12.TabIndex = 10;
+            this.label12.Text = "RFID";
+            this.label12.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // textBoxWheel8RFID3
             // 
@@ -409,6 +472,19 @@ namespace ASCOM.Wise40
             this.textBoxWheel8RFID4.Size = new System.Drawing.Size(95, 20);
             this.textBoxWheel8RFID4.TabIndex = 18;
             // 
+            // textBoxWheel8RFID6
+            // 
+            this.textBoxWheel8RFID6.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBoxWheel8RFID6.BackColor = System.Drawing.SystemColors.Control;
+            this.textBoxWheel8RFID6.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.textBoxWheel8RFID6.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.textBoxWheel8RFID6.Location = new System.Drawing.Point(390, 178);
+            this.textBoxWheel8RFID6.Name = "textBoxWheel8RFID6";
+            this.textBoxWheel8RFID6.Size = new System.Drawing.Size(95, 20);
+            this.textBoxWheel8RFID6.TabIndex = 20;
+            // 
             // textBoxWheel8RFID5
             // 
             this.textBoxWheel8RFID5.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -435,18 +511,14 @@ namespace ASCOM.Wise40
             this.textBoxWheel8RFID7.Size = new System.Drawing.Size(95, 20);
             this.textBoxWheel8RFID7.TabIndex = 19;
             // 
-            // textBoxWheel8RFID6
+            // comboBox80
             // 
-            this.textBoxWheel8RFID6.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxWheel8RFID6.BackColor = System.Drawing.SystemColors.Control;
-            this.textBoxWheel8RFID6.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxWheel8RFID6.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.textBoxWheel8RFID6.Location = new System.Drawing.Point(390, 178);
-            this.textBoxWheel8RFID6.Name = "textBoxWheel8RFID6";
-            this.textBoxWheel8RFID6.Size = new System.Drawing.Size(95, 20);
-            this.textBoxWheel8RFID6.TabIndex = 20;
+            this.comboBox80.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.comboBox80.FormattingEnabled = true;
+            this.comboBox80.Location = new System.Drawing.Point(43, 16);
+            this.comboBox80.Name = "comboBox80";
+            this.comboBox80.Size = new System.Drawing.Size(341, 21);
+            this.comboBox80.TabIndex = 50;
             // 
             // groupBox2
             // 
@@ -491,31 +563,32 @@ namespace ASCOM.Wise40
             this.tableLayoutPanel2.Size = new System.Drawing.Size(488, 128);
             this.tableLayoutPanel2.TabIndex = 5;
             // 
-            // textBoxWheel4RFID0
+            // comboBox43
             // 
-            this.textBoxWheel4RFID0.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxWheel4RFID0.BackColor = System.Drawing.SystemColors.Control;
-            this.textBoxWheel4RFID0.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxWheel4RFID0.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.textBoxWheel4RFID0.Location = new System.Drawing.Point(390, 16);
-            this.textBoxWheel4RFID0.Name = "textBoxWheel4RFID0";
-            this.textBoxWheel4RFID0.Size = new System.Drawing.Size(95, 20);
-            this.textBoxWheel4RFID0.TabIndex = 22;
+            this.comboBox43.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.comboBox43.FormattingEnabled = true;
+            this.comboBox43.Location = new System.Drawing.Point(43, 97);
+            this.comboBox43.Name = "comboBox43";
+            this.comboBox43.Size = new System.Drawing.Size(341, 21);
+            this.comboBox43.TabIndex = 26;
             // 
-            // textBoxWheel4RFID1
+            // comboBox42
             // 
-            this.textBoxWheel4RFID1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxWheel4RFID1.BackColor = System.Drawing.SystemColors.Control;
-            this.textBoxWheel4RFID1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxWheel4RFID1.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.textBoxWheel4RFID1.Location = new System.Drawing.Point(390, 43);
-            this.textBoxWheel4RFID1.Name = "textBoxWheel4RFID1";
-            this.textBoxWheel4RFID1.Size = new System.Drawing.Size(95, 20);
-            this.textBoxWheel4RFID1.TabIndex = 17;
+            this.comboBox42.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.comboBox42.FormattingEnabled = true;
+            this.comboBox42.Location = new System.Drawing.Point(43, 70);
+            this.comboBox42.Name = "comboBox42";
+            this.comboBox42.Size = new System.Drawing.Size(341, 21);
+            this.comboBox42.TabIndex = 25;
+            // 
+            // comboBox41
+            // 
+            this.comboBox41.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.comboBox41.FormattingEnabled = true;
+            this.comboBox41.Location = new System.Drawing.Point(43, 43);
+            this.comboBox41.Name = "comboBox41";
+            this.comboBox41.Size = new System.Drawing.Size(341, 21);
+            this.comboBox41.TabIndex = 24;
             // 
             // label14
             // 
@@ -583,6 +656,19 @@ namespace ASCOM.Wise40
             this.label18.Text = "4";
             this.label18.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
+            // label25
+            // 
+            this.label25.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
+            this.label25.AutoSize = true;
+            this.label25.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label25.Location = new System.Drawing.Point(43, 0);
+            this.label25.Name = "label25";
+            this.label25.Size = new System.Drawing.Size(35, 13);
+            this.label25.TabIndex = 7;
+            this.label25.Text = "Filter";
+            this.label25.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
             // label24
             // 
             this.label24.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -596,18 +682,31 @@ namespace ASCOM.Wise40
             this.label24.Text = "RFID";
             this.label24.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // label25
+            // textBoxWheel4RFID0
             // 
-            this.label25.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left)));
-            this.label25.AutoSize = true;
-            this.label25.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label25.Location = new System.Drawing.Point(43, 0);
-            this.label25.Name = "label25";
-            this.label25.Size = new System.Drawing.Size(35, 13);
-            this.label25.TabIndex = 7;
-            this.label25.Text = "Filter";
-            this.label25.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.textBoxWheel4RFID0.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBoxWheel4RFID0.BackColor = System.Drawing.SystemColors.Control;
+            this.textBoxWheel4RFID0.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.textBoxWheel4RFID0.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.textBoxWheel4RFID0.Location = new System.Drawing.Point(390, 16);
+            this.textBoxWheel4RFID0.Name = "textBoxWheel4RFID0";
+            this.textBoxWheel4RFID0.Size = new System.Drawing.Size(95, 20);
+            this.textBoxWheel4RFID0.TabIndex = 22;
+            // 
+            // textBoxWheel4RFID1
+            // 
+            this.textBoxWheel4RFID1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBoxWheel4RFID1.BackColor = System.Drawing.SystemColors.Control;
+            this.textBoxWheel4RFID1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.textBoxWheel4RFID1.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.textBoxWheel4RFID1.Location = new System.Drawing.Point(390, 43);
+            this.textBoxWheel4RFID1.Name = "textBoxWheel4RFID1";
+            this.textBoxWheel4RFID1.Size = new System.Drawing.Size(95, 20);
+            this.textBoxWheel4RFID1.TabIndex = 17;
             // 
             // textBoxWheel4RFID2
             // 
@@ -636,6 +735,15 @@ namespace ASCOM.Wise40
             this.textBoxWheel4RFID3.Size = new System.Drawing.Size(95, 20);
             this.textBoxWheel4RFID3.TabIndex = 15;
             // 
+            // comboBox40
+            // 
+            this.comboBox40.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.comboBox40.FormattingEnabled = true;
+            this.comboBox40.Location = new System.Drawing.Point(43, 16);
+            this.comboBox40.Name = "comboBox40";
+            this.comboBox40.Size = new System.Drawing.Size(341, 21);
+            this.comboBox40.TabIndex = 23;
+            // 
             // comboBoxPort
             // 
             this.comboBoxPort.FormattingEnabled = true;
@@ -653,114 +761,6 @@ namespace ASCOM.Wise40
             this.label19.TabIndex = 19;
             this.label19.Text = "Arduino Port";
             this.label19.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // comboBox80
-            // 
-            this.comboBox80.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.comboBox80.FormattingEnabled = true;
-            this.comboBox80.Location = new System.Drawing.Point(43, 16);
-            this.comboBox80.Name = "comboBox80";
-            this.comboBox80.Size = new System.Drawing.Size(341, 21);
-            this.comboBox80.TabIndex = 50;
-            // 
-            // comboBox81
-            // 
-            this.comboBox81.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.comboBox81.FormattingEnabled = true;
-            this.comboBox81.Location = new System.Drawing.Point(43, 43);
-            this.comboBox81.Name = "comboBox81";
-            this.comboBox81.Size = new System.Drawing.Size(341, 21);
-            this.comboBox81.TabIndex = 51;
-            // 
-            // comboBox82
-            // 
-            this.comboBox82.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.comboBox82.FormattingEnabled = true;
-            this.comboBox82.Location = new System.Drawing.Point(43, 70);
-            this.comboBox82.Name = "comboBox82";
-            this.comboBox82.Size = new System.Drawing.Size(341, 21);
-            this.comboBox82.TabIndex = 52;
-            // 
-            // comboBox83
-            // 
-            this.comboBox83.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.comboBox83.FormattingEnabled = true;
-            this.comboBox83.Location = new System.Drawing.Point(43, 97);
-            this.comboBox83.Name = "comboBox83";
-            this.comboBox83.Size = new System.Drawing.Size(341, 21);
-            this.comboBox83.TabIndex = 53;
-            // 
-            // comboBox84
-            // 
-            this.comboBox84.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.comboBox84.FormattingEnabled = true;
-            this.comboBox84.Location = new System.Drawing.Point(43, 124);
-            this.comboBox84.Name = "comboBox84";
-            this.comboBox84.Size = new System.Drawing.Size(341, 21);
-            this.comboBox84.TabIndex = 54;
-            // 
-            // comboBox85
-            // 
-            this.comboBox85.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.comboBox85.FormattingEnabled = true;
-            this.comboBox85.Location = new System.Drawing.Point(43, 151);
-            this.comboBox85.Name = "comboBox85";
-            this.comboBox85.Size = new System.Drawing.Size(341, 21);
-            this.comboBox85.TabIndex = 55;
-            // 
-            // comboBox86
-            // 
-            this.comboBox86.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.comboBox86.FormattingEnabled = true;
-            this.comboBox86.Location = new System.Drawing.Point(43, 178);
-            this.comboBox86.Name = "comboBox86";
-            this.comboBox86.Size = new System.Drawing.Size(341, 21);
-            this.comboBox86.TabIndex = 56;
-            // 
-            // comboBox87
-            // 
-            this.comboBox87.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.comboBox87.FormattingEnabled = true;
-            this.comboBox87.Location = new System.Drawing.Point(43, 205);
-            this.comboBox87.Name = "comboBox87";
-            this.comboBox87.Size = new System.Drawing.Size(341, 21);
-            this.comboBox87.TabIndex = 57;
-            // 
-            // comboBox40
-            // 
-            this.comboBox40.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.comboBox40.FormattingEnabled = true;
-            this.comboBox40.Location = new System.Drawing.Point(43, 16);
-            this.comboBox40.Name = "comboBox40";
-            this.comboBox40.Size = new System.Drawing.Size(341, 21);
-            this.comboBox40.TabIndex = 23;
-            // 
-            // comboBox41
-            // 
-            this.comboBox41.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.comboBox41.FormattingEnabled = true;
-            this.comboBox41.Location = new System.Drawing.Point(43, 43);
-            this.comboBox41.Name = "comboBox41";
-            this.comboBox41.Size = new System.Drawing.Size(341, 21);
-            this.comboBox41.TabIndex = 24;
-            // 
-            // comboBox42
-            // 
-            this.comboBox42.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.comboBox42.FormattingEnabled = true;
-            this.comboBox42.Location = new System.Drawing.Point(43, 70);
-            this.comboBox42.Name = "comboBox42";
-            this.comboBox42.Size = new System.Drawing.Size(341, 21);
-            this.comboBox42.TabIndex = 25;
-            // 
-            // comboBox43
-            // 
-            this.comboBox43.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.comboBox43.FormattingEnabled = true;
-            this.comboBox43.Location = new System.Drawing.Point(43, 97);
-            this.comboBox43.Name = "comboBox43";
-            this.comboBox43.Size = new System.Drawing.Size(341, 21);
-            this.comboBox43.TabIndex = 26;
             // 
             // checkBoxEditableRFIDs
             // 

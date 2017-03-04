@@ -78,6 +78,9 @@ namespace ASCOM.Wise40
         public WisePin TrackPin;
         public WiseVirtualMotor NorthMotor, SouthMotor, EastMotor, WestMotor, TrackingMotor;
 
+        private WiseDomePlatform wisedomeplatform = WiseDomePlatform.Instance;
+        private bool _bypassSafety = false;
+
         private bool _atPark;
 
         private double mainMirrorDiam = 1.016;    // 40inch (meters)
@@ -965,6 +968,9 @@ namespace ASCOM.Wise40
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, string.Format("MoveAxis({0}, {1})", Axis, Rate));
             #endregion debug
 
+            if (!wisedomeplatform.IsSafe && !BypassSafety)
+                throw new ASCOM.InvalidOperationException("Dome platform is NOT safe.");
+
             Const.AxisDirection direction = (Rate == Const.rateStopped) ? Const.AxisDirection.None :
                 (Rate < 0.0) ? Const.AxisDirection.Decreasing : Const.AxisDirection.Increasing;
             
@@ -1730,6 +1736,9 @@ namespace ASCOM.Wise40
             if (!wiseComputerControl.IsSafe)
                 throw new InvalidOperationException("Computer control switch is OFF (not safe)");
 
+            if (!wisedomeplatform.IsSafe && !BypassSafety)
+                throw new ASCOM.InvalidOperationException("Dome platform is NOT safe.");
+
             try
             {
                 _slewToCoordinatesSync(ra, dec);
@@ -1769,6 +1778,9 @@ namespace ASCOM.Wise40
 
             if (!wiseComputerControl.IsSafe)
                 throw new InvalidOperationException("Computer control switch is OFF (not safe)");
+
+            if (!wisedomeplatform.IsSafe && !BypassSafety)
+                throw new ASCOM.InvalidOperationException("Dome platform is NOT safe.");
 
             try
             {
@@ -2521,5 +2533,19 @@ namespace ASCOM.Wise40
                 return ret;
             }
         }
+
+        public bool BypassSafety
+        {
+            get
+            {
+                return _bypassSafety;
+            }
+
+            set
+            {
+                _bypassSafety = value;
+            }
+        }
+
     }
 }

@@ -204,10 +204,21 @@ namespace Restore_ASCOM_Profiles
 
                 driverProfile.WriteValue(driverID, "Port", "COM5");
 
-                driverProfile.WriteValue(driverID, "RFID", "7F000817F7", "Wheel4/Position1");
-                driverProfile.WriteValue(driverID, "Filter Name", "R", "Wheel4/Position1");
-
                 driverProfile.WriteValue(driverID, "RFID", "7F0007F75E", "Wheel8/Position1");
+                driverProfile.WriteValue(driverID, "RFID", "7F000817F7", "Wheel8/Position2");
+                driverProfile.WriteValue(driverID, "RFID", "7F000AEFC5", "Wheel8/Position3");
+                driverProfile.WriteValue(driverID, "RFID", "7C00563E5A", "Wheel8/Position4");
+                driverProfile.WriteValue(driverID, "RFID", "7F001B2B73", "Wheel8/Position5");
+                driverProfile.WriteValue(driverID, "RFID", "7F000ACAD5", "Wheel8/Position6");
+                driverProfile.WriteValue(driverID, "RFID", "7F001B4A83", "Wheel8/Position7");
+                driverProfile.WriteValue(driverID, "RFID", "7F0007BC0E", "Wheel8/Position8");
+
+                driverProfile.WriteValue(driverID, "RFID", "7F001B4C16", "Wheel4/Position1");
+                driverProfile.WriteValue(driverID, "RFID", "7C0055F4EB", "Wheel4/Position2");
+                driverProfile.WriteValue(driverID, "RFID", "7F0007F75E", "Wheel4/Position3");
+                driverProfile.WriteValue(driverID, "RFID", "7F001B0573", "Wheel4/Position4");
+
+                driverProfile.WriteValue(driverID, "Filter Name", "R", "Wheel4/Position1");
                 driverProfile.WriteValue(driverID, "Filter Name", "B", "Wheel8/Position1");
 
                 driverProfile.WriteValue(driverID, "Name", "R", "Filter0");

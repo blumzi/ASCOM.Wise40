@@ -130,7 +130,6 @@
             this.toolStripMenuItemSafeToOpen = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItemFilterWheel = new System.Windows.Forms.ToolStripMenuItem();
             this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.filterWheelRefreshToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.manageFilterInventoryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem3 = new System.Windows.Forms.ToolStripMenuItem();
             this.resetFocusEncoderToZeroToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -166,6 +165,7 @@
             this.labelComputerControl = new System.Windows.Forms.Label();
             this.annunciatorPanelSafety = new ASCOM.Controls.AnnunciatorPanel();
             this.annunciatorComputerControl = new ASCOM.Controls.Annunciator();
+            this.annunciatorDomePlatform = new ASCOM.Controls.Annunciator();
             this.annunciatorSafeToOpen = new ASCOM.Controls.Annunciator();
             this.annunciatorSafeToImage = new ASCOM.Controls.Annunciator();
             this.labelFiller = new System.Windows.Forms.Label();
@@ -217,7 +217,6 @@
             this.labelRainRateValue = new System.Windows.Forms.Label();
             this.timerRefreshDisplay = new System.Windows.Forms.Timer(this.components);
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
-            this.annunciatorPlatform = new ASCOM.Controls.Annunciator();
             this.tableLayoutMain.SuspendLayout();
             this.groupBoxFocuser.SuspendLayout();
             this.groupBoxDomeGroup.SuspendLayout();
@@ -302,7 +301,7 @@
             "100",
             "150",
             "200"});
-            this.comboBoxFocusStep.Location = new System.Drawing.Point(56, 118);
+            this.comboBoxFocusStep.Location = new System.Drawing.Point(48, 118);
             this.comboBoxFocusStep.Margin = new System.Windows.Forms.Padding(0);
             this.comboBoxFocusStep.Name = "comboBoxFocusStep";
             this.comboBoxFocusStep.Size = new System.Drawing.Size(72, 21);
@@ -318,7 +317,7 @@
             this.buttonFocusIncrease.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonFocusIncrease.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonFocusIncrease.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonFocusIncrease.Location = new System.Drawing.Point(134, 117);
+            this.buttonFocusIncrease.Location = new System.Drawing.Point(126, 117);
             this.buttonFocusIncrease.Name = "buttonFocusIncrease";
             this.buttonFocusIncrease.Size = new System.Drawing.Size(24, 23);
             this.buttonFocusIncrease.TabIndex = 32;
@@ -335,7 +334,7 @@
             this.buttonFocusDecrease.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonFocusDecrease.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonFocusDecrease.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonFocusDecrease.Location = new System.Drawing.Point(30, 117);
+            this.buttonFocusDecrease.Location = new System.Drawing.Point(22, 117);
             this.buttonFocusDecrease.Name = "buttonFocusDecrease";
             this.buttonFocusDecrease.Size = new System.Drawing.Size(21, 23);
             this.buttonFocusDecrease.TabIndex = 31;
@@ -362,7 +361,7 @@
             this.buttonFocusGoto.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonFocusGoto.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonFocusGoto.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonFocusGoto.Location = new System.Drawing.Point(30, 87);
+            this.buttonFocusGoto.Location = new System.Drawing.Point(22, 87);
             this.buttonFocusGoto.Name = "buttonFocusGoto";
             this.buttonFocusGoto.Size = new System.Drawing.Size(52, 23);
             this.buttonFocusGoto.TabIndex = 21;
@@ -389,7 +388,7 @@
             this.textBoxFocusGotoPosition.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.textBoxFocusGotoPosition.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.textBoxFocusGotoPosition.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxFocusGotoPosition.Location = new System.Drawing.Point(86, 88);
+            this.textBoxFocusGotoPosition.Location = new System.Drawing.Point(78, 88);
             this.textBoxFocusGotoPosition.Name = "textBoxFocusGotoPosition";
             this.textBoxFocusGotoPosition.Size = new System.Drawing.Size(71, 21);
             this.textBoxFocusGotoPosition.TabIndex = 22;
@@ -430,9 +429,9 @@
             this.buttonFocuserStop.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonFocuserStop.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonFocuserStop.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonFocuserStop.Location = new System.Drawing.Point(240, 87);
+            this.buttonFocuserStop.Location = new System.Drawing.Point(245, 87);
             this.buttonFocuserStop.Name = "buttonFocuserStop";
-            this.buttonFocuserStop.Size = new System.Drawing.Size(51, 52);
+            this.buttonFocuserStop.Size = new System.Drawing.Size(59, 52);
             this.buttonFocuserStop.TabIndex = 28;
             this.buttonFocuserStop.Text = "Stop";
             this.buttonFocuserStop.UseVisualStyleBackColor = false;
@@ -1640,7 +1639,6 @@
             // 
             this.toolStripMenuItemFilterWheel.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.settingsToolStripMenuItem,
-            this.filterWheelRefreshToolStripMenuItem,
             this.manageFilterInventoryToolStripMenuItem});
             this.toolStripMenuItemFilterWheel.Name = "toolStripMenuItemFilterWheel";
             this.toolStripMenuItemFilterWheel.Size = new System.Drawing.Size(158, 22);
@@ -1653,13 +1651,6 @@
             this.settingsToolStripMenuItem.Size = new System.Drawing.Size(206, 22);
             this.settingsToolStripMenuItem.Text = "Settings";
             this.settingsToolStripMenuItem.Click += new System.EventHandler(this.toolStripMenuItemFilterWheel_Click);
-            // 
-            // filterWheelRefreshToolStripMenuItem
-            // 
-            this.filterWheelRefreshToolStripMenuItem.Name = "filterWheelRefreshToolStripMenuItem";
-            this.filterWheelRefreshToolStripMenuItem.Size = new System.Drawing.Size(206, 22);
-            this.filterWheelRefreshToolStripMenuItem.Text = "Wheel was changed";
-            this.filterWheelRefreshToolStripMenuItem.Click += new System.EventHandler(this.filterWheelRefreshToolStripMenuItem_Click);
             // 
             // manageFilterInventoryToolStripMenuItem
             // 
@@ -1965,7 +1956,7 @@
             // 
             this.annunciatorPanelSafety.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.annunciatorPanelSafety.Controls.Add(this.annunciatorComputerControl);
-            this.annunciatorPanelSafety.Controls.Add(this.annunciatorPlatform);
+            this.annunciatorPanelSafety.Controls.Add(this.annunciatorDomePlatform);
             this.annunciatorPanelSafety.Controls.Add(this.annunciatorSafeToOpen);
             this.annunciatorPanelSafety.Controls.Add(this.annunciatorSafeToImage);
             this.annunciatorPanelSafety.Location = new System.Drawing.Point(3, 339);
@@ -1988,6 +1979,22 @@
             this.annunciatorComputerControl.TabIndex = 0;
             this.annunciatorComputerControl.Text = "Computer Control";
             this.annunciatorComputerControl.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // annunciatorDomePlatform
+            // 
+            this.annunciatorDomePlatform.ActiveColor = System.Drawing.Color.Green;
+            this.annunciatorDomePlatform.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
+            this.annunciatorDomePlatform.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            this.annunciatorDomePlatform.Font = new System.Drawing.Font("Consolas", 10F);
+            this.annunciatorDomePlatform.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciatorDomePlatform.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciatorDomePlatform.Location = new System.Drawing.Point(3, 23);
+            this.annunciatorDomePlatform.Mute = false;
+            this.annunciatorDomePlatform.Name = "annunciatorDomePlatform";
+            this.annunciatorDomePlatform.Size = new System.Drawing.Size(157, 23);
+            this.annunciatorDomePlatform.TabIndex = 3;
+            this.annunciatorDomePlatform.Text = "Platform Down";
+            this.annunciatorDomePlatform.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // annunciatorSafeToOpen
             // 
@@ -2256,7 +2263,7 @@
             this.labelFilterWheelPosition.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.labelFilterWheelPosition.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F);
             this.labelFilterWheelPosition.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelFilterWheelPosition.Location = new System.Drawing.Point(120, 56);
+            this.labelFilterWheelPosition.Location = new System.Drawing.Point(120, 72);
             this.labelFilterWheelPosition.Name = "labelFilterWheelPosition";
             this.labelFilterWheelPosition.Size = new System.Drawing.Size(72, 18);
             this.labelFilterWheelPosition.TabIndex = 43;
@@ -2269,7 +2276,7 @@
             this.labelFilterWheelName.AutoSize = true;
             this.labelFilterWheelName.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F);
             this.labelFilterWheelName.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelFilterWheelName.Location = new System.Drawing.Point(120, 32);
+            this.labelFilterWheelName.Location = new System.Drawing.Point(120, 48);
             this.labelFilterWheelName.Name = "labelFilterWheelName";
             this.labelFilterWheelName.Size = new System.Drawing.Size(20, 18);
             this.labelFilterWheelName.TabIndex = 42;
@@ -2283,7 +2290,7 @@
             this.label4.AutoSize = true;
             this.label4.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))));
             this.label4.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label4.Location = new System.Drawing.Point(8, 56);
+            this.label4.Location = new System.Drawing.Point(8, 72);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(81, 18);
             this.label4.TabIndex = 41;
@@ -2297,7 +2304,7 @@
             this.label7.AutoSize = true;
             this.label7.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))));
             this.label7.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label7.Location = new System.Drawing.Point(26, 32);
+            this.label7.Location = new System.Drawing.Point(26, 48);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(63, 18);
             this.label7.TabIndex = 40;
@@ -2313,7 +2320,7 @@
             this.comboBoxFilterWheelPositions.Location = new System.Drawing.Point(88, 112);
             this.comboBoxFilterWheelPositions.Margin = new System.Windows.Forms.Padding(0);
             this.comboBoxFilterWheelPositions.Name = "comboBoxFilterWheelPositions";
-            this.comboBoxFilterWheelPositions.Size = new System.Drawing.Size(224, 21);
+            this.comboBoxFilterWheelPositions.Size = new System.Drawing.Size(216, 21);
             this.comboBoxFilterWheelPositions.TabIndex = 37;
             this.comboBoxFilterWheelPositions.Text = "??";
             this.toolTip.SetToolTip(this.comboBoxFilterWheelPositions, "Select a filter and press GO.");
@@ -2742,22 +2749,6 @@
             this.timerRefreshDisplay.Enabled = true;
             this.timerRefreshDisplay.Tick += new System.EventHandler(this.RefreshDisplay);
             // 
-            // annunciatorPlatform
-            // 
-            this.annunciatorPlatform.ActiveColor = System.Drawing.Color.Green;
-            this.annunciatorPlatform.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.annunciatorPlatform.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
-            this.annunciatorPlatform.Font = new System.Drawing.Font("Consolas", 10F);
-            this.annunciatorPlatform.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorPlatform.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorPlatform.Location = new System.Drawing.Point(3, 23);
-            this.annunciatorPlatform.Mute = false;
-            this.annunciatorPlatform.Name = "annunciatorPlatform";
-            this.annunciatorPlatform.Size = new System.Drawing.Size(157, 23);
-            this.annunciatorPlatform.TabIndex = 3;
-            this.annunciatorPlatform.Text = "Platform";
-            this.annunciatorPlatform.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
             // FormDash
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
@@ -2991,9 +2982,8 @@
         private System.Windows.Forms.ComboBox comboBoxFilterWheelPositions;
         private System.Windows.Forms.Button buttonFilterWheelGo;
         private System.Windows.Forms.ToolStripMenuItem settingsToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem filterWheelRefreshToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem manageFilterInventoryToolStripMenuItem;
-        private ASCOM.Controls.Annunciator annunciatorPlatform;
+        private ASCOM.Controls.Annunciator annunciatorDomePlatform;
     }
 }
 

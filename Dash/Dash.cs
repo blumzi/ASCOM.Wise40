@@ -28,6 +28,7 @@ namespace Dash
         public WiseSafeToOperate wisesafetoopen = WiseSafeToOperate.Instance(WiseSafeToOperate.Operation.Open);
         public ObservingConditions boltwood = new ASCOM.DriverAccess.ObservingConditions("ASCOM.CloudSensor.ObservingConditions");
         public WiseFilterWheel wisefilterwheel = WiseFilterWheel.Instance;
+        public WiseDomePlatform wisedomeplatform = WiseDomePlatform.Instance;
 
         DomeSlaveDriver domeSlaveDriver = DomeSlaveDriver.Instance;
         DebuggingForm debuggingForm = new DebuggingForm();
@@ -42,6 +43,14 @@ namespace Dash
 
         private List<ToolStripMenuItem> debugMenuItems;
         private Dictionary<object, string> alteredItems = new Dictionary<object, string>();
+
+        void onWheelOrPositionChanged(object sender, EventArgs e)
+        {
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Dash.onWheelOrFilterChanged");
+            #endregion
+            LoadFilterWheelInformation();
+        }
 
         #region Initialization
         public FormDash()
@@ -59,6 +68,7 @@ namespace Dash
             boltwood.Connected = true;
             wisefilterwheel.init();
             wisefilterwheel.Connected = true;
+            wisedomeplatform.init();
 
             InitializeComponent();
 
@@ -151,7 +161,7 @@ namespace Dash
             buttonFocusAllUp.Text = "\u21c8  " + wisefocuser.UpperLimit.ToString();
             buttonFocusAllDown.Text = wisefocuser.LowerLimit.ToString() + "  \u21ca";
 
-            LoadFilterWheelInformation();
+            wisefilterwheel.wheelOrPositionChanged += onWheelOrPositionChanged;
         }
         #endregion
 
@@ -233,6 +243,7 @@ namespace Dash
             #endregion
 
             #region RefreshSafety
+            #region ComputerControl
             string tip;
             if (wisesite.computerControl == null)
             {
@@ -250,7 +261,30 @@ namespace Dash
                 tip = "Computer control switch is OFF!";
             }
             toolTip.SetToolTip(annunciatorComputerControl, tip);
-
+            #endregion
+            #region DomePlatform
+            tip = null;
+            if (_bypassSafety)
+            {
+                annunciatorDomePlatform.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+                tip = "Safety is bypassed (from Settings)";
+            }
+            else
+            {
+                if (wisedomeplatform.IsSafe)
+                {
+                    annunciatorDomePlatform.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+                    tip = "Dome platform is down.";
+                }
+                else
+                {
+                    annunciatorDomePlatform.Cadence = ASCOM.Controls.CadencePattern.BlinkSlow;
+                    tip = "Dome platform is NOT down";
+                }
+            }
+            toolTip.SetToolTip(annunciatorDomePlatform, tip);
+            #endregion
+            #region SafeToOpen
             tip = null;
             if (_bypassSafety)
             {
@@ -272,11 +306,12 @@ namespace Dash
                 else
                 {
                     annunciatorSafeToOpen.Cadence = ASCOM.Controls.CadencePattern.BlinkSlow;
-                    //tip = wisesite.safeToOpen.CommandString("unsafeReasons", false);
+                    tip = wisesite.safeToOpen.CommandString("unsafeReasons", false);
                 }
             }
             toolTip.SetToolTip(annunciatorSafeToOpen, tip);
-
+            #endregion
+            #region SafeToImage
             tip = null;
             if (_bypassSafety)
             {
@@ -298,10 +333,11 @@ namespace Dash
                 else
                 {
                     annunciatorSafeToImage.Cadence = ASCOM.Controls.CadencePattern.BlinkSlow;
-                    //tip = wisesite.safeToImage.CommandString("unsafeReasons", false);
+                    tip = wisesite.safeToImage.CommandString("unsafeReasons", false);
                 }
             }
             toolTip.SetToolTip(annunciatorSafeToImage, tip);
+            #endregion
             #endregion
 
             #region RefreshDome
@@ -404,14 +440,16 @@ namespace Dash
             annunciatorFocus.Cadence = wisefocuser.Status.StartsWith("Moving") ? ASCOM.Controls.CadencePattern.BlinkFast : ASCOM.Controls.CadencePattern.SteadyOff;
             #endregion
 
-            #region RefreshFilterWheel              
-            labelFilterWheelName.Text = string.Format("{0} ({1} filters)", wisefilterwheel.currentWheel.name, wisefilterwheel.currentWheel.positions.Length);
-            labelFilterWheelPosition.Text = (wisefilterwheel.currentWheel.position + 1).ToString();
+            #region RefreshFilterWheel
             string fwstat = wisefilterwheel.Status;
-            annunciatorFilterWheel.Cadence = (fwstat == "Idle") ? ASCOM.Controls.CadencePattern.SteadyOff :
-                (fwstat == "Moving") ? ASCOM.Controls.CadencePattern.BlinkSlow : ASCOM.Controls.CadencePattern.BlinkFast;
-            if (fwstat != "Idle")
+            if (fwstat == "Idle")
+            {
+                annunciatorFilterWheel.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            } else
+            {
+                annunciatorFilterWheel.Cadence = ASCOM.Controls.CadencePattern.BlinkSlow;
                 filterWheelStatus.Show(fwstat);
+            }
             #endregion
         }
         #endregion
@@ -1033,15 +1071,28 @@ namespace Dash
 
         private void LoadFilterWheelInformation()
         {
-            comboBoxFilterWheelPositions.Items.Clear();
-            for (int pos = 0; pos < wisefilterwheel.currentWheel.positions.Length; pos++)
+            WiseFilterWheel.Wheel wheel = WiseFilterWheel.Instance.currentWheel;
+            short position = wheel.position;
+
+            if (position == -1)
             {
-                string filterName = wisefilterwheel.currentWheel.positions[pos].filterName;
+                labelFilterWheelName.Text = "Unknown";
+                labelFilterWheelPosition.Text = "";
+                return;
+            }
+
+            labelFilterWheelName.Text = string.Format("{0} ({1} filters)", wheel.name, wheel.positions.Length);
+            labelFilterWheelPosition.Text = (position + 1).ToString();
+
+            comboBoxFilterWheelPositions.Items.Clear();
+            for (int pos = 0; pos < wheel.positions.Length; pos++)
+            {
+                string filterName = wheel.positions[pos].filterName;
                 string item;
                 if (filterName == string.Empty)
                     item = string.Format("{0} - Clear", pos + 1);
                 else {
-                    if (wisefilterwheel.currentWheel.type == WiseFilterWheel.WheelType.Simulated)
+                    if (wheel.type == WiseFilterWheel.WheelType.Simulated)
                     {
                         item = string.Format("{0} - {1}", pos + 1, filterName);
                     } else {
@@ -1051,12 +1102,11 @@ namespace Dash
                     }
                 }
                 comboBoxFilterWheelPositions.Items.Add(item);
-                if (pos == wisefilterwheel.currentWheel.position)
+                if (pos == position)
                     comboBoxFilterWheelPositions.Text = item;
             }
+
             comboBoxFilterWheelPositions.Invalidate();
-            labelFilterWheelName.Text = wisefilterwheel.currentWheel.name;
-            labelFilterWheelPosition.Text = (wisefilterwheel.currentWheel.position + 1).ToString();
         }
 
         private void UpdateAlteredItems(ToolStripMenuItem item, string title)
@@ -1218,19 +1268,11 @@ namespace Dash
             UpdateAlteredItems(item, string.Format("Focus: {0}", wisefocuser.UpperLimit));
         }
 
-        private void filterWheelRefreshToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            wisefilterwheel.Connected = false;
-            wisefilterwheel.Connected = true;
-            LoadFilterWheelInformation();
-            filterWheelStatus.Show("Reloaded", 1000, Statuser.Severity.Good);
-        }
-
         private void buttonFilterWheelGo_Click(object sender, EventArgs e)
         {
             short targetPosition = (short)comboBoxFilterWheelPositions.SelectedIndex;
 
-            filterWheelStatus.Show(string.Format("Moving to position {0}", targetPosition + 1), 1000, Statuser.Severity.Good);
+            filterWheelStatus.Show(string.Format("Moving to position {0}", targetPosition + 1), 5000, Statuser.Severity.Good);
             wisefilterwheel.Position = targetPosition;
         }
 
@@ -1277,6 +1319,7 @@ namespace Dash
                 safetyOverrideToolStripMenuItem.Text = menuText + Const.checkmark;
                 _bypassSafety = true;
             }
+            wisetele.BypassSafety = _bypassSafety;
         }
 
         public void StopEverything(Exception e = null)
