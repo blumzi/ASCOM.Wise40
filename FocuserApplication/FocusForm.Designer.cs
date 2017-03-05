@@ -156,6 +156,7 @@
             // 
             this.buttonFocuserStop.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonFocuserStop.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonFocuserStop.Enabled = false;
             this.buttonFocuserStop.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonFocuserStop.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonFocuserStop.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
@@ -222,21 +223,19 @@
             // comboBoxFocusStep
             // 
             this.comboBoxFocusStep.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.comboBoxFocusStep.Enabled = false;
             this.comboBoxFocusStep.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.comboBoxFocusStep.FormattingEnabled = true;
             this.comboBoxFocusStep.Items.AddRange(new object[] {
-            "1",
-            "5",
-            "10",
             "50",
             "100",
-            "150",
-            "200"});
+            "200",
+            ""});
             this.comboBoxFocusStep.Location = new System.Drawing.Point(48, 68);
             this.comboBoxFocusStep.Name = "comboBoxFocusStep";
             this.comboBoxFocusStep.Size = new System.Drawing.Size(82, 21);
             this.comboBoxFocusStep.TabIndex = 35;
-            this.comboBoxFocusStep.Text = "5";
+            this.comboBoxFocusStep.Text = "50";
             // 
             // panel1
             // 

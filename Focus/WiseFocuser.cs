@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 
 using System.Collections;
 using System.Globalization;
@@ -37,6 +38,8 @@ namespace ASCOM.Wise40
         
         private uint targetPos;
 
+        private double _startPos, _stopPos, _endPos;
+
         private System.Threading.Timer movementTimer;   // Should be ON only when the focuser is moving
         private int movementTimeout = 50;               // millis between movement monitoring events
 
@@ -70,7 +73,8 @@ namespace ASCOM.Wise40
 
             encoder = new WiseFocuserEnc(true);
             ReadProfile();
-            debugger.init(Debugger.DebugLevel.DebugLogic | Debugger.DebugLevel.DebugEncoders);
+            //debugger.init(Debugger.DebugLevel.DebugLogic | Debugger.DebugLevel.DebugEncoders);
+            debugger.init(Debugger.DebugLevel.DebugLogic);
             traceLogger = new TraceLogger("", "Focuser");
             traceLogger.Enabled = debugger.Tracing;
             hardware.init();
@@ -86,8 +90,8 @@ namespace ASCOM.Wise40
             movementTimer = new System.Threading.Timer(movementTimerCallback);
 
             motionParameters = new Dictionary<Direction, MotionParameter>();
-            motionParameters[Direction.Up] = new MotionParameter() { stoppingDistance = 2 };
-            motionParameters[Direction.Down] = new MotionParameter() { stoppingDistance = 3 };
+            motionParameters[Direction.Up] = new MotionParameter() { stoppingDistance = 100 };
+            motionParameters[Direction.Down] = new MotionParameter() { stoppingDistance = 100 };
 
             _initialized = true;
         }
@@ -247,7 +251,23 @@ namespace ASCOM.Wise40
         {
             pinUp.SetOff();
             pinDown.SetOff();
-            movementTimer.Change(0, 0);
+            movementTimer.Change(Timeout.Infinite, Timeout.Infinite);
+    /*
+            _stopPos = (int)Position;
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Started stopping at {0} ...", _stopPos);
+            #endregion
+            DateTime start = DateTime.Now;
+            while ((DateTime.Now - start).TotalMilliseconds < 1000)
+            {
+                //debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Stopping, now at {0}", Position);
+                Thread.Sleep(50);
+            }
+            _endPos = (double) Position;
+            double travel = Math.Abs(_stopPos - _startPos), stoppingDist = Math.Abs(_endPos - _stopPos);
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "stopping: travel: {0}, stopping distance: {1}, {2}%",
+                travel, stoppingDist, (stoppingDist / travel) * 100);
+    */
             targetPos = 0;
             _status = FocuserStatus.Idle;
         }
@@ -326,6 +346,9 @@ namespace ASCOM.Wise40
 
         public void Move(Direction dir)
         {
+            _startPos = Position;
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Starting Move({0}) at {1}",
+                dir.ToString(), _startPos);
             switch (dir)
             {
                 case Direction.Up:
@@ -501,10 +524,10 @@ namespace ASCOM.Wise40
                 switch (_status)
                 {
                     case FocuserStatus.MovingUp:
-                        ret = "Moving Up";
+                        ret = "Moving Down";
                         break;
                     case FocuserStatus.MovingDown:
-                        ret = "Moving Down";
+                        ret = "Moving Up";
                         break;
                     case FocuserStatus.MovingAllUp:
                         ret = string.Format("Moving All Up to {0}", UpperLimit);
