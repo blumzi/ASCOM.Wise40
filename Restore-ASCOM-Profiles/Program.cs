@@ -12,7 +12,7 @@ namespace Restore_ASCOM_Profiles
 {
     public class Program
     {
-        private static bool realMachine = Environment.MachineName.ToUpper() == "dome-ctlr";
+        private static bool realMachine = Environment.MachineName.ToLower() == "dome-ctlr";
         public enum Mode { LCOGT, ACP, WISE };
         public static Mode mode = Mode.WISE;
 
@@ -202,7 +202,7 @@ namespace Restore_ASCOM_Profiles
             {
                 driverProfile.DeviceType = "FilterWheel";
 
-                driverProfile.WriteValue(driverID, "Port", "COM5");
+                driverProfile.WriteValue(driverID, "Port", realMachine ? "COM6" : "COM5");
 
                 driverProfile.WriteValue(driverID, "RFID", "7F0007F75E", "Wheel8/Position1");
                 driverProfile.WriteValue(driverID, "RFID", "7F000817F7", "Wheel8/Position2");
