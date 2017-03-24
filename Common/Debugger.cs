@@ -168,9 +168,8 @@ namespace ASCOM.Wise40.Common
                 p.DeviceType = deviceType;
                 if (p.IsRegistered(driverID))
                 {
-                    Debugger.DebugLevel defaultDebugLevel = Debugger.DebugLevel.DebugAxes | Debugger.DebugLevel.DebugMotors | Debugger.DebugLevel.DebugExceptions | Debugger.DebugLevel.DebugASCOM | Debugger.DebugLevel.DebugLogic;
-
-                    //_currentLevel = (DebugLevel) Enum.Parse(typeof(DebugLevel), p.GetValue(driverID, "DebugLevel", string.Empty));
+                    //Debugger.DebugLevel defaultDebugLevel = Debugger.DebugLevel.DebugAxes | Debugger.DebugLevel.DebugMotors | Debugger.DebugLevel.DebugExceptions | Debugger.DebugLevel.DebugASCOM | Debugger.DebugLevel.DebugLogic;
+                    
                     _currentLevel = DebugLevel.DebugDefault;
                     _tracing = Convert.ToBoolean(p.GetValue(driverID, "Tracing", string.Empty, "false"));
                 }

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 
 using ASCOM.Wise40.Common;
-using ASCOM.Wise40.Hardware;
+//using ASCOM.Wise40.Hardware;
 using ASCOM.Utilities;
 using System.Collections;
 using System.Globalization;

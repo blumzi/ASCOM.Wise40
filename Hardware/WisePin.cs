@@ -9,15 +9,22 @@ using ASCOM.Wise40.Common;
 
 namespace ASCOM.Wise40.Hardware
 {
-    public class WisePin : WiseObject, IConnectable, IDisposable
+    public class WisePin : WiseObject, IConnectable, IDisposable, IOnOff
     {
         private int bit;
         private WiseDaq daq;
         private DigitalPortDirection dir;
         private bool inverse;
         private bool _connected = false;
+        private Const.Direction _direction = Const.Direction.None;  // Generally speking - does it increase or decrease an encoder value
 
-        public WisePin(string name, WiseBoard brd, DigitalPortType port, int bit, DigitalPortDirection dir, bool inverse = false)
+        public WisePin(string name,
+            WiseBoard brd,
+            DigitalPortType port,
+            int bit,
+            DigitalPortDirection dir,
+            bool inverse = false,
+            Const.Direction direction = Const.Direction.None)
         {
             this.Name = name +
                 "@Board" +
@@ -30,18 +37,11 @@ namespace ASCOM.Wise40.Hardware
             this.dir = dir;
             this.bit = bit;
             this.inverse = inverse;
+            this._direction = direction;
             daq.setDir(dir);
             if (daq.owners != null && daq.owners[bit].owner == null)
                 daq.setOwner(name, bit);
         }
-
-        //public bool Simulated
-        //{
-        //    get
-        //    {
-        //        return daq.wiseBoard.type == WiseBoard.BoardType.Soft;
-        //    }
-        //}
 
         public void SetOn()
         {
@@ -96,6 +96,14 @@ namespace ASCOM.Wise40.Hardware
         {
             SetOff();
             daq.unsetOwner(bit);
+        }
+
+        public Const.Direction Direction
+        {
+            get
+            {
+                return _direction;
+            }
         }
     }
 }

@@ -89,6 +89,14 @@
       <Project>{d49ae541-3d66-4ef4-8a07-69357070718b}</Project>
       <Name>Focuser</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Hardware\Hardware.csproj">
+      <Project>{b3400ce2-9b66-4f0c-97fe-26343382ba7b}</Project>
+      <Name>Hardware</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PIDLibrary\PID.csproj">
+      <Project>{91dd8aab-0e56-4412-b15f-9b3ec510e929}</Project>
+      <Name>PID</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

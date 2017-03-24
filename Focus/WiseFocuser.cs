@@ -38,7 +38,7 @@ namespace ASCOM.Wise40
         
         private uint targetPos;
 
-        private double _startPos, _stopPos, _endPos;
+        private double _startPos; //, _stopPos, _endPos;
 
         private System.Threading.Timer movementTimer;   // Should be ON only when the focuser is moving
         private int movementTimeout = 50;               // millis between movement monitoring events
@@ -53,6 +53,8 @@ namespace ASCOM.Wise40
 
         private static string driverDescription = "ASCOM Wise40 Focuser";
 
+        public TimeProportionedPidController upPID, downPID;
+
         public WiseFocuser() {}
 
         public static WiseFocuser Instance
@@ -61,6 +63,26 @@ namespace ASCOM.Wise40
             {
                 return instance;
             }
+        }
+
+        private ulong readEncoder()
+        {
+            return encoder.Value;
+        }
+
+        private ulong readOutput()
+        {
+            return (ulong) DateTime.Now.Ticks;
+        }
+
+        private void writeOutput(ulong value)
+        {
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "writeOutput: {0}", value);
+        }
+
+        private ulong readSetPoint()
+        {
+            return targetPos;
         }
 
         public void init(bool multiTurn = false)
@@ -80,8 +102,8 @@ namespace ASCOM.Wise40
             hardware.init();
             wisesite.init();
 
-            pinDown = new WisePin("FocusDown", hardware.miscboard, DigitalPortType.FirstPortCH, 0, DigitalPortDirection.DigitalOut);
-            pinUp = new WisePin("FocusUp", hardware.miscboard, DigitalPortType.FirstPortCH, 1, DigitalPortDirection.DigitalOut);
+            pinDown = new WisePin("FocusDown", hardware.miscboard, DigitalPortType.FirstPortCH, 0, DigitalPortDirection.DigitalOut, direction: Const.Direction.Decreasing);
+            pinUp = new WisePin("FocusUp", hardware.miscboard, DigitalPortType.FirstPortCH, 1, DigitalPortDirection.DigitalOut, direction: Const.Direction.Increasing);
             
             connectables.AddRange(new List<IConnectable> { instance.pinUp, instance.pinDown, instance.encoder });
             disposables.AddRange(new List<IDisposable> { instance.pinUp, instance.pinDown, instance.encoder });            
@@ -92,6 +114,33 @@ namespace ASCOM.Wise40
             motionParameters = new Dictionary<Direction, MotionParameter>();
             motionParameters[Direction.Up] = new MotionParameter() { stoppingDistance = 100 };
             motionParameters[Direction.Down] = new MotionParameter() { stoppingDistance = 100 };
+
+            TimeSpan pidSamplingRate = new TimeSpan(0, 0, 0, 100);  // 100 milliseconds
+            upPID = new TimeProportionedPidController(
+                windowSizeMillis: 5000,
+                pin: pinUp,
+                samplingRate: pidSamplingRate,
+                readProcess: readEncoder,
+                readOutput: readOutput,
+                readSetPoint: readSetPoint,
+                writeOutput: writeOutput,
+                proportionalGain: 5,
+                integralGain: 2,
+                derivativeGain: 1
+                );
+
+            downPID = new TimeProportionedPidController(
+                windowSizeMillis: 5000,
+                pin: pinDown,
+                samplingRate: pidSamplingRate,
+                readProcess: readEncoder,
+                readOutput: readOutput,
+                readSetPoint: readSetPoint,
+                writeOutput: writeOutput,
+                proportionalGain: 5,
+                integralGain: 2,
+                derivativeGain: 1
+                );
 
             _initialized = true;
         }
@@ -393,6 +442,7 @@ namespace ASCOM.Wise40
                 return;
 
             targetPos = pos;
+            /*
             if (targetPos > currentPos)
             {
                 _status = FocuserStatus.MovingUp;     
@@ -405,6 +455,22 @@ namespace ASCOM.Wise40
             }
             
             movementTimer.Change(movementTimeout, movementTimeout);
+            */
+            if (targetPos > currentPos)
+            {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseFocuser: Starting upPID");
+                #endregion
+                upPID.MoveTo(targetPos);
+            }
+            else
+            {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseFocuser: Starting downPID");
+                #endregion
+                downPID.MoveTo(targetPos);
+            }
+
         }
 
         /// <summary>
