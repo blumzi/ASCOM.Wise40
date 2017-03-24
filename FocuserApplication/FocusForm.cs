@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Windows.Forms;
+using System.Collections.Generic;
 
 using ASCOM.Wise40;
 using ASCOM.Wise40.Common;
+using ASCOM.Wise40.Hardware;
+using PID;
 
 namespace FocuserApplication
 {
@@ -18,6 +21,10 @@ namespace FocuserApplication
             wisefocuser.Connected = true;
             focuserStatus = new Statuser(labelStatus);
             timerRefresh.Enabled = true;
+
+            textBoxPID_P.Text = wisefocuser.upPID.ProportionalGain.ToString();
+            textBoxPID_I.Text = wisefocuser.upPID.IntegralGain.ToString();
+            textBoxPID_D.Text = wisefocuser.upPID.DerivativeGain.ToString();
         }
 
         private void timerRefresh_Tick(object sender, EventArgs e)
@@ -115,5 +122,15 @@ namespace FocuserApplication
                 wisefocuser.Move(WiseFocuser.Direction.AllDown);
         }
         #endregion
+
+        private void buttonSetPID_Click(object sender, EventArgs e)
+        {
+            foreach (var pid in new List<TimeProportionedPidController>() { wisefocuser.upPID, wisefocuser.downPID })
+            {
+                pid.ProportionalGain = (float)Convert.ToDouble(textBoxPID_P.Text);
+                pid.IntegralGain = (float)Convert.ToDouble(textBoxPID_I.Text);
+                pid.DerivativeGain = (float)Convert.ToDouble(textBoxPID_D.Text);
+            }
+        }
     }
 }

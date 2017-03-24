@@ -37,6 +37,16 @@ namespace ASCOM.Wise40
         //  The upper and lower limits are maintained via software.  They have default natural values but these are overriden by values in the 
         //  focuser's ASCOM profile.
         //
+        //
+        // 7 Mar 2017 -  Arie Blumenzweig
+        //
+        //  NOTES:
+        //    - We found that the new encoder increases/decreases in the oposite direction compared to the old one.
+        //      The encoder has a pin that, when strapped to 5V, inverses the counting direction. We may do that in
+        //       the future, till then we reverse the counter in software (with reversedDirection = true)
+        //
+        private static readonly bool reversedDirection = true;          // The encoder value decreases when focusing up
+
         private static readonly int posBits = 12;
         private static readonly int turnBits = 4;
 
@@ -116,6 +126,9 @@ namespace ASCOM.Wise40
                 }
 
                 ret = (turns * maxPos) + pos;
+                if (reversedDirection)
+                    ret = maxPos - ret;
+
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "FocusEnc get: pos: {0}, turn: {1} => {2}", pos, turns, ret);
                 #endregion

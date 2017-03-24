@@ -86,6 +86,7 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
+    <Compile Include="TimeProportionedPidController.cs" />
     <Compile Include="WiseBitOwner.cs" />
     <Compile Include="WiseBoard.cs" />
     <Compile Include="WiseDaq.cs" />
@@ -105,6 +106,12 @@
   <ItemGroup>
     <Folder Include="BuildingBlocks\" />
     <Folder Include="Measurement Computing\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PIDLibrary\PID.csproj">
+      <Project>{91dd8aab-0e56-4412-b15f-9b3ec510e929}</Project>
+      <Name>PID</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
