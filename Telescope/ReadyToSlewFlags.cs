@@ -57,13 +57,13 @@ namespace ASCOM.Wise40
             return (int)ret;
         }
 
-        public bool AxesAreReady(double rate)
+        public bool BothAxesAreReady(double rate)
         {
             int nReady = Get(rate);
             bool ret = nReady == 2;
 
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "AxesAreReady: at {0} ({1}) => {2}",
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "BothAxesAreReady: at {0} ({1}) => {2}",
                 WiseTele.RateName(rate), nReady, ret);
             #endregion
             return ret;
