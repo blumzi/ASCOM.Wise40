@@ -11,6 +11,8 @@ using ASCOM.Wise40.Common;
 using ASCOM.Utilities;
 using MccDaq;
 
+using PID;
+
 namespace ASCOM.Wise40
 {
     public class WiseFocuser : WiseObject, IDisposable, IConnectable
@@ -77,7 +79,7 @@ namespace ASCOM.Wise40
 
         private void writeOutput(ulong value)
         {
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "writeOutput: {0}", value);
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseFocuser: writeOutput: {0}", value);
         }
 
         private ulong readSetPoint()
@@ -117,6 +119,7 @@ namespace ASCOM.Wise40
 
             TimeSpan pidSamplingRate = new TimeSpan(0, 0, 0, 100);  // 100 milliseconds
             upPID = new TimeProportionedPidController(
+                name: "focusUpPID",
                 windowSizeMillis: 5000,
                 pin: pinUp,
                 samplingRate: pidSamplingRate,
@@ -130,6 +133,7 @@ namespace ASCOM.Wise40
                 );
 
             downPID = new TimeProportionedPidController(
+                name: "focusDownPID",
                 windowSizeMillis: 5000,
                 pin: pinDown,
                 samplingRate: pidSamplingRate,
@@ -266,7 +270,7 @@ namespace ASCOM.Wise40
             {
                 uint pos = encoder.Value;
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "Focuser: position: {0}", pos);
+                debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "WiseFocuser: position: {0}", pos);
                 #endregion
                 return pos;
             }
@@ -329,7 +333,7 @@ namespace ASCOM.Wise40
             if (!Connected)
                 throw new NotConnectedException("");
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Focuser: Halt");
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseFocuser: Halt");
             #endregion
             Stop();
         }
@@ -396,7 +400,7 @@ namespace ASCOM.Wise40
         public void Move(Direction dir)
         {
             _startPos = Position;
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Starting Move({0}) at {1}",
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseFocuser: Starting Move({0}) at {1}",
                 dir.ToString(), _startPos);
             switch (dir)
             {

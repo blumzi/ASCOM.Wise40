@@ -66,12 +66,12 @@ namespace FocuserApplication
 
         private void buttonFocusUp_MouseDown(object sender, MouseEventArgs e)
         {
-            wisefocuser.Move(WiseFocuser.Direction.Down);
+            wisefocuser.Move(WiseFocuser.Direction.Up);
         }
 
         private void buttonFocusDown_MouseDown(object sender, MouseEventArgs e)
         {
-            wisefocuser.Move(WiseFocuser.Direction.Up);
+            wisefocuser.Move(WiseFocuser.Direction.Down);
         }
 
         private void buttonFocusStop(object sender, MouseEventArgs e)
