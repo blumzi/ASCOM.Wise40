@@ -140,16 +140,18 @@ namespace ASCOM.Wise40
             if (_initialized)
                 return;
 
-            Simulated = false;
+            Simulated = true;   // Force
             traceLogger.LogMessage("WiseFilterWheel", "Starting initialisation");
             Connected = false;
             ReadProfile();
-            if (! Simulated)
+            if (!Simulated)
+            {
                 arduino.init(WiseFilterWheel.port);
 
-            arduino.communicationCompleteHandler += onCommunicationComplete;
+                arduino.communicationCompleteHandler += onCommunicationComplete;
+                arduino.StartReadingTag();
+            }
             Connected = true;
-            arduino.StartReadingTag();
 
             traceLogger.LogMessage("WiseFilterWheel", "Completed initialisation");
             _initialized = true;
