@@ -137,6 +137,8 @@ namespace Restore_ASCOM_Profiles
             string traceStateProfileName = "Tracing";
             string debugLevelProfileName = "DebugLevel";
             string studyMotionProfileName = "StudyMotion";
+            string debugFileProfileName = "DebugFile";
+            string debugFile = (mode == Mode.ACP) ? "c:/temp/Wise40-debug.txt" : string.Empty;
 
             using (Profile driverProfile = new Profile())
             {
@@ -145,6 +147,7 @@ namespace Restore_ASCOM_Profiles
                 driverProfile.WriteValue(driverID, studyMotionProfileName, true.ToString());
                 driverProfile.WriteValue(driverID, enslaveDomeProfileName, mode == Mode.ACP ? false.ToString() : true.ToString());
                 driverProfile.WriteValue(driverID, debugLevelProfileName, "DebugAxes|DebugMotors|DebugExceptions|DebugASCOM|DebugLogic");
+                driverProfile.WriteValue(driverID, debugFileProfileName, debugFile);
             }
         }
 
