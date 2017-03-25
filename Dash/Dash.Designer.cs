@@ -846,7 +846,7 @@
             this.buttonTelescopePark.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.buttonTelescopePark.Location = new System.Drawing.Point(264, 9);
             this.buttonTelescopePark.Name = "buttonTelescopePark";
-            this.buttonTelescopePark.Size = new System.Drawing.Size(64, 32);
+            this.buttonTelescopePark.Size = new System.Drawing.Size(77, 32);
             this.buttonTelescopePark.TabIndex = 29;
             this.buttonTelescopePark.Text = "Park?";
             this.buttonTelescopePark.UseVisualStyleBackColor = false;
