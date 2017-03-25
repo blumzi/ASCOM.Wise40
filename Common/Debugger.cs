@@ -16,6 +16,8 @@ namespace ASCOM.Wise40.Common
         private bool _appendToWindow = false;
         private static bool _initialized = false;
         private static bool _tracing = false;
+        private static string _debugFile = string.Empty;
+        private System.IO.StreamWriter debugStream;
 
         static Debugger()
         {
@@ -71,6 +73,10 @@ namespace ASCOM.Wise40.Common
             indents[(int)DebugLevel.DebugMotors] = ">>>>> ";
             indents[(int)DebugLevel.DebugEncoders] = ">>>>>>";
 
+            if (_debugFile != string.Empty)
+            {
+                debugStream = new System.IO.StreamWriter(_debugFile, true);
+            }
             _initialized = true;
         }
 
@@ -108,7 +114,10 @@ namespace ASCOM.Wise40.Common
                     indents[(int)level] + " " + level.ToString() + ":",
                     msg);
 
-               System.Diagnostics.Debug.WriteLine(line);
+                if (debugStream != null)
+                    debugStream.WriteLine(line);
+
+                System.Diagnostics.Debug.WriteLine(line);
                 if (listBox != null && _appendToWindow)
                 {
                     if (listBox.InvokeRequired)
@@ -168,10 +177,9 @@ namespace ASCOM.Wise40.Common
                 p.DeviceType = deviceType;
                 if (p.IsRegistered(driverID))
                 {
-                    //Debugger.DebugLevel defaultDebugLevel = Debugger.DebugLevel.DebugAxes | Debugger.DebugLevel.DebugMotors | Debugger.DebugLevel.DebugExceptions | Debugger.DebugLevel.DebugASCOM | Debugger.DebugLevel.DebugLogic;
-                    
                     _currentLevel = DebugLevel.DebugDefault;
                     _tracing = Convert.ToBoolean(p.GetValue(driverID, "Tracing", string.Empty, "false"));
+                    _debugFile = p.GetValue(driverID, "DebugFile", string.Empty, string.Empty);
                 }
             }
         }
