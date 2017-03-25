@@ -494,9 +494,9 @@ namespace ASCOM.Wise40
             instance.realMovementParameters[TelescopeAxes.axisPrimary] = new Dictionary<double, MovementParameters>();
             instance.realMovementParameters[TelescopeAxes.axisPrimary][Const.rateSlew] = new MovementParameters()
             {
-                minimalMovement = Angle.FromHours(Angle.Deg2Hours("01:00:00.0")),
+                minimalMovement = Angle.FromHours(1/15),    // 1 degree
                 stopMovement = new Angle("00h16m00.0s"),
-                millisecondsPerDegree = 500.0,      // 2deg/sec
+                millisecondsPerDegree = 500.0,              // 2deg/sec
             };
 
             instance.realMovementParameters[TelescopeAxes.axisPrimary][Const.rateSet] = new MovementParameters()
@@ -770,7 +770,9 @@ namespace ASCOM.Wise40
                 trackingTimer.Change(Timeout.Infinite, Timeout.Infinite);
                 return;
             }
-            DomeSlewer(Angle.FromHours(RightAscension), Angle.FromDegrees(Declination));
+
+            if (_enslaveDome)
+                DomeSlewer(Angle.FromHours(RightAscension), Angle.FromDegrees(Declination));
         }
 
         public bool Tracking
@@ -1305,8 +1307,6 @@ namespace ASCOM.Wise40
 
             Angle ra = wisesite.LocalSiderealTime;
             Angle dec = Angle.FromDegrees(66.0, Angle.Type.Dec);
-            //telescopeSlewingCancellationTokenSource = new CancellationTokenSource();
-            //telescopSlewingCancellationToken = telescopeSlewingCancellationTokenSource.Token;
 
             bool saveEnslaveDome = _enslaveDome;
 
@@ -1351,6 +1351,18 @@ namespace ASCOM.Wise40
 
         private void Slewer(TelescopeAxes axis, Angle targetAngle)
         {
+            Slewers.Type thisSlewer, otherSlewer;
+
+            if (axis == TelescopeAxes.axisPrimary)
+            {
+                thisSlewer = Slewers.Type.Ra;
+                otherSlewer = Slewers.Type.Dec;
+            } else
+            {
+                thisSlewer = Slewers.Type.Dec;
+                otherSlewer = Slewers.Type.Ra;
+            }
+
             instance.currMovement[axis] = new Movement() {
                 rate = Const.rateStopped,
                 direction = Const.AxisDirection.None
@@ -1371,8 +1383,23 @@ namespace ASCOM.Wise40
                 bool done = false;
 
                 readyToSlew.AxisIsReady(axis, rate);
-                while (! readyToSlew.AxesAreReady(rate))
+                DateTime startWaiting = DateTime.Now;
+                while (!readyToSlew.BothAxesAreReady(rate))
                 {
+                    //
+                    // After 30 seconds, start checking that the other slewer is alive before
+                    // waiting for it to be ready.  Just in case the other ask dies.
+                    // 
+                    if (DateTime.Now.Subtract(startWaiting).TotalSeconds > 30 && !slewers.Active(otherSlewer))
+                    {
+                        #region debug
+                        debugger.WriteLine(Debugger.DebugLevel.DebugAxes, string.Format("{0} at {1}: The other slewer is not actie.  Stopping !!!",
+                            cm.taskName, RateName(rate)));
+                        #endregion
+                        Stop();
+                        return;
+                    }
+
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugAxes, string.Format("{0} at {1}: Waiting {2} millis for other axis ...",
                         cm.taskName, RateName(rate), waitForOtherAxisMillis));
@@ -1400,9 +1427,7 @@ namespace ASCOM.Wise40
                 while (!done);
             }
 
-            slewers.Delete(axis == TelescopeAxes.axisPrimary ?
-                Slewers.Type.Ra :
-                Slewers.Type.Dec);
+            slewers.Delete(thisSlewer);
         }
 
         private void StopAxisAndWaitForHalt(TelescopeAxes axis)
@@ -1569,12 +1594,12 @@ namespace ASCOM.Wise40
                         // Not there yet, continue waiting
                         #region debug
                         debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                                "{0} at {1}: at {2} ({10}), moving ==> target: {3}, remaining (Angle: {4}, radians: {5}, direction: {6}), stopMovement: ({7}, {8}), sleeping {9} millis ...",
+                                "{0} at {1}: at {2}, moving ==> target: {3}, remaining (Angle: {4}, direction: {5}), stopMovement: ({6}, {7}), sleeping {8} millis ...",
                                 cm.taskName, RateName(cm.rate), currPosition,
                                 cm.target,
-                                remainingDistance.angle, remainingDistance.angle.Radians, remainingDistance.direction,
+                                remainingDistance.angle, remainingDistance.direction,
                                 mp.stopMovement, mp.stopMovement.Radians,
-                                waitMillis, currPosition.Radians);
+                                waitMillis);
                         #endregion debug
                         telescopeSlewingCancellationToken.ThrowIfCancellationRequested();
                         Thread.Sleep(waitMillis);
