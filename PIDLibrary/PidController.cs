@@ -9,6 +9,7 @@ namespace PID
 {
     public class PidController
     {
+        private string _name;
         protected Func<ulong> _readOutput;
         protected Func<ulong> _readProcess;
         protected Func<ulong> _readSetPoint;
@@ -54,7 +55,7 @@ namespace PID
         ///     Thrown when <see cref="readProcess" /> or <see cref="readOutput" /> or <see cref="writeOutput" /> or
         ///     <see cref="readSetPoint" /> are null.
         /// </exception>
-        public PidController(TimeSpan samplingRate, float outputMinimum, float outputMaximum,
+        public PidController(string name, TimeSpan samplingRate, float outputMinimum, float outputMaximum,
             Func<ulong> readProcess, Func<ulong> readOutput, Action<ulong> writeOutput, Func<ulong> readSetPoint,
             float proportionalGain, float integralGain, float derivativeGain,
             ControllerDirection controllerDirection, ControllerMode controllerMode)
@@ -68,6 +69,7 @@ namespace PID
             if (writeOutput == null)
                 throw new ArgumentNullException(nameof(writeOutput), "Write output must not be null.");
 
+            _name = name;
             SamplingRate = samplingRate;
             SetOutputLimits(outputMinimum, outputMaximum);
             _readProcess = readProcess;
@@ -324,6 +326,14 @@ namespace PID
                 _iTerm = OutputMaximum;
             else if (_iTerm < OutputMinimum)
                 _iTerm = OutputMinimum;
+        }
+
+        public string Name
+        {
+            get
+            {
+                return _name;
+            }
         }
     }
 }
