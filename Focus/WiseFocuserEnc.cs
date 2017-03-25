@@ -59,6 +59,7 @@ namespace ASCOM.Wise40
         private bool _connected = false;
         private bool _multiTurn = false;
         private uint _upperLimit, _lowerLimit;
+        private uint _maxValue;
 
         List<IConnectable> connectables = new List<IConnectable>();
         List<IDisposable> disposables = new List<IDisposable>();
@@ -69,10 +70,11 @@ namespace ASCOM.Wise40
             this._multiTurn = multiTurn;
             if (this._multiTurn)
             {
+                _maxValue = (uint)(1 << (posBits + turnBits)) - 1;
                 pinLatch = new WisePin("FocusLatch", hardware.miscboard, DigitalPortType.FirstPortCH, 3, DigitalPortDirection.DigitalOut);
                 pinZero = new WisePin("FocusZero", hardware.miscboard, DigitalPortType.FirstPortCH, 2, DigitalPortDirection.DigitalOut);
                 base.init("FocusEnc",
-                    1 << (posBits + turnBits),
+                    (int) _maxValue,
                     new List<WiseEncSpec>() {
                         new WiseEncSpec() { brd = hardware.miscboard, port = DigitalPortType.FirstPortA,  mask = 0xff },
                         new WiseEncSpec() { brd = hardware.miscboard, port = DigitalPortType.FirstPortB,  mask = 0xff },
@@ -81,7 +83,8 @@ namespace ASCOM.Wise40
                 connectables.AddRange(new List<IConnectable>() { pinLatch, pinZero });
                 disposables.AddRange(new List<IDisposable>() { pinLatch, pinZero });
 
-                UpperLimit = maxPos * maxTurns; // max value that the hardware can read, disregarding the upper limit switch
+                //UpperLimit = maxPos * maxTurns; // max value that the hardware can read, disregarding the upper limit switch
+                UpperLimit = _maxValue;
                 LowerLimit = 0;
             }
             else
@@ -127,7 +130,7 @@ namespace ASCOM.Wise40
 
                 ret = (turns * maxPos) + pos;
                 if (reversedDirection)
-                    ret = maxPos - ret;
+                    ret = _maxValue - ret;
 
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "FocusEnc get: pos: {0}, turn: {1} => {2}", pos, turns, ret);
