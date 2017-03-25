@@ -196,6 +196,7 @@ namespace Dash
             WiseVirtualMotor primaryMotor = null, secondaryMotor = null;
             double currentRate = Const.rateStopped;
 
+            annunciatorPrimary.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
             if (wisetele.slewers.Active(Slewers.Type.Ra))
             {
                 primaryMotor = null;
@@ -203,16 +204,14 @@ namespace Dash
                     primaryMotor = wisetele.WestMotor;
                 else if (wisetele.EastMotor.isOn)
                     primaryMotor = wisetele.EastMotor;
-
-                if (primaryMotor == null)
-                    annunciatorPrimary.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
-                else
+                if (primaryMotor != null)
                 {
                     annunciatorPrimary.Cadence = ASCOM.Controls.CadencePattern.BlinkFast;
                     currentRate = primaryMotor.currentRate;
-                }               
+                }
             }
 
+            annunciatorSecondary.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
             if (wisetele.slewers.Active(Slewers.Type.Dec))
             {
                 secondaryMotor = null;
@@ -220,16 +219,13 @@ namespace Dash
                     secondaryMotor = wisetele.NorthMotor;
                 else if (wisetele.SouthMotor.isOn)
                     secondaryMotor = wisetele.SouthMotor;
-
-                if (secondaryMotor == null)
-                    annunciatorSecondary.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
-                else
+                if (secondaryMotor != null)
                 {
                     annunciatorSecondary.Cadence = ASCOM.Controls.CadencePattern.BlinkFast;
                     currentRate = secondaryMotor.currentRate;
                 }
             }
-            
+
             annunciatorRateSlew.Cadence = annunciatorRateSet.Cadence = annunciatorRateGuide.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
             if (currentRate == Const.rateSlew)
                 annunciatorRateSlew.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
@@ -962,7 +958,8 @@ namespace Dash
         {
             bool savedEnslaveDome = wisetele._enslaveDome;
             double ra = wisesite.LocalSiderealTime.Hours;
-            double dec = 90.0 - wisesite.Latitude.Degrees;
+            //double dec = 90.0 - wisesite.Latitude.Degrees;
+            double dec = wisesite.Latitude.Degrees;
 
             wisetele._enslaveDome = false;
             wisetele.Tracking = true;
