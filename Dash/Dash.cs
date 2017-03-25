@@ -616,13 +616,16 @@ namespace Dash
                     bool saveTracking = wisetele.Tracking;
                     wisetele.Tracking = true;
                     telescopeStatus.Show("Parking", 0, Statuser.Severity.Good);
-                    wisetele.ParkFromGui();
+                    bool wasSlavingTheDome = wisetele._enslaveDome;
+                    wisetele._enslaveDome = false;
+                    wisetele.ParkFromGui(wasSlavingTheDome);
                     while (wisetele.Slewing)
                     {
                         Application.DoEvents();
                     }
                     wisetele.AtPark = true;
                     wisetele.Tracking = saveTracking;
+                    wisetele._enslaveDome = wasSlavingTheDome;
                     telescopeStatus.Show("");
                 }
             }

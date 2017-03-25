@@ -1294,7 +1294,7 @@ namespace ASCOM.Wise40
             _enslaveDome = saveEnslaveDome;
         }
 
-        public void ParkFromGui()
+        public void ParkFromGui(bool parkDome)
         {
             #region trace
             traceLogger.LogMessage("Park", "");
@@ -1308,15 +1308,9 @@ namespace ASCOM.Wise40
             Angle ra = wisesite.LocalSiderealTime;
             Angle dec = Angle.FromDegrees(66.0, Angle.Type.Dec);
 
-            bool saveEnslaveDome = _enslaveDome;
-
-            if (saveEnslaveDome)
-            {
-                _enslaveDome = false;
+            if (parkDome)
                 DomeParker();
-            }
             SlewToCoordinatesAsync(ra.Hours, dec.Degrees, false);
-            _enslaveDome = saveEnslaveDome;
         }
 
         private void _slewToCoordinatesSync(Angle RightAscension, Angle Declination)
