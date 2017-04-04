@@ -248,13 +248,15 @@ namespace Dash
             }
             else if (wisesite.computerControl.IsSafe)
             {
+                annunciatorComputerControl.Text = "Computer has control";
                 annunciatorComputerControl.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
-                tip = "Computer control is enabled.";
+                tip = "The computer control switch is UP.";
             }
             else
             {
+                annunciatorComputerControl.Text = "No computer control";
                 annunciatorComputerControl.Cadence = ASCOM.Controls.CadencePattern.BlinkSlow;
-                tip = "Computer control switch is OFF!";
+                tip = "The computer control switch is DOWN!";
             }
             toolTip.SetToolTip(annunciatorComputerControl, tip);
             #endregion
@@ -269,11 +271,13 @@ namespace Dash
             {
                 if (wisedomeplatform.IsSafe)
                 {
+                    annunciatorDomePlatform.Text = "Platform Down";
                     annunciatorDomePlatform.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
                     tip = "Dome platform is down.";
                 }
                 else
                 {
+                    annunciatorDomePlatform.Text = "Platform NOT down";
                     annunciatorDomePlatform.Cadence = ASCOM.Controls.CadencePattern.BlinkSlow;
                     tip = "Dome platform is NOT down";
                 }
@@ -296,11 +300,13 @@ namespace Dash
                 }
                 else if (wisesite.safeToOpen.IsSafe)
                 {
+                    annunciatorSafeToOpen.Text = "Safe to open";
                     annunciatorSafeToOpen.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
                     tip = "Conditions are safe to open the dome.";
                 }
                 else
                 {
+                    annunciatorSafeToOpen.Text = "Not safe to open";
                     annunciatorSafeToOpen.Cadence = ASCOM.Controls.CadencePattern.BlinkSlow;
                     tip = wisesite.safeToOpen.CommandString("unsafeReasons", false);
                 }
@@ -323,11 +329,13 @@ namespace Dash
                 }
                 else if (wisesite.safeToImage.IsSafe)
                 {
+                    annunciatorSafeToImage.Text = "Safe to image";
                     annunciatorSafeToImage.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
                     tip = "Conditions are safe to image.";
                 }
                 else
                 {
+                    annunciatorSafeToImage.Text = "Not safe to image";
                     annunciatorSafeToImage.Cadence = ASCOM.Controls.CadencePattern.BlinkSlow;
                     tip = wisesite.safeToImage.CommandString("unsafeReasons", false);
                 }

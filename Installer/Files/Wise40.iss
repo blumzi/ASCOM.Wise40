@@ -38,13 +38,18 @@ Source: "{#SolutionDir}\ClarityII\bin\Debug\ASCOM.ClarityII.ObservingConditions.
 Source: "{#SolutionDir}\Common\bin\Debug\Common.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SolutionDir}\ComputerControl\bin\Debug\MccDaq.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SolutionDir}\ComputerControl\bin\Debug\ASCOM.Wise40.ComputerControl.SafetyMonitor.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#SolutionDir}\DavisVantage\bin\Debug\ASCOM.Vantage.ObservingConditions.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SolutionDir}\DavisVantage\bin\Debug\VantagePro.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SolutionDir}\Dome\bin\Debug\ASCOM.Wise40.Dome.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SolutionDir}\Focus\bin\Debug\ASCOM.Wise40.Focuser.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SolutionDir}\Hardware\bin\Debug\Hardware.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SolutionDir}\PIDLibrary\bin\Debug\PID.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SolutionDir}\Restore-ASCOM-Profiles\bin\Debug\Restore-ASCOM-Profiles.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SolutionDir}\Restore-ASCOM-Profiles\bin\Debug\Restore-ASCOM-Profiles - ACP.lnk"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SolutionDir}\Restore-ASCOM-Profiles\bin\Debug\Restore-ASCOM-Profiles - LCOGT.lnk"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SolutionDir}\Restore-ASCOM-Profiles\bin\Debug\Restore-ASCOM-Profiles - Wise.lnk"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SolutionDir}\SafeToImage\bin\Debug\ASCOM.Wise40.SafeToImage.SafetyMonitor.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SolutionDir}\SafeToOpen\bin\Debug\ASCOM.Wise40.SafeToOpen.SafetyMonitor.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SolutionDir}\FilterWheel\bin\Debug\ASCOM.Wise40.FilterWheel.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SolutionDir}\Telescope\bin\Debug\ASCOM.Wise40.Telescope.dll"; DestDir: "{app}"; Flags: ignoreversion
 
 Source: "{#SolutionDir}\ClarityII\Sample Files\clarityII-data.txt"; DestDir: "{app}"; AfterInstall: CopyToTemp('c:\temp\clarityII-data.txt')
@@ -60,6 +65,7 @@ Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; Fil
 ; [Components]
 ; Name: "Dashboard"; Description: "The Wise40 Dashboard"; Types: full;
 ; Name: "Telescope"; DEscription: "The Wise40 ASCOM Telescope driver"; Types: full;
+; Name: "FilterWeheel"; Description: "The Wise40 ASCOM FilterWheel driver"; Types: full;
 ; Name: "Focuser"; Description: "The Wise40 ASCOM Focuser driver"; Types: full;
 ; Name: "Dome"; Description: "The Wise40 ASCOM Dome driver"; Types: full;
 ; Name: "Computer Control"; Description: "The Wise40 ASCOM ComputerControl SafetyMonitor driver"; Types: full;
