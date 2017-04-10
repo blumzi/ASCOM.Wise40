@@ -13,7 +13,7 @@ namespace Restore_ASCOM_Profiles
     public class Program
     {
         private static bool realMachine = Environment.MachineName.ToLower() == "dome-ctlr";
-        public enum Mode { LCOGT, ACP, WISE };
+        public enum Mode { LCOGT, ACP, WISE, SKIP };
         public static Mode mode = Mode.WISE;
 
         static void Main(string[] args)
@@ -24,6 +24,10 @@ namespace Restore_ASCOM_Profiles
                 if (Enum.TryParse<Mode>(args[0].ToUpper(), out m))
                     mode = m;
             }
+
+            if (mode == Mode.SKIP)
+                Environment.Exit(0);
+
             WriteCloudSensorProfile();
             WriteVantageProProfile();
             WriteSafeToOpenProfile();
@@ -33,7 +37,7 @@ namespace Restore_ASCOM_Profiles
             WriteOCHProfile();
             WriteFilterWheelProfile();
 
-            string message = string.Format("ASCOM Profiles for Wise40 drivers have been restored to mode \"{0}\".", mode.ToString());
+            string message = string.Format("The Wise40 ASCOM Profiles have been initializes to mode \"{0}\".", mode.ToString());
             Console.WriteLine(message);
             MessageBox.Show(message);
 
