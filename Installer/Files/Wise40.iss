@@ -99,7 +99,13 @@ Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40
 Filename: "{dotnet4032}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.Telescope.dll"""; Flags: runhidden 32bit
 Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.Telescope.dll"""; Flags: runhidden 64bit; Check: IsWin64
 
-Filename: "{app}\Restore-ASCOM-Profiles"; Description: "{cm:LaunchProgram,Restore-ASCOM-Profiles}"; Flags:
+Filename: "{dotnet4032}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.FilterWheel.dll"""; Flags: runhidden 32bit
+Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.FilterWheel.dll"""; Flags: runhidden 64bit; Check: IsWin64
+
+Filename: "{dotnet4032}\regasm.exe"; Parameters: "/codebase ""{app}\VantagePro.dll"""; Flags: runhidden 32bit
+Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\VantagePro.dll"""; Flags: runhidden 64bit; Check: IsWin64
+
+Filename: "{app}\Restore-ASCOM-Profiles"; Description: "Initialize ASCOM Profiles according to previous selection."; Parameters: "{code:ProfileType|}"; Flags: postinstall
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,Wise40 Dashboard}"; Flags: nowait postinstall skipifsilent
 
 [UninstallRun]
@@ -146,6 +152,18 @@ Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40
 Filename: "{dotnet4064}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Wise40.Telescope.dll"""; Flags: runhidden 64bit; Check: IsWin64
 
 [CODE]
+  
+//const
+  //WiseDescText = 'Wise Profile'#13'New line';
+  //LCODescText  = 'LCO Profile';
+  //ACPDescText  = 'ACP Profile';
+
+var
+  LCORadioButton: TNewRadioButton;
+  WiseRadioButton: TNewRadioButton;
+  ACPRadioButton: TNewRadioButton;
+  SkipRadioButton: TNewRadioButton;
+
 //
 // Before the installer UI appears, verify that the (prerequisite)
 // ASCOM Platform 6.2 or greater is installed, including both Helper
@@ -205,4 +223,70 @@ begin
 	begin
        FileCopy(ExpandConstant(CurrentFileName), dst, False);
 	end;
+end;
+
+procedure InitializeWizard;
+var
+  CustomPage: TWizardPage;
+  IntroLabel, SkipDescLabel: TLabel;
+begin
+  CustomPage := CreateCustomPage(wpWelcome, 'ASCOM Profile Initialization', '');
+
+  IntroLabel := TLabel.Create(WizardForm);
+  IntroLabel.Parent := CustomPage.Surface;
+  IntroLabel.Caption := 'The ASCOM Profiles for the various drivers must be initialized.'#13#13'Please select the type of control that will be used.'#13'The main difference is what controls the dome.'#13;
+
+  WiseRadioButton := TNewRadioButton.Create(WizardForm);
+  WiseRadioButton.Parent := CustomPage.Surface;
+  WiseRadioButton.Checked := True;
+  WiseRadioButton.Top := IntroLabel.Top + IntroLabel.Height + 2;
+  WiseRadioButton.Width := CustomPage.SurfaceWidth;
+  WiseRadioButton.Font.Style := [fsBold];
+  WiseRadioButton.Font.Size := 9;
+  WiseRadioButton.Caption := 'Wise40 Dashboard'
+
+  LCORadioButton := TNewRadioButton.Create(WizardForm);
+  LCORadioButton.Parent := CustomPage.Surface;
+  LCORadioButton.Top := WiseRadioButton.Top + WiseRadioButton.Height + 2;
+  LCORadioButton.Width := CustomPage.SurfaceWidth;
+  LCORadioButton.Font.Style := [fsBold];
+  LCORadioButton.Font.Size := 9;
+  LCORadioButton.Caption := 'LCO'
+
+  ACPRadioButton := TNewRadioButton.Create(WizardForm);
+  ACPRadioButton.Parent := CustomPage.Surface;
+  ACPRadioButton.Top := LCORadioButton.Top + LCORadioButton.Height + 2;
+  ACPRadioButton.Width := CustomPage.SurfaceWidth;
+  ACPRadioButton.Font.Style := [fsBold];
+  ACPRadioButton.Font.Size := 9;
+  ACPRadioButton.Caption := 'ACP'
+
+  SkipRadioButton := TNewRadioButton.Create(WizardForm);
+  SkipRadioButton.Parent := CustomPage.Surface;
+  SkipRadioButton.Top := ACPRadioButton.Top + ACPRadioButton.Height + 2;
+  SkipRadioButton.Width := CustomPage.SurfaceWidth;
+  SkipRadioButton.Font.Style := [fsBold];
+  SkipRadioButton.Font.Size := 9;
+  SkipRadioButton.Caption := 'Skip'
+  SkipDescLabel := TLabel.Create(WizardForm);
+  SkipDescLabel.Parent := CustomPage.Surface;
+  SkipDescLabel.Left := 20;
+  SkipDescLabel.Top := SkipRadioButton.Top + SkipRadioButton.Height + 2;
+  SkipDescLabel.Width := CustomPage.SurfaceWidth;
+  SkipDescLabel.Height := 40;
+  SkipDescLabel.AutoSize := False;
+  SkipDescLabel.Wordwrap := True;
+  SkipDescLabel.Caption := 'The current ASCOM Profiles, if existent, will not be altered.'#13'NOTE: The Wise40 drivers will not work without initialized profiles!!!';
+end;
+
+function ProfileType(Param: String): String;
+begin
+	if ACPRadioButton.Checked then
+		Result := 'ACP'
+	else if WiseRadioButton.Checked then
+		Result := 'Wise'
+	else if LCORadioButton.Checked then
+		Result := 'LCO'
+	else
+		Result := 'Skip'
 end;
