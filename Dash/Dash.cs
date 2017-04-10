@@ -249,14 +249,14 @@ namespace Dash
             else if (wisesite.computerControl.IsSafe)
             {
                 annunciatorComputerControl.Text = "Computer has control";
-                annunciatorComputerControl.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
-                tip = "The computer control switch is UP.";
+                annunciatorComputerControl.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+                tip = "The computer control switch is ON.";
             }
             else
             {
                 annunciatorComputerControl.Text = "No computer control";
                 annunciatorComputerControl.Cadence = ASCOM.Controls.CadencePattern.BlinkSlow;
-                tip = "The computer control switch is DOWN!";
+                tip = "The computer control switch is OFF!";
             }
             toolTip.SetToolTip(annunciatorComputerControl, tip);
             #endregion
@@ -264,22 +264,22 @@ namespace Dash
             tip = null;
             if (_bypassSafety)
             {
-                annunciatorDomePlatform.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+                annunciatorDomePlatform.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
                 tip = "Safety is bypassed (from Settings)";
             }
             else
             {
                 if (wisedomeplatform.IsSafe)
                 {
-                    annunciatorDomePlatform.Text = "Platform Down";
-                    annunciatorDomePlatform.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
-                    tip = "Dome platform is down.";
+                    annunciatorDomePlatform.Text = "Platform lowered";
+                    annunciatorDomePlatform.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+                    tip = "Dome platform is lowered.";
                 }
                 else
                 {
-                    annunciatorDomePlatform.Text = "Platform NOT down";
+                    annunciatorDomePlatform.Text = "Platform RAISED";
                     annunciatorDomePlatform.Cadence = ASCOM.Controls.CadencePattern.BlinkSlow;
-                    tip = "Dome platform is NOT down";
+                    tip = "Dome platform is RAISED!";
                 }
             }
             toolTip.SetToolTip(annunciatorDomePlatform, tip);
@@ -288,20 +288,22 @@ namespace Dash
             tip = null;
             if (_bypassSafety)
             {
-                annunciatorSafeToOpen.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+                annunciatorSafeToOpen.Text = "Safe to open";
+                annunciatorSafeToOpen.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
                 tip = "Safety is bypassed (from Settings)";
             }
             else
             {
                 if (wisesite.safeToOpen == null)
                 {
+                    annunciatorSafeToOpen.Text = "Safe to open ???";
                     annunciatorSafeToOpen.Cadence = ASCOM.Controls.CadencePattern.BlinkSlow;
                     tip = "Cannot connect to the safeToOpen driver!";
                 }
                 else if (wisesite.safeToOpen.IsSafe)
                 {
                     annunciatorSafeToOpen.Text = "Safe to open";
-                    annunciatorSafeToOpen.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+                    annunciatorSafeToOpen.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
                     tip = "Conditions are safe to open the dome.";
                 }
                 else
@@ -317,20 +319,22 @@ namespace Dash
             tip = null;
             if (_bypassSafety)
             {
-                annunciatorSafeToImage.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+                annunciatorSafeToImage.Text = "Safe to image";
+                annunciatorSafeToImage.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
                 tip = "Safety is bypassed (from Settings)";
             }
             else
             {
                 if (wisesite.safeToImage == null)
                 {
+                    annunciatorSafeToImage.Text = "Safe to image ???";
                     annunciatorSafeToImage.Cadence = ASCOM.Controls.CadencePattern.BlinkSlow;
                     tip = "Cannot connect to the safeToImage driver!";
                 }
                 else if (wisesite.safeToImage.IsSafe)
                 {
                     annunciatorSafeToImage.Text = "Safe to image";
-                    annunciatorSafeToImage.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+                    annunciatorSafeToImage.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
                     tip = "Conditions are safe to image.";
                 }
                 else
