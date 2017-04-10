@@ -1966,7 +1966,7 @@
             // 
             // annunciatorComputerControl
             // 
-            this.annunciatorComputerControl.ActiveColor = System.Drawing.Color.Green;
+            this.annunciatorComputerControl.ActiveColor = System.Drawing.Color.IndianRed;
             this.annunciatorComputerControl.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.annunciatorComputerControl.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
             this.annunciatorComputerControl.Font = new System.Drawing.Font("Consolas", 10F);
@@ -1982,7 +1982,7 @@
             // 
             // annunciatorDomePlatform
             // 
-            this.annunciatorDomePlatform.ActiveColor = System.Drawing.Color.Green;
+            this.annunciatorDomePlatform.ActiveColor = System.Drawing.Color.IndianRed;
             this.annunciatorDomePlatform.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.annunciatorDomePlatform.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
             this.annunciatorDomePlatform.Font = new System.Drawing.Font("Consolas", 10F);
@@ -1998,7 +1998,7 @@
             // 
             // annunciatorSafeToOpen
             // 
-            this.annunciatorSafeToOpen.ActiveColor = System.Drawing.Color.Green;
+            this.annunciatorSafeToOpen.ActiveColor = System.Drawing.Color.IndianRed;
             this.annunciatorSafeToOpen.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.annunciatorSafeToOpen.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
             this.annunciatorSafeToOpen.Font = new System.Drawing.Font("Consolas", 10F);
@@ -2014,7 +2014,7 @@
             // 
             // annunciatorSafeToImage
             // 
-            this.annunciatorSafeToImage.ActiveColor = System.Drawing.Color.Green;
+            this.annunciatorSafeToImage.ActiveColor = System.Drawing.Color.IndianRed;
             this.annunciatorSafeToImage.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.annunciatorSafeToImage.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
             this.annunciatorSafeToImage.Font = new System.Drawing.Font("Consolas", 10F);
