@@ -79,10 +79,8 @@ namespace Dash
                 MessageBoxIcon.Warning,
                 MessageBoxDefaultButton.Button2);
 
-            if (answer == DialogResult.OK)
-                source.RemoveAt(row.Index);
-            dataGridView.DataSource = source;
-            dataGridView.Update();
+            if (answer == DialogResult.Yes)
+                dataGridView.Rows.Remove(row);
         }
 
         private void buttonOK_Click(object sender, EventArgs e)

@@ -189,7 +189,6 @@
             this.Offset.Name = "Offset";
             this.Offset.Resizable = System.Windows.Forms.DataGridViewTriState.False;
             this.Offset.ToolTipText = "Focus offset";
-            this.Offset.Width = 109;
             // 
             // FiltersForm
             // 
