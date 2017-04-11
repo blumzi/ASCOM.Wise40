@@ -1655,8 +1655,8 @@
             // manageFilterInventoryToolStripMenuItem
             // 
             this.manageFilterInventoryToolStripMenuItem.Name = "manageFilterInventoryToolStripMenuItem";
-            this.manageFilterInventoryToolStripMenuItem.Size = new System.Drawing.Size(206, 22);
-            this.manageFilterInventoryToolStripMenuItem.Text = "Manage filter inventory";
+            this.manageFilterInventoryToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
+            this.manageFilterInventoryToolStripMenuItem.Text = "Manage filters";
             this.manageFilterInventoryToolStripMenuItem.Click += new System.EventHandler(this.manageFilterInventoryToolStripMenuItem_Click);
             // 
             // toolStripMenuItem3
