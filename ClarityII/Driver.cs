@@ -46,9 +46,9 @@ using ASCOM.Wise40.Common;
 namespace ASCOM.CloudSensor
 {
     //
-    // Your driver's DeviceID is ASCOM.CloudSensor.ObservingConditions
+    // Your driver's DeviceID is ASCOM.ClarityII.ObservingConditions
     //
-    // The Guid attribute sets the CLSID for ASCOM.CloudSensor.ObservingConditions
+    // The Guid attribute sets the CLSID for ASCOM.ClarityII.ObservingConditions
     // The ClassInterface/None addribute prevents an empty interface called
     // _CloudSensor from being created and used as the [default] interface
     //
@@ -60,17 +60,17 @@ namespace ASCOM.CloudSensor
     [ClassInterface(ClassInterfaceType.None)]
     public class ObservingConditions : IObservingConditions
     {
-        private Version version = new Version(0, 1);
+        private Version version = new Version(0, 2);
         /// <summary>
         /// ASCOM DeviceID (COM ProgID) for this driver.
         /// The DeviceID is used by ASCOM applications to load the driver at runtime.
         /// </summary>
-        internal static string driverID = "ASCOM.CloudSensor.ObservingConditions";
+        internal static string driverID = "ASCOM.ClarityII.ObservingConditions";
         // TODO Change the descriptive string for your driver then remove this line
         /// <summary>
         /// Driver description that displays in the ASCOM Chooser.
         /// </summary>
-        private static string driverDescription = "ASCOM CloudSensor ObservingConditions Driver.";
+        private static string driverDescription = "ASCOM Wise40 CloudSensor.";
 
         internal static string dataFileProfileName = "Data File"; // Constants used for Profile persistence
 

@@ -13,6 +13,7 @@ using ASCOM.DeviceInterface;
 using ASCOM.DriverAccess;
 using ASCOM.Wise40;
 using ASCOM.Wise40.Common;
+using ASCOM.Wise40.Boltwood;
 using ASCOM.Wise40.Hardware;
 using ASCOM.Wise40.SafeToOperate;
 
@@ -25,8 +26,9 @@ namespace Dash
         public WiseFocuser wisefocuser = WiseFocuser.Instance;
         Hardware hardware = Hardware.Instance;
         public WiseSite wisesite = WiseSite.Instance;
-        public WiseSafeToOperate wisesafetoopen = WiseSafeToOperate.Instance(WiseSafeToOperate.Operation.Open);
-        public ObservingConditions boltwood = new ASCOM.DriverAccess.ObservingConditions("ASCOM.CloudSensor.ObservingConditions");
+        public WiseSafeToOperate wisesafetoopen = WiseSafeToOperate.InstanceOpen;
+        //public ObservingConditions boltwood = new ASCOM.DriverAccess.ObservingConditions("ASCOM.ClarityII.ObservingConditions");
+        //public WiseBoltwood wiseboltwood = WiseBoltwood.Instance;
         public WiseFilterWheel wisefilterwheel = WiseFilterWheel.Instance;
         public WiseDomePlatform wisedomeplatform = WiseDomePlatform.Instance;
 
@@ -65,7 +67,7 @@ namespace Dash
             wisefocuser.Connected = true;
             wisesafetoopen.init();
             wisesafetoopen.Connected = true;
-            boltwood.Connected = true;
+            //wiseboltwood.Connected = true;
             wisefilterwheel.init();
             wisefilterwheel.Connected = true;
             wisedomeplatform.init();
@@ -132,7 +134,7 @@ namespace Dash
             using (ASCOM.Utilities.Profile driverProfile = new ASCOM.Utilities.Profile())
             {
                 driverProfile.DeviceType = "ObservingConditions";
-                string dataFile = driverProfile.GetValue("ASCOM.CloudSensor.ObservingConditions", "Data File", string.Empty, string.Empty);
+                string dataFile = driverProfile.GetValue("ASCOM.Wise40.Boltwood.ObservingConditions", "DataFile", string.Empty, string.Empty);
                 tb = toolStripTextBoxCloudSensorDataFile;
 
                 tb.MaxLength = 256;
@@ -147,7 +149,7 @@ namespace Dash
             using (ASCOM.Utilities.Profile driverProfile = new ASCOM.Utilities.Profile())
             {
                 driverProfile.DeviceType = "ObservingConditions";
-                string reportFile = driverProfile.GetValue("ASCOM.Vantage.ObservingConditions", "Report File", string.Empty, string.Empty);
+                string reportFile = driverProfile.GetValue("ASCOM.Wise40.VantagePro.ObservingConditions", "DataFile", string.Empty, string.Empty);
                 tb = toolStripTextBoxVantagePro2ReportFile;
 
                 tb.MaxLength = 256;
@@ -357,7 +359,8 @@ namespace Dash
             #endregion
 
             #region RefreshWeather
-            if (!wisesite.observingConditions.Connected)
+            //if (wisesite.och == null || !wisesite.och.Connected)
+            if (wisesite.vantagePro == null || !wisesite.vantagePro.Connected)
             {
                 string nc = "???";
 
@@ -384,40 +387,52 @@ namespace Dash
             {
                 try
                 {
-                    ObservingConditions oc = wisesite.observingConditions;
+                    //ASCOM.DriverAccess.ObservingConditions oc = wisesite.och;
+                    ASCOM.DriverAccess.ObservingConditions vantagePro = wisesite.vantagePro;
 
                     #region ObservingConditions Informational
-                    labelAgeValue.Text = ((int)Math.Round(oc.TimeSinceLastUpdate(""), 2)).ToString() + "sec";
-                    labelDewPointValue.Text = oc.DewPoint.ToString() + "°C";
-                    labelSkyTempValue.Text = oc.SkyTemperature.ToString() + "°C";
-                    labelTempValue.Text = oc.Temperature.ToString() + "°C";
-                    labelPressureValue.Text = oc.Pressure.ToString() + "mB";
-                    labelWindDirValue.Text = oc.WindDirection.ToString() + "°";
+                    //labelAgeValue.Text = ((int)Math.Round(oc.TimeSinceLastUpdate(""), 2)).ToString() + "sec";
+                    //labelDewPointValue.Text = oc.DewPoint.ToString() + "°C";
+                    //labelSkyTempValue.Text = oc.SkyTemperature.ToString() + "°C";
+                    //labelTempValue.Text = oc.Temperature.ToString() + "°C";
+                    //labelPressureValue.Text = oc.Pressure.ToString() + "mB";
+                    //labelWindDirValue.Text = oc.WindDirection.ToString() + "°";                    labelAgeValue.Text = ((int)Math.Round(oc.TimeSinceLastUpdate(""), 2)).ToString() + "sec";
+                    labelDewPointValue.Text = vantagePro.DewPoint.ToString() + "°C";
+                    labelSkyTempValue.Text = /*oc.SkyTemperature.ToString()*/ "???" + "°C";
+                    labelTempValue.Text = vantagePro.Temperature.ToString() + "°C";
+                    labelPressureValue.Text = vantagePro.Pressure.ToString() + "mB";
+                    labelWindDirValue.Text = vantagePro.WindDirection.ToString() + "°";
                     #endregion
 
                     #region ObservingConditions governed by SafeToOpen
-                    labelHumidityValue.Text = oc.Humidity.ToString() + "%";
+                    //labelHumidityValue.Text = oc.Humidity.ToString() + "%";
+                    labelHumidityValue.Text = vantagePro.Humidity.ToString() + "%";
                     labelHumidityValue.ForeColor = Statuser.TriStateColor(wisesafetoopen.isSafeHumidity);
 
-                    double d = oc.CloudCover;
-                    if (d == 0.0)
-                        labelCloudCoverValue.Text = "Clear";
-                    else if (d == 50.0)
-                        labelCloudCoverValue.Text = "Cloudy";
-                    else if (d == 90.0)
-                        labelCloudCoverValue.Text = "VeryCloudy";
-                    else
-                        labelCloudCoverValue.Text = "Unknown";
-                    labelCloudCoverValue.ForeColor = Statuser.TriStateColor(wisesafetoopen.isSafeCloudCover);
+                    //double d = oc.CloudCover;
+                    //if (d == 0.0)
+                    //    labelCloudCoverValue.Text = "Clear";
+                    //else if (d == 50.0)
+                    //    labelCloudCoverValue.Text = "Cloudy";
+                    //else if (d == 90.0)
+                    //    labelCloudCoverValue.Text = "VeryCloudy";
+                    //else
+                    //    labelCloudCoverValue.Text = "Unknown";
+                    //labelCloudCoverValue.ForeColor = Statuser.TriStateColor(wisesafetoopen.isSafeCloudCover);
+                    labelCloudCoverValue.Text = "Unknown";
+                    labelCloudCoverValue.ForeColor = Statuser.TriStateColor(Const.TriStateStatus.Error);
 
-                    string light = boltwood.CommandString("daylight", true);
+                    //string light = wiseboltwood.CommandString("daylight", true);
+                    string light = "???";
                     labelLightValue.Text = light;
                     labelLightValue.ForeColor = Statuser.TriStateColor(wisesafetoopen.isSafeLight);
 
-                    labelWindSpeedValue.Text = oc.WindSpeed.ToString() + "m/s";
+                    //labelWindSpeedValue.Text = oc.WindSpeed.ToString() + "m/s";
+                    labelWindSpeedValue.Text = vantagePro.WindSpeed.ToString() + "m/s";
                     labelWindSpeedValue.ForeColor = Statuser.TriStateColor(wisesafetoopen.isSafeWindSpeed);
 
-                    labelRainRateValue.Text = (oc.RainRate > 0.0) ? "Wet" : "Dry";
+                    //labelRainRateValue.Text = (oc.RainRate > 0.0) ? "Wet" : "Dry";
+                    labelRainRateValue.Text = (vantagePro.RainRate > 0.0) ? "Wet" : "Dry";
                     labelRainRateValue.ForeColor = Statuser.TriStateColor(wisesafetoopen.isSafeRain);
 
                     if (wisesafetoopen.IsSafe)
@@ -1167,7 +1182,7 @@ namespace Dash
                 using (ASCOM.Utilities.Profile driverProfile = new ASCOM.Utilities.Profile())
                 {
                     driverProfile.DeviceType = "ObservingConditions";
-                    driverProfile.WriteValue("ASCOM.CloudSensor.ObservingConditions", "Data File", toolStripTextBoxCloudSensorDataFile.Text);
+                    driverProfile.WriteValue("ASCOM.Wise40.Boltwood.ObservingConditions", "Data File", toolStripTextBoxCloudSensorDataFile.Text);
                 }
             }
 
@@ -1176,7 +1191,7 @@ namespace Dash
                 using (ASCOM.Utilities.Profile driverProfile = new ASCOM.Utilities.Profile())
                 {
                     driverProfile.DeviceType = "ObservingConditions";
-                    driverProfile.WriteValue("ASCOM.Vantage.ObservingConditions", "Report File", toolStripTextBoxVantagePro2ReportFile.Text);
+                    driverProfile.WriteValue("ASCOM.Wise40.VantagePro.ObservingConditions", "DataFile", toolStripTextBoxVantagePro2ReportFile.Text);
                 }
             }
         }

@@ -64,6 +64,25 @@
   <PropertyGroup>
     <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <RegisterForComInterop>true</RegisterForComInterop>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\x64\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="ASCOM.Astrometry, Version=6.0.0.0, Culture=neutral, PublicKeyToken=565de7938946fba7, processorArchitecture=MSIL" />
     <Reference Include="ASCOM.Attributes, Version=6.0.0.0, Culture=neutral, PublicKeyToken=565de7938946fba7, processorArchitecture=MSIL" />
@@ -77,9 +96,6 @@
     <Reference Include="ASCOM.SettingsProvider, Version=6.0.0.0, Culture=neutral, PublicKeyToken=565de7938946fba7, processorArchitecture=MSIL" />
     <Reference Include="ASCOM.Utilities, Version=6.0.0.0, Culture=neutral, PublicKeyToken=565de7938946fba7, processorArchitecture=MSIL" />
     <Reference Include="ASCOM.Utilities.Video, Version=6.1.0.0, Culture=neutral, PublicKeyToken=565de7938946fba7, processorArchitecture=MSIL" />
-    <Reference Include="Common">
-      <HintPath>..\Common\bin\Debug\Common.dll</HintPath>
-    </Reference>
     <Reference Include="MccDaq, Version=2.1.0.0, Culture=neutral, PublicKeyToken=a37eefcf5c6ca10a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Hardware\Measurement Computing\DAQ\MccDaq.dll</HintPath>
@@ -177,6 +193,14 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Boltwood\Boltwood.csproj">
+      <Project>{d937deb7-5df8-491d-b21a-193adabd0315}</Project>
+      <Name>Boltwood</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Common\Common.csproj">
+      <Project>{b76546e7-9832-4d28-b412-b34ca1c6177c}</Project>
+      <Name>Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ComputerControl\ComputerControl.csproj">
       <Project>{eef50bc4-becc-430b-9a05-769c80d8d25c}</Project>
       <Name>ComputerControl</Name>
@@ -192,6 +216,10 @@
     <ProjectReference Include="..\Hardware\Hardware.csproj">
       <Project>{b3400ce2-9b66-4f0c-97fe-26343382ba7b}</Project>
       <Name>Hardware</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\VantagePro\VantagePro.csproj">
+      <Project>{59cc2a31-dec4-4eee-b5c3-efc8771438a7}</Project>
+      <Name>VantagePro</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

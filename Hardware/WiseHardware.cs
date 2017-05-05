@@ -12,18 +12,25 @@ namespace ASCOM.Wise40.Hardware
     {
         private List<WiseBoard> WiseBoards = new List<WiseBoard>();
         public WiseBoard domeboard, teleboard, miscboard;
-        private static Hardware hw;
-        private bool _initialized;
+        private static volatile Hardware _instance;     // Singleton
+        private static object _syncObject = new object();
+        private bool _initialized = false;
         public float mccRevNum, mccVxdRevNum;
 
         public static Hardware Instance
         {
             get
             {
-                if (hw == null)
-                    hw = new Hardware();
-                hw.init();
-                return hw;
+                if (_instance == null)
+                {
+                    lock (_syncObject)
+                    {
+                        if (_instance == null)
+                            _instance = new Hardware();
+                    }
+                }
+                _instance.init();
+                return _instance;
             }
         }
 

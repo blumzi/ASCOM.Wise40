@@ -6,18 +6,20 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Diagnostics;
 using System.Windows.Forms;
+using System.IO;
 
 namespace ASCOM.Wise40.Common
 {
     public class Debugger
     {
-        private static readonly Debugger instance = new Debugger(); // Singleton
+        private static volatile Debugger _instance; // Singleton
+        private static object syncObject = new object();
         private ListBox listBox;
         private bool _appendToWindow = false;
         private static bool _initialized = false;
         private static bool _tracing = false;
         private static string _debugFile = string.Empty;
-        private System.IO.StreamWriter debugStream;
+        private TextWriter debugStream;
 
         static Debugger()
         {
@@ -31,7 +33,15 @@ namespace ASCOM.Wise40.Common
         {
             get
             {
-                return instance;
+                if (_instance == null)
+                {
+                    lock (syncObject)
+                    {
+                        if (_instance == null)
+                            _instance = new Debugger();
+                    }
+                }
+                return _instance;
             }
         }
 
@@ -75,7 +85,7 @@ namespace ASCOM.Wise40.Common
 
             if (_debugFile != string.Empty)
             {
-                debugStream = new System.IO.StreamWriter(_debugFile, true);
+                debugStream = TextWriter.Synchronized(new StreamWriter(_debugFile, true));
             }
             _initialized = true;
         }
@@ -177,7 +187,8 @@ namespace ASCOM.Wise40.Common
                 p.DeviceType = deviceType;
                 if (p.IsRegistered(driverID))
                 {
-                    _currentLevel = DebugLevel.DebugDefault;
+                    _currentLevel = (DebugLevel) Enum.Parse(typeof(DebugLevel),
+                        p.GetValue(driverID, "DebugLevel", string.Empty, DebugLevel.DebugDefault.ToString()));
                     _tracing = Convert.ToBoolean(p.GetValue(driverID, "Tracing", string.Empty, "false"));
                     _debugFile = p.GetValue(driverID, "DebugFile", string.Empty, string.Empty);
                 }

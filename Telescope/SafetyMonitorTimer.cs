@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 using ASCOM.Wise40.Common;
@@ -16,13 +17,13 @@ namespace ASCOM.Wise40
     class SafetyMonitorTimer
     {
         private static WiseTele wisetele = WiseTele.Instance;
-        private System.Threading.Timer timer;
+        private Timer timer;
         private int _dueTime, _period;
         private bool _enabled;
 
         private void SafetyChecker(object StateObject)
         {
-            wisetele.CheckSafetyAtCoordinates(
+            wisetele.SafeAtCoordinates(
                 Angle.FromHours(wisetele.RightAscension, Angle.Type.RA),
                 Angle.FromDegrees(wisetele.Declination, Angle.Type.Dec),
                 true);
@@ -30,9 +31,7 @@ namespace ASCOM.Wise40
 
         public SafetyMonitorTimer(int dueTime = 100, int period = 100)
         {
-            System.Threading.TimerCallback callback = new System.Threading.TimerCallback(SafetyChecker);
-
-            timer = new System.Threading.Timer(callback);
+            timer = new Timer(new TimerCallback(SafetyChecker));
             this._dueTime = dueTime;
             this._period = period;
             _enabled = false;

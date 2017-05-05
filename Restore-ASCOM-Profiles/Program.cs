@@ -46,11 +46,11 @@ namespace Restore_ASCOM_Profiles
 
         internal static void WriteCloudSensorProfile()
         {
-            string driverID = "ASCOM.CloudSensor.ObservingConditions";
-            string dataFileProfileName = "Data File";
+            string driverID = "ASCOM.Wise40.Boltwood.ObservingConditions";
+            string dataFileProfileName = "DataFile";
             string dataFile = realMachine ? 
-                "z:/clarityII-data.txt" :
-                "c:/temp/clarityII-data.txt";
+                "z:/ClarityII-data.txt" :
+                "c:/temp/ClarityII-data.txt";
 
             using (Profile driverProfile = new Profile())
             {
@@ -61,8 +61,8 @@ namespace Restore_ASCOM_Profiles
 
         internal static void WriteVantageProProfile()
         {
-            string driverID = "ASCOM.Vantage.ObservingConditions";
-            string reportFileProfileName = "Report File";
+            string driverID = "ASCOM.Wise40.VantagePro.ObservingConditions";
+            string reportFileProfileName = "DataFile";
             string reportFile = realMachine ?
                 "y:/Weather_Wise40_Vantage_Pro.htm" :
                 "c:/temp/Weather_Wise40_Vantage_Pro.htm";
@@ -142,15 +142,19 @@ namespace Restore_ASCOM_Profiles
             string debugLevelProfileName = "DebugLevel";
             string studyMotionProfileName = "StudyMotion";
             string debugFileProfileName = "DebugFile";
-            string debugFile = (mode == Mode.ACP) ? "c:/temp/Wise40-debug.txt" : string.Empty;
+            string debugFile = "c:/temp/Wise40-debug.txt";
 
             using (Profile driverProfile = new Profile())
             {
                 driverProfile.DeviceType = "Telescope";
-                driverProfile.WriteValue(driverID, traceStateProfileName, true.ToString());
+                driverProfile.WriteValue(driverID, traceStateProfileName, false.ToString());
                 driverProfile.WriteValue(driverID, studyMotionProfileName, true.ToString());
                 driverProfile.WriteValue(driverID, enslaveDomeProfileName, mode == Mode.ACP ? false.ToString() : true.ToString());
-                driverProfile.WriteValue(driverID, debugLevelProfileName, "DebugAxes|DebugMotors|DebugExceptions|DebugASCOM|DebugLogic");
+                driverProfile.WriteValue(driverID, debugLevelProfileName, (Debugger.DebugLevel.DebugAxes |
+                    Debugger.DebugLevel.DebugExceptions |
+                    Debugger.DebugLevel.DebugDevice |
+                    Debugger.DebugLevel.DebugASCOM |
+                    Debugger.DebugLevel.DebugLogic).ToString());
                 driverProfile.WriteValue(driverID, debugFileProfileName, debugFile);
             }
         }
@@ -164,39 +168,39 @@ namespace Restore_ASCOM_Profiles
                 driverProfile.DeviceType = "ObservingConditions";
 
                 driverProfile.WriteValue(driverID, "Device Mode", "Real", "CloudCover");
-                driverProfile.WriteValue(driverID, "ProgID", "ASCOM.CloudSensor.ObservingConditions", "CloudCover");
+                driverProfile.WriteValue(driverID, "ProgID", "ASCOM.Wise40.Boltwood.ObservingConditions", "CloudCover");
                 driverProfile.WriteValue(driverID, "Switch Number", "0", "CloudCover");
 
                 driverProfile.WriteValue(driverID, "Device Mode", "Real", "DewPoint");
-                driverProfile.WriteValue(driverID, "ProgID", "ASCOM.Vantage.ObservingConditions", "DewPoint");
+                driverProfile.WriteValue(driverID, "ProgID", "ASCOM.Wise40.VantagePro.ObservingConditions", "DewPoint");
                 driverProfile.WriteValue(driverID, "Switch Number", "0", "DewPoint");
 
                 driverProfile.WriteValue(driverID, "Device Mode", "Real", "Humidity");
-                driverProfile.WriteValue(driverID, "ProgID", "ASCOM.Vantage.ObservingConditions", "Humidity");
+                driverProfile.WriteValue(driverID, "ProgID", "ASCOM.Wise40.VantagePro.ObservingConditions", "Humidity");
                 driverProfile.WriteValue(driverID, "Switch Number", "0", "Humidity");
 
                 driverProfile.WriteValue(driverID, "Device Mode", "Real", "Pressure");
-                driverProfile.WriteValue(driverID, "ProgID", "ASCOM.Vantage.ObservingConditions", "Pressure");
+                driverProfile.WriteValue(driverID, "ProgID", "ASCOM.Wise40.VantagePro.ObservingConditions", "Pressure");
                 driverProfile.WriteValue(driverID, "Switch Number", "0", "Pressure");
 
                 driverProfile.WriteValue(driverID, "Device Mode", "Real", "RainRate");
-                driverProfile.WriteValue(driverID, "ProgID", "ASCOM.Vantage.ObservingConditions", "RainRate");
+                driverProfile.WriteValue(driverID, "ProgID", "ASCOM.Wise40.VantagePro.ObservingConditions", "RainRate");
                 driverProfile.WriteValue(driverID, "Switch Number", "0", "RainRate");
 
                 driverProfile.WriteValue(driverID, "Device Mode", "Real", "SkyTemperature");
-                driverProfile.WriteValue(driverID, "ProgID", "ASCOM.CloudSensor.ObservingConditions", "SkyTemperature");
+                driverProfile.WriteValue(driverID, "ProgID", "ASCOM.Wise40.Boltwood.ObservingConditions", "SkyTemperature");
                 driverProfile.WriteValue(driverID, "Switch Number", "0", "SkyTemperature");
 
                 driverProfile.WriteValue(driverID, "Device Mode", "Real", "Temperature");
-                driverProfile.WriteValue(driverID, "ProgID", "ASCOM.Vantage.ObservingConditions", "Temperature");
+                driverProfile.WriteValue(driverID, "ProgID", "ASCOM.Wise40.VantagePro.ObservingConditions", "Temperature");
                 driverProfile.WriteValue(driverID, "Switch Number", "0", "Temperature");
 
                 driverProfile.WriteValue(driverID, "Device Mode", "Real", "WindDirection");
-                driverProfile.WriteValue(driverID, "ProgID", "ASCOM.Vantage.ObservingConditions", "WindDirection");
+                driverProfile.WriteValue(driverID, "ProgID", "ASCOM.Wise40.VantagePro.ObservingConditions", "WindDirection");
                 driverProfile.WriteValue(driverID, "Switch Number", "0", "WindDirection");
 
                 driverProfile.WriteValue(driverID, "Device Mode", "Real", "WindSpeed");
-                driverProfile.WriteValue(driverID, "ProgID", "ASCOM.Vantage.ObservingConditions", "WindSpeed");
+                driverProfile.WriteValue(driverID, "ProgID", "ASCOM.Wise40.VantagePro.ObservingConditions", "WindSpeed");
                 driverProfile.WriteValue(driverID, "Switch Number", "0", "WindSpeed");
             }
         }

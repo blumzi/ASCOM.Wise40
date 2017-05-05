@@ -34,11 +34,11 @@ Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescrip
 
 [Files]
 Source: "{#SolutionDir}\Dash\bin\Debug\Dash.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#SolutionDir}\ClarityII\bin\Debug\ASCOM.ClarityII.ObservingConditions.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SolutionDir}\Boltwood\bin\Debug\ASCOM.Wise40.Boltwood.ObservingConditions.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SolutionDir}\Common\bin\Debug\Common.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SolutionDir}\ComputerControl\bin\Debug\MccDaq.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SolutionDir}\ComputerControl\bin\Debug\ASCOM.Wise40.ComputerControl.SafetyMonitor.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#SolutionDir}\DavisVantage\bin\Debug\VantagePro.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SolutionDir}\VantagePro\bin\Debug\ASCOM.Wise40.VantagePro.ObservingConditions.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SolutionDir}\Dome\bin\Debug\ASCOM.Wise40.Dome.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SolutionDir}\Focus\bin\Debug\ASCOM.Wise40.Focuser.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SolutionDir}\Hardware\bin\Debug\Hardware.dll"; DestDir: "{app}"; Flags: ignoreversion
@@ -52,7 +52,7 @@ Source: "{#SolutionDir}\SafeToOpen\bin\Debug\ASCOM.Wise40.SafeToOpen.SafetyMonit
 Source: "{#SolutionDir}\FilterWheel\bin\Debug\ASCOM.Wise40.FilterWheel.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SolutionDir}\Telescope\bin\Debug\ASCOM.Wise40.Telescope.dll"; DestDir: "{app}"; Flags: ignoreversion
 
-Source: "{#SolutionDir}\ClarityII\Sample Files\clarityII-data.txt"; DestDir: "{app}"; AfterInstall: CopyToTemp('c:\temp\clarityII-data.txt')
+Source: "{#SolutionDir}\Boltwood\Sample Files\ClarityII-data.txt"; DestDir: "{app}"; AfterInstall: CopyToTemp('c:\temp\ClarityII-data.txt')
 Source: "{#SolutionDir}\DavisVantage\Sample Files\Weather_Wise40_Vantage_Pro.htm"; DestDir: "{app}";  AfterInstall: CopyToTemp('c:\temp\Weather_Wise40_Vantage_Pro.htm')
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
@@ -75,14 +75,14 @@ Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; Fil
 ; Name: "Davis VantagePro2"; Description: "The Wise40 ASCOM VantagePro2 ObservingConditions driver"; Types: full;
 
 [Run]
-Filename: "{dotnet4032}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.ClarityII.ObservingConditions.dll"""; Flags: runhidden 32bit
-Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.ClarityII.ObservingConditions.dll"""; Flags: runhidden 64bit; Check: IsWin64
+Filename: "{dotnet4032}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.Boltwood.ObservingConditions.dll"""; Flags: runhidden 32bit
+Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.Boltwood.ObservingConditions.dll"""; Flags: runhidden 64bit; Check: IsWin64
 
 Filename: "{dotnet4032}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.ComputerControl.SafetyMonitor.dll"""; Flags: runhidden 32bit
 Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.ComputerControl.SafetyMonitor.dll"""; Flags: runhidden 64bit; Check: IsWin64
 
-Filename: "{dotnet4032}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Vantage.ObservingConditions.dll"""; Flags: runhidden 32bit
-Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Vantage.ObservingConditions.dll"""; Flags: runhidden 64bit; Check: IsWin64
+Filename: "{dotnet4032}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.VantagePro.ObservingConditions.dll"""; Flags: runhidden 32bit
+Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.VantagePro.ObservingConditions.dll"""; Flags: runhidden 64bit; Check: IsWin64
 
 Filename: "{dotnet4032}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.Dome.dll"""; Flags: runhidden 32bit
 Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.Dome.dll"""; Flags: runhidden 64bit; Check: IsWin64
@@ -102,18 +102,18 @@ Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40
 Filename: "{dotnet4032}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.FilterWheel.dll"""; Flags: runhidden 32bit
 Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.FilterWheel.dll"""; Flags: runhidden 64bit; Check: IsWin64
 
-Filename: "{dotnet4032}\regasm.exe"; Parameters: "/codebase ""{app}\VantagePro.dll"""; Flags: runhidden 32bit
-Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\VantagePro.dll"""; Flags: runhidden 64bit; Check: IsWin64
+Filename: "{dotnet4032}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.VantagePro.ObservingConditions.dll"""; Flags: runhidden 32bit
+Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.VantagePro.ObservingConditions.dll"""; Flags: runhidden 64bit; Check: IsWin64
 
 Filename: "{app}\Restore-ASCOM-Profiles"; Description: "Initialize ASCOM Profiles according to previous selection."; Parameters: "{code:ProfileType|}"; Flags: postinstall
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,Wise40 Dashboard}"; Flags: nowait postinstall skipifsilent
 
 [UninstallRun]
 ; Only for .NET assembly/in-proc drivers
-Filename: "{dotnet4032}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.ClarityII.ObservingConditions.dll"""; Flags: runhidden 32bit
+Filename: "{dotnet4032}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Wise40.Boltwood.ObservingConditions.dll"""; Flags: runhidden 32bit
 ; This helps to give a clean uninstall
-Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.ClarityII.ObservingConditions.dll"""; Flags: runhidden 64bit; Check: IsWin64
-Filename: "{dotnet4064}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.ClarityII.ObservingConditions.dll"""; Flags: runhidden 64bit; Check: IsWin64
+Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.Boltwood.ObservingConditions.dll"""; Flags: runhidden 64bit; Check: IsWin64
+Filename: "{dotnet4064}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Wise40.Boltwood.ObservingConditions.dll"""; Flags: runhidden 64bit; Check: IsWin64
 
 
 Filename: "{dotnet4032}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Wise40.ComputerControl.SafetyMonitor.dll"""; Flags: runhidden 32bit
@@ -121,10 +121,10 @@ Filename: "{dotnet4032}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Wise40.Comput
 Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.ComputerControl.SafetyMonitor.dll"""; Flags: runhidden 64bit; Check: IsWin64
 Filename: "{dotnet4064}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Wise40.ComputerControl.SafetyMonitor.dll"""; Flags: runhidden 64bit; Check: IsWin64
 
-Filename: "{dotnet4032}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Vantage.ObservingConditions.dll"""; Flags: runhidden 32bit
+Filename: "{dotnet4032}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Wise40.VantagePro.ObservingConditions.dll"""; Flags: runhidden 32bit
 ; This helps to give a clean uninstall
-Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Vantage.ObservingConditions.dll"""; Flags: runhidden 64bit; Check: IsWin64
-Filename: "{dotnet4064}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Vantage.ObservingConditions.dll"""; Flags: runhidden 64bit; Check: IsWin64
+Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.VantagePro.ObservingConditions.dll"""; Flags: runhidden 64bit; Check: IsWin64
+Filename: "{dotnet4064}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Wise40.VantagePro.ObservingConditions.dll"""; Flags: runhidden 64bit; Check: IsWin64
 
 Filename: "{dotnet4032}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Wise40.Dome.dll"""; Flags: runhidden 32bit
 ; This helps to give a clean uninstall

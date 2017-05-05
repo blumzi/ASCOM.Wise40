@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 // associated with an assembly.
 //
 // TODO - Add your authorship information here
-[assembly: AssemblyTitle("ASCOM.VantagePro.ObservingConditions")]
+[assembly: AssemblyTitle("ASCOM.Vantage.ObservingConditions")]
 [assembly: AssemblyDescription("ASCOM ObservingConditions driver for VantagePro")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Department of Astrophysics, School of Physics & Astronomy, Tel Aviv University, Israel")]

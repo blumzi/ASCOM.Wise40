@@ -60,6 +60,25 @@
     <RegisterForComInterop>false</RegisterForComInterop>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <RegisterForComInterop>true</RegisterForComInterop>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\x64\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="ASCOM.Astrometry, Version=6.0.0.0, Culture=neutral, PublicKeyToken=565de7938946fba7, processorArchitecture=MSIL" />
     <Reference Include="ASCOM.Attributes, Version=6.0.0.0, Culture=neutral, PublicKeyToken=565de7938946fba7, processorArchitecture=MSIL" />
@@ -147,21 +166,21 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ClarityII\CloudSensor.csproj">
-      <Project>{918d2f5b-9337-4378-8106-9f8468b34f54}</Project>
-      <Name>CloudSensor</Name>
+    <ProjectReference Include="..\Boltwood\Boltwood.csproj">
+      <Project>{d937deb7-5df8-491d-b21a-193adabd0315}</Project>
+      <Name>Boltwood</Name>
     </ProjectReference>
     <ProjectReference Include="..\Common\Common.csproj">
       <Project>{b76546e7-9832-4d28-b412-b34ca1c6177c}</Project>
       <Name>Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\DavisVantage\VantagePro.csproj">
-      <Project>{c819d411-a817-4cee-b597-a57f2ca5b5b0}</Project>
-      <Name>VantagePro</Name>
-    </ProjectReference>
     <ProjectReference Include="..\SafeToOpen\SafeToOpen.csproj">
       <Project>{7fa766d4-8f97-4d9f-8f62-f25c84c01ff2}</Project>
       <Name>SafeToOpen</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\VantagePro\VantagePro.csproj">
+      <Project>{59cc2a31-dec4-4eee-b5c3-efc8771438a7}</Project>
+      <Name>VantagePro</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

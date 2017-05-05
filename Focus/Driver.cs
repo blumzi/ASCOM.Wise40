@@ -60,7 +60,7 @@ namespace ASCOM.Wise40
         /// ASCOM DeviceID (COM ProgID) for this driver.
         /// The DeviceID is used by ASCOM applications to load the driver at runtime.
         /// </summary>
-        internal static string driverID = "ASCOM.Wise40.Focuser";
+        //internal static string driverID = "ASCOM.Wise40.Focuser";
 
         private WiseFocuser wisefocuser;
 
@@ -154,7 +154,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return wisefocuser.Description;
+                return WiseFocuser.Description;
             }
         }
 
@@ -316,11 +316,11 @@ namespace ASCOM.Wise40
                 P.DeviceType = "Focuser";
                 if (bRegister)
                 {
-                    P.Register(driverID, "ASCOM Wise40 Focuser");
+                    P.Register(WiseFocuser.DriverId, WiseFocuser.Description);
                 }
                 else
                 {
-                    P.Unregister(driverID);
+                    P.Unregister(WiseFocuser.DriverId);
                 }
             }
         }
