@@ -18,6 +18,7 @@ namespace ASCOM.Wise40.Hardware
         private ulong _output;
         private float _targetPosition;
         private Debugger debugger = Debugger.Instance;
+        Func<int> _stopSimulatedProcess;
 
         public TimeProportionedPidController() { }
 
@@ -35,8 +36,10 @@ namespace ASCOM.Wise40.Hardware
         /// <param name="derivativeGain"></param>
         /// <param name="controllerDirection"></param>
         /// <param name="controllerMode"></param>
-        public TimeProportionedPidController(string name, ulong windowSizeMillis, WisePin pin, TimeSpan samplingRate,
-            Func<ulong> readProcess, Func<ulong> readOutput, Action<ulong> writeOutput, Func<ulong> readSetPoint,
+        public TimeProportionedPidController(string name,
+            ulong windowSizeMillis, WisePin pin, TimeSpan samplingRate,
+            Func<int> stopSimulatedProcess,
+            Func<int> readProcess, Func<ulong> readOutput, Action<ulong> writeOutput, Func<int> readSetPoint,
             float proportionalGain, float integralGain, float derivativeGain,
             ControllerMode controllerMode = ControllerMode.Automatic): base(name, samplingRate, (float)0.0, (float)100.0,
                 readProcess, readOutput, writeOutput, readSetPoint,
@@ -51,6 +54,7 @@ namespace ASCOM.Wise40.Hardware
                 throw new ArgumentNullException(nameof(readProcess), "Read process must not be null.");
             if (readOutput == null)
                 throw new ArgumentNullException(nameof(readOutput), "Read output must not be null.");
+            _stopSimulatedProcess = stopSimulatedProcess;
             debugger.init();
         }
 
@@ -68,11 +72,12 @@ namespace ASCOM.Wise40.Hardware
             if (_output <= now - windowStartTime) {
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
-                    "{0}: Compute: {1} <= {2} ({3} - {4}), Stopping",
+                    "{0}: Compute: _output: {1} <= {2} ({3} - {4}), Stopping",
                     Name, _output, now - windowStartTime, now, windowStartTime);
                 #endregion
                 base.Stop();
                 _pin.SetOff();
+                _stopSimulatedProcess();
             }
         }
 

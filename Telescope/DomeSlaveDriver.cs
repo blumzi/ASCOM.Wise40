@@ -90,7 +90,8 @@ namespace ASCOM.Wise40
             {
                 wisedome.SlewToAzimuth(az);
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver: Waiting for dome to arrive to target az");
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver: Waiting for dome to arrive to {0}",
+                    Angle.FromDegrees(az).ToString());
                 #endregion
                 _arrivedAtAz.WaitOne();
             }
@@ -116,7 +117,8 @@ namespace ASCOM.Wise40
             {
                 wisedome.Park();
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver: Waiting for dome to arrive to target az");
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver: Waiting for dome to park at {0}",
+                    Angle.FromDegrees(wisedome.ParkAzimuth).ToString());
                 #endregion
                 _arrivedAtAz.WaitOne();
             }
@@ -231,6 +233,14 @@ namespace ASCOM.Wise40
 
                 string state = wisedome.ShutterState.ToString();
                 return (state == "shutterError" ? String.Empty : wisedome.ShutterState.ToString().Substring("shutter".Length));
+            }
+        }
+
+        public bool AtPark
+        {
+            get
+            {
+                return wisedome.AtPark;
             }
         }
 

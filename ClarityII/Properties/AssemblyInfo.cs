@@ -7,8 +7,8 @@ using System.Runtime.InteropServices;
 // associated with an assembly.
 //
 // TODO - Add your authorship information here
-[assembly: AssemblyTitle("ASCOM.CloudSensor.ObservingConditions")]
-[assembly: AssemblyDescription("ASCOM ObservingConditions driver for Boltwood CloudSensor")]
+[assembly: AssemblyTitle("ASCOM.ClarityII.ObservingConditions")]
+[assembly: AssemblyDescription("ASCOM Wise40 Boltwood CloudSensor ObservingConditions")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Department of Astrophysics, School of Physics & Astronomy, Tel Aviv University, Israel")]
 [assembly: AssemblyProduct("ASCOM ObservingConditions driver for Boltwood CloudSensor")]

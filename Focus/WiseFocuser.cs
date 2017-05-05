@@ -17,8 +17,8 @@ namespace ASCOM.Wise40
 {
     public class WiseFocuser : WiseObject, IDisposable, IConnectable
     {
-        private Version version = new Version(0, 1);
-        private static readonly WiseFocuser instance = new WiseFocuser();
+        private static Version version = new Version(0, 2);
+        private static readonly WiseFocuser _instance = new WiseFocuser();
         private bool _initialized = false;
         private bool _connected = false;
         private enum FocuserStatus { Idle, MovingUp, MovingAllUp, MovingDown, MovingAllDown };
@@ -35,9 +35,9 @@ namespace ASCOM.Wise40
         {
             public int stoppingDistance;   // number of encoder ticks to stop
         };
-        
+
         Dictionary<Direction, MotionParameter> motionParameters;
-        
+
         private uint targetPos;
 
         private double _startPos; //, _stopPos, _endPos;
@@ -53,28 +53,28 @@ namespace ASCOM.Wise40
 
         internal static string driverID = "ASCOM.Wise40.Focuser";
 
-        private static string driverDescription = "ASCOM Wise40 Focuser";
+        private static string driverDescription = string.Format("ASCOM Wise40.Focuser v{0}", version.ToString());
 
         public TimeProportionedPidController upPID, downPID;
 
-        public WiseFocuser() {}
+        public WiseFocuser() { }
 
         public static WiseFocuser Instance
         {
             get
             {
-                return instance;
+                return _instance;
             }
         }
 
-        private ulong readEncoder()
+        private int readEncoder()
         {
-            return encoder.Value;
+            return (int)encoder.Value;
         }
 
         private ulong readOutput()
         {
-            return (ulong) DateTime.Now.Ticks;
+            return (ulong)DateTime.Now.Ticks;
         }
 
         private void writeOutput(ulong value)
@@ -82,9 +82,9 @@ namespace ASCOM.Wise40
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseFocuser: writeOutput: {0}", value);
         }
 
-        private ulong readSetPoint()
+        private int readSetPoint()
         {
-            return targetPos;
+            return (int)targetPos;
         }
 
         public void init(bool multiTurn = false)
@@ -95,7 +95,8 @@ namespace ASCOM.Wise40
             Name = "WiseFocuser";
             _status = FocuserStatus.Idle;
 
-            encoder = new WiseFocuserEnc(true);
+            encoder = WiseFocuserEnc.Instance;
+            encoder.init(true);
             ReadProfile();
             //debugger.init(Debugger.DebugLevel.DebugLogic | Debugger.DebugLevel.DebugEncoders);
             debugger.init(Debugger.DebugLevel.DebugLogic);
@@ -106,9 +107,9 @@ namespace ASCOM.Wise40
 
             pinDown = new WisePin("FocusDown", hardware.miscboard, DigitalPortType.FirstPortCH, 0, DigitalPortDirection.DigitalOut, direction: Const.Direction.Decreasing);
             pinUp = new WisePin("FocusUp", hardware.miscboard, DigitalPortType.FirstPortCH, 1, DigitalPortDirection.DigitalOut, direction: Const.Direction.Increasing);
-            
-            connectables.AddRange(new List<IConnectable> { instance.pinUp, instance.pinDown, instance.encoder });
-            disposables.AddRange(new List<IDisposable> { instance.pinUp, instance.pinDown, instance.encoder });            
+
+            connectables.AddRange(new List<IConnectable> { _instance.pinUp, _instance.pinDown, _instance.encoder });
+            disposables.AddRange(new List<IDisposable> { _instance.pinUp, _instance.pinDown, _instance.encoder });
 
             System.Threading.TimerCallback movementTimerCallback = new System.Threading.TimerCallback(MonitorMovement);
             movementTimer = new System.Threading.Timer(movementTimerCallback);
@@ -123,6 +124,7 @@ namespace ASCOM.Wise40
                 windowSizeMillis: 5000,
                 pin: pinUp,
                 samplingRate: pidSamplingRate,
+                stopSimulatedProcess: stopSimulation,
                 readProcess: readEncoder,
                 readOutput: readOutput,
                 readSetPoint: readSetPoint,
@@ -137,6 +139,7 @@ namespace ASCOM.Wise40
                 windowSizeMillis: 5000,
                 pin: pinDown,
                 samplingRate: pidSamplingRate,
+                stopSimulatedProcess: stopSimulation,
                 readProcess: readEncoder,
                 readOutput: readOutput,
                 readSetPoint: readSetPoint,
@@ -192,7 +195,7 @@ namespace ASCOM.Wise40
             using (Profile driverProfile = new Profile())
             {
                 driverProfile.DeviceType = "Focuser";
-                
+
                 encoder.UpperLimit = Convert.ToUInt32(driverProfile.GetValue(driverID, "Upper Limit", string.Empty, encoder.UpperLimit.ToString()));
                 encoder.LowerLimit = Convert.ToUInt32(driverProfile.GetValue(driverID, "Lower Limit", string.Empty, encoder.LowerLimit.ToString()));
             }
@@ -302,25 +305,28 @@ namespace ASCOM.Wise40
 
         public void Stop()
         {
+            if (Simulated)
+                encoder.stopMoving();
+
             pinUp.SetOff();
             pinDown.SetOff();
             movementTimer.Change(Timeout.Infinite, Timeout.Infinite);
-    /*
-            _stopPos = (int)Position;
-            #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Started stopping at {0} ...", _stopPos);
-            #endregion
-            DateTime start = DateTime.Now;
-            while ((DateTime.Now - start).TotalMilliseconds < 1000)
-            {
-                //debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Stopping, now at {0}", Position);
-                Thread.Sleep(50);
-            }
-            _endPos = (double) Position;
-            double travel = Math.Abs(_stopPos - _startPos), stoppingDist = Math.Abs(_endPos - _stopPos);
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "stopping: travel: {0}, stopping distance: {1}, {2}%",
-                travel, stoppingDist, (stoppingDist / travel) * 100);
-    */
+            /*
+                    _stopPos = (int)Position;
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Started stopping at {0} ...", _stopPos);
+                    #endregion
+                    DateTime start = DateTime.Now;
+                    while ((DateTime.Now - start).TotalMilliseconds < 1000)
+                    {
+                        //debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Stopping, now at {0}", Position);
+                        Thread.Sleep(50);
+                    }
+                    _endPos = (double) Position;
+                    double travel = Math.Abs(_stopPos - _startPos), stoppingDist = Math.Abs(_endPos - _stopPos);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "stopping: travel: {0}, stopping distance: {1}, {2}%",
+                        travel, stoppingDist, (stoppingDist / travel) * 100);
+            */
             targetPos = 0;
             _status = FocuserStatus.Idle;
         }
@@ -380,7 +386,7 @@ namespace ASCOM.Wise40
                 #region trace
                 traceLogger.LogMessage("MaxIncrement Get", UpperLimit.ToString());
                 #endregion
-                return (int) UpperLimit; // Maximum change in one move
+                return (int)UpperLimit; // Maximum change in one move
             }
         }
 
@@ -393,7 +399,7 @@ namespace ASCOM.Wise40
                 #region trace
                 traceLogger.LogMessage("MaxStep Get", UpperLimit.ToString());
                 #endregion
-                return (int) UpperLimit; // Maximum extent of the focuser, so position range is 0 to 10,000
+                return (int)UpperLimit; // Maximum extent of the focuser, so position range is 0 to 10,000
             }
         }
 
@@ -425,8 +431,23 @@ namespace ASCOM.Wise40
                     _status = FocuserStatus.MovingAllDown;
                     break;
             }
-            
+
             movementTimer.Change(movementTimeout, movementTimeout);
+
+            if (Simulated)
+            {
+                switch (dir)
+                {
+                    case Direction.AllDown:
+                    case Direction.Down:
+                        encoder.startMoving(Const.Direction.Decreasing);
+                        break;
+                    case Direction.AllUp:
+                    case Direction.Up:
+                        encoder.startMoving(Const.Direction.Increasing);
+                        break;
+                }
+            }
         }
 
         public void Move(uint pos)
@@ -465,6 +486,7 @@ namespace ASCOM.Wise40
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseFocuser: Starting upPID");
                 #endregion
+                encoder.startMoving(Const.Direction.Increasing);
                 upPID.MoveTo(targetPos);
             }
             else
@@ -472,6 +494,7 @@ namespace ASCOM.Wise40
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseFocuser: Starting downPID");
                 #endregion
+                encoder.startMoving(Const.Direction.Decreasing);
                 downPID.MoveTo(targetPos);
             }
 
@@ -523,14 +546,22 @@ namespace ASCOM.Wise40
             throw new ASCOM.MethodNotImplementedException("CommandString");
         }
 
-        public string Description
+        public static string DriverId
         {
             get
             {
-                if (! Connected)
+                return driverID;
+            }
+        }
+
+        public static string Description
+        {
+            get
+            {
+                if (!_instance.Connected)
                     throw new NotConnectedException("");
                 #region trace
-                traceLogger.LogMessage("Description Get", driverDescription);
+                _instance.traceLogger.LogMessage("Description Get", driverDescription);
                 #endregion
                 return driverDescription;
             }
@@ -540,7 +571,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                string driverInfo = "Information about the driver itself. Version: " + DriverVersion;
+                string driverInfo = "Wise40 Focuser. Version: " + DriverVersion;
                 #region trace
                 traceLogger.LogMessage("DriverInfo Get", driverInfo);
                 #endregion
@@ -639,6 +670,13 @@ namespace ASCOM.Wise40
             {
                 encoder.LowerLimit = value;
             }
+        }
+
+        public int stopSimulation()
+        {
+            if (Simulated)
+                encoder.stopMoving();
+            return 0;
         }
     }
 }

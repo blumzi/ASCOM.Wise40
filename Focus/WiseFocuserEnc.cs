@@ -14,8 +14,15 @@ namespace ASCOM.Wise40
 {
     public class WiseFocuserEnc : WiseEncoder, IDisposable
     {
+        private static readonly WiseFocuserEnc instance = new WiseFocuserEnc();
+        private bool _initialized = false;
+
         private WisePin pinZero, pinLatch;
         private Hardware.Hardware hardware = Hardware.Hardware.Instance;
+        private static uint _simulatedValue;
+        private static Const.Direction _simulatedDirection;
+        private static Timer _simulationTimer = new Timer(new TimerCallback(simulateMovement));
+        private static uint _simulatedStep = 1;
 
         //
         // 17 Jan 2017 - Arie Blumenzweig
@@ -50,8 +57,8 @@ namespace ASCOM.Wise40
         private static readonly int posBits = 12;
         private static readonly int turnBits = 4;
 
-        private static readonly uint maxPos = (uint) (1 << posBits);
-        private static readonly uint maxTurns = (uint) (1 << turnBits);
+        private static readonly uint maxPos = (uint)(1 << posBits);
+        private static readonly uint maxTurns = (uint)(1 << turnBits);
         private static readonly uint posMask = maxPos - 1;
         private static readonly uint turnsMask = maxTurns - 1;
 
@@ -64,17 +71,31 @@ namespace ASCOM.Wise40
         List<IConnectable> connectables = new List<IConnectable>();
         List<IDisposable> disposables = new List<IDisposable>();
 
-        public WiseFocuserEnc(bool multiTurn = false)
+        public WiseFocuserEnc() { }
+
+        public static WiseFocuserEnc Instance
         {
+            get
+            {
+                return instance;
+            }
+        }
+
+        public void init(bool multiTurn = false)
+        {
+            if (_initialized)
+                return;
+
             Name = "FocusEnc";
             this._multiTurn = multiTurn;
+
             if (this._multiTurn)
             {
                 _maxValue = (uint)(1 << (posBits + turnBits)) - 1;
                 pinLatch = new WisePin("FocusLatch", hardware.miscboard, DigitalPortType.FirstPortCH, 3, DigitalPortDirection.DigitalOut);
                 pinZero = new WisePin("FocusZero", hardware.miscboard, DigitalPortType.FirstPortCH, 2, DigitalPortDirection.DigitalOut);
                 base.init("FocusEnc",
-                    (int) _maxValue,
+                    (int)_maxValue,
                     new List<WiseEncSpec>() {
                         new WiseEncSpec() { brd = hardware.miscboard, port = DigitalPortType.FirstPortA,  mask = 0xff },
                         new WiseEncSpec() { brd = hardware.miscboard, port = DigitalPortType.FirstPortB,  mask = 0xff },
@@ -100,47 +121,58 @@ namespace ASCOM.Wise40
                 UpperLimit = 128;
                 LowerLimit = 0;
             }
+
+            _initialized = true;
         }
 
         public new uint Value
         {
+
             get
             {
-                uint turns, pos, ret;
+                uint ret;
 
-                if (_multiTurn)
+                if (Simulated)
                 {
-                    pinLatch.SetOn();
-                    Thread.Sleep(1); 
-                }
-                _daqsValue = base.Value;
-                if (_multiTurn)
-                    pinLatch.SetOff();
-
-                if (_multiTurn)
-                {
-                    pos = _daqsValue & posMask;
-                    turns = (_daqsValue >> posBits) & turnsMask;
+                    ret = _simulatedValue;
                 }
                 else
                 {
-                    pos = _daqsValue;
-                    turns = 0;
+                    uint turns, pos;
+
+                    if (_multiTurn)
+                    {
+                        pinLatch.SetOn();
+                        Thread.Sleep(1);
+                    }
+                    _daqsValue = base.Value;
+                    if (_multiTurn)
+                        pinLatch.SetOff();
+
+                    if (_multiTurn)
+                    {
+                        pos = _daqsValue & posMask;
+                        turns = (_daqsValue >> posBits) & turnsMask;
+                    }
+                    else
+                    {
+                        pos = _daqsValue;
+                        turns = 0;
+                    }
+
+                    ret = (turns * maxPos) + pos;
+                    if (reversedDirection)
+                        ret = _maxValue - ret;
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "FocusEnc get: pos: {0}, turn: {1} => {2}", pos, turns, ret);
+                    #endregion
                 }
-
-                ret = (turns * maxPos) + pos;
-                if (reversedDirection)
-                    ret = _maxValue - ret;
-
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "FocusEnc get: pos: {0}, turn: {1} => {2}", pos, turns, ret);
-                #endregion
                 return ret;
             }
 
             set
             {
-                
+
             }
         }
 
@@ -148,9 +180,14 @@ namespace ASCOM.Wise40
         {
             if (!_multiTurn)
                 return;
-            pinZero.SetOn();
-            Thread.Sleep(150);
-            pinZero.SetOff();
+            if (Simulated)
+                _simulatedValue = 0;
+            else
+            {
+                pinZero.SetOn();
+                Thread.Sleep(150);
+                pinZero.SetOff();
+            }
         }
 
         public new void Dispose()
@@ -176,6 +213,9 @@ namespace ASCOM.Wise40
                 foreach (var connectable in connectables)
                     connectable.Connect(value);
                 base.Connect(value);
+
+                if (Simulated && value == true)
+                    _simulatedValue = 0;
 
                 _connected = value;
             }
@@ -207,5 +247,31 @@ namespace ASCOM.Wise40
             }
         }
 
+        public void startMoving(Const.Direction dir)
+        {
+            if (!Simulated)
+                return;
+            _simulatedDirection = dir;
+            _simulationTimer.Change(100, 100);
+        }
+
+        public void stopMoving()
+        {
+            _simulationTimer.Change(Timeout.Infinite, Timeout.Infinite);
+        }
+
+        private static void simulateMovement(object o)
+        {
+            if (!instance.Simulated)
+            {
+                _simulationTimer.Change(Timeout.Infinite, Timeout.Infinite);
+                return;
+            }
+
+            if (_simulatedDirection == Const.Direction.Increasing)
+                _simulatedValue += _simulatedStep;
+            else
+                _simulatedValue -= _simulatedStep;
+        }
     }
 }

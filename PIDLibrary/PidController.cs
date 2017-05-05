@@ -11,8 +11,8 @@ namespace PID
     {
         private string _name;
         protected Func<ulong> _readOutput;
-        protected Func<ulong> _readProcess;
-        protected Func<ulong> _readSetPoint;
+        protected Func<int> _readProcess;
+        protected Func<int> _readSetPoint;
         protected Action<ulong> _writeOutput;
         private Timer _computeTimer;
         private ControllerDirection _controllerDirection;
@@ -56,7 +56,7 @@ namespace PID
         ///     <see cref="readSetPoint" /> are null.
         /// </exception>
         public PidController(string name, TimeSpan samplingRate, float outputMinimum, float outputMaximum,
-            Func<ulong> readProcess, Func<ulong> readOutput, Action<ulong> writeOutput, Func<ulong> readSetPoint,
+            Func<int> readProcess, Func<ulong> readOutput, Action<ulong> writeOutput, Func<int> readSetPoint,
             float proportionalGain, float integralGain, float derivativeGain,
             ControllerDirection controllerDirection, ControllerMode controllerMode)
         {

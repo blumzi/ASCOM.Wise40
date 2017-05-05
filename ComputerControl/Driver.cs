@@ -56,7 +56,7 @@ namespace ASCOM.Wise40.ComputerControl
     [ClassInterface(ClassInterfaceType.None)]
     public class SafetyMonitor : ISafetyMonitor
     {
-        private Version version = new Version(0, 1);
+        private static Version version = new Version(0, 2);
         /// <summary>
         /// ASCOM DeviceID (COM ProgID) for this driver.
         /// The DeviceID is used by ASCOM applications to load the driver at runtime.
@@ -66,12 +66,12 @@ namespace ASCOM.Wise40.ComputerControl
         /// <summary>
         /// Driver description that displays in the ASCOM Chooser.
         /// </summary>
-        private static string driverDescription = "ASCOM Wise40.ComputerControl.";       
+        private static string driverDescription = string.Format("ASCOM Wise40.ComputerControl v{0}", version.ToString());       
 
         /// <summary>
         /// Private variable to hold the connected state
         /// </summary>
-        private bool _connected;
+        private bool _connected = false;
 
         /// <summary>
         /// Private variable to hold the trace logger object (creates a diagnostic log file with information that you specify)
@@ -116,7 +116,7 @@ namespace ASCOM.Wise40.ComputerControl
         {
             // consider only showing the setup dialog if not connected
             // or call a different dialog if connected
-            if (IsConnected)
+            if (_connected)
                 System.Windows.Forms.MessageBox.Show("Already connected, just press OK");
 
             using (SetupDialogForm F = new SetupDialogForm())
@@ -185,8 +185,8 @@ namespace ASCOM.Wise40.ComputerControl
         {
             get
             {
-                tl.LogMessage("Connected Get", IsConnected.ToString());
-                return IsConnected;
+                tl.LogMessage("Connected Get", _connected.ToString());
+                return _connected;
             }
             set
             {
@@ -208,7 +208,7 @@ namespace ASCOM.Wise40.ComputerControl
         {
             get
             {
-                string driverInfo = "Quick and Dirty. Version: " + DriverVersion;
+                string driverInfo = "Reports Maintenance Switch status. Version: " + DriverVersion;
                 tl.LogMessage("DriverInfo Get", driverInfo);
                 return driverInfo;
             }
@@ -251,7 +251,12 @@ namespace ASCOM.Wise40.ComputerControl
         {
             get
             {
-                bool ret = wisesafety.IsSafe;
+                bool ret;
+
+                if (!_connected)
+                    ret = false;
+                else
+                    ret = wisesafety.IsSafe;
 
                 tl.LogMessage("IsSafe Get", ret.ToString());
                 return ret;
@@ -339,24 +344,12 @@ namespace ASCOM.Wise40.ComputerControl
         #endregion
 
         /// <summary>
-        /// Returns true if there is a valid connection to the driver hardware
-        /// </summary>
-        private bool IsConnected
-        {
-            get
-            {
-                // TODO check that the driver hardware connection exists and is connected to the hardware
-                return _connected;
-            }
-        }
-
-        /// <summary>
         /// Use this function to throw an exception if we aren't connected to the hardware
         /// </summary>
         /// <param name="message"></param>
         private void CheckConnected(string message)
         {
-            if (!IsConnected)
+            if (!_connected)
             {
                 throw new ASCOM.NotConnectedException(message);
             }

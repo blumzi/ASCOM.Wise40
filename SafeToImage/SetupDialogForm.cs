@@ -7,13 +7,14 @@ using System.Text;
 using System.Windows.Forms;
 using ASCOM.Utilities;
 using ASCOM.Wise40.SafeToOperate;
+using ASCOM.Wise40.Boltwood;
 
 namespace ASCOM.Wise40.SafeToImage
 {
     [ComVisible(false)]					// Form not registered for COM!
     public partial class SetupDialogForm : Form
     {
-        WiseSafeToOperate wisesafetoimage = WiseSafeToOperate.Instance(WiseSafeToOperate.Operation.Open);
+        WiseSafeToOperate wisesafetoimage = WiseSafeToOperate.InstanceImage;
 
         public SetupDialogForm()
         {
@@ -44,10 +45,10 @@ namespace ASCOM.Wise40.SafeToImage
                 textBoxAge.ForeColor = okColor;
                 wisesafetoimage.ageMaxSeconds = i;
             }
-            wisesafetoimage.cloudsMaxEnum = (CloudSensor.SensorData.CloudCondition)comboBoxCloud.SelectedIndex;
-            wisesafetoimage.cloudsMaxValue = CloudSensor.SensorData.doubleCloudCondition[wisesafetoimage.cloudsMaxEnum];
+            wisesafetoimage. cloudsMaxEnum = (Boltwood.SensorData.CloudCondition)comboBoxCloud.SelectedIndex;
+            wisesafetoimage.cloudsMaxValue = Boltwood.SensorData.doubleCloudCondition[wisesafetoimage.cloudsMaxEnum];
             wisesafetoimage.rainMax = comboBoxRain.SelectedIndex;
-            wisesafetoimage.lightMaxEnum = (CloudSensor.SensorData.DayCondition)comboBoxLight.SelectedIndex;
+            wisesafetoimage.lightMaxEnum = (Boltwood.SensorData.DayCondition)comboBoxLight.SelectedIndex;
             wisesafetoimage.lightMaxValue = (int)wisesafetoimage.lightMaxEnum;
             i = Convert.ToInt32(textBoxHumidity.Text);
             if (i >= 0 && i <= 100)

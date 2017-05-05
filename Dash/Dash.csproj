@@ -50,12 +50,30 @@
   <PropertyGroup>
     <ApplicationIcon>WiseObs.ico</ApplicationIcon>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\x64\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ASCOM.ClarityII.ObservingConditions, Version=6.2.6165.21329, Culture=neutral, PublicKeyToken=5a596dde3293c610, processorArchitecture=x86">
+    <Reference Include="ASCOM.Controls, Version=6.0.0.0, Culture=neutral, PublicKeyToken=565de7938946fba7, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\ClarityII\bin\Debug\ASCOM.ClarityII.ObservingConditions.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\ASCOM\Platform 6 Developer Components\Components\Platform6\ASCOM.Controls.dll</HintPath>
     </Reference>
-    <Reference Include="ASCOM.Controls, Version=6.0.0.0, Culture=neutral, PublicKeyToken=565de7938946fba7, processorArchitecture=MSIL" />
     <Reference Include="ASCOM.DeviceInterfaces, Version=6.0.0.0, Culture=neutral, PublicKeyToken=565de7938946fba7, processorArchitecture=MSIL" />
     <Reference Include="ASCOM.DriverAccess, Version=6.0.0.0, Culture=neutral, PublicKeyToken=565de7938946fba7, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -67,13 +85,6 @@
     </Reference>
     <Reference Include="ASCOM.Internal.Extensions, Version=6.0.0.0, Culture=neutral, PublicKeyToken=565de7938946fba7" />
     <Reference Include="ASCOM.Utilities, Version=6.0.0.0, Culture=neutral, PublicKeyToken=565de7938946fba7, processorArchitecture=MSIL" />
-    <Reference Include="ASCOM.Vantage.ObservingConditions">
-      <HintPath>..\DavisVantage\bin\Debug\ASCOM.Vantage.ObservingConditions.dll</HintPath>
-    </Reference>
-    <Reference Include="ASCOM.Wise40.SafeToOpen.SafetyMonitor, Version=6.2.6164.32379, Culture=neutral, PublicKeyToken=5a596dde3293c610, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\SafeToOpen\bin\Debug\ASCOM.Wise40.SafeToOpen.SafetyMonitor.dll</HintPath>
-    </Reference>
     <Reference Include="MccDaq, Version=2.5.0.0, Culture=neutral, PublicKeyToken=a37eefcf5c6ca10a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Hardware\Measurement Computing\DAQ\MccDaq.dll</HintPath>
@@ -174,9 +185,9 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ClarityII\CloudSensor.csproj">
-      <Project>{918d2f5b-9337-4378-8106-9f8468b34f54}</Project>
-      <Name>CloudSensor</Name>
+    <ProjectReference Include="..\Boltwood\Boltwood.csproj">
+      <Project>{d937deb7-5df8-491d-b21a-193adabd0315}</Project>
+      <Name>Boltwood</Name>
     </ProjectReference>
     <ProjectReference Include="..\Common\Common.csproj">
       <Project>{b76546e7-9832-4d28-b412-b34ca1c6177c}</Project>
@@ -206,9 +217,17 @@
       <Project>{990e4dfa-414e-4c05-89c0-6f18a5c6fa94}</Project>
       <Name>SafeToImage</Name>
     </ProjectReference>
+    <ProjectReference Include="..\SafeToOpen\SafeToOpen.csproj">
+      <Project>{7fa766d4-8f97-4d9f-8f62-f25c84c01ff2}</Project>
+      <Name>SafeToOpen</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Telescope\Telescope.csproj">
       <Project>{e27802fc-efb5-4deb-bd4d-013f44a0813c}</Project>
       <Name>Telescope</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\VantagePro\VantagePro.csproj">
+      <Project>{59cc2a31-dec4-4eee-b5c3-efc8771438a7}</Project>
+      <Name>VantagePro</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

@@ -180,27 +180,5 @@ namespace ASCOM.Wise40
                 }
             }
         }
-
-        //public bool Simulated
-        //{
-        //    get
-        //    {
-        //        return _simulated;
-        //    }
-        //    set { }
-        //}
-
-        //public string Name
-        //{
-        //    get
-        //    {
-        //        return _name;
-        //    }
-
-        //    set
-        //    {
-        //        _name = value;
-        //    }
-        //}
     }
 }

@@ -9,14 +9,16 @@ using System.Globalization;
 using ASCOM;
 using ASCOM.Utilities;
 using ASCOM.Wise40.Common;
+using ASCOM.Wise40.Boltwood;
+using ASCOM.Wise40.VantagePro;
 
 namespace ASCOM.Wise40.SafeToOperate
 {
     public class WiseSafeToOperate
     {
-        private Version version = new Version(0, 1);
-        public enum Operation { Open, Image };
-        private Operation _op;
+        private Version version = new Version(0, 2);
+        public enum Type { Open, Image };
+        private Type _type;
 
         /// <summary>
         /// ASCOM DeviceID (COM ProgID) for this driver.
@@ -28,6 +30,7 @@ namespace ASCOM.Wise40.SafeToOperate
         /// Driver description that displays in the ASCOM Chooser.
         /// </summary>
         public string driverDescription;
+        private string name;
 
         internal static string cloudsMaxProfileName = "Clouds Max";
         internal static string windMaxProfileName = "Wind Max";
@@ -36,8 +39,8 @@ namespace ASCOM.Wise40.SafeToOperate
         internal static string humidityMaxProfileName = "Humidity Max";
         internal static string ageMaxSecondsProfileName = "Age Max";
 
-        public CloudSensor.SensorData.CloudCondition cloudsMaxEnum;
-        public CloudSensor.SensorData.DayCondition lightMaxEnum;
+        public Boltwood.SensorData.CloudCondition cloudsMaxEnum;
+        public Boltwood.SensorData.DayCondition lightMaxEnum;
 
         public double cloudsMaxValue;
         public double windMax;
@@ -53,30 +56,46 @@ namespace ASCOM.Wise40.SafeToOperate
 
         private Wise40.Common.Debugger debugger = Wise40.Common.Debugger.Instance;
         private TraceLogger tl;
+        
+        WiseBoltwood boltwood = WiseBoltwood.Instance;
+        WiseVantagePro vantagePro = WiseVantagePro.Instance;
 
-        private static ASCOM.DriverAccess.ObservingConditions boltwood;
-        private static ASCOM.DriverAccess.ObservingConditions vantagePro;
+        private static WiseSafeToOperate _instanceOpen = new WiseSafeToOperate(Type.Open);
+        private static WiseSafeToOperate _instanceImage = new WiseSafeToOperate(Type.Image);
 
-        private static WiseSafeToOperate _instanceOpen = new WiseSafeToOperate(Operation.Open);
-        private static WiseSafeToOperate _instanceImage = new WiseSafeToOperate(Operation.Image);
-
-        public static WiseSafeToOperate Instance(Operation op)
+        public static WiseSafeToOperate InstanceOpen
         {
-            return op == Operation.Open ? _instanceOpen : _instanceImage;
+            get
+            {
+                _instanceOpen.init();
+                return _instanceOpen;
+            }
         }
 
-        public WiseSafeToOperate(Operation op)
+        public static WiseSafeToOperate InstanceImage
         {
-            _op = op;
-            init();
+            get
+            {
+                _instanceImage.init();
+                return _instanceImage;
+            }
+        }
+
+        public WiseSafeToOperate(Type type)
+        {
+            _type = type;
         }
         
-        public void init() {
-            driverID = "ASCOM.Wise40.SafeTo" + ((_op == Operation.Open) ? "Open" : "Image") + ".SafetyMonitor";
-            driverDescription = "ASCOM Wise40 SafeTo" + ((_op == Operation.Open) ? "Open" : "Image");
+        public void init()
+        {
+            string type = _type == Type.Open ? "Open" : "Image";
+
+            name = "Wise40 SafeTo" + type;
+            driverID = "ASCOM.Wise40.SafeTo" + type + ".SafetyMonitor";
+            driverDescription = string.Format("ASCOM Wise40.SafeTo{0} v{1}", type, version.ToString());
             ReadProfile(); // Read device configuration from the ASCOM Profile store
 
-            tl = new TraceLogger("", _op == Operation.Open ? "Wise40.SafeToOpen" : "Wise40.SafeToImage");
+            tl = new TraceLogger("", "Wise40.SafeTo" + type);
             tl.Enabled = debugger.Tracing;
             tl.LogMessage("SafetyMonitor", "Starting initialisation");
 
@@ -84,12 +103,21 @@ namespace ASCOM.Wise40.SafeToOperate
 
             try
             {
-                boltwood = new DriverAccess.ObservingConditions("ASCOM.CloudSensor.ObservingConditions");
-                vantagePro = new DriverAccess.ObservingConditions("ASCOM.Vantage.ObservingConditions");
+                boltwood.init();
             }
-            catch
+            catch (Exception ex)
             {
-                throw new InvalidOperationException("Could not open weather stations");
+                throw new InvalidOperationException(string.Format("Could not init boltwood: {0}", ex.Message));
+            }
+
+            try
+            {
+                //vantagePro = new DriverAccess.ObservingConditions("ASCOM.Vantage.ObservingConditions");
+                vantagePro.init();
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException(string.Format("Could not init vantagePro: {0}", ex.Message));
             }
 
             tl.LogMessage("SafetyMonitor", "Completed initialisation");
@@ -141,21 +169,13 @@ namespace ASCOM.Wise40.SafeToOperate
         public void CommandBlind(string command, bool raw)
         {
             CheckConnected("CommandBlind");
-            // Call CommandString and return as soon as it finishes
-            this.CommandString(command, raw);
-            // or
             throw new ASCOM.MethodNotImplementedException("CommandBlind");
-            // DO NOT have both these sections!  One or the other
         }
 
         public bool CommandBool(string command, bool raw)
         {
             CheckConnected("CommandBool");
-            string ret = CommandString(command, raw);
-            // TODO decode the return string and return true or false
-            // or
             throw new ASCOM.MethodNotImplementedException("CommandBool");
-            // DO NOT have both these sections!  One or the other
         }
 
         public string CommandString(string command, bool raw)
@@ -242,7 +262,6 @@ namespace ASCOM.Wise40.SafeToOperate
         {
             get
             {
-                string name = "Wise40 SafeTo" + ((_op == Operation.Open) ?  "Open" : "Image");
                 tl.LogMessage("Name Get", name);
                 return name;
             }
@@ -409,14 +428,19 @@ namespace ASCOM.Wise40.SafeToOperate
         {
             get
             {
-                bool ret = 
-                    _boltwoodIsValid &&
-                    _vantageProIsValid &&
-                    IsSafeLight &&
-                    IsSafeCloudCover &&
-                    IsSafeWindSpeed &&
-                    IsSafeHumidity &&
-                    IsSafeRain;
+                bool ret;
+
+                if (!_connected)
+                    ret = false;
+                else
+                    ret = 
+                        _boltwoodIsValid &&
+                        _vantageProIsValid &&
+                        IsSafeLight &&
+                        IsSafeCloudCover &&
+                        IsSafeWindSpeed &&
+                        IsSafeHumidity &&
+                        IsSafeRain;
 
                 tl.LogMessage("IsSafe Get", ret.ToString());
                 return ret;
@@ -450,18 +474,18 @@ namespace ASCOM.Wise40.SafeToOperate
             {
                 driverProfile.DeviceType = "SafetyMonitor";                
 
-                cloudsMaxEnum = (CloudSensor.SensorData.CloudCondition)
-                    Enum.Parse(typeof(CloudSensor.SensorData.CloudCondition),
-                        driverProfile.GetValue(driverID, cloudsMaxProfileName, string.Empty, CloudSensor.SensorData.CloudCondition.cloudClear.ToString()));
-                cloudsMaxValue = CloudSensor.SensorData.doubleCloudCondition[cloudsMaxEnum];     
+                cloudsMaxEnum = (Boltwood.SensorData.CloudCondition)
+                    Enum.Parse(typeof(Boltwood.SensorData.CloudCondition),
+                        driverProfile.GetValue(driverID, cloudsMaxProfileName, string.Empty, Boltwood.SensorData.CloudCondition.cloudClear.ToString()));
+                cloudsMaxValue = Boltwood.SensorData.doubleCloudCondition[cloudsMaxEnum];     
                            
                 windMax = Convert.ToDouble(driverProfile.GetValue(driverID, windMaxProfileName, string.Empty, 0.0.ToString()));
                 rainMax = Convert.ToDouble(driverProfile.GetValue(driverID, rainMaxProfileName, string.Empty, 0.0.ToString()));
                 humidityMax = Convert.ToDouble(driverProfile.GetValue(driverID, humidityMaxProfileName, string.Empty, 0.0.ToString()));
                 ageMaxSeconds = Convert.ToInt32(driverProfile.GetValue(driverID, ageMaxSecondsProfileName, string.Empty, 0.ToString()));
 
-                lightMaxEnum = (CloudSensor.SensorData.DayCondition)
-                    Enum.Parse(typeof(CloudSensor.SensorData.DayCondition),
+                lightMaxEnum = (Boltwood.SensorData.DayCondition)
+                    Enum.Parse(typeof(Boltwood.SensorData.DayCondition),
                         driverProfile.GetValue(driverID, lightMaxProfileName, string.Empty, "dayUnknown"));
                 lightMaxValue = (int)lightMaxEnum;
             }
