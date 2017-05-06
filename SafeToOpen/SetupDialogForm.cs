@@ -101,6 +101,7 @@ namespace ASCOM.Wise40.SafeToOperate
 
         private void InitUI()
         {
+            wisesafetoopen.Connected = true;
             wisesafetoopen.ReadProfile();
             
             comboBoxCloud.SelectedIndex = (int)wisesafetoopen.cloudsMaxEnum;

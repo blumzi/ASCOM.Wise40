@@ -44,7 +44,7 @@ namespace Dash
             labelDashVersion.Text = appVersion;
             labelTelescopeVersion.Text = _dash.wisetele.DriverVersion;
             labelDomeVersion.Text = _dash.wisedome.DriverVersion;
-            labelFocuserVersion.Text = _dash.wisefocuser.DriverVersion;
+            labelFocuserVersion.Text = WiseFocuser.DriverVersion;
             labelSafeToOpenVersion.Text = _dash.wisesite.safeToOpen.DriverVersion;
             //labelBoltwoodVersion.Text = _dash.wiseboltwood.DriverVersion;
             labelBoltwoodVersion.Text = "???";

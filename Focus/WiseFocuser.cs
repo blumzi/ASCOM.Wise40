@@ -51,7 +51,7 @@ namespace ASCOM.Wise40
         private Hardware.Hardware hardware = Hardware.Hardware.Instance;
         private WiseSite wisesite = WiseSite.Instance;
 
-        internal static string driverID = "ASCOM.Wise40.Focuser";
+        public static string driverID = "ASCOM.Wise40.Focuser";
 
         private static string driverDescription = string.Format("ASCOM Wise40.Focuser v{0}", version.ToString());
 
@@ -579,13 +579,13 @@ namespace ASCOM.Wise40
             }
         }
 
-        public string DriverVersion
+        public static string DriverVersion
         {
             get
             {
                 string driverVersion = String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
                 #region trace
-                traceLogger.LogMessage("DriverVersion Get", driverVersion);
+                _instance.traceLogger.LogMessage("DriverVersion Get", driverVersion);
                 #endregion
                 return driverVersion;
             }
