@@ -167,7 +167,6 @@
             this.annunciatorComputerControl = new ASCOM.Controls.Annunciator();
             this.annunciatorDomePlatform = new ASCOM.Controls.Annunciator();
             this.annunciatorSafeToOpen = new ASCOM.Controls.Annunciator();
-            this.annunciatorSafeToImage = new ASCOM.Controls.Annunciator();
             this.labelFiller = new System.Windows.Forms.Label();
             this.annunciatorPanelStatus = new ASCOM.Controls.AnnunciatorPanel();
             this.annunciatorTrack = new ASCOM.Controls.Annunciator();
@@ -1648,7 +1647,7 @@
             // settingsToolStripMenuItem
             // 
             this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
-            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(206, 22);
+            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
             this.settingsToolStripMenuItem.Text = "Settings";
             this.settingsToolStripMenuItem.Click += new System.EventHandler(this.toolStripMenuItemFilterWheel_Click);
             // 
@@ -1958,7 +1957,6 @@
             this.annunciatorPanelSafety.Controls.Add(this.annunciatorComputerControl);
             this.annunciatorPanelSafety.Controls.Add(this.annunciatorDomePlatform);
             this.annunciatorPanelSafety.Controls.Add(this.annunciatorSafeToOpen);
-            this.annunciatorPanelSafety.Controls.Add(this.annunciatorSafeToImage);
             this.annunciatorPanelSafety.Location = new System.Drawing.Point(3, 339);
             this.annunciatorPanelSafety.Name = "annunciatorPanelSafety";
             this.annunciatorPanelSafety.Size = new System.Drawing.Size(181, 98);
@@ -2011,22 +2009,6 @@
             this.annunciatorSafeToOpen.TabIndex = 1;
             this.annunciatorSafeToOpen.Text = "Safe To Open";
             this.annunciatorSafeToOpen.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // annunciatorSafeToImage
-            // 
-            this.annunciatorSafeToImage.ActiveColor = System.Drawing.Color.IndianRed;
-            this.annunciatorSafeToImage.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.annunciatorSafeToImage.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
-            this.annunciatorSafeToImage.Font = new System.Drawing.Font("Consolas", 10F);
-            this.annunciatorSafeToImage.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorSafeToImage.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorSafeToImage.Location = new System.Drawing.Point(3, 69);
-            this.annunciatorSafeToImage.Mute = false;
-            this.annunciatorSafeToImage.Name = "annunciatorSafeToImage";
-            this.annunciatorSafeToImage.Size = new System.Drawing.Size(173, 23);
-            this.annunciatorSafeToImage.TabIndex = 2;
-            this.annunciatorSafeToImage.Text = "Safe To Image";
-            this.annunciatorSafeToImage.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // labelFiller
             // 
@@ -2971,7 +2953,6 @@
         private ASCOM.Controls.AnnunciatorPanel annunciatorPanelSafety;
         private ASCOM.Controls.Annunciator annunciatorComputerControl;
         private ASCOM.Controls.Annunciator annunciatorSafeToOpen;
-        private ASCOM.Controls.Annunciator annunciatorSafeToImage;
         private ASCOM.Controls.Annunciator annunciatorRateSlew;
         private ASCOM.Controls.Annunciator annunciatorRateSet;
         private ASCOM.Controls.Annunciator annunciatorRateGuide;

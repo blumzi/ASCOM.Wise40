@@ -16,7 +16,7 @@ namespace ASCOM.Wise40.SafeToOperate
 {
     public class WiseSafeToOperate
     {
-        private Version version = new Version(0, 2);
+        private static Version version = new Version(0, 2);
         public enum Type { Open, Image };
         private Type _type;
 
@@ -24,7 +24,7 @@ namespace ASCOM.Wise40.SafeToOperate
         /// ASCOM DeviceID (COM ProgID) for this driver.
         /// The DeviceID is used by ASCOM applications to load the driver at runtime.
         /// </summary>
-        internal string driverID;
+        public string driverID;
         // TODO Change the descriptive string for your driver then remove this line
         /// <summary>
         /// Driver description that displays in the ASCOM Chooser.
@@ -55,7 +55,7 @@ namespace ASCOM.Wise40.SafeToOperate
         private bool _connected = false;
 
         private Wise40.Common.Debugger debugger = Wise40.Common.Debugger.Instance;
-        private TraceLogger tl;
+        private static TraceLogger tl;
         
         WiseBoltwood boltwood = WiseBoltwood.Instance;
         WiseVantagePro vantagePro = WiseVantagePro.Instance;
@@ -220,6 +220,15 @@ namespace ASCOM.Wise40.SafeToOperate
             }
         }
 
+        public string DriverId
+        {
+            get
+            {
+                tl.LogMessage("DriverId Get", driverID);
+                return driverID;
+            }
+        }
+
         public string Description
         {
             get
@@ -239,7 +248,7 @@ namespace ASCOM.Wise40.SafeToOperate
             }
         }
 
-        public string DriverVersion
+        public static string DriverVersion
         {
             get
             {

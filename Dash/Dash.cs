@@ -273,15 +273,15 @@ namespace Dash
             {
                 if (wisedomeplatform.IsSafe)
                 {
-                    annunciatorDomePlatform.Text = "Platform lowered";
+                    annunciatorDomePlatform.Text = "Platform is lowered";
                     annunciatorDomePlatform.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
-                    tip = "Dome platform is lowered.";
+                    tip = "Dome platform is at its lowest position.";
                 }
                 else
                 {
-                    annunciatorDomePlatform.Text = "Platform RAISED";
+                    annunciatorDomePlatform.Text = "Platform is RAISED";
                     annunciatorDomePlatform.Cadence = ASCOM.Controls.CadencePattern.BlinkSlow;
-                    tip = "Dome platform is RAISED!";
+                    tip = "Dome platform is NOT at its lowest position!";
                 }
             }
             toolTip.SetToolTip(annunciatorDomePlatform, tip);
@@ -318,35 +318,35 @@ namespace Dash
             toolTip.SetToolTip(annunciatorSafeToOpen, tip);
             #endregion
             #region SafeToImage
-            tip = null;
-            if (_bypassSafety)
-            {
-                annunciatorSafeToImage.Text = "Safe to image";
-                annunciatorSafeToImage.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
-                tip = "Safety is bypassed (from Settings)";
-            }
-            else
-            {
-                if (wisesite.safeToImage == null)
-                {
-                    annunciatorSafeToImage.Text = "Safe to image ???";
-                    annunciatorSafeToImage.Cadence = ASCOM.Controls.CadencePattern.BlinkSlow;
-                    tip = "Cannot connect to the safeToImage driver!";
-                }
-                else if (wisesite.safeToImage.IsSafe)
-                {
-                    annunciatorSafeToImage.Text = "Safe to image";
-                    annunciatorSafeToImage.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
-                    tip = "Conditions are safe to image.";
-                }
-                else
-                {
-                    annunciatorSafeToImage.Text = "Not safe to image";
-                    annunciatorSafeToImage.Cadence = ASCOM.Controls.CadencePattern.BlinkSlow;
-                    tip = wisesite.safeToImage.CommandString("unsafeReasons", false);
-                }
-            }
-            toolTip.SetToolTip(annunciatorSafeToImage, tip);
+            //tip = null;
+            //if (_bypassSafety)
+            //{
+            //    annunciatorSafeToImage.Text = "Safe to image";
+            //    annunciatorSafeToImage.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            //    tip = "Safety is bypassed (from Settings)";
+            //}
+            //else
+            //{
+            //    if (wisesite.safeToImage == null)
+            //    {
+            //        annunciatorSafeToImage.Text = "Safe to image ???";
+            //        annunciatorSafeToImage.Cadence = ASCOM.Controls.CadencePattern.BlinkSlow;
+            //        tip = "Cannot connect to the safeToImage driver!";
+            //    }
+            //    else if (wisesite.safeToImage.IsSafe)
+            //    {
+            //        annunciatorSafeToImage.Text = "Safe to image";
+            //        annunciatorSafeToImage.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            //        tip = "Conditions are safe to image.";
+            //    }
+            //    else
+            //    {
+            //        annunciatorSafeToImage.Text = "Not safe to image";
+            //        annunciatorSafeToImage.Cadence = ASCOM.Controls.CadencePattern.BlinkSlow;
+            //        tip = wisesite.safeToImage.CommandString("unsafeReasons", false);
+            //    }
+            //}
+            //toolTip.SetToolTip(annunciatorSafeToImage, tip);
             #endregion
             #endregion
 
@@ -359,8 +359,8 @@ namespace Dash
             #endregion
 
             #region RefreshWeather
-            //if (wisesite.och == null || !wisesite.och.Connected)
-            if (wisesite.vantagePro == null || !wisesite.vantagePro.Connected)
+            if (wisesite.och == null || !wisesite.och.Connected)
+            //if (wisesite.vantagePro == null || !wisesite.vantagePro.Connected)
             {
                 string nc = "???";
 
@@ -387,26 +387,27 @@ namespace Dash
             {
                 try
                 {
-                    //ASCOM.DriverAccess.ObservingConditions oc = wisesite.och;
-                    ASCOM.DriverAccess.ObservingConditions vantagePro = wisesite.vantagePro;
+                    ASCOM.DriverAccess.ObservingConditions oc = wisesite.och;
+                    //ASCOM.DriverAccess.ObservingConditions vantagePro = wisesite.vantagePro;
 
                     #region ObservingConditions Informational
+                    labelAgeValue.Text = ((int)Math.Round(oc.TimeSinceLastUpdate(""), 2)).ToString() + "sec";
+                    labelDewPointValue.Text = oc.DewPoint.ToString() + "°C";
+                    labelSkyTempValue.Text = oc.SkyTemperature.ToString() + "°C";
+                    labelTempValue.Text = oc.Temperature.ToString() + "°C";
+                    labelPressureValue.Text = oc.Pressure.ToString() + "mB";
+                    labelWindDirValue.Text = oc.WindDirection.ToString() + "°";
                     //labelAgeValue.Text = ((int)Math.Round(oc.TimeSinceLastUpdate(""), 2)).ToString() + "sec";
-                    //labelDewPointValue.Text = oc.DewPoint.ToString() + "°C";
-                    //labelSkyTempValue.Text = oc.SkyTemperature.ToString() + "°C";
-                    //labelTempValue.Text = oc.Temperature.ToString() + "°C";
-                    //labelPressureValue.Text = oc.Pressure.ToString() + "mB";
-                    //labelWindDirValue.Text = oc.WindDirection.ToString() + "°";                    labelAgeValue.Text = ((int)Math.Round(oc.TimeSinceLastUpdate(""), 2)).ToString() + "sec";
-                    labelDewPointValue.Text = vantagePro.DewPoint.ToString() + "°C";
-                    labelSkyTempValue.Text = /*oc.SkyTemperature.ToString()*/ "???" + "°C";
-                    labelTempValue.Text = vantagePro.Temperature.ToString() + "°C";
-                    labelPressureValue.Text = vantagePro.Pressure.ToString() + "mB";
-                    labelWindDirValue.Text = vantagePro.WindDirection.ToString() + "°";
+                    //labelDewPointValue.Text = vantagePro.DewPoint.ToString() + "°C";
+                    //labelSkyTempValue.Text = /*oc.SkyTemperature.ToString()*/ "???" + "°C";
+                    //labelTempValue.Text = vantagePro.Temperature.ToString() + "°C";
+                    //labelPressureValue.Text = vantagePro.Pressure.ToString() + "mB";
+                    //labelWindDirValue.Text = vantagePro.WindDirection.ToString() + "°";
                     #endregion
 
                     #region ObservingConditions governed by SafeToOpen
-                    //labelHumidityValue.Text = oc.Humidity.ToString() + "%";
-                    labelHumidityValue.Text = vantagePro.Humidity.ToString() + "%";
+                    labelHumidityValue.Text = oc.Humidity.ToString() + "%";
+                    //labelHumidityValue.Text = vantagePro.Humidity.ToString() + "%";
                     labelHumidityValue.ForeColor = Statuser.TriStateColor(wisesafetoopen.isSafeHumidity);
 
                     //double d = oc.CloudCover;
@@ -427,12 +428,12 @@ namespace Dash
                     labelLightValue.Text = light;
                     labelLightValue.ForeColor = Statuser.TriStateColor(wisesafetoopen.isSafeLight);
 
-                    //labelWindSpeedValue.Text = oc.WindSpeed.ToString() + "m/s";
-                    labelWindSpeedValue.Text = vantagePro.WindSpeed.ToString() + "m/s";
+                    labelWindSpeedValue.Text = oc.WindSpeed.ToString() + "m/s";
+                    //labelWindSpeedValue.Text = vantagePro.WindSpeed.ToString() + "m/s";
                     labelWindSpeedValue.ForeColor = Statuser.TriStateColor(wisesafetoopen.isSafeWindSpeed);
 
-                    //labelRainRateValue.Text = (oc.RainRate > 0.0) ? "Wet" : "Dry";
-                    labelRainRateValue.Text = (vantagePro.RainRate > 0.0) ? "Wet" : "Dry";
+                    labelRainRateValue.Text = (oc.RainRate > 0.0) ? "Wet" : "Dry";
+                    //labelRainRateValue.Text = (vantagePro.RainRate > 0.0) ? "Wet" : "Dry";
                     labelRainRateValue.ForeColor = Statuser.TriStateColor(wisesafetoopen.isSafeRain);
 
                     if (wisesafetoopen.IsSafe)

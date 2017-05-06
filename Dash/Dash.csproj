@@ -69,6 +69,25 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>bin\x86\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="ASCOM.Controls, Version=6.0.0.0, Culture=neutral, PublicKeyToken=565de7938946fba7, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -212,10 +231,6 @@
     <ProjectReference Include="..\Hardware\Hardware.csproj">
       <Project>{b3400ce2-9b66-4f0c-97fe-26343382ba7b}</Project>
       <Name>Hardware</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\SafeToImage\SafeToImage.csproj">
-      <Project>{990e4dfa-414e-4c05-89c0-6f18a5c6fa94}</Project>
-      <Name>SafeToImage</Name>
     </ProjectReference>
     <ProjectReference Include="..\SafeToOpen\SafeToOpen.csproj">
       <Project>{7fa766d4-8f97-4d9f-8f62-f25c84c01ff2}</Project>
