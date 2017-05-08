@@ -125,9 +125,11 @@ namespace ASCOM.Wise40
         }
 
         private static CancellationTokenSource telescopeSlewingCancellationTokenSource = new CancellationTokenSource();
-        private static CancellationTokenSource domeSlewingCancellationTokenSource = new CancellationTokenSource();
         private static CancellationToken telescopeSlewingCancellationToken = telescopeSlewingCancellationTokenSource.Token;
+
+        private static CancellationTokenSource domeSlewingCancellationTokenSource = new CancellationTokenSource();
         private static CancellationToken domeSlewingCancellationToken = domeSlewingCancellationTokenSource.Token;
+
         public Slewers slewers = Slewers.Instance;
 
         private AxisMonitor primaryStatusMonitor, secondaryStatusMonitor;
@@ -1388,9 +1390,9 @@ namespace ASCOM.Wise40
                 Thread.Sleep(200);
         }
 
-        private enum SlewerStatus { Undefined, CloseEnough, ChangedDirection, Canceled };
+        private enum ScopeSlewerStatus { Undefined, CloseEnough, ChangedDirection, Canceled };
         
-        private void Slewer(TelescopeAxes axis, Angle targetAngle)
+        private void ScopeSlewer(TelescopeAxes axis, Angle targetAngle)
         {
             Slewers.Type otherSlewer = (axis == TelescopeAxes.axisPrimary) ? Slewers.Type.Dec : Slewers.Type.Ra;
 
@@ -1407,7 +1409,7 @@ namespace ASCOM.Wise40
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0} Slewer started.", cm.taskName);
             #endregion
 
-            SlewerStatus status;
+            ScopeSlewerStatus status;
 
             foreach (var rate in rates)
             {
@@ -1440,18 +1442,18 @@ namespace ASCOM.Wise40
 
                 do
                 {
-                    status = SlewCloser(axis, rate);
+                    status = ScopeSlewCloser(axis, rate);
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0} SlewCloser({1}, {2}) => {3}",
                         cm.taskName, axis, RateName(rate), status.ToString());
                     #endregion
                     switch (status)
                     {
-                        case SlewerStatus.CloseEnough:
-                        case SlewerStatus.Canceled:
+                        case ScopeSlewerStatus.CloseEnough:
+                        case ScopeSlewerStatus.Canceled:
                             done = true;
                             break;
-                        case SlewerStatus.ChangedDirection:
+                        case ScopeSlewerStatus.ChangedDirection:
                             break;  // NOTE: this breaks the switch, not the loop
                     }
                 }
@@ -1492,7 +1494,7 @@ namespace ASCOM.Wise40
             #endregion debug
         }
 
-        private SlewerStatus SlewCloser(TelescopeAxes axis, double rate)
+        private ScopeSlewerStatus ScopeSlewCloser(TelescopeAxes axis, double rate)
         {
             Movement cm = Instance.currMovement[axis];
             Angle currPosition = new Angle(0.0);
@@ -1534,7 +1536,7 @@ namespace ASCOM.Wise40
                         shortest.angle, minimalMovementAngle,
                         shortest.angle.Degrees, minimalMovementAngle.Degrees);
                     #endregion debug
-                    return SlewerStatus.CloseEnough;
+                    return ScopeSlewerStatus.CloseEnough;
                 }
 
                 // Set the axis in motion at the current rate ...
@@ -1584,7 +1586,7 @@ namespace ASCOM.Wise40
                         //  opposite axis direction.
                         //
                         cm.direction = remainingDistance.direction;
-                        return SlewerStatus.ChangedDirection;
+                        return ScopeSlewerStatus.ChangedDirection;
                     }
                     else if (remainingDistance.angle <= mp.stopMovement)
                     {
@@ -1615,7 +1617,7 @@ namespace ASCOM.Wise40
                                 );
                             #endregion
                             cm.direction = statusAfterStopping.direction;
-                            return SlewerStatus.ChangedDirection;
+                            return ScopeSlewerStatus.ChangedDirection;
                         }
                     }
                     else
@@ -1642,7 +1644,7 @@ namespace ASCOM.Wise40
                     "{0} at {1}: Slew cancelled at {2}", cm.taskName, RateName(cm.rate), currPosition);
                 #endregion debug
                 StopAxisAndWaitForHalt(axis);
-                return SlewerStatus.Canceled;
+                return ScopeSlewerStatus.Canceled;
             }
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
@@ -1650,7 +1652,7 @@ namespace ASCOM.Wise40
                 cm.taskName, RateName(cm.rate), currPosition,
                 currPosition.ShortestDistance(cm.target).angle, cm.target);
             #endregion
-            return SlewerStatus.CloseEnough;
+            return ScopeSlewerStatus.CloseEnough;
         }
 
         private static SlewerTask domeSlewer;
@@ -1726,31 +1728,39 @@ namespace ASCOM.Wise40
                     DomeSlewer(RightAscension, Declination);
                 }
 
-                foreach (Slewers.Type T in new List<Slewers.Type>() { Slewers.Type.Ra, Slewers.Type.Dec })
+                foreach (Slewers.Type slewerType in new List<Slewers.Type>() { Slewers.Type.Ra, Slewers.Type.Dec })
                 {
-                    SlewerTask slewer = new SlewerTask() { type = T, task = null };
+                    SlewerTask slewer = new SlewerTask() { type = slewerType, task = null };
                     try
                     {
                         TelescopeAxes axis;
                         Angle angle;
-                        if (T == Slewers.Type.Ra) { axis = TelescopeAxes.axisPrimary; angle = RightAscension; }
-                        else { axis = TelescopeAxes.axisSecondary; angle = Declination; }
+                        if (slewerType == Slewers.Type.Ra) {
+                            axis = TelescopeAxes.axisPrimary; angle = RightAscension;
+                        }
+                        else {
+                            axis = TelescopeAxes.axisSecondary; angle = Declination;
+                        }
 
+                        slewers.Add(slewer);
                         slewer.task = Task.Run(() =>
                         {
-                            Slewer(axis, angle);
-                        }, telescopeSlewingCancellationToken).ContinueWith((x) =>
+                            ScopeSlewer(axis, angle);
+                        }, telescopeSlewingCancellationToken).ContinueWith((slewerTask) =>
                         {
                             #region debug
-                            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "slewer {0} COMPLETED", T.ToString());
+                            debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                                "slewer \"{0}\" completed with status: {1}", slewer.type.ToString(), slewerTask.Status.ToString());
                             #endregion
-                            slewers.Delete(T);
-                        });
-                        slewers.Add(slewer);
+                            slewers.Delete(slewerType);
+                        }, TaskContinuationOptions.ExecuteSynchronously);
                     }
                     catch (Exception ex)
                     {
-                        debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Failed to run slewer {0}: {1}", T.ToString(), ex.Message);
+                        #region debug
+                        debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Failed to run slewer {0}: {1}", slewerType.ToString(), ex.Message);
+                        #endregion
+                        slewers.Delete(slewerType);
                     }
                 }
             }

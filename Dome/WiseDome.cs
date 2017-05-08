@@ -620,7 +620,7 @@ namespace ASCOM.Wise40
 
                 ret = domeEncoder.Azimuth;
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: [{0}] Azimuth: get => {1}", this.GetHashCode(), ret);
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: Azimuth: get => {0}", ret.ToNiceString());
                 #endregion
                 #region trace
                 tl.LogMessage("Dome: Azimuth Get", ret.ToString());
