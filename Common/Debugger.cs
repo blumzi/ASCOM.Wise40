@@ -83,10 +83,10 @@ namespace ASCOM.Wise40.Common
             indents[(int)DebugLevel.DebugMotors] = ">>>>> ";
             indents[(int)DebugLevel.DebugEncoders] = ">>>>>>";
 
-            if (_debugFile != string.Empty)
-            {
-                debugStream = TextWriter.Synchronized(new StreamWriter(_debugFile, true));
-            }
+            //if (_debugFile != string.Empty && debugStream == null)
+            //{
+            //    debugStream = TextWriter.Synchronized(new StreamWriter(_debugFile, true));
+            //}
             _initialized = true;
         }
 

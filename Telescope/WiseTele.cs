@@ -884,11 +884,7 @@ namespace ASCOM.Wise40
             {
                 try
                 {
-                    domeSlewingCancellationTokenSource.Cancel();
-
-                    domeSlewingCancellationTokenSource.Dispose();
-                    domeSlewingCancellationTokenSource = new CancellationTokenSource();
-                    domeSlewingCancellationToken = domeSlewingCancellationTokenSource.Token;
+                    DomeStopper();
                 }
                 catch (AggregateException ax)
                 {
