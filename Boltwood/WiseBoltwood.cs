@@ -73,7 +73,7 @@ namespace ASCOM.Wise40.Boltwood
             string str;
 
             if (_dataFile == null || _dataFile == string.Empty)
-                throw new InvalidOperationException("GetSensorData: _dataFile is either null or empty!");
+                throw new InvalidOperationException("GetSensorData: _dataFile name is either null or empty!");
 
             try
             {
