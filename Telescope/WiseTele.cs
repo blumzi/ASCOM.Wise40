@@ -1169,6 +1169,8 @@ namespace ASCOM.Wise40
             double rar = 0, decr = 0, az = 0, zd = 0;
             Angle alt;
 
+            return true;
+
             if (whileMoving && !(Slewing || Tracking))
                 return true;
 
