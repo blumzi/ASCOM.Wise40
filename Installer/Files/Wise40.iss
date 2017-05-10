@@ -33,24 +33,24 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked; OnlyBelowVersion: 0,6.1
 
 [Files]
-Source: "{#SolutionDir}\Dash\bin\Debug\Dash.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#SolutionDir}\Boltwood\bin\Debug\ASCOM.Wise40.Boltwood.ObservingConditions.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#SolutionDir}\Common\bin\Debug\Common.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#SolutionDir}\ComputerControl\bin\Debug\MccDaq.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#SolutionDir}\ComputerControl\bin\Debug\ASCOM.Wise40.ComputerControl.SafetyMonitor.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#SolutionDir}\VantagePro\bin\Debug\ASCOM.Wise40.VantagePro.ObservingConditions.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#SolutionDir}\Dome\bin\Debug\ASCOM.Wise40.Dome.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#SolutionDir}\Focus\bin\Debug\ASCOM.Wise40.Focuser.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#SolutionDir}\Hardware\bin\Debug\Hardware.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#SolutionDir}\PIDLibrary\bin\Debug\PID.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#SolutionDir}\Restore-ASCOM-Profiles\bin\Debug\Restore-ASCOM-Profiles.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#SolutionDir}\Restore-ASCOM-Profiles\bin\Debug\Restore-ASCOM-Profiles - ACP.lnk"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#SolutionDir}\Restore-ASCOM-Profiles\bin\Debug\Restore-ASCOM-Profiles - LCOGT.lnk"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#SolutionDir}\Restore-ASCOM-Profiles\bin\Debug\Restore-ASCOM-Profiles - Wise.lnk"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#SolutionDir}\SafeToImage\bin\Debug\ASCOM.Wise40.SafeToImage.SafetyMonitor.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#SolutionDir}\SafeToOpen\bin\Debug\ASCOM.Wise40.SafeToOpen.SafetyMonitor.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#SolutionDir}\FilterWheel\bin\Debug\ASCOM.Wise40.FilterWheel.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#SolutionDir}\Telescope\bin\Debug\ASCOM.Wise40.Telescope.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SolutionDir}\Dash\bin\x86\Debug\Dash.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SolutionDir}\Boltwood\bin\x86\Debug\ASCOM.Wise40.Boltwood.ObservingConditions.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SolutionDir}\Common\bin\x86\Debug\Common.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SolutionDir}\ComputerControl\bin\x86\Debug\MccDaq.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SolutionDir}\ComputerControl\bin\x86\Debug\ASCOM.Wise40.ComputerControl.SafetyMonitor.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SolutionDir}\VantagePro\bin\x86\Debug\ASCOM.Wise40.VantagePro.ObservingConditions.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SolutionDir}\Dome\bin\x86\Debug\ASCOM.Wise40.Dome.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SolutionDir}\Focus\bin\x86\Debug\ASCOM.Wise40.Focuser.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SolutionDir}\Hardware\bin\x86\Debug\Hardware.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SolutionDir}\PIDLibrary\bin\x86\Debug\PID.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SolutionDir}\Restore-ASCOM-Profiles\bin\x86\Debug\Restore-ASCOM-Profiles.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SolutionDir}\Restore-ASCOM-Profiles\bin\x86\Debug\Restore-ASCOM-Profiles - ACP.lnk"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SolutionDir}\Restore-ASCOM-Profiles\bin\x86\Debug\Restore-ASCOM-Profiles - LCOGT.lnk"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SolutionDir}\Restore-ASCOM-Profiles\bin\x86\Debug\Restore-ASCOM-Profiles - Wise.lnk"; DestDir: "{app}"; Flags: ignoreversion
+; Source: "{#SolutionDir}\SafeToImage\bin\x86\Debug\ASCOM.Wise40.SafeToImage.SafetyMonitor.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SolutionDir}\SafeToOpen\bin\x86\Debug\ASCOM.Wise40.SafeToOpen.SafetyMonitor.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SolutionDir}\FilterWheel\bin\x86\Debug\ASCOM.Wise40.FilterWheel.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SolutionDir}\Telescope\bin\x86\Debug\ASCOM.Wise40.Telescope.dll"; DestDir: "{app}"; Flags: ignoreversion
 
 Source: "{#SolutionDir}\Boltwood\Sample Files\ClarityII-data.txt"; DestDir: "{app}"; AfterInstall: CopyToTemp('c:\temp\ClarityII-data.txt')
 Source: "{#SolutionDir}\DavisVantage\Sample Files\Weather_Wise40_Vantage_Pro.htm"; DestDir: "{app}";  AfterInstall: CopyToTemp('c:\temp\Weather_Wise40_Vantage_Pro.htm')
