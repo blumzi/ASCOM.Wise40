@@ -861,6 +861,10 @@ namespace ASCOM.Wise40
             try
             {
                 telescopeSlewingCancellationTokenSource.Cancel();
+
+                telescopeSlewingCancellationTokenSource.Dispose();
+                telescopeSlewingCancellationTokenSource = new CancellationTokenSource();
+                telescopeSlewingCancellationToken = telescopeSlewingCancellationTokenSource.Token;
             }
             catch (AggregateException ax)
             {
@@ -881,6 +885,10 @@ namespace ASCOM.Wise40
                 try
                 {
                     domeSlewingCancellationTokenSource.Cancel();
+
+                    domeSlewingCancellationTokenSource.Dispose();
+                    domeSlewingCancellationTokenSource = new CancellationTokenSource();
+                    domeSlewingCancellationToken = domeSlewingCancellationTokenSource.Token;
                 }
                 catch (AggregateException ax)
                 {
@@ -1717,6 +1725,10 @@ namespace ASCOM.Wise40
         public void DomeStopper()
         {
             domeSlewingCancellationTokenSource.Cancel();
+
+            domeSlewingCancellationTokenSource.Dispose();
+            domeSlewingCancellationTokenSource = new CancellationTokenSource();
+            domeSlewingCancellationToken = domeSlewingCancellationTokenSource.Token;
         }
 
         private void _slewToCoordinatesAsync(Angle RightAscension, Angle Declination)
