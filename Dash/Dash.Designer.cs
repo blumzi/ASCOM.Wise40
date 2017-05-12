@@ -216,6 +216,7 @@
             this.labelRainRateValue = new System.Windows.Forms.Label();
             this.timerRefreshDisplay = new System.Windows.Forms.Timer(this.components);
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
+            this.annunciatorSimulation = new ASCOM.Controls.Annunciator();
             this.tableLayoutMain.SuspendLayout();
             this.groupBoxFocuser.SuspendLayout();
             this.groupBoxDomeGroup.SuspendLayout();
@@ -1957,6 +1958,7 @@
             this.annunciatorPanelSafety.Controls.Add(this.annunciatorComputerControl);
             this.annunciatorPanelSafety.Controls.Add(this.annunciatorDomePlatform);
             this.annunciatorPanelSafety.Controls.Add(this.annunciatorSafeToOpen);
+            this.annunciatorPanelSafety.Controls.Add(this.annunciatorSimulation);
             this.annunciatorPanelSafety.Location = new System.Drawing.Point(3, 339);
             this.annunciatorPanelSafety.Name = "annunciatorPanelSafety";
             this.annunciatorPanelSafety.Size = new System.Drawing.Size(181, 98);
@@ -2734,6 +2736,22 @@
             this.timerRefreshDisplay.Enabled = true;
             this.timerRefreshDisplay.Tick += new System.EventHandler(this.RefreshDisplay);
             // 
+            // annunciatorSimulation
+            // 
+            this.annunciatorSimulation.ActiveColor = System.Drawing.Color.Turquoise;
+            this.annunciatorSimulation.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
+            this.annunciatorSimulation.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            this.annunciatorSimulation.Font = new System.Drawing.Font("Consolas", 10F, System.Drawing.FontStyle.Italic);
+            this.annunciatorSimulation.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciatorSimulation.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciatorSimulation.Location = new System.Drawing.Point(3, 69);
+            this.annunciatorSimulation.Mute = false;
+            this.annunciatorSimulation.Name = "annunciatorSimulation";
+            this.annunciatorSimulation.Size = new System.Drawing.Size(173, 23);
+            this.annunciatorSimulation.TabIndex = 4;
+            this.annunciatorSimulation.Text = "SIMULATION";
+            this.annunciatorSimulation.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
             // FormDash
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
@@ -2968,6 +2986,7 @@
         private System.Windows.Forms.ToolStripMenuItem settingsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem manageFilterInventoryToolStripMenuItem;
         private ASCOM.Controls.Annunciator annunciatorDomePlatform;
+        private ASCOM.Controls.Annunciator annunciatorSimulation;
     }
 }
 
