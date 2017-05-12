@@ -133,7 +133,7 @@ namespace ASCOM.Wise40
             #endregion
         }
 
-        public void Calibrate()
+        public void FindHome()
         {
             if (wisetele == null)
                 wisetele = WiseTele.Instance;
