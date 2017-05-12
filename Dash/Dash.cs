@@ -27,10 +27,10 @@ namespace Dash
         Hardware hardware = Hardware.Instance;
         public WiseSite wisesite = WiseSite.Instance;
         public WiseSafeToOperate wisesafetoopen = WiseSafeToOperate.InstanceOpen;
-        //public ObservingConditions boltwood = new ASCOM.DriverAccess.ObservingConditions("ASCOM.ClarityII.ObservingConditions");
-        //public WiseBoltwood wiseboltwood = WiseBoltwood.Instance;
+        public WiseBoltwood wiseboltwood = WiseBoltwood.Instance;
         public WiseFilterWheel wisefilterwheel = WiseFilterWheel.Instance;
         public WiseDomePlatform wisedomeplatform = WiseDomePlatform.Instance;
+        WiseObject wiseobject = new WiseObject();
 
         DomeSlaveDriver domeSlaveDriver = DomeSlaveDriver.Instance;
         DebuggingForm debuggingForm = new DebuggingForm();
@@ -67,7 +67,7 @@ namespace Dash
             wisefocuser.Connected = true;
             wisesafetoopen.init();
             wisesafetoopen.Connected = true;
-            //wiseboltwood.Connected = true;
+            wiseboltwood.Connected = true;
             wisefilterwheel.init();
             wisefilterwheel.Connected = true;
             wisedomeplatform.init();
@@ -348,6 +348,24 @@ namespace Dash
             //}
             //toolTip.SetToolTip(annunciatorSafeToImage, tip);
             #endregion
+
+            #region Simulation
+            tip = null;
+
+            if (wiseobject.Simulated)
+            {
+                annunciatorSimulation.Text = "SIMULATION";
+                annunciatorSimulation.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+                tip = "Hardware access is simulated by software";
+            }
+            else
+            {
+                annunciatorSimulation.Text = "";
+                annunciatorSimulation.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+                tip = "Real Hardware Access (not simulated)";
+            }
+            toolTip.SetToolTip(annunciatorSimulation, tip);
+            #endregion
             #endregion
 
             #region RefreshDome
@@ -423,8 +441,8 @@ namespace Dash
                     labelCloudCoverValue.Text = "Unknown";
                     labelCloudCoverValue.ForeColor = Statuser.TriStateColor(Const.TriStateStatus.Error);
 
-                    //string light = wiseboltwood.CommandString("daylight", true);
-                    string light = "???";
+                    string light = wiseboltwood.CommandString("daylight", true);
+                    //string light = "???";
                     labelLightValue.Text = light;
                     labelLightValue.ForeColor = Statuser.TriStateColor(wisesafetoopen.isSafeLight);
 
