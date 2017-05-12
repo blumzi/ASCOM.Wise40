@@ -31,7 +31,7 @@ namespace Restore_ASCOM_Profiles
             WriteCloudSensorProfile();
             WriteVantageProProfile();
             WriteSafeToOpenProfile();
-            WriteSafeToImageProfile();
+            //WriteSafeToImageProfile();
             WriteDomeProfile();
             WriteTelescopeProfile();
             WriteOCHProfile();
