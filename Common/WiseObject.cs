@@ -1,11 +1,14 @@
 ﻿using System;
+using System.IO;
+using ASCOM.Utilities;
 
 namespace ASCOM.Wise40.Common
 {
     public class WiseObject
     {
         private string _name;
-        private bool _simulated = Environment.MachineName.ToLower() != "dome-ctlr";
+        //private bool _simulated = Environment.MachineName.ToLower() != "dome-ctlr";
+        private bool _simulated = AreWeReallySimulated();
 
         public string Name
         {
@@ -30,6 +33,12 @@ namespace ASCOM.Wise40.Common
             {
                 _simulated = value;
             }
+        }
+
+        private static bool AreWeReallySimulated()
+        {
+            return File.Exists("c:/temp/simulate") || 
+                (Environment.MachineName.ToLower() != "dome-ctlr");
         }
     }
 }
