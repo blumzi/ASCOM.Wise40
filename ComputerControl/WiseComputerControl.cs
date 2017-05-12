@@ -15,7 +15,7 @@ namespace ASCOM.Wise40
         private static bool _initialized = false;
         private WisePin computerControlPin;
         private Hardware.Hardware hardware = Hardware.Hardware.Instance;
-        //private static bool _simulated;
+        private WiseDomePlatform wisedomeplatform = WiseDomePlatform.Instance;
 
         // Explicit static constructor to tell C# compiler
         // not to mark type as beforefieldinit
@@ -42,13 +42,17 @@ namespace ASCOM.Wise40
             
             computerControlPin = new WisePin("CompControl", hardware.teleboard, DigitalPortType.SecondPortCH, 0, DigitalPortDirection.DigitalIn);
             _initialized = true;
+            wisedomeplatform.init();
         }
 
         public bool IsSafe
         {
             get
             {
-                return Simulated ? true : computerControlPin.isOn;
+                if (Simulated)
+                    return true;
+                else
+                    return computerControlPin.isOn && wisedomeplatform.IsSafe;
             }
         }
     }
