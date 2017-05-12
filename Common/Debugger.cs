@@ -19,7 +19,7 @@ namespace ASCOM.Wise40.Common
         private static bool _initialized = false;
         private static bool _tracing = false;
         private static string _debugFile = string.Empty;
-        private TextWriter debugStream;
+        //private TextWriter debugStream;
 
         static Debugger()
         {
@@ -124,8 +124,8 @@ namespace ASCOM.Wise40.Common
                     indents[(int)level] + " " + level.ToString() + ":",
                     msg);
 
-                if (debugStream != null)
-                    debugStream.WriteLine(line);
+                //if (debugStream != null)
+                //    debugStream.WriteLine(line);
 
                 System.Diagnostics.Debug.WriteLine(line);
                 if (listBox != null && _appendToWindow)
