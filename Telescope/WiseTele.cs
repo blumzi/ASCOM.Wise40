@@ -77,8 +77,7 @@ namespace ASCOM.Wise40
 
         public WisePin TrackPin;
         public WiseVirtualMotor NorthMotor, SouthMotor, EastMotor, WestMotor, TrackingMotor;
-
-        private WiseDomePlatform wisedomeplatform = WiseDomePlatform.Instance;
+        
         private bool _bypassSafety = false;
 
         private bool _atPark;
@@ -103,6 +102,8 @@ namespace ASCOM.Wise40
         private ReadyToSlewFlags readyToSlew = new ReadyToSlewFlags();
         System.Threading.Timer trackingTimer;
         const int trackingDomeAdjustmentInterval = 30 * 1000;   // half a minute
+
+        private string compControlOrPlatformNotSafe = "Computer control switch is OFF or platform is RAISED (not safe)";
 
         /// <summary>
         /// Usually two or three tasks are used to perform a slew:
@@ -216,7 +217,7 @@ namespace ASCOM.Wise40
                 return names[rate];
             return rate.ToString();
         }
-        
+
         public double TargetDeclination
         {
             get
@@ -368,7 +369,7 @@ namespace ASCOM.Wise40
                 _connected = value;
             }
         }
-        
+
         private static volatile WiseTele _instance; // Singleton
         private static object syncObject = new object();
         private static bool _initialized = false;
@@ -505,7 +506,7 @@ namespace ASCOM.Wise40
             _instance.realMovementParameters[TelescopeAxes.axisPrimary] = new Dictionary<double, MovementParameters>();
             _instance.realMovementParameters[TelescopeAxes.axisPrimary][Const.rateSlew] = new MovementParameters()
             {
-                minimalMovement = Angle.FromHours(1/15),    // 1 degree
+                minimalMovement = Angle.FromHours(1 / 15),    // 1 degree
                 stopMovement = new Angle("00h16m00.0s"),
                 millisecondsPerDegree = 500.0,              // 2deg/sec
             };
@@ -528,21 +529,21 @@ namespace ASCOM.Wise40
             _instance.realMovementParameters[TelescopeAxes.axisSecondary][Const.rateSlew] = new MovementParameters()
             {
                 minimalMovement = new Angle("01:00:00.0"),
-                stopMovement    = new Angle("05:00:00.0"),
+                stopMovement = new Angle("05:00:00.0"),
                 millisecondsPerDegree = 500.0,      // 2 deg/sec
             };
 
             _instance.realMovementParameters[TelescopeAxes.axisSecondary][Const.rateSet] = new MovementParameters()
             {
                 minimalMovement = new Angle("00:01:00.0"),
-                stopMovement    = new Angle("00:00:15.0"),
+                stopMovement = new Angle("00:00:15.0"),
                 millisecondsPerDegree = 60000.0,    // 1 min/sec
             };
 
             _instance.realMovementParameters[TelescopeAxes.axisSecondary][Const.rateGuide] = new MovementParameters()
             {
                 minimalMovement = new Angle("00:00:01.0"),
-                stopMovement    = new Angle("00:00:00.5"),
+                stopMovement = new Angle("00:00:00.5"),
                 millisecondsPerDegree = 3600000.0,  // 1 sec/sec
             };
             #endregion
@@ -678,7 +679,7 @@ namespace ASCOM.Wise40
         {
             if (AtPark)
                 throw new InvalidOperationException("Cannot AbortSlew while AtPark");
-            
+
             Stop();
             #region trace
             traceLogger.LogMessage("AbortSlew", "");
@@ -776,7 +777,7 @@ namespace ASCOM.Wise40
 
         private void AdjustDomePositionWhileTracking(object StateObject)
         {
-            if (! Tracking)
+            if (!Tracking)
             {
                 trackingTimer.Change(Timeout.Infinite, Timeout.Infinite);
                 return;
@@ -870,11 +871,11 @@ namespace ASCOM.Wise40
             {
                 ax.Handle((Func<Exception, bool>)((ex) =>
                 {
-                        #region debug
-                        debugger.WriteLine((Debugger.DebugLevel)Debugger.DebugLevel.DebugExceptions,
-                        "Stop: telescope slewing cancellation got {0}", ex.Message);
-                        #endregion debug
-                        if (ex is ObjectDisposedException)
+                    #region debug
+                    debugger.WriteLine((Debugger.DebugLevel)Debugger.DebugLevel.DebugExceptions,
+                    "Stop: telescope slewing cancellation got {0}", ex.Message);
+                    #endregion debug
+                    if (ex is ObjectDisposedException)
                         return true;
                     return false;
                 }));
@@ -985,12 +986,12 @@ namespace ASCOM.Wise40
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, string.Format("MoveAxis({0}, {1})", Axis, Rate));
             #endregion debug
 
-            if (!wisedomeplatform.IsSafe && !BypassSafety)
+            if (!wiseComputerControl.IsSafe && !BypassSafety)
                 throw new ASCOM.InvalidOperationException("Dome platform is NOT safe.");
 
             Const.AxisDirection direction = (Rate == Const.rateStopped) ? Const.AxisDirection.None :
                 (Rate < 0.0) ? Const.AxisDirection.Decreasing : Const.AxisDirection.Increasing;
-            
+
             _moveAxis(Axis, Rate, direction, true);
         }
 
@@ -1052,7 +1053,7 @@ namespace ASCOM.Wise40
             }
 
             if (!wiseComputerControl.IsSafe)
-                throw new InvalidOperationException("Computer control switch is OFF (not safe)");
+                throw new InvalidOperationException(compControlOrPlatformNotSafe);
 
             if (Rate == Const.rateStopped)
             {
@@ -1155,7 +1156,7 @@ namespace ASCOM.Wise40
                 throw new InvalidOperationException(string.Format("Not safe to SlewToTargetAsync to ({0}, {1})", ra, dec));
 
             if (!wiseComputerControl.IsSafe)
-                throw new InvalidOperationException("Computer control switch is OFF (not safe)");
+                throw new InvalidOperationException(compControlOrPlatformNotSafe);
 
             _slewToCoordinatesAsync(_targetRightAscension, _targetDeclination);
         }
@@ -1193,7 +1194,7 @@ namespace ASCOM.Wise40
             //
             // For a check-before-move target we only check that the altitude is not under the altLimit.
             //
-            if (! whileMoving)
+            if (!whileMoving)
             {
                 if (altNotSafe)
                 {
@@ -1290,7 +1291,7 @@ namespace ASCOM.Wise40
             }
             return true;
         }
-        
+
         public bool AtPark
         {
             get
@@ -1379,7 +1380,8 @@ namespace ASCOM.Wise40
                 {
                     _slewToCoordinatesAsync(RightAscension, Declination);
                 }, telescopeSlewingCancellationToken);
-            } catch (AggregateException ae)
+            }
+            catch (AggregateException ae)
             {
                 ae.Handle((Func<Exception, bool>)((ex) =>
                 {
@@ -1397,12 +1399,13 @@ namespace ASCOM.Wise40
         }
 
         private enum ScopeSlewerStatus { Undefined, CloseEnough, ChangedDirection, Canceled };
-        
+
         private void ScopeSlewer(TelescopeAxes axis, Angle targetAngle)
         {
             Slewers.Type otherSlewer = (axis == TelescopeAxes.axisPrimary) ? Slewers.Type.Dec : Slewers.Type.Ra;
 
-            _instance.currMovement[axis] = new Movement() {
+            _instance.currMovement[axis] = new Movement()
+            {
                 rate = Const.rateStopped,
                 direction = Const.AxisDirection.None
             };
@@ -1665,44 +1668,44 @@ namespace ASCOM.Wise40
 
         private static void checkDomeActionAborted(object StateObject)
         {
-            if (domeSlewingCancellationToken.IsCancellationRequested)
-            {
-                _instance.domeSlaveDriver.AbortSlew();
-                _instance.slewers.Delete(Slewers.Type.Dome);
-                domeSlewTimer.Change(Timeout.Infinite, Timeout.Infinite);
-            }
+            domeSlewingCancellationToken.ThrowIfCancellationRequested();
         }
 
         private static System.Threading.Timer domeSlewTimer = new System.Threading.Timer(new TimerCallback(checkDomeActionAborted));
 
         private void _genericDomeSlewerTask(Action action)
         {
-            domeSlewer = new SlewerTask() { type = Slewers.Type.Dome };
-            domeSlewer.task = Task.Run(
-                () => {
+            domeSlewer = new SlewerTask() { type = Slewers.Type.Dome, task = null };
+            slewers.Add(domeSlewer);
+            domeSlewer.task = Task.Run(() =>
+                {
                     try
                     {
                         domeSlewTimer.Change(100, 100);
-                        slewers.Add(domeSlewer);
                         action();
-                        slewers.Delete(Slewers.Type.Dome);
-                        domeSlewTimer.Change(Timeout.Infinite, Timeout.Infinite);
                     }
                     catch (OperationCanceledException)
                     {
                         domeSlaveDriver.AbortSlew();
                         domeSlewTimer.Change(Timeout.Infinite, Timeout.Infinite);
+                        slewers.Delete(Slewers.Type.Dome);
                     }
-                },
-                domeSlewingCancellationToken
-            );
+                }, domeSlewingCancellationToken).ContinueWith((domeSlewerTask) =>
+                {
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                        "slewer \"{0}\" completed with status: {1}", Slewers.Type.Dome.ToString(), domeSlewerTask.Status.ToString());
+                    #endregion
+                    domeSlewTimer.Change(Timeout.Infinite, Timeout.Infinite);
+                    slewers.Delete(Slewers.Type.Dome);
+                }, TaskContinuationOptions.ExecuteSynchronously);
         }
 
         public void DomeSlewer(Angle ra, Angle dec)
         {
             _genericDomeSlewerTask(() => domeSlaveDriver.SlewToAz(ra, dec));
         }
-        
+
         public void DomeSlewer(double az)
         {
             _genericDomeSlewerTask(() => domeSlaveDriver.SlewToAz(az));
@@ -1715,7 +1718,7 @@ namespace ASCOM.Wise40
 
         public void DomeCalibrator()
         {
-            _genericDomeSlewerTask(() => domeSlaveDriver.Calibrate());
+            _genericDomeSlewerTask(() => domeSlaveDriver.FindHome());
         }
 
         public void DomeStopper()
@@ -1745,10 +1748,12 @@ namespace ASCOM.Wise40
                     {
                         TelescopeAxes axis;
                         Angle angle;
-                        if (slewerType == Slewers.Type.Ra) {
+                        if (slewerType == Slewers.Type.Ra)
+                        {
                             axis = TelescopeAxes.axisPrimary; angle = RightAscension;
                         }
-                        else {
+                        else
+                        {
                             axis = TelescopeAxes.axisSecondary; angle = Declination;
                         }
 
@@ -1812,10 +1817,7 @@ namespace ASCOM.Wise40
                 throw new InvalidOperationException(string.Format("Not safe to SlewToCoordinates to ({0}, {1})", ra, dec));
 
             if (!wiseComputerControl.IsSafe)
-                throw new InvalidOperationException("Computer control switch is OFF (not safe)");
-
-            if (!wisedomeplatform.IsSafe && !BypassSafety)
-                throw new ASCOM.InvalidOperationException("Dome platform is NOT safe.");
+                throw new InvalidOperationException(compControlOrPlatformNotSafe);
 
             try
             {
@@ -1856,10 +1858,7 @@ namespace ASCOM.Wise40
             }
 
             if (!wiseComputerControl.IsSafe)
-                throw new InvalidOperationException("Computer control switch is OFF (not safe)");
-
-            if (!wisedomeplatform.IsSafe && !BypassSafety)
-                throw new ASCOM.InvalidOperationException("Dome platform is NOT safe.");
+                throw new InvalidOperationException(compControlOrPlatformNotSafe);
 
             try
             {
@@ -2057,7 +2056,7 @@ namespace ASCOM.Wise40
                 throw new InvalidOperationException(string.Format("Not safe to SlewToTarget to ({0}, {1})", ra, dec));
 
             if (!wiseComputerControl.IsSafe)
-                throw new InvalidOperationException("Computer control switch is OFF (not safe)");
+                throw new InvalidOperationException(compControlOrPlatformNotSafe);
 
             SlewToCoordinates(TargetRightAscension, TargetDeclination); // sync
         }
