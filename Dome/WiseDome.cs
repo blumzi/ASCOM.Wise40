@@ -308,7 +308,12 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return DomeStateIsOn(DomeState.MovingCCW) | DomeStateIsOn(DomeState.MovingCW);
+                var ret = DomeStateIsOn(DomeState.MovingCCW) | DomeStateIsOn(DomeState.MovingCW);
+
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "DomeIsMoving: {0}", ret);
+                #endregion
+                return ret;
             }
         }
         
@@ -359,7 +364,11 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return _shutterState == ShutterState.shutterOpening || _shutterState == ShutterState.shutterClosing;
+                var ret = _shutterState == ShutterState.shutterOpening || _shutterState == ShutterState.shutterClosing;
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "ShutterIsMoving: {0}", ret.ToString());
+                #endregion
+                return ret;
             }
         }
 
@@ -551,6 +560,9 @@ namespace ASCOM.Wise40
 
         public void StartOpeningShutter()
         {
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "StartOpeningShutter: started opening the shutter");
+            #endregion debug
             openPin.SetOn();
             _shutterState = ShutterState.shutterOpening;
             _shutterTimer.Change(_shutterTimeout, Timeout.Infinite);
@@ -560,6 +572,9 @@ namespace ASCOM.Wise40
 
         public void StartClosingShutter()
         {
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "StartClosingShutter: started closing the shutter");
+            #endregion debug
             closePin.SetOn();
             _shutterState = ShutterState.shutterClosing;
             _shutterTimer.Change(_shutterTimeout, Timeout.Infinite);
@@ -569,6 +584,8 @@ namespace ASCOM.Wise40
 
         public void ShutterStop()
         {
+            ShutterState prev = _shutterState;
+
             switch (_shutterState)
             {
                 case ShutterState.shutterOpening:
@@ -581,6 +598,9 @@ namespace ASCOM.Wise40
                     _shutterState = ShutterState.shutterClosed;
                     break;
             }
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "ShutterStop: _shutterState was {0} is {1}", prev, _shutterState);
+            #endregion
         }
 
         public CalibrationPoint AtCaliPoint
@@ -1082,6 +1102,9 @@ namespace ASCOM.Wise40
                 ShutterState ret = _shutterState;
                 #region trace
                 tl.LogMessage("Dome: ShutterState get", ret.ToString());
+                #endregion
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "ShutterState - get: {0}", ret.ToString());
                 #endregion
                 return ret;
             }
