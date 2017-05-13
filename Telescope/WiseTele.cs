@@ -506,7 +506,7 @@ namespace ASCOM.Wise40
             _instance.realMovementParameters[TelescopeAxes.axisPrimary] = new Dictionary<double, MovementParameters>();
             _instance.realMovementParameters[TelescopeAxes.axisPrimary][Const.rateSlew] = new MovementParameters()
             {
-                minimalMovement = Angle.FromHours(1 / 15),    // 1 degree
+                minimalMovement = new Angle("00h02m00.0s"),
                 stopMovement = new Angle("00h16m00.0s"),
                 millisecondsPerDegree = 500.0,              // 2deg/sec
             };
@@ -514,14 +514,14 @@ namespace ASCOM.Wise40
             _instance.realMovementParameters[TelescopeAxes.axisPrimary][Const.rateSet] = new MovementParameters()
             {
                 minimalMovement = Angle.FromHours(Angle.Deg2Hours("00:00:05.0")),
-                stopMovement = new Angle("00h00m01.0s"),
+                stopMovement = new Angle("00h00m02.0s"),
                 millisecondsPerDegree = 60000.0,    // 1min/sec
             };
 
             _instance.realMovementParameters[TelescopeAxes.axisPrimary][Const.rateGuide] = new MovementParameters()
             {
                 minimalMovement = Angle.FromHours(Angle.Deg2Hours("00:00:01.0")),
-                stopMovement = new Angle("00h00m00.5s"),
+                stopMovement = new Angle("00h00m00.04s"),
                 millisecondsPerDegree = 3600000.0,  // 1 sec/sec
             };
 
