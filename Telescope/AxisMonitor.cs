@@ -9,6 +9,7 @@ using ASCOM.DeviceInterface;
 
 using ASCOM.Wise40.Hardware;
 using ASCOM.Wise40.Common;
+using ASCOM.Wise40;
 
 namespace ASCOM.Wise40
 {
@@ -20,9 +21,17 @@ namespace ASCOM.Wise40
         private WiseTele wisetele = WiseTele.Instance;
         private bool _connected = false;
         private Debugger debugger = Debugger.Instance;
-
-        //private static double epsilon;
+        
+        /// <summary>
+        /// The epsilon value contains the minimal encoder change (within the _samplingFrequency below)
+        ///  that's considered as the axis being currently moving.
+        /// </summary>
+        private double epsilon;
         private static readonly int _samplingFrequency = 10;
+        private const double secondaryDelta = 0.0001;
+        private const double trackingDelta = 0;
+        private const double primaryDelta = 7.0;
+        private const double simulatedDelta = 0.4;
 
         /// <summary>
         /// A background Task that checks whether the telescope axis is moving
@@ -38,44 +47,59 @@ namespace ASCOM.Wise40
         public AxisMonitor(TelescopeAxes axis)
         {
             _axis = axis;
-            if (_axis == TelescopeAxes.axisPrimary)
+
+            if ((new WiseObject()).Simulated)
             {
-                _other_axis = TelescopeAxes.axisSecondary;
-                //epsilon = 0.00001D;
-            } else
-            {
-                _other_axis = TelescopeAxes.axisPrimary;
-                //epsilon = 0.0;
+                epsilon = simulatedDelta;
             }
+            else if (_axis == TelescopeAxes.axisPrimary)
+            {
+                epsilon = primaryDelta; // To Be Reviewed
+            }
+            else if (_axis == TelescopeAxes.axisSecondary)
+            {
+                epsilon = secondaryDelta;   // Measured as the minimal change while the Dec axis is moving
+            }
+
+            _other_axis = (_axis == TelescopeAxes.axisPrimary) ?
+                TelescopeAxes.axisSecondary : TelescopeAxes.axisPrimary;
         }
 
         public bool IsMoving
         {
             get
             {
-                bool ret;
-                double _max = double.MinValue;
-                double epsilon = 0.00004;       // TODO: Check in real life
-                foreach (double d in _deltas.ToArray())
-                    if (d > _max)
-                        _max = d;
-
-                if (_axis == TelescopeAxes.axisPrimary)
-                    ret = _max > epsilon;
-                else
-                    ret = _max > 0.0;
+                var max = _deltas.ToArray().Max();
+                bool ret =  max > epsilon;
 
                 #region debug
-                //debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}: _max: {1:F15}, epsilon: {2:F15}, ret: {3}, tracking: {4}",
-                //    _axis, _max, epsilon, ret, wisetele.Tracking);
+                string deb = string.Format("AxisMonitor:IsMoving:{0}: max: {1:F15}, epsilon: {2:F15}, ret: {3}, active: {4}",
+                    _axis, max, epsilon, ret, ActiveMotors(_axis)) + "[";
+                foreach (var d in _deltas.ToArray())
+                    deb += " " + d.ToString();
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, deb + "]");
                 #endregion
                 return ret;
             }
         }
 
+        private string ActiveMotors(TelescopeAxes axis)
+        {
+            string ret = string.Empty;
+
+            List<WiseVirtualMotor> motors = new List<WiseVirtualMotor>(wisetele.axisMotors[axis]);
+            if (axis == TelescopeAxes.axisPrimary)
+                motors.Add(wisetele.TrackingMotor);
+            foreach (var m in motors)
+                if (m.isOn)
+                    ret += m.Name + " ";
+            return ret;
+        }
+
         private void SampleAxisMovement(object StateObject)
         {
-            double value = (_axis == TelescopeAxes.axisPrimary) ? wisetele.RightAscension : wisetele.Declination;
+            //double value = (_axis == TelescopeAxes.axisPrimary) ? wisetele.RightAscension : wisetele.Declination;
+            double value = (_axis == TelescopeAxes.axisPrimary) ? wisetele.HAEncoder.Value : wisetele.Declination;
             if (_previousValue == double.NaN)
             {
                 _previousValue = value;
@@ -87,8 +111,8 @@ namespace ASCOM.Wise40
                 return;
 
             #region debug
-            //debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}: value: {1}, _previousValue: {2}, enqueueing: {3:F15}",
-            //    _axis, value, _previousValue, d);
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "AxisMonitor:SampleAxisMovement:{0}: value: {1}, _previousValue: {2}, enqueueing: {3:F15}, active: {4}",
+                _axis, value, _previousValue, d, ActiveMotors(_axis));
             #endregion
             _deltas.Enqueue(d);
             _previousValue = value;
