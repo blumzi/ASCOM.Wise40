@@ -528,8 +528,8 @@ namespace ASCOM.Wise40
             _instance.realMovementParameters[TelescopeAxes.axisSecondary] = new Dictionary<double, MovementParameters>();
             _instance.realMovementParameters[TelescopeAxes.axisSecondary][Const.rateSlew] = new MovementParameters()
             {
-                minimalMovement = new Angle("01:00:00.0"),
-                stopMovement = new Angle("05:00:00.0"),
+                minimalMovement = new Angle("00:30:00.0"),
+                stopMovement = new Angle("04:00:00.0"),
                 millisecondsPerDegree = 500.0,      // 2 deg/sec
             };
 
