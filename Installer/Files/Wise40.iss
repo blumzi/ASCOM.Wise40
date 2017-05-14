@@ -46,7 +46,7 @@ Source: "{#SolutionDir}\PIDLibrary\bin\x86\Debug\PID.dll"; DestDir: "{app}"; Fla
 Source: "{#SolutionDir}\Restore-ASCOM-Profiles\bin\x86\Debug\Restore-ASCOM-Profiles.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SolutionDir}\Restore-ASCOM-Profiles\bin\x86\Debug\Restore-ASCOM-Profiles - ACP.lnk"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SolutionDir}\Restore-ASCOM-Profiles\bin\x86\Debug\Restore-ASCOM-Profiles - LCOGT.lnk"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#SolutionDir}\Restore-ASCOM-Profiles\bin\x86\Debug\Restore-ASCOM-Profiles - Wise.lnk"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SolutionDir}\Restore-ASCOM-Profiles\bin\x86\Debug\Restore-ASCOM-Profiles - Wise40.lnk"; DestDir: "{app}"; Flags: ignoreversion
 ; Source: "{#SolutionDir}\SafeToImage\bin\x86\Debug\ASCOM.Wise40.SafeToImage.SafetyMonitor.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SolutionDir}\SafeToOpen\bin\x86\Debug\ASCOM.Wise40.SafeToOpen.SafetyMonitor.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SolutionDir}\FilterWheel\bin\x86\Debug\ASCOM.Wise40.FilterWheel.dll"; DestDir: "{app}"; Flags: ignoreversion
