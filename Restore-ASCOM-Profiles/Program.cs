@@ -143,6 +143,7 @@ namespace Restore_ASCOM_Profiles
             string studyMotionProfileName = "StudyMotion";
             string debugFileProfileName = "DebugFile";
             string debugFile = "c:/temp/Wise40-debug.txt";
+            string refractionProfileName = "Calculate refraction";
 
             using (Profile driverProfile = new Profile())
             {
@@ -156,6 +157,7 @@ namespace Restore_ASCOM_Profiles
                     Debugger.DebugLevel.DebugASCOM |
                     Debugger.DebugLevel.DebugLogic).ToString());
                 driverProfile.WriteValue(driverID, debugFileProfileName, debugFile);
+                driverProfile.WriteValue(driverID, refractionProfileName, mode == Mode.LCOGT ? false.ToString() : true.ToString());
             }
         }
 
