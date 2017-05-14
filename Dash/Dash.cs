@@ -458,7 +458,7 @@ namespace Dash
 
                     #region Light from Boltwood
                     string light = wiseboltwood.CommandString("daylight", true);
-                    labelLightValue.Text = light;
+                    labelLightValue.Text = light.Substring(3);
                     labelLightValue.ForeColor = Statuser.TriStateColor(wisesafetoopen.isSafeLight);
                     #endregion
 
