@@ -1280,6 +1280,15 @@ namespace ASCOM.Wise40
                 return _parkAzimuth;
             }
         }
+
+        public bool MotorsAreActive
+        {
+            get
+            {
+                return leftPin.isOn || rightPin.isOn;
+            }
+        }
+
         #region Profile
         internal static string autoCalibrateProfileName = "AutoCalibrate";
         internal static string bypassSafetyProfileName = "Bypass Safety";
