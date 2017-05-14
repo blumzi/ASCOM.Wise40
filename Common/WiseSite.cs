@@ -26,7 +26,6 @@ namespace ASCOM.Wise40
         public Astrometry.RefractionOption refractionOption;
         public double siteLatitude, siteLongitude, siteElevation;
         public ObservingConditions och;
-        //public ObservingConditions vantagePro;
         public SafetyMonitor computerControl, safeToOpen, safeToImage;
         private DateTime lastOCFetch;
         private Debugger debugger = Debugger.Instance;
@@ -63,8 +62,6 @@ namespace ASCOM.Wise40
             {
                 och = new ObservingConditions("ASCOM.OCH.ObservingConditions");
                 och.Connected = true;
-                //vantagePro = new ObservingConditions("ASCOM.Wise40.VantagePro.ObservingConditions");
-                //vantagePro.Connected = true;
                 refractionOption = Astrometry.RefractionOption.LocationRefraction;
                 lastOCFetch = DateTime.Now;
             }
@@ -74,7 +71,6 @@ namespace ASCOM.Wise40
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Could not connect to OCH: {0}", ex.Message);
                 #endregion
                 och = null;
-                //vantagePro = null;
                 refractionOption = Astrometry.RefractionOption.NoRefraction;
             }
 
@@ -201,19 +197,15 @@ namespace ASCOM.Wise40
             onSurface.Pressure = averagePressures[month];
 
             if (och != null && DateTime.Now.Subtract(lastOCFetch).TotalMinutes > freqOCFetchMinutes)
-//            if (vantagePro != null && DateTime.Now.Subtract(lastOCFetch).TotalMinutes > freqOCFetchMinutes)
             {
                 try
                 {
                     double timeSinceLastUpdate = och.TimeSinceLastUpdate("Temperature");
-//                    double timeSinceLastUpdate = vantagePro.TimeSinceLastUpdate("Temperature");
 
                     if (timeSinceLastUpdate > (freqOCFetchMinutes * 60))
                     {
                         onSurface.Temperature = och.Temperature;
                         onSurface.Pressure = och.Pressure;
-                        //onSurface.Temperature = vantagePro.Temperature;
-                        //onSurface.Pressure = vantagePro.Pressure;
                         refractionOption = RefractionOption.LocationRefraction;
                     }
                 }
