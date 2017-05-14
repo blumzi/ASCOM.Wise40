@@ -1179,6 +1179,7 @@ namespace ASCOM.Wise40
 
             Angle ra = Angle.FromHours(TargetRightAscension, Angle.Type.RA);
             Angle dec = Angle.FromDegrees(TargetDeclination, Angle.Type.Dec);
+            string notSafe;
 
             #region trace
             traceLogger.LogMessage("SlewToTargetAsync", string.Format("Started: ra: {0}, dec: {1}", ra, dec));
@@ -1193,8 +1194,9 @@ namespace ASCOM.Wise40
             if (!Tracking)
                 throw new InvalidOperationException("Cannot SlewToTargetAsync while NOT Tracking");
 
-            if (!SafeAtCoordinates(ra, dec))
-                throw new InvalidOperationException(string.Format("Not safe to SlewToTargetAsync to ({0}, {1})", ra, dec));
+            notSafe = SafeAtCoordinates(ra, dec);
+            if (notSafe != string.Empty)
+                throw new InvalidOperationException(notSafe);
 
             if (!wiseComputerControl.IsSafe)
                 throw new InvalidOperationException(compControlOrPlatformNotSafe);
@@ -1210,10 +1212,11 @@ namespace ASCOM.Wise40
         /// <param name="ra">RightAscension of the checked position</param>
         /// <param name="dec">Declination of the checked position</param>
         /// <param name="whileMoving">true: the check is while moving, false: the check is in-advance</param>
-        public bool SafeAtCoordinates(Angle ra, Angle dec, bool whileTracking = false)
+        public string SafeAtCoordinates(Angle ra, Angle dec, bool whileTracking = false)
         {
             double rar = 0, decr = 0, az = 0, zd = 0;
             Angle alt;
+            string ret = string.Empty;
             
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "SafeAtCoordinates(ra: {0}, dec: {1}, moving: {2}) - started.",
@@ -1221,7 +1224,7 @@ namespace ASCOM.Wise40
             #endregion
 
             if (whileTracking && !Tracking)
-                return true;
+                return string.Empty;
 
             wisesite.prepareRefractionData(_calculateRefraction);
             novas31.Equ2Hor(astroutils.JulianDateUT1(0), 0,
@@ -1242,14 +1245,14 @@ namespace ASCOM.Wise40
             {
                 if (altNotSafe)
                 {
-                    string message = string.Format("SafeAtCoordinates({0}, {1}, not-moving) => altNotSafe: alt: {2} < altLimit: {3}",
-                        ra, dec, alt, altLimit);
+                    string message = string.Format("SafeAtCoordinates(ra: {0}, dec: {1}, whileTracking: {4}) => altNotSafe: alt: {2} < altLimit: {3}",
+                        ra, dec, alt, altLimit, whileTracking.ToString());
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugLogic, message);
                     #endregion debug
-                    return false;
+                    return message;
                 }
-                return true;
+                return string.Empty;
             }
 
             //
@@ -1303,9 +1306,9 @@ namespace ASCOM.Wise40
                 debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "SafeAtCoordinates: Done backing off");
                 #endregion
 
-                return false;
+                return message;
             }
-            return true;
+            return string.Empty;
         }
 
         public bool AtPark
@@ -1864,8 +1867,12 @@ namespace ASCOM.Wise40
             if (!Tracking)
                 throw new InvalidOperationException("Cannot SlewToCoordinates while NOT Tracking");
 
-            if (!noSafetyCheck && !SafeAtCoordinates(ra, dec))
-                throw new InvalidOperationException(string.Format("Not safe to SlewToCoordinates to ({0}, {1})", ra, dec));
+            if (!noSafetyCheck)
+            {
+                string notSafe = SafeAtCoordinates(ra, dec);
+                if (notSafe != string.Empty)
+                    throw new InvalidOperationException(notSafe);
+            }
 
             if (!wiseComputerControl.IsSafe)
                 throw new InvalidOperationException(compControlOrPlatformNotSafe);
@@ -1904,8 +1911,9 @@ namespace ASCOM.Wise40
                 if (!Tracking)
                     throw new InvalidOperationException("Cannot SlewToCoordinates while NOT Tracking");
 
-                if (!SafeAtCoordinates(ra, dec))
-                    throw new InvalidOperationException(string.Format("Not safe to SlewToCoordinatesAsync to ({0}, {1})", ra, dec));
+                string notSafe = SafeAtCoordinates(ra, dec);
+                if (notSafe != string.Empty)
+                    throw new InvalidOperationException(notSafe);
             }
 
             if (!wiseComputerControl.IsSafe)
@@ -2103,8 +2111,9 @@ namespace ASCOM.Wise40
             if (!Tracking)
                 throw new InvalidOperationException("Cannot SlewToCoordinates while NOT Tracking");
 
-            if (!SafeAtCoordinates(ra, dec))
-                throw new InvalidOperationException(string.Format("Not safe to SlewToTarget to ({0}, {1})", ra, dec));
+            string notSafe = SafeAtCoordinates(ra, dec);
+            if (notSafe != string.Empty)
+                throw new InvalidOperationException(notSafe);
 
             if (!wiseComputerControl.IsSafe)
                 throw new InvalidOperationException(compControlOrPlatformNotSafe);
