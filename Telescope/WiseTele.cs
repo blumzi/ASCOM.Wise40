@@ -785,6 +785,9 @@ namespace ASCOM.Wise40
 
             set
             {
+                if (!_enslaveDome)
+                    return;
+
                 if (trackingTimer == null)
                     trackingTimer = new System.Threading.Timer(new System.Threading.TimerCallback(AdjustDomePositionWhileTracking));
 
@@ -840,12 +843,14 @@ namespace ASCOM.Wise40
                     _lastTrackingLST = wisesite.LocalSiderealTime.Hours;
 
                     if (TrackingMotor.isOff)
-                        TrackingMotor.SetOn(Const.rateTrack);
+                        TrackingMotor.SetOn(Const.rateTrack);                    
+                    SyncDomePosition = true;
                 }
                 else
                 {
                     if (TrackingMotor.isOn)
                         TrackingMotor.SetOff();
+                    SyncDomePosition = false;
                 }
                 safetyMonitorTimer.EnableIfNeeded();
 
@@ -1205,18 +1210,17 @@ namespace ASCOM.Wise40
         /// <param name="ra">RightAscension of the checked position</param>
         /// <param name="dec">Declination of the checked position</param>
         /// <param name="whileMoving">true: the check is while moving, false: the check is in-advance</param>
-        public bool SafeAtCoordinates(Angle ra, Angle dec, bool whileMoving = false)
+        public bool SafeAtCoordinates(Angle ra, Angle dec, bool whileTracking = false)
         {
             double rar = 0, decr = 0, az = 0, zd = 0;
             Angle alt;
-
-            //return true;
+            
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "SafeAtCoordinates(ra: {0}, dec: {1}, moving: {2}) - started.",
-                ra.ToString(), dec.ToString(), whileMoving.ToString());
+                ra.ToString(), dec.ToString(), whileTracking.ToString());
             #endregion
 
-            if (whileMoving && !(Slewing || Tracking))
+            if (whileTracking && !Tracking)
                 return true;
 
             wisesite.prepareRefractionData(_calculateRefraction);
@@ -1234,7 +1238,7 @@ namespace ASCOM.Wise40
             //
             // For a check-before-move target we only check that the altitude is not under the altLimit.
             //
-            if (!whileMoving)
+            if (!whileTracking)
             {
                 if (altNotSafe)
                 {
@@ -1252,7 +1256,6 @@ namespace ASCOM.Wise40
             // If we're checking at the current position, i.e. the check is while we're in motion, we:
             // - check if the hour angle is within limits
             // - back-off the scope away from the unsafe coordinates
-            // - abort slewing
             // - stop tracking 
             //
             Angle ha = Angle.FromHours(HourAngle, Angle.Type.HA);
@@ -1268,7 +1271,8 @@ namespace ASCOM.Wise40
 
             if (altNotSafe || haNotSafe)
             {
-                string message = string.Format("SafeAtCoordinates({0}, {1}, while moving): NOT SAFE: ", ra, dec);
+                string message = string.Format("SafeAtCoordinates(ra: {0}, dec: {1}, whileTracking: {2}): NOT SAFE: ",
+                    ra, dec, whileTracking.ToString());
 
                 if (altNotSafe)
                     message += string.Format("altNotSafe: alt: {0} < altLimit: {1} ", alt, altLimit);
@@ -1277,56 +1281,27 @@ namespace ASCOM.Wise40
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, message);
                 #endregion debug
-
-                Angle safeRa = ra, safeDec = dec;
-
-                // Before stopping, find the motor(s) that brought us to the unsafe position
-                List<WiseVirtualMotor> activeMotors = new List<WiseVirtualMotor>();
-
-                if (WestMotor.isOn)
-                {
-                    safeRa += primarySafetyBackoff;
-                    activeMotors.Add(WestMotor);
-                }
-                else if (EastMotor.isOn)
-                {
-                    safeRa -= primarySafetyBackoff;
-                    activeMotors.Add(EastMotor);
-                }
-
-                if (SouthMotor.isOn)
-                {
-                    safeDec += secondarySafetyBackoff;
-                    activeMotors.Add(SouthMotor);
-                }
-                else if (NorthMotor.isOn)
-                {
-                    safeDec -= secondarySafetyBackoff;
-                    activeMotors.Add(NorthMotor);
-                }
-
-                if (TrackingMotor.isOn)
-                    activeMotors.Add(TrackingMotor);
-
-                message += string.Format(", active motors: ");
-                foreach (WiseVirtualMotor m in activeMotors)
-                    message += m.ToString() + ", ";
-
-                message += string.Format("backing off to ({0}, {1}), stopping Tracking", safeRa, safeDec);
+                
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, message);
                 #endregion
                 #region trace
                 traceLogger.LogMessage("SafeAtCoordinates", message);
                 #endregion
-
-                if (Slewing)
-                    AbortSlew();
+                
                 safetyMonitorTimer.Enabled = false;
-                if (!Tracking)
-                    Tracking = true;
-                SlewToCoordinates(safeRa.Hours, safeDec.Degrees, true);  // Backoff synchronously
                 Tracking = false;
+
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                    "SafeAtCoordinates: Not safe at ra:{0}, dec: {1}: Backing off to the East", ra, dec);
+                #endregion
+                MoveAxis(TelescopeAxes.axisPrimary, Const.rateSlew);
+                Thread.Sleep(1000);
+                MoveAxis(TelescopeAxes.axisPrimary, Const.rateStopped);
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "SafeAtCoordinates: Done backing off");
+                #endregion
 
                 return false;
             }
