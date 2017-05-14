@@ -88,7 +88,7 @@ namespace ASCOM.Wise40
 
         private int _shutterTimeout;
         private readonly int _movementTimeout = 2000;
-        private readonly int _domeTimeout = 100;
+        private readonly int _domeTimeout = 50;
         
         private bool _slaved = false;
         private bool _atPark = false;
