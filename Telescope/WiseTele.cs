@@ -183,7 +183,7 @@ namespace ASCOM.Wise40
         public Dictionary<TelescopeAxes, Movement> currMovement;         // the current axes movement        
 
         private static readonly Angle altLimit = new Angle(14.0, Angle.Type.Alt); // telescope must not go below 14deg Altitude
-        private static readonly Angle haLimit = Angle.FromHours(7.0);
+        private static readonly Angle haLimit = Angle.FromHours(4.5);
 
         public MovementDictionary movementDict;
         private bool wasTracking;
