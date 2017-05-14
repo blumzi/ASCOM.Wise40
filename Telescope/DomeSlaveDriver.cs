@@ -18,7 +18,7 @@ namespace ASCOM.Wise40
         private bool _connected = false;
         private ASCOM.Astrometry.NOVAS.NOVAS31 novas31 = new Astrometry.NOVAS.NOVAS31();
         private AstroUtils astroutils = new AstroUtils();
-        AutoResetEvent _arrivedAtAz = new AutoResetEvent(false);
+        public AutoResetEvent _arrivedAtAz;
         private Debugger debugger;
 
         public static readonly DomeSlaveDriver instance = new DomeSlaveDriver(); // Singleton

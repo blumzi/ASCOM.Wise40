@@ -95,7 +95,8 @@ namespace ASCOM.Wise40
 
         private Debugger debugger = Debugger.Instance;
 
-        private static AutoResetEvent _arrivedAtAzEvent;
+        //private AutoResetEvent _arrivedAtAzEvent;
+        private List<AutoResetEvent> arrivedEvents = new List<AutoResetEvent>();
         private static AutoResetEvent _foundCalibration = new AutoResetEvent(false);
         private static Hardware.Hardware hw = Hardware.Hardware.Instance;
 
@@ -232,10 +233,15 @@ namespace ASCOM.Wise40
 
         public void SetArrivedAtAzEvent(AutoResetEvent e)
         {
-            _arrivedAtAzEvent = e;
+            //_arrivedAtAzEvent = e;
+            //#region debug
+            //debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+            //    "WiseDome: SetArrivedAtAzEvent(#{0})", _arrivedAtAzEvent.GetHashCode());
+            //#endregion
+            arrivedEvents.Add(e);
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                "WiseDome: SetArrivedAtAzEvent(#{0})", _arrivedAtAzEvent.GetHashCode());
+                "WiseDome:SetArrivedAtAzEvent Added: (#{0})", e.GetHashCode());
             #endregion
         }
 
@@ -352,11 +358,20 @@ namespace ASCOM.Wise40
                     AtPark = true;
                 }
 
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                    "WiseDome: Setting _arrivedAtAzEvent (#{0})", _arrivedAtAzEvent.GetHashCode());
-                #endregion
-                _arrivedAtAzEvent.Set();
+                //#region debug
+                //debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                //    "WiseDome: Setting _arrivedAtAzEvent (#{0})", _arrivedAtAzEvent.GetHashCode());
+                //#endregion
+                //_arrivedAtAzEvent.Set();
+
+                foreach (var e in arrivedEvents)
+                {
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                        "WiseDome: Setting _arrivedAtAzEvent (#{0})", e.GetHashCode());
+                    #endregion
+                    e.Set();
+                }
             }            
         }
         
