@@ -95,8 +95,8 @@ namespace ASCOM.Wise40
 
         private Debugger debugger = Debugger.Instance;
 
-        //private AutoResetEvent _arrivedAtAzEvent;
-        private List<AutoResetEvent> arrivedEvents = new List<AutoResetEvent>();
+        private AutoResetEvent internalArrivedAtAzEvent = new AutoResetEvent(false);
+        private List<AutoResetEvent> externalArrivedAtAzEvents = new List<AutoResetEvent>();
         private static AutoResetEvent _foundCalibration = new AutoResetEvent(false);
         private static Hardware.Hardware hw = Hardware.Hardware.Instance;
 
@@ -238,7 +238,7 @@ namespace ASCOM.Wise40
             //debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
             //    "WiseDome: SetArrivedAtAzEvent(#{0})", _arrivedAtAzEvent.GetHashCode());
             //#endregion
-            arrivedEvents.Add(e);
+            externalArrivedAtAzEvents.Add(e);
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
                 "WiseDome:SetArrivedAtAzEvent Added: (#{0})", e.GetHashCode());
@@ -362,9 +362,9 @@ namespace ASCOM.Wise40
                 //debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
                 //    "WiseDome: Setting _arrivedAtAzEvent (#{0})", _arrivedAtAzEvent.GetHashCode());
                 //#endregion
-                //_arrivedAtAzEvent.Set();
+                internalArrivedAtAzEvent.Set();
 
-                foreach (var e in arrivedEvents)
+                foreach (var e in externalArrivedAtAzEvents)
                 {
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
