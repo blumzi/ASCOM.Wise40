@@ -185,8 +185,8 @@ namespace ASCOM.Wise40.SafeToOperate
             // then all communication calls this function
             // you need something to ensure that only one command is in progress at a time
 
-            if (command == "unsafeReasons")
-                return string.Join(Const.crnl, UnsafeReasons);
+            if (command.ToLower() == "unsafereasons")
+                return string.Join(", ", UnsafeReasons);
 
             return string.Empty;
         }
@@ -285,25 +285,25 @@ namespace ASCOM.Wise40.SafeToOperate
                 List<string> reasons = new List<string>();
 
                 if (!_boltwoodIsValid)
-                    reasons.Add("The Boltwood CloudSensor either not responding or data is too old.");
+                    reasons.Add("The Boltwood CloudSensor either not responding or data is too old");
                 else
                 {
                     if (!IsSafeCloudCover)
-                        reasons.Add("Too cloudy.");
+                        reasons.Add("Too cloudy");
                     if (!IsSafeLight)
-                        reasons.Add("Too much light.");
+                        reasons.Add("Too much light");
                 }
 
                 if (!_vantageProIsValid)
-                    reasons.Add("The VantagePro either not responding or data is too old.");
+                    reasons.Add("The VantagePro either not responding or data is too old");
                 else
                 {
                     if (!IsSafeWindSpeed)
-                        reasons.Add("Too windy.");
+                        reasons.Add("Too windy");
                     if (!IsSafeHumidity)
-                        reasons.Add("Too humid.");
+                        reasons.Add("Too humid");
                     if (!IsSafeRain)
-                        reasons.Add("Too wet.");
+                        reasons.Add("Too wet");
                 }
                 return reasons;
             }
