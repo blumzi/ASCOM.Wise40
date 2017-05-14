@@ -148,7 +148,7 @@ namespace Restore_ASCOM_Profiles
             {
                 driverProfile.DeviceType = "Telescope";
                 driverProfile.WriteValue(driverID, traceStateProfileName, false.ToString());
-                driverProfile.WriteValue(driverID, studyMotionProfileName, true.ToString());
+                driverProfile.WriteValue(driverID, studyMotionProfileName, false.ToString());
                 driverProfile.WriteValue(driverID, enslaveDomeProfileName, mode == Mode.ACP ? false.ToString() : true.ToString());
                 driverProfile.WriteValue(driverID, debugLevelProfileName, (Debugger.DebugLevel.DebugAxes |
                     Debugger.DebugLevel.DebugExceptions |
