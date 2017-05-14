@@ -90,19 +90,26 @@ namespace ASCOM.Wise40
             {
                 wisedome.SlewToAzimuth(az);
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver: Waiting for dome to arrive to {0}",
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver:SlewToAz Waiting for dome to arrive to target {0}",
                     Angle.FromDegrees(az).ToString());
                 #endregion
                 _arrivedAtAz.WaitOne();
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver:SlewToAz Dome arrived to target {0}",
+                    Angle.FromDegrees(az).ToString());
+                #endregion
             }
             catch (Exception ex)
             {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                    "DomeSlaveDriver:SlewToAz got \"{0}\" while slewing to {1}, Aborting slew!",
+                    ex.Message,
+                    new Angle(az, Angle.Type.Az));
+                #endregion
                 wisedome.AbortSlew();
                 throw ex;
             }
-            #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver: Dome arrived to {0}", new Angle(az, Angle.Type.Az));
-            #endregion
         }
 
         public void Park()
