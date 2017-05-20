@@ -303,11 +303,49 @@ namespace ASCOM.Wise40
         /// <returns></returns>
         private bool arriving(Angle there)
         {
-            if (! DomeIsMoving)
-                return false;
+            string message = string.Format("WiseDome:arriving: at {0} target {1}: ", Azimuth, there);
 
+            if (!DomeIsMoving)
+            {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, message + "Dome is not moving => false");
+                #endregion
+                return false;
+            }
+
+            Angle az = Azimuth;
             ShortestDistanceResult shortest = _instance.Azimuth.ShortestDistance(there);
-            return shortest.angle <= inertiaAngle(there);
+            Angle inertial = inertiaAngle(there);
+
+            if (DomeStateIsOn(DomeState.MovingCW) && (shortest.direction == Const.AxisDirection.Decreasing))
+            {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, message + "direction changed CW to CCW => true", az, there);
+                #endregion
+                return true;
+            }
+            else if (DomeStateIsOn(DomeState.MovingCCW) && (shortest.direction == Const.AxisDirection.Increasing))
+            {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, message + "direction changed CCW to CW => true");
+                #endregion
+                return true;
+            }
+            else if (shortest.angle <= inertial)
+            {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, message +
+                    string.Format("shortest.Angle {0} <= inertiaAngle({1}) => true", shortest.angle, inertial));
+                #endregion
+                return true;
+            }
+            else
+            {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, message + "=> false");
+                #endregion
+                return false;
+            }
         }
 
         private bool DomeIsMoving
@@ -358,17 +396,13 @@ namespace ASCOM.Wise40
                     AtPark = true;
                 }
 
-                //#region debug
-                //debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                //    "WiseDome: Setting _arrivedAtAzEvent (#{0})", _arrivedAtAzEvent.GetHashCode());
-                //#endregion
-                internalArrivedAtAzEvent.Set();
-
-                foreach (var e in externalArrivedAtAzEvents)
+                var waiters = new List<AutoResetEvent>() { internalArrivedAtAzEvent };
+                waiters.AddRange(externalArrivedAtAzEvents);
+                foreach (var e in waiters)
                 {
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                        "WiseDome: Setting _arrivedAtAzEvent (#{0})", e.GetHashCode());
+                        "WiseDome: Setting arrivedAtAzEvent (#{0})", e.GetHashCode());
                     #endregion
                     e.Set();
                 }
@@ -551,13 +585,18 @@ namespace ASCOM.Wise40
 
         public void Stop()
         {
+            int tries;
+
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome:Stop Starting to stop at az: {0} (encoder: {1})", Azimuth, domeEncoder.Value);
+            #endregion
             rightPin.SetOff();
             leftPin.SetOff();
             UnsetDomeState(DomeState.MovingCCW|DomeState.MovingCW);
             _movementTimer.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
             domeEncoder.setMovement(Direction.None);
 
-            for (int tries = 10; tries > 0; tries--)
+            for ( tries = 0; tries < 10; tries++)
             {
                 uint prev = domeEncoder.Value;
                 Thread.Sleep(500);
@@ -567,9 +606,9 @@ namespace ASCOM.Wise40
             }
             if (Calibrated)
                 SaveCalibrationData();
-
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: Stopped");
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome:Stop Fully stopped at az: {0} (encoder: {1}) after {2} tries",
+                Azimuth, domeEncoder.Value, tries + 1);
             #endregion
         }
 
