@@ -97,10 +97,8 @@ namespace ASCOM.Wise40
 
         private static WiseSite wisesite = WiseSite.Instance;
 
-        private static Angle primarySafetyBackoff = new Angle("00h05m00.0s");
-        private static Angle secondarySafetyBackoff = new Angle("00:05:00.0");
+        private ReadyToSlewFlags readyToSlew = ReadyToSlewFlags.Instance;
 
-        private ReadyToSlewFlags readyToSlew = new ReadyToSlewFlags();
         System.Threading.Timer trackingTimer;
         const int trackingDomeAdjustmentInterval = 30 * 1000;   // half a minute
 
