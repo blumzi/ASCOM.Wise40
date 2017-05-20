@@ -329,22 +329,26 @@ namespace ASCOM.Wise40
             pinDown.SetOff();
 #if !WITH_PID
             int startStopping = (int)Position, currPosition, prevPosition = startStopping;
-
+            int travel = (int) Math.Abs(startStopping - _startPos);
 #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseFocuser:Stop Started stopping at {0} ...", startStopping);
 #endregion
             do
             {
-#region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseFocuser:Stop Sleeping 50 at {0}, now at {0}", prevPosition);
-#endregion
+                prevPosition = (int)Position;
                 Thread.Sleep(50);
+                currPosition = (int)Position;
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseFocuser:Stop Slept 50 millis now at {0} (delta: {1})",
+                    currPosition, Math.Abs(currPosition - prevPosition));
+                #endregion
             }
-            while ((currPosition = (int) Position) != prevPosition);
+            while (currPosition != prevPosition);
             
             int stoppingDist = Math.Abs(currPosition - startStopping);
 #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseFocuser:Stop: stopping distance: {0}", stoppingDist);
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                "WiseFocuser:Stop: travel: {0}, stopping distance: {1}, percent: {2:f2}", travel, stoppingDist, (stoppingDist * 100)/ travel);
 #endregion
 #endif
             targetPos = 0;
