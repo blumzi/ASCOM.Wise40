@@ -19,7 +19,42 @@ namespace ASCOM.Wise40
         private long readyForSet = 0;
         private long readyForGuide = 0;
 
-        public ReadyToSlewFlags() { }
+        private static volatile ReadyToSlewFlags _instance; // Singleton
+
+        private static object syncObject = new object();
+        private static bool _initialized = false;
+
+        // Explicit static constructor to tell C# compiler
+        // not to mark type as beforefieldinit
+        static ReadyToSlewFlags()
+        {
+        }
+
+        public ReadyToSlewFlags()
+        {
+        }
+
+        public static ReadyToSlewFlags Instance
+        {
+            get
+            {
+                if (_instance == null)
+                {
+                    lock (syncObject)
+                    {
+                        if (_instance == null)
+                            _instance = new ReadyToSlewFlags();
+                    }
+                }
+
+                if (! _initialized)
+                {
+                    _instance.Reset();
+                    _initialized = true;
+                }
+                return _instance;
+            }
+        }
 
         public void Reset()
         {
