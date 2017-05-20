@@ -376,7 +376,7 @@ namespace Dash
 
             if (wiseobject.Simulated)
             {
-                annunciatorSimulation.Text = "SIMULATION";
+                annunciatorSimulation.Text = "SIMULATED HARDWARE";
                 annunciatorSimulation.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
                 tip = "Hardware access is simulated by software";
             }
