@@ -20,7 +20,7 @@ namespace ASCOM.Wise40
     public class WiseFocuser : WiseObject, IDisposable, IConnectable
     {
         private static Version version = new Version(0, 2);
-        private static readonly WiseFocuser _instance = new WiseFocuser();
+        //private static readonly WiseFocuser _instance = new WiseFocuser();
         private bool _initialized = false;
         private bool _connected = false;
         private enum FocuserStatus { Idle, MovingUp, MovingAllUp, MovingDown, MovingAllDown };
@@ -61,11 +61,22 @@ namespace ASCOM.Wise40
 #endif
 
         public WiseFocuser() { }
+        static WiseFocuser() { }
+        private static volatile WiseFocuser _instance; // Singleton
+        private static object syncObject = new object();
 
         public static WiseFocuser Instance
         {
             get
             {
+                if (_instance == null)
+                {
+                    lock (syncObject)
+                    {
+                        if (_instance == null)
+                            _instance = new WiseFocuser();
+                    }
+                }
                 return _instance;
             }
         }
