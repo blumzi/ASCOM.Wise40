@@ -167,6 +167,7 @@
             this.annunciatorComputerControl = new ASCOM.Controls.Annunciator();
             this.annunciatorDomePlatform = new ASCOM.Controls.Annunciator();
             this.annunciatorSafeToOpen = new ASCOM.Controls.Annunciator();
+            this.annunciatorSimulation = new ASCOM.Controls.Annunciator();
             this.labelFiller = new System.Windows.Forms.Label();
             this.annunciatorPanelStatus = new ASCOM.Controls.AnnunciatorPanel();
             this.annunciatorTrack = new ASCOM.Controls.Annunciator();
@@ -216,7 +217,6 @@
             this.labelRainRateValue = new System.Windows.Forms.Label();
             this.timerRefreshDisplay = new System.Windows.Forms.Timer(this.components);
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
-            this.annunciatorSimulation = new ASCOM.Controls.Annunciator();
             this.tableLayoutMain.SuspendLayout();
             this.groupBoxFocuser.SuspendLayout();
             this.groupBoxDomeGroup.SuspendLayout();
@@ -2012,11 +2012,28 @@
             this.annunciatorSafeToOpen.Text = "Safe To Open";
             this.annunciatorSafeToOpen.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
+            // annunciatorSimulation
+            // 
+            this.annunciatorSimulation.ActiveColor = System.Drawing.Color.Turquoise;
+            this.annunciatorSimulation.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
+            this.annunciatorSimulation.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            this.annunciatorSimulation.Font = new System.Drawing.Font("Consolas", 10F, System.Drawing.FontStyle.Italic);
+            this.annunciatorSimulation.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciatorSimulation.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciatorSimulation.Location = new System.Drawing.Point(3, 69);
+            this.annunciatorSimulation.Mute = false;
+            this.annunciatorSimulation.Name = "annunciatorSimulation";
+            this.annunciatorSimulation.Padding = new System.Windows.Forms.Padding(0, 10, 0, 0);
+            this.annunciatorSimulation.Size = new System.Drawing.Size(173, 23);
+            this.annunciatorSimulation.TabIndex = 4;
+            this.annunciatorSimulation.Text = "SIMULATED HARDWARE";
+            this.annunciatorSimulation.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
             // labelFiller
             // 
             this.labelFiller.Location = new System.Drawing.Point(3, 440);
             this.labelFiller.Name = "labelFiller";
-            this.labelFiller.Size = new System.Drawing.Size(173, 32);
+            this.labelFiller.Size = new System.Drawing.Size(173, 24);
             this.labelFiller.TabIndex = 39;
             // 
             // annunciatorPanelStatus
@@ -2035,7 +2052,7 @@
             this.annunciatorPanelStatus.Controls.Add(this.annunciatorFilterWheel);
             this.annunciatorPanelStatus.Controls.Add(this.annunciatorFocus);
             this.annunciatorPanelStatus.Controls.Add(this.annunciatorWeather);
-            this.annunciatorPanelStatus.Location = new System.Drawing.Point(10, 475);
+            this.annunciatorPanelStatus.Location = new System.Drawing.Point(10, 467);
             this.annunciatorPanelStatus.Margin = new System.Windows.Forms.Padding(10, 3, 3, 3);
             this.annunciatorPanelStatus.Name = "annunciatorPanelStatus";
             this.annunciatorPanelStatus.Size = new System.Drawing.Size(166, 78);
@@ -2735,22 +2752,6 @@
             // 
             this.timerRefreshDisplay.Enabled = true;
             this.timerRefreshDisplay.Tick += new System.EventHandler(this.RefreshDisplay);
-            // 
-            // annunciatorSimulation
-            // 
-            this.annunciatorSimulation.ActiveColor = System.Drawing.Color.Turquoise;
-            this.annunciatorSimulation.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.annunciatorSimulation.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
-            this.annunciatorSimulation.Font = new System.Drawing.Font("Consolas", 10F, System.Drawing.FontStyle.Italic);
-            this.annunciatorSimulation.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorSimulation.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorSimulation.Location = new System.Drawing.Point(3, 69);
-            this.annunciatorSimulation.Mute = false;
-            this.annunciatorSimulation.Name = "annunciatorSimulation";
-            this.annunciatorSimulation.Size = new System.Drawing.Size(173, 23);
-            this.annunciatorSimulation.TabIndex = 4;
-            this.annunciatorSimulation.Text = "SIMULATION";
-            this.annunciatorSimulation.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // FormDash
             // 
