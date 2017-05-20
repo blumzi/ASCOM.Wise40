@@ -316,7 +316,7 @@ namespace ASCOM.Wise40
                 P.DeviceType = "Focuser";
                 if (bRegister)
                 {
-                    string description = string.Format("ASCOM Wise40.Focuser v{0}", WiseFocuser.DriverVersion);
+                    string description = string.Format("ASCOM Wise40.Focuser v{0}", "0.2" /*WiseFocuser.DriverVersion*/);
                     P.Register(WiseFocuser.DriverId, description);
                 }
                 else
