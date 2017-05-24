@@ -62,7 +62,7 @@ namespace ASCOM.Wise40
         /// </summary>
         //internal static string driverID = "ASCOM.Wise40.Focuser";
 
-        private WiseFocuser wisefocuser;
+        private WiseFocuser wisefocuser = WiseFocuser.Instance;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Wise40"/> class.
@@ -70,7 +70,6 @@ namespace ASCOM.Wise40
         /// </summary>
         public Focuser()
         {
-            wisefocuser = WiseFocuser.Instance;
             wisefocuser.init();
             wisefocuser.traceLogger.LogMessage("Focuser", "Completed initialisation");
         }
@@ -316,7 +315,8 @@ namespace ASCOM.Wise40
                 P.DeviceType = "Focuser";
                 if (bRegister)
                 {
-                    string description = string.Format("ASCOM Wise40.Focuser v{0}", "0.2" /*WiseFocuser.DriverVersion*/);
+                    Version version = new Version("0.2");
+                    string description = string.Format("ASCOM Wise40.Focuser v{0}", version);
                     P.Register(WiseFocuser.DriverId, description);
                 }
                 else

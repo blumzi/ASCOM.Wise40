@@ -22,9 +22,11 @@ namespace FocuserApplication
             focuserStatus = new Statuser(labelStatus);
             timerRefresh.Enabled = true;
 
+#if WITH_PID
             textBoxPID_P.Text = wisefocuser.upPID.ProportionalGain.ToString();
             textBoxPID_I.Text = wisefocuser.upPID.IntegralGain.ToString();
             textBoxPID_D.Text = wisefocuser.upPID.DerivativeGain.ToString();
+#endif
         }
 
         private void timerRefresh_Tick(object sender, EventArgs e)
@@ -33,7 +35,7 @@ namespace FocuserApplication
             focuserStatus.Show(wisefocuser.Status);
         }
 
-        #region FocuserControl
+#region FocuserControl
         private void buttonFocusIncrease_Click(object sender, EventArgs e)
         {
             uint newPos = wisefocuser.Position + Convert.ToUInt32(comboBoxFocusStep.Text);
@@ -123,6 +125,7 @@ namespace FocuserApplication
         }
         #endregion
 
+#if WITH_PID
         private void buttonSetPID_Click(object sender, EventArgs e)
         {
             foreach (var pid in new List<TimeProportionedPidController>() { wisefocuser.upPID, wisefocuser.downPID })
@@ -132,5 +135,6 @@ namespace FocuserApplication
                 pid.DerivativeGain = (float)Convert.ToDouble(textBoxPID_D.Text);
             }
         }
+#endif
     }
 }
