@@ -65,7 +65,7 @@ namespace ASCOM.Wise40
         private static readonly bool reversedDirection = true;          // The encoder value decreases when focusing up
 
         private BitExtractor positionBits = new BitExtractor(9, 3);
-        private BitExtractor turnsBits = new BitExtractor(5, 12);
+        private BitExtractor turnsBits = new BitExtractor(6, 12);
 
         private uint _daqsValue;
         private bool _connected = false;
