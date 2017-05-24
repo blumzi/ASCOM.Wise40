@@ -17,7 +17,7 @@ namespace ASCOM.Wise40
         private static readonly WiseFocuserEnc instance = new WiseFocuserEnc();
         private bool _initialized = false;
 
-        private WisePin pinZero, pinLatch;
+        private WisePin pinLatch;
         private Hardware.Hardware hardware = Hardware.Hardware.Instance;
         private static uint _simulatedValue;
         private static Const.Direction _simulatedDirection;
@@ -44,6 +44,7 @@ namespace ASCOM.Wise40
         //  The upper and lower limits are maintained via software.  They have default natural values but these are overriden by values in the 
         //  focuser's ASCOM profile.
         //
+
         //
         // 7 Mar 2017 -  Arie Blumenzweig
         //
@@ -52,15 +53,19 @@ namespace ASCOM.Wise40
         //      The encoder has a pin that, when strapped to 5V, inverses the counting direction. We may do that in
         //       the future, till then we reverse the counter in software (with reversedDirection = true)
         //
+        
+        //
+        // 23 May, 2017 - Arie Blumenzweig
+        //
+        //   - We have too much jitter in the position values.  We'll discard some of the least-significant position bits.
+        //   - Seems that the current 4 turn-bits are not enough.  The values wrap-around at about 5mm from the upper limit-switch.
+        //     The wire that was supposed to be used for zeroing the encoder (reminder: the purchassedencoder does not have this capability)
+        //      will be re-used for an additional turn-bit, so we'll have 5 of them.
+        //
         private static readonly bool reversedDirection = true;          // The encoder value decreases when focusing up
 
-        private static readonly int posBits = 12;
-        private static readonly int turnBits = 4;
-
-        private static readonly uint maxPos = (uint)(1 << posBits);
-        private static readonly uint maxTurns = (uint)(1 << turnBits);
-        private static readonly uint posMask = maxPos - 1;
-        private static readonly uint turnsMask = maxTurns - 1;
+        private BitExtractor positionBits = new BitExtractor(9, 3);
+        private BitExtractor turnsBits = new BitExtractor(5, 12);
 
         private uint _daqsValue;
         private bool _connected = false;
@@ -91,9 +96,8 @@ namespace ASCOM.Wise40
 
             if (this._multiTurn)
             {
-                _maxValue = (uint)(1 << (posBits + turnBits)) - 1;
+                _maxValue = turnsBits.MaxValue * positionBits.MaxValue;
                 pinLatch = new WisePin("FocusLatch", hardware.miscboard, DigitalPortType.FirstPortCH, 3, DigitalPortDirection.DigitalOut);
-                pinZero = new WisePin("FocusZero", hardware.miscboard, DigitalPortType.FirstPortCH, 2, DigitalPortDirection.DigitalOut);
                 base.init("FocusEnc",
                     (int)_maxValue,
                     new List<WiseEncSpec>() {
@@ -101,10 +105,9 @@ namespace ASCOM.Wise40
                         new WiseEncSpec() { brd = hardware.miscboard, port = DigitalPortType.FirstPortB,  mask = 0xff },
                         }
                 );
-                connectables.AddRange(new List<IConnectable>() { pinLatch, pinZero });
-                disposables.AddRange(new List<IDisposable>() { pinLatch, pinZero });
-
-                //UpperLimit = maxPos * maxTurns; // max value that the hardware can read, disregarding the upper limit switch
+                connectables.Add(pinLatch);
+                disposables.Add(pinLatch);
+                
                 UpperLimit = _maxValue;
                 LowerLimit = 0;
             }
@@ -151,8 +154,8 @@ namespace ASCOM.Wise40
 
                     if (_multiTurn)
                     {
-                        pos = _daqsValue & posMask;
-                        turns = (_daqsValue >> posBits) & turnsMask;
+                        pos = positionBits.Extract(_daqsValue);
+                        turns = turnsBits.Extract(_daqsValue);
                     }
                     else
                     {
@@ -160,7 +163,7 @@ namespace ASCOM.Wise40
                         turns = 0;
                     }
 
-                    ret = (turns * maxPos) + pos;
+                    ret = (turns * positionBits.MaxValue) + pos;
                     if (reversedDirection)
                         ret = _maxValue - ret;
                     #region debug
@@ -173,20 +176,6 @@ namespace ASCOM.Wise40
             set
             {
 
-            }
-        }
-
-        public void SetZero()
-        {
-            if (!_multiTurn)
-                return;
-            if (Simulated)
-                _simulatedValue = 0;
-            else
-            {
-                pinZero.SetOn();
-                Thread.Sleep(150);
-                pinZero.SetOff();
             }
         }
 

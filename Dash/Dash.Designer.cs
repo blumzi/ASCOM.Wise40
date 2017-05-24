@@ -132,7 +132,6 @@
             this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.manageFilterInventoryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem3 = new System.Windows.Forms.ToolStripMenuItem();
-            this.resetFocusEncoderToZeroToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem6 = new System.Windows.Forms.ToolStripMenuItem();
             this.saveMaximumToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem5 = new System.Windows.Forms.ToolStripMenuItem();
@@ -1662,24 +1661,16 @@
             // toolStripMenuItem3
             // 
             this.toolStripMenuItem3.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.resetFocusEncoderToZeroToolStripMenuItem,
             this.toolStripMenuItem6,
             this.saveMaximumToolStripMenuItem});
             this.toolStripMenuItem3.Name = "toolStripMenuItem3";
             this.toolStripMenuItem3.Size = new System.Drawing.Size(158, 22);
             this.toolStripMenuItem3.Text = "Focus";
             // 
-            // resetFocusEncoderToZeroToolStripMenuItem
-            // 
-            this.resetFocusEncoderToZeroToolStripMenuItem.Name = "resetFocusEncoderToZeroToolStripMenuItem";
-            this.resetFocusEncoderToZeroToolStripMenuItem.Size = new System.Drawing.Size(181, 22);
-            this.resetFocusEncoderToZeroToolStripMenuItem.Text = "Set Encoder to Zero";
-            this.resetFocusEncoderToZeroToolStripMenuItem.Click += new System.EventHandler(this.resetFocusEncoderToZeroToolStripMenuItem_Click);
-            // 
             // toolStripMenuItem6
             // 
             this.toolStripMenuItem6.Name = "toolStripMenuItem6";
-            this.toolStripMenuItem6.Size = new System.Drawing.Size(181, 22);
+            this.toolStripMenuItem6.Size = new System.Drawing.Size(166, 22);
             this.toolStripMenuItem6.Text = "Save UpperLimit";
             this.toolStripMenuItem6.ToolTipText = "Saves the current focus encoder value to the ASCOM profile\r\n as the focus UpperLi" +
     "mit.";
@@ -1688,7 +1679,7 @@
             // saveMaximumToolStripMenuItem
             // 
             this.saveMaximumToolStripMenuItem.Name = "saveMaximumToolStripMenuItem";
-            this.saveMaximumToolStripMenuItem.Size = new System.Drawing.Size(181, 22);
+            this.saveMaximumToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
             this.saveMaximumToolStripMenuItem.Text = "Save LowerLimit";
             this.saveMaximumToolStripMenuItem.ToolTipText = "Saves the current focus encoder value to the ASCOM profile\r\n as the focus UpperLi" +
     "mit.";
@@ -2951,7 +2942,6 @@
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem3;
         private System.Windows.Forms.ToolStripMenuItem filterWheelToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem syncVentWithShutterToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem resetFocusEncoderToZeroToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem5;
         private System.Windows.Forms.ComboBox comboBoxFocusStep;
         private System.Windows.Forms.Button buttonFocusIncrease;

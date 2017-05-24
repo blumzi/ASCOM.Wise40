@@ -342,6 +342,7 @@
             this.label3.TabIndex = 43;
             this.label3.Text = "D:";
             this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+#if WITH_PID
             // 
             // buttonSetPID
             // 
@@ -357,6 +358,7 @@
             this.buttonSetPID.Text = "Set";
             this.buttonSetPID.UseVisualStyleBackColor = false;
             this.buttonSetPID.Click += new System.EventHandler(this.buttonSetPID_Click);
+#endif
             // 
             // FormFocus
             // 
@@ -382,7 +384,7 @@
 
         }
 
-        #endregion
+#endregion
         private System.Windows.Forms.Button buttonFocusIncrease;
         private System.Windows.Forms.Button buttonFocusDecrease;
         private System.Windows.Forms.Button buttonFocusGoto;

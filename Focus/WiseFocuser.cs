@@ -662,11 +662,6 @@ namespace ASCOM.Wise40
             }
         }
 
-        public void SetZero()
-        {
-            encoder.SetZero();
-        }
-
         public uint UpperLimit
         {
             get
