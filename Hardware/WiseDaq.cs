@@ -15,11 +15,12 @@ namespace ASCOM.Wise40.Hardware
         {
             _nbits = nbits;
             _lsb = lsb;
+            _mask = (uint) (1 << _nbits) - 1;
         }
 
         public uint Extract(uint from)
         {
-            return (from >> _lsb) & (uint) ((1 << _nbits) - 1);
+            return (from >> _lsb) & _mask;
         }
 
         public uint MaxValue
@@ -32,6 +33,7 @@ namespace ASCOM.Wise40.Hardware
 
         private int _nbits;
         private int _lsb;
+        private uint _mask;
     }
 
     public class WiseDaq : WiseObject
