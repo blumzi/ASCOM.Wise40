@@ -20,10 +20,9 @@ namespace ASCOM.Wise40
     public class WiseFocuser : WiseObject, IDisposable, IConnectable
     {
         private static Version version = new Version(0, 2);
-        //private static readonly WiseFocuser _instance = new WiseFocuser();
         private bool _initialized = false;
         private bool _connected = false;
-        private enum FocuserStatus { Idle, MovingUp, MovingAllUp, MovingDown, MovingAllDown };
+        private enum FocuserStatus { Idle, MovingUp, MovingAllUp, MovingDown, MovingAllDown, Stopping };
         private FocuserStatus _status = FocuserStatus.Idle;
 
         public TraceLogger traceLogger = new TraceLogger();
@@ -40,9 +39,10 @@ namespace ASCOM.Wise40
 
         Dictionary<Direction, MotionParameter> motionParameters;
 
-        private uint targetPos;
+        private uint _targetPos;
+        private bool _movingToTarget = false;
 
-        private double _startPos; //, _stopPos, _endPos;
+        private double _startPos, _lastPos;
 
         private System.Threading.Timer movementTimer;   // Should be ON only when the focuser is moving
         private int movementTimeout = 50;               // millis between movement monitoring events
@@ -332,7 +332,8 @@ namespace ASCOM.Wise40
 
 #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseFocuser:Stop Started stopping at {0} ...", startStopping);
-#endregion
+            #endregion
+            _status = FocuserStatus.Stopping;
             do
             {
 #region debug
@@ -347,7 +348,7 @@ namespace ASCOM.Wise40
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseFocuser:Stop: stopping distance: {0}", stoppingDist);
 #endregion
 #endif
-            targetPos = 0;
+            _movingToTarget = false;
             _status = FocuserStatus.Idle;
         }
 
@@ -426,29 +427,30 @@ namespace ASCOM.Wise40
         public void Move(Direction dir)
         {
             _startPos = Position;
+            #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseFocuser: Starting Move({0}) at {1}",
                 dir.ToString(), _startPos);
+            #endregion
+            _movingToTarget = false;
             switch (dir)
             {
                 case Direction.Up:
-                    targetPos = UpperLimit;
                     pinUp.SetOn();
                     _status = FocuserStatus.MovingUp;
                     break;
                 case Direction.Down:
-                    targetPos = LowerLimit;
                     pinDown.SetOn();
                     _status = FocuserStatus.MovingDown;
                     break;
                 case Direction.AllUp:
-                    targetPos = UpperLimit;
                     pinUp.SetOn();
                     _status = FocuserStatus.MovingAllUp;
+                    _lastPos = Position;
                     break;
                 case Direction.AllDown:
-                    targetPos = LowerLimit;
                     pinDown.SetOn();
                     _status = FocuserStatus.MovingAllDown;
+                    _lastPos = Position;
                     break;
             }
 
@@ -470,7 +472,7 @@ namespace ASCOM.Wise40
             }
         }
 
-        public void Move(uint pos)
+        public void Move(uint toPos)
         {
 #region trace
             traceLogger.LogMessage("Move", Position.ToString());
@@ -483,10 +485,11 @@ namespace ASCOM.Wise40
 
             uint currentPos = Position;
 
-            if (currentPos == pos)
+            if (currentPos == toPos)
                 return;
 
-            targetPos = pos;
+            _targetPos = toPos;
+            _movingToTarget = true;
 #if WITH_PID
             if (targetPos > currentPos)
             {
@@ -505,16 +508,20 @@ namespace ASCOM.Wise40
                 downPID.MoveTo(targetPos);
             }
 #else
-            if (targetPos > currentPos)
+            if (_targetPos > currentPos)
             {
                 _status = FocuserStatus.MovingUp;
                 pinUp.SetOn();
+                if (Simulated)
+                    encoder.startMoving(Const.Direction.Increasing);
             }
             else
             {
                 _status = FocuserStatus.MovingDown;
                 pinDown.SetOn();
-            }
+                if (Simulated)
+                    encoder.startMoving(Const.Direction.Decreasing);
+            }                
 
             movementTimer.Change(movementTimeout, movementTimeout);
 #endif
@@ -627,13 +634,31 @@ namespace ASCOM.Wise40
         {
             if (pinUp.isOn)
             {
-                if (targetPos - Position <= motionParameters[Direction.Up].stoppingDistance)
+                if (_movingToTarget && (_targetPos - Position) <= motionParameters[Direction.Up].stoppingDistance)
                     Stop();
+
+                if (_status == FocuserStatus.MovingAllUp)
+                {
+                    uint currPos = Position;
+
+                    if (_lastPos == currPos)
+                        Stop();
+                    _lastPos = currPos;
+                }
             }
             else if (pinDown.isOn)
             {
-                if (Position - targetPos <= motionParameters[Direction.Down].stoppingDistance)
+                if (Position - _targetPos <= motionParameters[Direction.Down].stoppingDistance)
                     Stop();
+
+                if (_status == FocuserStatus.MovingAllDown)
+                {
+                    uint currPos = Position;
+
+                    if (_lastPos == currPos)
+                        Stop();
+                    _lastPos = currPos;
+                }
             }
         }
 
@@ -646,16 +671,23 @@ namespace ASCOM.Wise40
                 switch (_status)
                 {
                     case FocuserStatus.MovingUp:
-                        ret = "Moving Down";
+                        ret = "Moving Up";
+                        if (_movingToTarget)
+                            ret += string.Format(" to {0}", _targetPos);
                         break;
                     case FocuserStatus.MovingDown:
-                        ret = "Moving Up";
+                        ret = "Moving Down";
+                        if (_movingToTarget)
+                            ret += string.Format(" to {0}", _targetPos);
                         break;
                     case FocuserStatus.MovingAllUp:
-                        ret = string.Format("Moving All Up to {0}", UpperLimit);
+                        ret = "Moving All Up";
                         break;
                     case FocuserStatus.MovingAllDown:
-                        ret = string.Format("Moving All Down to {0}", LowerLimit);
+                        ret = "Moving All Down";
+                        break;
+                    case FocuserStatus.Stopping:
+                        ret = "Stopping";
                         break;
                 }
                 return ret;
