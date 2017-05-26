@@ -482,7 +482,11 @@ namespace ASCOM.Wise40
                 try
                 {
                     arduino.StartMoving(dir, slots);
-                } catch (Exception ex) { }
+                } catch (Exception ex) {
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "SetCurrentPosition: communication exception {0}", ex.Message);
+                    #endregion
+                }
             }
         }
         #endregion
