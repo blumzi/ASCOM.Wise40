@@ -219,7 +219,7 @@ namespace ASCOM.Wise40
                 communicatorTask.Dispose();
                 _status = ArduinoStatus.Idle;
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, string.Format("arduino status: {0}", _status));
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, string.Format("arduino status: {0}, communication exception: {1}", _status, ex.Message));
                 #endregion
             }
         }
