@@ -386,7 +386,7 @@
             this.textBoxFocusGotoPosition.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.textBoxFocusGotoPosition.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.textBoxFocusGotoPosition.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.textBoxFocusGotoPosition.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.textBoxFocusGotoPosition.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.textBoxFocusGotoPosition.Location = new System.Drawing.Point(78, 88);
             this.textBoxFocusGotoPosition.Name = "textBoxFocusGotoPosition";
             this.textBoxFocusGotoPosition.Size = new System.Drawing.Size(73, 21);
@@ -447,7 +447,7 @@
             this.buttonFocusAllDown.Name = "buttonFocusAllDown";
             this.buttonFocusAllDown.Size = new System.Drawing.Size(58, 24);
             this.buttonFocusAllDown.TabIndex = 24;
-            this.buttonFocusAllDown.Text = "Lowest";
+            this.buttonFocusAllDown.Text = "All down";
             this.buttonFocusAllDown.UseVisualStyleBackColor = false;
             this.buttonFocusAllDown.Click += new System.EventHandler(this.buttonFocusAllDown_Click);
             // 
@@ -478,7 +478,7 @@
             this.buttonFocusAllUp.Name = "buttonFocusAllUp";
             this.buttonFocusAllUp.Size = new System.Drawing.Size(66, 24);
             this.buttonFocusAllUp.TabIndex = 23;
-            this.buttonFocusAllUp.Text = "Highest";
+            this.buttonFocusAllUp.Text = "All up";
             this.buttonFocusAllUp.UseVisualStyleBackColor = false;
             this.buttonFocusAllUp.Click += new System.EventHandler(this.buttonFocusAllUp_Click);
             // 

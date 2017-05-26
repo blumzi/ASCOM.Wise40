@@ -160,8 +160,8 @@ namespace Dash
                 tb.ForeColor = Color.FromArgb(176, 161, 142);
             }
 
-            buttonFocusAllUp.Text = "\u21c8  " + wisefocuser.UpperLimit.ToString();
-            buttonFocusAllDown.Text = wisefocuser.LowerLimit.ToString() + "  \u21ca";
+            //buttonFocusAllUp.Text = "\u21c8  " + wisefocuser.UpperLimit.ToString();
+            //buttonFocusAllDown.Text = wisefocuser.LowerLimit.ToString() + "  \u21ca";
 
             wisefilterwheel.wheelOrPositionChanged += onWheelOrPositionChanged;
         }
