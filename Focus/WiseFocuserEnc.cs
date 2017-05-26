@@ -64,13 +64,13 @@ namespace ASCOM.Wise40
         //
         private static readonly bool reversedDirection = true;          // The encoder value decreases when focusing up
 
-        private BitExtractor positionBits = new BitExtractor(9, 3);
-        private BitExtractor turnsBits = new BitExtractor(6, 12);
+        private BitExtractor positionBits = new BitExtractor(nbits: 9, lsb: 3);
+        private BitExtractor turnsBits = new BitExtractor(nbits: 6, lsb: 12);
 
         private uint _daqsValue;
         private bool _connected = false;
         private bool _multiTurn = false;
-        private uint _upperLimit, _lowerLimit;
+        private static uint _upperLimit, _lowerLimit;
         private uint _maxValue;
 
         List<IConnectable> connectables = new List<IConnectable>();
@@ -242,7 +242,7 @@ namespace ASCOM.Wise40
             if (!Simulated)
                 return;
             _simulatedDirection = dir;
-            _simulationTimer.Change(100, 100);
+            _simulationTimer.Change(10, 10);
         }
 
         public void stopMoving()
@@ -258,9 +258,10 @@ namespace ASCOM.Wise40
                 return;
             }
 
-            if (_simulatedDirection == Const.Direction.Increasing)
+            if (_simulatedDirection == Const.Direction.Increasing && _simulatedValue < _upperLimit)
                 _simulatedValue += _simulatedStep;
-            else
+
+            if (_simulatedDirection == Const.Direction.Decreasing && _simulatedValue > _lowerLimit)
                 _simulatedValue -= _simulatedStep;
         }
     }
