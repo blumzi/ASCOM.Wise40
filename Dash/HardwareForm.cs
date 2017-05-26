@@ -34,7 +34,8 @@ namespace ASCOM.Wise40
                 if (controls.Count() == 1)
                 {
                     board.gb = (GroupBox)controls[0];
-                    board.gb.Text += (board.type == WiseBoard.BoardType.Hard) ? " [Hard]" : " [Soft]";
+                    if (board.type == WiseBoard.BoardType.Soft)
+                        board.gb.Text += " [Simulated]";
                 }
                 else
                     Console.WriteLine("Missing: {0}", "gbBoard" + board.boardNum);

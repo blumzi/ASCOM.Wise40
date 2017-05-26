@@ -2041,7 +2041,7 @@
             this.gbBoard0.Size = new System.Drawing.Size(287, 282);
             this.gbBoard0.TabIndex = 0;
             this.gbBoard0.TabStop = false;
-            this.gbBoard0.Text = " Miscelaneous (Board0)";
+            this.gbBoard0.Text = "Focus (Board0)";
             // 
             // groupBox5
             // 
