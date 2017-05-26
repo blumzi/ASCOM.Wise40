@@ -20,57 +20,63 @@ namespace ASCOM.Wise40.Common
                 { Severity.Good, Color.Green },
             };
 
-        private Label label;
-        private ToolTip toolTip;
-        private DateTime expiration;
-        private System.Windows.Forms.Timer timer;
+        private Label _label;
+        private ToolTip _toolTip;
+        private DateTime _expiration;
+        private System.Windows.Forms.Timer _timer;
+        private bool _busy = false;
 
         public Statuser(Label label, ToolTip tooltip = null)
         {
-            this.label = label;
-            timer = new Timer();
-            timer.Interval = 100;
-            timer.Tick += Tick;
-            toolTip = tooltip;
+            this._label = label;
+            _timer = new Timer();
+            _timer.Interval = 100;
+            _timer.Tick += Tick;
+            _toolTip = tooltip;
         }
 
         public void Show(string s, int millis = 0, Severity severity = Severity.Normal, bool silent = false)
         {
+            if (_busy)
+                return;
+
             if (severity == Severity.Error && !silent)
                 System.Media.SystemSounds.Beep.Play();
 
             if (s == null)
                 return;
 
-            if (label != null)
+            if (_label != null)
             {
-                label.ForeColor = colors[severity];
-                label.Text = s;
+                _label.ForeColor = colors[severity];
+                _label.Text = s;
             }
 
             if (millis > 0)
             {
-                expiration = DateTime.Now.AddMilliseconds(millis);
-                timer.Start();
+                _expiration = DateTime.Now.AddMilliseconds(millis);
+                _timer.Start();
+                _busy = true;
             }
         }
 
         public void SetToolTip(string tip)
         {
-            toolTip.SetToolTip(label, tip);
+            _toolTip.SetToolTip(_label, tip);
         }
 
         private void Tick(object sender, EventArgs e)
         {
             DateTime now = DateTime.Now;
 
-            if (now.CompareTo(expiration) > 0)
+            if (now.CompareTo(_expiration) > 0)
             {
-                label.Text = "";
-                if (toolTip != null)
-                    toolTip.SetToolTip(label, "");
-                expiration = now;
-                timer.Stop();
+                _label.Text = "";
+                if (_toolTip != null)
+                    _toolTip.SetToolTip(_label, "");
+                _expiration = now;
+                _timer.Stop();
+                _busy = false;
             }
         }
 
