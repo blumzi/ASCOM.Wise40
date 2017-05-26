@@ -15,7 +15,7 @@ namespace ASCOM.Wise40.Hardware
         private ulong _windowSize;          // Ticks
         private WisePin _pin;
         private ulong windowStartTime;
-        private ulong _output;
+        private ulong _output = 0;
         private float _targetPosition;
         private Debugger debugger = Debugger.Instance;
         Func<int> _stopSimulatedProcess;
