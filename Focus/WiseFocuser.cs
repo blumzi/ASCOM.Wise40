@@ -348,8 +348,10 @@ namespace ASCOM.Wise40
             
             int stoppingDist = Math.Abs(currPosition - startStopping);
 #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
-                "WiseFocuser:Stop: travel: {0}, stopping distance: {1}, percent: {2:f2}", travel, stoppingDist, (stoppingDist * 100)/ travel);
+            if (travel != 0)
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                    "WiseFocuser:Stop: travel: {0}, stopping distance: {1}, percent: {2:f2}",
+                    travel, stoppingDist, (stoppingDist * 100)/ travel);
 #endregion
 #endif
             _movingToTarget = false;
