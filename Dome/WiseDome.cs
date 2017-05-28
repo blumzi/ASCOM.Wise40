@@ -373,14 +373,14 @@ namespace ASCOM.Wise40
             {
                 if (_calibrating)
                 {
-                    Stop();
-                    Thread.Sleep(2000);     // settle down
                     _calibrating = false;
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
                         "WiseDome: Setting _foundCalibration[{0}] == {1} ...", calibrationPoints.IndexOf(cp), cp.az.ToNiceString());
                     #endregion
                     _foundCalibration.Set();
+                    Stop();
+                    Thread.Sleep(2000);     // settle down
                 }
                 domeEncoder.Calibrate(cp.az);
             }
@@ -751,15 +751,16 @@ namespace ASCOM.Wise40
 
             if (Calibrated)
             {
-                List<ShortestDistanceResult> results = new List<ShortestDistanceResult>();
+                List<ShortestDistanceResult> distanceToCaliPoints = new List<ShortestDistanceResult>();
                 foreach (var cp in calibrationPoints)
-                    results.Add(_instance.Azimuth.ShortestDistance(cp.az));
-                ShortestDistanceResult shortest = new ShortestDistanceResult(new Angle(360.0, Angle.Type.Alt), Const.AxisDirection.None);
-                foreach (var res in results)
-                    if (res.angle < shortest.angle)
-                        shortest = res;
+                    distanceToCaliPoints.Add(_instance.Azimuth.ShortestDistance(cp.az));
+
+                ShortestDistanceResult closest = new ShortestDistanceResult(new Angle(360.0, Angle.Type.Az), Const.AxisDirection.None);
+                foreach (var res in distanceToCaliPoints)
+                    if (res.angle < closest.angle)
+                        closest = res;
                 
-                switch (shortest.direction) {
+                switch (closest.direction) {
                     case Const.AxisDirection.Decreasing: StartMovingCCW(); break ;
                     case Const.AxisDirection.Increasing:  StartMovingCW(); break;
                 }
@@ -946,11 +947,19 @@ namespace ASCOM.Wise40
                 throw new ASCOM.InvalidOperationException("Cannot Park, shutter is active!");
             }
 
+            if (!Calibrated && ! _autoCalibrate)
+            {
+                tl.LogMessage("Dome: Park", string.Format("Dome: Park", "Cannot Park, not calibrated and _autoCalibrate == {0}.", _autoCalibrate.ToString()));
+                throw new ASCOM.InvalidOperationException("Cannot Park, not calibrated!");
+            }
+
             tl.LogMessage("Dome: Park", "");
             
             SetDomeState(DomeState.Parking);
-            if (!Calibrated)
-                FindHome();
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: Park: {0}, not calibrated, _autoCalibrate == true, calling FindHomePoint");
+            #endregion
+            FindHome();
 
             AtPark = false;
             SlewToAzimuth(_parkAzimuth);
