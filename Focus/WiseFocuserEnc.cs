@@ -101,7 +101,7 @@ namespace ASCOM.Wise40
                 base.init("FocusEnc",
                     (int)_maxValue,
                     new List<WiseEncSpec>() {
-                        new WiseEncSpec() { brd = hardware.miscboard, port = DigitalPortType.FirstPortCL,  mask = 0x03 },
+                        new WiseEncSpec() { brd = hardware.miscboard, port = DigitalPortType.FirstPortCL,  mask = 0x01 },
                         new WiseEncSpec() { brd = hardware.miscboard, port = DigitalPortType.FirstPortA,  mask = 0xff },
                         new WiseEncSpec() { brd = hardware.miscboard, port = DigitalPortType.FirstPortB,  mask = 0xff },
                         }
