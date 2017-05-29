@@ -211,9 +211,6 @@ namespace ASCOM.Wise40
             using (Profile driverProfile = new Profile())
             {
                 driverProfile.DeviceType = "Focuser";
-
-                encoder.UpperLimit = Convert.ToUInt32(driverProfile.GetValue(driverID, "Upper Limit", string.Empty, encoder.UpperLimit.ToString()));
-                encoder.LowerLimit = Convert.ToUInt32(driverProfile.GetValue(driverID, "Lower Limit", string.Empty, encoder.LowerLimit.ToString()));
             }
         }
 
@@ -225,8 +222,6 @@ namespace ASCOM.Wise40
             using (Profile driverProfile = new Profile())
             {
                 driverProfile.DeviceType = "Focuser";
-                driverProfile.WriteValue(driverID, "Upper Limit", encoder.UpperLimit.ToString());
-                driverProfile.WriteValue(driverID, "Lower Limit", encoder.LowerLimit.ToString());
             }
         }
 
@@ -706,11 +701,6 @@ namespace ASCOM.Wise40
             {
                 return encoder.UpperLimit;
             }
-
-            set
-            {
-                encoder.UpperLimit = value;
-            }
         }
 
         public uint LowerLimit
@@ -718,11 +708,6 @@ namespace ASCOM.Wise40
             get
             {
                 return encoder.LowerLimit;
-            }
-
-            set
-            {
-                encoder.LowerLimit = value;
             }
         }
 

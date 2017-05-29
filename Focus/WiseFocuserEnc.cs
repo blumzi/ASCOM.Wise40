@@ -70,13 +70,34 @@ namespace ASCOM.Wise40
         private uint _daqsValue;
         private bool _connected = false;
         private bool _multiTurn = false;
-        private static uint _upperLimit, _lowerLimit;
+
+        /// <summary>
+        /// May 29th, 2017 - The limits below are actual, observed, limits.
+        /// </summary>
+        private static uint _upperLimit = 10122, _lowerLimit = 20;
+
         private uint _maxValue;
 
         List<IConnectable> connectables = new List<IConnectable>();
         List<IDisposable> disposables = new List<IDisposable>();
 
         public WiseFocuserEnc() { }
+
+        public uint UpperLimit
+        {
+            get
+            {
+                return _upperLimit;
+            }
+        }
+
+        public uint LowerLimit
+        {
+            get
+            {
+                return _lowerLimit;
+            }
+        }
 
         public static WiseFocuserEnc Instance
         {
@@ -108,9 +129,6 @@ namespace ASCOM.Wise40
                 );
                 connectables.Add(pinLatch);
                 disposables.Add(pinLatch);
-                
-                UpperLimit = _maxValue;
-                LowerLimit = 0;
             }
             else
             {
@@ -121,9 +139,6 @@ namespace ASCOM.Wise40
                         },
                     true
                     );
-
-                UpperLimit = 128;
-                LowerLimit = 0;
             }
 
             _initialized = true;
@@ -208,32 +223,6 @@ namespace ASCOM.Wise40
                     _simulatedValue = 0;
 
                 _connected = value;
-            }
-        }
-
-        public uint UpperLimit
-        {
-            get
-            {
-                return _upperLimit;
-            }
-
-            set
-            {
-                _upperLimit = value;
-            }
-        }
-
-        public uint LowerLimit
-        {
-            get
-            {
-                return _lowerLimit;
-            }
-
-            set
-            {
-                _lowerLimit = value;
             }
         }
 
