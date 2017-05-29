@@ -371,6 +371,7 @@ namespace ASCOM.Wise40
 
             if ((cp = AtCaliPoint) != null)
             {
+                domeEncoder.Calibrate(cp.az);
                 if (_calibrating)
                 {
                     _calibrating = false;
@@ -378,11 +379,10 @@ namespace ASCOM.Wise40
                     debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
                         "WiseDome: Setting _foundCalibration[{0}] == {1} ...", calibrationPoints.IndexOf(cp), cp.az.ToNiceString());
                     #endregion
-                    _foundCalibration.Set();
                     Stop();
                     Thread.Sleep(2000);     // settle down
+                    _foundCalibration.Set();
                 }
-                domeEncoder.Calibrate(cp.az);
             }
 
             if (_targetAz != null && arriving(_targetAz))
@@ -590,10 +590,10 @@ namespace ASCOM.Wise40
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome:Stop Starting to stop at az: {0} (encoder: {1})", Azimuth, domeEncoder.Value);
             #endregion
+            _movementTimer.Change(Timeout.Infinite, Timeout.Infinite);
             rightPin.SetOff();
             leftPin.SetOff();
             UnsetDomeState(DomeState.MovingCCW|DomeState.MovingCW);
-            _movementTimer.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
             domeEncoder.setMovement(Direction.None);
 
             for ( tries = 0; tries < 10; tries++)
@@ -604,6 +604,7 @@ namespace ASCOM.Wise40
                 if (prev == curr)
                     break;
             }
+
             if (Calibrated)
                 SaveCalibrationData();
             #region debug
