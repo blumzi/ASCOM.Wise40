@@ -46,8 +46,7 @@ namespace Dash
             labelDomeVersion.Text = _dash.wisedome.DriverVersion;
             labelFocuserVersion.Text = WiseFocuser.DriverVersion;
             labelSafeToOpenVersion.Text = _dash.wisesite.safeToOpen.DriverVersion;
-            //labelBoltwoodVersion.Text = _dash.wiseboltwood.DriverVersion;
-            labelBoltwoodVersion.Text = "???";
+            labelBoltwoodVersion.Text = _dash.wiseboltwood.DriverVersion;
             labelComputerControlVersion.Text = _dash.wisesite.computerControl.DriverVersion;
             labelVantageProVersion.Text = (new ObservingConditions("ASCOM.Wise40.VantagePro.ObservingConditions")).DriverVersion;
             labelFilterWheelVersion.Text = _dash.wisefilterwheel.DriverVersion;
