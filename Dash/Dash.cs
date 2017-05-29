@@ -1297,25 +1297,6 @@ namespace Dash
                 wisefocuser.Move(newPos);
         }
 
-        private void saveFocusEncoderUpperLimitToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            wisefocuser.UpperLimit = wisefocuser.Position;
-            ToolStripMenuItem item = sender as ToolStripMenuItem;
-
-            if (item.Text.EndsWith(Const.checkmark))
-            {
-                _saveFocusUpperLimit = false;
-                item.Text = item.Text.Remove(item.Text.Length - Const.checkmark.Length);
-            }
-            else
-            {
-                _saveFocusUpperLimit = true;
-                item.Text += Const.checkmark;
-            }
-            item.Invalidate();
-            UpdateAlteredItems(item, string.Format("Focus: {0}", wisefocuser.UpperLimit));
-        }
-
         private void buttonFilterWheelGo_Click(object sender, EventArgs e)
         {
             short targetPosition = (short)comboBoxFilterWheelPositions.SelectedIndex;
@@ -1333,25 +1314,6 @@ namespace Dash
         private void buttonTrack_Click(object sender, EventArgs e)
         {
             wisetele.Tracking = !wisetele.Tracking;
-        }
-
-        private void saveFocusEncoderLowerLimitToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            wisefocuser.LowerLimit = wisefocuser.Position;
-            ToolStripMenuItem item = sender as ToolStripMenuItem;
-
-            if (item.Text.EndsWith(Const.checkmark))
-            {
-                _saveFocusLowerLimit = false;
-                item.Text = item.Text.Remove(item.Text.Length - Const.checkmark.Length);
-            }
-            else
-            {
-                _saveFocusLowerLimit = true;
-                item.Text += Const.checkmark;
-            }
-            item.Invalidate();
-            UpdateAlteredItems(item, string.Format("Focus: {0}", wisefocuser.LowerLimit));
         }
 
         private void safetyOverrideToolStripMenuItem_Click(object sender, EventArgs e)

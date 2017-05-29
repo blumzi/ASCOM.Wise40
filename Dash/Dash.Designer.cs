@@ -131,9 +131,6 @@
             this.toolStripMenuItemFilterWheel = new System.Windows.Forms.ToolStripMenuItem();
             this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.manageFilterInventoryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripMenuItem3 = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripMenuItem6 = new System.Windows.Forms.ToolStripMenuItem();
-            this.saveMaximumToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem5 = new System.Windows.Forms.ToolStripMenuItem();
             this.tracingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.debuggingToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
@@ -1533,7 +1530,6 @@
             this.vantagePro2ToolStripMenuItem,
             this.toolStripMenuItemSafeToOpen,
             this.toolStripMenuItemFilterWheel,
-            this.toolStripMenuItem3,
             this.toolStripMenuItem5,
             this.tracingToolStripMenuItem,
             this.debuggingToolStripMenuItem1,
@@ -1657,33 +1653,6 @@
             this.manageFilterInventoryToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
             this.manageFilterInventoryToolStripMenuItem.Text = "Manage filters";
             this.manageFilterInventoryToolStripMenuItem.Click += new System.EventHandler(this.manageFilterInventoryToolStripMenuItem_Click);
-            // 
-            // toolStripMenuItem3
-            // 
-            this.toolStripMenuItem3.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripMenuItem6,
-            this.saveMaximumToolStripMenuItem});
-            this.toolStripMenuItem3.Name = "toolStripMenuItem3";
-            this.toolStripMenuItem3.Size = new System.Drawing.Size(158, 22);
-            this.toolStripMenuItem3.Text = "Focus";
-            // 
-            // toolStripMenuItem6
-            // 
-            this.toolStripMenuItem6.Name = "toolStripMenuItem6";
-            this.toolStripMenuItem6.Size = new System.Drawing.Size(166, 22);
-            this.toolStripMenuItem6.Text = "Save UpperLimit";
-            this.toolStripMenuItem6.ToolTipText = "Saves the current focus encoder value to the ASCOM profile\r\n as the focus UpperLi" +
-    "mit.";
-            this.toolStripMenuItem6.Click += new System.EventHandler(this.saveFocusEncoderUpperLimitToolStripMenuItem_Click);
-            // 
-            // saveMaximumToolStripMenuItem
-            // 
-            this.saveMaximumToolStripMenuItem.Name = "saveMaximumToolStripMenuItem";
-            this.saveMaximumToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
-            this.saveMaximumToolStripMenuItem.Text = "Save LowerLimit";
-            this.saveMaximumToolStripMenuItem.ToolTipText = "Saves the current focus encoder value to the ASCOM profile\r\n as the focus UpperLi" +
-    "mit.";
-            this.saveMaximumToolStripMenuItem.Click += new System.EventHandler(this.saveFocusEncoderLowerLimitToolStripMenuItem_Click);
             // 
             // toolStripMenuItem5
             // 
@@ -2939,7 +2908,6 @@
         private System.Windows.Forms.ToolStripMenuItem wise40WikiToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemFilterWheel;
-        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem3;
         private System.Windows.Forms.ToolStripMenuItem filterWheelToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem syncVentWithShutterToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem5;
@@ -2947,8 +2915,6 @@
         private System.Windows.Forms.Button buttonFocusIncrease;
         private System.Windows.Forms.Button buttonFocusDecrease;
         private System.Windows.Forms.Panel panel1;
-        private System.Windows.Forms.ToolStripMenuItem saveMaximumToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem6;
         private ASCOM.Controls.AnnunciatorPanel annunciatorPanelStatus;
         private ASCOM.Controls.Annunciator annunciatorTrack;
         private ASCOM.Controls.Annunciator annunciatorSlew;
