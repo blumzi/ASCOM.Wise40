@@ -62,7 +62,7 @@ namespace ASCOM.Wise40
         //     The wire that was supposed to be used for zeroing the encoder (reminder: the purchassedencoder does not have this capability)
         //      will be re-used for an additional turn-bit, so we'll have 5 of them.
         //
-        private static readonly bool reversedDirection = true;          // The encoder value decreases when focusing up
+        private static readonly bool reversedDirection = false;          // The encoder value decreases when focusing up
 
         private BitExtractor positionBits = new BitExtractor(nbits: 9, lsb: 3);
         private BitExtractor turnsBits = new BitExtractor(nbits: 6, lsb: 12);

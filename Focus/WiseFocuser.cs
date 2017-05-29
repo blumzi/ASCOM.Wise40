@@ -130,8 +130,8 @@ namespace ASCOM.Wise40
             movementTimer = new System.Threading.Timer(movementTimerCallback);
 
             motionParameters = new Dictionary<Direction, MotionParameter>();
-            motionParameters[Direction.Up] = new MotionParameter() { stoppingDistance = 100 };
-            motionParameters[Direction.Down] = new MotionParameter() { stoppingDistance = 100 };
+            motionParameters[Direction.Up] = new MotionParameter() { stoppingDistance = 10 };
+            motionParameters[Direction.Down] = new MotionParameter() { stoppingDistance = 10 };
 #if WITH_PID
             TimeSpan pidSamplingRate = new TimeSpan(0, 0, 0, 100);  // 100 milliseconds
             upPID = new TimeProportionedPidController(
@@ -460,7 +460,7 @@ namespace ASCOM.Wise40
                     break;
             }
 
-            movementTimer.Change(movementTimeout, movementTimeout);
+            movementTimer.Change(4 * movementTimeout, movementTimeout);
 
             if (Simulated)
             {
@@ -654,7 +654,7 @@ namespace ASCOM.Wise40
             }
             else if (pinDown.isOn)
             {
-                if (Position - _targetPos <= motionParameters[Direction.Down].stoppingDistance)
+                if (_movingToTarget && (Position - _targetPos) <= motionParameters[Direction.Down].stoppingDistance)
                     Stop();
 
                 if (_status == FocuserStatus.MovingAllDown)
