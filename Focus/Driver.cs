@@ -71,7 +71,6 @@ namespace ASCOM.Wise40
         public Focuser()
         {
             wisefocuser.init();
-            wisefocuser.traceLogger.LogMessage("Focuser", "Completed initialisation");
         }
 
         //
@@ -169,7 +168,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return WiseFocuser.DriverVersion;
+                return wisefocuser.DriverVersion;
             }
         }
 
