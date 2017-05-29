@@ -289,10 +289,6 @@
             this.comboBoxFocusStep.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.comboBoxFocusStep.FormattingEnabled = true;
             this.comboBoxFocusStep.Items.AddRange(new object[] {
-            "1",
-            "3",
-            "5",
-            "10",
             "50",
             "100",
             "150",
@@ -302,7 +298,7 @@
             this.comboBoxFocusStep.Name = "comboBoxFocusStep";
             this.comboBoxFocusStep.Size = new System.Drawing.Size(72, 21);
             this.comboBoxFocusStep.TabIndex = 33;
-            this.comboBoxFocusStep.Text = "5";
+            this.comboBoxFocusStep.Text = "50";
             // 
             // buttonFocusIncrease
             // 
