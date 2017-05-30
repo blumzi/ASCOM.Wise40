@@ -19,10 +19,6 @@ namespace ASCOM.Wise40
 
         private WisePin pinLatch;
         private Hardware.Hardware hardware = Hardware.Hardware.Instance;
-        private static uint _simulatedValue;
-        private static Const.Direction _simulatedDirection;
-        private static Timer _simulationTimer = new Timer(new TimerCallback(simulateMovement));
-        private static uint _simulatedStep = 1;
 
         //
         // 17 Jan 2017 - Arie Blumenzweig
@@ -55,14 +51,13 @@ namespace ASCOM.Wise40
         //
         
         //
-        // 23 May, 2017 - Arie Blumenzweig
+        // 29 May, 2017 - Arie Blumenzweig
         //
-        //   - We have too much jitter in the position values.  We'll discard some of the least-significant position bits.
-        //   - Seems that the current 4 turn-bits are not enough.  The values wrap-around at about 5mm from the upper limit-switch.
-        //     The wire that was supposed to be used for zeroing the encoder (reminder: the purchassedencoder does not have this capability)
-        //      will be re-used for an additional turn-bit, so we'll have 5 of them.
+        //   - We have too much jitter in the position values.  We'll discard some of the least-significant position bits (in software).
+        //   - The current 4 turn-bits are not enough.  The values wrap-around at about 5mm from the upper limit-switch.
+        //     The wire that was supposed to be used for zeroing the encoder (reminder: the purchassed encoder does not have this capability)
+        //      was re-used for an additional turn-bit, so we' have 5 of them (up-to 32 turns).
         //
-        private static readonly bool reversedDirection = false;          // The encoder value decreases when focusing up
 
         private BitExtractor positionBits = new BitExtractor(nbits: 9, lsb: 3);
         private BitExtractor turnsBits = new BitExtractor(nbits: 6, lsb: 12);
@@ -70,11 +65,14 @@ namespace ASCOM.Wise40
         private uint _daqsValue;
         private bool _connected = false;
         private bool _multiTurn = false;
+        
+        private static uint _upperHardLimit = 10122, _lowerHardLimit = 20;      // Measured on May 29th, 2017
+        private static uint _upperSoftLimit = 10100, _lowerSoftLimit = 100;     // Enforced by software
 
-        /// <summary>
-        /// May 29th, 2017 - The limits below are actual, observed, limits.
-        /// </summary>
-        private static uint _upperLimit = 10122, _lowerLimit = 20;
+        private static uint _simulatedValue = (_upperHardLimit - _lowerHardLimit) / 2;
+        private static Const.Direction _simulatedDirection;
+        private static Timer _simulationTimer = new Timer(new TimerCallback(simulateMovement));
+        private static uint _simulatedStep = 1;
 
         private uint _maxValue;
 
@@ -87,7 +85,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return _upperLimit;
+                return _upperSoftLimit;
             }
         }
 
@@ -95,7 +93,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return _lowerLimit;
+                return _lowerSoftLimit;
             }
         }
 
@@ -180,8 +178,6 @@ namespace ASCOM.Wise40
                     }
 
                     ret = (turns * positionBits.MaxValue) + pos;
-                    if (reversedDirection)
-                        ret = _maxValue - ret;
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "FocusEnc get: pos: {0}, turn: {1} => {2}", pos, turns, ret);
                     #endregion
@@ -247,10 +243,10 @@ namespace ASCOM.Wise40
                 return;
             }
 
-            if (_simulatedDirection == Const.Direction.Increasing && _simulatedValue < _upperLimit)
+            if (_simulatedDirection == Const.Direction.Increasing && _simulatedValue < _upperSoftLimit)
                 _simulatedValue += _simulatedStep;
 
-            if (_simulatedDirection == Const.Direction.Decreasing && _simulatedValue > _lowerLimit)
+            if (_simulatedDirection == Const.Direction.Decreasing && _simulatedValue > _lowerSoftLimit)
                 _simulatedValue -= _simulatedStep;
         }
     }
