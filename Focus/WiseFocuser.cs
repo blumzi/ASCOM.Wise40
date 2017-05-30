@@ -25,7 +25,7 @@ namespace ASCOM.Wise40
         private enum FocuserStatus { Idle, MovingUp, MovingAllUp, MovingDown, MovingAllDown, Stopping };
         private FocuserStatus _status = FocuserStatus.Idle;
 
-        private static TraceLogger tl;
+        private ASCOM.Utilities.TraceLogger tl;
         public Debugger debugger = Debugger.Instance;
 
         private WisePin pinUp, pinDown;
@@ -103,7 +103,7 @@ namespace ASCOM.Wise40
         }
 #endif
 
-        public void init(bool multiTurn = false)
+        public void init()
         {
             if (_initialized)
                 return;
@@ -117,6 +117,8 @@ namespace ASCOM.Wise40
             debugger.init();
             tl = new TraceLogger("", "Focuser");
             tl.Enabled = debugger.Tracing;
+
+            //tl.LogMessage("init", "Initializing ...");
             hardware.init();
             wisesite.init();
 
@@ -130,7 +132,7 @@ namespace ASCOM.Wise40
 
             motionParameters = new Dictionary<Direction, MotionParameter>();
             motionParameters[Direction.Up] = new MotionParameter() { stoppingDistance = 10 };
-            motionParameters[Direction.Down] = new MotionParameter() { stoppingDistance = 10 };
+            motionParameters[Direction.Down] = new MotionParameter() { stoppingDistance =  10 };
 #if WITH_PID
             TimeSpan pidSamplingRate = new TimeSpan(0, 0, 0, 100);  // 100 milliseconds
             upPID = new TimeProportionedPidController(
@@ -177,7 +179,7 @@ namespace ASCOM.Wise40
             get
             {
                 #region trace
-                tl.LogMessage("Connected Get", _connected.ToString());
+                //tl.LogMessage("Connected Get", _connected.ToString());
                 #endregion
                 return _connected;
             }
@@ -185,7 +187,7 @@ namespace ASCOM.Wise40
             set
             {
                 #region trace
-                tl.LogMessage("Connected Set", value.ToString());
+                //tl.LogMessage("Connected Set", value.ToString());
                 #endregion
                 if (value == _connected)
                     return;
@@ -228,7 +230,7 @@ namespace ASCOM.Wise40
             get
             {
                 #region trace
-                tl.LogMessage("Temperature Get", "Not implemented");
+                //tl.LogMessage("Temperature Get", "Not implemented");
                 #endregion
                 throw new ASCOM.PropertyNotImplementedException("Temperature", false);
             }
@@ -240,7 +242,7 @@ namespace ASCOM.Wise40
             {
                 bool ret = false;
                 #region trace
-                tl.LogMessage("TempCompAvailable Get", ret.ToString());
+                //tl.LogMessage("TempCompAvailable Get", ret.ToString());
                 #endregion
                 return ret; // Temperature compensation is not available in this driver
             }
@@ -251,14 +253,14 @@ namespace ASCOM.Wise40
             get
             {
                 #region trace
-                tl.LogMessage("TempComp Get", false.ToString());
+                //tl.LogMessage("TempComp Get", false.ToString());
                 #endregion
                 return false;
             }
             set
             {
                 #region trace
-                tl.LogMessage("TempComp Set", "Not implemented");
+                //tl.LogMessage("TempComp Set", "Not implemented");
                 #endregion
                 throw new ASCOM.PropertyNotImplementedException("TempComp", false);
             }
@@ -273,7 +275,7 @@ namespace ASCOM.Wise40
             {
                 double ret = 50000.0 / (encoder.UpperLimit - encoder.LowerLimit);
                 #region trace
-                tl.LogMessage("StepSize Get", string.Format("Get - {0}", ret));
+                //tl.LogMessage("StepSize Get", string.Format("Get - {0}", ret));
                 #endregion
                 return ret;
             }
@@ -308,7 +310,7 @@ namespace ASCOM.Wise40
             {
                 bool ret = true;
                 #region trace
-                tl.LogMessage("Absolute Get", ret.ToString());
+                //tl.LogMessage("Absolute Get", ret.ToString());
                 #endregion
                 return ret; // This is an absolute focuser
             }
@@ -356,7 +358,7 @@ namespace ASCOM.Wise40
         public void Halt()
         {
             #region trace
-            tl.LogMessage("Halt", "");
+            //tl.LogMessage("Halt", "");
             #endregion
             if (!Connected)
                 throw new NotConnectedException("");
@@ -375,7 +377,7 @@ namespace ASCOM.Wise40
 
                 bool ret = pinUp.isOn || pinDown.isOn;
                 #region trace
-                tl.LogMessage("Halt", ret.ToString());
+                //tl.LogMessage("Halt", ret.ToString());
                 #endregion
                 return ret;
             }
@@ -386,14 +388,14 @@ namespace ASCOM.Wise40
             get
             {
                 #region trace
-                tl.LogMessage("Link Get", this.Connected.ToString());
+                //tl.LogMessage("Link Get", this.Connected.ToString());
                 #endregion
                 return this.Connected; // Direct function to the connected method, the Link method is just here for backwards compatibility
             }
             set
             {
                 #region trace
-                tl.LogMessage("Link Set", value.ToString());
+                //tl.LogMessage("Link Set", value.ToString());
                 #endregion
                 this.Connected = value; // Direct function to the connected method, the Link method is just here for backwards compatibility
             }
@@ -404,7 +406,7 @@ namespace ASCOM.Wise40
             get
             {
                 #region trace
-                tl.LogMessage("MaxIncrement Get", UpperLimit.ToString());
+                //tl.LogMessage("MaxIncrement Get", UpperLimit.ToString());
                 #endregion
                 return (int)UpperLimit; // Maximum change in one move
             }
@@ -415,7 +417,7 @@ namespace ASCOM.Wise40
             get
             {
                 #region trace
-                tl.LogMessage("MaxStep Get", UpperLimit.ToString());
+                //tl.LogMessage("MaxStep Get", UpperLimit.ToString());
                 #endregion
                 return (int)UpperLimit; // Maximum extent of the focuser, so position range is 0 to 10,000
             }
@@ -470,7 +472,7 @@ namespace ASCOM.Wise40
         public void Move(uint toPos)
         {
             #region trace
-            tl.LogMessage("Move", Position.ToString());
+            //tl.LogMessage("Move", Position.ToString());
             #endregion
             if (!Connected)
                 throw new NotConnectedException("Not connected!");
@@ -543,7 +545,7 @@ namespace ASCOM.Wise40
             get
             {
                 #region trace
-                tl.LogMessage("SupportedActions Get", "Returning empty arraylist");
+                //tl.LogMessage("SupportedActions Get", "Returning empty arraylist");
                 #endregion
                 return new ArrayList();
             }
@@ -585,7 +587,7 @@ namespace ASCOM.Wise40
             get
             {
                 #region trace
-                tl.LogMessage("Description Get", driverDescription);
+                ////tl.LogMessage("Description Get", driverDescription);
                 #endregion
                 return driverDescription;
             }
@@ -597,7 +599,7 @@ namespace ASCOM.Wise40
             {
                 string driverInfo = "Wise40 Focuser. Version: " + DriverVersion;
                 #region trace
-                tl.LogMessage("DriverInfo Get", driverInfo);
+                //tl.LogMessage("DriverInfo Get", driverInfo);
                 #endregion
                 return driverInfo;
             }
@@ -609,7 +611,7 @@ namespace ASCOM.Wise40
             {
                 string driverVersion = String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
                 #region trace
-                tl.LogMessage("DriverVersion Get", driverVersion);
+                //tl.LogMessage("DriverVersion Get", driverVersion);
                 #endregion
                 return driverVersion;
             }
@@ -621,8 +623,9 @@ namespace ASCOM.Wise40
             {
                 short ret = 2;
 
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "InterfaceVersion: tl: #{0}", tl.GetHashCode());
                 #region trace
-                tl.LogMessage("InterfaceVersion Get", ret.ToString());
+                //WiseFocuser.//tl.LogMessage("InterfaceVersion Get", ret.ToString());
                 #endregion
                 return ret;
             }
@@ -637,7 +640,7 @@ namespace ASCOM.Wise40
                 if (currPos >= UpperLimit)
                     Stop();
 
-                if (_movingToTarget && (_targetPos - Position) <= motionParameters[Direction.Up].stoppingDistance)
+                if (_movingToTarget && Math.Abs(_targetPos - Position) <= motionParameters[Direction.Up].stoppingDistance)
                     Stop();
             }
 
@@ -646,7 +649,7 @@ namespace ASCOM.Wise40
                 if (currPos <= LowerLimit)
                     Stop();
 
-                if (_movingToTarget && (Position - _targetPos) <= motionParameters[Direction.Down].stoppingDistance)
+                if (_movingToTarget && Math.Abs(Position - _targetPos) <= motionParameters[Direction.Down].stoppingDistance)
                     Stop();
             }
         }
