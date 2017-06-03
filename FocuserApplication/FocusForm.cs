@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 using System.Collections.Generic;
+using System.Threading;
 
 using ASCOM.Wise40;
 using ASCOM.Wise40.Common;
@@ -123,18 +124,26 @@ namespace FocuserApplication
             if (wisefocuser.Position > 0)
                 wisefocuser.Move(WiseFocuser.Direction.AllDown);
         }
-        #endregion
 
-#if WITH_PID
-        private void buttonSetPID_Click(object sender, EventArgs e)
+        private void buttonDownMillis_Click(object sender, EventArgs e)
         {
-            foreach (var pid in new List<TimeProportionedPidController>() { wisefocuser.upPID, wisefocuser.downPID })
-            {
-                pid.ProportionalGain = (float)Convert.ToDouble(textBoxPID_P.Text);
-                pid.IntegralGain = (float)Convert.ToDouble(textBoxPID_I.Text);
-                pid.DerivativeGain = (float)Convert.ToDouble(textBoxPID_D.Text);
-            }
+            int millis = Convert.ToInt32(comboBoxMillis.Text);
+            DateTime end = DateTime.Now.AddMilliseconds(millis);
+            wisefocuser.Move(WiseFocuser.Direction.Down);
+            while (DateTime.Now.CompareTo(end) <= 0)
+                Thread.Sleep(10);
+            wisefocuser.Stop();
         }
-#endif
+
+        private void buttonUpMillis_Click(object sender, EventArgs e)
+        {
+            int millis = Convert.ToInt32(comboBoxMillis.Text);
+            DateTime end = DateTime.Now.AddMilliseconds(millis);
+            wisefocuser.Move(WiseFocuser.Direction.Up);
+            while (DateTime.Now.CompareTo(end) <= 0)
+                Thread.Sleep(10);
+            wisefocuser.Stop();
+        }
+        #endregion
     }
 }
