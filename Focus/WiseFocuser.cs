@@ -41,11 +41,15 @@ namespace ASCOM.Wise40
 
         private uint _targetPos;
         private bool _movingToTarget = false;
+        private uint _start;
+        private uint _startStopping;
+        private uint _endStopping;
+        private uint _travel;
 
-        private double _startPos;
+        private FixedSizedQueue<uint> recentPositions = new FixedSizedQueue<uint>(3);
 
-        private System.Threading.Timer movementTimer;   // Should be ON only when the focuser is moving
-        private int movementTimeout = 50;               // millis between movement monitoring events
+        private System.Threading.Timer movementMonitoringTimer;   // Should be ON only when the focuser is moving
+        private int movementMonitoringTimeout = 50;     // millis between movement monitoring events
 
         List<IConnectable> connectables = new List<IConnectable>();
         List<IDisposable> disposables = new List<IDisposable>();
@@ -56,9 +60,6 @@ namespace ASCOM.Wise40
         public static string driverID = "ASCOM.Wise40.Focuser";
 
         private static string driverDescription = string.Format("ASCOM Wise40.Focuser v{0}", version.ToString());
-#if WITH_PID
-        public TimeProportionedPidController upPID, downPID;
-#endif
 
         public WiseFocuser() { }
         static WiseFocuser() { }
@@ -80,28 +81,6 @@ namespace ASCOM.Wise40
                 return _instance;
             }
         }
-
-#if WITH_PID
-        private int readEncoder()
-        {
-            return (int)encoder.Value;
-        }
-
-        private ulong readOutput()
-        {
-            return (ulong)DateTime.Now.Ticks;
-        }
-
-        private void writeOutput(ulong value)
-        {
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseFocuser: writeOutput: {0}", value);
-        }
-
-        private int readSetPoint()
-        {
-            return (int)targetPos;
-        }
-#endif
 
         public void init()
         {
@@ -128,43 +107,11 @@ namespace ASCOM.Wise40
             connectables.AddRange(new List<IConnectable> { _instance.pinUp, _instance.pinDown, _instance.encoder });
             disposables.AddRange(new List<IDisposable> { _instance.pinUp, _instance.pinDown, _instance.encoder });
             
-            movementTimer = new System.Threading.Timer(new TimerCallback(MonitorMovement));
+            movementMonitoringTimer = new System.Threading.Timer(new TimerCallback(MonitorMovement));
 
             motionParameters = new Dictionary<Direction, MotionParameter>();
             motionParameters[Direction.Up] = new MotionParameter() { stoppingDistance = 10 };
             motionParameters[Direction.Down] = new MotionParameter() { stoppingDistance =  10 };
-#if WITH_PID
-            TimeSpan pidSamplingRate = new TimeSpan(0, 0, 0, 100);  // 100 milliseconds
-            upPID = new TimeProportionedPidController(
-                name: "focusUpPID",
-                windowSizeMillis: 5000,
-                pin: pinUp,
-                samplingRate: pidSamplingRate,
-                stopSimulatedProcess: stopSimulation,
-                readProcess: readEncoder,
-                readOutput: readOutput,
-                readSetPoint: readSetPoint,
-                writeOutput: writeOutput,
-                proportionalGain: 5,
-                integralGain: 2,
-                derivativeGain: 1
-                );
-
-            downPID = new TimeProportionedPidController(
-                name: "focusDownPID",
-                windowSizeMillis: 5000,
-                pin: pinDown,
-                samplingRate: pidSamplingRate,
-                stopSimulatedProcess: stopSimulation,
-                readProcess: readEncoder,
-                readOutput: readOutput,
-                readSetPoint: readSetPoint,
-                writeOutput: writeOutput,
-                proportionalGain: 5,
-                integralGain: 2,
-                derivativeGain: 1
-                );
-#endif
             _initialized = true;
         }
 
@@ -316,43 +263,50 @@ namespace ASCOM.Wise40
             }
         }
 
+        /// <summary>
+        /// If all the recentPositions (enqueued by the movementMonitorTimer callback) are the
+        ///  same, change status from Stopping to Idle and stop the timer.
+        /// </summary>
+        private bool FullyStopped
+        {
+            get
+            {
+                uint[] recent = recentPositions.ToArray();
+                uint first = recent[0];
+
+                if (first == 0)     // just initialized
+                    return false;
+
+                for (int i = 1; i < recent.Count(); i++)
+                    if (recent[i] != first)
+                        return false;
+
+                movementMonitoringTimer.Change(Timeout.Infinite, Timeout.Infinite);
+                _endStopping = first;
+                _travel = (_endStopping > _start) ? _endStopping - _start : _start - _endStopping;
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseFocuser:FullyStopped: _target: {0}, _start: {1}, _startStopping: {2}, _endStopping: {3}, _travel: {4}",
+                    _targetPos, _start, _startStopping, _endStopping, _travel);
+                #endregion
+                _movingToTarget = false;
+                _targetPos = 0;
+                _status = FocuserStatus.Idle;
+                return true;
+            }
+        }
+
         public void Stop()
         {
             if (Simulated)
                 encoder.stopMoving();
-
-            movementTimer.Change(Timeout.Infinite, Timeout.Infinite);
+            
             pinUp.SetOff();
             pinDown.SetOff();
-#if !WITH_PID
-            int startStopping = (int)Position, currPosition, prevPosition = startStopping;
-            int travel = (int) Math.Abs(startStopping - _startPos);
-#region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseFocuser:Stop Started stopping at {0} ...", startStopping);
-            #endregion
+            _startStopping = Position;
             _status = FocuserStatus.Stopping;
-            do
-            {
-                prevPosition = (int)Position;
-                Thread.Sleep(50);
-                currPosition = (int)Position;
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseFocuser:Stop Slept 50 millis now at {0} (delta: {1})",
-                    currPosition, Math.Abs(currPosition - prevPosition));
-                #endregion
-            }
-            while (currPosition != prevPosition);
-            
-            int stoppingDist = Math.Abs(currPosition - startStopping);
-#region debug
-            if (travel != 0)
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
-                    "WiseFocuser:Stop: travel: {0}, stopping distance: {1}, percent: {2:f2}",
-                    travel, stoppingDist, (stoppingDist * 100)/ travel);
-#endregion
-#endif
-            _movingToTarget = false;
-            _status = FocuserStatus.Idle;
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseFocuser:Stop Started stopping at {0} ...", _startStopping);
+            #endregion
         }
 
         public void Halt()
@@ -362,9 +316,9 @@ namespace ASCOM.Wise40
             #endregion
             if (!Connected)
                 throw new NotConnectedException("");
-#region debug
+            #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseFocuser: Halt");
-#endregion
+            #endregion
             Stop();
         }
 
@@ -375,7 +329,7 @@ namespace ASCOM.Wise40
                 if (!Connected)
                     throw new NotConnectedException("");
 
-                bool ret = pinUp.isOn || pinDown.isOn;
+                bool ret = pinUp.isOn || pinDown.isOn || !FullyStopped;
                 #region trace
                 //tl.LogMessage("Halt", ret.ToString());
                 #endregion
@@ -425,12 +379,13 @@ namespace ASCOM.Wise40
 
         public void Move(Direction dir)
         {
-            _startPos = Position;
+            _start = Position;
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseFocuser: Starting Move({0}) at {1}",
-                dir.ToString(), _startPos);
+                dir.ToString(), _start);
             #endregion
             _movingToTarget = false;
+            _startStopping = _endStopping = _travel = 0;
             switch (dir)
             {
                 case Direction.Up:
@@ -451,7 +406,7 @@ namespace ASCOM.Wise40
                     break;
             }
 
-            movementTimer.Change(4 * movementTimeout, movementTimeout);
+            movementMonitoringTimer.Change(4 * movementMonitoringTimeout, movementMonitoringTimeout);
 
             if (Simulated)
             {
@@ -490,24 +445,6 @@ namespace ASCOM.Wise40
 
             _targetPos = toPos;
             _movingToTarget = true;
-#if WITH_PID
-            if (targetPos > currentPos)
-            {
-#region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseFocuser: Starting upPID");
-#endregion
-                encoder.startMoving(Const.Direction.Increasing);
-                upPID.MoveTo(targetPos);
-            }
-            else
-            {
-#region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseFocuser: Starting downPID");
-#endregion
-                encoder.startMoving(Const.Direction.Decreasing);
-                downPID.MoveTo(targetPos);
-            }
-#else
             if (_targetPos > currentPos)
             {
                 _status = FocuserStatus.MovingUp;
@@ -523,8 +460,7 @@ namespace ASCOM.Wise40
                     encoder.startMoving(Const.Direction.Decreasing);
             }                
 
-            movementTimer.Change(movementTimeout, movementTimeout);
-#endif
+            movementMonitoringTimer.Change(movementMonitoringTimeout, movementMonitoringTimeout);
 
         }
 
@@ -634,6 +570,7 @@ namespace ASCOM.Wise40
         private void MonitorMovement(object StateObject)
         {
             uint currPos = Position;
+            recentPositions.Enqueue(currPos);
 
             if (pinUp.isOn)
             {
@@ -652,6 +589,8 @@ namespace ASCOM.Wise40
                 if (_movingToTarget && Math.Abs(Position - _targetPos) <= motionParameters[Direction.Down].stoppingDistance)
                     Stop();
             }
+
+            bool stopped = FullyStopped;    // Just checking
         }
 
         public string Status
