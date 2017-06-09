@@ -46,14 +46,8 @@
             this.labelStatus = new System.Windows.Forms.Label();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
-            this.panel2 = new System.Windows.Forms.Panel();
-            this.comboBoxMillis = new System.Windows.Forms.ComboBox();
-            this.buttonDownMillis = new System.Windows.Forms.Button();
-            this.buttonUpMillis = new System.Windows.Forms.Button();
-            this.label1 = new System.Windows.Forms.Label();
             this.panel1.SuspendLayout();
             this.flowLayoutPanel1.SuspendLayout();
-            this.panel2.SuspendLayout();
             this.SuspendLayout();
             // 
             // buttonFocusIncrease
@@ -263,7 +257,7 @@
             // 
             this.labelStatus.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.labelStatus.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, System.Drawing.FontStyle.Italic);
-            this.labelStatus.Location = new System.Drawing.Point(3, 147);
+            this.labelStatus.Location = new System.Drawing.Point(3, 98);
             this.labelStatus.Name = "labelStatus";
             this.labelStatus.Size = new System.Drawing.Size(352, 29);
             this.labelStatus.TabIndex = 37;
@@ -272,89 +266,20 @@
             // 
             // flowLayoutPanel1
             // 
+            this.flowLayoutPanel1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.flowLayoutPanel1.Controls.Add(this.panel1);
-            this.flowLayoutPanel1.Controls.Add(this.panel2);
             this.flowLayoutPanel1.Controls.Add(this.labelStatus);
             this.flowLayoutPanel1.Location = new System.Drawing.Point(8, 8);
             this.flowLayoutPanel1.Name = "flowLayoutPanel1";
-            this.flowLayoutPanel1.Size = new System.Drawing.Size(360, 184);
+            this.flowLayoutPanel1.Size = new System.Drawing.Size(360, 139);
             this.flowLayoutPanel1.TabIndex = 38;
-            // 
-            // panel2
-            // 
-            this.panel2.Controls.Add(this.label1);
-            this.panel2.Controls.Add(this.comboBoxMillis);
-            this.panel2.Controls.Add(this.buttonDownMillis);
-            this.panel2.Controls.Add(this.buttonUpMillis);
-            this.panel2.Location = new System.Drawing.Point(3, 101);
-            this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(349, 43);
-            this.panel2.TabIndex = 38;
-            // 
-            // comboBoxMillis
-            // 
-            this.comboBoxMillis.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.comboBoxMillis.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.comboBoxMillis.FormattingEnabled = true;
-            this.comboBoxMillis.Items.AddRange(new object[] {
-            "10",
-            "50",
-            "100",
-            "200"});
-            this.comboBoxMillis.Location = new System.Drawing.Point(152, 8);
-            this.comboBoxMillis.Name = "comboBoxMillis";
-            this.comboBoxMillis.Size = new System.Drawing.Size(82, 21);
-            this.comboBoxMillis.TabIndex = 38;
-            this.comboBoxMillis.Text = "10";
-            // 
-            // buttonDownMillis
-            // 
-            this.buttonDownMillis.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonDownMillis.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.buttonDownMillis.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.buttonDownMillis.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.buttonDownMillis.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.buttonDownMillis.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonDownMillis.Location = new System.Drawing.Point(96, 8);
-            this.buttonDownMillis.Name = "buttonDownMillis";
-            this.buttonDownMillis.Size = new System.Drawing.Size(47, 21);
-            this.buttonDownMillis.TabIndex = 36;
-            this.buttonDownMillis.Text = "Down";
-            this.buttonDownMillis.UseVisualStyleBackColor = false;
-            this.buttonDownMillis.Click += new System.EventHandler(this.buttonDownMillis_Click);
-            // 
-            // buttonUpMillis
-            // 
-            this.buttonUpMillis.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonUpMillis.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.buttonUpMillis.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.buttonUpMillis.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.buttonUpMillis.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.buttonUpMillis.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonUpMillis.Location = new System.Drawing.Point(237, 8);
-            this.buttonUpMillis.Name = "buttonUpMillis";
-            this.buttonUpMillis.Size = new System.Drawing.Size(33, 21);
-            this.buttonUpMillis.TabIndex = 37;
-            this.buttonUpMillis.Text = "Up";
-            this.buttonUpMillis.UseVisualStyleBackColor = false;
-            this.buttonUpMillis.Click += new System.EventHandler(this.buttonUpMillis_Click);
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.ForeColor = System.Drawing.Color.DarkOrange;
-            this.label1.Location = new System.Drawing.Point(56, 12);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(28, 13);
-            this.label1.TabIndex = 39;
-            this.label1.Text = "millis";
             // 
             // FormFocus
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.ClientSize = new System.Drawing.Size(373, 194);
+            this.ClientSize = new System.Drawing.Size(373, 151);
             this.Controls.Add(this.flowLayoutPanel1);
             this.Name = "FormFocus";
             this.Text = "Wise40 Focus";
@@ -362,8 +287,6 @@
             this.panel1.PerformLayout();
             this.flowLayoutPanel1.ResumeLayout(false);
             this.flowLayoutPanel1.PerformLayout();
-            this.panel2.ResumeLayout(false);
-            this.panel2.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -386,11 +309,6 @@
         private System.Windows.Forms.ToolTip toolTip1;
         private System.Windows.Forms.Label labelStatus;
         private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
-        private System.Windows.Forms.Panel panel2;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.ComboBox comboBoxMillis;
-        private System.Windows.Forms.Button buttonDownMillis;
-        private System.Windows.Forms.Button buttonUpMillis;
     }
 }
 

@@ -124,7 +124,7 @@ namespace FocuserApplication
             if (wisefocuser.Position > 0)
                 wisefocuser.Move(WiseFocuser.Direction.AllDown);
         }
-
+/*
         private void buttonDownMillis_Click(object sender, EventArgs e)
         {
             int millis = Convert.ToInt32(comboBoxMillis.Text);
@@ -144,6 +144,7 @@ namespace FocuserApplication
                 Thread.Sleep(10);
             wisefocuser.Stop();
         }
+*/
         #endregion
     }
 }
