@@ -14,7 +14,10 @@ namespace ASCOM.Wise40
 {
     public class WiseFocuserEnc : WiseEncoder, IDisposable
     {
-        private WisePin pinZero, pinLatch;
+        private static readonly WiseFocuserEnc instance = new WiseFocuserEnc();
+        private bool _initialized = false;
+
+        private WisePin pinLatch;
         private Hardware.Hardware hardware = Hardware.Hardware.Instance;
 
         //
@@ -37,6 +40,7 @@ namespace ASCOM.Wise40
         //  The upper and lower limits are maintained via software.  They have default natural values but these are overriden by values in the 
         //  focuser's ASCOM profile.
         //
+
         //
         // 7 Mar 2017 -  Arie Blumenzweig
         //
@@ -45,44 +49,84 @@ namespace ASCOM.Wise40
         //      The encoder has a pin that, when strapped to 5V, inverses the counting direction. We may do that in
         //       the future, till then we reverse the counter in software (with reversedDirection = true)
         //
-        private static readonly bool reversedDirection = true;          // The encoder value decreases when focusing up
+        
+        //
+        // 29 May, 2017 - Arie Blumenzweig
+        //
+        //   - We have too much jitter in the position values.  We'll discard some of the least-significant position bits (in software).
+        //   - The current 4 turn-bits are not enough.  The values wrap-around at about 5mm from the upper limit-switch.
+        //     The wire that was supposed to be used for zeroing the encoder (reminder: the purchassed encoder does not have this capability)
+        //      was re-used for an additional turn-bit, so we' have 5 of them (up-to 32 turns).
+        //
 
-        private static readonly int posBits = 12;
-        private static readonly int turnBits = 4;
-
-        private static readonly uint maxPos = (uint) (1 << posBits);
-        private static readonly uint maxTurns = (uint) (1 << turnBits);
-        private static readonly uint posMask = maxPos - 1;
-        private static readonly uint turnsMask = maxTurns - 1;
+        private BitExtractor positionBits = new BitExtractor(nbits: 9, lsb: 3);
+        private BitExtractor turnsBits = new BitExtractor(nbits: 6, lsb: 12);
 
         private uint _daqsValue;
         private bool _connected = false;
         private bool _multiTurn = false;
-        private uint _upperLimit, _lowerLimit;
+        
+        private static uint _upperHardLimit = 10122, _lowerHardLimit = 20;      // Measured on May 29th, 2017
+        private static uint _upperSoftLimit = 10100, _lowerSoftLimit = 100;     // Enforced by software
+
+        private static uint _simulatedValue = (_upperHardLimit - _lowerHardLimit) / 2;
+        private static Const.Direction _simulatedDirection;
+        private static Timer _simulationTimer = new Timer(new TimerCallback(simulateMovement));
+        private static uint _simulatedStep = 1;
+
+        private uint _maxValue;
 
         List<IConnectable> connectables = new List<IConnectable>();
         List<IDisposable> disposables = new List<IDisposable>();
 
-        public WiseFocuserEnc(bool multiTurn = false)
+        public WiseFocuserEnc() { }
+
+        public uint UpperLimit
         {
+            get
+            {
+                return _upperSoftLimit;
+            }
+        }
+
+        public uint LowerLimit
+        {
+            get
+            {
+                return _lowerSoftLimit;
+            }
+        }
+
+        public static WiseFocuserEnc Instance
+        {
+            get
+            {
+                return instance;
+            }
+        }
+
+        public void init(bool multiTurn = false)
+        {
+            if (_initialized)
+                return;
+
             Name = "FocusEnc";
             this._multiTurn = multiTurn;
+
             if (this._multiTurn)
             {
+                _maxValue = turnsBits.MaxValue * positionBits.MaxValue;
                 pinLatch = new WisePin("FocusLatch", hardware.miscboard, DigitalPortType.FirstPortCH, 3, DigitalPortDirection.DigitalOut);
-                pinZero = new WisePin("FocusZero", hardware.miscboard, DigitalPortType.FirstPortCH, 2, DigitalPortDirection.DigitalOut);
                 base.init("FocusEnc",
-                    1 << (posBits + turnBits),
+                    (int)_maxValue,
                     new List<WiseEncSpec>() {
+                        new WiseEncSpec() { brd = hardware.miscboard, port = DigitalPortType.FirstPortCL,  mask = 0x01 },
                         new WiseEncSpec() { brd = hardware.miscboard, port = DigitalPortType.FirstPortA,  mask = 0xff },
                         new WiseEncSpec() { brd = hardware.miscboard, port = DigitalPortType.FirstPortB,  mask = 0xff },
                         }
                 );
-                connectables.AddRange(new List<IConnectable>() { pinLatch, pinZero });
-                disposables.AddRange(new List<IDisposable>() { pinLatch, pinZero });
-
-                UpperLimit = maxPos * maxTurns; // max value that the hardware can read, disregarding the upper limit switch
-                LowerLimit = 0;
+                connectables.Add(pinLatch);
+                disposables.Add(pinLatch);
             }
             else
             {
@@ -93,61 +137,58 @@ namespace ASCOM.Wise40
                         },
                     true
                     );
-
-                UpperLimit = 128;
-                LowerLimit = 0;
             }
+
+            _initialized = true;
         }
 
         public new uint Value
         {
+
             get
             {
-                uint turns, pos, ret;
+                uint ret;
 
-                if (_multiTurn)
+                if (Simulated)
                 {
-                    pinLatch.SetOn();
-                    Thread.Sleep(1); 
-                }
-                _daqsValue = base.Value;
-                if (_multiTurn)
-                    pinLatch.SetOff();
-
-                if (_multiTurn)
-                {
-                    pos = _daqsValue & posMask;
-                    turns = (_daqsValue >> posBits) & turnsMask;
+                    ret = _simulatedValue;
                 }
                 else
                 {
-                    pos = _daqsValue;
-                    turns = 0;
+                    uint turns, pos;
+
+                    if (_multiTurn)
+                    {
+                        pinLatch.SetOn();
+                        Thread.Sleep(1);
+                    }
+                    _daqsValue = base.Value;
+                    if (_multiTurn)
+                        pinLatch.SetOff();
+
+                    if (_multiTurn)
+                    {
+                        pos = positionBits.Extract(_daqsValue);
+                        turns = turnsBits.Extract(_daqsValue);
+                    }
+                    else
+                    {
+                        pos = _daqsValue;
+                        turns = 0;
+                    }
+
+                    ret = (turns * positionBits.MaxValue) + pos;
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "FocusEnc get: pos: {0}, turn: {1} => {2}", pos, turns, ret);
+                    #endregion
                 }
-
-                ret = (turns * maxPos) + pos;
-                if (reversedDirection)
-                    ret = maxPos - ret;
-
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "FocusEnc get: pos: {0}, turn: {1} => {2}", pos, turns, ret);
-                #endregion
                 return ret;
             }
 
             set
             {
-                
-            }
-        }
 
-        public void SetZero()
-        {
-            if (!_multiTurn)
-                return;
-            pinZero.SetOn();
-            Thread.Sleep(150);
-            pinZero.SetOff();
+            }
         }
 
         public new void Dispose()
@@ -174,35 +215,39 @@ namespace ASCOM.Wise40
                     connectable.Connect(value);
                 base.Connect(value);
 
+                if (Simulated && value == true)
+                    _simulatedValue = 0;
+
                 _connected = value;
             }
         }
 
-        public uint UpperLimit
+        public void startMoving(Const.Direction dir)
         {
-            get
-            {
-                return _upperLimit;
-            }
-
-            set
-            {
-                _upperLimit = value;
-            }
+            if (!Simulated)
+                return;
+            _simulatedDirection = dir;
+            _simulationTimer.Change(10, 10);
         }
 
-        public uint LowerLimit
+        public void stopMoving()
         {
-            get
-            {
-                return _lowerLimit;
-            }
-
-            set
-            {
-                _lowerLimit = value;
-            }
+            _simulationTimer.Change(Timeout.Infinite, Timeout.Infinite);
         }
 
+        private static void simulateMovement(object o)
+        {
+            if (!instance.Simulated)
+            {
+                _simulationTimer.Change(Timeout.Infinite, Timeout.Infinite);
+                return;
+            }
+
+            if (_simulatedDirection == Const.Direction.Increasing && _simulatedValue < _upperSoftLimit)
+                _simulatedValue += _simulatedStep;
+
+            if (_simulatedDirection == Const.Direction.Decreasing && _simulatedValue > _lowerSoftLimit)
+                _simulatedValue -= _simulatedStep;
+        }
     }
 }

@@ -64,7 +64,7 @@ namespace ASCOM.Wise40.Hardware
 
             if (Simulated)
             {
-                simulationTimerFrequency = 15;
+                simulationTimerFrequency = 30; // 15;
                 TimerCallback TimerCallback = new TimerCallback(bumpEncoders);
                 simulationTimer = new System.Threading.Timer(TimerCallback, null, Timeout.Infinite, Timeout.Infinite);
             } 
@@ -183,7 +183,8 @@ namespace ASCOM.Wise40.Hardware
             else
             {
                 double degrees = currentRate / simulationTimerFrequency;
-                delta = primary ? Angle.FromHours(degrees / 15.0, Angle.Type.HA) : Angle.FromDegrees(degrees);
+                double hours = Angle.Deg2Hours(currentRate) / simulationTimerFrequency;
+                delta = primary ? Angle.FromHours(hours, Angle.Type.HA) : Angle.FromDegrees(degrees, Angle.Type.Dec);
             }
 
             foreach (IEncoder encoder in encoders)

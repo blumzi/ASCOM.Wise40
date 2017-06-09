@@ -11,18 +11,21 @@ using ASCOM.Wise40.Common;
 using ASCOM.Utilities;
 using MccDaq;
 
+#if WITH_PID
+using PID;
+#endif
+
 namespace ASCOM.Wise40
 {
     public class WiseFocuser : WiseObject, IDisposable, IConnectable
     {
-        private Version version = new Version(0, 1);
-        private static readonly WiseFocuser instance = new WiseFocuser();
+        private static Version version = new Version(0, 2);
         private bool _initialized = false;
         private bool _connected = false;
-        private enum FocuserStatus { Idle, MovingUp, MovingAllUp, MovingDown, MovingAllDown };
+        private enum FocuserStatus { Idle, MovingUp, MovingAllUp, MovingDown, MovingAllDown, Stopping };
         private FocuserStatus _status = FocuserStatus.Idle;
 
-        public TraceLogger traceLogger = new TraceLogger();
+        private ASCOM.Utilities.TraceLogger tl;
         public Debugger debugger = Debugger.Instance;
 
         private WisePin pinUp, pinDown;
@@ -33,15 +36,20 @@ namespace ASCOM.Wise40
         {
             public int stoppingDistance;   // number of encoder ticks to stop
         };
-        
+
         Dictionary<Direction, MotionParameter> motionParameters;
-        
-        private uint targetPos;
 
-        private double _startPos; //, _stopPos, _endPos;
+        private uint _targetPos;
+        private bool _movingToTarget = false;
+        private uint _start;
+        private uint _startStopping;
+        private uint _endStopping;
+        private uint _travel;
 
-        private System.Threading.Timer movementTimer;   // Should be ON only when the focuser is moving
-        private int movementTimeout = 50;               // millis between movement monitoring events
+        private FixedSizedQueue<uint> recentPositions = new FixedSizedQueue<uint>(3);
+
+        private System.Threading.Timer movementMonitoringTimer;   // Should be ON only when the focuser is moving
+        private int movementMonitoringTimeout = 50;     // millis between movement monitoring events
 
         List<IConnectable> connectables = new List<IConnectable>();
         List<IDisposable> disposables = new List<IDisposable>();
@@ -49,43 +57,32 @@ namespace ASCOM.Wise40
         private Hardware.Hardware hardware = Hardware.Hardware.Instance;
         private WiseSite wisesite = WiseSite.Instance;
 
-        internal static string driverID = "ASCOM.Wise40.Focuser";
+        public static string driverID = "ASCOM.Wise40.Focuser";
 
-        private static string driverDescription = "ASCOM Wise40 Focuser";
+        private static string driverDescription = string.Format("ASCOM Wise40.Focuser v{0}", version.ToString());
 
-        public TimeProportionedPidController upPID, downPID;
-
-        public WiseFocuser() {}
+        public WiseFocuser() { }
+        static WiseFocuser() { }
+        private static volatile WiseFocuser _instance; // Singleton
+        private static object syncObject = new object();
 
         public static WiseFocuser Instance
         {
             get
             {
-                return instance;
+                if (_instance == null)
+                {
+                    lock (syncObject)
+                    {
+                        if (_instance == null)
+                            _instance = new WiseFocuser();
+                    }
+                }
+                return _instance;
             }
         }
 
-        private ulong readEncoder()
-        {
-            return encoder.Value;
-        }
-
-        private ulong readOutput()
-        {
-            return (ulong) DateTime.Now.Ticks;
-        }
-
-        private void writeOutput(ulong value)
-        {
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "writeOutput: {0}", value);
-        }
-
-        private ulong readSetPoint()
-        {
-            return targetPos;
-        }
-
-        public void init(bool multiTurn = false)
+        public void init()
         {
             if (_initialized)
                 return;
@@ -93,55 +90,28 @@ namespace ASCOM.Wise40
             Name = "WiseFocuser";
             _status = FocuserStatus.Idle;
 
-            encoder = new WiseFocuserEnc(true);
+            encoder = WiseFocuserEnc.Instance;
+            encoder.init(true);
             ReadProfile();
-            //debugger.init(Debugger.DebugLevel.DebugLogic | Debugger.DebugLevel.DebugEncoders);
-            debugger.init(Debugger.DebugLevel.DebugLogic);
-            traceLogger = new TraceLogger("", "Focuser");
-            traceLogger.Enabled = debugger.Tracing;
+            debugger.init();
+            tl = new TraceLogger("", "Focuser");
+            tl.Enabled = debugger.Tracing;
+
+            //tl.LogMessage("init", "Initializing ...");
             hardware.init();
             wisesite.init();
 
             pinDown = new WisePin("FocusDown", hardware.miscboard, DigitalPortType.FirstPortCH, 0, DigitalPortDirection.DigitalOut, direction: Const.Direction.Decreasing);
             pinUp = new WisePin("FocusUp", hardware.miscboard, DigitalPortType.FirstPortCH, 1, DigitalPortDirection.DigitalOut, direction: Const.Direction.Increasing);
-            
-            connectables.AddRange(new List<IConnectable> { instance.pinUp, instance.pinDown, instance.encoder });
-            disposables.AddRange(new List<IDisposable> { instance.pinUp, instance.pinDown, instance.encoder });            
 
-            System.Threading.TimerCallback movementTimerCallback = new System.Threading.TimerCallback(MonitorMovement);
-            movementTimer = new System.Threading.Timer(movementTimerCallback);
+            connectables.AddRange(new List<IConnectable> { _instance.pinUp, _instance.pinDown, _instance.encoder });
+            disposables.AddRange(new List<IDisposable> { _instance.pinUp, _instance.pinDown, _instance.encoder });
+            
+            movementMonitoringTimer = new System.Threading.Timer(new TimerCallback(MonitorMovement));
 
             motionParameters = new Dictionary<Direction, MotionParameter>();
-            motionParameters[Direction.Up] = new MotionParameter() { stoppingDistance = 100 };
-            motionParameters[Direction.Down] = new MotionParameter() { stoppingDistance = 100 };
-
-            TimeSpan pidSamplingRate = new TimeSpan(0, 0, 0, 100);  // 100 milliseconds
-            upPID = new TimeProportionedPidController(
-                windowSizeMillis: 5000,
-                pin: pinUp,
-                samplingRate: pidSamplingRate,
-                readProcess: readEncoder,
-                readOutput: readOutput,
-                readSetPoint: readSetPoint,
-                writeOutput: writeOutput,
-                proportionalGain: 5,
-                integralGain: 2,
-                derivativeGain: 1
-                );
-
-            downPID = new TimeProportionedPidController(
-                windowSizeMillis: 5000,
-                pin: pinDown,
-                samplingRate: pidSamplingRate,
-                readProcess: readEncoder,
-                readOutput: readOutput,
-                readSetPoint: readSetPoint,
-                writeOutput: writeOutput,
-                proportionalGain: 5,
-                integralGain: 2,
-                derivativeGain: 1
-                );
-
+            motionParameters[Direction.Up] = new MotionParameter() { stoppingDistance = 10 };
+            motionParameters[Direction.Down] = new MotionParameter() { stoppingDistance =  10 };
             _initialized = true;
         }
 
@@ -156,7 +126,7 @@ namespace ASCOM.Wise40
             get
             {
                 #region trace
-                traceLogger.LogMessage("Connected Get", _connected.ToString());
+                //tl.LogMessage("Connected Get", _connected.ToString());
                 #endregion
                 return _connected;
             }
@@ -164,7 +134,7 @@ namespace ASCOM.Wise40
             set
             {
                 #region trace
-                traceLogger.LogMessage("Connected Set", value.ToString());
+                //tl.LogMessage("Connected Set", value.ToString());
                 #endregion
                 if (value == _connected)
                     return;
@@ -180,7 +150,7 @@ namespace ASCOM.Wise40
         {
             foreach (var disposable in disposables)
                 disposable.Dispose();
-            traceLogger.Dispose();
+            tl.Dispose();
         }
 
         internal void ReadProfile()
@@ -188,9 +158,6 @@ namespace ASCOM.Wise40
             using (Profile driverProfile = new Profile())
             {
                 driverProfile.DeviceType = "Focuser";
-                
-                encoder.UpperLimit = Convert.ToUInt32(driverProfile.GetValue(driverID, "Upper Limit", string.Empty, encoder.UpperLimit.ToString()));
-                encoder.LowerLimit = Convert.ToUInt32(driverProfile.GetValue(driverID, "Lower Limit", string.Empty, encoder.LowerLimit.ToString()));
             }
         }
 
@@ -202,8 +169,6 @@ namespace ASCOM.Wise40
             using (Profile driverProfile = new Profile())
             {
                 driverProfile.DeviceType = "Focuser";
-                driverProfile.WriteValue(driverID, "Upper Limit", encoder.UpperLimit.ToString());
-                driverProfile.WriteValue(driverID, "Lower Limit", encoder.LowerLimit.ToString());
             }
         }
 
@@ -212,7 +177,7 @@ namespace ASCOM.Wise40
             get
             {
                 #region trace
-                traceLogger.LogMessage("Temperature Get", "Not implemented");
+                //tl.LogMessage("Temperature Get", "Not implemented");
                 #endregion
                 throw new ASCOM.PropertyNotImplementedException("Temperature", false);
             }
@@ -222,12 +187,11 @@ namespace ASCOM.Wise40
         {
             get
             {
-                if (!Connected)
-                    throw new NotConnectedException("");
+                bool ret = false;
                 #region trace
-                traceLogger.LogMessage("TempCompAvailable Get", false.ToString());
+                //tl.LogMessage("TempCompAvailable Get", ret.ToString());
                 #endregion
-                return false; // Temperature compensation is not available in this driver
+                return ret; // Temperature compensation is not available in this driver
             }
         }
 
@@ -236,27 +200,31 @@ namespace ASCOM.Wise40
             get
             {
                 #region trace
-                traceLogger.LogMessage("TempComp Get", false.ToString());
+                //tl.LogMessage("TempComp Get", false.ToString());
                 #endregion
                 return false;
             }
             set
             {
                 #region trace
-                traceLogger.LogMessage("TempComp Set", "Not implemented");
+                //tl.LogMessage("TempComp Set", "Not implemented");
                 #endregion
                 throw new ASCOM.PropertyNotImplementedException("TempComp", false);
             }
         }
 
+        /// <summary>
+        /// The full travel is 50mm
+        /// </summary>
         public double StepSize
         {
             get
             {
+                double ret = 50000.0 / (encoder.UpperLimit - encoder.LowerLimit);
                 #region trace
-                traceLogger.LogMessage("StepSize Get", "Not implemented");
+                //tl.LogMessage("StepSize Get", string.Format("Get - {0}", ret));
                 #endregion
-                throw new ASCOM.PropertyNotImplementedException("StepSize", false);
+                return ret;
             }
         }
 
@@ -265,9 +233,9 @@ namespace ASCOM.Wise40
             get
             {
                 uint pos = encoder.Value;
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "Focuser: position: {0}", pos);
-                #endregion
+#region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "WiseFocuser: position: {0}", pos);
+#endregion
                 return pos;
             }
         }
@@ -287,49 +255,69 @@ namespace ASCOM.Wise40
         {
             get
             {
-                if (!Connected)
-                    throw new NotConnectedException("");
+                bool ret = true;
                 #region trace
-                traceLogger.LogMessage("Absolute Get", true.ToString());
+                //tl.LogMessage("Absolute Get", ret.ToString());
                 #endregion
-                return true; // This is an absolute focuser
+                return ret; // This is an absolute focuser
+            }
+        }
+
+        /// <summary>
+        /// If all the recentPositions (enqueued by the movementMonitorTimer callback) are the
+        ///  same, change status from Stopping to Idle and stop the timer.
+        /// </summary>
+        private bool FullyStopped
+        {
+            get
+            {
+                uint[] recent = recentPositions.ToArray();
+                uint first = recent[0];
+
+                if (first == 0)     // just initialized
+                    return false;
+
+                for (int i = 1; i < recent.Count(); i++)
+                    if (recent[i] != first)
+                        return false;
+
+                movementMonitoringTimer.Change(Timeout.Infinite, Timeout.Infinite);
+                _endStopping = first;
+                _travel = (_endStopping > _start) ? _endStopping - _start : _start - _endStopping;
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseFocuser:FullyStopped: _target: {0}, _start: {1}, _startStopping: {2}, _endStopping: {3}, _travel: {4}",
+                    _targetPos, _start, _startStopping, _endStopping, _travel);
+                #endregion
+                _movingToTarget = false;
+                _targetPos = 0;
+                _status = FocuserStatus.Idle;
+                return true;
             }
         }
 
         public void Stop()
         {
+            if (Simulated)
+                encoder.stopMoving();
+            
             pinUp.SetOff();
             pinDown.SetOff();
-            movementTimer.Change(Timeout.Infinite, Timeout.Infinite);
-    /*
-            _stopPos = (int)Position;
+            _startStopping = Position;
+            _status = FocuserStatus.Stopping;
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Started stopping at {0} ...", _stopPos);
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseFocuser:Stop Started stopping at {0} ...", _startStopping);
             #endregion
-            DateTime start = DateTime.Now;
-            while ((DateTime.Now - start).TotalMilliseconds < 1000)
-            {
-                //debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Stopping, now at {0}", Position);
-                Thread.Sleep(50);
-            }
-            _endPos = (double) Position;
-            double travel = Math.Abs(_stopPos - _startPos), stoppingDist = Math.Abs(_endPos - _stopPos);
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "stopping: travel: {0}, stopping distance: {1}, {2}%",
-                travel, stoppingDist, (stoppingDist / travel) * 100);
-    */
-            targetPos = 0;
-            _status = FocuserStatus.Idle;
         }
 
         public void Halt()
         {
             #region trace
-            traceLogger.LogMessage("Halt", "");
+            //tl.LogMessage("Halt", "");
             #endregion
             if (!Connected)
                 throw new NotConnectedException("");
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Focuser: Halt");
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseFocuser: Halt");
             #endregion
             Stop();
         }
@@ -341,9 +329,9 @@ namespace ASCOM.Wise40
                 if (!Connected)
                     throw new NotConnectedException("");
 
-                bool ret = pinUp.isOn || pinDown.isOn;
+                bool ret = pinUp.isOn || pinDown.isOn || !FullyStopped;
                 #region trace
-                traceLogger.LogMessage("Halt", ret.ToString());
+                //tl.LogMessage("Halt", ret.ToString());
                 #endregion
                 return ret;
             }
@@ -354,14 +342,14 @@ namespace ASCOM.Wise40
             get
             {
                 #region trace
-                traceLogger.LogMessage("Link Get", this.Connected.ToString());
+                //tl.LogMessage("Link Get", this.Connected.ToString());
                 #endregion
                 return this.Connected; // Direct function to the connected method, the Link method is just here for backwards compatibility
             }
             set
             {
                 #region trace
-                traceLogger.LogMessage("Link Set", value.ToString());
+                //tl.LogMessage("Link Set", value.ToString());
                 #endregion
                 this.Connected = value; // Direct function to the connected method, the Link method is just here for backwards compatibility
             }
@@ -371,12 +359,10 @@ namespace ASCOM.Wise40
         {
             get
             {
-                if (!Connected)
-                    throw new NotConnectedException("");
                 #region trace
-                traceLogger.LogMessage("MaxIncrement Get", UpperLimit.ToString());
+                //tl.LogMessage("MaxIncrement Get", UpperLimit.ToString());
                 #endregion
-                return (int) UpperLimit; // Maximum change in one move
+                return (int)UpperLimit; // Maximum change in one move
             }
         }
 
@@ -384,51 +370,64 @@ namespace ASCOM.Wise40
         {
             get
             {
-                if (!Connected)
-                    throw new NotConnectedException("");
                 #region trace
-                traceLogger.LogMessage("MaxStep Get", UpperLimit.ToString());
+                //tl.LogMessage("MaxStep Get", UpperLimit.ToString());
                 #endregion
-                return (int) UpperLimit; // Maximum extent of the focuser, so position range is 0 to 10,000
+                return (int)UpperLimit; // Maximum extent of the focuser, so position range is 0 to 10,000
             }
         }
 
         public void Move(Direction dir)
         {
-            _startPos = Position;
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Starting Move({0}) at {1}",
-                dir.ToString(), _startPos);
+            _start = Position;
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseFocuser: Starting Move({0}) at {1}",
+                dir.ToString(), _start);
+            #endregion
+            _movingToTarget = false;
+            _startStopping = _endStopping = _travel = 0;
             switch (dir)
             {
                 case Direction.Up:
-                    targetPos = UpperLimit;
                     pinUp.SetOn();
                     _status = FocuserStatus.MovingUp;
                     break;
                 case Direction.Down:
-                    targetPos = LowerLimit;
                     pinDown.SetOn();
                     _status = FocuserStatus.MovingDown;
                     break;
                 case Direction.AllUp:
-                    targetPos = UpperLimit;
                     pinUp.SetOn();
                     _status = FocuserStatus.MovingAllUp;
                     break;
                 case Direction.AllDown:
-                    targetPos = LowerLimit;
                     pinDown.SetOn();
                     _status = FocuserStatus.MovingAllDown;
                     break;
             }
-            
-            movementTimer.Change(movementTimeout, movementTimeout);
+
+            movementMonitoringTimer.Change(4 * movementMonitoringTimeout, movementMonitoringTimeout);
+
+            if (Simulated)
+            {
+                switch (dir)
+                {
+                    case Direction.AllDown:
+                    case Direction.Down:
+                        encoder.startMoving(Const.Direction.Decreasing);
+                        break;
+                    case Direction.AllUp:
+                    case Direction.Up:
+                        encoder.startMoving(Const.Direction.Increasing);
+                        break;
+                }
+            }
         }
 
-        public void Move(uint pos)
+        public void Move(uint toPos)
         {
             #region trace
-            traceLogger.LogMessage("Move", Position.ToString());
+            //tl.LogMessage("Move", Position.ToString());
             #endregion
             if (!Connected)
                 throw new NotConnectedException("Not connected!");
@@ -436,40 +435,32 @@ namespace ASCOM.Wise40
             if (TempComp)
                 throw new InvalidOperationException("Cannot Move while TempComp == true");
 
+            if (toPos > encoder.UpperLimit || toPos < encoder.LowerLimit)
+                throw new DriverException(string.Format("Can only move between {0} and {1}!", encoder.LowerLimit, encoder.UpperLimit));
+
             uint currentPos = Position;
 
-            if (currentPos == pos)
+            if (currentPos == toPos)
                 return;
 
-            targetPos = pos;
-            /*
-            if (targetPos > currentPos)
+            _targetPos = toPos;
+            _movingToTarget = true;
+            if (_targetPos > currentPos)
             {
-                _status = FocuserStatus.MovingUp;     
+                _status = FocuserStatus.MovingUp;
                 pinUp.SetOn();
+                if (Simulated)
+                    encoder.startMoving(Const.Direction.Increasing);
             }
             else
             {
                 _status = FocuserStatus.MovingDown;
                 pinDown.SetOn();
-            }
-            
-            movementTimer.Change(movementTimeout, movementTimeout);
-            */
-            if (targetPos > currentPos)
-            {
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseFocuser: Starting upPID");
-                #endregion
-                upPID.MoveTo(targetPos);
-            }
-            else
-            {
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseFocuser: Starting downPID");
-                #endregion
-                downPID.MoveTo(targetPos);
-            }
+                if (Simulated)
+                    encoder.startMoving(Const.Direction.Decreasing);
+            }                
+
+            movementMonitoringTimer.Change(movementMonitoringTimeout, movementMonitoringTimeout);
 
         }
 
@@ -490,7 +481,7 @@ namespace ASCOM.Wise40
             get
             {
                 #region trace
-                traceLogger.LogMessage("SupportedActions Get", "Returning empty arraylist");
+                //tl.LogMessage("SupportedActions Get", "Returning empty arraylist");
                 #endregion
                 return new ArrayList();
             }
@@ -519,14 +510,20 @@ namespace ASCOM.Wise40
             throw new ASCOM.MethodNotImplementedException("CommandString");
         }
 
-        public string Description
+        public static string DriverId
         {
             get
             {
-                if (! Connected)
-                    throw new NotConnectedException("");
+                return driverID;
+            }
+        }
+
+        public static string Description
+        {
+            get
+            {
                 #region trace
-                traceLogger.LogMessage("Description Get", driverDescription);
+                ////tl.LogMessage("Description Get", driverDescription);
                 #endregion
                 return driverDescription;
             }
@@ -536,9 +533,9 @@ namespace ASCOM.Wise40
         {
             get
             {
-                string driverInfo = "Information about the driver itself. Version: " + DriverVersion;
+                string driverInfo = "Wise40 Focuser. Version: " + DriverVersion;
                 #region trace
-                traceLogger.LogMessage("DriverInfo Get", driverInfo);
+                //tl.LogMessage("DriverInfo Get", driverInfo);
                 #endregion
                 return driverInfo;
             }
@@ -550,7 +547,7 @@ namespace ASCOM.Wise40
             {
                 string driverVersion = String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
                 #region trace
-                traceLogger.LogMessage("DriverVersion Get", driverVersion);
+                //tl.LogMessage("DriverVersion Get", driverVersion);
                 #endregion
                 return driverVersion;
             }
@@ -560,25 +557,40 @@ namespace ASCOM.Wise40
         {
             get
             {
+                short ret = 2;
+
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "InterfaceVersion: tl: #{0}", tl.GetHashCode());
                 #region trace
-                traceLogger.LogMessage("InterfaceVersion Get", "2");
+                //WiseFocuser.//tl.LogMessage("InterfaceVersion Get", ret.ToString());
                 #endregion
-                return Convert.ToInt16("2");
+                return ret;
             }
         }
 
         private void MonitorMovement(object StateObject)
         {
+            uint currPos = Position;
+            recentPositions.Enqueue(currPos);
+
             if (pinUp.isOn)
             {
-                if (targetPos - Position <= motionParameters[Direction.Up].stoppingDistance)
+                if (currPos >= UpperLimit)
+                    Stop();
+
+                if (_movingToTarget && Math.Abs(_targetPos - Position) <= motionParameters[Direction.Up].stoppingDistance)
                     Stop();
             }
-            else if (pinDown.isOn)
+
+            if (pinDown.isOn)
             {
-                if (Position - targetPos <= motionParameters[Direction.Down].stoppingDistance)
+                if (currPos <= LowerLimit)
+                    Stop();
+
+                if (_movingToTarget && Math.Abs(Position - _targetPos) <= motionParameters[Direction.Down].stoppingDistance)
                     Stop();
             }
+
+            bool stopped = FullyStopped;    // Just checking
         }
 
         public string Status
@@ -590,25 +602,27 @@ namespace ASCOM.Wise40
                 switch (_status)
                 {
                     case FocuserStatus.MovingUp:
-                        ret = "Moving Down";
+                        ret = "Moving Up";
+                        if (_movingToTarget)
+                            ret += string.Format(" to {0}", _targetPos);
                         break;
                     case FocuserStatus.MovingDown:
-                        ret = "Moving Up";
+                        ret = "Moving Down";
+                        if (_movingToTarget)
+                            ret += string.Format(" to {0}", _targetPos);
                         break;
                     case FocuserStatus.MovingAllUp:
-                        ret = string.Format("Moving All Up to {0}", UpperLimit);
+                        ret = "Moving All Up";
                         break;
                     case FocuserStatus.MovingAllDown:
-                        ret = string.Format("Moving All Down to {0}", LowerLimit);
+                        ret = "Moving All Down";
+                        break;
+                    case FocuserStatus.Stopping:
+                        ret = "Stopping";
                         break;
                 }
                 return ret;
             }
-        }
-
-        public void SetZero()
-        {
-            encoder.SetZero();
         }
 
         public uint UpperLimit
@@ -616,11 +630,6 @@ namespace ASCOM.Wise40
             get
             {
                 return encoder.UpperLimit;
-            }
-
-            set
-            {
-                encoder.UpperLimit = value;
             }
         }
 
@@ -630,11 +639,13 @@ namespace ASCOM.Wise40
             {
                 return encoder.LowerLimit;
             }
+        }
 
-            set
-            {
-                encoder.LowerLimit = value;
-            }
+        public int stopSimulation()
+        {
+            if (Simulated)
+                encoder.stopMoving();
+            return 0;
         }
     }
 }

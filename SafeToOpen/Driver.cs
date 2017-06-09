@@ -41,7 +41,7 @@ using System.Globalization;
 using System.Collections;
 
 using ASCOM.DriverAccess;
-using ASCOM.CloudSensor;
+using ASCOM.Wise40.Boltwood;
 
 using ASCOM.Wise40.Common;
 
@@ -65,15 +65,13 @@ namespace ASCOM.Wise40.SafeToOperate
     [ClassInterface(ClassInterfaceType.None)]
     public class SafetyMonitor : ISafetyMonitor
     {
-        private static WiseSafeToOperate.Operation _op;
-
         public WiseSafeToOperate wisesafetoopen;
         private static string driverID = "ASCOM.Wise40.SafeToOpen.SafetyMonitor";
-        private static string driverDescription = "ASCOM Wise40 SafeToOpen";
+        private static string driverDescription;
 
-        internal static CloudSensor.SensorData.CloudCondition cloudsMax = SensorData.CloudCondition.cloudUnknown;
+        internal static Boltwood.SensorData.CloudCondition cloudsMax = SensorData.CloudCondition.cloudUnknown;
         internal static int rainMax = 0;
-        internal static CloudSensor.SensorData.DayCondition lightMax = SensorData.DayCondition.dayUnknown;
+        internal static Boltwood.SensorData.DayCondition lightMax = SensorData.DayCondition.dayUnknown;
         internal static int windMax;
         internal static int humidityMax;
         internal static int ageMaxSeconds;
@@ -84,9 +82,9 @@ namespace ASCOM.Wise40.SafeToOperate
         /// </summary>
         public SafetyMonitor()
         {
-            _op = WiseSafeToOperate.Operation.Open;
-            wisesafetoopen = WiseSafeToOperate.Instance(_op);
+            wisesafetoopen = WiseSafeToOperate.InstanceOpen;
             wisesafetoopen.init();
+            driverDescription = wisesafetoopen.Description;
         }
 
         //
@@ -184,7 +182,7 @@ namespace ASCOM.Wise40.SafeToOperate
         {
             get
             {
-                return wisesafetoopen.DriverVersion;
+                return WiseSafeToOperate.DriverVersion;
             }
         }
 
@@ -233,12 +231,14 @@ namespace ASCOM.Wise40.SafeToOperate
         /// <param name="bRegister">If <c>true</c>, registers the driver, otherwise unregisters it.</param>
         private static void RegUnregASCOM(bool bRegister)
         {
+            string desc = string.Format("ASCOM Wise40.SafeToOpen v0.2");
+
             using (var P = new ASCOM.Utilities.Profile())
             {
                 P.DeviceType = "SafetyMonitor";
                 if (bRegister)
                 {
-                    P.Register(driverID, driverDescription);
+                    P.Register(driverID, desc);
                 }
                 else
                 {

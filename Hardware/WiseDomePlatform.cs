@@ -47,7 +47,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return Simulated ? true : domePlatformIsDownPin.isOn;
+                return Simulated ? true : domePlatformIsDownPin.isOff;
             }
         }
     }

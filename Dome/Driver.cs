@@ -66,10 +66,12 @@ namespace ASCOM.Wise40
         /// The DeviceID is used by ASCOM applications to load the driver at runtime.
         /// </summary>
         internal static string driverID = "ASCOM.Wise40.Dome";
+
+        private static Version version = new Version("0.2");
         /// <summary>
         /// Dome driver for the Wise 40" telescope.
         /// </summary>
-        private static string driverDescription = "Wise40 Dome";
+        private static string driverDescription = string.Format("Wise40 Dome v{0}", version.ToString());
 
         public Common.Debugger debugger = Common.Debugger.Instance;
 

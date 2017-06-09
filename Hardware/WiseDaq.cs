@@ -9,6 +9,33 @@ using ASCOM.Wise40.Common;
 
 namespace ASCOM.Wise40.Hardware
 {
+    public class BitExtractor
+    {
+        public BitExtractor(int nbits, int lsb)
+        {
+            _nbits = nbits;
+            _lsb = lsb;
+            _mask = (uint) (1 << _nbits) - 1;
+        }
+
+        public uint Extract(uint from)
+        {
+            return (from >> _lsb) & _mask;
+        }
+
+        public uint MaxValue
+        {
+            get
+            {
+                return (uint)(1 << _nbits);
+            }
+        }
+
+        private int _nbits;
+        private int _lsb;
+        private uint _mask;
+    }
+
     public class WiseDaq : WiseObject
     {
         public WiseBoard wiseBoard;

@@ -6,16 +6,20 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Diagnostics;
 using System.Windows.Forms;
+using System.IO;
 
 namespace ASCOM.Wise40.Common
 {
     public class Debugger
     {
-        private static readonly Debugger instance = new Debugger(); // Singleton
+        private static volatile Debugger _instance; // Singleton
+        private static object syncObject = new object();
         private ListBox listBox;
         private bool _appendToWindow = false;
         private static bool _initialized = false;
         private static bool _tracing = false;
+        private static string _debugFile = string.Empty;
+        //private TextWriter debugStream;
 
         static Debugger()
         {
@@ -29,7 +33,15 @@ namespace ASCOM.Wise40.Common
         {
             get
             {
-                return instance;
+                if (_instance == null)
+                {
+                    lock (syncObject)
+                    {
+                        if (_instance == null)
+                            _instance = new Debugger();
+                    }
+                }
+                return _instance;
             }
         }
 
@@ -71,6 +83,10 @@ namespace ASCOM.Wise40.Common
             indents[(int)DebugLevel.DebugMotors] = ">>>>> ";
             indents[(int)DebugLevel.DebugEncoders] = ">>>>>>";
 
+            //if (_debugFile != string.Empty && debugStream == null)
+            //{
+            //    debugStream = TextWriter.Synchronized(new StreamWriter(_debugFile, true));
+            //}
             _initialized = true;
         }
 
@@ -108,7 +124,10 @@ namespace ASCOM.Wise40.Common
                     indents[(int)level] + " " + level.ToString() + ":",
                     msg);
 
-               System.Diagnostics.Debug.WriteLine(line);
+                //if (debugStream != null)
+                //    debugStream.WriteLine(line);
+
+                System.Diagnostics.Debug.WriteLine(line);
                 if (listBox != null && _appendToWindow)
                 {
                     if (listBox.InvokeRequired)
@@ -168,10 +187,10 @@ namespace ASCOM.Wise40.Common
                 p.DeviceType = deviceType;
                 if (p.IsRegistered(driverID))
                 {
-                    //Debugger.DebugLevel defaultDebugLevel = Debugger.DebugLevel.DebugAxes | Debugger.DebugLevel.DebugMotors | Debugger.DebugLevel.DebugExceptions | Debugger.DebugLevel.DebugASCOM | Debugger.DebugLevel.DebugLogic;
-                    
-                    _currentLevel = DebugLevel.DebugDefault;
+                    _currentLevel = (DebugLevel) Enum.Parse(typeof(DebugLevel),
+                        p.GetValue(driverID, "DebugLevel", string.Empty, DebugLevel.DebugDefault.ToString()));
                     _tracing = Convert.ToBoolean(p.GetValue(driverID, "Tracing", string.Empty, "false"));
+                    _debugFile = p.GetValue(driverID, "DebugFile", string.Empty, string.Empty);
                 }
             }
         }

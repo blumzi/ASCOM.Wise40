@@ -17,7 +17,7 @@ namespace ASCOM.Wise40
         private int simulatedValue = 0;                         // the simulated dome encoder value
         private Angle simulatedStuckAzimuth;
         private DateTime endSimulatedStuck;                     // time when the dome-stuck simulation should end
-        private System.Threading.Timer simulationTimer;        // times simulated-dome events
+        private System.Threading.Timer simulationTimer;         // times simulated-dome events
         private const int _simulatedEncoderTicksPerSecond = 6;
 
         private uint _caliTicks;
@@ -137,6 +137,9 @@ namespace ASCOM.Wise40
             _caliTicks = Value;
             _caliAz = az;
             _calibrated = true;
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "DomeEncoder: Calibrate({0}) at {1}", az.ToString(), _caliTicks);
+            #endregion
         }
 
         public bool Calibrated

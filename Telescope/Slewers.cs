@@ -13,7 +13,8 @@ namespace ASCOM.Wise40
         private Debugger debugger = Debugger.Instance;
         public enum Type { Dome, Ra, Dec, Focuser };
         private Object _lock = new object();
-        private static readonly Slewers _instance = new Slewers();
+        private static volatile Slewers _instance;
+        private static object syncObject = new object();
         private static List<WiseTele.SlewerTask> _active = new List<WiseTele.SlewerTask>();
 
         public Slewers() { }
@@ -24,6 +25,14 @@ namespace ASCOM.Wise40
         {
             get
             {
+                if (_instance == null)
+                {
+                    lock (syncObject)
+                    {
+                        if (_instance == null)
+                            _instance = new Slewers();
+                    }
+                }
                 return _instance;
             }
         }
@@ -39,7 +48,7 @@ namespace ASCOM.Wise40
             }
             #region debug
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugAxes,
-                "ActiveSlewers: added {0}, \"{1}\" => \"{2}\" ({3})", slewer.ToString(), before, this.ToString(), _active.GetHashCode());
+                "ActiveSlewers: added {0}, \"{1}\" => \"{2}\"", slewer.ToString(), before, this.ToString());
             #endregion
         }
 
@@ -67,7 +76,7 @@ namespace ASCOM.Wise40
             {
                 #region debug
                 debugger.WriteLine(Common.Debugger.DebugLevel.DebugAxes,
-                    "ActiveSlewers: Count {0} \"{1}\" ({2})", _active.Count, this.ToString(), _active.GetHashCode());
+                    "ActiveSlewers: Count {0} \"{1}\"", _active.Count, this.ToString());
                 #endregion
                 return _active.Count;
             }

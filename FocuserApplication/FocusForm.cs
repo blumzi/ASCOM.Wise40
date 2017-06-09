@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 using System.Collections.Generic;
+using System.Threading;
 
 using ASCOM.Wise40;
 using ASCOM.Wise40.Common;
@@ -22,9 +23,11 @@ namespace FocuserApplication
             focuserStatus = new Statuser(labelStatus);
             timerRefresh.Enabled = true;
 
+#if WITH_PID
             textBoxPID_P.Text = wisefocuser.upPID.ProportionalGain.ToString();
             textBoxPID_I.Text = wisefocuser.upPID.IntegralGain.ToString();
             textBoxPID_D.Text = wisefocuser.upPID.DerivativeGain.ToString();
+#endif
         }
 
         private void timerRefresh_Tick(object sender, EventArgs e)
@@ -33,7 +36,7 @@ namespace FocuserApplication
             focuserStatus.Show(wisefocuser.Status);
         }
 
-        #region FocuserControl
+#region FocuserControl
         private void buttonFocusIncrease_Click(object sender, EventArgs e)
         {
             uint newPos = wisefocuser.Position + Convert.ToUInt32(comboBoxFocusStep.Text);
@@ -66,12 +69,12 @@ namespace FocuserApplication
 
         private void buttonFocusUp_MouseDown(object sender, MouseEventArgs e)
         {
-            wisefocuser.Move(WiseFocuser.Direction.Down);
+            wisefocuser.Move(WiseFocuser.Direction.Up);
         }
 
         private void buttonFocusDown_MouseDown(object sender, MouseEventArgs e)
         {
-            wisefocuser.Move(WiseFocuser.Direction.Up);
+            wisefocuser.Move(WiseFocuser.Direction.Down);
         }
 
         private void buttonFocusStop(object sender, MouseEventArgs e)
@@ -121,16 +124,26 @@ namespace FocuserApplication
             if (wisefocuser.Position > 0)
                 wisefocuser.Move(WiseFocuser.Direction.AllDown);
         }
-        #endregion
 
-        private void buttonSetPID_Click(object sender, EventArgs e)
+        private void buttonDownMillis_Click(object sender, EventArgs e)
         {
-            foreach (var pid in new List<TimeProportionedPidController>() { wisefocuser.upPID, wisefocuser.downPID })
-            {
-                pid.ProportionalGain = (float)Convert.ToDouble(textBoxPID_P.Text);
-                pid.IntegralGain = (float)Convert.ToDouble(textBoxPID_I.Text);
-                pid.DerivativeGain = (float)Convert.ToDouble(textBoxPID_D.Text);
-            }
+            int millis = Convert.ToInt32(comboBoxMillis.Text);
+            DateTime end = DateTime.Now.AddMilliseconds(millis);
+            wisefocuser.Move(WiseFocuser.Direction.Down);
+            while (DateTime.Now.CompareTo(end) <= 0)
+                Thread.Sleep(10);
+            wisefocuser.Stop();
         }
+
+        private void buttonUpMillis_Click(object sender, EventArgs e)
+        {
+            int millis = Convert.ToInt32(comboBoxMillis.Text);
+            DateTime end = DateTime.Now.AddMilliseconds(millis);
+            wisefocuser.Move(WiseFocuser.Direction.Up);
+            while (DateTime.Now.CompareTo(end) <= 0)
+                Thread.Sleep(10);
+            wisefocuser.Stop();
+        }
+        #endregion
     }
 }

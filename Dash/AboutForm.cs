@@ -18,13 +18,13 @@ namespace Dash
     public partial class AboutForm : Form
     {
         FormDash _dash;
+        Version version = new Version(0, 2);
 
         public AboutForm(FormDash dashForm)
         {
             _dash = dashForm;
             InitializeComponent();
-
-            Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+            
             string appVersion = String.Format(System.Globalization.CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
 
             labelAbout.Text = "This dashboard controls the Wise 40 inch Observatory at" + Const.crnl +
@@ -44,11 +44,11 @@ namespace Dash
             labelDashVersion.Text = appVersion;
             labelTelescopeVersion.Text = _dash.wisetele.DriverVersion;
             labelDomeVersion.Text = _dash.wisedome.DriverVersion;
-            labelFocuserVersion.Text = _dash.wisefocuser.DriverVersion;
-            labelSafeToOpenVersion.Text = _dash.wisesite.safeToOpen.DriverVersion;            
-            labelBoltwoodVersion.Text = _dash.boltwood.DriverVersion;
+            labelFocuserVersion.Text = WiseFocuser.Instance.DriverVersion;
+            labelSafeToOpenVersion.Text = _dash.wisesite.safeToOpen.DriverVersion;
+            labelBoltwoodVersion.Text = _dash.wiseboltwood.DriverVersion;
             labelComputerControlVersion.Text = _dash.wisesite.computerControl.DriverVersion;
-            labelVantageProVersion.Text = (new ObservingConditions("ASCOM.Vantage.ObservingConditions")).DriverVersion;
+            labelVantageProVersion.Text = (new ObservingConditions("ASCOM.Wise40.VantagePro.ObservingConditions")).DriverVersion;
             labelFilterWheelVersion.Text = _dash.wisefilterwheel.DriverVersion;
         }
 

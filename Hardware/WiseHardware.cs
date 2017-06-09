@@ -4,50 +4,59 @@ using System.Linq;
 using System.Text;
 using MccDaq;
 
+using ASCOM.Wise40.Common;
+
 namespace ASCOM.Wise40.Hardware
 {
-    public class Hardware
+    public class Hardware: WiseObject
     {
-        private List<WiseBoard> WiseBoards;
+        private List<WiseBoard> WiseBoards = new List<WiseBoard>();
         public WiseBoard domeboard, teleboard, miscboard;
-        private static Hardware hw;
-        private bool isInitialized;
+        private static volatile Hardware _instance;     // Singleton
+        private static object _syncObject = new object();
+        private bool _initialized = false;
         public float mccRevNum, mccVxdRevNum;
 
         public static Hardware Instance
         {
             get
             {
-                if (hw == null)
-                    hw = new Hardware();
-                hw.init();
-                return hw;
+                if (_instance == null)
+                {
+                    lock (_syncObject)
+                    {
+                        if (_instance == null)
+                            _instance = new Hardware();
+                    }
+                }
+                _instance.init();
+                return _instance;
             }
         }
 
         public void init()
         {
-            if (!isInitialized)
+            if (!_initialized)
             {
                 int wantedBoards = 3;        // We always have three boards, either real or simulated
                 int maxMccBoards;
-
-                isInitialized = true;
-
-                MccService.GetRevision(out mccRevNum, out mccVxdRevNum);
-                MccService.ErrHandling(MccDaq.ErrorReporting.DontPrint, MccDaq.ErrorHandling.DontStop);
-                maxMccBoards = MccDaq.GlobalConfig.NumBoards;
-                WiseBoards = new List<WiseBoard>();
-
-                // get the real Mcc boards
-                for (int i = 0; i < maxMccBoards; i++)
+                
+                if (!Simulated)
                 {
-                    int type;
+                    MccService.GetRevision(out mccRevNum, out mccVxdRevNum);
+                    MccService.ErrHandling(MccDaq.ErrorReporting.DontPrint, MccDaq.ErrorHandling.DontStop);
+                    maxMccBoards = MccDaq.GlobalConfig.NumBoards;
 
-                    MccDaq.MccBoard board = new MccDaq.MccBoard(i);
-                    board.BoardConfig.GetBoardType(out type);
-                    if (type != 0)
-                        WiseBoards.Add(new WiseBoard(board));
+                    // get the real Mcc boards
+                    for (int i = 0; i < maxMccBoards; i++)
+                    {
+                        int type;
+
+                        MccDaq.MccBoard board = new MccDaq.MccBoard(i);
+                        board.BoardConfig.GetBoardType(out type);
+                        if (type != 0)
+                            WiseBoards.Add(new WiseBoard(board));
+                    }
                 }
 
                 // Add simulated boards, as needed
@@ -59,6 +68,8 @@ namespace ASCOM.Wise40.Hardware
                 miscboard = WiseBoards.Find(x => x.mccBoard.BoardNum == 0);
                 teleboard = WiseBoards.Find(x => x.mccBoard.BoardNum == 1);
                 domeboard = WiseBoards.Find(x => x.mccBoard.BoardNum == 2);
+
+                _initialized = true;
             }
        }
 

@@ -41,7 +41,7 @@ using System.Globalization;
 using System.Collections;
 
 using ASCOM.DriverAccess;
-using ASCOM.CloudSensor;
+using ASCOM.Wise40.Boltwood;
 
 using ASCOM.Wise40.Common;
 
@@ -65,15 +65,13 @@ namespace ASCOM.Wise40.SafeToOperate
     [ClassInterface(ClassInterfaceType.None)]
     public class SafetyMonitor : ISafetyMonitor
     {
-        private static WiseSafeToOperate.Operation _op = WiseSafeToOperate.Operation.Image;
-
-        internal WiseSafeToOperate wisesafetoimage = WiseSafeToOperate.Instance(_op);
+        internal WiseSafeToOperate wisesafetoimage = WiseSafeToOperate.InstanceImage;
         private static string driverID = "ASCOM.Wise40.SafeToImage.SafetyMonitor";
-        private static string driverDescription = "ASCOM Wise40 SafeToImage";
+        //private static string driverDescription = "ASCOM Wise40 SafeToImage";
 
-        internal static CloudSensor.SensorData.CloudCondition cloudsMax = SensorData.CloudCondition.cloudUnknown;
+        internal static Boltwood.SensorData.CloudCondition cloudsMax = SensorData.CloudCondition.cloudUnknown;
         internal static int rainMax = 0;
-        internal static CloudSensor.SensorData.DayCondition lightMax = SensorData.DayCondition.dayUnknown;
+        internal static Boltwood.SensorData.DayCondition lightMax = SensorData.DayCondition.dayUnknown;
         internal static int windMax = 0;
         internal static int humidityMax = 0;
         internal static int ageMaxSeconds = 0;
@@ -182,7 +180,7 @@ namespace ASCOM.Wise40.SafeToOperate
         {
             get
             {
-                return wisesafetoimage.DriverVersion;
+                return WiseSafeToOperate.DriverVersion;
             }
         }
 
@@ -231,12 +229,14 @@ namespace ASCOM.Wise40.SafeToOperate
         /// <param name="bRegister">If <c>true</c>, registers the driver, otherwise unregisters it.</param>
         private static void RegUnregASCOM(bool bRegister)
         {
+            string desc = string.Format("ASCOM Wise40.SafeToImage v0.2");
+
             using (var P = new ASCOM.Utilities.Profile())
             {
                 P.DeviceType = "SafetyMonitor";
                 if (bRegister)
                 {
-                    P.Register(driverID, driverDescription);
+                    P.Register(driverID, desc);
                 }
                 else
                 {

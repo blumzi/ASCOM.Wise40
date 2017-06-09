@@ -7,13 +7,14 @@ using System.Text;
 using System.Windows.Forms;
 using ASCOM.Utilities;
 using ASCOM.Wise40.SafeToOperate;
+using ASCOM.Wise40.Boltwood;
 
 namespace ASCOM.Wise40.SafeToOperate
 {
     [ComVisible(false)]					// Form not registered for COM!
     public partial class SetupDialogForm : Form
     {
-        WiseSafeToOperate wisesafetoopen = WiseSafeToOperate.Instance(WiseSafeToOperate.Operation.Open);
+        WiseSafeToOperate wisesafetoopen = WiseSafeToOperate.InstanceOpen;
 
         public SetupDialogForm()
         {
@@ -43,12 +44,12 @@ namespace ASCOM.Wise40.SafeToOperate
             {
                 SafetyMonitor.ageMaxSeconds = i;
             }
-            wisesafetoopen.cloudsMaxEnum = (CloudSensor.SensorData.CloudCondition)comboBoxCloud.SelectedIndex;
-            wisesafetoopen.cloudsMaxValue = CloudSensor.SensorData.doubleCloudCondition[wisesafetoopen.cloudsMaxEnum];
+            wisesafetoopen.cloudsMaxEnum = (Boltwood.SensorData.CloudCondition)comboBoxCloud.SelectedIndex;
+            wisesafetoopen.cloudsMaxValue = Boltwood.SensorData.doubleCloudCondition[wisesafetoopen.cloudsMaxEnum];
 
             wisesafetoopen.rainMax = comboBoxRain.SelectedIndex;
 
-            wisesafetoopen.lightMaxEnum = (CloudSensor.SensorData.DayCondition)comboBoxLight.SelectedIndex;
+            wisesafetoopen.lightMaxEnum = (Boltwood.SensorData.DayCondition)comboBoxLight.SelectedIndex;
             wisesafetoopen.lightMaxValue = (int)wisesafetoopen.lightMaxEnum;
 
             i = Convert.ToInt32(textBoxHumidity.Text);
@@ -100,6 +101,7 @@ namespace ASCOM.Wise40.SafeToOperate
 
         private void InitUI()
         {
+            wisesafetoopen.Connected = true;
             wisesafetoopen.ReadProfile();
             
             comboBoxCloud.SelectedIndex = (int)wisesafetoopen.cloudsMaxEnum;

@@ -63,7 +63,7 @@ namespace ASCOM.Vantage
     [ClassInterface(ClassInterfaceType.None)]
     public class ObservingConditions : IObservingConditions
     {
-        private Version version = new Version(0, 1);
+        private Version version = new Version(0, 2);
 
         /// <summary>
         /// ASCOM DeviceID (COM ProgID) for this driver.
@@ -74,7 +74,7 @@ namespace ASCOM.Vantage
         /// <summary>
         /// Driver description that displays in the ASCOM Chooser.
         /// </summary>
-        private static string driverDescription = "ASCOM VantagePro at Wise40.";
+        private static string driverDescription = "ASCOM Wise40 VantagePro.";
 
         internal static string reportFileProfileName = "Report File";
 

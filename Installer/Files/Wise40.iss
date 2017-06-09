@@ -33,21 +33,26 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked; OnlyBelowVersion: 0,6.1
 
 [Files]
-Source: "{#SolutionDir}\Dash\bin\Debug\Dash.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#SolutionDir}\ClarityII\bin\Debug\ASCOM.ClarityII.ObservingConditions.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#SolutionDir}\Common\bin\Debug\Common.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#SolutionDir}\ComputerControl\bin\Debug\MccDaq.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#SolutionDir}\ComputerControl\bin\Debug\ASCOM.Wise40.ComputerControl.SafetyMonitor.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#SolutionDir}\DavisVantage\bin\Debug\ASCOM.Vantage.ObservingConditions.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#SolutionDir}\Dome\bin\Debug\ASCOM.Wise40.Dome.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#SolutionDir}\Focus\bin\Debug\ASCOM.Wise40.Focuser.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#SolutionDir}\Hardware\bin\Debug\Hardware.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#SolutionDir}\Restore-ASCOM-Profiles\bin\Debug\Restore-ASCOM-Profiles.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#SolutionDir}\SafeToImage\bin\Debug\ASCOM.Wise40.SafeToImage.SafetyMonitor.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#SolutionDir}\SafeToOpen\bin\Debug\ASCOM.Wise40.SafeToOpen.SafetyMonitor.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#SolutionDir}\Telescope\bin\Debug\ASCOM.Wise40.Telescope.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SolutionDir}\Dash\bin\x86\Debug\Dash.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SolutionDir}\Boltwood\bin\x86\Debug\ASCOM.Wise40.Boltwood.ObservingConditions.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SolutionDir}\Common\bin\x86\Debug\Common.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SolutionDir}\ComputerControl\bin\x86\Debug\MccDaq.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SolutionDir}\ComputerControl\bin\x86\Debug\ASCOM.Wise40.ComputerControl.SafetyMonitor.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SolutionDir}\VantagePro\bin\x86\Debug\ASCOM.Wise40.VantagePro.ObservingConditions.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SolutionDir}\Dome\bin\x86\Debug\ASCOM.Wise40.Dome.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SolutionDir}\Focus\bin\x86\Debug\ASCOM.Wise40.Focuser.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SolutionDir}\Hardware\bin\x86\Debug\Hardware.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SolutionDir}\PIDLibrary\bin\x86\Debug\PID.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SolutionDir}\Restore-ASCOM-Profiles\bin\x86\Debug\Restore-ASCOM-Profiles.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SolutionDir}\Restore-ASCOM-Profiles\bin\x86\Debug\Restore-ASCOM-Profiles - ACP.lnk"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SolutionDir}\Restore-ASCOM-Profiles\bin\x86\Debug\Restore-ASCOM-Profiles - LCOGT.lnk"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SolutionDir}\Restore-ASCOM-Profiles\bin\x86\Debug\Restore-ASCOM-Profiles - Wise40.lnk"; DestDir: "{app}"; Flags: ignoreversion
+; Source: "{#SolutionDir}\SafeToImage\bin\x86\Debug\ASCOM.Wise40.SafeToImage.SafetyMonitor.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SolutionDir}\SafeToOpen\bin\x86\Debug\ASCOM.Wise40.SafeToOpen.SafetyMonitor.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SolutionDir}\FilterWheel\bin\x86\Debug\ASCOM.Wise40.FilterWheel.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SolutionDir}\Telescope\bin\x86\Debug\ASCOM.Wise40.Telescope.dll"; DestDir: "{app}"; Flags: ignoreversion
 
-Source: "{#SolutionDir}\ClarityII\Sample Files\clarityII-data.txt"; DestDir: "{app}"; AfterInstall: CopyToTemp('c:\temp\clarityII-data.txt')
+Source: "{#SolutionDir}\Boltwood\Sample Files\ClarityII-data.txt"; DestDir: "{app}"; AfterInstall: CopyToTemp('c:\temp\ClarityII-data.txt')
 Source: "{#SolutionDir}\DavisVantage\Sample Files\Weather_Wise40_Vantage_Pro.htm"; DestDir: "{app}";  AfterInstall: CopyToTemp('c:\temp\Weather_Wise40_Vantage_Pro.htm')
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
@@ -60,6 +65,7 @@ Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; Fil
 ; [Components]
 ; Name: "Dashboard"; Description: "The Wise40 Dashboard"; Types: full;
 ; Name: "Telescope"; DEscription: "The Wise40 ASCOM Telescope driver"; Types: full;
+; Name: "FilterWeheel"; Description: "The Wise40 ASCOM FilterWheel driver"; Types: full;
 ; Name: "Focuser"; Description: "The Wise40 ASCOM Focuser driver"; Types: full;
 ; Name: "Dome"; Description: "The Wise40 ASCOM Dome driver"; Types: full;
 ; Name: "Computer Control"; Description: "The Wise40 ASCOM ComputerControl SafetyMonitor driver"; Types: full;
@@ -69,14 +75,14 @@ Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; Fil
 ; Name: "Davis VantagePro2"; Description: "The Wise40 ASCOM VantagePro2 ObservingConditions driver"; Types: full;
 
 [Run]
-Filename: "{dotnet4032}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.ClarityII.ObservingConditions.dll"""; Flags: runhidden 32bit
-Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.ClarityII.ObservingConditions.dll"""; Flags: runhidden 64bit; Check: IsWin64
+Filename: "{dotnet4032}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.Boltwood.ObservingConditions.dll"""; Flags: runhidden 32bit
+Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.Boltwood.ObservingConditions.dll"""; Flags: runhidden 64bit; Check: IsWin64
 
 Filename: "{dotnet4032}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.ComputerControl.SafetyMonitor.dll"""; Flags: runhidden 32bit
 Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.ComputerControl.SafetyMonitor.dll"""; Flags: runhidden 64bit; Check: IsWin64
 
-Filename: "{dotnet4032}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Vantage.ObservingConditions.dll"""; Flags: runhidden 32bit
-Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Vantage.ObservingConditions.dll"""; Flags: runhidden 64bit; Check: IsWin64
+Filename: "{dotnet4032}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.VantagePro.ObservingConditions.dll"""; Flags: runhidden 32bit
+Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.VantagePro.ObservingConditions.dll"""; Flags: runhidden 64bit; Check: IsWin64
 
 Filename: "{dotnet4032}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.Dome.dll"""; Flags: runhidden 32bit
 Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.Dome.dll"""; Flags: runhidden 64bit; Check: IsWin64
@@ -93,15 +99,21 @@ Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40
 Filename: "{dotnet4032}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.Telescope.dll"""; Flags: runhidden 32bit
 Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.Telescope.dll"""; Flags: runhidden 64bit; Check: IsWin64
 
-Filename: "{app}\Restore-ASCOM-Profiles"; Description: "{cm:LaunchProgram,Restore-ASCOM-Profiles}"; Flags:
+Filename: "{dotnet4032}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.FilterWheel.dll"""; Flags: runhidden 32bit
+Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.FilterWheel.dll"""; Flags: runhidden 64bit; Check: IsWin64
+
+Filename: "{dotnet4032}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.VantagePro.ObservingConditions.dll"""; Flags: runhidden 32bit
+Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.VantagePro.ObservingConditions.dll"""; Flags: runhidden 64bit; Check: IsWin64
+
+Filename: "{app}\Restore-ASCOM-Profiles"; Description: "Initialize ASCOM Profiles according to previous selection."; Parameters: "{code:ProfileType|}"; Flags: postinstall
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,Wise40 Dashboard}"; Flags: nowait postinstall skipifsilent
 
 [UninstallRun]
 ; Only for .NET assembly/in-proc drivers
-Filename: "{dotnet4032}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.ClarityII.ObservingConditions.dll"""; Flags: runhidden 32bit
+Filename: "{dotnet4032}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Wise40.Boltwood.ObservingConditions.dll"""; Flags: runhidden 32bit
 ; This helps to give a clean uninstall
-Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.ClarityII.ObservingConditions.dll"""; Flags: runhidden 64bit; Check: IsWin64
-Filename: "{dotnet4064}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.ClarityII.ObservingConditions.dll"""; Flags: runhidden 64bit; Check: IsWin64
+Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.Boltwood.ObservingConditions.dll"""; Flags: runhidden 64bit; Check: IsWin64
+Filename: "{dotnet4064}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Wise40.Boltwood.ObservingConditions.dll"""; Flags: runhidden 64bit; Check: IsWin64
 
 
 Filename: "{dotnet4032}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Wise40.ComputerControl.SafetyMonitor.dll"""; Flags: runhidden 32bit
@@ -109,10 +121,10 @@ Filename: "{dotnet4032}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Wise40.Comput
 Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.ComputerControl.SafetyMonitor.dll"""; Flags: runhidden 64bit; Check: IsWin64
 Filename: "{dotnet4064}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Wise40.ComputerControl.SafetyMonitor.dll"""; Flags: runhidden 64bit; Check: IsWin64
 
-Filename: "{dotnet4032}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Vantage.ObservingConditions.dll"""; Flags: runhidden 32bit
+Filename: "{dotnet4032}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Wise40.VantagePro.ObservingConditions.dll"""; Flags: runhidden 32bit
 ; This helps to give a clean uninstall
-Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Vantage.ObservingConditions.dll"""; Flags: runhidden 64bit; Check: IsWin64
-Filename: "{dotnet4064}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Vantage.ObservingConditions.dll"""; Flags: runhidden 64bit; Check: IsWin64
+Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.VantagePro.ObservingConditions.dll"""; Flags: runhidden 64bit; Check: IsWin64
+Filename: "{dotnet4064}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Wise40.VantagePro.ObservingConditions.dll"""; Flags: runhidden 64bit; Check: IsWin64
 
 Filename: "{dotnet4032}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Wise40.Dome.dll"""; Flags: runhidden 32bit
 ; This helps to give a clean uninstall
@@ -140,6 +152,18 @@ Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40
 Filename: "{dotnet4064}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Wise40.Telescope.dll"""; Flags: runhidden 64bit; Check: IsWin64
 
 [CODE]
+  
+//const
+  //WiseDescText = 'Wise Profile'#13'New line';
+  //LCODescText  = 'LCO Profile';
+  //ACPDescText  = 'ACP Profile';
+
+var
+  LCORadioButton: TNewRadioButton;
+  WiseRadioButton: TNewRadioButton;
+  ACPRadioButton: TNewRadioButton;
+  SkipRadioButton: TNewRadioButton;
+
 //
 // Before the installer UI appears, verify that the (prerequisite)
 // ASCOM Platform 6.2 or greater is installed, including both Helper
@@ -199,4 +223,70 @@ begin
 	begin
        FileCopy(ExpandConstant(CurrentFileName), dst, False);
 	end;
+end;
+
+procedure InitializeWizard;
+var
+  CustomPage: TWizardPage;
+  IntroLabel, SkipDescLabel: TLabel;
+begin
+  CustomPage := CreateCustomPage(wpWelcome, 'ASCOM Profile Initialization', '');
+
+  IntroLabel := TLabel.Create(WizardForm);
+  IntroLabel.Parent := CustomPage.Surface;
+  IntroLabel.Caption := 'The ASCOM Profiles for the various drivers must be initialized.'#13#13'Please select the type of control that will be used.'#13'The main difference is what controls the dome.'#13;
+
+  WiseRadioButton := TNewRadioButton.Create(WizardForm);
+  WiseRadioButton.Parent := CustomPage.Surface;
+  WiseRadioButton.Checked := True;
+  WiseRadioButton.Top := IntroLabel.Top + IntroLabel.Height + 2;
+  WiseRadioButton.Width := CustomPage.SurfaceWidth;
+  WiseRadioButton.Font.Style := [fsBold];
+  WiseRadioButton.Font.Size := 9;
+  WiseRadioButton.Caption := 'Wise40 Dashboard'
+
+  LCORadioButton := TNewRadioButton.Create(WizardForm);
+  LCORadioButton.Parent := CustomPage.Surface;
+  LCORadioButton.Top := WiseRadioButton.Top + WiseRadioButton.Height + 2;
+  LCORadioButton.Width := CustomPage.SurfaceWidth;
+  LCORadioButton.Font.Style := [fsBold];
+  LCORadioButton.Font.Size := 9;
+  LCORadioButton.Caption := 'LCO'
+
+  ACPRadioButton := TNewRadioButton.Create(WizardForm);
+  ACPRadioButton.Parent := CustomPage.Surface;
+  ACPRadioButton.Top := LCORadioButton.Top + LCORadioButton.Height + 2;
+  ACPRadioButton.Width := CustomPage.SurfaceWidth;
+  ACPRadioButton.Font.Style := [fsBold];
+  ACPRadioButton.Font.Size := 9;
+  ACPRadioButton.Caption := 'ACP'
+
+  SkipRadioButton := TNewRadioButton.Create(WizardForm);
+  SkipRadioButton.Parent := CustomPage.Surface;
+  SkipRadioButton.Top := ACPRadioButton.Top + ACPRadioButton.Height + 2;
+  SkipRadioButton.Width := CustomPage.SurfaceWidth;
+  SkipRadioButton.Font.Style := [fsBold];
+  SkipRadioButton.Font.Size := 9;
+  SkipRadioButton.Caption := 'Skip'
+  SkipDescLabel := TLabel.Create(WizardForm);
+  SkipDescLabel.Parent := CustomPage.Surface;
+  SkipDescLabel.Left := 20;
+  SkipDescLabel.Top := SkipRadioButton.Top + SkipRadioButton.Height + 2;
+  SkipDescLabel.Width := CustomPage.SurfaceWidth;
+  SkipDescLabel.Height := 40;
+  SkipDescLabel.AutoSize := False;
+  SkipDescLabel.Wordwrap := True;
+  SkipDescLabel.Caption := 'The current ASCOM Profiles, if existent, will not be altered.'#13'NOTE: The Wise40 drivers will not work without initialized profiles!!!';
+end;
+
+function ProfileType(Param: String): String;
+begin
+	if ACPRadioButton.Checked then
+		Result := 'ACP'
+	else if WiseRadioButton.Checked then
+		Result := 'Wise'
+	else if LCORadioButton.Checked then
+		Result := 'LCO'
+	else
+		Result := 'Skip'
 end;

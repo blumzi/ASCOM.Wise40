@@ -9,9 +9,7 @@ namespace ASCOM.Wise40
 {
     public class WiseHAEncoder : WiseObject, IConnectable, IDisposable, IEncoder
     {
-        //private readonly bool _simulated = Environment.MachineName.ToLower() != "dome-ctlr";
         private bool _connected = false;
-        //private string _name;
         private uint _daqsValue;
         private const uint _realValueAtFiducialMark = 1432779; // Arie - 02 July 2016
         
@@ -60,8 +58,6 @@ namespace ASCOM.Wise40
 
             if (Simulated)
                 _angle = new Angle("00h00m00.0s");
-            //else
-            //    _angle = Angle.FromRadians((Value * HaMultiplier) + HaCorrection);
         }
 
         /// <summary>
@@ -152,9 +148,6 @@ namespace ASCOM.Wise40
         {
             get
             {
-                //if (!Simulated)
-                //    _angle.Radians = (_daqsValue * HaMultiplier) + HaCorrection;
-
                 return Angle.Degrees;
             }
 

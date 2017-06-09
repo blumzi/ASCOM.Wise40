@@ -14,7 +14,7 @@ namespace ASCOM.Wise40
 {
     public class WiseFilterWheel : WiseObject, IDisposable
     {
-        private Version version = new Version(0, 1);
+        private static Version version = new Version(0, 2);
         private static readonly WiseFilterWheel _instance = new WiseFilterWheel();
 
         public TraceLogger traceLogger = new TraceLogger();
@@ -26,7 +26,7 @@ namespace ASCOM.Wise40
         public WiseFilterWheel() { }
         static WiseFilterWheel() { }
         internal static string driverID = "ASCOM.Wise40.FilterWheel";
-        private static string driverDescription = "ASCOM FilterWheel Driver for Wise40.";
+        private static string driverDescription = string.Format("ASCOM Wise40.FilterWheel v{0}", version.ToString());
         private ArduinoInterface arduino = ArduinoInterface.Instance;
         public static string port;
 
@@ -140,16 +140,18 @@ namespace ASCOM.Wise40
             if (_initialized)
                 return;
 
-            Simulated = false;
+            Simulated = true;   // Force
             traceLogger.LogMessage("WiseFilterWheel", "Starting initialisation");
             Connected = false;
             ReadProfile();
-            if (! Simulated)
+            if (!Simulated)
+            {
                 arduino.init(WiseFilterWheel.port);
 
-            arduino.communicationCompleteHandler += onCommunicationComplete;
+                arduino.communicationCompleteHandler += onCommunicationComplete;
+                arduino.StartReadingTag();
+            }
             Connected = true;
-            arduino.StartReadingTag();
 
             traceLogger.LogMessage("WiseFilterWheel", "Completed initialisation");
             _initialized = true;
@@ -480,7 +482,11 @@ namespace ASCOM.Wise40
                 try
                 {
                     arduino.StartMoving(dir, slots);
-                } catch (Exception ex) { }
+                } catch (Exception ex) {
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "SetCurrentPosition: communication exception {0}", ex.Message);
+                    #endregion
+                }
             }
         }
         #endregion

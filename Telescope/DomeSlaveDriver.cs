@@ -18,7 +18,7 @@ namespace ASCOM.Wise40
         private bool _connected = false;
         private ASCOM.Astrometry.NOVAS.NOVAS31 novas31 = new Astrometry.NOVAS.NOVAS31();
         private AstroUtils astroutils = new AstroUtils();
-        AutoResetEvent _arrivedAtAz = new AutoResetEvent(false);
+        public AutoResetEvent _arrivedAtAz;
         private Debugger debugger;
 
         public static readonly DomeSlaveDriver instance = new DomeSlaveDriver(); // Singleton
@@ -90,18 +90,26 @@ namespace ASCOM.Wise40
             {
                 wisedome.SlewToAzimuth(az);
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver: Waiting for dome to arrive to target az");
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver:SlewToAz Waiting for dome to arrive to target {0}",
+                    Angle.FromDegrees(az).ToString());
                 #endregion
                 _arrivedAtAz.WaitOne();
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver:SlewToAz Dome arrived to target {0}",
+                    Angle.FromDegrees(az).ToString());
+                #endregion
             }
             catch (Exception ex)
             {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                    "DomeSlaveDriver:SlewToAz got \"{0}\" while slewing to {1}, Aborting slew!",
+                    ex.Message,
+                    new Angle(az, Angle.Type.Az));
+                #endregion
                 wisedome.AbortSlew();
                 throw ex;
             }
-            #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver: Dome arrived to {0}", new Angle(az, Angle.Type.Az));
-            #endregion
         }
 
         public void Park()
@@ -116,7 +124,8 @@ namespace ASCOM.Wise40
             {
                 wisedome.Park();
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver: Waiting for dome to arrive to target az");
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver: Waiting for dome to park at {0}",
+                    Angle.FromDegrees(wisedome.ParkAzimuth).ToString());
                 #endregion
                 _arrivedAtAz.WaitOne();
             }
@@ -131,7 +140,7 @@ namespace ASCOM.Wise40
             #endregion
         }
 
-        public void Calibrate()
+        public void FindHome()
         {
             if (wisetele == null)
                 wisetele = WiseTele.Instance;
@@ -231,6 +240,14 @@ namespace ASCOM.Wise40
 
                 string state = wisedome.ShutterState.ToString();
                 return (state == "shutterError" ? String.Empty : wisedome.ShutterState.ToString().Substring("shutter".Length));
+            }
+        }
+
+        public bool AtPark
+        {
+            get
+            {
+                return wisedome.AtPark;
             }
         }
 
