@@ -22,6 +22,8 @@ namespace ASCOM.Wise40
         private static Version version = new Version(0, 2);
         private bool _initialized = false;
         private bool _connected = false;
+        private bool _needUpwardCompensation = false;
+        private uint _upwardCompensation = 100;
         private enum FocuserStatus { Idle, MovingUp, MovingAllUp, MovingDown, MovingAllDown, Stopping };
         private FocuserStatus _status = FocuserStatus.Idle;
 
@@ -40,6 +42,7 @@ namespace ASCOM.Wise40
         Dictionary<Direction, MotionParameter> motionParameters;
 
         private uint _targetPos;
+        private uint _realTarget;
         private bool _movingToTarget = false;
         private uint _start;
         private uint _startStopping;
@@ -49,7 +52,7 @@ namespace ASCOM.Wise40
         private FixedSizedQueue<uint> recentPositions = new FixedSizedQueue<uint>(3);
 
         private System.Threading.Timer movementMonitoringTimer;   // Should be ON only when the focuser is moving
-        private int movementMonitoringTimeout = 50;     // millis between movement monitoring events
+        private int movementMonitoringTimeout = 35;     // millis between movement monitoring events
 
         List<IConnectable> connectables = new List<IConnectable>();
         List<IDisposable> disposables = new List<IDisposable>();
@@ -289,8 +292,13 @@ namespace ASCOM.Wise40
                     _targetPos, _start, _startStopping, _endStopping, _travel);
                 #endregion
                 _movingToTarget = false;
-                _targetPos = 0;
+                //_targetPos = 0;
                 _status = FocuserStatus.Idle;
+                if (_needUpwardCompensation)
+                {
+                    Move(_realTarget);
+                    _needUpwardCompensation = false;
+                }
                 return true;
             }
         }
@@ -307,6 +315,9 @@ namespace ASCOM.Wise40
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseFocuser:Stop Started stopping at {0} ...", _startStopping);
             #endregion
+
+            while (!FullyStopped)
+                Thread.Sleep(100);
         }
 
         public void Halt()
@@ -406,7 +417,7 @@ namespace ASCOM.Wise40
                     break;
             }
 
-            movementMonitoringTimer.Change(4 * movementMonitoringTimeout, movementMonitoringTimeout);
+            movementMonitoringTimer.Change(movementMonitoringTimeout, movementMonitoringTimeout);
 
             if (Simulated)
             {
@@ -454,6 +465,9 @@ namespace ASCOM.Wise40
             }
             else
             {
+                _realTarget = _targetPos;
+                _targetPos -= _upwardCompensation;
+                _needUpwardCompensation = true;
                 _status = FocuserStatus.MovingDown;
                 pinDown.SetOn();
                 if (Simulated)
@@ -577,8 +591,13 @@ namespace ASCOM.Wise40
                 if (currPos >= UpperLimit)
                     Stop();
 
-                if (_movingToTarget && Math.Abs(_targetPos - Position) <= motionParameters[Direction.Up].stoppingDistance)
-                    Stop();
+                if (_movingToTarget)
+                {
+                    if (currPos >= _targetPos) // overshoot
+                        Stop();
+                    if (_targetPos - currPos <= motionParameters[Direction.Up].stoppingDistance)
+                        Stop();
+                }
             }
 
             if (pinDown.isOn)
@@ -586,11 +605,14 @@ namespace ASCOM.Wise40
                 if (currPos <= LowerLimit)
                     Stop();
 
-                if (_movingToTarget && Math.Abs(Position - _targetPos) <= motionParameters[Direction.Down].stoppingDistance)
-                    Stop();
+                if (_movingToTarget)
+                {
+                    if (currPos <= _targetPos) // overshoot
+                        Stop();
+                    if (currPos - _targetPos <= motionParameters[Direction.Down].stoppingDistance)
+                        Stop();
+                }
             }
-
-            bool stopped = FullyStopped;    // Just checking
         }
 
         public string Status
