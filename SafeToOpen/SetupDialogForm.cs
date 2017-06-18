@@ -73,6 +73,15 @@ namespace ASCOM.Wise40.SafeToOperate
                 valid = false;
             }
 
+            double deg = Convert.ToInt32(textBoxSunElevation.Text);
+            if (deg > 0 || deg < -20)
+            {
+                textBoxSunElevation.ForeColor = badColor;
+                valid = false;
+            }
+            else
+                wisesafetoopen.sunElevationMax = deg;
+
             if (valid)
                 wisesafetoopen.WriteProfile();
         }
@@ -110,6 +119,7 @@ namespace ASCOM.Wise40.SafeToOperate
             textBoxWind.Text = wisesafetoopen.windMax.ToString();
             textBoxHumidity.Text = wisesafetoopen.humidityMax.ToString();
             textBoxAge.Text = wisesafetoopen.ageMaxSeconds.ToString();
+            textBoxSunElevation.Text = wisesafetoopen.sunElevationMax.ToString();
         }
 
         private void textBoxWind_Validating(object sender, CancelEventArgs e)

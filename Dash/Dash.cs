@@ -334,7 +334,7 @@ namespace Dash
                 {
                     annunciatorSafeToOpen.Text = "Not safe to open";
                     annunciatorSafeToOpen.Cadence = ASCOM.Controls.CadencePattern.BlinkSlow;
-                    tip = wisesite.safeToOpen.CommandString("unsafeReasons", false);
+                    tip = string.Join("\n", wisesafetoopen.UnsafeReasons);
                 }
             }
             toolTip.SetToolTip(annunciatorSafeToOpen, tip);
@@ -474,7 +474,7 @@ namespace Dash
                             weatherStatus.Show("Safe to open (safety bypassed)", 0, Statuser.Severity.Good);
                         else
                             weatherStatus.Show("Not safe to open", 0, Statuser.Severity.Error, true);
-                        weatherStatus.SetToolTip(string.Join(", ", wisesafetoopen.UnsafeReasons));
+                        weatherStatus.SetToolTip(string.Join("\n", wisesafetoopen.UnsafeReasons));
                     }
                     #endregion
                 }

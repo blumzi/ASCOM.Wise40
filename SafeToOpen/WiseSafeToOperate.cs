@@ -8,6 +8,9 @@ using System.Globalization;
 
 using ASCOM;
 using ASCOM.Utilities;
+using ASCOM.Astrometry;
+using ASCOM.Astrometry.AstroUtils;
+using ASCOM.Astrometry.NOVAS;
 using ASCOM.Wise40.Common;
 using ASCOM.Wise40.Boltwood;
 using ASCOM.Wise40.VantagePro;
@@ -38,6 +41,7 @@ namespace ASCOM.Wise40.SafeToOperate
         internal static string lightMaxProfileName = "Light Max";
         internal static string humidityMaxProfileName = "Humidity Max";
         internal static string ageMaxSecondsProfileName = "Age Max";
+        internal static string sunMaxProfileName = "Sun Elevation Max";
 
         public Boltwood.SensorData.CloudCondition cloudsMaxEnum;
         public Boltwood.SensorData.DayCondition lightMaxEnum;
@@ -48,6 +52,7 @@ namespace ASCOM.Wise40.SafeToOperate
         public int lightMaxValue;
         public double humidityMax;
         public int ageMaxSeconds;
+        public double sunElevationMax;
 
         /// <summary>
         /// Private variable to hold the connected state
@@ -56,12 +61,23 @@ namespace ASCOM.Wise40.SafeToOperate
 
         private Wise40.Common.Debugger debugger = Wise40.Common.Debugger.Instance;
         private static TraceLogger tl;
-        
+
         WiseBoltwood boltwood = WiseBoltwood.Instance;
         WiseVantagePro vantagePro = WiseVantagePro.Instance;
 
         private static WiseSafeToOperate _instanceOpen = new WiseSafeToOperate(Type.Open);
         private static WiseSafeToOperate _instanceImage = new WiseSafeToOperate(Type.Image);
+
+        private Astrometry.NOVAS.NOVAS31 novas31;
+        private static AstroUtils astroutils;
+        private static ASCOM.Utilities.Util ascomutils;
+        public double siteLatitude, siteLongitude, siteElevation;
+        public Astrometry.OnSurface onSurface;
+        public Astrometry.Accuracy astrometricAccuracy;
+        public Astrometry.RefractionOption refractionOption = Astrometry.RefractionOption.NoRefraction;
+        Object3 Sun = new Object3();
+
+        List<string> unsafeReasons = null;
 
         public static WiseSafeToOperate InstanceOpen
         {
@@ -85,7 +101,7 @@ namespace ASCOM.Wise40.SafeToOperate
         {
             _type = type;
         }
-        
+
         public void init()
         {
             string type = _type == Type.Open ? "Open" : "Image";
@@ -101,6 +117,16 @@ namespace ASCOM.Wise40.SafeToOperate
 
             _connected = false; // Initialise connected to false
 
+            novas31 = new NOVAS31();
+            astroutils = new AstroUtils();
+            ascomutils = new Util();
+
+            siteLatitude = ascomutils.DMSToDegrees("30:35:50.43");
+            siteLongitude = ascomutils.DMSToDegrees("34:45:43.86");
+            siteElevation = 882.9;
+            novas31.MakeOnSurface(siteLatitude, siteLongitude, siteElevation, 0.0, 0.0, ref onSurface);
+            novas31.MakeObject(0, Convert.ToInt16(Body.Sun), "Sun", new CatEntry3(), ref Sun);
+
             try
             {
                 boltwood.init();
@@ -112,7 +138,6 @@ namespace ASCOM.Wise40.SafeToOperate
 
             try
             {
-                //vantagePro = new DriverAccess.ObservingConditions("ASCOM.Vantage.ObservingConditions");
                 vantagePro.init();
             }
             catch (Exception ex)
@@ -186,7 +211,10 @@ namespace ASCOM.Wise40.SafeToOperate
             // you need something to ensure that only one command is in progress at a time
 
             if (command.ToLower() == "unsafereasons")
+            {
+                bool dummy = IsSafe;
                 return string.Join(", ", UnsafeReasons);
+            }
 
             return string.Empty;
         }
@@ -277,36 +305,34 @@ namespace ASCOM.Wise40.SafeToOperate
         }
 
         #endregion
-        
+
         public List<string> UnsafeReasons
         {
             get
             {
-                List<string> reasons = new List<string>();
+                List<string> ret;
+                unsafeReasons = new List<string>();
+                bool dummy;
 
-                if (!_boltwoodIsValid)
-                    reasons.Add("The Boltwood CloudSensor either not responding or data is too old");
-                else
-                {
-                    if (!IsSafeCloudCover)
-                        reasons.Add("Too cloudy");
-                    if (!IsSafeLight)
-                        reasons.Add("Too much light");
-                }
+                dummy = _boltwoodIsValid;
+                dummy = IsSafeCloudCover;
+                dummy = IsSafeLight;
+                dummy = _vantageProIsValid;
+                dummy = IsSafeWindSpeed;
+                dummy = IsSafeHumidity;
+                dummy = IsSafeRain;
+                dummy = IsSafeSunElevation;
 
-                if (!_vantageProIsValid)
-                    reasons.Add("The VantagePro either not responding or data is too old");
-                else
-                {
-                    if (!IsSafeWindSpeed)
-                        reasons.Add("Too windy");
-                    if (!IsSafeHumidity)
-                        reasons.Add("Too humid");
-                    if (!IsSafeRain)
-                        reasons.Add("Too wet");
-                }
-                return reasons;
+                ret = unsafeReasons;
+                unsafeReasons = null;
+                return ret;
             }
+        }
+
+        void AddReason(string reason)
+        {
+            if (unsafeReasons != null)
+                unsafeReasons.Add(reason);
         }
 
         #region Individual Property Implementations
@@ -316,9 +342,15 @@ namespace ASCOM.Wise40.SafeToOperate
             get
             {
                 if (boltwood == null)
+                {
+                    AddReason("No connection to the Boltwood station");
                     return false;
+                }
                 if (ageMaxSeconds > 0 && boltwood.TimeSinceLastUpdate("") > ageMaxSeconds)
+                {
+                    AddReason(string.Format("Boltwood data is too old (age > {0})", ageMaxSeconds));
                     return false;
+                }
                 return true;
             }
         }
@@ -328,9 +360,15 @@ namespace ASCOM.Wise40.SafeToOperate
             get
             {
                 if (vantagePro == null)
+                {
+                    AddReason("No connection to the VantagePro station");
                     return false;
+                }
                 if (ageMaxSeconds > 0 && vantagePro.TimeSinceLastUpdate("") > ageMaxSeconds)
+                {
+                    AddReason(string.Format("Data from the VantagePro station is too old (age > {0})", ageMaxSeconds));
                     return false;
+                }
                 return true;
             }
         }
@@ -346,8 +384,28 @@ namespace ASCOM.Wise40.SafeToOperate
                     {"dayLight", 2 },
                     {"dayVeryLight", 3 },
                 };
+
+                Dictionary<int, string> reversedDayConditions = new Dictionary<int, string>
+                {
+                    {0, "dayUnknown"},
+                    {1, "dayDark"},
+                    {2, "dayLight"},
+                    {3, "dayVeryLight"},
+                };
+
                 int light = dayConditions[boltwood.CommandString("daylight", true)];
-                return (light != 0) && (light <= lightMaxValue);
+                if (light == 0)
+                {
+                    AddReason("Unknown day condition from Boltwood station");
+                    return false;
+                }
+                if (light > lightMaxValue)
+                {
+                    AddReason(string.Format("Light condition from Boltwood ({0}) greater than max value ({1})",
+                        reversedDayConditions[light], reversedDayConditions[lightMaxValue]));
+                    return false;
+                }
+                return true;
             }
         }
 
@@ -355,7 +413,12 @@ namespace ASCOM.Wise40.SafeToOperate
         {
             get
             {
-                return boltwood.CloudCover <= cloudsMaxValue;
+                if (boltwood.CloudCover > cloudsMaxValue)
+                {
+                    AddReason(string.Format("Cloud cover from Boltwood ({0}) is greater than max value ({1})", boltwood.CloudCover, cloudsMaxValue));
+                    return false;
+                }
+                return true;
             }
         }
 
@@ -363,7 +426,12 @@ namespace ASCOM.Wise40.SafeToOperate
         {
             get
             {
-                return vantagePro.WindSpeed <= windMax;
+                if (vantagePro.WindSpeed > windMax)
+                {
+                    AddReason(string.Format("Wind speed from VantagePro ({0}) is greater than max value ({1})", vantagePro.WindSpeed, windMax));
+                    return false;
+                }
+                return true;
             }
         }
 
@@ -371,7 +439,12 @@ namespace ASCOM.Wise40.SafeToOperate
         {
             get
             {
-                return vantagePro.Humidity <= humidityMax;
+                if (vantagePro.Humidity > humidityMax)
+                {
+                    AddReason(string.Format("Humidity from VantagePro ({0}) is greater than max value ({1})", vantagePro.Humidity, humidityMax));
+                    return false;
+                }
+                return true;
             }
         }
 
@@ -379,7 +452,26 @@ namespace ASCOM.Wise40.SafeToOperate
         {
             get
             {
-                return vantagePro.RainRate <= rainMax;
+                if (vantagePro.RainRate > rainMax)
+                {
+                    AddReason(string.Format("Rain rate from VantagePro ({0}) is greater than max value ({1})", vantagePro.RainRate, rainMax));
+                    return false;
+                }
+                return true;
+            }
+        }
+
+        private bool IsSafeSunElevation
+        {
+            get
+            {
+                var elev = SunElevation;
+                if (elev > sunElevationMax)
+                {
+                    AddReason(string.Format("Sun elevation ({0:f1}°) is greater than max value ({1:f1}°)", Math.Floor(elev), sunElevationMax));
+                    return false;
+                }
+                return true;
             }
         }
         #endregion
@@ -408,7 +500,7 @@ namespace ASCOM.Wise40.SafeToOperate
             get
             {
                 return !_vantageProIsValid ? Const.TriStateStatus.Warning :
-                    IsSafeWindSpeed ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;                
+                    IsSafeWindSpeed ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
             }
         }
 
@@ -432,6 +524,48 @@ namespace ASCOM.Wise40.SafeToOperate
         #endregion
         #endregion
 
+        public double SunElevation
+        {
+            get
+            {
+                double ra = 0, dec = 0, dis = 0;
+                double jdt = astroutils.JulianDateUT1(0);
+                short res;
+
+                res = novas31.LocalPlanet(
+                    astroutils.JulianDateUT1(0),
+                    Sun,
+                    astroutils.DeltaT(),
+                    onSurface,
+                    astrometricAccuracy,
+                    ref ra, ref dec, ref dis);
+
+                if (res != 0)
+                {
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Failed to get LocalPlanet for the Sun (res: {0})", res);
+                    return 0.0;
+                }
+
+                double rar = 0, decr = 0, zd = 0, az = 0;
+                novas31.Equ2Hor(jdt, 0,
+                    astrometricAccuracy,
+                    0, 0,
+                    onSurface,
+                    ra, dec,
+                    refractionOption,
+                    ref zd, ref az, ref rar, ref decr);
+
+                if (res != 0)
+                {
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Failed to convert equ2hor (res: {0})", res);
+                    return 0.0;
+                }
+                double elev = 90.0 - zd;
+
+                return elev;
+            }
+        }
+
         #region ISafetyMonitor Implementation
         public bool IsSafe
         {
@@ -442,14 +576,15 @@ namespace ASCOM.Wise40.SafeToOperate
                 if (!_connected)
                     ret = false;
                 else
-                    ret = 
+                    ret =
                         _boltwoodIsValid &&
                         _vantageProIsValid &&
                         IsSafeLight &&
                         IsSafeCloudCover &&
                         IsSafeWindSpeed &&
                         IsSafeHumidity &&
-                        IsSafeRain;
+                        IsSafeRain &&
+                        IsSafeSunElevation;
 
                 tl.LogMessage("IsSafe Get", ret.ToString());
                 return ret;
@@ -481,22 +616,35 @@ namespace ASCOM.Wise40.SafeToOperate
         {
             using (Profile driverProfile = new Profile())
             {
-                driverProfile.DeviceType = "SafetyMonitor";                
+                driverProfile.DeviceType = "SafetyMonitor";
 
                 cloudsMaxEnum = (Boltwood.SensorData.CloudCondition)
                     Enum.Parse(typeof(Boltwood.SensorData.CloudCondition),
                         driverProfile.GetValue(driverID, cloudsMaxProfileName, string.Empty, Boltwood.SensorData.CloudCondition.cloudClear.ToString()));
-                cloudsMaxValue = Boltwood.SensorData.doubleCloudCondition[cloudsMaxEnum];     
-                           
+                cloudsMaxValue = Boltwood.SensorData.doubleCloudCondition[cloudsMaxEnum];
+
                 windMax = Convert.ToDouble(driverProfile.GetValue(driverID, windMaxProfileName, string.Empty, 0.0.ToString()));
                 rainMax = Convert.ToDouble(driverProfile.GetValue(driverID, rainMaxProfileName, string.Empty, 0.0.ToString()));
                 humidityMax = Convert.ToDouble(driverProfile.GetValue(driverID, humidityMaxProfileName, string.Empty, 0.0.ToString()));
                 ageMaxSeconds = Convert.ToInt32(driverProfile.GetValue(driverID, ageMaxSecondsProfileName, string.Empty, 0.ToString()));
+                sunElevationMax = Convert.ToDouble(driverProfile.GetValue(driverID, sunMaxProfileName, string.Empty, 0.0.ToString()));
 
                 lightMaxEnum = (Boltwood.SensorData.DayCondition)
                     Enum.Parse(typeof(Boltwood.SensorData.DayCondition),
                         driverProfile.GetValue(driverID, lightMaxProfileName, string.Empty, "dayUnknown"));
                 lightMaxValue = (int)lightMaxEnum;
+            }
+
+            using (Profile driverProfile = new Profile())
+            {
+                string telescopeDriverId = "ASCOM.Wise40.Telescope";
+                string astrometricAccuracyProfileName = "Astrometric accuracy";
+
+                driverProfile.DeviceType = "Telescope";
+                astrometricAccuracy =
+                    driverProfile.GetValue(telescopeDriverId, astrometricAccuracyProfileName, string.Empty, "Full") == "Full" ?
+                        Accuracy.Full :
+                        Accuracy.Reduced;
             }
         }
 
@@ -514,6 +662,7 @@ namespace ASCOM.Wise40.SafeToOperate
                 driverProfile.WriteValue(driverID, lightMaxProfileName, lightMaxEnum.ToString());
                 driverProfile.WriteValue(driverID, humidityMaxProfileName, humidityMax.ToString());
                 driverProfile.WriteValue(driverID, ageMaxSecondsProfileName, ageMaxSeconds.ToString());
+                driverProfile.WriteValue(driverID, sunMaxProfileName, sunElevationMax.ToString());
             }
         }
         #endregion

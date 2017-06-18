@@ -55,6 +55,9 @@ namespace ASCOM.Wise40.SafeToOperate
             this.label15 = new System.Windows.Forms.Label();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.label16 = new System.Windows.Forms.Label();
+            this.label17 = new System.Windows.Forms.Label();
+            this.textBoxSunElevation = new System.Windows.Forms.TextBox();
+            this.label18 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).BeginInit();
             this.SuspendLayout();
             // 
@@ -64,7 +67,7 @@ namespace ASCOM.Wise40.SafeToOperate
             this.cmdOK.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.cmdOK.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.cmdOK.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.cmdOK.Location = new System.Drawing.Point(310, 222);
+            this.cmdOK.Location = new System.Drawing.Point(310, 256);
             this.cmdOK.Name = "cmdOK";
             this.cmdOK.Size = new System.Drawing.Size(59, 24);
             this.cmdOK.TabIndex = 0;
@@ -78,7 +81,7 @@ namespace ASCOM.Wise40.SafeToOperate
             this.cmdCancel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.cmdCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.cmdCancel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.cmdCancel.Location = new System.Drawing.Point(310, 252);
+            this.cmdCancel.Location = new System.Drawing.Point(310, 286);
             this.cmdCancel.Name = "cmdCancel";
             this.cmdCancel.Size = new System.Drawing.Size(59, 25);
             this.cmdCancel.TabIndex = 1;
@@ -101,7 +104,6 @@ namespace ASCOM.Wise40.SafeToOperate
             // 
             this.picASCOM.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.picASCOM.Cursor = System.Windows.Forms.Cursors.Hand;
-//            this.picASCOM.Image = global::ASCOM.Wise40.SafeToOperate.Properties.Resources.ASCOM;
             this.picASCOM.Location = new System.Drawing.Point(321, 9);
             this.picASCOM.Name = "picASCOM";
             this.picASCOM.Size = new System.Drawing.Size(48, 56);
@@ -156,7 +158,7 @@ namespace ASCOM.Wise40.SafeToOperate
             // 
             this.label4.AutoSize = true;
             this.label4.ForeColor = System.Drawing.Color.DarkOrange;
-            this.label4.Location = new System.Drawing.Point(16, 264);
+            this.label4.Location = new System.Drawing.Point(16, 296);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(133, 13);
             this.label4.TabIndex = 10;
@@ -196,7 +198,7 @@ namespace ASCOM.Wise40.SafeToOperate
             // 
             this.textBoxAge.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.textBoxAge.ForeColor = System.Drawing.Color.DarkOrange;
-            this.textBoxAge.Location = new System.Drawing.Point(152, 260);
+            this.textBoxAge.Location = new System.Drawing.Point(152, 292);
             this.textBoxAge.Margin = new System.Windows.Forms.Padding(6, 3, 3, 3);
             this.textBoxAge.Name = "textBoxAge";
             this.textBoxAge.Size = new System.Drawing.Size(24, 20);
@@ -347,18 +349,51 @@ namespace ASCOM.Wise40.SafeToOperate
             // 
             this.label16.AutoSize = true;
             this.label16.ForeColor = System.Drawing.Color.DarkOrange;
-            this.label16.Location = new System.Drawing.Point(176, 264);
+            this.label16.Location = new System.Drawing.Point(176, 296);
             this.label16.Name = "label16";
             this.label16.Size = new System.Drawing.Size(24, 13);
             this.label16.TabIndex = 28;
             this.label16.Text = "sec";
+            // 
+            // label17
+            // 
+            this.label17.AutoSize = true;
+            this.label17.ForeColor = System.Drawing.Color.DarkOrange;
+            this.label17.Location = new System.Drawing.Point(16, 260);
+            this.label17.Name = "label17";
+            this.label17.Size = new System.Drawing.Size(26, 13);
+            this.label17.TabIndex = 30;
+            this.label17.Text = "Sun";
+            // 
+            // textBoxSunElevation
+            // 
+            this.textBoxSunElevation.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
+            this.textBoxSunElevation.ForeColor = System.Drawing.Color.DarkOrange;
+            this.textBoxSunElevation.Location = new System.Drawing.Point(64, 256);
+            this.textBoxSunElevation.Name = "textBoxSunElevation";
+            this.textBoxSunElevation.Size = new System.Drawing.Size(24, 20);
+            this.textBoxSunElevation.TabIndex = 31;
+            this.textBoxSunElevation.Text = "-14";
+            // 
+            // label18
+            // 
+            this.label18.AutoSize = true;
+            this.label18.ForeColor = System.Drawing.Color.DarkOrange;
+            this.label18.Location = new System.Drawing.Point(96, 260);
+            this.label18.Name = "label18";
+            this.label18.Size = new System.Drawing.Size(45, 13);
+            this.label18.TabIndex = 32;
+            this.label18.Text = "degrees";
             // 
             // SetupDialogForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.ClientSize = new System.Drawing.Size(379, 298);
+            this.ClientSize = new System.Drawing.Size(379, 332);
+            this.Controls.Add(this.label18);
+            this.Controls.Add(this.textBoxSunElevation);
+            this.Controls.Add(this.label17);
             this.Controls.Add(this.label16);
             this.Controls.Add(this.label15);
             this.Controls.Add(this.label14);
@@ -425,5 +460,8 @@ namespace ASCOM.Wise40.SafeToOperate
         private System.Windows.Forms.Label label15;
         private System.Windows.Forms.ToolTip toolTip1;
         private System.Windows.Forms.Label label16;
+        private System.Windows.Forms.Label label17;
+        private System.Windows.Forms.TextBox textBoxSunElevation;
+        private System.Windows.Forms.Label label18;
     }
 }

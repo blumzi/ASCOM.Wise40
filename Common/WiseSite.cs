@@ -21,8 +21,8 @@ namespace ASCOM.Wise40
         private Astrometry.NOVAS.NOVAS31 novas31;
         private static AstroUtils astroutils;
         private static ASCOM.Utilities.Util ascomutils;
-        public Astrometry.Accuracy astrometricAccuracy;
         public Astrometry.OnSurface onSurface;
+        public Astrometry.Accuracy astrometricAccuracy;
         public Astrometry.RefractionOption refractionOption;
         public double siteLatitude, siteLongitude, siteElevation;
         public ObservingConditions och;
@@ -211,6 +211,6 @@ namespace ASCOM.Wise40
                 }
                 catch { }
             }
-        }
+        }        
     }
 }

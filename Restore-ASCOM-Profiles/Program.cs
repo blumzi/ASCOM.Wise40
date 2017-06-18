@@ -83,6 +83,7 @@ namespace Restore_ASCOM_Profiles
             string lightMaxProfileName = "Light Max";
             string humidityMaxProfileName = "Humidity Max";
             string ageMaxSecondsProfileName = "Age Max";
+            string sunMaxProfileName = "Sun Elevation Max";
 
             using (Profile driverProfile = new Profile())
             {
@@ -93,6 +94,7 @@ namespace Restore_ASCOM_Profiles
                 driverProfile.WriteValue(driverID, lightMaxProfileName, "dayDark");
                 driverProfile.WriteValue(driverID, humidityMaxProfileName, 90.ToString());
                 driverProfile.WriteValue(driverID, ageMaxSecondsProfileName, 0.ToString());
+                driverProfile.WriteValue(driverID, sunMaxProfileName, (-7).ToString());
             }
         }
 

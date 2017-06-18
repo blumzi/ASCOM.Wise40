@@ -275,6 +275,9 @@ namespace ASCOM.Wise40
             get
             {
                 uint[] recent = recentPositions.ToArray();
+                if (recent.Count() == 0)
+                    return true;
+
                 uint first = recent[0];
 
                 if (first == 0)     // just initialized
