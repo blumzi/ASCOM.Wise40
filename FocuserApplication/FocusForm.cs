@@ -6,7 +6,7 @@ using System.Threading;
 using ASCOM.Wise40;
 using ASCOM.Wise40.Common;
 using ASCOM.Wise40.Hardware;
-using PID;
+using ASCOM.Wise40.Focuser;
 
 namespace FocuserApplication
 {

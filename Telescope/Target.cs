@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 using ASCOM.Wise40.Common;
 
-namespace ASCOM.Wise40
+namespace ASCOM.Wise40.Telescope
 {
     public class Target
     {

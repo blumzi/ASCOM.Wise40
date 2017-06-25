@@ -36,6 +36,7 @@ namespace Restore_ASCOM_Profiles
             WriteTelescopeProfile();
             WriteOCHProfile();
             WriteFilterWheelProfile();
+            WriteObservatoryMonitorProfile();
 
             string message = string.Format("The Wise40 ASCOM Profiles have been initializes to mode \"{0}\".", mode.ToString());
             Console.WriteLine(message);
@@ -247,6 +248,39 @@ namespace Restore_ASCOM_Profiles
                 driverProfile.WriteValue(driverID, "Name", "B", "Filter2");
                 driverProfile.WriteValue(driverID, "Description", "Blue filter", "Filter2");
                 driverProfile.WriteValue(driverID, "Offset", "17", "Filter2");
+            }
+        }
+
+        internal static void WriteObservatoryMonitorProfile()
+        {
+            string driverID = "ASCOM.Wise40.ObservatoryMonitor";
+
+            string intervalProfileName = "Interval";
+            string lightEventsProfileName = "LightEvents";
+            string sunEventsProfileName = "SunEvents";
+            string windEventsProfileName = "WindEvents";
+            string rainEventsProfileName = "RainEvents";
+            string humidityEventsProfileName = "HumidityEvents";
+
+            int _defaultInterval = 30;
+            int _defaultLightEvents = 3;
+            int _defaultSunEvents = 2;
+            int _defaultWindEvents = 4;
+            int _defaultRainEvents = 2;
+            int _defaultHumidityEvents = 2;
+
+            using (Profile driverProfile = new Profile())
+            {
+                if (!driverProfile.IsRegistered(driverID))
+                    driverProfile.Register(driverID, string.Format("ASCOM Wise40.ObservatoryMonitor v0.2"));
+
+                driverProfile.DeviceType = "SafetyMonitor";
+                driverProfile.WriteValue(driverID, intervalProfileName, _defaultInterval.ToString());
+                driverProfile.WriteValue(driverID, lightEventsProfileName, _defaultLightEvents.ToString());
+                driverProfile.WriteValue(driverID, sunEventsProfileName, _defaultSunEvents.ToString());
+                driverProfile.WriteValue(driverID, windEventsProfileName, _defaultWindEvents.ToString());
+                driverProfile.WriteValue(driverID, rainEventsProfileName, _defaultRainEvents.ToString());
+                driverProfile.WriteValue(driverID, humidityEventsProfileName, _defaultHumidityEvents.ToString());
             }
         }
     }

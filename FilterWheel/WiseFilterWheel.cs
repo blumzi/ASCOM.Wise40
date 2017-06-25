@@ -10,7 +10,7 @@ using ASCOM.Utilities;
 using System.Collections;
 using System.Globalization;
 
-namespace ASCOM.Wise40
+namespace ASCOM.Wise40.FilterWheel
 {
     public class WiseFilterWheel : WiseObject, IDisposable
     {

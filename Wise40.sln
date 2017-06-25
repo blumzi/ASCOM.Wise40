@@ -121,6 +121,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VantagePro", "VantagePro\Va
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestVantagePro-1", "TestVantagePro-1\TestVantagePro-1.csproj", "{D5207217-61C7-4E94-8097-91DBACE57D2A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Observatory Monitor", "WindowsFormsApplication1\Observatory Monitor.csproj", "{CE5E9E5E-FF3B-4451-9254-881D7CC67C1A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -381,6 +383,18 @@ Global
 		{D5207217-61C7-4E94-8097-91DBACE57D2A}.Release|x64.Build.0 = Release|x64
 		{D5207217-61C7-4E94-8097-91DBACE57D2A}.Release|x86.ActiveCfg = Release|x86
 		{D5207217-61C7-4E94-8097-91DBACE57D2A}.Release|x86.Build.0 = Release|x86
+		{CE5E9E5E-FF3B-4451-9254-881D7CC67C1A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CE5E9E5E-FF3B-4451-9254-881D7CC67C1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CE5E9E5E-FF3B-4451-9254-881D7CC67C1A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{CE5E9E5E-FF3B-4451-9254-881D7CC67C1A}.Debug|x64.Build.0 = Debug|Any CPU
+		{CE5E9E5E-FF3B-4451-9254-881D7CC67C1A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{CE5E9E5E-FF3B-4451-9254-881D7CC67C1A}.Debug|x86.Build.0 = Debug|Any CPU
+		{CE5E9E5E-FF3B-4451-9254-881D7CC67C1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CE5E9E5E-FF3B-4451-9254-881D7CC67C1A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CE5E9E5E-FF3B-4451-9254-881D7CC67C1A}.Release|x64.ActiveCfg = Release|Any CPU
+		{CE5E9E5E-FF3B-4451-9254-881D7CC67C1A}.Release|x64.Build.0 = Release|Any CPU
+		{CE5E9E5E-FF3B-4451-9254-881D7CC67C1A}.Release|x86.ActiveCfg = Release|Any CPU
+		{CE5E9E5E-FF3B-4451-9254-881D7CC67C1A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

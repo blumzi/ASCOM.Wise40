@@ -119,7 +119,6 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
-    <Compile Include="TimeProportionedPidController.cs" />
     <Compile Include="WiseBitOwner.cs" />
     <Compile Include="WiseBoard.cs" />
     <Compile Include="WiseDaq.cs" />
@@ -144,10 +143,6 @@
     <ProjectReference Include="..\Common\Common.csproj">
       <Project>{b76546e7-9832-4d28-b412-b34ca1c6177c}</Project>
       <Name>Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\PIDLibrary\PID.csproj">
-      <Project>{91dd8aab-0e56-4412-b15f-9b3ec510e929}</Project>
-      <Name>PID</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -1,4 +1,4 @@
-namespace ASCOM.Wise40
+namespace ASCOM.Wise40.Telescope
 {
     partial class TelescopeSetupDialogForm
     {
@@ -79,7 +79,7 @@ namespace ASCOM.Wise40
             // 
             this.picASCOM.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.picASCOM.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.picASCOM.Image = global::ASCOM.Wise40.Properties.Resources.ASCOM;
+            this.picASCOM.Image = global::ASCOM.Wise40.Telescope.Properties.Resources.ASCOM;
             this.picASCOM.Location = new System.Drawing.Point(253, 16);
             this.picASCOM.Name = "picASCOM";
             this.picASCOM.Size = new System.Drawing.Size(48, 56);

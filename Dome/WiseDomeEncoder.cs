@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using ASCOM.Wise40.Common;
 using ASCOM.Wise40.Hardware;
 
-namespace ASCOM.Wise40
+namespace ASCOM.Wise40.Dome
 {
     public class WiseDomeEncoder : WiseEncoder
     {

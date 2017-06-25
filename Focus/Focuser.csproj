@@ -8,7 +8,7 @@
     <ProjectGuid>{D49AE541-3D66-4EF4-8A07-69357070718B}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ASCOM.Wise40</RootNamespace>
+    <RootNamespace>ASCOM.Wise40.Focuser</RootNamespace>
     <AssemblyName>ASCOM.Wise40.Focuser</AssemblyName>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -199,10 +199,6 @@
       <Project>{b3400ce2-9b66-4f0c-97fe-26343382ba7b}</Project>
       <Name>Hardware</Name>
     </ProjectReference>
-    <ProjectReference Include="..\PIDLibrary\PID.csproj">
-      <Project>{91dd8aab-0e56-4412-b15f-9b3ec510e929}</Project>
-      <Name>PID</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
@@ -211,7 +207,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <PostBuildEvent>
-</PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

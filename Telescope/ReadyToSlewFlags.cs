@@ -8,7 +8,7 @@ using ASCOM.Wise40.Common;
 using System.Threading;
 using ASCOM.DeviceInterface;
 
-namespace ASCOM.Wise40
+namespace ASCOM.Wise40.Telescope
 {
     public class ReadyToSlewFlags
     {

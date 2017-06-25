@@ -11,7 +11,7 @@ using ASCOM.Wise40.Common;
 using ASCOM.Wise40.Hardware;
 using ASCOM.Wise40.SafeToOperate;
 
-namespace ASCOM.Wise40
+namespace ASCOM.Wise40.Dome
 {
     public class WiseDome : WiseObject, IConnectable, IDisposable {
 

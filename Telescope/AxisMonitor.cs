@@ -9,6 +9,7 @@ using ASCOM.DeviceInterface;
 
 using ASCOM.Wise40.Hardware;
 using ASCOM.Wise40.Common;
+using ASCOM.Wise40.Telescope;
 using ASCOM.Wise40;
 
 namespace ASCOM.Wise40

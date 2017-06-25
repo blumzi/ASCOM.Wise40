@@ -10,6 +10,7 @@ using System.Windows.Forms;
 
 using ASCOM.Wise40;
 using ASCOM.Wise40.Common;
+using ASCOM.Wise40.FilterWheel;
 
 namespace Dash
 {

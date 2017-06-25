@@ -44,7 +44,7 @@ using System.Collections;
 using ASCOM.Wise40.Hardware;
 using ASCOM.Wise40.Common;
 
-namespace ASCOM.Wise40
+namespace ASCOM.Wise40.Dome
 {
     //
     // Your driver's DeviceID is ASCOM.Wise40.Dome

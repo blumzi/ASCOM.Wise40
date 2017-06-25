@@ -40,7 +40,7 @@ using ASCOM.DeviceInterface;
 using System.Globalization;
 using System.Collections;
 
-namespace ASCOM.Wise40
+namespace ASCOM.Wise40.FilterWheel
 {
     //
     // Your driver's DeviceID is ASCOM.Wise40.FilterWheel

@@ -8,7 +8,7 @@
     <ProjectGuid>{64308775-BD4A-469C-BCAB-3ED830B811AF}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ASCOM.Wise40</RootNamespace>
+    <RootNamespace>ASCOM.Wise40.Dome</RootNamespace>
     <AssemblyName>ASCOM.Wise40.Dome</AssemblyName>
     <FileUpgradeFlags>
     </FileUpgradeFlags>

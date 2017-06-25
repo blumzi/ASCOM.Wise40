@@ -77,7 +77,8 @@ namespace ASCOM.Wise40.SafeToOperate
         public Astrometry.RefractionOption refractionOption = Astrometry.RefractionOption.NoRefraction;
         Object3 Sun = new Object3();
 
-        List<string> unsafeReasons = null;
+        object reasonsLock = new object();
+        List<string> unsafeReasons = new List<string>();
 
         public static WiseSafeToOperate InstanceOpen
         {
@@ -215,8 +216,8 @@ namespace ASCOM.Wise40.SafeToOperate
                 bool dummy = IsSafe;
                 return string.Join(", ", UnsafeReasons);
             }
-
-            return string.Empty;
+            else
+                return stringSafetyCommand(command);
         }
 
         public void Dispose()
@@ -311,19 +312,21 @@ namespace ASCOM.Wise40.SafeToOperate
             get
             {
                 List<string> ret;
-                unsafeReasons = new List<string>();
                 bool dummy;
 
-                dummy = _boltwoodIsValid;
-                dummy = IsSafeCloudCover;
-                dummy = IsSafeLight;
-                dummy = _vantageProIsValid;
-                dummy = IsSafeWindSpeed;
-                dummy = IsSafeHumidity;
-                dummy = IsSafeRain;
-                dummy = IsSafeSunElevation;
+                lock (reasonsLock)
+                {
+                    dummy = _boltwoodIsValid;
+                    dummy = IsSafeCloudCover;
+                    dummy = IsSafeLight;
+                    dummy = _vantageProIsValid;
+                    dummy = IsSafeWindSpeed;
+                    dummy = IsSafeHumidity;
+                    dummy = IsSafeRain;
+                    dummy = IsSafeSunElevation;
 
-                ret = unsafeReasons;
+                    ret = unsafeReasons;
+                }
                 unsafeReasons = null;
                 return ret;
             }
@@ -474,6 +477,43 @@ namespace ASCOM.Wise40.SafeToOperate
                 return true;
             }
         }
+
+        private string stringSafetyCommand(string command)
+        {
+            Const.TriStateStatus status = Const.TriStateStatus.Good;
+            string ret = "unknown";
+
+            lock (reasonsLock)
+            {
+                unsafeReasons.Clear();
+                switch (command.ToLower())
+                {
+                    case "light": status = isSafeLight; break;
+                    case "humidity": status = isSafeHumidity; break;
+                    case "wind": status = isSafeWindSpeed; break;
+                    case "sun": status = isSafeSunElevation; break;
+                    case "clouds": status = isSafeCloudCover; break;
+                    case "rain": status = isSafeRain; break;
+                    default:
+                        status = Const.TriStateStatus.Error;
+                        unsafeReasons.Add(string.Format("invalid command \"{0}\"", command));
+                        break;
+                }
+            }
+
+            switch (status)
+            {
+                case Const.TriStateStatus.Good:
+                    return "ok";
+                case Const.TriStateStatus.Error:
+                    return "error: " + unsafeReasons[0];
+                case Const.TriStateStatus.Warning:
+                    return "warning: " + unsafeReasons[0];
+            }
+
+            return ret;
+        }
+
         #endregion
 
         #region TriState Properties (for object)
@@ -519,6 +559,14 @@ namespace ASCOM.Wise40.SafeToOperate
             {
                 return !_vantageProIsValid ? Const.TriStateStatus.Warning :
                     IsSafeRain ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
+            }
+        }
+
+        public Const.TriStateStatus isSafeSunElevation
+        {
+            get
+            {
+                return IsSafeSunElevation ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
             }
         }
         #endregion

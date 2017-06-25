@@ -11,6 +11,7 @@ using System.Windows.Forms;
 using ASCOM.Wise40.Common;
 using ASCOM.Wise40;
 using ASCOM.Wise40.SafeToOperate;
+using ASCOM.Wise40.Focuser;
 using ASCOM.DriverAccess;
 
 namespace Dash

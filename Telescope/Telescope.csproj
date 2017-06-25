@@ -8,7 +8,7 @@
     <ProjectGuid>{E27802FC-EFB5-4DEB-BD4D-013F44A0813C}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ASCOM.Wise40</RootNamespace>
+    <RootNamespace>ASCOM.Wise40.Telescope</RootNamespace>
     <AssemblyName>ASCOM.Wise40.Telescope</AssemblyName>
     <FileUpgradeFlags>
     </FileUpgradeFlags>

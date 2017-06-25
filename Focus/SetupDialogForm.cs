@@ -8,7 +8,7 @@ using System.Windows.Forms;
 using ASCOM.Utilities;
 using ASCOM.Wise40;
 
-namespace ASCOM.Wise40
+namespace ASCOM.Wise40.Focuser
 {
     [ComVisible(false)]					// Form not registered for COM!
     public partial class SetupDialogForm : Form

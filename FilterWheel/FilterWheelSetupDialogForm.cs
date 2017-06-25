@@ -9,7 +9,7 @@ using ASCOM.Utilities;
 using ASCOM.Wise40;
 using RavSoft;
 
-namespace ASCOM.Wise40
+namespace ASCOM.Wise40.FilterWheel
 {
     [ComVisible(false)]					// Form not registered for COM!
     public partial class FilterWheelSetupDialogForm : Form

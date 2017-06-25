@@ -9,7 +9,7 @@ using ASCOM.Utilities;
 
 using ASCOM.Wise40.Common;
 
-namespace ASCOM.Wise40
+namespace ASCOM.Wise40.Dome
 {
     [ComVisible(false)]					// Form not registered for COM!
     public partial class SetupDialogForm : Form

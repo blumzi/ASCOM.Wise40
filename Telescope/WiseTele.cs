@@ -47,7 +47,7 @@ using System.Linq;
 ///     Scale:	                                       0.0345 mm/arcsec
 /// 
 /// </summary>
-namespace ASCOM.Wise40
+namespace ASCOM.Wise40.Telescope
 {
     public class WiseTele : WiseObject, IDisposable, IConnectable
     {

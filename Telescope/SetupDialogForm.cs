@@ -8,7 +8,7 @@ using ASCOM.Wise40.Common;
 using ASCOM.DeviceInterface;
 
 
-namespace ASCOM.Wise40
+namespace ASCOM.Wise40.Telescope
 {
     [ComVisible(false)]					// Form not registered for COM!
     public partial class TelescopeSetupDialogForm : Form
