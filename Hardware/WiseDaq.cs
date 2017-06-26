@@ -47,6 +47,7 @@ namespace ASCOM.Wise40.Hardware
 
         private ushort _value;
         private ushort _mask;
+        private object _lock = new object();
 
         private Debugger debugger = Debugger.Instance;
 
@@ -62,7 +63,10 @@ namespace ASCOM.Wise40.Hardware
                 {
                     try
                     {
-                        wiseBoard.mccBoard.DConfigPort(porttype, dir);
+                        lock (_lock)
+                        {
+                            wiseBoard.mccBoard.DConfigPort(porttype, dir);
+                        }
                     } catch (Exception err)
                     {
                         throw new WiseException(Name + ": UL DConfigPort(" + porttype.ToString() + ", " + dir.ToString() + ") failed with " + err.Message);
@@ -70,7 +74,12 @@ namespace ASCOM.Wise40.Hardware
                 }
                 else
                 {
-                    ErrorInfo err = wiseBoard.mccBoard.DConfigPort(porttype, dir);
+                    ErrorInfo err;
+
+                    lock (_lock)
+                    {
+                        err = wiseBoard.mccBoard.DConfigPort(porttype, dir);
+                    }
                     if (err.Value != 0)
                         throw new WiseException(Name + ": UL DConfigPort(" + porttype.ToString() + ", " + dir.ToString() + ") failed with " + err.Message);
                 }
@@ -136,7 +145,10 @@ namespace ASCOM.Wise40.Hardware
                     {
                         try
                         {
-                            wiseBoard.mccBoard.DIn(porttype, out v);
+                            lock (_lock)
+                            {
+                                wiseBoard.mccBoard.DIn(porttype, out v);
+                            }
                         }
                         catch (Exception err)
                         {
@@ -145,7 +157,11 @@ namespace ASCOM.Wise40.Hardware
                     }
                     else
                     {
-                        ErrorInfo err = wiseBoard.mccBoard.DIn(porttype, out v);
+                        ErrorInfo err;
+                        lock (_lock)
+                        {
+                            err = wiseBoard.mccBoard.DIn(porttype, out v);
+                        }
                         if (err.Value != ErrorInfo.ErrorCode.NoErrors)
                             throw new WiseException(Name + ": UL DIn(" + porttype.ToString() + ") failed with " + err.Message);
                     }
@@ -173,7 +189,10 @@ namespace ASCOM.Wise40.Hardware
                         {
                             try
                             {
-                                wiseBoard.mccBoard.DOut(porttype, value);
+                                lock (_lock)
+                                {
+                                    wiseBoard.mccBoard.DOut(porttype, value);
+                                }
                             }
                             catch (Exception err)
                             {
@@ -182,7 +201,11 @@ namespace ASCOM.Wise40.Hardware
                         }
                         else
                         {
-                            ErrorInfo err = wiseBoard.mccBoard.DOut(porttype, value);
+                            ErrorInfo err;
+                            lock (_lock)
+                            {
+                                err = wiseBoard.mccBoard.DOut(porttype, value);
+                            }
                             if (err.Value != ErrorInfo.ErrorCode.NoErrors)
                                 throw new WiseException(Name + ": UL DOut(" + porttype.ToString() + ", " + value.ToString() + ") failed with :\"" + err.Message + "\"");
                         }
