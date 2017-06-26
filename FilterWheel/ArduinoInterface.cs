@@ -7,7 +7,7 @@ using System.Threading;
 
 using ASCOM.Wise40.Common;
 
-namespace ASCOM.Wise40
+namespace ASCOM.Wise40.FilterWheel
 {
     public class ArduinoInterface
     {
@@ -15,8 +15,8 @@ namespace ASCOM.Wise40
         private static readonly ArduinoInterface _instance = new ArduinoInterface();
 
         private bool _initialized = false;
-        private string port;
-        private static object serialLock = new Object();
+        private string _serialPort;
+        private static object _serialLock = new Object();
 
         private System.IO.Ports.SerialPort serial;
         private const char stx = (char)2;
@@ -144,7 +144,7 @@ namespace ASCOM.Wise40
                 return;
             serial = new System.IO.Ports.SerialPort(port, 57600);
             debugger.StartDebugging(Debugger.DebugLevel.DebugLogic);
-            this.port = port;
+            this._serialPort = port;
             communicationCompleteHandler += onCommunicationComplete;
             _initialized = true;
         }
@@ -193,7 +193,7 @@ namespace ASCOM.Wise40
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Arduino: Communicate: Sending \"{0}\" ...", _command);
                     #endregion
-                    lock (serialLock)
+                    lock (_serialLock)
                     {
                         serial.Write(packet);
                         if (waitForReply)

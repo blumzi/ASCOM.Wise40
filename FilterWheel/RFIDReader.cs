@@ -5,7 +5,7 @@ using System.Text;
 
 using ASCOM.Wise40.Common;
 
-namespace ASCOM.Wise40
+namespace ASCOM.Wise40.FilterWheel
 {
     public class RFIDReader
     {

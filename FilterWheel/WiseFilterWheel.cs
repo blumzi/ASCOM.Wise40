@@ -21,7 +21,7 @@ namespace ASCOM.Wise40.FilterWheel
         public Debugger debugger = Debugger.Instance;        
 
         private static bool _initialized = false;
-        private static bool _connected = false; // simulated
+        private static bool _connected = false;
 
         public WiseFilterWheel() { }
         static WiseFilterWheel() { }

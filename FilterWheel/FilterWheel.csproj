@@ -140,7 +140,6 @@
     <Compile Include="FilterWheelSetupDialogForm.designer.cs">
       <DependentUpon>FilterWheelSetupDialogForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="SimulatedFilterWheel.cs" />
     <Compile Include="WiseFilterWheel.cs" />
   </ItemGroup>
   <ItemGroup>
