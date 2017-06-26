@@ -121,7 +121,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VantagePro", "VantagePro\Va
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestVantagePro-1", "TestVantagePro-1\TestVantagePro-1.csproj", "{D5207217-61C7-4E94-8097-91DBACE57D2A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Observatory Monitor", "WindowsFormsApplication1\Observatory Monitor.csproj", "{CE5E9E5E-FF3B-4451-9254-881D7CC67C1A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Observatory Monitor", "ObservatoryMonitor\Observatory Monitor.csproj", "{CE5E9E5E-FF3B-4451-9254-881D7CC67C1A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
