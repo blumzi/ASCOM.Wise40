@@ -958,7 +958,7 @@ namespace ASCOM.Wise40.Dome
             
             SetDomeState(DomeState.Parking);
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: Park: {0}, not calibrated, _autoCalibrate == true, calling FindHomePoint");
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: Park: not calibrated, _autoCalibrate == true, calling FindHomePoint");
             #endregion
             FindHome();
 
