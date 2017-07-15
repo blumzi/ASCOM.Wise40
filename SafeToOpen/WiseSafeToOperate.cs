@@ -503,6 +503,7 @@ namespace ASCOM.Wise40.SafeToOperate
 
             switch (status)
             {
+                case Const.TriStateStatus.Normal:
                 case Const.TriStateStatus.Good:
                     return "ok";
                 case Const.TriStateStatus.Error:
