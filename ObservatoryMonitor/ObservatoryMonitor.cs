@@ -34,7 +34,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             InitializeComponent();
             obsmon = ObsMon.Instance;
             obsmon.init(this);
-            statuser = new Statuser(labelNextCheck);
+            statuser = new Statuser(labelStatus);
             statusLights = new List<Label> { labelSun, labelRain, labelWind, labelHumidity, labelClouds };
             listBoxLog.SelectionMode = SelectionMode.None;
 
@@ -119,7 +119,12 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 listBoxLog.Items.Add(line);
             }
 
-            // TODO - Log to file
+            string dir = string.Format("c:/Logs/{0}", DateTime.Now.ToString("yyyy-MM-dd"));
+            Directory.CreateDirectory(dir);
+            using (var sw = new StreamWriter(dir + "/ObservatoryMonitor.log", true))
+            {
+                sw.WriteLine(line);
+            }
         }
 
         private void buttonEnable_Click(object sender, EventArgs e)
@@ -127,7 +132,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             obsmon.Enabled = !obsmon.Enabled;
             buttonEnable.Text = (obsmon.Enabled ? "Disable" : "Enable") + " Monitoring";
             if (!obsmon.Enabled)
-                labelNextCheck.Text = "Manually disabled";
+                labelStatus.Text = "Manually disabled";
         }
 
         private void buttonPark_Click(object sender, EventArgs e)

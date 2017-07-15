@@ -47,12 +47,13 @@
             this.labelWind = new System.Windows.Forms.Label();
             this.labelSun = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
-            this.labelNextCheck = new System.Windows.Forms.Label();
+            this.labelStatus = new System.Windows.Forms.Label();
             this.labelDate = new System.Windows.Forms.Label();
             this.buttonPark = new System.Windows.Forms.Button();
             this.timerDisplayRefresh = new System.Windows.Forms.Timer(this.components);
             this.buttonEnable = new System.Windows.Forms.Button();
             this.labelLight = new System.Windows.Forms.Label();
+            this.toolTip = new System.Windows.Forms.ToolTip(this.components);
             this.menuStrip.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             this.SuspendLayout();
@@ -215,6 +216,7 @@
             this.labelHumidity.TabIndex = 48;
             this.labelHumidity.Text = "   ";
             this.labelHumidity.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.toolTip.SetToolTip(this.labelHumidity, "Status light: Green: Ok, Yellow: Problematic, Red: Error");
             // 
             // labelRain
             // 
@@ -227,6 +229,7 @@
             this.labelRain.TabIndex = 49;
             this.labelRain.Text = "   ";
             this.labelRain.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.toolTip.SetToolTip(this.labelRain, "Status light: Green: Ok, Yellow: Problematic, Red: Error");
             // 
             // labelClouds
             // 
@@ -239,6 +242,7 @@
             this.labelClouds.TabIndex = 50;
             this.labelClouds.Text = "   ";
             this.labelClouds.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.toolTip.SetToolTip(this.labelClouds, "Status light: Green: Ok, Yellow: Problematic, Red: Error");
             // 
             // labelWind
             // 
@@ -251,6 +255,7 @@
             this.labelWind.TabIndex = 51;
             this.labelWind.Text = "   ";
             this.labelWind.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.toolTip.SetToolTip(this.labelWind, "Status light: Green: Ok, Yellow: Problematic, Red: Error");
             // 
             // labelSun
             // 
@@ -263,6 +268,7 @@
             this.labelSun.TabIndex = 52;
             this.labelSun.Text = "   ";
             this.labelSun.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.toolTip.SetToolTip(this.labelSun, "Status light: Green: Ok, Yellow: Problematic, Red: Error");
             // 
             // label7
             // 
@@ -276,15 +282,15 @@
             this.label7.Text = "Humidity";
             this.label7.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
-            // labelNextCheck
+            // labelStatus
             // 
-            this.labelNextCheck.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.labelNextCheck.ForeColor = System.Drawing.Color.DarkOrange;
-            this.labelNextCheck.Location = new System.Drawing.Point(48, 144);
-            this.labelNextCheck.Name = "labelNextCheck";
-            this.labelNextCheck.Size = new System.Drawing.Size(152, 13);
-            this.labelNextCheck.TabIndex = 51;
-            this.labelNextCheck.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.labelStatus.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
+            this.labelStatus.ForeColor = System.Drawing.Color.DarkOrange;
+            this.labelStatus.Location = new System.Drawing.Point(48, 144);
+            this.labelStatus.Name = "labelStatus";
+            this.labelStatus.Size = new System.Drawing.Size(152, 13);
+            this.labelStatus.TabIndex = 51;
+            this.labelStatus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // labelDate
             // 
@@ -310,6 +316,7 @@
             this.buttonPark.Size = new System.Drawing.Size(160, 48);
             this.buttonPark.TabIndex = 54;
             this.buttonPark.Text = "Shut Down Observatory";
+            this.toolTip.SetToolTip(this.buttonPark, "Manually shut down the observatory");
             this.buttonPark.UseVisualStyleBackColor = false;
             this.buttonPark.Click += new System.EventHandler(this.buttonPark_Click);
             // 
@@ -331,6 +338,7 @@
             this.buttonEnable.Size = new System.Drawing.Size(160, 48);
             this.buttonEnable.TabIndex = 55;
             this.buttonEnable.Text = "Disable Monitoring";
+            this.toolTip.SetToolTip(this.buttonEnable, "Disable/Enable Observatory Monitoring");
             this.buttonEnable.UseVisualStyleBackColor = false;
             this.buttonEnable.Click += new System.EventHandler(this.buttonEnable_Click);
             // 
@@ -342,6 +350,7 @@
             this.labelLight.Size = new System.Drawing.Size(16, 16);
             this.labelLight.TabIndex = 53;
             this.labelLight.Text = "   ";
+            this.toolTip.SetToolTip(this.labelLight, "Status light: Green: Ok, Yellow: Problematic, Red: Error");
             // 
             // ObsMainForm
             // 
@@ -353,7 +362,7 @@
             this.Controls.Add(this.buttonEnable);
             this.Controls.Add(this.buttonPark);
             this.Controls.Add(this.tableLayoutPanel1);
-            this.Controls.Add(this.labelNextCheck);
+            this.Controls.Add(this.labelStatus);
             this.Controls.Add(this.labelDate);
             this.Controls.Add(this.listBoxLog);
             this.Controls.Add(this.menuStrip);
@@ -389,12 +398,13 @@
         private System.Windows.Forms.Label labelWind;
         private System.Windows.Forms.Label labelSun;
         private System.Windows.Forms.Label label7;
-        private System.Windows.Forms.Label labelNextCheck;
+        private System.Windows.Forms.Label labelStatus;
         private System.Windows.Forms.Label labelDate;
         private System.Windows.Forms.Button buttonPark;
         private System.Windows.Forms.Timer timerDisplayRefresh;
         private System.Windows.Forms.Button buttonEnable;
         private System.Windows.Forms.Label labelLight;
+        private System.Windows.Forms.ToolTip toolTip;
     }
 }
 
