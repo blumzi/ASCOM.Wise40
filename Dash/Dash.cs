@@ -96,7 +96,7 @@ namespace Dash
             filterWheelStatus = new Statuser(labelFilterWheelStatus);
 
             menuStrip.RenderMode = ToolStripRenderMode.ManagerRenderMode;
-            ToolStripManager.Renderer = new Wise40ToolstripRenderer();
+            ToolStripManager.Renderer = new ASCOM.Wise40.Common.Wise40ToolstripRenderer();
 
             telescopeStatus.Show("");
             focuserStatus.Show("");
