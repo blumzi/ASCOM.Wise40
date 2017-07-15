@@ -20,44 +20,61 @@ using System.Net;
 using System.Net.Http;
 using System.IO;
 
-namespace ObservatoryMonitor
+namespace ASCOM.Wise40.ObservatoryMonitor
 {
-    public partial class Main : Form
+    public partial class ObsMainForm : Form
     {
-        internal static string driverID = "ASCOM.Wise40.ObservatoryMonitor";
-        private int _interval;
-        private int _sunEvents, _rainEvents, _windEvents, _humidityEvents, _lightEvents;
+        private ObsMon obsmon;
+        public const int _maxLogItems = 1000;
+        private Statuser statuser;
+        List<Label> statusLights;
 
-        private string intervalProfileName = "Interval";
-        private string lightEventsProfileName = "LightEvents";
-        private string sunEventsProfileName = "SunEvents";
-        private string windEventsProfileName = "WindEvents";
-        private string rainEventsProfileName = "RainEvents";
-        private string humidityEventsProfileName = "HumidityEvents";
-
-        private int _defaultInterval = 30;
-        private int _defaultLightEvents = 3;
-        private int _defaultSunEvents = 2;
-        private int _defaultWindEvents = 4;
-        private int _defaultRainEvents = 2;
-        private int _defaultHumidityEvents = 2;
-
-        private const int _maxLogItems = 1000;
-
-        string wise40Url = "http://localhost:11111";
-
-        public Main()
+        public ObsMainForm()
         {
             InitializeComponent();
-            ReadProfile();
-            timerCheckStatus.Interval = _interval;
-            timerCheckStatus.Enabled = true;
+            obsmon = ObsMon.Instance;
+            obsmon.init(this);
+            statuser = new Statuser(labelNextCheck);
+            statusLights = new List<Label> { labelSun, labelRain, labelWind, labelHumidity, labelClouds };
+            listBoxLog.SelectionMode = SelectionMode.None;
+
+            menuStrip.RenderMode = ToolStripRenderMode.ManagerRenderMode;
+            ToolStripManager.Renderer = new Wise40ToolstripRenderer();
         }
 
         void RefreshDisplay()
         {
             DateTime localTime = DateTime.Now.ToLocalTime();
             labelDate.Text = localTime.ToLongDateString() + Const.crnl + Const.crnl + localTime.ToLongTimeString();
+
+            if (obsmon.ShuttingDown)
+                statuser.Show("Shutting down ...", 0, Statuser.Severity.Good);
+            else if (!obsmon.Enabled)
+            {
+                statuser.Show("Manually disabled!", 0, Statuser.Severity.Warning);
+                foreach (var light in statusLights)
+                    light.ForeColor = Statuser.colors[Statuser.Severity.Warning];
+            }
+            else if (!obsmon.OnDuty)
+            {
+                statuser.Show("Out of duty, the Sun is up!", 0, Statuser.Severity.Error, silent: true);
+                foreach (var light in statusLights)
+                    light.ForeColor = Statuser.colors[Statuser.Severity.Error];
+            }
+            else
+            {
+                statuser.Show("Next check in " + obsmon.SecondsToNextCheck.ToString() + " seconds", 0, Statuser.Severity.Good);
+
+                labelSun.BackColor = Statuser.TriStateColor(obsmon.sunIsSafe());
+                labelLight.BackColor = Statuser.TriStateColor(obsmon.lightIsSafe());
+                labelRain.BackColor = Statuser.TriStateColor(obsmon.rainIsSafe());
+                labelWind.BackColor = Statuser.TriStateColor(obsmon.windIsSafe());
+                labelClouds.BackColor = Statuser.TriStateColor(obsmon.cloudsAreSafe());
+                labelHumidity.BackColor = Statuser.TriStateColor(obsmon.humidityIsSafe());
+            }
+
+            buttonPark.Enabled = !obsmon.ShuttingDown;
+            buttonEnable.Enabled = !obsmon.ShuttingDown;
         }
 
         private void timerDisplayRefresh_Tick(object sender, EventArgs e)
@@ -65,95 +82,64 @@ namespace ObservatoryMonitor
             RefreshDisplay();
         }
 
-        private void timerCheckStatus_Tick(object sender, EventArgs e)
+        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            Application.Exit();
         }
 
-        /// <summary>
-        /// Read the device configuration from the ASCOM Profile store
-        /// </summary>
-        internal void ReadProfile()
+        private void settingsToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            SetupDialogForm setup = new SetupDialogForm();
+            setup.Visible = true;
+        }
 
-            using (Profile driverProfile = new Profile())
+        delegate void LogDelegate(string text);
+
+        public void Log(string fmt, params object[] o)
+        {
+            string line = string.Format("{0} - {1}", DateTime.Now.ToString("dd MMMM, yyyy H:mm:ss"), string.Format(fmt, o));
+
+            log(line);
+        }
+
+        public void log(string line)
+        {
+            // InvokeRequired required compares the thread ID of the  
+            // calling thread to the thread ID of the creating thread.  
+            // If these threads are different, it returns true.  
+            if (listBoxLog.InvokeRequired)
             {
-                driverProfile.DeviceType = "SafetyMonitor";
-                _interval = Convert.ToInt32(driverProfile.GetValue(driverID, intervalProfileName, string.Empty, _defaultInterval.ToString()));
-                _lightEvents = Convert.ToInt32(driverProfile.GetValue(driverID, lightEventsProfileName, string.Empty, _defaultLightEvents.ToString()));
-                _sunEvents = Convert.ToInt32(driverProfile.GetValue(driverID, sunEventsProfileName, string.Empty, _defaultSunEvents.ToString()));
-                _windEvents = Convert.ToInt32(driverProfile.GetValue(driverID, windEventsProfileName, string.Empty, _defaultWindEvents.ToString()));
-                _rainEvents = Convert.ToInt32(driverProfile.GetValue(driverID, rainEventsProfileName, string.Empty, _defaultRainEvents.ToString()));
-                _humidityEvents = Convert.ToInt32(driverProfile.GetValue(driverID, humidityEventsProfileName, string.Empty, _defaultHumidityEvents.ToString()));
+                LogDelegate _log = new LogDelegate(log);
+                this.Invoke(_log, new object[] { line });
             }
-        }
-
-        /// <summary>
-        /// Write the device configuration to the  ASCOM  Profile store
-        /// </summary>
-        public void WriteProfile()
-        {
-            using (Profile driverProfile = new Profile())
+            else
             {
-                driverProfile.DeviceType = "SafetyMonitor";
-                driverProfile.WriteValue(driverID, intervalProfileName, _interval.ToString());
-                driverProfile.WriteValue(driverID, lightEventsProfileName, _lightEvents.ToString());
-                driverProfile.WriteValue(driverID, sunEventsProfileName, _sunEvents.ToString());
-                driverProfile.WriteValue(driverID, windEventsProfileName, _windEvents.ToString());
-                driverProfile.WriteValue(driverID, rainEventsProfileName, _rainEvents.ToString());
-                driverProfile.WriteValue(driverID, humidityEventsProfileName, _humidityEvents.ToString());
+                if (listBoxLog.Items.Count > _maxLogItems)
+                    listBoxLog.Items.RemoveAt(0);
+                listBoxLog.Items.Add(line);
             }
-        }
-
-        private void ParkAndClose()
-        {
-            WiseTele wisetele = WiseTele.Instance;
-            WiseDome wisedome = WiseDome.Instance;
-
-            wisetele.init();
-            wisedome.init();
-
-            wisetele.Park();
-            if (!wisetele._enslaveDome)
-                wisedome.Park();
-            wisedome.CloseShutter();
-        }
-
-        private void log(string fmt, params object[] o)
-        {
-            DateTime now = DateTime.Now;
-            string msg = string.Format(fmt, o);
-            string line = string.Format("{0}/{1}/{2} {3} {4}", now.Day, now.Month, now.Year, now.TimeOfDay, msg);
-
-            if (listBoxLog.Items.Count > _maxLogItems)
-            {
-                listBoxLog.Items.RemoveAt(0);
-            }
-            listBoxLog.Items.Add(line);
 
             // TODO - Log to file
         }
 
-        private string httpGet(string url)
+        private void buttonEnable_Click(object sender, EventArgs e)
         {
-            string html = string.Empty;
+            obsmon.Enabled = !obsmon.Enabled;
+            buttonEnable.Text = (obsmon.Enabled ? "Disable" : "Enable") + " Monitoring";
+            if (!obsmon.Enabled)
+                labelNextCheck.Text = "Manually disabled";
+        }
 
-            try
-            {
-                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-                request.AutomaticDecompression = DecompressionMethods.GZip;
+        private void buttonPark_Click(object sender, EventArgs e)
+        {
+            obsmon.Enabled = false;
+            obsmon.ParkAndClose();
+        }
 
-                using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
-                using (Stream stream = response.GetResponseStream())
-                using (StreamReader reader = new StreamReader(stream))
-                {
-                    html = reader.ReadToEnd();
-                }
-                return html;
-            } catch (Exception ex)
-            {
-                return "exception: " + ex.Message;
-            }
+        private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Form about = new AboutForm(obsmon);
+            about.Show();
         }
     }
 }

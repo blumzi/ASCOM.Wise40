@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace ObservatoryMonitor
+namespace ASCOM.Wise40.ObservatoryMonitor
 {
     static class Program
     {
@@ -16,7 +16,7 @@ namespace ObservatoryMonitor
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Main());
+            Application.Run(new ObsMainForm());
         }
     }
 }

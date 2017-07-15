@@ -6,26 +6,32 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
 using ASCOM.Utilities;
-using ASCOM.Wise40.SafeToOperate;
-using ASCOM.Wise40.Boltwood;
 
 namespace ASCOM.Wise40.ObservatoryMonitor
 {
     [ComVisible(false)]					// Form not registered for COM!
     public partial class SetupDialogForm : Form
     {
-        WiseSafeToOperate wisesafetoopen = WiseSafeToOperate.InstanceOpen;
+        ObsMon obsmon = ObsMon.Instance;
 
         public SetupDialogForm()
         {
             InitializeComponent();
-            // Initialise current values of user settings from the ASCOM Profile
             InitUI();
         }
 
         private void cmdOK_Click(object sender, EventArgs e) // OK button event handler
         {
-            Color badColor = Color.Red;
+            ObsMon._interval = Convert.ToInt32(textBoxMonitoringFrequency.Text) * 1000;
+            obsmon._cloudMaxEvents = Convert.ToInt32(textBoxCloudsEvents.Text);
+            obsmon._humidityMaxEvents = Convert.ToInt32(textBoxHumidityEvents.Text);
+            obsmon._windMaxEvents = Convert.ToInt32(textBoxWindEvents.Text);
+            obsmon._rainMaxEvents = Convert.ToInt32(textBoxRainEvents.Text);
+            obsmon._sunMaxEvents = Convert.ToInt32(textBoxSunEvents.Text);
+            obsmon._lightMaxEvents = Convert.ToInt32(textBoxLightEvents.Text);
+            obsmon.WriteProfile();
+
+            Close();
         }
 
         private void cmdCancel_Click(object sender, EventArgs e) // Cancel button event handler
@@ -52,56 +58,13 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
         private void InitUI()
         {
-            wisesafetoopen.Connected = true;
-            wisesafetoopen.ReadProfile();
-            /*
-            comboBoxCloud.SelectedIndex = (int)wisesafetoopen.cloudsMaxEnum;
-            comboBoxRain.SelectedIndex = (int)wisesafetoopen.rainMax;
-            comboBoxLight.SelectedIndex = (int)wisesafetoopen.lightMaxEnum;
-            textBoxWind.Text = wisesafetoopen.windMax.ToString();
-            textBoxHumidity.Text = wisesafetoopen.humidityMax.ToString();
-            textBoxAge.Text = wisesafetoopen.ageMaxSeconds.ToString();
-            textBoxSunElevation.Text = wisesafetoopen.sunElevationMax.ToString();
-            */
-        }
-
-        private void textBoxWind_Validating(object sender, CancelEventArgs e)
-        {
-            if (int.Parse(((TextBox)sender).Text) < 0)
-            {
-                ((TextBox)sender).ForeColor = Color.Red;
-            } else
-            {
-                ((TextBox)sender).ForeColor = Color.DarkOrange;
-            }
-            base.OnTextChanged(e);
-        }
-
-        private void textBoxHumidity_Validating(object sender, CancelEventArgs e)
-        {
-            int percent = int.Parse(((TextBox)sender).Text);
-            if (percent < 0 || percent > 100)
-            {
-                ((TextBox)sender).ForeColor = Color.Red;
-            }
-            else
-            {
-                ((TextBox)sender).ForeColor = Color.DarkOrange;
-            }
-            base.OnTextChanged(e);
-        }
-
-        private void textBoxAge_Validating(object sender, CancelEventArgs e)
-        {
-            if (int.Parse(((TextBox)sender).Text) < 0)
-            {
-                ((TextBox)sender).ForeColor = Color.Red;
-            }
-            else
-            {
-                ((TextBox)sender).ForeColor = Color.DarkOrange;
-            }
-            base.OnTextChanged(e);
+            textBoxCloudsEvents.Text = obsmon._cloudMaxEvents.ToString();
+            textBoxHumidityEvents.Text = obsmon._humidityMaxEvents.ToString();
+            textBoxLightEvents.Text = obsmon._lightMaxEvents.ToString();
+            textBoxRainEvents.Text = obsmon._rainMaxEvents.ToString();
+            textBoxSunEvents.Text = obsmon._sunMaxEvents.ToString();
+            textBoxWindEvents.Text = obsmon._windMaxEvents.ToString();
+            textBoxMonitoringFrequency.Text = (ObsMon._interval / 1000).ToString();
         }
     }
 }

@@ -260,9 +260,11 @@ namespace Restore_ASCOM_Profiles
             string sunEventsProfileName = "SunEvents";
             string windEventsProfileName = "WindEvents";
             string rainEventsProfileName = "RainEvents";
+            string cloudEventsProfileName = "CloudEvents";
             string humidityEventsProfileName = "HumidityEvents";
 
             int _defaultInterval = 30;
+            int _defaultCloudEvents = 5;
             int _defaultLightEvents = 3;
             int _defaultSunEvents = 2;
             int _defaultWindEvents = 4;
@@ -281,6 +283,7 @@ namespace Restore_ASCOM_Profiles
                 driverProfile.WriteValue(driverID, windEventsProfileName, _defaultWindEvents.ToString());
                 driverProfile.WriteValue(driverID, rainEventsProfileName, _defaultRainEvents.ToString());
                 driverProfile.WriteValue(driverID, humidityEventsProfileName, _defaultHumidityEvents.ToString());
+                driverProfile.WriteValue(driverID, cloudEventsProfileName, _defaultCloudEvents.ToString());
             }
         }
     }
