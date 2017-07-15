@@ -15,7 +15,7 @@ namespace ASCOM.Wise40.Common
         public static Dictionary<Severity, Color> colors = new Dictionary<Severity, Color>()
             {
                 { Severity.Normal, Color.FromArgb(176, 161, 142) },
-                { Severity.Warning, Color.LightYellow },
+                { Severity.Warning, Color.Yellow },
                 { Severity.Error, Color.IndianRed },
                 { Severity.Good, Color.Green },
             };
@@ -90,8 +90,9 @@ namespace ASCOM.Wise40.Common
                     return colors[Severity.Good];
                 case Const.TriStateStatus.Warning:
                     return colors[Severity.Warning];
+                default:
+                    return colors[Severity.Normal];
             }
-            return colors[Severity.Normal];
         }
     }
 }
