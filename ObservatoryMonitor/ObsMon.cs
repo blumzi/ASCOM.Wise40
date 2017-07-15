@@ -40,13 +40,14 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 _maxEvents = max;
                 _queue = new FixedSizedQueue<Event>(_maxEvents);
                 _isSafe = isSafe;
+                monitors.Add(_name, this);
             }
 
             public bool triggered
             {
                 get
                 {
-                    return _queue.ToArray().Length == _queue.MaxSize;
+                    return (_queue.MaxSize != 0) && (_queue.ToArray().Length == _queue.MaxSize);
                 }
             }
 
@@ -57,10 +58,13 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
             public Const.TriStateStatus Check()
             {
+                if (_maxEvents == 0)
+                    return Const.TriStateStatus.Normal;
+
                 Const.TriStateStatus status = _isSafe();
                 string severity = severities[status];
 
-                if (! (status == Const.TriStateStatus.Good || status == Const.TriStateStatus.Good))
+                if (! (status == Const.TriStateStatus.Good || status == Const.TriStateStatus.Normal))
                 {
                     _queue.Enqueue(new Event());
                     Log(string.Format("\"{0}\" monitor is not safe (event #{1} of max {2})",
@@ -70,18 +74,48 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 return status;
             }
 
+            public bool Enabled
+            {
+                get
+                {
+                    return _maxEvents != 0;
+                }
+            }
+
+            public bool Disabled
+            {
+                get
+                {
+                    return !Enabled;
+                }
+            }
+
             private string _name;
             private int _maxEvents;
             private FixedSizedQueue<Event> _queue;
             private Func<Const.TriStateStatus> _isSafe;
         }
 
-        public Const.TriStateStatus cloudsAreSafe() { return wisesafe.isSafeCloudCover; }
-        public Const.TriStateStatus humidityIsSafe() { return wisesafe.isSafeHumidity; }
-        public Const.TriStateStatus rainIsSafe() { return wisesafe.isSafeRain; }
-        public Const.TriStateStatus windIsSafe() { return wisesafe.isSafeWindSpeed; }
-        public Const.TriStateStatus lightIsSafe() { return wisesafe.isSafeLight; }
-        public Const.TriStateStatus sunIsSafe() { return wisesafe.isSafeSunElevation; }
+        public Const.TriStateStatus cloudsAreSafe() {
+            return monitors["Clouds"].Enabled ? wisesafe.isSafeCloudCover : Const.TriStateStatus.Normal;
+        }
+        public Const.TriStateStatus humidityIsSafe()
+        {
+            return monitors["Humidity"].Enabled ? wisesafe.isSafeHumidity : Const.TriStateStatus.Normal;
+        }
+        public Const.TriStateStatus rainIsSafe()
+        {
+            return monitors["Rain"].Enabled ? wisesafe.isSafeRain : Const.TriStateStatus.Normal;
+        }
+        public Const.TriStateStatus windIsSafe() {
+            return monitors["Wind"].Enabled ? wisesafe.isSafeWindSpeed : Const.TriStateStatus.Normal;
+        }
+        public Const.TriStateStatus lightIsSafe() {
+            return monitors["Light"].Enabled ? wisesafe.isSafeLight : Const.TriStateStatus.Normal;
+        }
+        public Const.TriStateStatus sunIsSafe() {
+            return monitors["Sun"].Enabled ? wisesafe.isSafeSunElevation : Const.TriStateStatus.Normal;
+        }
 
         internal static string driverID = "ASCOM.Wise40.ObservatoryMonitor";
         public static int _interval;
@@ -95,7 +129,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
         private DateTime nextCheck;
 
         private static Monitor _sunMonitor, _rainMonitors, _windMonitor, _humidityMonitor, _lightMonitor, _cloudMonitor;
-        private static List<Monitor> monitors;
+        private static Dictionary<string, Monitor> monitors = new Dictionary<string, Monitor>();
         private ObsMainForm _form;
 
         private string intervalProfileName = "Interval";
@@ -151,11 +185,6 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             _humidityMonitor = new Monitor("Humidity", _humidityMaxEvents, humidityIsSafe);
             _sunMonitor = new Monitor("Sun", _sunMaxEvents, sunIsSafe);
 
-            monitors = new List<Monitor> {
-                _cloudMonitor, _humidityMonitor, _lightMonitor,
-                _rainMonitors, _windMonitor, _sunMonitor
-            };
-
             if (!wisesafe.Connected)
                 wisesafe.Connected = true;
             
@@ -206,12 +235,12 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
             bool triggered = false;            
 
-            foreach (var monitor in monitors)
-                monitor.Check();
+            foreach (var key in monitors.Keys)
+                monitors[key].Check();
 
-            foreach (var monitor in monitors)
+            foreach (var key in monitors.Keys)
             {
-                if (monitor.triggered)
+                if (monitors[key].triggered)
                 {
                     triggered = true;
                     break;
@@ -222,10 +251,12 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             {
                 monitoringTimer.Change(Timeout.Infinite, Timeout.Infinite);
                 _instance.ParkAndClose();
-                foreach (var m in monitors)
-                    m.Reset();
+                foreach (var key in monitors.Keys)
+                    monitors[key].Reset();
                 monitoringTimer.Change(_interval, _interval);
             }
+            else
+                Log("Ok");
             _instance.nextCheck = DateTime.Now.AddMilliseconds(_interval);
         }
 
@@ -316,8 +347,8 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 else
                 {
                     monitoringTimer.Change(Timeout.Infinite, Timeout.Infinite);
-                    foreach (var monitor in monitors)
-                        monitor.Reset();
+                    foreach (var key in monitors.Keys)
+                        monitors[key].Reset();
                 }
             }
         }

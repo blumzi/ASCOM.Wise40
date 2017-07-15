@@ -65,16 +65,35 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             {
                 statuser.Show("Next check in " + obsmon.SecondsToNextCheck.ToString() + " seconds", 0, Statuser.Severity.Good);
 
-                labelSun.BackColor = Statuser.TriStateColor(obsmon.sunIsSafe());
-                labelLight.BackColor = Statuser.TriStateColor(obsmon.lightIsSafe());
-                labelRain.BackColor = Statuser.TriStateColor(obsmon.rainIsSafe());
-                labelWind.BackColor = Statuser.TriStateColor(obsmon.windIsSafe());
-                labelClouds.BackColor = Statuser.TriStateColor(obsmon.cloudsAreSafe());
-                labelHumidity.BackColor = Statuser.TriStateColor(obsmon.humidityIsSafe());
+                Const.TriStateStatus stat;
+
+                Update(labelSun, obsmon.sunIsSafe);
+                Update(labelLight, obsmon.lightIsSafe);
+                Update(labelRain, obsmon.rainIsSafe);
+                Update(labelWind, obsmon.windIsSafe);
+                Update(labelClouds, obsmon.cloudsAreSafe);
+                Update(labelHumidity, obsmon.humidityIsSafe);
             }
 
             buttonPark.Enabled = !obsmon.ShuttingDown;
             buttonEnable.Enabled = !obsmon.ShuttingDown;
+        }
+
+        private void Update(Label label, Func<Const.TriStateStatus> func)
+        {
+            Const.TriStateStatus stat = func();
+            label.BackColor = Statuser.TriStateColor(stat);
+            string tip;
+            
+            if (stat == Const.TriStateStatus.Normal)
+                tip  = "Disabled by settings";
+            else if (stat == Const.TriStateStatus.Good)
+                tip = "Threshold not exceeded";
+            else if (stat == Const.TriStateStatus.Warning)
+                tip = "Cannot read sensor";
+            else
+                tip = "Last reading was over the threshold";
+            toolTip.SetToolTip(label, tip);
         }
 
         private void timerDisplayRefresh_Tick(object sender, EventArgs e)

@@ -43,7 +43,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             this.label13 = new System.Windows.Forms.Label();
             this.label14 = new System.Windows.Forms.Label();
             this.label15 = new System.Windows.Forms.Label();
-            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.toolTip = new System.Windows.Forms.ToolTip(this.components);
             this.label17 = new System.Windows.Forms.Label();
             this.textBoxCloudsEvents = new System.Windows.Forms.TextBox();
             this.textBoxLightEvents = new System.Windows.Forms.TextBox();
@@ -265,6 +265,8 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             this.textBoxCloudsEvents.Size = new System.Drawing.Size(23, 21);
             this.textBoxCloudsEvents.TabIndex = 33;
             this.textBoxCloudsEvents.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.toolTip.SetToolTip(this.textBoxCloudsEvents, "How many consequtive \"not-safe\" events will triger shut-down.\r\nEnter 0 (zero) to " +
+        "disable the sensor.");
             // 
             // textBoxLightEvents
             // 
@@ -277,6 +279,8 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             this.textBoxLightEvents.Size = new System.Drawing.Size(23, 21);
             this.textBoxLightEvents.TabIndex = 34;
             this.textBoxLightEvents.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.toolTip.SetToolTip(this.textBoxLightEvents, "How many consequtive \"not-safe\" events will triger shut-down.\r\nEnter 0 (zero) to " +
+        "disable the sensor.");
             // 
             // textBoxRainEvents
             // 
@@ -289,6 +293,8 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             this.textBoxRainEvents.Size = new System.Drawing.Size(23, 21);
             this.textBoxRainEvents.TabIndex = 35;
             this.textBoxRainEvents.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.toolTip.SetToolTip(this.textBoxRainEvents, "How many consequtive \"not-safe\" events will triger shut-down.\r\nEnter 0 (zero) to " +
+        "disable the sensor.");
             // 
             // textBoxHumidityEvents
             // 
@@ -301,6 +307,8 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             this.textBoxHumidityEvents.Size = new System.Drawing.Size(23, 21);
             this.textBoxHumidityEvents.TabIndex = 36;
             this.textBoxHumidityEvents.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.toolTip.SetToolTip(this.textBoxHumidityEvents, "How many consequtive \"not-safe\" events will triger shut-down.\r\nEnter 0 (zero) to " +
+        "disable the sensor.");
             // 
             // textBoxSunEvents
             // 
@@ -313,6 +321,8 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             this.textBoxSunEvents.Size = new System.Drawing.Size(23, 21);
             this.textBoxSunEvents.TabIndex = 37;
             this.textBoxSunEvents.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.toolTip.SetToolTip(this.textBoxSunEvents, "How many consequtive \"not-safe\" events will triger shut-down.\r\nEnter 0 (zero) to " +
+        "disable the sensor.");
             // 
             // tableLayoutPanel1
             // 
@@ -363,6 +373,8 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             this.textBoxWindEvents.Size = new System.Drawing.Size(23, 21);
             this.textBoxWindEvents.TabIndex = 38;
             this.textBoxWindEvents.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.toolTip.SetToolTip(this.textBoxWindEvents, "How many consequtive \"not-safe\" events will triger shut-down.\r\nEnter 0 (zero) to " +
+        "disable the sensor.");
             // 
             // label4
             // 
@@ -470,7 +482,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
         private System.Windows.Forms.Label label13;
         private System.Windows.Forms.Label label14;
         private System.Windows.Forms.Label label15;
-        private System.Windows.Forms.ToolTip toolTip1;
+        private System.Windows.Forms.ToolTip toolTip;
         private System.Windows.Forms.Label label17;
         private System.Windows.Forms.TextBox textBoxCloudsEvents;
         private System.Windows.Forms.TextBox textBoxLightEvents;
