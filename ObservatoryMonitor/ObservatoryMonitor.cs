@@ -64,9 +64,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             else
             {
                 statuser.Show("Next check in " + obsmon.SecondsToNextCheck.ToString() + " seconds", 0, Statuser.Severity.Good);
-
-                Const.TriStateStatus stat;
-
+                
                 Update(labelSun, obsmon.sunIsSafe);
                 Update(labelLight, obsmon.lightIsSafe);
                 Update(labelRain, obsmon.rainIsSafe);

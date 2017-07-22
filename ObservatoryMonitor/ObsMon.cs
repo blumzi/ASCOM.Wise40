@@ -123,7 +123,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
         private static bool _enabled = true;
         private static bool _shuttingDown = false;
         
-        private static WiseSafeToOperate wisesafe = WiseSafeToOperate.InstanceImage;
+        private static WiseSafeToOperate wisesafe = WiseSafeToOperate.InstanceOpen;
 
         private static System.Threading.Timer monitoringTimer = new System.Threading.Timer(new TimerCallback(onTimer));
         private DateTime nextCheck;
@@ -276,14 +276,11 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             wisetele.init();
             Log("Connecting the telescope ...");
             wisetele.Connected = true;
-
-            if (!wisetele._enslaveDome)
-            {
-                wisedome = WiseDome.Instance;
-                wisedome.init();
-                Log("Connecting the dome ...");
-                wisedome.Connected = true;
-            }
+            
+            wisedome = WiseDome.Instance;
+            wisedome.init();
+            Log("Connecting the dome ...");
+            wisedome.Connected = true;
 
             Task.Run(() =>
             {
@@ -303,12 +300,13 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                     Log("Parking the dome ...");
                     wisedome.Park();
                 }
+
                 Log("Closing the dome shutter ...");
                 wisedome.CloseShutter();// If we could sense if the dome is closed, we could avoid waisting time here!
             }).ContinueWith((contTask) =>
             {
-                _shuttingDown = false;
                 Log("Shut down sequence completed.");
+                _shuttingDown = false;
             }, TaskContinuationOptions.ExecuteSynchronously);
         }
 

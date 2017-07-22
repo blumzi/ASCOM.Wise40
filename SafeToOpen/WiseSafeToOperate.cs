@@ -311,11 +311,11 @@ namespace ASCOM.Wise40.SafeToOperate
         {
             get
             {
-                List<string> ret;
                 bool dummy;
 
                 lock (reasonsLock)
                 {
+                    unsafeReasons.Clear();
                     dummy = _boltwoodIsValid;
                     dummy = IsSafeCloudCover;
                     dummy = IsSafeLight;
@@ -324,11 +324,8 @@ namespace ASCOM.Wise40.SafeToOperate
                     dummy = IsSafeHumidity;
                     dummy = IsSafeRain;
                     dummy = IsSafeSunElevation;
-
-                    ret = unsafeReasons;
                 }
-                unsafeReasons = null;
-                return ret;
+                return unsafeReasons;
             }
         }
 
