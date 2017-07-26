@@ -19,7 +19,8 @@ namespace ASCOM.Wise40.Common
         private static bool _initialized = false;
         private static bool _tracing = false;
         private static string _debugFile = string.Empty;
-        //private TextWriter debugStream;
+        private static string _appName = string.Empty;
+        private static string _logFile = string.Empty;
 
         static Debugger()
         {
@@ -56,7 +57,7 @@ namespace ASCOM.Wise40.Common
             DebugMotors = (1 << 5),
             DebugEncoders = (1 << 6),
 
-            DebugDefault = DebugAxes | DebugMotors | DebugExceptions | DebugASCOM | DebugLogic,
+            DebugDefault = DebugAxes | DebugExceptions | DebugASCOM | DebugLogic,
 
             DebugAll = DebugEncoders | DebugAxes | DebugMotors | DebugExceptions | DebugDevice | DebugASCOM | DebugLogic,
             DebugNone = 0,
@@ -83,10 +84,7 @@ namespace ASCOM.Wise40.Common
             indents[(int)DebugLevel.DebugMotors] = ">>>>> ";
             indents[(int)DebugLevel.DebugEncoders] = ">>>>>>";
 
-            //if (_debugFile != string.Empty && debugStream == null)
-            //{
-            //    debugStream = TextWriter.Synchronized(new StreamWriter(_debugFile, true));
-            //}
+            _appName = Path.GetFileNameWithoutExtension(Application.ExecutablePath);
             _initialized = true;
         }
 
@@ -117,15 +115,26 @@ namespace ASCOM.Wise40.Common
             {
                 DateTime now = DateTime.Now;
                 string msg = string.Format(fmt, o);
-                string line = string.Format("{0,4} {1,4} {2}/{3}/{4} {5} {6,-25} {7}",
+                string line = string.Format("{0}: {1,4} {2,4} {3}/{4}/{5} {6} {7,-25} {8}",
+                    _appName,
                     Thread.CurrentThread.ManagedThreadId.ToString(),
                     (Task.CurrentId.HasValue ? Task.CurrentId.Value : -1).ToString(),
                     now.Day, now.Month, now.Year, now.TimeOfDay,
                     indents[(int)level] + " " + level.ToString() + ":",
                     msg);
-
-                //if (debugStream != null)
-                //    debugStream.WriteLine(line);
+                string currentLogPath = string.Format("c:/Logs/Wise40/{0}-{1}-{2}/debug.txt",
+                    now.Year, now.Month, now.Day);
+                if (currentLogPath != _logFile)
+                {
+                    Directory.CreateDirectory(Path.GetDirectoryName(currentLogPath));
+                    try
+                    {
+                        Debug.Listeners.Remove(_logFile);
+                    }
+                    catch { }
+                    _logFile = currentLogPath;
+                    Debug.Listeners.Add(new TextWriterTraceListener(_logFile));
+                }
 
                 System.Diagnostics.Debug.WriteLine(line);
                 if (listBox != null && _appendToWindow)
