@@ -677,7 +677,19 @@ namespace ASCOM.Wise40.Telescope
         public void AbortSlew()
         {
             if (AtPark)
-                throw new InvalidOperationException("Cannot AbortSlew while AtPark");
+            {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugASCOM,
+                    "Got AbortSlew while AtPark.  THIS SHOULD NOT HAPPEN !!!.  Should have thrown an exception but ASCOM Server gets killed");
+                #endregion
+                //
+                // According to ASCOM.ITelescopeV3 this should raise an error.
+                // The ASCOM Remote Server does not handle this, so it dies.
+                // Commented out for the meanwhile
+                //
+
+                //throw new InvalidOperationException("Cannot AbortSlew while AtPark");
+            }
 
             Stop();
             #region trace
@@ -936,7 +948,7 @@ namespace ASCOM.Wise40.Telescope
                 }
             }
 
-            foreach (WiseVirtualMotor motor in directionMotors)
+            foreach (WiseVirtualMotor motor in allMotors)
                 if (motor.isOn)
                 {
                     #region debug
