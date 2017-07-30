@@ -690,7 +690,7 @@ namespace ASCOM.Wise40.FilterWheel
             {
                 sw.WriteLine("#");
                 sw.WriteLine(string.Format("# Wise40 {0} inch filter inventory", (int)filterSize));
-                sw.WriteLine(string.Format("# Saved at: {0}"), DateTime.Now.ToLongDateString());
+                sw.WriteLine(string.Format("# Saved at: {0}", DateTime.Now.ToLongDateString()));
                 sw.WriteLine("#");
 
                 foreach (var filter in filterInventory[(int)filterSize])
