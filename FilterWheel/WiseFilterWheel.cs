@@ -30,15 +30,18 @@ namespace ASCOM.Wise40.FilterWheel
         private ArduinoInterface arduino = ArduinoInterface.Instance;
         public static string port;
 
-        public enum WheelType { Unknown, Wheel8, Wheel4, Simulated };
+        public enum WheelType { Unknown, Wheel8, Wheel4};
+        public enum FilterSize { twoInch = 2, threeInch = 3};
+
         public Wheel currentWheel;
         public static Wheel wheel8 = new Wheel(WheelType.Wheel8);
         public static Wheel wheel4 = new Wheel(WheelType.Wheel4);
         public static Wheel wheelUnknown = new Wheel(WheelType.Unknown);
-        public static Wheel wheelSimulated = new Wheel(WheelType.Simulated);
-        public static List<Wheel> knownWheels = new List<Wheel>() { wheel8, wheel4, wheelSimulated };
+        public static List<Wheel> knownWheels = new List<Wheel>() { wheel8, wheel4 };
 
-        public static List<Filter> filterInventory;
+        public static List<Filter>[] filterInventory;
+
+        private string _savedFile = "c://Wise40/FilterWheel/Config.txt";
 
         public struct FWPosition
         {
@@ -52,36 +55,40 @@ namespace ASCOM.Wise40.FilterWheel
             }
         };
 
-        public struct Wheel
+        public class Wheel: WiseObject
         {
-            public WheelType type;
-            public FWPosition[] positions;
-            public string name;
-            public short position;
+            public WheelType _type;
+            public FWPosition[] _positions;
+            public string _name;
+            public short _position;
+            public short _targetPosition;
+            public int _nPositions;
+            public int _filterSize;
 
             public Wheel(WheelType type)
             {
-                this.type = type;
+                _type = type;
                 if (type == WheelType.Wheel4)
-                    this.positions = new FWPosition[4];
-                else if (type == WheelType.Wheel8)
-                    this.positions = new FWPosition[8];
-                else if (type == WheelType.Simulated)
-                    this.positions = new FWPosition[8];
-                else
-                    this.positions = new FWPosition[0];
-                name = "Wheel" + ((type == WheelType.Simulated) ? "Simulated" : positions.Length.ToString());
-
-                for (int i = 0; i < this.positions.Length; i++)
                 {
-                    if (type == WheelType.Simulated)
-                    {
-                        this.positions[i].filterName = string.Format("SimulatedFilter#{0}", i);
-                        this.positions[i].tag = string.Format("SimulatedTag#{0}", i);
-                    } else
-                        this.positions[i].filterName = this.positions[i].tag = string.Empty;
+                    _nPositions = 4;
+                    _filterSize = 3;
                 }
-                position = (short) ((type == WheelType.Simulated) ? 0 : -1);
+                else if (type == WheelType.Wheel8)
+                {
+                    _nPositions = 8;
+                    _filterSize = 2;
+                }
+                _positions = new FWPosition[_nPositions];
+
+                _nPositions = _positions.Length;
+                _targetPosition = -1;
+                _name = "Wheel" + _nPositions.ToString();
+
+                for (int i = 0; i < _nPositions; i++)
+                {
+                    _positions[i].filterName = _positions[i].tag = string.Empty;
+                }
+                _position = -1;
             }
 
         }
@@ -92,14 +99,14 @@ namespace ASCOM.Wise40.FilterWheel
 
             foreach (var wheel in knownWheels)
             {
-                for (short pos = 0; pos < wheel.positions.Length; pos++)
-                    if (tag == wheel.positions[pos].tag)
+                for (short pos = 0; pos < wheel._nPositions; pos++)
+                    if (tag == wheel._positions[pos].tag)
                     {
                         ret = wheel;
-                        ret.position = pos;
+                        ret._position = pos;
                         #region debug
                         debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "lookupWheel({0}) ==> wheel: {1}, position: {2}",
-                            tag, ret.name, ret.position);
+                            tag, ret._name, ret._position);
                         #endregion
                         return ret;
                     }
@@ -139,11 +146,13 @@ namespace ASCOM.Wise40.FilterWheel
         {
             if (_initialized)
                 return;
-
-            Simulated = true;   // Force
+            
             traceLogger.LogMessage("WiseFilterWheel", "Starting initialisation");
             Connected = false;
             ReadProfile();
+            ReadFiltersFromCsvFile();
+            RestoreCurrentFromFile();
+
             if (!Simulated)
             {
                 arduino.init(WiseFilterWheel.port);
@@ -166,38 +175,87 @@ namespace ASCOM.Wise40.FilterWheel
 
                 foreach (Wheel w in knownWheels)
                 {
-                    string name = "Wheel" + ((w.type == WheelType.Simulated) ? "Simulated" : w.positions.Length.ToString());
-                    for (int pos = 0; pos < w.positions.Length; pos++)
+                    string name = "Wheel" + w._nPositions.ToString();
+                    for (int pos = 0; pos < w._nPositions; pos++)
                     {
                         subKey = string.Format("{0}/Position{1}", name, pos + 1);
-                        if (w.type == WheelType.Simulated)
-                        {
-                            w.positions[pos].filterName = string.Format("SimulatedFilter#{0}", pos);
-                            w.positions[pos].tag = string.Format("SimulatedTag#{0}", pos);
-                        }
-                        else
-                        {
-                            w.positions[pos].filterName = driverProfile.GetValue(driverID, "Filter Name", subKey, string.Empty);
-                            w.positions[pos].tag = driverProfile.GetValue(driverID, "RFID", subKey, string.Empty);
-                        }
+                        w._positions[pos].filterName = driverProfile.GetValue(driverID, "Filter Name", subKey, string.Empty);
+                        w._positions[pos].tag = driverProfile.GetValue(driverID, "RFID", subKey, string.Empty);
                     }
                 }
                 port = _instance.Simulated ? "NoPort" : driverProfile.GetValue(driverID, "Port", string.Empty, string.Empty);
+            }
+        }
 
-                WiseFilterWheel.filterInventory = new List<Filter>();
-                foreach (var sk in driverProfile.SubKeys(driverID))
+        private static Dictionary<FilterSize, string> filterCsvFiles = new Dictionary<FilterSize, string>() {
+                {FilterSize.twoInch, "c:/Wise40/FilterWheel/" +"twoInchFilters.csv" },
+                {FilterSize.threeInch, "c:/Wise40/FilterWheel/" +"threeInchFilters.csv" },
+            };
+
+        //
+        // There are two filter inventory files (for two and three inch filters respectively)
+        // These are ';' separated CSV files
+        //
+        void ReadFiltersFromCsvFile()
+        {
+
+            WiseFilterWheel.filterInventory = new List<Filter>[4];
+            WiseFilterWheel.filterInventory[(int)FilterSize.twoInch] = new List<Filter>();
+            WiseFilterWheel.filterInventory[(int)FilterSize.threeInch] = new List<Filter>();
+
+            foreach (var filterSize in new List<FilterSize> { FilterSize.twoInch, FilterSize.threeInch })
+            {
+                string csvFile = filterCsvFiles[filterSize];
+                if (!System.IO.File.Exists(csvFile))
+                    continue;
+
+                using (var sr = new System.IO.StreamReader(csvFile))
                 {
-                    KeyValuePair kv = sk as KeyValuePair;
-                    if (kv.Key.StartsWith("Filter"))
-                    {
-                        string name = driverProfile.GetValue(driverID, "Name", kv.Key, string.Empty);
-                        string description = driverProfile.GetValue(driverID, "Description", kv.Key, string.Empty);
-                        int offset = Convert.ToInt32(driverProfile.GetValue(driverID, "Offset", kv.Key, string.Empty));
+                    string line;
+                    string[] fields;
+                    char[] sep = { ';' };
+                    int offset;
 
-                        WiseFilterWheel.filterInventory.Add(new Filter(name, description, offset));
+                    while ((line = sr.ReadLine()) != null)
+                    {
+                        line = line.TrimStart().TrimEnd();
+                        if (line.StartsWith("#"))       // skip comments
+                            continue;
+                        fields = line.Split(';');
+                        if (fields.Length != 3)         // skip bad lines
+                            continue;
+
+                        try
+                        {
+                            offset = Convert.ToInt32(fields[2]);
+                        } catch (FormatException)
+                        {
+                            offset = 0;
+                        }
+                        WiseFilterWheel.filterInventory[(int)filterSize].Add(new Filter(fields[0], fields[1], offset));
                     }
                 }
             }
+
+            //foreach (var sk in driverProfile.SubKeys(driverID))
+            //{
+            //    KeyValuePair kv = sk as KeyValuePair;
+            //    if (!(kv.Key.StartsWith("2inch") || kv.Key.StartsWith("3inch")))
+            //        continue;
+
+            //    string name = driverProfile.GetValue(driverID, "Name", kv.Key, string.Empty);
+            //    string description = driverProfile.GetValue(driverID, "Description", kv.Key, string.Empty);
+            //    int offset = Convert.ToInt32(driverProfile.GetValue(driverID, "Offset", kv.Key, "0"));
+
+            //    if (kv.Key.StartsWith("2inch/Filter"))
+            //    {
+            //        WiseFilterWheel.filterInventory[2].Add(new Filter(name, description, offset));
+            //    }
+            //    else if (kv.Key.StartsWith("3inch/Filter"))
+            //    {
+            //        WiseFilterWheel.filterInventory[3].Add(new Filter(name, description, offset));
+            //    }
+            //}
         }
 
         public static void WriteProfile()
@@ -209,13 +267,13 @@ namespace ASCOM.Wise40.FilterWheel
 
                 foreach (Wheel w in new List<Wheel> { wheel8, wheel4 })
                 {
-                    string name = "Wheel" + ((w.type == WheelType.Wheel4) ? "4" : "8");
-                    for (int pos = 0; pos < w.positions.Length; pos++)
+                    string name = "Wheel" + ((w._type == WheelType.Wheel4) ? "4" : "8");
+                    for (int pos = 0; pos < w._nPositions; pos++)
                     {
                         subKey = string.Format("{0}/Position{1}", name, pos + 1);
 
-                        driverProfile.WriteValue(driverID, "Filter Name", w.positions[pos].filterName, subKey);
-                        driverProfile.WriteValue(driverID, "RFID", w.positions[pos].tag, subKey);
+                        driverProfile.WriteValue(driverID, "Filter Name", w._positions[pos].filterName, subKey);
+                        driverProfile.WriteValue(driverID, "RFID", w._positions[pos].tag, subKey);
                     }
                 }
                 driverProfile.WriteValue(driverID, "Port", WiseFilterWheel.port);
@@ -244,15 +302,15 @@ namespace ASCOM.Wise40.FilterWheel
                     if (value == _connected)
                         return;
                     _connected = value;
-                    currentWheel = lookupWheel("SimulatedTag#0");
+                    currentWheel = wheel8;
                     return;
                 }
 
                 if (value == arduino.Connected)
                     return;
                 arduino.Connected = value;
-                if (value == true)                
-                        currentWheel = Simulated ? wheelSimulated : wheelUnknown;
+                if (value == true)
+                    currentWheel = wheelUnknown;
             }
         }
 
@@ -333,7 +391,7 @@ namespace ASCOM.Wise40.FilterWheel
         {
             get
             {
-                string name = string.Format("{0} ({1} slots)", currentWheel.name, currentWheel.positions.Length);
+                string name = string.Format("{0} ({1} slots)", currentWheel._name, currentWheel._nPositions);
                 traceLogger.LogMessage("Name Get", name);
                 return name;
             }
@@ -377,7 +435,7 @@ namespace ASCOM.Wise40.FilterWheel
             }
         }
 
-        #region IFilerWheel Implementation
+#region IFilerWheel Implementation
 
         public int[] FocusOffsets
         {
@@ -385,10 +443,10 @@ namespace ASCOM.Wise40.FilterWheel
             {
                 List<int> focusOffsets = new List<int>();
 
-                foreach (FWPosition position in currentWheel.positions) // Write filter offsets to the log
+                foreach (FWPosition position in currentWheel._positions) // Write filter offsets to the log
                 {
                     int offset = (position.filterName == string.Empty) ? 0 :
-                                    filterInventory.Find((x) => x.Name == position.filterName).Offset;
+                                    filterInventory[currentWheel._filterSize].Find((x) => x.Name == position.filterName).Offset;
                     focusOffsets.Add(offset);
                 }
                 return focusOffsets.ToArray();
@@ -400,9 +458,9 @@ namespace ASCOM.Wise40.FilterWheel
             get
             {
                 List<string> names = new List<string>();
-                if (currentWheel.positions == null)
+                if (currentWheel._positions == null)
                     return names.ToArray();
-                foreach (FWPosition position in currentWheel.positions)
+                foreach (FWPosition position in currentWheel._positions)
                 {
                     traceLogger.LogMessage("Names Get", position.filterName);
                     names.Add(position.filterName);
@@ -416,25 +474,35 @@ namespace ASCOM.Wise40.FilterWheel
         {
             get
             {
-                short ret;
-
                 if (!Connected)
                     throw new NotConnectedException("Not connected");
-
-                if (currentWheel.type == WheelType.Simulated)
-                    return currentWheel.position;
-
+#if RFID_IS_WORKING                
                 string tag = arduino.Tag;
                 if (tag == null)            // the arduino is busy
                     return -1;
-                
                 currentWheel = lookupWheel(tag);
                 ret = currentWheel.position;
-                
+#else
+                //
+                // Since the RFID is NOT working the reader will reply with "No tag in range"
+                if (arduino.isActive)
+                    return -1;          // the arduino is busy
+
+                string status = arduino.Status;
+                if (status.StartsWith("error:No tag in range"))
+                {
+                    // The wheel reached its target position and stopped.
+                    currentWheel._position = currentWheel._targetPosition;
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "GetCurrentPosition: {0}", currentWheel._position);
+                    #endregion
+                    return currentWheel._position;
+                }
+#endif
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "GetCurrentPosition: {0}", ret);
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "GetCurrentPosition: {0}", currentWheel._position);
                 #endregion
-                return ret;
+                return currentWheel._position;
             }
 
             set
@@ -442,10 +510,10 @@ namespace ASCOM.Wise40.FilterWheel
                 if (!Connected)
                     throw (new NotConnectedException("Not connected"));
 
-                int nPositions = currentWheel.positions.Length;
+                int nPositions = currentWheel._nPositions;
                 short targetPosition = value;
 
-                if (targetPosition == currentWheel.position)
+                if (targetPosition == currentWheel._position)
                     return;
 
                 traceLogger.LogMessage("Position Set", targetPosition.ToString());
@@ -455,21 +523,21 @@ namespace ASCOM.Wise40.FilterWheel
                     throw new InvalidValueException("Position", targetPosition.ToString(), "0 to " + (nPositions - 1).ToString());
                 }
 
-                if (currentWheel.type == WheelType.Simulated)
+                if (Simulated)
                 {
-                    currentWheel.position = targetPosition;
+                    currentWheel._position = targetPosition;
                     return;
                 }
 
                 int cw, ccw;    // # of positions to move
-                if (targetPosition > currentWheel.position)
+                if (targetPosition > currentWheel._position)
                 {
-                    cw = targetPosition - currentWheel.position;
-                    ccw = currentWheel.position + nPositions - targetPosition;
+                    cw = targetPosition - currentWheel._position;
+                    ccw = currentWheel._position + nPositions - targetPosition;
                 } else
                 {
-                    cw = currentWheel.position - targetPosition;
-                    ccw = targetPosition + nPositions - currentWheel.position;
+                    cw = currentWheel._position - targetPosition;
+                    ccw = targetPosition + nPositions - currentWheel._position;
                 }
 
                 int slots = (cw < ccw) ? cw : ccw;
@@ -479,23 +547,24 @@ namespace ASCOM.Wise40.FilterWheel
                 if (nPositions == 4)
                     slots *= 2;
 
+                currentWheel._targetPosition = targetPosition;
                 try
                 {
                     arduino.StartMoving(dir, slots);
                 } catch (Exception ex) {
-                    #region debug
+#region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "SetCurrentPosition: communication exception {0}", ex.Message);
-                    #endregion
+#endregion
                 }
             }
         }
-        #endregion
+#endregion
 
         public int Positions
         {
             get
             {
-                return currentWheel.positions.Length;
+                return currentWheel._nPositions;
             }
         }
 
@@ -504,9 +573,9 @@ namespace ASCOM.Wise40.FilterWheel
             get
             {
                 string status =  Simulated ? "Idle" : arduino.Status;
-                #region debug
+#region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, string.Format("WiseFilterWheel status: {0}", status));
-                #endregion
+#endregion
                 return status;
             }
         }
@@ -531,6 +600,102 @@ namespace ASCOM.Wise40.FilterWheel
                     }
                     catch
                     { }
+                }
+            }
+        }
+
+        public void SetCurrent(WiseFilterWheel.Wheel wheel, short position)
+        {
+            currentWheel = wheel;
+            currentWheel._position = position;
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseFilterWheel:SetCurrent: wheel = {0}, position = {1}",
+                wheel._name, position);
+            #endregion
+            SaveCurrentToFile();
+        }
+
+        private void SaveCurrentToFile()
+        {
+            System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(_savedFile));
+            using (var sw = new System.IO.StreamWriter(_savedFile)) {
+                sw.WriteLine("#");
+                sw.WriteLine("# This file contains the last 'known-as-good' Wise40 Filter Wheel setup.");
+                sw.WriteLine("# Saved at: {0}", DateTime.Now.ToString());
+                sw.WriteLine("#");
+                sw.WriteLine(string.Format("Wheel: {0}", currentWheel._nPositions));
+                sw.WriteLine(string.Format("Position: {0}", currentWheel._position));
+            }
+        }
+
+        private void RestoreCurrentFromFile()
+        {
+            string wheel = string.Empty;
+            string pos = string.Empty;
+            string[] parts;
+            char[] spaces = { ' ', '\t' };
+            int w = -1;
+            short p = -1;
+
+            if (!System.IO.File.Exists(_savedFile))
+                return;
+
+            using (var sr = new System.IO.StreamReader(_savedFile))
+            {
+                string line;
+                while ((line = sr.ReadLine()) != null) {
+                    if (line.StartsWith("Wheel: ")) {
+                        parts = line.Split(':');
+                        wheel = parts[1].TrimStart(spaces);
+                    } else if (line.StartsWith("Position:"))
+                    {
+                        parts = line.Split(':');
+                        pos = parts[1].TrimStart(spaces);
+                    }
+                }
+            }
+
+            try
+            {
+                w = Convert.ToInt32(wheel);
+            }
+            catch (FormatException) { }
+
+            try
+            {
+                p = Convert.ToInt16(pos);
+            }
+            catch (FormatException) { }
+
+            if (((w == 4) || (w == 8) && (p >= 0 && p <= w)))
+            {
+                currentWheel = (w == 4) ? wheel4 : wheel8;
+                currentWheel._position = p;
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                    "WiseFilterWheel:RestoreCurrentFromFile: wheel = {0}, position = {1}",
+                    currentWheel._name, currentWheel._position);
+                #endregion
+            }
+        }
+
+        public static void SaveFiltersToCsvFile(int filterSize)
+        {
+            string fileName = filterCsvFiles[(FilterSize) filterSize];
+
+            if (!System.IO.Directory.Exists(System.IO.Path.GetDirectoryName(fileName)))
+                System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(fileName));
+
+            using (var sw = new System.IO.StreamWriter(fileName))
+            {
+                sw.WriteLine("#");
+                sw.WriteLine(string.Format("# Wise40 {0} inch filter inventory", (int)filterSize));
+                sw.WriteLine(string.Format("# Saved at: {0}"), DateTime.Now.ToLongDateString());
+                sw.WriteLine("#");
+
+                foreach (var filter in filterInventory[(int)filterSize])
+                {
+                    sw.WriteLine(string.Format("{0};{1};{2}", filter.Name, filter.Description, filter.Offset.ToString()));
                 }
             }
         }
