@@ -122,7 +122,7 @@ namespace ASCOM.Wise40.Common
                     now.Day, now.Month, now.Year, now.TimeOfDay,
                     indents[(int)level] + " " + level.ToString() + ":",
                     msg);
-                string currentLogPath = string.Format("c:/Logs/Wise40/{0}-{1}-{2}/debug.txt",
+                string currentLogPath = string.Format(Const.topWise40Directory + "Logs/{0}-{1}-{2}/debug.txt",
                     now.Year, now.Month, now.Day);
                 if (currentLogPath != _logFile)
                 {

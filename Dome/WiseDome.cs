@@ -1268,7 +1268,7 @@ namespace ASCOM.Wise40.Dome
 
         #region SaveRestoreCalibrationData
 
-        private readonly string calibrationDataFilePath = "c:/temp/DomeCalibrationData.txt";
+        private readonly string calibrationDataFilePath = Const.topWise40Directory + "Dome/CalibrationData.txt";
 
         private void SaveCalibrationData()
         {
@@ -1285,6 +1285,8 @@ namespace ASCOM.Wise40.Dome
             lines.Add("#");
             lines.Add(string.Format("Encoder: {0}", domeEncoder.Value));
             lines.Add(string.Format("Azimuth: {0}", Azimuth.Degrees.ToString()));
+
+            System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(calibrationDataFilePath));
 
             lock (_caliWriteLock)
             {

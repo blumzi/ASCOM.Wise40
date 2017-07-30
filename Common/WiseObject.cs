@@ -37,7 +37,7 @@ namespace ASCOM.Wise40.Common
 
         private static bool AreWeReallySimulated()
         {
-            return File.Exists("c:/temp/simulate") || 
+            return File.Exists(Const.topWise40Directory + "simulate") || 
                 (Environment.MachineName.ToLower() != "dome-ctlr");
         }
     }

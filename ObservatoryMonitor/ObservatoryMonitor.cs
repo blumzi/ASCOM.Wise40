@@ -136,7 +136,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 listBoxLog.Items.Add(line);
             }
 
-            string dir = string.Format("c:/Logs/{0}", DateTime.Now.ToString("yyyy-MM-dd"));
+            string dir = string.Format(Const.topWise40Directory + "Logs/{0}", DateTime.Now.ToString("yyyy-MM-dd"));
             Directory.CreateDirectory(dir);
             using (var sw = new StreamWriter(dir + "/ObservatoryMonitor.log", true))
             {
