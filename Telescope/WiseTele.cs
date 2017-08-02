@@ -665,7 +665,7 @@ namespace ASCOM.Wise40.Telescope
         {
             get
             {
-                double ret = 7.112;  // from as Campanas 40" (meters)
+                double ret = 7.112;  // from Las Campanas 40" (meters)
 
                 #region trace
                 traceLogger.LogMessage("FocalLength Get", ret.ToString());
@@ -677,7 +677,12 @@ namespace ASCOM.Wise40.Telescope
         public void AbortSlew()
         {
             if (AtPark)
-                throw new InvalidOperationException("Cannot AbortSlew while AtPark");
+            {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Got AbortSlew while AtPark, not throwing InvalidOperationException !!!");
+                #endregion
+                //throw new InvalidOperationException("Cannot AbortSlew while AtPark");
+            }
 
             Stop();
             #region trace
@@ -936,7 +941,7 @@ namespace ASCOM.Wise40.Telescope
                 }
             }
 
-            foreach (WiseVirtualMotor motor in directionMotors)
+            foreach (WiseVirtualMotor motor in allMotors)
                 if (motor.isOn)
                 {
                     #region debug

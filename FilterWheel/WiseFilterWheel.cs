@@ -133,9 +133,17 @@ namespace ASCOM.Wise40.FilterWheel
         void onCommunicationComplete(object sender, ArduinoInterface.CommunicationCompleteEventArgs e)
         {
             string tag = arduino.Tag;
+            string stat = arduino.Status;
+
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, string.Format("WiseFilterWheel.onCommunicationComplete: tag: \"{0}\"", tag));
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, string.Format("WiseFilterWheel.onCommunicationComplete: tag: \"{0}\", status: {1}",
+                tag, stat));
             #endregion
+            if (stat == "No tag in range")
+            {
+                currentWheel._position = currentWheel._targetPosition;
+                RaiseWheelOrPositionChanged();
+            }
             if (tag != null) {
                 currentWheel = lookupWheel(tag);
                 RaiseWheelOrPositionChanged();
@@ -693,6 +701,7 @@ namespace ASCOM.Wise40.FilterWheel
                 sw.WriteLine(string.Format("# Last saved on: {0}", DateTime.Now.ToString()));
                 sw.WriteLine("# Filter line format:");
                 sw.WriteLine("#  name;decription;offset");
+                sw.WriteLine("# Name and description are free strings, offset must be a integer.");
                 sw.WriteLine("# Empty lines and comments (starting with #) are ignored.");
                 sw.WriteLine("#");
 
