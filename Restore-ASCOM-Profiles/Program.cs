@@ -145,7 +145,7 @@ namespace Restore_ASCOM_Profiles
             string debugLevelProfileName = "DebugLevel";
             string studyMotionProfileName = "StudyMotion";
             string debugFileProfileName = "DebugFile";
-            string debugFile = "c:/temp/Wise40-debug.txt";
+            string debugFile = Const.topWise40Directory + "Logs/debug.txt";
             string refractionProfileName = "Calculate refraction";
 
             using (Profile driverProfile = new Profile())
@@ -234,20 +234,8 @@ namespace Restore_ASCOM_Profiles
                 driverProfile.WriteValue(driverID, "RFID", "7F0007F75E", "Wheel4/Position3");
                 driverProfile.WriteValue(driverID, "RFID", "7F001B0573", "Wheel4/Position4");
 
-                driverProfile.WriteValue(driverID, "Filter Name", "R", "Wheel4/Position1");
-                driverProfile.WriteValue(driverID, "Filter Name", "B", "Wheel8/Position1");
-
-                driverProfile.WriteValue(driverID, "Name", "R", "Filter0");
-                driverProfile.WriteValue(driverID, "Description", "Red filter", "Filter0");
-                driverProfile.WriteValue(driverID, "Offset", "123", "Filter0");
-
-                driverProfile.WriteValue(driverID, "Name", "G", "Filter1");
-                driverProfile.WriteValue(driverID, "Description", "Green filter", "Filter1");
-                driverProfile.WriteValue(driverID, "Offset", "-123", "Filter1");
-
-                driverProfile.WriteValue(driverID, "Name", "B", "Filter2");
-                driverProfile.WriteValue(driverID, "Description", "Blue filter", "Filter2");
-                driverProfile.WriteValue(driverID, "Offset", "17", "Filter2");
+                driverProfile.WriteValue(driverID, "Filter Name", "U", "Wheel4/Position1");
+                driverProfile.WriteValue(driverID, "Filter Name", "U", "Wheel8/Position1");
             }
         }
 

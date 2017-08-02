@@ -5,8 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
 
-
 using ASCOM.DeviceInterface;
+using ASCOM.Wise40.Common;
 using System.IO;
 
 namespace ASCOM.Wise40.Telescope
@@ -86,7 +86,7 @@ namespace ASCOM.Wise40.Telescope
         public void generateDataFiles()
         {
             string rateName = WiseTele.RateName(Math.Abs(rate));
-            string directory = string.Format("c:/temp/MotionStudy/{0}/{1}/{2}",
+            string directory = string.Format(Const.topWise40Directory +  "Telescope/MotionStudy/{0}/{1}/{2}",
                 motorStop.ToString("yyyy-MMM-dd_HH-mm"),
                 axis.ToString().Substring(4), rateName);
             

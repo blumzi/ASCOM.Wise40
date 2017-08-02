@@ -179,10 +179,7 @@
             this.annunciatorWeather = new ASCOM.Controls.Annunciator();
             this.labelDashStatus = new System.Windows.Forms.Label();
             this.groupBoxFilterWheel = new System.Windows.Forms.GroupBox();
-            this.labelFilterWheelPosition = new System.Windows.Forms.Label();
-            this.labelFilterWheelName = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
-            this.label7 = new System.Windows.Forms.Label();
             this.comboBoxFilterWheelPositions = new System.Windows.Forms.ComboBox();
             this.buttonFilterWheelGo = new System.Windows.Forms.Button();
             this.labelFilterWheelStatus = new System.Windows.Forms.Label();
@@ -213,6 +210,12 @@
             this.labelRainRateValue = new System.Windows.Forms.Label();
             this.timerRefreshDisplay = new System.Windows.Forms.Timer(this.components);
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
+            this.buttonSetFilterWheelPosition = new System.Windows.Forms.Button();
+            this.textBoxFilterWheelPosition = new System.Windows.Forms.TextBox();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.radioButtonSelectFilterWheel8 = new System.Windows.Forms.RadioButton();
+            this.radioButtonSelectFilterWheel4 = new System.Windows.Forms.RadioButton();
+            this.manage3FiltersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tableLayoutMain.SuspendLayout();
             this.groupBoxFocuser.SuspendLayout();
             this.groupBoxDomeGroup.SuspendLayout();
@@ -230,6 +233,7 @@
             this.groupBoxFilterWheel.SuspendLayout();
             this.groupBoxWeather.SuspendLayout();
             this.tableLayoutPanelWeather.SuspendLayout();
+            this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
             // tableLayoutMain
@@ -344,7 +348,7 @@
             this.labelFocuserStatus.Size = new System.Drawing.Size(312, 20);
             this.labelFocuserStatus.TabIndex = 30;
             this.labelFocuserStatus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            this.toolTip.SetToolTip(this.labelFocuserStatus, "Focuser status");
+            this.toolTip.SetToolTip(this.labelFocuserStatus, "Filter wheel  status");
             // 
             // buttonFocusGoto
             // 
@@ -1630,7 +1634,8 @@
             // 
             this.toolStripMenuItemFilterWheel.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.settingsToolStripMenuItem,
-            this.manageFilterInventoryToolStripMenuItem});
+            this.manageFilterInventoryToolStripMenuItem,
+            this.manage3FiltersToolStripMenuItem});
             this.toolStripMenuItemFilterWheel.Name = "toolStripMenuItemFilterWheel";
             this.toolStripMenuItemFilterWheel.Size = new System.Drawing.Size(158, 22);
             this.toolStripMenuItemFilterWheel.Text = "Filter Wheel";
@@ -1646,9 +1651,9 @@
             // manageFilterInventoryToolStripMenuItem
             // 
             this.manageFilterInventoryToolStripMenuItem.Name = "manageFilterInventoryToolStripMenuItem";
-            this.manageFilterInventoryToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
-            this.manageFilterInventoryToolStripMenuItem.Text = "Manage filters";
-            this.manageFilterInventoryToolStripMenuItem.Click += new System.EventHandler(this.manageFilterInventoryToolStripMenuItem_Click);
+            this.manageFilterInventoryToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
+            this.manageFilterInventoryToolStripMenuItem.Text = "Manage 2\" filters";
+            this.manageFilterInventoryToolStripMenuItem.Click += new System.EventHandler(this.manage2InchFilterInventoryToolStripMenuItem_Click);
             // 
             // toolStripMenuItem5
             // 
@@ -2203,10 +2208,10 @@
             // 
             // groupBoxFilterWheel
             // 
-            this.groupBoxFilterWheel.Controls.Add(this.labelFilterWheelPosition);
-            this.groupBoxFilterWheel.Controls.Add(this.labelFilterWheelName);
+            this.groupBoxFilterWheel.Controls.Add(this.groupBox1);
+            this.groupBoxFilterWheel.Controls.Add(this.textBoxFilterWheelPosition);
+            this.groupBoxFilterWheel.Controls.Add(this.buttonSetFilterWheelPosition);
             this.groupBoxFilterWheel.Controls.Add(this.label4);
-            this.groupBoxFilterWheel.Controls.Add(this.label7);
             this.groupBoxFilterWheel.Controls.Add(this.comboBoxFilterWheelPositions);
             this.groupBoxFilterWheel.Controls.Add(this.buttonFilterWheelGo);
             this.groupBoxFilterWheel.Controls.Add(this.labelFilterWheelStatus);
@@ -2218,31 +2223,6 @@
             this.groupBoxFilterWheel.TabStop = false;
             this.groupBoxFilterWheel.Text = " FilterWheel ";
             // 
-            // labelFilterWheelPosition
-            // 
-            this.labelFilterWheelPosition.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.labelFilterWheelPosition.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F);
-            this.labelFilterWheelPosition.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelFilterWheelPosition.Location = new System.Drawing.Point(120, 72);
-            this.labelFilterWheelPosition.Name = "labelFilterWheelPosition";
-            this.labelFilterWheelPosition.Size = new System.Drawing.Size(72, 18);
-            this.labelFilterWheelPosition.TabIndex = 43;
-            this.labelFilterWheelPosition.Text = "??";
-            this.labelFilterWheelPosition.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // labelFilterWheelName
-            // 
-            this.labelFilterWheelName.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.labelFilterWheelName.AutoSize = true;
-            this.labelFilterWheelName.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F);
-            this.labelFilterWheelName.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelFilterWheelName.Location = new System.Drawing.Point(120, 48);
-            this.labelFilterWheelName.Name = "labelFilterWheelName";
-            this.labelFilterWheelName.Size = new System.Drawing.Size(20, 18);
-            this.labelFilterWheelName.TabIndex = 42;
-            this.labelFilterWheelName.Text = "??";
-            this.labelFilterWheelName.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
             // label4
             // 
             this.label4.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -2250,26 +2230,12 @@
             this.label4.AutoSize = true;
             this.label4.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))));
             this.label4.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label4.Location = new System.Drawing.Point(8, 72);
+            this.label4.Location = new System.Drawing.Point(16, 72);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(81, 18);
+            this.label4.Size = new System.Drawing.Size(151, 18);
             this.label4.TabIndex = 41;
-            this.label4.Text = "Position:";
+            this.label4.Text = "Current position:";
             this.label4.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // label7
-            // 
-            this.label7.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.label7.AutoSize = true;
-            this.label7.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))));
-            this.label7.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label7.Location = new System.Drawing.Point(26, 48);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(63, 18);
-            this.label7.TabIndex = 40;
-            this.label7.Text = "Wheel:";
-            this.label7.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // comboBoxFilterWheelPositions
             // 
@@ -2277,12 +2243,11 @@
             this.comboBoxFilterWheelPositions.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.comboBoxFilterWheelPositions.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.comboBoxFilterWheelPositions.FormattingEnabled = true;
-            this.comboBoxFilterWheelPositions.Location = new System.Drawing.Point(88, 112);
+            this.comboBoxFilterWheelPositions.Location = new System.Drawing.Point(88, 120);
             this.comboBoxFilterWheelPositions.Margin = new System.Windows.Forms.Padding(0);
             this.comboBoxFilterWheelPositions.Name = "comboBoxFilterWheelPositions";
             this.comboBoxFilterWheelPositions.Size = new System.Drawing.Size(216, 21);
             this.comboBoxFilterWheelPositions.TabIndex = 37;
-            this.comboBoxFilterWheelPositions.Text = "??";
             this.toolTip.SetToolTip(this.comboBoxFilterWheelPositions, "Select a filter and press GO.");
             // 
             // buttonFilterWheelGo
@@ -2292,7 +2257,7 @@
             this.buttonFilterWheelGo.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonFilterWheelGo.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonFilterWheelGo.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonFilterWheelGo.Location = new System.Drawing.Point(24, 112);
+            this.buttonFilterWheelGo.Location = new System.Drawing.Point(16, 120);
             this.buttonFilterWheelGo.Name = "buttonFilterWheelGo";
             this.buttonFilterWheelGo.Size = new System.Drawing.Size(51, 23);
             this.buttonFilterWheelGo.TabIndex = 36;
@@ -2709,6 +2674,76 @@
             this.timerRefreshDisplay.Enabled = true;
             this.timerRefreshDisplay.Tick += new System.EventHandler(this.RefreshDisplay);
             // 
+            // buttonSetFilterWheelPosition
+            // 
+            this.buttonSetFilterWheelPosition.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonSetFilterWheelPosition.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonSetFilterWheelPosition.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.buttonSetFilterWheelPosition.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.buttonSetFilterWheelPosition.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.buttonSetFilterWheelPosition.Location = new System.Drawing.Point(240, 32);
+            this.buttonSetFilterWheelPosition.Name = "buttonSetFilterWheelPosition";
+            this.buttonSetFilterWheelPosition.Size = new System.Drawing.Size(64, 64);
+            this.buttonSetFilterWheelPosition.TabIndex = 44;
+            this.buttonSetFilterWheelPosition.Text = "Set";
+            this.buttonSetFilterWheelPosition.UseVisualStyleBackColor = false;
+            this.buttonSetFilterWheelPosition.Click += new System.EventHandler(this.buttonSetFilterWheelPosition_Click);
+            // 
+            // textBoxFilterWheelPosition
+            // 
+            this.textBoxFilterWheelPosition.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBoxFilterWheelPosition.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.textBoxFilterWheelPosition.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.textBoxFilterWheelPosition.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.textBoxFilterWheelPosition.Location = new System.Drawing.Point(184, 72);
+            this.textBoxFilterWheelPosition.Name = "textBoxFilterWheelPosition";
+            this.textBoxFilterWheelPosition.Size = new System.Drawing.Size(32, 21);
+            this.textBoxFilterWheelPosition.TabIndex = 45;
+            this.textBoxFilterWheelPosition.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            // 
+            // groupBox1
+            // 
+            this.groupBox1.Controls.Add(this.radioButtonSelectFilterWheel8);
+            this.groupBox1.Controls.Add(this.radioButtonSelectFilterWheel4);
+            this.groupBox1.ForeColor = System.Drawing.Color.DarkOrange;
+            this.groupBox1.Location = new System.Drawing.Point(16, 24);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(200, 40);
+            this.groupBox1.TabIndex = 46;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "Wheel";
+            // 
+            // radioButtonSelectFilterWheel8
+            // 
+            this.radioButtonSelectFilterWheel8.AutoSize = true;
+            this.radioButtonSelectFilterWheel8.Checked = true;
+            this.radioButtonSelectFilterWheel8.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.radioButtonSelectFilterWheel8.Location = new System.Drawing.Point(24, 16);
+            this.radioButtonSelectFilterWheel8.Name = "radioButtonSelectFilterWheel8";
+            this.radioButtonSelectFilterWheel8.Size = new System.Drawing.Size(75, 17);
+            this.radioButtonSelectFilterWheel8.TabIndex = 0;
+            this.radioButtonSelectFilterWheel8.TabStop = true;
+            this.radioButtonSelectFilterWheel8.Text = "8-positions";
+            this.radioButtonSelectFilterWheel8.UseVisualStyleBackColor = true;
+            // 
+            // radioButtonSelectFilterWheel4
+            // 
+            this.radioButtonSelectFilterWheel4.AutoSize = true;
+            this.radioButtonSelectFilterWheel4.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.radioButtonSelectFilterWheel4.Location = new System.Drawing.Point(112, 16);
+            this.radioButtonSelectFilterWheel4.Name = "radioButtonSelectFilterWheel4";
+            this.radioButtonSelectFilterWheel4.Size = new System.Drawing.Size(75, 17);
+            this.radioButtonSelectFilterWheel4.TabIndex = 1;
+            this.radioButtonSelectFilterWheel4.Text = "4-positions";
+            this.radioButtonSelectFilterWheel4.UseVisualStyleBackColor = true;
+            // 
+            // manage3FiltersToolStripMenuItem
+            // 
+            this.manage3FiltersToolStripMenuItem.Name = "manage3FiltersToolStripMenuItem";
+            this.manage3FiltersToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
+            this.manage3FiltersToolStripMenuItem.Text = "Manage 3\" filters";
+            this.manage3FiltersToolStripMenuItem.Click += new System.EventHandler(this.manage3InchFilterInventoryToolStripMenuItem_Click);
+            // 
             // FormDash
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
@@ -2751,6 +2786,8 @@
             this.groupBoxWeather.ResumeLayout(false);
             this.tableLayoutPanelWeather.ResumeLayout(false);
             this.tableLayoutPanelWeather.PerformLayout();
+            this.groupBox1.ResumeLayout(false);
+            this.groupBox1.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -2930,16 +2967,19 @@
         private System.Windows.Forms.GroupBox groupBoxFilterWheel;
         private System.Windows.Forms.Label labelFilterWheelStatus;
         private System.Windows.Forms.Label labelFiller;
-        private System.Windows.Forms.Label labelFilterWheelPosition;
-        private System.Windows.Forms.Label labelFilterWheelName;
         private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.Label label7;
         private System.Windows.Forms.ComboBox comboBoxFilterWheelPositions;
         private System.Windows.Forms.Button buttonFilterWheelGo;
         private System.Windows.Forms.ToolStripMenuItem settingsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem manageFilterInventoryToolStripMenuItem;
         private ASCOM.Controls.Annunciator annunciatorDomePlatform;
         private ASCOM.Controls.Annunciator annunciatorSimulation;
+        private System.Windows.Forms.Button buttonSetFilterWheelPosition;
+        private System.Windows.Forms.TextBox textBoxFilterWheelPosition;
+        private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.RadioButton radioButtonSelectFilterWheel8;
+        private System.Windows.Forms.RadioButton radioButtonSelectFilterWheel4;
+        private System.Windows.Forms.ToolStripMenuItem manage3FiltersToolStripMenuItem;
     }
 }
 

@@ -232,14 +232,14 @@ namespace ASCOM.Wise40.FilterWheel
         public void StartMoving(StepperDirection dir, int nPos = 1)
         {
             string command = string.Format("move-{0}:{1}", (dir == StepperDirection.CW) ? "cw" : "ccw", nPos.ToString());
-            SendCommand(command, true, ArduinoStatus.Moving);
+            SendCommand(command, waitForReply: true, interimStatus: ArduinoStatus.Moving);
         }
 
         public bool isActive
         {
             get
             {
-                return _status != ArduinoStatus.Idle;
+                return _error == null && _status != ArduinoStatus.Idle;
             }
         }
 

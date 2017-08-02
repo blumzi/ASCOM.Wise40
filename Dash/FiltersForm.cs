@@ -17,9 +17,10 @@ namespace Dash
     public partial class FiltersForm : Form
     {
         private WiseFilterWheel wisefilterwheel = WiseFilterWheel.Instance;
-        BindingList<Filter> boundFilters = new BindingList<Filter>(WiseFilterWheel.filterInventory);
+        BindingList<Filter> boundFilters;
         BindingSource source;
         Debugger debugger = Debugger.Instance;
+        private int _filterSize;
 
         //static public class Util
         //{
@@ -32,18 +33,20 @@ namespace Dash
         //    }
         //}
 
-        public FiltersForm()
+        public FiltersForm(int filterSize)
         {
+            _filterSize = filterSize;
+
+            boundFilters = new BindingList<Filter>(WiseFilterWheel.filterInventory[_filterSize]);
             ReadProfile();
             InitializeComponent();
+            labelTitle.Text = string.Format("Wise40 {0}\" filters", _filterSize);
             source = new BindingSource(boundFilters, null);
             dataGridView.DataSource = source;
             dataGridView.AllowUserToAddRows = true;
             dataGridView.AllowUserToDeleteRows = true;
             dataGridView.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(64, 64, 64);
             dataGridView.EnableHeadersVisualStyles = false;
-            //Util.Find<HScrollBar>(dataGridView).BackColor = Color.FromArgb(64, 64, 64);
-            //Util.Find<HScrollBar>(dataGridView).ForeColor = Color.FromArgb(176, 161, 142);
         }
 
         void ReadProfile()
@@ -111,7 +114,8 @@ namespace Dash
                 return;
             }
 
-            WiseFilterWheel.filterInventory = filters;
+            WiseFilterWheel.filterInventory[_filterSize] = filters;
+            WiseFilterWheel.SaveFiltersToCsvFile(_filterSize);
             WriteProfile();
             Close();
         }

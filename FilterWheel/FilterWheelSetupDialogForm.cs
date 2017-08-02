@@ -31,19 +31,19 @@ namespace ASCOM.Wise40.FilterWheel
 
             foreach (var w in WiseFilterWheel.knownWheels)
             {
-                for (int i = 0; i < w.positions.Length; i++)
+                for (int i = 0; i < w._nPositions; i++)
                 {
                     TextBox tb;
                     ComboBox cb;
 
-                    cb = (ComboBox)F.Controls.Find(string.Format("comboBox{0}{1}", w.positions.Length, i), true)[0];
+                    cb = (ComboBox)F.Controls.Find(string.Format("comboBox{0}{1}", w._nPositions, i), true)[0];
                     if (cb.Text != string.Empty)
-                        w.positions[i].filterName = cb.Text.Remove(cb.Text.IndexOf(':'));
+                        w._positions[i].filterName = cb.Text.Remove(cb.Text.IndexOf(':'));
                     else
-                        w.positions[i].filterName = string.Empty;
+                        w._positions[i].filterName = string.Empty;
 
-                    tb = (TextBox)F.Controls.Find(string.Format("textBox{0}RFID{1}", w.name, i), true)[0];
-                    w.positions[i].tag = tb.Text ?? string.Empty;
+                    tb = (TextBox)F.Controls.Find(string.Format("textBox{0}RFID{1}", w._name, i), true)[0];
+                    w._positions[i].tag = tb.Text ?? string.Empty;
                 }
             }
             WiseFilterWheel.port = comboBoxPort.Text;
@@ -81,23 +81,23 @@ namespace ASCOM.Wise40.FilterWheel
 
             foreach (var w in WiseFilterWheel.knownWheels)
             {
-                for (int i = 0; i < w.positions.Length; i++)
+                for (int i = 0; i < w._nPositions; i++)
                 {
                     ComboBox cb;
 
-                    cb = (ComboBox)F.Controls.Find(string.Format("comboBox{0}{1}", w.positions.Length, i), true)[0];
-                    if (w.positions[i].filterName == string.Empty)
+                    cb = (ComboBox)F.Controls.Find(string.Format("comboBox{0}{1}", w._nPositions, i), true)[0];
+                    if (w._positions[i].filterName == string.Empty)
                         cb.Text = string.Empty;
                     else {
-                        Filter f = WiseFilterWheel.filterInventory.Find((x) => x.Name == w.positions[i].filterName);
-                        cb.Text = string.Format("{0}: {1}", f.Name, f.Description);
+                        Filter f = WiseFilterWheel.filterInventory[w._filterSize].Find((x) => x.Name == w._positions[i].filterName);
+                        cb.Text = (f == null) ? "<??>" : string.Format("{0}: {1}", f.Name, f.Description);
                     }
-                    foreach (Filter f in WiseFilterWheel.filterInventory)
+                    foreach (Filter f in WiseFilterWheel.filterInventory[w._filterSize])
                         cb.Items.Add(string.Format("{0}: {1}", f.Name, f.Description));
 
                     TextBox tb;
-                    tb = (TextBox)F.Controls.Find(string.Format("textBoxWheel{0}RFID{1}", w.positions.Length, i), true)[0];
-                    tb.Text = w.positions[i].tag ?? string.Empty;
+                    tb = (TextBox)F.Controls.Find(string.Format("textBoxWheel{0}RFID{1}", w._nPositions, i), true)[0];
+                    tb.Text = w._positions[i].tag ?? string.Empty;
                     tb.Enabled = checkBoxEditableRFIDs.Checked;
                 }
             }
@@ -110,11 +110,11 @@ namespace ASCOM.Wise40.FilterWheel
         {
             Form F = this.FindForm();
 
-            foreach (var w in WiseFilterWheel.knownWheels)
+            foreach (var w in new List<WiseFilterWheel.Wheel> { WiseFilterWheel.wheel4, WiseFilterWheel.wheel8})
             {
-                for (int i = 0; i < w.positions.Length; i++)
+                for (int i = 0; i < w._nPositions; i++)
                 {
-                    TextBox tb = (TextBox)F.Controls.Find(string.Format("textBox{0}RFID{1}", w.name, i), true)[0];
+                    TextBox tb = (TextBox)F.Controls.Find(string.Format("textBox{0}RFID{1}", w._name, i), true)[0];
                     CueProvider.SetCue(tb, "Missing");
                 }
             }
@@ -127,11 +127,11 @@ namespace ASCOM.Wise40.FilterWheel
 
             foreach (var w in WiseFilterWheel.knownWheels)
             {
-                for (int i = 0; i < w.positions.Length; i++)
+                for (int i = 0; i < w._nPositions; i++)
                 {
                     TextBox tb;
 
-                    tb = (TextBox)F.Controls.Find(string.Format("textBox{0}RFID{1}", w.name, i), true)[0];
+                    tb = (TextBox)F.Controls.Find(string.Format("textBox{0}RFID{1}", w._name, i), true)[0];
                     CueProvider.SetCue(tb, "Missing");
                     tb.Enabled = cb.Checked;
                 }

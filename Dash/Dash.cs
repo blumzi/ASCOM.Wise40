@@ -1131,8 +1131,8 @@ namespace Dash
         private void LoadFilterWheelInformation()
         {
             WiseFilterWheel.Wheel wheel = WiseFilterWheel.Instance.currentWheel;
-            short position = wheel.position;
-
+            short position = wheel._position;
+#if RFID_IS_WORKING
             if (position == -1)
             {
                 labelFilterWheelName.Text = "Unknown";
@@ -1142,23 +1142,19 @@ namespace Dash
 
             labelFilterWheelName.Text = string.Format("{0} ({1} filters)", wheel.name, wheel.positions.Length);
             labelFilterWheelPosition.Text = (position + 1).ToString();
-
+#endif
             comboBoxFilterWheelPositions.Items.Clear();
-            for (int pos = 0; pos < wheel.positions.Length; pos++)
+            for (int pos = 0; pos < wheel._positions.Length; pos++)
             {
-                string filterName = wheel.positions[pos].filterName;
+                string filterName = wheel._positions[pos].filterName;
                 string item;
                 if (filterName == string.Empty)
                     item = string.Format("{0} - Clear", pos + 1);
-                else {
-                    if (wheel.type == WiseFilterWheel.WheelType.Simulated)
-                    {
-                        item = string.Format("{0} - {1}", pos + 1, filterName);
-                    } else {
-                        string desc = WiseFilterWheel.filterInventory.Find((x) => x.Name == filterName).Description;
+                else
+                {
+                    string desc = WiseFilterWheel.filterInventory[wheel._filterSize].Find((x) => x.Name == filterName).Description;
 
-                        item = string.Format("{0} - {1}: {2}", pos + 1, filterName, desc);
-                    }
+                    item = string.Format("{0} - {1}: {2}", pos + 1, filterName, desc);
                 }
                 comboBoxFilterWheelPositions.Items.Add(item);
                 if (pos == position)
@@ -1304,15 +1300,63 @@ namespace Dash
         private void buttonFilterWheelGo_Click(object sender, EventArgs e)
         {
             short targetPosition = (short)comboBoxFilterWheelPositions.SelectedIndex;
+            short humanTargetPosition = (short)(targetPosition + 1);
 
-            filterWheelStatus.Show(string.Format("Moving to position {0}", targetPosition + 1), 5000, Statuser.Severity.Good);
+            if (wisefilterwheel.Simulated)
+            {
+                filterWheelStatus.Show(string.Format("Moved to position {0}", humanTargetPosition), 1000, Statuser.Severity.Good);
+                textBoxFilterWheelPosition.Text = humanTargetPosition.ToString();
+            }
+            else
+            {
+                filterWheelStatus.Show(string.Format("Moving to position {0}", humanTargetPosition), 5000, Statuser.Severity.Good);
+            }
             wisefilterwheel.Position = targetPosition;
         }
 
-        private void manageFilterInventoryToolStripMenuItem_Click(object sender, EventArgs e)
+        private void buttonSetFilterWheelPosition_Click(object sender, EventArgs e)
+        {
+            short selectedPosition = -1;
+            try
+            {
+                selectedPosition = Convert.ToInt16(textBoxFilterWheelPosition.Text);
+            } catch (FormatException)
+            {
+                filterWheelStatus.Show("Invalid position \"Current position\"", 1000, Statuser.Severity.Error);
+                textBoxFilterWheelPosition.Text = "";
+                return;
+            }
+            WiseFilterWheel.Wheel selectedWheel = radioButtonSelectFilterWheel8.Checked ? WiseFilterWheel.wheel8 : WiseFilterWheel.wheel4;
+            int maxPositions = selectedWheel._nPositions;
+
+            if (! (selectedPosition > 0 && selectedPosition < maxPositions))
+            {
+                textBoxFilterWheelPosition.Text = "";
+                filterWheelStatus.Show(
+                    string.Format("Position must be between 1 and {0}", maxPositions), 2000, Statuser.Severity.Error); 
+                return;
+            }
+
+            wisefilterwheel.SetCurrent(
+                radioButtonSelectFilterWheel8.Checked ? WiseFilterWheel.wheel8 : WiseFilterWheel.wheel4,
+                (short)(selectedPosition - 1));
+
+            LoadFilterWheelInformation();
+            filterWheelStatus.Show(string.Format("Manually set to {0}, position {1}",
+                wisefilterwheel.currentWheel._name, selectedPosition),
+                1000, Statuser.Severity.Good);
+        }
+
+        private void manage2InchFilterInventoryToolStripMenuItem_Click(object sender, EventArgs e)
         {
             wisefilterwheel.init();
-            new FiltersForm().Show();
+            new FiltersForm(2).Show();
+        }
+
+        private void manage3InchFilterInventoryToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            wisefilterwheel.init();
+            new FiltersForm(3).Show();
         }
 
         private void buttonTrack_Click(object sender, EventArgs e)
@@ -1347,13 +1391,13 @@ namespace Dash
                 wisefocuser.Stop();
             }
             catch { }
-            #region debug
+#region debug
             string msg = "StopEverything: ";
             if (e != null)
                 msg += string.Format("Exception: {0}, ", e.Message);
             msg += "Application will exit!";
             debugger.WriteLine(Debugger.DebugLevel.DebugExceptions, msg);
-            #endregion
+#endregion
             Application.Exit();
         }
 
@@ -1371,6 +1415,6 @@ namespace Dash
         {
             StopEverything(e.ExceptionObject as Exception);
         }
-        #endregion
+#endregion
     }
 }

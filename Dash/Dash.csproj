@@ -245,6 +245,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Icons\optica-filters%282%29.jpg" />
+    <Content Include="Icons\optica_filters_2__x5l_icon.ico" />
     <Content Include="Installer\ReadMe.html" />
     <Content Include="Installer\Wise40Dash.iss" />
     <Content Include="WiseObs.ico" />
@@ -261,6 +263,7 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>rem "C:\Program Files (x86)\Inno Setup 5\ISCC.exe" "/DSolutionDir=$(SolutionDir)" "/O$(SolutionDir)\Deliveries" "$(ProjectDir)Installer\Wise40Dash.iss" 

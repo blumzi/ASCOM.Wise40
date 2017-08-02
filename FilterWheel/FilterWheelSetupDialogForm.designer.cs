@@ -149,7 +149,7 @@ namespace ASCOM.Wise40.FilterWheel
             this.groupBox1.Size = new System.Drawing.Size(504, 272);
             this.groupBox1.TabIndex = 4;
             this.groupBox1.TabStop = false;
-            this.groupBox1.Text = " Eight positions wheel ";
+            this.groupBox1.Text = " Eight positions wheel (2 inch filters) ";
             // 
             // tableLayoutPanel1
             // 
@@ -529,7 +529,7 @@ namespace ASCOM.Wise40.FilterWheel
             this.groupBox2.Size = new System.Drawing.Size(504, 160);
             this.groupBox2.TabIndex = 17;
             this.groupBox2.TabStop = false;
-            this.groupBox2.Text = " Four positions wheel ";
+            this.groupBox2.Text = " Four positions wheel (3 inch filters) ";
             // 
             // tableLayoutPanel2
             // 
