@@ -14,13 +14,15 @@ namespace ASCOM.Wise40.Telescope
         private const uint _realValueAtFiducialMark = 1432779; // Arie - 02 July 2016
         
         private WiseEncoder axisEncoder, wormEncoder;
+        private WiseDecEncoder _decEncoder;
 
         private Astrometry.NOVAS.NOVAS31 Novas31;
         private Astrometry.AstroUtils.AstroUtils astroutils;
 
         public Angle _angle;
+        private const double twoPI = Math.PI * 2.0;
 
-        const double HaMultiplier = 2 * Math.PI / 720 / 4096;
+        const double HaMultiplier = twoPI / 720 / 4096;
         const double HaCorrection = -3.063571542;                   // 20081231: Shai Kaspi
         //const double HaCorrection = -6.899777777777778;  // 20160702: Arie
         const uint _simulatedValueAtFiducialMark = _realValueAtFiducialMark;
@@ -31,12 +33,13 @@ namespace ASCOM.Wise40.Telescope
 
         private Object _lock = new object();
 
-        public WiseHAEncoder(string name)
+        public WiseHAEncoder(string name, WiseDecEncoder decEncoder)
         {
             Name = "HAEncoder";
             Novas31 = new Astrometry.NOVAS.NOVAS31();
             astroutils = new Astrometry.AstroUtils.AstroUtils();
             wisesite.init();
+            _decEncoder = decEncoder;
 
             axisEncoder = new WiseEncoder("HAAxis",
                 1 << 16,
@@ -173,7 +176,21 @@ namespace ASCOM.Wise40.Telescope
         {
             get
             {
-                return Angle.Hours;
+                //   if dec_Corrected > pi / 2.0 then  // Has the telescope gone North of dec=90deg?
+                //      begin // Adjust the dec and HA values accordingly.
+                //          dec_Corrected:= pi - dec_Corrected;
+                //          HA_Corrected:= HA_Corrected + pi; // Add 12hr to HA
+                //          if HA_Corrected > 2 * pi then
+                //                HA_Corrected := HA_Corrected - 2 * pi
+                //      end;
+                double ret = Angle.Hours;
+                if (_decEncoder.FlippedOver90Degrees)
+                {
+                    ret += Math.PI;     // Add 12 hours
+                    if (ret > twoPI)
+                        ret -= twoPI;
+                }
+                return ret;
             }
         }
 
