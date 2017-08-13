@@ -443,8 +443,9 @@ namespace ASCOM.Wise40.Telescope
                 WestGuidePin = new WisePin("TeleWestGuide", hardware.teleboard, DigitalPortType.FirstPortB, 2, DigitalPortDirection.DigitalOut);
                 SouthGuidePin = new WisePin("TeleSouthGuide", hardware.teleboard, DigitalPortType.FirstPortB, 3, DigitalPortDirection.DigitalOut);
 
-                _instance.HAEncoder = new WiseHAEncoder("TeleHAEncoder");
+
                 _instance.DecEncoder = new WiseDecEncoder("TeleDecEncoder");
+                _instance.HAEncoder = new WiseHAEncoder("TeleHAEncoder", _instance.DecEncoder);
             }
             catch (WiseException e)
             {
@@ -1214,20 +1215,22 @@ namespace ASCOM.Wise40.Telescope
         /// </summary>
         /// <param name="ra">RightAscension of the checked position</param>
         /// <param name="dec">Declination of the checked position</param>
-        /// <param name="whileMoving">true: the check is while moving, false: the check is in-advance</param>
+        /// <param name="whileTracking">true: the check is while tracking, false: the check is prior to slewing</param>
         public string SafeAtCoordinates(Angle ra, Angle dec, bool whileTracking = false)
         {
             double rar = 0, decr = 0, az = 0, zd = 0;
             Angle alt;
             string ret = string.Empty;
-            
-            #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "SafeAtCoordinates(ra: {0}, dec: {1}, moving: {2}) - started.",
+            string header = string.Format("SafeAtCoordinates(ra: {0}, dec: {1}, whileTracking: {2}) - ",
                 ra.ToString(), dec.ToString(), whileTracking.ToString());
-            #endregion
 
             if (whileTracking && !Tracking)
+            {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, header + "OK");
+                #endregion
                 return string.Empty;
+            }
 
             wisesite.prepareRefractionData(_calculateRefraction);
             novas31.Equ2Hor(astroutils.JulianDateUT1(0), 0,
@@ -1248,13 +1251,15 @@ namespace ASCOM.Wise40.Telescope
             {
                 if (altNotSafe)
                 {
-                    string message = string.Format("SafeAtCoordinates(ra: {0}, dec: {1}, whileTracking: {4}) => altNotSafe: alt: {2} < altLimit: {3}",
-                        ra, dec, alt, altLimit, whileTracking.ToString());
+                    string result = string.Format("altNotSafe: alt: {0} < altLimit: {1}", alt, altLimit);
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, message);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, header + result);
                     #endregion debug
-                    return message;
+                    return result;
                 }
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, header + "OK");
+                #endregion
                 return string.Empty;
             }
 
@@ -1267,49 +1272,35 @@ namespace ASCOM.Wise40.Telescope
             Angle ha = Angle.FromHours(HourAngle, Angle.Type.HA);
             bool haNotSafe = Math.Abs(ha.Degrees) > haLimit.Degrees;
 
-            #region debug
-            //debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
-            //    "SafeAtCoordinates({0}, {1}, while moving): altNotSafe: {2} (alt: {3} < altLimit: {4}), haNotSafe: {5} (ha: {6} > haLimit: {7})",
-            //    ra, dec,
-            //    altNotSafe.ToString(), alt, altLimit,
-            //    haNotSafe.ToString(), ha, haLimit);
-            #endregion
-
             if (altNotSafe || haNotSafe)
             {
-                string message = string.Format("SafeAtCoordinates(ra: {0}, dec: {1}, whileTracking: {2}): NOT SAFE: ",
-                    ra, dec, whileTracking.ToString());
+                string result = "NOT SAFE - ";
 
                 if (altNotSafe)
-                    message += string.Format("altNotSafe: alt: {0} < altLimit: {1} ", alt, altLimit);
+                    result += string.Format("altNotSafe: alt: {0} < altLimit: {1} ", alt, altLimit);
                 if (haNotSafe)
-                    message += string.Format("haNotSafe: Abs({0}) >: {1}", ha, haLimit);
+                    result += string.Format("haNotSafe: Abs({0}) >: {1}", ha, haLimit);
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, message);
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, header + result);
                 #endregion debug
-                
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, message);
-                #endregion
                 #region trace
-                traceLogger.LogMessage("SafeAtCoordinates", message);
+                traceLogger.LogMessage("SafeAtCoordinates", header + result);
                 #endregion
                 
                 safetyMonitorTimer.Enabled = false;
                 Tracking = false;
 
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                    "SafeAtCoordinates: Not safe at ra:{0}, dec: {1}: Backing off to the East", ra, dec);
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, header + ": Backing off to the East");
                 #endregion
                 MoveAxis(TelescopeAxes.axisPrimary, Const.rateSlew);
                 Thread.Sleep(1000);
                 MoveAxis(TelescopeAxes.axisPrimary, Const.rateStopped);
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "SafeAtCoordinates: Done backing off");
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, header + ": Done backing off");
                 #endregion
 
-                return message;
+                return header + result;
             }
             return string.Empty;
         }

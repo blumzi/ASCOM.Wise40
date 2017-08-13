@@ -20,6 +20,7 @@ namespace ASCOM.Wise40.Telescope
         private bool _connected = false;
 
         public Angle _angle;
+        private const double halfPI = Math.PI / 2.0;
 
         const double decMultiplier = 2 * Math.PI / 600 / 4096;
         const double DecCorrection = 0.35613322;                //20081231 SK: ActualDec-Encoder Dec [rad]
@@ -131,13 +132,16 @@ namespace ASCOM.Wise40.Telescope
         {
             get
             {
+
                 if(! Simulated)
                     _angle.Radians = (Value * decMultiplier) + DecCorrection;
 
-                if (_angle.Radians > Math.PI)
-                    _angle.Radians -= 2 * Math.PI;
+                Angle ret = _angle;
 
-                return _angle;
+                if (FlippedOver90Degrees)
+                    ret.Radians = Math.PI - ret.Radians;
+
+                return ret;
             }
 
             set
@@ -150,25 +154,37 @@ namespace ASCOM.Wise40.Telescope
             }
         }
 
+        public bool FlippedOver90Degrees
+        {
+            get
+            {
+                double radians = (Value * decMultiplier) + DecCorrection;
+                return radians > halfPI;
+            }
+        }
+
         public double Degrees
         {
             get
             {
+                Angle ret = _angle;
+
                 if (!Simulated)
                 {
                     uint v = Value;
                     _angle.Radians = (v * decMultiplier) + DecCorrection;
 
-                    while (_angle.Radians > Math.PI)
-                        _angle.Radians -= 2 * Math.PI;
+                    ret = _angle;
+                    if (FlippedOver90Degrees)
+                        ret.Radians = Math.PI - ret.Radians;
 
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugEncoders,
-                        "[{0}] {1} Degrees - Value: {2}, deg: {3}", this.GetHashCode(), Name, v, _angle);
+                        "[{0}] {1} Degrees - Value: {2}, deg: {3}", this.GetHashCode(), Name, v, ret);
                     #endregion
                 }
 
-                return _angle.Degrees;
+                return ret.Degrees;
             }
 
             set
