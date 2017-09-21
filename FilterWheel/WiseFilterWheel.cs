@@ -549,9 +549,9 @@ namespace ASCOM.Wise40.FilterWheel
                 }
 
                 int slots = (cw < ccw) ? cw : ccw;
-                ArduinoInterface.StepperDirection dir = (cw < ccw) ?
-                    ArduinoInterface.StepperDirection.CW :
-                    ArduinoInterface.StepperDirection.CCW;
+                ArduinoInterface.StepperDirection dir = (cw < ccw) ?    // NOTE: Wheel moves oposite to stepper
+                    ArduinoInterface.StepperDirection.CCW :
+                    ArduinoInterface.StepperDirection.CW;
                 if (nPositions == 4)
                     slots *= 2;
 

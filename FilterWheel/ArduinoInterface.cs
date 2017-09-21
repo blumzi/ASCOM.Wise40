@@ -142,9 +142,9 @@ namespace ASCOM.Wise40.FilterWheel
         {
             if (_initialized)
                 return;
+            this._serialPort = port;
             serial = new System.IO.Ports.SerialPort(port, 57600);
             debugger.StartDebugging(Debugger.DebugLevel.DebugLogic);
-            this._serialPort = port;
             communicationCompleteHandler += onCommunicationComplete;
             _initialized = true;
         }
@@ -247,7 +247,7 @@ namespace ASCOM.Wise40.FilterWheel
         {
             get
             {
-                return (_error != null) ? _error : _status.ToString();
+                return string.Format("{0}{1}", _status.ToString(), (_error == null) ? "" : " (" + _error + ")");
             }
         }
 
