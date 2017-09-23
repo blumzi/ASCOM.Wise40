@@ -588,7 +588,12 @@ namespace ASCOM.Wise40.Dome
             int tries;
 
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome:Stop Starting to stop at az: {0} (encoder: {1})", Azimuth, domeEncoder.Value);
+            string dbg = string.Format("WiseDome:Stop Starting to stop (encoder: {0}) ", domeEncoder.Value);
+            if (Calibrated)
+                dbg += string.Format(", az: {0}", Azimuth);
+            else
+                dbg += ", not calibrated";
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, dbg);
             #endregion
             _movementTimer.Change(Timeout.Infinite, Timeout.Infinite);
             rightPin.SetOff();
