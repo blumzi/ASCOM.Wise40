@@ -107,14 +107,14 @@ namespace ASCOM.Wise40.Telescope
                         List<uint> wormValues = wormEncoder.RawValues;
                         List<uint> axisValues = axisEncoder.RawValues;
 
-                        worm = (wormValues[0] << 8) | wormValues[1];                        
+                        worm = ((wormValues[0] & 0xf) << 8) | (wormValues[1] & 0xff);                        
                         axis = (axisValues[1] >> 4) | (axisValues[0] << 4);
 
                         _daqsValue = ((axis * 600 + worm) & 0xfff000) - worm;
                     }
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, 
-                        "{0}: value: {1}, axis: {2}, worm: {3}", 
+                    debugger.WriteLine(Debugger.DebugLevel.DebugEncoders,
+                        "{0}: _daqsValue: {1}, (0x{1:x}), axis: {2}, worm: {3}", 
                         Name, _daqsValue, axis, worm);
                     #endregion
                 }
@@ -159,7 +159,13 @@ namespace ASCOM.Wise40.Telescope
             get
             {
                 double radians = (Value * decMultiplier) + DecCorrection;
-                return radians > halfPI;
+                bool flipped = radians > halfPI;
+
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                    "FlippedOver90Degrees: radians: {0}, ret: {1}", radians, flipped);
+                #endregion
+                return flipped;
             }
         }
 
@@ -176,7 +182,12 @@ namespace ASCOM.Wise40.Telescope
 
                     ret = _angle;
                     if (FlippedOver90Degrees)
+                    {
+                        #region debug
+                        debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDecEncoder: Flipped");
+                        #endregion
                         ret.Radians = Math.PI - ret.Radians;
+                    }
 
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugEncoders,
