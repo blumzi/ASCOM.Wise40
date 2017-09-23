@@ -39,7 +39,7 @@ namespace Dash
         DomeSlaveDriver domeSlaveDriver = DomeSlaveDriver.Instance;
         DebuggingForm debuggingForm = new DebuggingForm();
         Debugger debugger = Debugger.Instance;
-        FilterWheelForm filterWheelForm = new FilterWheelForm();
+        //FilterWheelForm filterWheelForm = new FilterWheelForm();
 
         Statuser dashStatus, telescopeStatus, domeStatus, shutterStatus, focuserStatus, weatherStatus, filterWheelStatus;
 
@@ -72,8 +72,8 @@ namespace Dash
             wisesafetoopen.init();
             wisesafetoopen.Connected = true;
             wiseboltwood.Connected = true;
-            wisefilterwheel.init();
-            wisefilterwheel.Connected = true;
+            //wisefilterwheel.init();
+            //wisefilterwheel.Connected = true;
             wisedomeplatform.init();
 
             InitializeComponent();
@@ -167,7 +167,7 @@ namespace Dash
             //buttonFocusAllUp.Text = "\u21c8  " + wisefocuser.UpperLimit.ToString();
             //buttonFocusAllDown.Text = wisefocuser.LowerLimit.ToString() + "  \u21ca";
 
-            wisefilterwheel.wheelOrPositionChanged += onWheelOrPositionChanged;
+            //wisefilterwheel.wheelOrPositionChanged += onWheelOrPositionChanged;
         }
         #endregion
 
@@ -496,15 +496,15 @@ namespace Dash
             #endregion
 
             #region RefreshFilterWheel
-            string fwstat = wisefilterwheel.Status;
-            if (fwstat == "Idle")
-            {
-                annunciatorFilterWheel.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
-            } else
-            {
-                annunciatorFilterWheel.Cadence = ASCOM.Controls.CadencePattern.BlinkSlow;
-                filterWheelStatus.Show(fwstat);
-            }
+            //string fwstat = wisefilterwheel.Status;
+            //if (fwstat == "Idle")
+            //{
+            //    annunciatorFilterWheel.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            //} else
+            //{
+            //    annunciatorFilterWheel.Cadence = ASCOM.Controls.CadencePattern.BlinkSlow;
+            //    filterWheelStatus.Show(fwstat);
+            //}
             #endregion
         }
         #endregion
@@ -1254,8 +1254,8 @@ namespace Dash
 
         private void filterWheelToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            wisefilterwheel.init();
-            new FilterWheelForm().Show();
+            //wisefilterwheel.init();
+            //new FilterWheelForm().Show();
         }
 
         private void syncVentWithShutterToolStripMenuItem_Click(object sender, EventArgs e)
