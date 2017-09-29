@@ -188,9 +188,15 @@ namespace Dash
 
             labelRightAscensionValue.Text = Angle.FromHours(wisetele.RightAscension).ToNiceString();
             labelDeclinationValue.Text = Angle.FromDegrees(wisetele.Declination).ToNiceString();
+
             labelHourAngleValue.Text = Angle.FromHours(wisetele.HourAngle, Angle.Type.HA).ToNiceString();
+            labelHourAngleValue.ForeColor = wisetele.HaNotSafe ? Statuser.colors[Statuser.Severity.Warning] :
+                Statuser.colors[Statuser.Severity.Normal];
 
             labelAltitudeValue.Text = Angle.FromDegrees(wisetele.Altitude).ToNiceString();
+            labelAltitudeValue.ForeColor = wisetele.AltNotSafe ? Statuser.colors[Statuser.Severity.Warning] :
+                Statuser.colors[Statuser.Severity.Normal];
+
             labelAzimuthValue.Text = Angle.FromDegrees(wisetele.Azimuth).ToNiceString();
 
             buttonTelescopePark.Text = wisetele.AtPark ? "Unpark" : "Park";

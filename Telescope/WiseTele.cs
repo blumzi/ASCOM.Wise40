@@ -82,6 +82,7 @@ namespace ASCOM.Wise40.Telescope
         private bool _syncingDomePosition = false;
 
         private bool _atPark;
+        private bool _altNotSafe, _haNotSafe;
 
         private double mainMirrorDiam = 1.016;    // 40inch (meters)
 
@@ -1271,6 +1272,8 @@ namespace ASCOM.Wise40.Telescope
             //
             Angle ha = Angle.FromHours(HourAngle, Angle.Type.HA);
             bool haNotSafe = Math.Abs(ha.Degrees) > haLimit.Degrees;
+            _altNotSafe = altNotSafe;
+            _haNotSafe = haNotSafe;
 
             if (altNotSafe || haNotSafe)
             {
@@ -1303,6 +1306,22 @@ namespace ASCOM.Wise40.Telescope
                 return header + result;
             }
             return string.Empty;
+        }
+
+        public bool AltNotSafe
+        {
+            get
+            {
+                return _altNotSafe;
+            }
+        }
+
+        public bool HaNotSafe
+        {
+            get
+            {
+                return _haNotSafe;
+            }
         }
 
         public bool AtPark
