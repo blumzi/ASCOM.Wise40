@@ -10,7 +10,7 @@ namespace ASCOM.Wise40.Telescope
 {
     public class WiseDecEncoder : WiseObject, IConnectable, IDisposable, IEncoder
     {
-        private uint _daqsValue;
+        private /*uint*/ double _daqsValue;
 
         private WiseEncoder axisEncoder, wormEncoder;
 
@@ -21,8 +21,9 @@ namespace ASCOM.Wise40.Telescope
 
         public Angle _angle;
         private const double halfPI = Math.PI / 2.0;
+        private const double twoPI = Math.PI * 2.0;
 
-        const double decMultiplier = 2 * Math.PI / 600 / 4096;
+        const double DecMultiplier = twoPI / 600 / 4096;
         const double DecCorrection = 0.35613322;                //20081231 SK: ActualDec-Encoder Dec [rad]
 
         private Common.Debugger debugger = Debugger.Instance;
@@ -41,16 +42,16 @@ namespace ASCOM.Wise40.Telescope
             axisEncoder = new WiseEncoder("DecAxis",
                 1 << 16,
                 new List<WiseEncSpec>() {
-                    new WiseEncSpec() { brd = hw.teleboard, port = DigitalPortType.SecondPortA, mask = 0xff },
-                    new WiseEncSpec() { brd = hw.teleboard, port = DigitalPortType.SecondPortB, mask = 0xff },
+                    new WiseEncSpec() { brd = hw.teleboard, port = DigitalPortType.SecondPortA, mask = 0xff }, // [0]
+                    new WiseEncSpec() { brd = hw.teleboard, port = DigitalPortType.SecondPortB, mask = 0xff }, // [1]
                 }
             );
 
             wormEncoder = new WiseEncoder("DecWorm",
                 1 << 12,
                 new List<WiseEncSpec>() {
-                    new WiseEncSpec() { brd = hw.teleboard, port = DigitalPortType.SecondPortCL, mask = 0x0f },
-                    new WiseEncSpec() { brd = hw.teleboard, port = DigitalPortType.FirstPortA,   mask = 0xff },
+                    new WiseEncSpec() { brd = hw.teleboard, port = DigitalPortType.SecondPortCL, mask = 0x0f }, // [0]
+                    new WiseEncSpec() { brd = hw.teleboard, port = DigitalPortType.FirstPortA,   mask = 0xff }, // [1]
                 }
             );
 
@@ -58,7 +59,7 @@ namespace ASCOM.Wise40.Telescope
 
             _angle = Simulated ?
                 Angle.FromDegrees(90.0, Angle.Type.Dec) - wisesite.Latitude :
-                Angle.FromRadians((Value * decMultiplier) + DecCorrection, Angle.Type.Dec);
+                Angle.FromRadians((Value * DecMultiplier) + DecCorrection, Angle.Type.Dec);
         }
 
         public double Declination
@@ -94,27 +95,46 @@ namespace ASCOM.Wise40.Telescope
         /// Reads the axis and worm encoders
         /// </summary>
         /// <returns>Combined Daq values</returns>
-        public uint Value
+        public double Value
         {
             get
             {
                 if (!Simulated)
                 {
-                    uint worm, axis;
+                    #region Delphi
+                    ////DecWormDAC is 12bit: lower nibble of boardAport0+ boardAport1
+                    //
+                    // procedure GetCoord(var HA, RA, HA_Enc, Dec, Dec_Enc :extended [double];
+                    // var HA_last, RA_last, Dec_last : extended [double];
+                    // var BAP0, BAP1, BAP2, BAP3, BBP0, BBP1, BBP2, BBP3: integer [int];
+                    // var HAWormEnc, HAAxisEnc, DecWormEnc, DecAxisEnc: longint [int]);
+                    //
+                    // DecWormEnc:= (BBP1 AND $000F)*$100 + BBP0;
+                    // DecAxisEnc:= ((BBP2 AND $00FF) div $10) +($10 * BBP3); //missing 4140 div 16
+                    // DecEnc:= ((DecAxisEnc * 600 + DecWormEnc) AND $FFF000) -DecWormEnc; //MASK lower 12 bits of DecAxisDAC
+                    // Dec_Enc:= DecEnc * 2.5566346464760687161968126491532e-6;  //2*pi/600/4096
+                    // Dec:= Dec_Enc + DecCorrection;
+                    // if (Dec > pi) then
+                    //   Dec := Dec - pi2;
+                    #endregion
+
+                    int worm, axis;
 
                     lock (_lock)
                     {
-                        List<uint> wormValues = wormEncoder.RawValues;
-                        List<uint> axisValues = axisEncoder.RawValues;
+                        List<int> wormValues = wormEncoder.RawValuesInt;
+                        List<int> axisValues = axisEncoder.RawValuesInt;
 
-                        worm = ((wormValues[0] & 0xf) << 8) | (wormValues[1] & 0xff);                        
-                        axis = (axisValues[1] >> 4) | (axisValues[0] << 4);
+                        //worm = ((wormValues[0] & 0xf) << 8) | (wormValues[1] & 0xff);
+                        worm = ((wormValues[0] & 0xf) * 0x100) + (wormValues[1] & 0xff);
+                        //axis = (axisValues[1] >> 4) | (axisValues[0] << 4);
+                        axis = (axisValues[1] / 0x10) + (axisValues[0] * 0x10);
 
                         _daqsValue = ((axis * 600 + worm) & 0xfff000) - worm;
                     }
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugEncoders,
-                        "{0}: _daqsValue: {1}, (0x{1:x}), axis: {2}, worm: {3}", 
+                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                        "{0}: _daqsValue: {1}, axis: {2}, worm: {3}", 
                         Name, _daqsValue, axis, worm);
                     #endregion
                 }
@@ -134,7 +154,7 @@ namespace ASCOM.Wise40.Telescope
             {
 
                 if(! Simulated)
-                    _angle.Radians = (Value * decMultiplier) + DecCorrection;
+                    _angle.Radians = (Value * DecMultiplier) + DecCorrection;
 
                 Angle ret = _angle;
 
@@ -149,7 +169,7 @@ namespace ASCOM.Wise40.Telescope
                 if (Simulated)
                 {
                     _angle.Radians = value.Radians;
-                    Value = (uint) Math.Round((_angle.Radians - DecCorrection) / decMultiplier);
+                    Value = (uint) Math.Round((_angle.Radians - DecCorrection) / DecMultiplier);
                 }
             }
         }
@@ -158,7 +178,9 @@ namespace ASCOM.Wise40.Telescope
         {
             get
             {
-                double radians = (Value * decMultiplier) + DecCorrection;
+                return false;
+
+                double radians = (Value * DecMultiplier) + DecCorrection;
                 bool flipped = radians > halfPI;
 
                 #region debug
@@ -177,8 +199,12 @@ namespace ASCOM.Wise40.Telescope
 
                 if (!Simulated)
                 {
-                    uint v = Value;
-                    _angle.Radians = (v * decMultiplier) + DecCorrection;
+                    double current_value = Value;
+                    double radians = (current_value * DecMultiplier) + DecCorrection;
+
+                    if (radians > Math.PI)
+                        radians -= twoPI;
+                    _angle.Radians = radians;
 
                     ret = _angle;
                     if (FlippedOver90Degrees)
@@ -191,7 +217,7 @@ namespace ASCOM.Wise40.Telescope
 
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugEncoders,
-                        "[{0}] {1} Degrees - Value: {2}, deg: {3}", this.GetHashCode(), Name, v, ret);
+                        "[{0}] {1} Degrees - Value: {2}, deg: {3}", this.GetHashCode(), Name, current_value, ret);
                     #endregion
                 }
 
@@ -203,7 +229,7 @@ namespace ASCOM.Wise40.Telescope
                 _angle.Degrees = value;
                 if (Simulated)
                 {
-                    _daqsValue = (uint) ((_angle.Radians - DecCorrection) / decMultiplier);
+                    _daqsValue = /*(uint)*/ ((_angle.Radians - DecCorrection) / DecMultiplier);
                 }
             }
         }

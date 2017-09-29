@@ -125,6 +125,19 @@ namespace ASCOM.Wise40.Hardware
             }
         }
 
+        public List<int> RawValuesInt
+        {
+            get
+            {
+                List<uint> values = RawValues;
+                List<int> ret = new List<int>();
+
+                foreach (uint u in values)
+                    ret.Add(Convert.ToInt16(u));
+                return ret;
+            }
+        }
+
         #region GrayCode
         protected static ushort[] GrayCode = new ushort[1024] {
             0,    1,    3,    2,    7,    6,    4,    5,   15,   14,

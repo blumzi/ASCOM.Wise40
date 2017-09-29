@@ -10,7 +10,7 @@ namespace ASCOM.Wise40.Telescope
     public class WiseHAEncoder : WiseObject, IConnectable, IDisposable, IEncoder
     {
         private bool _connected = false;
-        private uint _daqsValue;
+        private /*uint*/ double _daqsValue;
         private const uint _realValueAtFiducialMark = 1432779; // Arie - 02 July 2016
         
         private WiseEncoder axisEncoder, wormEncoder;
@@ -67,18 +67,30 @@ namespace ASCOM.Wise40.Telescope
         /// Reads the axis and worm encoders
         /// </summary>
         /// <returns>Combined Daq values</returns>
-        public uint Value
+        public /*uint*/ double Value
         {
             get
             {
-                uint worm, axis;
+                #region Delphi
+                // procedure GetCoord(var HA, RA, HA_Enc, Dec, Dec_Enc :extended [double];
+                // var HA_last, RA_last, Dec_last : extended [double];
+                // var BAP0, BAP1, BAP2, BAP3, BBP0, BBP1, BBP2, BBP3: integer [int];
+                // var HAWormEnc, HAAxisEnc, DecWormEnc, DecAxisEnc: longint [int]);
+                //
+                // HAWormEnc:= (BAP1 AND $000F)*$100 + BAP0;
+                // HAAxisEnc:= ((BAP2 AND $00FF) div $10) +($10 * BAP3);
+                // HAEnc:= ((HAAxisEnc * 720 - HAWormEnc) AND $FFF000) +HAWormEnc; //MASK lower 12 bits of HAEnc to be determined by HAWormEnc
+                // HA_Enc:= HAEnc * 2.1305288720633905968306772076277e-6;  //2*pi/720/4096
+                // HA:= HA_Enc + HACorrection;
+                #endregion
+                int worm, axis;
 
                 if (! Simulated)
                 {
                     lock (_lock)
                     {
-                        List<uint> wormValues = wormEncoder.RawValues;
-                        List<uint> axisValues = axisEncoder.RawValues;
+                        List<int> wormValues = wormEncoder.RawValuesInt;
+                        List<int> axisValues = axisEncoder.RawValuesInt;
 
                         worm = (wormValues[0] << 8) | wormValues[1];
                         axis = (axisValues[1] >> 4) | (axisValues[0] << 4);
@@ -132,7 +144,10 @@ namespace ASCOM.Wise40.Telescope
             get
             {
                 if (!Simulated)
-                    _angle = Angle.FromRadians((Value * HaMultiplier) + HaCorrection);
+                {
+                    double radians = (Value * HaMultiplier) + HaCorrection;
+                    _angle.Radians = radians;
+                }
 
                 return _angle;
             }
@@ -167,7 +182,7 @@ namespace ASCOM.Wise40.Telescope
                     debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "[{0}] {1}: {2} + {3} = {4}",
                         this.GetHashCode(), Name, before, delta, after);
                     #endregion
-                    _daqsValue = (uint)((_angle.Radians + HaCorrection) / HaMultiplier);
+                    _daqsValue = /*(uint)*/((_angle.Radians + HaCorrection) / HaMultiplier);
                 }
             }
         }
@@ -176,6 +191,7 @@ namespace ASCOM.Wise40.Telescope
         {
             get
             {
+                #region Delphi
                 //   if dec_Corrected > pi / 2.0 then  // Has the telescope gone North of dec=90deg?
                 //      begin // Adjust the dec and HA values accordingly.
                 //          dec_Corrected:= pi - dec_Corrected;
@@ -183,6 +199,7 @@ namespace ASCOM.Wise40.Telescope
                 //          if HA_Corrected > 2 * pi then
                 //                HA_Corrected := HA_Corrected - 2 * pi
                 //      end;
+                #endregion
                 double ret = Angle.Hours;
                 if (_decEncoder.FlippedOver90Degrees)
                 {
@@ -202,6 +219,10 @@ namespace ASCOM.Wise40.Telescope
             get
             {
                 Angle ret = wisesite.LocalSiderealTime - Angle.FromHours(Hours, Angle.Type.RA);
+                if (ret.Radians < 0)
+                    ret.Radians += twoPI;
+                if (ret.Radians > twoPI)
+                    ret.Radians -= twoPI;
                 #region debug
                 //debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "[{0}] RightAscension: {1}", this.GetHashCode(), ret);
                 #endregion
