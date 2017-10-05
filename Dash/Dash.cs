@@ -179,6 +179,15 @@ namespace Dash
             DateTime localTime = now.ToLocalTime();
             ASCOM.Utilities.Util u = new ASCOM.Utilities.Util();
 
+            Angle ra = Angle.FromHours(wisetele.RightAscension);
+            Angle dec = Angle.FromDegrees(wisetele.Declination);
+            Angle ha = Angle.FromHours(wisetele.HourAngle, Angle.Type.HA);
+            string safetyError = wisetele.SafeAtCoordinates(ra, dec, false);
+
+            Color coordsColor = (safetyError == string.Empty) ?
+                Statuser.colors[Statuser.Severity.Normal] :
+                Statuser.colors[Statuser.Severity.Error];
+
             labelDate.Text = localTime.ToLongDateString() + Const.crnl + localTime.ToLongTimeString();
 
             #region RefreshTelescope
@@ -186,16 +195,17 @@ namespace Dash
             labelUTValue.Text = utcTime.TimeOfDay.ToString(@"hh\hmm\mss\.f\s");
             labelSiderealValue.Text = wisesite.LocalSiderealTime.ToString();
 
-            labelRightAscensionValue.Text = Angle.FromHours(wisetele.RightAscension).ToNiceString();
-            labelDeclinationValue.Text = Angle.FromDegrees(wisetele.Declination).ToNiceString();
+            labelRightAscensionValue.Text = ra.ToNiceString();
+            labelRightAscensionValue.ForeColor = coordsColor;
 
-            labelHourAngleValue.Text = Angle.FromHours(wisetele.HourAngle, Angle.Type.HA).ToNiceString();
-            labelHourAngleValue.ForeColor = wisetele.HaNotSafe ? Statuser.colors[Statuser.Severity.Warning] :
-                Statuser.colors[Statuser.Severity.Normal];
+            labelDeclinationValue.Text = dec.ToNiceString();
+            labelDeclinationValue.ForeColor = coordsColor;
+
+            labelHourAngleValue.Text = ha.ToNiceString();
+            labelHourAngleValue.ForeColor = coordsColor;
 
             labelAltitudeValue.Text = Angle.FromDegrees(wisetele.Altitude).ToNiceString();
-            labelAltitudeValue.ForeColor = wisetele.AltNotSafe ? Statuser.colors[Statuser.Severity.Warning] :
-                Statuser.colors[Statuser.Severity.Normal];
+            labelAltitudeValue.ForeColor = coordsColor;
 
             labelAzimuthValue.Text = Angle.FromDegrees(wisetele.Azimuth).ToNiceString();
 
