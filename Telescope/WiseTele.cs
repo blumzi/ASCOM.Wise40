@@ -181,7 +181,8 @@ namespace ASCOM.Wise40.Telescope
         public Dictionary<TelescopeAxes, Movement> prevMovement;         // remembers data about the previous axes movement, specifically the direction
         public Dictionary<TelescopeAxes, Movement> currMovement;         // the current axes movement        
 
-        private static readonly Angle altLimit = new Angle(14.0, Angle.Type.Alt); // telescope must not go below 14deg Altitude
+        // Physical limit switches are engaged at 14deg Alt
+        private static readonly Angle altLimit = new Angle(16.0, Angle.Type.Alt);
         private static readonly Angle haLimit = Angle.FromHours(4.5);
 
         public MovementDictionary movementDict;
