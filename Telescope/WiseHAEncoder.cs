@@ -146,7 +146,10 @@ namespace ASCOM.Wise40.Telescope
                 if (!Simulated)
                 {
                     double radians = (Value * HaMultiplier) + HaCorrection;
-                    _angle.Radians = radians;
+                    if (_angle == null)
+                        _angle = Angle.FromRadians(radians);
+                    else
+                        _angle.Radians = radians;
                 }
 
                 return _angle;
@@ -191,23 +194,7 @@ namespace ASCOM.Wise40.Telescope
         {
             get
             {
-                #region Delphi
-                //   if dec_Corrected > pi / 2.0 then  // Has the telescope gone North of dec=90deg?
-                //      begin // Adjust the dec and HA values accordingly.
-                //          dec_Corrected:= pi - dec_Corrected;
-                //          HA_Corrected:= HA_Corrected + pi; // Add 12hr to HA
-                //          if HA_Corrected > 2 * pi then
-                //                HA_Corrected := HA_Corrected - 2 * pi
-                //      end;
-                #endregion
-                double ret = Angle.Hours;
-                if (_decEncoder.FlippedOver90Degrees)
-                {
-                    ret += Math.PI;     // Add 12 hours
-                    if (ret > twoPI)
-                        ret -= twoPI;
-                }
-                return ret;
+                return Angle.Hours;
             }
         }
 
@@ -219,6 +206,19 @@ namespace ASCOM.Wise40.Telescope
             get
             {
                 Angle ret = wisesite.LocalSiderealTime - Angle.FromHours(Hours, Angle.Type.RA);
+                #region Delphi
+                //   if dec_Corrected > pi / 2.0 then  // Has the telescope gone North of dec=90deg?
+                //      begin // Adjust the dec and HA values accordingly.
+                //          dec_Corrected:= pi - dec_Corrected;
+                //          HA_Corrected:= HA_Corrected + pi; // Add 12hr to HA
+                //          if HA_Corrected > 2 * pi then
+                //                HA_Corrected := HA_Corrected - 2 * pi
+                //      end;
+                #endregion
+                if (_decEncoder.FlippedOver90Degrees)
+                {
+                    ret.Radians += Math.PI;     // Add 12 hours
+                }
                 if (ret.Radians < 0)
                     ret.Radians += twoPI;
                 if (ret.Radians > twoPI)

@@ -178,7 +178,7 @@ namespace ASCOM.Wise40.Telescope
         {
             get
             {
-                return false;
+                //return false;
 
                 double radians = (Value * DecMultiplier) + DecCorrection;
                 bool flipped = radians > halfPI;
