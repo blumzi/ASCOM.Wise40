@@ -613,8 +613,12 @@ namespace ASCOM.Wise40.Dome
             if (Calibrated)
                 SaveCalibrationData();
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome:Stop Fully stopped at az: {0} (encoder: {1}) after {2} tries",
-                Azimuth, domeEncoder.Value, tries + 1);
+            if (Calibrated)
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome:Stop Fully stopped at az: {0} (encoder: {1}) after {2} tries",
+                    Azimuth, domeEncoder.Value, tries + 1);
+            else
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome:Stop Fully stopped (not calibrated) (encoder: {0}) after {1} tries",
+                    domeEncoder.Value, tries + 1);
             #endregion
         }
 
