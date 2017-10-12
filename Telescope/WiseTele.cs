@@ -82,7 +82,7 @@ namespace ASCOM.Wise40.Telescope
         private bool _syncingDomePosition = false;
 
         private bool _atPark;
-        private bool _altNotSafe, _haNotSafe;
+        private bool _movingToSafety = false;
 
         private double mainMirrorDiam = 1.016;    // 40inch (meters)
 
@@ -531,7 +531,7 @@ namespace ASCOM.Wise40.Telescope
             _instance.realMovementParameters[TelescopeAxes.axisSecondary][Const.rateSlew] = new MovementParameters()
             {
                 minimalMovement = new Angle("00:30:00.0"),
-                stopMovement = new Angle("04:00:00.0"),
+                stopMovement = new Angle("02:00:00.0"),
                 millisecondsPerDegree = 500.0,      // 2 deg/sec
             };
 
@@ -992,7 +992,10 @@ namespace ASCOM.Wise40.Telescope
         {
             get
             {
-                bool ret = slewers.Count > 0 || DirectionMotorsAreActive;
+                bool ret = slewers.Count > 0 ||
+                    DirectionMotorsAreActive ||
+                    _movingToSafety;                // triggered by SafeAtCoordinates()
+
                 #region trace
                 traceLogger.LogMessage("Slewing Get", ret.ToString());
                 #endregion
@@ -1034,7 +1037,7 @@ namespace ASCOM.Wise40.Telescope
             #endregion debug
 
             if (!wiseComputerControl.IsSafe && !BypassSafety)
-                throw new ASCOM.InvalidOperationException("Dome platform is NOT safe.");
+                throw new ASCOM.InvalidOperationException("Computer control or dome platform are NOT safe.");
 
             Const.AxisDirection direction = (Rate == Const.rateStopped) ? Const.AxisDirection.None :
                 (Rate < 0.0) ? Const.AxisDirection.Decreasing : Const.AxisDirection.Increasing;
@@ -1105,6 +1108,7 @@ namespace ASCOM.Wise40.Telescope
             if (Rate == Const.rateStopped)
             {
                 StopAxisAndWaitForHalt(thisAxis);
+                safetyMonitorTimer.DisableIfNotNeeded();
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "_moveAxis({0}, {1}): done.",
                     Axis, RateName(Rate));
@@ -1200,7 +1204,7 @@ namespace ASCOM.Wise40.Telescope
             if (!Tracking)
                 throw new InvalidOperationException("Cannot SlewToTargetAsync while NOT Tracking");
 
-            notSafe = SafeAtCoordinates(ra, dec);
+            notSafe = SafeAtCoordinates(ra, dec, false);
             if (notSafe != string.Empty)
                 throw new InvalidOperationException(notSafe);
 
@@ -1217,16 +1221,17 @@ namespace ASCOM.Wise40.Telescope
         /// </summary>
         /// <param name="ra">RightAscension of the checked position</param>
         /// <param name="dec">Declination of the checked position</param>
-        /// <param name="whileTracking">true: the check is while tracking, false: the check is prior to slewing</param>
-        public string SafeAtCoordinates(Angle ra, Angle dec, bool whileTracking = false)
+        /// <param name="moveToSafety">move back to safety</param>
+
+        public string SafeAtCoordinates(Angle ra, Angle dec, bool moveToSafety = false)
         {
             double rar = 0, decr = 0, az = 0, zd = 0;
             Angle alt;
             string ret = string.Empty;
-            string header = string.Format("SafeAtCoordinates(ra: {0}, dec: {1}, whileTracking: {2}) - ",
-                ra.ToString(), dec.ToString(), whileTracking.ToString());
+            string header = string.Format("SafeAtCoordinates(ra: {0}, dec: {1}, moveToSafety: {2}) - ",
+                ra.ToString(), dec.ToString(), moveToSafety.ToString());
 
-            if (whileTracking && !Tracking)
+            if (moveToSafety && !Tracking)
             {
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugAxes, header + "OK");
@@ -1249,11 +1254,11 @@ namespace ASCOM.Wise40.Telescope
             //
             // For a check-before-move target we only check that the altitude is not under the altLimit.
             //
-            if (!whileTracking)
+            if (!moveToSafety)
             {
                 if (altNotSafe)
                 {
-                    string result = string.Format("altNotSafe: alt: {0} < altLimit: {1}", alt, altLimit);
+                    string result = string.Format("altNotSafe: {0} < {1}", alt.ToNiceString(), altLimit.ToNiceString());
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugLogic, header + result);
                     #endregion debug
@@ -1267,62 +1272,81 @@ namespace ASCOM.Wise40.Telescope
 
             //
             // If we're checking at the current position, i.e. the check is while we're in motion, we:
-            // - check if the hour angle is within limits
             // - back-off the scope away from the unsafe coordinates
             // - stop tracking 
             //
-            Angle ha = Angle.FromHours(HourAngle, Angle.Type.HA);
-            bool haNotSafe = Math.Abs(ha.Degrees) > haLimit.Degrees;
-            _altNotSafe = altNotSafe;
-            _haNotSafe = haNotSafe;
 
-            if (altNotSafe || haNotSafe)
+
+            if (altNotSafe)
             {
-                string result = "NOT SAFE - ";
-
-                if (altNotSafe)
-                    result += string.Format("altNotSafe: alt: {0} < altLimit: {1} ", alt, altLimit);
-                if (haNotSafe)
-                    result += string.Format("haNotSafe: Abs({0}) >: {1}", ha, haLimit);
+                if (_movingToSafety)
+                {
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, header + ": Already moving back to safety, ignored.");
+                    #endregion
+                }
+                string result = string.Format("NOT SAFE - altNotSafe: alt: {0} < altLimit: {1} ", alt, altLimit);
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, header + result);
                 #endregion debug
                 #region trace
                 traceLogger.LogMessage("SafeAtCoordinates", header + result);
                 #endregion
-                
+
+                _movingToSafety = true;             // Keep Slewing == true
+
                 safetyMonitorTimer.Enabled = false;
+
+                double raRate = Const.rateStopped;
+                double decRate = Const.rateStopped;
+
+                if (_instance.NorthMotor.isOn)
+                    decRate = -Const.rateSlew;      // move South
+                else if (_instance.SouthMotor.isOn)
+                    decRate = Const.rateSlew;       // move North
+
+                if (_instance.EastMotor.isOn)
+                    raRate = -Const.rateSlew;       // move West
+                else if (_instance.WestMotor.isOn || _instance.TrackingMotor.isOn)
+                    raRate = Const.rateSlew;        // move East
+
+                Stop();
                 Tracking = false;
 
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, header + ": Backing off to the East");
-                #endregion
-                MoveAxis(TelescopeAxes.axisPrimary, Const.rateSlew);
-                Thread.Sleep(1000);
-                MoveAxis(TelescopeAxes.axisPrimary, Const.rateStopped);
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, header + ": Done backing off");
-                #endregion
+                if (raRate != Const.rateStopped)
+                {
+                    string dir = raRate < 0.0 ? "West" : "East";
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, header + ": Backing RA off to the " + dir);
+                    #endregion
+                    MoveAxis(TelescopeAxes.axisPrimary, raRate);
+                    Thread.Sleep(1000);
+                    MoveAxis(TelescopeAxes.axisPrimary, Const.rateStopped);
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, header + ": Done backing RA off to the " + dir);
+                    #endregion
+                }
+
+                if (decRate != Const.rateStopped)
+                {
+                    string dir = decRate < 0 ? "South" : "North";
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, header + ": Backing DEC off to the " + dir);
+                    #endregion
+                    MoveAxis(TelescopeAxes.axisSecondary, decRate);
+                    Thread.Sleep(1000);
+                    MoveAxis(TelescopeAxes.axisSecondary, Const.rateStopped);
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, header + ": Done backing DEC off to the " + dir);
+                    #endregion
+                }
+
+                _movingToSafety = false;            // Release Slewing to false
 
                 return header + result;
             }
-            return string.Empty;
-        }
-
-        public bool AltNotSafe
-        {
-            get
-            {
-                return _altNotSafe;
-            }
-        }
-
-        public bool HaNotSafe
-        {
-            get
-            {
-                return _haNotSafe;
-            }
+            else
+                return string.Empty;
         }
 
         public bool AtPark
