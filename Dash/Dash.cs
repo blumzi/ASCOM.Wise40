@@ -182,7 +182,7 @@ namespace Dash
             Angle ra = Angle.FromHours(wisetele.RightAscension);
             Angle dec = Angle.FromDegrees(wisetele.Declination);
             Angle ha = Angle.FromHours(wisetele.HourAngle, Angle.Type.HA);
-            string safetyError = wisetele.SafeAtCoordinates(ra, dec, false);
+            string safetyError = wisetele.SafeAtCoordinates(ra, dec);
 
             Color coordsColor = (safetyError == string.Empty) ?
                 Statuser.colors[Statuser.Severity.Normal] :
@@ -636,7 +636,7 @@ namespace Dash
             }
             catch (Exception ex)
             {
-                telescopeStatus.Show(ex.Message, 1000, Statuser.Severity.Error);
+                telescopeStatus.Show(ex.Message, 5000, Statuser.Severity.Error);
             }
         }
 
@@ -1408,9 +1408,14 @@ namespace Dash
             }
             catch { }
 #region debug
-            string msg = "StopEverything: ";
+            string msg = "\nStopEverything:\n";
             if (e != null)
-                msg += string.Format("Exception: {0}, ", e.Message);
+            {
+                msg += string.Format(" Exception -- : {0}\n", e.Message);
+                msg += string.Format("    Source -- : {0}\n", e.Source);
+                msg += string.Format("StackTrace -- : {0}\n", e.StackTrace);
+                msg += string.Format("TargetSite -- : {0}\n", e.TargetSite);
+            }
             msg += "Application will exit!";
             debugger.WriteLine(Debugger.DebugLevel.DebugExceptions, msg);
 #endregion
