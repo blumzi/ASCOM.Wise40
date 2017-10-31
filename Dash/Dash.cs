@@ -182,9 +182,9 @@ namespace Dash
             Angle ra = Angle.FromHours(wisetele.RightAscension);
             Angle dec = Angle.FromDegrees(wisetele.Declination);
             Angle ha = Angle.FromHours(wisetele.HourAngle, Angle.Type.HA);
-            string safetyError = wisetele.SafeAtCoordinates(ra, dec, false);
+            string safetyError = wisetele.SafeAtCoordinates(ra, dec);
 
-            Color coordsColor = (safetyError == string.Empty) ?
+            Color safetyColor = (safetyError == string.Empty) ?
                 Statuser.colors[Statuser.Severity.Normal] :
                 Statuser.colors[Statuser.Severity.Error];
 
@@ -196,16 +196,11 @@ namespace Dash
             labelSiderealValue.Text = wisesite.LocalSiderealTime.ToString();
 
             labelRightAscensionValue.Text = ra.ToNiceString();
-            labelRightAscensionValue.ForeColor = coordsColor;
-
             labelDeclinationValue.Text = dec.ToNiceString();
-            labelDeclinationValue.ForeColor = coordsColor;
-
             labelHourAngleValue.Text = ha.ToNiceString();
-            labelHourAngleValue.ForeColor = coordsColor;
 
             labelAltitudeValue.Text = Angle.FromDegrees(wisetele.Altitude).ToNiceString();
-            labelAltitudeValue.ForeColor = coordsColor;
+            labelAltitudeValue.ForeColor = safetyColor;
 
             labelAzimuthValue.Text = Angle.FromDegrees(wisetele.Azimuth).ToNiceString();
 
