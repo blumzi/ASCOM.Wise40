@@ -43,8 +43,8 @@ namespace ASCOM.Wise40.Telescope
         private void sampleMotion(object StateObject)
         {
             double value = (axis == TelescopeAxes.axisPrimary) ?
-                wisetele.HAEncoder.Angle.Hours :
-                wisetele.DecEncoder.Angle.Degrees;
+                wisetele.HAEncoder.Angle.Radians :
+                wisetele.DecEncoder.Angle.Radians;
 
             dataPoints.Add(new DataPoint(DateTime.Now.Subtract(start).TotalMilliseconds, value));
         }
