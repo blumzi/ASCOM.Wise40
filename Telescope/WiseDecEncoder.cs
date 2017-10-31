@@ -169,7 +169,7 @@ namespace ASCOM.Wise40.Telescope
                 if (Simulated)
                 {
                     _angle.Radians = value.Radians;
-                    Value = (uint) Math.Round((_angle.Radians - DecCorrection) / DecMultiplier);
+                    Value = Math.Round((_angle.Radians - DecCorrection) / DecMultiplier);
                 }
             }
         }
@@ -178,7 +178,7 @@ namespace ASCOM.Wise40.Telescope
         {
             get
             {
-                //return false;
+                return false;
 
                 double radians = (Value * DecMultiplier) + DecCorrection;
                 bool flipped = radians > halfPI;
