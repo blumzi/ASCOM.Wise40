@@ -169,7 +169,7 @@ namespace ASCOM.Wise40.Telescope
                 if (Simulated)
                 {
                     _angle.Radians = value.Radians;
-                    Value = Math.Round((_angle.Radians - DecCorrection) / DecMultiplier);
+                    Value = (uint) Math.Round((_angle.Radians - DecCorrection) / DecMultiplier);
                 }
             }
         }
@@ -179,13 +179,12 @@ namespace ASCOM.Wise40.Telescope
             get
             {
                 return false;
-
-                double radians = (Value * DecMultiplier) + DecCorrection;
-                bool flipped = radians > halfPI;
+                
+                bool flipped = _angle.Radians > halfPI;
 
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                    "FlippedOver90Degrees: radians: {0}, ret: {1}", radians, flipped);
+                    "FlippedOver90Degrees: radians: {0}, ret: {1}", _angle.Radians, flipped);
                 #endregion
                 return flipped;
             }

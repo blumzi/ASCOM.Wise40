@@ -531,7 +531,7 @@ namespace ASCOM.Wise40.Telescope
             _instance.realMovementParameters[TelescopeAxes.axisSecondary][Const.rateSlew] = new MovementParameters()
             {
                 minimalMovement = new Angle("00:30:00.0"),
-                stopMovement = new Angle("04:00:00.0"),
+                stopMovement = new Angle("02:00:00.0"),
                 millisecondsPerDegree = 500.0,      // 2 deg/sec
             };
 
@@ -986,14 +986,14 @@ namespace ASCOM.Wise40.Telescope
 
         /// <summary>
         /// Implements ITelescopeV3.Slewing Property.
-        /// True ONLY during SlewXXX and MoveAxis methods or when moving back to safety.
+        /// True ONLY during SlewXXX and MoveAxis methods.
         /// </summary>
         public bool Slewing
         {
             get
             {
-                bool ret = slewers.Count > 0  || 
-                    DirectionMotorsAreActive  || 
+                bool ret = slewers.Count > 0 ||
+                    DirectionMotorsAreActive ||
                     _movingToSafety;                // triggered by SafeAtCoordinates()
 
                 #region trace
@@ -1037,7 +1037,7 @@ namespace ASCOM.Wise40.Telescope
             #endregion debug
 
             if (!wiseComputerControl.IsSafe && !BypassSafety)
-                throw new ASCOM.InvalidOperationException("Dome platform is NOT safe.");
+                throw new ASCOM.InvalidOperationException("Computer control or dome platform are NOT safe.");
 
             Const.AxisDirection direction = (Rate == Const.rateStopped) ? Const.AxisDirection.None :
                 (Rate < 0.0) ? Const.AxisDirection.Decreasing : Const.AxisDirection.Increasing;
@@ -1108,6 +1108,7 @@ namespace ASCOM.Wise40.Telescope
             if (Rate == Const.rateStopped)
             {
                 StopAxisAndWaitForHalt(thisAxis);
+                safetyMonitorTimer.DisableIfNotNeeded();
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "_moveAxis({0}, {1}): done.",
                     Axis, RateName(Rate));
@@ -1203,7 +1204,7 @@ namespace ASCOM.Wise40.Telescope
             if (!Tracking)
                 throw new InvalidOperationException("Cannot SlewToTargetAsync while NOT Tracking");
 
-            notSafe = SafeAtCoordinates(ra, dec);
+            notSafe = SafeAtCoordinates(ra, dec, false);
             if (notSafe != string.Empty)
                 throw new InvalidOperationException(notSafe);
 
@@ -1220,13 +1221,14 @@ namespace ASCOM.Wise40.Telescope
         /// </summary>
         /// <param name="ra">RightAscension of the checked position</param>
         /// <param name="dec">Declination of the checked position</param>
-        /// <param name="moveToSafety">true: go back to safety, false: just check the given coordinates</param>
+        /// <param name="moveToSafety">move back to safety</param>
+
         public string SafeAtCoordinates(Angle ra, Angle dec, bool moveToSafety = false)
         {
             double rar = 0, decr = 0, az = 0, zd = 0;
             Angle alt;
             string ret = string.Empty;
-            string header = string.Format("SafeAtCoordinates(ra: {0}, dec: {1}, whileTracking: {2}) - ",
+            string header = string.Format("SafeAtCoordinates(ra: {0}, dec: {1}, moveToSafety: {2}) - ",
                 ra.ToString(), dec.ToString(), moveToSafety.ToString());
 
             if (moveToSafety && !Tracking)
@@ -1256,7 +1258,7 @@ namespace ASCOM.Wise40.Telescope
             {
                 if (altNotSafe)
                 {
-                    string result = string.Format("altNotSafe: alt: {0} < altLimit: {1}", alt, altLimit);
+                    string result = string.Format("altNotSafe: {0} < {1}", alt.ToNiceString(), altLimit.ToNiceString());
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugLogic, header + result);
                     #endregion debug
@@ -1274,9 +1276,15 @@ namespace ASCOM.Wise40.Telescope
             // - stop tracking 
             //
 
-            
+
             if (altNotSafe)
             {
+                if (_movingToSafety)
+                {
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, header + ": Already moving back to safety, ignored.");
+                    #endregion
+                }
                 string result = string.Format("NOT SAFE - altNotSafe: alt: {0} < altLimit: {1} ", alt, altLimit);
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, header + result);
@@ -1286,10 +1294,8 @@ namespace ASCOM.Wise40.Telescope
                 #endregion
 
                 _movingToSafety = true;             // Keep Slewing == true
-                Stop();
 
                 safetyMonitorTimer.Enabled = false;
-                Tracking = false;
 
                 double raRate = Const.rateStopped;
                 double decRate = Const.rateStopped;
@@ -1301,8 +1307,11 @@ namespace ASCOM.Wise40.Telescope
 
                 if (_instance.EastMotor.isOn)
                     raRate = -Const.rateSlew;       // move West
-                else if (_instance.WestMotor.isOn)
+                else if (_instance.WestMotor.isOn || _instance.TrackingMotor.isOn)
                     raRate = Const.rateSlew;        // move East
+
+                Stop();
+                Tracking = false;
 
                 if (raRate != Const.rateStopped)
                 {
@@ -1335,7 +1344,8 @@ namespace ASCOM.Wise40.Telescope
                 _movingToSafety = false;            // Release Slewing to false
 
                 return header + result;
-            } else
+            }
+            else
                 return string.Empty;
         }
 

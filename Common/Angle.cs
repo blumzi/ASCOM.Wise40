@@ -314,7 +314,7 @@ namespace ASCOM.Wise40.Common
                 return "Invalid";
             if (_isHMS)
                 return ascomutils.DegreesToHMS(Degrees, "h", "m", "s", 1);
-            else if (_type == Type.Az)
+            else if (_type == Type.Az || _type == Type.Alt)
                 return Degrees.ToString("0.0°");
             else
                 return ascomutils.DegreesToDMS(Degrees, "°", "'", "\"", 1);

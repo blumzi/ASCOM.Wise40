@@ -631,7 +631,7 @@ namespace Dash
             }
             catch (Exception ex)
             {
-                telescopeStatus.Show(ex.Message, 1000, Statuser.Severity.Error);
+                telescopeStatus.Show(ex.Message, 5000, Statuser.Severity.Error);
             }
         }
 
@@ -1403,9 +1403,14 @@ namespace Dash
             }
             catch { }
 #region debug
-            string msg = "StopEverything: ";
+            string msg = "\nStopEverything:\n";
             if (e != null)
-                msg += string.Format("Exception: {0}, ", e.Message);
+            {
+                msg += string.Format(" Exception -- : {0}\n", e.Message);
+                msg += string.Format("    Source -- : {0}\n", e.Source);
+                msg += string.Format("StackTrace -- : {0}\n", e.StackTrace);
+                msg += string.Format("TargetSite -- : {0}\n", e.TargetSite);
+            }
             msg += "Application will exit!";
             debugger.WriteLine(Debugger.DebugLevel.DebugExceptions, msg);
 #endregion
