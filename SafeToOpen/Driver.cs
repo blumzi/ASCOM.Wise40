@@ -68,12 +68,7 @@ namespace ASCOM.Wise40.SafeToOperate
         public WiseSafeToOperate wisesafetoopen;
         private static string driverID = "ASCOM.Wise40.SafeToOpen.SafetyMonitor";
         private static string driverDescription;
-
-        internal static Boltwood.SensorData.CloudCondition cloudsMax = SensorData.CloudCondition.cloudUnknown;
-        internal static int rainMax = 0;
-        internal static Boltwood.SensorData.DayCondition lightMax = SensorData.DayCondition.dayUnknown;
-        internal static int windMax;
-        internal static int humidityMax;
+        
         internal static int ageMaxSeconds;
 
         /// <summary>

@@ -78,46 +78,108 @@ namespace Restore_ASCOM_Profiles
         internal static void WriteSafeToOpenProfile()
         {
             string driverID = "ASCOM.Wise40.SafeToOpen.SafetyMonitor";
-            string cloudsMaxProfileName = "Clouds Max";
-            string windMaxProfileName = "Wind Max";
-            string rainMaxProfileName = "Rain Max";
-            string lightMaxProfileName = "Light Max";
-            string humidityMaxProfileName = "Humidity Max";
-            string ageMaxSecondsProfileName = "Age Max";
-            string sunMaxProfileName = "Sun Elevation Max";
 
             using (Profile driverProfile = new Profile())
             {
                 driverProfile.DeviceType = "SafetyMonitor";
-                driverProfile.WriteValue(driverID, cloudsMaxProfileName, "cloudClear");
-                driverProfile.WriteValue(driverID, windMaxProfileName, 40.ToString());
-                driverProfile.WriteValue(driverID, rainMaxProfileName, 0.ToString());
-                driverProfile.WriteValue(driverID, lightMaxProfileName, "dayDark");
-                driverProfile.WriteValue(driverID, humidityMaxProfileName, 90.ToString());
-                driverProfile.WriteValue(driverID, ageMaxSecondsProfileName, 0.ToString());
-                driverProfile.WriteValue(driverID, sunMaxProfileName, (-7).ToString());
+                //driverProfile.WriteValue(driverID, "Max", "cloudClear", "Clouds");
+                //driverProfile.WriteValue(driverID, "Interval", "30", "Clouds");
+                //driverProfile.WriteValue(driverID, "Repeats", "3", "Clouds");
+                //driverProfile.WriteValue(driverID, "Enabled", "True", "Clouds");
+
+                //driverProfile.WriteValue(driverID, "Max", "70", "Wind");
+                //driverProfile.WriteValue(driverID, "Interval", "30", "Wind");
+                //driverProfile.WriteValue(driverID, "Repeats", "3", "Wind");
+                //driverProfile.WriteValue(driverID, "Enabled", "True", "Wind");
+
+                //driverProfile.WriteValue(driverID, "Max", "0", "Rain");
+                //driverProfile.WriteValue(driverID, "Interval", "30", "Rain");
+                //driverProfile.WriteValue(driverID, "Repeats", "3", "Rain");
+                //driverProfile.WriteValue(driverID, "Enabled", "True", "Rain");
+
+                //driverProfile.WriteValue(driverID, "Max", "40", "Humidity");
+                //driverProfile.WriteValue(driverID, "Interval", "30", "Humidity");
+                //driverProfile.WriteValue(driverID, "Repeats", "4", "Humidity");
+                //driverProfile.WriteValue(driverID, "Enabled", "True", "Humidity");
+
+                //driverProfile.WriteValue(driverID, "Max", "dayDark", "Light");
+                //driverProfile.WriteValue(driverID, "Interval", "30", "Light");
+                //driverProfile.WriteValue(driverID, "Repeats", "4", "Light");
+                //driverProfile.WriteValue(driverID, "Enabled", "True", "Light");
+
+                //driverProfile.WriteValue(driverID, "Max", "-7", "Sun");
+                //driverProfile.WriteValue(driverID, "Interval", "60", "Sun");
+                //driverProfile.WriteValue(driverID, "Repeats", "2", "Sun");
+                //driverProfile.WriteValue(driverID, "Enabled", "True", "Sun");
+
+                driverProfile.WriteValue(driverID, "Clouds", "cloudClear", "Max");
+                driverProfile.WriteValue(driverID, "Clouds", "30", "Interval");
+                driverProfile.WriteValue(driverID, "Clouds", "3", "Repeats");
+                driverProfile.WriteValue(driverID, "Clouds", "True", "Enabled");
+
+                driverProfile.WriteValue(driverID, "Wind", "70", "Max");
+                driverProfile.WriteValue(driverID, "Wind", "30", "Interval");
+                driverProfile.WriteValue(driverID, "Wind", "3", "Repeats");
+                driverProfile.WriteValue(driverID, "Wind", "True", "Enabled");
+
+                driverProfile.WriteValue(driverID, "Rain", "0", "Max");
+                driverProfile.WriteValue(driverID, "Rain", "30", "Interval");
+                driverProfile.WriteValue(driverID, "Rain", "2", "Repeats");
+                driverProfile.WriteValue(driverID, "Rain", "True", "Enabled");
+
+                driverProfile.WriteValue(driverID, "Humidity", "40", "Max");
+                driverProfile.WriteValue(driverID, "Humidity", "30", "Interval");
+                driverProfile.WriteValue(driverID, "Humidity", "4", "Repeats");
+                driverProfile.WriteValue(driverID, "Humidity", "True", "Enabled");
+
+                driverProfile.WriteValue(driverID, "Light", "dayDark", "Max");
+                driverProfile.WriteValue(driverID, "Light", "30", "Interval");
+                driverProfile.WriteValue(driverID, "Light", "4", "Repeats");
+                driverProfile.WriteValue(driverID, "Light", "True", "Enabled");
+
+                driverProfile.WriteValue(driverID, "Sun", "-7", "Max");
+                driverProfile.WriteValue(driverID, "Sun", "60", "Interval");
+                driverProfile.WriteValue(driverID, "Sun", "2", "Repeats");
+                driverProfile.WriteValue(driverID, "Sun", "True", "Enabled");
             }
         }
 
         internal static void WriteSafeToImageProfile()
         {
             string driverID = "ASCOM.Wise40.SafeToImage.SafetyMonitor";
-            string cloudsMaxProfileName = "Clouds Max";
-            string windMaxProfileName = "Wind Max";
-            string rainMaxProfileName = "Rain Max";
-            string lightMaxProfileName = "Light Max";
-            string humidityMaxProfileName = "Humidity Max";
-            string ageMaxSecondsProfileName = "Age Max";
 
             using (Profile driverProfile = new Profile())
             {
                 driverProfile.DeviceType = "SafetyMonitor";
-                driverProfile.WriteValue(driverID, cloudsMaxProfileName, "cloudClear");
-                driverProfile.WriteValue(driverID, windMaxProfileName, 40.ToString());
-                driverProfile.WriteValue(driverID, rainMaxProfileName, 0.ToString());
-                driverProfile.WriteValue(driverID, lightMaxProfileName, "dayDark");
-                driverProfile.WriteValue(driverID, humidityMaxProfileName, 90.ToString());
-                driverProfile.WriteValue(driverID, ageMaxSecondsProfileName, 0.ToString());
+                driverProfile.WriteValue(driverID, "Clouds", "cloudClear", "Max");
+                driverProfile.WriteValue(driverID, "Clouds", "30", "Interval");
+                driverProfile.WriteValue(driverID, "Clouds", "3", "Repeats");
+                driverProfile.WriteValue(driverID, "Clouds", "True", "Enabled");
+
+                driverProfile.WriteValue(driverID, "Wind", "1000", "Max");
+                driverProfile.WriteValue(driverID, "Wind", "30", "Interval");
+                driverProfile.WriteValue(driverID, "Wind", "3", "Repeats");
+                driverProfile.WriteValue(driverID, "Wind", "True", "Enabled");
+
+                driverProfile.WriteValue(driverID, "Rain", "0", "Max");
+                driverProfile.WriteValue(driverID, "Rain", "30", "Interval");
+                driverProfile.WriteValue(driverID, "Rain", "3", "Repeats");
+                driverProfile.WriteValue(driverID, "Rain", "True", "Enabled");
+
+                driverProfile.WriteValue(driverID, "Humidity", "40", "Max");
+                driverProfile.WriteValue(driverID, "Humidity", "30", "Interval");
+                driverProfile.WriteValue(driverID, "Humidity", "4", "Repeats");
+                driverProfile.WriteValue(driverID, "Humidity", "True", "Enabled");
+
+                driverProfile.WriteValue(driverID, "Light", "dayDark", "Max");
+                driverProfile.WriteValue(driverID, "Light", "30", "Interval");
+                driverProfile.WriteValue(driverID, "Light", "4", "Repeats");
+                driverProfile.WriteValue(driverID, "Light", "True", "Enabled");
+
+                driverProfile.WriteValue(driverID, "Sun", "-7", "Max");
+                driverProfile.WriteValue(driverID, "Sun", "60", "Interval");
+                driverProfile.WriteValue(driverID, "Sun", "2", "Repeats");
+                driverProfile.WriteValue(driverID, "Sun", "True", "Enabled");
             }
         }
 
