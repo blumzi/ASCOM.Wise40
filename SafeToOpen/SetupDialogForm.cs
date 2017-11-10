@@ -30,7 +30,7 @@ namespace ASCOM.Wise40.SafeToOperate
         private void cmdOK_Click(object sender, EventArgs e) // OK button event handler
         {
             bool valid = true;
-            Color badColor = Color.Red;
+            Color errorColor = Color.Red;
             int i;
 
             // Place any validation constraint checks here
@@ -38,7 +38,7 @@ namespace ASCOM.Wise40.SafeToOperate
             i = Convert.ToInt32(textBoxAge.Text);
             if (i < 0)
             {
-                textBoxAge.ForeColor = badColor;
+                textBoxAge.ForeColor = errorColor;
                 valid = false;
             } else
             {
@@ -56,7 +56,7 @@ namespace ASCOM.Wise40.SafeToOperate
             }
             else
             {
-                textBoxHumidity.ForeColor = badColor;
+                textBoxHumidity.ForeColor = errorColor;
                 valid = false;
             }
             i = Convert.ToInt32(textBoxWind.Text);
@@ -66,14 +66,14 @@ namespace ASCOM.Wise40.SafeToOperate
             }
             else
             {
-                textBoxWind.ForeColor = badColor;
+                textBoxWind.ForeColor = errorColor;
                 valid = false;
             }
 
             double deg = Convert.ToDouble(textBoxSunElevation.Text);
             if (deg > 0 || deg < -20)
             {
-                textBoxSunElevation.ForeColor = badColor;
+                textBoxSunElevation.ForeColor = errorColor;
                 valid = false;
             }
             else

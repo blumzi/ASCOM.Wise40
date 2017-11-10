@@ -59,13 +59,12 @@ namespace ASCOM.Wise40.SafeToOperate
         public WiseBoltwood boltwood = WiseBoltwood.Instance;
         public WiseVantagePro vantagePro = WiseVantagePro.Instance;
 
-        private static WiseSafeToOperate _instanceOpen = new WiseSafeToOperate(Type.Open);
-        private static WiseSafeToOperate _instanceImage = new WiseSafeToOperate(Type.Image);
-        private static Dictionary<string, bool> initialized = new Dictionary<string, bool>()
-        {
-            { "Open", false },
-            { "Image", false },
-        };
+        //private static volatile WiseTele _instance; // Singleton
+        private static object syncObject = new object();
+
+        private static volatile WiseSafeToOperate _instanceOpen/* = new WiseSafeToOperate(Type.Open)*/;
+        private static WiseSafeToOperate _instanceImage /*= new WiseSafeToOperate(Type.Image)*/;
+        private static bool initialized = false;
 
         private Astrometry.NOVAS.NOVAS31 novas31;
         private static AstroUtils astroutils;
@@ -83,6 +82,14 @@ namespace ASCOM.Wise40.SafeToOperate
         {
             get
             {
+                if (_instanceOpen == null)
+                {
+                    lock(syncObject)
+                    {
+                        if (_instanceOpen == null)
+                            _instanceOpen = new WiseSafeToOperate(Type.Open);
+                    }
+                }
                 _instanceOpen.init();
                 return _instanceOpen;
             }
@@ -92,6 +99,14 @@ namespace ASCOM.Wise40.SafeToOperate
         {
             get
             {
+                if (_instanceImage == null)
+                {
+                    lock (syncObject)
+                    {
+                        if (_instanceImage == null)
+                            _instanceImage = new WiseSafeToOperate(Type.Image);
+                    }
+                }
                 _instanceImage.init();
                 return _instanceImage;
             }
@@ -106,22 +121,25 @@ namespace ASCOM.Wise40.SafeToOperate
         {
             string type = _type == Type.Open ? "Open" : "Image";
 
-            if (initialized[type])
+            if (initialized)
                 return;
 
             name = "Wise40 SafeTo" + type;
             driverID = "ASCOM.Wise40.SafeTo" + type + ".SafetyMonitor";
             driverDescription = string.Format("ASCOM Wise40.SafeTo{0} v{1}", type, version.ToString());
 
-            _profile = new Profile();
-            _profile.DeviceType = "SafetyMonitor";
+            if (_profile == null)
+            {
+                _profile = new Profile();
+                _profile.DeviceType = "SafetyMonitor";
+            }
 
-            lightSensor = new LightSensor(_profile);
-            humiditySensor = new HumiditySensor(_profile);
-            windSensor = new WindSensor(_profile);
-            sunSensor = new SunSensor(_profile);
-            cloudsSensor = new CloudsSensor(_profile);
-            rainSensor = new RainSensor(_profile);
+            lightSensor = new LightSensor(this);
+            humiditySensor = new HumiditySensor(this);
+            windSensor = new WindSensor(this);
+            sunSensor = new SunSensor(this);
+            cloudsSensor = new CloudsSensor(this);
+            rainSensor = new RainSensor(this);
             _sensors = new List<Sensor>() {windSensor, cloudsSensor, rainSensor, lightSensor, humiditySensor, sunSensor };
 
             tl = new TraceLogger("", "Wise40.SafeTo" + type);
@@ -159,7 +177,7 @@ namespace ASCOM.Wise40.SafeToOperate
             }
 
             ReadProfile(); // Read device configuration from the ASCOM Profile store
-            initialized[type] = true;
+            initialized = true;
 
             tl.LogMessage("SafetyMonitor", "Completed initialisation");
         }
@@ -590,27 +608,6 @@ namespace ASCOM.Wise40.SafeToOperate
         /// </summary>
         public void ReadProfile()
         {
-            //using (Profile driverProfile = new Profile())
-            //{
-            //    driverProfile.DeviceType = "SafetyMonitor";
-
-            //    cloudsMaxEnum = (Boltwood.SensorData.CloudCondition)
-            //        Enum.Parse(typeof(Boltwood.SensorData.CloudCondition),
-            //            driverProfile.GetValue(driverID, cloudsMaxProfileName, string.Empty, Boltwood.SensorData.CloudCondition.cloudClear.ToString()));
-            //    cloudsMaxValue = Boltwood.SensorData.doubleCloudCondition[cloudsMaxEnum];
-
-            //    windMax = Convert.ToDouble(driverProfile.GetValue(driverID, windMaxProfileName, string.Empty, 0.0.ToString()));
-            //    rainMax = Convert.ToDouble(driverProfile.GetValue(driverID, rainMaxProfileName, string.Empty, 0.0.ToString()));
-            //    humidityMax = Convert.ToDouble(driverProfile.GetValue(driverID, humidityMaxProfileName, string.Empty, 0.0.ToString()));
-            //    ageMaxSeconds = Convert.ToInt32(driverProfile.GetValue(driverID, ageMaxSecondsProfileName, string.Empty, 0.ToString()));
-            //    sunElevationMax = Convert.ToDouble(driverProfile.GetValue(driverID, sunMaxProfileName, string.Empty, 0.0.ToString()));
-
-            //    lightMaxEnum = (Boltwood.SensorData.DayCondition)
-            //        Enum.Parse(typeof(Boltwood.SensorData.DayCondition),
-            //            driverProfile.GetValue(driverID, lightMaxProfileName, string.Empty, "dayUnknown"));
-            //    lightMaxValue = (int)lightMaxEnum;
-            //}
-
             ageMaxSeconds = Convert.ToInt32(_profile.GetValue(driverID, ageMaxSecondsProfileName, string.Empty, 0.ToString()));
             foreach (Sensor s in _sensors)
                 s.readProfile();
@@ -633,17 +630,6 @@ namespace ASCOM.Wise40.SafeToOperate
         /// </summary>
         public void WriteProfile()
         {
-            //    using (Profile driverProfile = new Profile())
-            //    {
-            //        driverProfile.DeviceType = "SafetyMonitor";
-            //        driverProfile.WriteValue(driverID, cloudsMaxProfileName, cloudsMaxEnum.ToString());
-            //        driverProfile.WriteValue(driverID, windMaxProfileName, windMax.ToString());
-            //        driverProfile.WriteValue(driverID, rainMaxProfileName, rainMax.ToString());
-            //        driverProfile.WriteValue(driverID, lightMaxProfileName, lightMaxEnum.ToString());
-            //        driverProfile.WriteValue(driverID, humidityMaxProfileName, humidityMax.ToString());
-            //        driverProfile.WriteValue(driverID, sunMaxProfileName, sunElevationMax.ToString());
-            //        driverProfile.WriteValue(driverID, ageMaxSecondsProfileName, ageMaxSeconds.ToString());
-            //    }
             _profile.WriteValue(driverID, ageMaxSecondsProfileName, ageMaxSeconds.ToString());
             foreach (Sensor s in _sensors)
                 s.writeProfile();

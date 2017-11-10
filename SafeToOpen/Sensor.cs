@@ -24,36 +24,36 @@ namespace ASCOM.Wise40.SafeToOperate
         private int _nbad;
         private bool _running = false;
         protected string _maxValueProfileName;
-        protected Profile _profile;
         protected static Debugger debugger = Debugger.Instance;
 
         protected static string driverID = "ASCOM.Wise40.SafeToOpen.SafetyMonitor";
         protected static string deviceType = "SafetyMonitor";
 
-        protected static WiseSafeToOperate wisesafe = WiseSafeToOperate.InstanceOpen;
+        protected static WiseSafeToOperate wisesafe;
 
-        protected Sensor(string name, Profile profile)
+
+        protected Sensor(string name, WiseSafeToOperate instance)
         {
             base.Name = name;
             _timer = new System.Threading.Timer(new TimerCallback(onTimer));
-            _profile = profile;
+            wisesafe = instance;
             readProfile();
         }
 
         public void readProfile()
         {
-            _interval = 1000 * Convert.ToInt32(_profile.GetValue(driverID, Name, "Interval", 0.ToString()));
-            _repeats = Convert.ToInt32(_profile.GetValue(driverID, Name, "Repeats", 0.ToString()));
+            _interval = 1000 * Convert.ToInt32(wisesafe._profile.GetValue(driverID, Name, "Interval", 0.ToString()));
+            _repeats = Convert.ToInt32(wisesafe._profile.GetValue(driverID, Name, "Repeats", 0.ToString()));
             _isSafeQueue = new FixedSizedQueue<bool>(_repeats);
-            Enabled = Convert.ToBoolean(_profile.GetValue(driverID, Name, "Enabled", true.ToString()));
+            Enabled = Convert.ToBoolean(wisesafe._profile.GetValue(driverID, Name, "Enabled", true.ToString()));
             readSensorProfile();
         }
 
         public void writeProfile()
         {
-            _profile.WriteValue(driverID, Name, (_interval / 1000).ToString(), "Interval");
-            _profile.WriteValue(driverID, Name, _repeats.ToString(), "Repeats");
-            _profile.WriteValue(driverID, Name, _enabled.ToString(), "Enabled");
+            wisesafe._profile.WriteValue(driverID, Name, (_interval / 1000).ToString(), "Interval");
+            wisesafe._profile.WriteValue(driverID, Name, _repeats.ToString(), "Repeats");
+            wisesafe._profile.WriteValue(driverID, Name, _enabled.ToString(), "Enabled");
             writeSensorProfile();
         }
 
@@ -210,16 +210,16 @@ namespace ASCOM.Wise40.SafeToOperate
     {
         double _max;
 
-        public WindSensor(Profile p) : base("Wind", p) { }
+        public WindSensor(WiseSafeToOperate instance) : base("Wind", instance) {}
 
         public override void readSensorProfile()
         {
-            Max = _profile.GetValue(driverID, Name, "Max", 0.0.ToString());
+            Max = wisesafe._profile.GetValue(driverID, Name, "Max", 0.0.ToString());
         }
 
         public override void writeSensorProfile()
         {
-            _profile.WriteValue(driverID, Name, Max, "Max");
+            wisesafe._profile.WriteValue(driverID, Name, Max, "Max");
         }
 
         public override bool getIsSafe()
@@ -273,16 +273,16 @@ namespace ASCOM.Wise40.SafeToOperate
                 };
         public SensorData.DayCondition _max;
 
-        public LightSensor(Profile p) : base("Light", p) { }
+        public LightSensor(WiseSafeToOperate instance) : base("Light", instance) { }
 
         public override void readSensorProfile()
         {
-            Max = _profile.GetValue(driverID, Name, "Max", dayConditionsToString[(int)SensorData.DayCondition.dayUnknown]);
+            Max = wisesafe._profile.GetValue(driverID, Name, "Max", dayConditionsToString[(int)SensorData.DayCondition.dayUnknown]);
         }
 
         public override void writeSensorProfile()
         {
-            _profile.WriteValue(driverID, Name, Max, "Max");
+            wisesafe._profile.WriteValue(driverID, Name, Max, "Max");
         }
 
         public override bool getIsSafe()
@@ -323,16 +323,16 @@ namespace ASCOM.Wise40.SafeToOperate
     {
         private SensorData.CloudCondition _max;
 
-        public CloudsSensor(Profile p) : base("Clouds", p) { }
+        public CloudsSensor(WiseSafeToOperate instance) : base("Clouds", instance) { }
 
         public override void readSensorProfile()
         {
-            Max = _profile.GetValue(driverID, Name, "Max", "cloudUnknown");
+            Max = wisesafe._profile.GetValue(driverID, Name, "Max", "cloudUnknown");
         }
 
         public override void writeSensorProfile()
         {
-            _profile.WriteValue(driverID, Name, Max, "Max");
+            wisesafe._profile.WriteValue(driverID, Name, Max, "Max");
         }
 
         public override bool getIsSafe()
@@ -371,16 +371,16 @@ namespace ASCOM.Wise40.SafeToOperate
     {
         private double _max;
 
-        public RainSensor(Profile p) : base("Rain", p) { }
+        public RainSensor(WiseSafeToOperate instance) : base("Rain", instance) { }
 
         public override void readSensorProfile()
         {
-            Max = _profile.GetValue(driverID, Name, "Max", 0.0.ToString());
+            Max = wisesafe._profile.GetValue(driverID, Name, "Max", 0.0.ToString());
         }
 
         public override void writeSensorProfile()
         {
-            _profile.WriteValue(driverID, Name, Max, "Max");
+            wisesafe._profile.WriteValue(driverID, Name, Max, "Max");
         }
 
         public override bool getIsSafe()
@@ -416,16 +416,16 @@ namespace ASCOM.Wise40.SafeToOperate
     {
         private double _max;
 
-        public HumiditySensor(Profile p) : base("Humidity", p) { }
+        public HumiditySensor(WiseSafeToOperate instance) : base("Humidity", instance) { }
 
         public override void readSensorProfile()
         {
-            Max = _profile.GetValue(driverID, Name, "Max", 0.0.ToString());
+            Max = wisesafe._profile.GetValue(driverID, Name, "Max", 0.0.ToString());
         }
 
         public override void writeSensorProfile()
         {
-            _profile.WriteValue(driverID, Name, Max, "Max");
+            wisesafe._profile.WriteValue(driverID, Name, Max, "Max");
         }
 
         public override bool getIsSafe()
@@ -461,16 +461,16 @@ namespace ASCOM.Wise40.SafeToOperate
     {
         private double _max;
 
-        public SunSensor(Profile p) : base("Sun", p) { }
+        public SunSensor(WiseSafeToOperate instance) : base("Sun", instance) { }
 
         public override void readSensorProfile()
         {
-            Max = _profile.GetValue(driverID, Name, "Max", 0.0.ToString());
+            Max = wisesafe._profile.GetValue(driverID, Name, "Max", 0.0.ToString());
         }
 
         public override void writeSensorProfile()
         {
-            _profile.WriteValue(driverID, Name, Max, "Max");
+            wisesafe._profile.WriteValue(driverID, Name, Max, "Max");
         }
 
         public override bool getIsSafe()
