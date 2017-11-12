@@ -30,7 +30,7 @@ namespace ASCOM.Wise40.SafeToOperate
         private void cmdOK_Click(object sender, EventArgs e) // OK button event handler
         {
             bool valid = true;
-            Color badColor = Color.Red;
+            Color errorColor = Color.Red;
             int i;
 
             // Place any validation constraint checks here
@@ -38,52 +38,78 @@ namespace ASCOM.Wise40.SafeToOperate
             i = Convert.ToInt32(textBoxAge.Text);
             if (i < 0)
             {
-                textBoxAge.ForeColor = badColor;
+                textBoxAge.ForeColor = errorColor;
                 valid = false;
             } else
             {
                 SafetyMonitor.ageMaxSeconds = i;
             }
-            wisesafetoopen.cloudsMaxEnum = (Boltwood.SensorData.CloudCondition)comboBoxCloud.SelectedIndex;
-            wisesafetoopen.cloudsMaxValue = Boltwood.SensorData.doubleCloudCondition[wisesafetoopen.cloudsMaxEnum];
 
-            wisesafetoopen.rainMax = comboBoxRain.SelectedIndex;
-
-            wisesafetoopen.lightMaxEnum = (Boltwood.SensorData.DayCondition)comboBoxLight.SelectedIndex;
-            wisesafetoopen.lightMaxValue = (int)wisesafetoopen.lightMaxEnum;
+            wisesafetoopen.cloudsSensor.MaxAsString = (comboBoxCloud.SelectedIndex + 1).ToString();
+            wisesafetoopen.rainSensor.MaxAsString = textBoxRain.Text;
+            wisesafetoopen.lightSensor.MaxAsString = (comboBoxLight.SelectedIndex + 1).ToString();
 
             i = Convert.ToInt32(textBoxHumidity.Text);
             if (i >= 0 && i <= 100)
             {
-                SafetyMonitor.humidityMax = i;
+                wisesafetoopen.humiditySensor.MaxAsString = i.ToString();
             }
             else
             {
-                textBoxHumidity.ForeColor = badColor;
+                textBoxHumidity.ForeColor = errorColor;
                 valid = false;
             }
             i = Convert.ToInt32(textBoxWind.Text);
             if (i >= 0)
             {
-                SafetyMonitor.windMax = i;
+                wisesafetoopen.windSensor.MaxAsString = i.ToString();
             }
             else
             {
-                textBoxWind.ForeColor = badColor;
+                textBoxWind.ForeColor = errorColor;
                 valid = false;
             }
 
-            double deg = Convert.ToInt32(textBoxSunElevation.Text);
+            double deg = Convert.ToDouble(textBoxSunElevation.Text);
             if (deg > 0 || deg < -20)
             {
-                textBoxSunElevation.ForeColor = badColor;
+                textBoxSunElevation.ForeColor = errorColor;
                 valid = false;
             }
             else
-                wisesafetoopen.sunElevationMax = deg;
+                wisesafetoopen.sunSensor.MaxAsString = deg.ToString();
 
-            if (valid)
-                wisesafetoopen.WriteProfile();
+            if (!valid)
+                return;
+
+            foreach (Sensor s in wisesafetoopen._sensors)
+                s.Stop();
+
+            wisesafetoopen.lightSensor.Repeats = Convert.ToInt32(textBoxLightRepeats.Text);
+            wisesafetoopen.cloudsSensor.Repeats = Convert.ToInt32(textBoxCloudRepeats.Text);
+            wisesafetoopen.windSensor.Repeats = Convert.ToInt32(textBoxWindRepeats.Text);
+            wisesafetoopen.humiditySensor.Repeats = Convert.ToInt32(textBoxHumidityRepeats.Text);
+            wisesafetoopen.sunSensor.Repeats = Convert.ToInt32(textBoxSunRepeats.Text);
+            wisesafetoopen.rainSensor.Repeats = Convert.ToInt32(textBoxRainRepeats.Text);
+
+            wisesafetoopen.lightSensor.Interval = Convert.ToInt32(textBoxLightIntervalSeconds.Text);
+            wisesafetoopen.cloudsSensor.Interval = Convert.ToInt32(textBoxCloudIntervalSeconds.Text);
+            wisesafetoopen.windSensor.Interval = Convert.ToInt32(textBoxWindIntervalSeconds.Text);
+            wisesafetoopen.humiditySensor.Interval = Convert.ToInt32(textBoxHumidityIntervalSeconds.Text);
+            wisesafetoopen.sunSensor.Interval = Convert.ToInt32(textBoxSunIntervalSeconds.Text);
+            wisesafetoopen.rainSensor.Interval = Convert.ToInt32(textBoxRainIntervalSeconds.Text);
+
+            wisesafetoopen.lightSensor.Enabled = checkBoxLight.Checked;
+            wisesafetoopen.cloudsSensor.Enabled = checkBoxCloud.Checked;
+            wisesafetoopen.windSensor.Enabled = checkBoxWind.Checked;
+            wisesafetoopen.humiditySensor.Enabled = checkBoxHumidity.Checked;
+            wisesafetoopen.sunSensor.Enabled = checkBoxSun.Checked;
+            wisesafetoopen.rainSensor.Enabled = checkBoxRain.Checked;
+            
+            wisesafetoopen.WriteProfile();
+
+            foreach (Sensor s in wisesafetoopen._sensors)
+                s.Start();
         }
 
         private void cmdCancel_Click(object sender, EventArgs e) // Cancel button event handler
@@ -113,13 +139,17 @@ namespace ASCOM.Wise40.SafeToOperate
             wisesafetoopen.Connected = true;
             wisesafetoopen.ReadProfile();
             
-            comboBoxCloud.SelectedIndex = (int)wisesafetoopen.cloudsMaxEnum;
-            comboBoxRain.SelectedIndex = (int)wisesafetoopen.rainMax;
-            comboBoxLight.SelectedIndex = (int)wisesafetoopen.lightMaxEnum;
-            textBoxWind.Text = wisesafetoopen.windMax.ToString();
-            textBoxHumidity.Text = wisesafetoopen.humidityMax.ToString();
+            SensorData.CloudCondition cloudsMax = (SensorData.CloudCondition)
+                Enum.Parse(typeof(SensorData.CloudCondition), wisesafetoopen.cloudsSensor.MaxAsString);
+            comboBoxCloud.SelectedIndex = (int) cloudsMax - 1;
+            textBoxRain.Text = wisesafetoopen.rainSensor.MaxAsString;
+            SensorData.DayCondition lightMax = (SensorData.DayCondition)
+                Enum.Parse(typeof(SensorData.DayCondition), wisesafetoopen.lightSensor.MaxAsString);
+            comboBoxLight.SelectedIndex = (int) lightMax - 1;
+            textBoxWind.Text = wisesafetoopen.windSensor.MaxAsString;
+            textBoxHumidity.Text = wisesafetoopen.humiditySensor.MaxAsString;
             textBoxAge.Text = wisesafetoopen.ageMaxSeconds.ToString();
-            textBoxSunElevation.Text = wisesafetoopen.sunElevationMax.ToString();
+            textBoxSunElevation.Text = wisesafetoopen.sunSensor.MaxAsString;
         }
 
         private void textBoxWind_Validating(object sender, CancelEventArgs e)

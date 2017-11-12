@@ -297,7 +297,7 @@ namespace ASCOM.Wise40.Boltwood
         /// Amount of sky obscured by cloud
         /// </summary>
         /// <remarks>0%= clear sky, 100% = 100% cloud coverage</remarks>
-        public double CloudCover
+        public double CloudCover_numeric
         {
             get
             {
@@ -319,6 +319,14 @@ namespace ASCOM.Wise40.Boltwood
 
                 tl.LogMessage("CloudCover", string.Format("get - {0}", ret));
                 return ret;
+            }
+        }
+
+        public SensorData.CloudCondition CloudCover_condition
+        {
+            get
+            {
+                return _sensorData.cloudCondition;
             }
         }
 

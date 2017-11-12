@@ -212,7 +212,7 @@ namespace ASCOM.Wise40.Boltwood
         {
             get
             {
-                return boltwood.CloudCover;
+                return boltwood.CloudCover_numeric;
             }
         }
 
