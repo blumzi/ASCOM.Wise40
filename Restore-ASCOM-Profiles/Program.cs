@@ -65,7 +65,8 @@ namespace Restore_ASCOM_Profiles
             string driverID = "ASCOM.Wise40.VantagePro.ObservingConditions";
             string reportFileProfileName = "DataFile";
             string reportFile = realMachine ?
-                "y:/Weather_Wise40_Vantage_Pro.htm" :
+                //"y:/Weather_Wise40_Vantage_Pro.htm" :  // restore when weather-ps is back
+                "c:/Wise40/Data/Weather_Wise40_Vantage_Pro.htm" :
                 "c:/temp/Weather_Wise40_Vantage_Pro.htm";
 
             using (Profile driverProfile = new Profile())
