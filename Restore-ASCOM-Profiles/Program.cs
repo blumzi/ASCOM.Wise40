@@ -13,7 +13,7 @@ namespace Restore_ASCOM_Profiles
     public class Program
     {
         private static bool realMachine = Environment.MachineName.ToLower() == "dome-ctlr";
-        public enum Mode { LCOGT, ACP, WISE, SKIP };
+        public enum Mode { LCO, ACP, WISE, SKIP };
         public static Mode mode = Mode.WISE;
 
         static void Main(string[] args)
@@ -210,6 +210,7 @@ namespace Restore_ASCOM_Profiles
             string debugFileProfileName = "DebugFile";
             string debugFile = Const.topWise40Directory + "Logs/debug.txt";
             string refractionProfileName = "Calculate refraction";
+            string minimalDomeTrackingMovementProfileName = "Minimal Dome Tracking Movement";
 
             using (Profile driverProfile = new Profile())
             {
@@ -223,7 +224,8 @@ namespace Restore_ASCOM_Profiles
                     Debugger.DebugLevel.DebugASCOM |
                     Debugger.DebugLevel.DebugLogic).ToString());
                 driverProfile.WriteValue(driverID, debugFileProfileName, debugFile);
-                driverProfile.WriteValue(driverID, refractionProfileName, mode == Mode.LCOGT ? false.ToString() : true.ToString());
+                driverProfile.WriteValue(driverID, refractionProfileName, mode == Mode.LCO ? false.ToString() : true.ToString());
+                driverProfile.WriteValue(driverID, minimalDomeTrackingMovementProfileName, "2.0");
             }
         }
 

@@ -69,6 +69,11 @@ namespace ASCOM.Wise40.Telescope
 
         private bool _connected = false;
 
+        #region PulseGuiding
+        //private bool _isPulseGuiding = false;
+        private long _primaryIsPulseGuiding = 0, _secondaryIsPulseGuiding = 0;
+        #endregion
+
         private List<WiseVirtualMotor> directionMotors, allMotors;
         public Dictionary<TelescopeAxes, List<WiseVirtualMotor>> axisMotors;
 
@@ -191,10 +196,12 @@ namespace ASCOM.Wise40.Telescope
         private SafetyMonitorTimer safetyMonitorTimer;
 
         public bool _enslaveDome = false;
+        public double _minimalDomeTrackingMovement;
         private DomeSlaveDriver domeSlaveDriver = DomeSlaveDriver.Instance;
 
         public bool _calculateRefraction = true;
         private string calculateRefractionProfileName = "Calculate refraction";
+        private string minimalDomeTrackingMovementProfileName = "Minimal Dome Tracking Movement";
 
         private bool _studyMotion = false;
         Dictionary<TelescopeAxes, MotionStudy> motionStudy = new Dictionary<TelescopeAxes, MotionStudy>(2);
@@ -1176,7 +1183,12 @@ namespace ASCOM.Wise40.Telescope
         {
             get
             {
-                throw new PropertyNotImplementedException("IsPulseGuiding");
+                bool ret = AxisIsPulseGuiding(TelescopeAxes.axisPrimary) ||
+                    AxisIsPulseGuiding(TelescopeAxes.axisSecondary);
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "IsPulseGuiding: {0}", ret);
+                #endregion
+                return ret;
             }
         }
 
@@ -2238,10 +2250,11 @@ namespace ASCOM.Wise40.Telescope
         {
             get
             {
+                bool ret = true;
                 #region trace
-                traceLogger.LogMessage("CanPulseGuide", "Get - " + false.ToString());
+                traceLogger.LogMessage("CanPulseGuide", "Get - " + ret.ToString());
                 #endregion
-                return false;
+                return ret;
             }
         }
 
@@ -2410,17 +2423,18 @@ namespace ASCOM.Wise40.Telescope
         {
             get
             {
+                double rate = Const.rateGuide;
                 #region trace
-                traceLogger.LogMessage("GuideRateDeclination Get", "Not implemented");
+                traceLogger.LogMessage("GuideRateDeclination Get", rate.ToString());
                 #endregion
-                throw new ASCOM.PropertyNotImplementedException("GuideRateDeclination", false);
+                return rate;
             }
             set
             {
                 #region trace
                 traceLogger.LogMessage("GuideRateDeclination Set", "Not implemented");
                 #endregion
-                throw new ASCOM.PropertyNotImplementedException("GuideRateDeclination", true);
+                throw new ASCOM.PropertyNotImplementedException("GuideRateDeclination - Set", true);
             }
         }
 
@@ -2428,17 +2442,19 @@ namespace ASCOM.Wise40.Telescope
         {
             get
             {
+                double rate = Const.rateGuide;
+
                 #region trace
-                traceLogger.LogMessage("GuideRateRightAscension Get", "Not implemented");
+                traceLogger.LogMessage("GuideRateRightAscension Get", rate.ToString());
                 #endregion
-                throw new ASCOM.PropertyNotImplementedException("GuideRateRightAscension", false);
+                return rate;
             }
             set
             {
                 #region trace
                 traceLogger.LogMessage("GuideRateRightAscension Set", "Not implemented");
                 #endregion
-                throw new ASCOM.PropertyNotImplementedException("GuideRateRightAscension", true);
+                throw new ASCOM.PropertyNotImplementedException("GuideRateRightAscension - Set", true);
             }
         }
 
@@ -2566,12 +2582,108 @@ namespace ASCOM.Wise40.Telescope
             }
         }
 
+        private static Dictionary<GuideDirections, TelescopeAxes> guideDirection2Axis = new Dictionary<GuideDirections, TelescopeAxes>
+        {
+            {GuideDirections.guideEast, TelescopeAxes.axisPrimary },
+            {GuideDirections.guideWest, TelescopeAxes.axisPrimary },
+            {GuideDirections.guideNorth, TelescopeAxes.axisSecondary },
+            {GuideDirections.guideSouth, TelescopeAxes.axisSecondary },
+        };
+
+        private static Dictionary<GuideDirections, WiseVirtualMotor> guideDirection2Motor = new Dictionary<GuideDirections, WiseVirtualMotor>
+        {
+            {GuideDirections.guideEast, Instance.EastMotor },
+            {GuideDirections.guideWest, Instance.WestMotor },
+            {GuideDirections.guideNorth, Instance.NorthMotor },
+            {GuideDirections.guideSouth, Instance.SouthMotor },
+        };
+
+        internal void doPulseGuide(object param)
+        {
+            GuideDirections direction = (GuideDirections)(((object[]) param)[0]);
+            int duration = (int)(((object[])param)[1]);
+
+            TelescopeAxes axis = guideDirection2Axis[direction];
+            WiseVirtualMotor motor = null;
+
+            switch (direction)
+            {
+                case GuideDirections.guideNorth:
+                    motor = _instance.NorthMotor;
+                    break;
+                case GuideDirections.guideSouth:
+                    motor = _instance.SouthMotor;
+                    break;
+                case GuideDirections.guideWest:
+                    motor = _instance.WestMotor;
+                    break;
+                case GuideDirections.guideEast:
+                    motor = _instance.EastMotor;
+                    break;
+            }
+
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "PulseGuide: direction: {0}, duration: {1}ms, start", direction, duration);
+            #endregion
+            motor.SetOn(Const.rateGuide);
+            System.Threading.Thread.Sleep(duration);
+            motor.SetOff();
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "PulseGuide: direction: {0}, duration: {1}ms, done", direction, duration);
+            #endregion
+
+            if (axis == TelescopeAxes.axisPrimary)
+                Interlocked.Decrement(ref _primaryIsPulseGuiding);
+            else
+                Interlocked.Decrement(ref _secondaryIsPulseGuiding);
+        }
+
         public void PulseGuide(GuideDirections Direction, int Duration)
         {
             #region trace
-            traceLogger.LogMessage("PulseGuide", "Not implemented");
+            traceLogger.LogMessage("PulseGuide", string.Format("Direction={0}, Duration={1}", Direction.ToString(), Duration.ToString()));
             #endregion
-            throw new ASCOM.MethodNotImplementedException("PulseGuide");
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugASCOM, "PulseGuide: Direction={0}, Duration={1}", Direction.ToString(), Duration.ToString());
+            #endregion
+            if (AtPark)
+                throw new InvalidOperationException("Cannot PulseGuide while AtPark");
+
+            TelescopeAxes axis = guideDirection2Axis[Direction];
+
+            if (Slewing)
+                throw new InvalidOperationException("Cannot PulseGuide while Slewing");
+
+            if (AxisIsPulseGuiding(Direction))
+                throw new InvalidOperationException(string.Format("Axis {0} is already PulseGuiding.", axis));
+
+            if (axis == TelescopeAxes.axisPrimary)
+                Interlocked.Increment(ref _primaryIsPulseGuiding);
+            else
+                Interlocked.Increment(ref _secondaryIsPulseGuiding);
+
+            object[] param = new object[2] { Direction, Duration };
+            System.Threading.ThreadPool.QueueUserWorkItem(doPulseGuide, param);
+        }
+
+        public bool AxisIsPulseGuiding(TelescopeAxes axis)
+        {
+            if (axis == TelescopeAxes.axisPrimary)
+                return Interlocked.Read(ref _primaryIsPulseGuiding) != 0;
+            else if (axis == TelescopeAxes.axisSecondary)
+                return (Interlocked.Read(ref _secondaryIsPulseGuiding) != 0);
+            else
+                return false;
+        }
+
+        private bool AxisIsPulseGuiding(GuideDirections Direction)
+        {
+            if (Direction == GuideDirections.guideEast || Direction == GuideDirections.guideWest)
+                return AxisIsPulseGuiding(TelescopeAxes.axisPrimary);
+            else if (Direction == GuideDirections.guideNorth || Direction == GuideDirections.guideSouth)
+                return AxisIsPulseGuiding(TelescopeAxes.axisSecondary);
+            else
+                return false;
         }
 
         public ArrayList SupportedActions
@@ -2677,6 +2789,7 @@ namespace ASCOM.Wise40.Telescope
                         Accuracy.Reduced;
                 _calculateRefraction = Convert.ToBoolean(driverProfile.GetValue(driverID, calculateRefractionProfileName, string.Empty, "true"));
                 _studyMotion = Convert.ToBoolean(driverProfile.GetValue(driverID, "StudyMotion", string.Empty, "false"));
+                _minimalDomeTrackingMovement = Convert.ToDouble(driverProfile.GetValue(driverID, minimalDomeTrackingMovementProfileName, string.Empty, "2.0"));
             }
         }
 
@@ -2692,6 +2805,7 @@ namespace ASCOM.Wise40.Telescope
                 driverProfile.WriteValue(driverID, astrometricAccuracyProfileName, wisesite.astrometricAccuracy == Accuracy.Full ? "Full" : "Reduced");
                 driverProfile.WriteValue(driverID, enslaveDomeProfileName, _enslaveDome.ToString());
                 driverProfile.WriteValue(driverID, calculateRefractionProfileName, _calculateRefraction.ToString());
+                driverProfile.WriteValue(driverID, minimalDomeTrackingMovementProfileName, _minimalDomeTrackingMovement.ToString());
             }
         }
 

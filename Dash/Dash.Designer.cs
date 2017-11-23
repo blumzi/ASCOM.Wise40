@@ -131,6 +131,7 @@
             this.toolStripMenuItemFilterWheel = new System.Windows.Forms.ToolStripMenuItem();
             this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.manageFilterInventoryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.manage3FiltersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem5 = new System.Windows.Forms.ToolStripMenuItem();
             this.tracingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.debuggingToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
@@ -150,6 +151,7 @@
             this.digitalIOCardsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.debuggingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.filterWheelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItemPulseGuide = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.wise40WikiToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
@@ -168,6 +170,7 @@
             this.annunciatorPanelStatus = new ASCOM.Controls.AnnunciatorPanel();
             this.annunciatorTrack = new ASCOM.Controls.Annunciator();
             this.annunciatorSlew = new ASCOM.Controls.Annunciator();
+            this.annunciatorPulse = new ASCOM.Controls.Annunciator();
             this.annunciatorPrimary = new ASCOM.Controls.Annunciator();
             this.annunciatorSecondary = new ASCOM.Controls.Annunciator();
             this.annunciatorDome = new ASCOM.Controls.Annunciator();
@@ -179,6 +182,11 @@
             this.annunciatorWeather = new ASCOM.Controls.Annunciator();
             this.labelDashStatus = new System.Windows.Forms.Label();
             this.groupBoxFilterWheel = new System.Windows.Forms.GroupBox();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.radioButtonSelectFilterWheel8 = new System.Windows.Forms.RadioButton();
+            this.radioButtonSelectFilterWheel4 = new System.Windows.Forms.RadioButton();
+            this.textBoxFilterWheelPosition = new System.Windows.Forms.TextBox();
+            this.buttonSetFilterWheelPosition = new System.Windows.Forms.Button();
             this.label4 = new System.Windows.Forms.Label();
             this.comboBoxFilterWheelPositions = new System.Windows.Forms.ComboBox();
             this.buttonFilterWheelGo = new System.Windows.Forms.Button();
@@ -210,12 +218,8 @@
             this.labelRainRateValue = new System.Windows.Forms.Label();
             this.timerRefreshDisplay = new System.Windows.Forms.Timer(this.components);
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
-            this.buttonSetFilterWheelPosition = new System.Windows.Forms.Button();
-            this.textBoxFilterWheelPosition = new System.Windows.Forms.TextBox();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.radioButtonSelectFilterWheel8 = new System.Windows.Forms.RadioButton();
-            this.radioButtonSelectFilterWheel4 = new System.Windows.Forms.RadioButton();
-            this.manage3FiltersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.minimalTrackingStepToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripTextBoxMinimalDomeStep = new System.Windows.Forms.ToolStripTextBox();
             this.tableLayoutMain.SuspendLayout();
             this.groupBoxFocuser.SuspendLayout();
             this.groupBoxDomeGroup.SuspendLayout();
@@ -231,9 +235,9 @@
             this.annunciatorPanelSafety.SuspendLayout();
             this.annunciatorPanelStatus.SuspendLayout();
             this.groupBoxFilterWheel.SuspendLayout();
+            this.groupBox1.SuspendLayout();
             this.groupBoxWeather.SuspendLayout();
             this.tableLayoutPanelWeather.SuspendLayout();
-            this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
             // tableLayoutMain
@@ -812,7 +816,7 @@
             this.buttonTrack.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonTrack.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonTrack.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonTrack.Location = new System.Drawing.Point(288, 299);
+            this.buttonTrack.Location = new System.Drawing.Point(296, 299);
             this.buttonTrack.Name = "buttonTrack";
             this.buttonTrack.Size = new System.Drawing.Size(58, 26);
             this.buttonTrack.TabIndex = 39;
@@ -928,7 +932,7 @@
             this.buttonMainStop.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonMainStop.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonMainStop.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonMainStop.Location = new System.Drawing.Point(288, 224);
+            this.buttonMainStop.Location = new System.Drawing.Point(296, 224);
             this.buttonMainStop.Name = "buttonMainStop";
             this.buttonMainStop.Size = new System.Drawing.Size(58, 69);
             this.buttonMainStop.TabIndex = 26;
@@ -947,7 +951,7 @@
             this.panelDirectionButtons.Controls.Add(this.buttonSouth);
             this.panelDirectionButtons.Controls.Add(this.buttonEast);
             this.panelDirectionButtons.Controls.Add(this.buttonWest);
-            this.panelDirectionButtons.Location = new System.Drawing.Point(112, 186);
+            this.panelDirectionButtons.Location = new System.Drawing.Point(120, 186);
             this.panelDirectionButtons.Name = "panelDirectionButtons";
             this.panelDirectionButtons.Size = new System.Drawing.Size(160, 152);
             this.panelDirectionButtons.TabIndex = 11;
@@ -1560,7 +1564,8 @@
             // 
             this.domeToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.domeAutoCalibrateToolStripMenuItem,
-            this.syncVentWithShutterToolStripMenuItem});
+            this.syncVentWithShutterToolStripMenuItem,
+            this.minimalTrackingStepToolStripMenuItem});
             this.domeToolStripMenuItem.Name = "domeToolStripMenuItem";
             this.domeToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
             this.domeToolStripMenuItem.Text = "Dome";
@@ -1568,7 +1573,7 @@
             // domeAutoCalibrateToolStripMenuItem
             // 
             this.domeAutoCalibrateToolStripMenuItem.Name = "domeAutoCalibrateToolStripMenuItem";
-            this.domeAutoCalibrateToolStripMenuItem.Size = new System.Drawing.Size(194, 22);
+            this.domeAutoCalibrateToolStripMenuItem.Size = new System.Drawing.Size(232, 22);
             this.domeAutoCalibrateToolStripMenuItem.Text = "Auto Calibrate";
             this.domeAutoCalibrateToolStripMenuItem.ToolTipText = "If asked for Azimuth and not calibrated, \r\nthe dome will automatically search for" +
     "\r\nthe calibration point.\r\n";
@@ -1577,7 +1582,7 @@
             // syncVentWithShutterToolStripMenuItem
             // 
             this.syncVentWithShutterToolStripMenuItem.Name = "syncVentWithShutterToolStripMenuItem";
-            this.syncVentWithShutterToolStripMenuItem.Size = new System.Drawing.Size(194, 22);
+            this.syncVentWithShutterToolStripMenuItem.Size = new System.Drawing.Size(232, 22);
             this.syncVentWithShutterToolStripMenuItem.Text = "SyncVentWithShutter";
             this.syncVentWithShutterToolStripMenuItem.Click += new System.EventHandler(this.syncVentWithShutterToolStripMenuItem_Click);
             // 
@@ -1644,7 +1649,7 @@
             // settingsToolStripMenuItem
             // 
             this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
-            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
+            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
             this.settingsToolStripMenuItem.Text = "Settings";
             this.settingsToolStripMenuItem.Click += new System.EventHandler(this.toolStripMenuItemFilterWheel_Click);
             // 
@@ -1654,6 +1659,13 @@
             this.manageFilterInventoryToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
             this.manageFilterInventoryToolStripMenuItem.Text = "Manage 2\" filters";
             this.manageFilterInventoryToolStripMenuItem.Click += new System.EventHandler(this.manage2InchFilterInventoryToolStripMenuItem_Click);
+            // 
+            // manage3FiltersToolStripMenuItem
+            // 
+            this.manage3FiltersToolStripMenuItem.Name = "manage3FiltersToolStripMenuItem";
+            this.manage3FiltersToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
+            this.manage3FiltersToolStripMenuItem.Text = "Manage 3\" filters";
+            this.manage3FiltersToolStripMenuItem.Click += new System.EventHandler(this.manage3InchFilterInventoryToolStripMenuItem_Click);
             // 
             // toolStripMenuItem5
             // 
@@ -1783,7 +1795,8 @@
             this.viewToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.digitalIOCardsToolStripMenuItem,
             this.debuggingToolStripMenuItem,
-            this.filterWheelToolStripMenuItem});
+            this.filterWheelToolStripMenuItem,
+            this.toolStripMenuItemPulseGuide});
             this.viewToolStripMenuItem.ForeColor = System.Drawing.Color.DarkOrange;
             this.viewToolStripMenuItem.Name = "viewToolStripMenuItem";
             this.viewToolStripMenuItem.Size = new System.Drawing.Size(47, 20);
@@ -1812,6 +1825,14 @@
             this.filterWheelToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
             this.filterWheelToolStripMenuItem.Text = "Filter Wheel";
             this.filterWheelToolStripMenuItem.Click += new System.EventHandler(this.filterWheelToolStripMenuItem_Click);
+            // 
+            // toolStripMenuItemPulseGuide
+            // 
+            this.toolStripMenuItemPulseGuide.ForeColor = System.Drawing.Color.DarkOrange;
+            this.toolStripMenuItemPulseGuide.Name = "toolStripMenuItemPulseGuide";
+            this.toolStripMenuItemPulseGuide.Size = new System.Drawing.Size(165, 22);
+            this.toolStripMenuItemPulseGuide.Text = "PulseGuide";
+            this.toolStripMenuItemPulseGuide.Click += new System.EventHandler(this.toolStripMenuItemPulseGuide_Click);
             // 
             // aboutToolStripMenuItem
             // 
@@ -2004,6 +2025,7 @@
             this.annunciatorPanelStatus.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.annunciatorPanelStatus.Controls.Add(this.annunciatorTrack);
             this.annunciatorPanelStatus.Controls.Add(this.annunciatorSlew);
+            this.annunciatorPanelStatus.Controls.Add(this.annunciatorPulse);
             this.annunciatorPanelStatus.Controls.Add(this.annunciatorPrimary);
             this.annunciatorPanelStatus.Controls.Add(this.annunciatorSecondary);
             this.annunciatorPanelStatus.Controls.Add(this.annunciatorDome);
@@ -2041,16 +2063,32 @@
             this.annunciatorSlew.AutoSize = true;
             this.annunciatorSlew.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.annunciatorSlew.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
-            this.annunciatorPanelStatus.SetFlowBreak(this.annunciatorSlew, true);
             this.annunciatorSlew.Font = new System.Drawing.Font("Consolas", 10F);
             this.annunciatorSlew.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorSlew.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorSlew.Location = new System.Drawing.Point(57, 0);
             this.annunciatorSlew.Mute = false;
             this.annunciatorSlew.Name = "annunciatorSlew";
-            this.annunciatorSlew.Size = new System.Drawing.Size(64, 17);
+            this.annunciatorSlew.Size = new System.Drawing.Size(40, 17);
             this.annunciatorSlew.TabIndex = 1;
-            this.annunciatorSlew.Text = "SLEWING";
+            this.annunciatorSlew.Text = "SLEW";
+            // 
+            // annunciatorPulse
+            // 
+            this.annunciatorPulse.ActiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(255)))));
+            this.annunciatorPulse.AutoSize = true;
+            this.annunciatorPulse.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
+            this.annunciatorPulse.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            this.annunciatorPanelStatus.SetFlowBreak(this.annunciatorPulse, true);
+            this.annunciatorPulse.Font = new System.Drawing.Font("Consolas", 10F);
+            this.annunciatorPulse.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciatorPulse.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciatorPulse.Location = new System.Drawing.Point(103, 0);
+            this.annunciatorPulse.Mute = false;
+            this.annunciatorPulse.Name = "annunciatorPulse";
+            this.annunciatorPulse.Size = new System.Drawing.Size(48, 17);
+            this.annunciatorPulse.TabIndex = 11;
+            this.annunciatorPulse.Text = "PULSE";
             // 
             // annunciatorPrimary
             // 
@@ -2222,6 +2260,69 @@
             this.groupBoxFilterWheel.TabIndex = 35;
             this.groupBoxFilterWheel.TabStop = false;
             this.groupBoxFilterWheel.Text = " FilterWheel ";
+            // 
+            // groupBox1
+            // 
+            this.groupBox1.Controls.Add(this.radioButtonSelectFilterWheel8);
+            this.groupBox1.Controls.Add(this.radioButtonSelectFilterWheel4);
+            this.groupBox1.ForeColor = System.Drawing.Color.DarkOrange;
+            this.groupBox1.Location = new System.Drawing.Point(16, 24);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(200, 40);
+            this.groupBox1.TabIndex = 46;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "Wheel";
+            // 
+            // radioButtonSelectFilterWheel8
+            // 
+            this.radioButtonSelectFilterWheel8.AutoSize = true;
+            this.radioButtonSelectFilterWheel8.Checked = true;
+            this.radioButtonSelectFilterWheel8.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.radioButtonSelectFilterWheel8.Location = new System.Drawing.Point(24, 16);
+            this.radioButtonSelectFilterWheel8.Name = "radioButtonSelectFilterWheel8";
+            this.radioButtonSelectFilterWheel8.Size = new System.Drawing.Size(75, 17);
+            this.radioButtonSelectFilterWheel8.TabIndex = 0;
+            this.radioButtonSelectFilterWheel8.TabStop = true;
+            this.radioButtonSelectFilterWheel8.Text = "8-positions";
+            this.radioButtonSelectFilterWheel8.UseVisualStyleBackColor = true;
+            // 
+            // radioButtonSelectFilterWheel4
+            // 
+            this.radioButtonSelectFilterWheel4.AutoSize = true;
+            this.radioButtonSelectFilterWheel4.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.radioButtonSelectFilterWheel4.Location = new System.Drawing.Point(112, 16);
+            this.radioButtonSelectFilterWheel4.Name = "radioButtonSelectFilterWheel4";
+            this.radioButtonSelectFilterWheel4.Size = new System.Drawing.Size(75, 17);
+            this.radioButtonSelectFilterWheel4.TabIndex = 1;
+            this.radioButtonSelectFilterWheel4.Text = "4-positions";
+            this.radioButtonSelectFilterWheel4.UseVisualStyleBackColor = true;
+            // 
+            // textBoxFilterWheelPosition
+            // 
+            this.textBoxFilterWheelPosition.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBoxFilterWheelPosition.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.textBoxFilterWheelPosition.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.textBoxFilterWheelPosition.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.textBoxFilterWheelPosition.Location = new System.Drawing.Point(184, 72);
+            this.textBoxFilterWheelPosition.Name = "textBoxFilterWheelPosition";
+            this.textBoxFilterWheelPosition.Size = new System.Drawing.Size(32, 21);
+            this.textBoxFilterWheelPosition.TabIndex = 45;
+            this.textBoxFilterWheelPosition.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            // 
+            // buttonSetFilterWheelPosition
+            // 
+            this.buttonSetFilterWheelPosition.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonSetFilterWheelPosition.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonSetFilterWheelPosition.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.buttonSetFilterWheelPosition.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.buttonSetFilterWheelPosition.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.buttonSetFilterWheelPosition.Location = new System.Drawing.Point(240, 32);
+            this.buttonSetFilterWheelPosition.Name = "buttonSetFilterWheelPosition";
+            this.buttonSetFilterWheelPosition.Size = new System.Drawing.Size(64, 64);
+            this.buttonSetFilterWheelPosition.TabIndex = 44;
+            this.buttonSetFilterWheelPosition.Text = "Set";
+            this.buttonSetFilterWheelPosition.UseVisualStyleBackColor = false;
+            this.buttonSetFilterWheelPosition.Click += new System.EventHandler(this.buttonSetFilterWheelPosition_Click);
             // 
             // label4
             // 
@@ -2674,75 +2775,19 @@
             this.timerRefreshDisplay.Enabled = true;
             this.timerRefreshDisplay.Tick += new System.EventHandler(this.RefreshDisplay);
             // 
-            // buttonSetFilterWheelPosition
+            // minimalTrackingStepToolStripMenuItem
             // 
-            this.buttonSetFilterWheelPosition.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonSetFilterWheelPosition.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.buttonSetFilterWheelPosition.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.buttonSetFilterWheelPosition.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.buttonSetFilterWheelPosition.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonSetFilterWheelPosition.Location = new System.Drawing.Point(240, 32);
-            this.buttonSetFilterWheelPosition.Name = "buttonSetFilterWheelPosition";
-            this.buttonSetFilterWheelPosition.Size = new System.Drawing.Size(64, 64);
-            this.buttonSetFilterWheelPosition.TabIndex = 44;
-            this.buttonSetFilterWheelPosition.Text = "Set";
-            this.buttonSetFilterWheelPosition.UseVisualStyleBackColor = false;
-            this.buttonSetFilterWheelPosition.Click += new System.EventHandler(this.buttonSetFilterWheelPosition_Click);
+            this.minimalTrackingStepToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripTextBoxMinimalDomeStep});
+            this.minimalTrackingStepToolStripMenuItem.Name = "minimalTrackingStepToolStripMenuItem";
+            this.minimalTrackingStepToolStripMenuItem.Size = new System.Drawing.Size(232, 22);
+            this.minimalTrackingStepToolStripMenuItem.Text = "Minimal Tracking Step (deg)";
             // 
-            // textBoxFilterWheelPosition
+            // toolStripTextBox1
             // 
-            this.textBoxFilterWheelPosition.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxFilterWheelPosition.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.textBoxFilterWheelPosition.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.textBoxFilterWheelPosition.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxFilterWheelPosition.Location = new System.Drawing.Point(184, 72);
-            this.textBoxFilterWheelPosition.Name = "textBoxFilterWheelPosition";
-            this.textBoxFilterWheelPosition.Size = new System.Drawing.Size(32, 21);
-            this.textBoxFilterWheelPosition.TabIndex = 45;
-            this.textBoxFilterWheelPosition.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            // 
-            // groupBox1
-            // 
-            this.groupBox1.Controls.Add(this.radioButtonSelectFilterWheel8);
-            this.groupBox1.Controls.Add(this.radioButtonSelectFilterWheel4);
-            this.groupBox1.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBox1.Location = new System.Drawing.Point(16, 24);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(200, 40);
-            this.groupBox1.TabIndex = 46;
-            this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Wheel";
-            // 
-            // radioButtonSelectFilterWheel8
-            // 
-            this.radioButtonSelectFilterWheel8.AutoSize = true;
-            this.radioButtonSelectFilterWheel8.Checked = true;
-            this.radioButtonSelectFilterWheel8.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.radioButtonSelectFilterWheel8.Location = new System.Drawing.Point(24, 16);
-            this.radioButtonSelectFilterWheel8.Name = "radioButtonSelectFilterWheel8";
-            this.radioButtonSelectFilterWheel8.Size = new System.Drawing.Size(75, 17);
-            this.radioButtonSelectFilterWheel8.TabIndex = 0;
-            this.radioButtonSelectFilterWheel8.TabStop = true;
-            this.radioButtonSelectFilterWheel8.Text = "8-positions";
-            this.radioButtonSelectFilterWheel8.UseVisualStyleBackColor = true;
-            // 
-            // radioButtonSelectFilterWheel4
-            // 
-            this.radioButtonSelectFilterWheel4.AutoSize = true;
-            this.radioButtonSelectFilterWheel4.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.radioButtonSelectFilterWheel4.Location = new System.Drawing.Point(112, 16);
-            this.radioButtonSelectFilterWheel4.Name = "radioButtonSelectFilterWheel4";
-            this.radioButtonSelectFilterWheel4.Size = new System.Drawing.Size(75, 17);
-            this.radioButtonSelectFilterWheel4.TabIndex = 1;
-            this.radioButtonSelectFilterWheel4.Text = "4-positions";
-            this.radioButtonSelectFilterWheel4.UseVisualStyleBackColor = true;
-            // 
-            // manage3FiltersToolStripMenuItem
-            // 
-            this.manage3FiltersToolStripMenuItem.Name = "manage3FiltersToolStripMenuItem";
-            this.manage3FiltersToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
-            this.manage3FiltersToolStripMenuItem.Text = "Manage 3\" filters";
-            this.manage3FiltersToolStripMenuItem.Click += new System.EventHandler(this.manage3InchFilterInventoryToolStripMenuItem_Click);
+            this.toolStripTextBoxMinimalDomeStep.Name = "toolStripTextBox1";
+            this.toolStripTextBoxMinimalDomeStep.Size = new System.Drawing.Size(100, 23);
+            this.toolStripTextBoxMinimalDomeStep.Click += new System.EventHandler(this.toolStripTextBox1_Click);
             // 
             // FormDash
             // 
@@ -2783,11 +2828,11 @@
             this.annunciatorPanelStatus.PerformLayout();
             this.groupBoxFilterWheel.ResumeLayout(false);
             this.groupBoxFilterWheel.PerformLayout();
+            this.groupBox1.ResumeLayout(false);
+            this.groupBox1.PerformLayout();
             this.groupBoxWeather.ResumeLayout(false);
             this.tableLayoutPanelWeather.ResumeLayout(false);
             this.tableLayoutPanelWeather.PerformLayout();
-            this.groupBox1.ResumeLayout(false);
-            this.groupBox1.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -2980,6 +3025,10 @@
         private System.Windows.Forms.RadioButton radioButtonSelectFilterWheel8;
         private System.Windows.Forms.RadioButton radioButtonSelectFilterWheel4;
         private System.Windows.Forms.ToolStripMenuItem manage3FiltersToolStripMenuItem;
+        private ASCOM.Controls.Annunciator annunciatorPulse;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemPulseGuide;
+        private System.Windows.Forms.ToolStripMenuItem minimalTrackingStepToolStripMenuItem;
+        private System.Windows.Forms.ToolStripTextBox toolStripTextBoxMinimalDomeStep;
     }
 }
 
