@@ -26,6 +26,7 @@ namespace ASCOM.Wise40.Telescope
         private static WiseSite wisesite = WiseSite.Instance;
 
         private bool _initialized = false;
+        private Angle _minimalMovement;
 
         // Explicit static constructor to tell C# compiler
         // not to mark type as beforefieldinit
@@ -57,6 +58,7 @@ namespace ASCOM.Wise40.Telescope
             wisedome.init();
             wisedome.SetArrivedAtAzEvent(_arrivedAtAz);
             wisesite.init();
+            _minimalMovement = new Angle(wisetele._minimalDomeTrackingMovement, Angle.Type.Az);
 
             _initialized = true;
             #region debug
@@ -169,14 +171,25 @@ namespace ASCOM.Wise40.Telescope
 
         public void SlewToAz(Angle ra, Angle dec)
         {
-            Angle domeAz = CalculateDomeAzimuth(ra, dec);
+            Angle newDomeAz = CalculateDomeAzimuth(ra, dec);
+            Angle currentDomeAz = wisedome.Azimuth;
+            var delta = currentDomeAz.ShortestDistance(newDomeAz);
+
+            if (delta.angle < _minimalMovement)
+            {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "DomeSlaveDriver:SlewToAz: delta={0}, _minimalMovement={1}: Not moving",
+                    delta.angle.ToNiceString(), _minimalMovement.ToNiceString());
+                #endregion
+                return;
+            }
 
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                "DomeSlaveDriver: SlewToAz ra: {0}, dec: {1} => {2}",
-                ra.ToString(), dec.ToString(), domeAz.ToNiceString());
+                "DomeSlaveDriver: SlewToAz (tracking) ra: {0}, dec: {1} => {2}",
+                ra.ToString(), dec.ToString(), newDomeAz.ToNiceString());
             #endregion
-            SlewToAz(domeAz.Degrees);
+            SlewToAz(newDomeAz.Degrees);
         }
 
         public bool Slewing
