@@ -1000,7 +1000,7 @@ namespace ASCOM.Wise40.Telescope
             get
             {
                 bool ret = slewers.Count > 0 ||
-                    DirectionMotorsAreActive ||
+                    (!IsPulseGuiding && DirectionMotorsAreActive) ||
                     _movingToSafety;                // triggered by SafeAtCoordinates()
 
                 #region trace

@@ -43,7 +43,6 @@
             this.label7 = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
             this.labelRaDeltaDeg = new System.Windows.Forms.Label();
-            this.labelDecDeltaDeg = new System.Windows.Forms.Label();
             this.labelRaDeltaEnc = new System.Windows.Forms.Label();
             this.labelDecDeltaEnc = new System.Windows.Forms.Label();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
@@ -51,6 +50,7 @@
             this.label9 = new System.Windows.Forms.Label();
             this.label10 = new System.Windows.Forms.Label();
             this.label11 = new System.Windows.Forms.Label();
+            this.labelDecDeltaDeg = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.trackBarDec)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackBarRa)).BeginInit();
             this.tableLayoutPanel1.SuspendLayout();
@@ -66,7 +66,7 @@
             this.textBoxRaMillis.Name = "textBoxRaMillis";
             this.textBoxRaMillis.Size = new System.Drawing.Size(40, 21);
             this.textBoxRaMillis.TabIndex = 43;
-            this.textBoxRaMillis.Text = "6000";
+            this.textBoxRaMillis.Text = "1000";
             this.textBoxRaMillis.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
             // textBoxDecMillis
@@ -79,7 +79,7 @@
             this.textBoxDecMillis.Name = "textBoxDecMillis";
             this.textBoxDecMillis.Size = new System.Drawing.Size(40, 21);
             this.textBoxDecMillis.TabIndex = 42;
-            this.textBoxDecMillis.Text = "6000";
+            this.textBoxDecMillis.Text = "1000";
             this.textBoxDecMillis.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
             // label1
@@ -224,21 +224,7 @@
             this.labelRaDeltaDeg.Name = "labelRaDeltaDeg";
             this.labelRaDeltaDeg.Size = new System.Drawing.Size(80, 44);
             this.labelRaDeltaDeg.TabIndex = 56;
-            this.labelRaDeltaDeg.Text = "00h00m00.0s";
             this.labelRaDeltaDeg.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // labelDecDeltaDeg
-            // 
-            this.labelDecDeltaDeg.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.labelDecDeltaDeg.AutoSize = true;
-            this.labelDecDeltaDeg.Location = new System.Drawing.Point(46, 44);
-            this.labelDecDeltaDeg.Name = "labelDecDeltaDeg";
-            this.labelDecDeltaDeg.Size = new System.Drawing.Size(80, 44);
-            this.labelDecDeltaDeg.TabIndex = 57;
-            this.labelDecDeltaDeg.Text = "00:00:00.0";
-            this.labelDecDeltaDeg.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // labelRaDeltaEnc
             // 
@@ -250,7 +236,6 @@
             this.labelRaDeltaEnc.Name = "labelRaDeltaEnc";
             this.labelRaDeltaEnc.Size = new System.Drawing.Size(81, 44);
             this.labelRaDeltaEnc.TabIndex = 58;
-            this.labelRaDeltaEnc.Text = "00000000";
             this.labelRaDeltaEnc.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // labelDecDeltaEnc
@@ -263,7 +248,6 @@
             this.labelDecDeltaEnc.Name = "labelDecDeltaEnc";
             this.labelDecDeltaEnc.Size = new System.Drawing.Size(81, 44);
             this.labelDecDeltaEnc.TabIndex = 59;
-            this.labelDecDeltaEnc.Text = "00000000";
             this.labelDecDeltaEnc.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // tableLayoutPanel1
@@ -334,6 +318,18 @@
             this.label11.Text = "Select guiding directions and durations,\r\nthen press Go";
             this.label11.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
+            // labelDecDeltaDeg
+            // 
+            this.labelDecDeltaDeg.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.labelDecDeltaDeg.AutoSize = true;
+            this.labelDecDeltaDeg.Location = new System.Drawing.Point(46, 44);
+            this.labelDecDeltaDeg.Name = "labelDecDeltaDeg";
+            this.labelDecDeltaDeg.Size = new System.Drawing.Size(80, 44);
+            this.labelDecDeltaDeg.TabIndex = 57;
+            this.labelDecDeltaDeg.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
             // PulseGuideForm
             // 
             this.AcceptButton = this.buttonDone;
@@ -387,7 +383,6 @@
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.Label labelRaDeltaDeg;
-        private System.Windows.Forms.Label labelDecDeltaDeg;
         private System.Windows.Forms.Label labelRaDeltaEnc;
         private System.Windows.Forms.Label labelDecDeltaEnc;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
@@ -395,5 +390,6 @@
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.Label labelDecDeltaDeg;
     }
 }

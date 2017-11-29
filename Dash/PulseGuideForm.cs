@@ -27,9 +27,25 @@ namespace Dash
         private enum raTrackBar { West, None, East };
         private enum decTrackBar { South, None, North };
 
+        private class Movement
+        {
+            public bool moving;
+            public GuideDirections dir;
+            public int millis;
+            public double coord_before, coord_after;
+            public double enc_before, enc_after;
+        };
+
+        Movement primaryMovement = new Movement() { moving = false };
+        Movement secondaryMovement = new Movement() { moving = false };
+
+        private Dictionary<TelescopeAxes, Movement> move = new Dictionary<TelescopeAxes, Movement>();
+
         public PulseGuideForm()
         {
             InitializeComponent();
+            move.Add(TelescopeAxes.axisPrimary, primaryMovement);
+            move.Add(TelescopeAxes.axisSecondary, secondaryMovement);
             statuser = new Statuser(labelStatus);
             statuser.Show("");
         }
@@ -41,69 +57,48 @@ namespace Dash
 
         private void buttonGo_Click(object sender, EventArgs e)
         {
-            ra[0] = wisetele.RightAscension;
-            dec[0] = wisetele.Declination;
-            raEnc[0] = wisetele.HAEncoder.Value;
-            decEnc[0] = wisetele.DecEncoder.Value;
-
-            int[] millis = new int[2] { 0, 0 };
-            GuideDirections[] dir = new GuideDirections[2];
-
             labelRaDeltaDeg.Text = labelDecDeltaDeg.Text = labelRaDeltaEnc.Text = labelDecDeltaEnc.Text = string.Empty;
 
-            switch ((raTrackBar)trackBarRa.Value)
+            if (trackBarRa.Value == (int) raTrackBar.West || trackBarRa.Value == (int) raTrackBar.East)
             {
-                case raTrackBar.West:
-                    dir[0] = GuideDirections.guideWest;
-                    millis[0] = Convert.ToInt32(textBoxRaMillis.Text);
-                    break;
-                case raTrackBar.None:
-                    millis[0] = 0;
-                    break;
-                case raTrackBar.East:
-                    dir[0] = GuideDirections.guideEast;
-                    millis[0] = Convert.ToInt32(textBoxRaMillis.Text);
-                    break;
+                move[TelescopeAxes.axisPrimary].moving = true;
+                move[TelescopeAxes.axisPrimary].millis = Convert.ToInt32(textBoxRaMillis.Text);
+                move[TelescopeAxes.axisPrimary].coord_before = wisetele.RightAscension;
+                move[TelescopeAxes.axisPrimary].enc_before = wisetele.HAEncoder.Value;
+                move[TelescopeAxes.axisPrimary].dir = (raTrackBar)trackBarRa.Value == raTrackBar.West ? GuideDirections.guideWest : GuideDirections.guideEast;
             }
 
-            switch ((decTrackBar)trackBarDec.Value)
+            if (trackBarDec.Value == (int) decTrackBar.North || trackBarDec.Value == (int) decTrackBar.South)
             {
-                case decTrackBar.North:
-                    dir[1] = GuideDirections.guideNorth;
-                    millis[1] = Convert.ToInt32(textBoxDecMillis.Text);
-                    break;
-                case decTrackBar.None:
-                    millis[1] = 0;
-                    break;
-                case decTrackBar.South:
-                    dir[1] = GuideDirections.guideSouth;
-                    millis[1] = Convert.ToInt32(textBoxDecMillis.Text);
-                    break;
+                move[TelescopeAxes.axisSecondary].moving = true;
+                move[TelescopeAxes.axisSecondary].millis = Convert.ToInt32(textBoxRaMillis.Text);
+                move[TelescopeAxes.axisSecondary].coord_before = wisetele.Declination;
+                move[TelescopeAxes.axisSecondary].enc_before = wisetele.DecEncoder.Value;
+                move[TelescopeAxes.axisSecondary].dir = (decTrackBar)trackBarRa.Value == decTrackBar.North ? GuideDirections.guideNorth : GuideDirections.guideSouth;
             }
 
-            if (millis[0] == 0 && millis[1] == 0)
+            if (!move[TelescopeAxes.axisPrimary].moving && !move[TelescopeAxes.axisSecondary].moving)
                 return;
 
             statuser.Show("Guiding ...");
-
-            if (millis[0] != 0)
+            
+            if (move[TelescopeAxes.axisPrimary].moving)
             {
                 try
                 {
-                    wisetele.PulseGuide(dir[0], millis[0]);
+                    wisetele.PulseGuide(move[TelescopeAxes.axisPrimary].dir, move[TelescopeAxes.axisPrimary].millis);
                 }
                 catch (Exception ex)
                 {
                     statuser.Show(ex.Message, 5000, Statuser.Severity.Error);
                 }
             }
-
-
-            if (millis[1] != 0)
+            
+            if (move[TelescopeAxes.axisSecondary].moving)
             {
                 try
                 {
-                    wisetele.PulseGuide(dir[1], millis[1]);
+                    wisetele.PulseGuide(move[TelescopeAxes.axisSecondary].dir, move[TelescopeAxes.axisSecondary].millis);
                 }
                 catch (Exception ex)
                 {
@@ -115,21 +110,21 @@ namespace Dash
                 Thread.Sleep(10);
 
             statuser.Show("Done.", 2000);
-            ra[1] = wisetele.RightAscension;
-            dec[1] = wisetele.Declination;
-            raEnc[1] = wisetele.HAEncoder.Value;
-            decEnc[1] = wisetele.DecEncoder.Value;
-
-            if (millis[0] != 0)
+            
+            if (move[TelescopeAxes.axisPrimary].moving)
             {
-                labelRaDeltaDeg.Text = (new Angle(Math.Abs(ra[1] - ra[0]), Angle.Type.RA)).ToString();
-                labelRaDeltaEnc.Text = (raEnc[1] - raEnc[0]).ToString("F0");
+                move[TelescopeAxes.axisPrimary].coord_after = wisetele.RightAscension;
+                move[TelescopeAxes.axisPrimary].enc_after = wisetele.HAEncoder.Value;
+                labelRaDeltaDeg.Text = (new Angle(Math.Abs(move[TelescopeAxes.axisPrimary].coord_after - move[TelescopeAxes.axisPrimary].coord_before), Angle.Type.RA)).ToString();
+                labelRaDeltaEnc.Text = (Math.Abs(move[TelescopeAxes.axisPrimary].enc_after - move[TelescopeAxes.axisPrimary].enc_before)).ToString("F0");
             }
-
-            if (millis[1] != 0)
+            
+            if (move[TelescopeAxes.axisSecondary].moving)
             {
-                labelDecDeltaDeg.Text = (new Angle(Math.Abs(decEnc[1] - decEnc[0]), Angle.Type.Deg)).ToString();
-                labelDecDeltaEnc.Text = (decEnc[1] - decEnc[0]).ToString("F0");
+                move[TelescopeAxes.axisSecondary].coord_after = wisetele.Declination;
+                move[TelescopeAxes.axisSecondary].enc_after = wisetele.DecEncoder.Value;
+                labelDecDeltaDeg.Text = (new Angle(Math.Abs(move[TelescopeAxes.axisSecondary].coord_after - move[TelescopeAxes.axisSecondary].coord_before), Angle.Type.Dec)).ToString();
+                labelDecDeltaEnc.Text = (Math.Abs(move[TelescopeAxes.axisSecondary].enc_after - move[TelescopeAxes.axisSecondary].enc_before)).ToString("F0");
             }
         }
     }
