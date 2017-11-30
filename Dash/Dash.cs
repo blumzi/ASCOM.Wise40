@@ -1392,9 +1392,15 @@ namespace Dash
             new PulseGuideForm().Show();
         }
 
-        private void toolStripTextBox1_Click(object sender, EventArgs e)
+        private void buttonFullStop_Click(object sender, EventArgs e)
         {
-
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "FullStop !!!");
+            #endregion
+            wisetele.FullStop();
+            wisedome.Stop();
+            wisedome.ShutterStop();
+            wisefocuser.Stop();
         }
 
         private void manage3InchFilterInventoryToolStripMenuItem_Click(object sender, EventArgs e)

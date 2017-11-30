@@ -963,6 +963,17 @@ namespace ASCOM.Wise40.Telescope
             safetyMonitorTimer.DisableIfNotNeeded();
         }
 
+        public void FullStop()
+        {
+            foreach (WiseVirtualMotor motor in allMotors)
+            {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseTele:FullStop - Stopping {0}", motor.Name);
+                #endregion
+                motor.SetOff();
+            }          
+        }
+
         public bool AxisIsMoving(TelescopeAxes axis)
         {
             bool ret = false;

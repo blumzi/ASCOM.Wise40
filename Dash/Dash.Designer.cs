@@ -121,6 +121,8 @@
             this.domeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.domeAutoCalibrateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.syncVentWithShutterToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.minimalTrackingStepToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripTextBoxMinimalDomeStep = new System.Windows.Forms.ToolStripTextBox();
             this.cloudSensorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.dataFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripTextBoxCloudSensorDataFile = new System.Windows.Forms.ToolStripTextBox();
@@ -158,7 +160,6 @@
             this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
             this.label1 = new System.Windows.Forms.Label();
             this.labelTitle = new System.Windows.Forms.Label();
-            this.pictureBoxWise = new System.Windows.Forms.PictureBox();
             this.labelDate = new System.Windows.Forms.Label();
             this.labelComputerControl = new System.Windows.Forms.Label();
             this.annunciatorPanelSafety = new ASCOM.Controls.AnnunciatorPanel();
@@ -218,8 +219,10 @@
             this.labelRainRateValue = new System.Windows.Forms.Label();
             this.timerRefreshDisplay = new System.Windows.Forms.Timer(this.components);
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
-            this.minimalTrackingStepToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripTextBoxMinimalDomeStep = new System.Windows.Forms.ToolStripTextBox();
+            this.panel2 = new System.Windows.Forms.Panel();
+            this.panel3 = new System.Windows.Forms.Panel();
+            this.pictureBoxWise = new System.Windows.Forms.PictureBox();
+            this.buttonFullStop = new System.Windows.Forms.Button();
             this.tableLayoutMain.SuspendLayout();
             this.groupBoxFocuser.SuspendLayout();
             this.groupBoxDomeGroup.SuspendLayout();
@@ -231,13 +234,15 @@
             this.tableLayoutPanelCoordinates.SuspendLayout();
             this.menuStrip.SuspendLayout();
             this.flowLayoutPanel1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxWise)).BeginInit();
             this.annunciatorPanelSafety.SuspendLayout();
             this.annunciatorPanelStatus.SuspendLayout();
             this.groupBoxFilterWheel.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.groupBoxWeather.SuspendLayout();
             this.tableLayoutPanelWeather.SuspendLayout();
+            this.panel2.SuspendLayout();
+            this.panel3.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxWise)).BeginInit();
             this.SuspendLayout();
             // 
             // tableLayoutMain
@@ -1586,6 +1591,19 @@
             this.syncVentWithShutterToolStripMenuItem.Text = "SyncVentWithShutter";
             this.syncVentWithShutterToolStripMenuItem.Click += new System.EventHandler(this.syncVentWithShutterToolStripMenuItem_Click);
             // 
+            // minimalTrackingStepToolStripMenuItem
+            // 
+            this.minimalTrackingStepToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripTextBoxMinimalDomeStep});
+            this.minimalTrackingStepToolStripMenuItem.Name = "minimalTrackingStepToolStripMenuItem";
+            this.minimalTrackingStepToolStripMenuItem.Size = new System.Drawing.Size(232, 22);
+            this.minimalTrackingStepToolStripMenuItem.Text = "Minimal Tracking Step (deg)";
+            // 
+            // toolStripTextBoxMinimalDomeStep
+            // 
+            this.toolStripTextBoxMinimalDomeStep.Name = "toolStripTextBoxMinimalDomeStep";
+            this.toolStripTextBoxMinimalDomeStep.Size = new System.Drawing.Size(100, 23);
+            // 
             // cloudSensorToolStripMenuItem
             // 
             this.cloudSensorToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -1870,11 +1888,11 @@
             this.flowLayoutPanel1.Controls.Add(this.annunciatorPanelSafety);
             this.flowLayoutPanel1.Controls.Add(this.labelFiller);
             this.flowLayoutPanel1.Controls.Add(this.annunciatorPanelStatus);
-            this.flowLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.flowLayoutPanel1.Controls.Add(this.panel2);
             this.flowLayoutPanel1.Location = new System.Drawing.Point(3, 27);
             this.flowLayoutPanel1.Name = "flowLayoutPanel1";
             this.tableLayoutMain.SetRowSpan(this.flowLayoutPanel1, 3);
-            this.flowLayoutPanel1.Size = new System.Drawing.Size(185, 662);
+            this.flowLayoutPanel1.Size = new System.Drawing.Size(185, 661);
             this.flowLayoutPanel1.TabIndex = 29;
             // 
             // label1
@@ -1900,16 +1918,6 @@
             this.labelTitle.Text = "Raymond and Beverly Sackler\r\nFaculty of Exact Sciences\r\n\r\nSchool of Physics and A" +
     "stronomy\r\nDepartment of Astrophysics\r\n\r\nTel Aviv University\r\n";
             this.labelTitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // pictureBoxWise
-            // 
-            this.pictureBoxWise.Image = ((System.Drawing.Image)(resources.GetObject("pictureBoxWise.Image")));
-            this.pictureBoxWise.Location = new System.Drawing.Point(3, 155);
-            this.pictureBoxWise.Name = "pictureBoxWise";
-            this.pictureBoxWise.Size = new System.Drawing.Size(173, 93);
-            this.pictureBoxWise.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.pictureBoxWise.TabIndex = 1;
-            this.pictureBoxWise.TabStop = false;
             // 
             // labelDate
             // 
@@ -2775,19 +2783,44 @@
             this.timerRefreshDisplay.Enabled = true;
             this.timerRefreshDisplay.Tick += new System.EventHandler(this.RefreshDisplay);
             // 
-            // minimalTrackingStepToolStripMenuItem
+            // panel2
             // 
-            this.minimalTrackingStepToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripTextBoxMinimalDomeStep});
-            this.minimalTrackingStepToolStripMenuItem.Name = "minimalTrackingStepToolStripMenuItem";
-            this.minimalTrackingStepToolStripMenuItem.Size = new System.Drawing.Size(232, 22);
-            this.minimalTrackingStepToolStripMenuItem.Text = "Minimal Tracking Step (deg)";
+            this.panel2.Controls.Add(this.panel3);
+            this.panel2.Location = new System.Drawing.Point(3, 551);
+            this.panel2.Name = "panel2";
+            this.panel2.Size = new System.Drawing.Size(200, 100);
+            this.panel2.TabIndex = 40;
             // 
-            // toolStripTextBox1
+            // panel3
             // 
-            this.toolStripTextBoxMinimalDomeStep.Name = "toolStripTextBox1";
-            this.toolStripTextBoxMinimalDomeStep.Size = new System.Drawing.Size(100, 23);
-            this.toolStripTextBoxMinimalDomeStep.Click += new System.EventHandler(this.toolStripTextBox1_Click);
+            this.panel3.Controls.Add(this.buttonFullStop);
+            this.panel3.Location = new System.Drawing.Point(0, 0);
+            this.panel3.Name = "panel3";
+            this.panel3.Size = new System.Drawing.Size(184, 112);
+            this.panel3.TabIndex = 0;
+            // 
+            // pictureBoxWise
+            // 
+            this.pictureBoxWise.Image = ((System.Drawing.Image)(resources.GetObject("pictureBoxWise.Image")));
+            this.pictureBoxWise.Location = new System.Drawing.Point(3, 155);
+            this.pictureBoxWise.Name = "pictureBoxWise";
+            this.pictureBoxWise.Size = new System.Drawing.Size(173, 93);
+            this.pictureBoxWise.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pictureBoxWise.TabIndex = 1;
+            this.pictureBoxWise.TabStop = false;
+            // 
+            // buttonFullStop
+            // 
+            this.buttonFullStop.BackgroundImage = global::Dash.Properties.Resources.stop_sign_200x200;
+            this.buttonFullStop.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.buttonFullStop.FlatAppearance.BorderSize = 0;
+            this.buttonFullStop.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.buttonFullStop.Location = new System.Drawing.Point(56, 24);
+            this.buttonFullStop.Name = "buttonFullStop";
+            this.buttonFullStop.Size = new System.Drawing.Size(64, 64);
+            this.buttonFullStop.TabIndex = 0;
+            this.buttonFullStop.UseVisualStyleBackColor = true;
+            this.buttonFullStop.Click += new System.EventHandler(this.buttonFullStop_Click);
             // 
             // FormDash
             // 
@@ -2822,7 +2855,6 @@
             this.menuStrip.ResumeLayout(false);
             this.menuStrip.PerformLayout();
             this.flowLayoutPanel1.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxWise)).EndInit();
             this.annunciatorPanelSafety.ResumeLayout(false);
             this.annunciatorPanelStatus.ResumeLayout(false);
             this.annunciatorPanelStatus.PerformLayout();
@@ -2833,6 +2865,9 @@
             this.groupBoxWeather.ResumeLayout(false);
             this.tableLayoutPanelWeather.ResumeLayout(false);
             this.tableLayoutPanelWeather.PerformLayout();
+            this.panel2.ResumeLayout(false);
+            this.panel3.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxWise)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -3029,6 +3064,9 @@
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemPulseGuide;
         private System.Windows.Forms.ToolStripMenuItem minimalTrackingStepToolStripMenuItem;
         private System.Windows.Forms.ToolStripTextBox toolStripTextBoxMinimalDomeStep;
+        private System.Windows.Forms.Panel panel2;
+        private System.Windows.Forms.Panel panel3;
+        private System.Windows.Forms.Button buttonFullStop;
     }
 }
 

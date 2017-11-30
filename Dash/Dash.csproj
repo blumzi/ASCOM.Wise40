@@ -193,6 +193,7 @@
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
     <EmbeddedResource Include="PulseGuideForm.resx">
       <DependentUpon>PulseGuideForm.cs</DependentUpon>
@@ -256,6 +257,8 @@
   <ItemGroup>
     <Content Include="Icons\optica-filters%282%29.jpg" />
     <Content Include="Icons\optica_filters_2__x5l_icon.ico" />
+    <None Include="Icons\stop-sign-smaller.jpg" />
+    <None Include="Icons\stop-sign-200x200.jpg" />
     <Content Include="Installer\ReadMe.html" />
     <Content Include="Installer\Wise40Dash.iss" />
     <Content Include="WiseObs.ico" />
