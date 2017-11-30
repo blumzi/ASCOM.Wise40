@@ -65,16 +65,18 @@ namespace Dash
                 move[TelescopeAxes.axisPrimary].millis = Convert.ToInt32(textBoxRaMillis.Text);
                 move[TelescopeAxes.axisPrimary].coord_before = wisetele.RightAscension;
                 move[TelescopeAxes.axisPrimary].enc_before = wisetele.HAEncoder.Value;
-                move[TelescopeAxes.axisPrimary].dir = (raTrackBar)trackBarRa.Value == raTrackBar.West ? GuideDirections.guideWest : GuideDirections.guideEast;
+                move[TelescopeAxes.axisPrimary].dir = (raTrackBar)trackBarRa.Value == raTrackBar.West ?
+                    GuideDirections.guideWest : GuideDirections.guideEast;
             }
 
             if (trackBarDec.Value == (int) decTrackBar.North || trackBarDec.Value == (int) decTrackBar.South)
             {
                 move[TelescopeAxes.axisSecondary].moving = true;
-                move[TelescopeAxes.axisSecondary].millis = Convert.ToInt32(textBoxRaMillis.Text);
+                move[TelescopeAxes.axisSecondary].millis = Convert.ToInt32(textBoxDecMillis.Text);
                 move[TelescopeAxes.axisSecondary].coord_before = wisetele.Declination;
                 move[TelescopeAxes.axisSecondary].enc_before = wisetele.DecEncoder.Value;
-                move[TelescopeAxes.axisSecondary].dir = (decTrackBar)trackBarRa.Value == decTrackBar.North ? GuideDirections.guideNorth : GuideDirections.guideSouth;
+                move[TelescopeAxes.axisSecondary].dir = (decTrackBar)trackBarDec.Value == decTrackBar.North ?
+                    GuideDirections.guideNorth : GuideDirections.guideSouth;
             }
 
             if (!move[TelescopeAxes.axisPrimary].moving && !move[TelescopeAxes.axisSecondary].moving)
