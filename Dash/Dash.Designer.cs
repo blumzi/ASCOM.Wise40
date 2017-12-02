@@ -2798,6 +2798,7 @@
             this.panel3.Name = "panel3";
             this.panel3.Size = new System.Drawing.Size(184, 112);
             this.panel3.TabIndex = 0;
+            this.toolTip.SetToolTip(this.panel3, "Stops all motors \r\n(telescope, dome, shutter, focus, filter-wheel)");
             // 
             // pictureBoxWise
             // 
@@ -2811,8 +2812,8 @@
             // 
             // buttonFullStop
             // 
-            this.buttonFullStop.BackgroundImage = global::Dash.Properties.Resources.stop_sign_200x200;
-            this.buttonFullStop.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.buttonFullStop.BackgroundImage = global::Dash.Properties.Resources.stop_sign_236x236;
+            this.buttonFullStop.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this.buttonFullStop.FlatAppearance.BorderSize = 0;
             this.buttonFullStop.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonFullStop.Location = new System.Drawing.Point(56, 24);

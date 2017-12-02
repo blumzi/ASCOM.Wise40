@@ -73,6 +73,16 @@ namespace Dash.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap stop_sign_236x236 {
+            get {
+                object obj = ResourceManager.GetObject("stop-sign-236x236", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap stop_sign_smaller {
             get {
                 object obj = ResourceManager.GetObject("stop-sign-smaller", resourceCulture);

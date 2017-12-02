@@ -315,12 +315,15 @@ namespace ASCOM.Wise40.Focuser
             pinDown.SetOff();
             _startStopping = Position;
             _status = FocuserStatus.Stopping;
+
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseFocuser:Stop Started stopping at {0} ...", _startStopping);
             #endregion
-
             while (!FullyStopped)
                 Thread.Sleep(100);
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseFocuser:Stop Stopped at {0} ...", Position);
+            #endregion
         }
 
         public void Halt()
