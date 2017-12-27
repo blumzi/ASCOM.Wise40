@@ -65,9 +65,9 @@ namespace ASCOM.Wise40.Hardware
                     WiseBoards.Add(new WiseBoard(null, i));
                 }
 
-                miscboard = WiseBoards.Find(x => x.mccBoard.BoardNum == 0);
+                miscboard = WiseBoards.Find(x => x.mccBoard.BoardNum == /*0*/2);
                 teleboard = WiseBoards.Find(x => x.mccBoard.BoardNum == 1);
-                domeboard = WiseBoards.Find(x => x.mccBoard.BoardNum == 2);
+                domeboard = WiseBoards.Find(x => x.mccBoard.BoardNum == /*2*/0);
 
                 _initialized = true;
             }
