@@ -12,7 +12,7 @@ namespace Restore_ASCOM_Profiles
 {
     public class Program
     {
-        private static bool realMachine = Environment.MachineName.ToLower() == "dome-ctlr";
+        private static bool realMachine = Environment.MachineName.ToLower() == "dome-pc";
         public enum Mode { LCO, ACP, WISE, SKIP };
         public static Mode mode = Mode.WISE;
 
@@ -49,8 +49,8 @@ namespace Restore_ASCOM_Profiles
         {
             string driverID = "ASCOM.Wise40.Boltwood.ObservingConditions";
             string dataFileProfileName = "DataFile";
-            string dataFile = realMachine ? 
-                "z:/ClarityII-data.txt" :
+            string dataFile = realMachine ?
+                "c:/temp/ClarityII-data.txt" /*"z:/ClarityII-data.txt"*/ :
                 "c:/temp/ClarityII-data.txt";
 
             using (Profile driverProfile = new Profile())
@@ -66,7 +66,7 @@ namespace Restore_ASCOM_Profiles
             string reportFileProfileName = "DataFile";
             string reportFile = realMachine ?
                 //"y:/Weather_Wise40_Vantage_Pro.htm" :  // restore when weather-ps is back
-                "c:/Wise40/Data/Weather_Wise40_Vantage_Pro.htm" :
+                "c:/temp/Weather_Wise40_Vantage_Pro.htm" /*"c:/Wise40/Data/Weather_Wise40_Vantage_Pro.htm"*/ :
                 "c:/temp/Weather_Wise40_Vantage_Pro.htm";
 
             using (Profile driverProfile = new Profile())
