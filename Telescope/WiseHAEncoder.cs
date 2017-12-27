@@ -98,7 +98,7 @@ namespace ASCOM.Wise40.Telescope
                         _daqsValue = ((axis * 720 - worm) & 0xfff000) + worm;
                     }
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugEncoders,
+                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
                         "{0}: value: {1}, axis: {2}, worm: {3}",
                         Name, _daqsValue, axis, worm);
                     #endregion
