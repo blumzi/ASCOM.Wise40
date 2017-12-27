@@ -58,7 +58,6 @@ namespace ASCOM.Wise40.Hardware
             this._otherAxis = (_axis == TelescopeAxes.axisPrimary) ?
                 TelescopeAxes.axisSecondary : TelescopeAxes.axisPrimary;
             this._direction = direction;
-            //Simulated = motorPin.Simulated || (guideMotorPin != null && guideMotorPin.Simulated);
 
             if (Simulated && (encoders == null || encoders.Count() == 0))
                 throw new WiseException(Name + ": A simulated WiseVirtualMotor must have at least one encoder reference");
