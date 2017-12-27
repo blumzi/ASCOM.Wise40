@@ -58,7 +58,7 @@ namespace ASCOM.Wise40.Telescope
             wisedome.init();
             wisedome.SetArrivedAtAzEvent(_arrivedAtAz);
             wisesite.init();
-            _minimalMovement = new Angle(wisetele._minimalDomeTrackingMovement, Angle.Type.Az);
+            _minimalMovement = new Angle(WiseTele.Instance._minimalDomeTrackingMovement, Angle.Type.Az);
 
             _initialized = true;
             #region debug
@@ -175,10 +175,10 @@ namespace ASCOM.Wise40.Telescope
             Angle currentDomeAz = wisedome.Azimuth;
             var delta = currentDomeAz.ShortestDistance(newDomeAz);
 
-            if (delta.angle < _minimalMovement)
+            if (delta.angle.Radians < _minimalMovement.Radians)
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "DomeSlaveDriver:SlewToAz: delta={0}, _minimalMovement={1}: Not moving",
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "DomeSlaveDriver:SlewToAz (tracking): delta={0}, _minimalMovement={1}: Not moving",
                     delta.angle.ToNiceString(), _minimalMovement.ToNiceString());
                 #endregion
                 return;
@@ -186,7 +186,7 @@ namespace ASCOM.Wise40.Telescope
 
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                "DomeSlaveDriver: SlewToAz (tracking) ra: {0}, dec: {1} => {2}",
+                "DomeSlaveDriver:SlewToAz (tracking): ra: {0}, dec: {1} => {2}",
                 ra.ToString(), dec.ToString(), newDomeAz.ToNiceString());
             #endregion
             SlewToAz(newDomeAz.Degrees);
