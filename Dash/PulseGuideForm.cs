@@ -18,14 +18,14 @@ namespace Dash
     public partial class PulseGuideForm : Form
     {
         private static WiseTele wisetele = WiseTele.Instance;
-        private double[] ra = new double[2];
-        private double[] dec = new double[2];
-        private double[] raEnc = new double[2];
-        private double[] decEnc = new double[2];
+        //private double[] ra = new double[2];
+        //private double[] dec = new double[2];
+        //private double[] raEnc = new double[2];
+        //private double[] decEnc = new double[2];
         private Statuser statuser;
 
-        private enum raTrackBar { West, None, East };
-        private enum decTrackBar { South, None, North };
+        private enum RaTrackBar { West, None, East };
+        private enum DecTrackBar { South, None, North };
 
         private class Movement
         {
@@ -58,24 +58,25 @@ namespace Dash
         private void buttonGo_Click(object sender, EventArgs e)
         {
             labelRaDeltaDeg.Text = labelDecDeltaDeg.Text = labelRaDeltaEnc.Text = labelDecDeltaEnc.Text = string.Empty;
-
-            if (trackBarRa.Value == (int) raTrackBar.West || trackBarRa.Value == (int) raTrackBar.East)
+            move[TelescopeAxes.axisPrimary].moving = move[TelescopeAxes.axisSecondary].moving = false;
+            
+            if (radioButtonEast.Checked || radioButtonWest.Checked)
             {
                 move[TelescopeAxes.axisPrimary].moving = true;
                 move[TelescopeAxes.axisPrimary].millis = Convert.ToInt32(textBoxRaMillis.Text);
                 move[TelescopeAxes.axisPrimary].coord_before = wisetele.RightAscension;
                 move[TelescopeAxes.axisPrimary].enc_before = wisetele.HAEncoder.Value;
-                move[TelescopeAxes.axisPrimary].dir = (raTrackBar)trackBarRa.Value == raTrackBar.West ?
+                move[TelescopeAxes.axisPrimary].dir = radioButtonWest.Checked ? 
                     GuideDirections.guideWest : GuideDirections.guideEast;
             }
-
-            if (trackBarDec.Value == (int) decTrackBar.North || trackBarDec.Value == (int) decTrackBar.South)
+            
+            if (radioButtonNorth.Checked || radioButtonSouth.Checked)
             {
                 move[TelescopeAxes.axisSecondary].moving = true;
                 move[TelescopeAxes.axisSecondary].millis = Convert.ToInt32(textBoxDecMillis.Text);
                 move[TelescopeAxes.axisSecondary].coord_before = wisetele.Declination;
                 move[TelescopeAxes.axisSecondary].enc_before = wisetele.DecEncoder.Value;
-                move[TelescopeAxes.axisSecondary].dir = (decTrackBar)trackBarDec.Value == decTrackBar.North ?
+                move[TelescopeAxes.axisSecondary].dir = radioButtonNorth.Checked ?
                     GuideDirections.guideNorth : GuideDirections.guideSouth;
             }
 
@@ -109,7 +110,7 @@ namespace Dash
             }
 
             while (wisetele.IsPulseGuiding)
-                Thread.Sleep(10);
+                Application.DoEvents();
 
             statuser.Show("Done.", 2000);
             
@@ -128,6 +129,11 @@ namespace Dash
                 labelDecDeltaDeg.Text = (new Angle(Math.Abs(move[TelescopeAxes.axisSecondary].coord_after - move[TelescopeAxes.axisSecondary].coord_before), Angle.Type.Dec)).ToString();
                 labelDecDeltaEnc.Text = (Math.Abs(move[TelescopeAxes.axisSecondary].enc_after - move[TelescopeAxes.axisSecondary].enc_before)).ToString("F0");
             }
+        }
+
+        private void buttonStop_Click(object sender, EventArgs e)
+        {
+            wisetele.pulsing.Abort();
         }
     }
 }

@@ -241,7 +241,7 @@ namespace Dash
             double currentRate = Const.rateStopped;
 
             annunciatorPrimary.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
-            if (wisetele.slewers.Active(Slewers.Type.Ra))
+            if (wisetele.slewers.Active(Slewers.Type.Ra) || wisetele.pulsing.Active(TelescopeAxes.axisPrimary))
             {
                 primaryMotor = null;
                 if (wisetele.WestMotor.isOn)
@@ -261,7 +261,7 @@ namespace Dash
             }
 
             annunciatorSecondary.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
-            if (wisetele.slewers.Active(Slewers.Type.Dec))
+            if (wisetele.slewers.Active(Slewers.Type.Dec) || wisetele.pulsing.Active(TelescopeAxes.axisSecondary))
             {
                 secondaryMotor = null;
                 if (wisetele.NorthMotor.isOn)
@@ -352,7 +352,7 @@ namespace Dash
                 {
                     annunciatorSafeToOpen.Text = "Safe to open ???";
                     annunciatorSafeToOpen.Cadence = ASCOM.Controls.CadencePattern.BlinkSlow;
-                    tip = "Cannot connect to the safeToOpen driver!";
+                    tip = "Cannot connect to the SafeToOpen driver!";
                 }
                 else if (wisesite.safeToOpen.IsSafe)
                 {
@@ -617,6 +617,11 @@ namespace Dash
 
         private void directionButton_MouseUp(object sender, MouseEventArgs e)
         {
+            if (wisetele.NorthMotor.isOn || wisetele.SouthMotor.isOn)
+                wisetele.MoveAxis(TelescopeAxes.axisSecondary, Const.rateStopped);
+            if (wisetele.WestMotor.isOn || wisetele.EastMotor.isOn)
+                wisetele.MoveAxis(TelescopeAxes.axisPrimary, Const.rateStopped);
+
             wisetele.Stop();
             telescopeStatus.Show("Stopped", 1000, Statuser.Severity.Good);
         }

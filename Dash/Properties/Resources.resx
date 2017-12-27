@@ -118,13 +118,19 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="stop-sign-236x236" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Icons\stop-sign-236x236.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="images_clip-art_Leomarc_Leomarc_stop_sign" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Icons\images_clip-art_Leomarc_Leomarc_stop_sign.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="stop-sign-smaller" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\stop-sign-smaller.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="stop-sign-200x200" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\stop-sign-200x200.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="stop-sign-236x236" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Icons\stop-sign-236x236.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="Leomarc_stop_sign" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Icons\Leomarc_stop_sign.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

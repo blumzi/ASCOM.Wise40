@@ -132,6 +132,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MotionStudy.cs" />
+    <Compile Include="Pulsing.cs" />
     <Compile Include="Slewers.cs" />
     <Compile Include="AxisMonitor.cs" />
     <Compile Include="DomeSlaveDriver.cs" />

@@ -69,9 +69,46 @@ namespace ASCOM.Wise40.Telescope
 
         private bool _connected = false;
 
-        #region PulseGuiding
-        //private bool _isPulseGuiding = false;
-        private long _primaryIsPulseGuiding = 0, _secondaryIsPulseGuiding = 0;
+        #region TrackingRestoration
+        /// <summary>
+        /// Remembers the Tracking state when MoveAxis instance(s) are activated.
+        /// When no more MoveAxis instance(s) are active, it restores the remembered Tracking stat.e
+        /// </summary>
+        private class TrackingRestorer
+        {
+            bool _wasTracking;
+            long _axisMovers;
+
+            public TrackingRestorer()
+            {
+                Interlocked.Exchange(ref _axisMovers, 0);
+            }
+
+            public void AddMover()
+            {
+                long current = Interlocked.Increment(ref _axisMovers);
+                if (current == 1)
+                {
+                    _wasTracking = _instance.Tracking;
+                    #region debug
+                    _instance.debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "TrackingRestorer:AddMover:  Remembered _wasTracking: {0}", _wasTracking);
+                    #endregion
+                }
+            }
+
+            public void RemoveMover()
+            {
+                long current = Interlocked.Decrement(ref _axisMovers);
+                if (current == 0)
+                {
+                    _instance.Tracking = _wasTracking;
+                    #region debug
+                    _instance.debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "TrackingRestorer:RemoveMover:  Restored Tracking =  _wasTracking: {0}", _wasTracking);
+                    #endregion
+                }
+            }
+        };
+        TrackingRestorer _trackingRestorer;
         #endregion
 
         private List<WiseVirtualMotor> directionMotors, allMotors;
@@ -137,6 +174,7 @@ namespace ASCOM.Wise40.Telescope
         private CancellationToken domeCT;
 
         public Slewers slewers = Slewers.Instance;
+        public Pulsing pulsing = Pulsing.Instance;
 
         private AxisMonitor primaryStatusMonitor, secondaryStatusMonitor;
         Dictionary<TelescopeAxes, AxisMonitor> axisStatusMonitors;
@@ -191,7 +229,6 @@ namespace ASCOM.Wise40.Telescope
         private static readonly Angle haLimit = Angle.FromHours(4.5);
 
         public MovementDictionary movementDict;
-        private bool wasTracking;
 
         private SafetyMonitorTimer safetyMonitorTimer;
 
@@ -430,6 +467,8 @@ namespace ASCOM.Wise40.Telescope
             wisesite.init();
             wiseComputerControl.init();
 
+            _trackingRestorer = new TrackingRestorer();
+
             #region MotorDefinitions
             //
             // Define motors-related hardware (pins and encoders)
@@ -665,6 +704,8 @@ namespace ASCOM.Wise40.Telescope
             _instance.domeSlaveDriver.init();
             _instance.connectables.Add(_instance.domeSlaveDriver);
 
+            pulsing.Init();
+
             _initialized = true;
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseTele init() done.");
@@ -807,7 +848,8 @@ namespace ASCOM.Wise40.Telescope
                 if (value == true)
                 {
                     trackingTimer.Change(trackingDomeAdjustmentInterval, trackingDomeAdjustmentInterval);
-                } else
+                }
+                else
                 {
                     trackingTimer.Change(Timeout.Infinite, Timeout.Infinite);
                 }
@@ -856,7 +898,7 @@ namespace ASCOM.Wise40.Telescope
                     _lastTrackingLST = wisesite.LocalSiderealTime.Hours;
 
                     if (TrackingMotor.isOff)
-                        TrackingMotor.SetOn(Const.rateTrack);                    
+                        TrackingMotor.SetOn(Const.rateTrack);
                     SyncDomePosition = true;
                 }
                 else
@@ -909,7 +951,7 @@ namespace ASCOM.Wise40.Telescope
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseTele:Stop - Canceling telescopeCT: #{0}", telescopeCT.GetHashCode());
                     #endregion
-                    telescopeCTS.Cancel();                    
+                    telescopeCTS.Cancel();
                     telescopeCTS = new CancellationTokenSource();
                 }
                 catch (AggregateException ax)
@@ -963,15 +1005,25 @@ namespace ASCOM.Wise40.Telescope
             safetyMonitorTimer.DisableIfNotNeeded();
         }
 
+        public void AbortPulseGuiding()
+        {
+            pulsing.Abort();
+        }
+
         public void FullStop()
         {
+            Stop();
+            if (IsPulseGuiding)
+                AbortPulseGuiding();
+            Tracking = false;
+
             foreach (WiseVirtualMotor motor in allMotors)
             {
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseTele:FullStop - Stopping {0}", motor.Name);
                 #endregion
-                motor.SetOff();
-            }          
+                motor.SetOff(); // ForceOff
+            }
         }
 
         public bool AxisIsMoving(TelescopeAxes axis)
@@ -1080,10 +1132,6 @@ namespace ASCOM.Wise40.Telescope
                     m.SetOff();
                 }
 
-            // Restore tracking
-            if (wasTracking)
-                Tracking = true;
-
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "StopAxis({0}): done.", axis);
             #endregion debug
@@ -1127,6 +1175,7 @@ namespace ASCOM.Wise40.Telescope
             {
                 StopAxisAndWaitForHalt(thisAxis);
                 safetyMonitorTimer.DisableIfNotNeeded();
+                _trackingRestorer.RemoveMover();
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "_moveAxis({0}, {1}): done.",
                     Axis, RateName(Rate));
@@ -1167,9 +1216,12 @@ namespace ASCOM.Wise40.Telescope
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "_moveAxis({0}, {1}): direction: {2}, stopTracking: {3}",
                 Axis, RateName(Rate), axisDirectionName[Axis][direction], stopTracking);
             #endregion debug
-            wasTracking = Tracking;
+
             if (stopTracking)
+            {
+                _instance._trackingRestorer.AddMover();
                 Tracking = false;
+            }
 
             Angle currPosition = (Axis == TelescopeAxes.axisPrimary) ?
                 Angle.FromHours(_instance.RightAscension, Angle.Type.RA) :
@@ -1194,8 +1246,7 @@ namespace ASCOM.Wise40.Telescope
         {
             get
             {
-                bool ret = AxisIsPulseGuiding(TelescopeAxes.axisPrimary) ||
-                    AxisIsPulseGuiding(TelescopeAxes.axisSecondary);
+                bool ret = pulsing.Active();
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "IsPulseGuiding: {0}", ret);
                 #endregion
@@ -1836,7 +1887,7 @@ namespace ASCOM.Wise40.Telescope
 
         public void DomeStopper()
         {
-            domeCTS.Cancel();            
+            domeCTS.Cancel();
             domeCTS = new CancellationTokenSource();
             SyncDomePosition = false;
         }
@@ -2593,62 +2644,6 @@ namespace ASCOM.Wise40.Telescope
             }
         }
 
-        private static Dictionary<GuideDirections, TelescopeAxes> guideDirection2Axis = new Dictionary<GuideDirections, TelescopeAxes>
-        {
-            {GuideDirections.guideEast, TelescopeAxes.axisPrimary },
-            {GuideDirections.guideWest, TelescopeAxes.axisPrimary },
-            {GuideDirections.guideNorth, TelescopeAxes.axisSecondary },
-            {GuideDirections.guideSouth, TelescopeAxes.axisSecondary },
-        };
-
-        private static Dictionary<GuideDirections, WiseVirtualMotor> guideDirection2Motor = new Dictionary<GuideDirections, WiseVirtualMotor>
-        {
-            {GuideDirections.guideEast, Instance.EastMotor },
-            {GuideDirections.guideWest, Instance.WestMotor },
-            {GuideDirections.guideNorth, Instance.NorthMotor },
-            {GuideDirections.guideSouth, Instance.SouthMotor },
-        };
-
-        internal void doPulseGuide(object param)
-        {
-            GuideDirections direction = (GuideDirections)(((object[]) param)[0]);
-            int duration = (int)(((object[])param)[1]);
-
-            TelescopeAxes axis = guideDirection2Axis[direction];
-            WiseVirtualMotor motor = null;
-
-            switch (direction)
-            {
-                case GuideDirections.guideNorth:
-                    motor = _instance.NorthMotor;
-                    break;
-                case GuideDirections.guideSouth:
-                    motor = _instance.SouthMotor;
-                    break;
-                case GuideDirections.guideWest:
-                    motor = _instance.WestMotor;
-                    break;
-                case GuideDirections.guideEast:
-                    motor = _instance.EastMotor;
-                    break;
-            }
-
-            #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "PulseGuide: direction: {0}, duration: {1}ms, start", direction, duration);
-            #endregion
-            motor.SetOn(Const.rateGuide);
-            System.Threading.Thread.Sleep(duration);
-            motor.SetOff();
-            #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "PulseGuide: direction: {0}, duration: {1}ms, done", direction, duration);
-            #endregion
-
-            if (axis == TelescopeAxes.axisPrimary)
-                Interlocked.Decrement(ref _primaryIsPulseGuiding);
-            else
-                Interlocked.Decrement(ref _secondaryIsPulseGuiding);
-        }
-
         public void PulseGuide(GuideDirections Direction, int Duration)
         {
             #region trace
@@ -2660,41 +2655,24 @@ namespace ASCOM.Wise40.Telescope
             if (AtPark)
                 throw new InvalidOperationException("Cannot PulseGuide while AtPark");
 
-            TelescopeAxes axis = guideDirection2Axis[Direction];
-
             if (Slewing)
                 throw new InvalidOperationException("Cannot PulseGuide while Slewing");
 
-            if (AxisIsPulseGuiding(Direction))
-                throw new InvalidOperationException(string.Format("Axis {0} is already PulseGuiding.", axis));
+            if (pulsing.Active(Direction))
+            {
+                throw new InvalidOperationException(string.Format(
+                    "Already PulseGuiding on {0}", Pulsing.guideDirection2Axis[Direction].ToString()));
+            }
 
-            if (axis == TelescopeAxes.axisPrimary)
-                Interlocked.Increment(ref _primaryIsPulseGuiding);
-            else
-                Interlocked.Increment(ref _secondaryIsPulseGuiding);
-
-            object[] param = new object[2] { Direction, Duration };
-            System.Threading.ThreadPool.QueueUserWorkItem(doPulseGuide, param);
-        }
-
-        public bool AxisIsPulseGuiding(TelescopeAxes axis)
-        {
-            if (axis == TelescopeAxes.axisPrimary)
-                return Interlocked.Read(ref _primaryIsPulseGuiding) != 0;
-            else if (axis == TelescopeAxes.axisSecondary)
-                return (Interlocked.Read(ref _secondaryIsPulseGuiding) != 0);
-            else
-                return false;
-        }
-
-        private bool AxisIsPulseGuiding(GuideDirections Direction)
-        {
-            if (Direction == GuideDirections.guideEast || Direction == GuideDirections.guideWest)
-                return AxisIsPulseGuiding(TelescopeAxes.axisPrimary);
-            else if (Direction == GuideDirections.guideNorth || Direction == GuideDirections.guideSouth)
-                return AxisIsPulseGuiding(TelescopeAxes.axisSecondary);
-            else
-                return false;
+            try
+            {
+                pulsing.Start(Direction, Duration);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException(string.Format("PulseGuide: Cannot Start({0}, {1}): {2}",
+                    Direction.ToString(), Duration.ToString(), ex.Message));
+            }
         }
 
         public ArrayList SupportedActions
@@ -2831,6 +2809,13 @@ namespace ASCOM.Wise40.Telescope
                     Angle ra = Angle.FromHours(TargetRightAscension, Angle.Type.RA);
                     Angle dec = Angle.FromDegrees(TargetDeclination, Angle.Type.Dec);
                     ret = string.Format("Slewing to RA {0} DEC {1}", ra, dec);
+                } else if (IsPulseGuiding)
+                {
+                    ret = "PulseGuiding in";
+                    if (pulsing.Active(TelescopeAxes.axisPrimary))
+                        ret += " RA";
+                    if (pulsing.Active(TelescopeAxes.axisSecondary))
+                        ret += " DEC";
                 }
                 return ret;
             }

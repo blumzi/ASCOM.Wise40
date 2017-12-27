@@ -181,6 +181,8 @@
             this.annunciatorFilterWheel = new ASCOM.Controls.Annunciator();
             this.annunciatorFocus = new ASCOM.Controls.Annunciator();
             this.annunciatorWeather = new ASCOM.Controls.Annunciator();
+            this.panel2 = new System.Windows.Forms.Panel();
+            this.panel3 = new System.Windows.Forms.Panel();
             this.labelDashStatus = new System.Windows.Forms.Label();
             this.groupBoxFilterWheel = new System.Windows.Forms.GroupBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
@@ -219,8 +221,6 @@
             this.labelRainRateValue = new System.Windows.Forms.Label();
             this.timerRefreshDisplay = new System.Windows.Forms.Timer(this.components);
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
-            this.panel2 = new System.Windows.Forms.Panel();
-            this.panel3 = new System.Windows.Forms.Panel();
             this.pictureBoxWise = new System.Windows.Forms.PictureBox();
             this.buttonFullStop = new System.Windows.Forms.Button();
             this.tableLayoutMain.SuspendLayout();
@@ -236,12 +236,12 @@
             this.flowLayoutPanel1.SuspendLayout();
             this.annunciatorPanelSafety.SuspendLayout();
             this.annunciatorPanelStatus.SuspendLayout();
+            this.panel2.SuspendLayout();
+            this.panel3.SuspendLayout();
             this.groupBoxFilterWheel.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.groupBoxWeather.SuspendLayout();
             this.tableLayoutPanelWeather.SuspendLayout();
-            this.panel2.SuspendLayout();
-            this.panel3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxWise)).BeginInit();
             this.SuspendLayout();
             // 
@@ -2242,6 +2242,23 @@
             this.annunciatorWeather.TabIndex = 7;
             this.annunciatorWeather.Text = "WEA";
             // 
+            // panel2
+            // 
+            this.panel2.Controls.Add(this.panel3);
+            this.panel2.Location = new System.Drawing.Point(3, 551);
+            this.panel2.Name = "panel2";
+            this.panel2.Size = new System.Drawing.Size(200, 100);
+            this.panel2.TabIndex = 40;
+            // 
+            // panel3
+            // 
+            this.panel3.Controls.Add(this.buttonFullStop);
+            this.panel3.Location = new System.Drawing.Point(0, 0);
+            this.panel3.Name = "panel3";
+            this.panel3.Size = new System.Drawing.Size(184, 112);
+            this.panel3.TabIndex = 0;
+            this.toolTip.SetToolTip(this.panel3, "Stops all motors \r\n(telescope, dome, shutter, focus, filter-wheel)");
+            // 
             // labelDashStatus
             // 
             this.tableLayoutMain.SetColumnSpan(this.labelDashStatus, 2);
@@ -2783,23 +2800,6 @@
             this.timerRefreshDisplay.Enabled = true;
             this.timerRefreshDisplay.Tick += new System.EventHandler(this.RefreshDisplay);
             // 
-            // panel2
-            // 
-            this.panel2.Controls.Add(this.panel3);
-            this.panel2.Location = new System.Drawing.Point(3, 551);
-            this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(200, 100);
-            this.panel2.TabIndex = 40;
-            // 
-            // panel3
-            // 
-            this.panel3.Controls.Add(this.buttonFullStop);
-            this.panel3.Location = new System.Drawing.Point(0, 0);
-            this.panel3.Name = "panel3";
-            this.panel3.Size = new System.Drawing.Size(184, 112);
-            this.panel3.TabIndex = 0;
-            this.toolTip.SetToolTip(this.panel3, "Stops all motors \r\n(telescope, dome, shutter, focus, filter-wheel)");
-            // 
             // pictureBoxWise
             // 
             this.pictureBoxWise.Image = ((System.Drawing.Image)(resources.GetObject("pictureBoxWise.Image")));
@@ -2812,14 +2812,18 @@
             // 
             // buttonFullStop
             // 
-            this.buttonFullStop.BackgroundImage = global::Dash.Properties.Resources.stop_sign_236x236;
-            this.buttonFullStop.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.buttonFullStop.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonFullStop.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
             this.buttonFullStop.FlatAppearance.BorderSize = 0;
             this.buttonFullStop.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.buttonFullStop.Location = new System.Drawing.Point(56, 24);
+            this.buttonFullStop.Image = global::Dash.Properties.Resources.Leomarc_stop_sign;
+            this.buttonFullStop.Location = new System.Drawing.Point(49, 12);
             this.buttonFullStop.Name = "buttonFullStop";
-            this.buttonFullStop.Size = new System.Drawing.Size(64, 64);
+            this.buttonFullStop.Size = new System.Drawing.Size(86, 92);
             this.buttonFullStop.TabIndex = 0;
+            this.toolTip.SetToolTip(this.buttonFullStop, "Stop all moving components.");
             this.buttonFullStop.UseVisualStyleBackColor = true;
             this.buttonFullStop.Click += new System.EventHandler(this.buttonFullStop_Click);
             // 
@@ -2859,6 +2863,8 @@
             this.annunciatorPanelSafety.ResumeLayout(false);
             this.annunciatorPanelStatus.ResumeLayout(false);
             this.annunciatorPanelStatus.PerformLayout();
+            this.panel2.ResumeLayout(false);
+            this.panel3.ResumeLayout(false);
             this.groupBoxFilterWheel.ResumeLayout(false);
             this.groupBoxFilterWheel.PerformLayout();
             this.groupBox1.ResumeLayout(false);
@@ -2866,8 +2872,6 @@
             this.groupBoxWeather.ResumeLayout(false);
             this.tableLayoutPanelWeather.ResumeLayout(false);
             this.tableLayoutPanelWeather.PerformLayout();
-            this.panel2.ResumeLayout(false);
-            this.panel3.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxWise)).EndInit();
             this.ResumeLayout(false);
 

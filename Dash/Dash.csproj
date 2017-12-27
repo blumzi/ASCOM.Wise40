@@ -255,6 +255,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Icons\Leomarc_stop_sign.png" />
     <Content Include="Icons\optica-filters%282%29.jpg" />
     <Content Include="Icons\optica_filters_2__x5l_icon.ico" />
     <None Include="Icons\stop-sign-smaller.jpg" />
