@@ -1209,6 +1209,8 @@ namespace Dash
                 tip += string.Format("  {0,-20} {1} {2}", alteredItems[key] + ":", mark, text) + Const.crnl;
             }
             saveToProfileToolStripMenuItem.ToolTipText = tip;
+            if (!saveToProfileToolStripMenuItem.Text.EndsWith(" *"))
+                saveToProfileToolStripMenuItem.Text += " *";
         }
 
         private void saveToProfileToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1245,6 +1247,9 @@ namespace Dash
                     driverProfile.WriteValue("ASCOM.Wise40.Telescope", "Minimal Dome Tracking Movement", toolStripTextBoxMinimalDomeStep.Text);
                 }
             }
+
+            if (saveToProfileToolStripMenuItem.Text.EndsWith(" *"))
+                saveToProfileToolStripMenuItem.Text = saveToProfileToolStripMenuItem.Text.Remove(saveToProfileToolStripMenuItem.Text.Length - 2);
         }
 
         private void tracingToolStripMenuItem_Click(object sender, EventArgs e)
