@@ -241,43 +241,27 @@ namespace Dash
             double currentRate = Const.rateStopped;
 
             annunciatorPrimary.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
-            if (wisetele.slewers.Active(Slewers.Type.Ra) || wisetele.pulsing.Active(TelescopeAxes.axisPrimary))
+            primaryMotor = null;
+            if (wisetele.WestMotor.isOn)
+                primaryMotor = wisetele.WestMotor;
+            else if (wisetele.EastMotor.isOn)
+                primaryMotor = wisetele.EastMotor;
+            if (primaryMotor != null)
             {
-                primaryMotor = null;
-                if (wisetele.WestMotor.isOn)
-                    primaryMotor = wisetele.WestMotor;
-                else if (wisetele.EastMotor.isOn)
-                    primaryMotor = wisetele.EastMotor;
-                if (primaryMotor == null)
-                {
-                    // STUCK: Ra slewer is active but no motors are On
-                    annunciatorPrimary.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
-                }
-                else
-                {
-                    annunciatorPrimary.Cadence = ASCOM.Controls.CadencePattern.BlinkFast;
-                    currentRate = primaryMotor.currentRate;
-                }
+                annunciatorPrimary.Cadence = ASCOM.Controls.CadencePattern.BlinkFast;
+                currentRate = primaryMotor.currentRate;
             }
 
             annunciatorSecondary.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
-            if (wisetele.slewers.Active(Slewers.Type.Dec) || wisetele.pulsing.Active(TelescopeAxes.axisSecondary))
+            secondaryMotor = null;
+            if (wisetele.NorthMotor.isOn)
+                secondaryMotor = wisetele.NorthMotor;
+            else if (wisetele.SouthMotor.isOn)
+                secondaryMotor = wisetele.SouthMotor;
+            if (secondaryMotor != null)
             {
-                secondaryMotor = null;
-                if (wisetele.NorthMotor.isOn)
-                    secondaryMotor = wisetele.NorthMotor;
-                else if (wisetele.SouthMotor.isOn)
-                    secondaryMotor = wisetele.SouthMotor;
-                if (secondaryMotor == null)
-                {
-                    // STUCK: Dec slewer is active but no motors are On
-                    annunciatorSecondary.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
-                }
-                else
-                {
-                    annunciatorSecondary.Cadence = ASCOM.Controls.CadencePattern.BlinkFast;
-                    currentRate = secondaryMotor.currentRate;
-                }
+                annunciatorSecondary.Cadence = ASCOM.Controls.CadencePattern.BlinkFast;
+                currentRate = secondaryMotor.currentRate;
             }
 
             annunciatorRateSlew.Cadence = annunciatorRateSet.Cadence = annunciatorRateGuide.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
