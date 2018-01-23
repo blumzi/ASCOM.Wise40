@@ -1020,7 +1020,7 @@ namespace Dash
             if (item.Text.EndsWith(Const.checkmark))
             {
                 wisetele._enslaveDome = false;
-                item.Text.Remove(item.Text.Length - Const.checkmark.Length);
+                item.Text = item.Text.Remove(item.Text.Length - Const.checkmark.Length);
             }
             else
             {
