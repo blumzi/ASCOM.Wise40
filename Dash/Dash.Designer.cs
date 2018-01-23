@@ -160,6 +160,7 @@
             this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
             this.label1 = new System.Windows.Forms.Label();
             this.labelTitle = new System.Windows.Forms.Label();
+            this.pictureBoxWise = new System.Windows.Forms.PictureBox();
             this.labelDate = new System.Windows.Forms.Label();
             this.labelComputerControl = new System.Windows.Forms.Label();
             this.annunciatorPanelSafety = new ASCOM.Controls.AnnunciatorPanel();
@@ -183,6 +184,7 @@
             this.annunciatorWeather = new ASCOM.Controls.Annunciator();
             this.panel2 = new System.Windows.Forms.Panel();
             this.panel3 = new System.Windows.Forms.Panel();
+            this.buttonFullStop = new System.Windows.Forms.Button();
             this.labelDashStatus = new System.Windows.Forms.Label();
             this.groupBoxFilterWheel = new System.Windows.Forms.GroupBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
@@ -221,8 +223,6 @@
             this.labelRainRateValue = new System.Windows.Forms.Label();
             this.timerRefreshDisplay = new System.Windows.Forms.Timer(this.components);
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
-            this.pictureBoxWise = new System.Windows.Forms.PictureBox();
-            this.buttonFullStop = new System.Windows.Forms.Button();
             this.tableLayoutMain.SuspendLayout();
             this.groupBoxFocuser.SuspendLayout();
             this.groupBoxDomeGroup.SuspendLayout();
@@ -234,6 +234,7 @@
             this.tableLayoutPanelCoordinates.SuspendLayout();
             this.menuStrip.SuspendLayout();
             this.flowLayoutPanel1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxWise)).BeginInit();
             this.annunciatorPanelSafety.SuspendLayout();
             this.annunciatorPanelStatus.SuspendLayout();
             this.panel2.SuspendLayout();
@@ -242,7 +243,6 @@
             this.groupBox1.SuspendLayout();
             this.groupBoxWeather.SuspendLayout();
             this.tableLayoutPanelWeather.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxWise)).BeginInit();
             this.SuspendLayout();
             // 
             // tableLayoutMain
@@ -1919,6 +1919,16 @@
     "stronomy\r\nDepartment of Astrophysics\r\n\r\nTel Aviv University\r\n";
             this.labelTitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
+            // pictureBoxWise
+            // 
+            this.pictureBoxWise.Image = ((System.Drawing.Image)(resources.GetObject("pictureBoxWise.Image")));
+            this.pictureBoxWise.Location = new System.Drawing.Point(3, 155);
+            this.pictureBoxWise.Name = "pictureBoxWise";
+            this.pictureBoxWise.Size = new System.Drawing.Size(173, 93);
+            this.pictureBoxWise.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pictureBoxWise.TabIndex = 1;
+            this.pictureBoxWise.TabStop = false;
+            // 
             // labelDate
             // 
             this.labelDate.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -2258,6 +2268,23 @@
             this.panel3.Size = new System.Drawing.Size(184, 112);
             this.panel3.TabIndex = 0;
             this.toolTip.SetToolTip(this.panel3, "Stops all motors \r\n(telescope, dome, shutter, focus, filter-wheel)");
+            // 
+            // buttonFullStop
+            // 
+            this.buttonFullStop.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonFullStop.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
+            this.buttonFullStop.FlatAppearance.BorderSize = 0;
+            this.buttonFullStop.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.buttonFullStop.Image = global::Dash.Properties.Resources.Leomarc_stop_sign;
+            this.buttonFullStop.Location = new System.Drawing.Point(49, 12);
+            this.buttonFullStop.Name = "buttonFullStop";
+            this.buttonFullStop.Size = new System.Drawing.Size(86, 92);
+            this.buttonFullStop.TabIndex = 0;
+            this.toolTip.SetToolTip(this.buttonFullStop, "Stop all moving components.");
+            this.buttonFullStop.UseVisualStyleBackColor = true;
+            this.buttonFullStop.Click += new System.EventHandler(this.buttonFullStop_Click);
             // 
             // labelDashStatus
             // 
@@ -2800,33 +2827,6 @@
             this.timerRefreshDisplay.Enabled = true;
             this.timerRefreshDisplay.Tick += new System.EventHandler(this.RefreshDisplay);
             // 
-            // pictureBoxWise
-            // 
-            this.pictureBoxWise.Image = ((System.Drawing.Image)(resources.GetObject("pictureBoxWise.Image")));
-            this.pictureBoxWise.Location = new System.Drawing.Point(3, 155);
-            this.pictureBoxWise.Name = "pictureBoxWise";
-            this.pictureBoxWise.Size = new System.Drawing.Size(173, 93);
-            this.pictureBoxWise.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.pictureBoxWise.TabIndex = 1;
-            this.pictureBoxWise.TabStop = false;
-            // 
-            // buttonFullStop
-            // 
-            this.buttonFullStop.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonFullStop.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
-            this.buttonFullStop.FlatAppearance.BorderSize = 0;
-            this.buttonFullStop.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.buttonFullStop.Image = global::Dash.Properties.Resources.Leomarc_stop_sign;
-            this.buttonFullStop.Location = new System.Drawing.Point(49, 12);
-            this.buttonFullStop.Name = "buttonFullStop";
-            this.buttonFullStop.Size = new System.Drawing.Size(86, 92);
-            this.buttonFullStop.TabIndex = 0;
-            this.toolTip.SetToolTip(this.buttonFullStop, "Stop all moving components.");
-            this.buttonFullStop.UseVisualStyleBackColor = true;
-            this.buttonFullStop.Click += new System.EventHandler(this.buttonFullStop_Click);
-            // 
             // FormDash
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
@@ -2860,6 +2860,7 @@
             this.menuStrip.ResumeLayout(false);
             this.menuStrip.PerformLayout();
             this.flowLayoutPanel1.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxWise)).EndInit();
             this.annunciatorPanelSafety.ResumeLayout(false);
             this.annunciatorPanelStatus.ResumeLayout(false);
             this.annunciatorPanelStatus.PerformLayout();
@@ -2872,7 +2873,6 @@
             this.groupBoxWeather.ResumeLayout(false);
             this.tableLayoutPanelWeather.ResumeLayout(false);
             this.tableLayoutPanelWeather.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxWise)).EndInit();
             this.ResumeLayout(false);
 
         }
