@@ -551,46 +551,46 @@ namespace Dash
                 if (button == buttonNorth)
                 {
                     telescopeStatus.Show("Moving North" + atRate, 0, Statuser.Severity.Good);
-                    wisetele.MoveAxis(TelescopeAxes.axisSecondary, handpadRate);
+                    wisetele.HandpadMoveAxis(TelescopeAxes.axisSecondary, handpadRate);
                 }
                 else if (button == buttonSouth)
                 {
                     telescopeStatus.Show("Moving South" + atRate, 0, Statuser.Severity.Good);
-                    wisetele.MoveAxis(TelescopeAxes.axisSecondary, -handpadRate);
+                    wisetele.HandpadMoveAxis(TelescopeAxes.axisSecondary, -handpadRate);
                 }
                 else if (button == buttonEast)
                 {
                     telescopeStatus.Show("Moving East" + atRate, 0, Statuser.Severity.Good);
-                    wisetele.MoveAxis(TelescopeAxes.axisPrimary, handpadRate);
+                    wisetele.HandpadMoveAxis(TelescopeAxes.axisPrimary, handpadRate);
                 }
                 else if (button == buttonWest)
                 {
                     telescopeStatus.Show("Moving West" + atRate, 0, Statuser.Severity.Good);
-                    wisetele.MoveAxis(TelescopeAxes.axisPrimary, -handpadRate);
+                    wisetele.HandpadMoveAxis(TelescopeAxes.axisPrimary, -handpadRate);
                 }
                 else if (button == buttonNE)
                 {
                     telescopeStatus.Show("Moving North-East" + atRate, 0, Statuser.Severity.Good);
-                    wisetele.MoveAxis(TelescopeAxes.axisSecondary, handpadRate);
-                    wisetele.MoveAxis(TelescopeAxes.axisPrimary, -handpadRate);
+                    wisetele.HandpadMoveAxis(TelescopeAxes.axisSecondary, handpadRate);
+                    wisetele.HandpadMoveAxis(TelescopeAxes.axisPrimary, -handpadRate);
                 }
                 else if (button == buttonNW)
                 {
                     telescopeStatus.Show("Moving North-West" + atRate, 0, Statuser.Severity.Good);
-                    wisetele.MoveAxis(TelescopeAxes.axisSecondary, handpadRate);
-                    wisetele.MoveAxis(TelescopeAxes.axisPrimary, -handpadRate);
+                    wisetele.HandpadMoveAxis(TelescopeAxes.axisSecondary, handpadRate);
+                    wisetele.HandpadMoveAxis(TelescopeAxes.axisPrimary, -handpadRate);
                 }
                 else if (button == buttonSE)
                 {
                     telescopeStatus.Show("Moving South-East" + atRate, 0, Statuser.Severity.Good);
-                    wisetele.MoveAxis(TelescopeAxes.axisSecondary, -handpadRate);
-                    wisetele.MoveAxis(TelescopeAxes.axisPrimary, -handpadRate);
+                    wisetele.HandpadMoveAxis(TelescopeAxes.axisSecondary, -handpadRate);
+                    wisetele.HandpadMoveAxis(TelescopeAxes.axisPrimary, -handpadRate);
                 }
                 else if (button == buttonSW)
                 {
                     telescopeStatus.Show("Moving North-West" + atRate, 0, Statuser.Severity.Good);
-                    wisetele.MoveAxis(TelescopeAxes.axisSecondary, -handpadRate);
-                    wisetele.MoveAxis(TelescopeAxes.axisPrimary, handpadRate);
+                    wisetele.HandpadMoveAxis(TelescopeAxes.axisSecondary, -handpadRate);
+                    wisetele.HandpadMoveAxis(TelescopeAxes.axisPrimary, handpadRate);
                 }
             }
             catch (Exception ex)

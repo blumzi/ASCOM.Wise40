@@ -1097,6 +1097,24 @@ namespace ASCOM.Wise40.Telescope
             }
         }
 
+        public void HandpadMoveAxis(TelescopeAxes Axis, double Rate)
+        {
+            #region trace
+            traceLogger.LogMessage("HandpadMoveAxis", string.Format("HandpadMoveAxis({0}, {1})", Axis, Rate));
+            #endregion
+            #region debug
+            debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, string.Format("HandpadMoveAxis({0}, {1})", Axis, Rate));
+            #endregion debug
+
+            if (!wiseComputerControl.IsSafe && !BypassSafety)
+                throw new ASCOM.InvalidOperationException("Computer control or dome platform are NOT safe.");
+
+            Const.AxisDirection direction = (Rate == Const.rateStopped) ? Const.AxisDirection.None :
+                (Rate < 0.0) ? Const.AxisDirection.Decreasing : Const.AxisDirection.Increasing;
+
+            _moveAxis(Axis, Rate, direction, false);
+        }
+
         public void MoveAxis(TelescopeAxes Axis, double Rate)
         {
             #region trace
