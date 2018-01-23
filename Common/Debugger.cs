@@ -109,6 +109,13 @@ namespace ASCOM.Wise40.Common
             return (_currentLevel & l) != 0;
         }
 
+        public static string LogFolder()
+        {
+            DateTime now = DateTime.Now;
+            return string.Format(Const.topWise40Directory + "Logs/{0}-{1}-{2}",
+                    now.Year, now.Month, now.Day);
+        }
+
         public void WriteLine(DebugLevel level, string fmt, params object[] o)
         {
             if (Debugging(level))
@@ -122,8 +129,7 @@ namespace ASCOM.Wise40.Common
                     now.Day, now.Month, now.Year, now.TimeOfDay,
                     indents[(int)level] + " " + level.ToString() + ":",
                     msg);
-                string currentLogPath = string.Format(Const.topWise40Directory + "Logs/{0}-{1}-{2}/debug.txt",
-                    now.Year, now.Month, now.Day);
+                string currentLogPath = LogFolder() + "/debug.txt";
                 if (currentLogPath != _logFile)
                 {
                     Directory.CreateDirectory(Path.GetDirectoryName(currentLogPath));
