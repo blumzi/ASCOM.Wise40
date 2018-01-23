@@ -21,7 +21,6 @@ namespace ASCOM.Wise40.SafeToOperate
         public int _interval;      // millis
         public int _repeats;
         protected FixedSizedQueue<bool> _isSafeQueue;
-        private int _nbad;
         private bool _running = false;
         protected string _maxValueProfileName;
         protected static Debugger debugger = Debugger.Instance;
@@ -139,7 +138,6 @@ namespace ASCOM.Wise40.SafeToOperate
                 #endregion
                 return;
             }
-            _nbad = 0;
             _isSafeQueue = new FixedSizedQueue<bool>(_repeats);  // memory leak, dispose old _values
             _running = true;
             #region debug
