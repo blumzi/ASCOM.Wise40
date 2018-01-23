@@ -26,13 +26,14 @@ namespace ASCOM.Wise40.Telescope
             try
             {
                 _sw = new StreamWriter(filename);
+                _sw.AutoFlush = true;
                 _sw.WriteLine("#");
                 _sw.WriteLine("# Started at: {0}", now.ToShortDateString());
                 _sw.WriteLine("# Start position: {0}", start.ToString());
                 _sw.WriteLine("# Target position: {0}", target.ToString());
                 _sw.WriteLine("# Axis: {0}", axis.ToString());
                 _sw.WriteLine("#");
-                _sw.WriteLine("# milliseconds position log(abs(error))");
+                _sw.WriteLine("# milliseconds position log10(abs(error))");
                 _sw.WriteLine("#");
             } catch
             {
@@ -41,16 +42,6 @@ namespace ASCOM.Wise40.Telescope
             _start = start;
             _target = target;
             _stopWatch.Start();
-        }
-
-        ~Grapher()
-        {
-            if (_sw != null)
-                try
-                {
-                    _sw.Close();
-                }
-                catch { }
         }
 
         public void Record(double coord, string comment = null)
@@ -65,7 +56,6 @@ namespace ASCOM.Wise40.Telescope
             if (comment != null)
                 s += "  # " + comment;
             _sw.WriteLine(s);
-            _sw.Flush();
         }
 
         private StreamWriter _sw = null;
