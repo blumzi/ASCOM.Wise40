@@ -1538,6 +1538,9 @@ namespace ASCOM.Wise40.Telescope
         private void ScopeSlewer(TelescopeAxes axis, Angle targetAngle)
         {
             Slewers.Type otherSlewer = (axis == TelescopeAxes.axisPrimary) ? Slewers.Type.Dec : Slewers.Type.Ra;
+            Grapher grapher = new Grapher(axis,
+                axis == TelescopeAxes.axisPrimary ? RightAscension : Declination,
+                targetAngle.Degrees);
 
             _instance.currMovement[axis] = new Movement()
             {
@@ -1565,7 +1568,7 @@ namespace ASCOM.Wise40.Telescope
                 {
                     //
                     // After 30 seconds, start checking that the other slewer is alive before
-                    // waiting for it to be ready.  Just in case the other ask dies.
+                    // waiting for it to be ready.  Just in case the other task dies.
                     // 
                     if (DateTime.Now.Subtract(startWaiting).TotalSeconds > 30 && !slewers.Active(otherSlewer))
                     {
@@ -1581,12 +1584,16 @@ namespace ASCOM.Wise40.Telescope
                     debugger.WriteLine(Debugger.DebugLevel.DebugAxes, string.Format("{0} at {1}: Waiting {2} millis for other axis ...",
                         cm.taskName, RateName(rate), waitForOtherAxisMillis));
                     #endregion
+                    #region graph
+                    grapher.Record((axis == TelescopeAxes.axisPrimary) ? RightAscension : Declination,
+                        string.Format("at {0} waiting {1} millis for other axis", RateName(rate), waitForOtherAxisMillis));
+                    #endregion
                     Thread.Sleep(waitForOtherAxisMillis);
                 }
 
                 do
                 {
-                    status = ScopeSlewCloser(axis, rate);
+                    status = ScopeSlewCloser(axis, rate, grapher);
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0} SlewCloser({1}, {2}) => {3}",
                         cm.taskName, axis, RateName(rate), status.ToString());
@@ -1638,7 +1645,7 @@ namespace ASCOM.Wise40.Telescope
             #endregion debug
         }
 
-        private ScopeSlewerStatus ScopeSlewCloser(TelescopeAxes axis, double rate)
+        private ScopeSlewerStatus ScopeSlewCloser(TelescopeAxes axis, double rate, Grapher grapher)
         {
             Movement cm = Instance.currMovement[axis];
             Angle currPosition = new Angle(0.0);
@@ -1760,11 +1767,17 @@ namespace ASCOM.Wise40.Telescope
                             remainingDistance.angle, cm.target,
                             remainingDistance.angle, mp.stopMovement);
                         #endregion
+                        #region graph
+                        grapher.Record(currPosition.Degrees, string.Format("at {0} - before stopping", RateName(cm.rate)));
+                        #endregion
                         StopAxisAndWaitForHalt(axis);
 
                         Angle angleAfterStopping = (axis == TelescopeAxes.axisPrimary) ?
                             Angle.FromHours(_instance.RightAscension, Angle.Type.RA) :
                             Angle.FromDegrees(_instance.Declination, Angle.Type.Dec);
+                        #region graph
+                        grapher.Record(angleAfterStopping.Degrees, string.Format("at {0} - after stopping", RateName(cm.rate)));
+                        #endregion
                         ShortestDistanceResult statusAfterStopping = angleAfterStopping.ShortestDistance(cm.target);
 
                         if (statusAfterStopping.direction == cm.direction)
@@ -1796,6 +1809,9 @@ namespace ASCOM.Wise40.Telescope
                                 telescopeCT.GetHashCode(),
                                 telescopeCT.IsCancellationRequested.ToString());
                         #endregion debug
+                        #region graph
+                        grapher.Record(currPosition.Degrees, string.Format("at {0}", RateName(cm.rate)));
+                        #endregion
                         telescopeCT.ThrowIfCancellationRequested();
                         Thread.Sleep(waitMillis);
                         telescopeCT.ThrowIfCancellationRequested();

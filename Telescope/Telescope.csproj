@@ -131,6 +131,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Grapher.cs" />
     <Compile Include="MotionStudy.cs" />
     <Compile Include="Pulsing.cs" />
     <Compile Include="Slewers.cs" />
