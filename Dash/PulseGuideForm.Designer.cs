@@ -39,11 +39,9 @@
             this.labelRaDeltaEnc = new System.Windows.Forms.Label();
             this.labelDecDeltaEnc = new System.Windows.Forms.Label();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
-            this.labelDecDeltaDeg = new System.Windows.Forms.Label();
-            this.labelStatus = new System.Windows.Forms.Label();
-            this.label9 = new System.Windows.Forms.Label();
             this.label10 = new System.Windows.Forms.Label();
-            this.label11 = new System.Windows.Forms.Label();
+            this.labelDecDeltaDeg = new System.Windows.Forms.Label();
+            this.label9 = new System.Windows.Forms.Label();
             this.groupBoxDec = new System.Windows.Forms.GroupBox();
             this.radioButtonSouth = new System.Windows.Forms.RadioButton();
             this.radioButtonDecIdle = new System.Windows.Forms.RadioButton();
@@ -52,6 +50,8 @@
             this.radioButtonEast = new System.Windows.Forms.RadioButton();
             this.radioButton2 = new System.Windows.Forms.RadioButton();
             this.radioButtonWest = new System.Windows.Forms.RadioButton();
+            this.labelStatus = new System.Windows.Forms.Label();
+            this.label11 = new System.Windows.Forms.Label();
             this.buttonStop = new System.Windows.Forms.Button();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.tableLayoutPanel1.SuspendLayout();
@@ -206,41 +206,6 @@
             this.tableLayoutPanel1.Size = new System.Drawing.Size(500, 117);
             this.tableLayoutPanel1.TabIndex = 60;
             // 
-            // labelDecDeltaDeg
-            // 
-            this.labelDecDeltaDeg.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.labelDecDeltaDeg.AutoSize = true;
-            this.labelDecDeltaDeg.Location = new System.Drawing.Point(270, 68);
-            this.labelDecDeltaDeg.Name = "labelDecDeltaDeg";
-            this.labelDecDeltaDeg.Size = new System.Drawing.Size(110, 49);
-            this.labelDecDeltaDeg.TabIndex = 57;
-            this.labelDecDeltaDeg.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // labelStatus
-            // 
-            this.labelStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelStatus.Location = new System.Drawing.Point(27, 264);
-            this.labelStatus.Name = "labelStatus";
-            this.labelStatus.Size = new System.Drawing.Size(500, 24);
-            this.labelStatus.TabIndex = 61;
-            this.labelStatus.Text = "Hello world";
-            this.labelStatus.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // label9
-            // 
-            this.label9.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(270, 0);
-            this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(110, 20);
-            this.label9.TabIndex = 62;
-            this.label9.Text = "Delta coordinate";
-            this.label9.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
             // label10
             // 
             this.label10.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -254,14 +219,30 @@
             this.label10.Text = "Delta encoder";
             this.label10.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // label11
+            // labelDecDeltaDeg
             // 
-            this.label11.Location = new System.Drawing.Point(24, 16);
-            this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(264, 48);
-            this.label11.TabIndex = 64;
-            this.label11.Text = "Select guiding directions and durations,\r\nthen press Go";
-            this.label11.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.labelDecDeltaDeg.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.labelDecDeltaDeg.AutoSize = true;
+            this.labelDecDeltaDeg.Location = new System.Drawing.Point(270, 68);
+            this.labelDecDeltaDeg.Name = "labelDecDeltaDeg";
+            this.labelDecDeltaDeg.Size = new System.Drawing.Size(110, 49);
+            this.labelDecDeltaDeg.TabIndex = 57;
+            this.labelDecDeltaDeg.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // label9
+            // 
+            this.label9.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(270, 0);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(110, 20);
+            this.label9.TabIndex = 62;
+            this.label9.Text = "Delta coordinate";
+            this.label9.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // groupBoxDec
             // 
@@ -352,6 +333,25 @@
             this.radioButtonWest.TabIndex = 0;
             this.radioButtonWest.Text = "West";
             this.radioButtonWest.UseVisualStyleBackColor = true;
+            // 
+            // labelStatus
+            // 
+            this.labelStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelStatus.Location = new System.Drawing.Point(27, 264);
+            this.labelStatus.Name = "labelStatus";
+            this.labelStatus.Size = new System.Drawing.Size(500, 24);
+            this.labelStatus.TabIndex = 61;
+            this.labelStatus.Text = "Hello world";
+            this.labelStatus.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label11
+            // 
+            this.label11.Location = new System.Drawing.Point(24, 16);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(264, 48);
+            this.label11.TabIndex = 64;
+            this.label11.Text = "Select guiding directions and durations,\r\nthen press Go";
+            this.label11.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // buttonStop
             // 
