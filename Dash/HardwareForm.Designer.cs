@@ -1679,7 +1679,7 @@
             this.gbBoard2.Size = new System.Drawing.Size(287, 281);
             this.gbBoard2.TabIndex = 1;
             this.gbBoard2.TabStop = false;
-            this.gbBoard2.Text = " Dome (Board2)";
+            this.gbBoard2.Text = " Focus (Board2)";
             // 
             // groupBox3
             // 
@@ -2041,7 +2041,7 @@
             this.gbBoard0.Size = new System.Drawing.Size(287, 282);
             this.gbBoard0.TabIndex = 0;
             this.gbBoard0.TabStop = false;
-            this.gbBoard0.Text = "Focus (Board0)";
+            this.gbBoard0.Text = "Dome (Board0)";
             // 
             // groupBox5
             // 
