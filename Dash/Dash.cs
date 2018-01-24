@@ -1209,8 +1209,8 @@ namespace Dash
                 tip += string.Format("  {0,-20} {1} {2}", alteredItems[key] + ":", mark, text) + Const.crnl;
             }
             saveToProfileToolStripMenuItem.ToolTipText = tip;
-            if (!saveToProfileToolStripMenuItem.Text.EndsWith(" *"))
-                saveToProfileToolStripMenuItem.Text += " *";
+            if (!saveToProfileToolStripMenuItem.Text.EndsWith(Const.checkmark))
+                saveToProfileToolStripMenuItem.Text += Const.checkmark;
         }
 
         private void saveToProfileToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1248,7 +1248,7 @@ namespace Dash
                 }
             }
 
-            if (saveToProfileToolStripMenuItem.Text.EndsWith(" *"))
+            if (saveToProfileToolStripMenuItem.Text.EndsWith(Const.checkmark))
                 saveToProfileToolStripMenuItem.Text = saveToProfileToolStripMenuItem.Text.Remove(saveToProfileToolStripMenuItem.Text.Length - 2);
         }
 
