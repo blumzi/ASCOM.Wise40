@@ -43,7 +43,7 @@ namespace ASCOM.Wise40.Telescope
             _motor.SetOn(Const.rateGuide);
             while (sw.ElapsedMilliseconds < _duration)
             {
-                if (Pulsing.pulseGuideCTS.IsCancellationRequested)
+                if (Pulsing.pulseGuideCT.IsCancellationRequested)
                 {
                     #region debug
                     debugger.WriteLine(Common.Debugger.DebugLevel.DebugLogic,
@@ -90,7 +90,7 @@ namespace ASCOM.Wise40.Telescope
         }
 
         public static CancellationTokenSource pulseGuideCTS = new CancellationTokenSource();
-        private static CancellationToken pulseGuideCT;
+        public static CancellationToken pulseGuideCT;
 
         public Pulsing() { }
 
