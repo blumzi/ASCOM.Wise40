@@ -1194,6 +1194,7 @@ namespace Dash
             }
 
             string tip = "To be saved to profile:" + Const.crnl + Const.crnl;
+            string alterations = string.Empty;
             foreach (var key in alteredItems.Keys)
             {
                 string text = ((ToolStripMenuItem)key).Text;
@@ -1206,11 +1207,18 @@ namespace Dash
                 }
                 else
                     mark = "-";
-                tip += string.Format("  {0,-20} {1} {2}", alteredItems[key] + ":", mark, text) + Const.crnl;
+                alterations += string.Format("  {0,-20} {1} {2}", alteredItems[key] + ":", mark, text) + Const.crnl;
             }
-            saveToProfileToolStripMenuItem.ToolTipText = tip;
-            if (!saveToProfileToolStripMenuItem.Text.EndsWith(Const.checkmark))
-                saveToProfileToolStripMenuItem.Text += Const.checkmark;
+
+            if (alterations != string.Empty)
+            {
+                saveToProfileToolStripMenuItem.ToolTipText = "To be saved to profile:" + Const.crnl + Const.crnl + alterations;
+                saveToProfileToolStripMenuItem.Text = "** Save To Profile **";
+            } else
+            {
+                saveToProfileToolStripMenuItem.ToolTipText = "No changes";
+                saveToProfileToolStripMenuItem.Text = "Save To Profile";
+            }
         }
 
         private void saveToProfileToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1247,9 +1255,7 @@ namespace Dash
                     driverProfile.WriteValue("ASCOM.Wise40.Telescope", "Minimal Dome Tracking Movement", toolStripTextBoxMinimalDomeStep.Text);
                 }
             }
-
-            if (saveToProfileToolStripMenuItem.Text.EndsWith(Const.checkmark))
-                saveToProfileToolStripMenuItem.Text = saveToProfileToolStripMenuItem.Text.Remove(saveToProfileToolStripMenuItem.Text.Length - 2);
+            saveToProfileToolStripMenuItem.Text = "Save To Profile";
         }
 
         private void tracingToolStripMenuItem_Click(object sender, EventArgs e)
