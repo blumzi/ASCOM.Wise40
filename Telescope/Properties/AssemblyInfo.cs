@@ -22,7 +22,8 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(true)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("3d57ff39-1956-4b56-87a5-ebb6525ff4b6")]
+[assembly: Guid("3d57ff39-1956-4b56-87a5-ebb6525ff4b7")]
+//[assembly: Guid("3d57ff39-1956-4b56-87a5-ebb6525ff4c9")]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -35,5 +36,5 @@ using System.Runtime.InteropServices;
 // by using the '*' as shown below:
 //
 // TODO - Set your driver's version here
-[assembly: AssemblyVersion("6.0.*")]
+[assembly: AssemblyVersion("6.0.0.0")]
 [assembly: AssemblyFileVersion("6.0.0.0")]

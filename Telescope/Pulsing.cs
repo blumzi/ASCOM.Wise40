@@ -82,11 +82,12 @@ namespace ASCOM.Wise40.Telescope
         {
             debugger = Common.Debugger.Instance;
             wisetele = WiseTele.Instance;
-            guideDirection2Motor = new Dictionary<GuideDirections, WiseVirtualMotor>();
-            guideDirection2Motor[GuideDirections.guideEast] = wisetele.EastMotor;
-            guideDirection2Motor[GuideDirections.guideWest] = wisetele.WestMotor;
-            guideDirection2Motor[GuideDirections.guideNorth] = wisetele.NorthMotor;
-            guideDirection2Motor[GuideDirections.guideSouth] = wisetele.SouthMotor;
+            guideDirection2Motor = new Dictionary<GuideDirections, WiseVirtualMotor>() {
+                { GuideDirections.guideEast, wisetele.EastMotor },
+                { GuideDirections.guideWest, wisetele.WestMotor },
+                { GuideDirections.guideNorth, wisetele.NorthMotor },
+                { GuideDirections.guideSouth, wisetele.SouthMotor },
+            };
         }
 
         public static CancellationTokenSource pulseGuideCTS = new CancellationTokenSource();
@@ -96,7 +97,7 @@ namespace ASCOM.Wise40.Telescope
 
         static Pulsing() { }
 
-        public static Pulsing Instance
+        public static Pulsing Instance        
         {
             get
             {

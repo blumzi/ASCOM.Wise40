@@ -66,8 +66,7 @@ namespace ASCOM.Wise40.Telescope
         /// ASCOM DeviceID (COM ProgID) for this driver.
         /// The DeviceID is used by ASCOM applications to load the driver at runtime.
         /// </summary>
-        internal static string driverID = "ASCOM.Wise40.Telescope";
-        
+        public static string driverID = "ASCOM.Wise40.Telescope";
         internal static string astrometricAccuracyProfileName = "Astrometric accuracy";
         internal static string enslaveDomeProfileName = "Enslave Dome";
         internal static string calculateRefractionProfileName = "Calculate refraction";

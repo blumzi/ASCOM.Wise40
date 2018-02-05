@@ -180,13 +180,13 @@ namespace ASCOM.Wise40.Telescope
             {
                 return false;
                 
-                bool flipped = _angle.Radians > halfPI;
+                //bool flipped = _angle.Radians > halfPI;
 
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                    "FlippedOver90Degrees: radians: {0}, ret: {1}", _angle.Radians, flipped);
-                #endregion
-                return flipped;
+                //#region debug
+                //debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                //    "FlippedOver90Degrees: radians: {0}, ret: {1}", _angle.Radians, flipped);
+                //#endregion
+                //return flipped;
             }
         }
 
