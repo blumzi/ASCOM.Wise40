@@ -133,9 +133,8 @@ namespace ASCOM.Wise40 //.Telescope
                 task = null,
             };
             pulseGuideCT = pulseGuideCTS.Token;
-            string before = _active.ToString();
 
-            _active.Add(pulserTask);
+            Activate(pulserTask);
             pulserTask.task = Task.Run(() =>
             {
                 try
@@ -149,7 +148,7 @@ namespace ASCOM.Wise40 //.Telescope
                         "Caught exception: {0}, aborting pulse guiding", ex.Message);
                     #endregion
                     Abort();
-                    _active.Remove(pulserTask);
+                    Deactivate(pulserTask);
                 }
             }, pulseGuideCT).ContinueWith((t) =>
             {
@@ -158,30 +157,33 @@ namespace ASCOM.Wise40 //.Telescope
                     "pulser \"{0}\" on {1} completed with status: {2}",
                     t.ToString(), pulserTask._axis.ToString(), t.Status.ToString());
                 #endregion
-                _active.Remove(pulserTask);
+                Deactivate(pulserTask);
             }, TaskContinuationOptions.ExecuteSynchronously);
-
-            #region debug
-            debugger.WriteLine(Common.Debugger.DebugLevel.DebugAxes,
-                "Pulsers:Add: added {0}, \"{1}\" => \"{2}\"", pulserTask.ToString(), before, this.ToString());
-            #endregion
         }
 
-        public void Delete(TelescopeAxes axis)
+        private void Activate(PulserTask t)
         {
-            string before;
-            PulserTask pulserTask;
-
+            string before = ToString();
             lock (_lock)
             {
-                before = ToString();
-
-                pulserTask = _active.Find((s) => s._axis == axis);
-                _active.Remove(pulserTask);
+                _active.Add(t);
             }
             #region debug
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugAxes,
-                "ActiveSlewers: deleted {0}, \"{1}\" => \"{2}\" ({3})", axis.ToString(), before, this.ToString(), _active.GetHashCode());
+                "ActiveSlewers: added {0}, \"{1}\" => \"{2}\"", t._axis.ToString(), before, ToString());
+            #endregion
+        }
+
+        private void Deactivate(PulserTask t)
+        {
+            string before = ToString();
+            lock (_lock)
+            {
+                _active.Remove(t);
+            }
+            #region debug
+            debugger.WriteLine(Common.Debugger.DebugLevel.DebugAxes,
+                "ActiveSlewers: deleted {0}, \"{1}\" => \"{2}\"", t._axis.ToString(), before, ToString());
             #endregion
         }
 

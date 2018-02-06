@@ -184,7 +184,6 @@
             this.annunciatorWeather = new ASCOM.Controls.Annunciator();
             this.panel2 = new System.Windows.Forms.Panel();
             this.panel3 = new System.Windows.Forms.Panel();
-            this.buttonFullStop = new System.Windows.Forms.Button();
             this.labelDashStatus = new System.Windows.Forms.Label();
             this.groupBoxFilterWheel = new System.Windows.Forms.GroupBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
@@ -223,6 +222,7 @@
             this.labelRainRateValue = new System.Windows.Forms.Label();
             this.timerRefreshDisplay = new System.Windows.Forms.Timer(this.components);
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.tableLayoutMain.SuspendLayout();
             this.groupBoxFocuser.SuspendLayout();
             this.groupBoxDomeGroup.SuspendLayout();
@@ -243,6 +243,7 @@
             this.groupBox1.SuspendLayout();
             this.groupBoxWeather.SuspendLayout();
             this.tableLayoutPanelWeather.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
             // tableLayoutMain
@@ -2262,29 +2263,11 @@
             // 
             // panel3
             // 
-            this.panel3.Controls.Add(this.buttonFullStop);
+            this.panel3.Controls.Add(this.pictureBox1);
             this.panel3.Location = new System.Drawing.Point(0, 0);
             this.panel3.Name = "panel3";
             this.panel3.Size = new System.Drawing.Size(184, 112);
             this.panel3.TabIndex = 0;
-            this.toolTip.SetToolTip(this.panel3, "Stops all motors \r\n(telescope, dome, shutter, focus, filter-wheel)");
-            // 
-            // buttonFullStop
-            // 
-            this.buttonFullStop.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonFullStop.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
-            this.buttonFullStop.FlatAppearance.BorderSize = 0;
-            this.buttonFullStop.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.buttonFullStop.Image = global::Dash.Properties.Resources.Leomarc_stop_sign;
-            this.buttonFullStop.Location = new System.Drawing.Point(49, 12);
-            this.buttonFullStop.Name = "buttonFullStop";
-            this.buttonFullStop.Size = new System.Drawing.Size(86, 92);
-            this.buttonFullStop.TabIndex = 0;
-            this.toolTip.SetToolTip(this.buttonFullStop, "Stop all moving components.");
-            this.buttonFullStop.UseVisualStyleBackColor = true;
-            this.buttonFullStop.Click += new System.EventHandler(this.buttonFullStop_Click);
             // 
             // labelDashStatus
             // 
@@ -2827,6 +2810,20 @@
             this.timerRefreshDisplay.Enabled = true;
             this.timerRefreshDisplay.Tick += new System.EventHandler(this.RefreshDisplay);
             // 
+            // pictureBox1
+            // 
+            this.pictureBox1.BackColor = System.Drawing.Color.Transparent;
+            this.pictureBox1.Image = global::Dash.Properties.Resources.stop_sign_smaller;
+            this.pictureBox1.InitialImage = global::Dash.Properties.Resources.stop_sign_smaller;
+            this.pictureBox1.Location = new System.Drawing.Point(64, 24);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(56, 56);
+            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
+            this.pictureBox1.TabIndex = 2;
+            this.pictureBox1.TabStop = false;
+            this.toolTip.SetToolTip(this.pictureBox1, "Stops all motors \r\n(telescope, dome, shutter, focus, filter-wheel)");
+            this.pictureBox1.Click += new System.EventHandler(this.buttonFullStop_Click);
+            // 
             // FormDash
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
@@ -2873,6 +2870,7 @@
             this.groupBoxWeather.ResumeLayout(false);
             this.tableLayoutPanelWeather.ResumeLayout(false);
             this.tableLayoutPanelWeather.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -3071,7 +3069,7 @@
         private System.Windows.Forms.ToolStripTextBox toolStripTextBoxMinimalDomeStep;
         private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.Panel panel3;
-        private System.Windows.Forms.Button buttonFullStop;
+        private System.Windows.Forms.PictureBox pictureBox1;
     }
 }
 
