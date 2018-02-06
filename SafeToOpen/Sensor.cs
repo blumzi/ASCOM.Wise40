@@ -6,12 +6,12 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ASCOM.Wise40.Common;
-using ASCOM.Wise40.SafeToOperate;
+//using ASCOM.Wise40.SafeToOperate;
 using ASCOM.Utilities;
 using ASCOM.Wise40.Boltwood;
 using ASCOM.Wise40.VantagePro;
 
-namespace ASCOM.Wise40.SafeToOperate
+namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
 {
     public abstract class Sensor: WiseObject
     {
@@ -25,7 +25,7 @@ namespace ASCOM.Wise40.SafeToOperate
         protected string _maxValueProfileName;
         protected static Debugger debugger = Debugger.Instance;
 
-        protected static string driverID = "ASCOM.Wise40.SafeToOpen.SafetyMonitor";
+        protected static string driverID = "ASCOM.Wise40SafeToOpen.SafetyMonitor";
         protected static string deviceType = "SafetyMonitor";
 
         protected static WiseSafeToOperate wisesafe;

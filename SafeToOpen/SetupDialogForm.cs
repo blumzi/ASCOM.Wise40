@@ -6,17 +6,17 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
 using ASCOM.Utilities;
-using ASCOM.Wise40.SafeToOperate;
+//using ASCOM.Wise40.SafeToOperate;
 using ASCOM.Wise40.Boltwood;
 
-namespace ASCOM.Wise40.SafeToOperate
+namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
 {
     [ComVisible(false)]					// Form not registered for COM!
-    public partial class SetupDialogForm : Form
+    public partial class SafeToOperateSetupDialogForm : Form
     {
         WiseSafeToOperate wisesafetoopen = WiseSafeToOperate.InstanceOpen;
 
-        public SetupDialogForm()
+        public SafeToOperateSetupDialogForm()
         {
             InitializeComponent();
             // Initialise current values of user settings from the ASCOM Profile

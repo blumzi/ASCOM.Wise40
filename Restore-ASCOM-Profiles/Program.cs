@@ -78,7 +78,7 @@ namespace Restore_ASCOM_Profiles
 
         internal static void WriteSafeToOpenProfile()
         {
-            string driverID = "ASCOM.Wise40.SafeToOpen.SafetyMonitor";
+            string driverID = "ASCOM.Wise40SafeToOpen.SafetyMonitor";
 
             using (Profile driverProfile = new Profile())
             {
@@ -147,7 +147,7 @@ namespace Restore_ASCOM_Profiles
 
         internal static void WriteSafeToImageProfile()
         {
-            string driverID = "ASCOM.Wise40.SafeToImage.SafetyMonitor";
+            string driverID = "ASCOM.Wise40SafeToImage.SafetyMonitor";
 
             using (Profile driverProfile = new Profile())
             {

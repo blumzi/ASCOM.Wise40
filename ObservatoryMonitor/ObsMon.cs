@@ -7,11 +7,11 @@ using System.Threading;
 
 using ASCOM.Utilities;
 using ASCOM.Wise40.Common;
-using ASCOM.Wise40.SafeToOperate;
-using ASCOM.Wise40.Telescope;
-using ASCOM.Wise40.Dome;
+using ASCOM.Wise40SafeToOpen;
+//using ASCOM.Wise40.Telescope;
+//using ASCOM.Wise40.Dome;
 
-namespace ASCOM.Wise40.ObservatoryMonitor
+namespace ASCOM.Wise40 //.ObservatoryMonitor
 {
     public class ObsMon
     {

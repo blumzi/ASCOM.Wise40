@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 
 using ASCOM.Wise40.Common;
-using ASCOM.Wise40.SafeToOperate;
-using ASCOM.Wise40.Telescope;
-using ASCOM.Wise40.Dome;
+//using ASCOM.Wise40.SafeToOperate;
+//using ASCOM.Wise40.Telescope;
+//using ASCOM.Wise40.Dome;
 using ASCOM.Wise40;
 using ASCOM.Utilities;
 using ASCOM;
@@ -20,7 +20,7 @@ using System.Net;
 using System.Net.Http;
 using System.IO;
 
-namespace ASCOM.Wise40.ObservatoryMonitor
+namespace ASCOM.Wise40 //.ObservatoryMonitor
 {
     public partial class ObsMainForm : Form
     {
@@ -106,7 +106,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
         private void settingsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            SetupDialogForm setup = new SetupDialogForm();
+            ObservatoryMonitorSetupDialogForm setup = new ObservatoryMonitorSetupDialogForm();
             setup.Visible = true;
         }
 
@@ -160,7 +160,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Form about = new AboutForm(obsmon);
+            Form about = new ObservatoryMonitorAboutForm(obsmon);
             about.Show();
         }
     }

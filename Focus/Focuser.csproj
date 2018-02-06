@@ -8,7 +8,7 @@
     <ProjectGuid>{D49AE541-3D66-4EF4-8A07-69357070718B}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ASCOM.Wise40.Focuser</RootNamespace>
+    <RootNamespace>ASCOM.Wise40</RootNamespace>
     <AssemblyName>ASCOM.Wise40.Focuser</AssemblyName>
     <FileUpgradeFlags>
     </FileUpgradeFlags>

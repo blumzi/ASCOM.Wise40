@@ -12,13 +12,10 @@ namespace ASCOM.Wise40.Boltwood
     [ComVisible(false)]					// Form not registered for COM!
     public partial class SetupDialogForm : Form
     {
-        //private ObservingConditions _oc;
         private WiseBoltwood boltwood = WiseBoltwood.Instance;
 
         public SetupDialogForm()
         {
-            //_oc = oc;
-
             InitializeComponent();
             InitUI();
         }

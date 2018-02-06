@@ -36,7 +36,7 @@ using ASCOM.DeviceInterface;
 using System.Globalization;
 using System.Collections;
 
-namespace ASCOM.Wise40.Focuser
+namespace ASCOM.Wise40 //.Focuser
 {
     //
     // Your driver's DeviceID is ASCOM.Wise40.Focuser
@@ -54,7 +54,7 @@ namespace ASCOM.Wise40.Focuser
     /// </summary>
     [Guid("4cebb869-32ce-425e-8833-fbbc5054e274")]
     [ClassInterface(ClassInterfaceType.None)]
-    public class Focuser : IFocuserV2
+    public class Focuser : IFocuserV2, IDisposable
     {
         /// <summary>
         /// ASCOM DeviceID (COM ProgID) for this driver.

@@ -1,4 +1,4 @@
-﻿namespace ASCOM.Wise40.ObservatoryMonitor
+﻿namespace ASCOM.Wise40
 {
     partial class ObsMainForm
     {

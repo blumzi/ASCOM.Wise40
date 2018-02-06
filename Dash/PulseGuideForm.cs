@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-using ASCOM.Wise40.Telescope;
+using ASCOM.Wise40; //.Telescope;
 using ASCOM.Wise40.Common;
 using ASCOM.DeviceInterface;
 using System.Threading;

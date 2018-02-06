@@ -42,7 +42,7 @@ using System.Collections;
 
 using ASCOM.Wise40.Common;
 
-namespace ASCOM.Wise40.Telescope
+namespace ASCOM.Wise40 //.Telescope
 {
     //
     // Your driver's DeviceID is ASCOM.Wise40.Telescope
@@ -60,7 +60,8 @@ namespace ASCOM.Wise40.Telescope
     /// </summary>
     [Guid("320779e0-0cf2-47ca-8486-4472c9a0fe5e")]
     [ClassInterface(ClassInterfaceType.None)]
-    public class Telescope : ITelescopeV3
+    [ComVisible(true)]
+    public class Telescope : ITelescopeV3, IDisposable
     {
         /// <summary>
         /// ASCOM DeviceID (COM ProgID) for this driver.

@@ -1,6 +1,8 @@
-namespace ASCOM.Wise40.Dome
+using System;
+
+namespace ASCOM.Wise40 //.Dome
 {
-    partial class SetupDialogForm
+    partial class DomeSetupDialogForm : IDisposable
     {
         /// <summary>
         /// Required designer variable.
@@ -68,7 +70,7 @@ namespace ASCOM.Wise40.Dome
             // picASCOM
             // 
             this.picASCOM.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.picASCOM.Image = global::ASCOM.Wise40.Dome.Properties.Resources.ASCOM;
+            this.picASCOM.Image = global::ASCOM.Wise40.Properties.Resources.ASCOM;
             this.picASCOM.Location = new System.Drawing.Point(232, 16);
             this.picASCOM.Name = "picASCOM";
             this.picASCOM.Size = new System.Drawing.Size(48, 56);

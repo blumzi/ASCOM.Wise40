@@ -9,7 +9,7 @@ using ASCOM.DeviceInterface;
 using ASCOM.Wise40.Common;
 using System.IO;
 
-namespace ASCOM.Wise40.Telescope
+namespace ASCOM.Wise40 //.Telescope
 {
     public class MotionStudy
     {

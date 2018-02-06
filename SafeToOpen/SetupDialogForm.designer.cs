@@ -1,6 +1,6 @@
-namespace ASCOM.Wise40.SafeToOperate
+namespace ASCOM.Wise40SafeToOpen
 {
-    partial class SetupDialogForm
+    partial class SafeToOperateSetupDialogForm
     {
         /// <summary>
         /// Required designer variable.

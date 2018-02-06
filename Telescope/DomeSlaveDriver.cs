@@ -8,9 +8,9 @@ using ASCOM.Wise40.Hardware;
 using ASCOM.Wise40.Common;
 using ASCOM.Astrometry.AstroUtils;
 using System.Threading;
-using ASCOM.Wise40.Dome;
+//using ASCOM.Wise40.Dome;
 
-namespace ASCOM.Wise40.Telescope
+namespace ASCOM.Wise40 //.Telescope
 {
     public class DomeSlaveDriver : IConnectable
     {

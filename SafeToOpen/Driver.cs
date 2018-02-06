@@ -45,12 +45,12 @@ using ASCOM.Wise40.Boltwood;
 
 using ASCOM.Wise40.Common;
 
-namespace ASCOM.Wise40.SafeToOperate
+namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
 {
     //
-    // Your driver's DeviceID is ASCOM.Wise40.SafeToOpen.SafetyMonitor
+    // Your driver's DeviceID is ASCOM.Wise40SafeToOpen.SafetyMonitor
     //
-    // The Guid attribute sets the CLSID for ASCOM.Wise40.SafeToOpen.SafetyMonitor
+    // The Guid attribute sets the CLSID for ASCOM.Wise40SafeToOpen.SafetyMonitor
     // The ClassInterface/None addribute prevents an empty interface called
     // _Wise40.SafeToOpen from being created and used as the [default] interface
     //
@@ -63,10 +63,11 @@ namespace ASCOM.Wise40.SafeToOperate
     /// </summary>
     [Guid("6b5388b9-d420-4596-9311-f5f9c3dd090f")]
     [ClassInterface(ClassInterfaceType.None)]
+    [ComVisible(true)]
     public class SafetyMonitor : ISafetyMonitor
     {
         public WiseSafeToOperate wisesafetoopen;
-        private static string driverID = "ASCOM.Wise40.SafeToOpen.SafetyMonitor";
+        private static string driverID = "ASCOM.Wise40SafeToOpen.SafetyMonitor";
         private static string driverDescription;
         
         internal static int ageMaxSeconds;
@@ -101,7 +102,7 @@ namespace ASCOM.Wise40.SafeToOperate
             if (wisesafetoopen.Connected)
                 System.Windows.Forms.MessageBox.Show("Already connected, just press OK");
 
-            using (SetupDialogForm F = new SetupDialogForm())
+            using (SafeToOperateSetupDialogForm F = new SafeToOperateSetupDialogForm())
             {
                 var result = F.ShowDialog();
                 if (result == System.Windows.Forms.DialogResult.OK)

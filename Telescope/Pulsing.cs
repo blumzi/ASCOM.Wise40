@@ -10,7 +10,7 @@ using ASCOM.Wise40.Common;
 using ASCOM.Wise40.Hardware;
 using ASCOM.DeviceInterface;
 
-namespace ASCOM.Wise40.Telescope
+namespace ASCOM.Wise40 //.Telescope
 {
     /// <summary>
     /// A PulserTask performs an Asynchronous PulseGuide on a WiseTelescope

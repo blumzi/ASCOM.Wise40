@@ -10,7 +10,7 @@ using MccDaq;
 using System.Threading;
 
 
-namespace ASCOM.Wise40.Focuser
+namespace ASCOM.Wise40 //.Focuser
 {
     public class WiseFocuserEnc : WiseEncoder, IDisposable
     {

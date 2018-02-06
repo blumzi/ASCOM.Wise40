@@ -1,6 +1,6 @@
-namespace ASCOM.Wise40.ObservatoryMonitor
+namespace ASCOM.Wise40 //.ObservatoryMonitor
 {
-    partial class SetupDialogForm
+    partial class ObservatoryMonitorSetupDialogForm
     {
         /// <summary>
         /// Required designer variable.

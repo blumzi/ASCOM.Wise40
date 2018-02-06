@@ -7,14 +7,14 @@ using System.Text;
 using System.Windows.Forms;
 using ASCOM.Utilities;
 
-namespace ASCOM.Wise40.ObservatoryMonitor
+namespace ASCOM.Wise40 //.ObservatoryMonitor
 {
     [ComVisible(false)]					// Form not registered for COM!
-    public partial class SetupDialogForm : Form
+    public partial class ObservatoryMonitorSetupDialogForm : Form
     {
         ObsMon obsmon = ObsMon.Instance;
 
-        public SetupDialogForm()
+        public ObservatoryMonitorSetupDialogForm()
         {
             InitializeComponent();
             InitUI();

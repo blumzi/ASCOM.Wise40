@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using ASCOM.Wise40.Common;
-using ASCOM.Wise40.Telescope;
+//using ASCOM.Wise40.Telescope;
 using ASCOM.DeviceInterface;
 
 namespace ASCOM.Wise40.Hardware

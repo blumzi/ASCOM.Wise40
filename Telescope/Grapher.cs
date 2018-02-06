@@ -8,7 +8,7 @@ using ASCOM.Wise40.Common;
 using ASCOM.DeviceInterface;
 using System.Diagnostics;
 
-namespace ASCOM.Wise40.Telescope
+namespace ASCOM.Wise40 //.Telescope
 {
     public class Grapher
     {

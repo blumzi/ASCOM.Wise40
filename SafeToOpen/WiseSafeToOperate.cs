@@ -15,7 +15,7 @@ using ASCOM.Wise40.Common;
 using ASCOM.Wise40.Boltwood;
 using ASCOM.Wise40.VantagePro;
 
-namespace ASCOM.Wise40.SafeToOperate
+namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
 {
     public class WiseSafeToOperate
     {
@@ -125,7 +125,7 @@ namespace ASCOM.Wise40.SafeToOperate
                 return;
 
             name = "Wise40 SafeTo" + type;
-            driverID = "ASCOM.Wise40.SafeTo" + type + ".SafetyMonitor";
+            driverID = "ASCOM.Wise40SafeTo" + type + ".SafetyMonitor";
             driverDescription = string.Format("ASCOM Wise40.SafeTo{0} v{1}", type, version.ToString());
 
             if (_profile == null)
@@ -201,7 +201,7 @@ namespace ASCOM.Wise40.SafeToOperate
             if (_connected)
                 System.Windows.Forms.MessageBox.Show("Already connected, just press OK");
 
-            using (SetupDialogForm F = new SetupDialogForm())
+            using (SafeToOperateSetupDialogForm F = new SafeToOperateSetupDialogForm())
             {
                 var result = F.ShowDialog();
                 if (result == System.Windows.Forms.DialogResult.OK)

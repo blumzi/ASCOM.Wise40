@@ -44,7 +44,7 @@ using System.Collections;
 using ASCOM.Wise40.Hardware;
 using ASCOM.Wise40.Common;
 
-namespace ASCOM.Wise40.Dome
+namespace ASCOM.Wise40 //.Dome
 {
     //
     // Your driver's DeviceID is ASCOM.Wise40.Dome
@@ -135,7 +135,7 @@ namespace ASCOM.Wise40.Dome
             if (wisedome.Connected)
                 System.Windows.Forms.MessageBox.Show("Already connected, just press OK");
 
-            using (SetupDialogForm F = new SetupDialogForm())
+            using (DomeSetupDialogForm F = new DomeSetupDialogForm())
             {
                 var result = F.ShowDialog();
                 if (result == System.Windows.Forms.DialogResult.OK)

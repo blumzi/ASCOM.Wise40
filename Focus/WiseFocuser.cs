@@ -15,7 +15,7 @@ using MccDaq;
 using PID;
 #endif
 
-namespace ASCOM.Wise40.Focuser
+namespace ASCOM.Wise40 //.Focuser
 {
     public class WiseFocuser : WiseObject, IDisposable, IConnectable
     {

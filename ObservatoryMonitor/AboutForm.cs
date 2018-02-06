@@ -11,11 +11,11 @@ using System.Windows.Forms;
 using ASCOM.Wise40.Common;
 using ASCOM.Wise40;
 
-namespace ASCOM.Wise40.ObservatoryMonitor
+namespace ASCOM.Wise40 //.ObservatoryMonitor
 {
-    public partial class AboutForm : Form
+    public partial class ObservatoryMonitorAboutForm : Form
     {
-        public AboutForm(ObsMon obsmon)
+        public ObservatoryMonitorAboutForm(ObsMon obsmon)
         {
             InitializeComponent();
             

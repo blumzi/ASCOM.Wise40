@@ -15,11 +15,11 @@ using ASCOM.Wise40;
 using ASCOM.Wise40.Common;
 using ASCOM.Wise40.Boltwood;
 using ASCOM.Wise40.Hardware;
-using ASCOM.Wise40.SafeToOperate;
-using ASCOM.Wise40.Telescope;
-using ASCOM.Wise40.Dome;
+using ASCOM.Wise40SafeToOpen;
+//using ASCOM.Wise40.Telescope;
+//using ASCOM.Wise40.Dome;
 using ASCOM.Wise40.FilterWheel;
-using ASCOM.Wise40.Focuser;
+//using ASCOM.Wise40.Focuser;
 
 namespace Dash
 {
@@ -1272,7 +1272,7 @@ namespace Dash
 
         private void toolStripMenuItemSafeToOpen_Click(object sender, EventArgs e)
         {
-            new ASCOM.Wise40.SafeToOperate.SetupDialogForm().Show();
+            new ASCOM.Wise40SafeToOpen.SafeToOperateSetupDialogForm().Show();
         }
 
         private void toolStripMenuItemFilterWheel_Click(object sender, EventArgs e)

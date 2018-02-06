@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 // associated with an assembly.
 //
 // TODO - Add your authorship information here
-[assembly: AssemblyTitle("ASCOM.Wise40.SafeToOpen.SafetyMonitor")]
+[assembly: AssemblyTitle("ASCOM.Wise40SafeToOpen.SafetyMonitor")]
 [assembly: AssemblyDescription("ASCOM SafetyMonitor driver for Wise40.SafeToOpen")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("The ASCOM Initiative")]

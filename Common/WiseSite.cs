@@ -86,7 +86,7 @@ namespace ASCOM.Wise40
 
             try
             {
-                safeToOpen = new SafetyMonitor("ASCOM.Wise40.SafeToOpen.SafetyMonitor");
+                safeToOpen = new SafetyMonitor("ASCOM.Wise40SafeToOpen.SafetyMonitor");
                 safeToOpen.Connected = true;
             }
             catch

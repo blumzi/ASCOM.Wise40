@@ -5,7 +5,7 @@ using ASCOM.Wise40;
 using ASCOM.Wise40.Common;
 using ASCOM.Wise40.Hardware;
 
-namespace ASCOM.Wise40.Telescope
+namespace ASCOM.Wise40 //.Telescope
 {
     public class WiseHAEncoder : WiseObject, IConnectable, IDisposable, IEncoder
     {
