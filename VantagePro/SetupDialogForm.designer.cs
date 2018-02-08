@@ -43,25 +43,29 @@ namespace ASCOM.Wise40.VantagePro
             // cmdOK
             // 
             this.cmdOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.cmdOK.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.cmdOK.DialogResult = System.Windows.Forms.DialogResult.OK;
+            this.cmdOK.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.cmdOK.Location = new System.Drawing.Point(400, 76);
             this.cmdOK.Name = "cmdOK";
             this.cmdOK.Size = new System.Drawing.Size(59, 24);
             this.cmdOK.TabIndex = 0;
             this.cmdOK.Text = "OK";
-            this.cmdOK.UseVisualStyleBackColor = true;
+            this.cmdOK.UseVisualStyleBackColor = false;
             this.cmdOK.Click += new System.EventHandler(this.cmdOK_Click);
             // 
             // cmdCancel
             // 
             this.cmdCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.cmdCancel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.cmdCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            this.cmdCancel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.cmdCancel.Location = new System.Drawing.Point(400, 106);
             this.cmdCancel.Name = "cmdCancel";
             this.cmdCancel.Size = new System.Drawing.Size(59, 25);
             this.cmdCancel.TabIndex = 1;
             this.cmdCancel.Text = "Cancel";
-            this.cmdCancel.UseVisualStyleBackColor = true;
+            this.cmdCancel.UseVisualStyleBackColor = false;
             this.cmdCancel.Click += new System.EventHandler(this.cmdCancel_Click);
             // 
             // label1
@@ -89,31 +93,36 @@ namespace ASCOM.Wise40.VantagePro
             // 
             // buttonChoose
             // 
+            this.buttonChoose.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonChoose.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.buttonChoose.Location = new System.Drawing.Point(6, 22);
             this.buttonChoose.Name = "buttonChoose";
             this.buttonChoose.Size = new System.Drawing.Size(75, 23);
             this.buttonChoose.TabIndex = 7;
             this.buttonChoose.Text = "Choose";
-            this.buttonChoose.UseVisualStyleBackColor = true;
+            this.buttonChoose.UseVisualStyleBackColor = false;
             this.buttonChoose.Click += new System.EventHandler(this.buttonChoose_Click);
             // 
             // labelReportFileValue
             // 
             this.labelReportFileValue.Location = new System.Drawing.Point(98, 22);
             this.labelReportFileValue.Name = "labelReportFileValue";
+            this.labelReportFileValue.Padding = new System.Windows.Forms.Padding(5, 0, 0, 0);
             this.labelReportFileValue.Size = new System.Drawing.Size(268, 23);
             this.labelReportFileValue.TabIndex = 8;
+            this.labelReportFileValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // groupBoxReportFile
             // 
             this.groupBoxReportFile.Controls.Add(this.labelReportFileValue);
             this.groupBoxReportFile.Controls.Add(this.buttonChoose);
-            this.groupBoxReportFile.Location = new System.Drawing.Point(8, 78);
+            this.groupBoxReportFile.ForeColor = System.Drawing.Color.DarkOrange;
+            this.groupBoxReportFile.Location = new System.Drawing.Point(8, 69);
             this.groupBoxReportFile.Name = "groupBoxReportFile";
-            this.groupBoxReportFile.Size = new System.Drawing.Size(372, 53);
+            this.groupBoxReportFile.Size = new System.Drawing.Size(372, 62);
             this.groupBoxReportFile.TabIndex = 9;
             this.groupBoxReportFile.TabStop = false;
-            this.groupBoxReportFile.Text = " Data File ";
+            this.groupBoxReportFile.Text = "Data File";
             // 
             // openFileDialog
             // 
@@ -124,19 +133,21 @@ namespace ASCOM.Wise40.VantagePro
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.ClientSize = new System.Drawing.Size(463, 173);
             this.Controls.Add(this.groupBoxReportFile);
             this.Controls.Add(this.picASCOM);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.cmdCancel);
             this.Controls.Add(this.cmdOK);
+            this.ForeColor = System.Drawing.Color.DarkOrange;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "SetupDialogForm";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Vantage Setup";
+            this.Text = "Wise40 Vantage Setup";
             this.Load += new System.EventHandler(this.SetupDialogForm_Load);
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).EndInit();
             this.groupBoxReportFile.ResumeLayout(false);

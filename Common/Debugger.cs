@@ -112,7 +112,7 @@ namespace ASCOM.Wise40.Common
         public static string LogFolder()
         {
             DateTime now = DateTime.Now;
-            return string.Format(Const.topWise40Directory + "Logs/{0}-{1}-{2}",
+            return string.Format(Const.topWise40Directory + "Logs/{0}-{1:D2}-{2:D2}",
                     now.Year, now.Month, now.Day);
         }
 
