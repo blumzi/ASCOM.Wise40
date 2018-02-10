@@ -29,14 +29,12 @@ namespace ASCOM.Wise40.Hardware
     //public class WiseEncoder : IWiseObject, IConnectable, IDisposable, ISimulated
     public class WiseEncoder : WiseObject, IConnectable, IDisposable
     {
-        //private string _name;
         private List<WiseDaq> _daqs;
         private List<byte> _masks;
         private int _nbits;
         private bool _isGray;
         private int _hwTicks;
         private bool _connected = false;
-        //protected bool _simulated = Environment.MachineName.ToLower() != "dome-ctlr";
         private AtomicReader _atomicReader;
         protected Common.Debugger debugger = Common.Debugger.Instance;
 
