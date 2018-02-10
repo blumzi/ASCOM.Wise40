@@ -16,10 +16,22 @@ namespace ASCOM.Wise40
     {
         private List<WiseBoard> boards;
         private Hardware.Hardware hw = Hardware.Hardware.Instance;
-        
+        private WiseTele wisetele = WiseTele.Instance;
+        private WiseDome wisedome = WiseDome.Instance;
+        private WiseFocuser wisefocuser = WiseFocuser.Instance;
+        private WiseSite wisesite = WiseSite.Instance;
+        private WiseDomePlatform wisedomeplatform = WiseDomePlatform.Instance;
+
         public HardwareForm()
         {
             InitializeComponent();
+            hw.init();
+            wisetele.init();
+            wisetele.Connected = true;
+            wisedome.init();
+            wisedome.Connected = true;
+            wisefocuser.init();
+            wisefocuser.Connected = true;
 
             boards = new List<WiseBoard>();
             boards.Add(hw.miscboard);
