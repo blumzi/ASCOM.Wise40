@@ -26,6 +26,7 @@ namespace ASCOM.Wise40 //.Dome
         private WisePin openPin, closePin;
         private WisePin[] caliPins = new WisePin[3];
         private WisePin ventPin;
+        private WisePin projectorPin;
         private static WiseDomeEncoder domeEncoder = WiseDomeEncoder.Instance;
         private List<IConnectable> connectables;
         private List<IDisposable> disposables;
@@ -160,7 +161,9 @@ namespace ASCOM.Wise40 //.Dome
                 calibrationPoints.Add(new CalibrationPoint(caliPins[2], new Angle( 18.0, Angle.Type.Az), 10 + 0 * caliPointsSpacing));
 
                 ventPin = new WisePin("DomeVent", hw.teleboard, DigitalPortType.ThirdPortCL, 0, DigitalPortDirection.DigitalOut);
-                
+                //ventPin = new WisePin("DomeVent", hw.domeboard, DigitalPortType.FirstPortA, 5, DigitalPortDirection.DigitalOut);
+                projectorPin = new WisePin("DomeProjector", hw.domeboard, DigitalPortType.FirstPortA, 4, DigitalPortDirection.DigitalOut);
+
                 domeEncoder.init();
 
                 connectables.Add(openPin);
@@ -738,6 +741,25 @@ namespace ASCOM.Wise40 //.Dome
                     ventPin.SetOn();
                 else
                     ventPin.SetOff();
+            }
+        }
+
+        public bool Projector
+        {
+            get
+            {
+                return projectorPin.isOn;
+            }
+
+            set
+            {
+                if (value == projectorPin.isOn)
+                    return;
+
+                if (value)
+                    projectorPin.SetOn();
+                else
+                    projectorPin.SetOff();
             }
         }
 

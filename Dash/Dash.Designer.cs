@@ -48,7 +48,7 @@
             this.groupBoxDomeGroup = new System.Windows.Forms.GroupBox();
             this.button1 = new System.Windows.Forms.Button();
             this.buttonDomePark = new System.Windows.Forms.Button();
-            this.button2 = new System.Windows.Forms.Button();
+            this.buttonProjector = new System.Windows.Forms.Button();
             this.buttonVent = new System.Windows.Forms.Button();
             this.buttonCalibrateDome = new System.Windows.Forms.Button();
             this.groupBox7 = new System.Windows.Forms.GroupBox();
@@ -184,6 +184,7 @@
             this.annunciatorWeather = new ASCOM.Controls.Annunciator();
             this.panel2 = new System.Windows.Forms.Panel();
             this.panel3 = new System.Windows.Forms.Panel();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.labelDashStatus = new System.Windows.Forms.Label();
             this.groupBoxFilterWheel = new System.Windows.Forms.GroupBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
@@ -222,7 +223,6 @@
             this.labelRainRateValue = new System.Windows.Forms.Label();
             this.timerRefreshDisplay = new System.Windows.Forms.Timer(this.components);
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.tableLayoutMain.SuspendLayout();
             this.groupBoxFocuser.SuspendLayout();
             this.groupBoxDomeGroup.SuspendLayout();
@@ -239,11 +239,11 @@
             this.annunciatorPanelStatus.SuspendLayout();
             this.panel2.SuspendLayout();
             this.panel3.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.groupBoxFilterWheel.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.groupBoxWeather.SuspendLayout();
             this.tableLayoutPanelWeather.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
             // tableLayoutMain
@@ -493,7 +493,7 @@
             // 
             this.groupBoxDomeGroup.Controls.Add(this.button1);
             this.groupBoxDomeGroup.Controls.Add(this.buttonDomePark);
-            this.groupBoxDomeGroup.Controls.Add(this.button2);
+            this.groupBoxDomeGroup.Controls.Add(this.buttonProjector);
             this.groupBoxDomeGroup.Controls.Add(this.buttonVent);
             this.groupBoxDomeGroup.Controls.Add(this.buttonCalibrateDome);
             this.groupBoxDomeGroup.Controls.Add(this.groupBox7);
@@ -542,18 +542,19 @@
             this.buttonDomePark.UseVisualStyleBackColor = false;
             this.buttonDomePark.Click += new System.EventHandler(this.buttonDomePark_Click);
             // 
-            // button2
+            // buttonProjector
             // 
-            this.button2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.button2.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.button2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button2.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.button2.Location = new System.Drawing.Point(184, 126);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(120, 23);
-            this.button2.TabIndex = 29;
-            this.button2.Text = "Projector";
-            this.button2.UseVisualStyleBackColor = false;
+            this.buttonProjector.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonProjector.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.buttonProjector.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.buttonProjector.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.buttonProjector.Location = new System.Drawing.Point(184, 126);
+            this.buttonProjector.Name = "buttonProjector";
+            this.buttonProjector.Size = new System.Drawing.Size(120, 23);
+            this.buttonProjector.TabIndex = 29;
+            this.buttonProjector.Text = "Projector Off";
+            this.buttonProjector.UseVisualStyleBackColor = false;
+            this.buttonProjector.Click += new System.EventHandler(this.buttonProjector_Click);
             // 
             // buttonVent
             // 
@@ -565,7 +566,7 @@
             this.buttonVent.Name = "buttonVent";
             this.buttonVent.Size = new System.Drawing.Size(80, 23);
             this.buttonVent.TabIndex = 28;
-            this.buttonVent.Text = "Vent";
+            this.buttonVent.Text = "Close Vent";
             this.buttonVent.UseVisualStyleBackColor = false;
             this.buttonVent.Click += new System.EventHandler(this.buttonVent_Click);
             // 
@@ -2269,6 +2270,20 @@
             this.panel3.Size = new System.Drawing.Size(184, 112);
             this.panel3.TabIndex = 0;
             // 
+            // pictureBox1
+            // 
+            this.pictureBox1.BackColor = System.Drawing.Color.Transparent;
+            this.pictureBox1.Image = global::Dash.Properties.Resources.stop_sign_smaller;
+            this.pictureBox1.InitialImage = global::Dash.Properties.Resources.stop_sign_smaller;
+            this.pictureBox1.Location = new System.Drawing.Point(64, 24);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(56, 56);
+            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
+            this.pictureBox1.TabIndex = 2;
+            this.pictureBox1.TabStop = false;
+            this.toolTip.SetToolTip(this.pictureBox1, "Stops all motors \r\n(telescope, dome, shutter, focus, filter-wheel)");
+            this.pictureBox1.Click += new System.EventHandler(this.buttonFullStop_Click);
+            // 
             // labelDashStatus
             // 
             this.tableLayoutMain.SetColumnSpan(this.labelDashStatus, 2);
@@ -2810,20 +2825,6 @@
             this.timerRefreshDisplay.Enabled = true;
             this.timerRefreshDisplay.Tick += new System.EventHandler(this.RefreshDisplay);
             // 
-            // pictureBox1
-            // 
-            this.pictureBox1.BackColor = System.Drawing.Color.Transparent;
-            this.pictureBox1.Image = global::Dash.Properties.Resources.stop_sign_smaller;
-            this.pictureBox1.InitialImage = global::Dash.Properties.Resources.stop_sign_smaller;
-            this.pictureBox1.Location = new System.Drawing.Point(64, 24);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(56, 56);
-            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
-            this.pictureBox1.TabIndex = 2;
-            this.pictureBox1.TabStop = false;
-            this.toolTip.SetToolTip(this.pictureBox1, "Stops all motors \r\n(telescope, dome, shutter, focus, filter-wheel)");
-            this.pictureBox1.Click += new System.EventHandler(this.buttonFullStop_Click);
-            // 
             // FormDash
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
@@ -2863,6 +2864,7 @@
             this.annunciatorPanelStatus.PerformLayout();
             this.panel2.ResumeLayout(false);
             this.panel3.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.groupBoxFilterWheel.ResumeLayout(false);
             this.groupBoxFilterWheel.PerformLayout();
             this.groupBox1.ResumeLayout(false);
@@ -2870,7 +2872,6 @@
             this.groupBoxWeather.ResumeLayout(false);
             this.tableLayoutPanelWeather.ResumeLayout(false);
             this.tableLayoutPanelWeather.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -2984,7 +2985,7 @@
         private System.Windows.Forms.Button buttonOpenShutter;
         private System.Windows.Forms.Label labelDashStatus;
         private System.Windows.Forms.Button buttonCalibrateDome;
-        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Button buttonProjector;
         private System.Windows.Forms.Button buttonVent;
         private System.Windows.Forms.Button buttonTelescopePark;
         private System.Windows.Forms.Button buttonDomePark;

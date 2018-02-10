@@ -178,6 +178,9 @@ namespace Dash
                 tb.ForeColor = Color.FromArgb(176, 161, 142);
             }
 
+            buttonVent.Text = wisedome.Vent ? "Close Vent" : "Open Vent";
+            buttonProjector.Text = wisedome.Projector ? "Projector Off" : "Projector On";
+
             //buttonFocusAllUp.Text = "\u21c8  " + wisefocuser.UpperLimit.ToString();
             //buttonFocusAllDown.Text = wisefocuser.LowerLimit.ToString() + "  \u21ca";
 
@@ -1401,6 +1404,20 @@ namespace Dash
             wisedome.Stop();
             wisedome.ShutterStop();
             wisefocuser.Stop();
+        }
+
+        private void buttonProjector_Click(object sender, EventArgs e)
+        {
+            if (wisedome.Projector)
+            {
+                wisedome.Projector = false;
+                buttonProjector.Text = "Projector Off";
+            } else
+            {
+                wisedome.Projector = true;
+                buttonProjector.Text = "Projector On";
+            }
+
         }
 
         private void manage3InchFilterInventoryToolStripMenuItem_Click(object sender, EventArgs e)
