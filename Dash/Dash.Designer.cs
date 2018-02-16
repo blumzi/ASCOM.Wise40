@@ -2058,7 +2058,8 @@
             this.annunciatorPanelStatus.Location = new System.Drawing.Point(10, 467);
             this.annunciatorPanelStatus.Margin = new System.Windows.Forms.Padding(10, 3, 3, 3);
             this.annunciatorPanelStatus.Name = "annunciatorPanelStatus";
-            this.annunciatorPanelStatus.Size = new System.Drawing.Size(166, 78);
+            this.annunciatorPanelStatus.Padding = new System.Windows.Forms.Padding(5, 0, 0, 0);
+            this.annunciatorPanelStatus.Size = new System.Drawing.Size(174, 78);
             this.annunciatorPanelStatus.TabIndex = 38;
             // 
             // annunciatorTrack
@@ -2070,7 +2071,7 @@
             this.annunciatorTrack.Font = new System.Drawing.Font("Consolas", 10F);
             this.annunciatorTrack.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorTrack.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorTrack.Location = new System.Drawing.Point(3, 0);
+            this.annunciatorTrack.Location = new System.Drawing.Point(8, 0);
             this.annunciatorTrack.Mute = false;
             this.annunciatorTrack.Name = "annunciatorTrack";
             this.annunciatorTrack.Size = new System.Drawing.Size(48, 17);
@@ -2086,7 +2087,7 @@
             this.annunciatorSlew.Font = new System.Drawing.Font("Consolas", 10F);
             this.annunciatorSlew.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorSlew.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorSlew.Location = new System.Drawing.Point(57, 0);
+            this.annunciatorSlew.Location = new System.Drawing.Point(62, 0);
             this.annunciatorSlew.Mute = false;
             this.annunciatorSlew.Name = "annunciatorSlew";
             this.annunciatorSlew.Size = new System.Drawing.Size(40, 17);
@@ -2103,7 +2104,7 @@
             this.annunciatorPulse.Font = new System.Drawing.Font("Consolas", 10F);
             this.annunciatorPulse.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorPulse.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorPulse.Location = new System.Drawing.Point(103, 0);
+            this.annunciatorPulse.Location = new System.Drawing.Point(108, 0);
             this.annunciatorPulse.Mute = false;
             this.annunciatorPulse.Name = "annunciatorPulse";
             this.annunciatorPulse.Size = new System.Drawing.Size(48, 17);
@@ -2119,7 +2120,7 @@
             this.annunciatorPrimary.Font = new System.Drawing.Font("Consolas", 10F);
             this.annunciatorPrimary.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorPrimary.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorPrimary.Location = new System.Drawing.Point(3, 17);
+            this.annunciatorPrimary.Location = new System.Drawing.Point(8, 17);
             this.annunciatorPrimary.Mute = false;
             this.annunciatorPrimary.Name = "annunciatorPrimary";
             this.annunciatorPrimary.Size = new System.Drawing.Size(24, 17);
@@ -2135,7 +2136,7 @@
             this.annunciatorSecondary.Font = new System.Drawing.Font("Consolas", 10F);
             this.annunciatorSecondary.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorSecondary.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorSecondary.Location = new System.Drawing.Point(33, 17);
+            this.annunciatorSecondary.Location = new System.Drawing.Point(38, 17);
             this.annunciatorSecondary.Mute = false;
             this.annunciatorSecondary.Name = "annunciatorSecondary";
             this.annunciatorSecondary.Size = new System.Drawing.Size(32, 17);
@@ -2152,7 +2153,7 @@
             this.annunciatorDome.Font = new System.Drawing.Font("Consolas", 10F);
             this.annunciatorDome.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorDome.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorDome.Location = new System.Drawing.Point(71, 17);
+            this.annunciatorDome.Location = new System.Drawing.Point(76, 17);
             this.annunciatorDome.Mute = false;
             this.annunciatorDome.Name = "annunciatorDome";
             this.annunciatorDome.Size = new System.Drawing.Size(40, 17);
@@ -2168,7 +2169,7 @@
             this.annunciatorRateSlew.Font = new System.Drawing.Font("Consolas", 10F);
             this.annunciatorRateSlew.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorRateSlew.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorRateSlew.Location = new System.Drawing.Point(3, 34);
+            this.annunciatorRateSlew.Location = new System.Drawing.Point(8, 34);
             this.annunciatorRateSlew.Mute = false;
             this.annunciatorRateSlew.Name = "annunciatorRateSlew";
             this.annunciatorRateSlew.Size = new System.Drawing.Size(40, 17);
@@ -2184,7 +2185,7 @@
             this.annunciatorRateSet.Font = new System.Drawing.Font("Consolas", 10F);
             this.annunciatorRateSet.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorRateSet.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorRateSet.Location = new System.Drawing.Point(49, 34);
+            this.annunciatorRateSet.Location = new System.Drawing.Point(54, 34);
             this.annunciatorRateSet.Mute = false;
             this.annunciatorRateSet.Name = "annunciatorRateSet";
             this.annunciatorRateSet.Size = new System.Drawing.Size(32, 17);
@@ -2200,7 +2201,7 @@
             this.annunciatorRateGuide.Font = new System.Drawing.Font("Consolas", 10F);
             this.annunciatorRateGuide.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorRateGuide.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorRateGuide.Location = new System.Drawing.Point(87, 34);
+            this.annunciatorRateGuide.Location = new System.Drawing.Point(92, 34);
             this.annunciatorRateGuide.Mute = false;
             this.annunciatorRateGuide.Name = "annunciatorRateGuide";
             this.annunciatorRateGuide.Size = new System.Drawing.Size(48, 17);
@@ -2216,7 +2217,7 @@
             this.annunciatorFilterWheel.Font = new System.Drawing.Font("Consolas", 10F);
             this.annunciatorFilterWheel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorFilterWheel.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorFilterWheel.Location = new System.Drawing.Point(3, 51);
+            this.annunciatorFilterWheel.Location = new System.Drawing.Point(8, 51);
             this.annunciatorFilterWheel.Mute = false;
             this.annunciatorFilterWheel.Name = "annunciatorFilterWheel";
             this.annunciatorFilterWheel.Size = new System.Drawing.Size(64, 17);
@@ -2232,7 +2233,7 @@
             this.annunciatorFocus.Font = new System.Drawing.Font("Consolas", 10F);
             this.annunciatorFocus.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorFocus.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorFocus.Location = new System.Drawing.Point(73, 51);
+            this.annunciatorFocus.Location = new System.Drawing.Point(78, 51);
             this.annunciatorFocus.Mute = false;
             this.annunciatorFocus.Name = "annunciatorFocus";
             this.annunciatorFocus.Size = new System.Drawing.Size(48, 17);
@@ -2247,7 +2248,7 @@
             this.annunciatorWeather.Font = new System.Drawing.Font("Consolas", 10F);
             this.annunciatorWeather.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorWeather.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorWeather.Location = new System.Drawing.Point(127, 51);
+            this.annunciatorWeather.Location = new System.Drawing.Point(132, 51);
             this.annunciatorWeather.Mute = false;
             this.annunciatorWeather.Name = "annunciatorWeather";
             this.annunciatorWeather.Size = new System.Drawing.Size(32, 17);
@@ -2265,9 +2266,9 @@
             // panel3
             // 
             this.panel3.Controls.Add(this.pictureBox1);
-            this.panel3.Location = new System.Drawing.Point(0, 0);
+            this.panel3.Location = new System.Drawing.Point(0, 8);
             this.panel3.Name = "panel3";
-            this.panel3.Size = new System.Drawing.Size(184, 112);
+            this.panel3.Size = new System.Drawing.Size(184, 104);
             this.panel3.TabIndex = 0;
             // 
             // pictureBox1

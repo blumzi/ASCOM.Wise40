@@ -549,52 +549,58 @@ namespace Dash
 
             try
             {
+                string msg = string.Empty;
                 string atRate = string.Format(" at rate {0}", rateName);
 
                 if (button == buttonNorth)
                 {
-                    telescopeStatus.Show("Moving North" + atRate, 0, Statuser.Severity.Good);
+                    msg = "Moving North";
                     wisetele.HandpadMoveAxis(TelescopeAxes.axisSecondary, handpadRate);
                 }
                 else if (button == buttonSouth)
                 {
-                    telescopeStatus.Show("Moving South" + atRate, 0, Statuser.Severity.Good);
+                    msg = "Moving South";
                     wisetele.HandpadMoveAxis(TelescopeAxes.axisSecondary, -handpadRate);
                 }
                 else if (button == buttonEast)
                 {
-                    telescopeStatus.Show("Moving East" + atRate, 0, Statuser.Severity.Good);
+                    msg = "Moving East";
                     wisetele.HandpadMoveAxis(TelescopeAxes.axisPrimary, handpadRate);
                 }
                 else if (button == buttonWest)
                 {
-                    telescopeStatus.Show("Moving West" + atRate, 0, Statuser.Severity.Good);
+                    msg = "Moving West";
                     wisetele.HandpadMoveAxis(TelescopeAxes.axisPrimary, -handpadRate);
                 }
                 else if (button == buttonNE)
                 {
-                    telescopeStatus.Show("Moving North-East" + atRate, 0, Statuser.Severity.Good);
+                    msg = "Moving North-East";
                     wisetele.HandpadMoveAxis(TelescopeAxes.axisSecondary, handpadRate);
                     wisetele.HandpadMoveAxis(TelescopeAxes.axisPrimary, -handpadRate);
                 }
                 else if (button == buttonNW)
                 {
-                    telescopeStatus.Show("Moving North-West" + atRate, 0, Statuser.Severity.Good);
+                    msg = "Moving North-West";
                     wisetele.HandpadMoveAxis(TelescopeAxes.axisSecondary, handpadRate);
                     wisetele.HandpadMoveAxis(TelescopeAxes.axisPrimary, -handpadRate);
                 }
                 else if (button == buttonSE)
                 {
-                    telescopeStatus.Show("Moving South-East" + atRate, 0, Statuser.Severity.Good);
+                    msg = "Moving South-East";
                     wisetele.HandpadMoveAxis(TelescopeAxes.axisSecondary, -handpadRate);
                     wisetele.HandpadMoveAxis(TelescopeAxes.axisPrimary, -handpadRate);
                 }
                 else if (button == buttonSW)
                 {
-                    telescopeStatus.Show("Moving North-West" + atRate, 0, Statuser.Severity.Good);
+                    msg = "Moving South-West";
                     wisetele.HandpadMoveAxis(TelescopeAxes.axisSecondary, -handpadRate);
                     wisetele.HandpadMoveAxis(TelescopeAxes.axisPrimary, handpadRate);
                 }
+                msg += atRate;
+                telescopeStatus.Show(msg, 0, Statuser.Severity.Good);
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Handpad: " + msg);
+                #endregion
             }
             catch (Exception ex)
             {
@@ -608,9 +614,11 @@ namespace Dash
                 wisetele.MoveAxis(TelescopeAxes.axisSecondary, Const.rateStopped);
             if (wisetele.WestMotor.isOn || wisetele.EastMotor.isOn)
                 wisetele.MoveAxis(TelescopeAxes.axisPrimary, Const.rateStopped);
-
-            wisetele.Stop();
+            
             telescopeStatus.Show("Stopped", 1000, Statuser.Severity.Good);
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Handpad: stopped");
+            #endregion
         }
 
         private void debuggingToolStripMenuItem_Click(object sender, EventArgs e)
