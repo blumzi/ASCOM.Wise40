@@ -50,7 +50,7 @@ namespace Restore_ASCOM_Profiles
             string driverID = "ASCOM.Wise40.Boltwood.ObservingConditions";
             string dataFileProfileName = "DataFile";
             string dataFile = realMachine ?
-                "c:/temp/ClarityII-data.txt" /*"z:/ClarityII-data.txt"*/ :
+                "//WO-NEO/Temp/clarityII-data.txt" :
                 "c:/temp/ClarityII-data.txt";
 
             using (Profile driverProfile = new Profile())
@@ -64,9 +64,8 @@ namespace Restore_ASCOM_Profiles
         {
             string driverID = "ASCOM.Wise40.VantagePro.ObservingConditions";
             string reportFileProfileName = "DataFile";
-            string reportFile = realMachine ?
-                //"y:/Weather_Wise40_Vantage_Pro.htm" :  // restore when weather-ps is back
-                "c:/temp/Weather_Wise40_Vantage_Pro.htm" /*"c:/Wise40/Data/Weather_Wise40_Vantage_Pro.htm"*/ :
+            string reportFile = realMachine ? 
+                "c:/Wise40/Weather/Davis VantagePro/Weather_Wise40_Vantage_Pro.htm" :
                 "c:/temp/Weather_Wise40_Vantage_Pro.htm";
 
             using (Profile driverProfile = new Profile())

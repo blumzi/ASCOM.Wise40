@@ -179,7 +179,7 @@ namespace Dash
             }
 
             buttonVent.Text = wisedome.Vent ? "Close Vent" : "Open Vent";
-            buttonProjector.Text = wisedome.Projector ? "Projector Off" : "Projector On";
+            buttonProjector.Text = wisedome.Projector ? "Turn projector Off" : "Turn projector On";
 
             //buttonFocusAllUp.Text = "\u21c8  " + wisefocuser.UpperLimit.ToString();
             //buttonFocusAllDown.Text = wisefocuser.LowerLimit.ToString() + "  \u21ca";
@@ -1505,16 +1505,8 @@ namespace Dash
 
         private void buttonProjector_Click(object sender, EventArgs e)
         {
-            if (wisedome.Projector)
-            {
-                wisedome.Projector = false;
-                buttonProjector.Text = "Projector Off";
-            } else
-            {
-                wisedome.Projector = true;
-                buttonProjector.Text = "Projector On";
-            }
-
+            wisedome.Projector = !wisedome.Projector;
+            buttonProjector.Text = wisedome.Projector ? "Turn projector Off" : "Turn projector On";
         }
 
         private void manage3InchFilterInventoryToolStripMenuItem_Click(object sender, EventArgs e)
