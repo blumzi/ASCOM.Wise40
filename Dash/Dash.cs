@@ -200,10 +200,9 @@ namespace Dash
             Angle dec = Angle.FromDegrees(wisetele.Declination);
             Angle ha = Angle.FromHours(wisetele.HourAngle, Angle.Type.HA);
             string safetyError = wisetele.SafeAtCoordinates(ra, dec);
-
-            Color safetyColor = (safetyError == string.Empty) ?
-                Statuser.colors[Statuser.Severity.Normal] :
-                Statuser.colors[Statuser.Severity.Error];
+            
+            Color safeColor = Statuser.colors[Statuser.Severity.Normal];
+            Color unsafeColor = Statuser.colors[Statuser.Severity.Error];
 
             labelDate.Text = localTime.ToLongDateString() + Const.crnl + localTime.ToLongTimeString();
 
@@ -213,11 +212,15 @@ namespace Dash
             labelSiderealValue.Text = wisesite.LocalSiderealTime.ToString();
 
             labelRightAscensionValue.Text = ra.ToNiceString();
+
             labelDeclinationValue.Text = dec.ToNiceString();
+            labelDeclinationValue.ForeColor = safetyError.Contains("Declination") ? unsafeColor : safeColor;
+
             labelHourAngleValue.Text = ha.ToNiceString();
+            labelHourAngleValue.ForeColor = safetyError.Contains("HourAngle") ? unsafeColor : safeColor;
 
             labelAltitudeValue.Text = Angle.FromDegrees(wisetele.Altitude).ToNiceString();
-            labelAltitudeValue.ForeColor = safetyColor;
+            labelAltitudeValue.ForeColor = safetyError.Contains("Altitude") ? unsafeColor : safeColor;
 
             labelAzimuthValue.Text = Angle.FromDegrees(wisetele.Azimuth).ToNiceString();
 
@@ -541,71 +544,157 @@ namespace Dash
         }
         #endregion
 
+        class Movement
+        {
+            public TelescopeAxes _axis;
+            public double _rate;
+            public Const.CardinalDirection _direction;
+
+            public Movement(Const.CardinalDirection direction, TelescopeAxes axis, double rate)
+            {
+                _axis = axis;
+                _rate = rate;
+                _direction = direction;
+            }
+        };
+
+        private bool SafeAtCurrentCoords()
+        {
+            return wisetele.SafeAtCoordinates(Angle.FromHours(wisetele.RightAscension), Angle.FromDegrees(wisetele.Declination)) == string.Empty;
+        }
+
         #region TelescopeControl
         public void directionButton_MouseDown(object sender, MouseEventArgs e)
         {
             Button button = (Button)sender;
-            string rateName = WiseTele.RateName(handpadRate).Remove(0, 4);
+            //string rateName = WiseTele.RateName(handpadRate).Remove(0, 4);
+            string dir = string.Empty, msg;
 
-            try
-            {
-                string msg = string.Empty;
-                string atRate = string.Format(" at rate {0}", rateName);
+            List<Movement> movements = new List<Movement>();
 
-                if (button == buttonNorth)
-                {
-                    msg = "Moving North";
-                    wisetele.HandpadMoveAxis(TelescopeAxes.axisSecondary, handpadRate);
-                }
-                else if (button == buttonSouth)
-                {
-                    msg = "Moving South";
-                    wisetele.HandpadMoveAxis(TelescopeAxes.axisSecondary, -handpadRate);
-                }
-                else if (button == buttonEast)
-                {
-                    msg = "Moving East";
-                    wisetele.HandpadMoveAxis(TelescopeAxes.axisPrimary, handpadRate);
-                }
-                else if (button == buttonWest)
-                {
-                    msg = "Moving West";
-                    wisetele.HandpadMoveAxis(TelescopeAxes.axisPrimary, -handpadRate);
-                }
-                else if (button == buttonNE)
-                {
-                    msg = "Moving North-East";
-                    wisetele.HandpadMoveAxis(TelescopeAxes.axisSecondary, handpadRate);
-                    wisetele.HandpadMoveAxis(TelescopeAxes.axisPrimary, -handpadRate);
-                }
-                else if (button == buttonNW)
-                {
-                    msg = "Moving North-West";
-                    wisetele.HandpadMoveAxis(TelescopeAxes.axisSecondary, handpadRate);
-                    wisetele.HandpadMoveAxis(TelescopeAxes.axisPrimary, -handpadRate);
-                }
-                else if (button == buttonSE)
-                {
-                    msg = "Moving South-East";
-                    wisetele.HandpadMoveAxis(TelescopeAxes.axisSecondary, -handpadRate);
-                    wisetele.HandpadMoveAxis(TelescopeAxes.axisPrimary, -handpadRate);
-                }
-                else if (button == buttonSW)
-                {
-                    msg = "Moving South-West";
-                    wisetele.HandpadMoveAxis(TelescopeAxes.axisSecondary, -handpadRate);
-                    wisetele.HandpadMoveAxis(TelescopeAxes.axisPrimary, handpadRate);
-                }
-                msg += atRate;
-                telescopeStatus.Show(msg, 0, Statuser.Severity.Good);
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Handpad: " + msg);
-                #endregion
-            }
-            catch (Exception ex)
+            if (button == buttonNorth)
+                movements.Add(new Movement(Const.CardinalDirection.North, TelescopeAxes.axisSecondary, handpadRate));
+            else if (button == buttonSouth)
+                movements.Add(new Movement(Const.CardinalDirection.South, TelescopeAxes.axisSecondary, -handpadRate));
+            else if (button == buttonEast)
+                movements.Add(new Movement(Const.CardinalDirection.East, TelescopeAxes.axisPrimary, handpadRate));
+            else if (button == buttonWest)
+                movements.Add(new Movement(Const.CardinalDirection.West, TelescopeAxes.axisPrimary, -handpadRate));
+            else if (button == buttonNE)
             {
-                telescopeStatus.Show(ex.Message, 2000, Statuser.Severity.Error);
+                movements.Add(new Movement(Const.CardinalDirection.North, TelescopeAxes.axisSecondary, handpadRate));
+                movements.Add(new Movement(Const.CardinalDirection.East, TelescopeAxes.axisPrimary, handpadRate));
             }
+            else if (button == buttonNW)
+            {
+                movements.Add(new Movement(Const.CardinalDirection.North, TelescopeAxes.axisSecondary, handpadRate));
+                movements.Add(new Movement(Const.CardinalDirection.West, TelescopeAxes.axisPrimary, -handpadRate));
+            }
+            else if (button == buttonSW)
+            {
+                movements.Add(new Movement(Const.CardinalDirection.South, TelescopeAxes.axisSecondary, -handpadRate));
+                movements.Add(new Movement(Const.CardinalDirection.West, TelescopeAxes.axisPrimary, -handpadRate));
+            }
+            else if (button == buttonSE)
+            {
+                movements.Add(new Movement(Const.CardinalDirection.South, TelescopeAxes.axisSecondary, -handpadRate));
+                movements.Add(new Movement(Const.CardinalDirection.East, TelescopeAxes.axisPrimary, handpadRate));
+            }
+
+            List<Const.CardinalDirection> whichWay = new List<Const.CardinalDirection>();
+            List<string> Directions = new List<string>();
+            foreach (var m in movements)
+            {
+                whichWay.Add(m._direction);
+                Directions.Add(m._direction.ToString());
+            }
+
+            if (SafeAtCurrentCoords() || wisetele.SafeToMove(whichWay))
+            {
+                string message = string.Format("Moving {0} at {1}", String.Join("-", Directions.ToArray()), WiseTele.RateName(handpadRate).Remove(0, 4));
+                telescopeStatus.Show(message, 0, Statuser.Severity.Good);
+                foreach (var m in movements)
+                {
+                    wisetele.HandpadMoveAxis(m._axis, m._rate);
+                }
+            } else {
+                string message = string.Format("Unsafe to move {0}", String.Join("-", Directions.ToArray()));
+                telescopeStatus.Show(message, 2000, Statuser.Severity.Error);
+            }
+
+
+            //try
+            //{
+            //    if (button == buttonNorth)
+            //    {
+            //        dir = "North";
+            //        if (!wisetele.SafeToMove(new List<Const.CardinalDirection>() { Const.CardinalDirection.North }))
+            //            throw new ASCOM.InvalidOperationException("Unsafe to move North!");
+            //        wisetele.HandpadMoveAxis(TelescopeAxes.axisSecondary, handpadRate);
+            //    }
+            //    else if (button == buttonSouth)
+            //    {
+            //        dir = "South";
+            //        if (!wisetele.SafeToMove(new List<Const.CardinalDirection>() { Const.CardinalDirection.South }))
+            //            throw new ASCOM.InvalidOperationException("Unsafe to move South!");
+            //        wisetele.HandpadMoveAxis(TelescopeAxes.axisSecondary, -handpadRate);
+            //    }
+            //    else if (button == buttonEast)
+            //    {
+            //        dir = "East";
+            //        if (!wisetele.SafeToMove(new List<Const.CardinalDirection>() { Const.CardinalDirection.East }))
+            //            throw new ASCOM.InvalidOperationException("Unsafe to move East!");
+            //        wisetele.HandpadMoveAxis(TelescopeAxes.axisPrimary, handpadRate);
+            //    }
+            //    else if (button == buttonWest)
+            //    {
+            //        dir = "West";
+            //        if (!wisetele.SafeToMove(new List<Const.CardinalDirection>() { Const.CardinalDirection.West }))
+            //            throw new ASCOM.InvalidOperationException("Unsafe to move West!");
+            //        wisetele.HandpadMoveAxis(TelescopeAxes.axisPrimary, -handpadRate);
+            //    }
+            //    else if (button == buttonNE)
+            //    {
+            //        dir = "North-East";
+            //        if (!wisetele.SafeToMove(new List<Const.CardinalDirection>() { Const.CardinalDirection.East, Const.CardinalDirection.North }))
+            //            throw new ASCOM.InvalidOperationException("Unsafe to move North-East!");
+            //        wisetele.HandpadMoveAxis(TelescopeAxes.axisSecondary, handpadRate);
+            //        wisetele.HandpadMoveAxis(TelescopeAxes.axisPrimary, -handpadRate);
+            //    }
+            //    else if (button == buttonNW)
+            //    {
+            //        dir = "North-West";
+            //        if (!wisetele.SafeToMove(new List<Const.CardinalDirection>() { Const.CardinalDirection.West, Const.CardinalDirection.North }))
+            //            throw new ASCOM.InvalidOperationException("Unsafe to move North-West!");
+            //        wisetele.HandpadMoveAxis(TelescopeAxes.axisSecondary, handpadRate);
+            //        wisetele.HandpadMoveAxis(TelescopeAxes.axisPrimary, -handpadRate);
+            //    }
+            //    else if (button == buttonSE)
+            //    {
+            //        dir = "South-East";
+            //        if (!wisetele.SafeToMove(new List<Const.CardinalDirection>() { Const.CardinalDirection.East, Const.CardinalDirection.South }))
+            //            throw new ASCOM.InvalidOperationException("Unsafe to move South-East!");
+            //        wisetele.HandpadMoveAxis(TelescopeAxes.axisSecondary, -handpadRate);
+            //        wisetele.HandpadMoveAxis(TelescopeAxes.axisPrimary, -handpadRate);
+            //    }
+            //    else if (button == buttonSW)
+            //    {
+            //        dir = "South-West";
+            //        if (!wisetele.SafeToMove(new List<Const.CardinalDirection>() { Const.CardinalDirection.West, Const.CardinalDirection.South }))
+            //            throw new ASCOM.InvalidOperationException("Unsafe to move South-West!");
+            //        wisetele.HandpadMoveAxis(TelescopeAxes.axisSecondary, -handpadRate);
+            //        wisetele.HandpadMoveAxis(TelescopeAxes.axisPrimary, handpadRate);
+            //    }
+            //    msg = string.Format("Moving {0} at {1}", dir, rateName);
+            //    telescopeStatus.Show(msg, 0, Statuser.Severity.Good);
+            //    #region debug
+            //    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Handpad: " + msg);
+            //    #endregion
+            //}
+            //catch (Exception ex)
+            //{
+            //    telescopeStatus.Show(ex.Message, 2000, Statuser.Severity.Error);
+            //}
         }
 
         private void directionButton_MouseUp(object sender, MouseEventArgs e)

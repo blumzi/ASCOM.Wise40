@@ -17,21 +17,51 @@ namespace ASCOM.Wise40 //.Telescope
     class SafetyMonitorTimer
     {
         private static WiseTele wisetele = WiseTele.Instance;
-        private Timer timer;
+        private Timer _timer;
         private int _dueTime, _period;
         private bool _enabled;
+        public enum ActionWhenNotSafe {  None, StopMotors, Backoff };
+        private ActionWhenNotSafe _action = ActionWhenNotSafe.None;
+
+        public ActionWhenNotSafe WhenNotSafe
+        {
+            get
+            {
+                return _action;
+            }
+
+            set
+            {
+                _action = value;
+            }
+        }
+
 
         private void SafetyChecker(object StateObject)
         {
-            wisetele.SafeAtCoordinates(
+            string reason = wisetele.SafeAtCoordinates(
                 Angle.FromHours(wisetele.RightAscension, Angle.Type.RA),
-                Angle.FromDegrees(wisetele.Declination, Angle.Type.Dec),
-                true);
+                Angle.FromDegrees(wisetele.Declination, Angle.Type.Dec));
+
+            if (reason == string.Empty)
+                return;
+
+            switch (WhenNotSafe)
+            {
+                case ActionWhenNotSafe.None:
+                    return;
+                case ActionWhenNotSafe.StopMotors:
+                    wisetele.Stop();
+                    break;
+                case ActionWhenNotSafe.Backoff:
+                    wisetele.Backoff();
+                    break;
+            }
         }
 
         public SafetyMonitorTimer(int dueTime = 100, int period = 100)
         {
-            timer = new Timer(new TimerCallback(SafetyChecker));
+            _timer = new Timer(new TimerCallback(SafetyChecker));
             this._dueTime = dueTime;
             this._period = period;
             _enabled = false;
@@ -48,9 +78,9 @@ namespace ASCOM.Wise40 //.Telescope
             {
                 _enabled = value;
                 if (_enabled)
-                    timer.Change(_dueTime, _period);
+                    _timer.Change(_dueTime, _period);
                 else
-                    timer.Change(0, 0);
+                    _timer.Change(0, 0);
             }
         }
 
