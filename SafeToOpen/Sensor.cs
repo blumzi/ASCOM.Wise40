@@ -10,6 +10,7 @@ using ASCOM.Wise40.Common;
 using ASCOM.Utilities;
 using ASCOM.Wise40.Boltwood;
 using ASCOM.Wise40.VantagePro;
+using System.IO;
 
 namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
 {
@@ -214,10 +215,13 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
                 if (!Enabled)
                     return true;
 
-                if (nReadings < _isSafeQueue.MaxSize)   // not enough readings yet
-                    return true;
+                if (Name == "HumanIntervention")
+                    return getIsSafe();
 
-                return nBadReadings < nReadings;
+                if (nReadings < _isSafeQueue.MaxSize)   // not enough readings yet
+                    return false;
+
+                return nBadReadings != nReadings;
             }
         }
     }
@@ -245,6 +249,11 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
 
         public override string reason()
         {
+            if (nReadings < _repeats)
+            {
+                return string.Format("{0} - not enough readings ({1} < {2})", Name, nReadings, _repeats);
+            }
+
             int nbad;
 
             if ((nbad = nBadReadings) == 0)
@@ -267,6 +276,52 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Sensor ({0}) Max: {1}", Name, MaxAsString);
                 #endregion
             }
+        }
+    }
+
+    public class HumanInterventionSensor : Sensor
+    {
+        private const string humanInterventionFilePath = Const.topWise40Directory + "Observatory/HumanIntervention.txt";
+
+        public HumanInterventionSensor(WiseSafeToOperate instance) : base("HumanIntervention", instance) {
+            Directory.CreateDirectory(Path.GetDirectoryName(humanInterventionFilePath));
+        }
+
+        public override void readSensorProfile() { }
+        public override void writeSensorProfile() { }
+
+        public override bool getIsSafe()
+        {
+            bool ret = !File.Exists(humanInterventionFilePath);
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "HumanInterventionSensor: getIsSafe: {0}", ret);
+            #endregion
+            return ret;
+        }
+
+        public override string reason()
+        {
+            if (!File.Exists(humanInterventionFilePath))
+                return string.Empty;
+
+            StreamReader sr = new StreamReader(humanInterventionFilePath);
+            string line, reason = string.Empty;
+
+            while ((line = sr.ReadLine()) != null)
+            {
+                if (line.StartsWith("Operator:") || line.StartsWith("Created:") || line.StartsWith("Reason:"))
+                   reason += line + "; ";
+            }
+
+            reason = "Human Intervention: " + ((reason == string.Empty) ? string.Format("File \"{0}\" exists.", humanInterventionFilePath) : reason);
+            return reason;
+        }
+
+        public override string MaxAsString
+        {
+            set {}
+
+            get { return 0.ToString(); }
         }
     }
 
@@ -312,6 +367,11 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
 
         public override string reason()
         {
+            if (nReadings < _repeats)
+            {
+                return string.Format("{0} - not enough readings ({1} < {2})", Name, nReadings, _repeats);
+            }
+
             int nbad;
 
             if ((nbad = nBadReadings) == 0)
@@ -360,6 +420,11 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
 
         public override string reason()
         {
+            if (nReadings < _repeats)
+            {
+                return string.Format("{0} - not enough readings ({1} < {2})", Name, nReadings, _repeats);
+            }
+
             int nbad;
 
             if ((nbad = nBadReadings) == 0)
@@ -406,6 +471,11 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
 
         public override string reason()
         {
+            if (nReadings < _repeats)
+            {
+                return string.Format("{0} - not enough readings ({1} < {2})", Name, nReadings, _repeats);
+            }
+
             int nbad;
 
             if ((nbad = nBadReadings) == 0)
@@ -451,6 +521,11 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
 
         public override string reason()
         {
+            if (nReadings < _repeats)
+            {
+                return string.Format("{0} - not enough readings ({1} < {2})", Name, nReadings, _repeats);
+            }
+
             int nbad;
 
             if ((nbad = nBadReadings) == 0)
@@ -496,6 +571,11 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
 
         public override string reason()
         {
+            if (nReadings < _repeats)
+            {
+                return string.Format("{0} - not enough readings ({1} < {2})", Name, nReadings, _repeats);
+            }
+
             int nbad;
 
             if ((nbad = nBadReadings) == 0)

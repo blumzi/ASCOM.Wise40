@@ -47,8 +47,9 @@ namespace ASCOM.Wise40SafeToOpen
             this.label14 = new System.Windows.Forms.Label();
             this.label15 = new System.Windows.Forms.Label();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.label16 = new System.Windows.Forms.Label();
             this.textBoxSunElevation = new System.Windows.Forms.TextBox();
+            this.textBoxRain = new System.Windows.Forms.TextBox();
+            this.label16 = new System.Windows.Forms.Label();
             this.label18 = new System.Windows.Forms.Label();
             this.textBoxCloudIntervalSeconds = new System.Windows.Forms.TextBox();
             this.label19 = new System.Windows.Forms.Label();
@@ -72,7 +73,6 @@ namespace ASCOM.Wise40SafeToOpen
             this.checkBoxHumidity = new System.Windows.Forms.CheckBox();
             this.checkBoxSun = new System.Windows.Forms.CheckBox();
             this.comboBoxLight = new System.Windows.Forms.ComboBox();
-            this.textBoxRain = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).BeginInit();
             this.SuspendLayout();
             // 
@@ -281,16 +281,6 @@ namespace ASCOM.Wise40SafeToOpen
             this.label15.TabIndex = 27;
             this.label15.Text = "(VantagePro2)";
             // 
-            // label16
-            // 
-            this.label16.AutoSize = true;
-            this.label16.ForeColor = System.Drawing.Color.DarkOrange;
-            this.label16.Location = new System.Drawing.Point(224, 320);
-            this.label16.Name = "label16";
-            this.label16.Size = new System.Drawing.Size(24, 13);
-            this.label16.TabIndex = 28;
-            this.label16.Text = "sec";
-            // 
             // textBoxSunElevation
             // 
             this.textBoxSunElevation.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
@@ -302,6 +292,29 @@ namespace ASCOM.Wise40SafeToOpen
             this.textBoxSunElevation.Text = "-7";
             this.textBoxSunElevation.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.toolTip1.SetToolTip(this.textBoxSunElevation, "Maximal Sun elevation (degrees)");
+            // 
+            // textBoxRain
+            // 
+            this.textBoxRain.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
+            this.textBoxRain.ForeColor = System.Drawing.Color.DarkOrange;
+            this.textBoxRain.Location = new System.Drawing.Point(112, 188);
+            this.textBoxRain.Margin = new System.Windows.Forms.Padding(6, 3, 3, 3);
+            this.textBoxRain.Name = "textBoxRain";
+            this.textBoxRain.Size = new System.Drawing.Size(32, 20);
+            this.textBoxRain.TabIndex = 55;
+            this.textBoxRain.Text = "0.0";
+            this.textBoxRain.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.toolTip1.SetToolTip(this.textBoxRain, "A value of 0.0 is considered \"Dry\", anything higher\r\nrepresents \"some-rain\"");
+            // 
+            // label16
+            // 
+            this.label16.AutoSize = true;
+            this.label16.ForeColor = System.Drawing.Color.DarkOrange;
+            this.label16.Location = new System.Drawing.Point(224, 320);
+            this.label16.Name = "label16";
+            this.label16.Size = new System.Drawing.Size(24, 13);
+            this.label16.TabIndex = 28;
+            this.label16.Text = "sec";
             // 
             // label18
             // 
@@ -581,20 +594,7 @@ namespace ASCOM.Wise40SafeToOpen
             this.comboBoxLight.TabIndex = 17;
             this.comboBoxLight.ValueMember = "1";
             // 
-            // textBoxRain
-            // 
-            this.textBoxRain.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.textBoxRain.ForeColor = System.Drawing.Color.DarkOrange;
-            this.textBoxRain.Location = new System.Drawing.Point(112, 188);
-            this.textBoxRain.Margin = new System.Windows.Forms.Padding(6, 3, 3, 3);
-            this.textBoxRain.Name = "textBoxRain";
-            this.textBoxRain.Size = new System.Drawing.Size(32, 20);
-            this.textBoxRain.TabIndex = 55;
-            this.textBoxRain.Text = "0.0";
-            this.textBoxRain.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.toolTip1.SetToolTip(this.textBoxRain, "A value of 0.0 is considered \"Dry\", anything higher\r\nrepresents \"some-rain\"");
-            // 
-            // SetupDialogForm
+            // SafeToOperateSetupDialogForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -646,7 +646,7 @@ namespace ASCOM.Wise40SafeToOpen
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
-            this.Name = "SetupDialogForm";
+            this.Name = "SafeToOperateSetupDialogForm";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Wise40.SafeToOpen Setup";

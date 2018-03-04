@@ -43,6 +43,7 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
         public RainSensor rainSensor;
         public HumiditySensor humiditySensor;
         public SunSensor sunSensor;
+        public HumanInterventionSensor humanInterventionSensor;
         public List<Sensor> _sensors;
         
         internal static string ageMaxSecondsProfileName = "Age Max";
@@ -140,13 +141,21 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
             sunSensor = new SunSensor(this);
             cloudsSensor = new CloudsSensor(this);
             rainSensor = new RainSensor(this);
-            _sensors = new List<Sensor>() {windSensor, cloudsSensor, rainSensor, lightSensor, humiditySensor, sunSensor };
+            humanInterventionSensor = new HumanInterventionSensor(this);
+            _sensors = new List<Sensor>() {
+                windSensor,
+                cloudsSensor,
+                rainSensor,
+                lightSensor,
+                humiditySensor,
+                sunSensor,
+                humanInterventionSensor };
 
             tl = new TraceLogger("", "Wise40.SafeTo" + type);
             tl.Enabled = debugger.Tracing;
             tl.LogMessage("SafetyMonitor", "Starting initialisation");
 
-            _connected = false; // Initialise connected to false
+            _connected = false;
 
             novas31 = new NOVAS31();
             astroutils = new AstroUtils();
@@ -361,17 +370,24 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
         {
             get
             {
-                bool dummy;
-
                 lock (reasonsLock)
                 {
                     unsafeReasons.Clear();
-                    dummy = _boltwoodIsValid;
-                    dummy = _vantageProIsValid;
-                    string reason;
-                    foreach (Sensor s in _sensors)
-                        if (!s.isSafe && (reason = s.reason()) != string.Empty)
-                            AddReason(reason);
+                    if (!humanInterventionSensor.isSafe)
+                    {
+                        AddReason(humanInterventionSensor.reason());
+                    }
+                    else
+                    {
+                        bool dummy;
+
+                        dummy = _boltwoodIsValid;
+                        dummy = _vantageProIsValid;
+                        string reason;
+                        foreach (Sensor s in _sensors)
+                            if (!s.isSafe && (reason = s.reason()) != string.Empty)
+                                AddReason(reason);
+                    }
                 }
                 return unsafeReasons;
             }
@@ -394,9 +410,11 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
                     AddReason("No connection to the Boltwood station");
                     return false;
                 }
-                if (ageMaxSeconds > 0 && boltwood.TimeSinceLastUpdate("") > ageMaxSeconds)
+                double timeSinceLastUpdate = boltwood.TimeSinceLastUpdate("");
+                if (ageMaxSeconds > 0 &&  timeSinceLastUpdate > ageMaxSeconds)
                 {
-                    AddReason(string.Format("Boltwood data is too old (age > {0})", ageMaxSeconds));
+                    AddReason(string.Format("Boltwood data is too old ({0:g} > {1}sec)",
+                        TimeSpan.FromSeconds((int)timeSinceLastUpdate).ToString(), ageMaxSeconds));
                     return false;
                 }
                 return true;
@@ -412,9 +430,12 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
                     AddReason("No connection to the VantagePro station");
                     return false;
                 }
-                if (ageMaxSeconds > 0 && vantagePro.TimeSinceLastUpdate("") > ageMaxSeconds)
+
+                double timeSinceLastUpdate = vantagePro.TimeSinceLastUpdate("");
+                if (ageMaxSeconds > 0 && timeSinceLastUpdate > ageMaxSeconds)
                 {
-                    AddReason(string.Format("Data from the VantagePro station is too old (age > {0})", ageMaxSeconds));
+                    AddReason(string.Format("VantagePro data is too old ({0:g} > {1}sec)",
+                        TimeSpan.FromSeconds((int)timeSinceLastUpdate).ToString(), ageMaxSeconds));
                     return false;
                 }
                 return true;
@@ -567,17 +588,25 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
 
                 if (!_connected)
                     ret = false;
+                else if (!humanInterventionSensor.isSafe)
+                    ret = false;
                 else
                 {
                     if (!_boltwoodIsValid || !_vantageProIsValid)
                         return false;
-                    
+
                     foreach (Sensor s in _sensors)
+                    {
+                        if (s.nReadings < s._repeats)
+                        {
+                            AddReason(string.Format("{0} - not enough readings ({1} < {2})", s.Name, s.nReadings, s._repeats));
+                        }
                         if (!s.isSafe)
-                        {   // check sensors' integrated value
+                        {
                             ret = false;
                             break;
                         }
+                    }
                 }
 
                 tl.LogMessage("IsSafe Get", ret.ToString());
