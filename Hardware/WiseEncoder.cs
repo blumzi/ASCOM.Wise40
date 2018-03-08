@@ -96,12 +96,36 @@ namespace ASCOM.Wise40.Hardware
             _atomicReader = new AtomicReader(Name, _daqs, timeoutMillis, retries);
         }
 
+        private bool sameUintList(List<uint> a, List<uint> b)
+        {
+            if (a.Count != b.Count)
+                return false;
+
+            for (int i = 0; i < a.Count; i++)
+                if (a[i] != b[i])
+                    return false;
+            return true;
+        }
+
         public uint Value
         {
             get
             {
                 uint ret = 0;
-                List<uint> values = _atomicReader.Values;
+                List<uint> prevValues, values = _atomicReader.Values;
+                int tries = 0;
+
+                do
+                {
+                    prevValues = values;
+                    values = _atomicReader.Values;
+                    tries++;
+                } while (!sameUintList(prevValues, values) && tries < 10);
+
+                if (tries == 10)
+                {
+                    throw new InvalidValueException(string.Format("{0}: Could not get same reading after 10 tries.", Name));
+                }
 
                 foreach (uint v in values)
                     ret = (ret << 8) | (v & _masks[values.IndexOf(v)]);
