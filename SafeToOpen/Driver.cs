@@ -66,7 +66,7 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
     [ComVisible(true)]
     public class SafetyMonitor : ISafetyMonitor
     {
-        public WiseSafeToOperate wisesafetoopen;
+        public WiseSafeToOperate wisesafetooperate;
         private static string driverID = "ASCOM.Wise40SafeToOpen.SafetyMonitor";
         private static string driverDescription;
         
@@ -78,9 +78,9 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
         /// </summary>
         public SafetyMonitor()
         {
-            wisesafetoopen = WiseSafeToOperate.InstanceOpen;
-            wisesafetoopen.init();
-            driverDescription = wisesafetoopen.Description;
+            wisesafetooperate = WiseSafeToOperate.InstanceOpen;
+            wisesafetooperate.init();
+            driverDescription = wisesafetooperate.Description;
         }
 
         //
@@ -99,7 +99,7 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
         {
             // consider only showing the setup dialog if not connected
             // or call a different dialog if connected
-            if (wisesafetoopen.Connected)
+            if (wisesafetooperate.Connected)
                 System.Windows.Forms.MessageBox.Show("Already connected, just press OK");
 
             using (SafeToOperateSetupDialogForm F = new SafeToOperateSetupDialogForm())
@@ -107,7 +107,7 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
                 var result = F.ShowDialog();
                 if (result == System.Windows.Forms.DialogResult.OK)
                 {
-                    wisesafetoopen.WriteProfile(); // Persist device configuration values to the ASCOM Profile store
+                    wisesafetooperate.WriteProfile(); // Persist device configuration values to the ASCOM Profile store
                 }
             }
         }
@@ -116,44 +116,44 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
         {
             get
             {
-                return wisesafetoopen.SupportedActions;
+                return wisesafetooperate.SupportedActions;
             }
         }
 
         public string Action(string actionName, string actionParameters)
         {
-            return wisesafetoopen.Action(actionName, actionParameters);
+            return wisesafetooperate.Action(actionName, actionParameters);
         }
 
         public void CommandBlind(string command, bool raw)
         {
-            wisesafetoopen.CommandBlind(command, raw);
+            wisesafetooperate.CommandBlind(command, raw);
         }
 
         public bool CommandBool(string command, bool raw)
         {
-            return wisesafetoopen.CommandBool(command, raw);
+            return wisesafetooperate.CommandBool(command, raw);
         }
 
         public string CommandString(string command, bool raw)
         {
-            return wisesafetoopen.CommandString(command, raw);
+            return wisesafetooperate.CommandString(command, raw);
         }
 
         public void Dispose()
         {
-            wisesafetoopen.Dispose();
+            wisesafetooperate.Dispose();
         }
 
         public bool Connected
         {
             get
             {
-                return wisesafetoopen.Connected;
+                return wisesafetooperate.Connected;
             }
             set
             {
-                wisesafetoopen.Connected = value;
+                wisesafetooperate.Connected = value;
             }
         }
 
@@ -162,7 +162,7 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
             // TODO customise this device description
             get
             {
-                return wisesafetoopen.Description;
+                return wisesafetooperate.Description;
             }
         }
 
@@ -170,7 +170,7 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
         {
             get
             {
-                return wisesafetoopen.DriverInfo;
+                return wisesafetooperate.DriverInfo;
             }
         }
 
@@ -187,7 +187,7 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
             // set by the driver wizard
             get
             {
-                return wisesafetoopen.InterfaceVersion;
+                return wisesafetooperate.InterfaceVersion;
             }
         }
 
@@ -195,7 +195,7 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
         {
             get
             {
-                return wisesafetoopen.Name;
+                return wisesafetooperate.Name;
             }
         }
 
@@ -206,7 +206,7 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
         {
             get
             {
-                return wisesafetoopen.IsSafe;
+                return wisesafetooperate.IsSafe;
             }
         }
         #endregion

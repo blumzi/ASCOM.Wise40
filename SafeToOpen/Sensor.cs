@@ -26,6 +26,9 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
         protected string _maxValueProfileName;
         protected static Debugger debugger = Debugger.Instance;
 
+        private bool _mustStabilize;
+        private DateTime _startedStabilizing = DateTime.MinValue;
+
         protected static string driverID = "ASCOM.Wise40SafeToOpen.SafetyMonitor";
         protected static string deviceType = "SafetyMonitor";
 
@@ -37,6 +40,7 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
             base.Name = name;
             _timer = new System.Threading.Timer(new TimerCallback(onTimer));
             wisesafe = instance;
+            _mustStabilize = name != "Sun";
             readProfile();
         }
 
@@ -79,6 +83,19 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
             }
         }
         
+        protected bool isStabilizing
+        {
+            get
+            {
+                if (!_mustStabilize)
+                    return false;
+
+                if (_startedStabilizing == DateTime.MinValue)
+                    return false;
+                return DateTime.Now.Subtract(_startedStabilizing) < wisesafe._stabilizationPeriod;
+            }
+        }
+
         public abstract string reason();
         public abstract void readSensorProfile();
         public abstract void writeSensorProfile();
@@ -104,7 +121,7 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Sensor ({0}) onTimer: enqueing {1}", Name, reading);
             #endregion
             _isSafeQueue.Enqueue(reading);
-            #region debug
+            
             bool issafe = false;
             foreach (bool safe in _isSafeQueue.ToArray())
                 if (safe)
@@ -112,9 +129,24 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
                     issafe = true;
                     break;
                 }
+
+            #region debug
             if (wassafe != issafe)
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Sensor ({0})) isSafe changed from {1} to {2}", Name, wassafe, issafe);
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Sensor ({0}) isSafe changed from {1} to {2}", Name, wassafe, issafe);
             #endregion
+
+            if (_mustStabilize && (issafe && !wassafe))
+            {
+                _startedStabilizing = DateTime.Now;
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Sensor ({0}) started stabilizing", Name);
+                #endregion
+            }
+            else
+            {
+                _startedStabilizing = DateTime.MinValue;
+            }
+
         }
 
         public bool Enabled
@@ -215,8 +247,12 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
                 if (!Enabled)
                     return true;
 
+
                 if (Name == "HumanIntervention")
                     return getIsSafe();
+
+                if (isStabilizing)
+                    return false;
 
                 if (nReadings < _isSafeQueue.MaxSize)   // not enough readings yet
                     return false;
@@ -250,9 +286,10 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
         public override string reason()
         {
             if (nReadings < _repeats)
-            {
                 return string.Format("{0} - not enough readings ({1} < {2})", Name, nReadings, _repeats);
-            }
+
+            if (isStabilizing)
+                return string.Format("{0} - stabilizing", Name);
 
             int nbad;
 

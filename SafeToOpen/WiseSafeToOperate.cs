@@ -15,7 +15,7 @@ using ASCOM.Wise40.Common;
 using ASCOM.Wise40.Boltwood;
 using ASCOM.Wise40.VantagePro;
 
-namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
+namespace ASCOM.Wise40SafeToOpen
 {
     public class WiseSafeToOperate
     {
@@ -47,6 +47,7 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
         public List<Sensor> _sensors;
         
         internal static string ageMaxSecondsProfileName = "Age Max";
+        internal static string stableAfterMinProfileName = "StableAfterMin";
         public int ageMaxSeconds;
 
         /// <summary>
@@ -59,13 +60,14 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
 
         public WiseBoltwood boltwood = WiseBoltwood.Instance;
         public WiseVantagePro vantagePro = WiseVantagePro.Instance;
-
-        //private static volatile WiseTele _instance; // Singleton
+        
         private static object syncObject = new object();
 
-        private static volatile WiseSafeToOperate _instanceOpen/* = new WiseSafeToOperate(Type.Open)*/;
-        private static WiseSafeToOperate _instanceImage /*= new WiseSafeToOperate(Type.Image)*/;
+        private static volatile WiseSafeToOperate _instanceOpen;
         private static bool initialized = false;
+        
+        public TimeSpan _stabilizationPeriod;
+        private int _defaultStabilizationMinutes = 15;
 
         private Astrometry.NOVAS.NOVAS31 novas31;
         private static AstroUtils astroutils;
@@ -93,23 +95,6 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
                 }
                 _instanceOpen.init();
                 return _instanceOpen;
-            }
-        }
-
-        public static WiseSafeToOperate InstanceImage
-        {
-            get
-            {
-                if (_instanceImage == null)
-                {
-                    lock (syncObject)
-                    {
-                        if (_instanceImage == null)
-                            _instanceImage = new WiseSafeToOperate(Type.Image);
-                    }
-                }
-                _instanceImage.init();
-                return _instanceImage;
             }
         }
 
@@ -401,7 +386,7 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
 
         #region Individual Property Implementations
         #region Boolean Properties (for ASCOM)
-        private bool _boltwoodIsValid
+        public bool _boltwoodIsValid
         {
             get
             {
@@ -421,7 +406,7 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
             }
         }
 
-        private bool _vantageProIsValid
+        public bool _vantageProIsValid
         {
             get
             {
@@ -638,6 +623,10 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
         public void ReadProfile()
         {
             ageMaxSeconds = Convert.ToInt32(_profile.GetValue(driverID, ageMaxSecondsProfileName, string.Empty, 0.ToString()));
+
+            int minutes = Convert.ToInt32(_profile.GetValue(driverID, stableAfterMinProfileName, string.Empty, _defaultStabilizationMinutes.ToString()));
+            _stabilizationPeriod = new TimeSpan(0, minutes, 0);
+
             foreach (Sensor s in _sensors)
                 s.readProfile();
 
@@ -660,6 +649,7 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
         public void WriteProfile()
         {
             _profile.WriteValue(driverID, ageMaxSecondsProfileName, ageMaxSeconds.ToString());
+            _profile.WriteValue(driverID, stableAfterMinProfileName, _stabilizationPeriod.Minutes.ToString());
             foreach (Sensor s in _sensors)
                 s.writeProfile();
         }

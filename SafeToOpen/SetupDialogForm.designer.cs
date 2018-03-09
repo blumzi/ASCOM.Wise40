@@ -73,6 +73,9 @@ namespace ASCOM.Wise40SafeToOpen
             this.checkBoxHumidity = new System.Windows.Forms.CheckBox();
             this.checkBoxSun = new System.Windows.Forms.CheckBox();
             this.comboBoxLight = new System.Windows.Forms.ComboBox();
+            this.label3 = new System.Windows.Forms.Label();
+            this.textBoxRestoreSafety = new System.Windows.Forms.TextBox();
+            this.label5 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).BeginInit();
             this.SuspendLayout();
             // 
@@ -82,7 +85,7 @@ namespace ASCOM.Wise40SafeToOpen
             this.cmdOK.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.cmdOK.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.cmdOK.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.cmdOK.Location = new System.Drawing.Point(493, 281);
+            this.cmdOK.Location = new System.Drawing.Point(493, 309);
             this.cmdOK.Name = "cmdOK";
             this.cmdOK.Size = new System.Drawing.Size(59, 24);
             this.cmdOK.TabIndex = 0;
@@ -96,7 +99,7 @@ namespace ASCOM.Wise40SafeToOpen
             this.cmdCancel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.cmdCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.cmdCancel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.cmdCancel.Location = new System.Drawing.Point(493, 311);
+            this.cmdCancel.Location = new System.Drawing.Point(493, 339);
             this.cmdCancel.Name = "cmdCancel";
             this.cmdCancel.Size = new System.Drawing.Size(59, 25);
             this.cmdCancel.TabIndex = 1;
@@ -111,8 +114,8 @@ namespace ASCOM.Wise40SafeToOpen
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(244, 55);
             this.label1.TabIndex = 2;
-            this.label1.Text = "Wise40 SafeToOpen SafetyMonitor.\r\nSets safety parameters and values for opening t" +
-    "he Wise40 observatory.";
+            this.label1.Text = "Wise40 SafeToOperate SafetyMonitor.\r\nSets safety parameters and values for operat" +
+    "ing the Wise40 observatory.";
             this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // picASCOM
@@ -594,12 +597,49 @@ namespace ASCOM.Wise40SafeToOpen
             this.comboBoxLight.TabIndex = 17;
             this.comboBoxLight.ValueMember = "1";
             // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.ForeColor = System.Drawing.Color.DarkOrange;
+            this.label3.Location = new System.Drawing.Point(224, 352);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(23, 13);
+            this.label3.TabIndex = 58;
+            this.label3.Text = "min";
+            // 
+            // textBoxRestoreSafety
+            // 
+            this.textBoxRestoreSafety.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
+            this.textBoxRestoreSafety.ForeColor = System.Drawing.Color.DarkOrange;
+            this.textBoxRestoreSafety.Location = new System.Drawing.Point(200, 348);
+            this.textBoxRestoreSafety.Margin = new System.Windows.Forms.Padding(6, 3, 3, 3);
+            this.textBoxRestoreSafety.Name = "textBoxRestoreSafety";
+            this.textBoxRestoreSafety.Size = new System.Drawing.Size(24, 20);
+            this.textBoxRestoreSafety.TabIndex = 57;
+            this.textBoxRestoreSafety.Text = "0";
+            this.textBoxRestoreSafety.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.toolTip1.SetToolTip(this.textBoxRestoreSafety, "Stabilizing period (in minutes) after conditions return to safe values.\r\n");
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.ForeColor = System.Drawing.Color.DarkOrange;
+            this.label5.Location = new System.Drawing.Point(96, 352);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(99, 13);
+            this.label5.TabIndex = 56;
+            this.label5.Text = "Restore safety after";
+            this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
             // SafeToOperateSetupDialogForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.ClientSize = new System.Drawing.Size(562, 357);
+            this.ClientSize = new System.Drawing.Size(562, 385);
+            this.Controls.Add(this.label3);
+            this.Controls.Add(this.textBoxRestoreSafety);
+            this.Controls.Add(this.label5);
             this.Controls.Add(this.textBoxRain);
             this.Controls.Add(this.checkBoxSun);
             this.Controls.Add(this.checkBoxHumidity);
@@ -649,7 +689,7 @@ namespace ASCOM.Wise40SafeToOpen
             this.Name = "SafeToOperateSetupDialogForm";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Wise40.SafeToOpen Setup";
+            this.Text = "Wise40.SafeToOperate Setup";
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -702,5 +742,8 @@ namespace ASCOM.Wise40SafeToOpen
         private System.Windows.Forms.CheckBox checkBoxSun;
         private System.Windows.Forms.ComboBox comboBoxLight;
         private System.Windows.Forms.TextBox textBoxRain;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.TextBox textBoxRestoreSafety;
+        private System.Windows.Forms.Label label5;
     }
 }
