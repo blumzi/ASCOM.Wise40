@@ -39,7 +39,7 @@ namespace ASCOM.Wise40
             if (_initialized)
                 return;
 
-            domePlatformIsDownPin = new WisePin("PlatDown", hardware.domeboard, DigitalPortType.FirstPortCL, 3, DigitalPortDirection.DigitalIn);
+            domePlatformIsDownPin = new WisePin(Const.notsign + "PlatDown", hardware.domeboard, DigitalPortType.FirstPortCL, 3, DigitalPortDirection.DigitalIn);
             _initialized = true;
         }
 
