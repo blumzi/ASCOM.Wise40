@@ -32,6 +32,7 @@ namespace ASCOM.Wise40.Common
 
         public const string crnl = "\r\n";
         public const string checkmark = " ✓";
+        public const string notsign = "\u00AC";
 
         public const string topWise40Directory = "c:/Wise40/";
     }
