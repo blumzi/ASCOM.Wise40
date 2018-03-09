@@ -153,7 +153,7 @@ namespace ASCOM.Wise40 //.Telescope
             #endregion
             try
             {
-                wisedome.FindHome();
+                wisedome.StartFindingHome();
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver: Waiting for dome to findHome");
                 #endregion
