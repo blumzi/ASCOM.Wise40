@@ -233,9 +233,12 @@ namespace ASCOM.Wise40.VantagePro
         {
             get
             {
-                var dewPoint = Convert.ToDouble(sensorData["insideDewPt"]);
+                var dewPoint = Convert.ToDouble(sensorData["outsideDewPt"]);
 
                 tl.LogMessage("DewPoint", "get - " + dewPoint.ToString());
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, string.Format("VantagePro: DewPoint - get => {0}", dewPoint.ToString()));
+                #endregion
                 return dewPoint;
             }
         }
@@ -251,9 +254,12 @@ namespace ASCOM.Wise40.VantagePro
         {
             get
             {
-                var humidity = Convert.ToDouble(sensorData["insideHumidity"]);
+                var humidity = Convert.ToDouble(sensorData["outsideHumidity"]);
 
                 tl.LogMessage("Humidity", "get - " + humidity.ToString());
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, string.Format("VantagePro: Humidity - get => {0}", humidity.ToString()));
+                #endregion
                 return humidity;
             }
         }
@@ -273,6 +279,9 @@ namespace ASCOM.Wise40.VantagePro
                 var pressure = Convert.ToDouble(sensorData["barometer"]);
 
                 tl.LogMessage("Pressure", "get - " + pressure.ToString());
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, string.Format("VantagePro: Pressure - get => {0}", pressure.ToString()));
+                #endregion
                 return pressure;
             }
         }
@@ -291,6 +300,9 @@ namespace ASCOM.Wise40.VantagePro
                 var rainRate = Convert.ToDouble(sensorData["rainRate"]);
 
                 tl.LogMessage("RainRate", "get - " + rainRate.ToString());
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, string.Format("VantagePro: RainRate - get => {0}", rainRate.ToString()));
+                #endregion
                 return rainRate;
             }
         }
@@ -390,7 +402,7 @@ namespace ASCOM.Wise40.VantagePro
         {
             get
             {
-                var temperature = Convert.ToDouble(sensorData["insideTemp"]);
+                var temperature = Convert.ToDouble(sensorData["outsideTemp"]);
 
                 tl.LogMessage("Temperature", "get - " + temperature.ToString());
                 return temperature;
@@ -469,6 +481,14 @@ namespace ASCOM.Wise40.VantagePro
 
                 tl.LogMessage("WindSpeed", "get - " + windSpeed.ToString());
                 return windSpeed;
+            }
+        }
+
+        public string Forecast
+        {
+            get
+            {
+                return sensorData["ForecastStr"];
             }
         }
 
