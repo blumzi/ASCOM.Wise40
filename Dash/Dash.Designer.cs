@@ -77,10 +77,10 @@
             this.labelTelescopeStatus = new System.Windows.Forms.Label();
             this.buttonMainStop = new System.Windows.Forms.Button();
             this.panelDirectionButtons = new System.Windows.Forms.Panel();
-            this.buttonNW = new System.Windows.Forms.Button();
-            this.buttonSW = new System.Windows.Forms.Button();
-            this.buttonSE = new System.Windows.Forms.Button();
             this.buttonNE = new System.Windows.Forms.Button();
+            this.buttonSE = new System.Windows.Forms.Button();
+            this.buttonSW = new System.Windows.Forms.Button();
+            this.buttonNW = new System.Windows.Forms.Button();
             this.buttonNorth = new System.Windows.Forms.Button();
             this.buttonStop = new System.Windows.Forms.Button();
             this.buttonSouth = new System.Windows.Forms.Button();
@@ -129,7 +129,7 @@
             this.vantagePro2ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.reportFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripTextBoxVantagePro2ReportFile = new System.Windows.Forms.ToolStripTextBox();
-            this.toolStripMenuItemSafeToOpen = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItemSafeToOperate = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItemFilterWheel = new System.Windows.Forms.ToolStripMenuItem();
             this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.manageFilterInventoryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -143,7 +143,8 @@
             this.debugEncodersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.debugExceptionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.debugLogicToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripMenuItem4 = new System.Windows.Forms.ToolStripMenuItem();
+            this.debugMotorsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.debugAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.debugNoneToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
@@ -166,7 +167,7 @@
             this.annunciatorPanelSafety = new ASCOM.Controls.AnnunciatorPanel();
             this.annunciatorComputerControl = new ASCOM.Controls.Annunciator();
             this.annunciatorDomePlatform = new ASCOM.Controls.Annunciator();
-            this.annunciatorSafeToOpen = new ASCOM.Controls.Annunciator();
+            this.annunciatorSafeToOperate = new ASCOM.Controls.Annunciator();
             this.annunciatorSimulation = new ASCOM.Controls.Annunciator();
             this.labelFiller = new System.Windows.Forms.Label();
             this.annunciatorPanelStatus = new ASCOM.Controls.AnnunciatorPanel();
@@ -185,6 +186,8 @@
             this.panel2 = new System.Windows.Forms.Panel();
             this.panel3 = new System.Windows.Forms.Panel();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.panel4 = new System.Windows.Forms.Panel();
+            this.labelCountdown = new System.Windows.Forms.Label();
             this.labelDashStatus = new System.Windows.Forms.Label();
             this.groupBoxFilterWheel = new System.Windows.Forms.GroupBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
@@ -240,6 +243,7 @@
             this.panel2.SuspendLayout();
             this.panel3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            this.panel4.SuspendLayout();
             this.groupBoxFilterWheel.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.groupBoxWeather.SuspendLayout();
@@ -838,9 +842,9 @@
             this.panel1.Controls.Add(this.buttonHandleCover);
             this.panel1.Controls.Add(this.label3);
             this.panel1.Controls.Add(this.buttonZenith);
-            this.panel1.Location = new System.Drawing.Point(29, 344);
+            this.panel1.Location = new System.Drawing.Point(8, 344);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(344, 48);
+            this.panel1.Size = new System.Drawing.Size(368, 48);
             this.panel1.TabIndex = 37;
             // 
             // buttonTelescopePark
@@ -851,7 +855,7 @@
             this.buttonTelescopePark.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonTelescopePark.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonTelescopePark.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonTelescopePark.Location = new System.Drawing.Point(264, 9);
+            this.buttonTelescopePark.Location = new System.Drawing.Point(280, 9);
             this.buttonTelescopePark.Name = "buttonTelescopePark";
             this.buttonTelescopePark.Size = new System.Drawing.Size(77, 32);
             this.buttonTelescopePark.TabIndex = 29;
@@ -949,10 +953,10 @@
             // 
             // panelDirectionButtons
             // 
-            this.panelDirectionButtons.Controls.Add(this.buttonNW);
-            this.panelDirectionButtons.Controls.Add(this.buttonSW);
-            this.panelDirectionButtons.Controls.Add(this.buttonSE);
             this.panelDirectionButtons.Controls.Add(this.buttonNE);
+            this.panelDirectionButtons.Controls.Add(this.buttonSE);
+            this.panelDirectionButtons.Controls.Add(this.buttonSW);
+            this.panelDirectionButtons.Controls.Add(this.buttonNW);
             this.panelDirectionButtons.Controls.Add(this.buttonNorth);
             this.panelDirectionButtons.Controls.Add(this.buttonStop);
             this.panelDirectionButtons.Controls.Add(this.buttonSouth);
@@ -963,39 +967,22 @@
             this.panelDirectionButtons.Size = new System.Drawing.Size(160, 152);
             this.panelDirectionButtons.TabIndex = 11;
             // 
-            // buttonNW
+            // buttonNE
             // 
-            this.buttonNW.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.buttonNW.FlatAppearance.BorderSize = 0;
-            this.buttonNW.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.buttonNW.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.buttonNW.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.buttonNW.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonNW.Location = new System.Drawing.Point(13, 10);
-            this.buttonNW.Name = "buttonNW";
-            this.buttonNW.Size = new System.Drawing.Size(40, 40);
-            this.buttonNW.TabIndex = 8;
-            this.buttonNW.Text = "NE";
-            this.buttonNW.UseVisualStyleBackColor = false;
-            this.buttonNW.MouseDown += new System.Windows.Forms.MouseEventHandler(this.directionButton_MouseDown);
-            this.buttonNW.MouseUp += new System.Windows.Forms.MouseEventHandler(this.directionButton_MouseUp);
-            // 
-            // buttonSW
-            // 
-            this.buttonSW.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.buttonSW.FlatAppearance.BorderSize = 0;
-            this.buttonSW.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.buttonSW.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.buttonSW.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.buttonSW.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonSW.Location = new System.Drawing.Point(13, 102);
-            this.buttonSW.Name = "buttonSW";
-            this.buttonSW.Size = new System.Drawing.Size(40, 40);
-            this.buttonSW.TabIndex = 7;
-            this.buttonSW.Text = "SE";
-            this.buttonSW.UseVisualStyleBackColor = false;
-            this.buttonSW.MouseDown += new System.Windows.Forms.MouseEventHandler(this.directionButton_MouseDown);
-            this.buttonSW.MouseUp += new System.Windows.Forms.MouseEventHandler(this.directionButton_MouseUp);
+            this.buttonNE.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonNE.FlatAppearance.BorderSize = 0;
+            this.buttonNE.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonNE.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.buttonNE.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.buttonNE.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.buttonNE.Location = new System.Drawing.Point(13, 10);
+            this.buttonNE.Name = "buttonNE";
+            this.buttonNE.Size = new System.Drawing.Size(40, 40);
+            this.buttonNE.TabIndex = 8;
+            this.buttonNE.Text = "NE";
+            this.buttonNE.UseVisualStyleBackColor = false;
+            this.buttonNE.MouseDown += new System.Windows.Forms.MouseEventHandler(this.directionButton_MouseDown);
+            this.buttonNE.MouseUp += new System.Windows.Forms.MouseEventHandler(this.directionButton_MouseUp);
             // 
             // buttonSE
             // 
@@ -1005,31 +992,48 @@
             this.buttonSE.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonSE.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonSE.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonSE.Location = new System.Drawing.Point(104, 102);
+            this.buttonSE.Location = new System.Drawing.Point(13, 102);
             this.buttonSE.Name = "buttonSE";
             this.buttonSE.Size = new System.Drawing.Size(40, 40);
-            this.buttonSE.TabIndex = 6;
-            this.buttonSE.Text = "SW";
+            this.buttonSE.TabIndex = 7;
+            this.buttonSE.Text = "SE";
             this.buttonSE.UseVisualStyleBackColor = false;
             this.buttonSE.MouseDown += new System.Windows.Forms.MouseEventHandler(this.directionButton_MouseDown);
             this.buttonSE.MouseUp += new System.Windows.Forms.MouseEventHandler(this.directionButton_MouseUp);
             // 
-            // buttonNE
+            // buttonSW
             // 
-            this.buttonNE.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.buttonNE.FlatAppearance.BorderSize = 0;
-            this.buttonNE.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.buttonNE.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.buttonNE.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.buttonNE.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonNE.Location = new System.Drawing.Point(104, 10);
-            this.buttonNE.Name = "buttonNE";
-            this.buttonNE.Size = new System.Drawing.Size(40, 40);
-            this.buttonNE.TabIndex = 5;
-            this.buttonNE.Text = "NW";
-            this.buttonNE.UseVisualStyleBackColor = false;
-            this.buttonNE.MouseDown += new System.Windows.Forms.MouseEventHandler(this.directionButton_MouseDown);
-            this.buttonNE.MouseUp += new System.Windows.Forms.MouseEventHandler(this.directionButton_MouseUp);
+            this.buttonSW.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonSW.FlatAppearance.BorderSize = 0;
+            this.buttonSW.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonSW.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.buttonSW.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.buttonSW.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.buttonSW.Location = new System.Drawing.Point(104, 102);
+            this.buttonSW.Name = "buttonSW";
+            this.buttonSW.Size = new System.Drawing.Size(40, 40);
+            this.buttonSW.TabIndex = 6;
+            this.buttonSW.Text = "SW";
+            this.buttonSW.UseVisualStyleBackColor = false;
+            this.buttonSW.MouseDown += new System.Windows.Forms.MouseEventHandler(this.directionButton_MouseDown);
+            this.buttonSW.MouseUp += new System.Windows.Forms.MouseEventHandler(this.directionButton_MouseUp);
+            // 
+            // buttonNW
+            // 
+            this.buttonNW.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonNW.FlatAppearance.BorderSize = 0;
+            this.buttonNW.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonNW.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.buttonNW.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.buttonNW.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.buttonNW.Location = new System.Drawing.Point(104, 10);
+            this.buttonNW.Name = "buttonNW";
+            this.buttonNW.Size = new System.Drawing.Size(40, 40);
+            this.buttonNW.TabIndex = 5;
+            this.buttonNW.Text = "NW";
+            this.buttonNW.UseVisualStyleBackColor = false;
+            this.buttonNW.MouseDown += new System.Windows.Forms.MouseEventHandler(this.directionButton_MouseDown);
+            this.buttonNW.MouseUp += new System.Windows.Forms.MouseEventHandler(this.directionButton_MouseUp);
             // 
             // buttonNorth
             // 
@@ -1118,7 +1122,7 @@
             this.groupBox36.Controls.Add(this.radioButtonGuide);
             this.groupBox36.Controls.Add(this.radioButtonSet);
             this.groupBox36.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBox36.Location = new System.Drawing.Point(40, 224);
+            this.groupBox36.Location = new System.Drawing.Point(48, 224);
             this.groupBox36.Name = "groupBox36";
             this.groupBox36.Size = new System.Drawing.Size(64, 77);
             this.groupBox36.TabIndex = 12;
@@ -1445,7 +1449,7 @@
             this.buttonGoCoord.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonGoCoord.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonGoCoord.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonGoCoord.Location = new System.Drawing.Point(288, 157);
+            this.buttonGoCoord.Location = new System.Drawing.Point(296, 157);
             this.buttonGoCoord.Name = "buttonGoCoord";
             this.buttonGoCoord.Size = new System.Drawing.Size(58, 32);
             this.buttonGoCoord.TabIndex = 25;
@@ -1458,7 +1462,7 @@
             this.textBoxRA.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.textBoxRA.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.textBoxRA.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxRA.Location = new System.Drawing.Point(80, 160);
+            this.textBoxRA.Location = new System.Drawing.Point(90, 160);
             this.textBoxRA.Margin = new System.Windows.Forms.Padding(7, 3, 3, 3);
             this.textBoxRA.Name = "textBoxRA";
             this.textBoxRA.Size = new System.Drawing.Size(84, 23);
@@ -1470,7 +1474,7 @@
             this.textBoxDec.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.textBoxDec.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.textBoxDec.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxDec.Location = new System.Drawing.Point(200, 160);
+            this.textBoxDec.Location = new System.Drawing.Point(210, 160);
             this.textBoxDec.Margin = new System.Windows.Forms.Padding(7, 3, 3, 3);
             this.textBoxDec.Name = "textBoxDec";
             this.textBoxDec.Size = new System.Drawing.Size(75, 23);
@@ -1480,7 +1484,7 @@
             // labelRA
             // 
             this.labelRA.AutoSize = true;
-            this.labelRA.Location = new System.Drawing.Point(54, 164);
+            this.labelRA.Location = new System.Drawing.Point(64, 164);
             this.labelRA.Name = "labelRA";
             this.labelRA.Size = new System.Drawing.Size(25, 13);
             this.labelRA.TabIndex = 21;
@@ -1489,7 +1493,7 @@
             // labelDec
             // 
             this.labelDec.AutoSize = true;
-            this.labelDec.Location = new System.Drawing.Point(167, 164);
+            this.labelDec.Location = new System.Drawing.Point(177, 164);
             this.labelDec.Name = "labelDec";
             this.labelDec.Size = new System.Drawing.Size(30, 13);
             this.labelDec.TabIndex = 22;
@@ -1539,7 +1543,7 @@
             this.domeToolStripMenuItem,
             this.cloudSensorToolStripMenuItem,
             this.vantagePro2ToolStripMenuItem,
-            this.toolStripMenuItemSafeToOpen,
+            this.toolStripMenuItemSafeToOperate,
             this.toolStripMenuItemFilterWheel,
             this.toolStripMenuItem5,
             this.tracingToolStripMenuItem,
@@ -1648,12 +1652,12 @@
             this.toolStripTextBoxVantagePro2ReportFile.Name = "toolStripTextBoxVantagePro2ReportFile";
             this.toolStripTextBoxVantagePro2ReportFile.Size = new System.Drawing.Size(100, 23);
             // 
-            // toolStripMenuItemSafeToOpen
+            // toolStripMenuItemSafeToOperate
             // 
-            this.toolStripMenuItemSafeToOpen.Name = "toolStripMenuItemSafeToOpen";
-            this.toolStripMenuItemSafeToOpen.Size = new System.Drawing.Size(158, 22);
-            this.toolStripMenuItemSafeToOpen.Text = "SafeToOpen";
-            this.toolStripMenuItemSafeToOpen.Click += new System.EventHandler(this.toolStripMenuItemSafeToOpen_Click);
+            this.toolStripMenuItemSafeToOperate.Name = "toolStripMenuItemSafeToOperate";
+            this.toolStripMenuItemSafeToOperate.Size = new System.Drawing.Size(158, 22);
+            this.toolStripMenuItemSafeToOperate.Text = "SafeToOperate";
+            this.toolStripMenuItemSafeToOperate.Click += new System.EventHandler(this.toolStripMenuItemSafeToOpen_Click);
             // 
             // toolStripMenuItemFilterWheel
             // 
@@ -1661,6 +1665,7 @@
             this.settingsToolStripMenuItem,
             this.manageFilterInventoryToolStripMenuItem,
             this.manage3FiltersToolStripMenuItem});
+            this.toolStripMenuItemFilterWheel.Enabled = false;
             this.toolStripMenuItemFilterWheel.Name = "toolStripMenuItemFilterWheel";
             this.toolStripMenuItemFilterWheel.Size = new System.Drawing.Size(158, 22);
             this.toolStripMenuItemFilterWheel.Text = "Filter Wheel";
@@ -1710,7 +1715,8 @@
             this.debugEncodersToolStripMenuItem,
             this.debugExceptionsToolStripMenuItem,
             this.debugLogicToolStripMenuItem,
-            this.toolStripMenuItem4,
+            this.debugMotorsToolStripMenuItem,
+            this.toolStripSeparator1,
             this.debugAllToolStripMenuItem,
             this.debugNoneToolStripMenuItem});
             this.debuggingToolStripMenuItem1.Name = "debuggingToolStripMenuItem1";
@@ -1765,11 +1771,17 @@
             this.debugLogicToolStripMenuItem.ToolTipText = "Debug driver logic";
             this.debugLogicToolStripMenuItem.Click += new System.EventHandler(this.debugSelectedToolStripMenuItem_Click);
             // 
-            // toolStripMenuItem4
+            // debugMotorsToolStripMenuItem
             // 
-            this.toolStripMenuItem4.Name = "toolStripMenuItem4";
-            this.toolStripMenuItem4.Size = new System.Drawing.Size(134, 22);
-            this.toolStripMenuItem4.Text = " ";
+            this.debugMotorsToolStripMenuItem.Name = "debugMotorsToolStripMenuItem";
+            this.debugMotorsToolStripMenuItem.Size = new System.Drawing.Size(134, 22);
+            this.debugMotorsToolStripMenuItem.Text = "Motors";
+            this.debugMotorsToolStripMenuItem.Click += new System.EventHandler(this.debugSelectedToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(131, 6);
             // 
             // debugAllToolStripMenuItem
             // 
@@ -1891,6 +1903,7 @@
             this.flowLayoutPanel1.Controls.Add(this.labelFiller);
             this.flowLayoutPanel1.Controls.Add(this.annunciatorPanelStatus);
             this.flowLayoutPanel1.Controls.Add(this.panel2);
+            this.flowLayoutPanel1.Controls.Add(this.panel4);
             this.flowLayoutPanel1.Location = new System.Drawing.Point(3, 27);
             this.flowLayoutPanel1.Name = "flowLayoutPanel1";
             this.tableLayoutMain.SetRowSpan(this.flowLayoutPanel1, 3);
@@ -1959,7 +1972,7 @@
             this.annunciatorPanelSafety.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.annunciatorPanelSafety.Controls.Add(this.annunciatorComputerControl);
             this.annunciatorPanelSafety.Controls.Add(this.annunciatorDomePlatform);
-            this.annunciatorPanelSafety.Controls.Add(this.annunciatorSafeToOpen);
+            this.annunciatorPanelSafety.Controls.Add(this.annunciatorSafeToOperate);
             this.annunciatorPanelSafety.Controls.Add(this.annunciatorSimulation);
             this.annunciatorPanelSafety.Location = new System.Drawing.Point(3, 339);
             this.annunciatorPanelSafety.Name = "annunciatorPanelSafety";
@@ -1998,21 +2011,21 @@
             this.annunciatorDomePlatform.Text = "Platform Down";
             this.annunciatorDomePlatform.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // annunciatorSafeToOpen
+            // annunciatorSafeToOperate
             // 
-            this.annunciatorSafeToOpen.ActiveColor = System.Drawing.Color.IndianRed;
-            this.annunciatorSafeToOpen.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.annunciatorSafeToOpen.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
-            this.annunciatorSafeToOpen.Font = new System.Drawing.Font("Consolas", 10F);
-            this.annunciatorSafeToOpen.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorSafeToOpen.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorSafeToOpen.Location = new System.Drawing.Point(3, 46);
-            this.annunciatorSafeToOpen.Mute = false;
-            this.annunciatorSafeToOpen.Name = "annunciatorSafeToOpen";
-            this.annunciatorSafeToOpen.Size = new System.Drawing.Size(173, 23);
-            this.annunciatorSafeToOpen.TabIndex = 1;
-            this.annunciatorSafeToOpen.Text = "Safe To Open";
-            this.annunciatorSafeToOpen.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.annunciatorSafeToOperate.ActiveColor = System.Drawing.Color.IndianRed;
+            this.annunciatorSafeToOperate.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
+            this.annunciatorSafeToOperate.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            this.annunciatorSafeToOperate.Font = new System.Drawing.Font("Consolas", 10F);
+            this.annunciatorSafeToOperate.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciatorSafeToOperate.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciatorSafeToOperate.Location = new System.Drawing.Point(3, 46);
+            this.annunciatorSafeToOperate.Mute = false;
+            this.annunciatorSafeToOperate.Name = "annunciatorSafeToOperate";
+            this.annunciatorSafeToOperate.Size = new System.Drawing.Size(173, 23);
+            this.annunciatorSafeToOperate.TabIndex = 1;
+            this.annunciatorSafeToOperate.Text = "Safe To Operate";
+            this.annunciatorSafeToOperate.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // annunciatorSimulation
             // 
@@ -2035,7 +2048,7 @@
             // 
             this.labelFiller.Location = new System.Drawing.Point(3, 440);
             this.labelFiller.Name = "labelFiller";
-            this.labelFiller.Size = new System.Drawing.Size(173, 24);
+            this.labelFiller.Size = new System.Drawing.Size(173, 16);
             this.labelFiller.TabIndex = 39;
             // 
             // annunciatorPanelStatus
@@ -2055,7 +2068,7 @@
             this.annunciatorPanelStatus.Controls.Add(this.annunciatorFilterWheel);
             this.annunciatorPanelStatus.Controls.Add(this.annunciatorFocus);
             this.annunciatorPanelStatus.Controls.Add(this.annunciatorWeather);
-            this.annunciatorPanelStatus.Location = new System.Drawing.Point(10, 467);
+            this.annunciatorPanelStatus.Location = new System.Drawing.Point(10, 459);
             this.annunciatorPanelStatus.Margin = new System.Windows.Forms.Padding(10, 3, 3, 3);
             this.annunciatorPanelStatus.Name = "annunciatorPanelStatus";
             this.annunciatorPanelStatus.Padding = new System.Windows.Forms.Padding(5, 0, 0, 0);
@@ -2258,17 +2271,17 @@
             // panel2
             // 
             this.panel2.Controls.Add(this.panel3);
-            this.panel2.Location = new System.Drawing.Point(3, 551);
+            this.panel2.Location = new System.Drawing.Point(3, 543);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(200, 100);
+            this.panel2.Size = new System.Drawing.Size(181, 81);
             this.panel2.TabIndex = 40;
             // 
             // panel3
             // 
             this.panel3.Controls.Add(this.pictureBox1);
-            this.panel3.Location = new System.Drawing.Point(0, 8);
+            this.panel3.Location = new System.Drawing.Point(56, 8);
             this.panel3.Name = "panel3";
-            this.panel3.Size = new System.Drawing.Size(184, 104);
+            this.panel3.Size = new System.Drawing.Size(72, 72);
             this.panel3.TabIndex = 0;
             // 
             // pictureBox1
@@ -2276,14 +2289,34 @@
             this.pictureBox1.BackColor = System.Drawing.Color.Transparent;
             this.pictureBox1.Image = global::Dash.Properties.Resources.stop_sign_smaller;
             this.pictureBox1.InitialImage = global::Dash.Properties.Resources.stop_sign_smaller;
-            this.pictureBox1.Location = new System.Drawing.Point(64, 24);
+            this.pictureBox1.Location = new System.Drawing.Point(8, 8);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(56, 56);
             this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             this.pictureBox1.TabIndex = 2;
             this.pictureBox1.TabStop = false;
-            this.toolTip.SetToolTip(this.pictureBox1, "Stops all motors \r\n(telescope, dome, shutter, focus, filter-wheel)");
+            this.toolTip.SetToolTip(this.pictureBox1, "Emergency stop of all moving parts \r\n(telescope, dome, shutter, focus, filter-whe" +
+        "el)");
             this.pictureBox1.Click += new System.EventHandler(this.buttonFullStop_Click);
+            // 
+            // panel4
+            // 
+            this.panel4.Controls.Add(this.labelCountdown);
+            this.panel4.Location = new System.Drawing.Point(3, 630);
+            this.panel4.Name = "panel4";
+            this.panel4.Size = new System.Drawing.Size(181, 34);
+            this.panel4.TabIndex = 41;
+            // 
+            // labelCountdown
+            // 
+            this.labelCountdown.Font = new System.Drawing.Font("Lucida Console", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelCountdown.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.labelCountdown.Location = new System.Drawing.Point(61, 8);
+            this.labelCountdown.Name = "labelCountdown";
+            this.labelCountdown.Size = new System.Drawing.Size(62, 21);
+            this.labelCountdown.TabIndex = 42;
+            this.labelCountdown.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.toolTip.SetToolTip(this.labelCountdown, "Time to Observatory Shutdown (if not active).");
             // 
             // labelDashStatus
             // 
@@ -2293,6 +2326,7 @@
             this.labelDashStatus.Name = "labelDashStatus";
             this.labelDashStatus.Size = new System.Drawing.Size(731, 23);
             this.labelDashStatus.TabIndex = 34;
+            this.labelDashStatus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.toolTip.SetToolTip(this.labelDashStatus, "Dashboard status");
             // 
             // groupBoxFilterWheel
@@ -2866,6 +2900,7 @@
             this.panel2.ResumeLayout(false);
             this.panel3.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            this.panel4.ResumeLayout(false);
             this.groupBoxFilterWheel.ResumeLayout(false);
             this.groupBoxFilterWheel.PerformLayout();
             this.groupBox1.ResumeLayout(false);
@@ -2896,10 +2931,10 @@
         private System.Windows.Forms.GroupBox groupBoxTelescope;
         private System.Windows.Forms.Button buttonMainStop;
         private System.Windows.Forms.Panel panelDirectionButtons;
-        private System.Windows.Forms.Button buttonNW;
-        private System.Windows.Forms.Button buttonSW;
-        private System.Windows.Forms.Button buttonSE;
         private System.Windows.Forms.Button buttonNE;
+        private System.Windows.Forms.Button buttonSE;
+        private System.Windows.Forms.Button buttonSW;
+        private System.Windows.Forms.Button buttonNW;
         private System.Windows.Forms.Button buttonNorth;
         private System.Windows.Forms.Button buttonStop;
         private System.Windows.Forms.Button buttonSouth;
@@ -3002,8 +3037,8 @@
         private System.Windows.Forms.ToolStripMenuItem debugAllToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem debugNoneToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem saveToProfileToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemSafeToOpen;
-        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem4;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemSafeToOperate;
+        private System.Windows.Forms.ToolStripMenuItem debugMotorsToolStripMenuItem;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label labelLightValue;
         private System.Windows.Forms.ToolStripMenuItem safetyOverrideToolStripMenuItem;
@@ -3045,7 +3080,7 @@
         private System.Windows.Forms.Button buttonTrack;
         private ASCOM.Controls.AnnunciatorPanel annunciatorPanelSafety;
         private ASCOM.Controls.Annunciator annunciatorComputerControl;
-        private ASCOM.Controls.Annunciator annunciatorSafeToOpen;
+        private ASCOM.Controls.Annunciator annunciatorSafeToOperate;
         private ASCOM.Controls.Annunciator annunciatorRateSlew;
         private ASCOM.Controls.Annunciator annunciatorRateSet;
         private ASCOM.Controls.Annunciator annunciatorRateGuide;
@@ -3072,6 +3107,9 @@
         private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.Panel panel3;
         private System.Windows.Forms.PictureBox pictureBox1;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+        private System.Windows.Forms.Label labelCountdown;
+        private System.Windows.Forms.Panel panel4;
     }
 }
 

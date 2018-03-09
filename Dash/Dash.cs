@@ -16,10 +16,8 @@ using ASCOM.Wise40.Common;
 using ASCOM.Wise40.Boltwood;
 using ASCOM.Wise40.Hardware;
 using ASCOM.Wise40SafeToOpen;
-//using ASCOM.Wise40.Telescope;
-//using ASCOM.Wise40.Dome;
 using ASCOM.Wise40.FilterWheel;
-//using ASCOM.Wise40.Focuser;
+using ASCOM.Wise40.VantagePro;
 
 namespace Dash
 {
@@ -30,8 +28,9 @@ namespace Dash
         public WiseFocuser wisefocuser = WiseFocuser.Instance;
         Hardware hardware = Hardware.Instance;
         public WiseSite wisesite = WiseSite.Instance;
-        public WiseSafeToOperate wisesafetoopen = WiseSafeToOperate.InstanceOpen;
+        public WiseSafeToOperate wisesafetooperate = WiseSafeToOperate.InstanceOpen;
         public WiseBoltwood wiseboltwood = WiseBoltwood.Instance;
+        public WiseVantagePro wisevantagepro = WiseVantagePro.Instance;
         public WiseFilterWheel wisefilterwheel = WiseFilterWheel.Instance;
         public WiseDomePlatform wisedomeplatform = WiseDomePlatform.Instance;
         WiseObject wiseobject = new WiseObject();
@@ -69,8 +68,8 @@ namespace Dash
             wisedome.Connected = true;
             wisefocuser.init();
             wisefocuser.Connected = true;
-            wisesafetoopen.init();
-            wisesafetoopen.Connected = true;
+            wisesafetooperate.init();
+            wisesafetooperate.Connected = true;
             wiseboltwood.Connected = true;
             //wisefilterwheel.init();
             //wisefilterwheel.Connected = true;
@@ -82,6 +81,7 @@ namespace Dash
                 debugASCOMToolStripMenuItem ,
                 debugAxesToolStripMenuItem,
                 debugDeviceToolStripMenuItem,
+                debugMotorsToolStripMenuItem,
                 debugEncodersToolStripMenuItem,
                 debugExceptionsToolStripMenuItem,
                 debugLogicToolStripMenuItem,
@@ -108,13 +108,15 @@ namespace Dash
             if (debugger.Debugging(Debugger.DebugLevel.DebugASCOM))
                 checkedItems.Add(debugASCOMToolStripMenuItem);
             if (debugger.Debugging(Debugger.DebugLevel.DebugDevice))
-                checkedItems.Add(debugAxesToolStripMenuItem);
+                checkedItems.Add(debugDeviceToolStripMenuItem);
             if (debugger.Debugging(Debugger.DebugLevel.DebugAxes))
                 checkedItems.Add(debugAxesToolStripMenuItem);
             if (debugger.Debugging(Debugger.DebugLevel.DebugLogic))
                 checkedItems.Add(debugLogicToolStripMenuItem);
             if (debugger.Debugging(Debugger.DebugLevel.DebugEncoders))
                 checkedItems.Add(debugEncodersToolStripMenuItem);
+            if (debugger.Debugging(Debugger.DebugLevel.DebugMotors))
+                checkedItems.Add(debugMotorsToolStripMenuItem);
             if (debugger.Debugging(Debugger.DebugLevel.DebugExceptions))
                 checkedItems.Add(debugExceptionsToolStripMenuItem);
 
@@ -226,6 +228,18 @@ namespace Dash
 
             buttonTelescopePark.Text = wisetele.AtPark ? "Unpark" : "Park";
 
+            TimeSpan ts = wisetele.inactivityMonitor.RemainingTime;
+            if (ts == TimeSpan.MaxValue)
+            {
+                labelCountdown.Text = "";
+                toolTip.SetToolTip(labelCountdown, "");
+            }
+            else
+            {
+                labelCountdown.Text = string.Format("{0:D2}:{1:D2}", ts.Minutes, ts.Seconds);
+                toolTip.SetToolTip(labelCountdown, "Inactivity Countdown\n(time to Observatory Shutdown)");
+            }
+
             annunciatorTrack.Cadence = wisetele.Tracking ? ASCOM.Controls.CadencePattern.SteadyOn : ASCOM.Controls.CadencePattern.SteadyOff;
             annunciatorSlew.Cadence = wisetele.Slewing ? ASCOM.Controls.CadencePattern.SteadyOn : ASCOM.Controls.CadencePattern.SteadyOff;
             annunciatorPulse.Cadence = wisetele.IsPulseGuiding ? ASCOM.Controls.CadencePattern.SteadyOn : ASCOM.Controls.CadencePattern.SteadyOff;
@@ -332,65 +346,33 @@ namespace Dash
             tip = null;
             if (_bypassSafety)
             {
-                annunciatorSafeToOpen.Text = "Safe to open";
-                annunciatorSafeToOpen.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+                annunciatorSafeToOperate.Text = "Safe to operate";
+                annunciatorSafeToOperate.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
                 tip = "Safety is bypassed (from Settings)";
             }
             else
             {
-                if (wisesite.safeToOpen == null)
+                if (wisesite.safeToOperate == null)
                 {
-                    annunciatorSafeToOpen.Text = "Safe to open ???";
-                    annunciatorSafeToOpen.Cadence = ASCOM.Controls.CadencePattern.BlinkSlow;
+                    annunciatorSafeToOperate.Text = "Safe to operate ???";
+                    annunciatorSafeToOperate.Cadence = ASCOM.Controls.CadencePattern.BlinkSlow;
                     tip = "Cannot connect to the SafeToOpen driver!";
                 }
-                else if (wisesite.safeToOpen.IsSafe)
+                else if (wisesite.safeToOperate.IsSafe)
                 {
-                    annunciatorSafeToOpen.Text = "Safe to open";
-                    annunciatorSafeToOpen.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
-                    tip = "Conditions are safe to open the dome.";
+                    annunciatorSafeToOperate.Text = "Safe to operate";
+                    annunciatorSafeToOperate.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+                    tip = "Conditions are safe to operate.";
                 }
                 else
                 {
-                    annunciatorSafeToOpen.Text = "Not safe to open";
-                    annunciatorSafeToOpen.Cadence = ASCOM.Controls.CadencePattern.BlinkSlow;
-                    tip = string.Join("\n", wisesafetoopen.UnsafeReasons);
+                    annunciatorSafeToOperate.Text = "Not safe to operate";
+                    annunciatorSafeToOperate.Cadence = ASCOM.Controls.CadencePattern.BlinkSlow;
+                    tip = string.Join("\n", wisesafetooperate.UnsafeReasons);
                 }
             }
-            toolTip.SetToolTip(annunciatorSafeToOpen, tip);
+            toolTip.SetToolTip(annunciatorSafeToOperate, tip);
             #endregion
-            #region SafeToImage
-            //tip = null;
-            //if (_bypassSafety)
-            //{
-            //    annunciatorSafeToImage.Text = "Safe to image";
-            //    annunciatorSafeToImage.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
-            //    tip = "Safety is bypassed (from Settings)";
-            //}
-            //else
-            //{
-            //    if (wisesite.safeToImage == null)
-            //    {
-            //        annunciatorSafeToImage.Text = "Safe to image ???";
-            //        annunciatorSafeToImage.Cadence = ASCOM.Controls.CadencePattern.BlinkSlow;
-            //        tip = "Cannot connect to the safeToImage driver!";
-            //    }
-            //    else if (wisesite.safeToImage.IsSafe)
-            //    {
-            //        annunciatorSafeToImage.Text = "Safe to image";
-            //        annunciatorSafeToImage.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
-            //        tip = "Conditions are safe to image.";
-            //    }
-            //    else
-            //    {
-            //        annunciatorSafeToImage.Text = "Not safe to image";
-            //        annunciatorSafeToImage.Cadence = ASCOM.Controls.CadencePattern.BlinkSlow;
-            //        tip = wisesite.safeToImage.CommandString("unsafeReasons", false);
-            //    }
-            //}
-            //toolTip.SetToolTip(annunciatorSafeToImage, tip);
-            #endregion
-
             #region Simulation
             tip = null;
 
@@ -456,7 +438,7 @@ namespace Dash
                     labelPressureValue.Text = oc.Pressure.ToString() + "mB";
                     labelWindDirValue.Text = oc.WindDirection.ToString() + "°";                    
                     labelHumidityValue.Text = oc.Humidity.ToString() + "%";
-                    labelHumidityValue.ForeColor = Statuser.TriStateColor(wisesafetoopen.isSafeHumidity);
+                    labelHumidityValue.ForeColor = Statuser.TriStateColor(wisesafetooperate.isSafeHumidity);
 
                     double d = oc.CloudCover;
                     if (d == 0.0)
@@ -467,34 +449,41 @@ namespace Dash
                         labelCloudCoverValue.Text = "VeryCloudy";
                     else
                         labelCloudCoverValue.Text = "Unknown";
-                    labelCloudCoverValue.ForeColor = Statuser.TriStateColor(wisesafetoopen.isSafeCloudCover);
+                    labelCloudCoverValue.ForeColor = Statuser.TriStateColor(wisesafetooperate.isSafeCloudCover);
 
                     labelWindSpeedValue.Text = oc.WindSpeed.ToString() + "m/s";
-                    labelWindSpeedValue.ForeColor = Statuser.TriStateColor(wisesafetoopen.isSafeWindSpeed);
+                    labelWindSpeedValue.ForeColor = Statuser.TriStateColor(wisesafetooperate.isSafeWindSpeed);
 
                     labelRainRateValue.Text = (oc.RainRate > 0.0) ? "Wet" : "Dry";
-                    labelRainRateValue.ForeColor = Statuser.TriStateColor(wisesafetoopen.isSafeRain);
+                    labelRainRateValue.ForeColor = Statuser.TriStateColor(wisesafetooperate.isSafeRain);
                     #endregion
 
                     #region Light from Boltwood
                     string light = wiseboltwood.CommandString("daylight", true);
                     labelLightValue.Text = light.Substring(3);
-                    labelLightValue.ForeColor = Statuser.TriStateColor(wisesafetoopen.isSafeLight);
+                    labelLightValue.ForeColor = Statuser.TriStateColor(wisesafetooperate.isSafeLight);
+                    #endregion
+
+                    #region Forecast from VantagePro
+                    if (wisesafetooperate._vantageProIsValid)
+                        dashStatus.Show("Forecast: " + wisevantagepro.Forecast, 0, Statuser.Severity.Normal);
+                    else
+                        dashStatus.Show("No forecast: bad connection to VantagePro", 0, Statuser.Severity.Warning);
                     #endregion
 
                     #region SafeToOpen
-                    if (wisesafetoopen.IsSafe)
+                    if (wisesafetooperate.IsSafe)
                     {
-                        weatherStatus.Show("Safe to open", 0, Statuser.Severity.Good);
+                        weatherStatus.Show("Safe to operate", 0, Statuser.Severity.Good);
                         weatherStatus.SetToolTip("");
                     }
                     else
                     {
                         if (_bypassSafety)
-                            weatherStatus.Show("Safe to open (safety bypassed)", 0, Statuser.Severity.Good);
+                            weatherStatus.Show("Safe to operate (safety bypassed)", 0, Statuser.Severity.Good);
                         else
-                            weatherStatus.Show("Not safe to open", 0, Statuser.Severity.Error, true);
-                        weatherStatus.SetToolTip(string.Join("\n", wisesafetoopen.UnsafeReasons));
+                            weatherStatus.Show("Not safe to operate", 0, Statuser.Severity.Error, true);
+                        weatherStatus.SetToolTip(string.Join("\n", wisesafetooperate.UnsafeReasons));
                     }
                     #endregion
                 }
@@ -567,8 +556,6 @@ namespace Dash
         public void directionButton_MouseDown(object sender, MouseEventArgs e)
         {
             Button button = (Button)sender;
-            //string rateName = WiseTele.RateName(handpadRate).Remove(0, 4);
-            string dir = string.Empty, msg;
 
             List<Movement> movements = new List<Movement>();
 
@@ -580,22 +567,22 @@ namespace Dash
                 movements.Add(new Movement(Const.CardinalDirection.East, TelescopeAxes.axisPrimary, handpadRate));
             else if (button == buttonWest)
                 movements.Add(new Movement(Const.CardinalDirection.West, TelescopeAxes.axisPrimary, -handpadRate));
-            else if (button == buttonNE)
+            else if (button == buttonNW)
             {
                 movements.Add(new Movement(Const.CardinalDirection.North, TelescopeAxes.axisSecondary, handpadRate));
                 movements.Add(new Movement(Const.CardinalDirection.East, TelescopeAxes.axisPrimary, handpadRate));
             }
-            else if (button == buttonNW)
+            else if (button == buttonNE)
             {
                 movements.Add(new Movement(Const.CardinalDirection.North, TelescopeAxes.axisSecondary, handpadRate));
                 movements.Add(new Movement(Const.CardinalDirection.West, TelescopeAxes.axisPrimary, -handpadRate));
             }
-            else if (button == buttonSW)
+            else if (button == buttonSE)
             {
                 movements.Add(new Movement(Const.CardinalDirection.South, TelescopeAxes.axisSecondary, -handpadRate));
                 movements.Add(new Movement(Const.CardinalDirection.West, TelescopeAxes.axisPrimary, -handpadRate));
             }
-            else if (button == buttonSE)
+            else if (button == buttonSW)
             {
                 movements.Add(new Movement(Const.CardinalDirection.South, TelescopeAxes.axisSecondary, -handpadRate));
                 movements.Add(new Movement(Const.CardinalDirection.East, TelescopeAxes.axisPrimary, handpadRate));
@@ -621,80 +608,6 @@ namespace Dash
                 string message = string.Format("Unsafe to move {0}", String.Join("-", Directions.ToArray()));
                 telescopeStatus.Show(message, 2000, Statuser.Severity.Error);
             }
-
-
-            //try
-            //{
-            //    if (button == buttonNorth)
-            //    {
-            //        dir = "North";
-            //        if (!wisetele.SafeToMove(new List<Const.CardinalDirection>() { Const.CardinalDirection.North }))
-            //            throw new ASCOM.InvalidOperationException("Unsafe to move North!");
-            //        wisetele.HandpadMoveAxis(TelescopeAxes.axisSecondary, handpadRate);
-            //    }
-            //    else if (button == buttonSouth)
-            //    {
-            //        dir = "South";
-            //        if (!wisetele.SafeToMove(new List<Const.CardinalDirection>() { Const.CardinalDirection.South }))
-            //            throw new ASCOM.InvalidOperationException("Unsafe to move South!");
-            //        wisetele.HandpadMoveAxis(TelescopeAxes.axisSecondary, -handpadRate);
-            //    }
-            //    else if (button == buttonEast)
-            //    {
-            //        dir = "East";
-            //        if (!wisetele.SafeToMove(new List<Const.CardinalDirection>() { Const.CardinalDirection.East }))
-            //            throw new ASCOM.InvalidOperationException("Unsafe to move East!");
-            //        wisetele.HandpadMoveAxis(TelescopeAxes.axisPrimary, handpadRate);
-            //    }
-            //    else if (button == buttonWest)
-            //    {
-            //        dir = "West";
-            //        if (!wisetele.SafeToMove(new List<Const.CardinalDirection>() { Const.CardinalDirection.West }))
-            //            throw new ASCOM.InvalidOperationException("Unsafe to move West!");
-            //        wisetele.HandpadMoveAxis(TelescopeAxes.axisPrimary, -handpadRate);
-            //    }
-            //    else if (button == buttonNE)
-            //    {
-            //        dir = "North-East";
-            //        if (!wisetele.SafeToMove(new List<Const.CardinalDirection>() { Const.CardinalDirection.East, Const.CardinalDirection.North }))
-            //            throw new ASCOM.InvalidOperationException("Unsafe to move North-East!");
-            //        wisetele.HandpadMoveAxis(TelescopeAxes.axisSecondary, handpadRate);
-            //        wisetele.HandpadMoveAxis(TelescopeAxes.axisPrimary, -handpadRate);
-            //    }
-            //    else if (button == buttonNW)
-            //    {
-            //        dir = "North-West";
-            //        if (!wisetele.SafeToMove(new List<Const.CardinalDirection>() { Const.CardinalDirection.West, Const.CardinalDirection.North }))
-            //            throw new ASCOM.InvalidOperationException("Unsafe to move North-West!");
-            //        wisetele.HandpadMoveAxis(TelescopeAxes.axisSecondary, handpadRate);
-            //        wisetele.HandpadMoveAxis(TelescopeAxes.axisPrimary, -handpadRate);
-            //    }
-            //    else if (button == buttonSE)
-            //    {
-            //        dir = "South-East";
-            //        if (!wisetele.SafeToMove(new List<Const.CardinalDirection>() { Const.CardinalDirection.East, Const.CardinalDirection.South }))
-            //            throw new ASCOM.InvalidOperationException("Unsafe to move South-East!");
-            //        wisetele.HandpadMoveAxis(TelescopeAxes.axisSecondary, -handpadRate);
-            //        wisetele.HandpadMoveAxis(TelescopeAxes.axisPrimary, -handpadRate);
-            //    }
-            //    else if (button == buttonSW)
-            //    {
-            //        dir = "South-West";
-            //        if (!wisetele.SafeToMove(new List<Const.CardinalDirection>() { Const.CardinalDirection.West, Const.CardinalDirection.South }))
-            //            throw new ASCOM.InvalidOperationException("Unsafe to move South-West!");
-            //        wisetele.HandpadMoveAxis(TelescopeAxes.axisSecondary, -handpadRate);
-            //        wisetele.HandpadMoveAxis(TelescopeAxes.axisPrimary, handpadRate);
-            //    }
-            //    msg = string.Format("Moving {0} at {1}", dir, rateName);
-            //    telescopeStatus.Show(msg, 0, Statuser.Severity.Good);
-            //    #region debug
-            //    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Handpad: " + msg);
-            //    #endregion
-            //}
-            //catch (Exception ex)
-            //{
-            //    telescopeStatus.Show(ex.Message, 2000, Statuser.Severity.Error);
-            //}
         }
 
         private void directionButton_MouseUp(object sender, MouseEventArgs e)
@@ -705,6 +618,7 @@ namespace Dash
                 wisetele.MoveAxis(TelescopeAxes.axisPrimary, Const.rateStopped);
             
             telescopeStatus.Show("Stopped", 1000, Statuser.Severity.Good);
+            wisetele.inactivityMonitor.EndActivity(InactivityMonitor.Activity.Handpad);
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Handpad: stopped");
             #endregion
@@ -1213,16 +1127,21 @@ namespace Dash
 
             if (item == debugASCOMToolStripMenuItem)
                 selectedLevel = Debugger.DebugLevel.DebugASCOM;
-            else if (item == debugAxesToolStripMenuItem)
+            else if (item == debugDeviceToolStripMenuItem)
                 selectedLevel = Debugger.DebugLevel.DebugDevice;
             else if (item == debugAxesToolStripMenuItem)
                 selectedLevel = Debugger.DebugLevel.DebugAxes;
             else if (item == debugEncodersToolStripMenuItem)
                 selectedLevel = Debugger.DebugLevel.DebugEncoders;
+            else if (item == debugMotorsToolStripMenuItem)
+                selectedLevel = Debugger.DebugLevel.DebugMotors;
             else if (item == debugExceptionsToolStripMenuItem)
                 selectedLevel = Debugger.DebugLevel.DebugExceptions;
             else if (item == debugLogicToolStripMenuItem)
                 selectedLevel = Debugger.DebugLevel.DebugLogic;
+
+            if (selectedLevel == Debugger.DebugLevel.DebugNone)
+                return;
 
             if (debugger.Debugging(selectedLevel))
             {
@@ -1292,8 +1211,7 @@ namespace Dash
                 if (!alteredItems.ContainsKey(item))
                     alteredItems[item] = title;
             }
-
-            string tip = "To be saved to profile:" + Const.crnl + Const.crnl;
+            
             string alterations = string.Empty;
             foreach (var key in alteredItems.Keys)
             {

@@ -277,7 +277,9 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Images\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>rem "C:\Program Files (x86)\Inno Setup 5\ISCC.exe" "/DSolutionDir=$(SolutionDir)" "/O$(SolutionDir)\Deliveries" "$(ProjectDir)Installer\Wise40Dash.iss" 
