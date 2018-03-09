@@ -29,7 +29,8 @@ namespace ASCOM.Wise40.VantagePro
         public WiseVantagePro() { }
         static WiseVantagePro() { }
 
-        private Dictionary<string, string> sensorData;
+        private Dictionary<string, string> sensorData = null;
+        private DateTime _lastDataRead = DateTime.MinValue;
 
         public static WiseVantagePro Instance
         {
@@ -55,22 +56,28 @@ namespace ASCOM.Wise40.VantagePro
                     return;
             }
 
-            sensorData = new Dictionary<string, string>();
-            using (StreamReader sr = new StreamReader(_dataFile))
+            if (_lastDataRead == DateTime.MinValue || File.GetLastWriteTime(_dataFile).CompareTo(_lastDataRead) > 0)
             {
-                string[] words;
-                string line;
+                if (sensorData == null)
+                    sensorData = new Dictionary<string, string>();
 
-                if (sr == null)
-                    throw new InvalidValueException(string.Format("Refresh: cannot open \"{0}\" for read.", _dataFile));
-
-                while ((line = sr.ReadLine()) != null)
+                using (StreamReader sr = new StreamReader(_dataFile))
                 {
-                    words = line.Split('=');
-                    if (words.Length != 3)
-                        continue;
-                    sensorData[words[0]] = words[1];
+                    string[] words;
+                    string line;
+
+                    if (sr == null)
+                        throw new InvalidValueException(string.Format("Refresh: cannot open \"{0}\" for read.", _dataFile));
+
+                    while ((line = sr.ReadLine()) != null)
+                    {
+                        words = line.Split('=');
+                        if (words.Length != 3)
+                            continue;
+                        sensorData[words[0]] = words[1];
+                    }
                 }
+                _lastDataRead = DateTime.Now;
             }
         }
 
@@ -233,6 +240,7 @@ namespace ASCOM.Wise40.VantagePro
         {
             get
             {
+                Refresh();
                 var dewPoint = Convert.ToDouble(sensorData["outsideDewPt"]);
 
                 tl.LogMessage("DewPoint", "get - " + dewPoint.ToString());
@@ -254,6 +262,7 @@ namespace ASCOM.Wise40.VantagePro
         {
             get
             {
+                Refresh();
                 var humidity = Convert.ToDouble(sensorData["outsideHumidity"]);
 
                 tl.LogMessage("Humidity", "get - " + humidity.ToString());
@@ -276,6 +285,7 @@ namespace ASCOM.Wise40.VantagePro
         {
             get
             {
+                Refresh();
                 var pressure = Convert.ToDouble(sensorData["barometer"]);
 
                 tl.LogMessage("Pressure", "get - " + pressure.ToString());
@@ -297,6 +307,7 @@ namespace ASCOM.Wise40.VantagePro
         {
             get
             {
+                Refresh();
                 var rainRate = Convert.ToDouble(sensorData["rainRate"]);
 
                 tl.LogMessage("RainRate", "get - " + rainRate.ToString());
@@ -402,9 +413,13 @@ namespace ASCOM.Wise40.VantagePro
         {
             get
             {
+                Refresh();
                 var temperature = Convert.ToDouble(sensorData["outsideTemp"]);
 
                 tl.LogMessage("Temperature", "get - " + temperature.ToString());
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, string.Format("VantagePro: Temperature - get => {0}", temperature.ToString()));
+                #endregion
                 return temperature;
             }
         }
@@ -432,6 +447,7 @@ namespace ASCOM.Wise40.VantagePro
                     tl.LogMessage("TimeSinceLastUpdate", PropertyName + " - not implemented");
                     throw new MethodNotImplementedException("SensorDescription(" + PropertyName + ")");
             }
+            Refresh();
             string dateTime = sensorData["stationDate"] + " " + sensorData["stationTime"] + "m";
             DateTime lastUpdate = Convert.ToDateTime(dateTime);
             double seconds = (DateTime.Now - lastUpdate).TotalSeconds;
@@ -451,6 +467,7 @@ namespace ASCOM.Wise40.VantagePro
         {
             get
             {
+                Refresh();
                 var windDir = Convert.ToDouble(sensorData["windDir"]);
 
                 tl.LogMessage("WindDirection", "get - " + windDir.ToString());
@@ -477,9 +494,13 @@ namespace ASCOM.Wise40.VantagePro
         {
             get
             {
+                Refresh();
                 var windSpeed = Convert.ToDouble(sensorData["windSpeed"]);
 
                 tl.LogMessage("WindSpeed", "get - " + windSpeed.ToString());
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, string.Format("VantagePro: WindSpeed - get => {0}", windspeed.ToString()));
+                #endregion
                 return windSpeed;
             }
         }

@@ -19,6 +19,7 @@ namespace ASCOM.Wise40.Boltwood
         public static string driverDescription = string.Format("ASCOM Wise40.Boltwood v{0}", version.ToString());
         private string _dataFile;
         private Util utilities = new Util();
+        private DateTime _lastDataRead = DateTime.MinValue;
 
         /// <summary>
         /// ASCOM DeviceID (COM ProgID) for this driver.
@@ -33,7 +34,7 @@ namespace ASCOM.Wise40.Boltwood
         static WiseBoltwood() {}
         public WiseBoltwood() {}
 
-        private SensorData _sensorData;
+        private SensorData _sensorData = null;
 
         public static WiseBoltwood Instance
         {
@@ -75,19 +76,23 @@ namespace ASCOM.Wise40.Boltwood
             if (_dataFile == null || _dataFile == string.Empty)
                 throw new InvalidOperationException("GetSensorData: _dataFile name is either null or empty!");
 
-            try
+            if (_lastDataRead == DateTime.MinValue || File.GetLastWriteTime(_dataFile).CompareTo(_lastDataRead) > 0)
             {
-                using (StreamReader sr = new StreamReader(_dataFile))
+                try
                 {
-                    str = sr.ReadToEnd();
+                    using (StreamReader sr = new StreamReader(_dataFile))
+                    {
+                        str = sr.ReadToEnd();
+                    }
                 }
+                catch (Exception e)
+                {
+                    throw new InvalidOperationException(string.Format("GetSensorData: Cannot read \"{0}\", caught {1}", _dataFile, e.Message));
+                }
+                                    
+                _sensorData = new SensorData(str);
+                _lastDataRead = DateTime.Now;
             }
-            catch (Exception e)
-            {
-                throw new InvalidOperationException(string.Format("GetSensorData: Cannot read \"{0}\", caught {1}", _dataFile, e.Message));
-            }
-
-            _sensorData = new SensorData(str);
         }
 
         private Common.Debugger debugger = Debugger.Instance;
@@ -301,6 +306,7 @@ namespace ASCOM.Wise40.Boltwood
         {
             get
             {
+                GetSensorData();
                 double ret = 0.0;
 
                 switch (_sensorData.cloudCondition)
@@ -329,6 +335,7 @@ namespace ASCOM.Wise40.Boltwood
         {
             get
             {
+                GetSensorData();
                 return _sensorData.cloudCondition;
             }
         }
@@ -344,6 +351,7 @@ namespace ASCOM.Wise40.Boltwood
         {
             get
             {
+                GetSensorData();
                 double ret = _sensorData.dewPoint;
                 tl.LogMessage("DewPoint", string.Format("get - {0}", ret));
                 return ret;
@@ -361,6 +369,7 @@ namespace ASCOM.Wise40.Boltwood
         {
             get
             {
+                GetSensorData();
                 double ret = _sensorData.humidity;
                 tl.LogMessage("Humidity", string.Format("get - {0}", ret));
                 return ret;
@@ -489,6 +498,7 @@ namespace ASCOM.Wise40.Boltwood
         {
             get
             {
+                GetSensorData();
                 var ret = _sensorData.skyAmbientTemp;
 
                 if (ret == (double)SensorData.SpecialTempValue.specialTempSaturatedHot)
@@ -512,6 +522,7 @@ namespace ASCOM.Wise40.Boltwood
         {
             get
             {
+                GetSensorData();
                 double ret = _sensorData.ambientTemp;
 
                 tl.LogMessage("Temperature", string.Format("get - {0}", ret));
@@ -588,6 +599,7 @@ namespace ASCOM.Wise40.Boltwood
         {
             get
             {
+                GetSensorData();
                 double ret = _sensorData.windSpeed;
 
                 switch (_sensorData.windUnits)
