@@ -46,7 +46,7 @@ namespace Dash
             labelTelescopeVersion.Text = _dash.wisetele.DriverVersion;
             labelDomeVersion.Text = _dash.wisedome.DriverVersion;
             labelFocuserVersion.Text = WiseFocuser.Instance.DriverVersion;
-            labelSafeToOpenVersion.Text = _dash.wisesite.safeToOpen.DriverVersion;
+            labelSafeToOperateVersion.Text = _dash.wisesite.safeToOperate.DriverVersion;
             labelBoltwoodVersion.Text = _dash.wiseboltwood.DriverVersion;
             labelComputerControlVersion.Text = _dash.wisesite.computerControl.DriverVersion;
             labelVantageProVersion.Text = (new ObservingConditions("ASCOM.Wise40.VantagePro.ObservingConditions")).DriverVersion;

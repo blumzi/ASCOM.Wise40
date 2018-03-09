@@ -31,6 +31,7 @@
             this.buttonOK = new System.Windows.Forms.Button();
             this.labelAbout = new System.Windows.Forms.Label();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
+            this.label6 = new System.Windows.Forms.Label();
             this.labelVantageProVersion = new System.Windows.Forms.Label();
             this.label16 = new System.Windows.Forms.Label();
             this.label15 = new System.Windows.Forms.Label();
@@ -47,8 +48,7 @@
             this.labelDomeVersion = new System.Windows.Forms.Label();
             this.labelFocuserVersion = new System.Windows.Forms.Label();
             this.labelComputerControlVersion = new System.Windows.Forms.Label();
-            this.labelSafeToOpenVersion = new System.Windows.Forms.Label();
-            this.label6 = new System.Windows.Forms.Label();
+            this.labelSafeToOperateVersion = new System.Windows.Forms.Label();
             this.labelFilterWheelVersion = new System.Windows.Forms.Label();
             this.tableLayoutPanel1.SuspendLayout();
             this.SuspendLayout();
@@ -99,7 +99,7 @@
             this.tableLayoutPanel1.Controls.Add(this.labelDomeVersion, 1, 3);
             this.tableLayoutPanel1.Controls.Add(this.labelFocuserVersion, 1, 4);
             this.tableLayoutPanel1.Controls.Add(this.labelComputerControlVersion, 3, 1);
-            this.tableLayoutPanel1.Controls.Add(this.labelSafeToOpenVersion, 3, 2);
+            this.tableLayoutPanel1.Controls.Add(this.labelSafeToOperateVersion, 3, 2);
             this.tableLayoutPanel1.Controls.Add(this.labelFilterWheelVersion, 1, 5);
             this.tableLayoutPanel1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.tableLayoutPanel1.Location = new System.Drawing.Point(48, 280);
@@ -113,6 +113,21 @@
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 19.04762F));
             this.tableLayoutPanel1.Size = new System.Drawing.Size(424, 128);
             this.tableLayoutPanel1.TabIndex = 2;
+            // 
+            // label6
+            // 
+            this.label6.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.label6.AutoSize = true;
+            this.label6.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
+            this.label6.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.label6.Location = new System.Drawing.Point(3, 107);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(163, 21);
+            this.label6.TabIndex = 17;
+            this.label6.Text = "FilterWheel Driver";
+            this.label6.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // labelVantageProVersion
             // 
@@ -355,35 +370,20 @@
             this.labelComputerControlVersion.Text = "M.m";
             this.labelComputerControlVersion.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
-            // labelSafeToOpenVersion
+            // labelSafeToOperateVersion
             // 
-            this.labelSafeToOpenVersion.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.labelSafeToOperateVersion.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.labelSafeToOpenVersion.AutoSize = true;
-            this.labelSafeToOpenVersion.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
-            this.labelSafeToOpenVersion.ForeColor = System.Drawing.Color.DarkOrange;
-            this.labelSafeToOpenVersion.Location = new System.Drawing.Point(383, 48);
-            this.labelSafeToOpenVersion.Name = "labelSafeToOpenVersion";
-            this.labelSafeToOpenVersion.Size = new System.Drawing.Size(38, 18);
-            this.labelSafeToOpenVersion.TabIndex = 10;
-            this.labelSafeToOpenVersion.Text = "M.m";
-            this.labelSafeToOpenVersion.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // label6
-            // 
-            this.label6.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.label6.AutoSize = true;
-            this.label6.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
-            this.label6.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.label6.Location = new System.Drawing.Point(3, 107);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(163, 21);
-            this.label6.TabIndex = 17;
-            this.label6.Text = "FilterWheel Driver";
-            this.label6.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.labelSafeToOperateVersion.AutoSize = true;
+            this.labelSafeToOperateVersion.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
+            this.labelSafeToOperateVersion.ForeColor = System.Drawing.Color.DarkOrange;
+            this.labelSafeToOperateVersion.Location = new System.Drawing.Point(383, 48);
+            this.labelSafeToOperateVersion.Name = "labelSafeToOperateVersion";
+            this.labelSafeToOperateVersion.Size = new System.Drawing.Size(38, 18);
+            this.labelSafeToOperateVersion.TabIndex = 10;
+            this.labelSafeToOperateVersion.Text = "M.m";
+            this.labelSafeToOperateVersion.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // labelFilterWheelVersion
             // 
@@ -441,7 +441,7 @@
         private System.Windows.Forms.Label labelDomeVersion;
         private System.Windows.Forms.Label labelFocuserVersion;
         private System.Windows.Forms.Label labelComputerControlVersion;
-        private System.Windows.Forms.Label labelSafeToOpenVersion;
+        private System.Windows.Forms.Label labelSafeToOperateVersion;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Label labelFilterWheelVersion;
     }
