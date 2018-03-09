@@ -499,7 +499,7 @@ namespace ASCOM.Wise40.VantagePro
 
                 tl.LogMessage("WindSpeed", "get - " + windSpeed.ToString());
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, string.Format("VantagePro: WindSpeed - get => {0}", windspeed.ToString()));
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, string.Format("VantagePro: WindSpeed - get => {0}", windSpeed.ToString()));
                 #endregion
                 return windSpeed;
             }
