@@ -47,7 +47,7 @@ using System.Linq;
 ///     Scale:	                                       0.0345 mm/arcsec
 /// 
 /// </summary>
-namespace ASCOM.Wise40 //.Telescope
+namespace ASCOM.Wise40
 {
     public class WiseTele : WiseObject, IDisposable, IConnectable
     {
@@ -68,6 +68,9 @@ namespace ASCOM.Wise40 //.Telescope
         public Debugger debugger = Debugger.Instance;
 
         private bool _connected = false;
+        private bool _parking = false;
+
+        public InactivityMonitor inactivityMonitor;
 
         #region TrackingRestoration
         /// <summary>
@@ -226,7 +229,7 @@ namespace ASCOM.Wise40 //.Telescope
 
         public MovementDictionary movementDict;
 
-        private SafetyMonitorTimer safetyMonitorTimer;
+        public SafetyMonitorTimer safetyMonitorTimer;
 
         public bool _enslaveDome = false;
         public double _minimalDomeTrackingMovement;
@@ -277,6 +280,7 @@ namespace ASCOM.Wise40 //.Telescope
 
             set
             {
+                inactivityMonitor.Start("TargetDeclination was set");
                 if (value < -90.0 || value > 90.0)
                     throw new InvalidValueException(string.Format("Invalid Declination {0}. Must be between -90 and 90", value));
 
@@ -316,6 +320,7 @@ namespace ASCOM.Wise40 //.Telescope
                 if (value < 0.0 || value > 24.0)
                     throw new ASCOM.InvalidValueException(string.Format("Invalid RightAscension {0}. Must be between 0 to 24", value));
 
+                inactivityMonitor.Start("TargetRightAscension was set");
                 _targetRightAscension = Angle.FromHours(value, Angle.Type.RA);
                 #region trace
                 traceLogger.LogMessage("TargetRightAscension Set", string.Format("{0}", _targetRightAscension));
@@ -397,6 +402,9 @@ namespace ASCOM.Wise40 //.Telescope
                 #region trace
                 traceLogger.LogMessage("Connected Set", value.ToString());
                 #endregion
+                if (value == true)
+                    inactivityMonitor.Start("Connected was set to true");
+
                 if (value == _connected)
                     return;
 
@@ -464,6 +472,7 @@ namespace ASCOM.Wise40 //.Telescope
             wiseComputerControl.init();
 
             _trackingRestorer = new TrackingRestorer();
+            inactivityMonitor = new InactivityMonitor();
 
             #region MotorDefinitions
             //
@@ -573,7 +582,7 @@ namespace ASCOM.Wise40 //.Telescope
             _instance.realMovementParameters[TelescopeAxes.axisSecondary][Const.rateSlew] = new MovementParameters()
             {
                 minimalMovement = new Angle("00:30:00.0"),
-                stopMovement = new Angle("02:00:00.0"),
+                stopMovement = new Angle("04:00:00.0"),
                 millisecondsPerDegree = 500.0,      // 2 deg/sec
             };
 
@@ -723,6 +732,7 @@ namespace ASCOM.Wise40 //.Telescope
 
         public void AbortSlew()
         {
+            inactivityMonitor.Start("AbortSlew");
             if (AtPark)
             {
                 #region debug
@@ -732,6 +742,7 @@ namespace ASCOM.Wise40 //.Telescope
             }
 
             Stop();
+            inactivityMonitor.EndActivity(InactivityMonitor.Activity.Slewing);
             #region trace
             traceLogger.LogMessage("AbortSlew", "");
             #endregion
@@ -896,14 +907,16 @@ namespace ASCOM.Wise40 //.Telescope
                     if (TrackingMotor.isOff)
                         TrackingMotor.SetOn(Const.rateTrack);
                     SyncDomePosition = true;
+                    inactivityMonitor.StartActivity(InactivityMonitor.Activity.Tracking);
                 }
                 else
                 {
                     if (TrackingMotor.isOn)
                         TrackingMotor.SetOff();
                     SyncDomePosition = false;
+                    inactivityMonitor.EndActivity(InactivityMonitor.Activity.Tracking);
                 }
-                safetyMonitorTimer.EnableIfNeeded();
+                safetyMonitorTimer.EnableIfNeeded(SafetyMonitorTimer.ActionWhenNotSafe.Backoff);
 
                 SyncDomePosition = value;
             }
@@ -1108,8 +1121,9 @@ namespace ASCOM.Wise40 //.Telescope
             Const.AxisDirection direction = (Rate == Const.rateStopped) ? Const.AxisDirection.None :
                 (Rate < 0.0) ? Const.AxisDirection.Decreasing : Const.AxisDirection.Increasing;
 
+            inactivityMonitor.StartActivity(InactivityMonitor.Activity.Handpad);
             _moveAxis(Axis, Rate, direction, false);
-            safetyMonitorTimer.EnableIfNeeded();
+            safetyMonitorTimer.EnableIfNeeded(SafetyMonitorTimer.ActionWhenNotSafe.StopMotors);
         }
 
         public void MoveAxis(TelescopeAxes Axis, double Rate)
@@ -1253,7 +1267,7 @@ namespace ASCOM.Wise40 //.Telescope
                 #endregion debug
                 m.SetOn(Rate);
             }
-            safetyMonitorTimer.EnableIfNeeded();
+            safetyMonitorTimer.EnableIfNeeded(SafetyMonitorTimer.ActionWhenNotSafe.Backoff);
             return true;
         }
 
@@ -1276,8 +1290,8 @@ namespace ASCOM.Wise40 //.Telescope
             if (_targetDeclination == null)
                 throw new ValueNotSetException("Target Dec not set");
 
-            Angle ra = Angle.FromHours(TargetRightAscension, Angle.Type.RA);
-            Angle dec = Angle.FromDegrees(TargetDeclination, Angle.Type.Dec);
+            Angle ra = Angle.FromHours(_instance.TargetRightAscension, Angle.Type.RA);
+            Angle dec = Angle.FromDegrees(_instance.TargetDeclination, Angle.Type.Dec);
             string notSafe;
 
             #region trace
@@ -1347,7 +1361,7 @@ namespace ASCOM.Wise40 //.Telescope
                 wisesite.refractionOption,
                 ref zd, ref az, ref rar, ref decr);
 
-            return Math.Cos(90.0 - zd) < Math.Cos(Altitude);
+            return Math.Abs(Math.Cos(Angle.Deg2Rad(90.0 - zd))) < Math.Abs(Math.Cos(Angle.Deg2Rad(Altitude)));
         }
 
         /// <summary>
@@ -1493,11 +1507,15 @@ namespace ASCOM.Wise40 //.Telescope
             Angle dec = Angle.FromDegrees(66.0, Angle.Type.Dec);
 
             bool wasEnslavingDome = _enslaveDome;
+            _parking = true;
             if (wasEnslavingDome)
             {
                 _enslaveDome = false;
                 DomeParker();
             }
+            _instance.TargetRightAscension = ra.Hours;
+            _instance.TargetDeclination = dec.Degrees;
+            Tracking = true;
             _slewToCoordinatesSync(ra, dec);
             if (wasEnslavingDome)
             {
@@ -1505,6 +1523,8 @@ namespace ASCOM.Wise40 //.Telescope
                     Thread.Sleep(2000);
             }
             AtPark = true;
+            Tracking = false;
+            _parking = false;
             _enslaveDome = wasEnslavingDome;
         }
 
@@ -1696,8 +1716,8 @@ namespace ASCOM.Wise40 //.Telescope
                 telescopeCT.ThrowIfCancellationRequested();
 
                 cm.start = (axis == TelescopeAxes.axisPrimary) ?
-                    Angle.FromHours(RightAscension, Angle.Type.RA) :
-                    Angle.FromDegrees(Declination, Angle.Type.Dec);
+                    Angle.FromHours(_instance.RightAscension, Angle.Type.RA) :
+                    Angle.FromDegrees(_instance.Declination, Angle.Type.Dec);
 
                 var shortest = cm.start.ShortestDistance(cm.target);
                 cm.direction = shortest.direction;
@@ -1939,6 +1959,7 @@ namespace ASCOM.Wise40 //.Telescope
         {
             slewers.Clear();
             readyToSlew.Reset();
+            inactivityMonitor.StartActivity(InactivityMonitor.Activity.Slewing);
             try
             {
                 if (_instance._enslaveDome)
@@ -2003,11 +2024,11 @@ namespace ASCOM.Wise40 //.Telescope
 
         public void SlewToCoordinates(double RightAscension, double Declination, bool noSafetyCheck = false)
         {
-            TargetRightAscension = RightAscension;
-            TargetDeclination = Declination;
+            _instance.TargetRightAscension = RightAscension;
+            _instance.TargetDeclination = Declination;
 
-            Angle ra = Angle.FromHours(TargetRightAscension, Angle.Type.RA);
-            Angle dec = Angle.FromDegrees(TargetDeclination, Angle.Type.Dec);
+            Angle ra = Angle.FromHours(_instance.TargetRightAscension, Angle.Type.RA);
+            Angle dec = Angle.FromDegrees(_instance.TargetDeclination, Angle.Type.Dec);
 
             #region trace
             traceLogger.LogMessage("SlewToCoordinates", string.Format("ra: {0}, dec: {0}", ra, dec));
@@ -2048,11 +2069,11 @@ namespace ASCOM.Wise40 //.Telescope
 
         public void SlewToCoordinatesAsync(double RightAscension, double Declination, bool doChecks = true)
         {
-            TargetRightAscension = RightAscension;
-            TargetDeclination = Declination;
+            _instance.TargetRightAscension = RightAscension;
+            _instance.TargetDeclination = Declination;
 
-            Angle ra = Angle.FromHours(TargetRightAscension, Angle.Type.RA);
-            Angle dec = Angle.FromDegrees(TargetDeclination, Angle.Type.Dec);
+            Angle ra = Angle.FromHours(_instance.TargetRightAscension, Angle.Type.RA);
+            Angle dec = Angle.FromDegrees(_instance.TargetDeclination, Angle.Type.Dec);
 
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "SlewToCoordinatesAsync({0}, {1})", ra, dec);
@@ -2250,8 +2271,8 @@ namespace ASCOM.Wise40 //.Telescope
 
         public void SlewToTarget()
         {
-            Angle ra = Angle.FromHours(TargetRightAscension, Angle.Type.RA);
-            Angle dec = Angle.FromDegrees(TargetDeclination, Angle.Type.Dec);
+            Angle ra = Angle.FromHours(_instance.TargetRightAscension, Angle.Type.RA);
+            Angle dec = Angle.FromDegrees(_instance.TargetDeclination, Angle.Type.Dec);
 
             #region trace
             traceLogger.LogMessage("SlewToTarget", string.Format("ra: {0}, dec: {0}", ra, dec));
@@ -2273,7 +2294,7 @@ namespace ASCOM.Wise40 //.Telescope
             if (!wiseComputerControl.IsSafe)
                 throw new InvalidOperationException(compControlOrPlatformNotSafe);
 
-            SlewToCoordinates(TargetRightAscension, TargetDeclination); // sync
+            SlewToCoordinates(_instance.TargetRightAscension, _instance.TargetDeclination); // sync
         }
 
         public void SyncToAltAz(double Azimuth, double Altitude)
@@ -2710,6 +2731,7 @@ namespace ASCOM.Wise40 //.Telescope
             try
             {
                 pulsing.Start(Direction, Duration);
+                inactivityMonitor.StartActivity(InactivityMonitor.Activity.Pulsing);
             }
             catch (Exception ex)
             {
@@ -2745,19 +2767,19 @@ namespace ASCOM.Wise40 //.Telescope
         public void CommandBlind(string command, bool raw)
         {
             CheckConnected("CommandBlind");
-            // Call CommandString and return as soon as it finishes
-            //this.CommandString(command, raw);
-            // or
-            throw new ASCOM.MethodNotImplementedException("CommandBlind");
+            if (command == "active")
+                inactivityMonitor.Start("CommandBlind(\"active\")");
+            else
+                throw new ASCOM.MethodNotImplementedException(string.Format("CommandBlind: {0}", command));
         }
 
         public bool CommandBool(string command, bool raw)
         {
             CheckConnected("CommandBool");
-            //string ret = CommandString(command, raw);
-            // TODO decode the return string and return true or false
-            // or
-            throw new ASCOM.MethodNotImplementedException("CommandBool");
+            if (command == "active")
+                return inactivityMonitor.ObservatoryIsActive();
+            else
+                throw new ASCOM.MethodNotImplementedException(string.Format("CommandBool {0}", command));
         }
 
         public string CommandString(string command, bool raw)
@@ -2851,8 +2873,9 @@ namespace ASCOM.Wise40 //.Telescope
                 {
                     Angle ra = Angle.FromHours(TargetRightAscension, Angle.Type.RA);
                     Angle dec = Angle.FromDegrees(TargetDeclination, Angle.Type.Dec);
-                    ret = string.Format("Slewing to RA {0} DEC {1}", ra, dec);
-                } else if (IsPulseGuiding)
+                    ret = _parking ? "Parking" : "Slewing" + string.Format(" to RA {0} DEC {1}", ra, dec);
+                }
+                else if (IsPulseGuiding)
                 {
                     ret = "PulseGuiding in";
                     if (pulsing.Active(TelescopeAxes.axisPrimary))

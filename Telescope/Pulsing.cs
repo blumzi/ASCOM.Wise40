@@ -185,6 +185,8 @@ namespace ASCOM.Wise40 //.Telescope
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugAxes,
                 "ActiveSlewers: deleted {0}, \"{1}\" => \"{2}\"", t._axis.ToString(), before, ToString());
             #endregion
+            if (_active.Count == 0)
+                wisetele.inactivityMonitor.EndActivity(InactivityMonitor.Activity.Pulsing);
         }
 
         public override string ToString()

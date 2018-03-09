@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 using ASCOM.Wise40.Common;
 
-namespace ASCOM.Wise40 //.Telescope
+namespace ASCOM.Wise40
 {
     public class Slewers
     {
@@ -63,6 +63,9 @@ namespace ASCOM.Wise40 //.Telescope
 
                 slewerTask = _active.Find((s) => s.type == type);
                 _active.Remove(slewerTask);
+
+                if (_active.Count == 0)
+                    WiseTele.Instance.inactivityMonitor.EndActivity(InactivityMonitor.Activity.Slewing);
             }
             #region debug
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugAxes,

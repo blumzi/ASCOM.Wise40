@@ -14,7 +14,7 @@ namespace ASCOM.Wise40 //.Telescope
     /// A timer that should be on whenever any of the directional or tracking motors 
     ///  are on.  The callback checks if the telescope is safe at the current coordinates.
     /// </summary>
-    class SafetyMonitorTimer
+    public class SafetyMonitorTimer
     {
         private static WiseTele wisetele = WiseTele.Instance;
         private Timer _timer;
@@ -46,6 +46,12 @@ namespace ASCOM.Wise40 //.Telescope
             if (reason == string.Empty)
                 return;
 
+            #region debug
+            wisetele.debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "SafetyChecker: activated (action: {0}, reason: {1})",
+                WhenNotSafe.ToString(), reason);
+            #endregion
+
+            wisetele.safetyMonitorTimer.Enabled = false;
             switch (WhenNotSafe)
             {
                 case ActionWhenNotSafe.None:
@@ -84,10 +90,11 @@ namespace ASCOM.Wise40 //.Telescope
             }
         }
 
-        public void EnableIfNeeded()
+        public void EnableIfNeeded(ActionWhenNotSafe action)
         {
             if ((wisetele.DirectionMotorsAreActive || wisetele.TrackingMotor.isOn) && !Enabled)
             {
+                WhenNotSafe = action;
                 Enabled = true;
             }
         }
@@ -97,6 +104,7 @@ namespace ASCOM.Wise40 //.Telescope
             if (Enabled && !(wisetele.DirectionMotorsAreActive || wisetele.TrackingMotor.isOn))
             {
                 Enabled = false;
+                WhenNotSafe = ActionWhenNotSafe.None;
             }
         }
     }
