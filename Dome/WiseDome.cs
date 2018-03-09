@@ -152,9 +152,9 @@ namespace ASCOM.Wise40 //.Dome
                 leftPin = new WisePin("DomeLeft", hw.domeboard, DigitalPortType.FirstPortA, 2, DigitalPortDirection.DigitalOut);
                 rightPin = new WisePin("DomeRight", hw.domeboard, DigitalPortType.FirstPortA, 3, DigitalPortDirection.DigitalOut);
 
-                caliPins[0] = new WisePin("DomeCali0", hw.domeboard, DigitalPortType.FirstPortCL, 0, DigitalPortDirection.DigitalIn);
-                caliPins[1] = new WisePin("DomeCali1", hw.domeboard, DigitalPortType.FirstPortCL, 1, DigitalPortDirection.DigitalIn);
-                caliPins[2] = new WisePin("DomeCali2", hw.domeboard, DigitalPortType.FirstPortCL, 2, DigitalPortDirection.DigitalIn);
+                caliPins[0] = new WisePin(Const.notsign + "DomeCali0", hw.domeboard, DigitalPortType.FirstPortCL, 0, DigitalPortDirection.DigitalIn);
+                caliPins[1] = new WisePin(Const.notsign + "DomeCali1", hw.domeboard, DigitalPortType.FirstPortCL, 1, DigitalPortDirection.DigitalIn);
+                caliPins[2] = new WisePin(Const.notsign + "DomeCali2", hw.domeboard, DigitalPortType.FirstPortCL, 2, DigitalPortDirection.DigitalIn);
 
                 calibrationPoints.Add(new CalibrationPoint(caliPins[0], new Angle(254.6, Angle.Type.Az), 10 + 2 * caliPointsSpacing));
                 calibrationPoints.Add(new CalibrationPoint(caliPins[1], new Angle(133.0, Angle.Type.Az), 10 + 1 * caliPointsSpacing));
@@ -165,22 +165,11 @@ namespace ASCOM.Wise40 //.Dome
 
                 domeEncoder.init();
 
-                connectables.Add(openPin);
-                connectables.Add(closePin);
-                connectables.Add(leftPin);
-                connectables.Add(rightPin);
-                for (int i = 0; i < 3; i++)
-                    connectables.Add(caliPins[i]);
-                connectables.Add(ventPin);
-                connectables.Add(domeEncoder);
+                List<WisePin> domePins = new List<WisePin> { openPin, closePin, leftPin, rightPin, ventPin, projectorPin };
+                domePins.AddRange(caliPins);
 
-                disposables.Add(openPin);
-                disposables.Add(closePin);
-                disposables.Add(leftPin);
-                disposables.Add(rightPin);
-                for (int i = 0; i < 3; i++)
-                    disposables.Add(caliPins[i]);
-                disposables.Add(ventPin);
+                connectables.AddRange(domePins);
+                disposables.AddRange(domePins);
             }
             catch (WiseException e)
             {
@@ -648,7 +637,7 @@ namespace ASCOM.Wise40 //.Dome
                 Vent = false;
         }
 
-        public void ShutterStop()
+        public void   ShutterStop()
         {
             ShutterState prev = _shutterState;
 
@@ -699,7 +688,7 @@ namespace ASCOM.Wise40 //.Dome
                 if (!Calibrated)
                 {
                     if (_autoCalibrate)
-                        FindHome();
+                        StartFindingHome();
                     else
                         return Angle.FromDegrees(double.NaN, Angle.Type.Az);
                 }
@@ -762,12 +751,12 @@ namespace ASCOM.Wise40 //.Dome
             }
         }
 
-        public void FindHome()
+        public void StartFindingHome()
         {
             if (ShutterIsMoving)
             {
-                tl.LogMessage("Dome: FindHome", "Cannot FindHome, shutter is active.");
-                throw new ASCOM.InvalidOperationException("Cannot FindHome, shutter is active!");
+                tl.LogMessage("WiseDome:StartFindingHome", "Cannot move, shutter is active.");
+                throw new ASCOM.InvalidOperationException("Cannot move, shutter is active!");
             }
 
             if (wisesite.computerControl != null && !wisesite.computerControl.IsSafe)
@@ -776,7 +765,7 @@ namespace ASCOM.Wise40 //.Dome
             AtPark = false;
 
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: FindHomePoint: started");
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome:StartFindingHome: started");
             #endregion
             _calibrating = true;
 
@@ -790,17 +779,21 @@ namespace ASCOM.Wise40 //.Dome
                 foreach (var res in distanceToCaliPoints)
                     if (res.angle < closest.angle)
                         closest = res;
-                
-                switch (closest.direction) {
-                    case Const.AxisDirection.Decreasing: StartMovingCCW(); break ;
-                    case Const.AxisDirection.Increasing:  StartMovingCW(); break;
+
+                switch (closest.direction)
+                {
+                    case Const.AxisDirection.Decreasing: StartMovingCCW(); break;
+                    case Const.AxisDirection.Increasing: StartMovingCW(); break;
                 }
-            } else
+            }
+            else
+            {
+                SetDomeState(DomeState.Calibrating);
                 StartMovingCCW();
-            SetDomeState(DomeState.Calibrating);
+            }
 
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: FindHomePoint: waiting for _foundCalibration ...");
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome:StartFindingHome: waiting for _foundCalibration ...");
             #endregion
             _foundCalibration.WaitOne();
             UnsetDomeState(DomeState.Calibrating);
@@ -837,7 +830,7 @@ namespace ASCOM.Wise40 //.Dome
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: SlewToAzimuth: {0}, not calibrated, _autoCalibrate == true, calling FindHomePoint", toAng);
                     #endregion
-                    FindHome();
+                    StartFindingHome();
                 } else
                 {
                     #region debug
@@ -985,12 +978,12 @@ namespace ASCOM.Wise40 //.Dome
             }
 
             tl.LogMessage("Dome: Park", "");
-            
+
             SetDomeState(DomeState.Parking);
-            #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: Park: not calibrated, _autoCalibrate == true, calling FindHomePoint");
-            #endregion
-            FindHome();
+            //#region debug
+            //debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome:Park: calling StartFindingHome");
+            //#endregion
+            //StartFindingHome();
 
             AtPark = false;
             SlewToAzimuth(_parkAzimuth);
@@ -1003,8 +996,8 @@ namespace ASCOM.Wise40 //.Dome
             if (Slewing)
                 err += "Cannot OpenShutter, dome is slewing!";
 
-            if (!bypassSafety && !_bypassSafety && (wisesite.safeToOpen != null && !wisesite.safeToOpen.IsSafe))
-                err += "Not safeToOpen: " + wisesite.safeToOpen.CommandString("unsafeReasons", false);
+            if (!bypassSafety && !_bypassSafety && (wisesite.safeToOperate != null && !wisesite.safeToOperate.IsSafe))
+                err += "Not safeToOperate: " + wisesite.safeToOperate.CommandString("unsafeReasons", false);
 
             if (err == null)
             {
