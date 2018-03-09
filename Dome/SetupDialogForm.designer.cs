@@ -109,7 +109,7 @@ namespace ASCOM.Wise40 //.Dome
             this.checkBoxBypassSafety.Size = new System.Drawing.Size(124, 17);
             this.checkBoxBypassSafety.TabIndex = 10;
             this.checkBoxBypassSafety.TabStop = false;
-            this.checkBoxBypassSafety.Text = "Bypass SafeToOpen";
+            this.checkBoxBypassSafety.Text = "Bypass SafeToOperate";
             this.checkBoxBypassSafety.UseVisualStyleBackColor = true;
             this.checkBoxBypassSafety.CheckedChanged += new System.EventHandler(this.checkBoxBypassSafety_CheckedChanged);
             // 

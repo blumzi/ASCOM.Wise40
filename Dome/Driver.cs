@@ -355,7 +355,7 @@ namespace ASCOM.Wise40 //.Dome
 
         public void FindHome()
         {
-            wisedome.FindHome();
+            wisedome.StartFindingHome();
         }
 
         public void OpenShutter()
