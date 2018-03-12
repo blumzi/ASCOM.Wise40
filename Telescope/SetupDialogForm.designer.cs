@@ -76,12 +76,12 @@ namespace ASCOM.Wise40 //.Telescope
             this.descriptionLabel.Size = new System.Drawing.Size(165, 20);
             this.descriptionLabel.TabIndex = 2;
             this.descriptionLabel.Text = "Wise40 Telescope driver setup.";
+            this.descriptionLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // picASCOM
             // 
             this.picASCOM.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.picASCOM.Cursor = System.Windows.Forms.Cursors.Hand;
-            //this.picASCOM.Image = global::ASCOM.Wise40.Telescope.Properties.Resources.ASCOM;
             this.picASCOM.Image = global::ASCOM.Wise40.Properties.Resources.ASCOM;
             this.picASCOM.Location = new System.Drawing.Point(253, 16);
             this.picASCOM.Name = "picASCOM";
@@ -156,7 +156,7 @@ namespace ASCOM.Wise40 //.Telescope
             this.Name = "TelescopeSetupDialogForm";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Wise40 Setup";
+            this.Text = "Wise40 Telescope Setup";
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();

@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 
 using ASCOM.DeviceInterface;
+using ASCOM.Astrometry;
 using ASCOM.DriverAccess;
 using ASCOM.Wise40;
 using ASCOM.Wise40.Common;
@@ -122,12 +123,6 @@ namespace Dash
 
             if (debugger.Tracing)
                 checkedItems.Add(tracingToolStripMenuItem);
-            if (wisedome._autoCalibrate)
-                checkedItems.Add(domeAutoCalibrateToolStripMenuItem);
-            if (wisetele._enslaveDome)
-                checkedItems.Add(enslaveDomeToolStripMenuItem);
-            if (wisedome._syncVentWithShutter)
-                checkedItems.Add(syncVentWithShutterToolStripMenuItem);
 
             foreach (var item in checkedItems)
             {
@@ -162,20 +157,6 @@ namespace Dash
                 tb.Size = new System.Drawing.Size(300, 25);
                 tb.Text = reportFile;
                 tb.Tag = reportFile;
-                tb.BackColor = Color.FromArgb(64, 64, 64);
-                tb.ForeColor = Color.FromArgb(176, 161, 142);
-            }
-
-            using (ASCOM.Utilities.Profile driverProfile = new ASCOM.Utilities.Profile())
-            {
-                driverProfile.DeviceType = "Telescope";
-                string step = driverProfile.GetValue("ASCOM.Wise40.Telescope", "Minimal Dome Tracking Movement", string.Empty, string.Empty);
-                tb = toolStripTextBoxMinimalDomeStep;
-
-                tb.MaxLength = 16;
-                tb.Size = new System.Drawing.Size(50, 25);
-                tb.Text = step;
-                tb.Tag = step;
                 tb.BackColor = Color.FromArgb(64, 64, 64);
                 tb.ForeColor = Color.FromArgb(176, 161, 142);
             }
@@ -1264,15 +1245,6 @@ namespace Dash
                     driverProfile.WriteValue("ASCOM.Wise40.VantagePro.ObservingConditions", "DataFile", toolStripTextBoxVantagePro2ReportFile.Text);
                 }
             }
-
-            if ((string)toolStripTextBoxMinimalDomeStep.Tag != toolStripTextBoxMinimalDomeStep.Text)
-            {
-                using (ASCOM.Utilities.Profile driverProfile = new ASCOM.Utilities.Profile())
-                {
-                    driverProfile.DeviceType = "Telescope";
-                    driverProfile.WriteValue("ASCOM.Wise40.Telescope", "Minimal Dome Tracking Movement", toolStripTextBoxMinimalDomeStep.Text);
-                }
-            }
             saveToProfileToolStripMenuItem.Text = "Save To Profile";
         }
 
@@ -1425,6 +1397,18 @@ namespace Dash
         {
             wisedome.Projector = !wisedome.Projector;
             buttonProjector.Text = wisedome.Projector ? "Turn projector Off" : "Turn projector On";
+        }
+
+        private void telescopeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            wisetele.init();
+            new TelescopeSetupDialogForm(wisetele.debugger.Tracing, wisetele.debugger.Level, wisesite.astrometricAccuracy, wisetele._enslaveDome).Show();
+        }
+
+        private void domeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            wisedome.init();
+            new DomeSetupDialogForm().Show();
         }
 
         private void manage3InchFilterInventoryToolStripMenuItem_Click(object sender, EventArgs e)

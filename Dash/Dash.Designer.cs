@@ -117,12 +117,7 @@
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.telescopeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.enslaveDomeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.domeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.domeAutoCalibrateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.syncVentWithShutterToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.minimalTrackingStepToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripTextBoxMinimalDomeStep = new System.Windows.Forms.ToolStripTextBox();
             this.cloudSensorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.dataFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripTextBoxCloudSensorDataFile = new System.Windows.Forms.ToolStripTextBox();
@@ -1558,57 +1553,17 @@
             // 
             // telescopeToolStripMenuItem
             // 
-            this.telescopeToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.enslaveDomeToolStripMenuItem});
             this.telescopeToolStripMenuItem.Name = "telescopeToolStripMenuItem";
             this.telescopeToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
             this.telescopeToolStripMenuItem.Text = "Telescope";
-            // 
-            // enslaveDomeToolStripMenuItem
-            // 
-            this.enslaveDomeToolStripMenuItem.Name = "enslaveDomeToolStripMenuItem";
-            this.enslaveDomeToolStripMenuItem.Size = new System.Drawing.Size(151, 22);
-            this.enslaveDomeToolStripMenuItem.Text = "Enslave Dome";
-            this.enslaveDomeToolStripMenuItem.Click += new System.EventHandler(this.enslaveDomeToolStripMenuItem_Click);
+            this.telescopeToolStripMenuItem.Click += new System.EventHandler(this.telescopeToolStripMenuItem_Click);
             // 
             // domeToolStripMenuItem
             // 
-            this.domeToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.domeAutoCalibrateToolStripMenuItem,
-            this.syncVentWithShutterToolStripMenuItem,
-            this.minimalTrackingStepToolStripMenuItem});
             this.domeToolStripMenuItem.Name = "domeToolStripMenuItem";
             this.domeToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
             this.domeToolStripMenuItem.Text = "Dome";
-            // 
-            // domeAutoCalibrateToolStripMenuItem
-            // 
-            this.domeAutoCalibrateToolStripMenuItem.Name = "domeAutoCalibrateToolStripMenuItem";
-            this.domeAutoCalibrateToolStripMenuItem.Size = new System.Drawing.Size(232, 22);
-            this.domeAutoCalibrateToolStripMenuItem.Text = "Auto Calibrate";
-            this.domeAutoCalibrateToolStripMenuItem.ToolTipText = "If asked for Azimuth and not calibrated, \r\nthe dome will automatically search for" +
-    "\r\nthe calibration point.\r\n";
-            this.domeAutoCalibrateToolStripMenuItem.Click += new System.EventHandler(this.domeAutoCalibrateToolStripMenuItem_Click);
-            // 
-            // syncVentWithShutterToolStripMenuItem
-            // 
-            this.syncVentWithShutterToolStripMenuItem.Name = "syncVentWithShutterToolStripMenuItem";
-            this.syncVentWithShutterToolStripMenuItem.Size = new System.Drawing.Size(232, 22);
-            this.syncVentWithShutterToolStripMenuItem.Text = "SyncVentWithShutter";
-            this.syncVentWithShutterToolStripMenuItem.Click += new System.EventHandler(this.syncVentWithShutterToolStripMenuItem_Click);
-            // 
-            // minimalTrackingStepToolStripMenuItem
-            // 
-            this.minimalTrackingStepToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripTextBoxMinimalDomeStep});
-            this.minimalTrackingStepToolStripMenuItem.Name = "minimalTrackingStepToolStripMenuItem";
-            this.minimalTrackingStepToolStripMenuItem.Size = new System.Drawing.Size(232, 22);
-            this.minimalTrackingStepToolStripMenuItem.Text = "Minimal Tracking Step (deg)";
-            // 
-            // toolStripTextBoxMinimalDomeStep
-            // 
-            this.toolStripTextBoxMinimalDomeStep.Name = "toolStripTextBoxMinimalDomeStep";
-            this.toolStripTextBoxMinimalDomeStep.Size = new System.Drawing.Size(100, 23);
+            this.domeToolStripMenuItem.Click += new System.EventHandler(this.domeToolStripMenuItem_Click);
             // 
             // cloudSensorToolStripMenuItem
             // 
@@ -3045,9 +3000,7 @@
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem2;
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.ToolStripMenuItem domeToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem domeAutoCalibrateToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem telescopeToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem enslaveDomeToolStripMenuItem;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Button buttonFlat;
         private System.Windows.Forms.Button buttonHandleCover;
@@ -3062,7 +3015,6 @@
         private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemFilterWheel;
         private System.Windows.Forms.ToolStripMenuItem filterWheelToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem syncVentWithShutterToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem5;
         private System.Windows.Forms.ComboBox comboBoxFocusStep;
         private System.Windows.Forms.Button buttonFocusIncrease;
@@ -3102,8 +3054,6 @@
         private System.Windows.Forms.ToolStripMenuItem manage3FiltersToolStripMenuItem;
         private ASCOM.Controls.Annunciator annunciatorPulse;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemPulseGuide;
-        private System.Windows.Forms.ToolStripMenuItem minimalTrackingStepToolStripMenuItem;
-        private System.Windows.Forms.ToolStripTextBox toolStripTextBoxMinimalDomeStep;
         private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.Panel panel3;
         private System.Windows.Forms.PictureBox pictureBox1;

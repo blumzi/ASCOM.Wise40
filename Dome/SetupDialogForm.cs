@@ -15,6 +15,7 @@ namespace ASCOM.Wise40 //.Dome
     public partial class DomeSetupDialogForm : Form
     {
         private WiseDome wisedome = WiseDome.Instance;
+        double minimalStep;
 
         public DomeSetupDialogForm()
         {
@@ -23,11 +24,26 @@ namespace ASCOM.Wise40 //.Dome
             wisedome.ReadProfile();
             checkBoxAutoCalibrate.Checked = wisedome._autoCalibrate;
             checkBoxBypassSafety.Checked = wisedome._bypassSafety;
+            checkBoxSyncVent.Checked = wisedome._syncVentWithShutter;
+
+            using (ASCOM.Utilities.Profile driverProfile = new ASCOM.Utilities.Profile())
+            {
+                driverProfile.DeviceType = "Telescope";
+                minimalStep = Convert.ToDouble(driverProfile.GetValue("ASCOM.Wise40.Telescope", 
+                    "Minimal Dome Tracking Movement", string.Empty, string.Empty));
+                textBoxMinimalStep.Text = minimalStep.ToString();
+            }
         }
 
         private void cmdOK_Click(object sender, EventArgs e) // OK button event handler
         {
             wisedome.WriteProfile();
+
+            using (ASCOM.Utilities.Profile driverProfile = new ASCOM.Utilities.Profile())
+            {
+                driverProfile.DeviceType = "Telescope";
+                driverProfile.WriteValue("ASCOM.Wise40.Telescope", "Minimal Dome Tracking Movement", textBoxMinimalStep.Text);
+            }
         }
 
         private void cmdCancel_Click(object sender, EventArgs e) // Cancel button event handler

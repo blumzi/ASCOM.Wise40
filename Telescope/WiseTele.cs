@@ -2843,7 +2843,12 @@ namespace ASCOM.Wise40
                         Accuracy.Reduced;
                 _calculateRefraction = Convert.ToBoolean(driverProfile.GetValue(driverID, calculateRefractionProfileName, string.Empty, "true"));
                 _studyMotion = Convert.ToBoolean(driverProfile.GetValue(driverID, "StudyMotion", string.Empty, "false"));
-                _minimalDomeTrackingMovement = Convert.ToDouble(driverProfile.GetValue(driverID, minimalDomeTrackingMovementProfileName, string.Empty, "2.0"));
+            }
+
+            using (Profile driverProfile = new Profile())
+            {
+                driverProfile.DeviceType = "Dome";
+                _minimalDomeTrackingMovement = Convert.ToDouble(driverProfile.GetValue("ASCOM.Wise40.Dome", minimalDomeTrackingMovementProfileName, string.Empty, "2.0"));
             }
         }
 
@@ -2859,7 +2864,12 @@ namespace ASCOM.Wise40
                 driverProfile.WriteValue(driverID, astrometricAccuracyProfileName, wisesite.astrometricAccuracy == Accuracy.Full ? "Full" : "Reduced");
                 driverProfile.WriteValue(driverID, enslaveDomeProfileName, _enslaveDome.ToString());
                 driverProfile.WriteValue(driverID, calculateRefractionProfileName, _calculateRefraction.ToString());
-                driverProfile.WriteValue(driverID, minimalDomeTrackingMovementProfileName, _minimalDomeTrackingMovement.ToString());
+            }
+
+            using (Profile driverProfile = new Profile())
+            {
+                driverProfile.DeviceType = "Dome";
+                driverProfile.WriteValue("ASCOM.Wise40.Dome", minimalDomeTrackingMovementProfileName, _minimalDomeTrackingMovement.ToString());
             }
         }
 
