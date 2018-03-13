@@ -30,7 +30,7 @@ namespace ASCOM.Wise40 //.Dome
             {
                 driverProfile.DeviceType = "Telescope";
                 minimalStep = Convert.ToDouble(driverProfile.GetValue("ASCOM.Wise40.Telescope", 
-                    "Minimal Dome Tracking Movement", string.Empty, string.Empty));
+                    "Minimal Dome Tracking Movement", string.Empty, "2.0"));
                 textBoxMinimalStep.Text = minimalStep.ToString();
             }
         }
