@@ -280,7 +280,7 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
 
         public override bool getIsSafe()
         {
-            return wisesafe.vantagePro.WindSpeed < _max;
+            return wisesafe.vantagePro.KMH(wisesafe.vantagePro.WindSpeedMps) < _max;
         }
 
         public override string reason()
@@ -296,7 +296,7 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
             if ((nbad = nBadReadings) == 0)
                 return string.Empty;
 
-            return string.Format("The last {0} wind speed readings from VantagePro were higher than {1} m/sec.", nbad, _max);
+            return string.Format("The last {0} wind speed readings from VantagePro were higher than {1} km/h.", nbad, _max);
         }
 
         public override string MaxAsString

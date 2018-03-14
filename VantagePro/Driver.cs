@@ -446,7 +446,7 @@ namespace ASCOM.Wise40.VantagePro
         {
             get
             {
-                return vantagePro.WindSpeed;
+                return vantagePro.WindSpeedMps;
             }
         }
 

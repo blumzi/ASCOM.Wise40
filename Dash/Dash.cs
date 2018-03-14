@@ -131,41 +131,38 @@ namespace Dash
                 item.Invalidate();
             }
 
-            ToolStripTextBox tb;
-            using (ASCOM.Utilities.Profile driverProfile = new ASCOM.Utilities.Profile())
-            {
-                driverProfile.DeviceType = "ObservingConditions";
-                string dataFile = driverProfile.GetValue("ASCOM.Wise40.Boltwood.ObservingConditions", "DataFile", string.Empty, string.Empty);
-                tb = toolStripTextBoxCloudSensorDataFile;
+            //ToolStripTextBox tb;
+            //using (ASCOM.Utilities.Profile driverProfile = new ASCOM.Utilities.Profile())
+            //{
+            //    driverProfile.DeviceType = "ObservingConditions";
+            //    string dataFile = driverProfile.GetValue("ASCOM.Wise40.Boltwood.ObservingConditions", "DataFile", string.Empty, string.Empty);
+            //    tb = toolStripTextBoxCloudSensorDataFile;
 
-                tb.MaxLength = 256;
-                tb.Size = new System.Drawing.Size(300, 25);
-                tb.Text = dataFile;
-                tb.Tag = dataFile;
-                tb.BackColor = Color.FromArgb(64, 64, 64);
-                tb.ForeColor = Color.FromArgb(176, 161, 142);
-            }
+            //    tb.MaxLength = 256;
+            //    tb.Size = new System.Drawing.Size(300, 25);
+            //    tb.Text = dataFile;
+            //    tb.Tag = dataFile;
+            //    tb.BackColor = Color.FromArgb(64, 64, 64);
+            //    tb.ForeColor = Color.FromArgb(176, 161, 142);
+            //}
 
 
-            using (ASCOM.Utilities.Profile driverProfile = new ASCOM.Utilities.Profile())
-            {
-                driverProfile.DeviceType = "ObservingConditions";
-                string reportFile = driverProfile.GetValue("ASCOM.Wise40.VantagePro.ObservingConditions", "DataFile", string.Empty, string.Empty);
-                tb = toolStripTextBoxVantagePro2ReportFile;
+            //using (ASCOM.Utilities.Profile driverProfile = new ASCOM.Utilities.Profile())
+            //{
+            //    driverProfile.DeviceType = "ObservingConditions";
+            //    string reportFile = driverProfile.GetValue("ASCOM.Wise40.VantagePro.ObservingConditions", "DataFile", string.Empty, string.Empty);
+            //    tb = toolStripTextBoxVantagePro2ReportFile;
 
-                tb.MaxLength = 256;
-                tb.Size = new System.Drawing.Size(300, 25);
-                tb.Text = reportFile;
-                tb.Tag = reportFile;
-                tb.BackColor = Color.FromArgb(64, 64, 64);
-                tb.ForeColor = Color.FromArgb(176, 161, 142);
-            }
+            //    tb.MaxLength = 256;
+            //    tb.Size = new System.Drawing.Size(300, 25);
+            //    tb.Text = reportFile;
+            //    tb.Tag = reportFile;
+            //    tb.BackColor = Color.FromArgb(64, 64, 64);
+            //    tb.ForeColor = Color.FromArgb(176, 161, 142);
+            //}
 
             buttonVent.Text = wisedome.Vent ? "Close Vent" : "Open Vent";
             buttonProjector.Text = wisedome.Projector ? "Turn projector Off" : "Turn projector On";
-
-            //buttonFocusAllUp.Text = "\u21c8  " + wisefocuser.UpperLimit.ToString();
-            //buttonFocusAllDown.Text = wisefocuser.LowerLimit.ToString() + "  \u21ca";
 
             //wisefilterwheel.wheelOrPositionChanged += onWheelOrPositionChanged;
         }
@@ -432,7 +429,8 @@ namespace Dash
                         labelCloudCoverValue.Text = "Unknown";
                     labelCloudCoverValue.ForeColor = Statuser.TriStateColor(wisesafetooperate.isSafeCloudCover);
 
-                    labelWindSpeedValue.Text = oc.WindSpeed.ToString() + "m/s";
+                    double windSpeedMps = oc.WindSpeed;
+                    labelWindSpeedValue.Text = string.Format("{0} m/s ({1} km/h)", windSpeedMps.ToString(), (windSpeedMps * (1 / 3.6)).ToString());
                     labelWindSpeedValue.ForeColor = Statuser.TriStateColor(wisesafetooperate.isSafeWindSpeed);
 
                     labelRainRateValue.Text = (oc.RainRate > 0.0) ? "Wet" : "Dry";

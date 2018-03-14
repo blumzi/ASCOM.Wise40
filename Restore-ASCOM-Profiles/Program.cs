@@ -89,7 +89,7 @@ namespace Restore_ASCOM_Profiles
                 driverProfile.WriteValue(driverID, "Clouds", "3", "Repeats");
                 driverProfile.WriteValue(driverID, "Clouds", "True", "Enabled");
 
-                driverProfile.WriteValue(driverID, "Wind", "70", "Max");
+                driverProfile.WriteValue(driverID, "Wind", "40", "Max");
                 driverProfile.WriteValue(driverID, "Wind", "30", "Interval");
                 driverProfile.WriteValue(driverID, "Wind", "3", "Repeats");
                 driverProfile.WriteValue(driverID, "Wind", "True", "Enabled");

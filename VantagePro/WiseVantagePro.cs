@@ -487,15 +487,26 @@ namespace ASCOM.Wise40.VantagePro
             }
         }
 
+        public double MPS(double kmh)
+        {
+            return kmh * (1000 / 3600);
+        }
+
+        public double KMH(double mps)
+        {
+            return mps / (1000 / 3600);
+        }
+
         /// <summary>
         /// Wind speed at the observatory in m/s
         /// </summary>
-        public double WindSpeed
+        public double WindSpeedMps
         {
             get
             {
                 Refresh();
-                var windSpeed = Convert.ToDouble(sensorData["windSpeed"]);
+                var kmh = Convert.ToDouble(sensorData["windSpeed"]);
+                var windSpeed = MPS(kmh);
 
                 tl.LogMessage("WindSpeed", "get - " + windSpeed.ToString());
                 #region debug
