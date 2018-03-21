@@ -430,8 +430,7 @@ namespace Dash
                     labelCloudCoverValue.ForeColor = Statuser.TriStateColor(wisesafetooperate.isSafeCloudCover);
 
                     double windSpeedMps = oc.WindSpeed;
-                    labelWindSpeedValue.Text = string.Format("{0} m/s ({1} km/h)", windSpeedMps.ToString(), 
-                        wisevantagepro.KMH(windSpeedMps).ToString());
+                    labelWindSpeedValue.Text = string.Format("{0:G3} km/h", wisevantagepro.KMH(windSpeedMps));
                     labelWindSpeedValue.ForeColor = Statuser.TriStateColor(wisesafetooperate.isSafeWindSpeed);
 
                     labelRainRateValue.Text = (oc.RainRate > 0.0) ? "Wet" : "Dry";

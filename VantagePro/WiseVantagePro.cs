@@ -5,6 +5,7 @@ using System.Text;
 using System.Globalization;
 
 using System.IO;
+using System.Threading;
 using ASCOM.Wise40.Common;
 using ASCOM.Utilities;
 
@@ -61,23 +62,32 @@ namespace ASCOM.Wise40.VantagePro
                 if (sensorData == null)
                     sensorData = new Dictionary<string, string>();
 
-                using (StreamReader sr = new StreamReader(_dataFile))
+                for (int tries = 5; tries != 0; tries--)
                 {
-                    string[] words;
-                    string line;
-
-                    if (sr == null)
-                        throw new InvalidValueException(string.Format("Refresh: cannot open \"{0}\" for read.", _dataFile));
-
-                    while ((line = sr.ReadLine()) != null)
+                    try
                     {
-                        words = line.Split('=');
-                        if (words.Length != 3)
-                            continue;
-                        sensorData[words[0]] = words[1];
+                        using (StreamReader sr = new StreamReader(_dataFile))
+                        {
+                            string[] words;
+                            string line;
+
+                            if (sr == null)
+                                throw new InvalidValueException(string.Format("Refresh: cannot open \"{0}\" for read.", _dataFile));
+
+                            while ((line = sr.ReadLine()) != null)
+                            {
+                                words = line.Split('=');
+                                if (words.Length != 3)
+                                    continue;
+                                sensorData[words[0]] = words[1];
+                            }
+                            _lastDataRead = DateTime.Now;
+                        }
+                    } catch
+                    {
+                        Thread.Sleep(500);  // WeatherLink is writing the file
                     }
                 }
-                _lastDataRead = DateTime.Now;
             }
         }
 
@@ -489,12 +499,12 @@ namespace ASCOM.Wise40.VantagePro
 
         public double MPS(double kmh)
         {
-            return kmh * (1000 / 3600);
+            return kmh * (1000.0 / 3600.0);
         }
 
         public double KMH(double mps)
         {
-            return mps / (1000 / 3600);
+            return mps * 3.6;
         }
 
         /// <summary>
@@ -505,8 +515,8 @@ namespace ASCOM.Wise40.VantagePro
             get
             {
                 Refresh();
-                var kmh = Convert.ToDouble(sensorData["windSpeed"]);
-                var windSpeed = MPS(kmh);
+                double kmh = Convert.ToSingle(sensorData["windSpeed"]);
+                double windSpeed = MPS(kmh);
 
                 tl.LogMessage("WindSpeed", "get - " + windSpeed.ToString());
                 #region debug
