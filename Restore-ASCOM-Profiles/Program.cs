@@ -83,7 +83,7 @@ namespace Restore_ASCOM_Profiles
             {
                 driverProfile.DeviceType = "SafetyMonitor";
 
-                driverProfile.WriteValue(driverID, "Age Max", "90");
+                driverProfile.WriteValue(driverID, "Age Max", "180");
                 driverProfile.WriteValue(driverID, "Clouds", "cloudClear", "Max");
                 driverProfile.WriteValue(driverID, "Clouds", "30", "Interval");
                 driverProfile.WriteValue(driverID, "Clouds", "3", "Repeats");
@@ -111,7 +111,7 @@ namespace Restore_ASCOM_Profiles
 
                 driverProfile.WriteValue(driverID, "Sun", "-7", "Max");
                 driverProfile.WriteValue(driverID, "Sun", "60", "Interval");
-                driverProfile.WriteValue(driverID, "Sun", "2", "Repeats");
+                driverProfile.WriteValue(driverID, "Sun", "1", "Repeats");
                 driverProfile.WriteValue(driverID, "Sun", "True", "Enabled");
                 
                 driverProfile.WriteValue(driverID, "HumanIntervention", "0", "Interval");
