@@ -10,7 +10,7 @@ namespace ASCOM.Wise40 //.Telescope
     public class WiseHAEncoder : WiseObject, IConnectable, IDisposable, IEncoder
     {
         private bool _connected = false;
-        private /*uint*/ double _daqsValue;
+        private double _daqsValue;
         private const uint _realValueAtFiducialMark = 1432779; // Arie - 02 July 2016
         
         private WiseEncoder axisEncoder, wormEncoder;
@@ -30,6 +30,7 @@ namespace ASCOM.Wise40 //.Telescope
         private Common.Debugger debugger = Common.Debugger.Instance;
         private Hardware.Hardware hw = Hardware.Hardware.Instance;
         private static WiseSite wisesite = WiseSite.Instance;
+        private int prev_worm = int.MinValue, prev_axis = int.MinValue;
 
         private Object _lock = new object();
 
@@ -67,7 +68,7 @@ namespace ASCOM.Wise40 //.Telescope
         /// Reads the axis and worm encoders
         /// </summary>
         /// <returns>Combined Daq values</returns>
-        public /*uint*/ double Value
+        public double Value
         {
             get
             {
@@ -98,9 +99,18 @@ namespace ASCOM.Wise40 //.Telescope
                         _daqsValue = ((axis * 720 - worm) & 0xfff000) + worm;
                     }
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                        "{0}: value: {1}, axis: {2}, worm: {3}",
+                    string dbg = string.Format("{0}: value: {1}, axis: {2} (0x{2:x}), worm: {3} (0x{3:x})",
                         Name, _daqsValue, axis, worm);
+                    if (prev_worm != int.MinValue)
+                    {
+                        dbg += string.Format(" prev_axis: {0} (0x{0:x}), prev_worm: {1} (0x{1:x})", prev_axis, prev_worm);
+                        dbg += string.Format(" change_axis: {0}, change_worm: {1}",
+                            Convert.ToString(axis ^ prev_axis, 2).PadLeft(16, '0'),
+                            Convert.ToString(worm ^ prev_worm).PadLeft(12, '0'));
+                    }
+                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, dbg);
+                    prev_worm = worm;
+                    prev_axis = axis;
                     #endregion
                 }
                 return _daqsValue;
