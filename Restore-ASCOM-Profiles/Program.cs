@@ -183,6 +183,7 @@ namespace Restore_ASCOM_Profiles
             string debugLevelProfileName = "DebugLevel";
             string studyMotionProfileName = "StudyMotion";
             string debugFileProfileName = "DebugFile";
+            string bypassSafetyProfileName = "BypassSafety";
             string debugFile = Const.topWise40Directory + "Logs/debug.txt";
             string refractionProfileName = "Calculate refraction";
             string minimalDomeTrackingMovementProfileName = "Minimal Dome Tracking Movement";
@@ -201,6 +202,7 @@ namespace Restore_ASCOM_Profiles
                 driverProfile.WriteValue(driverID, debugFileProfileName, debugFile);
                 driverProfile.WriteValue(driverID, refractionProfileName, mode == Mode.LCO ? false.ToString() : true.ToString());
                 driverProfile.WriteValue(driverID, minimalDomeTrackingMovementProfileName, "2.0");
+                driverProfile.WriteValue(driverID, bypassSafetyProfileName, "false");
             }
         }
 

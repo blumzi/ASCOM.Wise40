@@ -30,6 +30,7 @@ namespace ASCOM.Wise40 //.Telescope
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.cmdOK = new System.Windows.Forms.Button();
             this.cmdCancel = new System.Windows.Forms.Button();
             this.descriptionLabel = new System.Windows.Forms.Label();
@@ -38,6 +39,8 @@ namespace ASCOM.Wise40 //.Telescope
             this.acuracyLabel = new System.Windows.Forms.Label();
             this.checkBoxEnslaveDome = new System.Windows.Forms.CheckBox();
             this.checkBoxCalculateRefraction = new System.Windows.Forms.CheckBox();
+            this.checkBoxBypassSafety = new System.Windows.Forms.CheckBox();
+            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).BeginInit();
             this.SuspendLayout();
             // 
@@ -47,7 +50,7 @@ namespace ASCOM.Wise40 //.Telescope
             this.cmdOK.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.cmdOK.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.cmdOK.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.cmdOK.Location = new System.Drawing.Point(248, 89);
+            this.cmdOK.Location = new System.Drawing.Point(248, 108);
             this.cmdOK.Name = "cmdOK";
             this.cmdOK.Size = new System.Drawing.Size(59, 24);
             this.cmdOK.TabIndex = 0;
@@ -61,7 +64,7 @@ namespace ASCOM.Wise40 //.Telescope
             this.cmdCancel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.cmdCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.cmdCancel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.cmdCancel.Location = new System.Drawing.Point(248, 115);
+            this.cmdCancel.Location = new System.Drawing.Point(248, 134);
             this.cmdCancel.Name = "cmdCancel";
             this.cmdCancel.Size = new System.Drawing.Size(59, 25);
             this.cmdCancel.TabIndex = 1;
@@ -71,7 +74,7 @@ namespace ASCOM.Wise40 //.Telescope
             // 
             // descriptionLabel
             // 
-            this.descriptionLabel.Location = new System.Drawing.Point(24, 34);
+            this.descriptionLabel.Location = new System.Drawing.Point(24, 24);
             this.descriptionLabel.Name = "descriptionLabel";
             this.descriptionLabel.Size = new System.Drawing.Size(165, 20);
             this.descriptionLabel.TabIndex = 2;
@@ -98,7 +101,7 @@ namespace ASCOM.Wise40 //.Telescope
             this.accuracyBox.Items.AddRange(new object[] {
             "Full",
             "Reduced"});
-            this.accuracyBox.Location = new System.Drawing.Point(136, 78);
+            this.accuracyBox.Location = new System.Drawing.Point(136, 70);
             this.accuracyBox.Name = "accuracyBox";
             this.accuracyBox.Size = new System.Drawing.Size(69, 21);
             this.accuracyBox.TabIndex = 8;
@@ -107,7 +110,7 @@ namespace ASCOM.Wise40 //.Telescope
             // acuracyLabel
             // 
             this.acuracyLabel.AutoSize = true;
-            this.acuracyLabel.Location = new System.Drawing.Point(24, 80);
+            this.acuracyLabel.Location = new System.Drawing.Point(24, 72);
             this.acuracyLabel.Name = "acuracyLabel";
             this.acuracyLabel.Size = new System.Drawing.Size(107, 13);
             this.acuracyLabel.TabIndex = 10;
@@ -135,12 +138,24 @@ namespace ASCOM.Wise40 //.Telescope
             this.checkBoxCalculateRefraction.Text = "Calculate refraction";
             this.checkBoxCalculateRefraction.UseVisualStyleBackColor = true;
             // 
+            // checkBoxBypassSafety
+            // 
+            this.checkBoxBypassSafety.AutoSize = true;
+            this.checkBoxBypassSafety.Location = new System.Drawing.Point(24, 144);
+            this.checkBoxBypassSafety.Name = "checkBoxBypassSafety";
+            this.checkBoxBypassSafety.Size = new System.Drawing.Size(93, 17);
+            this.checkBoxBypassSafety.TabIndex = 16;
+            this.checkBoxBypassSafety.Text = "Bypass Safety";
+            this.toolTip1.SetToolTip(this.checkBoxBypassSafety, "Dangerous!!!  Telescope will not perform safety checks!");
+            this.checkBoxBypassSafety.UseVisualStyleBackColor = true;
+            // 
             // TelescopeSetupDialogForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.ClientSize = new System.Drawing.Size(321, 152);
+            this.ClientSize = new System.Drawing.Size(321, 171);
+            this.Controls.Add(this.checkBoxBypassSafety);
             this.Controls.Add(this.checkBoxCalculateRefraction);
             this.Controls.Add(this.checkBoxEnslaveDome);
             this.Controls.Add(this.acuracyLabel);
@@ -173,5 +188,7 @@ namespace ASCOM.Wise40 //.Telescope
         private System.Windows.Forms.Label acuracyLabel;
         private System.Windows.Forms.CheckBox checkBoxEnslaveDome;
         private System.Windows.Forms.CheckBox checkBoxCalculateRefraction;
+        private System.Windows.Forms.CheckBox checkBoxBypassSafety;
+        private System.Windows.Forms.ToolTip toolTip1;
     }
 }

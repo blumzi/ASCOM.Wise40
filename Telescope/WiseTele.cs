@@ -2843,6 +2843,7 @@ namespace ASCOM.Wise40
                         Accuracy.Reduced;
                 _calculateRefraction = Convert.ToBoolean(driverProfile.GetValue(driverID, calculateRefractionProfileName, string.Empty, "true"));
                 _studyMotion = Convert.ToBoolean(driverProfile.GetValue(driverID, "StudyMotion", string.Empty, "false"));
+                _bypassSafety = Convert.ToBoolean(driverProfile.GetValue(driverID, "BypassSafety", string.Empty, "false"));
             }
 
             using (Profile driverProfile = new Profile())
@@ -2864,6 +2865,7 @@ namespace ASCOM.Wise40
                 driverProfile.WriteValue(driverID, astrometricAccuracyProfileName, wisesite.astrometricAccuracy == Accuracy.Full ? "Full" : "Reduced");
                 driverProfile.WriteValue(driverID, enslaveDomeProfileName, _enslaveDome.ToString());
                 driverProfile.WriteValue(driverID, calculateRefractionProfileName, _calculateRefraction.ToString());
+                driverProfile.WriteValue(driverID, "BypassSafety", _bypassSafety.ToString());
             }
 
             using (Profile driverProfile = new Profile())

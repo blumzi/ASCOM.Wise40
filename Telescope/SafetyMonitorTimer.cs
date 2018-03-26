@@ -83,7 +83,7 @@ namespace ASCOM.Wise40 //.Telescope
             set
             {
                 _enabled = value;
-                if (_enabled)
+                if (_enabled && !wisetele.BypassSafety)
                     _timer.Change(_dueTime, _period);
                 else
                     _timer.Change(0, 0);
