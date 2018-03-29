@@ -14,12 +14,15 @@ namespace ASCOM.Wise40
 {
     public class AxisMonitor : IConnectable
     {
+        private const int nSamples = 5;
         private double _previousValue = double.NaN;
-        private FixedSizedQueue<double> _deltas = new FixedSizedQueue<double>(5);
+        private FixedSizedQueue<double> _deltas = new FixedSizedQueue<double>(nSamples);
         private TelescopeAxes _axis, _other_axis;
         private WiseTele wisetele = WiseTele.Instance;
         private bool _connected = false;
         private Debugger debugger = Debugger.Instance;
+        private bool _whileTracking = false;
+        private WiseVirtualMotor trackingMotor = WiseTele.Instance.TrackingMotor;
         
         /// <summary>
         /// The epsilon value contains the minimal encoder change (within the _samplingFrequency below)
@@ -54,6 +57,7 @@ namespace ASCOM.Wise40
             else if (_axis == TelescopeAxes.axisPrimary)
             {
                 epsilon = primaryDelta; // To Be Reviewed
+                _whileTracking = trackingMotor.isOn;
             }
             else if (_axis == TelescopeAxes.axisSecondary)
             {
@@ -97,8 +101,19 @@ namespace ASCOM.Wise40
 
         private void SampleAxisMovement(object StateObject)
         {
-            //double value = (_axis == TelescopeAxes.axisPrimary) ? wisetele.RightAscension : wisetele.Declination;
-            double value = (_axis == TelescopeAxes.axisPrimary) ? wisetele.HAEncoder.Value : wisetele.Declination;
+            if (_axis == TelescopeAxes.axisPrimary)
+            {
+                if (trackingMotor.isOn != _whileTracking)
+                {
+                    _whileTracking = trackingMotor.isOn;
+                    _deltas = new FixedSizedQueue<double>(nSamples);
+                }
+            }
+
+            double value = (_axis == TelescopeAxes.axisPrimary) ?
+                    (_whileTracking ? wisetele.RightAscension : wisetele.HAEncoder.Value) :
+                    wisetele.Declination;
+
             if (_previousValue == double.NaN)
             {
                 _previousValue = value;
