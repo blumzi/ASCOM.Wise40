@@ -192,6 +192,7 @@
     </None>
     <Content Include="ASCOM.ico" />
     <Content Include="Documents\DomeSync.txt" />
+    <Content Include="Documents\Telescope Conform32 Results.txt" />
     <Content Include="Installer\ReadMe.html" />
     <Content Include="Installer\Wise40Telescope Setup.iss" />
     <Content Include="ReadMe.htm" />
