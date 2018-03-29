@@ -61,7 +61,7 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
     /// <summary>
     /// ASCOM SafetyMonitor Driver for Wise40.SafeToOpen.
     /// </summary>
-    [Guid("6b5388b9-d420-4596-9311-f5f9c3dd090f")]
+    [Guid("67F3B23A-17E1-4F0B-A9E9-BDD750E3C289")]
     [ClassInterface(ClassInterfaceType.None)]
     [ComVisible(true)]
     public class SafetyMonitor : ISafetyMonitor

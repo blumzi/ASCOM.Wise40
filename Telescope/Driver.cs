@@ -58,7 +58,7 @@ namespace ASCOM.Wise40 //.Telescope
     /// <summary>
     /// ASCOM Telescope Driver for Wise40.
     /// </summary>
-    [Guid("320779e0-0cf2-47ca-8486-4472c9a0fe5e")]
+    [Guid("05CBFDAA-DDA0-4248-9240-288A797CD7B3")]
     [ClassInterface(ClassInterfaceType.None)]
     [ComVisible(true)]
     public class Telescope : ITelescopeV3, IDisposable

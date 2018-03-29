@@ -53,8 +53,9 @@ namespace ASCOM.Wise40.VantagePro
     /// <summary>
     /// ASCOM ObservingConditions Driver for Wise40.VantagePro.
     /// </summary>
-    [Guid("1a13f123-87d0-4b46-a378-c7da7f98ce12")]
+    [Guid("DB6D788E-9ACD-4EEE-AA12-FF23E9B3488D")]
     [ClassInterface(ClassInterfaceType.None)]
+    [ComVisible(true)]
     public class ObservingConditions : IObservingConditions
     {
         private Common.Debugger debugger = Common.Debugger.Instance;

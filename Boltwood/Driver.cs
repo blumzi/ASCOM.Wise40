@@ -51,8 +51,9 @@ namespace ASCOM.Wise40.Boltwood
     /// <summary>
     /// ASCOM ObservingConditions Driver for Wise40.Boltwood.
     /// </summary>
-    [Guid("ab95e909-98e2-4672-abca-4783aadead81")]
+    [Guid("9385C384-E3FF-4395-B405-7803A1479DDE")]
     [ClassInterface(ClassInterfaceType.None)]
+    [ComVisible(true)]
     public class ObservingConditions : IObservingConditions
     {
         private static WiseBoltwood boltwood = WiseBoltwood.Instance;
