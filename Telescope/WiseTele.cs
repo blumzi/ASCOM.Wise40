@@ -80,6 +80,7 @@ namespace ASCOM.Wise40
         private class TrackingRestorer
         {
             bool _wasTracking;
+            bool _savedTrackingState = false;
             long _axisMovers;
 
             public TrackingRestorer()
@@ -90,25 +91,42 @@ namespace ASCOM.Wise40
             public void AddMover()
             {
                 long current = Interlocked.Increment(ref _axisMovers);
+                #region debug
+                string dbg = string.Format("TrackingRestorer:AddMover:  current: {0}", current);
+                #endregion
                 if (current == 1)
                 {
                     _wasTracking = _instance.Tracking;
+                    _savedTrackingState = true;
                     #region debug
-                    _instance.debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "TrackingRestorer:AddMover:  Remembered _wasTracking: {0}", _wasTracking);
+                    dbg += string.Format(" remembering _wasTracking: {0}", _wasTracking);
                     #endregion
                 }
+                #region debug
+                _instance.debugger.WriteLine(Debugger.DebugLevel.DebugLogic, dbg);
+                #endregion
             }
 
             public void RemoveMover()
             {
-                long current = Interlocked.Decrement(ref _axisMovers);
-                if (current == 0)
+                long current = Interlocked.Read(ref _axisMovers);
+                #region debug
+                string dbg = string.Format("TrackingRestorer:RemoveMover:  current: {0}", current);
+                #endregion
+                if (current > 0)
                 {
-                    _instance.Tracking = _wasTracking;
-                    #region debug
-                    _instance.debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "TrackingRestorer:RemoveMover:  Restored Tracking =  _wasTracking: {0}", _wasTracking);
-                    #endregion
+                    current = Interlocked.Decrement(ref _axisMovers);
+                    if (current == 0 && _savedTrackingState)
+                    {
+                        _instance.Tracking = _wasTracking;
+                        #region debug
+                        dbg += string.Format(" restored Tracking to {0}", _wasTracking);
+                        #endregion
+                    }
                 }
+                #region debug
+                _instance.debugger.WriteLine(Debugger.DebugLevel.DebugLogic, dbg);
+                #endregion
             }
         };
         TrackingRestorer _trackingRestorer;
@@ -210,7 +228,6 @@ namespace ASCOM.Wise40
         {
             public Angle minimalMovement;
             public Angle stopMovement;
-            public double millisecondsPerDegree;
         };
 
         public class Movement
@@ -458,7 +475,7 @@ namespace ASCOM.Wise40
 
             WisePin SlewPin = null;
             WisePin NorthGuidePin = null, SouthGuidePin = null, EastGuidePin = null, WestGuidePin = null;   // Guide motor activation pins
-            WisePin NorthPin = null, SouthPin = null, EastPin = null, WestPin = null;                       // Set and Slew motors activation pinsisInitialized = true;
+            WisePin NorthPin = null, SouthPin = null, EastPin = null, WestPin = null;                       // Set and Slew motors activation pins
 
             ReadProfile();
             debugger.init();
@@ -561,21 +578,18 @@ namespace ASCOM.Wise40
             {
                 minimalMovement = new Angle("00h02m00.0s"),
                 stopMovement = new Angle("00h16m00.0s"),
-                millisecondsPerDegree = 500.0,              // 2deg/sec
             };
 
             _instance.realMovementParameters[TelescopeAxes.axisPrimary][Const.rateSet] = new MovementParameters()
             {
                 minimalMovement = Angle.FromHours(Angle.Deg2Hours("00:00:05.0")),
                 stopMovement = new Angle("00h00m02.0s"),
-                millisecondsPerDegree = 60000.0,    // 1min/sec
             };
 
             _instance.realMovementParameters[TelescopeAxes.axisPrimary][Const.rateGuide] = new MovementParameters()
             {
                 minimalMovement = Angle.FromHours(Angle.Deg2Hours("00:00:01.0")),
                 stopMovement = new Angle("00h00m00.04s"),
-                millisecondsPerDegree = 3600000.0,  // 1 sec/sec
             };
 
             _instance.realMovementParameters[TelescopeAxes.axisSecondary] = new Dictionary<double, MovementParameters>();
@@ -583,21 +597,18 @@ namespace ASCOM.Wise40
             {
                 minimalMovement = new Angle("00:30:00.0"),
                 stopMovement = new Angle("04:00:00.0"),
-                millisecondsPerDegree = 500.0,      // 2 deg/sec
             };
 
             _instance.realMovementParameters[TelescopeAxes.axisSecondary][Const.rateSet] = new MovementParameters()
             {
                 minimalMovement = new Angle("00:01:00.0"),
                 stopMovement = new Angle("00:00:15.0"),
-                millisecondsPerDegree = 60000.0,    // 1 min/sec
             };
 
             _instance.realMovementParameters[TelescopeAxes.axisSecondary][Const.rateGuide] = new MovementParameters()
             {
                 minimalMovement = new Angle("00:00:01.0"),
                 stopMovement = new Angle("00:00:00.5"),
-                millisecondsPerDegree = 3600000.0,  // 1 sec/sec
             };
             #endregion
 
@@ -609,21 +620,18 @@ namespace ASCOM.Wise40
             {
                 minimalMovement = Angle.FromHours(Angle.Deg2Hours("01:00:00.0")),
                 stopMovement = new Angle("00h01m00.0s"),
-                millisecondsPerDegree = 500.0,      // 2deg/sec
             };
 
             _instance.simulatedMovementParameters[TelescopeAxes.axisPrimary][Const.rateSet] = new MovementParameters()
             {
                 minimalMovement = Angle.FromHours(Angle.Deg2Hours("00:00:01.0")),
                 stopMovement = new Angle("00h00m01.0s"),
-                millisecondsPerDegree = 60000.0,    // 1min/sec
             };
 
             _instance.simulatedMovementParameters[TelescopeAxes.axisPrimary][Const.rateGuide] = new MovementParameters()
             {
                 minimalMovement = Angle.FromHours(Angle.Deg2Hours("00:00:01.0")),
                 stopMovement = new Angle("00h00m01.0s"),
-                millisecondsPerDegree = 3600000.0,  // 1 sec/sec
             };
 
             _instance.simulatedMovementParameters[TelescopeAxes.axisSecondary] = new Dictionary<double, MovementParameters>();
@@ -631,21 +639,18 @@ namespace ASCOM.Wise40
             {
                 minimalMovement = new Angle("01:00:00.0"),
                 stopMovement = new Angle("00:01:00.0"),
-                millisecondsPerDegree = 500.0,      // 2 deg/sec
             };
 
             _instance.simulatedMovementParameters[TelescopeAxes.axisSecondary][Const.rateSet] = new MovementParameters()
             {
                 minimalMovement = new Angle("00:00:01.0"),
                 stopMovement = new Angle("00:00:01.0"),
-                millisecondsPerDegree = 60000.0,    // 1 min/sec
             };
 
             _instance.simulatedMovementParameters[TelescopeAxes.axisSecondary][Const.rateGuide] = new MovementParameters()
             {
                 minimalMovement = new Angle("00:00:01.0"),
                 stopMovement = new Angle("00:00:01.0"),
-                millisecondsPerDegree = 3600000.0,  // 1 sec/sec
             };
             #endregion
 
@@ -735,10 +740,10 @@ namespace ASCOM.Wise40
             inactivityMonitor.Start("AbortSlew");
             if (AtPark)
             {
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Got AbortSlew while AtPark, not throwing InvalidOperationException !!!");
-                #endregion
-                //throw new InvalidOperationException("Cannot AbortSlew while AtPark");
+                //#region debug
+                //debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Got AbortSlew while AtPark, not throwing InvalidOperationException !!!");
+                //#endregion
+                throw new InvalidOperationException("Cannot AbortSlew while AtPark");
             }
 
             Stop();
@@ -906,14 +911,12 @@ namespace ASCOM.Wise40
 
                     if (TrackingMotor.isOff)
                         TrackingMotor.SetOn(Const.rateTrack);
-                    SyncDomePosition = true;
                     inactivityMonitor.StartActivity(InactivityMonitor.Activity.Tracking);
                 }
                 else
                 {
                     if (TrackingMotor.isOn)
                         TrackingMotor.SetOff();
-                    SyncDomePosition = false;
                     inactivityMonitor.EndActivity(InactivityMonitor.Activity.Tracking);
                 }
                 safetyMonitorTimer.EnableIfNeeded(SafetyMonitorTimer.ActionWhenNotSafe.Backoff);
