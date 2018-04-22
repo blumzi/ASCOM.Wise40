@@ -44,6 +44,7 @@ namespace ASCOM.Wise40 //.Dome
                 driverProfile.DeviceType = "Telescope";
                 driverProfile.WriteValue("ASCOM.Wise40.Telescope", "Minimal Dome Tracking Movement", textBoxMinimalStep.Text);
             }
+            Close();
         }
 
         private void cmdCancel_Click(object sender, EventArgs e) // Cancel button event handler

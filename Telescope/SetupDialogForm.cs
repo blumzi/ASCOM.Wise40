@@ -34,6 +34,8 @@ namespace ASCOM.Wise40 //.Telescope
             wisetele._enslaveDome = checkBoxEnslaveDome.Checked;
             wisetele._calculateRefraction = checkBoxCalculateRefraction.Checked;
             wisetele.BypassSafety = checkBoxBypassSafety.Checked;
+            wisetele.WriteProfile();
+            Close();
         }
 
         private void cmdCancel_Click(object sender, EventArgs e) // Cancel button event handler
