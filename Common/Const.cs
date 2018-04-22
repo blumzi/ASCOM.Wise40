@@ -35,5 +35,6 @@ namespace ASCOM.Wise40.Common
         public const string notsign = "\u00AC";
 
         public const string topWise40Directory = "c:/Wise40/";
+        public const string humanInterventionFilePath = Const.topWise40Directory + "Observatory/HumanIntervention.txt";
     }
 }
