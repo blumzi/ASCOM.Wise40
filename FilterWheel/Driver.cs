@@ -48,8 +48,9 @@ namespace ASCOM.Wise40.FilterWheel
     /// <summary>
     /// ASCOM FilterWheel Driver for Wise40.
     /// </summary>
-    [Guid("f9a8bb3c-65e1-48b8-94b0-18a3b6db1e9e")]
+    [Guid("E971207E-4642-458F-80F5-7322A85E1649")]
     [ClassInterface(ClassInterfaceType.None)]
+    [ComVisible(true)]
     public class FilterWheel : IFilterWheelV2
     {
         /// <summary>

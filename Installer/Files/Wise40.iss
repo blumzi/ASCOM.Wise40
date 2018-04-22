@@ -47,7 +47,6 @@ Source: "{#SolutionDir}\Restore-ASCOM-Profiles\bin\x86\Debug\Restore-ASCOM-Profi
 Source: "{#SolutionDir}\Restore-ASCOM-Profiles\bin\x86\Debug\Restore-ASCOM-Profiles - ACP.lnk"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SolutionDir}\Restore-ASCOM-Profiles\bin\x86\Debug\Restore-ASCOM-Profiles - LCOGT.lnk"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SolutionDir}\Restore-ASCOM-Profiles\bin\x86\Debug\Restore-ASCOM-Profiles - Wise40.lnk"; DestDir: "{app}"; Flags: ignoreversion
-; Source: "{#SolutionDir}\SafeToImage\bin\x86\Debug\ASCOM.Wise40.SafeToImage.SafetyMonitor.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SolutionDir}\SafeToOpen\bin\x86\Debug\ASCOM.Wise40.SafeToOpen.SafetyMonitor.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SolutionDir}\FilterWheel\bin\x86\Debug\ASCOM.Wise40.FilterWheel.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SolutionDir}\Telescope\bin\x86\Debug\ASCOM.Wise40.Telescope.dll"; DestDir: "{app}"; Flags: ignoreversion
@@ -70,40 +69,36 @@ Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; Fil
 ; Name: "Dome"; Description: "The Wise40 ASCOM Dome driver"; Types: full;
 ; Name: "Computer Control"; Description: "The Wise40 ASCOM ComputerControl SafetyMonitor driver"; Types: full;
 ; Name: "SafeToOpen"; Description: "The Wise40 ASCOM SafeToOpen SafetyMonitor driver"; Types: full;
-; Name: "SafeToImage"; Description: "The Wise40 ASCOM SafeToImage SafetyMonitor driver"; Types: full;
 ; Name: "Boltwood CloudSensor"; Description: "The Wise40 ASCOM CloudSensor ObservingConditions driver"; Types: full;
 ; Name: "Davis VantagePro2"; Description: "The Wise40 ASCOM VantagePro2 ObservingConditions driver"; Types: full;
 
 [Run]
 Filename: "{dotnet4032}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.Boltwood.ObservingConditions.dll"""; Flags: runhidden 32bit
-Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.Boltwood.ObservingConditions.dll"""; Flags: runhidden 64bit; Check: IsWin64
+;Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.Boltwood.ObservingConditions.dll"""; Flags: runhidden 64bit; Check: IsWin64
 
 Filename: "{dotnet4032}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.ComputerControl.SafetyMonitor.dll"""; Flags: runhidden 32bit
-Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.ComputerControl.SafetyMonitor.dll"""; Flags: runhidden 64bit; Check: IsWin64
+;Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.ComputerControl.SafetyMonitor.dll"""; Flags: runhidden 64bit; Check: IsWin64
 
 Filename: "{dotnet4032}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.VantagePro.ObservingConditions.dll"""; Flags: runhidden 32bit
-Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.VantagePro.ObservingConditions.dll"""; Flags: runhidden 64bit; Check: IsWin64
+;Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.VantagePro.ObservingConditions.dll"""; Flags: runhidden 64bit; Check: IsWin64
 
 Filename: "{dotnet4032}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.Dome.dll"""; Flags: runhidden 32bit
-Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.Dome.dll"""; Flags: runhidden 64bit; Check: IsWin64
+;Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.Dome.dll"""; Flags: runhidden 64bit; Check: IsWin64
 
 Filename: "{dotnet4032}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.Focuser.dll"""; Flags: runhidden 32bit
-Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.Focuser.dll"""; Flags: runhidden 64bit; Check: IsWin64
-
-Filename: "{dotnet4032}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.SafeToImage.SafetyMonitor.dll"""; Flags: runhidden 32bit
-Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.SafeToImage.SafetyMonitor.dll"""; Flags: runhidden 64bit; Check: IsWin64
+;Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.Focuser.dll"""; Flags: runhidden 64bit; Check: IsWin64
 
 Filename: "{dotnet4032}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.SafeToOpen.SafetyMonitor.dll"""; Flags: runhidden 32bit
-Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.SafeToOpen.SafetyMonitor.dll"""; Flags: runhidden 64bit; Check: IsWin64
+;Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.SafeToOpen.SafetyMonitor.dll"""; Flags: runhidden 64bit; Check: IsWin64
 
 Filename: "{dotnet4032}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.Telescope.dll"""; Flags: runhidden 32bit
-Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.Telescope.dll"""; Flags: runhidden 64bit; Check: IsWin64
+;Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.Telescope.dll"""; Flags: runhidden 64bit; Check: IsWin64
 
 Filename: "{dotnet4032}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.FilterWheel.dll"""; Flags: runhidden 32bit
-Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.FilterWheel.dll"""; Flags: runhidden 64bit; Check: IsWin64
+;Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.FilterWheel.dll"""; Flags: runhidden 64bit; Check: IsWin64
 
 Filename: "{dotnet4032}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.VantagePro.ObservingConditions.dll"""; Flags: runhidden 32bit
-Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.VantagePro.ObservingConditions.dll"""; Flags: runhidden 64bit; Check: IsWin64
+;Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.VantagePro.ObservingConditions.dll"""; Flags: runhidden 64bit; Check: IsWin64
 
 Filename: "{app}\Restore-ASCOM-Profiles"; Description: "Initialize ASCOM Profiles according to previous selection."; Parameters: "{code:ProfileType|}"; Flags: postinstall
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,Wise40 Dashboard}"; Flags: nowait postinstall skipifsilent
@@ -112,44 +107,39 @@ Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,Wise40 Dashbo
 ; Only for .NET assembly/in-proc drivers
 Filename: "{dotnet4032}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Wise40.Boltwood.ObservingConditions.dll"""; Flags: runhidden 32bit
 ; This helps to give a clean uninstall
-Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.Boltwood.ObservingConditions.dll"""; Flags: runhidden 64bit; Check: IsWin64
-Filename: "{dotnet4064}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Wise40.Boltwood.ObservingConditions.dll"""; Flags: runhidden 64bit; Check: IsWin64
+;Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.Boltwood.ObservingConditions.dll"""; Flags: runhidden 64bit; Check: IsWin64
+;Filename: "{dotnet4064}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Wise40.Boltwood.ObservingConditions.dll"""; Flags: runhidden 64bit; Check: IsWin64
 
 
 Filename: "{dotnet4032}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Wise40.ComputerControl.SafetyMonitor.dll"""; Flags: runhidden 32bit
 ; This helps to give a clean uninstall
-Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.ComputerControl.SafetyMonitor.dll"""; Flags: runhidden 64bit; Check: IsWin64
-Filename: "{dotnet4064}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Wise40.ComputerControl.SafetyMonitor.dll"""; Flags: runhidden 64bit; Check: IsWin64
+;Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.ComputerControl.SafetyMonitor.dll"""; Flags: runhidden 64bit; Check: IsWin64
+;Filename: "{dotnet4064}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Wise40.ComputerControl.SafetyMonitor.dll"""; Flags: runhidden 64bit; Check: IsWin64
 
 Filename: "{dotnet4032}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Wise40.VantagePro.ObservingConditions.dll"""; Flags: runhidden 32bit
 ; This helps to give a clean uninstall
-Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.VantagePro.ObservingConditions.dll"""; Flags: runhidden 64bit; Check: IsWin64
-Filename: "{dotnet4064}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Wise40.VantagePro.ObservingConditions.dll"""; Flags: runhidden 64bit; Check: IsWin64
+;Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.VantagePro.ObservingConditions.dll"""; Flags: runhidden 64bit; Check: IsWin64
+;Filename: "{dotnet4064}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Wise40.VantagePro.ObservingConditions.dll"""; Flags: runhidden 64bit; Check: IsWin64
 
 Filename: "{dotnet4032}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Wise40.Dome.dll"""; Flags: runhidden 32bit
 ; This helps to give a clean uninstall
-Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.Dome.dll"""; Flags: runhidden 64bit; Check: IsWin64
-Filename: "{dotnet4064}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Wise40.Dome.dll"""; Flags: runhidden 64bit; Check: IsWin64
+;Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.Dome.dll"""; Flags: runhidden 64bit; Check: IsWin64
+;Filename: "{dotnet4064}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Wise40.Dome.dll"""; Flags: runhidden 64bit; Check: IsWin64
 
 Filename: "{dotnet4032}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Wise40.Focuser.dll"""; Flags: runhidden 32bit
 ; This helps to give a clean uninstall
-Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.Focuser.dll"""; Flags: runhidden 64bit; Check: IsWin64
-Filename: "{dotnet4064}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Wise40.Focuser.dll"""; Flags: runhidden 64bit; Check: IsWin64
-
-Filename: "{dotnet4032}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Wise40.SafeToImage.SafetyMonitor.dll"""; Flags: runhidden 32bit
-; This helps to give a clean uninstall
-Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.SafeToImage.SafetyMonitor.dll"""; Flags: runhidden 64bit; Check: IsWin64
-Filename: "{dotnet4064}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Wise40.SafeToImage.SafetyMonitor.dll"""; Flags: runhidden 64bit; Check: IsWin64
+;Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.Focuser.dll"""; Flags: runhidden 64bit; Check: IsWin64
+;Filename: "{dotnet4064}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Wise40.Focuser.dll"""; Flags: runhidden 64bit; Check: IsWin64
 
 Filename: "{dotnet4032}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Wise40.SafeToOpen.SafetyMonitor.dll"""; Flags: runhidden 32bit
 ; This helps to give a clean uninstall
-Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.SafeToOpen.SafetyMonitor.dll"""; Flags: runhidden 64bit; Check: IsWin64
-Filename: "{dotnet4064}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Wise40.SafeToOpen.SafetyMonitor.dll"""; Flags: runhidden 64bit; Check: IsWin64
+;Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.SafeToOpen.SafetyMonitor.dll"""; Flags: runhidden 64bit; Check: IsWin64
+;Filename: "{dotnet4064}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Wise40.SafeToOpen.SafetyMonitor.dll"""; Flags: runhidden 64bit; Check: IsWin64
 
 Filename: "{dotnet4032}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Wise40.Telescope.dll"""; Flags: runhidden 32bit
 ; This helps to give a clean uninstall
-Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.Telescope.dll"""; Flags: runhidden 64bit; Check: IsWin64
-Filename: "{dotnet4064}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Wise40.Telescope.dll"""; Flags: runhidden 64bit; Check: IsWin64
+;Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Wise40.Telescope.dll"""; Flags: runhidden 64bit; Check: IsWin64
+;Filename: "{dotnet4064}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Wise40.Telescope.dll"""; Flags: runhidden 64bit; Check: IsWin64
 
 [CODE]
   

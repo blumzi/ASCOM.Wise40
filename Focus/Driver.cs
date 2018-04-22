@@ -52,8 +52,9 @@ namespace ASCOM.Wise40 //.Focuser
     /// <summary>
     /// ASCOM Focuser Driver for Wise40.
     /// </summary>
-    [Guid("4cebb869-32ce-425e-8833-fbbc5054e274")]
+    [Guid("701BBD4A-7ABE-47DB-815C-719436EF9741")]
     [ClassInterface(ClassInterfaceType.None)]
+    [ComVisible(true)]
     public class Focuser : IFocuserV2, IDisposable
     {
         /// <summary>

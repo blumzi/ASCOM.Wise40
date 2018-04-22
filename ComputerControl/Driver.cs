@@ -54,6 +54,7 @@ namespace ASCOM.Wise40.ComputerControl
     /// </summary>
     [Guid("7f8e5d5f-aa98-410d-a67e-9f7c0ae4d735")]
     [ClassInterface(ClassInterfaceType.None)]
+    [ComVisible(true)]
     public class SafetyMonitor : ISafetyMonitor
     {
         private static Version version = new Version(0, 2);

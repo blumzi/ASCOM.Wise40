@@ -59,6 +59,7 @@ namespace ASCOM.Wise40 //.Dome
     /// </summary>
     [Guid("5cec8f8d-f8be-453d-b80f-9a93a758d08a")]
     [ClassInterface(ClassInterfaceType.None)]
+    [ComVisible(true)]
     public class Dome : IDomeV2, IDisposable
     {
         /// <summary>
