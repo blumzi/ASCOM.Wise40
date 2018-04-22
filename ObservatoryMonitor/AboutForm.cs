@@ -11,22 +11,24 @@ using System.Windows.Forms;
 using ASCOM.Wise40.Common;
 using ASCOM.Wise40;
 
-namespace ASCOM.Wise40 //.ObservatoryMonitor
+namespace ASCOM.Wise40.ObservatoryMonitor
 {
     public partial class ObservatoryMonitorAboutForm : Form
     {
-        public ObservatoryMonitorAboutForm(ObsMon obsmon)
+        public ObservatoryMonitorAboutForm(Version version)
         {
             InitializeComponent();
             
             string appVersion = String.Format(System.Globalization.CultureInfo.InvariantCulture, "{0}.{1}",
-                obsmon.Version.Major, obsmon.Version.Minor);
+                version.Major, version.Minor);
 
             labelAbout.Text = "This utility monitors the Wise 40 inch Observatory at" + Const.crnl +
                 "Mizpe Ramon, Israel." + Const.crnl +
                 Const.crnl +
-                "The Observatory will be shut down if any of the monitored" + Const.crnl +
-                "parameter thresholds (see the Settings menu) are exceeded." + Const.crnl +
+                "The Observatory will be shut down if:" + Const.crnl +
+                "the operator intervened, or" + Const.crnl +
+                "the telescope is idle, or" + Const.crnl +
+                "weather conditions are not safe." + Const.crnl +
                 Const.crnl +
                 "Author: Arie Blumenzweig <blumzi@013.net> - since July 2017" + Const.crnl +
                 Const.crnl +
