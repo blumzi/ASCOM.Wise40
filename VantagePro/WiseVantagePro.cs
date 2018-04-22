@@ -458,9 +458,9 @@ namespace ASCOM.Wise40.VantagePro
                     throw new MethodNotImplementedException("SensorDescription(" + PropertyName + ")");
             }
             Refresh();
-            string dateTime = sensorData["stationDate"] + " " + sensorData["stationTime"] + "m";
+            string dateTime = sensorData["utcDate"] + " " + sensorData["utcTime"] + "m";
             DateTime lastUpdate = Convert.ToDateTime(dateTime);
-            double seconds = (DateTime.Now - lastUpdate).TotalSeconds;
+            double seconds = (DateTime.UtcNow - lastUpdate).TotalSeconds;
 
             tl.LogMessage("TimeSinceLastUpdate", PropertyName + seconds.ToString());
             return seconds;

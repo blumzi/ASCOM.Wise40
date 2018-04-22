@@ -468,7 +468,7 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
                 return string.Empty;
 
             return string.Format("The last {0} cloud cover readings from Boltwood were higher than \"{1}\"",
-                nbad, nReadings, MaxAsString.Replace("cloud", ""));
+                nbad, MaxAsString.Replace("cloud", ""));
         }
 
         public override string MaxAsString

@@ -122,6 +122,8 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
 
             foreach (Sensor s in wisesafetooperate._sensors)
                 s.Start();
+
+            Close();
         }
 
         private void cmdCancel_Click(object sender, EventArgs e) // Cancel button event handler
