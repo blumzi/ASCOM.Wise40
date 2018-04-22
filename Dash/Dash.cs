@@ -50,6 +50,8 @@ namespace Dash
         private List<ToolStripMenuItem> debugMenuItems;
         private Dictionary<object, string> alteredItems = new Dictionary<object, string>();
 
+        private long stoppingAxes;
+
         void onWheelOrPositionChanged(object sender, EventArgs e)
         {
             #region debug
@@ -589,13 +591,43 @@ namespace Dash
             }
         }
 
+        private void axisStopper_DoWork(object sender, DoWorkEventArgs e)
+        {
+            TelescopeAxes axis = (int)e.Argument == 0 ? TelescopeAxes.axisPrimary : TelescopeAxes.axisSecondary;
+
+            wisetele.MoveAxis(axis, Const.rateStopped);
+        }
+
+        private void axisStopper_Completed(object sender, RunWorkerCompletedEventArgs e)
+        {
+            Interlocked.Decrement(ref stoppingAxes);
+        }
+
         private void directionButton_MouseUp(object sender, MouseEventArgs e)
         {
+            List<TelescopeAxes> activeAxes = new List<TelescopeAxes>();
+
             if (wisetele.NorthMotor.isOn || wisetele.SouthMotor.isOn)
-                wisetele.MoveAxis(TelescopeAxes.axisSecondary, Const.rateStopped);
+                activeAxes.Add(TelescopeAxes.axisSecondary);
             if (wisetele.WestMotor.isOn || wisetele.EastMotor.isOn)
-                wisetele.MoveAxis(TelescopeAxes.axisPrimary, Const.rateStopped);
-            
+                activeAxes.Add(TelescopeAxes.axisPrimary);
+
+            Interlocked.Exchange(ref stoppingAxes, activeAxes.Count());
+            telescopeStatus.Show("Stopping ...");
+            foreach (TelescopeAxes axis in activeAxes)
+            {
+                BackgroundWorker axisStopper = new BackgroundWorker();
+
+                axisStopper.DoWork += new DoWorkEventHandler(axisStopper_DoWork);
+                axisStopper.RunWorkerCompleted += new RunWorkerCompletedEventHandler(axisStopper_Completed);
+                axisStopper.RunWorkerAsync(axis == TelescopeAxes.axisPrimary ? 0 : 1);
+            }
+
+            while (Interlocked.Read(ref stoppingAxes) != 0)
+            {
+                Application.DoEvents();
+            }
+
             telescopeStatus.Show("Stopped", 1000, Statuser.Severity.Good);
             wisetele.inactivityMonitor.EndActivity(InactivityMonitor.Activity.Handpad);
             #region debug
