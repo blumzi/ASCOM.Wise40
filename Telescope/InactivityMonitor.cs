@@ -152,6 +152,9 @@ namespace ASCOM.Wise40
 
         public bool ObservatoryIsActive()
         {
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "ObservatoryIsActive: {0}", _activities.ToString());
+            #endregion
             return _activities != Activity.None;
         }
     }
