@@ -32,6 +32,11 @@
             this.menuStrip = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.operationModeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.lCOToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.wISEToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.aCPToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.listBoxLog = new System.Windows.Forms.ListBox();
             this.labelDate = new System.Windows.Forms.Label();
@@ -46,6 +51,8 @@
             this.label4 = new System.Windows.Forms.Label();
             this.labelNextCheck = new System.Windows.Forms.Label();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.label2 = new System.Windows.Forms.Label();
+            this.labelOperatingMode = new System.Windows.Forms.Label();
             this.menuStrip.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
@@ -54,6 +61,7 @@
             // 
             this.menuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
+            this.settingsToolStripMenuItem,
             this.aboutToolStripMenuItem});
             this.menuStrip.Location = new System.Drawing.Point(0, 0);
             this.menuStrip.Name = "menuStrip";
@@ -75,6 +83,45 @@
             this.exitToolStripMenuItem.Size = new System.Drawing.Size(92, 22);
             this.exitToolStripMenuItem.Text = "Exit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
+            // 
+            // settingsToolStripMenuItem
+            // 
+            this.settingsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.operationModeToolStripMenuItem});
+            this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
+            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(61, 20);
+            this.settingsToolStripMenuItem.Text = "Settings";
+            // 
+            // operationModeToolStripMenuItem
+            // 
+            this.operationModeToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.aCPToolStripMenuItem,
+            this.lCOToolStripMenuItem,
+            this.wISEToolStripMenuItem});
+            this.operationModeToolStripMenuItem.Name = "operationModeToolStripMenuItem";
+            this.operationModeToolStripMenuItem.Size = new System.Drawing.Size(161, 22);
+            this.operationModeToolStripMenuItem.Text = "Operation Mode";
+            // 
+            // lCOToolStripMenuItem
+            // 
+            this.lCOToolStripMenuItem.Name = "lCOToolStripMenuItem";
+            this.lCOToolStripMenuItem.Size = new System.Drawing.Size(100, 22);
+            this.lCOToolStripMenuItem.Text = "LCO";
+            this.lCOToolStripMenuItem.Click += new System.EventHandler(this.SelectOpMode);
+            // 
+            // wISEToolStripMenuItem
+            // 
+            this.wISEToolStripMenuItem.Name = "wISEToolStripMenuItem";
+            this.wISEToolStripMenuItem.Size = new System.Drawing.Size(100, 22);
+            this.wISEToolStripMenuItem.Text = "WISE";
+            this.wISEToolStripMenuItem.Click += new System.EventHandler(this.SelectOpMode);
+            // 
+            // aCPToolStripMenuItem
+            // 
+            this.aCPToolStripMenuItem.Name = "aCPToolStripMenuItem";
+            this.aCPToolStripMenuItem.Size = new System.Drawing.Size(100, 22);
+            this.aCPToolStripMenuItem.Text = "ACP";
+            this.aCPToolStripMenuItem.Click += new System.EventHandler(this.SelectOpMode);
             // 
             // aboutToolStripMenuItem
             // 
@@ -107,7 +154,7 @@
             this.labelDate.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.labelDate.Location = new System.Drawing.Point(32, 40);
             this.labelDate.Name = "labelDate";
-            this.labelDate.Size = new System.Drawing.Size(256, 72);
+            this.labelDate.Size = new System.Drawing.Size(256, 48);
             this.labelDate.TabIndex = 53;
             this.labelDate.Text = "Jun 19, 2017\r\nhh:mm:ss";
             this.labelDate.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -237,6 +284,32 @@
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = " Status ";
             // 
+            // label2
+            // 
+            this.label2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
+            this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label2.ForeColor = System.Drawing.Color.DarkOrange;
+            this.label2.Location = new System.Drawing.Point(56, 96);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(136, 24);
+            this.label2.TabIndex = 63;
+            this.label2.Text = "Operating Mode:";
+            this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // labelOperatingMode
+            // 
+            this.labelOperatingMode.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
+            this.labelOperatingMode.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelOperatingMode.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.labelOperatingMode.Location = new System.Drawing.Point(192, 96);
+            this.labelOperatingMode.Name = "labelOperatingMode";
+            this.labelOperatingMode.Size = new System.Drawing.Size(48, 24);
+            this.labelOperatingMode.TabIndex = 64;
+            this.labelOperatingMode.Text = "???";
+            this.labelOperatingMode.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.toolTip.SetToolTip(this.labelOperatingMode, "This information is from the SafeToOperate driver.\r\nIt combines environmental and" +
+        " human\r\nintervention sensors");
+            // 
             // ObsMainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -244,6 +317,8 @@
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.ClientSize = new System.Drawing.Size(567, 726);
+            this.Controls.Add(this.labelOperatingMode);
+            this.Controls.Add(this.label2);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.labelNextCheck);
             this.Controls.Add(this.label4);
@@ -283,6 +358,13 @@
         private System.Windows.Forms.Label labelActivity;
         private System.Windows.Forms.Label labelNextCheck;
         public System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.ToolStripMenuItem settingsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem operationModeToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem lCOToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem wISEToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem aCPToolStripMenuItem;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label labelOperatingMode;
     }
 }
 

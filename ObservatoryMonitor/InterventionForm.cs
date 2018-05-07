@@ -22,6 +22,12 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             InitializeComponent();
             if (_operator != string.Empty)
                 textBoxOperator.Text = _operator;
+
+            cmdOK.DialogResult = DialogResult.OK;
+            cmdCancel.DialogResult = DialogResult.Cancel;
+
+            AcceptButton = cmdOK;
+            CancelButton = cmdCancel;
         }
 
         private void cmdCancel_Click(object sender, EventArgs e)
@@ -32,12 +38,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
         private void cmdOK_Click(object sender, EventArgs e)
         {
             _operator = textBoxOperator.Text;
-            using (StreamWriter sw = new StreamWriter(Const.humanInterventionFilePath))
-            {
-                sw.WriteLine("Operator: " + textBoxOperator.Text);
-                sw.WriteLine("Reason: " + textBoxReason.Text);
-                sw.WriteLine("Created: " + DateTime.Now.ToString());
-            }
+            HumanIntervention.Create(_operator, textBoxReason.Text);
             Close();
         }
     }
