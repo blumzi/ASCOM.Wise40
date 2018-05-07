@@ -5,6 +5,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
+using ASCOM.Wise40;
+
 namespace Dash
 {
     static class Program
@@ -19,9 +21,19 @@ namespace Dash
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            if (args.Length == 1 && args[0] == "--dio-monitor")
+            if (args.Length == 1)
             {
-                Application.Run(new ASCOM.Wise40.HardwareForm());
+                if (args[0] == "--dio-monitor")
+                    Application.Run(new ASCOM.Wise40.HardwareForm());
+                else if (args[0].StartsWith("--mode="))
+                {
+                    WiseSite.OpMode mode;
+
+                    if (Enum.TryParse<WiseSite.OpMode>(args[0].Substring("--mode=".Length).ToUpper(), out mode))
+                        WiseSite.Instance.OperationalMode = mode;
+                }
+
+                Environment.Exit(0);
             }
             else
             {
