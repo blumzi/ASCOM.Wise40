@@ -12,6 +12,8 @@ using ASCOM.Wise40.Common;
 using ASCOM.Wise40;
 using ASCOM.DriverAccess;
 
+using System.IO;
+
 namespace ASCOM.Wise40
 {
     public class WiseSite : IDisposable
@@ -29,6 +31,10 @@ namespace ASCOM.Wise40
         public SafetyMonitor computerControl, safeToOperate;
         private DateTime lastOCFetch;
         private Debugger debugger = Debugger.Instance;
+        private bool calculateRefraction;
+
+        public enum OpMode { LCO, ACP, WISE, NONE };
+        public OpMode _opMode = OpMode.WISE;
 
         //
         // From the VantagePro summary graphs for 2015
@@ -58,6 +64,7 @@ namespace ASCOM.Wise40
             siteElevation = 882.9;
             novas31.MakeOnSurface(siteLatitude, siteLongitude, siteElevation, 0.0, 0.0, ref onSurface);
 
+            //WriteOCHProfile();  // Prepare a Wise profile for the OCH
             try
             {
                 och = new ObservingConditions("ASCOM.OCH.ObservingConditions");
@@ -76,7 +83,7 @@ namespace ASCOM.Wise40
 
             try
             {
-                computerControl = new SafetyMonitor("ASCOM.Wise40.ComputerControl.SafetyMonitor");
+                computerControl = new SafetyMonitor(Const.wiseComputerControlDriverID);
                 computerControl.Connected = true;
             }
             catch
@@ -86,7 +93,7 @@ namespace ASCOM.Wise40
 
             try
             {
-                safeToOperate = new SafetyMonitor("ASCOM.Wise40SafeToOpen.SafetyMonitor");
+                safeToOperate = new SafetyMonitor(Const.wiseSafeToOpenDriverID);
                 safeToOperate.Connected = true;
             }
             catch
@@ -195,6 +202,108 @@ namespace ASCOM.Wise40
                 }
                 catch { }
             }
-        }        
+        }
+        
+        public OpMode OperationalMode
+        {
+            get
+            {
+                using (Profile driverProfile = new Profile() { DeviceType = "Telescope" })
+                {
+                    OpMode mode;
+
+                    if (Enum.TryParse<OpMode>(driverProfile.GetValue(Const.wiseTelescopeDriverID, "SiteOperationMode", null, "WISE").ToUpper(), out mode))
+                        _opMode = mode;
+                }
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "OperationalMode:get => {0}", _opMode.ToString());
+                #endregion
+                return _opMode;
+            }
+
+            set
+            {
+                _opMode = value;
+                using (Profile driverProfile = new Profile() { DeviceType = "Telescope" })
+                {
+                    driverProfile.WriteValue(Const.wiseTelescopeDriverID, "SiteOperationMode", _opMode.ToString());
+                }
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "OperationalMode:set {0}", _opMode.ToString());
+                #endregion
+            }
+        }
+    }
+
+    public static class HumanIntervention
+    {
+        static DateTime _lastInfoRead = DateTime.MinValue;
+        static string _info = null;
+
+        static HumanIntervention() {}
+
+        public static void Create(string oper, string reason)
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(Const.humanInterventionFilePath));
+            using (StreamWriter sw = new StreamWriter(Const.humanInterventionFilePath))
+            {
+                sw.WriteLine("Operator: " + oper);
+                sw.WriteLine("Reason: " + reason);
+                sw.WriteLine("Created: " + DateTime.Now.ToString());
+            }
+
+            while (! File.Exists(Const.humanInterventionFilePath))
+            {
+                System.Threading.Thread.Sleep(50);
+            }
+        }
+
+        public static void Remove()
+        {
+            bool deleted = false;
+
+            while (!deleted)
+            {
+                try
+                {
+                    File.Delete(Const.humanInterventionFilePath);
+                    deleted = true;
+                }
+                catch (IOException) { }
+            }
+        }
+        
+        public static bool IsSet()
+        {
+            return System.IO.File.Exists(Const.humanInterventionFilePath);
+        }
+
+        public static string Info
+        {
+            get
+            {
+                if (!IsSet())
+                    return string.Empty;
+
+                if (File.GetLastWriteTime(Const.humanInterventionFilePath) > _lastInfoRead)
+                {
+
+                    StreamReader sr = new StreamReader(Const.humanInterventionFilePath);
+                    string line, info = string.Empty;
+
+                    while ((line = sr.ReadLine()) != null)
+                    {
+                        if (line.StartsWith("Operator:") || line.StartsWith("Created:") || line.StartsWith("Reason:"))
+                            info += line + "; ";
+                    }
+
+                    info = "Human Intervention: " + ((info == string.Empty) ? string.Format("File \"{0}\" exists.",
+                        Const.humanInterventionFilePath) : info);
+                    _info = info;
+                    _lastInfoRead = DateTime.Now;
+                }
+                return _info;
+            }
+        }
     }
 }
