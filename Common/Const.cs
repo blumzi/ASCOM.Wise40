@@ -30,9 +30,9 @@ namespace ASCOM.Wise40.Common
         public const double defaultReadTimeoutMillis = 2000.0;
         public const int defaultReadRetries = 20;
 
-        public const string crnl = "\r\n";
+        public const string crnl = "/r/n";
         public const string checkmark = " ✓";
-        public const string notsign = "\u00AC";
+        public const string notsign = "/u00AC";
 
         public const string topWise40Directory = "c:/Wise40/";
         public const string humanInterventionFilePath = Const.topWise40Directory + "Observatory/HumanIntervention.txt";
@@ -50,6 +50,6 @@ namespace ASCOM.Wise40.Common
         public const string wiseObservatoryMonitorAppName = "ObservatoryMonitor";
         public const string wiseASCOMServerPath = "c:/Program Files (x86)/ASCOM/RemoteServer/ASCOM.RemoteDeviceServer.exe";
         public const string wiseSimulatedDashPath = "c:/Users/Blumzi/Documents/Visual Studio 2015/Projects/Wise40/Dash/bin/x86/Debug/Dash.exe";
-        public const string wiseRealDashPath = "c:/Users/Blumzi/Documents/Visual Studio 2015/Projects/Wise40/Dash/bin/x86/Debug/Dash.exe";
+        public const string wiseRealDashPath = "c:/Users/mizpe/source/repos/ASCOM.Wise40/Dash/bin/x86/Debug/Dash.exe";
     }
 }
