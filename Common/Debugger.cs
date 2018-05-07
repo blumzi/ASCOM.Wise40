@@ -180,32 +180,29 @@ namespace ASCOM.Wise40.Common
             _currentLevel &= ~levels;
         }
 
-        internal static string driverID = "ASCOM.Wise40.Telescope";
-        internal static string deviceType = "Telescope";
-
         public void WriteProfile()
         {
-            using (ASCOM.Utilities.Profile p = new Utilities.Profile())
+            using (ASCOM.Utilities.Profile p = new Utilities.Profile() { DeviceType = "Telescope" })
             {
-                if (!p.IsRegistered(driverID))
-                    p.Register(driverID, "Wise40 global settings");
-                p.DeviceType = deviceType;
-                p.WriteValue(driverID, "DebugLevel", Level.ToString());
-                p.WriteValue(driverID, "Tracing", _tracing.ToString());
+                if (!p.IsRegistered(Const.wiseTelescopeDriverID))
+                    p.Register(Const.wiseTelescopeDriverID, "Wise40 global settings");
+                p.WriteValue(Const.wiseTelescopeDriverID, "SiteDebugLevel", Level.ToString());
+                p.WriteValue(Const.wiseTelescopeDriverID, "SiteTracing", _tracing.ToString());
             }
         }
 
         public void ReadProfile()
         {
-            using (ASCOM.Utilities.Profile p = new Utilities.Profile())
+            using (ASCOM.Utilities.Profile p = new Utilities.Profile() { DeviceType = "Telescope" })
             {
-                p.DeviceType = deviceType;
-                if (p.IsRegistered(driverID))
+                if (p.IsRegistered(Const.wiseTelescopeDriverID))
                 {
-                    _currentLevel = (DebugLevel) Enum.Parse(typeof(DebugLevel),
-                        p.GetValue(driverID, "DebugLevel", string.Empty, DebugLevel.DebugDefault.ToString()));
-                    _tracing = Convert.ToBoolean(p.GetValue(driverID, "Tracing", string.Empty, "false"));
-                    _debugFile = p.GetValue(driverID, "DebugFile", string.Empty, string.Empty);
+                    DebugLevel d;
+                    
+                    if (Enum.TryParse<DebugLevel>(p.GetValue(Const.wiseTelescopeDriverID, "SiteDebugLevel", string.Empty, DebugLevel.DebugDefault.ToString()), out d))
+                        _currentLevel = d;
+                    _tracing = Convert.ToBoolean(p.GetValue(Const.wiseTelescopeDriverID, "SiteTracing", string.Empty, false.ToString()));
+                    _debugFile = p.GetValue(Const.wiseTelescopeDriverID, "SiteDebugFile", string.Empty, string.Empty);
                 }
             }
         }

@@ -60,7 +60,7 @@ namespace ASCOM.Wise40 //.Focuser
         private Hardware.Hardware hardware = Hardware.Hardware.Instance;
         private WiseSite wisesite = WiseSite.Instance;
 
-        public static string driverID = "ASCOM.Wise40.Focuser";
+        public static string driverID = Const.wiseFocusDriverID;
 
         private static string driverDescription = string.Format("ASCOM Wise40.Focuser v{0}", version.ToString());
 
@@ -158,10 +158,8 @@ namespace ASCOM.Wise40 //.Focuser
 
         internal void ReadProfile()
         {
-            using (Profile driverProfile = new Profile())
-            {
-                driverProfile.DeviceType = "Focuser";
-            }
+            using (Profile driverProfile = new Profile() { DeviceType = "Focuser" })
+            {}
         }
 
         /// <summary>
@@ -169,10 +167,8 @@ namespace ASCOM.Wise40 //.Focuser
         /// </summary>
         public void WriteProfile()
         {
-            using (Profile driverProfile = new Profile())
-            {
-                driverProfile.DeviceType = "Focuser";
-            }
+            using (Profile driverProfile = new Profile() { DeviceType = "Focuser" })
+            {}
         }
 
         public double Temperature

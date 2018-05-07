@@ -35,6 +35,7 @@ using ASCOM.Utilities;
 using ASCOM.DeviceInterface;
 using System.Globalization;
 using System.Collections;
+using ASCOM.Wise40.Common;
 
 namespace ASCOM.Wise40.ComputerControl
 {
@@ -62,7 +63,7 @@ namespace ASCOM.Wise40.ComputerControl
         /// ASCOM DeviceID (COM ProgID) for this driver.
         /// The DeviceID is used by ASCOM applications to load the driver at runtime.
         /// </summary>
-        internal static string driverID = "ASCOM.Wise40.ComputerControl.SafetyMonitor";
+        internal static string driverID = Const.wiseComputerControlDriverID;
         // TODO Change the descriptive string for your driver then remove this line
         /// <summary>
         /// Driver description that displays in the ASCOM Chooser.
@@ -361,9 +362,8 @@ namespace ASCOM.Wise40.ComputerControl
         /// </summary>
         internal void ReadProfile()
         {
-            using (Profile driverProfile = new Profile())
+            using (Profile driverProfile = new Profile() { DeviceType = "SafetyMonitor" })
             {
-                driverProfile.DeviceType = "SafetyMonitor";
             }
         }
 
@@ -372,9 +372,8 @@ namespace ASCOM.Wise40.ComputerControl
         /// </summary>
         internal void WriteProfile()
         {
-            using (Profile driverProfile = new Profile())
+            using (Profile driverProfile = new Profile() { DeviceType = "SafetyMonitor" })
             {
-                driverProfile.DeviceType = "SafetyMonitor";
             }
         }
 

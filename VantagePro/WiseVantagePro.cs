@@ -12,10 +12,9 @@ using ASCOM.Utilities;
 
 namespace ASCOM.Wise40.VantagePro
 {
-    public class WiseVantagePro
+    public class WiseVantagePro: WiseObject
     {
         private string _dataFile;
-        public static string driverID = "ASCOM.Wise40.VantagePro.ObservingConditions";
         internal static string dataFileProfileName = "DataFile";
         private static WiseVantagePro _instance = new WiseVantagePro();
         private static Version version = new Version("0.2");
@@ -168,11 +167,12 @@ namespace ASCOM.Wise40.VantagePro
         /// </summary>
         internal void ReadProfile()
         {
-            using (Profile driverProfile = new Profile())
-            {
-                driverProfile.DeviceType = "ObservingConditions";
-                _dataFile = driverProfile.GetValue(driverID, dataFileProfileName, string.Empty, string.Empty);
-            }
+            string defaultReportFile = Simulated ?
+                    "c:/temp/Weather_Wise40_Vantage_Pro.htm" :
+                    "c:/Wise40/Weather/Davis VantagePro/Weather_Wise40_Vantage_Pro.htm";
+                ;
+            using (Profile driverProfile = new Profile() { DeviceType = "ObservingConditions" })
+                _dataFile = driverProfile.GetValue(Const.wiseVantageProDriverID, dataFileProfileName, string.Empty, defaultReportFile);
         }
 
         /// <summary>
@@ -180,11 +180,8 @@ namespace ASCOM.Wise40.VantagePro
         /// </summary>
         internal void WriteProfile()
         {
-            using (Profile driverProfile = new Profile())
-            {
-                driverProfile.DeviceType = "ObservingConditions";
-                driverProfile.WriteValue(driverID, dataFileProfileName, _dataFile);
-            }
+            using (Profile driverProfile = new Profile() { DeviceType = "ObservingConditions" })
+                driverProfile.WriteValue(Const.wiseVantageProDriverID, dataFileProfileName, _dataFile);
         }
 
         public string DataFile

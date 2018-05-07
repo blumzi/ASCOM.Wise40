@@ -46,7 +46,7 @@ namespace ASCOM.Wise40SafeToOpen
         public HumanInterventionSensor humanInterventionSensor;
         public List<Sensor> _sensors;
         
-        internal static string ageMaxSecondsProfileName = "Age Max";
+        internal static string ageMaxSecondsProfileName = "AgeMaxSeconds";
         internal static string stableAfterMinProfileName = "StableAfterMin";
         public int ageMaxSeconds;
 
@@ -67,7 +67,7 @@ namespace ASCOM.Wise40SafeToOpen
         private static bool initialized = false;
         
         public TimeSpan _stabilizationPeriod;
-        private int _defaultStabilizationMinutes = 15;
+        private int _defaultStabilizationPeriodMinutes = 15;
 
         private Astrometry.NOVAS.NOVAS31 novas31;
         private static AstroUtils astroutils;
@@ -105,14 +105,14 @@ namespace ASCOM.Wise40SafeToOpen
 
         public void init()
         {
-            string type = _type == Type.Open ? "Open" : "Image";
+            //string type = _type == Type.Open ? "Open" : "Image";
 
             if (initialized)
                 return;
 
-            name = "Wise40 SafeTo" + type;
-            driverID = "ASCOM.Wise40SafeTo" + type + ".SafetyMonitor";
-            driverDescription = string.Format("ASCOM Wise40.SafeTo{0} v{1}", type, version.ToString());
+            name = "Wise40 SafeToOpen";
+            driverID = Const.wiseSafeToOpenDriverID;
+            driverDescription = string.Format("ASCOM Wise40.SafeToOpen v{0}", version.ToString());
 
             if (_profile == null)
             {
@@ -136,7 +136,7 @@ namespace ASCOM.Wise40SafeToOpen
                 sunSensor,
                 humanInterventionSensor };
 
-            tl = new TraceLogger("", "Wise40.SafeTo" + type);
+            tl = new TraceLogger("", "Wise40.SafeToOpen");
             tl.Enabled = debugger.Tracing;
             tl.LogMessage("SafetyMonitor", "Starting initialisation");
 
@@ -622,9 +622,9 @@ namespace ASCOM.Wise40SafeToOpen
         /// </summary>
         public void ReadProfile()
         {
-            ageMaxSeconds = Convert.ToInt32(_profile.GetValue(driverID, ageMaxSecondsProfileName, string.Empty, 0.ToString()));
+            ageMaxSeconds = Convert.ToInt32(_profile.GetValue(driverID, ageMaxSecondsProfileName, string.Empty, 180.ToString()));
 
-            int minutes = Convert.ToInt32(_profile.GetValue(driverID, stableAfterMinProfileName, string.Empty, _defaultStabilizationMinutes.ToString()));
+            int minutes = Convert.ToInt32(_profile.GetValue(driverID, stableAfterMinProfileName, string.Empty, _defaultStabilizationPeriodMinutes.ToString()));
             _stabilizationPeriod = new TimeSpan(0, minutes, 0);
 
             foreach (Sensor s in _sensors)
@@ -632,7 +632,7 @@ namespace ASCOM.Wise40SafeToOpen
 
             using (Profile driverProfile = new Profile())
             {
-                string telescopeDriverId = "ASCOM.Wise40.Telescope";
+                string telescopeDriverId = Const.wiseTelescopeDriverID;
                 string astrometricAccuracyProfileName = "Astrometric accuracy";
 
                 driverProfile.DeviceType = "Telescope";

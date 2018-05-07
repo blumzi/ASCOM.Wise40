@@ -34,6 +34,7 @@ using System.Runtime.InteropServices;
 
 using ASCOM.DeviceInterface;
 using System.Collections;
+using ASCOM.Wise40.Common;
 
 namespace ASCOM.Wise40.Boltwood
 {
@@ -463,11 +464,11 @@ namespace ASCOM.Wise40.Boltwood
                 P.DeviceType = "ObservingConditions";
                 if (bRegister)
                 {
-                    P.Register(WiseBoltwood.driverID, WiseBoltwood.driverDescription);
+                    P.Register(Const.wiseBoltwoodDriverID, WiseBoltwood.driverDescription);
                 }
                 else
                 {
-                    P.Unregister(WiseBoltwood.driverID);
+                    P.Unregister(Const.wiseBoltwoodDriverID);
                 }
             }
         }

@@ -219,10 +219,10 @@ namespace ASCOM.Wise40
             };
 
         private Hardware.Hardware hardware = Hardware.Hardware.Instance;
-        internal static string driverID = "ASCOM.Wise40.Telescope";
+        internal static string driverID = Const.wiseTelescopeDriverID;
         internal static string astrometricAccuracyProfileName = "Astrometric accuracy";
-        internal static string enslaveDomeProfileName = "Enslave Dome";
         internal static string traceStateProfileName = "Tracing";
+        internal static string bypassSafetyProfileName = "BypassSafety";
 
         public class MovementParameters
         {
@@ -252,14 +252,10 @@ namespace ASCOM.Wise40
         public double _minimalDomeTrackingMovement;
         private DomeSlaveDriver domeSlaveDriver = DomeSlaveDriver.Instance;
 
-        public bool _calculateRefraction = true;
-        private string calculateRefractionProfileName = "Calculate refraction";
+        public bool _calculateRefraction = false;
         private string minimalDomeTrackingMovementProfileName = "Minimal Dome Tracking Movement";
-
-        private bool _studyMotion = false;
-        Dictionary<TelescopeAxes, MotionStudy> motionStudy = new Dictionary<TelescopeAxes, MotionStudy>(2);
-
-        private static WiseComputerControl wiseComputerControl = WiseComputerControl.Instance;
+        
+        private static WiseComputerControl wisecomputercontrol = WiseComputerControl.Instance;
 
         public static string RateName(double rate)
         {
@@ -486,10 +482,28 @@ namespace ASCOM.Wise40
             astroutils = new Astrometry.AstroUtils.AstroUtils();
             hardware.init();
             wisesite.init();
-            wiseComputerControl.init();
+            wisecomputercontrol.init();
 
             _trackingRestorer = new TrackingRestorer();
             inactivityMonitor = new InactivityMonitor();
+
+            switch (wisesite.OperationalMode)
+            {
+                case WiseSite.OpMode.LCO:
+                    _enslaveDome = true;
+                    _calculateRefraction = true;
+                    break;
+
+                case WiseSite.OpMode.WISE:
+                    _enslaveDome = true;
+                    _calculateRefraction = true;
+
+                    break;
+                case WiseSite.OpMode.ACP:
+                    _enslaveDome = false;
+                    _calculateRefraction = true;
+                    break;
+            }
 
             #region MotorDefinitions
             //
@@ -1118,7 +1132,7 @@ namespace ASCOM.Wise40
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, string.Format("HandpadMoveAxis({0}, {1})", Axis, Rate));
             #endregion debug
 
-            if (!wiseComputerControl.IsSafe && !BypassSafety)
+            if (!wisecomputercontrol.IsSafe && !BypassSafety)
                 throw new ASCOM.InvalidOperationException("Computer control or dome platform are NOT safe.");
 
             Const.AxisDirection direction = (Rate == Const.rateStopped) ? Const.AxisDirection.None :
@@ -1138,7 +1152,7 @@ namespace ASCOM.Wise40
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, string.Format("MoveAxis({0}, {1})", Axis, Rate));
             #endregion debug
 
-            if (!wiseComputerControl.IsSafe && !BypassSafety)
+            if (!wisecomputercontrol.IsSafe && !BypassSafety)
                 throw new ASCOM.InvalidOperationException("Computer control or dome platform are NOT safe.");
 
             Const.AxisDirection direction = (Rate == Const.rateStopped) ? Const.AxisDirection.None :
@@ -1200,7 +1214,7 @@ namespace ASCOM.Wise40
                 throw new InvalidValueException("Cannot MoveAxis while AtPark");
             }
 
-            if (!wiseComputerControl.IsSafe)
+            if (!wisecomputercontrol.IsSafe)
                 throw new InvalidOperationException(compControlOrPlatformNotSafe);
 
             if (Rate == Const.rateStopped)
@@ -1259,9 +1273,6 @@ namespace ASCOM.Wise40
                 Angle.FromHours(_instance.RightAscension, Angle.Type.RA) :
                 Angle.FromDegrees(_instance.Declination, Angle.Type.Dec);
 
-            if (_studyMotion)
-                motionStudy[Axis] = new MotionStudy(Axis, absRate);
-
             foreach (WiseVirtualMotor m in mover.motors)
             {
                 #region debug
@@ -1314,7 +1325,7 @@ namespace ASCOM.Wise40
             if (notSafe != string.Empty)
                 throw new InvalidOperationException(notSafe);
 
-            if (!wiseComputerControl.IsSafe)
+            if (!wisecomputercontrol.IsSafe)
                 throw new InvalidOperationException(compControlOrPlatformNotSafe);
 
             _slewToCoordinatesAsync(_targetRightAscension, _targetDeclination);
@@ -1666,12 +1677,6 @@ namespace ASCOM.Wise40
         {
             Movement cm = _instance.currMovement[axis];
             StopAxis(axis);
-
-            if (_studyMotion && motionStudy.ContainsKey(axis) && motionStudy[axis] != null)
-            {
-                motionStudy[axis].Dispose();
-                motionStudy[axis] = null;
-            }
 
             #region debug
             Angle a = (axis == TelescopeAxes.axisPrimary) ?
@@ -2053,7 +2058,7 @@ namespace ASCOM.Wise40
                     throw new InvalidOperationException(notSafe);
             }
 
-            if (!wiseComputerControl.IsSafe)
+            if (!wisecomputercontrol.IsSafe)
                 throw new InvalidOperationException(compControlOrPlatformNotSafe);
 
             try
@@ -2095,7 +2100,7 @@ namespace ASCOM.Wise40
                     throw new InvalidOperationException(notSafe);
             }
 
-            if (!wiseComputerControl.IsSafe)
+            if (!wisecomputercontrol.IsSafe)
                 throw new InvalidOperationException(compControlOrPlatformNotSafe);
 
             try
@@ -2294,7 +2299,7 @@ namespace ASCOM.Wise40
             if (notSafe != string.Empty)
                 throw new InvalidOperationException(notSafe);
 
-            if (!wiseComputerControl.IsSafe)
+            if (!wisecomputercontrol.IsSafe)
                 throw new InvalidOperationException(compControlOrPlatformNotSafe);
 
             SlewToCoordinates(_instance.TargetRightAscension, _instance.TargetDeclination); // sync
@@ -2836,24 +2841,19 @@ namespace ASCOM.Wise40
         /// </summary>
         internal void ReadProfile()
         {
-            using (Profile driverProfile = new Profile())
+            using (Profile driverProfile = new Profile() { DeviceType = "Telescope" })
             {
-                driverProfile.DeviceType = "Telescope";
-                _enslaveDome = Convert.ToBoolean(driverProfile.GetValue(driverID, enslaveDomeProfileName, string.Empty, "false"));
-                wisesite.astrometricAccuracy =
-                    driverProfile.GetValue(driverID, astrometricAccuracyProfileName, string.Empty, "Full") == "Full" ?
-                        Accuracy.Full :
-                        Accuracy.Reduced;
-                _calculateRefraction = Convert.ToBoolean(driverProfile.GetValue(driverID, calculateRefractionProfileName, string.Empty, "true"));
-                _studyMotion = Convert.ToBoolean(driverProfile.GetValue(driverID, "StudyMotion", string.Empty, "false"));
-                _bypassSafety = Convert.ToBoolean(driverProfile.GetValue(driverID, "BypassSafety", string.Empty, "false"));
+                Accuracy acc;
+
+                if (Enum.TryParse<Accuracy>(driverProfile.GetValue(driverID, astrometricAccuracyProfileName, string.Empty, "Full"), out acc))
+                    wisesite.astrometricAccuracy = acc;
+                else
+                    wisesite.astrometricAccuracy = Accuracy.Full;
+                _bypassSafety = Convert.ToBoolean(driverProfile.GetValue(driverID, bypassSafetyProfileName, string.Empty, false.ToString()));
             }
 
-            using (Profile driverProfile = new Profile())
-            {
-                driverProfile.DeviceType = "Dome";
-                _minimalDomeTrackingMovement = Convert.ToDouble(driverProfile.GetValue("ASCOM.Wise40.Dome", minimalDomeTrackingMovementProfileName, string.Empty, "2.0"));
-            }
+            using (Profile driverProfile = new Profile() { DeviceType = "Dome" })
+                _minimalDomeTrackingMovement = Convert.ToDouble(driverProfile.GetValue(Const.wiseDomeDriverID, minimalDomeTrackingMovementProfileName, string.Empty, "2.0"));
         }
 
         /// <summary>
@@ -2861,21 +2861,15 @@ namespace ASCOM.Wise40
         /// </summary>
         public void WriteProfile()
         {
-            using (Profile driverProfile = new Profile())
+            using (Profile driverProfile = new Profile() { DeviceType = "Telescope" })
             {
-                driverProfile.DeviceType = "Telescope";
                 driverProfile.WriteValue(driverID, traceStateProfileName, traceLogger.Enabled.ToString());
-                driverProfile.WriteValue(driverID, astrometricAccuracyProfileName, wisesite.astrometricAccuracy == Accuracy.Full ? "Full" : "Reduced");
-                driverProfile.WriteValue(driverID, enslaveDomeProfileName, _enslaveDome.ToString());
-                driverProfile.WriteValue(driverID, calculateRefractionProfileName, _calculateRefraction.ToString());
-                driverProfile.WriteValue(driverID, "BypassSafety", _bypassSafety.ToString());
+                driverProfile.WriteValue(driverID, astrometricAccuracyProfileName, wisesite.astrometricAccuracy.ToString());
+                driverProfile.WriteValue(driverID, bypassSafetyProfileName, _bypassSafety.ToString());
             }
 
-            using (Profile driverProfile = new Profile())
-            {
-                driverProfile.DeviceType = "Dome";
-                driverProfile.WriteValue("ASCOM.Wise40.Dome", minimalDomeTrackingMovementProfileName, _minimalDomeTrackingMovement.ToString());
-            }
+            using (Profile driverProfile = new Profile() { DeviceType = "Dome" })
+                driverProfile.WriteValue(Const.wiseDomeDriverID, minimalDomeTrackingMovementProfileName, _minimalDomeTrackingMovement.ToString());
         }
 
         public string Status

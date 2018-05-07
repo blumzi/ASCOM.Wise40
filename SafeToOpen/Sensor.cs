@@ -28,8 +28,7 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
 
         private bool _mustStabilize;
         private DateTime _startedStabilizing = DateTime.MinValue;
-
-        protected static string driverID = "ASCOM.Wise40SafeToOpen.SafetyMonitor";
+        
         protected static string deviceType = "SafetyMonitor";
 
         protected static WiseSafeToOperate wisesafe;
@@ -46,18 +45,31 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
 
         public void readProfile()
         {
-            _interval = 1000 * Convert.ToInt32(wisesafe._profile.GetValue(driverID, Name, "Interval", 0.ToString()));
-            _repeats = Convert.ToInt32(wisesafe._profile.GetValue(driverID, Name, "Repeats", 0.ToString()));
+            int defaultInterval = 0, defaultRepeats = 0;
+
+            switch (Name)
+            {
+                case "Wind": defaultInterval = 30; defaultRepeats = 3; break;
+                case "Sun": defaultInterval = 60; defaultRepeats = 1; break;
+                case "Light": defaultInterval = 30; defaultRepeats = 4; break;
+                case "HumanIntervention": defaultInterval = 0; defaultRepeats = 1; break;
+                case "Rain": defaultInterval = 30; defaultRepeats = 2; break;
+                case "Clouds": defaultInterval = 30; defaultRepeats = 3; break;
+                case "Humidity": defaultInterval = 30; defaultRepeats = 4; break;
+            }
+
+            _interval = 1000 * Convert.ToInt32(wisesafe._profile.GetValue(Const.wiseSafeToOpenDriverID, Name, "Interval", defaultInterval.ToString()));
+            _repeats = Convert.ToInt32(wisesafe._profile.GetValue(Const.wiseSafeToOpenDriverID, Name, "Repeats", defaultRepeats.ToString()));
             _isSafeQueue = new FixedSizedQueue<bool>(_repeats);
-            Enabled = Convert.ToBoolean(wisesafe._profile.GetValue(driverID, Name, "Enabled", true.ToString()));
+            Enabled = Convert.ToBoolean(wisesafe._profile.GetValue(Const.wiseSafeToOpenDriverID, Name, "Enabled", true.ToString()));
             readSensorProfile();
         }
 
         public void writeProfile()
         {
-            wisesafe._profile.WriteValue(driverID, Name, (_interval / 1000).ToString(), "Interval");
-            wisesafe._profile.WriteValue(driverID, Name, _repeats.ToString(), "Repeats");
-            wisesafe._profile.WriteValue(driverID, Name, _enabled.ToString(), "Enabled");
+            wisesafe._profile.WriteValue(Const.wiseSafeToOpenDriverID, Name, (_interval / 1000).ToString(), "Interval");
+            wisesafe._profile.WriteValue(Const.wiseSafeToOpenDriverID, Name, _repeats.ToString(), "Repeats");
+            wisesafe._profile.WriteValue(Const.wiseSafeToOpenDriverID, Name, _enabled.ToString(), "Enabled");
             writeSensorProfile();
         }
 
@@ -270,12 +282,12 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
 
         public override void readSensorProfile()
         {
-            MaxAsString = wisesafe._profile.GetValue(driverID, Name, "Max", 0.0.ToString());
+            MaxAsString = wisesafe._profile.GetValue(Const.wiseSafeToOpenDriverID, Name, "Max", 0.0.ToString());
         }
 
         public override void writeSensorProfile()
         {
-            wisesafe._profile.WriteValue(driverID, Name, MaxAsString, "Max");
+            wisesafe._profile.WriteValue(Const.wiseSafeToOpenDriverID, Name, MaxAsString, "Max");
         }
 
         public override bool getIsSafe()
@@ -318,18 +330,14 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
 
     public class HumanInterventionSensor : Sensor
     {
-        private const string humanInterventionFilePath = Const.topWise40Directory + "Observatory/HumanIntervention.txt";
-
-        public HumanInterventionSensor(WiseSafeToOperate instance) : base("HumanIntervention", instance) {
-            Directory.CreateDirectory(Path.GetDirectoryName(humanInterventionFilePath));
-        }
+        public HumanInterventionSensor(WiseSafeToOperate instance) : base("HumanIntervention", instance) { }
 
         public override void readSensorProfile() { }
         public override void writeSensorProfile() { }
 
         public override bool getIsSafe()
         {
-            bool ret = !File.Exists(humanInterventionFilePath);
+            bool ret = !Wise40.HumanIntervention.IsSet();
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "HumanInterventionSensor: getIsSafe: {0}", ret);
             #endregion
@@ -338,20 +346,7 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
 
         public override string reason()
         {
-            if (!File.Exists(humanInterventionFilePath))
-                return string.Empty;
-
-            StreamReader sr = new StreamReader(humanInterventionFilePath);
-            string line, reason = string.Empty;
-
-            while ((line = sr.ReadLine()) != null)
-            {
-                if (line.StartsWith("Operator:") || line.StartsWith("Created:") || line.StartsWith("Reason:"))
-                   reason += line + "; ";
-            }
-
-            reason = "Human Intervention: " + ((reason == string.Empty) ? string.Format("File \"{0}\" exists.", humanInterventionFilePath) : reason);
-            return reason;
+            return Wise40.HumanIntervention.Info;
         }
 
         public override string MaxAsString
@@ -385,12 +380,12 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
 
         public override void readSensorProfile()
         {
-            MaxAsString = wisesafe._profile.GetValue(driverID, Name, "Max", dayConditionsToString[(int)SensorData.DayCondition.dayUnknown]);
+            MaxAsString = wisesafe._profile.GetValue(Const.wiseSafeToOpenDriverID, Name, "Max", dayConditionsToString[(int)SensorData.DayCondition.dayUnknown]);
         }
 
         public override void writeSensorProfile()
         {
-            wisesafe._profile.WriteValue(driverID, Name, MaxAsString, "Max");
+            wisesafe._profile.WriteValue(Const.wiseSafeToOpenDriverID, Name, MaxAsString, "Max");
         }
 
         public override bool getIsSafe()
@@ -440,12 +435,12 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
 
         public override void readSensorProfile()
         {
-            MaxAsString = wisesafe._profile.GetValue(driverID, Name, "Max", "cloudUnknown");
+            MaxAsString = wisesafe._profile.GetValue(Const.wiseSafeToOpenDriverID, Name, "Max", "cloudUnknown");
         }
 
         public override void writeSensorProfile()
         {
-            wisesafe._profile.WriteValue(driverID, Name, MaxAsString, "Max");
+            wisesafe._profile.WriteValue(Const.wiseSafeToOpenDriverID, Name, MaxAsString, "Max");
         }
 
         public override bool getIsSafe()
@@ -493,12 +488,12 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
 
         public override void readSensorProfile()
         {
-            MaxAsString = wisesafe._profile.GetValue(driverID, Name, "Max", 0.0.ToString());
+            MaxAsString = wisesafe._profile.GetValue(Const.wiseSafeToOpenDriverID, Name, "Max", 0.0.ToString());
         }
 
         public override void writeSensorProfile()
         {
-            wisesafe._profile.WriteValue(driverID, Name, MaxAsString, "Max");
+            wisesafe._profile.WriteValue(Const.wiseSafeToOpenDriverID, Name, MaxAsString, "Max");
         }
 
         public override bool getIsSafe()
@@ -543,12 +538,12 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
 
         public override void readSensorProfile()
         {
-            MaxAsString = wisesafe._profile.GetValue(driverID, Name, "Max", 0.0.ToString());
+            MaxAsString = wisesafe._profile.GetValue(Const.wiseSafeToOpenDriverID, Name, "Max", 0.0.ToString());
         }
 
         public override void writeSensorProfile()
         {
-            wisesafe._profile.WriteValue(driverID, Name, MaxAsString, "Max");
+            wisesafe._profile.WriteValue(Const.wiseSafeToOpenDriverID, Name, MaxAsString, "Max");
         }
 
         public override bool getIsSafe()
@@ -593,12 +588,12 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
 
         public override void readSensorProfile()
         {
-            MaxAsString = wisesafe._profile.GetValue(driverID, Name, "Max", 0.0.ToString());
+            MaxAsString = wisesafe._profile.GetValue(Const.wiseSafeToOpenDriverID, Name, "Max", 0.0.ToString());
         }
 
         public override void writeSensorProfile()
         {
-            wisesafe._profile.WriteValue(driverID, Name, MaxAsString, "Max");
+            wisesafe._profile.WriteValue(Const.wiseSafeToOpenDriverID, Name, MaxAsString, "Max");
         }
 
         public override bool getIsSafe()

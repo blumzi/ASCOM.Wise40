@@ -36,5 +36,19 @@ namespace ASCOM.Wise40.Common
 
         public const string topWise40Directory = "c:/Wise40/";
         public const string humanInterventionFilePath = Const.topWise40Directory + "Observatory/HumanIntervention.txt";
+
+        public const string wiseTelescopeDriverID = "ASCOM.Wise40.Telescope";
+        public const string wiseDomeDriverID = "ASCOM.Wise40.Dome";
+        public const string wiseVantageProDriverID = "ASCOM.Wise40.VantagePro.ObservingConditions";
+        public const string wiseBoltwoodDriverID = "ASCOM.Wise40.Boltwood.ObservingConditions";
+        public const string wiseComputerControlDriverID = "ASCOM.Wise40.ComputerControl.SafetyMonitor";
+        public const string wiseSafeToOpenDriverID = "ASCOM.Wise40SafeToOpen.SafetyMonitor";
+        public const string wiseFocusDriverID = "ASCOM.Wise40.Focuser";
+
+        public const string wiseASCOMServerAppName = "RemoteDeviceServer";
+        public const string wiseDashboardAppName = "Dash";
+        public const string wiseObservatoryMonitorAppName = "ObservatoryMonitor";
+        public const string wiseASCOMServerPath = "c:/Program Files (x86)/ASCOM/RemoteServer/ASCOM.RemoteDeviceServer.exe";
+        public const string wiseDashPath = null;
     }
 }

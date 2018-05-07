@@ -36,6 +36,8 @@ using ASCOM.Utilities;
 using ASCOM.DeviceInterface;
 using System.Collections;
 
+using ASCOM.Wise40.Common;
+
 
 namespace ASCOM.Wise40.VantagePro
 {
@@ -495,10 +497,9 @@ namespace ASCOM.Wise40.VantagePro
         // to help with driver development
 
 
-        public static string driverID = "ASCOM.Wise40.VantagePro.ObservingConditions";
+        public static string driverID = Const.wiseVantageProDriverID;
         private static Version version = new Version("0.2");
-        //public static string driverDescription = string.Format("ASCOM Wise40.VantagePro v{0}", version.ToString());
-        public static string driverDescription = string.Format("ASCOM Wise40.VantagePro v0.2");
+        public static string driverDescription = string.Format("ASCOM Wise40.VantagePro v{0}", version.ToString());
         #region ASCOM Registration
 
         // Register or unregister driver for ASCOM. This is harmless if already

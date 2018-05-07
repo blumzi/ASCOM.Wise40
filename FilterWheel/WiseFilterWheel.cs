@@ -174,30 +174,50 @@ namespace ASCOM.Wise40.FilterWheel
             _initialized = true;
         }
 
+        private static String[] defaultWheel8RFIDs = {
+            "7F0007F75E",
+            "7F000817F7",
+            "7F000AEFC5",
+            "7C00563E5A",
+            "7F001B2B73",
+            "7F000ACAD5",
+            "7F001B4A83",
+            "7F0007BC0E",
+        };
+
+        private static String[] defaultWheel4RFIDs = {
+            "7F001B4C16",
+            "7C0055F4EB",
+            "7F0007F75E",
+            "7F001B0573",
+        };
+
         public static void ReadProfile()
         {
-            using (Profile driverProfile = new Profile())
+            using (Profile driverProfile = new Profile() { DeviceType = "FilterWheel" })
             {
-                driverProfile.DeviceType = "FilterWheel";
                 string subKey;
 
                 foreach (Wheel w in knownWheels)
                 {
-                    string name = "Wheel" + w._nPositions.ToString();
+                    string wheelName = "Wheel" + w._nPositions.ToString();
                     for (int pos = 0; pos < w._nPositions; pos++)
                     {
-                        subKey = string.Format("{0}/Position{1}", name, pos + 1);
+                        string defaultRFID = (w == wheel8) ? defaultWheel8RFIDs[pos] : defaultWheel4RFIDs[pos];
+
+                        subKey = string.Format("{0}/Position{1}", wheelName, pos + 1);
                         w._positions[pos].filterName = driverProfile.GetValue(driverID, "Filter Name", subKey, string.Empty);
-                        w._positions[pos].tag = driverProfile.GetValue(driverID, "RFID", subKey, string.Empty);
+                        w._positions[pos].tag = driverProfile.GetValue(driverID, "RFID", subKey, defaultRFID);
                     }
                 }
-                port = _instance.Simulated ? "NoPort" : driverProfile.GetValue(driverID, "Port", string.Empty, string.Empty);
+           
+                port = driverProfile.GetValue(driverID, "Port", string.Empty, Instance.Simulated ? "COM5" : "COM6");
             }
         }
 
         private static Dictionary<FilterSize, string> filterCsvFiles = new Dictionary<FilterSize, string>() {
-                {FilterSize.twoInch, "c:/Wise40/FilterWheel/" +"twoInchFilters.csv" },
-                {FilterSize.threeInch, "c:/Wise40/FilterWheel/" +"threeInchFilters.csv" },
+                {FilterSize.twoInch, Const.topWise40Directory + "/FilterWheel/twoInchFilters.csv" },
+                {FilterSize.threeInch, Const.topWise40Directory + "/FilterWheel/threeInchFilters.csv" },
             };
 
         //
@@ -268,14 +288,13 @@ namespace ASCOM.Wise40.FilterWheel
 
         public static void WriteProfile()
         {
-            using (Profile driverProfile = new Profile())
+            using (Profile driverProfile = new Profile() { DeviceType = "FilterWheel" })
             {
-                driverProfile.DeviceType = "FilterWheel";
                 string subKey;
 
-                foreach (Wheel w in new List<Wheel> { wheel8, wheel4 })
+                foreach (Wheel w in knownWheels)
                 {
-                    string name = "Wheel" + ((w._type == WheelType.Wheel4) ? "4" : "8");
+                    string name = "Wheel" + w._name.ToString();
                     for (int pos = 0; pos < w._nPositions; pos++)
                     {
                         subKey = string.Format("{0}/Position{1}", name, pos + 1);
