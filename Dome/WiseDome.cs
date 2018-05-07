@@ -3,15 +3,16 @@ using System.Threading;
 using System.Collections.Generic;
 using System.Collections;
 using System.Globalization;
+using System.Net.Http;
 
 using MccDaq;
 using ASCOM.Utilities;
 using ASCOM.DeviceInterface;
 using ASCOM.Wise40.Common;
 using ASCOM.Wise40.Hardware;
-//using ASCOM.Wise40.SafeToOperate;
+using System.Threading.Tasks;
 
-namespace ASCOM.Wise40 //.Dome
+namespace ASCOM.Wise40
 {
     public class WiseDome : WiseObject, IConnectable, IDisposable {
 
@@ -23,7 +24,6 @@ namespace ASCOM.Wise40 //.Dome
         private static bool _initialized = false;
 
         private WisePin leftPin, rightPin;
-        private WisePin openPin, closePin;
         private WisePin[] caliPins = new WisePin[3];
         private WisePin ventPin;
         private WisePin projectorPin;
@@ -38,6 +38,8 @@ namespace ASCOM.Wise40 //.Dome
         public bool _syncVentWithShutter = false;
         private static Object _caliWriteLock = new object();
 
+        public WiseDomeShutter wisedomeshutter = WiseDomeShutter.Instance;
+                
         [FlagsAttribute] public enum DomeState {
             Idle = 0,
             MovingCW = (1 << 0),
@@ -46,8 +48,7 @@ namespace ASCOM.Wise40 //.Dome
             Parking = (1 << 3),
             //AllMovements = MovingCCW|MovingCW|Parking|Calibrating,
         };
-        private DomeState _state;        
-        private ShutterState _shutterState = ShutterState.shutterClosed;
+        private DomeState _state;
 
         private enum StuckPhase { NotStuck, FirstStop, GoBackward, SecondStop, ResumeForward };
         private StuckPhase _stuckPhase;
@@ -56,6 +57,22 @@ namespace ASCOM.Wise40 //.Dome
 
         private uint _prevTicks;      // for Stuck checks
         private DateTime nextStuckEvent;
+
+        public bool _shutterIsAlive
+        {
+            get
+            {
+                return wisedomeshutter.webClient != null && wisedomeshutter.webClient.Alive;
+            }
+        }
+
+        public int ShutterPercent
+        {
+            get
+            {
+                return wisedomeshutter.Percent;
+            }
+        }
 
         public class CalibrationPoint {
             public uint simulatedEncoderValue;
@@ -83,11 +100,9 @@ namespace ASCOM.Wise40 //.Dome
         private Angle _targetAz = null;
 
         private System.Threading.Timer _domeTimer;
-        private System.Threading.Timer _shutterTimer;
         private System.Threading.Timer _movementTimer;
         private System.Threading.Timer _stuckTimer;
-
-        private int _shutterTimeout;
+        
         private readonly int _movementTimeout = 2000;
         private readonly int _domeTimeout = 50;
         
@@ -147,8 +162,6 @@ namespace ASCOM.Wise40 //.Dome
                 connectables = new List<IConnectable>();
                 disposables = new List<IDisposable>();
 
-                openPin = new WisePin("ShutterOpen", hw.domeboard, DigitalPortType.FirstPortA, 0, DigitalPortDirection.DigitalOut);
-                closePin = new WisePin("ShutterClose", hw.domeboard, DigitalPortType.FirstPortA, 1, DigitalPortDirection.DigitalOut);
                 leftPin = new WisePin("DomeLeft", hw.domeboard, DigitalPortType.FirstPortA, 2, DigitalPortDirection.DigitalOut);
                 rightPin = new WisePin("DomeRight", hw.domeboard, DigitalPortType.FirstPortA, 3, DigitalPortDirection.DigitalOut);
 
@@ -164,9 +177,11 @@ namespace ASCOM.Wise40 //.Dome
                 projectorPin = new WisePin("DomeProjector", hw.domeboard, DigitalPortType.FirstPortA, 4, DigitalPortDirection.DigitalOut);
 
                 domeEncoder.init();
+                wisedomeshutter.init();
 
-                List<WisePin> domePins = new List<WisePin> { openPin, closePin, leftPin, rightPin, ventPin, projectorPin };
+                List<WisePin> domePins = new List<WisePin> { leftPin, rightPin, ventPin, projectorPin };
                 domePins.AddRange(caliPins);
+                domePins.AddRange(wisedomeshutter.pins());
 
                 connectables.AddRange(domePins);
                 disposables.AddRange(domePins);
@@ -175,21 +190,15 @@ namespace ASCOM.Wise40 //.Dome
             {
                 debugger.WriteLine(Debugger.DebugLevel.DebugExceptions, "WiseDome: constructor caught: {0}.", e.Message);
             }
-
-            openPin.SetOff();
-            closePin.SetOff();
+            
             leftPin.SetOff();
             rightPin.SetOff();
 
             _calibrating = false;
             _state = DomeState.Idle;
-            _shutterState = ShutterState.shutterClosed;
             
             _domeTimer = new System.Threading.Timer(new TimerCallback(onDomeTimer));
             _domeTimer.Change(_domeTimeout, _domeTimeout);
-            
-            _shutterTimer = new System.Threading.Timer(new TimerCallback(onShutterTimer));
-            _shutterTimeout = (Simulated ? 2 : 25 ) * 1000;
             
             _movementTimer = new System.Threading.Timer(new TimerCallback(onMovementTimer));
             
@@ -404,20 +413,7 @@ namespace ASCOM.Wise40 //.Dome
         {
             get
             {
-                var ret = _shutterState == ShutterState.shutterOpening || _shutterState == ShutterState.shutterClosing;
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "ShutterIsMoving: {0}", ret.ToString());
-                #endregion
-                return ret;
-            }
-        }
-
-        private void onShutterTimer(object state)
-        {
-            if (ShutterIsMoving)
-            {
-                _shutterTimer.Change(Timeout.Infinite, Timeout.Infinite);
-                ShutterStop();
+                return wisedomeshutter.IsMoving;
             }
         }
         
@@ -615,49 +611,18 @@ namespace ASCOM.Wise40 //.Dome
 
         public void StartOpeningShutter()
         {
-            #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "StartOpeningShutter: started opening the shutter");
-            #endregion debug
-            openPin.SetOn();
-            _shutterState = ShutterState.shutterOpening;
-            _shutterTimer.Change(_shutterTimeout, Timeout.Infinite);
+            wisedomeshutter.StartOpening();
             if (_syncVentWithShutter)
                 Vent = true;
         }
 
         public void StartClosingShutter()
         {
-            #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "StartClosingShutter: started closing the shutter");
-            #endregion debug
-            closePin.SetOn();
-            _shutterState = ShutterState.shutterClosing;
-            _shutterTimer.Change(_shutterTimeout, Timeout.Infinite);
+            wisedomeshutter.StartClosing();
             if (_syncVentWithShutter)
                 Vent = false;
         }
-
-        public void   ShutterStop()
-        {
-            ShutterState prev = _shutterState;
-
-            switch (_shutterState)
-            {
-                case ShutterState.shutterOpening:
-                    openPin.SetOff();
-                    _shutterState = ShutterState.shutterOpen;
-                    break;
-
-                case ShutterState.shutterClosing:
-                    closePin.SetOff();
-                    _shutterState = ShutterState.shutterClosed;
-                    break;
-            }
-            #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "ShutterStop: _shutterState was {0} is {1}", prev, _shutterState);
-            #endregion
-        }
-
+        
         public CalibrationPoint AtCaliPoint
         {
             get
@@ -923,8 +888,7 @@ namespace ASCOM.Wise40 //.Dome
 
         public void Dispose()
         {
-            openPin.SetOff();
-            closePin.SetOff();
+            wisedomeshutter.Dispose();
             leftPin.SetOff();
             rightPin.SetOff();
 
@@ -1007,8 +971,8 @@ namespace ASCOM.Wise40 //.Dome
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugASCOM, "WiseDome: OpenShutter: opening shutter: ");
                 #endregion
-                ShutterStop();
-                StartOpeningShutter();
+                wisedomeshutter.Stop();
+                wisedomeshutter.StartOpening();
             } else
             {
                 #region trace
@@ -1017,7 +981,7 @@ namespace ASCOM.Wise40 //.Dome
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugASCOM, "WiseDome: OpenShutter: Cannot open shutter: " + err);
                 #endregion
-                _shutterState = ShutterState.shutterError;
+                wisedomeshutter.State = ShutterState.shutterError;
             }
         }
 
@@ -1036,8 +1000,8 @@ namespace ASCOM.Wise40 //.Dome
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugASCOM, "CloseShutter: started closing");
                 #endregion
-                ShutterStop();
-                StartClosingShutter();
+                wisedomeshutter.Stop();
+                wisedomeshutter.StartClosing();
             } else
             {
                 #region trace
@@ -1046,7 +1010,7 @@ namespace ASCOM.Wise40 //.Dome
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugASCOM, "CloseShutter: " + err);
                 #endregion
-                _shutterState = ShutterState.shutterError;
+                wisedomeshutter.State = ShutterState.shutterError;
             }
         }
 
@@ -1186,13 +1150,39 @@ namespace ASCOM.Wise40 //.Dome
         {
             get
             {
-                ShutterState ret = _shutterState;
+                ShutterState ret = wisedomeshutter.State;
                 #region trace
                 tl.LogMessage("Dome: ShutterState get", ret.ToString());
                 #endregion
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "ShutterState - get: {0}", ret.ToString());
                 #endregion
+                return ret;
+            }
+        }
+
+        public string ShutterStatus
+        {
+            get
+            {
+                string ret = "unknown";
+
+                switch (ShutterState)
+                {
+                    case ShutterState.shutterClosed:
+                        ret = "Shutter is closed";
+                        break;
+                    case ShutterState.shutterClosing:
+                    case ShutterState.shutterOpening:
+                        ret = string.Format("Shutter is {0}% open", wisedomeshutter.Percent);
+                        break;
+                    case ShutterState.shutterOpen:
+                        ret = "Shutter is open";
+                        break;
+                    case ShutterState.shutterError:
+                        ret = "Shutter error!";
+                        break;
+                }
                 return ret;
             }
         }
@@ -1380,22 +1370,23 @@ namespace ASCOM.Wise40 //.Dome
 
         #region Profile
         internal static string autoCalibrateProfileName = "AutoCalibrate";
-        internal static string bypassSafetyProfileName = "Bypass Safety";
-        internal static string syncVentWithShutterProfileName = "Sync Vent With Shutter";
-        internal static string driverID = "ASCOM.Wise40.Dome";
+        internal static string bypassSafetyProfileName = "BypassSafety";
+        internal static string syncVentWithShutterProfileName = "SyncVentWithShutter";
 
         /// <summary>
         /// Read the device configuration from the ASCOM Profile store
         /// </summary>
         public void ReadProfile()
         {
-            using (Profile driverProfile = new Profile())
+            bool defaultSyncVentWithShutter = (wisesite.OperationalMode == WiseSite.OpMode.WISE) ? false : true;
+
+            using (Profile driverProfile = new Profile() { DeviceType = "Dome" })
             {
-                driverProfile.DeviceType = "Dome";
-                _autoCalibrate = Convert.ToBoolean(driverProfile.GetValue(driverID, autoCalibrateProfileName, string.Empty, "false"));
-                _bypassSafety = Convert.ToBoolean(driverProfile.GetValue(driverID, bypassSafetyProfileName, string.Empty, "false"));
-                _syncVentWithShutter = Convert.ToBoolean(driverProfile.GetValue(driverID, syncVentWithShutterProfileName, string.Empty, "false"));
+                _autoCalibrate = Convert.ToBoolean(driverProfile.GetValue(Const.wiseDomeDriverID, autoCalibrateProfileName, string.Empty, true.ToString()));
+                _bypassSafety = Convert.ToBoolean(driverProfile.GetValue(Const.wiseDomeDriverID, bypassSafetyProfileName, string.Empty, true.ToString()));
+                _syncVentWithShutter = Convert.ToBoolean(driverProfile.GetValue(Const.wiseDomeDriverID, syncVentWithShutterProfileName, string.Empty, defaultSyncVentWithShutter.ToString()));
             }
+            wisedomeshutter.ReadProfile();
         }
 
         /// <summary>
@@ -1403,13 +1394,13 @@ namespace ASCOM.Wise40 //.Dome
         /// </summary>
         public void WriteProfile()
         {
-            using (Profile driverProfile = new Profile())
+            using (Profile driverProfile = new Profile() { DeviceType = "Dome" })
             {
-                driverProfile.DeviceType = "Dome";
-                driverProfile.WriteValue(driverID, autoCalibrateProfileName, _autoCalibrate.ToString());
-                driverProfile.WriteValue(driverID, bypassSafetyProfileName, _bypassSafety.ToString());
-                driverProfile.WriteValue(driverID, syncVentWithShutterProfileName, _syncVentWithShutter.ToString());
+                driverProfile.WriteValue(Const.wiseDomeDriverID, autoCalibrateProfileName, _autoCalibrate.ToString());
+                driverProfile.WriteValue(Const.wiseDomeDriverID, bypassSafetyProfileName, _bypassSafety.ToString());
+                driverProfile.WriteValue(Const.wiseDomeDriverID, syncVentWithShutterProfileName, _syncVentWithShutter.ToString());
             }
+            wisedomeshutter.WriteProfile();
         }
         #endregion
     }

@@ -242,7 +242,7 @@ namespace ASCOM.Wise40 //.Telescope
 
         public void StopShutter()
         {
-            wisedome.ShutterStop();
+            wisedome.wisedomeshutter.Stop();
         }
 
         public string ShutterStatus
@@ -251,9 +251,8 @@ namespace ASCOM.Wise40 //.Telescope
             {
                 if (!Connected)
                     return "Not connected";
-
-                string state = wisedome.ShutterState.ToString();
-                return (state == "shutterError" ? String.Empty : wisedome.ShutterState.ToString().Substring("shutter".Length));
+                
+                return wisedome.ShutterStatus;
             }
         }
 

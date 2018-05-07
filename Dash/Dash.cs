@@ -47,6 +47,8 @@ namespace Dash
         private bool _bypassSafety = false;
         private bool _saveFocusUpperLimit = false, _saveFocusLowerLimit = false;
 
+        DateTime _lastShutterStatusUpdate = DateTime.MinValue;
+
         private List<ToolStripMenuItem> debugMenuItems;
         private Dictionary<object, string> alteredItems = new Dictionary<object, string>();
 
@@ -69,6 +71,7 @@ namespace Dash
             wisetele.Connected = true;
             wisedome.init();
             wisedome.Connected = true;
+            wisedome.wisedomeshutter.init();
             wisefocuser.init();
             wisefocuser.Connected = true;
             wisesafetooperate.init();
@@ -375,9 +378,19 @@ namespace Dash
             #region RefreshDome
             labelDomeAzimuthValue.Text = domeSlaveDriver.Azimuth;
             domeStatus.Show(domeSlaveDriver.Status);
-            shutterStatus.Show(domeSlaveDriver.ShutterStatus);
             buttonDomePark.Text = wisedome.AtPark ? "Unpark" : "Park";
             buttonVent.Text = wisedome.Vent ? "Close Vent" : "Open Vent";
+
+            if (_lastShutterStatusUpdate == DateTime.MinValue ||  now.Subtract(_lastShutterStatusUpdate).TotalSeconds >= 2)
+            {
+                string stat = domeSlaveDriver.ShutterStatus;
+                Statuser.Severity severity = Statuser.Severity.Normal;
+
+                if (stat.Contains("error"))
+                    severity = Statuser.Severity.Error;
+                shutterStatus.Show(domeSlaveDriver.ShutterStatus, 0, severity);
+                _lastShutterStatusUpdate = now;
+            }
             #endregion
 
             #region RefreshWeather
@@ -1419,7 +1432,7 @@ namespace Dash
             #endregion
             wisetele.FullStop();
             wisedome.Stop();
-            wisedome.ShutterStop();
+            wisedome.wisedomeshutter.Stop();
             wisefocuser.Stop();
         }
 
@@ -1475,7 +1488,7 @@ namespace Dash
                 wisetele.Stop();
                 wisetele.Tracking = false;
                 wisedome.Stop();
-                wisedome.ShutterStop();
+                wisedome.wisedomeshutter.Stop();
                 wisefocuser.Stop();
             }
             catch { }

@@ -25,11 +25,14 @@ namespace ASCOM.Wise40 //.Dome
             checkBoxAutoCalibrate.Checked = wisedome._autoCalibrate;
             checkBoxBypassSafety.Checked = wisedome._bypassSafety;
             checkBoxSyncVent.Checked = wisedome._syncVentWithShutter;
+            textBoxShutterIpAddress.Text = wisedome.wisedomeshutter._ipAddress;
+            textBoxShutterHighestValue.Text = wisedome.wisedomeshutter._highestValue.ToString();
+            textBoxShutterLowestValue.Text = wisedome.wisedomeshutter._lowestValue.ToString();
 
             using (ASCOM.Utilities.Profile driverProfile = new ASCOM.Utilities.Profile())
             {
                 driverProfile.DeviceType = "Telescope";
-                minimalStep = Convert.ToDouble(driverProfile.GetValue("ASCOM.Wise40.Telescope", 
+                minimalStep = Convert.ToDouble(driverProfile.GetValue(Const.wiseTelescopeDriverID, 
                     "Minimal Dome Tracking Movement", string.Empty, "2.0"));
                 textBoxMinimalStep.Text = minimalStep.ToString();
             }
@@ -37,12 +40,19 @@ namespace ASCOM.Wise40 //.Dome
 
         private void cmdOK_Click(object sender, EventArgs e) // OK button event handler
         {
+            wisedome.wisedomeshutter._ipAddress = textBoxShutterIpAddress.Text.Trim();
+            wisedome.wisedomeshutter._highestValue = Convert.ToInt32(textBoxShutterHighestValue.Text);
+            wisedome.wisedomeshutter._lowestValue = Convert.ToInt32(textBoxShutterLowestValue.Text);
+            wisedome._autoCalibrate = checkBoxAutoCalibrate.Checked;
+            wisedome._bypassSafety = checkBoxBypassSafety.Checked;
+            wisedome._syncVentWithShutter = checkBoxSyncVent.Checked;
+
             wisedome.WriteProfile();
 
             using (ASCOM.Utilities.Profile driverProfile = new ASCOM.Utilities.Profile())
             {
                 driverProfile.DeviceType = "Telescope";
-                driverProfile.WriteValue("ASCOM.Wise40.Telescope", "Minimal Dome Tracking Movement", textBoxMinimalStep.Text);
+                driverProfile.WriteValue(Const.wiseTelescopeDriverID, "Minimal Dome Tracking Movement", textBoxMinimalStep.Text);
             }
             Close();
         }
@@ -77,6 +87,16 @@ namespace ASCOM.Wise40 //.Dome
         private void checkBoxBypassSafety_CheckedChanged(object sender, EventArgs e)
         {
             wisedome._bypassSafety = (sender as CheckBox).Checked;
+        }
+
+        private void label2_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void DomeSetupDialogForm_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }

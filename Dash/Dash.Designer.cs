@@ -519,7 +519,7 @@
             this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.button1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.button1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.button1.Location = new System.Drawing.Point(194, 25);
+            this.button1.Location = new System.Drawing.Point(194, 17);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(34, 23);
             this.button1.TabIndex = 31;
@@ -533,7 +533,7 @@
             this.buttonDomePark.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonDomePark.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonDomePark.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonDomePark.Location = new System.Drawing.Point(252, 64);
+            this.buttonDomePark.Location = new System.Drawing.Point(252, 40);
             this.buttonDomePark.Name = "buttonDomePark";
             this.buttonDomePark.Size = new System.Drawing.Size(56, 23);
             this.buttonDomePark.TabIndex = 30;
@@ -547,7 +547,7 @@
             this.buttonProjector.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonProjector.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonProjector.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonProjector.Location = new System.Drawing.Point(184, 126);
+            this.buttonProjector.Location = new System.Drawing.Point(184, 96);
             this.buttonProjector.Name = "buttonProjector";
             this.buttonProjector.Size = new System.Drawing.Size(120, 23);
             this.buttonProjector.TabIndex = 29;
@@ -561,7 +561,7 @@
             this.buttonVent.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonVent.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonVent.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonVent.Location = new System.Drawing.Point(99, 126);
+            this.buttonVent.Location = new System.Drawing.Point(99, 96);
             this.buttonVent.Name = "buttonVent";
             this.buttonVent.Size = new System.Drawing.Size(80, 23);
             this.buttonVent.TabIndex = 28;
@@ -575,7 +575,7 @@
             this.buttonCalibrateDome.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonCalibrateDome.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonCalibrateDome.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonCalibrateDome.Location = new System.Drawing.Point(22, 126);
+            this.buttonCalibrateDome.Location = new System.Drawing.Point(22, 96);
             this.buttonCalibrateDome.Name = "buttonCalibrateDome";
             this.buttonCalibrateDome.Size = new System.Drawing.Size(72, 23);
             this.buttonCalibrateDome.TabIndex = 27;
@@ -592,9 +592,9 @@
             this.groupBox7.Controls.Add(this.buttonFullOpenShutter);
             this.groupBox7.Controls.Add(this.labelDomeShutterStatus);
             this.groupBox7.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBox7.Location = new System.Drawing.Point(6, 149);
+            this.groupBox7.Location = new System.Drawing.Point(6, 136);
             this.groupBox7.Name = "groupBox7";
-            this.groupBox7.Size = new System.Drawing.Size(312, 84);
+            this.groupBox7.Size = new System.Drawing.Size(312, 97);
             this.groupBox7.TabIndex = 24;
             this.groupBox7.TabStop = false;
             this.groupBox7.Text = " Shutter ";
@@ -679,7 +679,7 @@
             this.labelDomeShutterStatus.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.labelDomeShutterStatus.Location = new System.Drawing.Point(8, 56);
             this.labelDomeShutterStatus.Name = "labelDomeShutterStatus";
-            this.labelDomeShutterStatus.Size = new System.Drawing.Size(296, 20);
+            this.labelDomeShutterStatus.Size = new System.Drawing.Size(296, 28);
             this.labelDomeShutterStatus.TabIndex = 19;
             this.labelDomeShutterStatus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.toolTip.SetToolTip(this.labelDomeShutterStatus, "Shutter status");
@@ -688,7 +688,7 @@
             // 
             this.textBoxDomeAzValue.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.textBoxDomeAzValue.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.textBoxDomeAzValue.Location = new System.Drawing.Point(231, 26);
+            this.textBoxDomeAzValue.Location = new System.Drawing.Point(231, 18);
             this.textBoxDomeAzValue.Name = "textBoxDomeAzValue";
             this.textBoxDomeAzValue.Size = new System.Drawing.Size(36, 20);
             this.textBoxDomeAzValue.TabIndex = 25;
@@ -701,7 +701,7 @@
             this.buttonDomeAzGo.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonDomeAzGo.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonDomeAzGo.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonDomeAzGo.Location = new System.Drawing.Point(271, 25);
+            this.buttonDomeAzGo.Location = new System.Drawing.Point(271, 17);
             this.buttonDomeAzGo.Name = "buttonDomeAzGo";
             this.buttonDomeAzGo.Size = new System.Drawing.Size(34, 23);
             this.buttonDomeAzGo.TabIndex = 24;
@@ -715,7 +715,7 @@
             this.buttonDomeRight.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonDomeRight.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonDomeRight.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonDomeRight.Location = new System.Drawing.Point(170, 64);
+            this.buttonDomeRight.Location = new System.Drawing.Point(170, 40);
             this.buttonDomeRight.Name = "buttonDomeRight";
             this.buttonDomeRight.Size = new System.Drawing.Size(76, 23);
             this.buttonDomeRight.TabIndex = 23;
@@ -730,7 +730,7 @@
             this.buttonDomeStop.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonDomeStop.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonDomeStop.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonDomeStop.Location = new System.Drawing.Point(94, 64);
+            this.buttonDomeStop.Location = new System.Drawing.Point(94, 40);
             this.buttonDomeStop.Name = "buttonDomeStop";
             this.buttonDomeStop.Size = new System.Drawing.Size(76, 23);
             this.buttonDomeStop.TabIndex = 22;
@@ -744,7 +744,7 @@
             this.buttonDomeLeft.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonDomeLeft.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonDomeLeft.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonDomeLeft.Location = new System.Drawing.Point(18, 64);
+            this.buttonDomeLeft.Location = new System.Drawing.Point(18, 40);
             this.buttonDomeLeft.Name = "buttonDomeLeft";
             this.buttonDomeLeft.Size = new System.Drawing.Size(76, 23);
             this.buttonDomeLeft.TabIndex = 21;
@@ -758,9 +758,9 @@
             this.labelDomeAzimuthValue.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.labelDomeAzimuthValue.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelDomeAzimuthValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelDomeAzimuthValue.Location = new System.Drawing.Point(53, 26);
+            this.labelDomeAzimuthValue.Location = new System.Drawing.Point(53, 18);
             this.labelDomeAzimuthValue.Name = "labelDomeAzimuthValue";
-            this.labelDomeAzimuthValue.Size = new System.Drawing.Size(128, 20);
+            this.labelDomeAzimuthValue.Size = new System.Drawing.Size(51, 20);
             this.labelDomeAzimuthValue.TabIndex = 17;
             this.labelDomeAzimuthValue.Text = "999.9";
             this.labelDomeAzimuthValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -770,7 +770,7 @@
             this.labelDomeStatus.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.labelDomeStatus.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelDomeStatus.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelDomeStatus.Location = new System.Drawing.Point(8, 96);
+            this.labelDomeStatus.Location = new System.Drawing.Point(8, 72);
             this.labelDomeStatus.Name = "labelDomeStatus";
             this.labelDomeStatus.Size = new System.Drawing.Size(312, 20);
             this.labelDomeStatus.TabIndex = 19;
@@ -782,7 +782,7 @@
             this.label17.AutoSize = true;
             this.label17.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label17.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label17.Location = new System.Drawing.Point(15, 27);
+            this.label17.Location = new System.Drawing.Point(15, 19);
             this.label17.Name = "label17";
             this.label17.Size = new System.Drawing.Size(35, 18);
             this.label17.TabIndex = 16;
