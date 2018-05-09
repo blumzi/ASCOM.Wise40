@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ObsMainForm));
             this.menuStrip = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -105,21 +106,21 @@
             // lCOToolStripMenuItem
             // 
             this.lCOToolStripMenuItem.Name = "lCOToolStripMenuItem";
-            this.lCOToolStripMenuItem.Size = new System.Drawing.Size(100, 22);
+            this.lCOToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.lCOToolStripMenuItem.Text = "LCO";
             this.lCOToolStripMenuItem.Click += new System.EventHandler(this.SelectOpMode);
             // 
             // wISEToolStripMenuItem
             // 
             this.wISEToolStripMenuItem.Name = "wISEToolStripMenuItem";
-            this.wISEToolStripMenuItem.Size = new System.Drawing.Size(100, 22);
+            this.wISEToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.wISEToolStripMenuItem.Text = "WISE";
             this.wISEToolStripMenuItem.Click += new System.EventHandler(this.SelectOpMode);
             // 
             // aCPToolStripMenuItem
             // 
             this.aCPToolStripMenuItem.Name = "aCPToolStripMenuItem";
-            this.aCPToolStripMenuItem.Size = new System.Drawing.Size(100, 22);
+            this.aCPToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.aCPToolStripMenuItem.Text = "ACP";
             this.aCPToolStripMenuItem.Click += new System.EventHandler(this.SelectOpMode);
             // 
@@ -328,6 +329,7 @@
             this.Controls.Add(this.listBoxLog);
             this.Controls.Add(this.menuStrip);
             this.ForeColor = System.Drawing.Color.DarkOrange;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip;
             this.Name = "ObsMainForm";
             this.Text = "Observatory Monitor";
