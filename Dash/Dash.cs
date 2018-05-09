@@ -52,6 +52,7 @@ namespace Dash
         private List<ToolStripMenuItem> debugMenuItems;
         private Dictionary<object, string> alteredItems = new Dictionary<object, string>();
 
+
         private long stoppingAxes;
 
         void onWheelOrPositionChanged(object sender, EventArgs e)
@@ -65,6 +66,8 @@ namespace Dash
         #region Initialization
         public FormDash()
         {
+
+
             debugger.init();
             hardware.init();
             wisetele.init();
@@ -82,6 +85,45 @@ namespace Dash
             wisedomeplatform.init();
 
             InitializeComponent();
+
+            if (wisesite.OperationalMode != WiseSite.OpMode.WISE)
+            {
+                List<Control> readonlyControls = new List<Control>()
+                {
+                    textBoxRA, textBoxDec,
+                    groupBoxSpeed,
+                    buttonGoCoord,
+                    buttonNorth, buttonSouth, buttonEast, buttonWest,
+                    buttonNW, buttonNE, buttonSE, buttonSW,
+                    buttonStop, buttonMainStop,
+                    buttonTrack,
+                    buttonZenith, buttonFlat, buttonHandleCover, buttonTelescopePark,
+
+                    buttonDomeLeft, buttonDomeRight, buttonDomeStop, buttonDomePark,
+                    buttonDomeAzGo, buttonDomeAzSet, textBoxDomeAzValue,
+                    buttonCalibrateDome, buttonVent, buttonProjector,
+                    buttonFullOpenShutter, buttonFullCloseShutter, buttonOpenShutter, buttonCloseShutter, buttonStopShutter,
+
+                    buttonFocusAllDown, buttonFocusAllUp, buttonFocusDecrease, buttonFocusIncrease,
+                    buttonFocuserStop, buttonFocusGoto, textBoxFocusGotoPosition,
+                    buttonFocusUp, buttonFocusDown, comboBoxFocusStep,
+
+                    pictureBoxStop,
+
+                    groupBoxFWSelect, textBoxFilterWheelPosition, buttonSetFilterWheelPosition,
+                    buttonFilterWheelGo, comboBoxFilterWheelPositions,
+                };
+                foreach (var c in readonlyControls)
+                {
+                    c.Enabled = false;
+                    toolTip.SetToolTip(c, "Disabled (readonly mode)");
+                }
+                annunciatorReadonly.Text = string.Format("Readonly mode ({0})", wisesite.OperationalMode.ToString());
+                annunciatorReadonly.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+                annunciatorReadonly.ActiveColor = Color.Coral;
+            }
+            else
+                annunciatorReadonly.Text = "";
 
             debugMenuItems = new List<ToolStripMenuItem> {
                 debugASCOMToolStripMenuItem ,
@@ -185,11 +227,11 @@ namespace Dash
             Angle dec = Angle.FromDegrees(wisetele.Declination);
             Angle ha = Angle.FromHours(wisetele.HourAngle, Angle.Type.HA);
             string safetyError = wisetele.SafeAtCoordinates(ra, dec);
-            
+
             Color safeColor = Statuser.colors[Statuser.Severity.Normal];
             Color unsafeColor = Statuser.colors[Statuser.Severity.Error];
 
-            labelDate.Text = localTime.ToLongDateString() + Const.crnl + localTime.ToLongTimeString();
+            labelDate.Text = localTime.ToString("ddd, dd MMM yyyy\n hh:mm:ss tt");
 
             #region RefreshTelescope
             labelLTValue.Text = now.TimeOfDay.ToString(@"hh\hmm\mss\.f\s");
@@ -239,7 +281,7 @@ namespace Dash
             }
             else
                 annunciatorDome.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
-            
+
             WiseVirtualMotor primaryMotor = null, secondaryMotor = null;
             double currentRate = Const.rateStopped;
 
@@ -381,7 +423,7 @@ namespace Dash
             buttonDomePark.Text = wisedome.AtPark ? "Unpark" : "Park";
             buttonVent.Text = wisedome.Vent ? "Close Vent" : "Open Vent";
 
-            if (_lastShutterStatusUpdate == DateTime.MinValue ||  now.Subtract(_lastShutterStatusUpdate).TotalSeconds >= 2)
+            if (_lastShutterStatusUpdate == DateTime.MinValue || now.Subtract(_lastShutterStatusUpdate).TotalSeconds >= 2)
             {
                 string stat = domeSlaveDriver.ShutterStatus;
                 Statuser.Severity severity = Statuser.Severity.Normal;
@@ -429,7 +471,7 @@ namespace Dash
                     labelSkyTempValue.Text = oc.SkyTemperature.ToString() + "°C";
                     labelTempValue.Text = oc.Temperature.ToString() + "°C";
                     labelPressureValue.Text = oc.Pressure.ToString() + "mB";
-                    labelWindDirValue.Text = oc.WindDirection.ToString() + "°";                    
+                    labelWindDirValue.Text = oc.WindDirection.ToString() + "°";
                     labelHumidityValue.Text = oc.Humidity.ToString() + "%";
                     labelHumidityValue.ForeColor = Statuser.TriStateColor(wisesafetooperate.isSafeHumidity);
 
@@ -598,7 +640,9 @@ namespace Dash
                 {
                     wisetele.HandpadMoveAxis(m._axis, m._rate);
                 }
-            } else {
+            }
+            else
+            {
                 string message = string.Format("Unsafe to move {0}", String.Join("-", Directions.ToArray()));
                 telescopeStatus.Show(message, 2000, Statuser.Severity.Error);
             }
@@ -1235,7 +1279,7 @@ namespace Dash
                 if (!alteredItems.ContainsKey(item))
                     alteredItems[item] = title;
             }
-            
+
             string alterations = string.Empty;
             foreach (var key in alteredItems.Keys)
             {
@@ -1256,7 +1300,8 @@ namespace Dash
             {
                 saveToProfileToolStripMenuItem.ToolTipText = "To be saved to profile:" + Const.crnl + Const.crnl + alterations;
                 saveToProfileToolStripMenuItem.Text = "** Save To Profile **";
-            } else
+            }
+            else
             {
                 saveToProfileToolStripMenuItem.ToolTipText = "No changes";
                 saveToProfileToolStripMenuItem.Text = "Save To Profile";
@@ -1387,7 +1432,8 @@ namespace Dash
             try
             {
                 selectedPosition = Convert.ToInt16(textBoxFilterWheelPosition.Text);
-            } catch (FormatException)
+            }
+            catch (FormatException)
             {
                 filterWheelStatus.Show("Invalid position \"Current position\"", 1000, Statuser.Severity.Error);
                 textBoxFilterWheelPosition.Text = "";
@@ -1396,11 +1442,11 @@ namespace Dash
             WiseFilterWheel.Wheel selectedWheel = radioButtonSelectFilterWheel8.Checked ? WiseFilterWheel.wheel8 : WiseFilterWheel.wheel4;
             int maxPositions = selectedWheel._nPositions;
 
-            if (! (selectedPosition > 0 && selectedPosition < maxPositions))
+            if (!(selectedPosition > 0 && selectedPosition < maxPositions))
             {
                 textBoxFilterWheelPosition.Text = "";
                 filterWheelStatus.Show(
-                    string.Format("Position must be between 1 and {0}", maxPositions), 2000, Statuser.Severity.Error); 
+                    string.Format("Position must be between 1 and {0}", maxPositions), 2000, Statuser.Severity.Error);
                 return;
             }
 
@@ -1492,7 +1538,7 @@ namespace Dash
                 wisefocuser.Stop();
             }
             catch { }
-#region debug
+            #region debug
             string msg = "\nStopEverything:\n";
             if (e != null)
             {
@@ -1503,7 +1549,7 @@ namespace Dash
             }
             msg += "Application will exit!";
             debugger.WriteLine(Debugger.DebugLevel.DebugExceptions, msg);
-#endregion
+            #endregion
             Application.Exit();
         }
 
@@ -1521,6 +1567,6 @@ namespace Dash
         {
             StopEverything(e.ExceptionObject as Exception);
         }
-#endregion
+        #endregion
     }
 }
