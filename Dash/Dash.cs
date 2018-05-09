@@ -91,7 +91,6 @@ namespace Dash
                 List<Control> readonlyControls = new List<Control>()
                 {
                     textBoxRA, textBoxDec,
-                    groupBoxSpeed,
                     buttonGoCoord,
                     buttonNorth, buttonSouth, buttonEast, buttonWest,
                     buttonNW, buttonNE, buttonSE, buttonSW,
@@ -101,7 +100,7 @@ namespace Dash
 
                     buttonDomeLeft, buttonDomeRight, buttonDomeStop, buttonDomePark,
                     buttonDomeAzGo, buttonDomeAzSet, textBoxDomeAzValue,
-                    buttonCalibrateDome, buttonVent, buttonProjector,
+                    buttonCalibrateDome, buttonVent,
                     buttonFullOpenShutter, buttonFullCloseShutter, buttonOpenShutter, buttonCloseShutter, buttonStopShutter,
 
                     buttonFocusAllDown, buttonFocusAllUp, buttonFocusDecrease, buttonFocusIncrease,
@@ -110,14 +109,16 @@ namespace Dash
 
                     pictureBoxStop,
 
-                    groupBoxFWSelect, textBoxFilterWheelPosition, buttonSetFilterWheelPosition,
+                    radioButtonGuide, radioButtonSet, radioButtonSlew, radioButtonSelectFilterWheel4, radioButtonSelectFilterWheel8,
+                    textBoxFilterWheelPosition, buttonSetFilterWheelPosition,
                     buttonFilterWheelGo, comboBoxFilterWheelPositions,
                 };
+
                 foreach (var c in readonlyControls)
                 {
                     c.Enabled = false;
-                    toolTip.SetToolTip(c, "Disabled (readonly mode)");
                 }
+
                 annunciatorReadonly.Text = string.Format("Readonly mode ({0})", wisesite.OperationalMode.ToString());
                 annunciatorReadonly.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
                 annunciatorReadonly.ActiveColor = Color.Coral;
