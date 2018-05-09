@@ -120,7 +120,7 @@ namespace ASCOM.Wise40.Common
         {
             if (Debugging(level))
             {
-                DateTime now = DateTime.Now;
+                DateTime now = DateTime.UtcNow;
                 string msg = string.Format(fmt, o);
                 string line = string.Format("{0}: {1,4} {2,4} {3}/{4}/{5} {6} {7,-25} {8}",
                     _appName,
