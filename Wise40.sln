@@ -27,6 +27,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Deliveries", "Deliveries", "{C2D939BB-B935-4F3D-A78F-06C9BC99D4A2}"
 	ProjectSection(SolutionItems) = preProject
 		..\..\..\ASCOM\Logs 2016-08-28\ASCOM.Wise40.Telescope.Validation.txt = ..\..\..\ASCOM\Logs 2016-08-28\ASCOM.Wise40.Telescope.Validation.txt
+		registerHomeDlls.bat = registerHomeDlls.bat
+		registerWiseDlls.bat = registerWiseDlls.bat
 		Deliveries\Wise40 Setup.exe = Deliveries\Wise40 Setup.exe
 	EndProjectSection
 EndProject
