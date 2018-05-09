@@ -49,6 +49,7 @@ namespace ASCOM.Wise40SafeToOpen
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.textBoxSunElevation = new System.Windows.Forms.TextBox();
             this.textBoxRain = new System.Windows.Forms.TextBox();
+            this.textBoxRestoreSafety = new System.Windows.Forms.TextBox();
             this.label16 = new System.Windows.Forms.Label();
             this.label18 = new System.Windows.Forms.Label();
             this.textBoxCloudIntervalSeconds = new System.Windows.Forms.TextBox();
@@ -74,7 +75,6 @@ namespace ASCOM.Wise40SafeToOpen
             this.checkBoxSun = new System.Windows.Forms.CheckBox();
             this.comboBoxLight = new System.Windows.Forms.ComboBox();
             this.label3 = new System.Windows.Forms.Label();
-            this.textBoxRestoreSafety = new System.Windows.Forms.TextBox();
             this.label5 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).BeginInit();
             this.SuspendLayout();
@@ -137,9 +137,9 @@ namespace ASCOM.Wise40SafeToOpen
             this.label2.ForeColor = System.Drawing.Color.DarkOrange;
             this.label2.Location = new System.Drawing.Point(112, 88);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(164, 26);
+            this.label2.Size = new System.Drawing.Size(170, 26);
             this.label2.TabIndex = 7;
-            this.label2.Text = "Maximum safe values for opening\r\nthe Wise40 observatory";
+            this.label2.Text = "Maximum safe values for operating\r\nthe Wise40 observatory";
             this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // comboBoxCloud
@@ -308,6 +308,19 @@ namespace ASCOM.Wise40SafeToOpen
             this.textBoxRain.Text = "0.0";
             this.textBoxRain.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.toolTip1.SetToolTip(this.textBoxRain, "A value of 0.0 is considered \"Dry\", anything higher\r\nrepresents \"some-rain\"");
+            // 
+            // textBoxRestoreSafety
+            // 
+            this.textBoxRestoreSafety.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
+            this.textBoxRestoreSafety.ForeColor = System.Drawing.Color.DarkOrange;
+            this.textBoxRestoreSafety.Location = new System.Drawing.Point(200, 348);
+            this.textBoxRestoreSafety.Margin = new System.Windows.Forms.Padding(6, 3, 3, 3);
+            this.textBoxRestoreSafety.Name = "textBoxRestoreSafety";
+            this.textBoxRestoreSafety.Size = new System.Drawing.Size(24, 20);
+            this.textBoxRestoreSafety.TabIndex = 57;
+            this.textBoxRestoreSafety.Text = "0";
+            this.textBoxRestoreSafety.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.toolTip1.SetToolTip(this.textBoxRestoreSafety, "Stabilizing period (in minutes) after conditions return to safe values.\r\n");
             // 
             // label16
             // 
@@ -606,19 +619,6 @@ namespace ASCOM.Wise40SafeToOpen
             this.label3.Size = new System.Drawing.Size(23, 13);
             this.label3.TabIndex = 58;
             this.label3.Text = "min";
-            // 
-            // textBoxRestoreSafety
-            // 
-            this.textBoxRestoreSafety.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.textBoxRestoreSafety.ForeColor = System.Drawing.Color.DarkOrange;
-            this.textBoxRestoreSafety.Location = new System.Drawing.Point(200, 348);
-            this.textBoxRestoreSafety.Margin = new System.Windows.Forms.Padding(6, 3, 3, 3);
-            this.textBoxRestoreSafety.Name = "textBoxRestoreSafety";
-            this.textBoxRestoreSafety.Size = new System.Drawing.Size(24, 20);
-            this.textBoxRestoreSafety.TabIndex = 57;
-            this.textBoxRestoreSafety.Text = "0";
-            this.textBoxRestoreSafety.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.toolTip1.SetToolTip(this.textBoxRestoreSafety, "Stabilizing period (in minutes) after conditions return to safe values.\r\n");
             // 
             // label5
             // 
