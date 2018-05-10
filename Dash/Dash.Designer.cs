@@ -164,6 +164,7 @@
             this.annunciatorDomePlatform = new ASCOM.Controls.Annunciator();
             this.annunciatorSafeToOperate = new ASCOM.Controls.Annunciator();
             this.annunciatorSimulation = new ASCOM.Controls.Annunciator();
+            this.annunciatorReadonly = new ASCOM.Controls.Annunciator();
             this.annunciatorPanelStatus = new ASCOM.Controls.AnnunciatorPanel();
             this.annunciatorTrack = new ASCOM.Controls.Annunciator();
             this.annunciatorSlew = new ASCOM.Controls.Annunciator();
@@ -220,7 +221,6 @@
             this.labelRainRateValue = new System.Windows.Forms.Label();
             this.timerRefreshDisplay = new System.Windows.Forms.Timer(this.components);
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
-            this.annunciatorReadonly = new ASCOM.Controls.Annunciator();
             this.tableLayoutMain.SuspendLayout();
             this.groupBoxFocuser.SuspendLayout();
             this.groupBoxDomeGroup.SuspendLayout();
@@ -1578,7 +1578,7 @@
             this.dataFileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripTextBoxCloudSensorDataFile});
             this.dataFileToolStripMenuItem.Name = "dataFileToolStripMenuItem";
-            this.dataFileToolStripMenuItem.Size = new System.Drawing.Size(125, 22);
+            this.dataFileToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.dataFileToolStripMenuItem.Text = "Data File";
             // 
             // toolStripTextBoxCloudSensorDataFile
@@ -2010,6 +2010,24 @@
             this.annunciatorSimulation.Text = "SIMULATED HARDWARE";
             this.annunciatorSimulation.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
+            // annunciatorReadonly
+            // 
+            this.annunciatorReadonly.ActiveColor = System.Drawing.Color.Orange;
+            this.annunciatorReadonly.AutoSize = true;
+            this.annunciatorReadonly.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
+            this.annunciatorReadonly.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            this.annunciatorReadonly.Font = new System.Drawing.Font("Consolas", 10F);
+            this.annunciatorReadonly.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciatorReadonly.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciatorReadonly.Location = new System.Drawing.Point(3, 73);
+            this.annunciatorReadonly.Mute = false;
+            this.annunciatorReadonly.Name = "annunciatorReadonly";
+            this.annunciatorReadonly.Padding = new System.Windows.Forms.Padding(5, 0, 0, 0);
+            this.annunciatorReadonly.Size = new System.Drawing.Size(173, 17);
+            this.annunciatorReadonly.TabIndex = 5;
+            this.annunciatorReadonly.Text = "Readonly mode (WISE)";
+            this.annunciatorReadonly.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
             // annunciatorPanelStatus
             // 
             this.annunciatorPanelStatus.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
@@ -2095,7 +2113,8 @@
             this.annunciatorPrimary.Location = new System.Drawing.Point(8, 17);
             this.annunciatorPrimary.Mute = false;
             this.annunciatorPrimary.Name = "annunciatorPrimary";
-            this.annunciatorPrimary.Size = new System.Drawing.Size(24, 17);
+            this.annunciatorPrimary.Padding = new System.Windows.Forms.Padding(20, 0, 0, 0);
+            this.annunciatorPrimary.Size = new System.Drawing.Size(44, 17);
             this.annunciatorPrimary.TabIndex = 2;
             this.annunciatorPrimary.Text = "RA";
             // 
@@ -2108,7 +2127,7 @@
             this.annunciatorSecondary.Font = new System.Drawing.Font("Consolas", 10F);
             this.annunciatorSecondary.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorSecondary.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorSecondary.Location = new System.Drawing.Point(38, 17);
+            this.annunciatorSecondary.Location = new System.Drawing.Point(58, 17);
             this.annunciatorSecondary.Mute = false;
             this.annunciatorSecondary.Name = "annunciatorSecondary";
             this.annunciatorSecondary.Size = new System.Drawing.Size(32, 17);
@@ -2125,7 +2144,7 @@
             this.annunciatorDome.Font = new System.Drawing.Font("Consolas", 10F);
             this.annunciatorDome.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorDome.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorDome.Location = new System.Drawing.Point(76, 17);
+            this.annunciatorDome.Location = new System.Drawing.Point(96, 17);
             this.annunciatorDome.Mute = false;
             this.annunciatorDome.Name = "annunciatorDome";
             this.annunciatorDome.Size = new System.Drawing.Size(40, 17);
@@ -2144,7 +2163,8 @@
             this.annunciatorRateSlew.Location = new System.Drawing.Point(8, 34);
             this.annunciatorRateSlew.Mute = false;
             this.annunciatorRateSlew.Name = "annunciatorRateSlew";
-            this.annunciatorRateSlew.Size = new System.Drawing.Size(40, 17);
+            this.annunciatorRateSlew.Padding = new System.Windows.Forms.Padding(10, 0, 0, 0);
+            this.annunciatorRateSlew.Size = new System.Drawing.Size(50, 17);
             this.annunciatorRateSlew.TabIndex = 8;
             this.annunciatorRateSlew.Text = "SLEW";
             // 
@@ -2157,7 +2177,7 @@
             this.annunciatorRateSet.Font = new System.Drawing.Font("Consolas", 10F);
             this.annunciatorRateSet.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorRateSet.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorRateSet.Location = new System.Drawing.Point(54, 34);
+            this.annunciatorRateSet.Location = new System.Drawing.Point(64, 34);
             this.annunciatorRateSet.Mute = false;
             this.annunciatorRateSet.Name = "annunciatorRateSet";
             this.annunciatorRateSet.Size = new System.Drawing.Size(32, 17);
@@ -2173,7 +2193,7 @@
             this.annunciatorRateGuide.Font = new System.Drawing.Font("Consolas", 10F);
             this.annunciatorRateGuide.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorRateGuide.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorRateGuide.Location = new System.Drawing.Point(92, 34);
+            this.annunciatorRateGuide.Location = new System.Drawing.Point(102, 34);
             this.annunciatorRateGuide.Mute = false;
             this.annunciatorRateGuide.Name = "annunciatorRateGuide";
             this.annunciatorRateGuide.Size = new System.Drawing.Size(48, 17);
@@ -2818,24 +2838,6 @@
             // 
             this.timerRefreshDisplay.Enabled = true;
             this.timerRefreshDisplay.Tick += new System.EventHandler(this.RefreshDisplay);
-            // 
-            // annunciatorReadonly
-            // 
-            this.annunciatorReadonly.ActiveColor = System.Drawing.Color.Wheat;
-            this.annunciatorReadonly.AutoSize = true;
-            this.annunciatorReadonly.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.annunciatorReadonly.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
-            this.annunciatorReadonly.Font = new System.Drawing.Font("Consolas", 10F);
-            this.annunciatorReadonly.ForeColor = System.Drawing.Color.DarkOrange;
-            this.annunciatorReadonly.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorReadonly.Location = new System.Drawing.Point(3, 73);
-            this.annunciatorReadonly.Mute = false;
-            this.annunciatorReadonly.Name = "annunciatorReadonly";
-            this.annunciatorReadonly.Padding = new System.Windows.Forms.Padding(5, 0, 0, 0);
-            this.annunciatorReadonly.Size = new System.Drawing.Size(173, 17);
-            this.annunciatorReadonly.TabIndex = 5;
-            this.annunciatorReadonly.Text = "Readonly mode (WISE)";
-            this.annunciatorReadonly.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // FormDash
             // 

@@ -120,8 +120,8 @@ namespace Dash
                 }
 
                 annunciatorReadonly.Text = string.Format("Readonly mode ({0})", wisesite.OperationalMode.ToString());
+                annunciatorReadonly.ForeColor = Statuser.colors[Statuser.Severity.Warning];
                 annunciatorReadonly.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
-                annunciatorReadonly.ActiveColor = Color.Coral;
             }
             else
                 annunciatorReadonly.Text = "";
@@ -179,38 +179,14 @@ namespace Dash
                 item.Invalidate();
             }
 
-            //ToolStripTextBox tb;
-            //using (ASCOM.Utilities.Profile driverProfile = new ASCOM.Utilities.Profile())
-            //{
-            //    driverProfile.DeviceType = "ObservingConditions";
-            //    string dataFile = driverProfile.GetValue("ASCOM.Wise40.Boltwood.ObservingConditions", "DataFile", string.Empty, string.Empty);
-            //    tb = toolStripTextBoxCloudSensorDataFile;
-
-            //    tb.MaxLength = 256;
-            //    tb.Size = new System.Drawing.Size(300, 25);
-            //    tb.Text = dataFile;
-            //    tb.Tag = dataFile;
-            //    tb.BackColor = Color.FromArgb(64, 64, 64);
-            //    tb.ForeColor = Color.FromArgb(176, 161, 142);
-            //}
-
-
-            //using (ASCOM.Utilities.Profile driverProfile = new ASCOM.Utilities.Profile())
-            //{
-            //    driverProfile.DeviceType = "ObservingConditions";
-            //    string reportFile = driverProfile.GetValue("ASCOM.Wise40.VantagePro.ObservingConditions", "DataFile", string.Empty, string.Empty);
-            //    tb = toolStripTextBoxVantagePro2ReportFile;
-
-            //    tb.MaxLength = 256;
-            //    tb.Size = new System.Drawing.Size(300, 25);
-            //    tb.Text = reportFile;
-            //    tb.Tag = reportFile;
-            //    tb.BackColor = Color.FromArgb(64, 64, 64);
-            //    tb.ForeColor = Color.FromArgb(176, 161, 142);
-            //}
-
             buttonVent.Text = wisedome.Vent ? "Close Vent" : "Open Vent";
             buttonProjector.Text = wisedome.Projector ? "Turn projector Off" : "Turn projector On";
+
+            toolStripTextBoxCloudSensorDataFile.Text = wiseboltwood.DataFile;
+            toolStripTextBoxCloudSensorDataFile.Tag = wiseboltwood.DataFile;
+
+            toolStripTextBoxVantagePro2ReportFile.Tag = wisevantagepro.DataFile;
+            toolStripTextBoxVantagePro2ReportFile.Text = wisevantagepro.DataFile;
 
             //wisefilterwheel.wheelOrPositionChanged += onWheelOrPositionChanged;
         }
