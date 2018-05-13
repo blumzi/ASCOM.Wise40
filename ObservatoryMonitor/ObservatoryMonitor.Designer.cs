@@ -35,9 +35,9 @@
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.operationModeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.aCPToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.lCOToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.wISEToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.aCPToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.listBoxLog = new System.Windows.Forms.ListBox();
             this.labelDate = new System.Windows.Forms.Label();
@@ -47,13 +47,13 @@
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
             this.labelConditions = new System.Windows.Forms.Label();
             this.labelActivity = new System.Windows.Forms.Label();
+            this.labelOperatingMode = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.labelNextCheck = new System.Windows.Forms.Label();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.label2 = new System.Windows.Forms.Label();
-            this.labelOperatingMode = new System.Windows.Forms.Label();
             this.menuStrip.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
@@ -103,26 +103,26 @@
             this.operationModeToolStripMenuItem.Size = new System.Drawing.Size(161, 22);
             this.operationModeToolStripMenuItem.Text = "Operation Mode";
             // 
+            // aCPToolStripMenuItem
+            // 
+            this.aCPToolStripMenuItem.Name = "aCPToolStripMenuItem";
+            this.aCPToolStripMenuItem.Size = new System.Drawing.Size(100, 22);
+            this.aCPToolStripMenuItem.Text = "ACP";
+            this.aCPToolStripMenuItem.Click += new System.EventHandler(this.SelectOpMode);
+            // 
             // lCOToolStripMenuItem
             // 
             this.lCOToolStripMenuItem.Name = "lCOToolStripMenuItem";
-            this.lCOToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.lCOToolStripMenuItem.Size = new System.Drawing.Size(100, 22);
             this.lCOToolStripMenuItem.Text = "LCO";
             this.lCOToolStripMenuItem.Click += new System.EventHandler(this.SelectOpMode);
             // 
             // wISEToolStripMenuItem
             // 
             this.wISEToolStripMenuItem.Name = "wISEToolStripMenuItem";
-            this.wISEToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.wISEToolStripMenuItem.Size = new System.Drawing.Size(100, 22);
             this.wISEToolStripMenuItem.Text = "WISE";
             this.wISEToolStripMenuItem.Click += new System.EventHandler(this.SelectOpMode);
-            // 
-            // aCPToolStripMenuItem
-            // 
-            this.aCPToolStripMenuItem.Name = "aCPToolStripMenuItem";
-            this.aCPToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.aCPToolStripMenuItem.Text = "ACP";
-            this.aCPToolStripMenuItem.Click += new System.EventHandler(this.SelectOpMode);
             // 
             // aboutToolStripMenuItem
             // 
@@ -153,9 +153,9 @@
             this.labelDate.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.labelDate.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelDate.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelDate.Location = new System.Drawing.Point(32, 40);
+            this.labelDate.Location = new System.Drawing.Point(79, 37);
             this.labelDate.Name = "labelDate";
-            this.labelDate.Size = new System.Drawing.Size(256, 48);
+            this.labelDate.Size = new System.Drawing.Size(183, 48);
             this.labelDate.TabIndex = 53;
             this.labelDate.Text = "Jun 19, 2017\r\nhh:mm:ss";
             this.labelDate.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -223,6 +223,20 @@
             this.labelActivity.Text = "Unknown";
             this.labelActivity.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.toolTip.SetToolTip(this.labelActivity, "Information from the telescope driver");
+            // 
+            // labelOperatingMode
+            // 
+            this.labelOperatingMode.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
+            this.labelOperatingMode.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelOperatingMode.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.labelOperatingMode.Location = new System.Drawing.Point(192, 96);
+            this.labelOperatingMode.Name = "labelOperatingMode";
+            this.labelOperatingMode.Size = new System.Drawing.Size(48, 24);
+            this.labelOperatingMode.TabIndex = 64;
+            this.labelOperatingMode.Text = "???";
+            this.labelOperatingMode.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.toolTip.SetToolTip(this.labelOperatingMode, "This information is from the SafeToOperate driver.\r\nIt combines environmental and" +
+        " human\r\nintervention sensors");
             // 
             // label1
             // 
@@ -296,20 +310,6 @@
             this.label2.TabIndex = 63;
             this.label2.Text = "Operating Mode:";
             this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // labelOperatingMode
-            // 
-            this.labelOperatingMode.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.labelOperatingMode.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelOperatingMode.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelOperatingMode.Location = new System.Drawing.Point(192, 96);
-            this.labelOperatingMode.Name = "labelOperatingMode";
-            this.labelOperatingMode.Size = new System.Drawing.Size(48, 24);
-            this.labelOperatingMode.TabIndex = 64;
-            this.labelOperatingMode.Text = "???";
-            this.labelOperatingMode.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.toolTip.SetToolTip(this.labelOperatingMode, "This information is from the SafeToOperate driver.\r\nIt combines environmental and" +
-        " human\r\nintervention sensors");
             // 
             // ObsMainForm
             // 

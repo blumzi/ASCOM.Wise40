@@ -56,7 +56,7 @@ namespace ASCOM.Wise40SafeToOpen
         private bool _connected = false;
 
         private Wise40.Common.Debugger debugger = Wise40.Common.Debugger.Instance;
-        private static TraceLogger tl;
+        private static TraceLogger tl = new TraceLogger("", "Wise40.SafeToOpen");
 
         public WiseBoltwood boltwood = WiseBoltwood.Instance;
         public WiseVantagePro vantagePro = WiseVantagePro.Instance;
@@ -101,6 +101,7 @@ namespace ASCOM.Wise40SafeToOpen
         public WiseSafeToOperate(Type type)
         {
             _type = type;
+            tl = new TraceLogger("", "Wise40.SafeToOpen");
         }
 
         public void init()
@@ -116,8 +117,7 @@ namespace ASCOM.Wise40SafeToOpen
 
             if (_profile == null)
             {
-                _profile = new Profile();
-                _profile.DeviceType = "SafetyMonitor";
+                _profile = new Profile() { DeviceType = "SafetyMonitor" };
             }
 
             lightSensor = new LightSensor(this);
@@ -135,8 +135,7 @@ namespace ASCOM.Wise40SafeToOpen
                 humiditySensor,
                 sunSensor,
                 humanInterventionSensor };
-
-            tl = new TraceLogger("", "Wise40.SafeToOpen");
+            
             tl.Enabled = debugger.Tracing;
             tl.LogMessage("SafetyMonitor", "Starting initialisation");
 
@@ -306,7 +305,7 @@ namespace ASCOM.Wise40SafeToOpen
         {
             get
             {
-                tl.LogMessage("Description Get", driverDescription);
+                //tl.LogMessage("Description Get", driverDescription);
                 return driverDescription;
             }
         }

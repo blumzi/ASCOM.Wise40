@@ -380,7 +380,7 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
 
         public override void readSensorProfile()
         {
-            MaxAsString = wisesafe._profile.GetValue(Const.wiseSafeToOpenDriverID, Name, "Max", dayConditionsToString[(int)SensorData.DayCondition.dayUnknown]);
+            MaxAsString = wisesafe._profile.GetValue(Const.wiseSafeToOpenDriverID, Name, "Max", dayConditionsToString[(int)SensorData.DayCondition.dayDark]);
         }
 
         public override void writeSensorProfile()
@@ -435,7 +435,7 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
 
         public override void readSensorProfile()
         {
-            MaxAsString = wisesafe._profile.GetValue(Const.wiseSafeToOpenDriverID, Name, "Max", "cloudUnknown");
+            MaxAsString = wisesafe._profile.GetValue(Const.wiseSafeToOpenDriverID, Name, "Max", SensorData.CloudCondition.cloudClear.ToString());
         }
 
         public override void writeSensorProfile()
@@ -538,7 +538,9 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
 
         public override void readSensorProfile()
         {
-            MaxAsString = wisesafe._profile.GetValue(Const.wiseSafeToOpenDriverID, Name, "Max", 0.0.ToString());
+            MaxAsString = wisesafe._profile.GetValue(Const.wiseSafeToOpenDriverID, Name, "Max", "90");
+            if (MaxAsString == "0")
+                MaxAsString = "90.0"; // ???
         }
 
         public override void writeSensorProfile()

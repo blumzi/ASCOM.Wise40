@@ -178,7 +178,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
         void RefreshDisplay()
         {
             DateTime localTime = DateTime.Now.ToLocalTime();
-            labelDate.Text = localTime.ToLongDateString() + Const.crnl + localTime.ToLongTimeString();
+            labelDate.Text = localTime.ToString("ddd, dd MMM yyyy\n hh:mm:ss tt");
 
             if (DateTime.Now.CompareTo(_nextCheck) >= 0)
             {

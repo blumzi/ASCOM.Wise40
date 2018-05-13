@@ -1,4 +1,4 @@
-set top=c:\Users\mizpe\Documents\Visual Studio 2015\Projects\Wise40
+set top=C:\Users\mizpe\source\repos\ASCOM.Wise40
 
 cd "%top%\Boltwood\bin\x86\Debug"
 c:\Windows\Microsoft.NET\Framework\v4.0.30319\regasm /codebase /tlb "%top%\Boltwood\bin\x86\Debug\ASCOM.Wise40.Boltwood.ObservingConditions.dll"
