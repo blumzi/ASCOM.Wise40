@@ -52,9 +52,10 @@
             this.labelAbout.Name = "labelAbout";
             this.labelAbout.Size = new System.Drawing.Size(464, 185);
             this.labelAbout.TabIndex = 1;
+            this.labelAbout.Text = "Hello\r\nworld";
             this.labelAbout.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // AboutForm
+            // ObservatoryMonitorAboutForm
             // 
             this.AcceptButton = this.buttonOK;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -63,7 +64,7 @@
             this.ClientSize = new System.Drawing.Size(534, 323);
             this.Controls.Add(this.labelAbout);
             this.Controls.Add(this.buttonOK);
-            this.Name = "AboutForm";
+            this.Name = "ObservatoryMonitorAboutForm";
             this.ShowIcon = false;
             this.ShowInTaskbar = false;
             this.Text = "About Wise40 Observatory Monitor";

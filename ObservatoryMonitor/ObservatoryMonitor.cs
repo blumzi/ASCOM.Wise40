@@ -31,10 +31,11 @@ namespace ASCOM.Wise40.ObservatoryMonitor
         WiseSite wisesite = WiseSite.Instance;
         DriverAccess.Dome wisedome;
         SafetyMonitor wisesafetooperate;
+        SafetyMonitor wisecomputercontrol;
         Version version = new Version(0, 2);
         private bool _shuttingDown = false;
         DateTime _nextCheck = DateTime.MaxValue;
-        TimeSpan _intervalBetweenChecks = _simulated ? new TimeSpan(0, 2, 0) : new TimeSpan(0, 5, 0);
+        public TimeSpan _intervalBetweenChecks;
         TimeSpan _intervalBetweenLogs = _simulated ? new TimeSpan(0, 0, 10) : new TimeSpan(0, 0, 20);
         private bool _telescopeEnslavesDome = false;
         DateTime _lastLog;
@@ -69,13 +70,23 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                     wisesafetooperate.Connected = false;
                 wisesafetooperate.Dispose();
             }
+
+            if (wisecomputercontrol != null)
+            {
+                if (wisecomputercontrol.Connected)
+                    wisecomputercontrol.Connected = false;
+                wisecomputercontrol.Dispose();
+            }
         }
 
         public void OpenConnections() {
             wisetelescope = new Telescope("ASCOM.Web1.Telescope");
             wisetelescope.Connected = true;
 
-            wisesafetooperate = new SafetyMonitor("ASCOM.Web1.SafetyMonitor");
+            wisecomputercontrol = new SafetyMonitor("ASCOM.Web1.SafetyMonitor");    // Must match ASCOM Remote Server Setup
+            wisecomputercontrol.Connected = true;
+
+            wisesafetooperate = new SafetyMonitor("ASCOM.Web2.SafetyMonitor");      // Must match ASCOM Remote Server Setup
             wisesafetooperate.Connected = true;
 
             wisedome = new DriverAccess.Dome("ASCOM.Web1.Dome");
@@ -86,6 +97,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
         {
             InitializeComponent();
             listBoxLog.SelectionMode = SelectionMode.None;
+            ReadProfile();
             _nextCheck = DateTime.Now.Add(new TimeSpan(0, 0, 10));
 
             menuStrip.RenderMode = ToolStripRenderMode.ManagerRenderMode;
@@ -120,17 +132,28 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
         private void CheckSituation()
         {
-            bool active = true, safe = true;
+            bool active = true, safe = true, inControl = false;
 
             try
             {
                 active = wisetelescope.CommandBool("active", false);
                 safe = wisesafetooperate.IsSafe;
+                inControl = wisecomputercontrol.IsSafe;
             } catch (Exception ex)
             {
                 Log(string.Format("Oops: {0}", ex.InnerException.Message));
                 _nextCheck = DateTime.Now.Add(_intervalBetweenChecks);
                 return;
+            }
+
+            if (inControl)
+            {
+                labelComputerControl.Text = "Operational";
+                labelComputerControl.ForeColor = safeColor;
+            } else
+            {
+                labelComputerControl.Text = "Maintenance";
+                labelComputerControl.ForeColor = unsafeColor;
             }
 
             if (active)
@@ -144,7 +167,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 labelActivity.ForeColor = unsafeColor;
             }
 
-            if (safe)
+            if (safe && inControl)
             {
                 labelConditions.Text = "Safe";
                 labelConditions.ForeColor = safeColor;
@@ -153,12 +176,15 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             {
                 labelConditions.Text = "Not safe";
                 labelConditions.ForeColor = unsafeColor;
-                toolTip.SetToolTip(labelConditions, wisesafetooperate.CommandString("unsafereasons", false).Replace(',', '\n'));
+                if (! inControl)
+                    toolTip.SetToolTip(labelConditions, "ComputerControl switch is OFF");
+                else
+                    toolTip.SetToolTip(labelConditions, wisesafetooperate.CommandString("unsafereasons", false).Replace(',', '\n'));
             }
 
             if (_shuttingDown)
                 return;
-
+            
             if (!(active && safe))
             {
                 List<string> reasons = new List<string>();
@@ -168,7 +194,11 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 if (!safe)
                     reasons.Add("Not SafeToOperate");
 
-                DoShutdownObservatory(String.Join(" and ", reasons));
+                string reason = String.Join(" and ", reasons);
+                if (inControl)
+                    DoShutdownObservatory(reason);
+                else
+                    Log(string.Format("No ComputerControl, shutdown (reason: {0}) skipped.", reason));
             }
             else
                 Log("OK");
@@ -571,6 +601,46 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             if (selected != null)
                 selected.Text += Const.checkmark;
             labelOperatingMode.Text = mode.ToString();
+        }
+
+        private void setupToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            new ObservatoryMonitorSetupDialogForm(this).Show();
+        }
+
+        public void ReadProfile()
+        {            
+            using (Profile driverProfile = new Profile() { DeviceType = "SafetyMonitor" })
+            {
+                driverProfile.Register(Const.wiseObservatoryMonitorDriverID, "Wise40 ObservatoryMonitor");
+
+                int minutes = Convert.ToInt32(driverProfile.GetValue(Const.wiseObservatoryMonitorDriverID,
+                    "MinutesBetweenChecks", string.Empty, "5"));
+
+                _intervalBetweenChecks = new TimeSpan(0, minutes, 0);
+            }
+        }
+
+        public void WriteProfile()
+        {
+            using (Profile driverProfile = new Profile() { DeviceType = "SafetyMonitor" })
+            {
+                driverProfile.WriteValue(Const.wiseObservatoryMonitorDriverID, "MinutesBetweenChecks", Minutes.ToString());
+            }
+        }
+
+        public int Minutes
+        {
+            get
+            {
+                return _intervalBetweenChecks.Minutes;
+            }
+
+            set
+            {
+                _intervalBetweenChecks = new TimeSpan(0, value, 0);
+                _nextCheck = DateTime.Now.Add(_intervalBetweenChecks);
+            }
         }
     }
 }

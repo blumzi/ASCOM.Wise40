@@ -7,19 +7,26 @@ using System.Text;
 using System.Windows.Forms;
 using ASCOM.Utilities;
 
+using ASCOM.Wise40.Common;
+
 namespace ASCOM.Wise40.ObservatoryMonitor
 {
     [ComVisible(false)]					// Form not registered for COM!
     public partial class ObservatoryMonitorSetupDialogForm : Form
     {
-        public ObservatoryMonitorSetupDialogForm()
+        private ObsMainForm _mainForm;
+
+        public ObservatoryMonitorSetupDialogForm(ObsMainForm mainForm)
         {
+            _mainForm = mainForm;
             InitializeComponent();
             InitUI();
         }
 
         private void cmdOK_Click(object sender, EventArgs e) // OK button event handler
         {
+            _mainForm.Minutes = Convert.ToInt32(textBoxMonitoringFrequency.Text);
+            _mainForm.WriteProfile();
             Close();
         }
 
@@ -47,6 +54,8 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
         private void InitUI()
         {
+            _mainForm.ReadProfile();
+            textBoxMonitoringFrequency.Text = _mainForm.Minutes.ToString();
         }
     }
 }

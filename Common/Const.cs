@@ -30,9 +30,9 @@ namespace ASCOM.Wise40.Common
         public const double defaultReadTimeoutMillis = 2000.0;
         public const int defaultReadRetries = 20;
 
-        public const string crnl = "/r/n";
+        public const string crnl = "\r\n";
         public const string checkmark = " ✓";
-        public const string notsign = "/u00AC";
+        public const string notsign = "\u00AC";
 
         public const string topWise40Directory = "c:/Wise40/";
         public const string humanInterventionFilePath = Const.topWise40Directory + "Observatory/HumanIntervention.txt";
@@ -44,6 +44,7 @@ namespace ASCOM.Wise40.Common
         public const string wiseComputerControlDriverID = "ASCOM.Wise40.ComputerControl.SafetyMonitor";
         public const string wiseSafeToOpenDriverID = "ASCOM.Wise40SafeToOpen.SafetyMonitor";
         public const string wiseFocusDriverID = "ASCOM.Wise40.Focuser";
+        public const string wiseObservatoryMonitorDriverID = "ASCOM.Wise40.ObservatoryMonitor.SafetyMonitor";
 
         public const string wiseASCOMServerAppName = "RemoteDeviceServer";
         public const string wiseDashboardAppName = "Dash";

@@ -22,8 +22,8 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             string appVersion = String.Format(System.Globalization.CultureInfo.InvariantCulture, "{0}.{1}",
                 version.Major, version.Minor);
 
-            labelAbout.Text = "This utility monitors the Wise 40 inch Observatory at" + Const.crnl +
-                "Mizpe Ramon, Israel." + Const.crnl +
+            labelAbout.Text = "This utility monitors the Wise 40 inch Observatory at\n"  +
+                "Mizpe Ramon, Israel.\n" +
                 Const.crnl +
                 "The Observatory will be shut down if:" + Const.crnl +
                 "the operator intervened, or" + Const.crnl +
