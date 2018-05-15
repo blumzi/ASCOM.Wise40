@@ -11,7 +11,7 @@ namespace ASCOM.Wise40.FilterWheel
         private string _name, _desc;
         private int _offset;
 
-        public string Name
+        public string FilterName
         {
             get
             {
@@ -24,7 +24,7 @@ namespace ASCOM.Wise40.FilterWheel
             }
         }
 
-        public string Description
+        public string FilterDescription
         {
             get
             {
@@ -37,7 +37,7 @@ namespace ASCOM.Wise40.FilterWheel
             }
         }
 
-        public int Offset
+        public int FilterOffset
         {
             get
             {
@@ -52,9 +52,9 @@ namespace ASCOM.Wise40.FilterWheel
 
         public Filter(string name, string desc, int offset)
         {
-            Name = name;
-            Description = desc;
-            Offset = offset;
+            FilterName = name;
+            FilterDescription = desc;
+            FilterOffset = offset;
         }
     }
 }

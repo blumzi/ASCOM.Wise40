@@ -1230,7 +1230,7 @@ namespace Dash
                     item = string.Format("{0} - Clear", pos + 1);
                 else
                 {
-                    string desc = WiseFilterWheel.filterInventory[wheel._filterSize].Find((x) => x.Name == filterName).Description;
+                    string desc = WiseFilterWheel.filterInventory[wheel._filterSize].Find((x) => x.FilterName == filterName).FilterDescription;
 
                     item = string.Format("{0} - {1}: {2}", pos + 1, filterName, desc);
                 }

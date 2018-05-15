@@ -94,9 +94,9 @@ namespace Dash
 
             foreach (Filter f in source.List)
             {
-                if (f.Name == string.Empty)
+                if (f.FilterName == string.Empty)
                     continue;
-                names.Add(f.Name);
+                names.Add(f.FilterName);
                 filters.Add(f);
             }
 

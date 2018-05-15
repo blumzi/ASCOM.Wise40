@@ -473,7 +473,7 @@ namespace ASCOM.Wise40.FilterWheel
                 foreach (FWPosition position in currentWheel._positions) // Write filter offsets to the log
                 {
                     int offset = (position.filterName == string.Empty) ? 0 :
-                                    filterInventory[currentWheel._filterSize].Find((x) => x.Name == position.filterName).Offset;
+                                    filterInventory[currentWheel._filterSize].Find((x) => x.FilterName == position.filterName).FilterOffset;
                     focusOffsets.Add(offset);
                 }
                 return focusOffsets.ToArray();
@@ -726,7 +726,7 @@ namespace ASCOM.Wise40.FilterWheel
 
                 foreach (var filter in filterInventory[(int)filterSize])
                 {
-                    sw.WriteLine(string.Format("{0};{1};{2}", filter.Name, filter.Description, filter.Offset.ToString()));
+                    sw.WriteLine(string.Format("{0};{1};{2}", filter.FilterName, filter.FilterDescription, filter.FilterOffset.ToString()));
                 }
             }
         }

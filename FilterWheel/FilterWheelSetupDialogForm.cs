@@ -89,11 +89,11 @@ namespace ASCOM.Wise40.FilterWheel
                     if (w._positions[i].filterName == string.Empty)
                         cb.Text = string.Empty;
                     else {
-                        Filter f = WiseFilterWheel.filterInventory[w._filterSize].Find((x) => x.Name == w._positions[i].filterName);
-                        cb.Text = (f == null) ? "<??>" : string.Format("{0}: {1}", f.Name, f.Description);
+                        Filter f = WiseFilterWheel.filterInventory[w._filterSize].Find((x) => x.FilterName == w._positions[i].filterName);
+                        cb.Text = (f == null) ? "<??>" : string.Format("{0}: {1}", f.FilterName, f.FilterDescription);
                     }
                     foreach (Filter f in WiseFilterWheel.filterInventory[w._filterSize])
-                        cb.Items.Add(string.Format("{0}: {1}", f.Name, f.Description));
+                        cb.Items.Add(string.Format("{0}: {1}", f.FilterName, f.FilterDescription));
 
                     TextBox tb;
                     tb = (TextBox)F.Controls.Find(string.Format("textBoxWheel{0}RFID{1}", w._nPositions, i), true)[0];
