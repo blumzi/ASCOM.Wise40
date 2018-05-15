@@ -34,11 +34,11 @@
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.setupToolStripMenuItemSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.operationModeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aCPToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.lCOToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.wISEToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.setupToolStripMenuItemSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.listBoxLog = new System.Windows.Forms.ListBox();
             this.labelDate = new System.Windows.Forms.Label();
@@ -97,6 +97,13 @@
             this.settingsToolStripMenuItem.Size = new System.Drawing.Size(61, 20);
             this.settingsToolStripMenuItem.Text = "Settings";
             // 
+            // setupToolStripMenuItemSetup
+            // 
+            this.setupToolStripMenuItemSetup.Name = "setupToolStripMenuItemSetup";
+            this.setupToolStripMenuItemSetup.Size = new System.Drawing.Size(161, 22);
+            this.setupToolStripMenuItemSetup.Text = "Setup";
+            this.setupToolStripMenuItemSetup.Click += new System.EventHandler(this.setupToolStripMenuItem_Click);
+            // 
             // operationModeToolStripMenuItem
             // 
             this.operationModeToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -110,30 +117,23 @@
             // aCPToolStripMenuItem
             // 
             this.aCPToolStripMenuItem.Name = "aCPToolStripMenuItem";
-            this.aCPToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.aCPToolStripMenuItem.Size = new System.Drawing.Size(100, 22);
             this.aCPToolStripMenuItem.Text = "ACP";
             this.aCPToolStripMenuItem.Click += new System.EventHandler(this.SelectOpMode);
             // 
             // lCOToolStripMenuItem
             // 
             this.lCOToolStripMenuItem.Name = "lCOToolStripMenuItem";
-            this.lCOToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.lCOToolStripMenuItem.Size = new System.Drawing.Size(100, 22);
             this.lCOToolStripMenuItem.Text = "LCO";
             this.lCOToolStripMenuItem.Click += new System.EventHandler(this.SelectOpMode);
             // 
             // wISEToolStripMenuItem
             // 
             this.wISEToolStripMenuItem.Name = "wISEToolStripMenuItem";
-            this.wISEToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.wISEToolStripMenuItem.Size = new System.Drawing.Size(100, 22);
             this.wISEToolStripMenuItem.Text = "WISE";
             this.wISEToolStripMenuItem.Click += new System.EventHandler(this.SelectOpMode);
-            // 
-            // setupToolStripMenuItemSetup
-            // 
-            this.setupToolStripMenuItemSetup.Name = "setupToolStripMenuItemSetup";
-            this.setupToolStripMenuItemSetup.Size = new System.Drawing.Size(161, 22);
-            this.setupToolStripMenuItemSetup.Text = "Setup";
-            this.setupToolStripMenuItemSetup.Click += new System.EventHandler(this.setupToolStripMenuItem_Click);
             // 
             // aboutToolStripMenuItem
             // 
@@ -164,7 +164,7 @@
             this.labelDate.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.labelDate.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelDate.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelDate.Location = new System.Drawing.Point(79, 37);
+            this.labelDate.Location = new System.Drawing.Point(72, 37);
             this.labelDate.Name = "labelDate";
             this.labelDate.Size = new System.Drawing.Size(183, 48);
             this.labelDate.TabIndex = 53;
@@ -178,9 +178,9 @@
             this.buttonPark.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonPark.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonPark.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonPark.Location = new System.Drawing.Point(320, 200);
+            this.buttonPark.Location = new System.Drawing.Point(304, 176);
             this.buttonPark.Name = "buttonPark";
-            this.buttonPark.Size = new System.Drawing.Size(192, 48);
+            this.buttonPark.Size = new System.Drawing.Size(224, 48);
             this.buttonPark.TabIndex = 54;
             this.buttonPark.Text = "Shutdown Now";
             this.toolTip.SetToolTip(this.buttonPark, "Stop activities\r\nPark the telescope\r\nPark the dome and close the shutter");
@@ -200,9 +200,9 @@
             this.buttonManualIntervention.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonManualIntervention.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonManualIntervention.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonManualIntervention.Location = new System.Drawing.Point(320, 104);
+            this.buttonManualIntervention.Location = new System.Drawing.Point(304, 80);
             this.buttonManualIntervention.Name = "buttonManualIntervention";
-            this.buttonManualIntervention.Size = new System.Drawing.Size(192, 72);
+            this.buttonManualIntervention.Size = new System.Drawing.Size(224, 72);
             this.buttonManualIntervention.TabIndex = 55;
             this.buttonManualIntervention.Text = "Remove Operator Intervention\r\n\r\nMake Observatory Safe to\r\nOperate";
             this.buttonManualIntervention.UseVisualStyleBackColor = false;
@@ -213,7 +213,7 @@
             this.labelConditions.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.labelConditions.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelConditions.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelConditions.Location = new System.Drawing.Point(168, 40);
+            this.labelConditions.Location = new System.Drawing.Point(152, 40);
             this.labelConditions.Name = "labelConditions";
             this.labelConditions.Size = new System.Drawing.Size(80, 24);
             this.labelConditions.TabIndex = 57;
@@ -227,20 +227,20 @@
             this.labelActivity.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.labelActivity.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelActivity.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelActivity.Location = new System.Drawing.Point(168, 64);
+            this.labelActivity.Location = new System.Drawing.Point(152, 64);
             this.labelActivity.Name = "labelActivity";
             this.labelActivity.Size = new System.Drawing.Size(80, 24);
             this.labelActivity.TabIndex = 60;
             this.labelActivity.Text = "Unknown";
             this.labelActivity.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.toolTip.SetToolTip(this.labelActivity, "Information from the telescope driver");
+            this.toolTip.SetToolTip(this.labelActivity, "The telescope can be either \"Active\" or \"Idle\"");
             // 
             // labelOperatingMode
             // 
             this.labelOperatingMode.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.labelOperatingMode.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelOperatingMode.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelOperatingMode.Location = new System.Drawing.Point(192, 96);
+            this.labelOperatingMode.Location = new System.Drawing.Point(184, 96);
             this.labelOperatingMode.Name = "labelOperatingMode";
             this.labelOperatingMode.Size = new System.Drawing.Size(48, 24);
             this.labelOperatingMode.TabIndex = 64;
@@ -254,7 +254,7 @@
             this.labelComputerControl.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.labelComputerControl.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelComputerControl.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelComputerControl.Location = new System.Drawing.Point(168, 16);
+            this.labelComputerControl.Location = new System.Drawing.Point(152, 16);
             this.labelComputerControl.Name = "labelComputerControl";
             this.labelComputerControl.Size = new System.Drawing.Size(80, 24);
             this.labelComputerControl.TabIndex = 62;
@@ -267,7 +267,7 @@
             this.label1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label1.ForeColor = System.Drawing.Color.DarkOrange;
-            this.label1.Location = new System.Drawing.Point(16, 40);
+            this.label1.Location = new System.Drawing.Point(8, 40);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(136, 24);
             this.label1.TabIndex = 56;
@@ -279,7 +279,7 @@
             this.label3.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.label3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label3.ForeColor = System.Drawing.Color.DarkOrange;
-            this.label3.Location = new System.Drawing.Point(32, 64);
+            this.label3.Location = new System.Drawing.Point(24, 64);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(120, 24);
             this.label3.TabIndex = 58;
@@ -291,7 +291,7 @@
             this.label4.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label4.ForeColor = System.Drawing.Color.DarkOrange;
-            this.label4.Location = new System.Drawing.Point(88, 235);
+            this.label4.Location = new System.Drawing.Point(80, 235);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(96, 24);
             this.label4.TabIndex = 59;
@@ -303,7 +303,7 @@
             this.labelNextCheck.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.labelNextCheck.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelNextCheck.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelNextCheck.Location = new System.Drawing.Point(200, 235);
+            this.labelNextCheck.Location = new System.Drawing.Point(192, 235);
             this.labelNextCheck.Name = "labelNextCheck";
             this.labelNextCheck.Size = new System.Drawing.Size(80, 24);
             this.labelNextCheck.TabIndex = 61;
@@ -320,7 +320,7 @@
             this.groupBox1.ForeColor = System.Drawing.Color.DarkOrange;
             this.groupBox1.Location = new System.Drawing.Point(32, 128);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(256, 96);
+            this.groupBox1.Size = new System.Drawing.Size(240, 96);
             this.groupBox1.TabIndex = 62;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = " Status ";
@@ -330,7 +330,7 @@
             this.label5.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label5.ForeColor = System.Drawing.Color.DarkOrange;
-            this.label5.Location = new System.Drawing.Point(16, 16);
+            this.label5.Location = new System.Drawing.Point(8, 16);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(136, 24);
             this.label5.TabIndex = 61;
@@ -342,7 +342,7 @@
             this.label2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label2.ForeColor = System.Drawing.Color.DarkOrange;
-            this.label2.Location = new System.Drawing.Point(56, 96);
+            this.label2.Location = new System.Drawing.Point(40, 96);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(136, 24);
             this.label2.TabIndex = 63;

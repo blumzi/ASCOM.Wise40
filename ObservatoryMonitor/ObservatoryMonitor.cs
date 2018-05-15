@@ -82,15 +82,36 @@ namespace ASCOM.Wise40.ObservatoryMonitor
         public void OpenConnections() {
             wisetelescope = new Telescope("ASCOM.Web1.Telescope");
             wisetelescope.Connected = true;
+            while (wisetelescope.Connected == false)
+            {
+                Log("Waiting for the \"Telescope\" client to connect ...", 5);
+                Application.DoEvents();
+            }
 
             wisecomputercontrol = new SafetyMonitor("ASCOM.Web1.SafetyMonitor");    // Must match ASCOM Remote Server Setup
             wisecomputercontrol.Connected = true;
+            while (!wisecomputercontrol.Connected)
+            {
+                Log("Waiting for the \"ComputerControl\" client to connect ...", 5);
+                Application.DoEvents();
+            }
 
             wisesafetooperate = new SafetyMonitor("ASCOM.Web2.SafetyMonitor");      // Must match ASCOM Remote Server Setup
             wisesafetooperate.Connected = true;
+            while (! wisesafetooperate.Connected)
+            {
+                Log("Waiting for the \"SafeToOperate\" client to connect ...", 5);
+                Application.DoEvents();
+            }
 
             wisedome = new DriverAccess.Dome("ASCOM.Web1.Dome");
             wisedome.Connected = true;
+            while (! wisedome.Connected)
+            {
+                Log("Waiting for the \"Dome\" client to connect", 5);
+                Application.DoEvents();
+            }
+            Log("All clients are connected.");
         }
 
         public ObsMainForm()
@@ -190,7 +211,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 List<string> reasons = new List<string>();
 
                 if (!active)
-                    reasons.Add("Inactive");
+                    reasons.Add("Telescope is Idle");
                 if (!safe)
                     reasons.Add("Not SafeToOperate");
 
@@ -497,12 +518,14 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
         public class App
         {
+            private ObsMainForm _form;
             public string _name;
             Process _process = null;
             string _path;
 
-            public App(string name, string path)
+            public App(ObsMainForm form, string name, string path)
             {
+                _form = form;
                 _path = path;
                 _name = name;
                 Process[] processes = Process.GetProcessesByName(name);
@@ -511,8 +534,6 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 {
                     _process = processes[0];
                 }
-                else
-                    throw new Exception(string.Format("Cannot find process for \"{0}\"", name));
             }
 
             public bool IsRunning
@@ -526,10 +547,14 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             public void Restart()
             {
                 if (IsRunning)
+                {
+                    _form.Log(string.Format("Stopping current \"{0}\" ...", _name));
                     _process.Kill();
+                }
                 if (_path != null)
                 {
                     Thread.Sleep(5000);
+                    _form.Log(string.Format("Starting new \"{0}\" ...", _name));
                     Process.Start(_path);
                 }
             }
@@ -543,19 +568,13 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             List<App> apps = new List<App>();
             try
             {
-                apps.Add(new App("ASCOM.RemoteDeviceServer", Const.wiseASCOMServerPath));
-                if (newMode == WiseSite.OpMode.WISE)
-                    apps.Add(new App(Const.wiseDashboardAppName,
-                        _simulated ? Const.wiseSimulatedDashPath : Const.wiseRealDashPath));
+                apps.Add(new App(this, "ASCOM.RemoteDeviceServer", Const.wiseASCOMServerPath));
+                apps.Add(new App(this, Const.wiseDashboardAppName, _simulated ? Const.wiseSimulatedDashPath : Const.wiseRealDashPath));
             } catch (Exception ex) { }
             
-            if (apps.Count > 0)
-            {
-                message += "The following applications will be restarted:\n";
-                foreach (var app in apps)
-                    if (app.IsRunning)
-                        message += "    " + app._name + '\n';
-            }
+            message += "The following applications will be restarted:\n\n";
+            foreach (var app in apps)
+                message += "    - " + app._name + '\n';
             message += "\nPlease confirm or cancel!";
 
             if (MessageBox.Show(message, "Change the Wise40 Operation Mode", MessageBoxButtons.OKCancel) == DialogResult.OK) {
