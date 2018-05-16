@@ -88,7 +88,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 Application.DoEvents();
             }
 
-            wisecomputercontrol = new SafetyMonitor("ASCOM.Web1.SafetyMonitor");    // Must match ASCOM Remote Server Setup
+            wisecomputercontrol = new SafetyMonitor("ASCOM.Web2.SafetyMonitor");    // Must match ASCOM Remote Server Setup
             wisecomputercontrol.Connected = true;
             while (!wisecomputercontrol.Connected)
             {
@@ -96,7 +96,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 Application.DoEvents();
             }
 
-            wisesafetooperate = new SafetyMonitor("ASCOM.Web2.SafetyMonitor");      // Must match ASCOM Remote Server Setup
+            wisesafetooperate = new SafetyMonitor("ASCOM.Web1.SafetyMonitor");      // Must match ASCOM Remote Server Setup
             wisesafetooperate.Connected = true;
             while (! wisesafetooperate.Connected)
             {
@@ -124,8 +124,11 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             menuStrip.RenderMode = ToolStripRenderMode.ManagerRenderMode;
             ToolStripManager.Renderer = new Wise40ToolstripRenderer();
 
+            wisesite.init();
+            WiseSite.OpMode opMode = wisesite.OperationalMode;
             try
             {
+                RestartApps(opMode);
                 OpenConnections();
             }
             catch (Exception ex)
@@ -134,8 +137,6 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 Application.Exit();
             }
 
-            wisesite.init();
-            WiseSite.OpMode opMode = wisesite.OperationalMode;
             switch (opMode)
             {
                 case WiseSite.OpMode.LCO:
@@ -162,7 +163,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 inControl = wisecomputercontrol.IsSafe;
             } catch (Exception ex)
             {
-                Log(string.Format("Oops: {0}", ex.InnerException.Message));
+                Log(string.Format("Oops: {0}", ex.InnerException == null ? ex.Message : ex.InnerException.Message));
                 _nextCheck = DateTime.Now.Add(_intervalBetweenChecks);
                 return;
             }
