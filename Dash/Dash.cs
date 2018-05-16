@@ -20,6 +20,8 @@ using ASCOM.Wise40SafeToOpen;
 using ASCOM.Wise40.FilterWheel;
 using ASCOM.Wise40.VantagePro;
 
+using ASCOM.Utilities;
+
 namespace Dash
 {
     public partial class FormDash : Form
@@ -35,6 +37,7 @@ namespace Dash
         public WiseFilterWheel wisefilterwheel = WiseFilterWheel.Instance;
         public WiseDomePlatform wisedomeplatform = WiseDomePlatform.Instance;
         WiseObject wiseobject = new WiseObject();
+        private ASCOM.Utilities.Util ascomutil = new Util();
 
         DomeSlaveDriver domeSlaveDriver = DomeSlaveDriver.Instance;
         DebuggingForm debuggingForm = new DebuggingForm();
@@ -310,7 +313,7 @@ namespace Dash
             {
                 annunciatorComputerControl.Text = "Computer has control";
                 annunciatorComputerControl.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
-                tip = "The computer control switch is ON.";
+                tip = "The computer control switch is ON";
             }
             else
             {
@@ -686,11 +689,12 @@ namespace Dash
 
             try
             {
-                string raText = textBoxRA.Text.Replace(':', 'h').Replace(':', 'm') + 's';
+                double ra = ascomutil.HMSToHours(textBoxRA.Text);
+                double dec = ascomutil.DMSToDegrees(textBoxDec.Text);
 
-                telescopeStatus.Show(string.Format("Slewing to ra: {0} dec: {1}", new Angle(raText), new Angle(textBoxDec.Text)),
-                    0, Statuser.Severity.Good);
-                wisetele.SlewToCoordinatesAsync(new Angle(raText).Hours, new Angle(textBoxDec.Text).Degrees);
+                telescopeStatus.Show(string.Format("Slewing to ra: {0} dec: {1}",
+                    Angle.FromHours(ra).ToNiceString(), Angle.FromDegrees(dec).ToNiceString()), 0, Statuser.Severity.Good);
+                wisetele.SlewToCoordinatesAsync(ra, dec);
             }
             catch (Exception ex)
             {
