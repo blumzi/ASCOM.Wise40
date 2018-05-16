@@ -275,6 +275,15 @@ namespace ASCOM.Wise40
             return rate.ToString();
         }
 
+        public void CheckCoordinateSanity(Angle.Type type, double value)
+        {
+            if (type == Angle.Type.Dec && (value < -90.0 || value > 90.0))
+                throw new InvalidValueException(string.Format("Invalid Declination {0}. Must be between -90 and 90", value));
+
+            if (type == Angle.Type.RA && (value < 0.0 || value > 24.0))
+                throw new ASCOM.InvalidValueException(string.Format("Invalid RightAscension {0}. Must be between 0 to 24", value));
+        }
+
         public double TargetDeclination
         {
             get
@@ -294,8 +303,7 @@ namespace ASCOM.Wise40
             set
             {
                 inactivityMonitor.Start("TargetDeclination was set");
-                if (value < -90.0 || value > 90.0)
-                    throw new InvalidValueException(string.Format("Invalid Declination {0}. Must be between -90 and 90", value));
+                CheckCoordinateSanity(Angle.Type.Dec, value);
 
                 _targetDeclination = Angle.FromDegrees(value, Angle.Type.Dec);
                 #region trace
@@ -330,10 +338,8 @@ namespace ASCOM.Wise40
 
             set
             {
-                if (value < 0.0 || value > 24.0)
-                    throw new ASCOM.InvalidValueException(string.Format("Invalid RightAscension {0}. Must be between 0 to 24", value));
-
                 inactivityMonitor.Start("TargetRightAscension was set");
+                CheckCoordinateSanity(Angle.Type.RA, value);
                 _targetRightAscension = Angle.FromHours(value, Angle.Type.RA);
                 #region trace
                 traceLogger.LogMessage("TargetRightAscension Set", string.Format("{0}", _targetRightAscension));
@@ -921,6 +927,9 @@ namespace ASCOM.Wise40
 
                 if (value)
                 {
+                    if (!wisecomputercontrol.IsSafe && !BypassSafety)
+                        throw new ASCOM.InvalidOperationException("Computer control or dome platform are NOT safe.");
+
                     _lastTrackingLST = wisesite.LocalSiderealTime.Hours;
 
                     if (TrackingMotor.isOff)
@@ -1965,6 +1974,9 @@ namespace ASCOM.Wise40
 
         private void _slewToCoordinatesAsync(Angle RightAscension, Angle Declination)
         {
+            CheckCoordinateSanity(Angle.Type.RA, RightAscension.Hours);
+            CheckCoordinateSanity(Angle.Type.Dec, Declination.Degrees);
+
             slewers.Clear();
             readyToSlew.Reset();
             inactivityMonitor.StartActivity(InactivityMonitor.Activity.Slewing);
@@ -2077,6 +2089,10 @@ namespace ASCOM.Wise40
 
         public void SlewToCoordinatesAsync(double RightAscension, double Declination, bool doChecks = true)
         {
+
+            CheckCoordinateSanity(Angle.Type.RA, RightAscension);
+            CheckCoordinateSanity(Angle.Type.Dec, Declination);
+
             _instance.TargetRightAscension = RightAscension;
             _instance.TargetDeclination = Declination;
 
@@ -2793,11 +2809,11 @@ namespace ASCOM.Wise40
         public string CommandString(string command, bool raw)
         {
             CheckConnected("CommandString");
-            // it's a good idea to put all the low level communication with the device here,
-            // then all communication calls this function
-            // you need something to ensure that only one command is in progress at a time
 
-            throw new ASCOM.MethodNotImplementedException("CommandString");
+            if (command == "opmode")
+                return wisesite.OperationalMode.ToString();
+            else
+                throw new ASCOM.MethodNotImplementedException("CommandString");
         }
 
         public string DriverInfo
