@@ -55,5 +55,20 @@ namespace ASCOM.Wise40
                     return computerControlPin.isOn && wisedomeplatform.IsSafe;
             }
         }
+
+        public string UnsafeReasons()
+        {
+            List<string> reasons = new List<string>();
+
+            if (!computerControlPin.isOn)
+                reasons.Add("ComputerControl switch is OFF");
+            if (!wisedomeplatform.IsSafe)
+                reasons.Add("The dome platform is RAISED");
+
+            if (reasons.Count > 0)
+                return string.Join(" and ", reasons);
+            else
+                return string.Empty;
+        }
     }
 }
