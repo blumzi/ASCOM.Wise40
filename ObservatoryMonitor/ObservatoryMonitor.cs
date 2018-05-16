@@ -48,6 +48,8 @@ namespace ASCOM.Wise40.ObservatoryMonitor
         CancellationToken CT;
         Task workerTask;
 
+        static bool _firstTime = true;
+
         public void CloseConnections()
         {
             if (wisetelescope != null)
@@ -126,16 +128,16 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
             wisesite.init();
             WiseSite.OpMode opMode = wisesite.OperationalMode;
-            try
-            {
-                RestartApps(opMode);
-                OpenConnections();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(string.Format("Exception while connecting to ASCOM drivers:\n\t{0}", ex.Message));
-                Application.Exit();
-            }
+            //try
+            //{
+            //    RestartApps(opMode);
+            //    OpenConnections();
+            //}
+            //catch (Exception ex)
+            //{
+            //    MessageBox.Show(string.Format("Exception while connecting to ASCOM drivers:\n\t{0}", ex.Message));
+            //    Application.Exit();
+            //}
 
             switch (opMode)
             {
@@ -152,9 +154,61 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             UpdateOpModeControls(opMode);
         }
 
+        private void EnsureServerWithSameOpMode()
+        {
+            WiseSite.OpMode configuredOpMode = wisesite.OperationalMode;
+            Process[] processes = Process.GetProcessesByName("ASCOM.RemoteDeviceServer");
+
+            if (processes.Length > 0)
+            {
+                //
+                // The ASCOM Remote Server is running.
+                // We'll check it is running at the same OpMode as currently configured in 
+                //  the profile.
+                //
+                WiseSite.OpMode runningOpMode = WiseSite.OpMode.NONE;
+
+                try
+                {
+                    Telescope wisetelescope = new Telescope("ASCOM.Web1.Telescope");
+                    wisetelescope.Connected = true;
+                    while (wisetelescope.Connected == false)
+                    {
+                        Log("Waiting for the \"Telescope\" client to connect ...", 5);
+                        Application.DoEvents();
+                    }
+
+                    Enum.TryParse<WiseSite.OpMode>(wisetelescope.CommandString("opmode", false), out runningOpMode);
+                    wisetelescope.Dispose();
+                } catch {
+                    throw;
+                }
+
+                if (runningOpMode == configuredOpMode)  // The current Server and Dash are at the correct OpMode
+                    return;
+            }
+
+            RestartApps(configuredOpMode, true);
+        }
+
         private void CheckSituation()
         {
             bool active = true, safe = true, inControl = false;
+
+            if (_firstTime)
+            {
+                try
+                {
+                    EnsureServerWithSameOpMode();
+                    OpenConnections();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(string.Format("Exception while connecting to ASCOM drivers:\n\t{0}", ex.Message));
+                    Application.Exit();
+                }
+                _firstTime = false;
+            }
 
             try
             {
@@ -168,6 +222,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 return;
             }
 
+            string reasons = string.Empty;
             if (inControl)
             {
                 labelComputerControl.Text = "Operational";
@@ -176,7 +231,9 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             {
                 labelComputerControl.Text = "Maintenance";
                 labelComputerControl.ForeColor = unsafeColor;
+                reasons = wisecomputercontrol.CommandString("unsafereasons", false);
             }
+            toolTip.SetToolTip(labelComputerControl, reasons.Replace(',', '\n'));
 
             if (active)
             {
@@ -198,10 +255,13 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             {
                 labelConditions.Text = "Not safe";
                 labelConditions.ForeColor = unsafeColor;
+
                 if (! inControl)
-                    toolTip.SetToolTip(labelConditions, "ComputerControl switch is OFF");
+                    reasons = wisecomputercontrol.CommandString("unsafereasons", false);
                 else
-                    toolTip.SetToolTip(labelConditions, wisesafetooperate.CommandString("unsafereasons", false).Replace(',', '\n'));
+                    reasons = wisesafetooperate.CommandString("unsafereasons", false);
+
+                toolTip.SetToolTip(labelConditions, reasons.Replace(',', '\n'));
             }
 
             if (_shuttingDown)
@@ -209,14 +269,14 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             
             if (!(active && safe))
             {
-                List<string> reasons = new List<string>();
+                List<string> reasonsList = new List<string>();
 
                 if (!active)
-                    reasons.Add("Telescope is Idle");
+                    reasonsList.Add("Telescope is Idle");
                 if (!safe)
-                    reasons.Add("Not SafeToOperate");
+                    reasonsList.Add("Not SafeToOperate");
 
-                string reason = String.Join(" and ", reasons);
+                string reason = String.Join(" and ", reasonsList);
                 if (inControl)
                     DoShutdownObservatory(reason);
                 else
@@ -561,7 +621,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             }
         };
 
-        private bool RestartApps(WiseSite.OpMode newMode)
+        private bool RestartApps(WiseSite.OpMode newMode, bool silent)
         {
             string message = string.Format("\nYou are about to change the Wise40 operational\n   mode from \"{0}\" to \"{1}\" !\n\n",
                 wisesite.OperationalMode, newMode);
@@ -595,7 +655,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             WiseSite.OpMode mode = (selectedItem == wISEToolStripMenuItem) ? WiseSite.OpMode.WISE :
                 (selectedItem == lCOToolStripMenuItem) ? WiseSite.OpMode.LCO : WiseSite.OpMode.ACP;
 
-            if (RestartApps(mode))
+            if (RestartApps(mode, false))
                 UpdateOpModeControls(mode);
         }
 
