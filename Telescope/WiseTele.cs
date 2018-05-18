@@ -278,10 +278,12 @@ namespace ASCOM.Wise40
         public void CheckCoordinateSanity(Angle.Type type, double value)
         {
             if (type == Angle.Type.Dec && (value < -90.0 || value > 90.0))
-                throw new InvalidValueException(string.Format("Invalid Declination {0}. Must be between -90 and 90", value));
+                throw new InvalidValueException(string.Format("Invalid Declination {0}. Must be between -90 and 90",
+                    Angle.FromDegrees(value).ToNiceString()));
 
             if (type == Angle.Type.RA && (value < 0.0 || value > 24.0))
-                throw new ASCOM.InvalidValueException(string.Format("Invalid RightAscension {0}. Must be between 0 to 24", value));
+                throw new ASCOM.InvalidValueException(string.Format("Invalid RightAscension {0}. Must be between 0 to 24",
+                    Angle.FromHours(value).ToNiceString()));
         }
 
         public double TargetDeclination
