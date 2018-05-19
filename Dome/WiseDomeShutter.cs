@@ -33,12 +33,10 @@ namespace ASCOM.Wise40
         private System.Threading.Timer _timer;
         private int _timeout;
 
-        private ShutterState _state = ShutterState.shutterClosed;
+        private ShutterState _state;
         
-        private DateTime _simulatedMovementStart;
         private static WiseObject wiseobject = new WiseObject();
         private static TimeSpan _simulatedAge = new TimeSpan(0, 0, 3);
-        ShutterState _simulatedMovement;
 
         List<WisePin> shutterPins;
 
@@ -52,6 +50,7 @@ namespace ASCOM.Wise40
             private static HttpClient _client;
             private static int _value;
             private static Debugger debugger = Debugger.Instance;
+            private static TimeSpan _maxAge = new TimeSpan(0, 0, 60);
 
             public TimeSpan Age
             {
@@ -65,7 +64,7 @@ namespace ASCOM.Wise40
             {
                 get
                 {
-                    return DateTime.Now.CompareTo(_lastReading.AddSeconds(60)) <= 0;
+                    return Age <= _maxAge;
                 }
             }
 
@@ -82,12 +81,12 @@ namespace ASCOM.Wise40
             public WebClient(string address)
             {
                 _client = new HttpClient();
-                _client.Timeout = new TimeSpan(0, 0, 8);
+                //_client.Timeout = new TimeSpan(0, 0, 4);
                 _url = String.Format("http://{0}/encoder", address);
                 Task.Run(() =>
                 {
                     _timer = new System.Threading.Timer(PeriodicallyReadShutterPosition);
-                    _timer.Change(0, 10000);
+                    _timer.Change(0, 5000);
                 });
             }
 
@@ -95,25 +94,36 @@ namespace ASCOM.Wise40
             {
                 int res = GetShutterPosition().GetAwaiter().GetResult();
                 if (res != -1)
+                {
+                    _lastReading = DateTime.Now;
                     _value = res;
+                }
             }
 
             public static async Task<int> GetShutterPosition()
             {
-                int ret = -1;
+                int ret = -7;
 
-                _client.CancelPendingRequests();
+                //_client.CancelPendingRequests();
                 try
                 {
                     var result = await _client.GetAsync(_url);
                     if (result.IsSuccessStatusCode)
                     {
-                        int value = Convert.ToInt32(await result.Content.ReadAsStringAsync());
-                        _lastReading = DateTime.Now;
-                        ret = value;
-                        #region debug
-                        debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "GetShutterPosition: got {0}", ret);
-                        #endregion
+                        string prefix = "<!DOCTYPE HTML>\r\n<html>";
+                        string suffix = "</html>\r\n";
+
+                        string reply = await result.Content.ReadAsStringAsync();
+                        if (reply.StartsWith(prefix) && reply.EndsWith(suffix))
+                        {
+
+                            reply = reply.Remove(0, prefix.Length);
+                            reply = reply.Remove(reply.IndexOf(suffix[0]));
+                            ret = Convert.ToInt32(reply);
+                            #region debug
+                            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "GetShutterPosition: got {0}", ret);
+                            #endregion
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -133,6 +143,7 @@ namespace ASCOM.Wise40
         public void Stop()
         {
             ShutterState prev = _state;
+            _timer.Change(Timeout.Infinite, Timeout.Infinite);
 
             switch (_state)
             {
@@ -159,11 +170,6 @@ namespace ASCOM.Wise40
             closePin.SetOn();
             _state = ShutterState.shutterClosing;
             _timer.Change(_timeout, Timeout.Infinite);
-            if (Simulated)
-            {
-                _simulatedMovement = ShutterState.shutterClosing;
-                _simulatedMovementStart = DateTime.Now;
-            }
         }
 
         public void StartOpening()
@@ -174,18 +180,29 @@ namespace ASCOM.Wise40
             openPin.SetOn();
             _state = ShutterState.shutterOpening;
             _timer.Change(_timeout, Timeout.Infinite);
-            if (Simulated)
-            {
-                _simulatedMovement = ShutterState.shutterOpening;
-                _simulatedMovementStart = DateTime.Now;
-            }
         }
 
         public ShutterState State
         {
             get
             {
-                return _state;
+                if (openPin.isOn)
+                    return ShutterState.shutterOpening;
+                else if (closePin.isOn)
+                    return ShutterState.shutterClosing;
+                else if (!CanUseWebShutter)
+                    return _state;
+
+                // Both motors are OFF and we can use the webShutter
+                int percentOpen = -1;
+                if ((percentOpen = Percent) == -1)
+                    return _state;
+                else if (percentOpen <= 2)
+                    return ShutterState.shutterClosed;
+                else if (percentOpen >= 98)
+                    return ShutterState.shutterOpen;
+                else
+                    return _state;
             }
 
             set
@@ -194,15 +211,14 @@ namespace ASCOM.Wise40
             }
         }
 
+        /// <summary>
+        /// Called after time-to-{open,close} passes.
+        /// </summary>
+        /// <param name="state"></param>
         private void onTimer(object state)
         {
             if (IsMoving)
-            {
-                _timer.Change(Timeout.Infinite, Timeout.Infinite);
                 Stop();
-                if (Simulated)
-                    _simulatedMovementStart = DateTime.MinValue;
-            }
         }
 
         public void init()
@@ -216,7 +232,7 @@ namespace ASCOM.Wise40
             {
                 debugger.WriteLine(Debugger.DebugLevel.DebugExceptions, "WiseDomeShutter.init: Exception: {0}.", ex.Message);
             }
-            _state = ShutterState.shutterClosed;
+            _state = State;
             _timer = new System.Threading.Timer(new TimerCallback(onTimer));
             _timeout = (Simulated ? 10 : 25) * 1000;
             openPin.SetOff();
@@ -278,7 +294,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                var ret = _state == ShutterState.shutterOpening || _state == ShutterState.shutterClosing;
+                var ret = openPin.isOn || closePin.isOn;
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "ShutterIsMoving: {0}", ret.ToString());
                 #endregion
@@ -312,24 +328,6 @@ namespace ASCOM.Wise40
         {
             get
             {
-                if (Simulated)
-                {
-                    if (_simulatedMovementStart == DateTime.MinValue)
-                        return 0;
-                    else
-                    {
-                        double elapsedMillis = DateTime.Now.Subtract(_simulatedMovementStart).TotalMilliseconds;
-                        int ret =  (int)((elapsedMillis * 100.0) / _timeout);
-                        if (_simulatedMovement == ShutterState.shutterClosing)
-                            ret = 100 - ret;
-                        #region debug
-                        debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Percent: {0}% (elapsed: {1}, max: {2})", 
-                            ret, elapsedMillis, _timeout);
-                        #endregion
-                        return ret;
-                    }
-                }
-
                 if (!CanUseWebShutter)
                     return -1;
 

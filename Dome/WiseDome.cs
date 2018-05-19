@@ -1166,6 +1166,7 @@ namespace ASCOM.Wise40
             get
             {
                 string ret = "unknown";
+                int percent = wisedomeshutter.Percent;
 
                 switch (ShutterState)
                 {
@@ -1174,15 +1175,14 @@ namespace ASCOM.Wise40
                         break;
                     case ShutterState.shutterClosing:
                     case ShutterState.shutterOpening:
-                        ret = string.Format("Shutter is {0}% open", wisedomeshutter.Percent);
-                        break;
                     case ShutterState.shutterOpen:
                         ret = "Shutter is open";
                         break;
                     case ShutterState.shutterError:
-                        ret = "Shutter error!";
+                        ret = "Shutter is in error!";
                         break;
                 }
+                ret += string.Format(" ({0}% open)", percent);
                 return ret;
             }
         }
