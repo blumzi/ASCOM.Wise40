@@ -20,6 +20,7 @@ namespace ASCOM.Wise40
         private Debugger debugger = WiseTele.Instance.debugger;
         private bool _shuttingDown = false;
         private DateTime _due = DateTime.MinValue;                  // not set
+        private WiseSite wisesite = WiseSite.Instance;
 
         [FlagsAttribute]
         public enum Activity
@@ -30,11 +31,17 @@ namespace ASCOM.Wise40
             Pulsing = (1 << 2),
             Dome = (1 << 3),
             Handpad = (1 << 4),
+            GoingIdle = (1 << 5),
         };
         private Activity _activities = Activity.None;
 
         public void ShutdownObservatory(object StateObject)
         {
+            EndActivity(Activity.GoingIdle);
+
+            if (wisesite.OperationalMode != WiseSite.OpMode.WISE)
+                return;
+
             _shuttingDown = true;
             _due = DateTime.MinValue;
             #region debug
@@ -71,6 +78,7 @@ namespace ASCOM.Wise40
 
         public InactivityMonitor()
         {
+            wisesite.init();
             inactivityTimer = new System.Threading.Timer(ShutdownObservatory);
             _activities = Activity.None;
             Start("init");
@@ -82,6 +90,8 @@ namespace ASCOM.Wise40
                 return;
 
             _activities |= act;
+            if (act != Activity.GoingIdle)      // Any activity ends GoingIdle
+                EndActivity(Activity.GoingIdle);
             #region debug
             wisetele.debugger.WriteLine(Common.Debugger.DebugLevel.DebugLogic, "InactivityMonitor:StartActivity: {0}", act.ToString());
             #endregion
@@ -112,6 +122,7 @@ namespace ASCOM.Wise40
             if (_shuttingDown)
                 return;
 
+            // The file's creation time is used in case we crashed after starting to idle.
             string filename = Const.topWise40Directory + "Observatory/InactivityMonitorRestart";
             int dueMillis = Simulated ? simulatedlMillisToInactivity : realMillisToInactivity;
 
@@ -133,6 +144,7 @@ namespace ASCOM.Wise40
                 reason, dueMillis);
             #endregion
 
+            StartActivity(Activity.GoingIdle);
             inactivityTimer.Change(dueMillis, -1);
             File.Create(filename).Close();
 
