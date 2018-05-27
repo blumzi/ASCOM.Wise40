@@ -278,10 +278,12 @@ namespace ASCOM.Wise40
         public void CheckCoordinateSanity(Angle.Type type, double value)
         {
             if (type == Angle.Type.Dec && (value < -90.0 || value > 90.0))
-                throw new InvalidValueException(string.Format("Invalid Declination {0}. Must be between -90 and 90", value));
+                throw new InvalidValueException(string.Format("Invalid Declination {0}. Must be between -90 and 90",
+                    Angle.FromDegrees(value).ToNiceString()));
 
             if (type == Angle.Type.RA && (value < 0.0 || value > 24.0))
-                throw new ASCOM.InvalidValueException(string.Format("Invalid RightAscension {0}. Must be between 0 to 24", value));
+                throw new ASCOM.InvalidValueException(string.Format("Invalid RightAscension {0}. Must be between 0 to 24",
+                    Angle.FromHours(value).ToNiceString()));
         }
 
         public double TargetDeclination
@@ -928,7 +930,7 @@ namespace ASCOM.Wise40
                 if (value)
                 {
                     if (!wisecomputercontrol.IsSafe && !BypassSafety)
-                        throw new ASCOM.InvalidOperationException("Computer control or dome platform are NOT safe.");
+                        throw new ASCOM.InvalidOperationException(wisecomputercontrol.UnsafeReasons());
 
                     _lastTrackingLST = wisesite.LocalSiderealTime.Hours;
 
@@ -1142,7 +1144,7 @@ namespace ASCOM.Wise40
             #endregion debug
 
             if (!wisecomputercontrol.IsSafe && !BypassSafety)
-                throw new ASCOM.InvalidOperationException("Computer control or dome platform are NOT safe.");
+                throw new ASCOM.InvalidOperationException(wisecomputercontrol.UnsafeReasons());
 
             Const.AxisDirection direction = (Rate == Const.rateStopped) ? Const.AxisDirection.None :
                 (Rate < 0.0) ? Const.AxisDirection.Decreasing : Const.AxisDirection.Increasing;
@@ -1162,7 +1164,7 @@ namespace ASCOM.Wise40
             #endregion debug
 
             if (!wisecomputercontrol.IsSafe && !BypassSafety)
-                throw new ASCOM.InvalidOperationException("Computer control or dome platform are NOT safe.");
+                throw new ASCOM.InvalidOperationException(wisecomputercontrol.UnsafeReasons());
 
             Const.AxisDirection direction = (Rate == Const.rateStopped) ? Const.AxisDirection.None :
                 (Rate < 0.0) ? Const.AxisDirection.Decreasing : Const.AxisDirection.Increasing;
@@ -1224,7 +1226,7 @@ namespace ASCOM.Wise40
             }
 
             if (!wisecomputercontrol.IsSafe)
-                throw new InvalidOperationException(compControlOrPlatformNotSafe);
+                throw new InvalidOperationException(wisecomputercontrol.UnsafeReasons());
 
             if (Rate == Const.rateStopped)
             {
@@ -1335,7 +1337,7 @@ namespace ASCOM.Wise40
                 throw new InvalidOperationException(notSafe);
 
             if (!wisecomputercontrol.IsSafe)
-                throw new InvalidOperationException(compControlOrPlatformNotSafe);
+                throw new InvalidOperationException(wisecomputercontrol.UnsafeReasons());
 
             _slewToCoordinatesAsync(_targetRightAscension, _targetDeclination);
         }
@@ -2071,7 +2073,7 @@ namespace ASCOM.Wise40
             }
 
             if (!wisecomputercontrol.IsSafe)
-                throw new InvalidOperationException(compControlOrPlatformNotSafe);
+                throw new InvalidOperationException(wisecomputercontrol.UnsafeReasons());
 
             try
             {
@@ -2117,7 +2119,7 @@ namespace ASCOM.Wise40
             }
 
             if (!wisecomputercontrol.IsSafe)
-                throw new InvalidOperationException(compControlOrPlatformNotSafe);
+                throw new InvalidOperationException(wisecomputercontrol.UnsafeReasons());
 
             try
             {
@@ -2316,7 +2318,7 @@ namespace ASCOM.Wise40
                 throw new InvalidOperationException(notSafe);
 
             if (!wisecomputercontrol.IsSafe)
-                throw new InvalidOperationException(compControlOrPlatformNotSafe);
+                throw new InvalidOperationException(wisecomputercontrol.UnsafeReasons());
 
             SlewToCoordinates(_instance.TargetRightAscension, _instance.TargetDeclination); // sync
         }

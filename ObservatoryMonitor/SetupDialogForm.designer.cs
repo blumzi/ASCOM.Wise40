@@ -75,8 +75,8 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(216, 55);
             this.label1.TabIndex = 2;
-            this.label1.Text = "Monitors the observatory environment and\r\nshuts-down operations when thresholds\r\n" +
-    "are exceeded.";
+            this.label1.Text = "Parks the equipment and closes the dome\r\nshutter if conditions are not safe-to-op" +
+    "erate\r\nor the telesope is idle";
             this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // label9
