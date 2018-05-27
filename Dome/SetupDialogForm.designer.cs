@@ -36,19 +36,18 @@ namespace ASCOM.Wise40 //.Dome
             this.picASCOM = new System.Windows.Forms.PictureBox();
             this.checkBoxAutoCalibrate = new System.Windows.Forms.CheckBox();
             this.label1 = new System.Windows.Forms.Label();
-            this.checkBoxBypassSafety = new System.Windows.Forms.CheckBox();
             this.checkBoxSyncVent = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.textBoxMinimalStep = new System.Windows.Forms.TextBox();
+            this.textBoxShutterIpAddress = new System.Windows.Forms.TextBox();
+            this.textBoxShutterHighestValue = new System.Windows.Forms.TextBox();
+            this.textBoxShutterLowestValue = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
-            this.textBoxShutterIpAddress = new System.Windows.Forms.TextBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.label5 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
-            this.textBoxShutterHighestValue = new System.Windows.Forms.TextBox();
-            this.textBoxShutterLowestValue = new System.Windows.Forms.TextBox();
+            this.label5 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
@@ -59,7 +58,7 @@ namespace ASCOM.Wise40 //.Dome
             this.cmdOK.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.cmdOK.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.cmdOK.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.cmdOK.Location = new System.Drawing.Point(284, 234);
+            this.cmdOK.Location = new System.Drawing.Point(284, 205);
             this.cmdOK.Name = "cmdOK";
             this.cmdOK.Size = new System.Drawing.Size(59, 24);
             this.cmdOK.TabIndex = 0;
@@ -73,7 +72,7 @@ namespace ASCOM.Wise40 //.Dome
             this.cmdCancel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.cmdCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.cmdCancel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.cmdCancel.Location = new System.Drawing.Point(284, 264);
+            this.cmdCancel.Location = new System.Drawing.Point(284, 235);
             this.cmdCancel.Name = "cmdCancel";
             this.cmdCancel.Size = new System.Drawing.Size(59, 25);
             this.cmdCancel.TabIndex = 1;
@@ -116,23 +115,10 @@ namespace ASCOM.Wise40 //.Dome
             this.label1.TabIndex = 9;
             this.label1.Text = "Wise40 Dome driver setup";
             // 
-            // checkBoxBypassSafety
-            // 
-            this.checkBoxBypassSafety.AutoSize = true;
-            this.checkBoxBypassSafety.Location = new System.Drawing.Point(25, 103);
-            this.checkBoxBypassSafety.Name = "checkBoxBypassSafety";
-            this.checkBoxBypassSafety.Size = new System.Drawing.Size(136, 17);
-            this.checkBoxBypassSafety.TabIndex = 10;
-            this.checkBoxBypassSafety.TabStop = false;
-            this.checkBoxBypassSafety.Text = "Bypass SafeToOperate";
-            this.toolTip1.SetToolTip(this.checkBoxBypassSafety, "Allow the shutter to be opened even if SafeToOperate is False");
-            this.checkBoxBypassSafety.UseVisualStyleBackColor = true;
-            this.checkBoxBypassSafety.CheckedChanged += new System.EventHandler(this.checkBoxBypassSafety_CheckedChanged);
-            // 
             // checkBoxSyncVent
             // 
             this.checkBoxSyncVent.AutoSize = true;
-            this.checkBoxSyncVent.Location = new System.Drawing.Point(24, 128);
+            this.checkBoxSyncVent.Location = new System.Drawing.Point(24, 103);
             this.checkBoxSyncVent.Name = "checkBoxSyncVent";
             this.checkBoxSyncVent.Size = new System.Drawing.Size(131, 17);
             this.checkBoxSyncVent.TabIndex = 11;
@@ -143,42 +129,12 @@ namespace ASCOM.Wise40 //.Dome
             // 
             // textBoxMinimalStep
             // 
-            this.textBoxMinimalStep.Location = new System.Drawing.Point(176, 156);
+            this.textBoxMinimalStep.Location = new System.Drawing.Point(176, 132);
             this.textBoxMinimalStep.Name = "textBoxMinimalStep";
             this.textBoxMinimalStep.Size = new System.Drawing.Size(24, 20);
             this.textBoxMinimalStep.TabIndex = 12;
             this.textBoxMinimalStep.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.toolTip1.SetToolTip(this.textBoxMinimalStep, "When tracking the telescope do not adjust Azimuth for less than this step");
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(40, 160);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(135, 13);
-            this.label2.TabIndex = 13;
-            this.label2.Text = "Minimal step when tracking";
-            this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.label2.Click += new System.EventHandler(this.label2_Click);
-            // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(200, 160);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(25, 13);
-            this.label3.TabIndex = 14;
-            this.label3.Text = "deg";
-            // 
-            // label4
-            // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(8, 28);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(58, 13);
-            this.label4.TabIndex = 15;
-            this.label4.Text = "IP Address";
-            this.label4.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // textBoxShutterIpAddress
             // 
@@ -187,42 +143,6 @@ namespace ASCOM.Wise40 //.Dome
             this.textBoxShutterIpAddress.Size = new System.Drawing.Size(104, 20);
             this.textBoxShutterIpAddress.TabIndex = 16;
             this.toolTip1.SetToolTip(this.textBoxShutterIpAddress, "When tracking the telescope do not adjust Azimuth for less than this step");
-            // 
-            // groupBox1
-            // 
-            this.groupBox1.Controls.Add(this.textBoxShutterLowestValue);
-            this.groupBox1.Controls.Add(this.textBoxShutterHighestValue);
-            this.groupBox1.Controls.Add(this.label6);
-            this.groupBox1.Controls.Add(this.label5);
-            this.groupBox1.Controls.Add(this.textBoxShutterIpAddress);
-            this.groupBox1.Controls.Add(this.label4);
-            this.groupBox1.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBox1.Location = new System.Drawing.Point(32, 192);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(232, 96);
-            this.groupBox1.TabIndex = 17;
-            this.groupBox1.TabStop = false;
-            this.groupBox1.Text = " Shutter ";
-            // 
-            // label5
-            // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(8, 50);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(72, 13);
-            this.label5.TabIndex = 17;
-            this.label5.Text = "Highest value";
-            this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // label6
-            // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(8, 72);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(70, 13);
-            this.label6.TabIndex = 18;
-            this.label6.Text = "Lowest value";
-            this.label6.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // textBoxShutterHighestValue
             // 
@@ -240,18 +160,83 @@ namespace ASCOM.Wise40 //.Dome
             this.textBoxShutterLowestValue.TabIndex = 20;
             this.toolTip1.SetToolTip(this.textBoxShutterLowestValue, "When tracking the telescope do not adjust Azimuth for less than this step");
             // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(40, 136);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(135, 13);
+            this.label2.TabIndex = 13;
+            this.label2.Text = "Minimal step when tracking";
+            this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.label2.Click += new System.EventHandler(this.label2_Click);
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(200, 136);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(25, 13);
+            this.label3.TabIndex = 14;
+            this.label3.Text = "deg";
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(8, 28);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(58, 13);
+            this.label4.TabIndex = 15;
+            this.label4.Text = "IP Address";
+            this.label4.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // groupBox1
+            // 
+            this.groupBox1.Controls.Add(this.textBoxShutterLowestValue);
+            this.groupBox1.Controls.Add(this.textBoxShutterHighestValue);
+            this.groupBox1.Controls.Add(this.label6);
+            this.groupBox1.Controls.Add(this.label5);
+            this.groupBox1.Controls.Add(this.textBoxShutterIpAddress);
+            this.groupBox1.Controls.Add(this.label4);
+            this.groupBox1.ForeColor = System.Drawing.Color.DarkOrange;
+            this.groupBox1.Location = new System.Drawing.Point(32, 168);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(232, 96);
+            this.groupBox1.TabIndex = 17;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = " Shutter ";
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(8, 72);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(70, 13);
+            this.label6.TabIndex = 18;
+            this.label6.Text = "Lowest value";
+            this.label6.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(8, 50);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(72, 13);
+            this.label5.TabIndex = 17;
+            this.label5.Text = "Highest value";
+            this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
             // DomeSetupDialogForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.ClientSize = new System.Drawing.Size(354, 311);
+            this.ClientSize = new System.Drawing.Size(354, 283);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.textBoxMinimalStep);
             this.Controls.Add(this.checkBoxSyncVent);
-            this.Controls.Add(this.checkBoxBypassSafety);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.checkBoxAutoCalibrate);
             this.Controls.Add(this.picASCOM);
@@ -281,7 +266,6 @@ namespace ASCOM.Wise40 //.Dome
         private System.Windows.Forms.PictureBox picASCOM;
         private System.Windows.Forms.CheckBox checkBoxAutoCalibrate;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.CheckBox checkBoxBypassSafety;
         private System.Windows.Forms.CheckBox checkBoxSyncVent;
         private System.Windows.Forms.ToolTip toolTip1;
         private System.Windows.Forms.TextBox textBoxMinimalStep;

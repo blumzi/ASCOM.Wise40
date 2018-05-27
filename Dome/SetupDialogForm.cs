@@ -23,7 +23,6 @@ namespace ASCOM.Wise40 //.Dome
 
             wisedome.ReadProfile();
             checkBoxAutoCalibrate.Checked = wisedome._autoCalibrate;
-            checkBoxBypassSafety.Checked = wisedome._bypassSafety;
             checkBoxSyncVent.Checked = wisedome._syncVentWithShutter;
             textBoxShutterIpAddress.Text = wisedome.wisedomeshutter._ipAddress;
             textBoxShutterHighestValue.Text = wisedome.wisedomeshutter._highestValue.ToString();
@@ -44,7 +43,6 @@ namespace ASCOM.Wise40 //.Dome
             wisedome.wisedomeshutter._highestValue = Convert.ToInt32(textBoxShutterHighestValue.Text);
             wisedome.wisedomeshutter._lowestValue = Convert.ToInt32(textBoxShutterLowestValue.Text);
             wisedome._autoCalibrate = checkBoxAutoCalibrate.Checked;
-            wisedome._bypassSafety = checkBoxBypassSafety.Checked;
             wisedome._syncVentWithShutter = checkBoxSyncVent.Checked;
 
             wisedome.WriteProfile();
@@ -82,11 +80,6 @@ namespace ASCOM.Wise40 //.Dome
         private void checkBoxAutoCalibrate_CheckedChanged(object sender, EventArgs e)
         {
             wisedome._autoCalibrate = (sender as CheckBox).Checked;
-        }
-
-        private void checkBoxBypassSafety_CheckedChanged(object sender, EventArgs e)
-        {
-            wisedome._bypassSafety = (sender as CheckBox).Checked;
         }
 
         private void label2_Click(object sender, EventArgs e)

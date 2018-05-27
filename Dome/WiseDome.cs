@@ -34,7 +34,6 @@ namespace ASCOM.Wise40
         private bool _calibrating = false;
         public bool _autoCalibrate = false;
         private bool _isStuck;
-        public bool _bypassSafety = false;
         public bool _syncVentWithShutter = false;
         private static Object _caliWriteLock = new object();
 
@@ -955,18 +954,18 @@ namespace ASCOM.Wise40
 
         public void OpenShutter(bool bypassSafety = false)
         {
-            string err = null;
+            List<string> reasons = new List<string>();
 
             if (Slewing)
-                err += "Cannot OpenShutter, dome is slewing!";
+                reasons.Add("Dome is slewing!");
 
-            if (!bypassSafety && !_bypassSafety && (wisesite.safeToOperate != null && !wisesite.safeToOperate.IsSafe))
-                err += "Not safeToOperate: " + wisesite.safeToOperate.CommandString("unsafeReasons", false);
+            if (!bypassSafety && (wisesite.safeToOperate != null && !wisesite.safeToOperate.IsSafe))
+                reasons.Add("Not SafeToOperate: " + wisesite.safeToOperate.CommandString("unsafeReasons", false));
 
-            if (err == null)
+            if (reasons.Count == 0)
             {
                 #region trace
-                tl.LogMessage("Dome: OpenShutter", err);
+                tl.LogMessage("Dome", "OpenShutter");
                 #endregion
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugASCOM, "WiseDome: OpenShutter: opening shutter: ");
@@ -975,6 +974,8 @@ namespace ASCOM.Wise40
                 wisedomeshutter.StartOpening();
             } else
             {
+                string err = string.Join(", ", reasons);
+
                 #region trace
                 tl.LogMessage("Dome: OpenShutter", "");
                 #endregion
@@ -1383,7 +1384,6 @@ namespace ASCOM.Wise40
             using (Profile driverProfile = new Profile() { DeviceType = "Dome" })
             {
                 _autoCalibrate = Convert.ToBoolean(driverProfile.GetValue(Const.wiseDomeDriverID, autoCalibrateProfileName, string.Empty, true.ToString()));
-                _bypassSafety = Convert.ToBoolean(driverProfile.GetValue(Const.wiseDomeDriverID, bypassSafetyProfileName, string.Empty, true.ToString()));
                 _syncVentWithShutter = Convert.ToBoolean(driverProfile.GetValue(Const.wiseDomeDriverID, syncVentWithShutterProfileName, string.Empty, defaultSyncVentWithShutter.ToString()));
             }
             wisedomeshutter.ReadProfile();
@@ -1397,7 +1397,6 @@ namespace ASCOM.Wise40
             using (Profile driverProfile = new Profile() { DeviceType = "Dome" })
             {
                 driverProfile.WriteValue(Const.wiseDomeDriverID, autoCalibrateProfileName, _autoCalibrate.ToString());
-                driverProfile.WriteValue(Const.wiseDomeDriverID, bypassSafetyProfileName, _bypassSafety.ToString());
                 driverProfile.WriteValue(Const.wiseDomeDriverID, syncVentWithShutterProfileName, _syncVentWithShutter.ToString());
             }
             wisedomeshutter.WriteProfile();
