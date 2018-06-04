@@ -166,8 +166,6 @@ namespace ASCOM.Wise40
         System.Threading.Timer trackingTimer;
         const int trackingDomeAdjustmentInterval = 30 * 1000;   // half a minute
 
-        private string compControlOrPlatformNotSafe = "Computer control switch is OFF or platform is RAISED (not safe)";
-
         /// <summary>
         /// Usually two or three tasks are used to perform a slew:
         /// - if the dome is slaved, a dome slewer
