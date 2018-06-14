@@ -107,14 +107,14 @@ namespace ASCOM.Wise40.Hardware
             if (Simulated)
                 simulationTimer.Change(Timeout.Infinite, Timeout.Infinite);
 
-            if (guideMotorPin.isOn)
+            if (guideMotorPin != null && guideMotorPin.isOn)
                 guideMotorPin.SetOff();
 
-            if (motorPin.isOn)
+            if (motorPin != null && motorPin.isOn)
                 motorPin.SetOff();
 
             currentRate = Const.rateStopped;
-            if (!slewPin.isOn)
+            if (slewPin == null || !slewPin.isOn)
                 return;
 
             bool inUseByOtherAxis = false;
@@ -132,7 +132,11 @@ namespace ASCOM.Wise40.Hardware
         {
             get
             {
-                return motorPin.isOn || guideMotorPin.isOn;
+                if (motorPin != null && motorPin.isOn)
+                    return true;
+                if (guideMotorPin != null && guideMotorPin.isOn)
+                    return true;
+                return false;
             }
         }
 
