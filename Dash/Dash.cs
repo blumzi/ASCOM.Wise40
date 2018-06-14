@@ -236,13 +236,21 @@ namespace Dash
             TimeSpan ts = wisetele.inactivityMonitor.RemainingTime;
             if (ts == TimeSpan.MaxValue)
             {
+                // not started
                 labelCountdown.Text = "";
                 toolTip.SetToolTip(labelCountdown, "");
             }
+            else if (ts < new TimeSpan(0, 0, 0))
+            {
+                // no remaining time, idle
+                labelCountdown.Text = "Idle";
+                toolTip.SetToolTip(labelCountdown, "Idle (no activity in the last 15 minutes)");
+            }
             else
             {
+                // still some time till idle
                 labelCountdown.Text = string.Format("{0:D2}:{1:D2}", ts.Minutes, ts.Seconds);
-                toolTip.SetToolTip(labelCountdown, "Inactivity Countdown\n(time to Observatory Shutdown)");
+                toolTip.SetToolTip(labelCountdown, "Inactivity countdown");
             }
 
             annunciatorTrack.Cadence = wisetele.Tracking ? ASCOM.Controls.CadencePattern.SteadyOn : ASCOM.Controls.CadencePattern.SteadyOff;
@@ -252,7 +260,7 @@ namespace Dash
             if (wisedome.Slewing)
             {
                 if (wisedome.MotorsAreActive)
-                    annunciatorDome.Cadence = ASCOM.Controls.CadencePattern.BlinkFast;
+                    annunciatorDome.Cadence = ASCOM.Controls.CadencePattern.BlinkSlow;
                 else
                 {
                     // STUCK: Slewing but not moving
@@ -273,7 +281,7 @@ namespace Dash
                 primaryMotor = wisetele.EastMotor;
             if (primaryMotor != null)
             {
-                annunciatorPrimary.Cadence = ASCOM.Controls.CadencePattern.BlinkFast;
+                annunciatorPrimary.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
                 currentRate = primaryMotor.currentRate;
             }
 
@@ -285,7 +293,7 @@ namespace Dash
                 secondaryMotor = wisetele.SouthMotor;
             if (secondaryMotor != null)
             {
-                annunciatorSecondary.Cadence = ASCOM.Controls.CadencePattern.BlinkFast;
+                annunciatorSecondary.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
                 currentRate = secondaryMotor.currentRate;
             }
 
