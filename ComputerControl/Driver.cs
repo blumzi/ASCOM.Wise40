@@ -172,7 +172,10 @@ namespace ASCOM.Wise40.ComputerControl
             // then all communication calls this function
             // you need something to ensure that only one command is in progress at a time
 
-            throw new ASCOM.MethodNotImplementedException("CommandString");
+            if (command == "unsafereasons")
+                return wisesafety.UnsafeReasons();
+            else
+                throw new ASCOM.MethodNotImplementedException(string.Format("CommandString \"{0}\" not implemented!", command));
         }
 
         public void Dispose()
