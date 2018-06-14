@@ -615,7 +615,9 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
             if ((nbad = nBadReadings) == 0)
                 return string.Empty;
 
-            return string.Format("The last {0} Sun elevation calculation(s) were higher than {1:f1}°", nbad, _max);
+            double currentElevation = wisesafe.SunElevation;
+            return string.Format("The last Sun elevation ({0:f1}°) was higher than {1:f1}°",
+                currentElevation, _max);
         }
 
         public override string MaxAsString
