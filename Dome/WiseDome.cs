@@ -1183,7 +1183,8 @@ namespace ASCOM.Wise40
                         ret = "Shutter is in error!";
                         break;
                 }
-                ret += string.Format(" ({0}% open)", percent);
+                if (percent != -1)
+                    ret += string.Format(" ({0}% open)", percent);
                 return ret;
             }
         }
