@@ -67,7 +67,7 @@ namespace ASCOM.Wise40 //.Focuser
         private bool _multiTurn = false;
         
         private static uint _upperHardLimit = 10122, _lowerHardLimit = 20;      // Measured on May 29th, 2017
-        private static uint _upperSoftLimit = 10100, _lowerSoftLimit = 100;     // Enforced by software
+        private static uint _upperSoftLimit = 10200, _lowerSoftLimit = 200;     // Enforced by software
 
         private static uint _simulatedValue = (_upperHardLimit - _lowerHardLimit) / 2;
         private static Const.Direction _simulatedDirection;
