@@ -39,7 +39,7 @@ namespace ASCOM.Wise40
         {
             EndActivity(Activity.GoingIdle);
 
-            if (wisesite.OperationalMode != WiseSite.OpMode.WISE)
+            //if (wisesite.OperationalMode != WiseSite.OpMode.WISE)
                 return;
 
             _shuttingDown = true;
