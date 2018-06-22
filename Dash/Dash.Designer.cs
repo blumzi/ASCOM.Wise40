@@ -1554,14 +1554,14 @@
             // telescopeToolStripMenuItem
             // 
             this.telescopeToolStripMenuItem.Name = "telescopeToolStripMenuItem";
-            this.telescopeToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
+            this.telescopeToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
             this.telescopeToolStripMenuItem.Text = "Telescope";
             this.telescopeToolStripMenuItem.Click += new System.EventHandler(this.telescopeToolStripMenuItem_Click);
             // 
             // domeToolStripMenuItem
             // 
             this.domeToolStripMenuItem.Name = "domeToolStripMenuItem";
-            this.domeToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
+            this.domeToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
             this.domeToolStripMenuItem.Text = "Dome";
             this.domeToolStripMenuItem.Click += new System.EventHandler(this.domeToolStripMenuItem_Click);
             // 
@@ -1570,7 +1570,7 @@
             this.cloudSensorToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.dataFileToolStripMenuItem});
             this.cloudSensorToolStripMenuItem.Name = "cloudSensorToolStripMenuItem";
-            this.cloudSensorToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
+            this.cloudSensorToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
             this.cloudSensorToolStripMenuItem.Text = "CloudSensor";
             // 
             // dataFileToolStripMenuItem
@@ -1578,7 +1578,7 @@
             this.dataFileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripTextBoxCloudSensorDataFile});
             this.dataFileToolStripMenuItem.Name = "dataFileToolStripMenuItem";
-            this.dataFileToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.dataFileToolStripMenuItem.Size = new System.Drawing.Size(125, 22);
             this.dataFileToolStripMenuItem.Text = "Data File";
             // 
             // toolStripTextBoxCloudSensorDataFile
@@ -1591,7 +1591,7 @@
             this.vantagePro2ToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.reportFileToolStripMenuItem});
             this.vantagePro2ToolStripMenuItem.Name = "vantagePro2ToolStripMenuItem";
-            this.vantagePro2ToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
+            this.vantagePro2ToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
             this.vantagePro2ToolStripMenuItem.Text = "VantagePro2";
             // 
             // reportFileToolStripMenuItem
@@ -1610,7 +1610,7 @@
             // toolStripMenuItemSafeToOperate
             // 
             this.toolStripMenuItemSafeToOperate.Name = "toolStripMenuItemSafeToOperate";
-            this.toolStripMenuItemSafeToOperate.Size = new System.Drawing.Size(158, 22);
+            this.toolStripMenuItemSafeToOperate.Size = new System.Drawing.Size(235, 22);
             this.toolStripMenuItemSafeToOperate.Text = "SafeToOperate";
             this.toolStripMenuItemSafeToOperate.Click += new System.EventHandler(this.toolStripMenuItemSafeToOpen_Click);
             // 
@@ -1622,7 +1622,7 @@
             this.manage3FiltersToolStripMenuItem});
             this.toolStripMenuItemFilterWheel.Enabled = false;
             this.toolStripMenuItemFilterWheel.Name = "toolStripMenuItemFilterWheel";
-            this.toolStripMenuItemFilterWheel.Size = new System.Drawing.Size(158, 22);
+            this.toolStripMenuItemFilterWheel.Size = new System.Drawing.Size(235, 22);
             this.toolStripMenuItemFilterWheel.Text = "Filter Wheel";
             this.toolStripMenuItemFilterWheel.Click += new System.EventHandler(this.toolStripMenuItemFilterWheel_Click);
             // 
@@ -1650,13 +1650,13 @@
             // toolStripMenuItem5
             // 
             this.toolStripMenuItem5.Name = "toolStripMenuItem5";
-            this.toolStripMenuItem5.Size = new System.Drawing.Size(158, 22);
+            this.toolStripMenuItem5.Size = new System.Drawing.Size(235, 22);
             this.toolStripMenuItem5.Text = "  ";
             // 
             // tracingToolStripMenuItem
             // 
             this.tracingToolStripMenuItem.Name = "tracingToolStripMenuItem";
-            this.tracingToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
+            this.tracingToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
             this.tracingToolStripMenuItem.Text = "Tracing";
             this.tracingToolStripMenuItem.ToolTipText = "Toggle tracing ";
             this.tracingToolStripMenuItem.Click += new System.EventHandler(this.tracingToolStripMenuItem_Click);
@@ -1675,7 +1675,7 @@
             this.debugAllToolStripMenuItem,
             this.debugNoneToolStripMenuItem});
             this.debuggingToolStripMenuItem1.Name = "debuggingToolStripMenuItem1";
-            this.debuggingToolStripMenuItem1.Size = new System.Drawing.Size(158, 22);
+            this.debuggingToolStripMenuItem1.Size = new System.Drawing.Size(235, 22);
             this.debuggingToolStripMenuItem1.Text = "Debugging";
             // 
             // debugASCOMToolStripMenuItem
@@ -1757,7 +1757,7 @@
             // toolStripMenuItem2
             // 
             this.toolStripMenuItem2.Name = "toolStripMenuItem2";
-            this.toolStripMenuItem2.Size = new System.Drawing.Size(158, 22);
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(235, 22);
             this.toolStripMenuItem2.Text = "  ";
             // 
             // safetyOverrideToolStripMenuItem
@@ -1765,14 +1765,13 @@
             this.safetyOverrideToolStripMenuItem.Name = "safetyOverrideToolStripMenuItem";
             this.safetyOverrideToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
             this.safetyOverrideToolStripMenuItem.Text = "Bypass Safety";
-            this.safetyOverrideToolStripMenuItem.ToolTipText = "Bypass Safety Checks\r\n\r\nNOTE:\r\n   Valid only within the current session.\r\n   Will" +
-    " not be saved to the persistent profile.";
+            this.safetyOverrideToolStripMenuItem.ToolTipText = resources.GetString("safetyOverrideToolStripMenuItem.ToolTipText");
             this.safetyOverrideToolStripMenuItem.Click += new System.EventHandler(this.safetyOverrideToolStripMenuItem_Click);
             // 
             // saveToProfileToolStripMenuItem
             // 
             this.saveToProfileToolStripMenuItem.Name = "saveToProfileToolStripMenuItem";
-            this.saveToProfileToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
+            this.saveToProfileToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
             this.saveToProfileToolStripMenuItem.Text = "Save To Profile";
             this.saveToProfileToolStripMenuItem.ToolTipText = "Save settings to the persistent profile";
             this.saveToProfileToolStripMenuItem.Click += new System.EventHandler(this.saveToProfileToolStripMenuItem_Click);

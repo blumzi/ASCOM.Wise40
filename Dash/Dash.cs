@@ -210,6 +210,7 @@ namespace Dash
 
             Color safeColor = Statuser.colors[Statuser.Severity.Normal];
             Color unsafeColor = Statuser.colors[Statuser.Severity.Error];
+            Color warningColor = Statuser.colors[Statuser.Severity.Warning];
 
             labelDate.Text = localTime.ToString("ddd, dd MMM yyyy\n hh:mm:ss tt");
 
@@ -219,9 +220,16 @@ namespace Dash
             labelSiderealValue.Text = wisesite.LocalSiderealTime.ToString();
 
             labelRightAscensionValue.Text = ra.ToNiceString();
+            //labelRightAscensionValue.ForeColor = wisetele.DecOver90Degrees ? warningColor : safeColor;
 
             labelDeclinationValue.Text = dec.ToNiceString();
-            labelDeclinationValue.ForeColor = safetyError.Contains("Declination") ? unsafeColor : safeColor;
+            //if (wisetele.DecOver90Degrees)
+            //    labelDeclinationValue.ForeColor = warningColor;
+            //else 
+            if (safetyError.Contains("Declination"))
+                labelDeclinationValue.ForeColor = wisetele.BypassCoordinatesSafety ? warningColor : unsafeColor;
+            else
+                labelDeclinationValue.ForeColor = safeColor;
 
             labelHourAngleValue.Text = ha.ToNiceString();
             labelHourAngleValue.ForeColor = safetyError.Contains("HourAngle") ? unsafeColor : safeColor;
@@ -252,7 +260,7 @@ namespace Dash
             if (wisedome.Slewing)
             {
                 if (wisedome.MotorsAreActive)
-                    annunciatorDome.Cadence = ASCOM.Controls.CadencePattern.BlinkFast;
+                    annunciatorDome.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
                 else
                 {
                     // STUCK: Slewing but not moving
@@ -273,7 +281,7 @@ namespace Dash
                 primaryMotor = wisetele.EastMotor;
             if (primaryMotor != null)
             {
-                annunciatorPrimary.Cadence = ASCOM.Controls.CadencePattern.BlinkFast;
+                annunciatorPrimary.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
                 currentRate = primaryMotor.currentRate;
             }
 
@@ -285,7 +293,7 @@ namespace Dash
                 secondaryMotor = wisetele.SouthMotor;
             if (secondaryMotor != null)
             {
-                annunciatorSecondary.Cadence = ASCOM.Controls.CadencePattern.BlinkFast;
+                annunciatorSecondary.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
                 currentRate = secondaryMotor.currentRate;
             }
 
@@ -306,7 +314,7 @@ namespace Dash
             string tip;
             if (wisesite.computerControl == null)
             {
-                annunciatorComputerControl.Cadence = ASCOM.Controls.CadencePattern.BlinkSlow;
+                annunciatorComputerControl.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
                 tip = "Cannot read the computer control switch!";
             }
             else if (wisesite.computerControl.IsSafe)
@@ -318,7 +326,7 @@ namespace Dash
             else
             {
                 annunciatorComputerControl.Text = "No computer control";
-                annunciatorComputerControl.Cadence = ASCOM.Controls.CadencePattern.BlinkSlow;
+                annunciatorComputerControl.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
                 tip = "The computer control switch is OFF!";
             }
             toolTip.SetToolTip(annunciatorComputerControl, tip);
@@ -341,7 +349,7 @@ namespace Dash
                 else
                 {
                     annunciatorDomePlatform.Text = "Platform is RAISED";
-                    annunciatorDomePlatform.Cadence = ASCOM.Controls.CadencePattern.BlinkSlow;
+                    annunciatorDomePlatform.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
                     tip = "Dome platform is NOT at its lowest position!";
                 }
             }
@@ -360,7 +368,7 @@ namespace Dash
                 if (wisesite.safeToOperate == null)
                 {
                     annunciatorSafeToOperate.Text = "Safe to operate ???";
-                    annunciatorSafeToOperate.Cadence = ASCOM.Controls.CadencePattern.BlinkSlow;
+                    annunciatorSafeToOperate.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
                     tip = "Cannot connect to the SafeToOpen driver!";
                 }
                 else if (wisesite.safeToOperate.IsSafe)
@@ -372,7 +380,7 @@ namespace Dash
                 else
                 {
                     annunciatorSafeToOperate.Text = "Not safe to operate";
-                    annunciatorSafeToOperate.Cadence = ASCOM.Controls.CadencePattern.BlinkSlow;
+                    annunciatorSafeToOperate.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
                     tip = string.Join("\n", wisesafetooperate.UnsafeReasons);
                 }
             }
@@ -513,7 +521,7 @@ namespace Dash
             #region RefreshFocuser
             labelFocusCurrentValue.Text = wisefocuser.position.ToString();
             focuserStatus.Show(wisefocuser.Status);
-            annunciatorFocus.Cadence = wisefocuser.Status.StartsWith("Moving") ? ASCOM.Controls.CadencePattern.BlinkFast : ASCOM.Controls.CadencePattern.SteadyOff;
+            annunciatorFocus.Cadence = wisefocuser.Status.StartsWith("Moving") ? ASCOM.Controls.CadencePattern.SteadyOn : ASCOM.Controls.CadencePattern.SteadyOff;
             #endregion
 
             #region RefreshFilterWheel
@@ -523,7 +531,7 @@ namespace Dash
             //    annunciatorFilterWheel.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
             //} else
             //{
-            //    annunciatorFilterWheel.Cadence = ASCOM.Controls.CadencePattern.BlinkSlow;
+            //    annunciatorFilterWheel.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
             //    filterWheelStatus.Show(fwstat);
             //}
             #endregion
@@ -571,6 +579,9 @@ namespace Dash
         #region TelescopeControl
         public void directionButton_MouseDown(object sender, MouseEventArgs e)
         {
+            if (!wisesite.computerControl.IsSafe)
+                telescopeStatus.Show(wisesite.computerControl.CommandString("unsafereasons", true), 1000, Statuser.Severity.Error);
+
             Button button = (Button)sender;
 
             List<Movement> movements = new List<Movement>();
@@ -612,7 +623,16 @@ namespace Dash
                 Directions.Add(m._direction.ToString());
             }
 
-            if (SafeAtCurrentCoords() || wisetele.SafeToMove(whichWay))
+            if (wisetele.BypassCoordinatesSafety)
+            {
+                string message = string.Format("Moving {0} at {1} (safety bypassed)", String.Join("-", Directions.ToArray()), WiseTele.RateName(handpadRate).Remove(0, 4));
+                telescopeStatus.Show(message, 0, Statuser.Severity.Good);
+                foreach (var m in movements)
+                {
+                    wisetele.HandpadMoveAxis(m._axis, m._rate);
+                }
+            }
+            else if (SafeAtCurrentCoords() || wisetele.SafeToMove(whichWay))
             {
                 string message = string.Format("Moving {0} at {1}", String.Join("-", Directions.ToArray()), WiseTele.RateName(handpadRate).Remove(0, 4));
                 telescopeStatus.Show(message, 0, Statuser.Severity.Good);
@@ -1505,7 +1525,7 @@ namespace Dash
                 safetyOverrideToolStripMenuItem.Text = menuText + Const.checkmark;
                 _bypassSafety = true;
             }
-            wisetele.BypassSafety = _bypassSafety;
+            wisetele.BypassCoordinatesSafety = _bypassSafety;
         }
 
         public void StopEverything(Exception e = null)
