@@ -549,7 +549,7 @@ namespace Dash
             #region RefreshFocuser
             labelFocusCurrentValue.Text = wisefocuser.position.ToString();
             focuserStatus.Show(wisefocuser.Status);
-            annunciatorFocus.Cadence = wisefocuser.Status.StartsWith("Moving") ? ASCOM.Controls.CadencePattern.SteadyOn : ASCOM.Controls.CadencePattern.SteadyOff;
+            annunciatorFocus.Cadence = wisefocuser.IsMoving ? ASCOM.Controls.CadencePattern.SteadyOn : ASCOM.Controls.CadencePattern.SteadyOff;
             #endregion
 
             #region RefreshFilterWheel

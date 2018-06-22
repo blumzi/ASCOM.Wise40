@@ -247,9 +247,9 @@ namespace ASCOM.Wise40
             Directory.CreateDirectory(Path.GetDirectoryName(Const.humanInterventionFilePath));
             using (StreamWriter sw = new StreamWriter(Const.humanInterventionFilePath))
             {
-                sw.WriteLine("Operator: " + oper);
-                sw.WriteLine("Reason: " + reason);
-                sw.WriteLine("Created: " + DateTime.Now.ToString());
+                sw.WriteLine("Operator: \"" + oper + "\"");
+                sw.WriteLine("Reason: \"" + reason + "\"");
+                sw.WriteLine("Created: " + DateTime.Now.ToString("MMM dd yyyy, hh:mm:ss tt"));
             }
 
             while (! File.Exists(Const.humanInterventionFilePath))

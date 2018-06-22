@@ -172,6 +172,7 @@
             this.annunciatorPrimary = new ASCOM.Controls.Annunciator();
             this.annunciatorSecondary = new ASCOM.Controls.Annunciator();
             this.annunciatorDome = new ASCOM.Controls.Annunciator();
+            this.annunciatorShutter = new ASCOM.Controls.Annunciator();
             this.annunciatorRateSlew = new ASCOM.Controls.Annunciator();
             this.annunciatorRateSet = new ASCOM.Controls.Annunciator();
             this.annunciatorRateGuide = new ASCOM.Controls.Annunciator();
@@ -221,7 +222,6 @@
             this.labelRainRateValue = new System.Windows.Forms.Label();
             this.timerRefreshDisplay = new System.Windows.Forms.Timer(this.components);
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
-            this.annunciatorShutter = new ASCOM.Controls.Annunciator();
             this.tableLayoutMain.SuspendLayout();
             this.groupBoxFocuser.SuspendLayout();
             this.groupBoxDomeGroup.SuspendLayout();
@@ -1555,14 +1555,14 @@
             // telescopeToolStripMenuItem
             // 
             this.telescopeToolStripMenuItem.Name = "telescopeToolStripMenuItem";
-            this.telescopeToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
+            this.telescopeToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
             this.telescopeToolStripMenuItem.Text = "Telescope";
             this.telescopeToolStripMenuItem.Click += new System.EventHandler(this.telescopeToolStripMenuItem_Click);
             // 
             // domeToolStripMenuItem
             // 
             this.domeToolStripMenuItem.Name = "domeToolStripMenuItem";
-            this.domeToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
+            this.domeToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
             this.domeToolStripMenuItem.Text = "Dome";
             this.domeToolStripMenuItem.Click += new System.EventHandler(this.domeToolStripMenuItem_Click);
             // 
@@ -1571,7 +1571,7 @@
             this.cloudSensorToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.dataFileToolStripMenuItem});
             this.cloudSensorToolStripMenuItem.Name = "cloudSensorToolStripMenuItem";
-            this.cloudSensorToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
+            this.cloudSensorToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
             this.cloudSensorToolStripMenuItem.Text = "CloudSensor";
             // 
             // dataFileToolStripMenuItem
@@ -1592,7 +1592,7 @@
             this.vantagePro2ToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.reportFileToolStripMenuItem});
             this.vantagePro2ToolStripMenuItem.Name = "vantagePro2ToolStripMenuItem";
-            this.vantagePro2ToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
+            this.vantagePro2ToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
             this.vantagePro2ToolStripMenuItem.Text = "VantagePro2";
             // 
             // reportFileToolStripMenuItem
@@ -1611,7 +1611,7 @@
             // toolStripMenuItemSafeToOperate
             // 
             this.toolStripMenuItemSafeToOperate.Name = "toolStripMenuItemSafeToOperate";
-            this.toolStripMenuItemSafeToOperate.Size = new System.Drawing.Size(235, 22);
+            this.toolStripMenuItemSafeToOperate.Size = new System.Drawing.Size(158, 22);
             this.toolStripMenuItemSafeToOperate.Text = "SafeToOperate";
             this.toolStripMenuItemSafeToOperate.Click += new System.EventHandler(this.toolStripMenuItemSafeToOpen_Click);
             // 
@@ -1623,7 +1623,7 @@
             this.manage3FiltersToolStripMenuItem});
             this.toolStripMenuItemFilterWheel.Enabled = false;
             this.toolStripMenuItemFilterWheel.Name = "toolStripMenuItemFilterWheel";
-            this.toolStripMenuItemFilterWheel.Size = new System.Drawing.Size(235, 22);
+            this.toolStripMenuItemFilterWheel.Size = new System.Drawing.Size(158, 22);
             this.toolStripMenuItemFilterWheel.Text = "Filter Wheel";
             this.toolStripMenuItemFilterWheel.Click += new System.EventHandler(this.toolStripMenuItemFilterWheel_Click);
             // 
@@ -1651,13 +1651,13 @@
             // toolStripMenuItem5
             // 
             this.toolStripMenuItem5.Name = "toolStripMenuItem5";
-            this.toolStripMenuItem5.Size = new System.Drawing.Size(235, 22);
+            this.toolStripMenuItem5.Size = new System.Drawing.Size(158, 22);
             this.toolStripMenuItem5.Text = "  ";
             // 
             // tracingToolStripMenuItem
             // 
             this.tracingToolStripMenuItem.Name = "tracingToolStripMenuItem";
-            this.tracingToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
+            this.tracingToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
             this.tracingToolStripMenuItem.Text = "Tracing";
             this.tracingToolStripMenuItem.ToolTipText = "Toggle tracing ";
             this.tracingToolStripMenuItem.Click += new System.EventHandler(this.tracingToolStripMenuItem_Click);
@@ -1676,7 +1676,7 @@
             this.debugAllToolStripMenuItem,
             this.debugNoneToolStripMenuItem});
             this.debuggingToolStripMenuItem1.Name = "debuggingToolStripMenuItem1";
-            this.debuggingToolStripMenuItem1.Size = new System.Drawing.Size(235, 22);
+            this.debuggingToolStripMenuItem1.Size = new System.Drawing.Size(158, 22);
             this.debuggingToolStripMenuItem1.Text = "Debugging";
             // 
             // debugASCOMToolStripMenuItem
@@ -1758,7 +1758,7 @@
             // toolStripMenuItem2
             // 
             this.toolStripMenuItem2.Name = "toolStripMenuItem2";
-            this.toolStripMenuItem2.Size = new System.Drawing.Size(235, 22);
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(158, 22);
             this.toolStripMenuItem2.Text = "  ";
             // 
             // safetyOverrideToolStripMenuItem
@@ -1772,7 +1772,7 @@
             // saveToProfileToolStripMenuItem
             // 
             this.saveToProfileToolStripMenuItem.Name = "saveToProfileToolStripMenuItem";
-            this.saveToProfileToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
+            this.saveToProfileToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
             this.saveToProfileToolStripMenuItem.Text = "Save To Profile";
             this.saveToProfileToolStripMenuItem.ToolTipText = "Save settings to the persistent profile";
             this.saveToProfileToolStripMenuItem.Click += new System.EventHandler(this.saveToProfileToolStripMenuItem_Click);
@@ -2063,7 +2063,8 @@
             this.annunciatorTrack.Location = new System.Drawing.Point(3, 0);
             this.annunciatorTrack.Mute = false;
             this.annunciatorTrack.Name = "annunciatorTrack";
-            this.annunciatorTrack.Size = new System.Drawing.Size(48, 17);
+            this.annunciatorTrack.Padding = new System.Windows.Forms.Padding(8, 0, 0, 0);
+            this.annunciatorTrack.Size = new System.Drawing.Size(56, 17);
             this.annunciatorTrack.TabIndex = 0;
             this.annunciatorTrack.Text = "TRACK";
             // 
@@ -2076,7 +2077,7 @@
             this.annunciatorSlew.Font = new System.Drawing.Font("Consolas", 10F);
             this.annunciatorSlew.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorSlew.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorSlew.Location = new System.Drawing.Point(57, 0);
+            this.annunciatorSlew.Location = new System.Drawing.Point(65, 0);
             this.annunciatorSlew.Mute = false;
             this.annunciatorSlew.Name = "annunciatorSlew";
             this.annunciatorSlew.Size = new System.Drawing.Size(40, 17);
@@ -2093,7 +2094,7 @@
             this.annunciatorPulse.Font = new System.Drawing.Font("Consolas", 10F);
             this.annunciatorPulse.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorPulse.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorPulse.Location = new System.Drawing.Point(103, 0);
+            this.annunciatorPulse.Location = new System.Drawing.Point(111, 0);
             this.annunciatorPulse.Mute = false;
             this.annunciatorPulse.Name = "annunciatorPulse";
             this.annunciatorPulse.Size = new System.Drawing.Size(48, 17);
@@ -2112,8 +2113,8 @@
             this.annunciatorPrimary.Location = new System.Drawing.Point(3, 17);
             this.annunciatorPrimary.Mute = false;
             this.annunciatorPrimary.Name = "annunciatorPrimary";
-            this.annunciatorPrimary.Padding = new System.Windows.Forms.Padding(20, 0, 0, 0);
-            this.annunciatorPrimary.Size = new System.Drawing.Size(44, 17);
+            this.annunciatorPrimary.Padding = new System.Windows.Forms.Padding(10, 0, 0, 0);
+            this.annunciatorPrimary.Size = new System.Drawing.Size(34, 17);
             this.annunciatorPrimary.TabIndex = 2;
             this.annunciatorPrimary.Text = "RA";
             this.annunciatorPrimary.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -2127,7 +2128,7 @@
             this.annunciatorSecondary.Font = new System.Drawing.Font("Consolas", 10F);
             this.annunciatorSecondary.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorSecondary.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorSecondary.Location = new System.Drawing.Point(53, 17);
+            this.annunciatorSecondary.Location = new System.Drawing.Point(43, 17);
             this.annunciatorSecondary.Mute = false;
             this.annunciatorSecondary.Name = "annunciatorSecondary";
             this.annunciatorSecondary.Size = new System.Drawing.Size(32, 17);
@@ -2143,12 +2144,29 @@
             this.annunciatorDome.Font = new System.Drawing.Font("Consolas", 10F);
             this.annunciatorDome.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorDome.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorDome.Location = new System.Drawing.Point(91, 17);
+            this.annunciatorDome.Location = new System.Drawing.Point(81, 17);
             this.annunciatorDome.Mute = false;
             this.annunciatorDome.Name = "annunciatorDome";
             this.annunciatorDome.Size = new System.Drawing.Size(40, 17);
             this.annunciatorDome.TabIndex = 4;
             this.annunciatorDome.Text = "DOME";
+            // 
+            // annunciatorShutter
+            // 
+            this.annunciatorShutter.ActiveColor = System.Drawing.Color.Green;
+            this.annunciatorShutter.AutoSize = true;
+            this.annunciatorShutter.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
+            this.annunciatorShutter.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            this.annunciatorPanelStatus.SetFlowBreak(this.annunciatorShutter, true);
+            this.annunciatorShutter.Font = new System.Drawing.Font("Consolas", 10F);
+            this.annunciatorShutter.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciatorShutter.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciatorShutter.Location = new System.Drawing.Point(127, 17);
+            this.annunciatorShutter.Mute = false;
+            this.annunciatorShutter.Name = "annunciatorShutter";
+            this.annunciatorShutter.Size = new System.Drawing.Size(32, 17);
+            this.annunciatorShutter.TabIndex = 12;
+            this.annunciatorShutter.Text = "SHU";
             // 
             // annunciatorRateSlew
             // 
@@ -2211,7 +2229,8 @@
             this.annunciatorFilterWheel.Location = new System.Drawing.Point(3, 51);
             this.annunciatorFilterWheel.Mute = false;
             this.annunciatorFilterWheel.Name = "annunciatorFilterWheel";
-            this.annunciatorFilterWheel.Size = new System.Drawing.Size(64, 17);
+            this.annunciatorFilterWheel.Padding = new System.Windows.Forms.Padding(2, 0, 0, 0);
+            this.annunciatorFilterWheel.Size = new System.Drawing.Size(66, 17);
             this.annunciatorFilterWheel.TabIndex = 6;
             this.annunciatorFilterWheel.Text = "FILTERS";
             // 
@@ -2224,7 +2243,7 @@
             this.annunciatorFocus.Font = new System.Drawing.Font("Consolas", 10F);
             this.annunciatorFocus.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorFocus.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorFocus.Location = new System.Drawing.Point(73, 51);
+            this.annunciatorFocus.Location = new System.Drawing.Point(75, 51);
             this.annunciatorFocus.Mute = false;
             this.annunciatorFocus.Name = "annunciatorFocus";
             this.annunciatorFocus.Size = new System.Drawing.Size(48, 17);
@@ -2239,7 +2258,7 @@
             this.annunciatorWeather.Font = new System.Drawing.Font("Consolas", 10F);
             this.annunciatorWeather.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorWeather.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorWeather.Location = new System.Drawing.Point(127, 51);
+            this.annunciatorWeather.Location = new System.Drawing.Point(129, 51);
             this.annunciatorWeather.Mute = false;
             this.annunciatorWeather.Name = "annunciatorWeather";
             this.annunciatorWeather.Size = new System.Drawing.Size(32, 17);
@@ -2837,23 +2856,6 @@
             // 
             this.timerRefreshDisplay.Enabled = true;
             this.timerRefreshDisplay.Tick += new System.EventHandler(this.RefreshDisplay);
-            // 
-            // annunciatorShutter
-            // 
-            this.annunciatorShutter.ActiveColor = System.Drawing.Color.Green;
-            this.annunciatorShutter.AutoSize = true;
-            this.annunciatorShutter.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.annunciatorShutter.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
-            this.annunciatorPanelStatus.SetFlowBreak(this.annunciatorShutter, true);
-            this.annunciatorShutter.Font = new System.Drawing.Font("Consolas", 10F);
-            this.annunciatorShutter.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorShutter.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorShutter.Location = new System.Drawing.Point(137, 17);
-            this.annunciatorShutter.Mute = false;
-            this.annunciatorShutter.Name = "annunciatorShutter";
-            this.annunciatorShutter.Size = new System.Drawing.Size(32, 17);
-            this.annunciatorShutter.TabIndex = 12;
-            this.annunciatorShutter.Text = "SHU";
             // 
             // FormDash
             // 
