@@ -9,6 +9,22 @@ using ASCOM.Wise40.Common;
 
 namespace ASCOM.Wise40.Hardware
 {
+    public class FullStopper
+    {
+        private static List<WisePin> outputPins = new List<WisePin>();
+
+        public void Register(WisePin pin)
+        {
+            outputPins.Add(pin);
+        }
+
+        public void StopAll()
+        {
+            foreach (var pin in outputPins)
+                pin.SetOff();
+        }
+    }
+
     public class WisePin : WiseObject, IConnectable, IDisposable, IOnOff
     {
         private int bit;
@@ -16,7 +32,7 @@ namespace ASCOM.Wise40.Hardware
         private DigitalPortDirection dir;
         private bool inverse;
         private bool _connected = false;
-        private Const.Direction _direction = Const.Direction.None;  // Generally speking - does it increase or decrease an encoder value
+        private Const.Direction _direction = Const.Direction.None;  // Generally speaking - does it increase or decrease an encoder value
 
         public WisePin(string name,
             WiseBoard brd,
