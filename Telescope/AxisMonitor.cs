@@ -112,7 +112,7 @@ namespace ASCOM.Wise40
 
             double value = (_axis == TelescopeAxes.axisPrimary) ?
                     (_whileTracking ? wisetele.RightAscension : wisetele.HAEncoder.Value) :
-                    wisetele.Declination;
+                    wisetele.DecEncoder.Angle.Radians;
 
             if (_previousValue == double.NaN)
             {
