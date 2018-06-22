@@ -225,7 +225,7 @@ namespace ASCOM.Wise40 //.Telescope
                 //                HA_Corrected := HA_Corrected - 2 * pi
                 //      end;
                 #endregion
-                if (_decEncoder.FlippedOver90Degrees)
+                if (_decEncoder.DecOver90Degrees)
                 {
                     ret.Radians += Math.PI;     // Add 12 hours
                 }

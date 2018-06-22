@@ -6,11 +6,11 @@ using MccDaq;
 using ASCOM.Wise40.Common;
 using ASCOM.Wise40.Hardware;
 
-namespace ASCOM.Wise40 //.Telescope
+namespace ASCOM.Wise40
 {
     public class WiseDecEncoder : WiseObject, IConnectable, IDisposable, IEncoder
     {
-        private /*uint*/ double _daqsValue;
+        private double _daqsValue;
 
         private WiseEncoder axisEncoder, wormEncoder;
 
@@ -58,8 +58,13 @@ namespace ASCOM.Wise40 //.Telescope
 
             Name = name;
 
-            _angle = Simulated ?
-                Angle.FromDegrees(90.0, Angle.Type.Dec) - wisesite.Latitude :
+            //_angle = Simulated ?
+            //    Angle.FromDegrees(90.0, Angle.Type.Dec) - wisesite.Latitude :
+            //    Angle.FromRadians((Value * DecMultiplier) + DecCorrection, Angle.Type.Dec);
+
+            Angle = Simulated ?
+                //Angle.FromDegrees(90.0, Angle.Type.Dec) - wisesite.Latitude :
+                Angle.FromDegrees(85, Angle.Type.Dec) :
                 Angle.FromRadians((Value * DecMultiplier) + DecCorrection, Angle.Type.Dec);
         }
 
@@ -162,14 +167,12 @@ namespace ASCOM.Wise40 //.Telescope
         {
             get
             {
-
-                if(! Simulated)
-                    _angle.Radians = (Value * DecMultiplier) + DecCorrection;
+                _angle.Radians = (Value * DecMultiplier) + DecCorrection;
 
                 Angle ret = _angle;
 
-                if (FlippedOver90Degrees)
-                    ret.Radians = Math.PI - ret.Radians;
+                //if (DecOver90Degrees)
+                //    ret.Radians = halfPI - (ret.Radians - halfPI);
 
                 return ret;
             }
@@ -178,25 +181,27 @@ namespace ASCOM.Wise40 //.Telescope
             {
                 if (Simulated)
                 {
+                    if (_angle == null)
+                        _angle = new Angle();
                     _angle.Radians = value.Radians;
                     Value = (uint) Math.Round((_angle.Radians - DecCorrection) / DecMultiplier);
                 }
             }
         }
 
-        public bool FlippedOver90Degrees
+        public bool DecOver90Degrees
         {
             get
             {
                 return false;
-                
-                //bool flipped = _angle.Radians > halfPI;
+
+                //bool over90 = _angle.Radians > halfPI;
 
                 //#region debug
                 //debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                //    "FlippedOver90Degrees: radians: {0}, ret: {1}", _angle.Radians, flipped);
+                //    "DecOver90Degrees: radians: {0} (delta: {1}), ret: {2}", _angle.Radians, _angle.Radians - halfPI, over90);
                 //#endregion
-                //return flipped;
+                //return over90;
             }
         }
 
@@ -208,29 +213,30 @@ namespace ASCOM.Wise40 //.Telescope
 
                 if (!Simulated)
                 {
-                    double current_value = Value;
-                    double radians = (current_value * DecMultiplier) + DecCorrection;
+                double current_value = Value;
+                double radians = (current_value * DecMultiplier) + DecCorrection;
 
-                    if (radians > Math.PI)
-                        radians -= twoPI;
-                    _angle.Radians = radians;
+                if (radians > Math.PI)
+                    radians -= twoPI;
+                _angle.Radians = radians;
 
-                    ret = _angle;
-                    if (FlippedOver90Degrees)
-                    {
-                        #region debug
-                        debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDecEncoder: Flipped");
-                        #endregion
-                        ret.Radians = Math.PI - ret.Radians;
-                    }
-
+                ret = _angle;
+                if (DecOver90Degrees)
+                {
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugEncoders,
-                        "[{0}] {1} Degrees - Value: {2}, deg: {3}", this.GetHashCode(), Name, current_value, ret);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDecEncoder:Degrees: over90");
                     #endregion
+                    ret.Radians = Math.PI - ret.Radians;
+                }
+
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugEncoders,
+                    "[{0}] {1} Degrees - Value: {2}, deg: {3}", this.GetHashCode(), Name, current_value, ret);
+                #endregion
                 }
 
                 return ret.Degrees;
+                //return Angle.Degrees;
             }
 
             set
@@ -238,7 +244,7 @@ namespace ASCOM.Wise40 //.Telescope
                 _angle.Degrees = value;
                 if (Simulated)
                 {
-                    _daqsValue = /*(uint)*/ ((_angle.Radians - DecCorrection) / DecMultiplier);
+                    _daqsValue = (_angle.Radians - DecCorrection) / DecMultiplier;
                 }
             }
         }

@@ -141,7 +141,7 @@ namespace ASCOM.Wise40
         public WisePin TrackPin;
         public WiseVirtualMotor NorthMotor, SouthMotor, EastMotor, WestMotor, TrackingMotor;
 
-        private bool _bypassSafety = false;
+        private bool _bypassCoordinatesSafety = false;
         private bool _syncingDomePosition = false;
 
         private bool _atPark;
@@ -165,8 +165,6 @@ namespace ASCOM.Wise40
 
         System.Threading.Timer trackingTimer;
         const int trackingDomeAdjustmentInterval = 30 * 1000;   // half a minute
-
-        private string compControlOrPlatformNotSafe = "Computer control switch is OFF or platform is RAISED (not safe)";
 
         /// <summary>
         /// Usually two or three tasks are used to perform a slew:
@@ -222,7 +220,7 @@ namespace ASCOM.Wise40
         internal static string driverID = Const.wiseTelescopeDriverID;
         internal static string astrometricAccuracyProfileName = "Astrometric accuracy";
         internal static string traceStateProfileName = "Tracing";
-        internal static string bypassSafetyProfileName = "BypassSafety";
+        internal static string bypassCoordinatesSafetyProfileName = "BypassCoordinatesSafety";
 
         public class MovementParameters
         {
@@ -929,7 +927,7 @@ namespace ASCOM.Wise40
 
                 if (value)
                 {
-                    if (!wisecomputercontrol.IsSafe && !BypassSafety)
+                    if (!wisecomputercontrol.IsSafe && !BypassCoordinatesSafety)
                         throw new ASCOM.InvalidOperationException(wisecomputercontrol.UnsafeReasons());
 
                     _lastTrackingLST = wisesite.LocalSiderealTime.Hours;
@@ -1143,15 +1141,14 @@ namespace ASCOM.Wise40
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, string.Format("HandpadMoveAxis({0}, {1})", Axis, Rate));
             #endregion debug
 
-            if (!wisecomputercontrol.IsSafe && !BypassSafety)
-                throw new ASCOM.InvalidOperationException(wisecomputercontrol.UnsafeReasons());
-
             Const.AxisDirection direction = (Rate == Const.rateStopped) ? Const.AxisDirection.None :
                 (Rate < 0.0) ? Const.AxisDirection.Decreasing : Const.AxisDirection.Increasing;
 
             inactivityMonitor.StartActivity(InactivityMonitor.Activity.Handpad);
             _moveAxis(Axis, Rate, direction, false);
-            safetyMonitorTimer.EnableIfNeeded(SafetyMonitorTimer.ActionWhenNotSafe.StopMotors);
+
+            if (! BypassCoordinatesSafety)
+                safetyMonitorTimer.EnableIfNeeded(SafetyMonitorTimer.ActionWhenNotSafe.StopMotors);
         }
 
         public void MoveAxis(TelescopeAxes Axis, double Rate)
@@ -1163,7 +1160,7 @@ namespace ASCOM.Wise40
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, string.Format("MoveAxis({0}, {1})", Axis, Rate));
             #endregion debug
 
-            if (!wisecomputercontrol.IsSafe && !BypassSafety)
+            if (!wisecomputercontrol.IsSafe && !BypassCoordinatesSafety)
                 throw new ASCOM.InvalidOperationException(wisecomputercontrol.UnsafeReasons());
 
             Const.AxisDirection direction = (Rate == Const.rateStopped) ? Const.AxisDirection.None :
@@ -1292,7 +1289,10 @@ namespace ASCOM.Wise40
                 #endregion debug
                 m.SetOn(Rate);
             }
-            safetyMonitorTimer.EnableIfNeeded(SafetyMonitorTimer.ActionWhenNotSafe.Backoff);
+
+            if (! BypassCoordinatesSafety)
+                safetyMonitorTimer.EnableIfNeeded(SafetyMonitorTimer.ActionWhenNotSafe.Backoff);
+
             return true;
         }
 
@@ -1317,7 +1317,6 @@ namespace ASCOM.Wise40
 
             Angle ra = Angle.FromHours(_instance.TargetRightAscension, Angle.Type.RA);
             Angle dec = Angle.FromDegrees(_instance.TargetDeclination, Angle.Type.Dec);
-            string notSafe;
 
             #region trace
             traceLogger.LogMessage("SlewToTargetAsync", string.Format("Started: ra: {0}, dec: {1}", ra, dec));
@@ -1332,14 +1331,14 @@ namespace ASCOM.Wise40
             if (!Tracking)
                 throw new InvalidOperationException("Cannot SlewToTargetAsync while NOT Tracking");
 
-            notSafe = SafeAtCoordinates(ra, dec);
+            string notSafe = SafeAtCoordinates(ra, dec);
             if (notSafe != string.Empty)
                 throw new InvalidOperationException(notSafe);
 
             if (!wisecomputercontrol.IsSafe)
                 throw new InvalidOperationException(wisecomputercontrol.UnsafeReasons());
-
-            _slewToCoordinatesAsync(_targetRightAscension, _targetDeclination);
+            
+            _doSlewToCoordinatesAsync(_targetRightAscension, _targetDeclination);
         }
 
         /// <summary>
@@ -1399,6 +1398,9 @@ namespace ASCOM.Wise40
 
         public string SafeAtCoordinates(Angle ra, Angle dec)
         {
+            if (BypassCoordinatesSafety)
+                return string.Empty;
+
             Angle altLimit = new Angle(16.0, Angle.Type.Alt);
             Angle haLimit = Angle.FromHours(7.0, Angle.Type.HA);
             Angle lower_decLimit = Angle.FromDegrees(-35.0, Angle.Type.Dec);
@@ -1425,7 +1427,8 @@ namespace ASCOM.Wise40
             if (dec < lower_decLimit)
                 reasons.Add(string.Format("Declination too low: {0} < {1}", dec.ToNiceString(), lower_decLimit.ToNiceString()));
 
-            double ha = astroutils.ConditionHA((wisesite.LocalSiderealTime - ra).Hours);
+            //double ha = astroutils.ConditionHA((wisesite.LocalSiderealTime - ra).Hours);
+            double ha = _instance.HourAngle;
             if (Math.Abs(ha) > haLimit.Hours)
                 reasons.Add(string.Format("HourAngle too high: Abs({0}) > {1}", ha, haLimit.ToNiceString()));
 
@@ -1585,7 +1588,7 @@ namespace ASCOM.Wise40
 
                 Task.Run(() =>
                 {
-                    _slewToCoordinatesAsync(RightAscension, Declination);
+                    _doSlewToCoordinatesAsync(RightAscension, Declination);
                 }, telescopeCT);
             }
             catch (AggregateException ae)
@@ -1973,8 +1976,8 @@ namespace ASCOM.Wise40
             domeCTS = new CancellationTokenSource();
             SyncDomePosition = false;
         }
-
-        private void _slewToCoordinatesAsync(Angle RightAscension, Angle Declination)
+                      
+        private void _doSlewToCoordinatesAsync(Angle RightAscension, Angle Declination)
         {
             CheckCoordinateSanity(Angle.Type.RA, RightAscension.Hours);
             CheckCoordinateSanity(Angle.Type.Dec, Declination.Degrees);
@@ -2123,7 +2126,7 @@ namespace ASCOM.Wise40
 
             try
             {
-                _slewToCoordinatesAsync(ra, dec);
+                _doSlewToCoordinatesAsync(ra, dec);
             }
             catch (Exception e)
             {
@@ -2133,6 +2136,82 @@ namespace ASCOM.Wise40
                 #endregion
             }
         }
+
+        public void _slewToCoordinatesAsync(Angle RightAscension, Angle Declination)
+        {
+            //if (DecOver90Degrees)
+            //{
+            //    telescopeCT = telescopeCTS.Token;
+            //    Task southScooter = Task.Run(() =>
+            //    {
+            //        ScootSouth();
+            //    }, telescopeCT).ContinueWith((scooter) =>
+            //    {
+            //        #region debug
+            //        debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+            //            "southScooter completed with status: {0}", scooter.Status.ToString());
+            //        #endregion
+            //        _doSlewToCoordinatesAsync(RightAscension, Declination);
+            //    }, TaskContinuationOptions.ExecuteSynchronously);
+            //}
+            //else
+                _doSlewToCoordinatesAsync(RightAscension, Declination);
+        }
+
+        //public void ScootSouth()
+        //{
+        //    if (!DecOver90Degrees)
+        //        return;
+
+        //    #region debug
+        //    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Scooting South from {0}, {1}",
+        //        Angle.FromHours(_instance.RightAscension).ToNiceString(),
+        //        Angle.FromDegrees(_instance.Declination).ToNiceString());
+        //    #endregion
+            
+        //    double targetRadians = Angle.Deg2Rad(89.5);
+
+        //    _movingToSafety = true;     // make Slewing true
+
+        //    while (true)
+        //    {
+        //        double remainingRadians = DecEncoder._angle.Radians - targetRadians;
+        //        double selectedRate = Const.rateStopped;
+
+        //        // Select the rate at which to move
+        //        foreach (var rate in rates)
+        //            if (remainingRadians <= _instance.movementParameters[TelescopeAxes.axisSecondary][rate].minimalMovement.Radians) {
+        //                selectedRate = rate;
+        //                break;
+        //            }
+        //        if (selectedRate == Const.rateStopped)
+        //        {
+        //            // Couldn't find a rate at which to move
+        //            _movingToSafety = false;
+        //            return;
+        //        }
+
+        //        // The rate is selected, get moving
+        //        _moveAxis(TelescopeAxes.axisSecondary, selectedRate, Const.AxisDirection.Decreasing, false);
+        //        MovementParameters mp = _instance.movementParameters[TelescopeAxes.axisSecondary][selectedRate];
+        //        while (true)
+        //        {
+        //            remainingRadians = DecEncoder._angle.Radians - targetRadians;
+        //            if (telescopeCT.IsCancellationRequested || (remainingRadians <= 0 || remainingRadians <= mp.stopMovement.Radians))
+        //            {
+        //                StopAxisAndWaitForHalt(TelescopeAxes.axisSecondary);
+        //                _movingToSafety = false;
+        //                return;
+        //            }
+        //            #region debug
+        //            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "ScootSouth: at {0}, remainingRadians: {1}, sleeping 10 millis ...",
+        //                selectedRate.ToString(), remainingRadians);
+        //            #endregion
+                    
+        //            Thread.Sleep(10);
+        //        }
+        //    }
+        //}
 
         public void Unpark()
         {
@@ -2867,7 +2946,7 @@ namespace ASCOM.Wise40
                     wisesite.astrometricAccuracy = acc;
                 else
                     wisesite.astrometricAccuracy = Accuracy.Full;
-                _bypassSafety = Convert.ToBoolean(driverProfile.GetValue(driverID, bypassSafetyProfileName, string.Empty, false.ToString()));
+                _bypassCoordinatesSafety = Convert.ToBoolean(driverProfile.GetValue(driverID, bypassCoordinatesSafetyProfileName, string.Empty, false.ToString()));
             }
 
             using (Profile driverProfile = new Profile() { DeviceType = "Dome" })
@@ -2883,7 +2962,7 @@ namespace ASCOM.Wise40
             {
                 driverProfile.WriteValue(driverID, traceStateProfileName, traceLogger.Enabled.ToString());
                 driverProfile.WriteValue(driverID, astrometricAccuracyProfileName, wisesite.astrometricAccuracy.ToString());
-                driverProfile.WriteValue(driverID, bypassSafetyProfileName, _bypassSafety.ToString());
+                driverProfile.WriteValue(driverID, bypassCoordinatesSafetyProfileName, _bypassCoordinatesSafety.ToString());
             }
 
             using (Profile driverProfile = new Profile() { DeviceType = "Dome" })
@@ -2914,18 +2993,25 @@ namespace ASCOM.Wise40
             }
         }
 
-        public bool BypassSafety
+        public bool BypassCoordinatesSafety
         {
             get
             {
-                return _bypassSafety;
+                return _bypassCoordinatesSafety;
             }
 
             set
             {
-                _bypassSafety = value;
+                _bypassCoordinatesSafety = value;
             }
         }
 
+        //public bool DecOver90Degrees
+        //{
+        //    get
+        //    {
+        //        return DecEncoder.DecOver90Degrees;
+        //    }
+        //}
     }
 }
