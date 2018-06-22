@@ -143,9 +143,9 @@ namespace ASCOM.Wise40 //.Telescope
             this.checkBoxBypassSafety.AutoSize = true;
             this.checkBoxBypassSafety.Location = new System.Drawing.Point(24, 144);
             this.checkBoxBypassSafety.Name = "checkBoxBypassSafety";
-            this.checkBoxBypassSafety.Size = new System.Drawing.Size(93, 17);
+            this.checkBoxBypassSafety.Size = new System.Drawing.Size(152, 17);
             this.checkBoxBypassSafety.TabIndex = 16;
-            this.checkBoxBypassSafety.Text = "Bypass Safety";
+            this.checkBoxBypassSafety.Text = "Bypass Coordinates Safety";
             this.toolTip1.SetToolTip(this.checkBoxBypassSafety, "Dangerous!!!  Telescope will not perform safety checks!");
             this.checkBoxBypassSafety.UseVisualStyleBackColor = true;
             // 
