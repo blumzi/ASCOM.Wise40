@@ -597,7 +597,8 @@ namespace ASCOM.Wise40
             _instance.realMovementParameters[TelescopeAxes.axisPrimary][Const.rateSlew] = new MovementParameters()
             {
                 minimalMovement = new Angle("00h02m00.0s"),
-                stopMovement = new Angle("00h16m00.0s"),
+                //stopMovement = new Angle("00h16m00.0s"),      // Jun 14th, 2018 - was undershooting by 1deg (4min)
+                stopMovement = new Angle("00h20m00.0s"),
             };
 
             _instance.realMovementParameters[TelescopeAxes.axisPrimary][Const.rateSet] = new MovementParameters()
@@ -616,7 +617,8 @@ namespace ASCOM.Wise40
             _instance.realMovementParameters[TelescopeAxes.axisSecondary][Const.rateSlew] = new MovementParameters()
             {
                 minimalMovement = new Angle("00:30:00.0"),
-                stopMovement = new Angle("04:00:00.0"),
+                //stopMovement = new Angle("04:00:00.0"),       // Jun 14th, 2018 - was overshooting by 0.3deg
+                stopMovement = new Angle("04:30:00.0"),
             };
 
             _instance.realMovementParameters[TelescopeAxes.axisSecondary][Const.rateSet] = new MovementParameters()

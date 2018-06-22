@@ -244,13 +244,21 @@ namespace Dash
             TimeSpan ts = wisetele.inactivityMonitor.RemainingTime;
             if (ts == TimeSpan.MaxValue)
             {
+                // not started
                 labelCountdown.Text = "";
                 toolTip.SetToolTip(labelCountdown, "");
             }
+            else if (ts < new TimeSpan(0, 0, 0))
+            {
+                // no remaining time, idle
+                labelCountdown.Text = "Idle";
+                toolTip.SetToolTip(labelCountdown, "Idle (no activity in the last 15 minutes)");
+            }
             else
             {
+                // still some time till idle
                 labelCountdown.Text = string.Format("{0:D2}:{1:D2}", ts.Minutes, ts.Seconds);
-                toolTip.SetToolTip(labelCountdown, "Inactivity Countdown\n(time to Observatory Shutdown)");
+                toolTip.SetToolTip(labelCountdown, "Inactivity countdown");
             }
 
             annunciatorTrack.Cadence = wisetele.Tracking ? ASCOM.Controls.CadencePattern.SteadyOn : ASCOM.Controls.CadencePattern.SteadyOff;
@@ -264,11 +272,12 @@ namespace Dash
                 else
                 {
                     // STUCK: Slewing but not moving
-                    annunciatorDome.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+                    annunciatorDome.Cadence = ASCOM.Controls.CadencePattern.BlinkSlow;
                 }
             }
             else
                 annunciatorDome.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+
 
             WiseVirtualMotor primaryMotor = null, secondaryMotor = null;
             double currentRate = Const.rateStopped;
@@ -421,6 +430,25 @@ namespace Dash
                 shutterStatus.Show(domeSlaveDriver.ShutterStatus, 0, severity);
                 _lastShutterStatusUpdate = now;
             }
+
+            #region Shutter
+            switch (wisedome.ShutterState)
+            {
+                case ShutterState.shutterOpening:
+                    annunciatorShutter.ActiveColor = safeColor;
+                    annunciatorShutter.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+                    break;
+
+                case ShutterState.shutterClosing:
+                    annunciatorShutter.ActiveColor = unsafeColor;
+                    annunciatorShutter.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+                    break;
+
+                default:
+                    annunciatorShutter.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+                    break;
+            }
+            #endregion
             #endregion
 
             #region RefreshWeather

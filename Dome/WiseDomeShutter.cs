@@ -33,7 +33,7 @@ namespace ASCOM.Wise40
         private System.Threading.Timer _timer;
         private int _timeout;
 
-        private ShutterState _state;
+        private ShutterState _state = ShutterState.shutterClosed; // till we know better ...
         
         private static WiseObject wiseobject = new WiseObject();
         private static TimeSpan _simulatedAge = new TimeSpan(0, 0, 3);

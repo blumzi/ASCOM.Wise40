@@ -23,7 +23,6 @@ namespace ASCOM.Wise40.Hardware
     public class WiseVirtualMotor : WiseObject, IConnectable, IDisposable //, ISimulated
     {
         private WisePin motorPin, guideMotorPin, slewPin;
-        private List<WisePin> activePins = new List<WisePin>();
         private List<object> encoders;
         private System.Threading.Timer simulationTimer;
         public double currentRate;
@@ -75,16 +74,22 @@ namespace ASCOM.Wise40.Hardware
             rate = Math.Abs(rate);
             debugger.WriteLine(Debugger.DebugLevel.DebugMotors, "{0}: On at {1}", Name, WiseTele.RateName(rate));
 
-            if (rate == Const.rateSlew)
-                activePins = new List<WisePin>() { slewPin, motorPin };
-            else if (rate == Const.rateSet || rate == Const.rateTrack)
-                activePins = new List<WisePin>() { motorPin };
-            else if (rate == Const.rateGuide)
-                activePins = new List<WisePin>() { guideMotorPin };
             currentRate = rate;
+            switch (rate) {
+                case Const.rateSlew:
+                    slewPin.SetOn();
+                    motorPin.SetOn();
+                    break;
 
-            foreach (WisePin pin in activePins)
-                pin.SetOn();
+                case Const.rateSet:
+                case Const.rateTrack:
+                    motorPin.SetOn();
+                    break;
+
+                case Const.rateGuide:
+                    guideMotorPin.SetOn();
+                    break;
+            }
 
             if (Simulated)
             {
@@ -102,39 +107,35 @@ namespace ASCOM.Wise40.Hardware
             if (Simulated)
                 simulationTimer.Change(Timeout.Infinite, Timeout.Infinite);
 
-            if (activePins != null && activePins.Count > 0) {
-                foreach (WisePin pin in activePins)
-                {
-                    bool inUseByOtherAxis;
+            if (guideMotorPin != null && guideMotorPin.isOn)
+                guideMotorPin.SetOff();
 
-                    if (pin == slewPin)
-                    {
-                        inUseByOtherAxis = false;
-                        foreach (WiseVirtualMotor m in wisetele.axisMotors[_otherAxis])
-                            if (m.isOn)
-                            {
-                                inUseByOtherAxis = true;
-                                break;
-                            }
-                        if (!inUseByOtherAxis)
-                            pin.SetOff();
-                    } else
-                        pin.SetOff();
-                }
-                activePins.Clear();
-            }
+            if (motorPin != null && motorPin.isOn)
+                motorPin.SetOff();
+
             currentRate = Const.rateStopped;
+            if (slewPin == null || !slewPin.isOn)
+                return;
+
+            bool inUseByOtherAxis = false;
+            foreach (WiseVirtualMotor m in wisetele.axisMotors[_otherAxis])
+                if (m.currentRate == Const.rateSlew)
+                {
+                    inUseByOtherAxis = true;
+                    break;
+                }
+            if (!inUseByOtherAxis)
+                slewPin.SetOff();
         }
 
         public bool isOn
         {
             get
             {
-                List<WisePin> pins = new List<WisePin>() { motorPin, guideMotorPin };
-
-                foreach (var pin in pins)
-                    if (pin != null && pin.isOn)
-                        return true;
+                if (motorPin != null && motorPin.isOn)
+                    return true;
+                if (guideMotorPin != null && guideMotorPin.isOn)
+                    return true;
                 return false;
             }
         }

@@ -246,22 +246,18 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 labelActivity.ForeColor = unsafeColor;
             }
 
-            if (safe && inControl)
+            if (safe)
             {
                 labelConditions.Text = "Safe";
                 labelConditions.ForeColor = safeColor;
                 toolTip.SetToolTip(labelConditions, "");
-            } else
+            }
+            else
             {
                 labelConditions.Text = "Not safe";
                 labelConditions.ForeColor = unsafeColor;
-
-                if (! inControl)
-                    reasons = wisecomputercontrol.CommandString("unsafereasons", false);
-                else
-                    reasons = wisesafetooperate.CommandString("unsafereasons", false);
-
-                toolTip.SetToolTip(labelConditions, reasons.Replace(',', '\n'));
+                toolTip.SetToolTip(labelConditions,
+                    wisesafetooperate.CommandString("unsafereasons", false).Replace(',', '\n'));
             }
 
             if (_shuttingDown)
