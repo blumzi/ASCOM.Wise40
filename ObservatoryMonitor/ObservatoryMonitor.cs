@@ -128,16 +128,6 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
             wisesite.init();
             WiseSite.OpMode opMode = wisesite.OperationalMode;
-            //try
-            //{
-            //    RestartApps(opMode);
-            //    OpenConnections();
-            //}
-            //catch (Exception ex)
-            //{
-            //    MessageBox.Show(string.Format("Exception while connecting to ASCOM drivers:\n\t{0}", ex.Message));
-            //    Application.Exit();
-            //}
 
             switch (opMode)
             {
@@ -150,7 +140,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                     break;
             }
             labelOperatingMode.Text = opMode.ToString();
-            updateManualInterventionButton();
+            updateManualInterventionControls();
             UpdateOpModeControls(opMode);
         }
 
@@ -286,27 +276,32 @@ namespace ASCOM.Wise40.ObservatoryMonitor
         void RefreshDisplay()
         {
             DateTime localTime = DateTime.Now.ToLocalTime();
-            labelDate.Text = localTime.ToString("ddd, dd MMM yyyy\n hh:mm:ss tt");
+            labelDate.Text = localTime.ToString("ddd, dd MMM yyyy, hh:mm:ss tt");
 
             if (DateTime.Now.CompareTo(_nextCheck) >= 0)
             {
                 CheckSituation();
             }
-            string s = string.Empty;
-            TimeSpan remaining = _nextCheck.Subtract(DateTime.Now);
-            if (remaining.Minutes > 0)
-                s += string.Format("{0:D2}m", remaining.Minutes);
-            s += string.Format("{0:D2}s", remaining.Seconds);
-            labelNextCheck.Text = s;
-            
+
             if (_shuttingDown)
             {
-                buttonPark.Text = "Abort Shutdown";
-                toolTip.SetToolTip(buttonPark, "Abort the shutdown procedure");
+                labelNextCheck.Visible = false;
+                labelNextCheckLabel.Visible = false;
+                buttonShutdown.Text = "Abort Shutdown";
+                toolTip.SetToolTip(buttonShutdown, "Abort the shutdown procedure");
             } else
             {
-                buttonPark.Text = "Shutdown Now";
-                toolTip.SetToolTip(buttonPark, "Stop activities\nPark equipment\nClose shutter");
+                labelNextCheck.Visible = true;
+                labelNextCheckLabel.Visible = true;
+                string s = string.Empty;
+                TimeSpan remaining = _nextCheck.Subtract(DateTime.Now);
+                if (remaining.Minutes > 0)
+                    s += string.Format("{0:D2}m", remaining.Minutes);
+                s += string.Format("{0:D2}s", remaining.Seconds);
+                labelNextCheck.Text = s;
+
+                buttonShutdown.Text = "Shutdown Now";
+                toolTip.SetToolTip(buttonShutdown, "Stop activities\nPark equipment\nClose shutter");
             }
 
             if (HumanIntervention.IsSet())
@@ -316,7 +311,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 toolTip.SetToolTip(labelConditions, HumanIntervention.Info);
             }
             buttonManualIntervention.Enabled = !_shuttingDown;
-            updateManualInterventionButton();
+            updateManualInterventionControls();
         }
 
         private void timerDisplayRefresh_Tick(object sender, EventArgs e)
@@ -407,6 +402,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
         private void ShutdownObservatory(string reason)
         {
             _shuttingDown = true;
+            _nextCheck = DateTime.MinValue;
             string header = string.Format("Starting Wise40 shutdown (reason: {0})...", reason);
             string trailer = string.Format("Completed Wise40 shutdown (reason: {0})...", reason);
             bool _headerWasLogged = false;
@@ -533,6 +529,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 _shuttingDown = false;
             }
             _shuttingDown = false;
+            _nextCheck = DateTime.Now.Add(_intervalBetweenChecks);
         }
 
         private void buttonPark_Click(object sender, EventArgs e)
@@ -548,11 +545,20 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             new ObservatoryMonitorAboutForm(version).Show();
         }
 
-        private void updateManualInterventionButton()
+        private void updateManualInterventionControls()
         {
-            buttonManualIntervention.Text = HumanIntervention.IsSet() ?
-                "Remove Operator Intervention\n\n(make observatory safe to\noperate)" :
-                "Create Operator Intervention\n\n(make observatory unsafe to\noperate)";
+            if (HumanIntervention.IsSet()) {
+                labelHumanInterventionStatus.Text = "Active";
+                labelHumanInterventionStatus.ForeColor = unsafeColor;
+                buttonManualIntervention.Text = "Deactivate";
+                toolTip.SetToolTip(labelHumanInterventionStatus, HumanIntervention.Info);
+            } else
+            {
+                labelHumanInterventionStatus.Text = "Inactive";
+                buttonManualIntervention.Text = "Activate";
+                labelHumanInterventionStatus.ForeColor = safeColor;
+                toolTip.SetToolTip(labelHumanInterventionStatus, "");
+            }
         }
 
         private void buttonManualIntervention_Click(object sender, EventArgs e)
@@ -569,7 +575,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                     Log("Created operator intervention");
             }
 
-            updateManualInterventionButton();
+            updateManualInterventionControls();
             CheckSituation();
         }
 
