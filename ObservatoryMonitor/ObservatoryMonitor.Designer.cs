@@ -168,11 +168,10 @@
             this.labelDate.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.labelDate.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelDate.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelDate.Location = new System.Drawing.Point(176, 37);
+            this.labelDate.Location = new System.Drawing.Point(152, 37);
             this.labelDate.Name = "labelDate";
-            this.labelDate.Size = new System.Drawing.Size(240, 27);
+            this.labelDate.Size = new System.Drawing.Size(296, 27);
             this.labelDate.TabIndex = 53;
-            this.labelDate.Text = "Jun 19, 2017 hh:mm:ss";
             this.labelDate.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // buttonShutdown

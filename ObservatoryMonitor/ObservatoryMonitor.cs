@@ -276,7 +276,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
         void RefreshDisplay()
         {
             DateTime localTime = DateTime.Now.ToLocalTime();
-            labelDate.Text = localTime.ToString("ddd, dd MMM yyyy, hh:mm:ss tt");
+            labelDate.Text = localTime.ToString("ddd, dd MMM yyyy, HH:mm:ss");
 
             if (DateTime.Now.CompareTo(_nextCheck) >= 0)
             {
@@ -629,11 +629,8 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 wisesite.OperationalMode, newMode);
 
             List<App> apps = new List<App>();
-            try
-            {
-                apps.Add(new App(this, "ASCOM.RemoteDeviceServer", Const.wiseASCOMServerPath));
-                apps.Add(new App(this, Const.wiseDashboardAppName, _simulated ? Const.wiseSimulatedDashPath : Const.wiseRealDashPath));
-            } catch (Exception ex) { }
+            apps.Add(new App(this, "ASCOM.RemoteDeviceServer", Const.wiseASCOMServerPath));
+            apps.Add(new App(this, Const.wiseDashboardAppName, _simulated ? Const.wiseSimulatedDashPath : Const.wiseRealDashPath));
             
             message += "The following applications will be restarted:\n\n";
             foreach (var app in apps)
