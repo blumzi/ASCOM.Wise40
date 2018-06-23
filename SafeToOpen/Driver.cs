@@ -69,8 +69,6 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
         public WiseSafeToOperate wisesafetooperate;
         private static string driverID = "ASCOM.Wise40SafeToOpen.SafetyMonitor";
         private static string driverDescription;
-        
-        internal static int ageMaxSeconds;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Wise40.SafeToOperate"/> class.
