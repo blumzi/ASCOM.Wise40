@@ -75,20 +75,18 @@ namespace ASCOM.Wise40.Hardware
             debugger.WriteLine(Debugger.DebugLevel.DebugMotors, "{0}: On at {1}", Name, WiseTele.RateName(rate));
 
             currentRate = rate;
-            switch (rate) {
-                case Const.rateSlew:
-                    slewPin.SetOn();
-                    motorPin.SetOn();
-                    break;
-
-                case Const.rateSet:
-                case Const.rateTrack:
-                    motorPin.SetOn();
-                    break;
-
-                case Const.rateGuide:
-                    guideMotorPin.SetOn();
-                    break;
+            if (rate == Const.rateSlew)
+            {
+                slewPin.SetOn();
+                motorPin.SetOn();
+            }
+            else if (rate == Const.rateSet)
+            {
+                motorPin.SetOn();
+            }
+            else if (rate == Const.rateGuide)
+            {
+                guideMotorPin.SetOn();
             }
 
             if (Simulated)
