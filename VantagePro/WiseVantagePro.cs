@@ -94,7 +94,8 @@ namespace ASCOM.Wise40.VantagePro
         {
             if (_initialized)
                 return;
-            
+
+            Name = "Wise40.VantagePro";
             debugger.init();
             tl = new TraceLogger("", "Wise40.VantagePro");
             tl.Enabled = debugger.Tracing;
@@ -532,14 +533,5 @@ namespace ASCOM.Wise40.VantagePro
         }
 
         #endregion
-
-        public string Name
-        {
-            get
-            {
-                return "Wise40.VantagePro";
-            }
-        }
-
     }
 }
