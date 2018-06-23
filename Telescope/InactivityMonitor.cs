@@ -35,51 +35,15 @@ namespace ASCOM.Wise40
         };
         private Activity _activities = Activity.None;
 
-        public void ShutdownObservatory(object StateObject)
+        public void BecomeIdle(object StateObject)
         {
             EndActivity(Activity.GoingIdle);
-
-            //if (wisesite.OperationalMode != WiseSite.OpMode.WISE)
-                return;
-
-            _shuttingDown = true;
-            _due = DateTime.MinValue;
-            #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "InactivityMonitor:ShutdownObservatory: starting.");
-            #endregion
-            
-            if (! wisetele.AtPark)
-                wisetele.Park();    // According to ASCOM this is Synchronous
-
-            // Telescope and Dome are Parked
-            if (wisetele._enslaveDome)
-            {
-                if (wisedome.ShutterState != DeviceInterface.ShutterState.shutterClosed)
-                {
-                    StartActivity(Activity.Dome);
-                    wisedome.StartClosingShutter();
-                    while (wisedome.ShutterState != DeviceInterface.ShutterState.shutterClosed)
-                    {
-                        #region debug
-                        debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "InactivityMonitor:ShutdownObservatory: Waiting 5 more seconds for shutter to close ...");
-                        Thread.Sleep(5 * 1000);
-                        #endregion
-                    }
-                    EndActivity(Activity.Dome);
-                }
-            }
-            #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "InactivityMonitor:ShutdownObservatory: done.");
-            #endregion
-
-            _shuttingDown = false;
-            inactivityTimer.Change(Timeout.Infinite, Timeout.Infinite);
         }
 
         public InactivityMonitor()
         {
             wisesite.init();
-            inactivityTimer = new System.Threading.Timer(ShutdownObservatory);
+            inactivityTimer = new System.Threading.Timer(BecomeIdle);
             _activities = Activity.None;
             Start("init");
         }
