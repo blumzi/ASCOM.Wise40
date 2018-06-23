@@ -31,7 +31,6 @@ namespace ASCOM.Wise40
         public SafetyMonitor computerControl, safeToOperate;
         private DateTime lastOCFetch;
         private Debugger debugger = Debugger.Instance;
-        private bool calculateRefraction;
 
         public enum OpMode { LCO, ACP, WISE, NONE };
         public OpMode _opMode = OpMode.WISE;
@@ -249,7 +248,7 @@ namespace ASCOM.Wise40
             {
                 sw.WriteLine("Operator: \"" + oper + "\"");
                 sw.WriteLine("Reason: \"" + reason + "\"");
-                sw.WriteLine("Created: " + DateTime.Now.ToString("MMM dd yyyy, hh:mm:ss tt"));
+                sw.WriteLine("Created: " + DateTime.Now.ToString("MMM dd yyyy, HH:mm:ss"));
             }
 
             while (! File.Exists(Const.humanInterventionFilePath))
@@ -260,19 +259,21 @@ namespace ASCOM.Wise40
 
         public static void Remove()
         {
-            bool deleted = false;
-
-            while (!deleted)
+            try
             {
-                try
+                var fi = new FileInfo(Const.humanInterventionFilePath);
+
+                fi.Delete();
+                fi.Refresh();
+                while (fi.Exists)
                 {
-                    File.Delete(Const.humanInterventionFilePath);
-                    deleted = true;
+                    System.Threading.Thread.Sleep(100);
+                    fi.Refresh();
                 }
-                catch (IOException) { }
             }
+            catch (IOException) { }
         }
-        
+
         public static bool IsSet()
         {
             return System.IO.File.Exists(Const.humanInterventionFilePath);
