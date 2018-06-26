@@ -31,7 +31,6 @@ namespace ASCOM.Wise40.Hardware
         private DateTime prevTick;
         private TelescopeAxes _axis, _otherAxis;
         private Const.AxisDirection _direction;   // There are separate WiseMotor instances for North, South, East, West
-        //private bool _simulated = false;
         private bool _connected = false;
         private Debugger debugger = Debugger.Instance;
         private WiseTele wisetele = WiseTele.Instance;
@@ -87,6 +86,10 @@ namespace ASCOM.Wise40.Hardware
             else if (rate == Const.rateGuide)
             {
                 guideMotorPin.SetOn();
+            }
+            else if (rate == Const.rateTrack)
+            {
+                motorPin.SetOn();
             }
 
             if (Simulated)
@@ -158,7 +161,7 @@ namespace ASCOM.Wise40.Hardware
         {
             if (!Simulated)
                 return;
-
+            
             bool primary = (_axis == TelescopeAxes.axisPrimary) ? true : false;
             Angle delta = Angle.zero;
 
@@ -195,7 +198,7 @@ namespace ASCOM.Wise40.Hardware
                 {
                     before = primary ?
                         Angle.FromHours(wisetele.HourAngle, Angle.Type.HA) :
-                        Angle.FromDegrees(wisetele.Declination);
+                        Angle.FromDegrees(wisetele.Declination, Angle.Type.Dec);
 
                     if (_direction == Const.AxisDirection.Increasing)
                     {
@@ -226,7 +229,7 @@ namespace ASCOM.Wise40.Hardware
 
                     after = primary ? 
                         Angle.FromHours(wisetele.HourAngle, Angle.Type.HA) : 
-                        Angle.FromDegrees(wisetele.Declination);
+                        Angle.FromDegrees(wisetele.Declination, Angle.Type.Dec);
                 }
 
                 debugger.WriteLine(Debugger.DebugLevel.DebugMotors,
@@ -279,16 +282,17 @@ namespace ASCOM.Wise40.Hardware
             return Name;
         }
 
-        //public bool Simulated
-        //{
-        //    get
-        //    {
-        //        return _simulated;
-        //    }
-        //    set
-        //    {
-        //        _simulated = value;
-        //    }
-        //}
+        public double RateFromPins
+        {
+            get
+            {
+                if (motorPin.isOn)
+                    return slewPin.isOn ? Const.rateSlew : Const.rateSet;
+                else if (guideMotorPin.isOn)
+                    return Const.rateGuide;
+                else
+                    return Const.rateStopped;
+            }
+        }
     }
 }

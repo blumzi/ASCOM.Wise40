@@ -211,29 +211,29 @@ namespace ASCOM.Wise40
             {
                 Angle ret = _angle;
 
-                if (!Simulated)
-                {
-                double current_value = Value;
-                double radians = (current_value * DecMultiplier) + DecCorrection;
+                //if (!Simulated)
+                //{
+                    double current_value = Value;
+                    double radians = (current_value * DecMultiplier) + DecCorrection;
 
-                if (radians > Math.PI)
-                    radians -= twoPI;
-                _angle.Radians = radians;
+                    if (radians > Math.PI)
+                        radians -= twoPI;
+                    _angle.Radians = radians;
 
-                ret = _angle;
-                if (DecOver90Degrees)
-                {
+                    ret = _angle;
+                    if (DecOver90Degrees)
+                    {
+                        #region debug
+                        debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDecEncoder:Degrees: over90");
+                        #endregion
+                        ret.Radians = Math.PI - ret.Radians;
+                    }
+
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDecEncoder:Degrees: over90");
+                    debugger.WriteLine(Debugger.DebugLevel.DebugEncoders,
+                        "[{0}] {1} Degrees - Value: {2}, deg: {3}", this.GetHashCode(), Name, current_value, ret);
                     #endregion
-                    ret.Radians = Math.PI - ret.Radians;
-                }
-
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugEncoders,
-                    "[{0}] {1} Degrees - Value: {2}, deg: {3}", this.GetHashCode(), Name, current_value, ret);
-                #endregion
-                }
+                //}
 
                 return ret.Degrees;
                 //return Angle.Degrees;

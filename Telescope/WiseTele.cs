@@ -161,7 +161,7 @@ namespace ASCOM.Wise40
 
         private static WiseSite wisesite = WiseSite.Instance;
 
-        private ReadyToSlewFlags readyToSlew = ReadyToSlewFlags.Instance;
+        private SlewingArbiter slewingArbiter = SlewingArbiter.Instance;
 
         System.Threading.Timer trackingTimer;
         const int trackingDomeAdjustmentInterval = 30 * 1000;   // half a minute
@@ -1612,7 +1612,7 @@ namespace ASCOM.Wise40
 
         private enum ScopeSlewerStatus { Undefined, CloseEnough, ChangedDirection, Canceled };
 
-        private void ScopeSlewer(TelescopeAxes axis, Angle targetAngle)
+        private void ScopeAxisSlewer(TelescopeAxes axis, Angle targetAngle)
         {
             Slewers.Type otherSlewer = (axis == TelescopeAxes.axisPrimary) ? Slewers.Type.Dec : Slewers.Type.Ra;
             Grapher grapher = new Grapher(axis,
@@ -1625,7 +1625,8 @@ namespace ASCOM.Wise40
                 direction = Const.AxisDirection.None
             };
             Movement cm = _instance.currMovement[axis];
-            int waitForOtherAxisMillis = 500;
+            int waitForOtherAxisMillis = 500;           // half a second between checks setting an axis rate
+            int waitForOtherAxisTotalSeconds = 600;     // 10 minutes total wait for setting an axis rate
 
             cm.taskName = (axis == TelescopeAxes.axisPrimary) ? "primarySlewer" : "secondarySlewer";
             cm.target = targetAngle;
@@ -1639,19 +1640,20 @@ namespace ASCOM.Wise40
             {
                 bool done = false;
 
-                readyToSlew.AxisIsReady(axis, rate);
+                //slewingArbiter.AxisReadyForRate(axis, rate);
                 DateTime startWaiting = DateTime.Now;
-                while (!readyToSlew.BothAxesAreReady(rate))
-                {
+                //while (!slewingArbiter.BothAxesAreReady(rate))
+                while (!slewingArbiter.AxisTryToSetRate(axis, rate))
+                    {
                     //
                     // After 30 seconds, start checking that the other slewer is alive before
                     // waiting for it to be ready.  Just in case the other task dies.
                     // 
-                    if (DateTime.Now.Subtract(startWaiting).TotalSeconds > 30 && !slewers.Active(otherSlewer))
+                    if (DateTime.Now.Subtract(startWaiting).TotalSeconds > waitForOtherAxisTotalSeconds && !slewers.Active(otherSlewer))
                     {
                         #region debug
-                        debugger.WriteLine(Debugger.DebugLevel.DebugAxes, string.Format("{0} at {1}: The other slewer is not actie.  Stopping !!!",
-                            cm.taskName, RateName(rate)));
+                        debugger.WriteLine(Debugger.DebugLevel.DebugAxes, string.Format("{0} at {1}: Waited too long to set rate (more than {2} seconds).  Stopping !!!",
+                            cm.taskName, RateName(rate), waitForOtherAxisTotalSeconds));
                         #endregion
                         Stop();
                         return;
@@ -1714,6 +1716,7 @@ namespace ASCOM.Wise40
                 "{0} at {1}: {2} {3} has stopped moving.",
                 cm.taskName, RateName(cm.rate), a, axis);
             #endregion debug
+            slewingArbiter.AxisTryToSetRate(axis, Const.rateStopped);
         }
 
         private ScopeSlewerStatus ScopeSlewCloser(TelescopeAxes axis, double rate, Grapher grapher)
@@ -1983,9 +1986,10 @@ namespace ASCOM.Wise40
         {
             CheckCoordinateSanity(Angle.Type.RA, RightAscension.Hours);
             CheckCoordinateSanity(Angle.Type.Dec, Declination.Degrees);
+            // Check coordinates safety ???
 
             slewers.Clear();
-            readyToSlew.Reset();
+            slewingArbiter.Reset();
             inactivityMonitor.StartActivity(InactivityMonitor.Activity.Slewing);
             try
             {
@@ -2017,7 +2021,7 @@ namespace ASCOM.Wise40
                         #endregion
                         slewer.task = Task.Run(() =>
                         {
-                            ScopeSlewer(axis, angle);
+                            ScopeAxisSlewer(axis, angle);
                         }, telescopeCT).ContinueWith((slewerTask) =>
                         {
                             #region debug
