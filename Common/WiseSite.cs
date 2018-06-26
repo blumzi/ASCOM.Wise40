@@ -13,6 +13,7 @@ using ASCOM.Wise40;
 using ASCOM.DriverAccess;
 
 using System.IO;
+using System.Threading.Tasks;
 
 namespace ASCOM.Wise40
 {
@@ -251,7 +252,7 @@ namespace ASCOM.Wise40
                 sw.WriteLine("Created: " + DateTime.Now.ToString("MMM dd yyyy, HH:mm:ss"));
             }
 
-            while (! File.Exists(Const.humanInterventionFilePath))
+            while (!File.Exists(Const.humanInterventionFilePath))
             {
                 System.Threading.Thread.Sleep(50);
             }
@@ -259,19 +260,22 @@ namespace ASCOM.Wise40
 
         public static void Remove()
         {
-            try
-            {
-                var fi = new FileInfo(Const.humanInterventionFilePath);
+            if (!File.Exists(Const.humanInterventionFilePath))
+                return;
 
-                fi.Delete();
-                fi.Refresh();
-                while (fi.Exists)
+            bool deleted = false;
+            while (!deleted)
+            {
+                try
                 {
-                    System.Threading.Thread.Sleep(100);
-                    fi.Refresh();
+                    File.Delete(Const.humanInterventionFilePath);
+                    deleted = true;
+                }
+                catch (System.IO.IOException ex)    // in use
+                {
+                    ;
                 }
             }
-            catch (IOException) { }
         }
 
         public static bool IsSet()
@@ -283,6 +287,8 @@ namespace ASCOM.Wise40
         {
             get
             {
+                string info = string.Empty;
+
                 if (!IsSet())
                     return string.Empty;
 
@@ -290,7 +296,7 @@ namespace ASCOM.Wise40
                 {
 
                     StreamReader sr = new StreamReader(Const.humanInterventionFilePath);
-                    string line, info = string.Empty;
+                    string line = string.Empty;
 
                     while ((line = sr.ReadLine()) != null)
                     {
