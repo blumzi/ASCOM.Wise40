@@ -280,7 +280,8 @@ namespace Dash
 
 
             WiseVirtualMotor primaryMotor = null, secondaryMotor = null;
-            double currentRate = Const.rateStopped;
+            double primaryRate = Const.rateStopped;
+            double secondaryRate = Const.rateStopped;
 
             annunciatorPrimary.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
             primaryMotor = null;
@@ -291,7 +292,7 @@ namespace Dash
             if (primaryMotor != null)
             {
                 annunciatorPrimary.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
-                currentRate = primaryMotor.currentRate;
+                primaryRate = primaryMotor.RateFromPins;
             }
 
             annunciatorSecondary.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
@@ -303,16 +304,24 @@ namespace Dash
             if (secondaryMotor != null)
             {
                 annunciatorSecondary.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
-                currentRate = secondaryMotor.currentRate;
+                secondaryRate = secondaryMotor.RateFromPins;
             }
 
-            annunciatorRateSlew.Cadence = annunciatorRateSet.Cadence = annunciatorRateGuide.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
-            if (currentRate == Const.rateSlew)
-                annunciatorRateSlew.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
-            else if (currentRate == Const.rateSet)
-                annunciatorRateSet.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
-            else if (currentRate == Const.rateGuide)
-                annunciatorRateGuide.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+            annunciatorRARateSlew.Cadence = annunciatorRARateSet.Cadence = annunciatorRARateGuide.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            if (primaryRate == Const.rateSlew)
+                annunciatorRARateSlew.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+            else if (primaryRate == Const.rateSet)
+                annunciatorRARateSet.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+            else if (primaryRate == Const.rateGuide)
+                annunciatorRARateGuide.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+
+            annunciatorDECRateSlew.Cadence = annunciatorDECRateSet.Cadence = annunciatorDECRateGuide.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            if (secondaryRate == Const.rateSlew)
+                annunciatorDECRateSlew.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+            else if (secondaryRate == Const.rateSet)
+                annunciatorDECRateSet.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+            else if (secondaryRate == Const.rateGuide)
+                annunciatorDECRateGuide.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
 
             telescopeStatus.Show(wisetele.Status);
 

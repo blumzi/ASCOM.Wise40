@@ -169,13 +169,16 @@
             this.annunciatorTrack = new ASCOM.Controls.Annunciator();
             this.annunciatorSlew = new ASCOM.Controls.Annunciator();
             this.annunciatorPulse = new ASCOM.Controls.Annunciator();
-            this.annunciatorPrimary = new ASCOM.Controls.Annunciator();
-            this.annunciatorSecondary = new ASCOM.Controls.Annunciator();
             this.annunciatorDome = new ASCOM.Controls.Annunciator();
             this.annunciatorShutter = new ASCOM.Controls.Annunciator();
-            this.annunciatorRateSlew = new ASCOM.Controls.Annunciator();
-            this.annunciatorRateSet = new ASCOM.Controls.Annunciator();
-            this.annunciatorRateGuide = new ASCOM.Controls.Annunciator();
+            this.annunciatorPrimary = new ASCOM.Controls.Annunciator();
+            this.annunciatorRARateSlew = new ASCOM.Controls.Annunciator();
+            this.annunciatorRARateSet = new ASCOM.Controls.Annunciator();
+            this.annunciatorRARateGuide = new ASCOM.Controls.Annunciator();
+            this.annunciatorSecondary = new ASCOM.Controls.Annunciator();
+            this.annunciatorDECRateSlew = new ASCOM.Controls.Annunciator();
+            this.annunciatorDECRateSet = new ASCOM.Controls.Annunciator();
+            this.annunciatorDECRateGuide = new ASCOM.Controls.Annunciator();
             this.annunciatorFilterWheel = new ASCOM.Controls.Annunciator();
             this.annunciatorFocus = new ASCOM.Controls.Annunciator();
             this.annunciatorWeather = new ASCOM.Controls.Annunciator();
@@ -2036,19 +2039,22 @@
             this.annunciatorPanelStatus.Controls.Add(this.annunciatorTrack);
             this.annunciatorPanelStatus.Controls.Add(this.annunciatorSlew);
             this.annunciatorPanelStatus.Controls.Add(this.annunciatorPulse);
-            this.annunciatorPanelStatus.Controls.Add(this.annunciatorPrimary);
-            this.annunciatorPanelStatus.Controls.Add(this.annunciatorSecondary);
             this.annunciatorPanelStatus.Controls.Add(this.annunciatorDome);
             this.annunciatorPanelStatus.Controls.Add(this.annunciatorShutter);
-            this.annunciatorPanelStatus.Controls.Add(this.annunciatorRateSlew);
-            this.annunciatorPanelStatus.Controls.Add(this.annunciatorRateSet);
-            this.annunciatorPanelStatus.Controls.Add(this.annunciatorRateGuide);
+            this.annunciatorPanelStatus.Controls.Add(this.annunciatorPrimary);
+            this.annunciatorPanelStatus.Controls.Add(this.annunciatorRARateSlew);
+            this.annunciatorPanelStatus.Controls.Add(this.annunciatorRARateSet);
+            this.annunciatorPanelStatus.Controls.Add(this.annunciatorRARateGuide);
+            this.annunciatorPanelStatus.Controls.Add(this.annunciatorSecondary);
+            this.annunciatorPanelStatus.Controls.Add(this.annunciatorDECRateSlew);
+            this.annunciatorPanelStatus.Controls.Add(this.annunciatorDECRateSet);
+            this.annunciatorPanelStatus.Controls.Add(this.annunciatorDECRateGuide);
             this.annunciatorPanelStatus.Controls.Add(this.annunciatorFilterWheel);
             this.annunciatorPanelStatus.Controls.Add(this.annunciatorFocus);
             this.annunciatorPanelStatus.Controls.Add(this.annunciatorWeather);
             this.annunciatorPanelStatus.Location = new System.Drawing.Point(3, 430);
             this.annunciatorPanelStatus.Name = "annunciatorPanelStatus";
-            this.annunciatorPanelStatus.Size = new System.Drawing.Size(179, 78);
+            this.annunciatorPanelStatus.Size = new System.Drawing.Size(189, 98);
             this.annunciatorPanelStatus.TabIndex = 38;
             // 
             // annunciatorTrack
@@ -2101,40 +2107,6 @@
             this.annunciatorPulse.TabIndex = 11;
             this.annunciatorPulse.Text = "PULSE";
             // 
-            // annunciatorPrimary
-            // 
-            this.annunciatorPrimary.ActiveColor = System.Drawing.Color.OrangeRed;
-            this.annunciatorPrimary.AutoSize = true;
-            this.annunciatorPrimary.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.annunciatorPrimary.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
-            this.annunciatorPrimary.Font = new System.Drawing.Font("Consolas", 10F);
-            this.annunciatorPrimary.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorPrimary.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorPrimary.Location = new System.Drawing.Point(3, 17);
-            this.annunciatorPrimary.Mute = false;
-            this.annunciatorPrimary.Name = "annunciatorPrimary";
-            this.annunciatorPrimary.Padding = new System.Windows.Forms.Padding(10, 0, 0, 0);
-            this.annunciatorPrimary.Size = new System.Drawing.Size(34, 17);
-            this.annunciatorPrimary.TabIndex = 2;
-            this.annunciatorPrimary.Text = "RA";
-            this.annunciatorPrimary.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // annunciatorSecondary
-            // 
-            this.annunciatorSecondary.ActiveColor = System.Drawing.Color.Chocolate;
-            this.annunciatorSecondary.AutoSize = true;
-            this.annunciatorSecondary.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.annunciatorSecondary.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
-            this.annunciatorSecondary.Font = new System.Drawing.Font("Consolas", 10F);
-            this.annunciatorSecondary.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorSecondary.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorSecondary.Location = new System.Drawing.Point(43, 17);
-            this.annunciatorSecondary.Mute = false;
-            this.annunciatorSecondary.Name = "annunciatorSecondary";
-            this.annunciatorSecondary.Size = new System.Drawing.Size(32, 17);
-            this.annunciatorSecondary.TabIndex = 3;
-            this.annunciatorSecondary.Text = "DEC";
-            // 
             // annunciatorDome
             // 
             this.annunciatorDome.ActiveColor = System.Drawing.Color.Green;
@@ -2144,10 +2116,11 @@
             this.annunciatorDome.Font = new System.Drawing.Font("Consolas", 10F);
             this.annunciatorDome.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorDome.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorDome.Location = new System.Drawing.Point(81, 17);
+            this.annunciatorDome.Location = new System.Drawing.Point(3, 17);
             this.annunciatorDome.Mute = false;
             this.annunciatorDome.Name = "annunciatorDome";
-            this.annunciatorDome.Size = new System.Drawing.Size(40, 17);
+            this.annunciatorDome.Padding = new System.Windows.Forms.Padding(35, 0, 0, 0);
+            this.annunciatorDome.Size = new System.Drawing.Size(75, 17);
             this.annunciatorDome.TabIndex = 4;
             this.annunciatorDome.Text = "DOME";
             // 
@@ -2161,61 +2134,144 @@
             this.annunciatorShutter.Font = new System.Drawing.Font("Consolas", 10F);
             this.annunciatorShutter.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorShutter.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorShutter.Location = new System.Drawing.Point(127, 17);
+            this.annunciatorShutter.Location = new System.Drawing.Point(84, 17);
             this.annunciatorShutter.Mute = false;
             this.annunciatorShutter.Name = "annunciatorShutter";
-            this.annunciatorShutter.Size = new System.Drawing.Size(32, 17);
+            this.annunciatorShutter.Size = new System.Drawing.Size(64, 17);
             this.annunciatorShutter.TabIndex = 12;
-            this.annunciatorShutter.Text = "SHU";
+            this.annunciatorShutter.Text = "SHUTTER";
             // 
-            // annunciatorRateSlew
+            // annunciatorPrimary
             // 
-            this.annunciatorRateSlew.ActiveColor = System.Drawing.Color.Yellow;
-            this.annunciatorRateSlew.AutoSize = true;
-            this.annunciatorRateSlew.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.annunciatorRateSlew.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
-            this.annunciatorRateSlew.Font = new System.Drawing.Font("Consolas", 10F);
-            this.annunciatorRateSlew.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorRateSlew.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorRateSlew.Location = new System.Drawing.Point(3, 34);
-            this.annunciatorRateSlew.Mute = false;
-            this.annunciatorRateSlew.Name = "annunciatorRateSlew";
-            this.annunciatorRateSlew.Padding = new System.Windows.Forms.Padding(10, 0, 0, 0);
-            this.annunciatorRateSlew.Size = new System.Drawing.Size(50, 17);
-            this.annunciatorRateSlew.TabIndex = 8;
-            this.annunciatorRateSlew.Text = "SLEW";
+            this.annunciatorPrimary.ActiveColor = System.Drawing.Color.Chocolate;
+            this.annunciatorPrimary.AutoSize = true;
+            this.annunciatorPrimary.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
+            this.annunciatorPrimary.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            this.annunciatorPrimary.Font = new System.Drawing.Font("Consolas", 10F);
+            this.annunciatorPrimary.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciatorPrimary.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciatorPrimary.Location = new System.Drawing.Point(3, 34);
+            this.annunciatorPrimary.Mute = false;
+            this.annunciatorPrimary.Name = "annunciatorPrimary";
+            this.annunciatorPrimary.Padding = new System.Windows.Forms.Padding(0, 0, 8, 0);
+            this.annunciatorPrimary.Size = new System.Drawing.Size(40, 17);
+            this.annunciatorPrimary.TabIndex = 16;
+            this.annunciatorPrimary.Text = "Ra:";
+            this.annunciatorPrimary.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // annunciatorRateSet
+            // annunciatorRARateSlew
             // 
-            this.annunciatorRateSet.ActiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(192)))), ((int)(((byte)(0)))));
-            this.annunciatorRateSet.AutoSize = true;
-            this.annunciatorRateSet.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.annunciatorRateSet.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
-            this.annunciatorRateSet.Font = new System.Drawing.Font("Consolas", 10F);
-            this.annunciatorRateSet.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorRateSet.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorRateSet.Location = new System.Drawing.Point(59, 34);
-            this.annunciatorRateSet.Mute = false;
-            this.annunciatorRateSet.Name = "annunciatorRateSet";
-            this.annunciatorRateSet.Size = new System.Drawing.Size(32, 17);
-            this.annunciatorRateSet.TabIndex = 9;
-            this.annunciatorRateSet.Text = "SET";
+            this.annunciatorRARateSlew.ActiveColor = System.Drawing.Color.Yellow;
+            this.annunciatorRARateSlew.AutoSize = true;
+            this.annunciatorRARateSlew.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
+            this.annunciatorRARateSlew.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            this.annunciatorRARateSlew.Font = new System.Drawing.Font("Consolas", 10F);
+            this.annunciatorRARateSlew.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciatorRARateSlew.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciatorRARateSlew.Location = new System.Drawing.Point(49, 34);
+            this.annunciatorRARateSlew.Mute = false;
+            this.annunciatorRARateSlew.Name = "annunciatorRARateSlew";
+            this.annunciatorRARateSlew.Size = new System.Drawing.Size(40, 17);
+            this.annunciatorRARateSlew.TabIndex = 8;
+            this.annunciatorRARateSlew.Text = "SLEW";
             // 
-            // annunciatorRateGuide
+            // annunciatorRARateSet
             // 
-            this.annunciatorRateGuide.ActiveColor = System.Drawing.Color.Olive;
-            this.annunciatorRateGuide.AutoSize = true;
-            this.annunciatorRateGuide.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.annunciatorRateGuide.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
-            this.annunciatorRateGuide.Font = new System.Drawing.Font("Consolas", 10F);
-            this.annunciatorRateGuide.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorRateGuide.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorRateGuide.Location = new System.Drawing.Point(97, 34);
-            this.annunciatorRateGuide.Mute = false;
-            this.annunciatorRateGuide.Name = "annunciatorRateGuide";
-            this.annunciatorRateGuide.Size = new System.Drawing.Size(48, 17);
-            this.annunciatorRateGuide.TabIndex = 10;
-            this.annunciatorRateGuide.Text = "GUIDE";
+            this.annunciatorRARateSet.ActiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(192)))), ((int)(((byte)(0)))));
+            this.annunciatorRARateSet.AutoSize = true;
+            this.annunciatorRARateSet.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
+            this.annunciatorRARateSet.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            this.annunciatorRARateSet.Font = new System.Drawing.Font("Consolas", 10F);
+            this.annunciatorRARateSet.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciatorRARateSet.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciatorRARateSet.Location = new System.Drawing.Point(95, 34);
+            this.annunciatorRARateSet.Mute = false;
+            this.annunciatorRARateSet.Name = "annunciatorRARateSet";
+            this.annunciatorRARateSet.Size = new System.Drawing.Size(32, 17);
+            this.annunciatorRARateSet.TabIndex = 9;
+            this.annunciatorRARateSet.Text = "SET";
+            // 
+            // annunciatorRARateGuide
+            // 
+            this.annunciatorRARateGuide.ActiveColor = System.Drawing.Color.Olive;
+            this.annunciatorRARateGuide.AutoSize = true;
+            this.annunciatorRARateGuide.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
+            this.annunciatorRARateGuide.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            this.annunciatorPanelStatus.SetFlowBreak(this.annunciatorRARateGuide, true);
+            this.annunciatorRARateGuide.Font = new System.Drawing.Font("Consolas", 10F);
+            this.annunciatorRARateGuide.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciatorRARateGuide.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciatorRARateGuide.Location = new System.Drawing.Point(133, 34);
+            this.annunciatorRARateGuide.Mute = false;
+            this.annunciatorRARateGuide.Name = "annunciatorRARateGuide";
+            this.annunciatorRARateGuide.Size = new System.Drawing.Size(48, 17);
+            this.annunciatorRARateGuide.TabIndex = 10;
+            this.annunciatorRARateGuide.Text = "GUIDE";
+            // 
+            // annunciatorSecondary
+            // 
+            this.annunciatorSecondary.ActiveColor = System.Drawing.Color.Chocolate;
+            this.annunciatorSecondary.AutoSize = true;
+            this.annunciatorSecondary.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
+            this.annunciatorSecondary.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            this.annunciatorSecondary.Font = new System.Drawing.Font("Consolas", 10F);
+            this.annunciatorSecondary.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciatorSecondary.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciatorSecondary.Location = new System.Drawing.Point(3, 51);
+            this.annunciatorSecondary.Mute = false;
+            this.annunciatorSecondary.Name = "annunciatorSecondary";
+            this.annunciatorSecondary.Size = new System.Drawing.Size(40, 17);
+            this.annunciatorSecondary.TabIndex = 3;
+            this.annunciatorSecondary.Text = "Dec:";
+            // 
+            // annunciatorDECRateSlew
+            // 
+            this.annunciatorDECRateSlew.ActiveColor = System.Drawing.Color.Yellow;
+            this.annunciatorDECRateSlew.AutoSize = true;
+            this.annunciatorDECRateSlew.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
+            this.annunciatorDECRateSlew.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            this.annunciatorDECRateSlew.Font = new System.Drawing.Font("Consolas", 10F);
+            this.annunciatorDECRateSlew.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciatorDECRateSlew.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciatorDECRateSlew.Location = new System.Drawing.Point(49, 51);
+            this.annunciatorDECRateSlew.Mute = false;
+            this.annunciatorDECRateSlew.Name = "annunciatorDECRateSlew";
+            this.annunciatorDECRateSlew.Size = new System.Drawing.Size(40, 17);
+            this.annunciatorDECRateSlew.TabIndex = 13;
+            this.annunciatorDECRateSlew.Text = "SLEW";
+            // 
+            // annunciatorDECRateSet
+            // 
+            this.annunciatorDECRateSet.ActiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(192)))), ((int)(((byte)(0)))));
+            this.annunciatorDECRateSet.AutoSize = true;
+            this.annunciatorDECRateSet.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
+            this.annunciatorDECRateSet.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            this.annunciatorDECRateSet.Font = new System.Drawing.Font("Consolas", 10F);
+            this.annunciatorDECRateSet.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciatorDECRateSet.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciatorDECRateSet.Location = new System.Drawing.Point(95, 51);
+            this.annunciatorDECRateSet.Mute = false;
+            this.annunciatorDECRateSet.Name = "annunciatorDECRateSet";
+            this.annunciatorDECRateSet.Size = new System.Drawing.Size(32, 17);
+            this.annunciatorDECRateSet.TabIndex = 14;
+            this.annunciatorDECRateSet.Text = "SET";
+            // 
+            // annunciatorDECRateGuide
+            // 
+            this.annunciatorDECRateGuide.ActiveColor = System.Drawing.Color.Olive;
+            this.annunciatorDECRateGuide.AutoSize = true;
+            this.annunciatorDECRateGuide.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
+            this.annunciatorDECRateGuide.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            this.annunciatorPanelStatus.SetFlowBreak(this.annunciatorDECRateGuide, true);
+            this.annunciatorDECRateGuide.Font = new System.Drawing.Font("Consolas", 10F);
+            this.annunciatorDECRateGuide.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciatorDECRateGuide.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciatorDECRateGuide.Location = new System.Drawing.Point(133, 51);
+            this.annunciatorDECRateGuide.Mute = false;
+            this.annunciatorDECRateGuide.Name = "annunciatorDECRateGuide";
+            this.annunciatorDECRateGuide.Size = new System.Drawing.Size(48, 17);
+            this.annunciatorDECRateGuide.TabIndex = 15;
+            this.annunciatorDECRateGuide.Text = "GUIDE";
             // 
             // annunciatorFilterWheel
             // 
@@ -2226,11 +2282,11 @@
             this.annunciatorFilterWheel.Font = new System.Drawing.Font("Consolas", 10F);
             this.annunciatorFilterWheel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorFilterWheel.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorFilterWheel.Location = new System.Drawing.Point(3, 51);
+            this.annunciatorFilterWheel.Location = new System.Drawing.Point(3, 68);
             this.annunciatorFilterWheel.Mute = false;
             this.annunciatorFilterWheel.Name = "annunciatorFilterWheel";
-            this.annunciatorFilterWheel.Padding = new System.Windows.Forms.Padding(2, 0, 0, 0);
-            this.annunciatorFilterWheel.Size = new System.Drawing.Size(66, 17);
+            this.annunciatorFilterWheel.Padding = new System.Windows.Forms.Padding(6, 0, 0, 0);
+            this.annunciatorFilterWheel.Size = new System.Drawing.Size(70, 17);
             this.annunciatorFilterWheel.TabIndex = 6;
             this.annunciatorFilterWheel.Text = "FILTERS";
             // 
@@ -2243,7 +2299,7 @@
             this.annunciatorFocus.Font = new System.Drawing.Font("Consolas", 10F);
             this.annunciatorFocus.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorFocus.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorFocus.Location = new System.Drawing.Point(75, 51);
+            this.annunciatorFocus.Location = new System.Drawing.Point(79, 68);
             this.annunciatorFocus.Mute = false;
             this.annunciatorFocus.Name = "annunciatorFocus";
             this.annunciatorFocus.Size = new System.Drawing.Size(48, 17);
@@ -2258,7 +2314,7 @@
             this.annunciatorWeather.Font = new System.Drawing.Font("Consolas", 10F);
             this.annunciatorWeather.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorWeather.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorWeather.Location = new System.Drawing.Point(129, 51);
+            this.annunciatorWeather.Location = new System.Drawing.Point(133, 68);
             this.annunciatorWeather.Mute = false;
             this.annunciatorWeather.Name = "annunciatorWeather";
             this.annunciatorWeather.Size = new System.Drawing.Size(32, 17);
@@ -2268,7 +2324,7 @@
             // panel2
             // 
             this.panel2.Controls.Add(this.panel3);
-            this.panel2.Location = new System.Drawing.Point(3, 514);
+            this.panel2.Location = new System.Drawing.Point(3, 534);
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(181, 78);
             this.panel2.TabIndex = 40;
@@ -2299,7 +2355,7 @@
             // panel4
             // 
             this.panel4.Controls.Add(this.labelCountdown);
-            this.panel4.Location = new System.Drawing.Point(3, 598);
+            this.panel4.Location = new System.Drawing.Point(3, 618);
             this.panel4.Name = "panel4";
             this.panel4.Size = new System.Drawing.Size(181, 34);
             this.panel4.TabIndex = 41;
@@ -3068,8 +3124,6 @@
         private ASCOM.Controls.Annunciator annunciatorTrack;
         private ASCOM.Controls.Annunciator annunciatorSlew;
         private ASCOM.Controls.Annunciator annunciatorDome;
-        private ASCOM.Controls.Annunciator annunciatorPrimary;
-        private ASCOM.Controls.Annunciator annunciatorSecondary;
         private ASCOM.Controls.Annunciator annunciatorFocus;
         private ASCOM.Controls.Annunciator annunciatorFilterWheel;
         private ASCOM.Controls.Annunciator annunciatorWeather;
@@ -3077,9 +3131,9 @@
         private ASCOM.Controls.AnnunciatorPanel annunciatorPanelSafety;
         private ASCOM.Controls.Annunciator annunciatorComputerControl;
         private ASCOM.Controls.Annunciator annunciatorSafeToOperate;
-        private ASCOM.Controls.Annunciator annunciatorRateSlew;
-        private ASCOM.Controls.Annunciator annunciatorRateSet;
-        private ASCOM.Controls.Annunciator annunciatorRateGuide;
+        private ASCOM.Controls.Annunciator annunciatorRARateSlew;
+        private ASCOM.Controls.Annunciator annunciatorRARateSet;
+        private ASCOM.Controls.Annunciator annunciatorRARateGuide;
         private System.Windows.Forms.GroupBox groupBoxFilterWheel;
         private System.Windows.Forms.Label labelFilterWheelStatus;
         private System.Windows.Forms.Label label4;
@@ -3105,6 +3159,11 @@
         private System.Windows.Forms.Panel panel4;
         private ASCOM.Controls.Annunciator annunciatorReadonly;
         private ASCOM.Controls.Annunciator annunciatorShutter;
+        private ASCOM.Controls.Annunciator annunciatorDECRateSlew;
+        private ASCOM.Controls.Annunciator annunciatorDECRateSet;
+        private ASCOM.Controls.Annunciator annunciatorDECRateGuide;
+        private ASCOM.Controls.Annunciator annunciatorPrimary;
+        private ASCOM.Controls.Annunciator annunciatorSecondary;
     }
 }
 
