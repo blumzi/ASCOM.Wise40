@@ -143,6 +143,7 @@ namespace ASCOM.Wise40
 
         private bool _bypassCoordinatesSafety = false;
         private bool _syncingDomePosition = false;
+        private bool _plotSlews = false;
 
         private bool _atPark;
         private bool _movingToSafety = false;
@@ -221,6 +222,7 @@ namespace ASCOM.Wise40
         internal static string astrometricAccuracyProfileName = "Astrometric accuracy";
         internal static string traceStateProfileName = "Tracing";
         internal static string bypassCoordinatesSafetyProfileName = "BypassCoordinatesSafety";
+        internal static string plotSlewsProfileName = "PlotSlews";
 
         public class MovementParameters
         {
@@ -1614,10 +1616,15 @@ namespace ASCOM.Wise40
 
         private void ScopeAxisSlewer(TelescopeAxes axis, Angle targetAngle)
         {
+            SlewPlotter slewPlotter = null;
+
             Slewers.Type otherSlewer = (axis == TelescopeAxes.axisPrimary) ? Slewers.Type.Dec : Slewers.Type.Ra;
-            Grapher grapher = new Grapher(axis,
-                axis == TelescopeAxes.axisPrimary ? RightAscension : Declination,
-                targetAngle.Degrees);
+            if (_plotSlews)
+            {
+                slewPlotter = new SlewPlotter(axis,
+                    axis == TelescopeAxes.axisPrimary ? RightAscension : Declination,
+                    targetAngle.Degrees);
+            }
 
             _instance.currMovement[axis] = new Movement()
             {
@@ -1664,15 +1671,16 @@ namespace ASCOM.Wise40
                         cm.taskName, RateName(rate), waitForOtherAxisMillis));
                     #endregion
                     #region graph
-                    grapher.Record((axis == TelescopeAxes.axisPrimary) ? RightAscension : Declination,
-                        string.Format("at {0} waiting {1} millis for other axis", RateName(rate), waitForOtherAxisMillis));
+                    if (slewPlotter != null)
+                        slewPlotter.Record((axis == TelescopeAxes.axisPrimary) ? RightAscension : Declination,
+                            string.Format("at {0} waiting {1} millis for other axis", RateName(rate), waitForOtherAxisMillis));
                     #endregion
                     Thread.Sleep(waitForOtherAxisMillis);
                 }
 
                 do
                 {
-                    status = ScopeSlewCloser(axis, rate, grapher);
+                    status = ScopeSlewCloser(axis, rate, slewPlotter);
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0} SlewCloser({1}, {2}) => {3}",
                         cm.taskName, axis, RateName(rate), status.ToString());
@@ -1719,7 +1727,7 @@ namespace ASCOM.Wise40
             slewingArbiter.AxisTryToSetRate(axis, Const.rateStopped);
         }
 
-        private ScopeSlewerStatus ScopeSlewCloser(TelescopeAxes axis, double rate, Grapher grapher)
+        private ScopeSlewerStatus ScopeSlewCloser(TelescopeAxes axis, double rate, SlewPlotter slewPlotter)
         {
             Movement cm = Instance.currMovement[axis];
             Angle currPosition = new Angle(0.0);
@@ -1842,7 +1850,8 @@ namespace ASCOM.Wise40
                             remainingDistance.angle, mp.stopMovement);
                         #endregion
                         #region graph
-                        grapher.Record(currPosition.Degrees, string.Format("at {0} - before stopping", RateName(cm.rate)));
+                        if (slewPlotter != null)
+                            slewPlotter.Record(currPosition.Degrees, string.Format("at {0} - before stopping", RateName(cm.rate)));
                         #endregion
                         StopAxisAndWaitForHalt(axis);
 
@@ -1850,7 +1859,8 @@ namespace ASCOM.Wise40
                             Angle.FromHours(_instance.RightAscension, Angle.Type.RA) :
                             Angle.FromDegrees(_instance.Declination, Angle.Type.Dec);
                         #region graph
-                        grapher.Record(angleAfterStopping.Degrees, string.Format("at {0} - after stopping", RateName(cm.rate)));
+                        if (slewPlotter != null)
+                            slewPlotter.Record(angleAfterStopping.Degrees, string.Format("at {0} - after stopping", RateName(cm.rate)));
                         #endregion
                         ShortestDistanceResult statusAfterStopping = angleAfterStopping.ShortestDistance(cm.target);
 
@@ -1884,7 +1894,8 @@ namespace ASCOM.Wise40
                                 telescopeCT.IsCancellationRequested.ToString());
                         #endregion debug
                         #region graph
-                        grapher.Record(currPosition.Degrees, string.Format("at {0}", RateName(cm.rate)));
+                        if (slewPlotter != null)
+                            slewPlotter.Record(currPosition.Degrees, string.Format("at {0}", RateName(cm.rate)));
                         #endregion
                         telescopeCT.ThrowIfCancellationRequested();
                         Thread.Sleep(waitMillis);
@@ -2953,6 +2964,7 @@ namespace ASCOM.Wise40
                 else
                     wisesite.astrometricAccuracy = Accuracy.Full;
                 _bypassCoordinatesSafety = Convert.ToBoolean(driverProfile.GetValue(driverID, bypassCoordinatesSafetyProfileName, string.Empty, false.ToString()));
+                _plotSlews = Convert.ToBoolean(driverProfile.GetValue(driverID, plotSlewsProfileName, string.Empty, false.ToString()));
             }
 
             using (Profile driverProfile = new Profile() { DeviceType = "Dome" })
@@ -2969,6 +2981,7 @@ namespace ASCOM.Wise40
                 driverProfile.WriteValue(driverID, traceStateProfileName, traceLogger.Enabled.ToString());
                 driverProfile.WriteValue(driverID, astrometricAccuracyProfileName, wisesite.astrometricAccuracy.ToString());
                 driverProfile.WriteValue(driverID, bypassCoordinatesSafetyProfileName, _bypassCoordinatesSafety.ToString());
+                driverProfile.WriteValue(driverID, plotSlewsProfileName, _plotSlews.ToString());
             }
 
             using (Profile driverProfile = new Profile() { DeviceType = "Dome" })
@@ -3009,6 +3022,19 @@ namespace ASCOM.Wise40
             set
             {
                 _bypassCoordinatesSafety = value;
+            }
+        }
+
+        public bool PlotSlews
+        {
+            get
+            {
+                return _plotSlews;
+            }
+
+            set
+            {
+                _plotSlews = value;
             }
         }
 

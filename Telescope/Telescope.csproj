@@ -132,7 +132,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="InactivityMonitor.cs" />
-    <Compile Include="Grapher.cs" />
+    <Compile Include="SlewPlotter.cs" />
     <Compile Include="MotionStudy.cs" />
     <Compile Include="Pulsing.cs" />
     <Compile Include="Slewers.cs" />

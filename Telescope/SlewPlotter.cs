@@ -10,9 +10,9 @@ using System.Diagnostics;
 
 namespace ASCOM.Wise40 //.Telescope
 {
-    public class Grapher
+    public class SlewPlotter
     {
-        public Grapher(TelescopeAxes axis,  double start, double target)
+        public SlewPlotter(TelescopeAxes axis,  double start, double target)
         {
             Angle.Type angleType = axis == TelescopeAxes.axisPrimary ? Angle.Type.RA : Angle.Type.Dec;
             DateTime utcNow = DateTime.UtcNow;
