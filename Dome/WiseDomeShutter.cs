@@ -51,6 +51,7 @@ namespace ASCOM.Wise40
             private static int _value;
             private static Debugger debugger = Debugger.Instance;
             private static TimeSpan _maxAge = new TimeSpan(0, 0, 60);
+            private static object _lock = new object();
 
             public TimeSpan Age
             {
@@ -81,7 +82,6 @@ namespace ASCOM.Wise40
             public WebClient(string address)
             {
                 _client = new HttpClient();
-                //_client.Timeout = new TimeSpan(0, 0, 4);
                 _url = String.Format("http://{0}/encoder", address);
                 Task.Run(() =>
                 {
@@ -92,19 +92,21 @@ namespace ASCOM.Wise40
 
             private static void PeriodicallyReadShutterPosition(object state)
             {
-                int res = GetShutterPosition().GetAwaiter().GetResult();
-                if (res != -1)
+                lock (_lock)
                 {
-                    _lastReading = DateTime.Now;
-                    _value = res;
+                    int res = GetShutterPosition().GetAwaiter().GetResult();
+                    if (res != -1)
+                    {
+                        _lastReading = DateTime.Now;
+                        _value = res;
+                    }
                 }
             }
 
             public static async Task<int> GetShutterPosition()
             {
                 int ret = -7;
-
-                //_client.CancelPendingRequests();
+                
                 try
                 {
                     var result = await _client.GetAsync(_url);
@@ -142,19 +144,21 @@ namespace ASCOM.Wise40
 
         public void Stop()
         {
-            ShutterState prev = _state;
+            ShutterState prev = State;
             _timer.Change(Timeout.Infinite, Timeout.Infinite);
 
-            switch (_state)
+            switch (State)
             {
                 case ShutterState.shutterOpening:
                     openPin.SetOff();
-                    _state = ShutterState.shutterOpen;
+                    if (!CanUseWebShutter)
+                        State = ShutterState.shutterOpen;
                     break;
 
                 case ShutterState.shutterClosing:
                     closePin.SetOff();
-                    _state = ShutterState.shutterClosed;
+                    if (!CanUseWebShutter)
+                        State = ShutterState.shutterClosed;
                     break;
             }
             #region debug
