@@ -19,7 +19,7 @@ namespace ASCOM.Wise40
 
         private bool _connected = false;
 
-        public Angle _angle;
+        public Angle _angle = new Angle(0.0, Angle.Type.Dec);
         private const double halfPI = Math.PI / 2.0;
         private const double twoPI = Math.PI * 2.0;
 
