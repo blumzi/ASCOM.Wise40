@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2010
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dome", "Dome\Dome.csproj", "{64308775-BD4A-469C-BCAB-3ED830B811AF}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -92,6 +92,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Conformance Tests", "Confor
 	ProjectSection(SolutionItems) = preProject
 		Conformance Test Results\Telescope.txt = Conformance Test Results\Telescope.txt
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wise40Watcher", "Wise40Service\Wise40Watcher.csproj", "{35306030-5E98-4BFC-8E3B-CFC02AA157D0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -312,8 +314,23 @@ Global
 		{89485E63-B166-44B3-B376-8F39509415AF}.Release|x64.ActiveCfg = Release|Win32
 		{89485E63-B166-44B3-B376-8F39509415AF}.Release|x86.ActiveCfg = Release|Win32
 		{89485E63-B166-44B3-B376-8F39509415AF}.Release|x86.Build.0 = Release|Win32
+		{35306030-5E98-4BFC-8E3B-CFC02AA157D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{35306030-5E98-4BFC-8E3B-CFC02AA157D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{35306030-5E98-4BFC-8E3B-CFC02AA157D0}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{35306030-5E98-4BFC-8E3B-CFC02AA157D0}.Debug|x64.Build.0 = Debug|Any CPU
+		{35306030-5E98-4BFC-8E3B-CFC02AA157D0}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{35306030-5E98-4BFC-8E3B-CFC02AA157D0}.Debug|x86.Build.0 = Debug|Any CPU
+		{35306030-5E98-4BFC-8E3B-CFC02AA157D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{35306030-5E98-4BFC-8E3B-CFC02AA157D0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{35306030-5E98-4BFC-8E3B-CFC02AA157D0}.Release|x64.ActiveCfg = Release|Any CPU
+		{35306030-5E98-4BFC-8E3B-CFC02AA157D0}.Release|x64.Build.0 = Release|Any CPU
+		{35306030-5E98-4BFC-8E3B-CFC02AA157D0}.Release|x86.ActiveCfg = Release|Any CPU
+		{35306030-5E98-4BFC-8E3B-CFC02AA157D0}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {219CB79B-3327-4160-9EF5-8E4E5D326AB4}
 	EndGlobalSection
 EndGlobal
