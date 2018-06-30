@@ -26,6 +26,7 @@ namespace ASCOM.Wise40 //.Telescope
             checkBoxEnslaveDome.Checked = wisetele._enslaveDome;
             checkBoxCalculateRefraction.Checked = wisetele._calculateRefraction;
             checkBoxBypassSafety.Checked = wisetele.BypassCoordinatesSafety;
+            checkBoxPlotSlews.Checked = wisetele.PlotSlews;
         }
 
         private void cmdOK_Click(object sender, EventArgs e) // OK button event handler
@@ -34,6 +35,7 @@ namespace ASCOM.Wise40 //.Telescope
             wisetele._enslaveDome = checkBoxEnslaveDome.Checked;
             wisetele._calculateRefraction = checkBoxCalculateRefraction.Checked;
             wisetele.BypassCoordinatesSafety = checkBoxBypassSafety.Checked;
+            wisetele.PlotSlews = checkBoxPlotSlews.Checked;
             wisetele.WriteProfile();
             Close();
         }
@@ -58,6 +60,11 @@ namespace ASCOM.Wise40 //.Telescope
             {
                 MessageBox.Show(other.Message);
             }
+        }
+
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }

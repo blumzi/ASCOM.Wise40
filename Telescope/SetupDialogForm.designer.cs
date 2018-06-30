@@ -41,6 +41,7 @@ namespace ASCOM.Wise40 //.Telescope
             this.checkBoxCalculateRefraction = new System.Windows.Forms.CheckBox();
             this.checkBoxBypassSafety = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.checkBoxPlotSlews = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).BeginInit();
             this.SuspendLayout();
             // 
@@ -50,7 +51,7 @@ namespace ASCOM.Wise40 //.Telescope
             this.cmdOK.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.cmdOK.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.cmdOK.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.cmdOK.Location = new System.Drawing.Point(248, 108);
+            this.cmdOK.Location = new System.Drawing.Point(248, 133);
             this.cmdOK.Name = "cmdOK";
             this.cmdOK.Size = new System.Drawing.Size(59, 24);
             this.cmdOK.TabIndex = 0;
@@ -64,7 +65,7 @@ namespace ASCOM.Wise40 //.Telescope
             this.cmdCancel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.cmdCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.cmdCancel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.cmdCancel.Location = new System.Drawing.Point(248, 134);
+            this.cmdCancel.Location = new System.Drawing.Point(248, 159);
             this.cmdCancel.Name = "cmdCancel";
             this.cmdCancel.Size = new System.Drawing.Size(59, 25);
             this.cmdCancel.TabIndex = 1;
@@ -149,12 +150,25 @@ namespace ASCOM.Wise40 //.Telescope
             this.toolTip1.SetToolTip(this.checkBoxBypassSafety, "Dangerous!!!  Telescope will not perform safety checks!");
             this.checkBoxBypassSafety.UseVisualStyleBackColor = true;
             // 
+            // checkBoxPlotSlews
+            // 
+            this.checkBoxPlotSlews.AutoSize = true;
+            this.checkBoxPlotSlews.Location = new System.Drawing.Point(24, 167);
+            this.checkBoxPlotSlews.Name = "checkBoxPlotSlews";
+            this.checkBoxPlotSlews.Size = new System.Drawing.Size(115, 17);
+            this.checkBoxPlotSlews.TabIndex = 17;
+            this.checkBoxPlotSlews.Text = "Produce slew plots";
+            this.toolTip1.SetToolTip(this.checkBoxPlotSlews, "Dangerous!!!  Telescope will not perform safety checks!");
+            this.checkBoxPlotSlews.UseVisualStyleBackColor = true;
+            this.checkBoxPlotSlews.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
+            // 
             // TelescopeSetupDialogForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.ClientSize = new System.Drawing.Size(321, 171);
+            this.ClientSize = new System.Drawing.Size(321, 196);
+            this.Controls.Add(this.checkBoxPlotSlews);
             this.Controls.Add(this.checkBoxBypassSafety);
             this.Controls.Add(this.checkBoxCalculateRefraction);
             this.Controls.Add(this.checkBoxEnslaveDome);
@@ -190,5 +204,6 @@ namespace ASCOM.Wise40 //.Telescope
         private System.Windows.Forms.CheckBox checkBoxCalculateRefraction;
         private System.Windows.Forms.CheckBox checkBoxBypassSafety;
         private System.Windows.Forms.ToolTip toolTip1;
+        private System.Windows.Forms.CheckBox checkBoxPlotSlews;
     }
 }
