@@ -272,7 +272,7 @@ namespace Dash
                 else
                 {
                     // STUCK: Slewing but not moving
-                    annunciatorDome.Cadence = ASCOM.Controls.CadencePattern.BlinkSlow;
+                    annunciatorDome.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
                 }
             }
             else
