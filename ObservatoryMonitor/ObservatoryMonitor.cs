@@ -147,9 +147,9 @@ namespace ASCOM.Wise40.ObservatoryMonitor
         private void EnsureServerWithSameOpMode()
         {
             WiseSite.OpMode configuredOpMode = wisesite.OperationalMode;
-            Process[] processes = Process.GetProcessesByName("ASCOM.RemoteDeviceServer");
+            Process[] remoteServerProcesses = Process.GetProcessesByName("ASCOM.RemoteDeviceServer");
 
-            if (processes.Length > 0)
+            if (remoteServerProcesses.Length > 0)
             {
                 //
                 // The ASCOM Remote Server is running.
@@ -173,12 +173,9 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 } catch {
                     throw;
                 }
-
-                if (runningOpMode == configuredOpMode)  // The current Server and Dash are at the correct OpMode
-                    return;
             }
 
-            RestartApps(configuredOpMode, true);
+            StartApps(configuredOpMode, false);
         }
 
         private void CheckSituation()
@@ -388,15 +385,6 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                     Log(string.Format("Exception: {0}", ex.Message));
                 }
             }, CT);
-            //.ContinueWith((t) =>
-            //{
-            //    #region debug
-            //    debugger.WriteLine(Common.Debugger.DebugLevel.DebugLogic,
-            //        "pulser \"{0}\" on {1} completed with status: {2}",
-            //        t.ToString(), pulserTask._axis.ToString(), t.Status.ToString());
-            //    #endregion
-            //    Deactivate(pulserTask);
-            //}, TaskContinuationOptions.ExecuteSynchronously);
         }
 
         private void ShutdownObservatory(string reason)
@@ -525,7 +513,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             }
             catch (Exception ex)
             {
-                MessageBox.Show(string.Format("Exception occurred while Shutting Down:\n{0}", ex.Message));
+                Log(string.Format("Exception occurred:\n{0}, aborting shutdown!", ex.Message));
                 _shuttingDown = false;
             }
             _shuttingDown = false;
@@ -561,12 +549,24 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             }
         }
 
+        private void removeHumanInterventionFile(object sender, DoWorkEventArgs e)
+        {
+            HumanIntervention.Remove();
+        }
+
+        private void afterRemoveHumanInterventionFile(object sender, RunWorkerCompletedEventArgs e)
+        {
+            Log("Removed operator intervention.");
+        }
+
         private void buttonManualIntervention_Click(object sender, EventArgs e)
         {
             if (HumanIntervention.IsSet())
             {
-                HumanIntervention.Remove();
-                Log("Removed operator intervention.");
+                BackgroundWorker bw = new BackgroundWorker();
+                bw.DoWork += new DoWorkEventHandler(removeHumanInterventionFile);
+                bw.RunWorkerCompleted += new RunWorkerCompletedEventHandler(afterRemoveHumanInterventionFile);
+                bw.RunWorkerAsync();
             }
             else
             {
@@ -591,29 +591,31 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 _form = form;
                 _path = path;
                 _name = name;
-                Process[] processes = Process.GetProcessesByName(name);
-
-                if (processes.Length > 0)
-                {
-                    _process = processes[0];
-                }
             }
 
-            public bool IsRunning
+            public bool _isRunning
             {
                 get
                 {
+                    Process[] processes = Process.GetProcessesByName(_name);
+
+                    _process = null;
+                    if (processes.Length > 0)
+                    {
+                        _process = processes[0];
+                    }
                     return _process != null;
                 }
             }
 
             public void Restart()
             {
-                if (IsRunning)
+                if (_isRunning)
                 {
                     _form.Log(string.Format("Stopping current \"{0}\" ...", _name));
                     _process.Kill();
                 }
+
                 if (_path != null)
                 {
                     Thread.Sleep(5000);
@@ -623,29 +625,38 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             }
         };
 
-        private bool RestartApps(WiseSite.OpMode newMode, bool silent)
+        private bool StartApps(WiseSite.OpMode newMode, bool interactive)
         {
-            string message = string.Format("\nYou are about to change the Wise40 operational\n   mode from \"{0}\" to \"{1}\" !\n\n",
-                wisesite.OperationalMode, newMode);
+            bool doit = true, doneit = false;
 
             List<App> apps = new List<App>();
             apps.Add(new App(this, "ASCOM.RemoteDeviceServer", Const.wiseASCOMServerPath));
             apps.Add(new App(this, Const.wiseDashboardAppName, _simulated ? Const.wiseSimulatedDashPath : Const.wiseRealDashPath));
-            
-            message += "The following applications will be restarted:\n\n";
-            foreach (var app in apps)
-                message += "    - " + app._name + '\n';
-            message += "\nPlease confirm or cancel!";
 
-            if (MessageBox.Show(message, "Change the Wise40 Operation Mode", MessageBoxButtons.OKCancel) == DialogResult.OK) {
+            if (interactive)
+            {
+                string message = string.Format("\nYou are about to change the Wise40 operational\n   mode from \"{0}\" to \"{1}\" !\n\n",
+                    wisesite.OperationalMode, newMode);
+                message += "The following applications will be restarted:\n\n";
+                foreach (var app in apps)
+                    message += "    - " + app._name + '\n';
+                message += "\nPlease confirm or cancel!";
+
+                if (MessageBox.Show(message, "Change the Wise40 Operation Mode", MessageBoxButtons.OKCancel) == DialogResult.OK)
+                    doit = true;
+            }
+
+            if (doit)
+            {
                 CloseConnections();
                 wisesite.OperationalMode = newMode;
                 foreach (var app in apps)
                     app.Restart();
                 OpenConnections();
-                return true;
+                doneit = true;
             }
-            return false;
+
+            return doneit;
         }
         
         private void SelectOpMode(object sender, EventArgs e)
@@ -654,7 +665,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             WiseSite.OpMode mode = (selectedItem == wISEToolStripMenuItem) ? WiseSite.OpMode.WISE :
                 (selectedItem == lCOToolStripMenuItem) ? WiseSite.OpMode.LCO : WiseSite.OpMode.ACP;
 
-            if (RestartApps(mode, false))
+            if (StartApps(mode, true))
                 UpdateOpModeControls(mode);
         }
 
