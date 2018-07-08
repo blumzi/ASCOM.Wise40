@@ -1,0 +1,20 @@
+#!/bin/bash
+
+prog=$(basename ${0})
+logfile=/cygdrive/c/Wise40/Logs/${prog}.log
+
+function log() {
+    echo "${prog}: $(date --rfc-3339=ns) $*" >> ${logfile}
+}
+
+tops=(
+    /cygdrive/c/Wise40/Logs
+    /cygdrive/c/Users/${USER}/Documents/ASCOM
+)
+
+log Started
+while read dir; do
+    log "Compressing \"${dir}\" ..."
+    gzip --recursive --best "${dir}"
+done < <( find "${tops[@]}" -maxdepth 1 -type d -name '*2???-??-??' -mtime +10 ) 
+log Done
