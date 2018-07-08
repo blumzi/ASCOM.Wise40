@@ -219,10 +219,15 @@ namespace ASCOM.Wise40
         /// Called after time-to-{open,close} passes.
         /// </summary>
         /// <param name="state"></param>
-        private void onTimer(object state)
+        private void onTimer(object sender)
         {
+            ShutterState prev = State;
             if (IsMoving)
                 Stop();
+            if (prev == ShutterState.shutterClosing)
+                State = ShutterState.shutterClosed;
+            else if (prev == ShutterState.shutterOpening)
+                State = ShutterState.shutterOpen;
         }
 
         public void init()
@@ -236,7 +241,8 @@ namespace ASCOM.Wise40
             {
                 debugger.WriteLine(Debugger.DebugLevel.DebugExceptions, "WiseDomeShutter.init: Exception: {0}.", ex.Message);
             }
-            _state = State;
+            //_state = State;
+            _state = ShutterState.shutterClosed;
             _timer = new System.Threading.Timer(new TimerCallback(onTimer));
             _timeout = (Simulated ? 10 : 25) * 1000;
             openPin.SetOff();
@@ -310,7 +316,8 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return webClient != null && _lowestValue != -1 && _highestValue != -1;
+                return false;
+                //return webClient != null && _lowestValue != -1 && _highestValue != -1;
             }
         }
 
