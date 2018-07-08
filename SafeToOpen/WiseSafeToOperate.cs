@@ -45,9 +45,11 @@ namespace ASCOM.Wise40SafeToOpen
         public SunSensor sunSensor;
         public HumanInterventionSensor humanInterventionSensor;
         public List<Sensor> _sensors;
+        private bool _bypassed = false;
         
         internal static string ageMaxSecondsProfileName = "AgeMaxSeconds";
         internal static string stableAfterMinProfileName = "StableAfterMin";
+        internal static string bypassedProfileName = "Bypassed";
         public int ageMaxSeconds;
 
         /// <summary>
@@ -55,8 +57,8 @@ namespace ASCOM.Wise40SafeToOpen
         /// </summary>
         private bool _connected = false;
 
-        private Wise40.Common.Debugger debugger = Wise40.Common.Debugger.Instance;
-        private static TraceLogger tl = new TraceLogger("", "Wise40.SafeToOpen");
+        private Wise40.Common.Debugger debugger = Debugger.Instance;
+        private static TraceLogger tl;
 
         public WiseBoltwood boltwood = WiseBoltwood.Instance;
         public WiseVantagePro vantagePro = WiseVantagePro.Instance;
@@ -101,16 +103,15 @@ namespace ASCOM.Wise40SafeToOpen
         public WiseSafeToOperate(Type type)
         {
             _type = type;
-            tl = new TraceLogger("", "Wise40.SafeToOpen");
         }
 
         public void init()
         {
-            //string type = _type == Type.Open ? "Open" : "Image";
-
             if (initialized)
                 return;
 
+            if (tl == null)
+                tl = new TraceLogger("", "Wise40.SafeToOpen");
             name = "Wise40 SafeToOpen";
             driverID = Const.wiseSafeToOpenDriverID;
             driverDescription = string.Format("ASCOM Wise40.SafeToOpen v{0}", version.ToString());
@@ -204,18 +205,53 @@ namespace ASCOM.Wise40SafeToOpen
             }
         }
 
+        private ArrayList supportedActions = new ArrayList() { "startbypass", "endbypass", "status" };
+
         public ArrayList SupportedActions
         {
             get
             {
-                tl.LogMessage("SupportedActions Get", "Returning empty arraylist");
-                return new ArrayList();
+                // tl.LogMessage("SupportedActions Get", "Returning empty arraylist");
+                return supportedActions;
             }
         }
 
         public string Action(string actionName, string actionParameters)
         {
-            throw new ASCOM.ActionNotImplementedException("Action " + actionName + " is not implemented by this driver");
+            string ret = string.Empty;
+
+            switch (actionName.ToLower())
+            {
+                case "startbypass":
+                    _bypassed = true;
+                    _profile.WriteValue(driverID, bypassedProfileName, _bypassed.ToString());
+                    ret = "ok";
+                    break;
+
+                case "endbypass":
+                    _bypassed = false;
+                    _profile.WriteValue(driverID, bypassedProfileName, _bypassed.ToString());
+                    ret = "ok";
+                    break;
+
+                case "status":
+                    List<string> stat = new List<string>() {
+                        (isReady) ? "ready" : "not-ready",
+                        (IsSafe) ? "safe" : "not-safe",
+                        (_bypassed) ? "bypassed" : "not-bypassed",
+                    };
+                    ret = string.Join(",", stat);
+                    break;
+
+                case "unsafereasons":
+                    bool dummy = IsSafe;
+                    ret = string.Join(", ", UnsafeReasons);
+                    break;
+
+                default:
+                    throw new ASCOM.ActionNotImplementedException("Action " + actionName + " is not implemented by this driver");
+            }
+            return ret;
         }
 
         public void CommandBlind(string command, bool raw)
@@ -227,7 +263,11 @@ namespace ASCOM.Wise40SafeToOpen
         public bool CommandBool(string command, bool raw)
         {
             CheckConnected("CommandBool");
-            throw new ASCOM.MethodNotImplementedException("CommandBool");
+
+            if (command.ToLower() == "ready")
+                return isReady;
+            else
+                throw new ASCOM.MethodNotImplementedException("CommandBool");
         }
 
         public string CommandString(string command, bool raw)
@@ -239,8 +279,7 @@ namespace ASCOM.Wise40SafeToOpen
 
             if (command.ToLower() == "unsafereasons")
             {
-                bool dummy = IsSafe;
-                return string.Join(", ", UnsafeReasons);
+                return Action("unsafereasons", string.Empty);
             }
             else
                 return stringSafetyCommand(command);
@@ -334,6 +373,8 @@ namespace ASCOM.Wise40SafeToOpen
         {
             get
             {
+                if (tl == null)
+                    tl = new TraceLogger("", "Wise40.SafeToOpen");
                 tl.LogMessage("InterfaceVersion Get", "1");
                 return Convert.ToInt16("1");
             }
@@ -343,6 +384,8 @@ namespace ASCOM.Wise40SafeToOpen
         {
             get
             {
+                if (tl == null)
+                    tl = new TraceLogger("", "Wise40.SafeToOpen");
                 tl.LogMessage("Name Get", name);
                 return name;
             }
@@ -572,6 +615,8 @@ namespace ASCOM.Wise40SafeToOpen
 
                 if (!_connected)
                     ret = false;
+                else if (_bypassed)
+                    return true;
                 else if (!humanInterventionSensor.isSafe)
                     ret = false;
                 else
@@ -600,6 +645,23 @@ namespace ASCOM.Wise40SafeToOpen
 
         #endregion
 
+        public bool isReady
+        {
+            get
+            {
+                if (!_boltwoodIsValid || !_vantageProIsValid)
+                    return false;
+
+                foreach (Sensor s in _sensors)
+                {
+                    if (s.nReadings < s._repeats)
+                        return false;
+                }
+
+                return true;
+            }
+        }
+
         #region Private properties and methods
         // here are some useful properties and methods that can be used as required
         // to help with driver development
@@ -622,6 +684,7 @@ namespace ASCOM.Wise40SafeToOpen
         public void ReadProfile()
         {
             ageMaxSeconds = Convert.ToInt32(_profile.GetValue(driverID, ageMaxSecondsProfileName, string.Empty, 180.ToString()));
+            _bypassed = Convert.ToBoolean(_profile.GetValue(driverID, bypassedProfileName, string.Empty, false.ToString()));
 
             int minutes = Convert.ToInt32(_profile.GetValue(driverID, stableAfterMinProfileName, string.Empty, _defaultStabilizationPeriodMinutes.ToString()));
             _stabilizationPeriod = new TimeSpan(0, minutes, 0);
