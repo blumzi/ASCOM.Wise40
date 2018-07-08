@@ -39,19 +39,23 @@ namespace ASCOM.Wise40 //.Telescope
 
         private void SafetyChecker(object StateObject)
         {
+            wisetele.safetyMonitorTimer.Enabled = false;
+
             string reason = wisetele.SafeAtCoordinates(
                 Angle.FromHours(wisetele.RightAscension, Angle.Type.RA),
                 Angle.FromDegrees(wisetele.Declination, Angle.Type.Dec));
 
             if (reason == string.Empty)
+            {
+                wisetele.safetyMonitorTimer.Enabled = true;
                 return;
+            }
 
             #region debug
             wisetele.debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "SafetyChecker: activated (action: {0}, reason: {1})",
                 WhenNotSafe.ToString(), reason);
             #endregion
 
-            wisetele.safetyMonitorTimer.Enabled = false;
             switch (WhenNotSafe)
             {
                 case ActionWhenNotSafe.None:
@@ -63,9 +67,10 @@ namespace ASCOM.Wise40 //.Telescope
                     wisetele.Backoff();
                     break;
             }
+            wisetele.safetyMonitorTimer.Enabled = true;
         }
 
-        public SafetyMonitorTimer(int dueTime = 100, int period = 100)
+        public SafetyMonitorTimer(int dueTime = 1000, int period = 1000)
         {
             _timer = new Timer(new TimerCallback(SafetyChecker));
             this._dueTime = dueTime;
