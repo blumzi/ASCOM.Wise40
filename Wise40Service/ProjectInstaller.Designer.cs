@@ -28,23 +28,23 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.serviceInstallerWise40 = new System.ServiceProcess.ServiceInstaller();
+            this.serviceInstallerWise40Watcher = new System.ServiceProcess.ServiceInstaller();
             // 
-            // serviceInstallerWise40
+            // serviceInstallerWise40Watcher
             // 
-            this.serviceInstallerWise40.Description = "Watches and restarts the Wise40 processes";
-            this.serviceInstallerWise40.DisplayName = "Wise40Watcher";
-            this.serviceInstallerWise40.ServiceName = "Wise40Watcher";
-            this.serviceInstallerWise40.StartType = System.ServiceProcess.ServiceStartMode.Automatic;
+            this.serviceInstallerWise40Watcher.Description = "Watches and restarts the Wise40 processes";
+            this.serviceInstallerWise40Watcher.DisplayName = "Wise40Watcher";
+            this.serviceInstallerWise40Watcher.ServiceName = "Wise40Watcher";
+            this.serviceInstallerWise40Watcher.StartType = System.ServiceProcess.ServiceStartMode.Automatic;
             // 
             // ProjectInstaller
             // 
             this.Installers.AddRange(new System.Configuration.Install.Installer[] {
-            this.serviceInstallerWise40});
+            this.serviceInstallerWise40Watcher});
 
         }
 
         #endregion
-        private System.ServiceProcess.ServiceInstaller serviceInstallerWise40;
+        private System.ServiceProcess.ServiceInstaller serviceInstallerWise40Watcher;
     }
 }

@@ -36,7 +36,9 @@
             // 
             // Wise40Watcher
             // 
-            this.ServiceName = "Wise40";
+            this.AutoLog = false;
+            this.CanShutdown = true;
+            this.ServiceName = "Wise40Watcher";
 
         }
 
