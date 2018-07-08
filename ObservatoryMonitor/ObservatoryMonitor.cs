@@ -43,10 +43,12 @@ namespace ASCOM.Wise40.ObservatoryMonitor
         Color normalColor = Statuser.colors[Statuser.Severity.Normal];
         Color unsafeColor = Statuser.colors[Statuser.Severity.Error];
         Color safeColor = Statuser.colors[Statuser.Severity.Good];
+        Color warningColor = Statuser.colors[Statuser.Severity.Warning];
 
         CancellationTokenSource CTS = new CancellationTokenSource();
         CancellationToken CT;
         Task workerTask;
+        string safeToOperateStatus = string.Empty;
 
         static bool _firstTime = true;
 
@@ -142,51 +144,27 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             labelOperatingMode.Text = opMode.ToString();
             updateManualInterventionControls();
             UpdateOpModeControls(opMode);
+            
+            conditionsBypassToolStripMenuItem.Text = "";
+            conditionsBypassToolStripMenuItem.Enabled = false;
         }
 
-        private void EnsureServerWithSameOpMode()
+        private void UpdateConditionsBypassToolStripMenuItem(bool bypassed)
         {
-            WiseSite.OpMode configuredOpMode = wisesite.OperationalMode;
-            Process[] remoteServerProcesses = Process.GetProcessesByName("ASCOM.RemoteDeviceServer");
+            if (!conditionsBypassToolStripMenuItem.Enabled)
+                conditionsBypassToolStripMenuItem.Enabled = true;
 
-            if (remoteServerProcesses.Length > 0)
-            {
-                //
-                // The ASCOM Remote Server is running.
-                // We'll check it is running at the same OpMode as currently configured in 
-                //  the profile.
-                //
-                WiseSite.OpMode runningOpMode = WiseSite.OpMode.NONE;
-
-                try
-                {
-                    Telescope wisetelescope = new Telescope("ASCOM.Web1.Telescope");
-                    wisetelescope.Connected = true;
-                    while (wisetelescope.Connected == false)
-                    {
-                        Log("Waiting for the \"Telescope\" client to connect ...", 5);
-                        Application.DoEvents();
-                    }
-
-                    Enum.TryParse<WiseSite.OpMode>(wisetelescope.CommandString("opmode", false), out runningOpMode);
-                    wisetelescope.Dispose();
-                } catch {
-                    throw;
-                }
-            }
-
-            StartApps(configuredOpMode, false);
+            conditionsBypassToolStripMenuItem.Text = bypassed ? "Don't bypass safety" : "Bypass safety";
         }
 
         private void CheckSituation()
         {
-            bool active = true, safe = true, inControl = false;
+            bool active = true, inControl = false, ready = false, safe = true, bypassed = false;
 
             if (_firstTime)
             {
                 try
                 {
-                    EnsureServerWithSameOpMode();
                     OpenConnections();
                 }
                 catch (Exception ex)
@@ -200,7 +178,17 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             try
             {
                 active = wisetelescope.CommandBool("active", false);
-                safe = wisesafetooperate.IsSafe;
+
+                safeToOperateStatus = wisesafetooperate.Action("status", string.Empty);
+                ready = safeToOperateStatus.Contains("not-ready") ? false : true;
+                bypassed = safeToOperateStatus.Contains("not-bypassed") ? false : true;
+                UpdateConditionsBypassToolStripMenuItem(bypassed);
+
+                if (ready)
+                    safe = safeToOperateStatus.Contains("not-safe") ? false : true;
+                if (bypassed)
+                    safe = true;
+
                 inControl = wisecomputercontrol.IsSafe;
             } catch (Exception ex)
             {
@@ -232,33 +220,19 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 labelActivity.Text = "Idle";
                 labelActivity.ForeColor = unsafeColor;
             }
-
-            if (safe)
-            {
-                labelConditions.Text = "Safe";
-                labelConditions.ForeColor = safeColor;
-                toolTip.SetToolTip(labelConditions, "");
-            }
-            else
-            {
-                labelConditions.Text = "Not safe";
-                labelConditions.ForeColor = unsafeColor;
-                toolTip.SetToolTip(labelConditions,
-                    wisesafetooperate.CommandString("unsafereasons", false).Replace(',', '\n'));
-            }
-
+            
             if (_shuttingDown)
                 return;
-            
-            if (!(active && safe))
+
+            List<string> reasonsList = new List<string>();
+
+            if (ready && !safe)
+                reasonsList.Add("Not SafeToOperate");
+            if (!active)
+                reasonsList.Add("Telescope is Idle");
+
+            if (reasonsList.Count != 0)
             {
-                List<string> reasonsList = new List<string>();
-
-                if (!active)
-                    reasonsList.Add("Telescope is Idle");
-                if (!safe)
-                    reasonsList.Add("Not SafeToOperate");
-
                 string reason = String.Join(" and ", reasonsList);
                 if (inControl)
                     DoShutdownObservatory(reason);
@@ -267,6 +241,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             }
             else
                 Log("OK");
+            
             _nextCheck = DateTime.Now.Add(_intervalBetweenChecks);
         }
 
@@ -286,7 +261,8 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 labelNextCheckLabel.Visible = false;
                 buttonShutdown.Text = "Abort Shutdown";
                 toolTip.SetToolTip(buttonShutdown, "Abort the shutdown procedure");
-            } else
+            }
+            else
             {
                 labelNextCheck.Visible = true;
                 labelNextCheckLabel.Visible = true;
@@ -301,14 +277,59 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 toolTip.SetToolTip(buttonShutdown, "Stop activities\nPark equipment\nClose shutter");
             }
 
-            if (HumanIntervention.IsSet())
-            {
-                labelConditions.Text = "Not safe";
-                labelConditions.ForeColor = unsafeColor;
-                toolTip.SetToolTip(labelConditions, HumanIntervention.Info);
-            }
             buttonManualIntervention.Enabled = !_shuttingDown;
             updateManualInterventionControls();
+            UpdateConditionsControls();
+        }
+
+        private void UpdateConditionsControls()
+        {
+            if (wisesafetooperate == null)
+                return;
+
+            string safety = wisesafetooperate.Action("status", string.Empty);
+            bool bypassed = safety.Contains("not-bypassed") ? false : true;
+            bool ready = safety.Contains("not-ready") ? false : true;
+            bool safe = safety.Contains("not-safe") ? false : true;
+            bool intervention = HumanIntervention.IsSet();
+            string text = string.Empty, tip = string.Empty;
+            Color color = normalColor;
+
+            if (bypassed)
+            {
+                text = "Bypassed";
+                color = warningColor;
+                tip = "Manually bypassed from Settings";
+            }
+            else if (intervention)
+            {
+                text = "Intervention";
+                color = warningColor;
+                tip = HumanIntervention.Info;
+            }
+            else if (!ready)
+            {
+                text = "Not ready";
+                color = normalColor;
+                tip = "Not enough safety information yet";
+            }
+            else if (!safe)
+            {
+                text = "Not safe";
+                color = unsafeColor;
+                tip = wisesafetooperate.Action("unsafereasons", string.Empty).Replace(',', '\n');
+            }
+            else
+            {
+                text = "Safe";
+                color = safeColor;
+            }
+
+            labelConditions.Text = text;
+            labelConditions.ForeColor = color;
+            toolTip.SetToolTip(labelConditions, tip);
+
+            UpdateConditionsBypassToolStripMenuItem(bypassed);
         }
 
         private void timerDisplayRefresh_Tick(object sender, EventArgs e)
@@ -625,48 +646,13 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             }
         };
 
-        private bool StartApps(WiseSite.OpMode newMode, bool interactive)
-        {
-            bool doit = true, doneit = false;
-
-            List<App> apps = new List<App>();
-            apps.Add(new App(this, "ASCOM.RemoteDeviceServer", Const.wiseASCOMServerPath));
-            apps.Add(new App(this, Const.wiseDashboardAppName, _simulated ? Const.wiseSimulatedDashPath : Const.wiseRealDashPath));
-
-            if (interactive)
-            {
-                string message = string.Format("\nYou are about to change the Wise40 operational\n   mode from \"{0}\" to \"{1}\" !\n\n",
-                    wisesite.OperationalMode, newMode);
-                message += "The following applications will be restarted:\n\n";
-                foreach (var app in apps)
-                    message += "    - " + app._name + '\n';
-                message += "\nPlease confirm or cancel!";
-
-                if (MessageBox.Show(message, "Change the Wise40 Operation Mode", MessageBoxButtons.OKCancel) == DialogResult.OK)
-                    doit = true;
-            }
-
-            if (doit)
-            {
-                CloseConnections();
-                wisesite.OperationalMode = newMode;
-                foreach (var app in apps)
-                    app.Restart();
-                OpenConnections();
-                doneit = true;
-            }
-
-            return doneit;
-        }
-        
         private void SelectOpMode(object sender, EventArgs e)
         {
             ToolStripMenuItem selectedItem = sender as ToolStripMenuItem;
             WiseSite.OpMode mode = (selectedItem == wISEToolStripMenuItem) ? WiseSite.OpMode.WISE :
                 (selectedItem == lCOToolStripMenuItem) ? WiseSite.OpMode.LCO : WiseSite.OpMode.ACP;
-
-            if (StartApps(mode, true))
-                UpdateOpModeControls(mode);
+            
+            UpdateOpModeControls(mode);
         }
 
         private void UpdateOpModeControls(WiseSite.OpMode mode)
@@ -731,6 +717,17 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 _intervalBetweenChecks = new TimeSpan(0, value, 0);
                 _nextCheck = DateTime.Now.Add(_intervalBetweenChecks);
             }
+        }
+
+        private void conditionsBypassToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (wisesafetooperate == null)
+                return;
+
+            safeToOperateStatus = wisesafetooperate.Action("status", string.Empty);
+            bool currentlyBypassed = safeToOperateStatus.Contains("not-bypassed") ? false : true;
+
+            wisesafetooperate.Action(currentlyBypassed ? "endbypass" : "startbypass", string.Empty);
         }
     }
 }

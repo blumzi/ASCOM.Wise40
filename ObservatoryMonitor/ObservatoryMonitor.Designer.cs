@@ -50,6 +50,7 @@
             this.labelActivity = new System.Windows.Forms.Label();
             this.labelOperatingMode = new System.Windows.Forms.Label();
             this.labelComputerControl = new System.Windows.Forms.Label();
+            this.labelHumanInterventionStatus = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.labelNextCheckLabel = new System.Windows.Forms.Label();
@@ -59,7 +60,7 @@
             this.label2 = new System.Windows.Forms.Label();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.label4 = new System.Windows.Forms.Label();
-            this.labelHumanInterventionStatus = new System.Windows.Forms.Label();
+            this.conditionsBypassToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -96,7 +97,8 @@
             // 
             this.settingsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.setupToolStripMenuItemSetup,
-            this.operationModeToolStripMenuItem});
+            this.operationModeToolStripMenuItem,
+            this.conditionsBypassToolStripMenuItem});
             this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
             this.settingsToolStripMenuItem.Size = new System.Drawing.Size(61, 20);
             this.settingsToolStripMenuItem.Text = "Settings";
@@ -104,7 +106,7 @@
             // setupToolStripMenuItemSetup
             // 
             this.setupToolStripMenuItemSetup.Name = "setupToolStripMenuItemSetup";
-            this.setupToolStripMenuItemSetup.Size = new System.Drawing.Size(161, 22);
+            this.setupToolStripMenuItemSetup.Size = new System.Drawing.Size(227, 22);
             this.setupToolStripMenuItemSetup.Text = "Setup";
             this.setupToolStripMenuItemSetup.Click += new System.EventHandler(this.setupToolStripMenuItem_Click);
             // 
@@ -115,7 +117,7 @@
             this.lCOToolStripMenuItem,
             this.wISEToolStripMenuItem});
             this.operationModeToolStripMenuItem.Name = "operationModeToolStripMenuItem";
-            this.operationModeToolStripMenuItem.Size = new System.Drawing.Size(161, 22);
+            this.operationModeToolStripMenuItem.Size = new System.Drawing.Size(227, 22);
             this.operationModeToolStripMenuItem.Text = "Operation Mode";
             // 
             // aCPToolStripMenuItem
@@ -265,6 +267,19 @@
             this.labelComputerControl.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.toolTip.SetToolTip(this.labelComputerControl, "The Computer Control switch states are either\r\n\"Operational\" or \"Maintenance\"");
             // 
+            // labelHumanInterventionStatus
+            // 
+            this.labelHumanInterventionStatus.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
+            this.labelHumanInterventionStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelHumanInterventionStatus.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.labelHumanInterventionStatus.Location = new System.Drawing.Point(64, 16);
+            this.labelHumanInterventionStatus.Name = "labelHumanInterventionStatus";
+            this.labelHumanInterventionStatus.Size = new System.Drawing.Size(56, 24);
+            this.labelHumanInterventionStatus.TabIndex = 64;
+            this.labelHumanInterventionStatus.Text = "Inactive";
+            this.labelHumanInterventionStatus.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.toolTip.SetToolTip(this.labelHumanInterventionStatus, "The Computer Control switch states are either\r\n\"Operational\" or \"Maintenance\"");
+            // 
             // label1
             // 
             this.label1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
@@ -274,7 +289,7 @@
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(136, 24);
             this.label1.TabIndex = 56;
-            this.label1.Text = "Operating Conditions:";
+            this.label1.Text = "Safety:";
             this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // label3
@@ -286,7 +301,7 @@
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(120, 24);
             this.label3.TabIndex = 58;
-            this.label3.Text = "Telescope :";
+            this.label3.Text = "Telescope:";
             this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // labelNextCheckLabel
@@ -377,18 +392,12 @@
             this.label4.Text = "Status:";
             this.label4.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
-            // labelHumanInterventionStatus
+            // conditionsBypassToolStripMenuItem
             // 
-            this.labelHumanInterventionStatus.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.labelHumanInterventionStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelHumanInterventionStatus.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelHumanInterventionStatus.Location = new System.Drawing.Point(64, 16);
-            this.labelHumanInterventionStatus.Name = "labelHumanInterventionStatus";
-            this.labelHumanInterventionStatus.Size = new System.Drawing.Size(56, 24);
-            this.labelHumanInterventionStatus.TabIndex = 64;
-            this.labelHumanInterventionStatus.Text = "Inactive";
-            this.labelHumanInterventionStatus.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.toolTip.SetToolTip(this.labelHumanInterventionStatus, "The Computer Control switch states are either\r\n\"Operational\" or \"Maintenance\"");
+            this.conditionsBypassToolStripMenuItem.Name = "conditionsBypassToolStripMenuItem";
+            this.conditionsBypassToolStripMenuItem.Size = new System.Drawing.Size(227, 22);
+            this.conditionsBypassToolStripMenuItem.Text = "Bypass Operating Conditions";
+            this.conditionsBypassToolStripMenuItem.Click += new System.EventHandler(this.conditionsBypassToolStripMenuItem_Click);
             // 
             // ObsMainForm
             // 
@@ -453,6 +462,7 @@
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label labelHumanInterventionStatus;
+        private System.Windows.Forms.ToolStripMenuItem conditionsBypassToolStripMenuItem;
     }
 }
 
