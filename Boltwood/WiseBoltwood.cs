@@ -325,7 +325,7 @@ namespace ASCOM.Wise40.Boltwood
 
                 tl.LogMessage("CloudCover", string.Format("get - {0}", ret));
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, string.Format("Boltwood: CloudCover_numeric - get => {0}", ret.ToString()));
+                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, string.Format("Boltwood: CloudCover_numeric - get => {0}", ret.ToString()));
                 #endregion 
                 return ret;
             }
@@ -509,7 +509,7 @@ namespace ASCOM.Wise40.Boltwood
                     ret = 100;
                 tl.LogMessage("SkyTemperature", string.Format("get - {0}", ret));
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, string.Format("Boltwood: SkyTemperature - get => {0}", ret.ToString()));
+                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, string.Format("Boltwood: SkyTemperature - get => {0}", ret.ToString()));
                 #endregion 
                 return ret;
             }
@@ -527,7 +527,7 @@ namespace ASCOM.Wise40.Boltwood
 
                 tl.LogMessage("Temperature", string.Format("get - {0}", ret));
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, string.Format("Boltwood: Temperature - get => {0}", ret.ToString()));
+                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, string.Format("Boltwood: Temperature - get => {0}", ret.ToString()));
                 #endregion 
                 return ret;
             }
@@ -616,7 +616,7 @@ namespace ASCOM.Wise40.Boltwood
 
                 tl.LogMessage("WindSpeed", string.Format("get - {0}", ret));
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, string.Format("Boltwood: WindSpeed - get => {0}", ret.ToString()));
+                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, string.Format("Boltwood: WindSpeed - get => {0}", ret.ToString()));
                 #endregion 
                 return ret;
             }

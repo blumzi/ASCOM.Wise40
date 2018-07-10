@@ -253,7 +253,7 @@ namespace ASCOM.Wise40.VantagePro
 
                 tl.LogMessage("DewPoint", "get - " + dewPoint.ToString());
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, string.Format("VantagePro: DewPoint - get => {0}", dewPoint.ToString()));
+                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, string.Format("VantagePro: DewPoint - get => {0}", dewPoint.ToString()));
                 #endregion
                 return dewPoint;
             }
@@ -275,7 +275,7 @@ namespace ASCOM.Wise40.VantagePro
 
                 tl.LogMessage("Humidity", "get - " + humidity.ToString());
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, string.Format("VantagePro: Humidity - get => {0}", humidity.ToString()));
+                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, string.Format("VantagePro: Humidity - get => {0}", humidity.ToString()));
                 #endregion
                 return humidity;
             }
@@ -298,7 +298,7 @@ namespace ASCOM.Wise40.VantagePro
 
                 tl.LogMessage("Pressure", "get - " + pressure.ToString());
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, string.Format("VantagePro: Pressure - get => {0}", pressure.ToString()));
+                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, string.Format("VantagePro: Pressure - get => {0}", pressure.ToString()));
                 #endregion
                 return pressure;
             }
@@ -320,7 +320,7 @@ namespace ASCOM.Wise40.VantagePro
 
                 tl.LogMessage("RainRate", "get - " + rainRate.ToString());
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, string.Format("VantagePro: RainRate - get => {0}", rainRate.ToString()));
+                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, string.Format("VantagePro: RainRate - get => {0}", rainRate.ToString()));
                 #endregion
                 return rainRate;
             }
@@ -426,7 +426,7 @@ namespace ASCOM.Wise40.VantagePro
 
                 tl.LogMessage("Temperature", "get - " + temperature.ToString());
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, string.Format("VantagePro: Temperature - get => {0}", temperature.ToString()));
+                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, string.Format("VantagePro: Temperature - get => {0}", temperature.ToString()));
                 #endregion
                 return temperature;
             }
@@ -518,7 +518,7 @@ namespace ASCOM.Wise40.VantagePro
 
                 tl.LogMessage("WindSpeed", "get - " + windSpeed.ToString());
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, string.Format("VantagePro: WindSpeed - get => {0}", windSpeed.ToString()));
+                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, string.Format("VantagePro: WindSpeed - get => {0}", windSpeed.ToString()));
                 #endregion
                 return windSpeed;
             }

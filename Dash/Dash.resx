@@ -117,9 +117,23 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <metadata name="toolTip.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>531, 5</value>
+  </metadata>
   <metadata name="menuStrip.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>135, 4</value>
   </metadata>
+  <data name="bypassSafetyToolStripMenuItem.ToolTipText" xml:space="preserve">
+    <value>Bypass Safety Checks
+
+Bypasses:
+  - SafeToOperate (environment) checks
+  - Telescope coordinate checks
+
+NOTE:
+   Valid only within the current session.
+   Will not be saved to the persistent profile.</value>
+  </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="pictureBoxWise.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
@@ -674,25 +688,8 @@
         sBWh2iIAbnA43YzmitmAAIQBgZopWEf/2Q==
 </value>
   </data>
-  <metadata name="toolTip.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>531, 5</value>
-  </metadata>
-  <data name="safetyOverrideToolStripMenuItem.ToolTipText" xml:space="preserve">
-    <value>Bypass Safety Checks
-
-Bypasses:
-  - SafeToOperate (environment) checks
-  - Telescope coordinate checks
-
-NOTE:
-   Valid only within the current session.
-   Will not be saved to the persistent profile.</value>
-  </data>
   <metadata name="timerRefreshDisplay.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>248, 3</value>
-  </metadata>
-  <metadata name="toolTip.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>531, 5</value>
   </metadata>
   <metadata name="$this.TrayHeight" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>25</value>

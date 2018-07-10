@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2010
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dome", "Dome\Dome.csproj", "{64308775-BD4A-469C-BCAB-3ED830B811AF}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -97,8 +97,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Conformance Tests", "Confor
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wise40Watcher", "Wise40Service\Wise40Watcher.csproj", "{35306030-5E98-4BFC-8E3B-CFC02AA157D0}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTestWatcher", "UnitTestWatcher\UnitTestWatcher.csproj", "{0CB64B52-A2F3-4973-A168-DBF116BE21CF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -331,18 +329,6 @@ Global
 		{35306030-5E98-4BFC-8E3B-CFC02AA157D0}.Release|x64.Build.0 = Release|Any CPU
 		{35306030-5E98-4BFC-8E3B-CFC02AA157D0}.Release|x86.ActiveCfg = Release|Any CPU
 		{35306030-5E98-4BFC-8E3B-CFC02AA157D0}.Release|x86.Build.0 = Release|Any CPU
-		{0CB64B52-A2F3-4973-A168-DBF116BE21CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0CB64B52-A2F3-4973-A168-DBF116BE21CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0CB64B52-A2F3-4973-A168-DBF116BE21CF}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{0CB64B52-A2F3-4973-A168-DBF116BE21CF}.Debug|x64.Build.0 = Debug|Any CPU
-		{0CB64B52-A2F3-4973-A168-DBF116BE21CF}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{0CB64B52-A2F3-4973-A168-DBF116BE21CF}.Debug|x86.Build.0 = Debug|Any CPU
-		{0CB64B52-A2F3-4973-A168-DBF116BE21CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0CB64B52-A2F3-4973-A168-DBF116BE21CF}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0CB64B52-A2F3-4973-A168-DBF116BE21CF}.Release|x64.ActiveCfg = Release|Any CPU
-		{0CB64B52-A2F3-4973-A168-DBF116BE21CF}.Release|x64.Build.0 = Release|Any CPU
-		{0CB64B52-A2F3-4973-A168-DBF116BE21CF}.Release|x86.ActiveCfg = Release|Any CPU
-		{0CB64B52-A2F3-4973-A168-DBF116BE21CF}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

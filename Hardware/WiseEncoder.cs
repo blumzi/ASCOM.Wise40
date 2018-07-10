@@ -108,7 +108,7 @@ namespace ASCOM.Wise40.Hardware
                 if (_isGray)
                     ret = GrayCode[ret];
                 #region debug
-                debugger.WriteLine(Common.Debugger.DebugLevel.DebugEncoders, "{0}: value: {1}", Name, ret);
+                debugger.WriteLine(Common.Debugger.DebugLevel.DebugDAQs, "{0}: value: {1}", Name, ret);
                 #endregion
 
                 return ret;

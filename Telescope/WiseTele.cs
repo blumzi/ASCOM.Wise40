@@ -1619,12 +1619,14 @@ namespace ASCOM.Wise40
             SlewPlotter slewPlotter = null;
 
             Slewers.Type otherSlewer = (axis == TelescopeAxes.axisPrimary) ? Slewers.Type.Dec : Slewers.Type.Ra;
+            #region graph
             if (_plotSlews)
             {
                 slewPlotter = new SlewPlotter(axis,
                     axis == TelescopeAxes.axisPrimary ? RightAscension : Declination,
                     targetAngle.Degrees);
             }
+            #endregion
 
             _instance.currMovement[axis] = new Movement()
             {
@@ -1632,8 +1634,8 @@ namespace ASCOM.Wise40
                 direction = Const.AxisDirection.None
             };
             Movement cm = _instance.currMovement[axis];
-            int waitForOtherAxisMillis = 500;           // half a second between checks setting an axis rate
-            int waitForOtherAxisTotalSeconds = 600;     // 10 minutes total wait for setting an axis rate
+            const int waitForOtherAxisMillis = 500;           // half a second between checks setting an axis rate
+            const int waitForOtherAxisTotalSeconds = 600;     // 10 minutes total wait for setting an axis rate
 
             cm.taskName = (axis == TelescopeAxes.axisPrimary) ? "primarySlewer" : "secondarySlewer";
             cm.target = targetAngle;
@@ -1646,10 +1648,8 @@ namespace ASCOM.Wise40
             foreach (var rate in rates)
             {
                 bool done = false;
-
-                //slewingArbiter.AxisReadyForRate(axis, rate);
+                
                 DateTime startWaiting = DateTime.Now;
-                //while (!slewingArbiter.BothAxesAreReady(rate))
                 while (!slewingArbiter.AxisTryToSetRate(axis, rate))
                     {
                     //

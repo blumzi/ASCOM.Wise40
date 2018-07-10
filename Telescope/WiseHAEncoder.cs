@@ -108,7 +108,7 @@ namespace ASCOM.Wise40 //.Telescope
                             Convert.ToString(axis ^ prev_axis, 2).PadLeft(16, '0'),
                             Convert.ToString(worm ^ prev_worm).PadLeft(12, '0'));
                     }
-                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, dbg);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, dbg);
                     prev_worm = worm;
                     prev_axis = axis;
                     #endregion

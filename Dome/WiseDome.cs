@@ -187,7 +187,7 @@ namespace ASCOM.Wise40
             }
             catch (WiseException e)
             {
-                debugger.WriteLine(Debugger.DebugLevel.DebugExceptions, "WiseDome: constructor caught: {0}.", e.Message);
+                debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome: constructor caught: {0}.", e.Message);
             }
             
             leftPin.SetOff();
@@ -207,7 +207,7 @@ namespace ASCOM.Wise40
 
             _initialized = true;
 
-            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: init() done.");
+            debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome: init() done.");
         }
 
         private bool DomeStateIsOn(DomeState flag)
@@ -234,12 +234,12 @@ namespace ASCOM.Wise40
         {
             //_arrivedAtAzEvent = e;
             //#region debug
-            //debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+            //debugger.WriteLine(Debugger.DebugLevel.DebugDome,
             //    "WiseDome: SetArrivedAtAzEvent(#{0})", _arrivedAtAzEvent.GetHashCode());
             //#endregion
             externalArrivedAtAzEvents.Add(e);
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+            debugger.WriteLine(Debugger.DebugLevel.DebugDome,
                 "WiseDome:SetArrivedAtAzEvent Added: (#{0})", e.GetHashCode());
             #endregion
         }
@@ -307,7 +307,7 @@ namespace ASCOM.Wise40
             if (!DomeIsMoving)
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, message + "Dome is not moving => false");
+                debugger.WriteLine(Debugger.DebugLevel.DebugDome, message + "Dome is not moving => false");
                 #endregion
                 return false;
             }
@@ -319,21 +319,21 @@ namespace ASCOM.Wise40
             if (DomeStateIsOn(DomeState.MovingCW) && (shortest.direction == Const.AxisDirection.Decreasing))
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, message + "direction changed CW to CCW => true", az, there);
+                debugger.WriteLine(Debugger.DebugLevel.DebugDome, message + "direction changed CW to CCW => true", az, there);
                 #endregion
                 return true;
             }
             else if (DomeStateIsOn(DomeState.MovingCCW) && (shortest.direction == Const.AxisDirection.Increasing))
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, message + "direction changed CCW to CW => true");
+                debugger.WriteLine(Debugger.DebugLevel.DebugDome, message + "direction changed CCW to CW => true");
                 #endregion
                 return true;
             }
             else if (shortest.angle <= inertial)
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, message +
+                debugger.WriteLine(Debugger.DebugLevel.DebugDome, message +
                     string.Format("shortest.Angle {0} <= inertiaAngle({1}) => true", shortest.angle, inertial));
                 #endregion
                 return true;
@@ -341,7 +341,7 @@ namespace ASCOM.Wise40
             else
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, message + "=> false");
+                debugger.WriteLine(Debugger.DebugLevel.DebugDome, message + "=> false");
                 #endregion
                 return false;
             }
@@ -354,7 +354,7 @@ namespace ASCOM.Wise40
                 var ret = DomeStateIsOn(DomeState.MovingCCW) | DomeStateIsOn(DomeState.MovingCW);
 
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "DomeIsMoving: {0}", ret);
+                debugger.WriteLine(Debugger.DebugLevel.DebugDome, "DomeIsMoving: {0}", ret);
                 #endregion
                 return ret;
             }
@@ -375,7 +375,7 @@ namespace ASCOM.Wise40
                 {
                     _calibrating = false;
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                    debugger.WriteLine(Debugger.DebugLevel.DebugDome,
                         "WiseDome: Setting _foundCalibration[{0}] == {1} ...", calibrationPoints.IndexOf(cp), cp.az.ToNiceString());
                     #endregion
                     Stop();
@@ -400,7 +400,7 @@ namespace ASCOM.Wise40
                 foreach (var e in waiters)
                 {
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                    debugger.WriteLine(Debugger.DebugLevel.DebugDome,
                         "WiseDome: Setting arrivedAtAzEvent (#{0})", e.GetHashCode());
                     #endregion
                     e.Set();
@@ -494,7 +494,7 @@ namespace ASCOM.Wise40
                     _stuckPhase = StuckPhase.FirstStop;
                     nextStuckEvent = rightNow.AddMilliseconds(10000);
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: stuck: {0}, phase1: stopped moving, letting wheels cool for 10 seconds", _instance.Azimuth);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome: stuck: {0}, phase1: stopped moving, letting wheels cool for 10 seconds", _instance.Azimuth);
                     #endregion
 
                     break;
@@ -504,7 +504,7 @@ namespace ASCOM.Wise40
                     _stuckPhase = StuckPhase.GoBackward;
                     nextStuckEvent = rightNow.AddMilliseconds(2000);
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: stuck: {0}, phase2: going backwards for 2 seconds", _instance.Azimuth);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome: stuck: {0}, phase2: going backwards for 2 seconds", _instance.Azimuth);
                     #endregion
                     break;
 
@@ -513,7 +513,7 @@ namespace ASCOM.Wise40
                     _stuckPhase = StuckPhase.SecondStop;
                     nextStuckEvent = rightNow.AddMilliseconds(2000);
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: stuck: {0}, phase3: stopping for 2 seconds", _instance.Azimuth);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome: stuck: {0}, phase3: stopping for 2 seconds", _instance.Azimuth);
                     #endregion
                     break;
 
@@ -524,7 +524,7 @@ namespace ASCOM.Wise40
                     _stuckTimer.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
                     nextStuckEvent = rightNow.AddYears(100);
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: stuck: {0}, phase4: resumed original motion", _instance.Azimuth);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome: stuck: {0}, phase4: resumed original motion", _instance.Azimuth);
                     #endregion
                     break;
             }
@@ -541,7 +541,7 @@ namespace ASCOM.Wise40
             domeEncoder.setMovement(Direction.CW);
             _movementTimer.Change(0, _movementTimeout);
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: Started moving CW");
+            debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome: Started moving CW");
             #endregion
         }
 
@@ -560,7 +560,7 @@ namespace ASCOM.Wise40
             domeEncoder.setMovement(Direction.CCW);
             _movementTimer.Change(0, _movementTimeout);
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: Started moving CCW");
+            debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome: Started moving CCW");
             #endregion
         }
 
@@ -579,7 +579,7 @@ namespace ASCOM.Wise40
                 dbg += string.Format(", az: {0}", Azimuth);
             else
                 dbg += ", not calibrated";
-            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, dbg);
+            debugger.WriteLine(Debugger.DebugLevel.DebugDome, dbg);
             #endregion
             _movementTimer.Change(Timeout.Infinite, Timeout.Infinite);
             rightPin.SetOff();
@@ -600,10 +600,10 @@ namespace ASCOM.Wise40
                 SaveCalibrationData();
             #region debug
             if (Calibrated)
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome:Stop Fully stopped at az: {0} (encoder: {1}) after {2} tries",
+                debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome:Stop Fully stopped at az: {0} (encoder: {1}) after {2} tries",
                     Azimuth, domeEncoder.Value, tries + 1);
             else
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome:Stop Fully stopped (not calibrated) (encoder: {0}) after {1} tries",
+                debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome:Stop Fully stopped (not calibrated) (encoder: {0}) after {1} tries",
                     domeEncoder.Value, tries + 1);
             #endregion
         }
@@ -659,7 +659,7 @@ namespace ASCOM.Wise40
 
                 ret = domeEncoder.Azimuth;
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: Azimuth: get => {0}", ret.ToNiceString());
+                debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome: Azimuth: get => {0}", ret.ToNiceString());
                 #endregion
                 #region trace
                 tl.LogMessage("Dome: Azimuth Get", ret.ToString());
@@ -670,7 +670,7 @@ namespace ASCOM.Wise40
             set
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: Azimuth: set({0})", value);
+                debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome: Azimuth: set({0})", value);
                 #endregion
                 #region trace
                 tl.LogMessage("Dome: Azimuth Set", value.ToString());
@@ -729,7 +729,7 @@ namespace ASCOM.Wise40
             AtPark = false;
 
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome:StartFindingHome: started");
+            debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome:StartFindingHome: started");
             #endregion
             _calibrating = true;
 
@@ -757,12 +757,12 @@ namespace ASCOM.Wise40
             }
 
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome:StartFindingHome: waiting for _foundCalibration ...");
+            debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome:StartFindingHome: waiting for _foundCalibration ...");
             #endregion
             _foundCalibration.WaitOne();
             UnsetDomeState(DomeState.Calibrating);
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: FindHomePoint: _foundCalibration was Set()");
+            debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome: FindHomePoint: _foundCalibration was Set()");
             #endregion
         }
 
@@ -792,13 +792,13 @@ namespace ASCOM.Wise40
                 if (_autoCalibrate)
                 {
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: SlewToAzimuth: {0}, not calibrated, _autoCalibrate == true, calling FindHomePoint", toAng);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome: SlewToAzimuth: {0}, not calibrated, _autoCalibrate == true, calling FindHomePoint", toAng);
                     #endregion
                     StartFindingHome();
                 } else
                 {
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: SlewToAzimuth: {0}, not calibrated, _autoCalibrate == false, throwing InvalidOperationException", toAng.ToNiceString());
+                    debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome: SlewToAzimuth: {0}, not calibrated, _autoCalibrate == false, throwing InvalidOperationException", toAng.ToNiceString());
                     #endregion
                     throw new ASCOM.InvalidOperationException("Not calibrated!");
                 }
@@ -818,7 +818,7 @@ namespace ASCOM.Wise40
                     break;
             }
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome: SlewToAzimuth: {0} => {1} (dist: {2}), moving {3}",
+            debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome: SlewToAzimuth: {0} => {1} (dist: {2}), moving {3}",
                 _instance.Azimuth, toAng, shortest.angle, shortest.direction);
             #endregion
 
@@ -944,7 +944,7 @@ namespace ASCOM.Wise40
 
             SetDomeState(DomeState.Parking);
             //#region debug
-            //debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDome:Park: calling StartFindingHome");
+            //debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome:Park: calling StartFindingHome");
             //#endregion
             //StartFindingHome();
 
@@ -1156,7 +1156,7 @@ namespace ASCOM.Wise40
                 tl.LogMessage("Dome: ShutterState get", ret.ToString());
                 #endregion
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "ShutterState - get: {0}", ret.ToString());
+                debugger.WriteLine(Debugger.DebugLevel.DebugDome, "ShutterState - get: {0}", ret.ToString());
                 #endregion
                 return ret;
             }
@@ -1347,7 +1347,7 @@ namespace ASCOM.Wise40
                 tl.LogMessage("Dome", string.Format("Restored calibration data from \"{0}\", Azimuth: {1}", calibrationDataFilePath, savedAzimuth));
                 #endregion
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Restored calibration data from \"{0}\", Azimuth: {1}",
+                debugger.WriteLine(Debugger.DebugLevel.DebugDome, "Restored calibration data from \"{0}\", Azimuth: {1}",
                     calibrationDataFilePath, savedAzimuth);
                 #endregion
             }

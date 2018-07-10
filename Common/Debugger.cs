@@ -56,10 +56,14 @@ namespace ASCOM.Wise40.Common
             DebugAxes = (1 << 4),
             DebugMotors = (1 << 5),
             DebugEncoders = (1 << 6),
+            DebugSafety = (1 << 7),
+            DebugDome = (1 << 8),
+            DebugShutter = (1 << 9),
+            DebugDAQs = (1 << 10),
 
             DebugDefault = DebugAxes | DebugExceptions | DebugASCOM | DebugLogic,
 
-            DebugAll = DebugEncoders | DebugAxes | DebugMotors | DebugExceptions | DebugDevice | DebugASCOM | DebugLogic,
+            DebugAll = DebugASCOM|DebugDevice|DebugLogic|DebugExceptions|DebugAxes|DebugMotors|DebugEncoders|DebugSafety|DebugDome|DebugShutter|DebugDAQs,
             DebugNone = 0,
         };
 

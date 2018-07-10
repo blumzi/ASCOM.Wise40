@@ -148,7 +148,7 @@ namespace ASCOM.Wise40
                             Convert.ToString(axis ^ prev_axis, 2).PadLeft(16, '0'),
                             Convert.ToString(worm ^ prev_worm).PadLeft(12, '0'));
                     }
-                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, dbg);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, dbg);
                     prev_axis = axis;
                     prev_worm = worm;
                     #endregion
@@ -198,7 +198,7 @@ namespace ASCOM.Wise40
                 //bool over90 = _angle.Radians > halfPI;
 
                 //#region debug
-                //debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                //debugger.WriteLine(Debugger.DebugLevel.DebugEncoders,
                 //    "DecOver90Degrees: radians: {0} (delta: {1}), ret: {2}", _angle.Radians, _angle.Radians - halfPI, over90);
                 //#endregion
                 //return over90;
@@ -224,7 +224,7 @@ namespace ASCOM.Wise40
                     if (DecOver90Degrees)
                     {
                         #region debug
-                        debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "WiseDecEncoder:Degrees: over90");
+                        debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "WiseDecEncoder:Degrees: over90");
                         #endregion
                         ret.Radians = Math.PI - ret.Radians;
                     }

@@ -137,6 +137,10 @@ namespace Dash
                 debugEncodersToolStripMenuItem,
                 debugExceptionsToolStripMenuItem,
                 debugLogicToolStripMenuItem,
+                debugSafetyToolStripMenuItem,
+                debugDomeToolStripMenuItem,
+                debugShutterToolStripMenuItem,
+                debugDAQsToolStripMenuItem,
             };
 
             dashStatus = new Statuser(labelDashStatus);
@@ -171,6 +175,15 @@ namespace Dash
                 checkedItems.Add(debugMotorsToolStripMenuItem);
             if (debugger.Debugging(Debugger.DebugLevel.DebugExceptions))
                 checkedItems.Add(debugExceptionsToolStripMenuItem);
+            if (debugger.Debugging(Debugger.DebugLevel.DebugSafety))
+                checkedItems.Add(debugSafetyToolStripMenuItem);
+            if (debugger.Debugging(Debugger.DebugLevel.DebugDome))
+                checkedItems.Add(debugDomeToolStripMenuItem);
+            if (debugger.Debugging(Debugger.DebugLevel.DebugShutter))
+                checkedItems.Add(debugShutterToolStripMenuItem);
+            if (debugger.Debugging(Debugger.DebugLevel.DebugDAQs))
+                checkedItems.Add(debugDAQsToolStripMenuItem);
+
 
             if (debugger.Tracing)
                 checkedItems.Add(tracingToolStripMenuItem);
@@ -1245,6 +1258,14 @@ namespace Dash
                 selectedLevel = Debugger.DebugLevel.DebugExceptions;
             else if (item == debugLogicToolStripMenuItem)
                 selectedLevel = Debugger.DebugLevel.DebugLogic;
+            else if (item == debugSafetyToolStripMenuItem)
+                selectedLevel = Debugger.DebugLevel.DebugSafety;
+            else if (item == debugDomeToolStripMenuItem)
+                selectedLevel = Debugger.DebugLevel.DebugDome;
+            else if (item == debugShutterToolStripMenuItem)
+                selectedLevel = Debugger.DebugLevel.DebugShutter;
+            else if (item == debugDAQsToolStripMenuItem)
+                selectedLevel = Debugger.DebugLevel.DebugDAQs;
 
             if (selectedLevel == Debugger.DebugLevel.DebugNone)
                 return;
@@ -1555,14 +1576,15 @@ namespace Dash
             if (_bypassSafety)
             {
                 _bypassSafety = false;
-                safetyOverrideToolStripMenuItem.Text = menuText;
+                bypassSafetyToolStripMenuItem.Text = menuText;
             }
             else
             {
-                safetyOverrideToolStripMenuItem.Text = menuText + Const.checkmark;
+                bypassSafetyToolStripMenuItem.Text = menuText + Const.checkmark;
                 _bypassSafety = true;
             }
             wisetele.BypassCoordinatesSafety = _bypassSafety;
+            wisesafetooperate.Action(_bypassSafety ? "startbypass" : "endbypass", string.Empty);
         }
 
         public void StopEverything(Exception e = null)

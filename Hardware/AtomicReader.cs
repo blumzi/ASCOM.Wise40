@@ -88,7 +88,7 @@ namespace ASCOM.Wise40.Hardware
                         s += ", ticks: ";
                         foreach (long t in elapsedTicks)
                             s += t.ToString() + " ";
-                        debugger.WriteLine(Common.Debugger.DebugLevel.DebugEncoders, s);
+                        debugger.WriteLine(Common.Debugger.DebugLevel.DebugDAQs, s);
                         #endregion
                         lastRead = DateTime.Now;
                         lastResults = results;
@@ -108,7 +108,7 @@ namespace ASCOM.Wise40.Hardware
                     err += m.ToString() + " ";
                 err += "]";
 
-                debugger.WriteLine(Common.Debugger.DebugLevel.DebugEncoders, err);
+                debugger.WriteLine(Common.Debugger.DebugLevel.DebugDAQs, err);
                 #endregion
                 throw new WiseException(err);
             }

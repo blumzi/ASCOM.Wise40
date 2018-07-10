@@ -177,7 +177,7 @@ namespace ASCOM.Wise40.Hardware
 
                 if (wiseBoard.type == WiseBoard.BoardType.Hard)
                 {
-                    debugger.WriteLine(Debugger.DebugLevel.DebugEncoders,
+                    debugger.WriteLine(Debugger.DebugLevel.DebugDAQs,
                         "daq.Value.set: board: {0}, port: {1}, value: 0x{2:x} => 0x{3:x}",
                         this.wiseBoard.Name,
                         this.porttype.ToString(),

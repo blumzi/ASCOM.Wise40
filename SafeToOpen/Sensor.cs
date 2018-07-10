@@ -130,7 +130,7 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
                     wassafe = true;
                     break;
                 }
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Sensor ({0}) onTimer: enqueing {1}", Name, reading);
+            debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}) onTimer: enqueing {1}", Name, reading);
             #endregion
             _isSafeQueue.Enqueue(reading);
             
@@ -144,14 +144,14 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
 
             #region debug
             if (wassafe != issafe)
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Sensor ({0}) isSafe changed from {1} to {2}", Name, wassafe, issafe);
+                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}) isSafe changed from {1} to {2}", Name, wassafe, issafe);
             #endregion
 
             if (_mustStabilize && (issafe && !wassafe))
             {
                 _startedStabilizing = DateTime.Now;
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Sensor ({0}) started stabilizing", Name);
+                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}) started stabilizing", Name);
                 #endregion
             }
             else
@@ -179,14 +179,14 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
             if (!Enabled || Running)
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Sensor ({0}) Start: not started: Enabled={1}, Running={2}", Name, Enabled, Running);
+                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}) Start: not started: Enabled={1}, Running={2}", Name, Enabled, Running);
                 #endregion
                 return;
             }
             _isSafeQueue = new FixedSizedQueue<bool>(_repeats);  // memory leak, dispose old _values
             _running = true;
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Sensor ({0}) Start: started", Name);
+            debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}) Start: started", Name);
             #endregion
             _timer.Change(0, _interval);
         }
@@ -196,7 +196,7 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
             _timer.Change(Timeout.Infinite, Timeout.Infinite);
             _running = false;
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Sensor ({0}) Stop: stopped", Name);
+            debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}) Stop: stopped", Name);
             #endregion
         }
 
@@ -322,7 +322,7 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
             {
                 _max = Convert.ToDouble(value);
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Sensor ({0}) Max: {1}", Name, MaxAsString);
+                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}) Max: {1}", Name, MaxAsString);
                 #endregion
             }
         }
@@ -339,7 +339,7 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
         {
             bool ret = !Wise40.HumanIntervention.IsSet();
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "HumanInterventionSensor: getIsSafe: {0}", ret);
+            debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "HumanInterventionSensor: getIsSafe: {0}", ret);
             #endregion
             return ret;
         }

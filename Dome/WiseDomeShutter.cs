@@ -123,7 +123,7 @@ namespace ASCOM.Wise40
                             reply = reply.Remove(reply.IndexOf(suffix[0]));
                             ret = Convert.ToInt32(reply);
                             #region debug
-                            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "GetShutterPosition: got {0}", ret);
+                            debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "GetShutterPosition: got {0}", ret);
                             #endregion
                         }
                     }
@@ -131,7 +131,7 @@ namespace ASCOM.Wise40
                 catch (Exception ex)
                 {
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "GetShutterPosition: Exception: {0}", ex.Message);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "GetShutterPosition: Exception: {0}", ex.Message);
                     #endregion
                 }
                 return ret;
@@ -162,14 +162,14 @@ namespace ASCOM.Wise40
                     break;
             }
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "ShutterStop: _state was {0}, now is {1}", prev, _state);
+            debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "ShutterStop: _state was {0}, now is {1}", prev, _state);
             #endregion
         }
 
         public void StartClosing()
         {
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "StartClosing: started closing the shutter");
+            debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "StartClosing: started closing the shutter");
             #endregion debug
             closePin.SetOn();
             _state = ShutterState.shutterClosing;
@@ -179,7 +179,7 @@ namespace ASCOM.Wise40
         public void StartOpening()
         {
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "StartOpening: started opening the shutter");
+            debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "StartOpening: started opening the shutter");
             #endregion debug
             openPin.SetOn();
             _state = ShutterState.shutterOpening;
@@ -239,7 +239,7 @@ namespace ASCOM.Wise40
             }
             catch (Exception ex)
             {
-                debugger.WriteLine(Debugger.DebugLevel.DebugExceptions, "WiseDomeShutter.init: Exception: {0}.", ex.Message);
+                debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "WiseDomeShutter.init: Exception: {0}.", ex.Message);
             }
             //_state = State;
             _state = ShutterState.shutterClosed;
@@ -306,7 +306,7 @@ namespace ASCOM.Wise40
             {
                 var ret = openPin.isOn || closePin.isOn;
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "ShutterIsMoving: {0}", ret.ToString());
+                debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "ShutterIsMoving: {0}", ret.ToString());
                 #endregion
                 return ret;
             }
