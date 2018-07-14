@@ -456,7 +456,7 @@ namespace ASCOM.Wise40.Common
             Debugger debugger = Debugger.Instance;
 
             if (other == this)
-                return new ShortestDistanceResult(Angle.zero, Const.AxisDirection.None);
+                return new ShortestDistanceResult(new Angle(0.0, this._type), Const.AxisDirection.None);
 
             if (_periodic)
             {
