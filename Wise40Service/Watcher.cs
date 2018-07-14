@@ -15,7 +15,6 @@ namespace Wise40Watcher
     public class Watcher: WiseObject
     {
         private string _path;
-        private WiseObject wiseobject = new WiseObject();
         private static string _logFile;
         Process _process = null;
         bool _stopping = false;
@@ -37,9 +36,9 @@ namespace Wise40Watcher
                     ret = top + "/Dash/bin/x86/Debug/Dash.exe";
                     break;
 
-                //case "monitor":
-                //    ret = top + "/ObservatoryMonitor/bin/Debug/ObservatoryMonitor.exe";
-                //    break;
+                case "obsmon":
+                    ret = top + "/ObservatoryMonitor/bin/x86/Debug/ObservatoryMonitor.exe";
+                    break;
 
                 default:
                     break;

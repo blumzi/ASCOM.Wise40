@@ -35,7 +35,6 @@
             this.serviceInstallerWise40Watcher.Description = "Watches and restarts the Wise40 processes";
             this.serviceInstallerWise40Watcher.DisplayName = "Wise40Watcher";
             this.serviceInstallerWise40Watcher.ServiceName = "Wise40Watcher";
-            this.serviceInstallerWise40Watcher.StartType = System.ServiceProcess.ServiceStartMode.Automatic;
             // 
             // ProjectInstaller
             // 
