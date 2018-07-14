@@ -67,8 +67,6 @@ namespace ASCOM.Wise40.Common
             DebugNone = 0,
         };
 
-        public static string[] indents = new string[(int)DebugLevel.DebugEncoders + 1];
-
         private static DebugLevel _currentLevel;
 
         public void init(DebugLevel level = 0)
@@ -79,14 +77,6 @@ namespace ASCOM.Wise40.Common
             ReadProfile();
             if (level != 0)
                 _currentLevel = level;
-
-            indents[(int)DebugLevel.DebugASCOM] = "      ";
-            indents[(int)DebugLevel.DebugDevice] = ">     ";
-            indents[(int)DebugLevel.DebugLogic] = ">>    ";
-            indents[(int)DebugLevel.DebugExceptions] = ">>>   ";
-            indents[(int)DebugLevel.DebugAxes] = ">>>>  ";
-            indents[(int)DebugLevel.DebugMotors] = ">>>>> ";
-            indents[(int)DebugLevel.DebugEncoders] = ">>>>>>";
 
             _appName = Path.GetFileNameWithoutExtension(Application.ExecutablePath);
             _initialized = true;
@@ -122,46 +112,49 @@ namespace ASCOM.Wise40.Common
 
         public void WriteLine(DebugLevel level, string fmt, params object[] o)
         {
-            if (Debugging(level))
-            {
-                DateTime now = DateTime.UtcNow;
-                string msg = string.Format(fmt, o);
-                string line = string.Format("{0}: {1,4} {2,4} {3}/{4}/{5} {6} {7,-25} {8}",
-                    _appName,
-                    Thread.CurrentThread.ManagedThreadId.ToString(),
-                    (Task.CurrentId.HasValue ? Task.CurrentId.Value : -1).ToString(),
-                    now.Day, now.Month, now.Year, now.TimeOfDay,
-                    indents[(int)level] + " " + level.ToString() + ":",
-                    msg);
-                string currentLogPath = LogFolder() + "/debug.txt";
-                if (currentLogPath != _logFile)
-                {
-                    Directory.CreateDirectory(Path.GetDirectoryName(currentLogPath));
-                    try
-                    {
-                        Debug.Listeners.Remove(_logFile);
-                    }
-                    catch { }
-                    _logFile = currentLogPath;
-                    Debug.Listeners.Add(new TextWriterTraceListener(_logFile));
-                }
+            if (! _initialized || !Debugging(level))
+                return;
 
-                System.Diagnostics.Debug.WriteLine(line);
-                if (listBox != null && _appendToWindow)
+            DateTime now = DateTime.UtcNow;
+            string msg = string.Format(fmt, o);
+            string taskInfo = (Task.CurrentId == null) ?
+                "-1" :
+                (Task.CurrentId.HasValue ? Task.CurrentId.Value : -1).ToString();
+            string line = string.Format("{0}: {1,4} {2,4} {3}/{4}/{5} {6} {7,-15} {8}",
+                _appName,
+                Thread.CurrentThread.ManagedThreadId.ToString(),
+                taskInfo,
+                now.Day, now.Month, now.Year, now.TimeOfDay,
+                level.ToString() + ":",
+                msg);
+            string currentLogPath = LogFolder() + "/debug.txt";
+            if (currentLogPath != _logFile)
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(currentLogPath));
+                try
                 {
-                    if (listBox.InvokeRequired)
-                    {
-                        listBox.Invoke(new Action(() =>
-                        {
-                            listBox.Items.Add(line);
-                            listBox.Update();
-                        }));
-                    }
-                    else
+                    Debug.Listeners.Remove(_logFile);
+                }
+                catch { }
+                _logFile = currentLogPath;
+                Debug.Listeners.Add(new TextWriterTraceListener(_logFile));
+            }
+
+            System.Diagnostics.Debug.WriteLine(line);
+            if (listBox != null && _appendToWindow)
+            {
+                if (listBox.InvokeRequired)
+                {
+                    listBox.Invoke(new Action(() =>
                     {
                         listBox.Items.Add(line);
                         listBox.Update();
-                    }
+                    }));
+                }
+                else
+                {
+                    listBox.Items.Add(line);
+                    listBox.Update();
                 }
             }
         }
