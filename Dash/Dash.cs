@@ -55,6 +55,9 @@ namespace Dash
         private List<ToolStripMenuItem> debugMenuItems;
         private Dictionary<object, string> alteredItems = new Dictionary<object, string>();
 
+        public Color safeColor = Statuser.colors[Statuser.Severity.Normal];
+        public Color unsafeColor = Statuser.colors[Statuser.Severity.Error];
+        public Color warningColor = Statuser.colors[Statuser.Severity.Warning];
 
         private long stoppingAxes;
 
@@ -69,8 +72,6 @@ namespace Dash
         #region Initialization
         public FormDash()
         {
-
-
             debugger.init();
             hardware.init();
             wisetele.init();
@@ -86,6 +87,7 @@ namespace Dash
             //wisefilterwheel.init();
             //wisefilterwheel.Connected = true;
             wisedomeplatform.init();
+            _bypassSafety = wisesafetooperate.Action("status", "").Contains("not-bypassed") ? false : true;
 
             InitializeComponent();
 
@@ -123,7 +125,7 @@ namespace Dash
                 }
 
                 annunciatorReadonly.Text = string.Format("Readonly mode ({0})", wisesite.OperationalMode.ToString());
-                annunciatorReadonly.ForeColor = Statuser.colors[Statuser.Severity.Warning];
+                annunciatorReadonly.ForeColor = warningColor;
                 annunciatorReadonly.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
             }
             else
@@ -160,40 +162,19 @@ namespace Dash
 
             buttonVent.Text = wisedome.Vent ? "Close Vent" : "Open Vent";
 
-            List<ToolStripMenuItem> checkedItems = new List<ToolStripMenuItem>();
-            if (debugger.Debugging(Debugger.DebugLevel.DebugASCOM))
-                checkedItems.Add(debugASCOMToolStripMenuItem);
-            if (debugger.Debugging(Debugger.DebugLevel.DebugDevice))
-                checkedItems.Add(debugDeviceToolStripMenuItem);
-            if (debugger.Debugging(Debugger.DebugLevel.DebugAxes))
-                checkedItems.Add(debugAxesToolStripMenuItem);
-            if (debugger.Debugging(Debugger.DebugLevel.DebugLogic))
-                checkedItems.Add(debugLogicToolStripMenuItem);
-            if (debugger.Debugging(Debugger.DebugLevel.DebugEncoders))
-                checkedItems.Add(debugEncodersToolStripMenuItem);
-            if (debugger.Debugging(Debugger.DebugLevel.DebugMotors))
-                checkedItems.Add(debugMotorsToolStripMenuItem);
-            if (debugger.Debugging(Debugger.DebugLevel.DebugExceptions))
-                checkedItems.Add(debugExceptionsToolStripMenuItem);
-            if (debugger.Debugging(Debugger.DebugLevel.DebugSafety))
-                checkedItems.Add(debugSafetyToolStripMenuItem);
-            if (debugger.Debugging(Debugger.DebugLevel.DebugDome))
-                checkedItems.Add(debugDomeToolStripMenuItem);
-            if (debugger.Debugging(Debugger.DebugLevel.DebugShutter))
-                checkedItems.Add(debugShutterToolStripMenuItem);
-            if (debugger.Debugging(Debugger.DebugLevel.DebugDAQs))
-                checkedItems.Add(debugDAQsToolStripMenuItem);
-
-
-            if (debugger.Tracing)
-                checkedItems.Add(tracingToolStripMenuItem);
-
-            foreach (var item in checkedItems)
-            {
-                item.Text += Const.checkmark;
-                item.Tag = true;
-                item.Invalidate();
-            }
+            UpdateCheckmark(debugASCOMToolStripMenuItem, debugger.Debugging(Debugger.DebugLevel.DebugASCOM));
+            UpdateCheckmark(debugDeviceToolStripMenuItem, debugger.Debugging(Debugger.DebugLevel.DebugDevice));
+            UpdateCheckmark(debugAxesToolStripMenuItem, debugger.Debugging(Debugger.DebugLevel.DebugAxes));
+            UpdateCheckmark(debugLogicToolStripMenuItem, debugger.Debugging(Debugger.DebugLevel.DebugAxes));
+            UpdateCheckmark(debugEncodersToolStripMenuItem, debugger.Debugging(Debugger.DebugLevel.DebugAxes));
+            UpdateCheckmark(debugMotorsToolStripMenuItem, debugger.Debugging(Debugger.DebugLevel.DebugAxes));
+            UpdateCheckmark(debugExceptionsToolStripMenuItem, debugger.Debugging(Debugger.DebugLevel.DebugExceptions));
+            UpdateCheckmark(debugSafetyToolStripMenuItem, debugger.Debugging(Debugger.DebugLevel.DebugSafety));
+            UpdateCheckmark(debugDomeToolStripMenuItem, debugger.Debugging(Debugger.DebugLevel.DebugDome));
+            UpdateCheckmark(debugShutterToolStripMenuItem, debugger.Debugging(Debugger.DebugLevel.DebugShutter));
+            UpdateCheckmark(debugDAQsToolStripMenuItem, debugger.Debugging(Debugger.DebugLevel.DebugDAQs));
+            UpdateCheckmark(bypassSafetyToolStripMenuItem, _bypassSafety);
+            UpdateCheckmark(tracingToolStripMenuItem, debugger.Tracing);
 
             buttonVent.Text = wisedome.Vent ? "Close Vent" : "Open Vent";
             buttonProjector.Text = wisedome.Projector ? "Turn projector Off" : "Turn projector On";
@@ -203,7 +184,7 @@ namespace Dash
 
             toolStripTextBoxVantagePro2ReportFile.Tag = wisevantagepro.DataFile;
             toolStripTextBoxVantagePro2ReportFile.Text = wisevantagepro.DataFile;
-
+            
             //wisefilterwheel.wheelOrPositionChanged += onWheelOrPositionChanged;
         }
         #endregion
@@ -221,10 +202,6 @@ namespace Dash
             Angle ha = Angle.FromHours(wisetele.HourAngle, Angle.Type.HA);
             string safetyError = wisetele.SafeAtCoordinates(ra, dec);
 
-            Color safeColor = Statuser.colors[Statuser.Severity.Normal];
-            Color unsafeColor = Statuser.colors[Statuser.Severity.Error];
-            Color warningColor = Statuser.colors[Statuser.Severity.Warning];
-
             labelDate.Text = localTime.ToString("ddd, dd MMM yyyy\n hh:mm:ss tt");
 
             #region RefreshTelescope
@@ -233,12 +210,8 @@ namespace Dash
             labelSiderealValue.Text = wisesite.LocalSiderealTime.ToString();
 
             labelRightAscensionValue.Text = ra.ToNiceString();
-            //labelRightAscensionValue.ForeColor = wisetele.DecOver90Degrees ? warningColor : safeColor;
 
             labelDeclinationValue.Text = dec.ToNiceString();
-            //if (wisetele.DecOver90Degrees)
-            //    labelDeclinationValue.ForeColor = warningColor;
-            //else 
             if (safetyError.Contains("Declination"))
                 labelDeclinationValue.ForeColor = wisetele.BypassCoordinatesSafety ? warningColor : unsafeColor;
             else
@@ -367,7 +340,7 @@ namespace Dash
             if (_bypassSafety)
             {
                 annunciatorDomePlatform.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
-                tip = "Safety is bypassed (from Settings)";
+                tip = "Safety is bypassed";
             }
             else
             {
@@ -388,19 +361,23 @@ namespace Dash
             #endregion
             #region SafeToOpen
             tip = null;
-            if (_bypassSafety)
+
+            if (wisesite.safeToOperate == null)
             {
-                annunciatorSafeToOperate.Text = "Safe to operate";
-                annunciatorSafeToOperate.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
-                tip = "Safety is bypassed (from Settings)";
+                annunciatorSafeToOperate.Text = "Safe to operate ???";
+                annunciatorSafeToOperate.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+                tip = "Cannot connect to the SafeToOpen driver!";
             }
             else
             {
-                if (wisesite.safeToOperate == null)
+                string status = wisesafetooperate.Action("status", string.Empty);
+                bool bypassed = !status.Contains("not-bypassed");
+
+                if (bypassed)
                 {
-                    annunciatorSafeToOperate.Text = "Safe to operate ???";
+                    annunciatorSafeToOperate.Text = "Safety bypassed";
                     annunciatorSafeToOperate.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
-                    tip = "Cannot connect to the SafeToOpen driver!";
+                    tip = "Safety checks are bypassed!";
                 }
                 else if (wisesite.safeToOperate.IsSafe)
                 {
@@ -494,7 +471,7 @@ namespace Dash
                 foreach (var label in labels)
                 {
                     label.Text = nc;
-                    label.ForeColor = Statuser.colors[Statuser.Severity.Warning];
+                    label.ForeColor = warningColor;
                 }
             }
             else
@@ -548,15 +525,19 @@ namespace Dash
                     #region SafeToOpen
                     if (wisesafetooperate.IsSafe)
                     {
-                        weatherStatus.Show("Safe to operate", 0, Statuser.Severity.Good);
+                        Statuser.Severity severity = Statuser.Severity.Good;
+                        string stat = "Safe to operate";
+                        if (_bypassSafety)
+                        {
+                            stat += " (safety bypassed)";
+                            severity = Statuser.Severity.Warning;
+                        }
+                        weatherStatus.Show(stat, 0, severity);
                         weatherStatus.SetToolTip("");
                     }
                     else
                     {
-                        if (_bypassSafety)
-                            weatherStatus.Show("Safe to operate (safety bypassed)", 0, Statuser.Severity.Good);
-                        else
-                            weatherStatus.Show("Not safe to operate", 0, Statuser.Severity.Error, true);
+                        weatherStatus.Show("Not safe to operate", 0, Statuser.Severity.Error, true);
                         weatherStatus.SetToolTip(string.Join("\n", wisesafetooperate.UnsafeReasons));
                     }
                     #endregion
@@ -1121,28 +1102,15 @@ namespace Dash
             debugger.StartDebugging(Debugger.DebugLevel.DebugAll);
 
             foreach (var item in debugMenuItems)
-            {
-                if (!item.Text.EndsWith(Const.checkmark))
-                    item.Text += Const.checkmark;
-            }
+                UpdateCheckmark(item, true);
         }
 
         private void domeAutoCalibrateToolStripMenuItem_Click(object sender, EventArgs e)
         {
             ToolStripMenuItem item = sender as ToolStripMenuItem;
-            string text = item.Text;
 
-            if (item.Text.EndsWith(Const.checkmark))
-            {
-                wisedome._autoCalibrate = false;
-                item.Text = text.Remove(text.Length - Const.checkmark.Length);
-            }
-            else
-            {
-                wisedome._autoCalibrate = true;
-                item.Text = text + Const.checkmark;
-            }
-            item.Invalidate();
+            wisedome._autoCalibrate = !IsCheckmarked(item);
+            UpdateCheckmark(item, wisedome._autoCalibrate);
             UpdateAlteredItems(item, "Dome");
         }
 
@@ -1150,17 +1118,8 @@ namespace Dash
         {
             ToolStripMenuItem item = sender as ToolStripMenuItem;
 
-            if (item.Text.EndsWith(Const.checkmark))
-            {
-                wisetele._enslaveDome = false;
-                item.Text = item.Text.Remove(item.Text.Length - Const.checkmark.Length);
-            }
-            else
-            {
-                wisetele._enslaveDome = true;
-                item.Text += Const.checkmark;
-            }
-            item.Invalidate();
+            wisetele._enslaveDome = !IsCheckmarked(item);
+            UpdateCheckmark(item, wisetele._enslaveDome);
             UpdateAlteredItems(item, "Telescope");
         }
 
@@ -1228,10 +1187,7 @@ namespace Dash
             debugger.StopDebugging(Debugger.DebugLevel.DebugAll);
 
             foreach (var item in debugMenuItems)
-            {
-                if (item.Text.EndsWith(Const.checkmark))
-                    item.Text = item.Text.Remove(item.Text.IndexOf(' '));
-            }
+                UpdateCheckmark(item, false);
         }
 
         private void wise40WikiToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1271,16 +1227,10 @@ namespace Dash
                 return;
 
             if (debugger.Debugging(selectedLevel))
-            {
-                item.Text = item.Text.Remove(item.Text.IndexOf(' '));
                 debugger.StopDebugging(selectedLevel);
-            }
             else
-            {
-                item.Text += Const.checkmark;
                 debugger.StartDebugging(selectedLevel);
-            }
-            item.Invalidate();
+            UpdateCheckmark(item, debugger.Debugging(selectedLevel));
             UpdateAlteredItems(item, "Debugging");
 
             #region debug
@@ -1326,18 +1276,11 @@ namespace Dash
 
         private void UpdateAlteredItems(ToolStripMenuItem item, string title)
         {
-            bool originalSetting = (item.Tag == null) ? false : (bool)item.Tag;
-            bool currentSetting = item.Text.EndsWith(Const.checkmark);
-            if (originalSetting == currentSetting)
-            {
-                if (alteredItems.ContainsKey(item))
-                    alteredItems.Remove(item);
-            }
+            bool currentSetting = IsCheckmarked(item);
+            if (alteredItems.ContainsKey(item))
+                alteredItems.Remove(item);
             else
-            {
-                if (!alteredItems.ContainsKey(item))
-                    alteredItems[item] = title;
-            }
+                alteredItems[item] = title;
 
             string alterations = string.Empty;
             foreach (var key in alteredItems.Keys)
@@ -1345,7 +1288,7 @@ namespace Dash
                 string text = ((ToolStripMenuItem)key).Text;
                 string mark;
 
-                if (text.EndsWith(Const.checkmark))
+                if (IsCheckmarked(key as ToolStripMenuItem))
                 {
                     text = text.Remove(text.Length - Const.checkmark.Length);
                     mark = "+";
@@ -1399,28 +1342,19 @@ namespace Dash
         {
             ToolStripMenuItem item = sender as ToolStripMenuItem;
 
-            if (debugger.Tracing)
-            {
-                item.Text = "Tracing";
-                debugger.Tracing = false;
-            }
-            else
-            {
-                item.Text = "Tracing" + Const.checkmark;
-                debugger.Tracing = true;
-            }
-            item.Invalidate();
+            debugger.Tracing = !debugger.Tracing;
+            UpdateCheckmark(item, debugger.Tracing);
             UpdateAlteredItems(item, "Tracing");
         }
 
         private void toolStripMenuItemSafeToOpen_Click(object sender, EventArgs e)
         {
-            new ASCOM.Wise40SafeToOpen.SafeToOperateSetupDialogForm().Show();
+            new SafeToOperateSetupDialogForm().Show();
         }
 
         private void toolStripMenuItemFilterWheel_Click(object sender, EventArgs e)
         {
-            new ASCOM.Wise40.FilterWheel.FilterWheelSetupDialogForm().Show();
+            new FilterWheelSetupDialogForm().Show();
         }
 
         private void filterWheelToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1434,17 +1368,8 @@ namespace Dash
             ToolStripMenuItem item = sender as ToolStripMenuItem;
             string text = item.Text;
 
-            if (item.Text.EndsWith(Const.checkmark))
-            {
-                wisedome._syncVentWithShutter = false;
-                item.Text = text.Remove(text.Length - Const.checkmark.Length);
-            }
-            else
-            {
-                wisedome._syncVentWithShutter = true;
-                item.Text = text + Const.checkmark;
-            }
-            item.Invalidate();
+            wisedome._syncVentWithShutter = !wisedome._syncVentWithShutter;
+            UpdateCheckmark(item, wisedome._syncVentWithShutter);
             UpdateAlteredItems(item, "Dome");
         }
 
@@ -1572,19 +1497,28 @@ namespace Dash
 
         private void safetyOverrideToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            string menuText = "Bypass Safety";
-            if (_bypassSafety)
-            {
-                _bypassSafety = false;
-                bypassSafetyToolStripMenuItem.Text = menuText;
-            }
-            else
-            {
-                bypassSafetyToolStripMenuItem.Text = menuText + Const.checkmark;
-                _bypassSafety = true;
-            }
+            _bypassSafety = !_bypassSafety;
+            bypassSafetyToolStripMenuItem.Tag = _bypassSafety;
+            UpdateCheckmark(bypassSafetyToolStripMenuItem, _bypassSafety);
+
             wisetele.BypassCoordinatesSafety = _bypassSafety;
             wisesafetooperate.Action(_bypassSafety ? "startbypass" : "endbypass", string.Empty);
+            annunciatorSafeToOperate.Text = (_bypassSafety) ? "Safety bypassed" : "Safe to Operate";
+        }
+
+        public void UpdateCheckmark(ToolStripMenuItem item, bool state)
+        {
+            if (state && !item.Text.EndsWith(Const.checkmark))
+                item.Text += Const.checkmark;
+            if (!state && item.Text.EndsWith(Const.checkmark))
+                item.Text = item.Text.Remove(item.Text.Length - Const.checkmark.Length);
+            item.Tag = state;
+            item.Invalidate();
+        }
+
+        public bool IsCheckmarked(ToolStripMenuItem item)
+        {
+            return item.Text.EndsWith(Const.checkmark);
         }
 
         public void StopEverything(Exception e = null)
