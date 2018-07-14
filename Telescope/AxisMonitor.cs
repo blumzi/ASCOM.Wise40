@@ -198,36 +198,5 @@ namespace ASCOM.Wise40
                 _connected = value;
             }
         }
-
-        public bool CanMoveAtRate(double rate)
-        {
-            double otherRate = Const.rateStopped;
-            bool ret = false;
-
-            foreach (WiseVirtualMotor m in wisetele.axisMotors[_other_axis])
-                {
-                    if (m.isOn)
-                    {
-                        otherRate = m.currentRate;
-                        break;
-                    }
-                }
-
-            if ((otherRate == Const.rateStopped) ||
-                (otherRate == rate) ||
-                ((rate == Const.rateSlew || rate == Const.rateSet) && otherRate == Const.rateGuide) ||
-                (rate == Const.rateGuide && (otherRate == Const.rateSet || otherRate == Const.rateSlew)))
-                ret = true;
-            else
-                ret = false;
-
-            #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                "CanMoveAtRate: {0}, axis: {1} => {2}",
-                WiseTele.RateName(rate), _axis, ret.ToString());
-            #endregion
-
-            return ret;
-        }
     }
 }
