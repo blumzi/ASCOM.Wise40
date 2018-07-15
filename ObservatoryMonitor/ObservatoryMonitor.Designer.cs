@@ -39,6 +39,7 @@
             this.aCPToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.lCOToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.wISEToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.conditionsBypassToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.listBoxLog = new System.Windows.Forms.ListBox();
             this.labelDate = new System.Windows.Forms.Label();
@@ -60,7 +61,6 @@
             this.label2 = new System.Windows.Forms.Label();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.label4 = new System.Windows.Forms.Label();
-            this.conditionsBypassToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -140,6 +140,13 @@
             this.wISEToolStripMenuItem.Size = new System.Drawing.Size(100, 22);
             this.wISEToolStripMenuItem.Text = "WISE";
             this.wISEToolStripMenuItem.Click += new System.EventHandler(this.SelectOpMode);
+            // 
+            // conditionsBypassToolStripMenuItem
+            // 
+            this.conditionsBypassToolStripMenuItem.Name = "conditionsBypassToolStripMenuItem";
+            this.conditionsBypassToolStripMenuItem.Size = new System.Drawing.Size(227, 22);
+            this.conditionsBypassToolStripMenuItem.Text = "Bypass Operating Conditions";
+            this.conditionsBypassToolStripMenuItem.Click += new System.EventHandler(this.conditionsBypassToolStripMenuItem_Click);
             // 
             // aboutToolStripMenuItem
             // 
@@ -392,13 +399,6 @@
             this.label4.Text = "Status:";
             this.label4.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
-            // conditionsBypassToolStripMenuItem
-            // 
-            this.conditionsBypassToolStripMenuItem.Name = "conditionsBypassToolStripMenuItem";
-            this.conditionsBypassToolStripMenuItem.Size = new System.Drawing.Size(227, 22);
-            this.conditionsBypassToolStripMenuItem.Text = "Bypass Operating Conditions";
-            this.conditionsBypassToolStripMenuItem.Click += new System.EventHandler(this.conditionsBypassToolStripMenuItem_Click);
-            // 
             // ObsMainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -421,6 +421,7 @@
             this.MainMenuStrip = this.menuStrip;
             this.Name = "ObsMainForm";
             this.Text = "Observatory Monitor";
+            this.Load += new System.EventHandler(this.ObsMainForm_Load);
             this.menuStrip.ResumeLayout(false);
             this.menuStrip.PerformLayout();
             this.groupBox1.ResumeLayout(false);

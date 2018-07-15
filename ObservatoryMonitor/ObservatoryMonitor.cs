@@ -27,11 +27,11 @@ namespace ASCOM.Wise40.ObservatoryMonitor
     {
         static bool _simulated = new WiseObject().Simulated;
         public const int _maxLogItems = 1000;
-        Telescope wisetelescope;
+        Telescope wisetelescope = null;
         WiseSite wisesite = WiseSite.Instance;
-        DriverAccess.Dome wisedome;
-        SafetyMonitor wisesafetooperate;
-        SafetyMonitor wisecomputercontrol;
+        DriverAccess.Dome wisedome = null;
+        SafetyMonitor wisesafetooperate = null;
+        SafetyMonitor wisecomputercontrol = null;
         Version version = new Version(0, 2);
         private bool _shuttingDown = false;
         DateTime _nextCheck = DateTime.MaxValue;
@@ -50,8 +50,6 @@ namespace ASCOM.Wise40.ObservatoryMonitor
         Task workerTask;
         string safeToOperateStatus = string.Empty;
 
-        static bool _firstTime = true;
-
         public void CloseConnections()
         {
             if (wisetelescope != null)
@@ -59,6 +57,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 if (wisetelescope.Connected)
                     wisetelescope.Connected = false;
                 wisetelescope.Dispose();
+                wisetelescope = null;
             }
 
             if (wisedome != null)
@@ -66,6 +65,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 if (wisedome.Connected)
                     wisedome.Connected = false;
                 wisedome.Dispose();
+                wisedome = null;
             }
 
             if (wisesafetooperate != null)
@@ -73,6 +73,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 if (wisesafetooperate.Connected)
                     wisesafetooperate.Connected = false;
                 wisesafetooperate.Dispose();
+                wisesafetooperate = null;
             }
 
             if (wisecomputercontrol != null)
@@ -80,42 +81,66 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 if (wisecomputercontrol.Connected)
                     wisecomputercontrol.Connected = false;
                 wisecomputercontrol.Dispose();
+                wisecomputercontrol = null;
             }
         }
 
-        public void OpenConnections() {
-            wisetelescope = new Telescope("ASCOM.Web1.Telescope");
-            wisetelescope.Connected = true;
-            while (wisetelescope.Connected == false)
-            {
-                Log("Waiting for the \"Telescope\" client to connect ...", 5);
-                Application.DoEvents();
-            }
+        public void CheckConnections() {
 
-            wisecomputercontrol = new SafetyMonitor("ASCOM.Web2.SafetyMonitor");    // Must match ASCOM Remote Server Setup
-            wisecomputercontrol.Connected = true;
-            while (!wisecomputercontrol.Connected)
+            try
             {
-                Log("Waiting for the \"ComputerControl\" client to connect ...", 5);
-                Application.DoEvents();
-            }
+                if (wisetelescope == null)
+                    wisetelescope = new Telescope("ASCOM.Web1.Telescope");
+                if (!wisetelescope.Connected)
+                {
+                    wisetelescope.Connected = true;
+                    while (wisetelescope.Connected == false)
+                    {
+                        Log("Waiting for the \"Telescope\" client to connect ...", 5);
+                        Application.DoEvents();
+                    }
+                }
 
-            wisesafetooperate = new SafetyMonitor("ASCOM.Web1.SafetyMonitor");      // Must match ASCOM Remote Server Setup
-            wisesafetooperate.Connected = true;
-            while (! wisesafetooperate.Connected)
-            {
-                Log("Waiting for the \"SafeToOperate\" client to connect ...", 5);
-                Application.DoEvents();
-            }
+                if (wisecomputercontrol == null)
+                    wisecomputercontrol = new SafetyMonitor("ASCOM.Web2.SafetyMonitor");    // Must match ASCOM Remote Server Setup
+                if (!wisecomputercontrol.Connected)
+                {
+                    wisecomputercontrol.Connected = true;
+                    while (!wisecomputercontrol.Connected)
+                    {
+                        Log("Waiting for the \"ComputerControl\" client to connect ...", 5);
+                        Application.DoEvents();
+                    }
+                }
 
-            wisedome = new DriverAccess.Dome("ASCOM.Web1.Dome");
-            wisedome.Connected = true;
-            while (! wisedome.Connected)
-            {
-                Log("Waiting for the \"Dome\" client to connect", 5);
-                Application.DoEvents();
+                if (wisesafetooperate == null)
+                    wisesafetooperate = new SafetyMonitor("ASCOM.Web1.SafetyMonitor");      // Must match ASCOM Remote Server Setup
+                if (!wisesafetooperate.Connected)
+                {
+                    wisesafetooperate.Connected = true;
+                    while (!wisesafetooperate.Connected)
+                    {
+                        Log("Waiting for the \"SafeToOperate\" client to connect ...", 5);
+                        Application.DoEvents();
+                    }
+                }
+
+                if (wisedome == null)
+                    wisedome = new DriverAccess.Dome("ASCOM.Web1.Dome");
+                if (!wisedome.Connected)
+                {
+                    wisedome.Connected = true;
+                    while (!wisedome.Connected)
+                    {
+                        Log("Waiting for the \"Dome\" client to connect", 5);
+                        Application.DoEvents();
+                    }
+                }
             }
-            Log("All clients are connected.");
+            catch (Exception ex)
+            {
+                Log(string.Format("Exception: {0}", ex.Message));
+            }
         }
 
         public ObsMainForm()
@@ -128,22 +153,8 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             menuStrip.RenderMode = ToolStripRenderMode.ManagerRenderMode;
             ToolStripManager.Renderer = new Wise40ToolstripRenderer();
 
-            wisesite.init();
-            WiseSite.OpMode opMode = wisesite.OperationalMode;
-
-            switch (opMode)
-            {
-                case WiseSite.OpMode.LCO:
-                case WiseSite.OpMode.WISE:
-                    _telescopeEnslavesDome = true;
-                    break;
-                case WiseSite.OpMode.ACP:
-                    _telescopeEnslavesDome = false;
-                    break;
-            }
-            labelOperatingMode.Text = opMode.ToString();
             updateManualInterventionControls();
-            UpdateOpModeControls(opMode);
+            UpdateOpModeControls();
             
             conditionsBypassToolStripMenuItem.Text = "";
             conditionsBypassToolStripMenuItem.Enabled = false;
@@ -154,30 +165,29 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             if (!conditionsBypassToolStripMenuItem.Enabled)
                 conditionsBypassToolStripMenuItem.Enabled = true;
 
-            conditionsBypassToolStripMenuItem.Text = bypassed ? "Don't bypass safety" : "Bypass safety";
+            conditionsBypassToolStripMenuItem.Text = "Bypass safety";
+            if (bypassed)
+                conditionsBypassToolStripMenuItem.Text += Const.checkmark;
         }
 
         private void CheckSituation()
         {
             bool active = true, inControl = false, ready = false, safe = true, bypassed = false;
 
-            if (_firstTime)
+            Process[] ascomServer = Process.GetProcessesByName("ASCOM.RemoteDeviceServer");
+            if (ascomServer.Count() == 0)
             {
-                try
-                {
-                    OpenConnections();
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(string.Format("Exception while connecting to ASCOM drivers:\n\t{0}", ex.Message));
-                    Application.Exit();
-                }
-                _firstTime = false;
+                Log("No active ASCOM.RemoteDeviceServer", 20);
+                _nextCheck = DateTime.Now.Add(_intervalBetweenChecks);
+                return;
             }
+            
+            CheckConnections();
 
             try
             {
-                active = wisetelescope.CommandBool("active", false);
+                active = Convert.ToBoolean(wisetelescope.Action("telescope:get-active", ""));
+                _telescopeEnslavesDome = Convert.ToBoolean(wisetelescope.Action("dome:enslaved", string.Empty));
 
                 safeToOperateStatus = wisesafetooperate.Action("status", string.Empty);
                 ready = safeToOperateStatus.Contains("not-ready") ? false : true;
@@ -287,7 +297,16 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             if (wisesafetooperate == null)
                 return;
 
-            string safety = wisesafetooperate.Action("status", string.Empty);
+            string safety = null;
+
+            try
+            {
+                safety = wisesafetooperate.Action("status", string.Empty);
+            } catch (Exception ex)
+            {
+                return;
+            }
+
             bool bypassed = safety.Contains("not-bypassed") ? false : true;
             bool ready = safety.Contains("not-ready") ? false : true;
             bool safe = safety.Contains("not-safe") ? false : true;
@@ -599,64 +618,33 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             updateManualInterventionControls();
             CheckSituation();
         }
-
-        public class App
-        {
-            private ObsMainForm _form;
-            public string _name;
-            Process _process = null;
-            string _path;
-
-            public App(ObsMainForm form, string name, string path)
-            {
-                _form = form;
-                _path = path;
-                _name = name;
-            }
-
-            public bool _isRunning
-            {
-                get
-                {
-                    Process[] processes = Process.GetProcessesByName(_name);
-
-                    _process = null;
-                    if (processes.Length > 0)
-                    {
-                        _process = processes[0];
-                    }
-                    return _process != null;
-                }
-            }
-
-            public void Restart()
-            {
-                if (_isRunning)
-                {
-                    _form.Log(string.Format("Stopping current \"{0}\" ...", _name));
-                    _process.Kill();
-                }
-
-                if (_path != null)
-                {
-                    Thread.Sleep(5000);
-                    _form.Log(string.Format("Starting new \"{0}\" ...", _name));
-                    Process.Start(_path);
-                }
-            }
-        };
-
+        
         private void SelectOpMode(object sender, EventArgs e)
         {
             ToolStripMenuItem selectedItem = sender as ToolStripMenuItem;
             WiseSite.OpMode mode = (selectedItem == wISEToolStripMenuItem) ? WiseSite.OpMode.WISE :
                 (selectedItem == lCOToolStripMenuItem) ? WiseSite.OpMode.LCO : WiseSite.OpMode.ACP;
             
-            UpdateOpModeControls(mode);
+            wisesite.OperationalMode = mode;
+
+            UpdateOpModeControls();
+            CloseConnections();
+            KillWise40Apps();
         }
 
-        private void UpdateOpModeControls(WiseSite.OpMode mode)
+        private void KillWise40Apps()
         {
+            foreach (var proc in Process.GetProcessesByName("ASCOM.RemoteDeviceServer"))
+                proc.Kill();
+
+            foreach (var proc in Process.GetProcessesByName("Dash"))
+                proc.Kill();
+        }
+
+        private void UpdateOpModeControls()
+        {
+            WiseSite.OpMode currentMode = wisesite.OperationalMode;
+
             List<ToolStripMenuItem> items = new List<ToolStripMenuItem>() {
                 wISEToolStripMenuItem,
                 lCOToolStripMenuItem,
@@ -668,7 +656,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                     item.Text = item.Text.Substring(0, item.Text.Length - Const.checkmark.Length);
 
             ToolStripMenuItem selected = null;
-            switch (mode)
+            switch (currentMode)
             {
                 case WiseSite.OpMode.LCO: selected = lCOToolStripMenuItem; break;
                 case WiseSite.OpMode.ACP: selected = aCPToolStripMenuItem; break;
@@ -676,7 +664,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             }
             if (selected != null)
                 selected.Text += Const.checkmark;
-            labelOperatingMode.Text = mode.ToString();
+            labelOperatingMode.Text = currentMode.ToString();
         }
 
         private void setupToolStripMenuItem_Click(object sender, EventArgs e)
@@ -728,6 +716,11 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             bool currentlyBypassed = safeToOperateStatus.Contains("not-bypassed") ? false : true;
 
             wisesafetooperate.Action(currentlyBypassed ? "endbypass" : "startbypass", string.Empty);
+        }
+
+        private void ObsMainForm_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }
