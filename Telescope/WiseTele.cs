@@ -2781,20 +2781,47 @@ namespace ASCOM.Wise40
             }
         }
 
+        private ArrayList supportedActions = new ArrayList() {
+            "dome:enslaved",
+            "telescope:get-active",
+            "telescope:set-active",
+            "site:get-opmode",
+            "site:set-opmode",
+        };
+
         public ArrayList SupportedActions
         {
             get
             {
                 #region trace
-                traceLogger.LogMessage("SupportedActions Get", "Returning empty arraylist");
+                traceLogger.LogMessage("SupportedActions Get", string.Format("{0}", supportedActions));
                 #endregion
-                return new ArrayList();
+                return supportedActions;
             }
         }
 
-        public string Action(string actionName, string actionParameters)
+        public string Action(string action, string parameter = null)
         {
-            throw new ASCOM.ActionNotImplementedException("Action " + actionName + " is not implemented by this driver");
+            action = action.ToLower();
+
+            if (action == "dome:enslaved")
+                return _enslaveDome.ToString();
+            else if (action == "telescope:get-active")
+                return inactivityMonitor.ObservatoryIsActive().ToString();
+            else if (action == "telescope:set-active")
+            {
+                inactivityMonitor.Start("action telescope:set-active");
+                return "ok";
+            }
+            else if (action == "site:get-opmode")
+                return wisesite.OperationalMode.ToString();
+            else if (action == "site:set-opmode")
+            {
+                Enum.TryParse(parameter.ToUpper(), out WiseSite.OpMode mode);
+                wisesite.OperationalMode = mode;
+            }
+
+            throw new ASCOM.ActionNotImplementedException("Action " + action + " is not implemented by this driver");
         }
 
         private void CheckConnected(string message)
@@ -2809,7 +2836,7 @@ namespace ASCOM.Wise40
         {
             CheckConnected("CommandBlind");
             if (command == "active")
-                inactivityMonitor.Start("CommandBlind(\"active\")");
+                Action("telescope:set-active", string.Empty);
             else
                 throw new ASCOM.MethodNotImplementedException(string.Format("CommandBlind: {0}", command));
         }
@@ -2818,7 +2845,7 @@ namespace ASCOM.Wise40
         {
             CheckConnected("CommandBool");
             if (command == "active")
-                return inactivityMonitor.ObservatoryIsActive();
+                return Convert.ToBoolean(Action("telescope:get-active", string.Empty));
             else
                 throw new ASCOM.MethodNotImplementedException(string.Format("CommandBool {0}", command));
         }
@@ -2828,7 +2855,7 @@ namespace ASCOM.Wise40
             CheckConnected("CommandString");
 
             if (command == "opmode")
-                return wisesite.OperationalMode.ToString();
+                return Action("site:opmode", string.Empty);
             else
                 throw new ASCOM.MethodNotImplementedException("CommandString");
         }
