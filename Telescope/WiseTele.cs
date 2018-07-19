@@ -606,7 +606,8 @@ namespace ASCOM.Wise40
                     {
                         minimalMovement = new Angle("00h02m00.0s"),
                         //stopMovement = new Angle("00h16m00.0s"),      // Jun 14th, 2018 - was undershooting by 1deg (4min)
-                        stopMovement = new Angle("00h20m00.0s"),
+                        //stopMovement = new Angle("00h20m00.0s"),
+                        stopMovement = new Angle("00h02m00.0s"),
                     },
 
                     [Const.rateSet] = new MovementParameters()
@@ -1832,10 +1833,12 @@ namespace ASCOM.Wise40
                 Thread.Sleep(500);
             }
             #region debug
-            a = (axis == TelescopeAxes.axisPrimary) ?
+            Angle b = (axis == TelescopeAxes.axisPrimary) ?
                 Angle.FromHours(_instance.RightAscension) :
                 Angle.FromDegrees(_instance.Declination);
-            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, msg + "at {0} {1} has stopped moving.", a, axis);
+            Angle stoppingDistance = b.ShortestDistance(a).angle;
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, msg + "at {0} {1} has stopped moving (stopping: {2})",
+                b, axis, stoppingDistance);
             #endregion debug
             slewingArbiter.AxisTryToSetRate(axis, Const.rateStopped);
         }

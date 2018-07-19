@@ -75,13 +75,13 @@ namespace ASCOM.Wise40
                 var max = _deltas.ToArray().Max();
                 bool ret =  max > epsilon;
 
-                #region debug
-                string deb = string.Format("AxisMonitor:IsMoving:{0}: max: {1:F15}, epsilon: {2:F15}, ret: {3}, active: {4}",
-                    _axis, max, epsilon, ret, ActiveMotors(_axis)) + "[";
-                foreach (var d in _deltas.ToArray())
-                    deb += " " + d.ToString();
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, deb + "]");
-                #endregion
+                //#region debug
+                //string deb = string.Format("AxisMonitor:IsMoving:{0}: max: {1:F15}, epsilon: {2:F15}, ret: {3}, active: {4}",
+                //    _axis, max, epsilon, ret, ActiveMotors(_axis)) + "[";
+                //foreach (var d in _deltas.ToArray())
+                //    deb += " " + d.ToString();
+                //debugger.WriteLine(Debugger.DebugLevel.DebugAxes, deb + "]");
+                //#endregion
                 return ret;
             }
         }
@@ -124,10 +124,10 @@ namespace ASCOM.Wise40
             if (d == double.NaN)
                 return;
 
-            #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "AxisMonitor:SampleAxisMovement:{0}: value: {1}, _previousValue: {2}, enqueueing: {3:F15}, active: {4}",
-                _axis, value, _previousValue, d, ActiveMotors(_axis));
-            #endregion
+            //#region debug
+            //debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "AxisMonitor:SampleAxisMovement:{0}: value: {1}, _previousValue: {2}, enqueueing: {3:F15}, active: {4}",
+            //    _axis, value, _previousValue, d, ActiveMotors(_axis));
+            //#endregion
             _deltas.Enqueue(d);
             _previousValue = value;
         }

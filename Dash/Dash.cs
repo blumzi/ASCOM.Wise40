@@ -227,24 +227,27 @@ namespace Dash
 
             buttonTelescopePark.Text = wisetele.AtPark ? "Unpark" : "Park";
 
-            TimeSpan ts = wisetele.inactivityMonitor.RemainingTime;
-            if (ts == TimeSpan.MaxValue)
+            if (wisesite.OperationalMode == WiseSite.OpMode.WISE)
             {
-                // not started
-                labelCountdown.Text = "";
-                toolTip.SetToolTip(labelCountdown, "");
-            }
-            else if (ts < new TimeSpan(0, 0, 0))
-            {
-                // no remaining time, idle
-                labelCountdown.Text = "Idle";
-                toolTip.SetToolTip(labelCountdown, "Idle (no activity in the last 15 minutes)");
-            }
-            else
-            {
-                // still some time till idle
-                labelCountdown.Text = string.Format("{0:D2}:{1:D2}", ts.Minutes, ts.Seconds);
-                toolTip.SetToolTip(labelCountdown, "Inactivity countdown");
+                TimeSpan ts = wisetele.inactivityMonitor.RemainingTime;
+                if (ts == TimeSpan.MaxValue)
+                {
+                    // not started
+                    labelCountdown.Text = "";
+                    toolTip.SetToolTip(labelCountdown, "");
+                }
+                else if (ts < new TimeSpan(0, 0, 0))
+                {
+                    // no remaining time, idle
+                    labelCountdown.Text = "Idle";
+                    toolTip.SetToolTip(labelCountdown, "Idle (no activity in the last 15 minutes)");
+                }
+                else
+                {
+                    // still some time till idle
+                    labelCountdown.Text = string.Format("{0:D2}:{1:D2}", ts.Minutes, ts.Seconds);
+                    toolTip.SetToolTip(labelCountdown, "Inactivity countdown");
+                }
             }
 
             annunciatorTrack.Cadence = wisetele.Tracking ? ASCOM.Controls.CadencePattern.SteadyOn : ASCOM.Controls.CadencePattern.SteadyOff;
