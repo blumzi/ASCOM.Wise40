@@ -1656,48 +1656,56 @@ namespace ASCOM.Wise40
             #endregion
 
             ScopeSlewerStatus status = ScopeSlewerStatus.Undefined;
-            Const.AxisDirection originalDirection;
+            Const.AxisDirection originalDirection = Const.AxisDirection.None;
             ShortestDistanceResult distanceToTarget;
 
             try
             {
                 while (true)
                 {
-                    telescopeCT.ThrowIfCancellationRequested();
-
-                    currentPosition = (thisAxis == TelescopeAxes.axisPrimary) ?
-                        Angle.FromHours(_instance.RightAscension, Angle.Type.RA) :
-                        Angle.FromDegrees(_instance.Declination, Angle.Type.Dec);
-
-                    distanceToTarget = currentPosition.ShortestDistance(targetPosition);
-
-                    rate = SelectHighestRate(thisAxis, distanceToTarget.angle);
-                    if (rate == Const.rateStopped)
+                    while (true)
                     {
-                        status = ScopeSlewerStatus.CloseEnough;
-                        #region debug
-                        debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0} close enough at {1} (target: {2}, distance: {3})",
-                            slewerName, currentPosition, targetPosition, distanceToTarget.angle);
-                        #endregion
-                        break;
-                    }
-                    originalDirection = distanceToTarget.direction;
-
-                    _instance.currMovement[thisAxis].rate = rate;
-                    _instance.currMovement[thisAxis].direction = originalDirection;
-
-                    // Wait for _moveAxis to start moving thisAxis
-                    while (!_moveAxis(thisAxis, rate, originalDirection, false))
-                    {
-                        const int waitForAxisToStartMovingMillis = 500;
-
-                        #region debug
-                        debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                            "{0}: waiting {1} millis to start _moveAxis({2}, {3}, {4}) ...",
-                            slewerName, waitForAxisToStartMovingMillis, thisAxis.ToString(), RateName(rate), originalDirection);
-                        #endregion
                         telescopeCT.ThrowIfCancellationRequested();
-                        Thread.Sleep(waitForAxisToStartMovingMillis);
+
+                        currentPosition = (thisAxis == TelescopeAxes.axisPrimary) ?
+                            Angle.FromHours(_instance.RightAscension, Angle.Type.RA) :
+                            Angle.FromDegrees(_instance.Declination, Angle.Type.Dec);
+
+                        distanceToTarget = currentPosition.ShortestDistance(targetPosition);
+
+                        rate = SelectHighestRate(thisAxis, distanceToTarget.angle);
+                        if (rate == Const.rateStopped)
+                        {
+                            status = ScopeSlewerStatus.CloseEnough;
+                            #region debug
+                            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0} close enough at {1} (target: {2}, distance: {3})",
+                                slewerName, currentPosition, targetPosition, distanceToTarget.angle);
+                            #endregion
+                            break;
+                        }
+                        originalDirection = distanceToTarget.direction;
+
+                        _instance.currMovement[thisAxis].rate = rate;
+                        _instance.currMovement[thisAxis].direction = originalDirection;
+
+                        // Wait for _moveAxis to start moving thisAxis
+                        if (_moveAxis(thisAxis, rate, originalDirection, false))
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            const int waitForAxisToStartMovingMillis = 500;
+
+                            #region debug
+                            debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                                "{0}: waiting {1} millis to start _moveAxis({2}, {3}, {4}) ...",
+                                slewerName, waitForAxisToStartMovingMillis, thisAxis.ToString(), RateName(rate), originalDirection);
+                            #endregion
+                            telescopeCT.ThrowIfCancellationRequested();
+                            Thread.Sleep(waitForAxisToStartMovingMillis);
+                            telescopeCT.ThrowIfCancellationRequested();
+                        }
                     }
 
                     ShortestDistanceResult currentDistance = null;
@@ -2817,11 +2825,12 @@ namespace ASCOM.Wise40
                 return wisesite.OperationalMode.ToString();
             else if (action == "site:set-opmode")
             {
-                Enum.TryParse(parameter.ToUpper(), out WiseSite.OpMode mode);
+                WiseSite.OpMode mode;
+                Enum.TryParse(parameter.ToUpper(), out mode);
                 wisesite.OperationalMode = mode;
             }
 
-            throw new ASCOM.ActionNotImplementedException("Action " + action + " is not implemented by this driver");
+            throw new ASCOM.ActionNotImplementedException("Action \"" + action + "\" is not implemented by this driver");
         }
 
         private void CheckConnected(string message)
