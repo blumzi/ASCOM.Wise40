@@ -391,8 +391,7 @@ namespace ASCOM.Wise40SafeToOperate
             if ((nbad = nBadReadings) == 0)
                 return string.Empty;
 
-            return string.Format("The last {0} cloud cover readings were higher than \"{1}\"",
-                nbad, MaxAsString.Replace("cloud", ""));
+            return string.Format("The last {0} cloud cover readings were higher than \"{1}\"", nbad, MaxAsString);
         }
 
         public override string MaxAsString
