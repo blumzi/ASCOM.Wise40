@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27130.2010
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dome", "Dome\Dome.csproj", "{64308775-BD4A-469C-BCAB-3ED830B811AF}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -35,7 +35,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Deliveries", "Deliveries", 
 		Deliveries\Wise40 Setup.exe = Deliveries\Wise40 Setup.exe
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SafeToOpen", "SafeToOpen\SafeToOpen.csproj", "{7FA766D4-8F97-4D9F-8F62-F25C84C01FF2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SafeToOperate", "SafeToOpen\SafeToOperate.csproj", "{7FA766D4-8F97-4D9F-8F62-F25C84C01FF2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Restore-ASCOM-Profiles", "Restore-ASCOM-Profiles\Restore-ASCOM-Profiles.csproj", "{E26E5B94-4AE9-425D-A5C9-797CB33F24F5}"
 EndProject

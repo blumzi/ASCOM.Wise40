@@ -118,12 +118,6 @@
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.telescopeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.domeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.cloudSensorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.dataFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripTextBoxCloudSensorDataFile = new System.Windows.Forms.ToolStripTextBox();
-            this.vantagePro2ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.reportFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripTextBoxVantagePro2ReportFile = new System.Windows.Forms.ToolStripTextBox();
             this.toolStripMenuItemSafeToOperate = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItemFilterWheel = new System.Windows.Forms.ToolStripMenuItem();
             this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -215,8 +209,6 @@
             this.labelDewPointValue = new System.Windows.Forms.Label();
             this.labelCloudCoverValue = new System.Windows.Forms.Label();
             this.label12 = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
-            this.labelLightValue = new System.Windows.Forms.Label();
             this.label22 = new System.Windows.Forms.Label();
             this.labelWindSpeedValue = new System.Windows.Forms.Label();
             this.label21 = new System.Windows.Forms.Label();
@@ -229,6 +221,8 @@
             this.labelRainRateValue = new System.Windows.Forms.Label();
             this.timerRefreshDisplay = new System.Windows.Forms.Timer(this.components);
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
+            this.boltwoodToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.davisVantagePro2ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tableLayoutMain.SuspendLayout();
             this.groupBoxFocuser.SuspendLayout();
             this.groupBoxDomeGroup.SuspendLayout();
@@ -1544,8 +1538,8 @@
             this.toolStripMenuItem1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.telescopeToolStripMenuItem,
             this.domeToolStripMenuItem,
-            this.cloudSensorToolStripMenuItem,
-            this.vantagePro2ToolStripMenuItem,
+            this.boltwoodToolStripMenuItem,
+            this.davisVantagePro2ToolStripMenuItem,
             this.toolStripMenuItemSafeToOperate,
             this.toolStripMenuItemFilterWheel,
             this.toolStripMenuItem5,
@@ -1562,63 +1556,21 @@
             // telescopeToolStripMenuItem
             // 
             this.telescopeToolStripMenuItem.Name = "telescopeToolStripMenuItem";
-            this.telescopeToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
+            this.telescopeToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
             this.telescopeToolStripMenuItem.Text = "Telescope";
             this.telescopeToolStripMenuItem.Click += new System.EventHandler(this.telescopeToolStripMenuItem_Click);
             // 
             // domeToolStripMenuItem
             // 
             this.domeToolStripMenuItem.Name = "domeToolStripMenuItem";
-            this.domeToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
+            this.domeToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
             this.domeToolStripMenuItem.Text = "Dome";
             this.domeToolStripMenuItem.Click += new System.EventHandler(this.domeToolStripMenuItem_Click);
-            // 
-            // cloudSensorToolStripMenuItem
-            // 
-            this.cloudSensorToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.dataFileToolStripMenuItem});
-            this.cloudSensorToolStripMenuItem.Name = "cloudSensorToolStripMenuItem";
-            this.cloudSensorToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
-            this.cloudSensorToolStripMenuItem.Text = "CloudSensor";
-            // 
-            // dataFileToolStripMenuItem
-            // 
-            this.dataFileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripTextBoxCloudSensorDataFile});
-            this.dataFileToolStripMenuItem.Name = "dataFileToolStripMenuItem";
-            this.dataFileToolStripMenuItem.Size = new System.Drawing.Size(125, 22);
-            this.dataFileToolStripMenuItem.Text = "Data File";
-            // 
-            // toolStripTextBoxCloudSensorDataFile
-            // 
-            this.toolStripTextBoxCloudSensorDataFile.Name = "toolStripTextBoxCloudSensorDataFile";
-            this.toolStripTextBoxCloudSensorDataFile.Size = new System.Drawing.Size(100, 23);
-            // 
-            // vantagePro2ToolStripMenuItem
-            // 
-            this.vantagePro2ToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.reportFileToolStripMenuItem});
-            this.vantagePro2ToolStripMenuItem.Name = "vantagePro2ToolStripMenuItem";
-            this.vantagePro2ToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
-            this.vantagePro2ToolStripMenuItem.Text = "VantagePro2";
-            // 
-            // reportFileToolStripMenuItem
-            // 
-            this.reportFileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripTextBoxVantagePro2ReportFile});
-            this.reportFileToolStripMenuItem.Name = "reportFileToolStripMenuItem";
-            this.reportFileToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
-            this.reportFileToolStripMenuItem.Text = "Report File";
-            // 
-            // toolStripTextBoxVantagePro2ReportFile
-            // 
-            this.toolStripTextBoxVantagePro2ReportFile.Name = "toolStripTextBoxVantagePro2ReportFile";
-            this.toolStripTextBoxVantagePro2ReportFile.Size = new System.Drawing.Size(100, 23);
             // 
             // toolStripMenuItemSafeToOperate
             // 
             this.toolStripMenuItemSafeToOperate.Name = "toolStripMenuItemSafeToOperate";
-            this.toolStripMenuItemSafeToOperate.Size = new System.Drawing.Size(158, 22);
+            this.toolStripMenuItemSafeToOperate.Size = new System.Drawing.Size(200, 22);
             this.toolStripMenuItemSafeToOperate.Text = "SafeToOperate";
             this.toolStripMenuItemSafeToOperate.Click += new System.EventHandler(this.toolStripMenuItemSafeToOpen_Click);
             // 
@@ -1630,7 +1582,7 @@
             this.manage3FiltersToolStripMenuItem});
             this.toolStripMenuItemFilterWheel.Enabled = false;
             this.toolStripMenuItemFilterWheel.Name = "toolStripMenuItemFilterWheel";
-            this.toolStripMenuItemFilterWheel.Size = new System.Drawing.Size(158, 22);
+            this.toolStripMenuItemFilterWheel.Size = new System.Drawing.Size(200, 22);
             this.toolStripMenuItemFilterWheel.Text = "Filter Wheel";
             this.toolStripMenuItemFilterWheel.Click += new System.EventHandler(this.toolStripMenuItemFilterWheel_Click);
             // 
@@ -1658,13 +1610,13 @@
             // toolStripMenuItem5
             // 
             this.toolStripMenuItem5.Name = "toolStripMenuItem5";
-            this.toolStripMenuItem5.Size = new System.Drawing.Size(158, 22);
+            this.toolStripMenuItem5.Size = new System.Drawing.Size(200, 22);
             this.toolStripMenuItem5.Text = "  ";
             // 
             // tracingToolStripMenuItem
             // 
             this.tracingToolStripMenuItem.Name = "tracingToolStripMenuItem";
-            this.tracingToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
+            this.tracingToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
             this.tracingToolStripMenuItem.Text = "Tracing";
             this.tracingToolStripMenuItem.ToolTipText = "Toggle tracing ";
             this.tracingToolStripMenuItem.Click += new System.EventHandler(this.tracingToolStripMenuItem_Click);
@@ -1687,7 +1639,7 @@
             this.debugAllToolStripMenuItem,
             this.debugNoneToolStripMenuItem});
             this.debuggingToolStripMenuItem1.Name = "debuggingToolStripMenuItem1";
-            this.debuggingToolStripMenuItem1.Size = new System.Drawing.Size(158, 22);
+            this.debuggingToolStripMenuItem1.Size = new System.Drawing.Size(200, 22);
             this.debuggingToolStripMenuItem1.Text = "Debugging";
             // 
             // debugASCOMToolStripMenuItem
@@ -1797,13 +1749,13 @@
             // toolStripMenuItem2
             // 
             this.toolStripMenuItem2.Name = "toolStripMenuItem2";
-            this.toolStripMenuItem2.Size = new System.Drawing.Size(158, 22);
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(200, 22);
             this.toolStripMenuItem2.Text = "  ";
             // 
             // bypassSafetyToolStripMenuItem
             // 
             this.bypassSafetyToolStripMenuItem.Name = "bypassSafetyToolStripMenuItem";
-            this.bypassSafetyToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
+            this.bypassSafetyToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
             this.bypassSafetyToolStripMenuItem.Text = "Bypass Safety";
             this.bypassSafetyToolStripMenuItem.ToolTipText = "Bypass Safety Checks\r\n\r\nBypasses:\r\n  - SafeToOperate (environment) checks\r\n  - Te" +
     "lescope coordinate checks";
@@ -1812,7 +1764,7 @@
             // saveToProfileToolStripMenuItem
             // 
             this.saveToProfileToolStripMenuItem.Name = "saveToProfileToolStripMenuItem";
-            this.saveToProfileToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
+            this.saveToProfileToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
             this.saveToProfileToolStripMenuItem.Text = "Save To Profile";
             this.saveToProfileToolStripMenuItem.ToolTipText = "Save settings to the persistent profile";
             this.saveToProfileToolStripMenuItem.Click += new System.EventHandler(this.saveToProfileToolStripMenuItem_Click);
@@ -2395,7 +2347,7 @@
             // 
             this.labelCountdown.Font = new System.Drawing.Font("Lucida Console", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelCountdown.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelCountdown.Location = new System.Drawing.Point(61, 8);
+            this.labelCountdown.Location = new System.Drawing.Point(68, 8);
             this.labelCountdown.Name = "labelCountdown";
             this.labelCountdown.Size = new System.Drawing.Size(62, 21);
             this.labelCountdown.TabIndex = 42;
@@ -2586,18 +2538,6 @@
             this.tableLayoutPanelWeather.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 22.1519F));
             this.tableLayoutPanelWeather.Controls.Add(this.label23, 0, 0);
             this.tableLayoutPanelWeather.Controls.Add(this.labelAgeValue, 1, 0);
-            this.tableLayoutPanelWeather.Controls.Add(this.label16, 0, 5);
-            this.tableLayoutPanelWeather.Controls.Add(this.labelPressureValue, 1, 5);
-            this.tableLayoutPanelWeather.Controls.Add(this.label14, 0, 4);
-            this.tableLayoutPanelWeather.Controls.Add(this.labelHumidityValue, 1, 4);
-            this.tableLayoutPanelWeather.Controls.Add(this.label13, 0, 3);
-            this.tableLayoutPanelWeather.Controls.Add(this.labelDewPointValue, 1, 3);
-            this.tableLayoutPanelWeather.Controls.Add(this.labelCloudCoverValue, 1, 2);
-            this.tableLayoutPanelWeather.Controls.Add(this.label12, 0, 2);
-            this.tableLayoutPanelWeather.Controls.Add(this.label2, 0, 1);
-            this.tableLayoutPanelWeather.Controls.Add(this.labelLightValue, 1, 1);
-            this.tableLayoutPanelWeather.Controls.Add(this.label22, 2, 5);
-            this.tableLayoutPanelWeather.Controls.Add(this.labelWindSpeedValue, 3, 5);
             this.tableLayoutPanelWeather.Controls.Add(this.label21, 2, 4);
             this.tableLayoutPanelWeather.Controls.Add(this.labelWindDirValue, 3, 4);
             this.tableLayoutPanelWeather.Controls.Add(this.label20, 2, 3);
@@ -2606,6 +2546,16 @@
             this.tableLayoutPanelWeather.Controls.Add(this.labelSkyTempValue, 3, 2);
             this.tableLayoutPanelWeather.Controls.Add(this.label18, 2, 1);
             this.tableLayoutPanelWeather.Controls.Add(this.labelRainRateValue, 3, 1);
+            this.tableLayoutPanelWeather.Controls.Add(this.label12, 0, 1);
+            this.tableLayoutPanelWeather.Controls.Add(this.labelCloudCoverValue, 1, 1);
+            this.tableLayoutPanelWeather.Controls.Add(this.label13, 0, 2);
+            this.tableLayoutPanelWeather.Controls.Add(this.labelDewPointValue, 1, 2);
+            this.tableLayoutPanelWeather.Controls.Add(this.label14, 0, 3);
+            this.tableLayoutPanelWeather.Controls.Add(this.labelHumidityValue, 1, 3);
+            this.tableLayoutPanelWeather.Controls.Add(this.label16, 0, 4);
+            this.tableLayoutPanelWeather.Controls.Add(this.labelPressureValue, 1, 4);
+            this.tableLayoutPanelWeather.Controls.Add(this.label22, 1, 5);
+            this.tableLayoutPanelWeather.Controls.Add(this.labelWindSpeedValue, 2, 5);
             this.tableLayoutPanelWeather.Location = new System.Drawing.Point(8, 16);
             this.tableLayoutPanelWeather.Name = "tableLayoutPanelWeather";
             this.tableLayoutPanelWeather.RowCount = 6;
@@ -2614,6 +2564,7 @@
             this.tableLayoutPanelWeather.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 20F));
             this.tableLayoutPanelWeather.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 20F));
             this.tableLayoutPanelWeather.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 20F));
+            this.tableLayoutPanelWeather.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             this.tableLayoutPanelWeather.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             this.tableLayoutPanelWeather.Size = new System.Drawing.Size(387, 207);
             this.tableLayoutPanelWeather.TabIndex = 0;
@@ -2656,9 +2607,9 @@
             this.label16.AutoSize = true;
             this.label16.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label16.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label16.Location = new System.Drawing.Point(39, 185);
+            this.label16.Location = new System.Drawing.Point(39, 148);
             this.label16.Name = "label16";
-            this.label16.Size = new System.Drawing.Size(60, 22);
+            this.label16.Size = new System.Drawing.Size(60, 37);
             this.label16.TabIndex = 3;
             this.label16.Text = "Pressure:";
             this.label16.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -2671,9 +2622,9 @@
             this.labelPressureValue.AutoSize = true;
             this.labelPressureValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.labelPressureValue.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.labelPressureValue.Location = new System.Drawing.Point(105, 185);
+            this.labelPressureValue.Location = new System.Drawing.Point(105, 148);
             this.labelPressureValue.Name = "labelPressureValue";
-            this.labelPressureValue.Size = new System.Drawing.Size(87, 22);
+            this.labelPressureValue.Size = new System.Drawing.Size(87, 37);
             this.labelPressureValue.TabIndex = 14;
             this.labelPressureValue.Text = "pressure";
             this.labelPressureValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -2685,7 +2636,7 @@
             this.label14.AutoSize = true;
             this.label14.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label14.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label14.Location = new System.Drawing.Point(40, 148);
+            this.label14.Location = new System.Drawing.Point(40, 111);
             this.label14.Name = "label14";
             this.label14.Size = new System.Drawing.Size(59, 37);
             this.label14.TabIndex = 2;
@@ -2700,7 +2651,7 @@
             this.labelHumidityValue.AutoSize = true;
             this.labelHumidityValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.labelHumidityValue.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.labelHumidityValue.Location = new System.Drawing.Point(105, 148);
+            this.labelHumidityValue.Location = new System.Drawing.Point(105, 111);
             this.labelHumidityValue.Name = "labelHumidityValue";
             this.labelHumidityValue.Size = new System.Drawing.Size(87, 37);
             this.labelHumidityValue.TabIndex = 13;
@@ -2714,7 +2665,7 @@
             this.label13.AutoSize = true;
             this.label13.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label13.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label13.Location = new System.Drawing.Point(34, 111);
+            this.label13.Location = new System.Drawing.Point(34, 74);
             this.label13.Name = "label13";
             this.label13.Size = new System.Drawing.Size(65, 37);
             this.label13.TabIndex = 1;
@@ -2729,7 +2680,7 @@
             this.labelDewPointValue.AutoSize = true;
             this.labelDewPointValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.labelDewPointValue.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.labelDewPointValue.Location = new System.Drawing.Point(105, 111);
+            this.labelDewPointValue.Location = new System.Drawing.Point(105, 74);
             this.labelDewPointValue.Name = "labelDewPointValue";
             this.labelDewPointValue.Size = new System.Drawing.Size(87, 37);
             this.labelDewPointValue.TabIndex = 12;
@@ -2744,7 +2695,7 @@
             this.labelCloudCoverValue.AutoSize = true;
             this.labelCloudCoverValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.labelCloudCoverValue.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.labelCloudCoverValue.Location = new System.Drawing.Point(105, 74);
+            this.labelCloudCoverValue.Location = new System.Drawing.Point(105, 37);
             this.labelCloudCoverValue.Name = "labelCloudCoverValue";
             this.labelCloudCoverValue.Size = new System.Drawing.Size(87, 37);
             this.labelCloudCoverValue.TabIndex = 11;
@@ -2758,41 +2709,12 @@
             this.label12.AutoSize = true;
             this.label12.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label12.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label12.Location = new System.Drawing.Point(23, 74);
+            this.label12.Location = new System.Drawing.Point(23, 37);
             this.label12.Name = "label12";
             this.label12.Size = new System.Drawing.Size(76, 37);
             this.label12.TabIndex = 0;
             this.label12.Text = "CloudCover:";
             this.label12.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // label2
-            // 
-            this.label2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.label2.AutoSize = true;
-            this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label2.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label2.Location = new System.Drawing.Point(60, 37);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(39, 37);
-            this.label2.TabIndex = 20;
-            this.label2.Text = "Light:";
-            this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // labelLightValue
-            // 
-            this.labelLightValue.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.labelLightValue.AutoSize = true;
-            this.labelLightValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelLightValue.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.labelLightValue.Location = new System.Drawing.Point(105, 37);
-            this.labelLightValue.Name = "labelLightValue";
-            this.labelLightValue.Size = new System.Drawing.Size(87, 37);
-            this.labelLightValue.TabIndex = 21;
-            this.labelLightValue.Text = "light";
-            this.labelLightValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // label22
             // 
@@ -2801,7 +2723,7 @@
             this.label22.AutoSize = true;
             this.label22.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label22.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label22.Location = new System.Drawing.Point(221, 185);
+            this.label22.Location = new System.Drawing.Point(116, 185);
             this.label22.Name = "label22";
             this.label22.Size = new System.Drawing.Size(76, 22);
             this.label22.TabIndex = 8;
@@ -2816,9 +2738,9 @@
             this.labelWindSpeedValue.AutoSize = true;
             this.labelWindSpeedValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.labelWindSpeedValue.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.labelWindSpeedValue.Location = new System.Drawing.Point(303, 185);
+            this.labelWindSpeedValue.Location = new System.Drawing.Point(198, 185);
             this.labelWindSpeedValue.Name = "labelWindSpeedValue";
-            this.labelWindSpeedValue.Size = new System.Drawing.Size(81, 22);
+            this.labelWindSpeedValue.Size = new System.Drawing.Size(99, 22);
             this.labelWindSpeedValue.TabIndex = 19;
             this.labelWindSpeedValue.Text = "windspeed";
             this.labelWindSpeedValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -2943,6 +2865,20 @@
             // 
             this.timerRefreshDisplay.Enabled = true;
             this.timerRefreshDisplay.Tick += new System.EventHandler(this.RefreshDisplay);
+            // 
+            // boltwoodToolStripMenuItem
+            // 
+            this.boltwoodToolStripMenuItem.Name = "boltwoodToolStripMenuItem";
+            this.boltwoodToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
+            this.boltwoodToolStripMenuItem.Text = "Boltwood Cloudsensor";
+            this.boltwoodToolStripMenuItem.Click += new System.EventHandler(this.boltwoodToolStripMenuItem_Click);
+            // 
+            // davisVantagePro2ToolStripMenuItem
+            // 
+            this.davisVantagePro2ToolStripMenuItem.Name = "davisVantagePro2ToolStripMenuItem";
+            this.davisVantagePro2ToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
+            this.davisVantagePro2ToolStripMenuItem.Text = "Davis VantagePro2";
+            this.davisVantagePro2ToolStripMenuItem.Click += new System.EventHandler(this.davisVantagePro2ToolStripMenuItem_Click);
             // 
             // FormDash
             // 
@@ -3123,8 +3059,6 @@
         private System.Windows.Forms.ToolStripMenuItem saveToProfileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemSafeToOperate;
         private System.Windows.Forms.ToolStripMenuItem debugMotorsToolStripMenuItem;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.Label labelLightValue;
         private System.Windows.Forms.ToolStripMenuItem bypassSafetyToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem2;
         private System.Windows.Forms.Button buttonDomeAzSet;
@@ -3134,12 +3068,6 @@
         private System.Windows.Forms.Button buttonFlat;
         private System.Windows.Forms.Button buttonHandleCover;
         private System.Windows.Forms.Button buttonZenith;
-        private System.Windows.Forms.ToolStripMenuItem cloudSensorToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem dataFileToolStripMenuItem;
-        private System.Windows.Forms.ToolStripTextBox toolStripTextBoxCloudSensorDataFile;
-        private System.Windows.Forms.ToolStripMenuItem vantagePro2ToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem reportFileToolStripMenuItem;
-        private System.Windows.Forms.ToolStripTextBox toolStripTextBoxVantagePro2ReportFile;
         private System.Windows.Forms.ToolStripMenuItem wise40WikiToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemFilterWheel;
@@ -3197,6 +3125,8 @@
         private System.Windows.Forms.ToolStripMenuItem debugDomeToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem debugDAQsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem debugShutterToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem boltwoodToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem davisVantagePro2ToolStripMenuItem;
     }
 }
 

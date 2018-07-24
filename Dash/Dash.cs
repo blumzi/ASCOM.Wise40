@@ -16,7 +16,7 @@ using ASCOM.Wise40;
 using ASCOM.Wise40.Common;
 using ASCOM.Wise40.Boltwood;
 using ASCOM.Wise40.Hardware;
-using ASCOM.Wise40SafeToOpen;
+using ASCOM.Wise40SafeToOperate;
 using ASCOM.Wise40.FilterWheel;
 using ASCOM.Wise40.VantagePro;
 
@@ -32,8 +32,6 @@ namespace Dash
         Hardware hardware = Hardware.Instance;
         public WiseSite wisesite = WiseSite.Instance;
         public WiseSafeToOperate wisesafetooperate = WiseSafeToOperate.InstanceOpen;
-        public WiseBoltwood wiseboltwood = WiseBoltwood.Instance;
-        public WiseVantagePro wisevantagepro = WiseVantagePro.Instance;
         public WiseFilterWheel wisefilterwheel = WiseFilterWheel.Instance;
         public WiseDomePlatform wisedomeplatform = WiseDomePlatform.Instance;
         WiseObject wiseobject = new WiseObject();
@@ -83,7 +81,8 @@ namespace Dash
             wisefocuser.Connected = true;
             wisesafetooperate.init();
             wisesafetooperate.Connected = true;
-            wiseboltwood.Connected = true;
+            //wiseboltwood.Connected = true;
+            wisesite.och.Connected = true;
             //wisefilterwheel.init();
             //wisefilterwheel.Connected = true;
             wisedomeplatform.init();
@@ -179,15 +178,26 @@ namespace Dash
             buttonVent.Text = wisedome.Vent ? "Close Vent" : "Open Vent";
             buttonProjector.Text = wisedome.Projector ? "Turn projector Off" : "Turn projector On";
 
-            toolStripTextBoxCloudSensorDataFile.Text = wiseboltwood.DataFile;
-            toolStripTextBoxCloudSensorDataFile.Tag = wiseboltwood.DataFile;
+            //toolStripTextBoxCloudSensorDataFile.Text = wiseboltwood.DataFile;
+            //toolStripTextBoxCloudSensorDataFile.Tag = wiseboltwood.DataFile;
 
-            toolStripTextBoxVantagePro2ReportFile.Tag = wisevantagepro.DataFile;
-            toolStripTextBoxVantagePro2ReportFile.Text = wisevantagepro.DataFile;
+            //toolStripTextBoxVantagePro2ReportFile.Tag = wisevantagepro.DataFile;
+            //toolStripTextBoxVantagePro2ReportFile.Text = wisevantagepro.DataFile;
             
             //wisefilterwheel.wheelOrPositionChanged += onWheelOrPositionChanged;
         }
         #endregion
+
+
+        public double MPS(double kmh)
+        {
+            return kmh * (1000.0 / 3600.0);
+        }
+
+        public double KMH(double mps)
+        {
+            return mps * 3.6;
+        }
 
         #region Refresh
         public void RefreshDisplay(object sender, EventArgs e)
@@ -491,36 +501,23 @@ namespace Dash
                     labelHumidityValue.ForeColor = Statuser.TriStateColor(wisesafetooperate.isSafeHumidity);
 
                     double d = oc.CloudCover;
-                    if (d == 0.0)
-                        labelCloudCoverValue.Text = "Clear";
-                    else if (d == 50.0)
-                        labelCloudCoverValue.Text = "Cloudy";
-                    else if (d == 90.0)
-                        labelCloudCoverValue.Text = "VeryCloudy";
-                    else
-                        labelCloudCoverValue.Text = "Unknown";
+                    labelCloudCoverValue.Text = Math.Floor(oc.CloudCover).ToString();
                     labelCloudCoverValue.ForeColor = Statuser.TriStateColor(wisesafetooperate.isSafeCloudCover);
 
                     double windSpeedMps = oc.WindSpeed;
-                    labelWindSpeedValue.Text = string.Format("{0:G3} km/h", wisevantagepro.KMH(windSpeedMps));
+                    labelWindSpeedValue.Text = string.Format("{0:G3} km/h", KMH(windSpeedMps));
                     labelWindSpeedValue.ForeColor = Statuser.TriStateColor(wisesafetooperate.isSafeWindSpeed);
 
                     labelRainRateValue.Text = (oc.RainRate > 0.0) ? "Wet" : "Dry";
                     labelRainRateValue.ForeColor = Statuser.TriStateColor(wisesafetooperate.isSafeRain);
                     #endregion
 
-                    #region Light from Boltwood
-                    string light = wiseboltwood.CommandString("daylight", true);
-                    labelLightValue.Text = light.Substring(3);
-                    labelLightValue.ForeColor = Statuser.TriStateColor(wisesafetooperate.isSafeLight);
-                    #endregion
-
-                    #region Forecast from VantagePro
-                    if (wisesafetooperate._vantageProIsValid)
-                        dashStatus.Show("Forecast: " + wisevantagepro.Forecast, 0, Statuser.Severity.Normal);
-                    else
-                        dashStatus.Show("No forecast: bad connection to VantagePro", 0, Statuser.Severity.Warning);
-                    #endregion
+                    //#region Forecast from VantagePro
+                    //if (wisesafetooperate._vantageProIsValid)
+                    //    dashStatus.Show("Forecast: " + wisevantagepro.Forecast, 0, Statuser.Severity.Normal);
+                    //else
+                    //    dashStatus.Show("No forecast: bad connection to VantagePro", 0, Statuser.Severity.Warning);
+                    //#endregion
 
                     #region SafeToOpen
                     if (wisesafetooperate.IsSafe)
@@ -1340,24 +1337,6 @@ namespace Dash
             wisetele.WriteProfile();
             if (_saveFocusUpperLimit || _saveFocusLowerLimit)
                 wisefocuser.WriteProfile();
-
-            if ((string)toolStripTextBoxCloudSensorDataFile.Tag != toolStripTextBoxCloudSensorDataFile.Text)
-            {
-                using (ASCOM.Utilities.Profile driverProfile = new ASCOM.Utilities.Profile())
-                {
-                    driverProfile.DeviceType = "ObservingConditions";
-                    driverProfile.WriteValue("ASCOM.Wise40.Boltwood.ObservingConditions", "Data File", toolStripTextBoxCloudSensorDataFile.Text);
-                }
-            }
-
-            if ((string)toolStripTextBoxVantagePro2ReportFile.Tag != toolStripTextBoxVantagePro2ReportFile.Text)
-            {
-                using (ASCOM.Utilities.Profile driverProfile = new ASCOM.Utilities.Profile())
-                {
-                    driverProfile.DeviceType = "ObservingConditions";
-                    driverProfile.WriteValue("ASCOM.Wise40.VantagePro.ObservingConditions", "DataFile", toolStripTextBoxVantagePro2ReportFile.Text);
-                }
-            }
             saveToProfileToolStripMenuItem.Text = "Save To Profile";
         }
 
@@ -1516,6 +1495,16 @@ namespace Dash
         private void buttonTrack_Click(object sender, EventArgs e)
         {
             wisetele.Tracking = !wisetele.Tracking;
+        }
+
+        private void davisVantagePro2ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            new ASCOM.Wise40.VantagePro.SetupDialogForm().Show();
+        }
+
+        private void boltwoodToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            new ASCOM.Wise40.Boltwood.SetupDialogForm().Show();
         }
 
         private void safetyOverrideToolStripMenuItem_Click(object sender, EventArgs e)

@@ -93,7 +93,7 @@ namespace ASCOM.Wise40
 
             try
             {
-                safeToOperate = new SafetyMonitor(Const.wiseSafeToOpenDriverID);
+                safeToOperate = new SafetyMonitor(Const.wiseSafeToOperateDriverID);
                 safeToOperate.Connected = true;
             }
             catch

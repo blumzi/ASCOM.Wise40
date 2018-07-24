@@ -12,10 +12,12 @@ using ASCOM.Astrometry;
 using ASCOM.Astrometry.AstroUtils;
 using ASCOM.Astrometry.NOVAS;
 using ASCOM.Wise40.Common;
-using ASCOM.Wise40.Boltwood;
-using ASCOM.Wise40.VantagePro;
+//using ASCOM.Wise40.Boltwood;
+//using ASCOM.Wise40.VantagePro;
+using ASCOM.Wise40;
+using ASCOM.DriverAccess;
 
-namespace ASCOM.Wise40SafeToOpen
+namespace ASCOM.Wise40SafeToOperate
 {
     public class WiseSafeToOperate
     {
@@ -36,8 +38,7 @@ namespace ASCOM.Wise40SafeToOpen
         private string name;
 
         public Profile _profile;
-
-        public LightSensor lightSensor;
+        
         public WindSensor windSensor;
         public CloudsSensor cloudsSensor;
         public RainSensor rainSensor;
@@ -59,9 +60,8 @@ namespace ASCOM.Wise40SafeToOpen
 
         private Wise40.Common.Debugger debugger = Debugger.Instance;
         private static TraceLogger tl;
-
-        public WiseBoltwood boltwood = WiseBoltwood.Instance;
-        public WiseVantagePro vantagePro = WiseVantagePro.Instance;
+        
+        public ObservingConditions och = WiseSite.Instance.och;
         
         private static object syncObject = new object();
 
@@ -110,10 +110,11 @@ namespace ASCOM.Wise40SafeToOpen
             if (initialized)
                 return;
 
+            och = new ObservingConditions("ASCOM.OCH.ObservingConditions");
             if (tl == null)
                 tl = new TraceLogger("", "Wise40.SafeToOpen");
             name = "Wise40 SafeToOpen";
-            driverID = Const.wiseSafeToOpenDriverID;
+            driverID = Const.wiseSafeToOperateDriverID;
             driverDescription = string.Format("ASCOM Wise40.SafeToOpen v{0}", version.ToString());
 
             if (_profile == null)
@@ -121,7 +122,7 @@ namespace ASCOM.Wise40SafeToOpen
                 _profile = new Profile() { DeviceType = "SafetyMonitor" };
             }
 
-            lightSensor = new LightSensor(this);
+            //lightSensor = new LightSensor(this);
             humiditySensor = new HumiditySensor(this);
             windSensor = new WindSensor(this);
             sunSensor = new SunSensor(this);
@@ -132,7 +133,7 @@ namespace ASCOM.Wise40SafeToOpen
                 windSensor,
                 cloudsSensor,
                 rainSensor,
-                lightSensor,
+                //lightSensor,
                 humiditySensor,
                 sunSensor,
                 humanInterventionSensor };
@@ -152,23 +153,23 @@ namespace ASCOM.Wise40SafeToOpen
             novas31.MakeOnSurface(siteLatitude, siteLongitude, siteElevation, 0.0, 0.0, ref onSurface);
             novas31.MakeObject(0, Convert.ToInt16(Body.Sun), "Sun", new CatEntry3(), ref Sun);
 
-            try
-            {
-                boltwood.init();
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException(string.Format("Could not init boltwood: {0}", ex.Message));
-            }
+            //try
+            //{
+            //    boltwood.init();
+            //}
+            //catch (Exception ex)
+            //{
+            //    throw new InvalidOperationException(string.Format("Could not init boltwood: {0}", ex.Message));
+            //}
 
-            try
-            {
-                vantagePro.init();
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException(string.Format("Could not init vantagePro: {0}", ex.Message));
-            }
+            //try
+            //{
+            //    vantagePro.init();
+            //}
+            //catch (Exception ex)
+            //{
+            //    throw new InvalidOperationException(string.Format("Could not init vantagePro: {0}", ex.Message));
+            //}
 
             ReadProfile(); // Read device configuration from the ASCOM Profile store
             initialized = true;
@@ -306,11 +307,14 @@ namespace ASCOM.Wise40SafeToOpen
                 if (value == _connected)
                     return;
 
-                if (boltwood != null)
-                    boltwood.Connected = value;
-                if (vantagePro != null)
-                    vantagePro.Connected = value;
-                _connected = boltwood.Connected == true && vantagePro.Connected == true;
+                //if (boltwood != null)
+                //    boltwood.Connected = value;
+                //if (vantagePro != null)
+                //    vantagePro.Connected = value;
+                //_connected = boltwood.Connected == true && vantagePro.Connected == true;
+
+                och.Connected = value;
+                _connected = och.Connected;
 
                 if (_connected)
                     startSensors();
@@ -408,8 +412,8 @@ namespace ASCOM.Wise40SafeToOpen
                     {
                         bool dummy;
 
-                        dummy = _boltwoodIsValid;
-                        dummy = _vantageProIsValid;
+                        //dummy = _boltwoodIsValid;
+                        //dummy = _vantageProIsValid;
                         string reason;
                         foreach (Sensor s in _sensors)
                             if (!s.isSafe && (reason = s.reason()) != string.Empty)
@@ -428,46 +432,46 @@ namespace ASCOM.Wise40SafeToOpen
 
         #region Individual Property Implementations
         #region Boolean Properties (for ASCOM)
-        public bool _boltwoodIsValid
-        {
-            get
-            {
-                if (boltwood == null)
-                {
-                    AddReason("No connection to the Boltwood station");
-                    return false;
-                }
-                double timeSinceLastUpdate = boltwood.TimeSinceLastUpdate("");
-                if (ageMaxSeconds > 0 &&  timeSinceLastUpdate > ageMaxSeconds)
-                {
-                    AddReason(string.Format("Boltwood data is too old ({0:g} > {1}sec)",
-                        TimeSpan.FromSeconds((int)timeSinceLastUpdate).ToString(), ageMaxSeconds));
-                    return false;
-                }
-                return true;
-            }
-        }
+        //public bool _boltwoodIsValid
+        //{
+        //    get
+        //    {
+        //        if (boltwood == null)
+        //        {
+        //            AddReason("No connection to the Boltwood station");
+        //            return false;
+        //        }
+        //        double timeSinceLastUpdate = boltwood.TimeSinceLastUpdate("");
+        //        if (ageMaxSeconds > 0 &&  timeSinceLastUpdate > ageMaxSeconds)
+        //        {
+        //            AddReason(string.Format("Boltwood data is too old ({0:g} > {1}sec)",
+        //                TimeSpan.FromSeconds((int)timeSinceLastUpdate).ToString(), ageMaxSeconds));
+        //            return false;
+        //        }
+        //        return true;
+        //    }
+        //}
 
-        public bool _vantageProIsValid
-        {
-            get
-            {
-                if (vantagePro == null)
-                {
-                    AddReason("No connection to the VantagePro station");
-                    return false;
-                }
+        //public bool _vantageProIsValid
+        //{
+        //    get
+        //    {
+        //        if (vantagePro == null)
+        //        {
+        //            AddReason("No connection to the VantagePro station");
+        //            return false;
+        //        }
 
-                double timeSinceLastUpdate = vantagePro.TimeSinceLastUpdate("");
-                if (ageMaxSeconds > 0 && timeSinceLastUpdate > ageMaxSeconds)
-                {
-                    AddReason(string.Format("VantagePro data is too old ({0:g} > {1}sec)",
-                        TimeSpan.FromSeconds((int)timeSinceLastUpdate).ToString(), ageMaxSeconds));
-                    return false;
-                }
-                return true;
-            }
-        }
+        //        double timeSinceLastUpdate = vantagePro.TimeSinceLastUpdate("");
+        //        if (ageMaxSeconds > 0 && timeSinceLastUpdate > ageMaxSeconds)
+        //        {
+        //            AddReason(string.Format("VantagePro data is too old ({0:g} > {1}sec)",
+        //                TimeSpan.FromSeconds((int)timeSinceLastUpdate).ToString(), ageMaxSeconds));
+        //            return false;
+        //        }
+        //        return true;
+        //    }
+        //}
 
         private string stringSafetyCommand(string command)
         {
@@ -479,7 +483,6 @@ namespace ASCOM.Wise40SafeToOpen
                 unsafeReasons.Clear();
                 switch (command.ToLower())
                 {
-                    case "light": status = isSafeLight; break;
                     case "humidity": status = isSafeHumidity; break;
                     case "wind": status = isSafeWindSpeed; break;
                     case "sun": status = isSafeSunElevation; break;
@@ -513,25 +516,25 @@ namespace ASCOM.Wise40SafeToOpen
         {
             get
             {
-                return !_boltwoodIsValid ? Const.TriStateStatus.Warning :
+                return /*!_boltwoodIsValid ? Const.TriStateStatus.Warning :*/
                     cloudsSensor.isSafe ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
             }
         }
 
-        public Const.TriStateStatus isSafeLight
-        {
-            get
-            {
-                return !_boltwoodIsValid ? Const.TriStateStatus.Warning :
-                    lightSensor.isSafe ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
-            }
-        }
+        //public Const.TriStateStatus isSafeLight
+        //{
+        //    get
+        //    {
+        //        return /*!_boltwoodIsValid ? Const.TriStateStatus.Warning :*/
+        //            lightSensor.isSafe ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
+        //    }
+        //}
 
         public Const.TriStateStatus isSafeWindSpeed
         {
             get
             {
-                return !_vantageProIsValid ? Const.TriStateStatus.Warning :
+                return /*!_vantageProIsValid ? Const.TriStateStatus.Warning :*/
                     windSensor.isSafe ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
             }
         }
@@ -540,7 +543,7 @@ namespace ASCOM.Wise40SafeToOpen
         {
             get
             {
-                return !_vantageProIsValid ? Const.TriStateStatus.Warning :
+                return /*!_vantageProIsValid ? Const.TriStateStatus.Warning :*/
                     humiditySensor.isSafe ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
             }
         }
@@ -549,7 +552,7 @@ namespace ASCOM.Wise40SafeToOpen
         {
             get
             {
-                return !_vantageProIsValid ? Const.TriStateStatus.Warning :
+                return /*!_vantageProIsValid ? Const.TriStateStatus.Warning :*/
                     rainSensor.isSafe ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
             }
         }
@@ -621,8 +624,8 @@ namespace ASCOM.Wise40SafeToOpen
                     ret = false;
                 else
                 {
-                    if (!_boltwoodIsValid || !_vantageProIsValid)
-                        return false;
+                    //if (!_boltwoodIsValid || !_vantageProIsValid)
+                    //    return false;
 
                     foreach (Sensor s in _sensors)
                     {
@@ -649,8 +652,8 @@ namespace ASCOM.Wise40SafeToOpen
         {
             get
             {
-                if (!_boltwoodIsValid || !_vantageProIsValid)
-                    return false;
+                //if (!_boltwoodIsValid || !_vantageProIsValid)
+                //    return false;
 
                 foreach (Sensor s in _sensors)
                 {

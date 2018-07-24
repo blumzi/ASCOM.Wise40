@@ -24,8 +24,8 @@ namespace ASCOM.Wise40.VantagePro
         private Util util = new Util();
         private TraceLogger tl;
 
-        public enum OpMode { Datafile, SerialPort };
-        public OpMode _opMode = WiseVantagePro.OpMode.Datafile;
+        public enum OpMode { File, Serial };
+        public OpMode _opMode = WiseVantagePro.OpMode.File;
 
         public string _portName = null;
         public int _portSpeed = 19200;
@@ -40,11 +40,21 @@ namespace ASCOM.Wise40.VantagePro
 
         private Dictionary<string, string> sensorData = null;
         private DateTime _lastDataRead = DateTime.MinValue;
+        private static object syncObject = new object();
 
         public static WiseVantagePro Instance
         {
             get
             {
+                if (_instance == null)
+                {
+                    lock (syncObject)
+                    {
+                        if (_instance == null)
+                            _instance = new WiseVantagePro();
+                    }
+                }
+                _instance.init();
                 return _instance;
             }
         }
@@ -55,7 +65,7 @@ namespace ASCOM.Wise40.VantagePro
         /// </summary>
         public void Refresh()
         {
-            if (_opMode == OpMode.Datafile)
+            if (_opMode == OpMode.File)
                 RefreshFromDatafile();
             else
                 RefreshFromSerialPort();
@@ -109,6 +119,9 @@ namespace ASCOM.Wise40.VantagePro
 
         private void TryOpenPort()
         {
+            if (_port == null)
+                _port = new System.IO.Ports.SerialPort();
+
             _port.PortName = _portName;
             _port.BaudRate = _portSpeed;
             try
@@ -150,6 +163,19 @@ namespace ASCOM.Wise40.VantagePro
 
         public void RefreshFromSerialPort()
         {
+            if (Simulated)
+            {
+                sensorData["outsideTemp"] = "300";
+                sensorData["windSpeed"] = "400";
+                sensorData["windDir"] = "275";
+                sensorData["outsideHumidity"] = "85";
+                sensorData["barometer"] = "1234";
+                sensorData["outsideDewPt"] = "55";
+                sensorData["rainRate"] = "11";
+                sensorData["ForecastStr"] = "No forecast";
+                return;
+            }
+
             if (!TryWakeUpVantagePro())
                 return;
 
@@ -189,6 +215,8 @@ namespace ASCOM.Wise40.VantagePro
             tl.Enabled = debugger.Tracing;
             tl.LogMessage("ObservingConditions", "initialized");
 
+            sensorData = new Dictionary<string, string>();
+
             ReadProfile();
             Refresh();
 
@@ -199,8 +227,6 @@ namespace ASCOM.Wise40.VantagePro
         {
             get
             {
-                //tl.LogMessage("Connected Get", IsConnected.ToString());
-                //return IsConnected;
                 return _connected;
             }
 
@@ -210,11 +236,11 @@ namespace ASCOM.Wise40.VantagePro
                 if (value == _connected)
                     return;
 
-                if (_opMode == OpMode.SerialPort)
+                if (Simulated || _opMode == OpMode.Serial)
                 {
                     if (value == true)
                     {
-                        if (!_port.IsOpen)
+                        if (_port == null || !_port.IsOpen)
                             TryOpenPort();
                     }
                     else
@@ -227,7 +253,6 @@ namespace ASCOM.Wise40.VantagePro
 
         public string Description
         {
-            // TODO customise this device description
             get
             {
                 tl.LogMessage("Description Get", driverDescription);
@@ -250,6 +275,14 @@ namespace ASCOM.Wise40.VantagePro
                 string driverInfo = "Wrapper for VantagePro Report file. Version: " + String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
                 tl.LogMessage("DriverInfo Get", driverInfo);
                 return driverInfo;
+            }
+        }
+
+        public static string driverVersion
+        {
+            get
+            {
+                return _instance.DriverVersion;
             }
         }
 
@@ -276,7 +309,7 @@ namespace ASCOM.Wise40.VantagePro
             {
                 OpMode mode;
 
-                Enum.TryParse<OpMode>(driverProfile.GetValue(Const.wiseVantageProDriverID, opModeProfileName, string.Empty, "DataFile"), out mode);
+                Enum.TryParse<OpMode>(driverProfile.GetValue(Const.wiseVantageProDriverID, opModeProfileName, string.Empty, OpMode.File.ToString()), out mode);
                 _opMode = mode;
                 _dataFile = driverProfile.GetValue(Const.wiseVantageProDriverID, dataFileProfileName, string.Empty, defaultReportFile);
                 _portName = driverProfile.GetValue(Const.wiseVantageProDriverID, serialPortProfileName, string.Empty, "");
