@@ -177,14 +177,6 @@ namespace Dash
 
             buttonVent.Text = wisedome.Vent ? "Close Vent" : "Open Vent";
             buttonProjector.Text = wisedome.Projector ? "Turn projector Off" : "Turn projector On";
-
-            //toolStripTextBoxCloudSensorDataFile.Text = wiseboltwood.DataFile;
-            //toolStripTextBoxCloudSensorDataFile.Tag = wiseboltwood.DataFile;
-
-            //toolStripTextBoxVantagePro2ReportFile.Tag = wisevantagepro.DataFile;
-            //toolStripTextBoxVantagePro2ReportFile.Text = wisevantagepro.DataFile;
-            
-            //wisefilterwheel.wheelOrPositionChanged += onWheelOrPositionChanged;
         }
         #endregion
 

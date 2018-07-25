@@ -12,8 +12,6 @@ using ASCOM.Astrometry;
 using ASCOM.Astrometry.AstroUtils;
 using ASCOM.Astrometry.NOVAS;
 using ASCOM.Wise40.Common;
-//using ASCOM.Wise40.Boltwood;
-//using ASCOM.Wise40.VantagePro;
 using ASCOM.Wise40;
 using ASCOM.DriverAccess;
 
@@ -22,8 +20,6 @@ namespace ASCOM.Wise40SafeToOperate
     public class WiseSafeToOperate
     {
         private static Version version = new Version(0, 2);
-        public enum Type { Open, Image };
-        private Type _type;
 
         /// <summary>
         /// ASCOM DeviceID (COM ProgID) for this driver.
@@ -92,7 +88,7 @@ namespace ASCOM.Wise40SafeToOperate
                     lock(syncObject)
                     {
                         if (_instanceOpen == null)
-                            _instanceOpen = new WiseSafeToOperate(Type.Open);
+                            _instanceOpen = new WiseSafeToOperate();
                     }
                 }
                 _instanceOpen.init();
@@ -100,9 +96,8 @@ namespace ASCOM.Wise40SafeToOperate
             }
         }
 
-        public WiseSafeToOperate(Type type)
+        public WiseSafeToOperate()
         {
-            _type = type;
         }
 
         public void init()
@@ -121,8 +116,7 @@ namespace ASCOM.Wise40SafeToOperate
             {
                 _profile = new Profile() { DeviceType = "SafetyMonitor" };
             }
-
-            //lightSensor = new LightSensor(this);
+            
             humiditySensor = new HumiditySensor(this);
             windSensor = new WindSensor(this);
             sunSensor = new SunSensor(this);
@@ -133,7 +127,6 @@ namespace ASCOM.Wise40SafeToOperate
                 windSensor,
                 cloudsSensor,
                 rainSensor,
-                //lightSensor,
                 humiditySensor,
                 sunSensor,
                 humanInterventionSensor };
@@ -152,24 +145,6 @@ namespace ASCOM.Wise40SafeToOperate
             siteElevation = 882.9;
             novas31.MakeOnSurface(siteLatitude, siteLongitude, siteElevation, 0.0, 0.0, ref onSurface);
             novas31.MakeObject(0, Convert.ToInt16(Body.Sun), "Sun", new CatEntry3(), ref Sun);
-
-            //try
-            //{
-            //    boltwood.init();
-            //}
-            //catch (Exception ex)
-            //{
-            //    throw new InvalidOperationException(string.Format("Could not init boltwood: {0}", ex.Message));
-            //}
-
-            //try
-            //{
-            //    vantagePro.init();
-            //}
-            //catch (Exception ex)
-            //{
-            //    throw new InvalidOperationException(string.Format("Could not init vantagePro: {0}", ex.Message));
-            //}
 
             ReadProfile(); // Read device configuration from the ASCOM Profile store
             initialized = true;
@@ -212,7 +187,6 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
-                // tl.LogMessage("SupportedActions Get", "Returning empty arraylist");
                 return supportedActions;
             }
         }
@@ -307,12 +281,6 @@ namespace ASCOM.Wise40SafeToOperate
                 if (value == _connected)
                     return;
 
-                //if (boltwood != null)
-                //    boltwood.Connected = value;
-                //if (vantagePro != null)
-                //    vantagePro.Connected = value;
-                //_connected = boltwood.Connected == true && vantagePro.Connected == true;
-
                 och.Connected = value;
                 _connected = och.Connected;
 
@@ -348,7 +316,6 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
-                //tl.LogMessage("Description Get", driverDescription);
                 return driverDescription;
             }
         }
@@ -410,10 +377,6 @@ namespace ASCOM.Wise40SafeToOperate
                     }
                     else
                     {
-                        bool dummy;
-
-                        //dummy = _boltwoodIsValid;
-                        //dummy = _vantageProIsValid;
                         string reason;
                         foreach (Sensor s in _sensors)
                             if (!s.isSafe && (reason = s.reason()) != string.Empty)
@@ -432,46 +395,6 @@ namespace ASCOM.Wise40SafeToOperate
 
         #region Individual Property Implementations
         #region Boolean Properties (for ASCOM)
-        //public bool _boltwoodIsValid
-        //{
-        //    get
-        //    {
-        //        if (boltwood == null)
-        //        {
-        //            AddReason("No connection to the Boltwood station");
-        //            return false;
-        //        }
-        //        double timeSinceLastUpdate = boltwood.TimeSinceLastUpdate("");
-        //        if (ageMaxSeconds > 0 &&  timeSinceLastUpdate > ageMaxSeconds)
-        //        {
-        //            AddReason(string.Format("Boltwood data is too old ({0:g} > {1}sec)",
-        //                TimeSpan.FromSeconds((int)timeSinceLastUpdate).ToString(), ageMaxSeconds));
-        //            return false;
-        //        }
-        //        return true;
-        //    }
-        //}
-
-        //public bool _vantageProIsValid
-        //{
-        //    get
-        //    {
-        //        if (vantagePro == null)
-        //        {
-        //            AddReason("No connection to the VantagePro station");
-        //            return false;
-        //        }
-
-        //        double timeSinceLastUpdate = vantagePro.TimeSinceLastUpdate("");
-        //        if (ageMaxSeconds > 0 && timeSinceLastUpdate > ageMaxSeconds)
-        //        {
-        //            AddReason(string.Format("VantagePro data is too old ({0:g} > {1}sec)",
-        //                TimeSpan.FromSeconds((int)timeSinceLastUpdate).ToString(), ageMaxSeconds));
-        //            return false;
-        //        }
-        //        return true;
-        //    }
-        //}
 
         private string stringSafetyCommand(string command)
         {
@@ -516,26 +439,15 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
-                return /*!_boltwoodIsValid ? Const.TriStateStatus.Warning :*/
-                    cloudsSensor.isSafe ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
+                return cloudsSensor.isSafe ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
             }
         }
-
-        //public Const.TriStateStatus isSafeLight
-        //{
-        //    get
-        //    {
-        //        return /*!_boltwoodIsValid ? Const.TriStateStatus.Warning :*/
-        //            lightSensor.isSafe ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
-        //    }
-        //}
 
         public Const.TriStateStatus isSafeWindSpeed
         {
             get
             {
-                return /*!_vantageProIsValid ? Const.TriStateStatus.Warning :*/
-                    windSensor.isSafe ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
+                return windSensor.isSafe ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
             }
         }
 
@@ -543,8 +455,7 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
-                return /*!_vantageProIsValid ? Const.TriStateStatus.Warning :*/
-                    humiditySensor.isSafe ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
+                return humiditySensor.isSafe ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
             }
         }
 
@@ -552,8 +463,7 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
-                return /*!_vantageProIsValid ? Const.TriStateStatus.Warning :*/
-                    rainSensor.isSafe ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
+                return rainSensor.isSafe ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
             }
         }
 
@@ -624,9 +534,6 @@ namespace ASCOM.Wise40SafeToOperate
                     ret = false;
                 else
                 {
-                    //if (!_boltwoodIsValid || !_vantageProIsValid)
-                    //    return false;
-
                     foreach (Sensor s in _sensors)
                     {
                         if (s.nReadings < s._repeats)
@@ -652,9 +559,6 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
-                //if (!_boltwoodIsValid || !_vantageProIsValid)
-                //    return false;
-
                 foreach (Sensor s in _sensors)
                 {
                     if (s.nReadings < s._repeats)
