@@ -8,8 +8,8 @@
     <ProjectGuid>{7FA766D4-8F97-4D9F-8F62-F25C84C01FF2}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ASCOM.Wise40SafeToOpen</RootNamespace>
-    <AssemblyName>ASCOM.Wise40SafeToOpen.SafetyMonitor</AssemblyName>
+    <RootNamespace>ASCOM.Wise40SafeToOperate</RootNamespace>
+    <AssemblyName>ASCOM.Wise40SafeToOperate.SafetyMonitor</AssemblyName>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <UpgradeBackupLocation>

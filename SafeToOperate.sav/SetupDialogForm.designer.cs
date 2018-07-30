@@ -118,7 +118,7 @@ namespace ASCOM.Wise40SafeToOperate
             // 
             this.picASCOM.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.picASCOM.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.picASCOM.Image = global::ASCOM.Wise40SafeToOpen.Properties.Resources.ASCOM;
+            this.picASCOM.Image = global::ASCOM.Wise40SafeToOperate.Properties.Resources.ASCOM;
             this.picASCOM.Location = new System.Drawing.Point(498, 15);
             this.picASCOM.Name = "picASCOM";
             this.picASCOM.Size = new System.Drawing.Size(48, 56);

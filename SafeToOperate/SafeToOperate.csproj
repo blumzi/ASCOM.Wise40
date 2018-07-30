@@ -5,11 +5,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{64308775-BD4A-469C-BCAB-3ED830B811AF}</ProjectGuid>
+    <ProjectGuid>{7FA766D4-8F97-4D9F-8F62-F25C84C01FF2}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ASCOM.Wise40</RootNamespace>
-    <AssemblyName>ASCOM.Wise40.Dome</AssemblyName>
+    <RootNamespace>ASCOM.Wise40SafeToOperate</RootNamespace>
+    <AssemblyName>ASCOM.Wise40SafeToOperate.SafetyMonitor</AssemblyName>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <UpgradeBackupLocation>
@@ -47,7 +47,6 @@
     <WarningLevel>4</WarningLevel>
     <RegisterForComInterop>true</RegisterForComInterop>
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <RunCodeAnalysis>false</RunCodeAnalysis>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -57,12 +56,9 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <PlatformTarget>x86</PlatformTarget>
-    <RegisterForComInterop>true</RegisterForComInterop>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <RegisterForComInterop>false</RegisterForComInterop>
     <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup>
-    <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
@@ -78,7 +74,6 @@
     <OutputPath>bin\x64\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
-    <RegisterForComInterop>true</RegisterForComInterop>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>x64</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
@@ -98,7 +93,6 @@
     <OutputPath>bin\x86\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
-    <RegisterForComInterop>true</RegisterForComInterop>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>x86</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
@@ -117,10 +111,6 @@
     <Reference Include="ASCOM.SettingsProvider, Version=6.0.0.0, Culture=neutral, PublicKeyToken=565de7938946fba7, processorArchitecture=MSIL" />
     <Reference Include="ASCOM.Utilities, Version=6.0.0.0, Culture=neutral, PublicKeyToken=565de7938946fba7, processorArchitecture=MSIL" />
     <Reference Include="ASCOM.Utilities.Video, Version=6.1.0.0, Culture=neutral, PublicKeyToken=565de7938946fba7, processorArchitecture=MSIL" />
-    <Reference Include="MccDaq, Version=2.1.0.0, Culture=neutral, PublicKeyToken=a37eefcf5c6ca10a, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Hardware\Measurement Computing\DAQ\MccDaq.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Configuration.Install" />
@@ -129,7 +119,6 @@
     </Reference>
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
-    <Reference Include="System.Net.Http" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
   </ItemGroup>
@@ -146,15 +135,14 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
+    <Compile Include="Sensor.cs" />
     <Compile Include="SetupDialogForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="SetupDialogForm.designer.cs">
       <DependentUpon>SetupDialogForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="WiseDome.cs" />
-    <Compile Include="WiseDomeEncoder.cs" />
-    <Compile Include="WiseDomeShutter.cs" />
+    <Compile Include="WiseSafeToOperate.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Resources.resx">
@@ -168,9 +156,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config">
-      <SubType>Designer</SubType>
-    </None>
+    <None Include="app.config" />
     <None Include="ASCOM.png" />
     <None Include="ASCOMDriverTemplate.snk" />
     <None Include="Properties\Settings.settings">
@@ -179,8 +165,8 @@
     </None>
     <Content Include="ASCOM.ico" />
     <Content Include="Installer\ReadMe.html" />
-    <Content Include="Installer\Wise40Dome Setup.iss" />
-    <Content Include="Wise40-Dome-ReadMe.html" />
+    <Content Include="Installer\SafeToOpen Setup.iss" />
+    <Content Include="ReadMe.htm" />
     <None Include="Resources\ASCOM.bmp" />
   </ItemGroup>
   <ItemGroup>
@@ -201,14 +187,21 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Boltwood\Boltwood.csproj">
+      <Project>{d937deb7-5df8-491d-b21a-193adabd0315}</Project>
+      <Name>Boltwood</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Common\Common.csproj">
       <Project>{b76546e7-9832-4d28-b412-b34ca1c6177c}</Project>
       <Name>Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Hardware\Hardware.csproj">
-      <Project>{b3400ce2-9b66-4f0c-97fe-26343382ba7b}</Project>
-      <Name>Hardware</Name>
+    <ProjectReference Include="..\VantagePro\VantagePro.csproj">
+      <Project>{59cc2a31-dec4-4eee-b5c3-efc8771438a7}</Project>
+      <Name>VantagePro</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Images\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
@@ -216,8 +209,7 @@
     </PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PostBuildEvent>rem "C:\Program Files (x86)\Inno Setup 5\ISCC.exe" "/DSolutionDir=$(SolutionDir)" /O"$(SolutionDir)\Deliveries" "$(ProjectDir)\Installer\Wise40Dome Setup.iss" 
-</PostBuildEvent>
+    <PostBuildEvent>rem "C:\Program Files (x86)\Inno Setup 5\ISCC.exe" "/DSolutionDir=$(SolutionDir)" "/O$(SolutionDir)\Deliveries" "$(ProjectDir)\Installer\$(ProjectName) Setup.iss"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -13,6 +13,7 @@ namespace ASCOM.Wise40.VantagePro
     public partial class SetupDialogForm : Form
     {
         WiseVantagePro vantagePro = WiseVantagePro.Instance;
+        WiseVantagePro.OpMode opMode;
 
         public SetupDialogForm()
         {
@@ -30,16 +31,16 @@ namespace ASCOM.Wise40.VantagePro
             }
             
             labelReportFileValue.Text = vantagePro.DataFile;
-            comboBoxSerialPort.Items.AddRange(System.IO.Ports.SerialPort.GetPortNames());
-            if (!String.IsNullOrEmpty(vantagePro._portName) && comboBoxSerialPort.Items.Contains(vantagePro._portName))
-                comboBoxSerialPort.Text = vantagePro._portName;
+            comboBoxSerialPorts.Items.AddRange(System.IO.Ports.SerialPort.GetPortNames());
+            if (!String.IsNullOrEmpty(vantagePro._portName) && comboBoxSerialPorts.Items.Contains(vantagePro._portName))
+                comboBoxSerialPorts.Text = vantagePro._portName;
         }
 
         private void cmdOK_Click(object sender, EventArgs e) // OK button event handler
         {
             vantagePro._opMode = radioButtonDataFile.Checked ? WiseVantagePro.OpMode.File : WiseVantagePro.OpMode.Serial;
             vantagePro.DataFile = labelReportFileValue.Text;
-            vantagePro._portName = comboBoxSerialPort.Text;
+            vantagePro._portName = comboBoxSerialPorts.Text;
             vantagePro.WriteProfile();
             Close();
         }
