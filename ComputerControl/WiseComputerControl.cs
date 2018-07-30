@@ -61,9 +61,9 @@ namespace ASCOM.Wise40
             List<string> reasons = new List<string>();
 
             if (!computerControlPin.isOn)
-                reasons.Add("ComputerControl switch is at MAINTENANCE");
+                reasons.Add("ComputerControl switch is OFF");
             if (!wisedomeplatform.IsSafe)
-                reasons.Add("The dome platform is RAISED");
+                reasons.Add("Platform is RAISED");
 
             if (reasons.Count > 0)
                 return string.Join(" and ", reasons);
