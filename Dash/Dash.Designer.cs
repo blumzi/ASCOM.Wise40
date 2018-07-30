@@ -229,6 +229,7 @@
             this.labelRainRateValue = new System.Windows.Forms.Label();
             this.timerRefreshDisplay = new System.Windows.Forms.Timer(this.components);
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
+            this.comboBoxGoToMode = new System.Windows.Forms.ComboBox();
             this.tableLayoutMain.SuspendLayout();
             this.groupBoxFocuser.SuspendLayout();
             this.groupBoxDomeGroup.SuspendLayout();
@@ -768,7 +769,7 @@
             this.labelDomeAzimuthValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.labelDomeAzimuthValue.Location = new System.Drawing.Point(53, 18);
             this.labelDomeAzimuthValue.Name = "labelDomeAzimuthValue";
-            this.labelDomeAzimuthValue.Size = new System.Drawing.Size(51, 20);
+            this.labelDomeAzimuthValue.Size = new System.Drawing.Size(132, 20);
             this.labelDomeAzimuthValue.TabIndex = 17;
             this.labelDomeAzimuthValue.Text = "999.9";
             this.labelDomeAzimuthValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -799,6 +800,7 @@
             // 
             // groupBoxTelescope
             // 
+            this.groupBoxTelescope.Controls.Add(this.comboBoxGoToMode);
             this.groupBoxTelescope.Controls.Add(this.buttonTrack);
             this.groupBoxTelescope.Controls.Add(this.panel1);
             this.groupBoxTelescope.Controls.Add(this.labelTelescopeStatus);
@@ -1452,7 +1454,7 @@
             this.buttonGoCoord.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonGoCoord.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonGoCoord.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonGoCoord.Location = new System.Drawing.Point(296, 157);
+            this.buttonGoCoord.Location = new System.Drawing.Point(310, 155);
             this.buttonGoCoord.Name = "buttonGoCoord";
             this.buttonGoCoord.Size = new System.Drawing.Size(58, 32);
             this.buttonGoCoord.TabIndex = 25;
@@ -1465,11 +1467,12 @@
             this.textBoxRA.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.textBoxRA.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.textBoxRA.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxRA.Location = new System.Drawing.Point(90, 160);
+            this.textBoxRA.Location = new System.Drawing.Point(97, 160);
             this.textBoxRA.Margin = new System.Windows.Forms.Padding(7, 3, 3, 3);
             this.textBoxRA.Name = "textBoxRA";
-            this.textBoxRA.Size = new System.Drawing.Size(84, 23);
+            this.textBoxRA.Size = new System.Drawing.Size(93, 23);
             this.textBoxRA.TabIndex = 23;
+            this.textBoxRA.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.textBoxRA.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.textBoxRA_MouseDoubleClick);
             // 
             // textBoxDec
@@ -1477,17 +1480,18 @@
             this.textBoxDec.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.textBoxDec.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.textBoxDec.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxDec.Location = new System.Drawing.Point(210, 160);
+            this.textBoxDec.Location = new System.Drawing.Point(223, 160);
             this.textBoxDec.Margin = new System.Windows.Forms.Padding(7, 3, 3, 3);
             this.textBoxDec.Name = "textBoxDec";
-            this.textBoxDec.Size = new System.Drawing.Size(75, 23);
+            this.textBoxDec.Size = new System.Drawing.Size(81, 23);
             this.textBoxDec.TabIndex = 24;
+            this.textBoxDec.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.textBoxDec.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.textBoxDec_MouseDoubleClick);
             // 
             // labelRA
             // 
             this.labelRA.AutoSize = true;
-            this.labelRA.Location = new System.Drawing.Point(64, 164);
+            this.labelRA.Location = new System.Drawing.Point(68, 164);
             this.labelRA.Name = "labelRA";
             this.labelRA.Size = new System.Drawing.Size(25, 13);
             this.labelRA.TabIndex = 21;
@@ -1496,7 +1500,7 @@
             // labelDec
             // 
             this.labelDec.AutoSize = true;
-            this.labelDec.Location = new System.Drawing.Point(177, 164);
+            this.labelDec.Location = new System.Drawing.Point(190, 164);
             this.labelDec.Name = "labelDec";
             this.labelDec.Size = new System.Drawing.Size(30, 13);
             this.labelDec.TabIndex = 22;
@@ -2373,7 +2377,7 @@
             this.pictureBoxStop.BackColor = System.Drawing.Color.Transparent;
             this.pictureBoxStop.Image = global::Dash.Properties.Resources.stop_sign_smaller;
             this.pictureBoxStop.InitialImage = global::Dash.Properties.Resources.stop_sign_smaller;
-            this.pictureBoxStop.Location = new System.Drawing.Point(8, 8);
+            this.pictureBoxStop.Location = new System.Drawing.Point(10, 8);
             this.pictureBoxStop.Name = "pictureBoxStop";
             this.pictureBoxStop.Size = new System.Drawing.Size(56, 56);
             this.pictureBoxStop.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
@@ -2395,7 +2399,7 @@
             // 
             this.labelCountdown.Font = new System.Drawing.Font("Lucida Console", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelCountdown.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelCountdown.Location = new System.Drawing.Point(61, 8);
+            this.labelCountdown.Location = new System.Drawing.Point(70, 8);
             this.labelCountdown.Name = "labelCountdown";
             this.labelCountdown.Size = new System.Drawing.Size(62, 21);
             this.labelCountdown.TabIndex = 42;
@@ -2944,6 +2948,24 @@
             this.timerRefreshDisplay.Enabled = true;
             this.timerRefreshDisplay.Tick += new System.EventHandler(this.RefreshDisplay);
             // 
+            // comboBoxGoToMode
+            // 
+            this.comboBoxGoToMode.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.comboBoxGoToMode.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
+            this.comboBoxGoToMode.FormattingEnabled = true;
+            this.comboBoxGoToMode.Items.AddRange(new object[] {
+            "RA",
+            "HA",
+            "dRA",
+            "dHA"});
+            this.comboBoxGoToMode.Location = new System.Drawing.Point(14, 161);
+            this.comboBoxGoToMode.Name = "comboBoxGoToMode";
+            this.comboBoxGoToMode.Size = new System.Drawing.Size(48, 21);
+            this.comboBoxGoToMode.TabIndex = 40;
+            this.comboBoxGoToMode.TabStop = false;
+            this.comboBoxGoToMode.Text = "RA";
+            this.comboBoxGoToMode.SelectedIndexChanged += new System.EventHandler(this.comboBoxGoToMode_SelectedIndexChanged);
+            // 
             // FormDash
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
@@ -3197,6 +3219,7 @@
         private System.Windows.Forms.ToolStripMenuItem debugDomeToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem debugDAQsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem debugShutterToolStripMenuItem;
+        private System.Windows.Forms.ComboBox comboBoxGoToMode;
     }
 }
 

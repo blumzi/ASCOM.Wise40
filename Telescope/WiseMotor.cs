@@ -35,6 +35,7 @@ namespace ASCOM.Wise40.Hardware
         private Debugger debugger = Debugger.Instance;
         private WiseTele wisetele = WiseTele.Instance;
         private WiseSite wisesite = WiseSite.Instance;
+        private List<WisePin> allPins;
 
         public WiseVirtualMotor(
             string name,
@@ -50,6 +51,7 @@ namespace ASCOM.Wise40.Hardware
             this.motorPin = motorPin;
             this.guideMotorPin = guideMotorPin;
             this.slewPin = slewPin;
+            this.allPins = new List<WisePin> { motorPin, slewPin, guideMotorPin };
 
             this.encoders = encoders;
             this._axis = axis;
@@ -68,10 +70,50 @@ namespace ASCOM.Wise40.Hardware
             } 
         }
 
+        public string ActiveMortorPins()
+        {
+            if (wisetele.allMotors == null)
+                return "";
+
+            List<string> active = new List<string>();
+
+            foreach (WiseVirtualMotor m in wisetele.allMotors)
+                foreach (WisePin pin in m.allPins)
+                {
+                    if (pin == null)
+                        continue;
+
+                    string shortName = pin.Name.Remove(pin.Name.IndexOf('@'));
+
+                    if (pin.isOn && !active.Contains(shortName))
+                        active.Add(shortName);
+                }
+
+            return String.Join(", ", active);
+        }
+
         public void SetOn(double rate)
         {
             rate = Math.Abs(rate);
-            debugger.WriteLine(Debugger.DebugLevel.DebugMotors, "{0}: On at {1}", Name, WiseTele.RateName(rate));
+            string activeBefore = ActiveMortorPins();
+
+            if (motorPin != null && motorPin.isOn)
+                motorPin.SetOff();
+            if (guideMotorPin != null && guideMotorPin.isOn)
+                guideMotorPin.SetOff();
+            if (slewPin != null && slewPin.isOn)
+            {
+
+                bool inUseByOtherAxis = false;
+                foreach (WiseVirtualMotor m in wisetele.axisMotors[_otherAxis])
+                    if (m.currentRate == Const.rateSlew)
+                    {
+                        inUseByOtherAxis = true;
+                        break;
+                    }
+                if (!inUseByOtherAxis)
+                    slewPin.SetOff();
+            }
 
             currentRate = rate;
             if (rate == Const.rateSlew)
@@ -92,6 +134,9 @@ namespace ASCOM.Wise40.Hardware
                 motorPin.SetOn();
             }
 
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}.SetOn at {1}: pins before: {2}, pins after: {3}",
+                Name, WiseTele.RateName(rate), activeBefore, ActiveMortorPins());
+
             if (Simulated)
             {
                 timer_counts = 0;
@@ -102,12 +147,10 @@ namespace ASCOM.Wise40.Hardware
 
         public void SetOff()
         {
-            debugger.WriteLine(Debugger.DebugLevel.DebugMotors,
-                "{0}: Off (was at {1})", Name, WiseTele.RateName(currentRate));
-
             if (Simulated)
                 simulationTimer.Change(Timeout.Infinite, Timeout.Infinite);
 
+            string activeBefore = ActiveMortorPins();
             if (guideMotorPin != null && guideMotorPin.isOn)
                 guideMotorPin.SetOff();
 
@@ -115,18 +158,22 @@ namespace ASCOM.Wise40.Hardware
                 motorPin.SetOff();
 
             currentRate = Const.rateStopped;
-            if (slewPin == null || !slewPin.isOn)
-                return;
+            if (slewPin != null && slewPin.isOn)
+            {
 
-            bool inUseByOtherAxis = false;
-            foreach (WiseVirtualMotor m in wisetele.axisMotors[_otherAxis])
-                if (m.currentRate == Const.rateSlew)
-                {
-                    inUseByOtherAxis = true;
-                    break;
-                }
-            if (!inUseByOtherAxis)
-                slewPin.SetOff();
+                bool inUseByOtherAxis = false;
+                foreach (WiseVirtualMotor m in wisetele.axisMotors[_otherAxis])
+                    if (m.currentRate == Const.rateSlew)
+                    {
+                        inUseByOtherAxis = true;
+                        break;
+                    }
+                if (!inUseByOtherAxis)
+                    slewPin.SetOff();
+            }
+
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}.SetOff: pins before: {1}, pins after: {2}",
+                Name, activeBefore, ActiveMortorPins());
         }
 
         public bool isOn

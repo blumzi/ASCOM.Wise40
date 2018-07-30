@@ -38,6 +38,8 @@ namespace Dash
         public WiseDomePlatform wisedomeplatform = WiseDomePlatform.Instance;
         WiseObject wiseobject = new WiseObject();
         private ASCOM.Utilities.Util ascomutil = new Util();
+        enum GoToMode { Ra, Ha, DeltaRa, DeltaHa };
+        private GoToMode goToMode = GoToMode.Ra;
 
         DomeSlaveDriver domeSlaveDriver = DomeSlaveDriver.Instance;
         DebuggingForm debuggingForm = new DebuggingForm();
@@ -184,8 +186,9 @@ namespace Dash
 
             toolStripTextBoxVantagePro2ReportFile.Tag = wisevantagepro.DataFile;
             toolStripTextBoxVantagePro2ReportFile.Text = wisevantagepro.DataFile;
-            
+
             //wisefilterwheel.wheelOrPositionChanged += onWheelOrPositionChanged;
+            UpdateGoToControls();
         }
         #endregion
 
@@ -758,9 +761,15 @@ namespace Dash
 
         private void buttonGoCoord_Click(object sender, EventArgs e)
         {
-            if (!wisetele.Tracking)
+            if ((goToMode == GoToMode.Ra || goToMode == GoToMode.DeltaRa) && !wisetele.Tracking)
             {
                 telescopeStatus.Show("Telescope is NOT tracking!", 1000, Statuser.Severity.Error);
+                return;
+            }
+
+            if ((goToMode == GoToMode.Ha || goToMode == GoToMode.DeltaHa) && wisetele.Tracking)
+            {
+                telescopeStatus.Show("Telescope is TRACKING!", 1000, Statuser.Severity.Error);
                 return;
             }
 
@@ -768,6 +777,34 @@ namespace Dash
             {
                 double ra = ascomutil.HMSToHours(textBoxRA.Text);
                 double dec = ascomutil.DMSToDegrees(textBoxDec.Text);
+                Angle ang;
+
+                switch (goToMode)
+                {
+                    case GoToMode.Ra:
+                        ra = ascomutil.HMSToHours(textBoxRA.Text);
+                        dec = ascomutil.DMSToDegrees(textBoxDec.Text);
+                        break;
+
+                    case GoToMode.Ha:
+                        ang = wisesite.LocalSiderealTime - Angle.FromHours(ascomutil.HMSToHours(textBoxRA.Text));
+                        ra = ang.Hours;
+                        dec = ascomutil.DMSToDegrees(textBoxDec.Text);
+                        break;
+
+                    case GoToMode.DeltaRa:
+                        ra = wisetele.RightAscension + ascomutil.HMSToHours(textBoxRA.Text);
+                        dec = wisetele.Declination + ascomutil.DMSToDegrees(textBoxDec.Text);
+                        break;
+
+                    case GoToMode.DeltaHa:
+                        double ha = wisetele.HourAngle + ascomutil.HMSToHours(textBoxRA.Text);
+                        ang = Angle.FromHours(ha);
+                        ra = (wisesite.LocalSiderealTime - ang).Hours;
+                        dec = wisetele.Declination + ascomutil.DMSToDegrees(textBoxDec.Text);
+                        break;
+
+                }
 
                 telescopeStatus.Show(string.Format("Slewing to ra: {0} dec: {1}",
                     Angle.FromHours(ra).ToNiceString(), Angle.FromDegrees(dec).ToNiceString()), 0, Statuser.Severity.Good);
@@ -787,18 +824,41 @@ namespace Dash
 
         private void textBoxRA_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            textBoxRA.Text = Angle.FromHours(wisetele.RightAscension).ToString().Replace('h', ':').Replace('m', ':').Replace('s', ' ');
+            string text = "";
+
+            switch (goToMode)
+            {
+                case GoToMode.Ra:
+                    text = Angle.FromHours(wisetele.RightAscension).ToString();
+                    break;
+                case GoToMode.Ha:
+                    text = Angle.FromHours(wisetele.HourAngle, Angle.Type.HA).ToString();
+                    break;
+                case GoToMode.DeltaRa:
+                case GoToMode.DeltaHa:
+                    text = new Angle("00h00m00.0s").ToString();
+                    break;
+
+            }
+            textBoxRA.Text = text.Replace('h', ':').Replace('m', ':').Replace('s', ' ');
         }
 
         private void textBoxDec_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            textBoxDec.Text = Angle.FromDegrees(wisetele.Declination).ToString();
-        }
+            string text = "";
 
-        private void checkBoxTrack_CheckedChanged(object sender, EventArgs e)
-        {
-            wisetele.Tracking = ((CheckBox)sender).Checked;
-            telescopeStatus.Show((wisetele.Tracking ? "Started" : "Stopped") + " tracking", 1000, Statuser.Severity.Good);
+            switch (goToMode)
+            {
+                case GoToMode.Ra:
+                case GoToMode.Ha:
+                    text = Angle.FromDegrees(wisetele.Declination).ToString();
+                    break;
+                case GoToMode.DeltaRa:
+                case GoToMode.DeltaHa:
+                    text = new Angle("00:00:00.0").ToString();
+                    break;
+            }
+            textBoxDec.Text = text;
         }
 
         private void radioButtonSlew_Click(object sender, EventArgs e)
@@ -1518,7 +1578,68 @@ namespace Dash
 
         private void buttonTrack_Click(object sender, EventArgs e)
         {
-            wisetele.Tracking = !wisetele.Tracking;
+            try
+            {
+                wisetele.Tracking = !wisetele.Tracking;
+            } catch (Exception ex)
+            {
+                telescopeStatus.Show(ex.Message, 2000, Statuser.Severity.Error);
+            }
+        }
+
+        private void UpdateGoToControls()
+        {
+            string modeTip = "", raTip = "", decTip = "";
+            string raText = "", decText = "";
+
+            switch (goToMode)
+            {
+                case GoToMode.Ra:
+                    raText = "RA";
+                    decText = "Dec";
+                    modeTip = "Enter RA and Dec coordinates and pres Go";
+                    raTip = "Double click for current Right Ascension";
+                    decTip = "Double click for current Declination";
+                    break;
+                case GoToMode.Ha:
+                    raText = "HA";
+                    decText = "Dec";
+                    modeTip = "Enter HA and Dec coordinates and pres Go";
+                    raTip = "Double click for current Hour Angle";
+                    decTip = "Double click for current Declination";
+                    break;
+                case GoToMode.DeltaRa:
+                    raText = "dRA";
+                    decText = "dDec";
+                    modeTip = "Enter RA and Dec distances and pres Go";
+                    raTip = "Double click for default RA distance";
+                    decTip = "Double click for default Dec distance";
+                    break;
+                case GoToMode.DeltaHa:
+                    raText = "dHA";
+                    decText = "dDec";
+                    modeTip = "Enter HA and Dec distances and pres Go";
+                    raTip = "Double click for default HA distance";
+                    decTip = "Double click for default Dec distance";
+                    break;
+            }
+
+            labelRA.Text = raText + ":";
+            labelDec.Text = decText + ":";
+            textBoxRA.Text = "";
+            textBoxDec.Text = "";
+            toolTip.SetToolTip(comboBoxGoToMode, modeTip);
+            toolTip.SetToolTip(textBoxRA, raTip);
+            toolTip.SetToolTip(textBoxDec, decTip);
+        }
+
+        private void comboBoxGoToMode_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ComboBox cb = sender as ComboBox;
+
+            goToMode = (GoToMode) cb.SelectedIndex;
+            UpdateGoToControls();
+            textBoxRA.Focus();
         }
 
         private void safetyOverrideToolStripMenuItem_Click(object sender, EventArgs e)

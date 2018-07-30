@@ -103,12 +103,13 @@ namespace ASCOM.Wise40 //.Telescope
                         Name, _daqsValue, axis, worm);
                     if (prev_worm != int.MinValue)
                     {
-                        dbg += string.Format(" prev_axis: {0} (0x{0:x}), prev_worm: {1} (0x{1:x})", prev_axis, prev_worm);
-                        dbg += string.Format(" change_axis: {0}, change_worm: {1}",
+                        dbg += string.Format(" prev_axis: {0} (0x{0:x}), prev_worm: {1} (0x{1:x})",
+                            prev_axis, prev_worm);
+                        dbg += string.Format(" xor_axis: {0}, xor_worm: {1}",
                             Convert.ToString(axis ^ prev_axis, 2).PadLeft(16, '0'),
-                            Convert.ToString(worm ^ prev_worm).PadLeft(12, '0'));
+                            Convert.ToString(worm ^ prev_worm, 2).PadLeft(12, '0'));
                     }
-                    debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, dbg);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, dbg);
                     prev_worm = worm;
                     prev_axis = axis;
                     #endregion
