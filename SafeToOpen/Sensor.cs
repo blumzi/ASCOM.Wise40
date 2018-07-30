@@ -8,11 +8,11 @@ using System.Threading.Tasks;
 using ASCOM.Wise40.Common;
 //using ASCOM.Wise40.SafeToOperate;
 using ASCOM.Utilities;
-using ASCOM.Wise40.Boltwood;
-using ASCOM.Wise40.VantagePro;
+//using ASCOM.Wise40.Boltwood;
+//using ASCOM.Wise40.VantagePro;
 using System.IO;
 
-namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
+namespace ASCOM.Wise40SafeToOperate
 {
     public abstract class Sensor: WiseObject
     {
@@ -33,6 +33,8 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
 
         protected static WiseSafeToOperate wisesafe;
 
+        private ASCOM.Utilities.Util util = new Util();
+
 
         protected Sensor(string name, WiseSafeToOperate instance)
         {
@@ -51,25 +53,24 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
             {
                 case "Wind": defaultInterval = 30; defaultRepeats = 3; break;
                 case "Sun": defaultInterval = 60; defaultRepeats = 1; break;
-                case "Light": defaultInterval = 30; defaultRepeats = 4; break;
                 case "HumanIntervention": defaultInterval = 0; defaultRepeats = 1; break;
                 case "Rain": defaultInterval = 30; defaultRepeats = 2; break;
                 case "Clouds": defaultInterval = 30; defaultRepeats = 3; break;
                 case "Humidity": defaultInterval = 30; defaultRepeats = 4; break;
             }
 
-            _interval = 1000 * Convert.ToInt32(wisesafe._profile.GetValue(Const.wiseSafeToOpenDriverID, Name, "Interval", defaultInterval.ToString()));
-            _repeats = Convert.ToInt32(wisesafe._profile.GetValue(Const.wiseSafeToOpenDriverID, Name, "Repeats", defaultRepeats.ToString()));
+            _interval = 1000 * Convert.ToInt32(wisesafe._profile.GetValue(Const.wiseSafeToOperateDriverID, Name, "Interval", defaultInterval.ToString()));
+            _repeats = Convert.ToInt32(wisesafe._profile.GetValue(Const.wiseSafeToOperateDriverID, Name, "Repeats", defaultRepeats.ToString()));
             _isSafeQueue = new FixedSizedQueue<bool>(_repeats);
-            Enabled = Convert.ToBoolean(wisesafe._profile.GetValue(Const.wiseSafeToOpenDriverID, Name, "Enabled", true.ToString()));
+            Enabled = Convert.ToBoolean(wisesafe._profile.GetValue(Const.wiseSafeToOperateDriverID, Name, "Enabled", true.ToString()));
             readSensorProfile();
         }
 
         public void writeProfile()
         {
-            wisesafe._profile.WriteValue(Const.wiseSafeToOpenDriverID, Name, (_interval / 1000).ToString(), "Interval");
-            wisesafe._profile.WriteValue(Const.wiseSafeToOpenDriverID, Name, _repeats.ToString(), "Repeats");
-            wisesafe._profile.WriteValue(Const.wiseSafeToOpenDriverID, Name, _enabled.ToString(), "Enabled");
+            wisesafe._profile.WriteValue(Const.wiseSafeToOperateDriverID, Name, (_interval / 1000).ToString(), "Interval");
+            wisesafe._profile.WriteValue(Const.wiseSafeToOperateDriverID, Name, _repeats.ToString(), "Repeats");
+            wisesafe._profile.WriteValue(Const.wiseSafeToOperateDriverID, Name, _enabled.ToString(), "Enabled");
             writeSensorProfile();
         }
 
@@ -282,17 +283,17 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
 
         public override void readSensorProfile()
         {
-            MaxAsString = wisesafe._profile.GetValue(Const.wiseSafeToOpenDriverID, Name, "Max", 0.0.ToString());
+            MaxAsString = wisesafe._profile.GetValue(Const.wiseSafeToOperateDriverID, Name, "Max", 0.0.ToString());
         }
 
         public override void writeSensorProfile()
         {
-            wisesafe._profile.WriteValue(Const.wiseSafeToOpenDriverID, Name, MaxAsString, "Max");
+            wisesafe._profile.WriteValue(Const.wiseSafeToOperateDriverID, Name, MaxAsString, "Max");
         }
 
         public override bool getIsSafe()
         {
-            return wisesafe.vantagePro.KMH(wisesafe.vantagePro.WindSpeedMps) < _max;
+            return (wisesafe.och.WindSpeed * 3.6) < _max;
         }
 
         public override string reason()
@@ -308,7 +309,7 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
             if ((nbad = nBadReadings) == 0)
                 return string.Empty;
 
-            return string.Format("The last {0} wind speed readings from VantagePro were higher than {1} km/h.", nbad, _max);
+            return string.Format("The last {0} wind speed readings were higher than {1} km/h.", nbad, _max);
         }
 
         public override string MaxAsString
@@ -357,97 +358,25 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
         }
     }
 
-    public class LightSensor : Sensor
-    {
-        private Dictionary<string, int> stringToDayConditions = new Dictionary<string, int>
-                {
-                    {"dayUnknown", 0 },
-                    {"dayDark", 1 },
-                    {"dayLight", 2 },
-                    {"dayVeryLight", 3 },
-                };
-
-        private Dictionary<int, string> dayConditionsToString = new Dictionary<int, string>
-                {
-                    {0, "dayUnknown"},
-                    {1, "dayDark"},
-                    {2, "dayLight"},
-                    {3, "dayVeryLight"},
-                };
-        public SensorData.DayCondition _max;
-
-        public LightSensor(WiseSafeToOperate instance) : base("Light", instance) { }
-
-        public override void readSensorProfile()
-        {
-            MaxAsString = wisesafe._profile.GetValue(Const.wiseSafeToOpenDriverID, Name, "Max", dayConditionsToString[(int)SensorData.DayCondition.dayDark]);
-        }
-
-        public override void writeSensorProfile()
-        {
-            wisesafe._profile.WriteValue(Const.wiseSafeToOpenDriverID, Name, MaxAsString, "Max");
-        }
-
-        public override bool getIsSafe()
-        {
-
-            SensorData.DayCondition light = (SensorData.DayCondition)Enum.Parse(typeof(SensorData.DayCondition),
-                wisesafe.boltwood.CommandString("daylight", true));
-                
-            return (light != SensorData.DayCondition.dayUnknown) && ((int)light <= (int)_max);
-        }
-
-        public override string reason()
-        {
-            if (nReadings < _repeats)
-            {
-                return string.Format("{0} - not enough readings ({1} < {2})", Name, nReadings, _repeats);
-            }
-
-            int nbad;
-
-            if ((nbad = nBadReadings) == 0)
-                return string.Empty;
-
-            return string.Format("The last {0} day condition readings from Boltwood were higher than \"{1}\".",
-                nbad, MaxAsString.Replace("day", ""));
-        }
-
-        public override string MaxAsString
-        {
-            set
-            {
-                _max = (SensorData.DayCondition)Enum.Parse(typeof(SensorData.DayCondition), value);
-            }
-
-            get
-            {
-                return _max.ToString();
-            }
-        }
-    }
-
     public class CloudsSensor : Sensor
     {
-        private SensorData.CloudCondition _max;
+        private uint _max;
 
         public CloudsSensor(WiseSafeToOperate instance) : base("Clouds", instance) { }
 
         public override void readSensorProfile()
         {
-            MaxAsString = wisesafe._profile.GetValue(Const.wiseSafeToOpenDriverID, Name, "Max", SensorData.CloudCondition.cloudClear.ToString());
+            MaxAsString = wisesafe._profile.GetValue(Const.wiseSafeToOperateDriverID, Name, "Max", "0");
         }
 
         public override void writeSensorProfile()
         {
-            wisesafe._profile.WriteValue(Const.wiseSafeToOpenDriverID, Name, MaxAsString, "Max");
+            wisesafe._profile.WriteValue(Const.wiseSafeToOperateDriverID, Name, MaxAsString, "Max");
         }
 
         public override bool getIsSafe()
         {
-            SensorData.CloudCondition cover = wisesafe.boltwood.CloudCover_condition;
-
-            return (cover != SensorData.CloudCondition.cloudUnknown) && ((int)cover <= (int)_max);
+            return wisesafe.och.CloudCover <= _max;
         }
 
         public override string reason()
@@ -462,15 +391,14 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
             if ((nbad = nBadReadings) == 0)
                 return string.Empty;
 
-            return string.Format("The last {0} cloud cover readings from Boltwood were higher than \"{1}\"",
-                nbad, MaxAsString.Replace("cloud", ""));
+            return string.Format("The last {0} cloud cover readings were higher than \"{1}\"", nbad, MaxAsString);
         }
 
         public override string MaxAsString
         {
             set
             {
-                _max = (SensorData.CloudCondition)Enum.Parse(typeof(SensorData.CloudCondition), value);
+                _max = Convert.ToUInt32(value);
             }
 
             get
@@ -488,17 +416,17 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
 
         public override void readSensorProfile()
         {
-            MaxAsString = wisesafe._profile.GetValue(Const.wiseSafeToOpenDriverID, Name, "Max", 0.0.ToString());
+            MaxAsString = wisesafe._profile.GetValue(Const.wiseSafeToOperateDriverID, Name, "Max", 0.0.ToString());
         }
 
         public override void writeSensorProfile()
         {
-            wisesafe._profile.WriteValue(Const.wiseSafeToOpenDriverID, Name, MaxAsString, "Max");
+            wisesafe._profile.WriteValue(Const.wiseSafeToOperateDriverID, Name, MaxAsString, "Max");
         }
 
         public override bool getIsSafe()
         {
-            return wisesafe.vantagePro.RainRate <= _max;
+            return wisesafe.och.RainRate <= _max;
         }
 
         public override string reason()
@@ -513,7 +441,7 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
             if ((nbad = nBadReadings) == 0)
                 return string.Empty;
 
-            return string.Format("The last {0} rain rate readings from VantagePro were higher than {1}", nbad, MaxAsString);
+            return string.Format("The last {0} rain rate readings were higher than {1}", nbad, MaxAsString);
         }
 
         public override string MaxAsString
@@ -538,19 +466,19 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
 
         public override void readSensorProfile()
         {
-            MaxAsString = wisesafe._profile.GetValue(Const.wiseSafeToOpenDriverID, Name, "Max", "90");
+            MaxAsString = wisesafe._profile.GetValue(Const.wiseSafeToOperateDriverID, Name, "Max", "90");
             if (MaxAsString == "0")
                 MaxAsString = "90.0"; // ???
         }
 
         public override void writeSensorProfile()
         {
-            wisesafe._profile.WriteValue(Const.wiseSafeToOpenDriverID, Name, MaxAsString, "Max");
+            wisesafe._profile.WriteValue(Const.wiseSafeToOperateDriverID, Name, MaxAsString, "Max");
         }
 
         public override bool getIsSafe()
         {
-            return wisesafe.vantagePro.Humidity <= _max;
+            return wisesafe.och.Humidity <= _max;
         }
 
         public override string reason()
@@ -565,7 +493,7 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
             if ((nbad = nBadReadings) == 0)
                 return string.Empty;
 
-            return string.Format("The last {0} humidity readings from VantagePro were higher than {1}", nbad, MaxAsString);
+            return string.Format("The last {0} humidity readings were higher than {1}", nbad, MaxAsString);
         }
 
         public override string MaxAsString
@@ -590,12 +518,12 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
 
         public override void readSensorProfile()
         {
-            MaxAsString = wisesafe._profile.GetValue(Const.wiseSafeToOpenDriverID, Name, "Max", 0.0.ToString());
+            MaxAsString = wisesafe._profile.GetValue(Const.wiseSafeToOperateDriverID, Name, "Max", 0.0.ToString());
         }
 
         public override void writeSensorProfile()
         {
-            wisesafe._profile.WriteValue(Const.wiseSafeToOpenDriverID, Name, MaxAsString, "Max");
+            wisesafe._profile.WriteValue(Const.wiseSafeToOperateDriverID, Name, MaxAsString, "Max");
         }
 
         public override bool getIsSafe()
@@ -607,7 +535,7 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
         {
             if (nReadings < _repeats)
             {
-                return string.Format("{0} - not enough readings ({1} < {2})", Name, nReadings, _repeats);
+                return string.Format("{0} - not enough calculations", Name);
             }
 
             int nbad;
@@ -616,7 +544,7 @@ namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
                 return string.Empty;
 
             double currentElevation = wisesafe.SunElevation;
-            return string.Format("The last Sun elevation ({0:f1}°) was higher than {1:f1}°",
+            return string.Format("The Sun elevation ({0:f1}deg) is higher than {1:f1}deg",
                 currentElevation, _max);
         }
 

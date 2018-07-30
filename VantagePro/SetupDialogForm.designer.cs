@@ -34,7 +34,6 @@ namespace ASCOM.Wise40.VantagePro
             this.picASCOM = new System.Windows.Forms.PictureBox();
             this.buttonChoose = new System.Windows.Forms.Button();
             this.labelReportFileValue = new System.Windows.Forms.Label();
-            this.groupBoxReportFile = new System.Windows.Forms.GroupBox();
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.radioButtonSerialPort = new System.Windows.Forms.RadioButton();
@@ -43,9 +42,7 @@ namespace ASCOM.Wise40.VantagePro
             this.label2 = new System.Windows.Forms.Label();
             this.comboBoxSerialPort = new System.Windows.Forms.ComboBox();
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).BeginInit();
-            this.groupBoxReportFile.SuspendLayout();
             this.groupBox1.SuspendLayout();
-            this.groupBox2.SuspendLayout();
             this.SuspendLayout();
             // 
             // cmdOK
@@ -54,7 +51,7 @@ namespace ASCOM.Wise40.VantagePro
             this.cmdOK.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.cmdOK.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.cmdOK.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.cmdOK.Location = new System.Drawing.Point(400, 193);
+            this.cmdOK.Location = new System.Drawing.Point(493, 97);
             this.cmdOK.Name = "cmdOK";
             this.cmdOK.Size = new System.Drawing.Size(59, 24);
             this.cmdOK.TabIndex = 0;
@@ -68,7 +65,7 @@ namespace ASCOM.Wise40.VantagePro
             this.cmdCancel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.cmdCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.cmdCancel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.cmdCancel.Location = new System.Drawing.Point(400, 223);
+            this.cmdCancel.Location = new System.Drawing.Point(493, 127);
             this.cmdCancel.Name = "cmdCancel";
             this.cmdCancel.Size = new System.Drawing.Size(59, 25);
             this.cmdCancel.TabIndex = 1;
@@ -90,7 +87,7 @@ namespace ASCOM.Wise40.VantagePro
             this.picASCOM.Cursor = System.Windows.Forms.Cursors.Hand;
             this.picASCOM.ErrorImage = global::ASCOM.Wise40.VantagePro.Properties.Resources.ASCOM;
             this.picASCOM.Image = global::ASCOM.Wise40.VantagePro.Properties.Resources.ASCOM;
-            this.picASCOM.Location = new System.Drawing.Point(405, 9);
+            this.picASCOM.Location = new System.Drawing.Point(498, 9);
             this.picASCOM.Name = "picASCOM";
             this.picASCOM.Size = new System.Drawing.Size(48, 56);
             this.picASCOM.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
@@ -103,7 +100,7 @@ namespace ASCOM.Wise40.VantagePro
             // 
             this.buttonChoose.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.buttonChoose.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonChoose.Location = new System.Drawing.Point(6, 22);
+            this.buttonChoose.Location = new System.Drawing.Point(92, 16);
             this.buttonChoose.Name = "buttonChoose";
             this.buttonChoose.Size = new System.Drawing.Size(75, 23);
             this.buttonChoose.TabIndex = 7;
@@ -113,24 +110,12 @@ namespace ASCOM.Wise40.VantagePro
             // 
             // labelReportFileValue
             // 
-            this.labelReportFileValue.Location = new System.Drawing.Point(98, 22);
+            this.labelReportFileValue.Location = new System.Drawing.Point(184, 16);
             this.labelReportFileValue.Name = "labelReportFileValue";
             this.labelReportFileValue.Padding = new System.Windows.Forms.Padding(5, 0, 0, 0);
             this.labelReportFileValue.Size = new System.Drawing.Size(268, 23);
             this.labelReportFileValue.TabIndex = 8;
             this.labelReportFileValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // groupBoxReportFile
-            // 
-            this.groupBoxReportFile.Controls.Add(this.labelReportFileValue);
-            this.groupBoxReportFile.Controls.Add(this.buttonChoose);
-            this.groupBoxReportFile.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBoxReportFile.Location = new System.Drawing.Point(32, 112);
-            this.groupBoxReportFile.Name = "groupBoxReportFile";
-            this.groupBoxReportFile.Size = new System.Drawing.Size(372, 62);
-            this.groupBoxReportFile.TabIndex = 9;
-            this.groupBoxReportFile.TabStop = false;
-            this.groupBoxReportFile.Text = "Data File";
             // 
             // openFileDialog
             // 
@@ -139,12 +124,15 @@ namespace ASCOM.Wise40.VantagePro
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.comboBoxSerialPort);
+            this.groupBox1.Controls.Add(this.labelReportFileValue);
+            this.groupBox1.Controls.Add(this.buttonChoose);
             this.groupBox1.Controls.Add(this.radioButtonSerialPort);
             this.groupBox1.Controls.Add(this.radioButtonDataFile);
             this.groupBox1.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBox1.Location = new System.Drawing.Point(32, 56);
+            this.groupBox1.Location = new System.Drawing.Point(8, 72);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(160, 40);
+            this.groupBox1.Size = new System.Drawing.Size(464, 80);
             this.groupBox1.TabIndex = 9;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = " Operation mode ";
@@ -207,10 +195,8 @@ namespace ASCOM.Wise40.VantagePro
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.ClientSize = new System.Drawing.Size(463, 290);
-            this.Controls.Add(this.groupBox2);
+            this.ClientSize = new System.Drawing.Size(556, 194);
             this.Controls.Add(this.groupBox1);
-            this.Controls.Add(this.groupBoxReportFile);
             this.Controls.Add(this.picASCOM);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.cmdCancel);
@@ -225,11 +211,8 @@ namespace ASCOM.Wise40.VantagePro
             this.Text = "Wise40 Vantage Setup";
             this.Load += new System.EventHandler(this.SetupDialogForm_Load);
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).EndInit();
-            this.groupBoxReportFile.ResumeLayout(false);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
-            this.groupBox2.ResumeLayout(false);
-            this.groupBox2.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -243,13 +226,10 @@ namespace ASCOM.Wise40.VantagePro
         private System.Windows.Forms.PictureBox picASCOM;
         private System.Windows.Forms.Button buttonChoose;
         private System.Windows.Forms.Label labelReportFileValue;
-        private System.Windows.Forms.GroupBox groupBoxReportFile;
         private System.Windows.Forms.OpenFileDialog openFileDialog;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.RadioButton radioButtonSerialPort;
         private System.Windows.Forms.RadioButton radioButtonDataFile;
-        private System.Windows.Forms.GroupBox groupBox2;
-        private System.Windows.Forms.Label label2;
         private System.Windows.Forms.ComboBox comboBoxSerialPort;
         //private System.Windows.Forms.ComboBox comboBoxComPort;
     }

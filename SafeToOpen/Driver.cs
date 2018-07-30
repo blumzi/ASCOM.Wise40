@@ -2,7 +2,7 @@
 // --------------------------------------------------------------------------------
 // TODO fill in this information for your driver, then remove this line!
 //
-// ASCOM SafetyMonitor driver for Wise40.SafeToOpen
+// ASCOM SafetyMonitor driver for Wise40.SafeToOperate
 //
 // Description:	Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam 
 //				nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam 
@@ -45,21 +45,21 @@ using ASCOM.Wise40.Boltwood;
 
 using ASCOM.Wise40.Common;
 
-namespace ASCOM.Wise40SafeToOpen //.SafeToOperate
+namespace ASCOM.Wise40SafeToOperate
 {
     //
-    // Your driver's DeviceID is ASCOM.Wise40SafeToOpen.SafetyMonitor
+    // Your driver's DeviceID is ASCOM.Wise40SafeToOperate.SafetyMonitor
     //
-    // The Guid attribute sets the CLSID for ASCOM.Wise40SafeToOpen.SafetyMonitor
+    // The Guid attribute sets the CLSID for ASCOM.Wise40SafeToOperate.SafetyMonitor
     // The ClassInterface/None addribute prevents an empty interface called
-    // _Wise40.SafeToOpen from being created and used as the [default] interface
+    // _Wise40.SafeToOperate from being created and used as the [default] interface
     //
     // TODO Replace the not implemented exceptions with code to implement the function or
     // throw the appropriate ASCOM exception.
     //
 
     /// <summary>
-    /// ASCOM SafetyMonitor Driver for Wise40.SafeToOpen.
+    /// ASCOM SafetyMonitor Driver for Wise40.SafeToOperate.
     /// </summary>
     [Guid("67F3B23A-17E1-4F0B-A9E9-BDD750E3C289")]
     [ClassInterface(ClassInterfaceType.None)]

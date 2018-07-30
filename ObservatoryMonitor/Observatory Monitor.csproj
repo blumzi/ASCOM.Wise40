@@ -169,9 +169,9 @@
       <Project>{64308775-bd4a-469c-bcab-3ed830b811af}</Project>
       <Name>Dome</Name>
     </ProjectReference>
-    <ProjectReference Include="..\SafeToOpen\SafeToOpen.csproj">
+    <ProjectReference Include="..\SafeToOpen\SafeToOperate.csproj">
       <Project>{7fa766d4-8f97-4d9f-8f62-f25c84c01ff2}</Project>
-      <Name>SafeToOpen</Name>
+      <Name>SafeToOperate</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

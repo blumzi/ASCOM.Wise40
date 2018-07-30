@@ -48,6 +48,7 @@ namespace ASCOM.Wise40.Boltwood
                             _instance = new WiseBoltwood();
                     }
                 }
+                _instance.init();
                 return _instance;
             }
         }
@@ -236,6 +237,14 @@ namespace ASCOM.Wise40.Boltwood
                 string driverInfo = "Information about the driver itself. Version: " + String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
                 tl.LogMessage("DriverInfo Get", driverInfo);
                 return driverInfo;
+            }
+        }
+
+        public static string driverVersion
+        {
+            get
+            {
+                return _instance.DriverVersion;
             }
         }
 

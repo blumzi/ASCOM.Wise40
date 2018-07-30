@@ -40,11 +40,21 @@ namespace ASCOM.Wise40.VantagePro
 
         private Dictionary<string, string> sensorData = null;
         private DateTime _lastDataRead = DateTime.MinValue;
+        private static object syncObject = new object();
 
         public static WiseVantagePro Instance
         {
             get
             {
+                if (_instance == null)
+                {
+                    lock (syncObject)
+                    {
+                        if (_instance == null)
+                            _instance = new WiseVantagePro();
+                    }
+                }
+                _instance.init();
                 return _instance;
             }
         }
@@ -109,7 +119,9 @@ namespace ASCOM.Wise40.VantagePro
 
         private void TryOpenPort()
         {
-            if (_port.IsOpen)
+            if (_port == null)
+                _port = new System.IO.Ports.SerialPort();
+            else if (_port.IsOpen)
                 return;
 
             _port.PortName = _portName;
@@ -126,6 +138,7 @@ namespace ASCOM.Wise40.VantagePro
                 debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "TryOpenPort: Cannot open \"{0}\", ex: {1}",
                     _portName, ex.Message);
                 #endregion
+                throw;
             }
         }
 
@@ -152,8 +165,33 @@ namespace ASCOM.Wise40.VantagePro
             return awake;
         }
 
+        /// <summary>
+        /// Gets a VantagePro two-bytes entity from the LPS command reply block
+        ///  They are transmitted LSB first - (buf[offset] = LSB, buf[offset+1] = MSB)
+        /// </summary>
+        /// <param name="bytes">The stream of bytes in the reply block</param>
+        /// <param name="o">The starting offset</param>
+        /// <returns></returns>
+        public ushort getTwoBytes(byte[] bytes, int o)
+        {
+            return (ushort) ((bytes[o + 1] << 8) | bytes[o]);
+        }
+
         public void RefreshFromSerialPort()
         {
+            if (Simulated)
+            {
+                sensorData["outsideTemp"] = "300";
+                sensorData["windSpeed"] = "400";
+                sensorData["windDir"] = "275";
+                sensorData["outsideHumidity"] = "85";
+                sensorData["barometer"] = "1234";
+                sensorData["outsideDewPt"] = "55";
+                sensorData["rainRate"] = "11";
+                sensorData["ForecastStr"] = "No forecast";
+                return;
+            }
+
             if (!TryWakeUpVantagePro())
                 return;
 
@@ -166,23 +204,21 @@ namespace ASCOM.Wise40.VantagePro
             if (_port.Read(buf, 0, 99) != 99)
                 return;
 
-            if (buf[0] != 'L' || buf[1] != 'O' || buf[2] != 'O' || buf[95] != '\n' || buf[96] != '\r')
+            // Check the reply is valid - TBD verify the checksum
+            if (buf[0] != 'L' || buf[1] != 'O' || buf[2] != 'O' || buf[4] != 1 || buf[95] != '\n' || buf[96] != '\r')
                 return;
 
             ASCOM.Utilities.Util util = new Util();
 
-            if (sensorData == null)
-                sensorData = new Dictionary<string, string>();
-
-            double fahrenheit = ((buf[12] << 8) | buf[13]) / 10.0;
-            sensorData["outsideTemp"] = util.ConvertUnits(fahrenheit, Units.degreesFarenheit, Units.degreesCelsius).ToString();
+            double F = getTwoBytes(buf, 12) / 10.0;
+            sensorData["outsideTemp"] = util.ConvertUnits(F, Units.degreesFarenheit, Units.degreesCelsius).ToString();
             sensorData["windSpeed"] = util.ConvertUnits(buf[14], Units.milesPerHour, Units.metresPerSecond).ToString();
-            sensorData["windDir"] = ((buf[16] << 8) | buf[17]).ToString();
+            sensorData["windDir"] = getTwoBytes(buf, 16).ToString();
             sensorData["outsideHumidity"] = buf[33].ToString();
-            sensorData["barometer"] = ((buf[7] << 8) | buf[8]).ToString();
-            fahrenheit = (buf[30] << 8) | buf[31];
-            sensorData["outsideDewPt"] = util.ConvertUnits(fahrenheit, Units.degreesFarenheit, Units.degreesCelsius).ToString();
-            sensorData["rainRate"] = ((buf[41] << 8) | buf[42]).ToString();
+            sensorData["barometer"] = getTwoBytes(buf, 7).ToString();
+            F = getTwoBytes(buf, 30);
+            sensorData["outsideDewPt"] = util.ConvertUnits(F, Units.degreesFarenheit, Units.degreesCelsius).ToString();
+            sensorData["rainRate"] = getTwoBytes(buf, 41).ToString();
             sensorData["ForecastStr"] = "No forecast";
         }
 
@@ -197,6 +233,8 @@ namespace ASCOM.Wise40.VantagePro
             tl.Enabled = debugger.Tracing;
             tl.LogMessage("ObservingConditions", "initialized");
 
+            sensorData = new Dictionary<string, string>();
+
             ReadProfile();
             Refresh();
 
@@ -207,8 +245,6 @@ namespace ASCOM.Wise40.VantagePro
         {
             get
             {
-                //tl.LogMessage("Connected Get", IsConnected.ToString());
-                //return IsConnected;
                 return _connected;
             }
 
@@ -218,13 +254,10 @@ namespace ASCOM.Wise40.VantagePro
                 if (value == _connected)
                     return;
 
-                if (_opMode == OpMode.Serial)
+                if (Simulated || _opMode == OpMode.Serial)
                 {
                     if (value == true)
-                    {
-                        if (!_port.IsOpen)
-                            TryOpenPort();
-                    }
+                        TryOpenPort();
                     else
                         _port.Close();
                     _connected = _port.IsOpen;
@@ -235,7 +268,6 @@ namespace ASCOM.Wise40.VantagePro
 
         public string Description
         {
-            // TODO customise this device description
             get
             {
                 tl.LogMessage("Description Get", driverDescription);
@@ -258,6 +290,14 @@ namespace ASCOM.Wise40.VantagePro
                 string driverInfo = "Wrapper for VantagePro Report file. Version: " + String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
                 tl.LogMessage("DriverInfo Get", driverInfo);
                 return driverInfo;
+            }
+        }
+
+        public static string driverVersion
+        {
+            get
+            {
+                return _instance.DriverVersion;
             }
         }
 
@@ -284,7 +324,7 @@ namespace ASCOM.Wise40.VantagePro
             {
                 OpMode mode;
 
-                Enum.TryParse<OpMode>(driverProfile.GetValue(Const.wiseVantageProDriverID, opModeProfileName, string.Empty, "File"), out mode);
+                Enum.TryParse<OpMode>(driverProfile.GetValue(Const.wiseVantageProDriverID, opModeProfileName, string.Empty, OpMode.File.ToString()), out mode);
                 _opMode = mode;
                 _dataFile = driverProfile.GetValue(Const.wiseVantageProDriverID, dataFileProfileName, string.Empty, defaultReportFile);
                 _portName = driverProfile.GetValue(Const.wiseVantageProDriverID, serialPortProfileName, string.Empty, "");
@@ -575,9 +615,14 @@ namespace ASCOM.Wise40.VantagePro
                     throw new MethodNotImplementedException("SensorDescription(" + PropertyName + ")");
             }
             Refresh();
-            string dateTime = sensorData["utcDate"] + " " + sensorData["utcTime"] + "m";
-            DateTime lastUpdate = Convert.ToDateTime(dateTime);
-            double seconds = (DateTime.UtcNow - lastUpdate).TotalSeconds;
+
+            double seconds = 0.0;
+            if (_opMode == OpMode.File)
+            {
+                string dateTime = sensorData["utcDate"] + " " + sensorData["utcTime"] + "m";
+                DateTime lastUpdate = Convert.ToDateTime(dateTime);
+                seconds = (DateTime.UtcNow - lastUpdate).TotalSeconds;
+            }
 
             tl.LogMessage("TimeSinceLastUpdate", PropertyName + seconds.ToString());
             return seconds;
