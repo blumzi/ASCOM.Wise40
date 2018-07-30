@@ -17,19 +17,19 @@ namespace ASCOM.Wise40.VantagePro
         private string _dataFile;
         internal static string opModeProfileName = "OperationMode";
         internal static string dataFileProfileName = "DataFile";
-        internal static string serialPortProfileName = "SerialPort";
+        internal static string serialPortProfileName = "Port";
         private static WiseVantagePro _instance = new WiseVantagePro();
         private static Version version = new Version("0.2");
         public static string driverDescription = string.Format("ASCOM Wise40.VantagePro v{0}", version.ToString());
         private Util util = new Util();
         private TraceLogger tl;
 
-        public enum OpMode { Datafile, SerialPort };
-        public OpMode _opMode = WiseVantagePro.OpMode.Datafile;
+        public enum OpMode { File, Serial };
+        public OpMode _opMode = WiseVantagePro.OpMode.File;
 
         public string _portName = null;
         public int _portSpeed = 19200;
-        System.IO.Ports.SerialPort _port = null;
+        System.IO.Ports.SerialPort _port = new System.IO.Ports.SerialPort();
 
         Common.Debugger debugger = Debugger.Instance;
         private bool _connected = false;
@@ -55,7 +55,7 @@ namespace ASCOM.Wise40.VantagePro
         /// </summary>
         public void Refresh()
         {
-            if (_opMode == OpMode.Datafile)
+            if (_opMode == OpMode.File)
                 RefreshFromDatafile();
             else
                 RefreshFromSerialPort();
@@ -109,8 +109,13 @@ namespace ASCOM.Wise40.VantagePro
 
         private void TryOpenPort()
         {
+            if (_port.IsOpen)
+                return;
+
             _port.PortName = _portName;
             _port.BaudRate = _portSpeed;
+            _port.ReadTimeout = 1000;
+            _port.ReadBufferSize = 100;
             try
             {
                 _port.Open();
@@ -118,7 +123,7 @@ namespace ASCOM.Wise40.VantagePro
             catch (Exception ex)
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "RefreshFromSerialPort: Cannot open \"{0}\", ex: {1}",
+                debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "TryOpenPort: Cannot open \"{0}\", ex: {1}",
                     _portName, ex.Message);
                 #endregion
             }
@@ -126,8 +131,7 @@ namespace ASCOM.Wise40.VantagePro
 
         private bool TryWakeUpVantagePro()
         {
-            if (!_port.IsOpen)
-                TryOpenPort();
+            TryOpenPort();
 
             bool awake = false;
             for (var attempts = 3; attempts != 0; attempts--)
@@ -156,8 +160,9 @@ namespace ASCOM.Wise40.VantagePro
             byte[] buf = new byte[99];
             _port.Write("LPS 2 1\n");
 
-            _port.ReadTimeout = 1000;
-            _port.ReadBufferSize = 100;
+            if (_port.ReadByte() != 0x6)
+                return;
+
             if (_port.Read(buf, 0, 99) != 99)
                 return;
 
@@ -165,6 +170,9 @@ namespace ASCOM.Wise40.VantagePro
                 return;
 
             ASCOM.Utilities.Util util = new Util();
+
+            if (sensorData == null)
+                sensorData = new Dictionary<string, string>();
 
             double fahrenheit = ((buf[12] << 8) | buf[13]) / 10.0;
             sensorData["outsideTemp"] = util.ConvertUnits(fahrenheit, Units.degreesFarenheit, Units.degreesCelsius).ToString();
@@ -210,7 +218,7 @@ namespace ASCOM.Wise40.VantagePro
                 if (value == _connected)
                     return;
 
-                if (_opMode == OpMode.SerialPort)
+                if (_opMode == OpMode.Serial)
                 {
                     if (value == true)
                     {
@@ -276,7 +284,7 @@ namespace ASCOM.Wise40.VantagePro
             {
                 OpMode mode;
 
-                Enum.TryParse<OpMode>(driverProfile.GetValue(Const.wiseVantageProDriverID, opModeProfileName, string.Empty, "DataFile"), out mode);
+                Enum.TryParse<OpMode>(driverProfile.GetValue(Const.wiseVantageProDriverID, opModeProfileName, string.Empty, "File"), out mode);
                 _opMode = mode;
                 _dataFile = driverProfile.GetValue(Const.wiseVantageProDriverID, dataFileProfileName, string.Empty, defaultReportFile);
                 _portName = driverProfile.GetValue(Const.wiseVantageProDriverID, serialPortProfileName, string.Empty, "");

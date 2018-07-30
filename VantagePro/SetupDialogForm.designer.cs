@@ -37,11 +37,11 @@ namespace ASCOM.Wise40.VantagePro
             this.groupBoxReportFile = new System.Windows.Forms.GroupBox();
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.radioButtonDataFile = new System.Windows.Forms.RadioButton();
             this.radioButtonSerialPort = new System.Windows.Forms.RadioButton();
+            this.radioButtonDataFile = new System.Windows.Forms.RadioButton();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.comboBoxSerialPort = new System.Windows.Forms.ComboBox();
             this.label2 = new System.Windows.Forms.Label();
+            this.comboBoxSerialPort = new System.Windows.Forms.ComboBox();
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).BeginInit();
             this.groupBoxReportFile.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -149,6 +149,17 @@ namespace ASCOM.Wise40.VantagePro
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = " Operation mode ";
             // 
+            // radioButtonSerialPort
+            // 
+            this.radioButtonSerialPort.AutoSize = true;
+            this.radioButtonSerialPort.Location = new System.Drawing.Point(80, 16);
+            this.radioButtonSerialPort.Name = "radioButtonSerialPort";
+            this.radioButtonSerialPort.Size = new System.Drawing.Size(73, 17);
+            this.radioButtonSerialPort.TabIndex = 1;
+            this.radioButtonSerialPort.Text = "Serial Port";
+            this.radioButtonSerialPort.UseVisualStyleBackColor = true;
+            this.radioButtonSerialPort.Click += new System.EventHandler(this.radioButtonSerialPort_Click);
+            // 
             // radioButtonDataFile
             // 
             this.radioButtonDataFile.AutoSize = true;
@@ -162,16 +173,6 @@ namespace ASCOM.Wise40.VantagePro
             this.radioButtonDataFile.UseVisualStyleBackColor = true;
             this.radioButtonDataFile.Click += new System.EventHandler(this.radioButtonDataFile_Click);
             // 
-            // radioButtonSerialPort
-            // 
-            this.radioButtonSerialPort.AutoSize = true;
-            this.radioButtonSerialPort.Location = new System.Drawing.Point(80, 16);
-            this.radioButtonSerialPort.Name = "radioButtonSerialPort";
-            this.radioButtonSerialPort.Size = new System.Drawing.Size(73, 17);
-            this.radioButtonSerialPort.TabIndex = 1;
-            this.radioButtonSerialPort.Text = "Serial Port";
-            this.radioButtonSerialPort.UseVisualStyleBackColor = true;
-            // 
             // groupBox2
             // 
             this.groupBox2.Controls.Add(this.label2);
@@ -184,14 +185,6 @@ namespace ASCOM.Wise40.VantagePro
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = " Serial Port ";
             // 
-            // comboBoxSerialPort
-            // 
-            this.comboBoxSerialPort.FormattingEnabled = true;
-            this.comboBoxSerialPort.Location = new System.Drawing.Point(40, 28);
-            this.comboBoxSerialPort.Name = "comboBoxSerialPort";
-            this.comboBoxSerialPort.Size = new System.Drawing.Size(64, 21);
-            this.comboBoxSerialPort.TabIndex = 0;
-            // 
             // label2
             // 
             this.label2.AutoSize = true;
@@ -200,6 +193,14 @@ namespace ASCOM.Wise40.VantagePro
             this.label2.Size = new System.Drawing.Size(29, 13);
             this.label2.TabIndex = 1;
             this.label2.Text = "Port:";
+            // 
+            // comboBoxSerialPort
+            // 
+            this.comboBoxSerialPort.FormattingEnabled = true;
+            this.comboBoxSerialPort.Location = new System.Drawing.Point(40, 28);
+            this.comboBoxSerialPort.Name = "comboBoxSerialPort";
+            this.comboBoxSerialPort.Size = new System.Drawing.Size(64, 21);
+            this.comboBoxSerialPort.TabIndex = 0;
             // 
             // SetupDialogForm
             // 
