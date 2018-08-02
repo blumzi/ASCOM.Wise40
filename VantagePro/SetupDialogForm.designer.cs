@@ -36,15 +36,12 @@ namespace ASCOM.Wise40.VantagePro
             this.labelReportFileValue = new System.Windows.Forms.Label();
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.comboBoxSerialPort = new System.Windows.Forms.ComboBox();
+            this.comboBoxSerialPorts = new System.Windows.Forms.ComboBox();
             this.radioButtonSerialPort = new System.Windows.Forms.RadioButton();
             this.radioButtonDataFile = new System.Windows.Forms.RadioButton();
-            this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.label2 = new System.Windows.Forms.Label();
-            this.comboBoxSerialPorts = new System.Windows.Forms.ComboBox();
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).BeginInit();
             this.groupBox1.SuspendLayout();
-            this.groupBox2.SuspendLayout();
             this.SuspendLayout();
             // 
             // cmdOK
@@ -140,13 +137,13 @@ namespace ASCOM.Wise40.VantagePro
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = " Operation mode ";
             // 
-            // comboBoxSerialPort
+            // comboBoxSerialPorts
             // 
-            this.comboBoxSerialPort.FormattingEnabled = true;
-            this.comboBoxSerialPort.Location = new System.Drawing.Point(40, 28);
-            this.comboBoxSerialPort.Name = "comboBoxSerialPort";
-            this.comboBoxSerialPort.Size = new System.Drawing.Size(64, 21);
-            this.comboBoxSerialPort.TabIndex = 0;
+            this.comboBoxSerialPorts.FormattingEnabled = true;
+            this.comboBoxSerialPorts.Location = new System.Drawing.Point(95, 43);
+            this.comboBoxSerialPorts.Name = "comboBoxSerialPorts";
+            this.comboBoxSerialPorts.Size = new System.Drawing.Size(73, 21);
+            this.comboBoxSerialPorts.TabIndex = 10;
             // 
             // radioButtonSerialPort
             // 
@@ -172,18 +169,6 @@ namespace ASCOM.Wise40.VantagePro
             this.radioButtonDataFile.UseVisualStyleBackColor = true;
             this.radioButtonDataFile.Click += new System.EventHandler(this.radioButtonDataFile_Click);
             // 
-            // groupBox2
-            // 
-            this.groupBox2.Controls.Add(this.label2);
-            this.groupBox2.Controls.Add(this.comboBoxSerialPort);
-            this.groupBox2.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBox2.Location = new System.Drawing.Point(32, 192);
-            this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(120, 64);
-            this.groupBox2.TabIndex = 10;
-            this.groupBox2.TabStop = false;
-            this.groupBox2.Text = " Serial Port ";
-            // 
             // label2
             // 
             this.label2.AutoSize = true;
@@ -192,14 +177,6 @@ namespace ASCOM.Wise40.VantagePro
             this.label2.Size = new System.Drawing.Size(29, 13);
             this.label2.TabIndex = 1;
             this.label2.Text = "Port:";
-            // 
-            // comboBoxSerialPorts
-            // 
-            this.comboBoxSerialPorts.FormattingEnabled = true;
-            this.comboBoxSerialPorts.Location = new System.Drawing.Point(95, 43);
-            this.comboBoxSerialPorts.Name = "comboBoxSerialPorts";
-            this.comboBoxSerialPorts.Size = new System.Drawing.Size(73, 21);
-            this.comboBoxSerialPorts.TabIndex = 10;
             // 
             // SetupDialogForm
             // 
@@ -224,8 +201,6 @@ namespace ASCOM.Wise40.VantagePro
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).EndInit();
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
-            this.groupBox2.ResumeLayout(false);
-            this.groupBox2.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -243,9 +218,6 @@ namespace ASCOM.Wise40.VantagePro
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.RadioButton radioButtonSerialPort;
         private System.Windows.Forms.RadioButton radioButtonDataFile;
-        private System.Windows.Forms.ComboBox comboBoxSerialPort;
-        //private System.Windows.Forms.ComboBox comboBoxComPort;            
-        private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.ComboBox comboBoxSerialPorts;
     }
