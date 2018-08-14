@@ -12,11 +12,16 @@ using ASCOM.Wise40.Common;
 
 namespace ASCOM.Wise40
 {
-    public class AxisMonitor : IConnectable
+    public class AxisMonitor : WiseObject, IConnectable
     {
+        public struct AxisPositionSample
+        {
+            public double value;
+        };
+
         private const int nSamples = 5;
         private double _previousValue = double.NaN;
-        private FixedSizedQueue<double> _deltas = new FixedSizedQueue<double>(nSamples);
+        private FixedSizedQueue<AxisPositionSample> _samples = new FixedSizedQueue<AxisPositionSample>(nSamples);
         private TelescopeAxes _axis, _other_axis;
         private WiseTele wisetele = WiseTele.Instance;
         private bool _connected = false;
@@ -24,15 +29,10 @@ namespace ASCOM.Wise40
         private bool _whileTracking = false;
         private WiseVirtualMotor trackingMotor = WiseTele.Instance.TrackingMotor;
         
-        /// <summary>
-        /// The epsilon value contains the minimal encoder change (within the _samplingFrequency below)
-        ///  that's considered as the axis being currently moving.
-        /// </summary>
-        private double epsilon;
-        private static readonly int _samplingFrequency = 10;
-        private const double secondaryDelta = 0.0001;
-        private const double trackingDelta = 0;
-        private const double primaryDelta = 7.0;
+        private static readonly int _samplingFrequency = 5;
+        private const double decEpsilon = 0.0001;     // epsilon for secondaryMonitor
+        private const double raEpsilon = 1e-5;        // epsilon for primaryMonitor, while tracking
+        private const double haEpsilon = 7.0;         // epsilon for primaryMonitor, while NOT tracking
         private const double simulatedDelta = 0.4;
 
         /// <summary>
@@ -49,21 +49,6 @@ namespace ASCOM.Wise40
         public AxisMonitor(TelescopeAxes axis)
         {
             _axis = axis;
-
-            if ((new WiseObject()).Simulated)
-            {
-                epsilon = simulatedDelta;
-            }
-            else if (_axis == TelescopeAxes.axisPrimary)
-            {
-                epsilon = primaryDelta; // To Be Reviewed
-                _whileTracking = trackingMotor.isOn;
-            }
-            else if (_axis == TelescopeAxes.axisSecondary)
-            {
-                epsilon = secondaryDelta;   // Measured as the minimal change while the Dec axis is moving
-            }
-
             _other_axis = (_axis == TelescopeAxes.axisPrimary) ?
                 TelescopeAxes.axisSecondary : TelescopeAxes.axisPrimary;
         }
@@ -72,16 +57,34 @@ namespace ASCOM.Wise40
         {
             get
             {
-                var max = _deltas.ToArray().Max();
-                bool ret =  max > epsilon;
+                double max = double.MinValue;
+                var arr = _samples.ToArray();
 
-                //#region debug
-                //string deb = string.Format("AxisMonitor:IsMoving:{0}: max: {1:F15}, epsilon: {2:F15}, ret: {3}, active: {4}",
-                //    _axis, max, epsilon, ret, ActiveMotors(_axis)) + "[";
-                //foreach (var d in _deltas.ToArray())
-                //    deb += " " + d.ToString();
-                //debugger.WriteLine(Debugger.DebugLevel.DebugAxes, deb + "]");
-                //#endregion
+                if (arr.Count() < _samples.MaxSize)
+                {
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "AxisMonitor:IsMoving:{0}: Not enough samples {1} < {2} = true",
+                        _axis, arr.Count(), _samples.MaxSize);
+                    #endregion
+                    return true;    // not enough samples
+                }
+
+                foreach (var sample in arr)
+                    if (sample.value > max)
+                        max = sample.value;
+
+                double epsilon = (_axis == TelescopeAxes.axisPrimary) ?
+                    (_whileTracking ? raEpsilon : haEpsilon) : decEpsilon;
+
+                bool ret = max > epsilon;
+
+                #region debug
+                string deb = string.Format("AxisMonitor:IsMoving:{0}: max: {1:F15}, epsilon: {2:F15}, ret: {3}, active: {4}",
+                    _axis, max, epsilon, ret, ActiveMotors(_axis)) + "[";
+                foreach (var sample in arr)
+                    deb += " " + sample.value.ToString();
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, deb + "]");
+                #endregion
                 return ret;
             }
         }
@@ -101,34 +104,40 @@ namespace ASCOM.Wise40
 
         private void SampleAxisMovement(object StateObject)
         {
+            bool tracking = trackingMotor.isOn;
+
             if (_axis == TelescopeAxes.axisPrimary)
             {
-                if (trackingMotor.isOn != _whileTracking)
+                if (tracking != _whileTracking)
                 {
-                    _whileTracking = trackingMotor.isOn;
-                    _deltas = new FixedSizedQueue<double>(nSamples);
+                    // The tracking state has changed while we're sampling: discard previous
+                    //  samples and start a new sequence
+                    _whileTracking = tracking;
+                    _samples = new FixedSizedQueue<AxisPositionSample>(nSamples);
                 }
             }
 
             double value = (_axis == TelescopeAxes.axisPrimary) ?
-                    (_whileTracking ? wisetele.RightAscension : wisetele.HAEncoder.Value) :
+                    (tracking ? wisetele.RightAscension : wisetele.HAEncoder.Value) :
                     wisetele.DecEncoder.Angle.Radians;
 
-            if (_previousValue == double.NaN)
+            if (Double.IsNaN(_previousValue))
             {
                 _previousValue = value;
                 return;
             }
 
             double d = Math.Abs(value - _previousValue);
-            if (d == double.NaN)
+            if (Double.IsNaN(d))
                 return;
 
-            //#region debug
-            //debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "AxisMonitor:SampleAxisMovement:{0}: value: {1}, _previousValue: {2}, enqueueing: {3:F15}, active: {4}",
-            //    _axis, value, _previousValue, d, ActiveMotors(_axis));
-            //#endregion
-            _deltas.Enqueue(d);
+            AxisPositionSample sample = new AxisPositionSample { value = d };
+
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "AxisMonitor:SampleAxisMovement:{0}: value: {1}, _previousValue: {2}, enqueueing: {3:F15}, active: {4}",
+                _axis, value, _previousValue, d, ActiveMotors(_axis));
+            #endregion
+            _samples.Enqueue(sample);
             _previousValue = value;
         }
 
@@ -136,7 +145,7 @@ namespace ASCOM.Wise40
         {
             TimerCallback axisMovementTimerCallback = new TimerCallback(SampleAxisMovement);
             movementCheckerTimer = new System.Threading.Timer(axisMovementTimerCallback);
-            movementCheckerTimer.Change(100/_samplingFrequency, 1000/_samplingFrequency);
+            movementCheckerTimer.Change(0, 1000/_samplingFrequency);
         }
 
         private void StartMovementChecker()
