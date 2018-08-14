@@ -652,7 +652,7 @@ namespace Dash
             {
                 string message = string.Format("Moving {0} at {1} (safety bypassed)", String.Join("-", Directions.ToArray()), WiseTele.RateName(handpadRate).Remove(0, 4));
                 telescopeStatus.Show(message, 0, Statuser.Severity.Good);
-                HandpadControlsEnabled(sender as Control, false);
+                //HandpadControlsEnabled(sender as Control, false);
                 foreach (var m in movements)
                 {
                     wisetele.HandpadMoveAxis(m._axis, m._rate);
@@ -662,7 +662,7 @@ namespace Dash
             {
                 string message = string.Format("Moving {0} at {1}", String.Join("-", Directions.ToArray()), WiseTele.RateName(handpadRate).Remove(0, 4));
                 telescopeStatus.Show(message, 0, Statuser.Severity.Good);
-                HandpadControlsEnabled(sender as Control, false);
+                //HandpadControlsEnabled(sender as Control, false);
                 foreach (var m in movements)
                 {
                     wisetele.HandpadMoveAxis(m._axis, m._rate);
@@ -679,7 +679,7 @@ namespace Dash
         {
             TelescopeAxes axis = (int)e.Argument == 0 ? TelescopeAxes.axisPrimary : TelescopeAxes.axisSecondary;
 
-            wisetele.MoveAxis(axis, Const.rateStopped);
+            wisetele.StopAxisAndWaitForHalt(axis, "HandpadMouseUp");
         }
 
         private void axisStopper_Completed(object sender, RunWorkerCompletedEventArgs e)
@@ -712,7 +712,7 @@ namespace Dash
                 Application.DoEvents();
             }
 
-            HandpadControlsEnabled(sender as Control, true);
+            //HandpadControlsEnabled(sender as Control, true);
 
             telescopeStatus.Show("Stopped", 1000, Statuser.Severity.Good);
             wisetele.inactivityMonitor.EndActivity(InactivityMonitor.Activity.Handpad);
