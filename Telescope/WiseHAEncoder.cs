@@ -24,7 +24,6 @@ namespace ASCOM.Wise40 //.Telescope
 
         const double HaMultiplier = twoPI / 720 / 4096;
         const double HaCorrection = -3.063571542;                   // 20081231: Shai Kaspi
-        //const double HaCorrection = -6.899777777777778;  // 20160702: Arie
         const uint _simulatedValueAtFiducialMark = _realValueAtFiducialMark;
 
         private Common.Debugger debugger = Common.Debugger.Instance;
@@ -109,7 +108,7 @@ namespace ASCOM.Wise40 //.Telescope
                             Convert.ToString(axis ^ prev_axis, 2).PadLeft(16, '0'),
                             Convert.ToString(worm ^ prev_worm, 2).PadLeft(12, '0'));
                     }
-                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, dbg);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, dbg);
                     prev_worm = worm;
                     prev_axis = axis;
                     #endregion
@@ -235,7 +234,7 @@ namespace ASCOM.Wise40 //.Telescope
                 if (ret.Radians > twoPI)
                     ret.Radians -= twoPI;
                 #region debug
-                //debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "[{0}] RightAscension: {1}", this.GetHashCode(), ret);
+                debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "[{0}] RightAscension: {1}", this.GetHashCode(), ret);
                 #endregion
                 return ret;
             }

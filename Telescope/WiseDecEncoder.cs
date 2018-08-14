@@ -58,12 +58,7 @@ namespace ASCOM.Wise40
 
             Name = name;
 
-            //_angle = Simulated ?
-            //    Angle.FromDegrees(90.0, Angle.Type.Dec) - wisesite.Latitude :
-            //    Angle.FromRadians((Value * DecMultiplier) + DecCorrection, Angle.Type.Dec);
-
             Angle = Simulated ?
-                //Angle.FromDegrees(90.0, Angle.Type.Dec) - wisesite.Latitude :
                 Angle.FromDegrees(85, Angle.Type.Dec) :
                 Angle.FromRadians((Value * DecMultiplier) + DecCorrection, Angle.Type.Dec);
         }
@@ -131,9 +126,7 @@ namespace ASCOM.Wise40
                         List<int> wormValues = wormEncoder.RawValuesInt;
                         List<int> axisValues = axisEncoder.RawValuesInt;
 
-                        //worm = ((wormValues[0] & 0xf) << 8) | (wormValues[1] & 0xff);
                         worm = ((wormValues[0] & 0xf) * 0x100) + (wormValues[1] & 0xff);
-                        //axis = (axisValues[1] >> 4) | (axisValues[0] << 4);
                         axis = (axisValues[1] / 0x10) + (axisValues[0] * 0x10);
 
                         _daqsValue = ((axis * 600 + worm) & 0xfff000) - worm;
@@ -211,32 +204,28 @@ namespace ASCOM.Wise40
             {
                 Angle ret = _angle;
 
-                //if (!Simulated)
-                //{
-                    double current_value = Value;
-                    double radians = (current_value * DecMultiplier) + DecCorrection;
+                double current_value = Value;
+                double radians = (current_value * DecMultiplier) + DecCorrection;
 
-                    if (radians > Math.PI)
-                        radians -= twoPI;
-                    _angle.Radians = radians;
+                if (radians > Math.PI)
+                    radians -= twoPI;
+                _angle.Radians = radians;
 
-                    ret = _angle;
-                    if (DecOver90Degrees)
-                    {
-                        #region debug
-                        debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "WiseDecEncoder:Degrees: over90");
-                        #endregion
-                        ret.Radians = Math.PI - ret.Radians;
-                    }
-
+                ret = _angle;
+                if (DecOver90Degrees)
+                {
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugEncoders,
-                        "[{0}] {1} Degrees - Value: {2}, deg: {3}", this.GetHashCode(), Name, current_value, ret);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "WiseDecEncoder:Degrees: over90");
                     #endregion
-                //}
+                    ret.Radians = Math.PI - ret.Radians;
+                }
+
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugEncoders,
+                    "[{0}] {1} Degrees - Value: {2}, deg: {3}", this.GetHashCode(), Name, current_value, ret);
+                #endregion
 
                 return ret.Degrees;
-                //return Angle.Degrees;
             }
 
             set
