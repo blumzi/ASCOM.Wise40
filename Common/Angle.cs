@@ -310,7 +310,7 @@ namespace ASCOM.Wise40.Common
 
         public string ToNiceString()
         {
-            if (Radians == double.NaN)
+            if (Double.IsNaN(Radians))
                 return "Invalid";
             if (_isHMS)
                 return ascomutils.DegreesToHMS(Degrees, "h", "m", "s", 1);
