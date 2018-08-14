@@ -30,7 +30,7 @@ namespace ASCOM.Wise40
         private WiseVirtualMotor trackingMotor = WiseTele.Instance.TrackingMotor;
         
         private static readonly int _samplingFrequency = 5;
-        private const double decEpsilon = 0.0001;     // epsilon for secondaryMonitor
+        private const double decEpsilon = 2e-6;       // epsilon for secondaryMonitor
         private const double raEpsilon = 1e-5;        // epsilon for primaryMonitor, while tracking
         private const double haEpsilon = 7.0;         // epsilon for primaryMonitor, while NOT tracking
         private const double simulatedDelta = 0.4;

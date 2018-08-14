@@ -630,7 +630,7 @@ namespace ASCOM.Wise40
 
                     [Const.rateSet] = new MovementParameters()
                     {
-                        minimalMovement = new Angle("00:01:00.0"),
+                        minimalMovement = new Angle("00:00:10.0"),
                         stopMovement = new Angle("00:00:03.0"),
                     },
 
