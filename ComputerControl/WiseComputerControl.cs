@@ -56,19 +56,16 @@ namespace ASCOM.Wise40
             }
         }
 
-        public string UnsafeReasons()
+        public List<string> UnsafeReasons()
         {
             List<string> reasons = new List<string>();
 
             if (!computerControlPin.isOn)
-                reasons.Add("ComputerControl switch is OFF");
+                reasons.Add("ComputerControl switch is on MAINTENANCE");
             if (!wisedomeplatform.IsSafe)
                 reasons.Add("Platform is RAISED");
 
-            if (reasons.Count > 0)
-                return string.Join(" and ", reasons);
-            else
-                return string.Empty;
+            return reasons; ;
         }
     }
 }

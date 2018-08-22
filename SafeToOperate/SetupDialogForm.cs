@@ -14,7 +14,7 @@ namespace ASCOM.Wise40SafeToOperate
     [ComVisible(false)]					// Form not registered for COM!
     public partial class SafeToOperateSetupDialogForm : Form
     {
-        WiseSafeToOperate wisesafetooperate = WiseSafeToOperate.InstanceOpen;
+        WiseSafeToOperate wisesafetooperate = WiseSafeToOperate.Instance;
 
         public SafeToOperateSetupDialogForm()
         {

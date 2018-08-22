@@ -216,7 +216,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             {
                 labelComputerControl.Text = "Maintenance";
                 labelComputerControl.ForeColor = unsafeColor;
-                reasons = wisecomputercontrol.CommandString("unsafereasons", false);
+                reasons = wisecomputercontrol.Action("unsafereasons", "");
             }
             toolTip.SetToolTip(labelComputerControl, reasons.Replace(',', '\n'));
 
@@ -224,11 +224,13 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             {
                 labelActivity.Text = "Active";
                 labelActivity.ForeColor = safeColor;
+                toolTip.SetToolTip(labelActivity, wisetelescope.Action("telescope:get-activities", ""));
             }
             else
             {
                 labelActivity.Text = "Idle";
                 labelActivity.ForeColor = unsafeColor;
+                toolTip.SetToolTip(labelActivity, "");
             }
             
             if (_shuttingDown)
@@ -237,7 +239,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             List<string> reasonsList = new List<string>();
 
             if (ready && !safe)
-                reasonsList.Add("Not SafeToOperate");
+                reasonsList.Add(wisesafetooperate.Action("unsafereasons", ""));
             if (!active)
                 reasonsList.Add("Telescope is Idle");
 
@@ -481,10 +483,19 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
                     if (!_headerWasLogged) { Log(header); _headerWasLogged = true; }
                     Log(string.Format("    Starting {0} park ...", what.ToLower()));
-                    
-                    Task parkerTask = Task.Run(() => wisetelescope.Park(), CT);
 
-                    do
+                    Task parkerTask = Task.Run(() => {
+                        try
+                        {
+                            wisetelescope.Action("telescope:force-park", "");
+                        }
+                        catch (Exception ex)
+                        {
+                            Log(string.Format("Exception: {0}", ex.Message));
+                        }
+                    }, CT);
+
+                do
                     {
                         if (CT.IsCancellationRequested)
                         {
@@ -501,9 +512,11 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                         ra = Angle.FromDegrees(wisetelescope.RightAscension, Angle.Type.RA);
                         dec = Angle.FromDegrees(wisetelescope.Declination, Angle.Type.Dec);
                         az = Angle.FromDegrees(wisedome.Azimuth, Angle.Type.Az);
-                        Log(string.Format("    Telescope at {0}, {1} dome at {2}...",
+                        Log(string.Format("    Telescope at {0}, {1} (=> {2}, {3}), dome at {4}...",
                             ra.ToNiceString(),
                             dec.ToNiceString(),
+                            Angle.FromHours(wisetelescope.TargetRightAscension, Angle.Type.RA),
+                            Angle.FromDegrees(wisetelescope.TargetDeclination, Angle.Type.Dec),
                             az.ToNiceString()),
                             _simulated ? 1 : 10);
                     } while (!wisetelescope.AtPark);

@@ -195,6 +195,10 @@
       <Project>{b76546e7-9832-4d28-b412-b34ca1c6177c}</Project>
       <Name>Common</Name>
     </ProjectReference>
+    <ProjectReference Include="..\ComputerControl\ComputerControl.csproj">
+      <Project>{eef50bc4-becc-430b-9a05-769c80d8d25c}</Project>
+      <Name>ComputerControl</Name>
+    </ProjectReference>
     <ProjectReference Include="..\VantagePro\VantagePro.csproj">
       <Project>{59cc2a31-dec4-4eee-b5c3-efc8771438a7}</Project>
       <Name>VantagePro</Name>

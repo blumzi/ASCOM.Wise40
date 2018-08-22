@@ -76,7 +76,7 @@ namespace ASCOM.Wise40SafeToOperate
         /// </summary>
         public SafetyMonitor()
         {
-            wisesafetooperate = WiseSafeToOperate.InstanceOpen;
+            wisesafetooperate = WiseSafeToOperate.Instance;
             wisesafetooperate.init();
             driverDescription = wisesafetooperate.Description;
         }

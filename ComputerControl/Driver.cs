@@ -173,7 +173,7 @@ namespace ASCOM.Wise40.ComputerControl
             // you need something to ensure that only one command is in progress at a time
 
             if (command == "unsafereasons")
-                return wisesafety.UnsafeReasons();
+                return string.Join(", ", wisesafety.UnsafeReasons());
             else
                 throw new ASCOM.MethodNotImplementedException(string.Format("CommandString \"{0}\" not implemented!", command));
         }

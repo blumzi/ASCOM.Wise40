@@ -41,6 +41,7 @@ namespace ASCOM.Wise40SafeToOperate
         public HumiditySensor humiditySensor;
         public SunSensor sunSensor;
         public HumanInterventionSensor humanInterventionSensor;
+        public WiseComputerControl wisecomputercontrol;
         public List<Sensor> _sensors;
         private bool _bypassed = false;
         
@@ -79,7 +80,7 @@ namespace ASCOM.Wise40SafeToOperate
         object reasonsLock = new object();
         List<string> unsafeReasons = new List<string>();
 
-        public static WiseSafeToOperate InstanceOpen
+        public static WiseSafeToOperate Instance
         {
             get
             {
@@ -123,6 +124,7 @@ namespace ASCOM.Wise40SafeToOperate
             cloudsSensor = new CloudsSensor(this);
             rainSensor = new RainSensor(this);
             humanInterventionSensor = new HumanInterventionSensor(this);
+            wisecomputercontrol = WiseComputerControl.Instance;
             _sensors = new List<Sensor>() {
                 windSensor,
                 cloudsSensor,
@@ -371,7 +373,12 @@ namespace ASCOM.Wise40SafeToOperate
                 lock (reasonsLock)
                 {
                     unsafeReasons.Clear();
-                    if (!humanInterventionSensor.isSafe)
+                    if (!wisecomputercontrol.IsSafe)
+                    {
+                        foreach (string reason in wisecomputercontrol.UnsafeReasons())
+                            AddReason(reason);
+                    }
+                    else if (!humanInterventionSensor.isSafe)
                     {
                         AddReason(humanInterventionSensor.reason());
                     }
@@ -513,10 +520,8 @@ namespace ASCOM.Wise40SafeToOperate
                     debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Failed to convert equ2hor (res: {0})", res);
                     return 0.0;
                 }
-                double elev = 90.0 - zd;
 
-                //return -11.17;
-                return elev;
+                return 90.0 - zd;
             }
         }
 
@@ -529,10 +534,12 @@ namespace ASCOM.Wise40SafeToOperate
 
                 if (!_connected)
                     ret = false;
-                else if (_bypassed)
-                    return true;
+                else if (!wisecomputercontrol.IsSafe)
+                    ret = false;
                 else if (!humanInterventionSensor.isSafe)
                     ret = false;
+                else if (_bypassed)
+                    return true;
                 else
                 {
                     foreach (Sensor s in _sensors)

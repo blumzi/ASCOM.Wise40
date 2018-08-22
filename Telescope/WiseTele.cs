@@ -6,6 +6,7 @@ using ASCOM.Astrometry;
 using ASCOM.Astrometry.NOVAS;
 using ASCOM.Wise40.Common;
 using ASCOM.Wise40.Hardware;
+using ASCOM.Wise40SafeToOperate;
 using ASCOM.DeviceInterface;
 
 using MccDaq;
@@ -259,7 +260,7 @@ namespace ASCOM.Wise40
         public bool _calculateRefraction = false;
         private string minimalDomeTrackingMovementProfileName = "Minimal Dome Tracking Movement";
 
-        private static WiseComputerControl wisecomputercontrol = WiseComputerControl.Instance;
+        private static WiseSafeToOperate wisesafetooperate = WiseSafeToOperate.Instance;
 
         public static string RateName(double rate)
         {
@@ -494,7 +495,7 @@ namespace ASCOM.Wise40
             astroutils = new Astrometry.AstroUtils.AstroUtils();
             hardware.init();
             wisesite.init();
-            wisecomputercontrol.init();
+            wisesafetooperate.init();
 
             _trackingRestorer = new TrackingRestorer();
             inactivityMonitor = new InactivityMonitor();
@@ -941,8 +942,8 @@ namespace ASCOM.Wise40
 
                 if (value)
                 {
-                    if (!wisecomputercontrol.IsSafe && !BypassCoordinatesSafety)
-                        throw new ASCOM.InvalidOperationException(wisecomputercontrol.UnsafeReasons());
+                    if (!wisesafetooperate.IsSafe && !BypassCoordinatesSafety)
+                        throw new ASCOM.InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasons));
 
                     _lastTrackingLST = wisesite.LocalSiderealTime.Hours;
 
@@ -1174,8 +1175,8 @@ namespace ASCOM.Wise40
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, string.Format("MoveAxis({0}, {1})", Axis, Rate));
             #endregion debug
 
-            if (!wisecomputercontrol.IsSafe && !BypassCoordinatesSafety)
-                throw new ASCOM.InvalidOperationException(wisecomputercontrol.UnsafeReasons());
+            if (!wisesafetooperate.IsSafe && !BypassCoordinatesSafety)
+                throw new ASCOM.InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasons));
 
             Const.AxisDirection direction = (Rate == Const.rateStopped) ? Const.AxisDirection.None :
                 (Rate < 0.0) ? Const.AxisDirection.Decreasing : Const.AxisDirection.Increasing;
@@ -1246,8 +1247,8 @@ namespace ASCOM.Wise40
                 throw new InvalidValueException("Cannot MoveAxis while AtPark");
             }
 
-            if (!wisecomputercontrol.IsSafe)
-                throw new InvalidOperationException(wisecomputercontrol.UnsafeReasons());
+            if (!wisesafetooperate.IsSafe)
+                throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasons));
 
             TelescopeAxes _otherAxis = otherAxis[thisAxis];
 
@@ -1376,8 +1377,8 @@ namespace ASCOM.Wise40
             if (notSafe != string.Empty)
                 throw new InvalidOperationException(notSafe);
 
-            if (!wisecomputercontrol.IsSafe)
-                throw new InvalidOperationException(wisecomputercontrol.UnsafeReasons());
+            if (!wisesafetooperate.IsSafe)
+                throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasons));
             
             _doSlewToCoordinatesAsync(_targetRightAscension, _targetDeclination);
         }
@@ -1558,6 +1559,32 @@ namespace ASCOM.Wise40
             }
         }
 
+        public void ForcePark()
+        {
+            string status = wisesafetooperate.Action("status", "");
+            bool cancelSafetyBypass = false;
+
+            if (status.Contains("not-bypassed"))
+            {
+                cancelSafetyBypass = true;
+                wisesafetooperate.Action("startbypass", "");
+            }
+
+            try
+            {
+                inactivityMonitor.StartActivity(InactivityMonitor.Activity.ShuttingDown);
+                Park();
+                inactivityMonitor.EndActivity(InactivityMonitor.Activity.ShuttingDown);
+            } finally
+            {
+                if (cancelSafetyBypass)
+                    wisesafetooperate.Action("endbypass", "");
+            }
+
+            if (cancelSafetyBypass)
+                wisesafetooperate.Action("endbypass", "");
+        }
+
         //
         // This is the Synchronous version, as mandated by ASCOM
         //
@@ -1577,6 +1604,7 @@ namespace ASCOM.Wise40
 
             bool wasEnslavingDome = _enslaveDome;
             _parking = true;
+            inactivityMonitor.StartActivity(InactivityMonitor.Activity.Parking);
             if (wasEnslavingDome)
             {
                 _enslaveDome = false;
@@ -1594,6 +1622,7 @@ namespace ASCOM.Wise40
             AtPark = true;
             Tracking = false;
             _parking = false;
+            inactivityMonitor.EndActivity(InactivityMonitor.Activity.Parking);
             _enslaveDome = wasEnslavingDome;
         }
 
@@ -1988,7 +2017,6 @@ namespace ASCOM.Wise40
             // Check coordinates safety ???
 
             slewers.Clear();
-            //slewingArbiter.Reset();
             readyToSlewFlags.Reset();
             inactivityMonitor.StartActivity(InactivityMonitor.Activity.Slewing);
             try
@@ -2081,8 +2109,8 @@ namespace ASCOM.Wise40
                     throw new InvalidOperationException(notSafe);
             }
 
-            if (!wisecomputercontrol.IsSafe)
-                throw new InvalidOperationException(wisecomputercontrol.UnsafeReasons());
+            if (!wisesafetooperate.IsSafe)
+                throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasons));
 
             try
             {
@@ -2127,8 +2155,8 @@ namespace ASCOM.Wise40
                     throw new InvalidOperationException(notSafe);
             }
 
-            if (!wisecomputercontrol.IsSafe)
-                throw new InvalidOperationException(wisecomputercontrol.UnsafeReasons());
+            if (!inactivityMonitor.Active(InactivityMonitor.Activity.ShuttingDown) && !wisesafetooperate.IsSafe)
+                throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasons));
 
             try
             {
@@ -2402,8 +2430,8 @@ namespace ASCOM.Wise40
             if (notSafe != string.Empty)
                 throw new InvalidOperationException(notSafe);
 
-            if (!wisecomputercontrol.IsSafe)
-                throw new InvalidOperationException(wisecomputercontrol.UnsafeReasons());
+            if (!wisesafetooperate.IsSafe)
+                throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasons));
 
             SlewToCoordinates(_instance.TargetRightAscension, _instance.TargetDeclination); // sync
         }
@@ -2854,6 +2882,7 @@ namespace ASCOM.Wise40
         private ArrayList supportedActions = new ArrayList() {
             "dome:enslaved",
             "telescope:get-active",
+            "telescope:get-activities",
             "telescope:set-active",
             "site:get-opmode",
             "site:set-opmode",
@@ -2878,9 +2907,16 @@ namespace ASCOM.Wise40
                 return _enslaveDome.ToString();
             else if (action == "telescope:get-active")
                 return inactivityMonitor.ObservatoryIsActive().ToString();
+            else if (action == "telescope:get-activities")
+                return inactivityMonitor.ObservatoryActivities;
             else if (action == "telescope:set-active")
             {
                 inactivityMonitor.Start("action telescope:set-active");
+                return "ok";
+            }
+            else if (action == "telescope:force-park")  // this is a hidden action, not listed in SupportedActions
+            {
+                ForcePark();
                 return "ok";
             }
             else if (action == "site:get-opmode")
@@ -2890,6 +2926,7 @@ namespace ASCOM.Wise40
                 WiseSite.OpMode mode;
                 Enum.TryParse(parameter.ToUpper(), out mode);
                 wisesite.OperationalMode = mode;
+                return "ok";
             }
 
             throw new ASCOM.ActionNotImplementedException("Action \"" + action + "\" is not implemented by this driver");

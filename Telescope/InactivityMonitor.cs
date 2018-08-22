@@ -32,6 +32,8 @@ namespace ASCOM.Wise40
             Dome = (1 << 3),
             Handpad = (1 << 4),
             GoingIdle = (1 << 5),
+            Parking = (1 << 6),
+            ShuttingDown = (1 << 7),
         };
         private Activity _activities = Activity.None;
 
@@ -73,6 +75,11 @@ namespace ASCOM.Wise40
             #endregion
             if (_activities == Activity.None)
                 Start("No activities");
+        }
+
+        public bool Active(Activity a)
+        {
+            return (_activities & a) != 0;
         }
 
         public void Stop()
@@ -132,6 +139,31 @@ namespace ASCOM.Wise40
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "ObservatoryIsActive: {0}", _activities.ToString());
             #endregion
             return _activities != Activity.None;
+        }
+
+        public string ObservatoryActivities
+        {
+            get
+            {
+                if (_activities == Activity.None)
+                    return string.Empty;
+
+                List<string> ret = new List<string>();
+                if (Active(Activity.Tracking))
+                    ret.Add("Tracking");
+                if (Active(Activity.Slewing))
+                    ret.Add("Slewing");
+                if (Active(Activity.Pulsing))
+                    ret.Add("Pulsing");
+                if (Active(Activity.Parking))
+                    ret.Add("Parking");
+                if (Active(Activity.Handpad))
+                    ret.Add("Handpad");
+                if (Active(Activity.GoingIdle))
+                    ret.Add("GoingIdle");
+
+                return string.Join(", ", ret);
+            }
         }
     }
 }

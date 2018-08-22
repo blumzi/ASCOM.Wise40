@@ -74,7 +74,7 @@
             this.aboutToolStripMenuItem});
             this.menuStrip.Location = new System.Drawing.Point(0, 0);
             this.menuStrip.Name = "menuStrip";
-            this.menuStrip.Size = new System.Drawing.Size(567, 24);
+            this.menuStrip.Size = new System.Drawing.Size(600, 24);
             this.menuStrip.TabIndex = 0;
             this.menuStrip.Text = "menuStrip1";
             // 
@@ -169,7 +169,7 @@
             this.listBoxLog.Name = "listBoxLog";
             this.listBoxLog.ScrollAlwaysVisible = true;
             this.listBoxLog.SelectionMode = System.Windows.Forms.SelectionMode.None;
-            this.listBoxLog.Size = new System.Drawing.Size(567, 484);
+            this.listBoxLog.Size = new System.Drawing.Size(600, 484);
             this.listBoxLog.TabIndex = 40;
             // 
             // labelDate
@@ -192,7 +192,7 @@
             this.buttonShutdown.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.buttonShutdown.Location = new System.Drawing.Point(440, 136);
             this.buttonShutdown.Name = "buttonShutdown";
-            this.buttonShutdown.Size = new System.Drawing.Size(88, 88);
+            this.buttonShutdown.Size = new System.Drawing.Size(121, 88);
             this.buttonShutdown.TabIndex = 54;
             this.buttonShutdown.Text = "Shutdown Now";
             this.toolTip.SetToolTip(this.buttonShutdown, "Stop activities\r\nPark the telescope\r\nPark the dome and close the shutter");
@@ -405,7 +405,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.ClientSize = new System.Drawing.Size(567, 726);
+            this.ClientSize = new System.Drawing.Size(600, 726);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.labelOperatingMode);
             this.Controls.Add(this.label2);

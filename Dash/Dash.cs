@@ -31,7 +31,7 @@ namespace Dash
         public WiseFocuser wisefocuser = WiseFocuser.Instance;
         Hardware hardware = Hardware.Instance;
         public WiseSite wisesite = WiseSite.Instance;
-        public WiseSafeToOperate wisesafetooperate = WiseSafeToOperate.InstanceOpen;
+        public WiseSafeToOperate wisesafetooperate = WiseSafeToOperate.Instance;
         public WiseFilterWheel wisefilterwheel = WiseFilterWheel.Instance;
         public WiseDomePlatform wisedomeplatform = WiseDomePlatform.Instance;
         WiseObject wiseobject = new WiseObject();
@@ -473,6 +473,7 @@ namespace Dash
                     labelRainRateValue,
                     labelWindSpeedValue,
                     labelWindDirValue,
+                    labelSunElevationValue,
                 };
 
                 foreach (var label in labels)
@@ -507,16 +508,12 @@ namespace Dash
 
                     labelRainRateValue.Text = (oc.RainRate > 0.0) ? "Wet" : "Dry";
                     labelRainRateValue.ForeColor = Statuser.TriStateColor(wisesafetooperate.isSafeRain);
+
+                    labelSunElevationValue.Text = wisesafetooperate.SunElevation.ToString("f1") + "°";
+                    labelSunElevationValue.ForeColor = Statuser.TriStateColor(wisesafetooperate.isSafeSunElevation);
                     #endregion
 
-                    //#region Forecast from VantagePro
-                    //if (wisesafetooperate._vantageProIsValid)
-                    //    dashStatus.Show("Forecast: " + wisevantagepro.Forecast, 0, Statuser.Severity.Normal);
-                    //else
-                    //    dashStatus.Show("No forecast: bad connection to VantagePro", 0, Statuser.Severity.Warning);
-                    //#endregion
-
-                    #region SafeToOpen
+                    #region SafeToOperate
                     if (wisesafetooperate.IsSafe)
                     {
                         Statuser.Severity severity = Statuser.Severity.Good;
