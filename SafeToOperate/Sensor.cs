@@ -19,7 +19,6 @@ namespace ASCOM.Wise40SafeToOperate
         public int _interval;      // millis
         public int _repeats;
         protected FixedSizedQueue<bool> _isSafeQueue;
-        private bool _lastReading;
         private bool _running = false;
         protected string _maxValueProfileName;
         protected static Debugger debugger = Debugger.Instance;
