@@ -515,6 +515,7 @@ namespace ASCOM.Wise40SafeToOperate
                 }
                 double elev = 90.0 - zd;
 
+                //return -11.17;
                 return elev;
             }
         }
