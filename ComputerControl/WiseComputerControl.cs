@@ -52,7 +52,23 @@ namespace ASCOM.Wise40
                 if (Simulated)
                     return true;
                 else
-                    return computerControlPin.isOn && wisedomeplatform.IsSafe;
+                    return !Maintenance && PlatformIsDown;
+            }
+        }
+
+        public bool Maintenance
+        {
+            get
+            {
+                return !computerControlPin.isOn;
+            }
+        }
+
+        public bool PlatformIsDown
+        {
+            get
+            {
+                return wisedomeplatform.IsSafe;
             }
         }
 

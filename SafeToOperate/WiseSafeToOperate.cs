@@ -216,6 +216,8 @@ namespace ASCOM.Wise40SafeToOperate
                         (isReady) ? "ready" : "not-ready",
                         (IsSafe) ? "safe" : "not-safe",
                         (_bypassed) ? "bypassed" : "not-bypassed",
+                        wisecomputercontrol.Maintenance ? "computer-control-off" : "computer-control-on",
+                        wisecomputercontrol.PlatformIsDown ? "platform-down" : "platform-raised",
                     };
                     ret = string.Join(",", stat);
                     break;
