@@ -1373,12 +1373,12 @@ namespace ASCOM.Wise40
             if (!Tracking)
                 throw new InvalidOperationException("Cannot SlewToTargetAsync while NOT Tracking");
 
+            if (!wisesafetooperate.IsSafe)
+                throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasons));
+
             string notSafe = SafeAtCoordinates(ra, dec);
             if (notSafe != string.Empty)
                 throw new InvalidOperationException(notSafe);
-
-            if (!wisesafetooperate.IsSafe)
-                throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasons));
             
             _doSlewToCoordinatesAsync(_targetRightAscension, _targetDeclination);
         }
@@ -2102,15 +2102,15 @@ namespace ASCOM.Wise40
             if (!Tracking)
                 throw new InvalidOperationException("Cannot SlewToCoordinates while NOT Tracking");
 
+            if (!wisesafetooperate.IsSafe)
+                throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasons));
+
             if (!noSafetyCheck)
             {
                 string notSafe = SafeAtCoordinates(ra, dec);
                 if (notSafe != string.Empty)
                     throw new InvalidOperationException(notSafe);
             }
-
-            if (!wisesafetooperate.IsSafe)
-                throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasons));
 
             try
             {
@@ -2426,12 +2426,12 @@ namespace ASCOM.Wise40
             if (!Tracking)
                 throw new InvalidOperationException("Cannot SlewToCoordinates while NOT Tracking");
 
+            if (!wisesafetooperate.IsSafe)
+                throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasons));
+
             string notSafe = SafeAtCoordinates(ra, dec);
             if (notSafe != string.Empty)
                 throw new InvalidOperationException(notSafe);
-
-            if (!wisesafetooperate.IsSafe)
-                throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasons));
 
             SlewToCoordinates(_instance.TargetRightAscension, _instance.TargetDeclination); // sync
         }

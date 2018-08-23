@@ -723,8 +723,8 @@ namespace ASCOM.Wise40
                 throw new ASCOM.InvalidOperationException("Cannot move, shutter is active!");
             }
 
-            if (wisesite.computerControl != null && !wisesite.computerControl.IsSafe)
-                throw new ASCOM.InvalidOperationException("Computer control is OFF!");
+            if (wisesite.safeToOperate != null && !wisesite.safeToOperate.IsSafe)
+                throw new ASCOM.InvalidOperationException(wisesite.safeToOperate.Action("unsafereasons", ""));
 
             AtPark = false;
 
@@ -780,8 +780,8 @@ namespace ASCOM.Wise40
                 throw new ASCOM.InvalidOperationException("Cannot move, shutter is active!");
             }
 
-            if (wisesite.computerControl != null && !wisesite.computerControl.IsSafe)
-                throw new ASCOM.InvalidOperationException("Wise40 computer control is OFF!");
+            if (wisesite.safeToOperate != null && !wisesite.safeToOperate.IsSafe)
+                throw new ASCOM.InvalidOperationException(wisesite.safeToOperate.Action("unsafereasons", ""));
 
             Angle toAng = new Angle(degrees, Angle.Type.Az);
 
