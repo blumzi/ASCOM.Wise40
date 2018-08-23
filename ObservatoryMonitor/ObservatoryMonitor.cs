@@ -190,12 +190,12 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 _telescopeEnslavesDome = Convert.ToBoolean(wisetelescope.Action("dome:enslaved", string.Empty));
 
                 safeToOperateStatus = wisesafetooperate.Action("status", string.Empty);
-                ready = safeToOperateStatus.Contains("not-ready") ? false : true;
-                bypassed = safeToOperateStatus.Contains("not-bypassed") ? false : true;
+                ready = safeToOperateStatus.Contains("ready:false") ? false : true;
+                bypassed = safeToOperateStatus.Contains("bypassed:false") ? false : true;
                 UpdateConditionsBypassToolStripMenuItem(bypassed);
 
                 if (ready)
-                    safe = safeToOperateStatus.Contains("not-safe") ? false : true;
+                    safe = safeToOperateStatus.Contains("safe:false") ? false : true;
                 if (bypassed)
                     safe = true;
 
@@ -309,9 +309,9 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 return;
             }
 
-            bool bypassed = safety.Contains("not-bypassed") ? false : true;
-            bool ready = safety.Contains("not-ready") ? false : true;
-            bool safe = safety.Contains("not-safe") ? false : true;
+            bool bypassed = safety.Contains("bypassed:false") ? false : true;
+            bool ready = safety.Contains("ready:false") ? false : true;
+            bool safe = safety.Contains("safe:false") ? false : true;
             bool intervention = HumanIntervention.IsSet();
             string text = string.Empty, tip = string.Empty;
             Color color = normalColor;
@@ -726,7 +726,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 return;
 
             safeToOperateStatus = wisesafetooperate.Action("status", string.Empty);
-            bool currentlyBypassed = safeToOperateStatus.Contains("not-bypassed") ? false : true;
+            bool currentlyBypassed = safeToOperateStatus.Contains("bypassed:false") ? false : true;
 
             wisesafetooperate.Action(currentlyBypassed ? "endbypass" : "startbypass", string.Empty);
         }

@@ -259,7 +259,7 @@ namespace ASCOM.Wise40SafeToOperate
                 if (!Enabled)
                     return true;
 
-                if (Name == "HumanIntervention")
+                if (Name == "HumanIntervention" || Name == "Sun")   // One-shots
                     return getIsSafe();
 
                 if (isStabilizing)

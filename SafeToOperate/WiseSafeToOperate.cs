@@ -62,7 +62,7 @@ namespace ASCOM.Wise40SafeToOperate
         
         private static object syncObject = new object();
 
-        private static volatile WiseSafeToOperate _instanceOpen;
+        private static volatile WiseSafeToOperate _instance;
         private static bool initialized = false;
         
         public TimeSpan _stabilizationPeriod;
@@ -84,16 +84,16 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
-                if (_instanceOpen == null)
+                if (_instance == null)
                 {
                     lock(syncObject)
                     {
-                        if (_instanceOpen == null)
-                            _instanceOpen = new WiseSafeToOperate();
+                        if (_instance == null)
+                            _instance = new WiseSafeToOperate();
                     }
                 }
-                _instanceOpen.init();
-                return _instanceOpen;
+                _instance.init();
+                return _instance;
             }
         }
 
@@ -212,6 +212,8 @@ namespace ASCOM.Wise40SafeToOperate
                     break;
 
                 case "status":
+                    _bypassed = Convert.ToBoolean(_profile.GetValue(driverID, bypassedProfileName, string.Empty, false.ToString()));
+
                     List<string> stat = new List<string>() {
                         "ready:" + isReady.ToString().ToLower(),
                         "safe:" + IsSafe.ToString().ToLower(),
@@ -390,6 +392,10 @@ namespace ASCOM.Wise40SafeToOperate
                         foreach (Sensor s in _sensors)
                             if (!s.isSafe && (reason = s.reason()) != string.Empty)
                                 AddReason(reason);
+
+                        double elev = SunElevation, maxElevation = Convert.ToDouble(sunSensor.MaxAsString);
+                        if (elev > maxElevation)
+                            AddReason(string.Format("Sun elevation ({0:f1}deg) is higher than {1:f1}deg.", elev, maxElevation));
                     }
                 }
                 return unsafeReasons;
@@ -480,7 +486,9 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
-                return sunSensor.isSafe ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
+                double max = Convert.ToDouble(sunSensor.MaxAsString);
+
+                return SunElevation <=  max ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
             }
         }
         #endregion
@@ -556,6 +564,9 @@ namespace ASCOM.Wise40SafeToOperate
                             break;
                         }
                     }
+
+                    if (SunElevation > Convert.ToDouble(sunSensor.MaxAsString))
+                        ret = false;
                 }
 
                 tl.LogMessage("IsSafe Get", ret.ToString());

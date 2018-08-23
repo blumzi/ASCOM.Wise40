@@ -1564,7 +1564,7 @@ namespace ASCOM.Wise40
             string status = wisesafetooperate.Action("status", "");
             bool cancelSafetyBypass = false;
 
-            if (status.Contains("not-bypassed"))
+            if (status.Contains("bypassed:false"))
             {
                 cancelSafetyBypass = true;
                 wisesafetooperate.Action("startbypass", "");

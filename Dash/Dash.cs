@@ -88,7 +88,7 @@ namespace Dash
             //wisefilterwheel.init();
             //wisefilterwheel.Connected = true;
             wisedomeplatform.init();
-            _bypassSafety = wisesafetooperate.Action("status", "").Contains("not-bypassed") ? false : true;
+            _bypassSafety = wisesafetooperate.Action("status", "").Contains("bypassed:false") ? false : true;
 
             InitializeComponent();
 
@@ -378,7 +378,7 @@ namespace Dash
             else
             {
                 string status = wisesafetooperate.Action("status", string.Empty);
-                bool bypassed = !status.Contains("not-bypassed");
+                bool bypassed = status.Contains("bypassed:true");
 
                 if (bypassed)
                 {

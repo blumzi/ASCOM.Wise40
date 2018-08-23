@@ -1372,7 +1372,6 @@ namespace ASCOM.Wise40
 
         #region Profile
         internal static string autoCalibrateProfileName = "AutoCalibrate";
-        internal static string bypassSafetyProfileName = "BypassSafety";
         internal static string syncVentWithShutterProfileName = "SyncVentWithShutter";
 
         /// <summary>
