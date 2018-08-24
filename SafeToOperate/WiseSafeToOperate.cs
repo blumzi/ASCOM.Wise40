@@ -215,11 +215,12 @@ namespace ASCOM.Wise40SafeToOperate
                     _bypassed = Convert.ToBoolean(_profile.GetValue(driverID, bypassedProfileName, string.Empty, false.ToString()));
 
                     List<string> stat = new List<string>() {
-                        "ready:" + isReady.ToString().ToLower(),
-                        "safe:" + IsSafe.ToString().ToLower(),
-                        "bypassed:" + _bypassed.ToString().ToLower(),
                         "computer-control:" + (!wisecomputercontrol.Maintenance).ToString().ToLower(),
                         "platform-lowered:" + wisecomputercontrol.PlatformIsDown.ToString().ToLower(),
+                        "human-intervention:" + humanInterventionSensor.isSafe.ToString().ToLower(),
+                        "bypassed:" + _bypassed.ToString().ToLower(),
+                        "ready:" + isReady.ToString().ToLower(),
+                        "safe:" + IsSafe.ToString().ToLower(),
                     };
                     ret = string.Join(",", stat);
                     break;
@@ -582,6 +583,9 @@ namespace ASCOM.Wise40SafeToOperate
             {
                 foreach (Sensor s in _sensors)
                 {
+                    if (s.Name == "Sun")
+                        continue;
+
                     if (s.nReadings < s._repeats)
                         return false;
                 }
