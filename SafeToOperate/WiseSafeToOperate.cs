@@ -77,9 +77,6 @@ namespace ASCOM.Wise40SafeToOperate
         public Astrometry.RefractionOption refractionOption = Astrometry.RefractionOption.NoRefraction;
         Object3 Sun = new Object3();
 
-        object reasonsLock = new object();
-        List<string> unsafeReasons = new List<string>();
-
         public static WiseSafeToOperate Instance
         {
             get
@@ -108,10 +105,10 @@ namespace ASCOM.Wise40SafeToOperate
 
             och = new ObservingConditions("ASCOM.OCH.ObservingConditions");
             if (tl == null)
-                tl = new TraceLogger("", "Wise40.SafeToOpen");
-            name = "Wise40 SafeToOpen";
+                tl = new TraceLogger("", "Wise40.SafeToOperate");
+            name = "Wise40 SafeToOperate";
             driverID = Const.wiseSafeToOperateDriverID;
-            driverDescription = string.Format("ASCOM Wise40.SafeToOpen v{0}", version.ToString());
+            driverDescription = string.Format("ASCOM Wise40.SafeToOperate v{0}", version.ToString());
 
             if (_profile == null)
             {
@@ -352,7 +349,7 @@ namespace ASCOM.Wise40SafeToOperate
             get
             {
                 if (tl == null)
-                    tl = new TraceLogger("", "Wise40.SafeToOpen");
+                    tl = new TraceLogger("", "Wise40.SafeToOperate");
                 tl.LogMessage("InterfaceVersion Get", "1");
                 return Convert.ToInt16("1");
             }
@@ -363,7 +360,7 @@ namespace ASCOM.Wise40SafeToOperate
             get
             {
                 if (tl == null)
-                    tl = new TraceLogger("", "Wise40.SafeToOpen");
+                    tl = new TraceLogger("", "Wise40.SafeToOperate");
                 tl.LogMessage("Name Get", name);
                 return name;
             }
@@ -375,38 +372,38 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
-                lock (reasonsLock)
+                List<string> reasons = new List<string>();
+
+                if (!wisecomputercontrol.IsSafe)
                 {
-                    unsafeReasons.Clear();
-                    if (!wisecomputercontrol.IsSafe)
-                    {
-                        foreach (string reason in wisecomputercontrol.UnsafeReasons())
-                            AddReason(reason);
-                    }
-                    else if (!humanInterventionSensor.isSafe)
-                    {
-                        AddReason(humanInterventionSensor.reason());
-                    }
-                    else
-                    {
-                        string reason;
-                        foreach (Sensor s in _sensors)
-                            if (!s.isSafe && (reason = s.reason()) != string.Empty)
-                                AddReason(reason);
-
-                        double elev = SunElevation, maxElevation = Convert.ToDouble(sunSensor.MaxAsString);
-                        if (elev > maxElevation)
-                            AddReason(string.Format("Sun elevation ({0:f1}deg) is higher than {1:f1}deg.", elev, maxElevation));
-                    }
+                    foreach (string reason in wisecomputercontrol.UnsafeReasons())
+                        reasons.Add(reason);
                 }
-                return unsafeReasons;
-            }
-        }
+                else if (!humanInterventionSensor.isSafe)
+                {
+                    reasons.Add(humanInterventionSensor.reason());
+                }
+                else
+                {
+                    string reason;
+                    foreach (Sensor s in _sensors)
+                    {
+                        if (s.Name == "Sun")
+                            continue;
+                        if (s.nReadings < s._repeats)
+                        {
+                            reasons.Add(string.Format("{0} - not enough readings ({1} < {2})", s.Name, s.nReadings, s._repeats));
+                        }
+                        else if (!s.isSafe && (reason = s.reason()) != string.Empty)
+                            reasons.Add(reason);
+                    }
 
-        void AddReason(string reason)
-        {
-            if (unsafeReasons != null)
-                unsafeReasons.Add(reason);
+                    double elev = SunElevation, maxElevation = Convert.ToDouble(sunSensor.MaxAsString);
+                    if (elev > maxElevation)
+                        reasons.Add(string.Format("Sun elevation ({0:f1}deg) is higher than {1:f1}deg.", elev, maxElevation));
+                }
+                return reasons;
+            }
         }
 
         #region Individual Property Implementations
@@ -416,10 +413,11 @@ namespace ASCOM.Wise40SafeToOperate
         {
             Const.TriStateStatus status = Const.TriStateStatus.Good;
             string ret = "unknown";
+            string msg = string.Empty;
 
-            lock (reasonsLock)
+            //lock (reasonsLock)
             {
-                unsafeReasons.Clear();
+                //unsafeReasons.Clear();
                 switch (command.ToLower())
                 {
                     case "humidity": status = isSafeHumidity; break;
@@ -429,7 +427,8 @@ namespace ASCOM.Wise40SafeToOperate
                     case "rain": status = isSafeRain; break;
                     default:
                         status = Const.TriStateStatus.Error;
-                        unsafeReasons.Add(string.Format("invalid command \"{0}\"", command));
+                        //unsafeReasons.Add(string.Format("invalid command \"{0}\"", command));
+                        msg = string.Format("invalid command \"{0}\"", command);
                         break;
                 }
             }
@@ -440,9 +439,9 @@ namespace ASCOM.Wise40SafeToOperate
                 case Const.TriStateStatus.Good:
                     return "ok";
                 case Const.TriStateStatus.Error:
-                    return "error: " + unsafeReasons[0];
+                    return "error: " + msg;
                 case Const.TriStateStatus.Warning:
-                    return "warning: " + unsafeReasons[0];
+                    return "warning: " + msg;
             }
 
             return ret;
@@ -513,7 +512,7 @@ namespace ASCOM.Wise40SafeToOperate
 
                 if (res != 0)
                 {
-                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Failed to get LocalPlanet for the Sun (res: {0})", res);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Failed to get LocalPlanet for the Sun (res: {0})", res);
                     return 0.0;
                 }
 
@@ -528,7 +527,7 @@ namespace ASCOM.Wise40SafeToOperate
 
                 if (res != 0)
                 {
-                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Failed to convert equ2hor (res: {0})", res);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Failed to convert equ2hor (res: {0})", res);
                     return 0.0;
                 }
 
@@ -555,10 +554,6 @@ namespace ASCOM.Wise40SafeToOperate
                 {
                     foreach (Sensor s in _sensors)
                     {
-                        if (s.nReadings < s._repeats)
-                        {
-                            AddReason(string.Format("{0} - not enough readings ({1} < {2})", s.Name, s.nReadings, s._repeats));
-                        }
                         if (!s.isSafe)
                         {
                             ret = false;
