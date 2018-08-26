@@ -15,6 +15,8 @@ using MccDaq;
 using PID;
 #endif
 
+using ASCOM.Wise40SafeToOperate;
+
 namespace ASCOM.Wise40 //.Focuser
 {
     public class WiseFocuser : WiseObject, IDisposable, IConnectable
@@ -32,6 +34,8 @@ namespace ASCOM.Wise40 //.Focuser
 
         private WisePin pinUp, pinDown;
         private WiseFocuserEnc encoder;
+
+        private WiseSafeToOperate safetooperate = WiseSafeToOperate.Instance;
 
         public enum Direction { None, Up, Down, AllUp, AllDown };
         public class MotionParameter
@@ -232,9 +236,9 @@ namespace ASCOM.Wise40 //.Focuser
             get
             {
                 uint pos = encoder.Value;
-#region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "WiseFocuser: position: {0}", pos);
-#endregion
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, "WiseFocuser: position: {0}", pos);
+                #endregion
                 return pos;
             }
         }
@@ -287,11 +291,10 @@ namespace ASCOM.Wise40 //.Focuser
                 _endStopping = first;
                 _travel = (_endStopping > _start) ? _endStopping - _start : _start - _endStopping;
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseFocuser:FullyStopped: _target: {0}, _start: {1}, _startStopping: {2}, _endStopping: {3}, _travel: {4}",
+                debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, "WiseFocuser:FullyStopped: _target: {0}, _start: {1}, _startStopping: {2}, _endStopping: {3}, _travel: {4}",
                     _targetPos, _start, _startStopping, _endStopping, _travel);
                 #endregion
                 _movingToTarget = false;
-                //_targetPos = 0;
                 _status = FocuserStatus.Idle;
                 if (_needUpwardCompensation)
                 {
@@ -313,12 +316,12 @@ namespace ASCOM.Wise40 //.Focuser
             _status = FocuserStatus.Stopping;
 
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseFocuser:Stop Started stopping at {0} ...", _startStopping);
+            debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, "WiseFocuser:Stop Started stopping at {0} ...", _startStopping);
             #endregion
             while (!FullyStopped)
                 Thread.Sleep(100);
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseFocuser:Stop Stopped at {0} ...", Position);
+            debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, "WiseFocuser:Stop Stopped at {0} ...", Position);
             #endregion
         }
 
@@ -330,7 +333,7 @@ namespace ASCOM.Wise40 //.Focuser
             if (!Connected)
                 throw new NotConnectedException("");
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseFocuser: Halt");
+            debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, "WiseFocuser: Halt");
             #endregion
             Stop();
         }
@@ -345,6 +348,9 @@ namespace ASCOM.Wise40 //.Focuser
                 bool ret = pinUp.isOn || pinDown.isOn || !FullyStopped;
                 #region trace
                 //tl.LogMessage("Halt", ret.ToString());
+                #endregion
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, "WiseFocuser: IsMoving: {0}", ret);
                 #endregion
                 return ret;
             }
@@ -392,9 +398,12 @@ namespace ASCOM.Wise40 //.Focuser
 
         public void Move(Direction dir)
         {
+            if (!safetooperate.IsSafe)
+                throw new InvalidOperationException("Not safe: " + string.Join(", ", safetooperate.UnsafeReasons));
+
             _start = Position;
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseFocuser: Starting Move({0}) at {1}",
+            debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, "WiseFocuser: Starting Move({0}) at {1}",
                 dir.ToString(), _start);
             #endregion
             _movingToTarget = false;
@@ -437,7 +446,7 @@ namespace ASCOM.Wise40 //.Focuser
             }
         }
 
-        public void Move(uint toPos)
+        public void Move(uint targetPos)
         {
             #region trace
             //tl.LogMessage("Move", Position.ToString());
@@ -445,21 +454,34 @@ namespace ASCOM.Wise40 //.Focuser
             if (!Connected)
                 throw new NotConnectedException("Not connected!");
 
+            if (!safetooperate.IsSafe)
+                throw new InvalidOperationException("Not safe: " + string.Join(", ", safetooperate.UnsafeReasons));
+
             if (TempComp)
                 throw new InvalidOperationException("Cannot Move while TempComp == true");
 
-            if (toPos > encoder.UpperLimit || toPos < encoder.LowerLimit)
+            if (targetPos > encoder.UpperLimit || targetPos < encoder.LowerLimit)
                 throw new DriverException(string.Format("Can only move between {0} and {1}!", encoder.LowerLimit, encoder.UpperLimit));
 
             uint currentPos = Position;
 
-            if (currentPos == toPos)
+            if (currentPos == targetPos)
+            {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, "WiseFocuser: Move({0}) - target same as current, not moving", targetPos);
+                #endregion
                 return;
+            }
 
-            _targetPos = toPos;
+            _start = currentPos;
+            _realTarget = targetPos;
+            _targetPos = targetPos;
             _movingToTarget = true;
             if (_targetPos > currentPos)
             {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, "WiseFocuser: Move({0}) - at {1} starting moving up", targetPos, currentPos);
+                #endregion
                 _status = FocuserStatus.MovingUp;
                 pinUp.SetOn();
                 if (Simulated)
@@ -471,12 +493,15 @@ namespace ASCOM.Wise40 //.Focuser
                 _targetPos -= _upwardCompensation;
                 _needUpwardCompensation = true;
                 _status = FocuserStatus.MovingDown;
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, "WiseFocuser: Move({0}) - at {1} starting moving down (compensation: {2})", targetPos, currentPos, _upwardCompensation);
+                #endregion
                 pinDown.SetOn();
                 if (Simulated)
                     encoder.startMoving(Const.Direction.Decreasing);
             }                
 
-            movementMonitoringTimer.Change(movementMonitoringTimeout, movementMonitoringTimeout);
+            movementMonitoringTimer.Change(0, movementMonitoringTimeout);
 
         }
 
@@ -575,7 +600,7 @@ namespace ASCOM.Wise40 //.Focuser
             {
                 short ret = 2;
 
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "InterfaceVersion: tl: #{0}", tl.GetHashCode());
+                debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, "InterfaceVersion: tl: #{0}", tl.GetHashCode());
                 #region trace
                 //WiseFocuser.//tl.LogMessage("InterfaceVersion Get", ret.ToString());
                 #endregion

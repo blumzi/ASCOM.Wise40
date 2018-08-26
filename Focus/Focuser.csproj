@@ -199,6 +199,10 @@
       <Project>{b3400ce2-9b66-4f0c-97fe-26343382ba7b}</Project>
       <Name>Hardware</Name>
     </ProjectReference>
+    <ProjectReference Include="..\SafeToOperate\SafeToOperate.csproj">
+      <Project>{7fa766d4-8f97-4d9f-8f62-f25c84c01ff2}</Project>
+      <Name>SafeToOperate</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
