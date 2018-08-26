@@ -29,7 +29,7 @@ namespace Wise40Watcher
             switch (Name)
             {
                 case "ascom":
-                    ret = "C:\\Program Files (x86)\\ASCOM\\RemoteServer\\ASCOM.RemoteDeviceServer.exe";
+                    ret = Const.wiseASCOMServerPath;
                     break;
 
                 case "dash":                    

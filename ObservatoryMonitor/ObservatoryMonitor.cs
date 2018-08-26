@@ -31,7 +31,6 @@ namespace ASCOM.Wise40.ObservatoryMonitor
         WiseSite wisesite = WiseSite.Instance;
         DriverAccess.Dome wisedome = null;
         SafetyMonitor wisesafetooperate = null;
-        SafetyMonitor wisecomputercontrol = null;
         Version version = new Version(0, 2);
         private bool _shuttingDown = false;
         DateTime _nextCheck = DateTime.MaxValue;
@@ -75,14 +74,6 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 wisesafetooperate.Dispose();
                 wisesafetooperate = null;
             }
-
-            if (wisecomputercontrol != null)
-            {
-                if (wisecomputercontrol.Connected)
-                    wisecomputercontrol.Connected = false;
-                wisecomputercontrol.Dispose();
-                wisecomputercontrol = null;
-            }
         }
 
         public void CheckConnections() {
@@ -90,7 +81,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             try
             {
                 if (wisetelescope == null)
-                    wisetelescope = new Telescope("ASCOM.Web1.Telescope");
+                    wisetelescope = new Telescope("ASCOM.Remote1.Telescope");
                 if (!wisetelescope.Connected)
                 {
                     wisetelescope.Connected = true;
@@ -101,20 +92,8 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                     }
                 }
 
-                if (wisecomputercontrol == null)
-                    wisecomputercontrol = new SafetyMonitor("ASCOM.Web2.SafetyMonitor");    // Must match ASCOM Remote Server Setup
-                if (!wisecomputercontrol.Connected)
-                {
-                    wisecomputercontrol.Connected = true;
-                    while (!wisecomputercontrol.Connected)
-                    {
-                        Log("Waiting for the \"ComputerControl\" client to connect ...", 5);
-                        Application.DoEvents();
-                    }
-                }
-
                 if (wisesafetooperate == null)
-                    wisesafetooperate = new SafetyMonitor("ASCOM.Web1.SafetyMonitor");      // Must match ASCOM Remote Server Setup
+                    wisesafetooperate = new SafetyMonitor("ASCOM.Remote1.SafetyMonitor");      // Must match ASCOM Remote Server Setup
                 if (!wisesafetooperate.Connected)
                 {
                     wisesafetooperate.Connected = true;
@@ -126,7 +105,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 }
 
                 if (wisedome == null)
-                    wisedome = new DriverAccess.Dome("ASCOM.Web1.Dome");
+                    wisedome = new DriverAccess.Dome("ASCOM.Remote1.Dome");
                 if (!wisedome.Connected)
                 {
                     wisedome.Connected = true;
@@ -174,10 +153,10 @@ namespace ASCOM.Wise40.ObservatoryMonitor
         {
             bool active = true, inControl = false, ready = false, safe = true, bypassed = false;
 
-            Process[] ascomServer = Process.GetProcessesByName("ASCOM.RemoteDeviceServer");
+            Process[] ascomServer = Process.GetProcessesByName(Const.wiseASCOMServerAppName);
             if (ascomServer.Count() == 0)
             {
-                Log("No active ASCOM.RemoteDeviceServer", 20);
+                Log(string.Format("No active {0}", Const.wiseASCOMServerAppName), 20);
                 _nextCheck = DateTime.Now.Add(_intervalBetweenChecks);
                 return;
             }
@@ -199,7 +178,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 if (bypassed)
                     safe = true;
 
-                inControl = wisecomputercontrol.IsSafe;
+                inControl = safeToOperateStatus.Contains("computer-control:false") ? false : true;
             } catch (Exception ex)
             {
                 Log(string.Format("Oops: {0}", ex.InnerException == null ? ex.Message : ex.InnerException.Message));
@@ -216,7 +195,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             {
                 labelComputerControl.Text = "Maintenance";
                 labelComputerControl.ForeColor = unsafeColor;
-                reasons = wisecomputercontrol.Action("unsafereasons", "");
+                reasons = wisesafetooperate.Action("unsafereasons", "");
             }
             toolTip.SetToolTip(labelComputerControl, reasons.Replace(',', '\n'));
 
