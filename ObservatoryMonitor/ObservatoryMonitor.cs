@@ -466,7 +466,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                     Task parkerTask = Task.Run(() => {
                         try
                         {
-                            wisetelescope.Action("telescope:force-park", "");
+                            wisetelescope.Action("telescope:shutdown", "");
                         }
                         catch (Exception ex)
                         {
@@ -626,7 +626,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
         private void KillWise40Apps()
         {
-            foreach (var proc in Process.GetProcessesByName("ASCOM.RemoteDeviceServer"))
+            foreach (var proc in Process.GetProcessesByName("ASCOM.RESTServer"))
                 proc.Kill();
 
             foreach (var proc in Process.GetProcessesByName("Dash"))
@@ -707,7 +707,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             safeToOperateStatus = wisesafetooperate.Action("status", string.Empty);
             bool currentlyBypassed = safeToOperateStatus.Contains("bypassed:false") ? false : true;
 
-            wisesafetooperate.Action(currentlyBypassed ? "endbypass" : "startbypass", string.Empty);
+            wisesafetooperate.Action(currentlyBypassed ? "end-bypass" : "start-bypass", string.Empty);
         }
 
         private void ObsMainForm_Load(object sender, EventArgs e)

@@ -1626,7 +1626,7 @@ namespace Dash
             UpdateCheckmark(bypassSafetyToolStripMenuItem, _bypassSafety);
 
             wisetele.BypassCoordinatesSafety = _bypassSafety;
-            wisesafetooperate.Action(_bypassSafety ? "startbypass" : "endbypass", string.Empty);
+            wisesafetooperate.Action(_bypassSafety ? "start-bypass" : "end-bypass", string.Empty);
             annunciatorSafeToOperate.Text = (_bypassSafety) ? "Safety bypassed" : "Safe to Operate";
         }
 

@@ -1559,7 +1559,7 @@ namespace ASCOM.Wise40
             }
         }
 
-        public void ForcePark()
+        public void Shutdown()
         {
             string status = wisesafetooperate.Action("status", "");
             bool cancelSafetyBypass = false;
@@ -1567,8 +1567,9 @@ namespace ASCOM.Wise40
             if (status.Contains("bypassed:false"))
             {
                 cancelSafetyBypass = true;
-                wisesafetooperate.Action("startbypass", "");
+                wisesafetooperate.Action("start-bypass", "");
             }
+            wisesafetooperate.Action("start-shutdown", "");
 
             try
             {
@@ -1578,11 +1579,12 @@ namespace ASCOM.Wise40
             } finally
             {
                 if (cancelSafetyBypass)
-                    wisesafetooperate.Action("endbypass", "");
+                    wisesafetooperate.Action("end-bypass", "");
             }
 
             if (cancelSafetyBypass)
-                wisesafetooperate.Action("endbypass", "");
+                wisesafetooperate.Action("end-bypass", "");
+            wisesafetooperate.Action("end-shutdown", "");
         }
 
         //
@@ -2914,9 +2916,9 @@ namespace ASCOM.Wise40
                 inactivityMonitor.Start("action telescope:set-active");
                 return "ok";
             }
-            else if (action == "telescope:force-park")  // this is a hidden action, not listed in SupportedActions
+            else if (action == "telescope:shutdown")  // this is a hidden action, not listed in SupportedActions
             {
-                ForcePark();
+                Shutdown();
                 return "ok";
             }
             else if (action == "site:get-opmode")
