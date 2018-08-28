@@ -44,6 +44,7 @@ namespace ASCOM.Wise40SafeToOperate
         public WiseComputerControl wisecomputercontrol;
         public List<Sensor> _sensors;
         private bool _bypassed = false;
+        private bool _shuttingDown = false;
         
         internal static string ageMaxSecondsProfileName = "AgeMaxSeconds";
         internal static string stableAfterMinProfileName = "StableAfterMin";
@@ -180,7 +181,7 @@ namespace ASCOM.Wise40SafeToOperate
             }
         }
 
-        private ArrayList supportedActions = new ArrayList() { "startbypass", "endbypass", "status" };
+        private ArrayList supportedActions = new ArrayList() { "start-bypass", "end-bypass", "status" };
 
         public ArrayList SupportedActions
         {
@@ -196,13 +197,13 @@ namespace ASCOM.Wise40SafeToOperate
 
             switch (actionName.ToLower())
             {
-                case "startbypass":
+                case "start-bypass":
                     _bypassed = true;
                     _profile.WriteValue(driverID, bypassedProfileName, _bypassed.ToString());
                     ret = "ok";
                     break;
 
-                case "endbypass":
+                case "end-bypass":
                     _bypassed = false;
                     _profile.WriteValue(driverID, bypassedProfileName, _bypassed.ToString());
                     ret = "ok";
@@ -214,7 +215,7 @@ namespace ASCOM.Wise40SafeToOperate
                     List<string> stat = new List<string>() {
                         "computer-control:" + (!wisecomputercontrol.Maintenance).ToString().ToLower(),
                         "platform-lowered:" + wisecomputercontrol.PlatformIsDown.ToString().ToLower(),
-                        "human-intervention:" + humanInterventionSensor.isSafe.ToString().ToLower(),
+                        "no-human-intervention:" + humanInterventionSensor.isSafe.ToString().ToLower(),
                         "bypassed:" + _bypassed.ToString().ToLower(),
                         "ready:" + isReady.ToString().ToLower(),
                         "safe:" + IsSafe.ToString().ToLower(),
@@ -225,6 +226,16 @@ namespace ASCOM.Wise40SafeToOperate
                 case "unsafereasons":
                     bool dummy = IsSafe;
                     ret = string.Join(", ", UnsafeReasons);
+                    break;
+
+                case "start-shutdown":      // hidden
+                    _shuttingDown = true;
+                    ret = "ok";
+                    break;
+
+                case "end-shutdown":        // hidden
+                    _shuttingDown = false;
+                    ret = "ok";
                     break;
 
                 default:
@@ -546,7 +557,7 @@ namespace ASCOM.Wise40SafeToOperate
                     ret = false;
                 else if (!wisecomputercontrol.IsSafe)
                     ret = false;
-                else if (!humanInterventionSensor.isSafe)
+                else if (!_shuttingDown && !humanInterventionSensor.isSafe)
                     ret = false;
                 else if (_bypassed)
                     return true;
@@ -565,7 +576,7 @@ namespace ASCOM.Wise40SafeToOperate
                         ret = false;
                 }
 
-                tl.LogMessage("IsSafe Get", ret.ToString());
+                //tl.LogMessage("IsSafe Get", ret.ToString());
                 return ret;
             }
         }
