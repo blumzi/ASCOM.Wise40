@@ -58,5 +58,14 @@ namespace ASCOM.Wise40.Common
         {
             return queue.ToArray();
         }
+
+        public T TryPeek()
+        {
+            T value;
+
+            while (!queue.TryPeek(out value))
+                ;
+            return value;
+        }
     }
 }
