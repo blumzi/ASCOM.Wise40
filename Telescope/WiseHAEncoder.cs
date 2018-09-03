@@ -20,9 +20,8 @@ namespace ASCOM.Wise40 //.Telescope
         private Astrometry.AstroUtils.AstroUtils astroutils;
 
         public Angle _angle;
-        private const double twoPI = Math.PI * 2.0;
 
-        const double HaMultiplier = twoPI / 720 / 4096;
+        const double HaMultiplier = Const.twoPI / 720 / 4096;
         const double HaCorrection = -3.063571542;                   // 20081231: Shai Kaspi
         const uint _simulatedValueAtFiducialMark = _realValueAtFiducialMark;
 
@@ -98,8 +97,7 @@ namespace ASCOM.Wise40 //.Telescope
                         _daqsValue = ((axis * 720 - worm) & 0xfff000) + worm;
                     }
                     #region debug
-                    string dbg = string.Format("{0}: value: {1}, axis: {2} (0x{2:x}), worm: {3} (0x{3:x})",
-                        Name, _daqsValue, axis, worm);
+                    string dbg = string.Format("{0}: value: {1}, axis: {2} (0x{2:x}), worm: {3} (0x{3:x})", Name, _daqsValue, axis, worm);
                     if (prev_worm != int.MinValue)
                     {
                         dbg += string.Format(" prev_axis: {0} (0x{0:x}), prev_worm: {1} (0x{1:x})",
@@ -192,8 +190,7 @@ namespace ASCOM.Wise40 //.Telescope
                 if (Simulated)
                 {
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "[{0}] {1}: {2} + {3} = {4}",
-                        this.GetHashCode(), Name, before, delta, after);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "{0}: {1} + {2} = {3}", Name, before, delta, after);
                     #endregion
                     _daqsValue = /*(uint)*/((_angle.Radians + HaCorrection) / HaMultiplier);
                 }
@@ -230,11 +227,11 @@ namespace ASCOM.Wise40 //.Telescope
                     ret.Radians += Math.PI;     // Add 12 hours
                 }
                 if (ret.Radians < 0)
-                    ret.Radians += twoPI;
-                if (ret.Radians > twoPI)
-                    ret.Radians -= twoPI;
+                    ret.Radians += Const.twoPI;
+                if (ret.Radians > Const.twoPI)
+                    ret.Radians -= Const.twoPI;
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "[{0}] RightAscension: {1}", this.GetHashCode(), ret);
+                debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "{0}: RightAscension: {1}", Name, ret);
                 #endregion
                 return ret;
             }
