@@ -221,7 +221,7 @@ namespace ASCOM.Wise40SafeToOperate
         /// <param name="bRegister">If <c>true</c>, registers the driver, otherwise unregisters it.</param>
         private static void RegUnregASCOM(bool bRegister)
         {
-            string desc = string.Format("ASCOM Wise40.SafeToOpen v0.2");
+            string desc = string.Format("ASCOM Wise40.SafeToOperate v0.2");
 
             using (var P = new ASCOM.Utilities.Profile())
             {

@@ -1606,7 +1606,7 @@
             this.toolStripMenuItemSafeToOperate.Name = "toolStripMenuItemSafeToOperate";
             this.toolStripMenuItemSafeToOperate.Size = new System.Drawing.Size(200, 22);
             this.toolStripMenuItemSafeToOperate.Text = "SafeToOperate";
-            this.toolStripMenuItemSafeToOperate.Click += new System.EventHandler(this.toolStripMenuItemSafeToOpen_Click);
+            this.toolStripMenuItemSafeToOperate.Click += new System.EventHandler(this.toolStripMenuItemSafeToOperate_Click);
             // 
             // toolStripMenuItemFilterWheel
             // 

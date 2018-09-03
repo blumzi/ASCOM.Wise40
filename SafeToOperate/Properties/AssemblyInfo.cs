@@ -11,7 +11,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyDescription("ASCOM SafetyMonitor driver for Wise40.SafeToOperate")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("The ASCOM Initiative")]
-[assembly: AssemblyProduct("ASCOM SafetyMonitor driver for Wise40.SafeToOpen")]
+[assembly: AssemblyProduct("ASCOM SafetyMonitor driver for Wise40.SafeToOperate")]
 [assembly: AssemblyCopyright("Copyright © 2016 The ASCOM Initiative")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
