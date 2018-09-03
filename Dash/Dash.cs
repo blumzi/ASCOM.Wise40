@@ -59,8 +59,6 @@ namespace Dash
         public Color unsafeColor = Statuser.colors[Statuser.Severity.Error];
         public Color warningColor = Statuser.colors[Statuser.Severity.Warning];
 
-        private long stoppingAxes;
-
         void onWheelOrPositionChanged(object sender, EventArgs e)
         {
             #region debug
@@ -366,14 +364,14 @@ namespace Dash
             }
             toolTip.SetToolTip(annunciatorDomePlatform, tip);
             #endregion
-            #region SafeToOpen
+            #region SafeToOperate
             tip = null;
 
             if (wisesite.safeToOperate == null)
             {
                 annunciatorSafeToOperate.Text = "Safe to operate ???";
                 annunciatorSafeToOperate.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
-                tip = "Cannot connect to the SafeToOpen driver!";
+                tip = "Cannot connect to the SafeToOperate driver!";
             }
             else
             {
@@ -636,11 +634,20 @@ namespace Dash
                 movements.Add(new Movement(Const.CardinalDirection.South, TelescopeAxes.axisSecondary, -handpadRate));
                 movements.Add(new Movement(Const.CardinalDirection.East, TelescopeAxes.axisPrimary, handpadRate));
             }
-
+            
             List<Const.CardinalDirection> whichWay = new List<Const.CardinalDirection>();
             List<string> Directions = new List<string>();
             foreach (var m in movements)
             {
+                if ((m._direction == Const.CardinalDirection.East || m._direction == Const.CardinalDirection.West) && wisetele.AxisIsMoving(TelescopeAxes.axisPrimary))
+                {
+                    telescopeStatus.Show("Primary axis is in motion", 1000, Statuser.Severity.Error);
+                    return;
+                } else if ((m._direction == Const.CardinalDirection.North || m._direction == Const.CardinalDirection.South) && wisetele.AxisIsMoving(TelescopeAxes.axisSecondary))
+                {
+                    telescopeStatus.Show("Secondary axis is in motion", 1000, Statuser.Severity.Error);
+                    return;
+                }
                 whichWay.Add(m._direction);
                 Directions.Add(m._direction.ToString());
             }
@@ -649,7 +656,7 @@ namespace Dash
             {
                 string message = string.Format("Moving {0} at {1} (safety bypassed)", String.Join("-", Directions.ToArray()), WiseTele.RateName(handpadRate).Remove(0, 4));
                 telescopeStatus.Show(message, 0, Statuser.Severity.Good);
-                //HandpadControlsEnabled(sender as Control, false);
+
                 foreach (var m in movements)
                 {
                     wisetele.HandpadMoveAxis(m._axis, m._rate);
@@ -659,7 +666,7 @@ namespace Dash
             {
                 string message = string.Format("Moving {0} at {1}", String.Join("-", Directions.ToArray()), WiseTele.RateName(handpadRate).Remove(0, 4));
                 telescopeStatus.Show(message, 0, Statuser.Severity.Good);
-                //HandpadControlsEnabled(sender as Control, false);
+
                 foreach (var m in movements)
                 {
                     wisetele.HandpadMoveAxis(m._axis, m._rate);
@@ -672,69 +679,18 @@ namespace Dash
             }
         }
 
-        private void axisStopper_DoWork(object sender, DoWorkEventArgs e)
-        {
-            TelescopeAxes axis = (int)e.Argument == 0 ? TelescopeAxes.axisPrimary : TelescopeAxes.axisSecondary;
-
-            wisetele.StopAxisAndWaitForHalt(axis, "HandpadMouseUp");
-        }
-
-        private void axisStopper_Completed(object sender, RunWorkerCompletedEventArgs e)
-        {
-            Interlocked.Decrement(ref stoppingAxes);
-        }
-
         private void directionButton_MouseUp(object sender, MouseEventArgs e)
         {
-            List<TelescopeAxes> activeAxes = new List<TelescopeAxes>();
-
             if (wisetele.NorthMotor.isOn || wisetele.SouthMotor.isOn)
-                activeAxes.Add(TelescopeAxes.axisSecondary);
+                wisetele.StopAxis(TelescopeAxes.axisSecondary);
             if (wisetele.WestMotor.isOn || wisetele.EastMotor.isOn)
-                activeAxes.Add(TelescopeAxes.axisPrimary);
-
-            Interlocked.Exchange(ref stoppingAxes, activeAxes.Count());
-            telescopeStatus.Show("Stopping ...");
-            foreach (TelescopeAxes axis in activeAxes)
-            {
-                BackgroundWorker axisStopper = new BackgroundWorker();
-
-                axisStopper.DoWork += new DoWorkEventHandler(axisStopper_DoWork);
-                axisStopper.RunWorkerCompleted += new RunWorkerCompletedEventHandler(axisStopper_Completed);
-                axisStopper.RunWorkerAsync(axis == TelescopeAxes.axisPrimary ? 0 : 1);
-            }
-
-            while (Interlocked.Read(ref stoppingAxes) != 0)
-            {
-                Application.DoEvents();
-            }
-
-            //HandpadControlsEnabled(sender as Control, true);
+                wisetele.StopAxis(TelescopeAxes.axisPrimary);
 
             telescopeStatus.Show("Stopped", 1000, Statuser.Severity.Good);
             wisetele.inactivityMonitor.EndActivity(InactivityMonitor.Activity.Handpad);
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Handpad: stopped");
             #endregion
-        }
-
-        private void HandpadControlsEnabled(Control except, bool onoff)
-        {
-            List<Control> controls = new List<Control>()
-            {
-                buttonNorth, buttonSouth, buttonEast, buttonWest,
-                buttonNE, buttonNW, buttonSE, buttonSW,
-                buttonGoCoord, textBoxDec, textBoxRA,
-                groupBoxSpeed,
-                buttonTrack, buttonZenith, buttonTelescopePark, buttonFlat, buttonHandleCover,
-            };
-
-            foreach (var c in controls)
-            {
-                if (c == except)
-                    continue;
-                c.Enabled = onoff;
-            }
         }
 
         private void debuggingToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1400,7 +1356,7 @@ namespace Dash
             UpdateAlteredItems(item, "Tracing");
         }
 
-        private void toolStripMenuItemSafeToOpen_Click(object sender, EventArgs e)
+        private void toolStripMenuItemSafeToOperate_Click(object sender, EventArgs e)
         {
             new SafeToOperateSetupDialogForm().Show();
         }
