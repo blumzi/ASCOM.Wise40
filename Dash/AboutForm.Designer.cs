@@ -186,7 +186,7 @@
             this.label14.Name = "label14";
             this.label14.Size = new System.Drawing.Size(163, 18);
             this.label14.TabIndex = 13;
-            this.label14.Text = "SafeToOpen Driver";
+            this.label14.Text = "SafeToOperate Driver";
             this.label14.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // label13

@@ -222,10 +222,10 @@
             this.labelPressureValue = new System.Windows.Forms.Label();
             this.label22 = new System.Windows.Forms.Label();
             this.labelWindSpeedValue = new System.Windows.Forms.Label();
-            this.timerRefreshDisplay = new System.Windows.Forms.Timer(this.components);
-            this.toolTip = new System.Windows.Forms.ToolTip(this.components);
             this.label2 = new System.Windows.Forms.Label();
             this.labelSunElevationValue = new System.Windows.Forms.Label();
+            this.timerRefreshDisplay = new System.Windows.Forms.Timer(this.components);
+            this.toolTip = new System.Windows.Forms.ToolTip(this.components);
             this.tableLayoutMain.SuspendLayout();
             this.groupBoxFocuser.SuspendLayout();
             this.groupBoxDomeGroup.SuspendLayout();
@@ -1610,7 +1610,7 @@
             this.toolStripMenuItemSafeToOperate.Name = "toolStripMenuItemSafeToOperate";
             this.toolStripMenuItemSafeToOperate.Size = new System.Drawing.Size(200, 22);
             this.toolStripMenuItemSafeToOperate.Text = "SafeToOperate";
-            this.toolStripMenuItemSafeToOperate.Click += new System.EventHandler(this.toolStripMenuItemSafeToOpen_Click);
+            this.toolStripMenuItemSafeToOperate.Click += new System.EventHandler(this.toolStripMenuItemSafeToOperate_Click);
             // 
             // toolStripMenuItemFilterWheel
             // 
@@ -2902,11 +2902,6 @@
             this.labelWindSpeedValue.Text = "windspeed";
             this.labelWindSpeedValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
-            // timerRefreshDisplay
-            // 
-            this.timerRefreshDisplay.Enabled = true;
-            this.timerRefreshDisplay.Tick += new System.EventHandler(this.RefreshDisplay);
-            // 
             // label2
             // 
             this.label2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -2935,6 +2930,11 @@
             this.labelSunElevationValue.TabIndex = 21;
             this.labelSunElevationValue.Text = "sunelevation";
             this.labelSunElevationValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // timerRefreshDisplay
+            // 
+            this.timerRefreshDisplay.Enabled = true;
+            this.timerRefreshDisplay.Tick += new System.EventHandler(this.RefreshDisplay);
             // 
             // FormDash
             // 
