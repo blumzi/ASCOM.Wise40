@@ -1371,8 +1371,6 @@ namespace ASCOM.Wise40
         }
 
         #region Profile
-        internal static string autoCalibrateProfileName = "AutoCalibrate";
-        internal static string syncVentWithShutterProfileName = "SyncVentWithShutter";
 
         /// <summary>
         /// Read the device configuration from the ASCOM Profile store
@@ -1383,8 +1381,8 @@ namespace ASCOM.Wise40
 
             using (Profile driverProfile = new Profile() { DeviceType = "Dome" })
             {
-                _autoCalibrate = Convert.ToBoolean(driverProfile.GetValue(Const.wiseDomeDriverID, autoCalibrateProfileName, string.Empty, true.ToString()));
-                _syncVentWithShutter = Convert.ToBoolean(driverProfile.GetValue(Const.wiseDomeDriverID, syncVentWithShutterProfileName, string.Empty, defaultSyncVentWithShutter.ToString()));
+                _autoCalibrate = Convert.ToBoolean(driverProfile.GetValue(Const.wiseDomeDriverID, Const.ProfileName.Dome_AutoCalibrate, string.Empty, true.ToString()));
+                _syncVentWithShutter = Convert.ToBoolean(driverProfile.GetValue(Const.wiseDomeDriverID, Const.ProfileName.Dome_SyncVentWithShutter, string.Empty, defaultSyncVentWithShutter.ToString()));
             }
             wisedomeshutter.ReadProfile();
         }
@@ -1396,8 +1394,8 @@ namespace ASCOM.Wise40
         {
             using (Profile driverProfile = new Profile() { DeviceType = "Dome" })
             {
-                driverProfile.WriteValue(Const.wiseDomeDriverID, autoCalibrateProfileName, _autoCalibrate.ToString());
-                driverProfile.WriteValue(Const.wiseDomeDriverID, syncVentWithShutterProfileName, _syncVentWithShutter.ToString());
+                driverProfile.WriteValue(Const.wiseDomeDriverID, Const.ProfileName.Dome_AutoCalibrate, _autoCalibrate.ToString());
+                driverProfile.WriteValue(Const.wiseDomeDriverID, Const.ProfileName.Dome_SyncVentWithShutter, _syncVentWithShutter.ToString());
             }
             wisedomeshutter.WriteProfile();
         }

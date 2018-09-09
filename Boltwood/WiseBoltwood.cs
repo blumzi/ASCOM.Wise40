@@ -22,12 +22,6 @@ namespace ASCOM.Wise40.Boltwood
         private DateTime _lastDataRead = DateTime.MinValue;
         private WiseSite wisesite = WiseSite.Instance;
 
-        /// <summary>
-        /// ASCOM DeviceID (COM ProgID) for this driver.
-        /// The DeviceID is used by ASCOM applications to load the driver at runtime.
-        /// </summary>
-        internal static string dataFileProfileName = "DataFile";
-
         private TraceLogger tl;
         private static volatile WiseBoltwood _instance; // Singleton
         private static object syncObject = new object();
@@ -641,7 +635,7 @@ namespace ASCOM.Wise40.Boltwood
             string defaultDataFile = Simulated ? "c:/temp/ClarityII-data.txt" : "//WO-NEO/Temp/clarityII-data.txt";
 
             using (Profile driverProfile = new Profile() { DeviceType = "ObservingConditions" })
-                _dataFile = driverProfile.GetValue(Const.wiseBoltwoodDriverID, dataFileProfileName, string.Empty, defaultDataFile);
+                _dataFile = driverProfile.GetValue(Const.wiseBoltwoodDriverID, Const.ProfileName.Boltwood_DataFile, string.Empty, defaultDataFile);
         }
 
         /// <summary>
@@ -650,7 +644,7 @@ namespace ASCOM.Wise40.Boltwood
         internal void WriteProfile()
         {
             using (Profile driverProfile = new Profile() { DeviceType = "ObservingConditions" })
-                driverProfile.WriteValue(Const.wiseBoltwoodDriverID, dataFileProfileName, _dataFile);
+                driverProfile.WriteValue(Const.wiseBoltwoodDriverID, Const.ProfileName.Boltwood_DataFile, _dataFile);
         }
 
         public string DataFile

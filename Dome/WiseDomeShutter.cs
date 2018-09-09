@@ -23,10 +23,6 @@ namespace ASCOM.Wise40
         public string _ipAddress;
         public int _lowestValue, _highestValue;
 
-        internal static string shutterIPAddressProfileName = "ShutterIPAddress";
-        internal static string shutterHighestValueProfileName = "ShutterHighestValue";
-        internal static string shutterLowestValueProfileName = "ShutterLowestValue";
-
         private static WiseDomeShutter _instance; // Singleton
         private static object syncObject = new object();
 
@@ -284,9 +280,9 @@ namespace ASCOM.Wise40
         {
             using (Profile driverProfile = new Profile() { DeviceType = "Dome" })
             {
-                _ipAddress = driverProfile.GetValue(Const.wiseDomeDriverID, shutterIPAddressProfileName, string.Empty, "").Trim();
-                _highestValue = Convert.ToInt32(driverProfile.GetValue(Const.wiseDomeDriverID, shutterHighestValueProfileName, string.Empty, "-1"));
-                _lowestValue = Convert.ToInt32(driverProfile.GetValue(Const.wiseDomeDriverID, shutterLowestValueProfileName, string.Empty, "-1"));
+                _ipAddress = driverProfile.GetValue(Const.wiseDomeDriverID, Const.ProfileName.DomeShutter_IPAddress, string.Empty, "").Trim();
+                _highestValue = Convert.ToInt32(driverProfile.GetValue(Const.wiseDomeDriverID, Const.ProfileName.DomeShutter_HighestValue, string.Empty, "-1"));
+                _lowestValue = Convert.ToInt32(driverProfile.GetValue(Const.wiseDomeDriverID, Const.ProfileName.DomeShutter_LowestValue, string.Empty, "-1"));
             }
         }
 
@@ -294,9 +290,9 @@ namespace ASCOM.Wise40
         {
             using (Profile driverProfile = new Profile() { DeviceType = "Dome" })
             {
-                driverProfile.WriteValue(Const.wiseDomeDriverID, shutterIPAddressProfileName, _ipAddress.ToString());
-                driverProfile.WriteValue(Const.wiseDomeDriverID, shutterHighestValueProfileName, _highestValue.ToString());
-                driverProfile.WriteValue(Const.wiseDomeDriverID, shutterLowestValueProfileName, _lowestValue.ToString());
+                driverProfile.WriteValue(Const.wiseDomeDriverID, Const.ProfileName.DomeShutter_IPAddress, _ipAddress.ToString());
+                driverProfile.WriteValue(Const.wiseDomeDriverID, Const.ProfileName.DomeShutter_HighestValue, _highestValue.ToString());
+                driverProfile.WriteValue(Const.wiseDomeDriverID, Const.ProfileName.DomeShutter_LowestValue, _lowestValue.ToString());
             }
         }
 

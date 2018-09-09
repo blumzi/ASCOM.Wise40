@@ -15,9 +15,6 @@ namespace ASCOM.Wise40.VantagePro
     public class WiseVantagePro: WiseObject
     {
         private string _dataFile;
-        internal static string opModeProfileName = "OperationMode";
-        internal static string dataFileProfileName = "DataFile";
-        internal static string serialPortProfileName = "Port";
         private static WiseVantagePro _instance = new WiseVantagePro();
         private static Version version = new Version("0.2");
         public static string driverDescription = string.Format("ASCOM Wise40.VantagePro v{0}", version.ToString());
@@ -324,10 +321,10 @@ namespace ASCOM.Wise40.VantagePro
             {
                 OpMode mode;
 
-                Enum.TryParse<OpMode>(driverProfile.GetValue(Const.wiseVantageProDriverID, opModeProfileName, string.Empty, OpMode.File.ToString()), out mode);
+                Enum.TryParse<OpMode>(driverProfile.GetValue(Const.wiseVantageProDriverID, Const.ProfileName.VantagePro_OpMode, string.Empty, OpMode.File.ToString()), out mode);
                 _opMode = mode;
-                _dataFile = driverProfile.GetValue(Const.wiseVantageProDriverID, dataFileProfileName, string.Empty, defaultReportFile);
-                _portName = driverProfile.GetValue(Const.wiseVantageProDriverID, serialPortProfileName, string.Empty, "");
+                _dataFile = driverProfile.GetValue(Const.wiseVantageProDriverID, Const.ProfileName.VantagePro_DataFile, string.Empty, defaultReportFile);
+                _portName = driverProfile.GetValue(Const.wiseVantageProDriverID, Const.ProfileName.VantagePro_SerialPort, string.Empty, "");
             }
         }
 
@@ -338,9 +335,9 @@ namespace ASCOM.Wise40.VantagePro
         {
             using (Profile driverProfile = new Profile() { DeviceType = "ObservingConditions" })
             {
-                driverProfile.WriteValue(Const.wiseVantageProDriverID, opModeProfileName, _opMode.ToString());
-                driverProfile.WriteValue(Const.wiseVantageProDriverID, dataFileProfileName, _dataFile);
-                driverProfile.WriteValue(Const.wiseVantageProDriverID, serialPortProfileName, _portName);
+                driverProfile.WriteValue(Const.wiseVantageProDriverID, Const.ProfileName.VantagePro_OpMode, _opMode.ToString());
+                driverProfile.WriteValue(Const.wiseVantageProDriverID, Const.ProfileName.VantagePro_DataFile, _dataFile);
+                driverProfile.WriteValue(Const.wiseVantageProDriverID, Const.ProfileName.VantagePro_SerialPort, _portName);
             }
         }
 

@@ -18,7 +18,6 @@ namespace ASCOM.Wise40.Common
         private bool _appendToWindow = false;
         private static bool _initialized = false;
         private static bool _tracing = false;
-        private static string _debugFile = string.Empty;
         private static string _appName = string.Empty;
         private static string _logFile = string.Empty;
 
@@ -200,7 +199,6 @@ namespace ASCOM.Wise40.Common
                     if (Enum.TryParse<DebugLevel>(p.GetValue(Const.wiseTelescopeDriverID, "SiteDebugLevel", string.Empty, DebugLevel.DebugDefault.ToString()), out d))
                         _currentLevel = d;
                     _tracing = Convert.ToBoolean(p.GetValue(Const.wiseTelescopeDriverID, "SiteTracing", string.Empty, false.ToString()));
-                    _debugFile = p.GetValue(Const.wiseTelescopeDriverID, "SiteDebugFile", string.Empty, string.Empty);
                 }
             }
         }

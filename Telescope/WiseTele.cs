@@ -226,10 +226,6 @@ namespace ASCOM.Wise40
 
         private Hardware.Hardware hardware = Hardware.Hardware.Instance;
         internal static string driverID = Const.wiseTelescopeDriverID;
-        internal static string astrometricAccuracyProfileName = "Astrometric accuracy";
-        internal static string traceStateProfileName = "Tracing";
-        internal static string bypassCoordinatesSafetyProfileName = "BypassCoordinatesSafety";
-        internal static string plotSlewsProfileName = "PlotSlews";
 
         public class MovementParameters
         {
@@ -258,7 +254,6 @@ namespace ASCOM.Wise40
         private DomeSlaveDriver domeSlaveDriver = DomeSlaveDriver.Instance;
 
         public bool _calculateRefraction = false;
-        private string minimalDomeTrackingMovementProfileName = "Minimal Dome Tracking Movement";
 
         private static WiseSafeToOperate wisesafetooperate = WiseSafeToOperate.Instance;
 
@@ -3015,16 +3010,16 @@ namespace ASCOM.Wise40
             {
                 Accuracy acc;
 
-                if (Enum.TryParse<Accuracy>(driverProfile.GetValue(driverID, astrometricAccuracyProfileName, string.Empty, "Full"), out acc))
+                if (Enum.TryParse<Accuracy>(driverProfile.GetValue(driverID, Const.ProfileName.Telescope_AstrometricAccuracy, string.Empty, "Full"), out acc))
                     wisesite.astrometricAccuracy = acc;
                 else
                     wisesite.astrometricAccuracy = Accuracy.Full;
-                _bypassCoordinatesSafety = Convert.ToBoolean(driverProfile.GetValue(driverID, bypassCoordinatesSafetyProfileName, string.Empty, false.ToString()));
-                _plotSlews = Convert.ToBoolean(driverProfile.GetValue(driverID, plotSlewsProfileName, string.Empty, false.ToString()));
+                _bypassCoordinatesSafety = Convert.ToBoolean(driverProfile.GetValue(driverID, Const.ProfileName.Telescope_BypassCoordinatesSafety, string.Empty, false.ToString()));
+                _plotSlews = Convert.ToBoolean(driverProfile.GetValue(driverID, Const.ProfileName.Telescope_PlotSlews, string.Empty, false.ToString()));
             }
 
             using (Profile driverProfile = new Profile() { DeviceType = "Dome" })
-                _minimalDomeTrackingMovement = Convert.ToDouble(driverProfile.GetValue(Const.wiseDomeDriverID, minimalDomeTrackingMovementProfileName, string.Empty, "2.0"));
+                _minimalDomeTrackingMovement = Convert.ToDouble(driverProfile.GetValue(Const.wiseDomeDriverID, Const.ProfileName.Dome_MinimalTrackingMovement, string.Empty, "2.0"));
         }
 
         /// <summary>
@@ -3034,14 +3029,14 @@ namespace ASCOM.Wise40
         {
             using (Profile driverProfile = new Profile() { DeviceType = "Telescope" })
             {
-                driverProfile.WriteValue(driverID, traceStateProfileName, traceLogger.Enabled.ToString());
-                driverProfile.WriteValue(driverID, astrometricAccuracyProfileName, wisesite.astrometricAccuracy.ToString());
-                driverProfile.WriteValue(driverID, bypassCoordinatesSafetyProfileName, _bypassCoordinatesSafety.ToString());
-                driverProfile.WriteValue(driverID, plotSlewsProfileName, _plotSlews.ToString());
+                driverProfile.WriteValue(driverID, Const.ProfileName.Telescope_Tracing, traceLogger.Enabled.ToString());
+                driverProfile.WriteValue(driverID, Const.ProfileName.Telescope_AstrometricAccuracy, wisesite.astrometricAccuracy.ToString());
+                driverProfile.WriteValue(driverID, Const.ProfileName.Telescope_BypassCoordinatesSafety, _bypassCoordinatesSafety.ToString());
+                driverProfile.WriteValue(driverID, Const.ProfileName.Telescope_PlotSlews, _plotSlews.ToString());
             }
 
             using (Profile driverProfile = new Profile() { DeviceType = "Dome" })
-                driverProfile.WriteValue(Const.wiseDomeDriverID, minimalDomeTrackingMovementProfileName, _minimalDomeTrackingMovement.ToString());
+                driverProfile.WriteValue(Const.wiseDomeDriverID, Const.ProfileName.Dome_MinimalTrackingMovement, _minimalDomeTrackingMovement.ToString());
         }
 
         public string Status

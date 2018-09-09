@@ -498,32 +498,6 @@ namespace ASCOM.Wise40 //.Dome
 
         #endregion
 
-        //internal static string autoCalibrateProfileName = "AutoCalibrate";
-
-        ///// <summary>
-        ///// Read the device configuration from the ASCOM Profile store
-        ///// </summary>
-        //internal void ReadProfile()
-        //{
-        //    using (Profile driverProfile = new Profile())
-        //    {
-        //        driverProfile.DeviceType = "Dome";
-        //        wisedome._autoCalibrate = Convert.ToBoolean(driverProfile.GetValue(driverID, autoCalibrateProfileName, string.Empty, "false"));
-        //    }
-        //}
-
-        ///// <summary>
-        ///// Write the device configuration to the  ASCOM  Profile store
-        ///// </summary>
-        //internal void WriteProfile()
-        //{
-        //    using (Profile driverProfile = new Profile())
-        //    {
-        //        driverProfile.DeviceType = "Dome";
-        //        driverProfile.WriteValue(driverID, autoCalibrateProfileName, wisedome._autoCalibrate.ToString());
-        //    }
-        //}
-
         #endregion
 
     }

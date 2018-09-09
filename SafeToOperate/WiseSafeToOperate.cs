@@ -45,10 +45,6 @@ namespace ASCOM.Wise40SafeToOperate
         public List<Sensor> _sensors;
         private bool _bypassed = false;
         private bool _shuttingDown = false;
-        
-        internal static string ageMaxSecondsProfileName = "AgeMaxSeconds";
-        internal static string stableAfterMinProfileName = "StableAfterMin";
-        internal static string bypassedProfileName = "Bypassed";
         public int ageMaxSeconds;
 
         /// <summary>
@@ -199,18 +195,18 @@ namespace ASCOM.Wise40SafeToOperate
             {
                 case "start-bypass":
                     _bypassed = true;
-                    _profile.WriteValue(driverID, bypassedProfileName, _bypassed.ToString());
+                    _profile.WriteValue(driverID, Const.ProfileName.SafeToOperate_Bypassed, _bypassed.ToString());
                     ret = "ok";
                     break;
 
                 case "end-bypass":
                     _bypassed = false;
-                    _profile.WriteValue(driverID, bypassedProfileName, _bypassed.ToString());
+                    _profile.WriteValue(driverID, Const.ProfileName.SafeToOperate_Bypassed, _bypassed.ToString());
                     ret = "ok";
                     break;
 
                 case "status":
-                    _bypassed = Convert.ToBoolean(_profile.GetValue(driverID, bypassedProfileName, string.Empty, false.ToString()));
+                    _bypassed = Convert.ToBoolean(_profile.GetValue(driverID, Const.ProfileName.SafeToOperate_Bypassed, string.Empty, false.ToString()));
 
                     List<string> stat = new List<string>() {
                         "computer-control:" + (!wisecomputercontrol.Maintenance).ToString().ToLower(),
@@ -621,10 +617,10 @@ namespace ASCOM.Wise40SafeToOperate
         /// </summary>
         public void ReadProfile()
         {
-            ageMaxSeconds = Convert.ToInt32(_profile.GetValue(driverID, ageMaxSecondsProfileName, string.Empty, 180.ToString()));
-            _bypassed = Convert.ToBoolean(_profile.GetValue(driverID, bypassedProfileName, string.Empty, false.ToString()));
+            ageMaxSeconds = Convert.ToInt32(_profile.GetValue(driverID, Const.ProfileName.SafeToOperate_AgeMaxSeconds, string.Empty, 180.ToString()));
+            _bypassed = Convert.ToBoolean(_profile.GetValue(driverID, Const.ProfileName.SafeToOperate_Bypassed, string.Empty, false.ToString()));
 
-            int minutes = Convert.ToInt32(_profile.GetValue(driverID, stableAfterMinProfileName, string.Empty, _defaultStabilizationPeriodMinutes.ToString()));
+            int minutes = Convert.ToInt32(_profile.GetValue(driverID, Const.ProfileName.SafeToOperate_StableAfterMin, string.Empty, _defaultStabilizationPeriodMinutes.ToString()));
             _stabilizationPeriod = new TimeSpan(0, minutes, 0);
 
             foreach (Sensor s in _sensors)
@@ -633,11 +629,10 @@ namespace ASCOM.Wise40SafeToOperate
             using (Profile driverProfile = new Profile())
             {
                 string telescopeDriverId = Const.wiseTelescopeDriverID;
-                string astrometricAccuracyProfileName = "Astrometric accuracy";
 
                 driverProfile.DeviceType = "Telescope";
                 astrometricAccuracy =
-                    driverProfile.GetValue(telescopeDriverId, astrometricAccuracyProfileName, string.Empty, "Full") == "Full" ?
+                    driverProfile.GetValue(telescopeDriverId, Const.ProfileName.Telescope_AstrometricAccuracy, string.Empty, "Full") == "Full" ?
                         Accuracy.Full :
                         Accuracy.Reduced;
             }
@@ -648,8 +643,8 @@ namespace ASCOM.Wise40SafeToOperate
         /// </summary>
         public void WriteProfile()
         {
-            _profile.WriteValue(driverID, ageMaxSecondsProfileName, ageMaxSeconds.ToString());
-            _profile.WriteValue(driverID, stableAfterMinProfileName, _stabilizationPeriod.Minutes.ToString());
+            _profile.WriteValue(driverID, Const.ProfileName.SafeToOperate_AgeMaxSeconds, ageMaxSeconds.ToString());
+            _profile.WriteValue(driverID, Const.ProfileName.SafeToOperate_StableAfterMin, _stabilizationPeriod.Minutes.ToString());
             foreach (Sensor s in _sensors)
                 s.writeProfile();
         }
