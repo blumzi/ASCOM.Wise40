@@ -144,7 +144,6 @@
             this.debugAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.debugNoneToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
-            this.bypassSafetyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveToProfileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.viewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.digitalIOCardsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -222,10 +221,10 @@
             this.labelPressureValue = new System.Windows.Forms.Label();
             this.label22 = new System.Windows.Forms.Label();
             this.labelWindSpeedValue = new System.Windows.Forms.Label();
-            this.timerRefreshDisplay = new System.Windows.Forms.Timer(this.components);
-            this.toolTip = new System.Windows.Forms.ToolTip(this.components);
             this.label2 = new System.Windows.Forms.Label();
             this.labelSunElevationValue = new System.Windows.Forms.Label();
+            this.timerRefreshDisplay = new System.Windows.Forms.Timer(this.components);
+            this.toolTip = new System.Windows.Forms.ToolTip(this.components);
             this.tableLayoutMain.SuspendLayout();
             this.groupBoxFocuser.SuspendLayout();
             this.groupBoxDomeGroup.SuspendLayout();
@@ -1570,7 +1569,6 @@
             this.tracingToolStripMenuItem,
             this.debuggingToolStripMenuItem1,
             this.toolStripMenuItem2,
-            this.bypassSafetyToolStripMenuItem,
             this.saveToProfileToolStripMenuItem});
             this.toolStripMenuItem1.ForeColor = System.Drawing.Color.DarkOrange;
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
@@ -1789,16 +1787,6 @@
             this.toolStripMenuItem2.Name = "toolStripMenuItem2";
             this.toolStripMenuItem2.Size = new System.Drawing.Size(200, 22);
             this.toolStripMenuItem2.Text = "  ";
-            // 
-            // bypassSafetyToolStripMenuItem
-            // 
-            this.bypassSafetyToolStripMenuItem.Name = "bypassSafetyToolStripMenuItem";
-            this.bypassSafetyToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
-            this.bypassSafetyToolStripMenuItem.Text = "Bypass Safety";
-            this.bypassSafetyToolStripMenuItem.ToolTipText = "Bypass Safety Checks\r\n\r\nBypasses:\r\n  - SafeToOperate (environment) checks\r\n  - Te" +
-    "lescope coordinate checks";
-            this.bypassSafetyToolStripMenuItem.Visible = false;
-            this.bypassSafetyToolStripMenuItem.Click += new System.EventHandler(this.safetyOverrideToolStripMenuItem_Click);
             // 
             // saveToProfileToolStripMenuItem
             // 
@@ -2551,7 +2539,7 @@
             this.groupBoxWeather.Size = new System.Drawing.Size(401, 258);
             this.groupBoxWeather.TabIndex = 33;
             this.groupBoxWeather.TabStop = false;
-            this.groupBoxWeather.Text = " Weather ";
+            this.groupBoxWeather.Text = "Safe To Operate";
             // 
             // labelWeatherStatus
             // 
@@ -2902,11 +2890,6 @@
             this.labelWindSpeedValue.Text = "windspeed";
             this.labelWindSpeedValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
-            // timerRefreshDisplay
-            // 
-            this.timerRefreshDisplay.Enabled = true;
-            this.timerRefreshDisplay.Tick += new System.EventHandler(this.RefreshDisplay);
-            // 
             // label2
             // 
             this.label2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -2935,6 +2918,11 @@
             this.labelSunElevationValue.TabIndex = 21;
             this.labelSunElevationValue.Text = "sunelevation";
             this.labelSunElevationValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // timerRefreshDisplay
+            // 
+            this.timerRefreshDisplay.Enabled = true;
+            this.timerRefreshDisplay.Tick += new System.EventHandler(this.RefreshDisplay);
             // 
             // FormDash
             // 
@@ -3115,7 +3103,6 @@
         private System.Windows.Forms.ToolStripMenuItem saveToProfileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemSafeToOperate;
         private System.Windows.Forms.ToolStripMenuItem debugMotorsToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem bypassSafetyToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem2;
         private System.Windows.Forms.Button buttonDomeAzSet;
         private System.Windows.Forms.ToolStripMenuItem domeToolStripMenuItem;

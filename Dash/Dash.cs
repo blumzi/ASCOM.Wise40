@@ -174,7 +174,7 @@ namespace Dash
             UpdateCheckmark(debugDomeToolStripMenuItem, debugger.Debugging(Debugger.DebugLevel.DebugDome));
             UpdateCheckmark(debugShutterToolStripMenuItem, debugger.Debugging(Debugger.DebugLevel.DebugShutter));
             UpdateCheckmark(debugDAQsToolStripMenuItem, debugger.Debugging(Debugger.DebugLevel.DebugDAQs));
-            UpdateCheckmark(bypassSafetyToolStripMenuItem, _bypassSafety);
+            //UpdateCheckmark(bypassSafetyToolStripMenuItem, _bypassSafety);
             UpdateCheckmark(tracingToolStripMenuItem, debugger.Tracing);
 
             buttonVent.Text = wisedome.Vent ? "Close Vent" : "Open Vent";
@@ -457,7 +457,7 @@ namespace Dash
             #endregion
             #endregion
 
-            #region RefreshWeather
+            #region RefreshSafeToOperate
             if (wisesite.och == null || !wisesite.och.Connected)
             {
                 string nc = "???";
@@ -495,6 +495,7 @@ namespace Dash
                     labelTempValue.Text = oc.Temperature.ToString() + "°C";
                     labelPressureValue.Text = oc.Pressure.ToString() + "mB";
                     labelWindDirValue.Text = oc.WindDirection.ToString() + "°";
+
                     labelHumidityValue.Text = oc.Humidity.ToString() + "%";
                     labelHumidityValue.ForeColor = Statuser.TriStateColor(wisesafetooperate.isSafeHumidity);
 
@@ -1619,16 +1620,16 @@ namespace Dash
             new ASCOM.Wise40.Boltwood.SetupDialogForm().Show();
         }
 
-        private void safetyOverrideToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            _bypassSafety = !_bypassSafety;
-            bypassSafetyToolStripMenuItem.Tag = _bypassSafety;
-            UpdateCheckmark(bypassSafetyToolStripMenuItem, _bypassSafety);
+        //private void safetyOverrideToolStripMenuItem_Click(object sender, EventArgs e)
+        //{
+        //    _bypassSafety = !_bypassSafety;
+        //    bypassSafetyToolStripMenuItem.Tag = _bypassSafety;
+        //    UpdateCheckmark(bypassSafetyToolStripMenuItem, _bypassSafety);
 
-            wisetele.BypassCoordinatesSafety = _bypassSafety;
-            wisesafetooperate.Action(_bypassSafety ? "start-bypass" : "end-bypass", string.Empty);
-            annunciatorSafeToOperate.Text = (_bypassSafety) ? "Safety bypassed" : "Safe to Operate";
-        }
+        //    wisetele.BypassCoordinatesSafety = _bypassSafety;
+        //    wisesafetooperate.Action(_bypassSafety ? "start-bypass" : "end-bypass", string.Empty);
+        //    annunciatorSafeToOperate.Text = (_bypassSafety) ? "Safety bypassed" : "Safe to Operate";
+        //}
 
         public void UpdateCheckmark(ToolStripMenuItem item, bool state)
         {
