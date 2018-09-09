@@ -21,6 +21,7 @@ namespace ASCOM.Wise40
 
         private const int nSamples = 5;
         private double _previousValue = double.NaN;
+        private double _previousEncoderValue = double.NaN;
         private FixedSizedQueue<AxisPositionSample> _samples = new FixedSizedQueue<AxisPositionSample>(nSamples);
         private TelescopeAxes _axis, _other_axis;
         private WiseTele wisetele = WiseTele.Instance;
@@ -98,7 +99,9 @@ namespace ASCOM.Wise40
                 motors.Add(wisetele.TrackingMotor);
             foreach (var m in motors)
                 if (m.isOn)
-                    ret += m.Name + " ";
+                {
+                    ret += m.Name + " (" + WiseTele.RateName(m.currentRate) + ") ";
+                }
             return ret;
         }
 
@@ -132,13 +135,19 @@ namespace ASCOM.Wise40
                 return;
 
             AxisPositionSample sample = new AxisPositionSample { value = d };
+            double encoderValue = (_axis == TelescopeAxes.axisPrimary) ? wisetele.HAEncoder.Value : wisetele.DecEncoder.Value;
+            double encoderDelta = double.NaN;
+            if (!Double.IsNaN(_previousEncoderValue))
+                encoderDelta = encoderValue - _previousEncoderValue;
 
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "AxisMonitor:SampleAxisMovement:{0}: value: {1}, _previousValue: {2}, enqueueing: {3:F15}, active: {4}",
-                _axis, value, _previousValue, d, ActiveMotors(_axis));
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                "AxisMonitor:SampleAxisMovement:{0}: value: {1}, _previousValue: {2}, enqueueing: {3:F15}, active: {4}, encoder: {5}, encoderDelta: {6}",
+                _axis, value, _previousValue, d, ActiveMotors(_axis), encoderValue, encoderDelta);
             #endregion
             _samples.Enqueue(sample);
             _previousValue = value;
+            _previousEncoderValue = encoderValue;
         }
 
         public void AxisMovementChecker()
