@@ -177,7 +177,7 @@ namespace ASCOM.Wise40SafeToOperate
             }
         }
 
-        private ArrayList supportedActions = new ArrayList() { "start-bypass", "end-bypass", "status" };
+        private ArrayList supportedActions = new ArrayList() { "start-bypass", "end-bypass", "status", "sensor-is-safe" };
 
         public ArrayList SupportedActions
         {
@@ -193,6 +193,35 @@ namespace ASCOM.Wise40SafeToOperate
 
             switch (actionName.ToLower())
             {
+                case "sensor-is-safe":
+                    switch(actionParameters)
+                    {
+                        case "HumanIntervention":
+                            ret = humanInterventionSensor.isSafe.ToString();
+                            break;
+
+                        case "Sun":
+                            ret = sunSensor.isSafe.ToString();
+                            break;
+
+                        case "Wind":
+                            ret = windSensor.isSafe.ToString();
+                            break;
+
+                        case "Rain":
+                            ret = rainSensor.isSafe.ToString();
+                            break;
+
+                        case "Humidity":
+                            ret = humiditySensor.isSafe.ToString();
+                            break;
+
+                        case "Clouds":
+                            ret = cloudsSensor.isSafe.ToString();
+                            break;
+                    }
+                    break;
+
                 case "start-bypass":
                     _bypassed = true;
                     _profile.WriteValue(driverID, Const.ProfileName.SafeToOperate_Bypassed, _bypassed.ToString());
