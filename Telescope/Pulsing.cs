@@ -170,7 +170,7 @@ namespace ASCOM.Wise40 //.Telescope
             }
             #region debug
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugAxes,
-                "ActiveSlewers: added {0}, \"{1}\" => \"{2}\"", t._axis.ToString(), before, ToString());
+                "ActivePulsers: added {0}, \"{1}\" => \"{2}\"", t._axis.ToString(), before, ToString());
             #endregion
         }
 
@@ -183,7 +183,7 @@ namespace ASCOM.Wise40 //.Telescope
             }
             #region debug
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugAxes,
-                "ActiveSlewers: deleted {0}, \"{1}\" => \"{2}\"", t._axis.ToString(), before, ToString());
+                "ActivePulsers: deleted {0}, \"{1}\" => \"{2}\"", t._axis.ToString(), before, ToString());
             #endregion
             if (_active.Count == 0)
                 wisetele.inactivityMonitor.EndActivity(InactivityMonitor.Activity.Pulsing);
