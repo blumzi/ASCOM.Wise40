@@ -53,7 +53,11 @@ namespace ASCOM.Wise40.Boltwood
                 return;
 
             ReadProfile();
-            GetSensorData();
+            try
+            {
+                GetSensorData();
+            }
+            catch { }
 
             debugger.init();
             tl = new TraceLogger("", "Wise40.Boltwood");
@@ -70,6 +74,9 @@ namespace ASCOM.Wise40.Boltwood
 
             if (_dataFile == null || _dataFile == string.Empty)
                 throw new InvalidOperationException("GetSensorData: _dataFile name is either null or empty!");
+
+            if (!File.Exists(_dataFile))
+                throw new InvalidOperationException(string.Format("GetSensorData: _dataFile \"{0}\" DOES NOT exist!", _dataFile));
 
             if (_lastDataRead == DateTime.MinValue || File.GetLastWriteTime(_dataFile).CompareTo(_lastDataRead) > 0)
             {
@@ -167,16 +174,7 @@ namespace ASCOM.Wise40.Boltwood
             // then all communication calls this function
             // you need something to ensure that only one command is in progress at a time
 
-            if (command == "daylight")
-            {
-                SensorData.DayCondition dayCondition = SensorData.DayCondition.dayUnknown;
-                GetSensorData();
-                if (_sensorData != null)
-                    dayCondition = _sensorData.dayCondition;
-                return dayCondition.ToString();
-            }
-            else
-                throw new ASCOM.MethodNotImplementedException("CommandString");
+            throw new ASCOM.MethodNotImplementedException("CommandString");
         }
 
         public void Dispose()
@@ -309,8 +307,15 @@ namespace ASCOM.Wise40.Boltwood
         {
             get
             {
-                GetSensorData();
                 double ret = 0.0;
+
+                try
+                {
+                    GetSensorData();
+                } catch
+                {
+                    return ret;
+                }
 
                 switch (_sensorData.cloudCondition)
                 {
@@ -338,7 +343,13 @@ namespace ASCOM.Wise40.Boltwood
         {
             get
             {
-                GetSensorData();
+                try
+                {
+                    GetSensorData();
+                } catch
+                {
+                    return SensorData.CloudCondition.cloudUnknown;
+                }
                 return _sensorData.cloudCondition;
             }
         }
@@ -354,7 +365,13 @@ namespace ASCOM.Wise40.Boltwood
         {
             get
             {
-                GetSensorData();
+                try
+                {
+                    GetSensorData();
+                } catch
+                {
+                    return double.NaN;
+                }
                 double ret = _sensorData.dewPoint;
                 tl.LogMessage("DewPoint", string.Format("get - {0}", ret));
                 return ret;
@@ -372,7 +389,13 @@ namespace ASCOM.Wise40.Boltwood
         {
             get
             {
-                GetSensorData();
+                try
+                {
+                    GetSensorData();
+                } catch
+                {
+                    return double.NaN;
+                }
                 double ret = _sensorData.humidity;
                 tl.LogMessage("Humidity", string.Format("get - {0}", ret));
                 return ret;
@@ -418,7 +441,11 @@ namespace ASCOM.Wise40.Boltwood
         /// </summary>
         public void Refresh()
         {
-            GetSensorData();
+            try
+            {
+                GetSensorData();
+            }
+            catch { }
         }
 
         /// <summary>
@@ -501,7 +528,13 @@ namespace ASCOM.Wise40.Boltwood
         {
             get
             {
-                GetSensorData();
+                try
+                {
+                    GetSensorData();
+                } catch
+                {
+                    return 100; // ???
+                }
                 var ret = _sensorData.skyAmbientTemp;
 
                 if (ret == (double)SensorData.SpecialTempValue.specialTempSaturatedHot)
@@ -525,7 +558,13 @@ namespace ASCOM.Wise40.Boltwood
         {
             get
             {
-                GetSensorData();
+                try
+                {
+                    GetSensorData();
+                } catch
+                {
+                    return double.NaN;
+                }
                 double ret = _sensorData.ambientTemp;
 
                 tl.LogMessage("Temperature", string.Format("get - {0}", ret));
@@ -602,7 +641,13 @@ namespace ASCOM.Wise40.Boltwood
         {
             get
             {
-                GetSensorData();
+                try
+                {
+                    GetSensorData();
+                } catch
+                {
+                    return double.NaN;
+                }
                 double ret = _sensorData.windSpeed;
 
                 switch (_sensorData.windUnits)
