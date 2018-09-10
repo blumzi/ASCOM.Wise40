@@ -88,7 +88,7 @@ namespace Dash
             //wisefilterwheel.init();
             //wisefilterwheel.Connected = true;
             wisedomeplatform.init();
-            _bypassSafety = wisesafetooperate.Action("status", "").Contains("bypassed:false") ? false : true;
+            //_bypassSafety = wisesafetooperate.Action("status", "").Contains("bypassed:false") ? false : true;
 
             InitializeComponent();
 
@@ -344,6 +344,8 @@ namespace Dash
             #endregion
             #region DomePlatform
             tip = null;
+
+            _bypassSafety = wisesafetooperate.Action("status", "").Contains("bypassed:false") ? false : true;
             if (_bypassSafety)
             {
                 annunciatorDomePlatform.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
