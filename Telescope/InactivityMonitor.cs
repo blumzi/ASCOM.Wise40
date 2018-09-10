@@ -13,8 +13,8 @@ namespace ASCOM.Wise40
     public class InactivityMonitor : WiseObject
     {
         private Timer inactivityTimer;
-        private int realMillisToInactivity = 15 * 60 * 1000;        // 15 minutes
-        private int simulatedlMillisToInactivity = 3 * 60 * 1000;   //  3 minutes
+        private readonly int realMillisToInactivity = (int) TimeSpan.FromMinutes(15).TotalMilliseconds;
+        private readonly int simulatedlMillisToInactivity = (int) TimeSpan.FromMinutes(3).TotalMilliseconds;
         private WiseTele wisetele = WiseTele.Instance;
         private WiseDome wisedome = WiseDome.Instance;
         private Debugger debugger = WiseTele.Instance.debugger;
@@ -47,7 +47,7 @@ namespace ASCOM.Wise40
             wisesite.init();
             inactivityTimer = new System.Threading.Timer(BecomeIdle);
             _activities = Activity.None;
-            Start("init");
+            StartTimer("init");
         }
 
         public void StartActivity(Activity act)
@@ -61,7 +61,7 @@ namespace ASCOM.Wise40
             #region debug
             wisetele.debugger.WriteLine(Common.Debugger.DebugLevel.DebugLogic, "InactivityMonitor:StartActivity: {0}", act.ToString());
             #endregion
-            Stop();
+            StopTimer();
         }
 
         public void EndActivity(Activity act)
@@ -73,8 +73,6 @@ namespace ASCOM.Wise40
             #region debug
             wisetele.debugger.WriteLine(Common.Debugger.DebugLevel.DebugLogic, "InactivityMonitor:EndActivity: {0}", act.ToString());
             #endregion
-            if (_activities == Activity.None)
-                Start("No activities");
         }
 
         public bool Active(Activity a)
@@ -82,13 +80,13 @@ namespace ASCOM.Wise40
             return (_activities & a) != 0;
         }
 
-        public void Stop()
+        public void StopTimer()
         {
             inactivityTimer.Change(Timeout.Infinite, Timeout.Infinite);
             _due = DateTime.MinValue;
         }
 
-        public void Start(string reason)
+        public void StartTimer(string reason)
         {
             if (_shuttingDown)
                 return;
@@ -116,7 +114,7 @@ namespace ASCOM.Wise40
             #endregion
 
             StartActivity(Activity.GoingIdle);
-            inactivityTimer.Change(dueMillis, -1);
+            inactivityTimer.Change(dueMillis, Timeout.Infinite);
             File.Create(filename).Close();
 
             DateTime now = DateTime.Now;

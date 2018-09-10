@@ -304,7 +304,7 @@ namespace ASCOM.Wise40
 
             set
             {
-                inactivityMonitor.Start("TargetDeclination was set");
+                inactivityMonitor.StartTimer("TargetDeclination was set");
                 CheckCoordinateSanity(Angle.Type.Dec, value);
 
                 _targetDeclination = Angle.FromDegrees(value, Angle.Type.Dec);
@@ -340,7 +340,7 @@ namespace ASCOM.Wise40
 
             set
             {
-                inactivityMonitor.Start("TargetRightAscension was set");
+                inactivityMonitor.StartTimer("TargetRightAscension was set");
                 CheckCoordinateSanity(Angle.Type.RA, value);
                 _targetRightAscension = Angle.FromHours(value, Angle.Type.RA);
                 #region trace
@@ -424,7 +424,7 @@ namespace ASCOM.Wise40
                 traceLogger.LogMessage("Connected Set", value.ToString());
                 #endregion
                 if (value == true)
-                    inactivityMonitor.Start("Connected was set to true");
+                    inactivityMonitor.StartTimer("Connected was set to true");
 
                 if (value == _connected)
                     return;
@@ -767,7 +767,7 @@ namespace ASCOM.Wise40
 
         public void AbortSlew()
         {
-            inactivityMonitor.Start("AbortSlew");
+            inactivityMonitor.StartTimer("AbortSlew");
             if (AtPark)
             {
                 //#region debug
@@ -2142,10 +2142,10 @@ namespace ASCOM.Wise40
             if (doChecks)
             {
                 if (AtPark)
-                    throw new InvalidOperationException("Cannot SlewToCoordinates while AtPark");
+                    throw new InvalidOperationException("Cannot SlewToCoordinatesAsync while AtPark");
 
                 if (!Tracking)
-                    throw new InvalidOperationException("Cannot SlewToCoordinates while NOT Tracking");
+                    throw new InvalidOperationException("Cannot SlewToCoordinatesAsync while NOT Tracking");
 
                 string notSafe = SafeAtCoordinates(ra, dec);
                 if (notSafe != string.Empty)
@@ -2881,6 +2881,7 @@ namespace ASCOM.Wise40
             "telescope:get-active",
             "telescope:get-activities",
             "telescope:set-active",
+            "telescope:seconds-till-idle",
             "site:get-opmode",
             "site:set-opmode",
         };
@@ -2908,7 +2909,7 @@ namespace ASCOM.Wise40
                 return inactivityMonitor.ObservatoryActivities;
             else if (action == "telescope:set-active")
             {
-                inactivityMonitor.Start("action telescope:set-active");
+                inactivityMonitor.StartTimer("action telescope:set-active");
                 return "ok";
             }
             else if (action == "telescope:shutdown")  // this is a hidden action, not listed in SupportedActions
@@ -2924,6 +2925,9 @@ namespace ASCOM.Wise40
                 Enum.TryParse(parameter.ToUpper(), out mode);
                 wisesite.OperationalMode = mode;
                 return "ok";
+            } else if (action == "telescope:seconds-till-idle")
+            {
+                return Math.Truncate(inactivityMonitor.RemainingTime.TotalSeconds).ToString();
             }
 
             throw new ASCOM.ActionNotImplementedException("Action \"" + action + "\" is not implemented by this driver");
