@@ -35,6 +35,8 @@ namespace ASCOM.Wise40
             Parking = (1 << 6),
             Shutter = (1 << 7),
             ShuttingDown = (1 << 8),
+            Focuser = (1 << 9),
+            FilterWheel = (1 << 10),
         };
         private Activity _currentlyActive = Activity.None;
         private List<Activity> _activities = new List<Activity> {

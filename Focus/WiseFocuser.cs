@@ -36,6 +36,7 @@ namespace ASCOM.Wise40 //.Focuser
         private WiseFocuserEnc encoder;
 
         private WiseSafeToOperate safetooperate = WiseSafeToOperate.Instance;
+        private static ActivityMonitor activityMonitor = ActivityMonitor.Instance;
 
         public enum Direction { None, Up, Down, AllUp, AllDown };
         public class MotionParameter
@@ -323,6 +324,7 @@ namespace ASCOM.Wise40 //.Focuser
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, "WiseFocuser:Stop Stopped at {0} ...", Position);
             #endregion
+            activityMonitor.EndActivity(ActivityMonitor.Activity.Focuser);
         }
 
         public void Halt()
@@ -499,10 +501,10 @@ namespace ASCOM.Wise40 //.Focuser
                 pinDown.SetOn();
                 if (Simulated)
                     encoder.startMoving(Const.Direction.Decreasing);
-            }                
+            }
 
+            activityMonitor.StartActivity(ActivityMonitor.Activity.Focuser);
             movementMonitoringTimer.Change(0, movementMonitoringTimeout);
-
         }
 
         /// <summary>
