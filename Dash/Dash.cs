@@ -38,6 +38,7 @@ namespace Dash
         private ASCOM.Utilities.Util ascomutil = new Util();
         enum GoToMode { Ra, Ha, DeltaRa, DeltaHa };
         private GoToMode goToMode = GoToMode.Ra;
+        private ActivityMonitor activityMonitor = ActivityMonitor.Instance;
 
         DomeSlaveDriver domeSlaveDriver = DomeSlaveDriver.Instance;
         DebuggingForm debuggingForm = new DebuggingForm();
@@ -230,7 +231,7 @@ namespace Dash
 
             if (wisesite.OperationalMode == WiseSite.OpMode.WISE)
             {
-                TimeSpan ts = wisetele.inactivityMonitor.RemainingTime;
+                TimeSpan ts = activityMonitor.RemainingTime;
                 if (ts == TimeSpan.MaxValue)
                 {
                     // not started
@@ -710,7 +711,7 @@ namespace Dash
             //HandpadControlsEnabled(sender as Control, true);
 
             telescopeStatus.Show("Stopped", 1000, Statuser.Severity.Good);
-            wisetele.inactivityMonitor.EndActivity(InactivityMonitor.Activity.Handpad);
+            activityMonitor.EndActivity(ActivityMonitor.Activity.Handpad);
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Handpad: stopped");
             #endregion

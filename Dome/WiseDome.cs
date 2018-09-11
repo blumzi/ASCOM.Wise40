@@ -38,6 +38,7 @@ namespace ASCOM.Wise40
         private static Object _caliWriteLock = new object();
 
         public WiseDomeShutter wisedomeshutter = WiseDomeShutter.Instance;
+        private static ActivityMonitor activityMonitor = ActivityMonitor.Instance;
                 
         [FlagsAttribute] public enum DomeState {
             Idle = 0,
@@ -606,6 +607,8 @@ namespace ASCOM.Wise40
                 debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome:Stop Fully stopped (not calibrated) (encoder: {0}) after {1} tries",
                     domeEncoder.Value, tries + 1);
             #endregion
+
+            activityMonitor.EndActivity(ActivityMonitor.Activity.Dome);
         }
 
         public void StartOpeningShutter()
@@ -786,6 +789,8 @@ namespace ASCOM.Wise40
             Angle toAng = new Angle(degrees, Angle.Type.Az);
 
             tl.LogMessage("Dome: SlewToAzimuth", toAng.ToString());
+
+            activityMonitor.StartActivity(ActivityMonitor.Activity.Dome);
 
             if (!Calibrated)
             {

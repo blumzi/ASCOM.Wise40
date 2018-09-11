@@ -38,6 +38,8 @@ namespace ASCOM.Wise40
 
         public WebClient webClient = null;
 
+        private ActivityMonitor activityMonitor = ActivityMonitor.Instance;
+
         public class WebClient
         {
             private static System.Threading.Timer _timer;
@@ -142,6 +144,7 @@ namespace ASCOM.Wise40
         {
             ShutterState prev = State;
             _timer.Change(Timeout.Infinite, Timeout.Infinite);
+            activityMonitor.EndActivity(ActivityMonitor.Activity.Shutter);
 
             switch (State)
             {
@@ -167,6 +170,7 @@ namespace ASCOM.Wise40
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "StartClosing: started closing the shutter");
             #endregion debug
+            activityMonitor.StartActivity(ActivityMonitor.Activity.Shutter);
             closePin.SetOn();
             _state = ShutterState.shutterClosing;
             _timer.Change(_timeout, Timeout.Infinite);
@@ -177,6 +181,7 @@ namespace ASCOM.Wise40
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "StartOpening: started opening the shutter");
             #endregion debug
+            activityMonitor.StartActivity(ActivityMonitor.Activity.Shutter);
             openPin.SetOn();
             _state = ShutterState.shutterOpening;
             _timer.Change(_timeout, Timeout.Infinite);
