@@ -379,14 +379,23 @@ namespace Dash
             {
                 string status = wisesafetooperate.Action("status", string.Empty);
                 bool bypassed = status.Contains("bypassed:true");
+                bool intervention = status.Contains("no-human-intervention:false");
+                bool safe = status.Contains("safe:true");
 
-                if (bypassed)
+                if (intervention)
+                {
+                    annunciatorSafeToOperate.Text = "Human Intervention";
+                    annunciatorSafeToOperate.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+                    string reasons = String.Join("\n", wisesafetooperate.UnsafeReasons);
+                    tip = reasons.Replace(";", "\n  ");
+                }
+                else if (bypassed)
                 {
                     annunciatorSafeToOperate.Text = "Safety bypassed";
                     annunciatorSafeToOperate.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
                     tip = "Safety checks are bypassed!";
                 }
-                else if (wisesite.safeToOperate.IsSafe)
+                else if (safe)
                 {
                     annunciatorSafeToOperate.Text = "Safe to operate";
                     annunciatorSafeToOperate.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
