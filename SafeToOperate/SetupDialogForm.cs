@@ -143,9 +143,7 @@ namespace ASCOM.Wise40SafeToOperate
 
         private void InitUI()
         {
-            wisesafetooperate.init();
             wisesafetooperate.Connected = true;
-            wisesafetooperate.ReadProfile();
             
             textBoxCloudCoverPercent.Text = wisesafetooperate.cloudsSensor.MaxAsString;
             textBoxRain.Text = wisesafetooperate.rainSensor.MaxAsString;

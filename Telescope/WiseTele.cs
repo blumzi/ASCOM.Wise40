@@ -490,7 +490,6 @@ namespace ASCOM.Wise40
             astroutils = new Astrometry.AstroUtils.AstroUtils();
             hardware.init();
             wisesite.init();
-            wisesafetooperate.init();
 
             _trackingRestorer = new TrackingRestorer();
             inactivityMonitor = new InactivityMonitor();

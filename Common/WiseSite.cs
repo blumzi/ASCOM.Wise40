@@ -233,6 +233,15 @@ namespace ASCOM.Wise40
                 #endregion
             }
         }
+
+        public bool OperationalModeRequiresRESTServer
+        {
+            get
+            {
+                // Not sure about ACP yet!
+                return (_opMode == OpMode.LCO || _opMode == OpMode.WISE);
+            }
+        }
     }
 
     public static class HumanIntervention

@@ -81,14 +81,11 @@ namespace Dash
             wisedome.wisedomeshutter.init();
             wisefocuser.init();
             wisefocuser.Connected = true;
-            wisesafetooperate.init();
             wisesafetooperate.Connected = true;
-            //wiseboltwood.Connected = true;
             wisesite.och.Connected = true;
             //wisefilterwheel.init();
             //wisefilterwheel.Connected = true;
             wisedomeplatform.init();
-            //_bypassSafety = wisesafetooperate.Action("status", "").Contains("bypassed:false") ? false : true;
 
             InitializeComponent();
 
@@ -465,7 +462,6 @@ namespace Dash
                 string nc = "???";
 
                 List<Label> labels = new List<Label>() {
-                    labelAgeValue,
                     labelCloudCoverValue,
                     labelDewPointValue,
                     labelSkyTempValue,
@@ -491,7 +487,6 @@ namespace Dash
                     ASCOM.DriverAccess.ObservingConditions oc = wisesite.och;
 
                     #region ObservingConditions from OCH
-                    labelAgeValue.Text = ((int)Math.Round(oc.TimeSinceLastUpdate(""), 2)).ToString() + "sec";
                     labelDewPointValue.Text = oc.DewPoint.ToString() + "°C";
                     labelSkyTempValue.Text = oc.SkyTemperature.ToString() + "°C";
                     labelTempValue.Text = oc.Temperature.ToString() + "°C";
