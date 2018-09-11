@@ -343,26 +343,17 @@ namespace Dash
             #region DomePlatform
             tip = null;
 
-            _bypassSafety = wisesafetooperate.Action("status", "").Contains("bypassed:false") ? false : true;
-            if (_bypassSafety)
+            if (wisedomeplatform.IsSafe)
             {
+                annunciatorDomePlatform.Text = "Platform is safe";
                 annunciatorDomePlatform.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
-                tip = "Safety is bypassed";
+                tip = "Dome platform is at its lowest position.";
             }
             else
             {
-                if (wisedomeplatform.IsSafe)
-                {
-                    annunciatorDomePlatform.Text = "Platform is lowered";
-                    annunciatorDomePlatform.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
-                    tip = "Dome platform is at its lowest position.";
-                }
-                else
-                {
-                    annunciatorDomePlatform.Text = "Platform is RAISED";
-                    annunciatorDomePlatform.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
-                    tip = "Dome platform is NOT at its lowest position!";
-                }
+                annunciatorDomePlatform.Text = "Platform is NOT SAFE";
+                annunciatorDomePlatform.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+                tip = "Dome platform is NOT at its lowest position!";
             }
             toolTip.SetToolTip(annunciatorDomePlatform, tip);
             #endregion

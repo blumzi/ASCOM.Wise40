@@ -294,18 +294,18 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             bool intervention = HumanIntervention.IsSet();
             string text = string.Empty, tip = string.Empty;
             Color color = normalColor;
-
-            if (bypassed)
-            {
-                text = "Bypassed";
-                color = warningColor;
-                tip = "Manually bypassed from Settings";
-            }
-            else if (intervention)
+            
+            if (intervention)
             {
                 text = "Intervention";
                 color = warningColor;
-                tip = HumanIntervention.Info;
+                tip = HumanIntervention.Info.Replace(";", "\n  ");
+            }
+            else if (bypassed)
+            {
+                text = "Bypassed";
+                color = warningColor;
+                tip = "Manually bypassed";
             }
             else if (!ready)
             {
