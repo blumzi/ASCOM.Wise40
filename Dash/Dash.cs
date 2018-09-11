@@ -396,7 +396,8 @@ namespace Dash
                 {
                     annunciatorSafeToOperate.Text = "Not safe to operate";
                     annunciatorSafeToOperate.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
-                    tip = string.Join("\n", wisesafetooperate.UnsafeReasons);
+                    string reasons = string.Join("\n", wisesafetooperate.UnsafeReasons);
+                    tip = reasons.Replace(";", "\n  ");
                 }
             }
             toolTip.SetToolTip(annunciatorSafeToOperate, tip);
@@ -528,7 +529,8 @@ namespace Dash
                     else
                     {
                         weatherStatus.Show("Not safe to operate", 0, Statuser.Severity.Error, true);
-                        weatherStatus.SetToolTip(string.Join("\n", wisesafetooperate.UnsafeReasons));
+                        string reasons = string.Join("\n", wisesafetooperate.UnsafeReasons);
+                        weatherStatus.SetToolTip(reasons.Replace(";", "\n  "));
                     }
                     #endregion
                 }

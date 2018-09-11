@@ -313,7 +313,7 @@ namespace ASCOM.Wise40
                             info += line + "; ";
                     }
 
-                    info = "Human Intervention: " + ((info == string.Empty) ? string.Format("File \"{0}\" exists.",
+                    info = "Human Intervention; " + ((info == string.Empty) ? string.Format("File \"{0}\" exists.",
                         Const.humanInterventionFilePath) : info);
                     _info = info;
                     _lastInfoRead = DateTime.Now;
