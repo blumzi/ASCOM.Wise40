@@ -424,11 +424,11 @@ namespace ASCOM.Wise40SafeToOperate
                     string reason;
                     foreach (Sensor s in _sensors)
                     {
-                        if (s.Name == "Sun")
+                        if (s.Name == "Sun" || s.Name == "HumanIntervention")
                             continue;
-                        if (s.nReadings < s._repeats)
+                        if (!s._ready)
                         {
-                            reasons.Add(string.Format("{0} - not enough readings ({1} < {2})", s.Name, s.nReadings, s._repeats));
+                            reasons.Add(string.Format("{0} - not ready", s.Name));
                         }
                         else if (!s.isSafe && (reason = s.reason()) != string.Empty)
                             reasons.Add(reason);
@@ -490,6 +490,8 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
+                if (!cloudsSensor._ready)
+                    return Const.TriStateStatus.Warning;
                 return cloudsSensor.isSafe ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
             }
         }
@@ -498,6 +500,8 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
+                if (!windSensor._ready)
+                    return Const.TriStateStatus.Warning;
                 return windSensor.isSafe ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
             }
         }
@@ -506,6 +510,8 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
+                if (!humiditySensor._ready)
+                    return Const.TriStateStatus.Warning;
                 return humiditySensor.isSafe ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
             }
         }
@@ -514,6 +520,8 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
+                if (!rainSensor._ready)
+                    return Const.TriStateStatus.Warning;
                 return rainSensor.isSafe ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
             }
         }
@@ -617,7 +625,7 @@ namespace ASCOM.Wise40SafeToOperate
                     if (s.Name == "Sun")
                         continue;
 
-                    if (s.nReadings < s._repeats)
+                    if (! s._ready)
                         return false;
                 }
 

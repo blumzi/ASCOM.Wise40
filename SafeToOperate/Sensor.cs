@@ -18,6 +18,8 @@ namespace ASCOM.Wise40SafeToOperate
         public bool _enabledByProfile;
         public int _interval;      // millis
         public int _repeats;
+        public bool _ready;
+        public int _nreadings, _nbad;
         protected FixedSizedQueue<bool> _isSafeQueue;
         private bool _running = false;
         protected string _maxValueProfileName;
@@ -39,6 +41,9 @@ namespace ASCOM.Wise40SafeToOperate
             _timer = new System.Threading.Timer(new TimerCallback(onTimer));
             wisesafetooperate = instance;
             _mustStabilize = name != "Sun";
+            _ready = false;
+            _nreadings = 0;
+            _nbad = 0;
             readProfile();
         }
 
@@ -73,27 +78,27 @@ namespace ASCOM.Wise40SafeToOperate
         }
         #endregion
 
-        public int nBadReadings
-        {
-            get
-            {
-                var values = _isSafeQueue.ToArray();
-                int nbad = 0;
+        //public int nBadReadings
+        //{
+        //    get
+        //    {
+        //        var values = _isSafeQueue.ToArray();
+        //        int nbad = 0;
 
-                foreach (var v in values)
-                    if (v == false)
-                        nbad++;
-                return nbad;
-            }
-        }
+        //        foreach (var v in values)
+        //            if (v == false)
+        //                nbad++;
+        //        return nbad;
+        //    }
+        //}
 
-        public int nReadings
-        {
-            get
-            {
-                return _isSafeQueue.ToArray().Length;
-            }
-        }
+        //public int nReadings
+        //{
+        //    get
+        //    {
+        //        return _isSafeQueue.ToArray().Length;
+        //    }
+        //}
         
         protected bool isStabilizing
         {
@@ -121,8 +126,7 @@ namespace ASCOM.Wise40SafeToOperate
                 Stop();
                 return;
             }
-            bool reading = getIsSafe();
-            #region debug
+            
             bool wassafe = false;
             foreach (bool safe in _isSafeQueue.ToArray())
                 if (safe)
@@ -130,12 +134,35 @@ namespace ASCOM.Wise40SafeToOperate
                     wassafe = true;
                     break;
                 }
-            debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}) onTimer: enqueing {1}", Name, reading);
-            #endregion
+
+            bool reading = getIsSafe();
             _isSafeQueue.Enqueue(reading);
-            
+            _nreadings++;
+            if (_nreadings > _repeats)
+                _nreadings = _repeats;
+
+            if (_nreadings == _repeats)
+                _ready = true;
+
+            bool[] arr = _isSafeQueue.ToArray();
+            #region debug
+            List<string> values = new List<string>();
+            foreach (bool safe in arr)
+                values.Add(safe.ToString());
+
+            debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}) onTimer: added {1} [{2}]", Name, reading, String.Join(",", values));
+            #endregion
+
+            if (!_ready)
+                return;
+
+            _nbad = 0;
+            foreach (bool safe in arr)
+                if (!safe)
+                    _nbad++;
+
             bool issafe = false;
-            foreach (bool safe in _isSafeQueue.ToArray())
+            foreach (bool safe in arr)
                 if (safe)
                 {
                     issafe = true;
@@ -158,7 +185,6 @@ namespace ASCOM.Wise40SafeToOperate
             {
                 _startedStabilizing = DateTime.MinValue;
             }
-
         }
 
         public bool Enabled
@@ -256,19 +282,40 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
+                bool ret;
+
                 if (!Enabled)
-                    return true;
+                {
+                    ret = true;
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor {0}, isSafe: {1} (not enabled)", Name, ret);
+                    #endregion
+                    return ret;
+                }
 
-                if (Name == "HumanIntervention" || Name == "Sun")   // One-shots
-                    return getIsSafe();
+                if (Name == "HumanIntervention" || Name == "Sun")
+                {  // One-shots
+                    ret = getIsSafe();
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor {0}, isSafe: {1}", Name, ret);
+                    #endregion
+                    return ret;
+                }
 
-                if (isStabilizing)
-                    return false;
+                if (!_ready || isStabilizing)
+                {
+                    ret = false;
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor {0}, isSafe: {1} (ready: {2}, stabilizing: {3})", Name, ret, _ready, isStabilizing);
+                    #endregion
+                    return ret;
+                }
 
-                if (nReadings < _isSafeQueue.MaxSize)   // not enough readings yet
-                    return false;
-
-                return nBadReadings != nReadings;
+                ret = _nbad != _nreadings;
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor {0}, isSafe: {1} (nReadings: {2}, nBadReadings: {3})", Name, ret, _nreadings, _nbad);
+                #endregion
+                return ret;
             }
         }
     }
@@ -297,18 +344,18 @@ namespace ASCOM.Wise40SafeToOperate
 
         public override string reason()
         {
-            if (nReadings < _repeats)
-                return string.Format("{0} - not enough readings ({1} < {2})", Name, nReadings, _repeats);
+            if (! _ready)
+                return string.Format("{0} - not enough readings ({1} < {2})", Name, _nreadings, _repeats);
 
             if (isStabilizing)
                 return string.Format("{0} - stabilizing", Name);
 
             int nbad;
 
-            if ((nbad = nBadReadings) == 0)
+            if (_nbad < _repeats)
                 return string.Empty;
 
-            return string.Format("The last {0} wind speed readings were higher than {1} km/h.", nbad, _max);
+            return string.Format("The last {0} wind speed readings were higher than {1} km/h.", _nbad, _max);
         }
 
         public override string MaxAsString
@@ -327,7 +374,7 @@ namespace ASCOM.Wise40SafeToOperate
             }
         }
     }
-#endregion
+    #endregion
 
     #region HumanIntervention
     public class HumanInterventionSensor : Sensor
@@ -358,7 +405,7 @@ namespace ASCOM.Wise40SafeToOperate
             get { return 0.ToString(); }
         }
     }
-#endregion
+    #endregion
 
     #region Clouds
     public class CloudsSensor : Sensor
@@ -384,17 +431,15 @@ namespace ASCOM.Wise40SafeToOperate
 
         public override string reason()
         {
-            if (nReadings < _repeats)
+            if (! _ready)
             {
-                return string.Format("{0} - not enough readings ({1} < {2})", Name, nReadings, _repeats);
+                return string.Format("{0} - not enough readings ({1} < {2})", Name, _nreadings, _repeats);
             }
 
-            int nbad;
-
-            if ((nbad = nBadReadings) == 0)
+            if (_nbad < _repeats)
                 return string.Empty;
 
-            return string.Format("The last {0} cloud cover readings were higher than \"{1}\"", nbad, MaxAsString);
+            return string.Format("The last {0} cloud cover readings were higher than \"{1}\"", _nbad, MaxAsString);
         }
 
         public override string MaxAsString
@@ -410,7 +455,7 @@ namespace ASCOM.Wise40SafeToOperate
             }
         }
     }
-#endregion
+    #endregion
 
     #region Rain
     public class RainSensor : Sensor
@@ -436,17 +481,17 @@ namespace ASCOM.Wise40SafeToOperate
 
         public override string reason()
         {
-            if (nReadings < _repeats)
+            if (! _ready)
             {
-                return string.Format("{0} - not enough readings ({1} < {2})", Name, nReadings, _repeats);
+                return string.Format("{0} - not enough readings ({1} < {2})", Name, _nreadings, _repeats);
             }
 
             int nbad;
 
-            if ((nbad = nBadReadings) == 0)
+            if (_nbad < _repeats)
                 return string.Empty;
 
-            return string.Format("The last {0} rain rate readings were higher than {1}", nbad, MaxAsString);
+            return string.Format("The last {0} rain rate readings were higher than {1}", _nbad, MaxAsString);
         }
 
         public override string MaxAsString
@@ -462,7 +507,7 @@ namespace ASCOM.Wise40SafeToOperate
             }
         }
     }
-#endregion
+    #endregion
 
     #region Humidity
     public class HumiditySensor : Sensor
@@ -490,17 +535,17 @@ namespace ASCOM.Wise40SafeToOperate
 
         public override string reason()
         {
-            if (nReadings < _repeats)
+            if (! _ready)
             {
-                return string.Format("{0} - not enough readings ({1} < {2})", Name, nReadings, _repeats);
+                return string.Format("{0} - not enough readings ({1} < {2})", Name, _nreadings, _repeats);
             }
 
             int nbad;
 
-            if ((nbad = nBadReadings) == 0)
+            if (_nbad < _repeats)
                 return string.Empty;
 
-            return string.Format("The last {0} humidity readings were higher than {1}", nbad, MaxAsString);
+            return string.Format("The last {0} humidity readings were higher than {1}", _nbad, MaxAsString);
         }
 
         public override string MaxAsString
