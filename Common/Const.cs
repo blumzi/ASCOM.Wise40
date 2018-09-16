@@ -47,11 +47,15 @@ namespace ASCOM.Wise40.Common
         public const string wiseObservatoryMonitorDriverID = "ASCOM.Wise40.ObservatoryMonitor.SafetyMonitor";
 
         public const string wiseASCOMServerAppName = "ASCOM.RESTServer";
-        public const string wiseDashboardAppName = "Dash";
-        public const string wiseObservatoryMonitorAppName = "ObservatoryMonitor";
         public const string wiseASCOMServerPath = "c:/Program Files (x86)/ASCOM/Remote/ASCOM.RESTServer.exe";
+
+        public const string wiseObservatoryMonitorAppName = "ObservatoryMonitor";
+
+        public const string wiseDashboardAppName = "Dash";
         public const string wiseSimulatedDashPath = "c:/Users/Blumzi/Documents/Visual Studio 2015/Projects/Wise40/Dash/bin/x86/Debug/Dash.exe";
         public const string wiseRealDashPath = "c:/Users/mizpe/source/repos/ASCOM.Wise40/Dash/bin/x86/Debug/Dash.exe";
+
+        public const string wiseWeatherLinkPath = "c:/WeatherLink/WeatherLink 6.0.2.exe";
 
         public class ProfileName
         {
