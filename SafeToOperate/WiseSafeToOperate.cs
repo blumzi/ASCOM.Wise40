@@ -340,7 +340,7 @@ namespace ASCOM.Wise40SafeToOperate
         public void startSensors()
         {
             foreach (Sensor s in _sensors)
-                s.Start();
+                s.Restart(0);
         }
 
         public string DriverId
@@ -424,19 +424,33 @@ namespace ASCOM.Wise40SafeToOperate
                     string reason;
                     foreach (Sensor s in _sensors)
                     {
-                        if (s.Name == "Sun" || s.Name == "HumanIntervention")
-                            continue;
-                        if (!s._ready)
+                        if (s.Name == "Sun")
                         {
-                            reasons.Add(string.Format("{0} - not ready", s.Name));
+                            double elev = SunElevation, maxElevation = Convert.ToDouble(sunSensor.MaxAsString);
+                            if (elev > maxElevation)
+                                reasons.Add(string.Format("Sun elevation ({0:f1}deg) is higher than {1:f1}deg.", elev, maxElevation));
+                            continue;
+                        }
+
+                        if (s.Name == "HumanIntervention")
+                            continue;       // was handled above
+
+                        if (s._attr.IsSet(Sensor.SensorAttributes.Stale))
+                        {
+                            reasons.Add(string.Format("{0} contains stale data", s.Name));
+                        }
+                        else if (!s._attr.IsSet(Sensor.SensorAttributes.Ready))
+                        {
+                            reasons.Add(string.Format("{0} - not ready (less than {1} readings)",
+                                s.Name, s._repeats));
+                        } else if (s._attr.IsSet(Sensor.SensorAttributes.Stabilizing))
+                        {
+                            reasons.Add(string.Format("{0} - stabilizing", s.Name));
                         }
                         else if (!s.isSafe && (reason = s.reason()) != string.Empty)
                             reasons.Add(reason);
                     }
 
-                    double elev = SunElevation, maxElevation = Convert.ToDouble(sunSensor.MaxAsString);
-                    if (elev > maxElevation)
-                        reasons.Add(string.Format("Sun elevation ({0:f1}deg) is higher than {1:f1}deg.", elev, maxElevation));
                 }
                 return reasons;
             }
@@ -490,7 +504,7 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
-                if (!cloudsSensor._ready)
+                if (!cloudsSensor._attr.IsSet(Sensor.SensorAttributes.Ready))
                     return Const.TriStateStatus.Warning;
                 return cloudsSensor.isSafe ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
             }
@@ -500,7 +514,7 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
-                if (!windSensor._ready)
+                if (!windSensor._attr.IsSet(Sensor.SensorAttributes.Ready))
                     return Const.TriStateStatus.Warning;
                 return windSensor.isSafe ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
             }
@@ -510,7 +524,7 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
-                if (!humiditySensor._ready)
+                if (!humiditySensor._attr.IsSet(Sensor.SensorAttributes.Ready))
                     return Const.TriStateStatus.Warning;
                 return humiditySensor.isSafe ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
             }
@@ -520,7 +534,7 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
-                if (!rainSensor._ready)
+                if (!rainSensor._attr.IsSet(Sensor.SensorAttributes.Ready))
                     return Const.TriStateStatus.Warning;
                 return rainSensor.isSafe ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
             }
@@ -625,7 +639,7 @@ namespace ASCOM.Wise40SafeToOperate
                     if (s.Name == "Sun")
                         continue;
 
-                    if (! s._ready)
+                    if (! s._attr.IsSet(Sensor.SensorAttributes.Ready))
                         return false;
                 }
 

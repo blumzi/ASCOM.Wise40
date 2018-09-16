@@ -11,40 +11,69 @@ using System.IO;
 
 namespace ASCOM.Wise40SafeToOperate
 {
-    public abstract class Sensor: WiseObject
+    public abstract class Sensor : WiseObject
     {
         private System.Threading.Timer _timer;
-        public bool _enabled;
-        public bool _enabledByProfile;
-        public int _interval;      // millis
-        public int _repeats;
-        public bool _ready;
-        public int _nreadings, _nbad;
-        protected FixedSizedQueue<bool> _isSafeQueue;
-        private bool _running = false;
-        protected string _maxValueProfileName;
-        protected static Debugger debugger = Debugger.Instance;
 
-        private bool _mustStabilize;
-        private DateTime _startedStabilizing = DateTime.MinValue;
+        public class SensorAttributes
+        {
+            public const uint None = 0;
+            public const uint Ready = (1 << 1);           // has enough readings to decide if safe or not
+            public const uint Safe = (1 << 2);            // at least one reading was safe
+            public const uint Stabilizing = (1 << 3);     // in transition from unsafe to safe
+            public const uint Accumulating = (1 << 4);    // uses more than one reading to decide if safe or not
+            public const uint TimerIsRunning = (1 << 5);
+            public const uint MustStabilize = (1 << 6);   // uses more than one reading and must stabilize when transitioning from unsafe to safe
+            public const uint Stale = (1 << 7);           // te data reading is too old
+            private uint _value;
+
+            public SensorAttributes()
+            {
+                Reset();
+            }
+
+            public bool IsSet(uint a)
+            {
+                return (_value & a) != 0;
+            }
+
+            public void Set(uint a)
+            {
+                _value |= a;
+            }
+
+            public void Unset(uint a)
+            {
+                _value &= ~a;
+            }
+
+            public void Reset()
+            {
+                _value = None;
+            }
+        }
+
+        public int _intervalMillis;
+        public int _repeats;
+        public int _nbad;
+        public bool _enabled;
+        public SensorAttributes _attr = new SensorAttributes();
+
+        protected FixedSizedQueue<bool> _isSafeQueue;
+        protected static Debugger debugger = Debugger.Instance;
         
         protected static string deviceType = "SafetyMonitor";
 
         protected static WiseSafeToOperate wisesafetooperate;
 
-        private ASCOM.Utilities.Util util = new Util();
-
-
         protected Sensor(string name, WiseSafeToOperate instance)
         {
-            base.Name = name;
+            Name = name;
+            _attr = new SensorAttributes();
+
             _timer = new System.Threading.Timer(new TimerCallback(onTimer));
             wisesafetooperate = instance;
-            _mustStabilize = name != "Sun";
-            _ready = false;
-            _nreadings = 0;
-            _nbad = 0;
-            readProfile();
+            Restart(0);
         }
 
         #region ASCOM Profile
@@ -62,56 +91,20 @@ namespace ASCOM.Wise40SafeToOperate
                 case "Humidity": defaultInterval = 30; defaultRepeats = 4; break;
             }
 
-            _interval = 1000 * Convert.ToInt32(wisesafetooperate._profile.GetValue(Const.wiseSafeToOperateDriverID, Name, "Interval", defaultInterval.ToString()));
+            _intervalMillis = 1000 * Convert.ToInt32(wisesafetooperate._profile.GetValue(Const.wiseSafeToOperateDriverID, Name, "Interval", defaultInterval.ToString()));
             _repeats = Convert.ToInt32(wisesafetooperate._profile.GetValue(Const.wiseSafeToOperateDriverID, Name, "Repeats", defaultRepeats.ToString()));
-            _isSafeQueue = new FixedSizedQueue<bool>(_repeats);
-            Enabled = Convert.ToBoolean(wisesafetooperate._profile.GetValue(Const.wiseSafeToOperateDriverID, Name, "Enabled", true.ToString()));
+            _enabled = Convert.ToBoolean(wisesafetooperate._profile.GetValue(Const.wiseSafeToOperateDriverID, Name, "Enabled", true.ToString()));
             readSensorProfile();
         }
 
         public void writeProfile()
         {
-            wisesafetooperate._profile.WriteValue(Const.wiseSafeToOperateDriverID, Name, (_interval / 1000).ToString(), "Interval");
+            wisesafetooperate._profile.WriteValue(Const.wiseSafeToOperateDriverID, Name, (_intervalMillis / 1000).ToString(), "Interval");
             wisesafetooperate._profile.WriteValue(Const.wiseSafeToOperateDriverID, Name, _repeats.ToString(), "Repeats");
             wisesafetooperate._profile.WriteValue(Const.wiseSafeToOperateDriverID, Name, _enabled.ToString(), "Enabled");
             writeSensorProfile();
         }
         #endregion
-
-        //public int nBadReadings
-        //{
-        //    get
-        //    {
-        //        var values = _isSafeQueue.ToArray();
-        //        int nbad = 0;
-
-        //        foreach (var v in values)
-        //            if (v == false)
-        //                nbad++;
-        //        return nbad;
-        //    }
-        //}
-
-        //public int nReadings
-        //{
-        //    get
-        //    {
-        //        return _isSafeQueue.ToArray().Length;
-        //    }
-        //}
-        
-        protected bool isStabilizing
-        {
-            get
-            {
-                if (!_mustStabilize)
-                    return false;
-
-                if (_startedStabilizing == DateTime.MinValue)
-                    return false;
-                return DateTime.Now.Subtract(_startedStabilizing) < wisesafetooperate._stabilizationPeriod;
-            }
-        }
 
         public abstract string reason();
         public abstract void readSensorProfile();
@@ -119,160 +112,109 @@ namespace ASCOM.Wise40SafeToOperate
         public abstract bool getIsSafe();
         public abstract string MaxAsString { get; set; }
 
+        public bool IsStale(string propertyName)
+        {
+            if (wisesafetooperate.och.TimeSinceLastUpdate(propertyName) > wisesafetooperate.ageMaxSeconds)
+            {
+                _attr.Set(SensorAttributes.Stale);
+                _attr.Unset(SensorAttributes.Safe);
+                return true;
+            }
+
+            _attr.Unset(SensorAttributes.Stale);
+            return false;
+        }
+
+        public void Restart(int due)
+        {
+            _attr = new SensorAttributes();
+            _nbad = 0;
+
+            readProfile();
+            if (_enabled)
+            {
+                if (_repeats > 1)
+                {
+                    _isSafeQueue = new FixedSizedQueue<bool>(_repeats);
+                    _attr.Set(SensorAttributes.MustStabilize);
+                    _timer.Change(due, _intervalMillis);
+                } else
+                    _timer.Change(Timeout.Infinite, Timeout.Infinite);
+            }
+            else {
+                _timer.Change(Timeout.Infinite, Timeout.Infinite);
+            }
+        }
+
         private void onTimer(object StateObject)
         {        
-            if (!Enabled)
+            if (!_enabled)
             {
                 Stop();
                 return;
             }
             
-            bool wassafe = false;
-            foreach (bool safe in _isSafeQueue.ToArray())
-                if (safe)
-                {
-                    wassafe = true;
-                    break;
-                }
+            if (_attr.IsSet(SensorAttributes.Stabilizing))
+            {
+                // this timer event is at the end of the stabilization period
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}) - Stabilization ended, restarting", Name);
+                #endregion
+                Restart(0);
+                return;
+            }
 
-            bool reading = getIsSafe();
-            _isSafeQueue.Enqueue(reading);
-            _nreadings++;
-            if (_nreadings > _repeats)
-                _nreadings = _repeats;
+            bool wassafe = _attr.IsSet(SensorAttributes.Safe);
+            bool wasready = _attr.IsSet(SensorAttributes.Ready);
 
-            if (_nreadings == _repeats)
-                _ready = true;
+            bool currentReading = getIsSafe();
+            _isSafeQueue.Enqueue(currentReading);
+            if (_isSafeQueue.ToArray().Count() == _isSafeQueue.MaxSize)
+                _attr.Set(SensorAttributes.Ready);
 
             bool[] arr = _isSafeQueue.ToArray();
-            #region debug
             List<string> values = new List<string>();
+            int baddies = 0;
             foreach (bool safe in arr)
+            {
                 values.Add(safe.ToString());
+                if (safe == false)
+                    baddies++;
+            }
+            debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}) onTimer: added {1} [{2}]",
+                Name, currentReading, String.Join(",", values));
 
-            debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}) onTimer: added {1} [{2}]", Name, reading, String.Join(",", values));
-            #endregion
+            _nbad = baddies;
+            if (_attr.IsSet(SensorAttributes.Ready) && _nbad < _repeats)
+                _attr.Set(SensorAttributes.Safe);
 
-            if (!_ready)
+            if (!_attr.IsSet(SensorAttributes.Ready))
                 return;
 
-            _nbad = 0;
-            foreach (bool safe in arr)
-                if (!safe)
-                    _nbad++;
-
-            bool issafe = false;
-            foreach (bool safe in arr)
-                if (safe)
-                {
-                    issafe = true;
-                    break;
-                }
-
+            bool issafe = _attr.IsSet(SensorAttributes.Safe);
             #region debug
             if (wassafe != issafe)
                 debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}) isSafe changed from {1} to {2}", Name, wassafe, issafe);
             #endregion
 
-            if (_mustStabilize && (issafe && !wassafe))
+            if (wasready && _attr.IsSet(SensorAttributes.MustStabilize) && (!wassafe && issafe))
             {
-                _startedStabilizing = DateTime.Now;
+                // the sensor transited from unsafe to safe
+                _attr.Set(SensorAttributes.Stabilizing);
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}) started stabilizing", Name);
                 #endregion
+                _timer.Change(Timeout.Infinite,(int) wisesafetooperate._stabilizationPeriod.TotalMilliseconds);
             }
-            else
-            {
-                _startedStabilizing = DateTime.MinValue;
-            }
-        }
-
-        public bool Enabled
-        {
-            get
-            {
-                return _enabled;
-            }
-
-            set
-            {
-                _enabled = value;
-            }
-        }
-
-        public void Start()
-        {
-            if (!Enabled || Running)
-            {
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}) Start: not started: Enabled={1}, Running={2}", Name, Enabled, Running);
-                #endregion
-                return;
-            }
-            _isSafeQueue = new FixedSizedQueue<bool>(_repeats);
-            _running = true;
-            #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}) Start: started", Name);
-            #endregion
-            _timer.Change(0, _interval);
         }
 
         public void Stop()
         {
             _timer.Change(Timeout.Infinite, Timeout.Infinite);
-            _running = false;
+            _attr.Unset(SensorAttributes.TimerIsRunning);
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}) Stop: stopped", Name);
             #endregion
-        }
-
-        public bool Running
-        {
-            get
-            {
-                return _running;
-            }
-        }
-
-        public int Interval
-        {
-            get
-            {
-                return _interval / 1000;
-            }
-
-            set
-            {
-                if (Running)
-                {
-                    Stop();
-                    _interval = value * 1000;
-                    Start();
-                }
-                else
-                    _interval = value * 1000;
-            }
-        }
-
-        public int Repeats
-        {
-            get
-            {
-                return _repeats;
-            }
-
-            set
-            {
-                if (Running)
-                {
-                    Stop(); ;
-                    _repeats = value;
-                    Start();
-                }
-                else
-                    _repeats = value;
-
-            }
         }
 
         /// <summary>
@@ -284,7 +226,7 @@ namespace ASCOM.Wise40SafeToOperate
             {
                 bool ret;
 
-                if (!Enabled)
+                if (!_enabled)
                 {
                     ret = true;
                     #region debug
@@ -302,18 +244,20 @@ namespace ASCOM.Wise40SafeToOperate
                     return ret;
                 }
 
-                if (!_ready || isStabilizing)
+                if (!_attr.IsSet(SensorAttributes.Ready) || _attr.IsSet(SensorAttributes.Stabilizing))
                 {
                     ret = false;
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor {0}, isSafe: {1} (ready: {2}, stabilizing: {3})", Name, ret, _ready, isStabilizing);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor {0}, isSafe: {1} (ready: {2}, stabilizing: {3})",
+                        Name, ret, _attr.IsSet(SensorAttributes.Ready), _attr.IsSet(SensorAttributes.Stabilizing));
                     #endregion
                     return ret;
                 }
 
-                ret = _nbad != _nreadings;
+                ret = _attr.IsSet(SensorAttributes.Safe);
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor {0}, isSafe: {1} (nReadings: {2}, nBadReadings: {3})", Name, ret, _nreadings, _nbad);
+                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor {0}, isSafe: {1} ({2} bad out of {3})",
+                    Name, ret, _nbad, _repeats);
                 #endregion
                 return ret;
             }
@@ -339,22 +283,13 @@ namespace ASCOM.Wise40SafeToOperate
 
         public override bool getIsSafe()
         {
+            if (IsStale("WindSpeed"))
+                return false;
             return (wisesafetooperate.och.WindSpeed * 3.6) < _max;
         }
 
         public override string reason()
         {
-            if (! _ready)
-                return string.Format("{0} - not enough readings ({1} < {2})", Name, _nreadings, _repeats);
-
-            if (isStabilizing)
-                return string.Format("{0} - stabilizing", Name);
-
-            int nbad;
-
-            if (_nbad < _repeats)
-                return string.Empty;
-
             return string.Format("The last {0} wind speed readings were higher than {1} km/h.", _nbad, _max);
         }
 
@@ -375,7 +310,6 @@ namespace ASCOM.Wise40SafeToOperate
         }
     }
     #endregion
-
     #region HumanIntervention
     public class HumanInterventionSensor : Sensor
     {
@@ -406,7 +340,6 @@ namespace ASCOM.Wise40SafeToOperate
         }
     }
     #endregion
-
     #region Clouds
     public class CloudsSensor : Sensor
     {
@@ -426,19 +359,13 @@ namespace ASCOM.Wise40SafeToOperate
 
         public override bool getIsSafe()
         {
+            if (IsStale("CloudCover"))
+                return false;
             return wisesafetooperate.och.CloudCover <= _max;
         }
 
         public override string reason()
         {
-            if (! _ready)
-            {
-                return string.Format("{0} - not enough readings ({1} < {2})", Name, _nreadings, _repeats);
-            }
-
-            if (_nbad < _repeats)
-                return string.Empty;
-
             return string.Format("The last {0} cloud cover readings were higher than \"{1}\"", _nbad, MaxAsString);
         }
 
@@ -456,7 +383,6 @@ namespace ASCOM.Wise40SafeToOperate
         }
     }
     #endregion
-
     #region Rain
     public class RainSensor : Sensor
     {
@@ -476,21 +402,13 @@ namespace ASCOM.Wise40SafeToOperate
 
         public override bool getIsSafe()
         {
+            if (IsStale("RainRate"))
+                return false;
             return wisesafetooperate.och.RainRate <= _max;
         }
 
         public override string reason()
         {
-            if (! _ready)
-            {
-                return string.Format("{0} - not enough readings ({1} < {2})", Name, _nreadings, _repeats);
-            }
-
-            int nbad;
-
-            if (_nbad < _repeats)
-                return string.Empty;
-
             return string.Format("The last {0} rain rate readings were higher than {1}", _nbad, MaxAsString);
         }
 
@@ -508,7 +426,6 @@ namespace ASCOM.Wise40SafeToOperate
         }
     }
     #endregion
-
     #region Humidity
     public class HumiditySensor : Sensor
     {
@@ -530,21 +447,13 @@ namespace ASCOM.Wise40SafeToOperate
 
         public override bool getIsSafe()
         {
+            if (IsStale("Humidity"))
+                return false;
             return wisesafetooperate.och.Humidity <= _max;
         }
 
         public override string reason()
         {
-            if (! _ready)
-            {
-                return string.Format("{0} - not enough readings ({1} < {2})", Name, _nreadings, _repeats);
-            }
-
-            int nbad;
-
-            if (_nbad < _repeats)
-                return string.Empty;
-
             return string.Format("The last {0} humidity readings were higher than {1}", _nbad, MaxAsString);
         }
 
@@ -562,7 +471,6 @@ namespace ASCOM.Wise40SafeToOperate
         }
     }
     #endregion
-
     #region Sun
     public class SunSensor : Sensor
     {
