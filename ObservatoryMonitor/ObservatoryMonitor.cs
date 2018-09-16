@@ -291,7 +291,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             bool bypassed = safety.Contains("bypassed:false") ? false : true;
             bool ready = safety.Contains("ready:false") ? false : true;
             bool safe = safety.Contains("safe:false") ? false : true;
-            bool intervention = HumanIntervention.IsSet();
+            bool intervention = safety.Contains("no-human-intervention:true") ? false : true;
             string text = string.Empty, tip = string.Empty;
             Color color = normalColor;
             
