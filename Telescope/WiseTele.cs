@@ -2856,6 +2856,9 @@ namespace ASCOM.Wise40
             if (Slewing)
                 throw new InvalidOperationException("Cannot PulseGuide while Slewing");
 
+            if (!wisesafetooperate.IsSafe)
+                throw new InvalidOperationException("Not safe to operate");
+
             if (pulsing.Active(Direction))
             {
                 throw new InvalidOperationException(string.Format(
