@@ -137,6 +137,7 @@ namespace ASCOM.Wise40SafeToOperate
                 {
                     _isSafeQueue = new FixedSizedQueue<bool>(_repeats);
                     _attr.Set(SensorAttributes.MustStabilize);
+                    _attr.Set(SensorAttributes.Accumulating);
                     _timer.Change(due, _intervalMillis);
                 } else
                     _timer.Change(Timeout.Infinite, Timeout.Infinite);
@@ -204,7 +205,7 @@ namespace ASCOM.Wise40SafeToOperate
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}) started stabilizing", Name);
                 #endregion
-                _timer.Change(Timeout.Infinite,(int) wisesafetooperate._stabilizationPeriod.TotalMilliseconds);
+                _timer.Change((int)wisesafetooperate._stabilizationPeriod.TotalMilliseconds, Timeout.Infinite);
             }
         }
 
@@ -230,7 +231,7 @@ namespace ASCOM.Wise40SafeToOperate
                 {
                     ret = true;
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor {0}, isSafe: {1} (not enabled)", Name, ret);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}), isSafe: {1} (not enabled)", Name, ret);
                     #endregion
                     return ret;
                 }
@@ -239,7 +240,7 @@ namespace ASCOM.Wise40SafeToOperate
                 {  // One-shots
                     ret = getIsSafe();
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor {0}, isSafe: {1}", Name, ret);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}), isSafe: {1}", Name, ret);
                     #endregion
                     return ret;
                 }
@@ -248,7 +249,7 @@ namespace ASCOM.Wise40SafeToOperate
                 {
                     ret = false;
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor {0}, isSafe: {1} (ready: {2}, stabilizing: {3})",
+                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}), isSafe: {1} (ready: {2}, stabilizing: {3})",
                         Name, ret, _attr.IsSet(SensorAttributes.Ready), _attr.IsSet(SensorAttributes.Stabilizing));
                     #endregion
                     return ret;
@@ -256,7 +257,7 @@ namespace ASCOM.Wise40SafeToOperate
 
                 ret = _attr.IsSet(SensorAttributes.Safe);
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor {0}, isSafe: {1} ({2} bad out of {3})",
+                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}), isSafe: {1} ({2} bad out of {3})",
                     Name, ret, _nbad, _repeats);
                 #endregion
                 return ret;
