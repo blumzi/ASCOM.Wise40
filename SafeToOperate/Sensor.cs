@@ -14,6 +14,7 @@ namespace ASCOM.Wise40SafeToOperate
     public abstract class Sensor : WiseObject
     {
         private System.Threading.Timer _timer;
+        private DateTime _endOfStabilization;
 
         public class SensorAttributes
         {
@@ -206,6 +207,15 @@ namespace ASCOM.Wise40SafeToOperate
                 debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}) started stabilizing", Name);
                 #endregion
                 _timer.Change((int)wisesafetooperate._stabilizationPeriod.TotalMilliseconds, Timeout.Infinite);
+                _endOfStabilization = DateTime.Now.AddMilliseconds((int)wisesafetooperate._stabilizationPeriod.TotalMilliseconds);
+            }
+        }
+
+        public TimeSpan TimeToStable
+        {
+            get
+            {
+                return _attr.IsSet(SensorAttributes.Stabilizing) ? _endOfStabilization - DateTime.Now : TimeSpan.FromSeconds(0);
             }
         }
 
