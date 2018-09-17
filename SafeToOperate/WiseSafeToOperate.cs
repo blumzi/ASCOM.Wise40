@@ -53,7 +53,7 @@ namespace ASCOM.Wise40SafeToOperate
         private bool _connected = false;
 
         private Wise40.Common.Debugger debugger = Debugger.Instance;
-        private static TraceLogger tl;
+        private static TraceLogger tl = new TraceLogger("", "Wise40.SafeToOperate");
         
         public ObservingConditions och = WiseSite.Instance.och;
         
@@ -636,7 +636,7 @@ namespace ASCOM.Wise40SafeToOperate
             {
                 foreach (Sensor s in _sensors)
                 {
-                    if (s.Name == "Sun")
+                    if (! s._attr.IsSet(Sensor.SensorAttributes.Accumulating))
                         continue;
 
                     if (! s._attr.IsSet(Sensor.SensorAttributes.Ready))
