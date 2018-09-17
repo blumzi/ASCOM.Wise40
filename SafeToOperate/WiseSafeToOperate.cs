@@ -25,7 +25,7 @@ namespace ASCOM.Wise40SafeToOperate
         /// ASCOM DeviceID (COM ProgID) for this driver.
         /// The DeviceID is used by ASCOM applications to load the driver at runtime.
         /// </summary>
-        public string driverID;
+        public string driverID = Const.wiseSafeToOperateDriverID;
         // TODO Change the descriptive string for your driver then remove this line
         /// <summary>
         /// Driver description that displays in the ASCOM Chooser.
@@ -104,7 +104,6 @@ namespace ASCOM.Wise40SafeToOperate
             if (tl == null)
                 tl = new TraceLogger("", "Wise40.SafeToOperate");
             name = "Wise40 SafeToOperate";
-            driverID = Const.wiseSafeToOperateDriverID;
             driverDescription = string.Format("ASCOM Wise40.SafeToOperate v{0}", version.ToString());
 
             if (_profile == null)
@@ -224,13 +223,15 @@ namespace ASCOM.Wise40SafeToOperate
 
                 case "start-bypass":
                     _bypassed = true;
-                    _profile.WriteValue(driverID, Const.ProfileName.SafeToOperate_Bypassed, _bypassed.ToString());
+                    if (actionParameters.ToLower() != "temporary")
+                        _profile.WriteValue(driverID, Const.ProfileName.SafeToOperate_Bypassed, _bypassed.ToString());
                     ret = "ok";
                     break;
 
                 case "end-bypass":
                     _bypassed = false;
-                    _profile.WriteValue(driverID, Const.ProfileName.SafeToOperate_Bypassed, _bypassed.ToString());
+                    if (actionParameters.ToLower() != "temporary")
+                        _profile.WriteValue(driverID, Const.ProfileName.SafeToOperate_Bypassed, _bypassed.ToString());
                     ret = "ok";
                     break;
 
@@ -445,7 +446,7 @@ namespace ASCOM.Wise40SafeToOperate
                                 s.Name, s._repeats));
                         } else if (s._attr.IsSet(Sensor.SensorAttributes.Stabilizing))
                         {
-                            reasons.Add(string.Format("{0} - stabilizing", s.Name));
+                            reasons.Add(string.Format("{0} - stabilizing in {1}", s.Name, s.TimeToStable.ToString("g")));
                         }
                         else if (!s.isSafe && (reason = s.reason()) != string.Empty)
                             reasons.Add(reason);

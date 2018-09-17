@@ -1560,7 +1560,7 @@ namespace ASCOM.Wise40
             if (status.Contains("bypassed:false"))
             {
                 cancelSafetyBypass = true;
-                wisesafetooperate.Action("start-bypass", "");
+                wisesafetooperate.Action("start-bypass", "temporary");
             }
             wisesafetooperate.Action("start-shutdown", "");
 
@@ -1572,11 +1572,11 @@ namespace ASCOM.Wise40
             } finally
             {
                 if (cancelSafetyBypass)
-                    wisesafetooperate.Action("end-bypass", "");
+                    wisesafetooperate.Action("end-bypass", "temporary");
             }
 
             if (cancelSafetyBypass)
-                wisesafetooperate.Action("end-bypass", "");
+                wisesafetooperate.Action("end-bypass", "temporary");
             wisesafetooperate.Action("end-shutdown", "");
         }
 
