@@ -446,7 +446,10 @@ namespace ASCOM.Wise40SafeToOperate
                                 s.Name, s._repeats));
                         } else if (s._attr.IsSet(Sensor.SensorAttributes.Stabilizing))
                         {
-                            reasons.Add(string.Format("{0} - stabilizing in {1}", s.Name, s.TimeToStable.ToString("g")));
+                            TimeSpan ts = s.TimeToStable;
+                            string fmt = ts.Minutes > 0 ? @"mm\m" : "" + @"ss\s";
+
+                            reasons.Add(string.Format("{0} - stabilizing in {1}", s.Name, ts.ToString(fmt)));
                         }
                         else if (!s.isSafe && (reason = s.reason()) != string.Empty)
                             reasons.Add(reason);
