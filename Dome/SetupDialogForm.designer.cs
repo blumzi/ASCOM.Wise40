@@ -48,6 +48,7 @@ namespace ASCOM.Wise40 //.Dome
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.label6 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
+            this.checkBoxShutterUseWebClient = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
@@ -58,7 +59,7 @@ namespace ASCOM.Wise40 //.Dome
             this.cmdOK.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.cmdOK.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.cmdOK.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.cmdOK.Location = new System.Drawing.Point(284, 205);
+            this.cmdOK.Location = new System.Drawing.Point(284, 229);
             this.cmdOK.Name = "cmdOK";
             this.cmdOK.Size = new System.Drawing.Size(59, 24);
             this.cmdOK.TabIndex = 0;
@@ -72,7 +73,7 @@ namespace ASCOM.Wise40 //.Dome
             this.cmdCancel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.cmdCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.cmdCancel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.cmdCancel.Location = new System.Drawing.Point(284, 235);
+            this.cmdCancel.Location = new System.Drawing.Point(284, 259);
             this.cmdCancel.Name = "cmdCancel";
             this.cmdCancel.Size = new System.Drawing.Size(59, 25);
             this.cmdCancel.TabIndex = 1;
@@ -138,7 +139,7 @@ namespace ASCOM.Wise40 //.Dome
             // 
             // textBoxShutterIpAddress
             // 
-            this.textBoxShutterIpAddress.Location = new System.Drawing.Point(88, 24);
+            this.textBoxShutterIpAddress.Location = new System.Drawing.Point(107, 44);
             this.textBoxShutterIpAddress.Name = "textBoxShutterIpAddress";
             this.textBoxShutterIpAddress.Size = new System.Drawing.Size(104, 20);
             this.textBoxShutterIpAddress.TabIndex = 16;
@@ -146,7 +147,7 @@ namespace ASCOM.Wise40 //.Dome
             // 
             // textBoxShutterHighestValue
             // 
-            this.textBoxShutterHighestValue.Location = new System.Drawing.Point(88, 46);
+            this.textBoxShutterHighestValue.Location = new System.Drawing.Point(107, 66);
             this.textBoxShutterHighestValue.Name = "textBoxShutterHighestValue";
             this.textBoxShutterHighestValue.Size = new System.Drawing.Size(48, 20);
             this.textBoxShutterHighestValue.TabIndex = 19;
@@ -154,7 +155,7 @@ namespace ASCOM.Wise40 //.Dome
             // 
             // textBoxShutterLowestValue
             // 
-            this.textBoxShutterLowestValue.Location = new System.Drawing.Point(88, 68);
+            this.textBoxShutterLowestValue.Location = new System.Drawing.Point(107, 88);
             this.textBoxShutterLowestValue.Name = "textBoxShutterLowestValue";
             this.textBoxShutterLowestValue.Size = new System.Drawing.Size(48, 20);
             this.textBoxShutterLowestValue.TabIndex = 20;
@@ -183,7 +184,7 @@ namespace ASCOM.Wise40 //.Dome
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(8, 28);
+            this.label4.Location = new System.Drawing.Point(27, 48);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(58, 13);
             this.label4.TabIndex = 15;
@@ -192,6 +193,7 @@ namespace ASCOM.Wise40 //.Dome
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.checkBoxShutterUseWebClient);
             this.groupBox1.Controls.Add(this.textBoxShutterLowestValue);
             this.groupBox1.Controls.Add(this.textBoxShutterHighestValue);
             this.groupBox1.Controls.Add(this.label6);
@@ -199,9 +201,9 @@ namespace ASCOM.Wise40 //.Dome
             this.groupBox1.Controls.Add(this.textBoxShutterIpAddress);
             this.groupBox1.Controls.Add(this.label4);
             this.groupBox1.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBox1.Location = new System.Drawing.Point(32, 168);
+            this.groupBox1.Location = new System.Drawing.Point(17, 162);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(232, 96);
+            this.groupBox1.Size = new System.Drawing.Size(232, 122);
             this.groupBox1.TabIndex = 17;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = " Shutter ";
@@ -209,7 +211,7 @@ namespace ASCOM.Wise40 //.Dome
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(8, 72);
+            this.label6.Location = new System.Drawing.Point(27, 92);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(70, 13);
             this.label6.TabIndex = 18;
@@ -219,19 +221,31 @@ namespace ASCOM.Wise40 //.Dome
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(8, 50);
+            this.label5.Location = new System.Drawing.Point(27, 70);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(72, 13);
             this.label5.TabIndex = 17;
             this.label5.Text = "Highest value";
             this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
+            // checkBoxShutterUseWebClient
+            // 
+            this.checkBoxShutterUseWebClient.AutoSize = true;
+            this.checkBoxShutterUseWebClient.Location = new System.Drawing.Point(11, 21);
+            this.checkBoxShutterUseWebClient.Name = "checkBoxShutterUseWebClient";
+            this.checkBoxShutterUseWebClient.Size = new System.Drawing.Size(100, 17);
+            this.checkBoxShutterUseWebClient.TabIndex = 21;
+            this.checkBoxShutterUseWebClient.TabStop = false;
+            this.checkBoxShutterUseWebClient.Text = "Use Web Client";
+            this.toolTip1.SetToolTip(this.checkBoxShutterUseWebClient, "If not calibrated, send dome to find nearest calibration point.");
+            this.checkBoxShutterUseWebClient.UseVisualStyleBackColor = true;
+            // 
             // DomeSetupDialogForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.ClientSize = new System.Drawing.Size(354, 283);
+            this.ClientSize = new System.Drawing.Size(354, 307);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label2);
@@ -278,5 +292,6 @@ namespace ASCOM.Wise40 //.Dome
         private System.Windows.Forms.TextBox textBoxShutterHighestValue;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.CheckBox checkBoxShutterUseWebClient;
     }
 }

@@ -77,6 +77,7 @@ namespace ASCOM.Wise40.Common
             public static string DomeShutter_IPAddress = "ShutterIPAddress";
             public static string DomeShutter_HighestValue = "ShutterHighestValue";
             public static string DomeShutter_LowestValue = "ShutterLowestValue";
+            public static string DomeShutter_UseWebClient = "ShutterUseWebClient";
 
             public static string Boltwood_DataFile = "DataFile";
 
