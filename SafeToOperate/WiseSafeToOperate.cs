@@ -35,35 +35,35 @@ namespace ASCOM.Wise40SafeToOperate
 
         public Profile _profile;
         
-        public WindSensor windSensor;
-        public CloudsSensor cloudsSensor;
-        public RainSensor rainSensor;
-        public HumiditySensor humiditySensor;
-        public SunSensor sunSensor;
-        public HumanInterventionSensor humanInterventionSensor;
-        public WiseComputerControl wisecomputercontrol;
-        public List<Sensor> _sensors;
-        private bool _bypassed = false;
-        private bool _shuttingDown = false;
-        public int ageMaxSeconds;
+        public static WindSensor windSensor;
+        public static CloudsSensor cloudsSensor;
+        public static RainSensor rainSensor;
+        public static HumiditySensor humiditySensor;
+        public static SunSensor sunSensor;
+        public static HumanInterventionSensor humanInterventionSensor;
+        public static WiseComputerControl wisecomputercontrol;
+        public static List<Sensor> _sensors;
+        private static bool _bypassed = false;
+        private static bool _shuttingDown = false;
+        public static int ageMaxSeconds;
 
         /// <summary>
         /// Private variable to hold the connected state
         /// </summary>
-        private bool _connected = false;
+        private static bool _connected = false;
 
         private Wise40.Common.Debugger debugger = Debugger.Instance;
         private static TraceLogger tl = new TraceLogger("", "Wise40.SafeToOperate");
         
-        public ObservingConditions och = WiseSite.Instance.och;
+        public static ObservingConditions och = WiseSite.Instance.och;
         
         private static object syncObject = new object();
 
-        private static volatile WiseSafeToOperate _instance;
+        private static volatile WiseSafeToOperate _instance = new WiseSafeToOperate();
         private static bool initialized = false;
         
-        public TimeSpan _stabilizationPeriod;
-        private int _defaultStabilizationPeriodMinutes = 15;
+        public static TimeSpan _stabilizationPeriod;
+        private static int _defaultStabilizationPeriodMinutes = 15;
 
         private Astrometry.NOVAS.NOVAS31 novas31;
         private static AstroUtils astroutils;
@@ -91,9 +91,9 @@ namespace ASCOM.Wise40SafeToOperate
             }
         }
 
-        public WiseSafeToOperate()
-        {
-        }
+        public WiseSafeToOperate() { }
+
+        static WiseSafeToOperate() { }
 
         public void init()
         {
@@ -189,6 +189,7 @@ namespace ASCOM.Wise40SafeToOperate
         public string Action(string actionName, string actionParameters)
         {
             string ret = string.Empty;
+            string parameter = actionParameters.ToLower();
 
             switch (actionName.ToLower())
             {
@@ -223,15 +224,21 @@ namespace ASCOM.Wise40SafeToOperate
 
                 case "start-bypass":
                     _bypassed = true;
-                    if (actionParameters.ToLower() != "temporary")
+                    if (parameter != "temporary")
                         _profile.WriteValue(driverID, Const.ProfileName.SafeToOperate_Bypassed, _bypassed.ToString());
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Started bypass (parameter: {0})", parameter);
+                    #endregion
                     ret = "ok";
                     break;
 
                 case "end-bypass":
                     _bypassed = false;
-                    if (actionParameters.ToLower() != "temporary")
+                    if (parameter != "temporary")
                         _profile.WriteValue(driverID, Const.ProfileName.SafeToOperate_Bypassed, _bypassed.ToString());
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Ended bypass (parameter: {0})", parameter);
+                    #endregion
                     ret = "ok";
                     break;
 
@@ -256,11 +263,17 @@ namespace ASCOM.Wise40SafeToOperate
 
                 case "start-shutdown":      // hidden
                     _shuttingDown = true;
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Started shutdown");
+                    #endregion
                     ret = "ok";
                     break;
 
                 case "end-shutdown":        // hidden
                     _shuttingDown = false;
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Ended shutdown");
+                    #endregion
                     ret = "ok";
                     break;
 
@@ -604,11 +617,16 @@ namespace ASCOM.Wise40SafeToOperate
             {
                 bool ret = true;
 
+                //
+                // NOTE: The following decisions are sorted by priority. TAKE CARE!
+                //
                 if (!_connected)
                     ret = false;
                 else if (!wisecomputercontrol.IsSafe)
                     ret = false;
-                else if (!_shuttingDown && !humanInterventionSensor.isSafe)
+                else if (_shuttingDown)
+                    ret = true;
+                else if (!humanInterventionSensor.isSafe)
                     ret = false;
                 else if (_bypassed)
                     return true;

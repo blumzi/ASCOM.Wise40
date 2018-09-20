@@ -304,7 +304,7 @@ namespace ASCOM.Wise40
 
             set
             {
-                activityMonitor.RewindTimer("TargetDeclination was set");
+                activityMonitor.RestartGoindIdleTimer("TargetDeclination was set");
                 CheckCoordinateSanity(Angle.Type.Dec, value);
 
                 _targetDeclination = Angle.FromDegrees(value, Angle.Type.Dec);
@@ -340,7 +340,7 @@ namespace ASCOM.Wise40
 
             set
             {
-                activityMonitor.RewindTimer("TargetRightAscension was set");
+                activityMonitor.RestartGoindIdleTimer("TargetRightAscension was set");
                 CheckCoordinateSanity(Angle.Type.RA, value);
                 _targetRightAscension = Angle.FromHours(value, Angle.Type.RA);
                 #region trace
@@ -424,7 +424,7 @@ namespace ASCOM.Wise40
                 traceLogger.LogMessage("Connected Set", value.ToString());
                 #endregion
                 if (value == true)
-                    activityMonitor.RewindTimer("Connected was set to true");
+                    activityMonitor.RestartGoindIdleTimer("Connected was set to true");
 
                 if (value == _connected)
                     return;
@@ -765,7 +765,7 @@ namespace ASCOM.Wise40
 
         public void AbortSlew()
         {
-            activityMonitor.RewindTimer("AbortSlew");
+            activityMonitor.RestartGoindIdleTimer("AbortSlew");
             if (AtPark)
             {
                 //#region debug
@@ -1564,20 +1564,14 @@ namespace ASCOM.Wise40
             }
             wisesafetooperate.Action("start-shutdown", "");
 
-            try
-            {
-                activityMonitor.StartActivity(ActivityMonitor.Activity.ShuttingDown);
-                Park();
-                activityMonitor.EndActivity(ActivityMonitor.Activity.ShuttingDown);
-            } finally
+            activityMonitor.StartActivity(ActivityMonitor.Activity.ShuttingDown);
+            Task.Run(() => Park()).ContinueWith((afterPark) =>
             {
                 if (cancelSafetyBypass)
                     wisesafetooperate.Action("end-bypass", "temporary");
-            }
-
-            if (cancelSafetyBypass)
-                wisesafetooperate.Action("end-bypass", "temporary");
-            wisesafetooperate.Action("end-shutdown", "");
+                wisesafetooperate.Action("end-shutdown", "");
+                activityMonitor.EndActivity(ActivityMonitor.Activity.ShuttingDown);
+            }, TaskContinuationOptions.ExecuteSynchronously);
         }
 
         //
@@ -1598,21 +1592,35 @@ namespace ASCOM.Wise40
             Angle dec = Angle.FromDegrees(66.0, Angle.Type.Dec);
 
             bool wasEnslavingDome = _enslaveDome;
-            _parking = true;
-            activityMonitor.StartActivity(ActivityMonitor.Activity.Parking);
-            if (wasEnslavingDome)
+            bool wasTracking = Tracking;
+            try
             {
-                _enslaveDome = false;
-                DomeParker();
-            }
-            _instance.TargetRightAscension = ra.Hours;
-            _instance.TargetDeclination = dec.Degrees;
-            Tracking = true;
-            _slewToCoordinatesSync(ra, dec);
-            if (wasEnslavingDome)
+                _parking = true;
+                activityMonitor.StartActivity(ActivityMonitor.Activity.Parking);
+                if (wasEnslavingDome)
+                {
+                    _enslaveDome = false;
+                    DomeParker();
+                }
+                _instance.TargetRightAscension = ra.Hours;
+                _instance.TargetDeclination = dec.Degrees;
+                Tracking = true;
+                _slewToCoordinatesSync(ra, dec);
+                if (wasEnslavingDome)
+                {
+                    while (!domeSlaveDriver.AtPark)
+                        Thread.Sleep(2000);
+                }
+            } catch(Exception ex)
             {
-                while (!domeSlaveDriver.AtPark)
-                    Thread.Sleep(2000);
+                _parking = false;
+                _enslaveDome = wasEnslavingDome;
+                Tracking = wasTracking;
+                activityMonitor.EndActivity(ActivityMonitor.Activity.Parking);
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: Exception: {0}, aborted.", ex.Message);
+                #endregion
+                return;
             }
             AtPark = true;
             Tracking = false;
@@ -2910,12 +2918,12 @@ namespace ASCOM.Wise40
                 return activityMonitor.ObservatoryActivities;
             else if (action == "telescope:set-active")
             {
-                activityMonitor.RewindTimer("action telescope:set-active");
+                activityMonitor.RestartGoindIdleTimer("action telescope:set-active");
                 return "ok";
             }
             else if (action == "telescope:shutdown")  // this is a hidden action, not listed in SupportedActions
             {
-                Shutdown();
+                Task.Run(() => Shutdown());
                 return "ok";
             }
             else if (action == "site:get-opmode")
@@ -2928,7 +2936,7 @@ namespace ASCOM.Wise40
                 return "ok";
             } else if (action == "telescope:seconds-till-idle")
             {
-                return Math.Truncate(activityMonitor.RemainingTime.TotalSeconds).ToString();
+                return ((int) activityMonitor.RemainingTime.TotalSeconds).ToString();
             }
 
             throw new ASCOM.ActionNotImplementedException("Action \"" + action + "\" is not implemented by this driver");

@@ -35,7 +35,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
         private bool _shuttingDown = false;
         DateTime _nextCheck = DateTime.MaxValue;
         public TimeSpan _intervalBetweenChecks;
-        TimeSpan _intervalBetweenLogs = _simulated ? new TimeSpan(0, 0, 10) : new TimeSpan(0, 0, 20);
+        TimeSpan _intervalBetweenLogs = _simulated ? TimeSpan.FromSeconds(10) : TimeSpan.FromSeconds(20);
         private bool _telescopeEnslavesDome = false;
         DateTime _lastLog;
 
@@ -241,7 +241,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             DateTime localTime = DateTime.Now.ToLocalTime();
             labelDate.Text = localTime.ToString("ddd, dd MMM yyyy, HH:mm:ss");
 
-            if (DateTime.Now.CompareTo(_nextCheck) >= 0)
+            if (!_shuttingDown && DateTime.Now.CompareTo(_nextCheck) >= 0)
             {
                 CheckSituation();
             }
@@ -408,6 +408,16 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             }, CT);
         }
 
+        private void SleepWhileProcessingEvents(TimeSpan ts)
+        {
+            Stopwatch sw = new Stopwatch();
+
+            sw.Start();
+            while (sw.ElapsedMilliseconds < ts.TotalMilliseconds)
+                Application.DoEvents();
+            sw.Stop();
+        }
+
         private void ShutdownObservatory(string reason)
         {
             _shuttingDown = true;
@@ -415,11 +425,25 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             string header = string.Format("Starting Wise40 shutdown (reason: {0})...", reason);
             string trailer = string.Format("Completed Wise40 shutdown (reason: {0})...", reason);
             bool _headerWasLogged = false;
+            Stopwatch sw = new Stopwatch();
 
             try
             {
                 string what = string.Format("Telescope{0}", _telescopeEnslavesDome ? " and dome" : "");
 
+                if (wisedome.ShutterStatus == ShutterState.shutterClosing || wisedome.ShutterStatus == ShutterState.shutterOpening)
+                {
+                        if (!_headerWasLogged) { Log(header); _headerWasLogged = true; }
+                    do
+                    {
+                        if (CT.IsCancellationRequested)
+                            throw new Exception("Shutdown aborted");
+
+                        Log("    Waiting for Shutter to stop moving ...");
+                        SleepWhileProcessingEvents(_intervalBetweenLogs);
+                    } while (wisedome.ShutterStatus == ShutterState.shutterClosing || wisedome.ShutterStatus == ShutterState.shutterOpening);
+                    Log("    Shutter stopped moving.");
+                }
 
                 if (wisetelescope.IsPulseGuiding)
                 {
@@ -430,7 +454,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                             throw new Exception("Shutdown aborted");
 
                         Log("    Waiting for PulseGuiding to stop ...");
-                        Thread.Sleep(_intervalBetweenLogs);
+                        SleepWhileProcessingEvents(_intervalBetweenLogs);
                     } while (wisetelescope.IsPulseGuiding);
                     Log("    PulseGuiding stopped.");
                 }
@@ -444,7 +468,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                         if (CT.IsCancellationRequested)
                             throw new Exception("Shutdown aborted");
                         Log("    Waiting for Slewing to stop ...", 10);
-                        Thread.Sleep(_intervalBetweenLogs);
+                        SleepWhileProcessingEvents(_intervalBetweenLogs);
                     }
                     Log("    Slew aborted.");
                 }
@@ -481,7 +505,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                             parkerTask.Dispose();
                             throw new Exception("Shutdown aborted");
                         }
-                        Thread.Sleep(_intervalBetweenLogs);
+                        SleepWhileProcessingEvents(_intervalBetweenLogs);
                         if (CT.IsCancellationRequested)
                         {
                             parkerTask.Dispose();
@@ -516,7 +540,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                                 wisedome.AbortSlew();
                                 throw new Exception("Shutdown aborted");
                             }
-                            Thread.Sleep(_intervalBetweenLogs);
+                            SleepWhileProcessingEvents(_intervalBetweenLogs);
                             Angle az = Angle.FromDegrees(wisedome.Azimuth, Angle.Type.Az);
                             Log(string.Format("  Dome is parking, now at {0} ...", az.ToNiceString()), 10);
                         } while (!wisedome.AtPark);
@@ -532,7 +556,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                     do
                     {
                         if (CT.IsCancellationRequested) throw new Exception("Shutdown aborted");
-                        Thread.Sleep(_intervalBetweenLogs);                        
+                        SleepWhileProcessingEvents(_intervalBetweenLogs);
                         Log("    Shutter is closing ...", 10);
                     } while (wisedome.ShutterStatus != ShutterState.shutterClosed);
                     Log("    Shutter is closed.");
@@ -543,9 +567,16 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 else
                     Log("Wise40 is parked and closed");
             }
+            catch (ValueNotSetException ex) when (ex.Message == "Target RA not set") {
+                // This is weird.  This exception seems to be from LCO's client access.
+                // Need to take this up with Peter!
+            }
             catch (Exception ex)
             {
-                Log(string.Format("Exception occurred:\n{0}, aborting shutdown!", ex.Message));
+                if (ex.Message == "Shutdown aborted")
+                    Log("Shutdown aborted by operator");
+                else
+                    Log(string.Format("Exception occurred:\n{0}, aborting shutdown!", ex.Message));
                 _shuttingDown = false;
             }
             _shuttingDown = false;

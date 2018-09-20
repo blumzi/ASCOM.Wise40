@@ -39,7 +39,7 @@ namespace ASCOM.Wise40SafeToOperate
                 valid = false;
             } else
             {
-                wisesafetooperate.ageMaxSeconds = i;
+                WiseSafeToOperate.ageMaxSeconds = i;
             }
 
             i = Convert.ToInt32(textBoxRestoreSafety.Text);
@@ -50,16 +50,16 @@ namespace ASCOM.Wise40SafeToOperate
             }
             else
             {
-                wisesafetooperate._stabilizationPeriod = new TimeSpan(0, Convert.ToInt32(textBoxRestoreSafety.Text), 0);
+                WiseSafeToOperate._stabilizationPeriod = new TimeSpan(0, Convert.ToInt32(textBoxRestoreSafety.Text), 0);
             }
 
-            wisesafetooperate.cloudsSensor.MaxAsString = textBoxCloudCoverPercent.Text;
-            wisesafetooperate.rainSensor.MaxAsString = textBoxRain.Text;
+            WiseSafeToOperate.cloudsSensor.MaxAsString = textBoxCloudCoverPercent.Text;
+            WiseSafeToOperate.rainSensor.MaxAsString = textBoxRain.Text;
 
             i = Convert.ToInt32(textBoxHumidity.Text);
             if (i >= 0 && i <= 100)
             {
-                wisesafetooperate.humiditySensor.MaxAsString = i.ToString();
+                WiseSafeToOperate.humiditySensor.MaxAsString = i.ToString();
             }
             else
             {
@@ -70,7 +70,7 @@ namespace ASCOM.Wise40SafeToOperate
             i = Convert.ToInt32(textBoxWind.Text);
             if (i >= 0)
             {
-                wisesafetooperate.windSensor.MaxAsString = i.ToString();
+                WiseSafeToOperate.windSensor.MaxAsString = i.ToString();
             }
             else
             {
@@ -85,37 +85,37 @@ namespace ASCOM.Wise40SafeToOperate
                 valid = false;
             }
             else
-                wisesafetooperate.sunSensor.MaxAsString = deg.ToString();
+                WiseSafeToOperate.sunSensor.MaxAsString = deg.ToString();
 
             if (!valid)
                 return;
 
-            foreach (Sensor s in wisesafetooperate._sensors)
+            foreach (Sensor s in WiseSafeToOperate._sensors)
                 s.Stop();
 
-            wisesafetooperate.cloudsSensor._repeats = Convert.ToInt32(textBoxCloudRepeats.Text);
-            wisesafetooperate.cloudsSensor._intervalMillis = Convert.ToInt32(textBoxCloudIntervalSeconds.Text);
-            wisesafetooperate.cloudsSensor._enabled = checkBoxCloud.Checked;
+            WiseSafeToOperate.cloudsSensor._repeats = Convert.ToInt32(textBoxCloudRepeats.Text);
+            WiseSafeToOperate.cloudsSensor._intervalMillis = Convert.ToInt32(textBoxCloudIntervalSeconds.Text);
+            WiseSafeToOperate.cloudsSensor._enabled = checkBoxCloud.Checked;
 
-            wisesafetooperate.windSensor._repeats = Convert.ToInt32(textBoxWindRepeats.Text);
-            wisesafetooperate.windSensor._intervalMillis = Convert.ToInt32(textBoxWindIntervalSeconds.Text);
-            wisesafetooperate.windSensor._enabled = checkBoxWind.Checked;
+            WiseSafeToOperate.windSensor._repeats = Convert.ToInt32(textBoxWindRepeats.Text);
+            WiseSafeToOperate.windSensor._intervalMillis = Convert.ToInt32(textBoxWindIntervalSeconds.Text);
+            WiseSafeToOperate.windSensor._enabled = checkBoxWind.Checked;
 
-            wisesafetooperate.humiditySensor._repeats = Convert.ToInt32(textBoxHumidityRepeats.Text);
-            wisesafetooperate.humiditySensor._intervalMillis = Convert.ToInt32(textBoxHumidityIntervalSeconds.Text);
-            wisesafetooperate.humiditySensor._enabled = checkBoxHumidity.Checked;
+            WiseSafeToOperate.humiditySensor._repeats = Convert.ToInt32(textBoxHumidityRepeats.Text);
+            WiseSafeToOperate.humiditySensor._intervalMillis = Convert.ToInt32(textBoxHumidityIntervalSeconds.Text);
+            WiseSafeToOperate.humiditySensor._enabled = checkBoxHumidity.Checked;
 
-            wisesafetooperate.sunSensor._repeats = Convert.ToInt32(textBoxSunRepeats.Text);
-            wisesafetooperate.sunSensor._intervalMillis = Convert.ToInt32(textBoxSunIntervalSeconds.Text);
-            wisesafetooperate.sunSensor._enabled = checkBoxSun.Checked;
+            WiseSafeToOperate.sunSensor._repeats = Convert.ToInt32(textBoxSunRepeats.Text);
+            WiseSafeToOperate.sunSensor._intervalMillis = Convert.ToInt32(textBoxSunIntervalSeconds.Text);
+            WiseSafeToOperate.sunSensor._enabled = checkBoxSun.Checked;
 
-            wisesafetooperate.rainSensor._repeats = Convert.ToInt32(textBoxRainRepeats.Text);            
-            wisesafetooperate.rainSensor._intervalMillis = Convert.ToInt32(textBoxRainIntervalSeconds.Text);            
-            wisesafetooperate.rainSensor._enabled = checkBoxRain.Checked;            
+            WiseSafeToOperate.rainSensor._repeats = Convert.ToInt32(textBoxRainRepeats.Text);
+            WiseSafeToOperate.rainSensor._intervalMillis = Convert.ToInt32(textBoxRainIntervalSeconds.Text);
+            WiseSafeToOperate.rainSensor._enabled = checkBoxRain.Checked;            
             
             wisesafetooperate.WriteProfile();
 
-            foreach (Sensor s in wisesafetooperate._sensors)
+            foreach (Sensor s in WiseSafeToOperate._sensors)
                 s.Restart(0);
 
             Close();
@@ -147,32 +147,32 @@ namespace ASCOM.Wise40SafeToOperate
         {
             wisesafetooperate.Connected = true;
 
-            textBoxCloudCoverPercent.Tag = textBoxCloudCoverPercent.Text = wisesafetooperate.cloudsSensor.MaxAsString;
-            textBoxRain.Tag = textBoxRain.Text = wisesafetooperate.rainSensor.MaxAsString;
-            textBoxWind.Tag = textBoxWind.Text = wisesafetooperate.windSensor.MaxAsString;
-            textBoxHumidity.Tag = textBoxHumidity.Text = wisesafetooperate.humiditySensor.MaxAsString;
-            textBoxSunElevation.Tag = textBoxSunElevation.Text = wisesafetooperate.sunSensor.MaxAsString;
+            textBoxCloudCoverPercent.Tag = textBoxCloudCoverPercent.Text = WiseSafeToOperate.cloudsSensor.MaxAsString;
+            textBoxRain.Tag = textBoxRain.Text = WiseSafeToOperate.rainSensor.MaxAsString;
+            textBoxWind.Tag = textBoxWind.Text = WiseSafeToOperate.windSensor.MaxAsString;
+            textBoxHumidity.Tag = textBoxHumidity.Text = WiseSafeToOperate.humiditySensor.MaxAsString;
+            textBoxSunElevation.Tag = textBoxSunElevation.Text = WiseSafeToOperate.sunSensor.MaxAsString;
 
-            textBoxAge.Text = wisesafetooperate.ageMaxSeconds.ToString();
-            textBoxRestoreSafety.Tag = textBoxRestoreSafety.Text = wisesafetooperate._stabilizationPeriod.Minutes.ToString();
+            textBoxAge.Text = WiseSafeToOperate.ageMaxSeconds.ToString();
+            textBoxRestoreSafety.Tag = textBoxRestoreSafety.Text = WiseSafeToOperate._stabilizationPeriod.Minutes.ToString();
 
-            checkBoxCloud.Tag = checkBoxCloud.Checked = wisesafetooperate.cloudsSensor._enabled;
-            checkBoxHumidity.Tag = checkBoxHumidity.Checked = wisesafetooperate.humiditySensor._enabled;
-            checkBoxRain.Tag = checkBoxRain.Checked = wisesafetooperate.rainSensor._enabled;
-            checkBoxSun.Tag = checkBoxSun.Checked = wisesafetooperate.sunSensor._enabled;
-            checkBoxWind.Tag = checkBoxWind.Checked = wisesafetooperate.windSensor._enabled;
+            checkBoxCloud.Tag = checkBoxCloud.Checked = WiseSafeToOperate.cloudsSensor._enabled;
+            checkBoxHumidity.Tag = checkBoxHumidity.Checked = WiseSafeToOperate.humiditySensor._enabled;
+            checkBoxRain.Tag = checkBoxRain.Checked = WiseSafeToOperate.rainSensor._enabled;
+            checkBoxSun.Tag = checkBoxSun.Checked = WiseSafeToOperate.sunSensor._enabled;
+            checkBoxWind.Tag = checkBoxWind.Checked = WiseSafeToOperate.windSensor._enabled;
 
-            textBoxCloudIntervalSeconds.Tag = textBoxCloudIntervalSeconds.Text = wisesafetooperate.cloudsSensor._intervalMillis.ToString();
-            textBoxHumidityIntervalSeconds.Tag = textBoxHumidityIntervalSeconds.Text = wisesafetooperate.humiditySensor._intervalMillis.ToString();
-            textBoxRainIntervalSeconds.Tag = textBoxRainIntervalSeconds.Text = wisesafetooperate.rainSensor._intervalMillis.ToString();
-            textBoxSunIntervalSeconds.Tag = textBoxSunIntervalSeconds.Text = wisesafetooperate.sunSensor._intervalMillis.ToString();
-            textBoxWindIntervalSeconds.Tag = textBoxWindIntervalSeconds.Text = wisesafetooperate.windSensor._intervalMillis.ToString();
+            textBoxCloudIntervalSeconds.Tag = textBoxCloudIntervalSeconds.Text = WiseSafeToOperate.cloudsSensor._intervalMillis.ToString();
+            textBoxHumidityIntervalSeconds.Tag = textBoxHumidityIntervalSeconds.Text = WiseSafeToOperate.humiditySensor._intervalMillis.ToString();
+            textBoxRainIntervalSeconds.Tag = textBoxRainIntervalSeconds.Text = WiseSafeToOperate.rainSensor._intervalMillis.ToString();
+            textBoxSunIntervalSeconds.Tag = textBoxSunIntervalSeconds.Text = WiseSafeToOperate.sunSensor._intervalMillis.ToString();
+            textBoxWindIntervalSeconds.Tag = textBoxWindIntervalSeconds.Text = WiseSafeToOperate.windSensor._intervalMillis.ToString();
 
-            textBoxCloudRepeats.Tag = textBoxCloudRepeats.Text = wisesafetooperate.cloudsSensor._repeats.ToString();
-            textBoxHumidityRepeats.Tag = textBoxHumidityRepeats.Text = wisesafetooperate.humiditySensor._repeats.ToString();
-            textBoxRainRepeats.Tag = textBoxRainRepeats.Text = wisesafetooperate.rainSensor._repeats.ToString();
-            textBoxSunRepeats.Tag = textBoxSunRepeats.Text = wisesafetooperate.sunSensor._repeats.ToString();
-            textBoxWindRepeats.Tag = textBoxWindRepeats.Text = wisesafetooperate.windSensor._repeats.ToString();
+            textBoxCloudRepeats.Tag = textBoxCloudRepeats.Text = WiseSafeToOperate.cloudsSensor._repeats.ToString();
+            textBoxHumidityRepeats.Tag = textBoxHumidityRepeats.Text = WiseSafeToOperate.humiditySensor._repeats.ToString();
+            textBoxRainRepeats.Tag = textBoxRainRepeats.Text = WiseSafeToOperate.rainSensor._repeats.ToString();
+            textBoxSunRepeats.Tag = textBoxSunRepeats.Text = WiseSafeToOperate.sunSensor._repeats.ToString();
+            textBoxWindRepeats.Tag = textBoxWindRepeats.Text = WiseSafeToOperate.windSensor._repeats.ToString();
 
             toolTip1.SetToolTip(textBoxHumidity, "0 to 100 (%)");
             toolTip1.SetToolTip(textBoxAge, "0 to use data of any age (sec)");

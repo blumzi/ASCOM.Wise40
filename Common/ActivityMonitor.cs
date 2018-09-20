@@ -77,7 +77,7 @@ namespace ASCOM.Wise40
             wisesite.init();
             inactivityTimer = new System.Threading.Timer(BecomeIdle);
             _currentlyActive = Activity.None;
-            RewindTimer("init");
+            RestartGoindIdleTimer("init");
         }
 
         public void StartActivity(Activity act)
@@ -89,20 +89,30 @@ namespace ASCOM.Wise40
             if (act != Activity.GoingIdle)      // Any activity ends GoingIdle
                 EndActivity(Activity.GoingIdle);
             #region debug
-            debugger.WriteLine(Common.Debugger.DebugLevel.DebugLogic, "ActivityMonitor:StartActivity: {0}", act.ToString());
+            debugger.WriteLine(Common.Debugger.DebugLevel.DebugLogic,
+                "ActivityMonitor:StartActivity: {0} (currentlyActive: {1})", act.ToString(), ObservatoryActivities);
             #endregion
-            StopTimer();
+            if (act != Activity.GoingIdle)
+                StopGoindIdleTimer();
         }
 
         public void EndActivity(Activity act)
         {
             if (_shuttingDown)
+            {
                 return;
+            }
 
             _currentlyActive &= ~act;
             #region debug
-            debugger.WriteLine(Common.Debugger.DebugLevel.DebugLogic, "ActivityMonitor:EndActivity: {0}", act.ToString());
+            debugger.WriteLine(Common.Debugger.DebugLevel.DebugLogic,
+                "ActivityMonitor:EndActivity: {0} (currentlyActive: {1})", act.ToString(), ObservatoryActivities);
             #endregion
+
+            if (act == Activity.ShuttingDown)
+                StopGoindIdleTimer();
+            else if (_currentlyActive == Activity.None)
+                RestartGoindIdleTimer("no activities");
         }
 
         public bool Active(Activity a)
@@ -110,13 +120,13 @@ namespace ASCOM.Wise40
             return (_currentlyActive & a) != 0;
         }
 
-        public void StopTimer()
+        public void StopGoindIdleTimer()
         {
             inactivityTimer.Change(Timeout.Infinite, Timeout.Infinite);
             _due = DateTime.MinValue;
         }
 
-        public void RewindTimer(string reason)
+        public void RestartGoindIdleTimer(string reason)
         {
             if (_shuttingDown)
                 return;
@@ -139,7 +149,7 @@ namespace ASCOM.Wise40
                     Directory.CreateDirectory(Path.GetDirectoryName(filename));
             }
             #region debug
-            debugger.WriteLine(Common.Debugger.DebugLevel.DebugLogic, "ActivityMonitor:RewindTimer (reason = {0}, due = {1}).",
+            debugger.WriteLine(Common.Debugger.DebugLevel.DebugLogic, "ActivityMonitor:RestartGoindIdleTimer (reason = {0}, due = {1} millis).",
                 reason, dueMillis);
             #endregion
 

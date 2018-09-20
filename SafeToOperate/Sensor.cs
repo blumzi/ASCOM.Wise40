@@ -115,7 +115,7 @@ namespace ASCOM.Wise40SafeToOperate
 
         public bool IsStale(string propertyName)
         {
-            if (wisesafetooperate.och.TimeSinceLastUpdate(propertyName) > wisesafetooperate.ageMaxSeconds)
+            if (WiseSafeToOperate.och.TimeSinceLastUpdate(propertyName) > WiseSafeToOperate.ageMaxSeconds)
             {
                 _attr.Set(SensorAttributes.Stale);
                 _attr.Unset(SensorAttributes.Safe);
@@ -206,8 +206,8 @@ namespace ASCOM.Wise40SafeToOperate
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}) started stabilizing", Name);
                 #endregion
-                _timer.Change((int)wisesafetooperate._stabilizationPeriod.TotalMilliseconds, Timeout.Infinite);
-                _endOfStabilization = DateTime.Now.AddMilliseconds((int)wisesafetooperate._stabilizationPeriod.TotalMilliseconds);
+                _timer.Change((int)WiseSafeToOperate._stabilizationPeriod.TotalMilliseconds, Timeout.Infinite);
+                _endOfStabilization = DateTime.Now.AddMilliseconds((int)WiseSafeToOperate._stabilizationPeriod.TotalMilliseconds);
             }
         }
 
@@ -296,7 +296,7 @@ namespace ASCOM.Wise40SafeToOperate
         {
             if (IsStale("WindSpeed"))
                 return false;
-            return (wisesafetooperate.och.WindSpeed * 3.6) < _max;
+            return (WiseSafeToOperate.och.WindSpeed * 3.6) < _max;
         }
 
         public override string reason()
@@ -372,7 +372,7 @@ namespace ASCOM.Wise40SafeToOperate
         {
             if (IsStale("CloudCover"))
                 return false;
-            return wisesafetooperate.och.CloudCover <= _max;
+            return WiseSafeToOperate.och.CloudCover <= _max;
         }
 
         public override string reason()
@@ -415,7 +415,7 @@ namespace ASCOM.Wise40SafeToOperate
         {
             if (IsStale("RainRate"))
                 return false;
-            return wisesafetooperate.och.RainRate <= _max;
+            return WiseSafeToOperate.och.RainRate <= _max;
         }
 
         public override string reason()
@@ -460,7 +460,7 @@ namespace ASCOM.Wise40SafeToOperate
         {
             if (IsStale("Humidity"))
                 return false;
-            return wisesafetooperate.och.Humidity <= _max;
+            return WiseSafeToOperate.och.Humidity <= _max;
         }
 
         public override string reason()
