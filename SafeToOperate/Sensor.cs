@@ -173,6 +173,11 @@ namespace ASCOM.Wise40SafeToOperate
             _isSafeQueue.Enqueue(currentReading);
             if (_isSafeQueue.ToArray().Count() == _isSafeQueue.MaxSize)
                 _attr.Set(SensorAttributes.Ready);
+            else
+            {
+                _attr.Unset(SensorAttributes.Ready);
+                _attr.Unset(SensorAttributes.Safe);
+            }
 
             bool[] arr = _isSafeQueue.ToArray();
             List<string> values = new List<string>();
@@ -189,10 +194,10 @@ namespace ASCOM.Wise40SafeToOperate
             _nbad = baddies;
             if (_attr.IsSet(SensorAttributes.Ready))
             {
-                if (_nbad < _repeats)
-                    _attr.Set(SensorAttributes.Safe);
-                else if (_nbad == _repeats)
+                if (_nbad == _repeats)
                     _attr.Unset(SensorAttributes.Safe);
+                else
+                    _attr.Set(SensorAttributes.Safe);
             }
 
             if (!_attr.IsSet(SensorAttributes.Ready))
