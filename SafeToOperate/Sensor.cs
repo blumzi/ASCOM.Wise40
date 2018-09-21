@@ -187,8 +187,13 @@ namespace ASCOM.Wise40SafeToOperate
                 Name, currentReading, String.Join(",", values));
 
             _nbad = baddies;
-            if (_attr.IsSet(SensorAttributes.Ready) && _nbad < _repeats)
-                _attr.Set(SensorAttributes.Safe);
+            if (_attr.IsSet(SensorAttributes.Ready))
+            {
+                if (_nbad < _repeats)
+                    _attr.Set(SensorAttributes.Safe);
+                else if (_nbad == _repeats)
+                    _attr.Unset(SensorAttributes.Safe);
+            }
 
             if (!_attr.IsSet(SensorAttributes.Ready))
                 return;
