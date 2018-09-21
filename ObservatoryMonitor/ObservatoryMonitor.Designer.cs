@@ -61,6 +61,7 @@
             this.label2 = new System.Windows.Forms.Label();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.label4 = new System.Windows.Forms.Label();
+            this.labelTime = new System.Windows.Forms.Label();
             this.menuStrip.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -175,12 +176,13 @@
             // labelDate
             // 
             this.labelDate.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.labelDate.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelDate.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelDate.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelDate.Location = new System.Drawing.Point(152, 37);
+            this.labelDate.Location = new System.Drawing.Point(217, 37);
             this.labelDate.Name = "labelDate";
-            this.labelDate.Size = new System.Drawing.Size(296, 27);
+            this.labelDate.Size = new System.Drawing.Size(152, 27);
             this.labelDate.TabIndex = 53;
+            this.labelDate.Text = "date";
             this.labelDate.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // buttonShutdown
@@ -252,7 +254,7 @@
             this.labelOperatingMode.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.labelOperatingMode.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelOperatingMode.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelOperatingMode.Location = new System.Drawing.Point(312, 66);
+            this.labelOperatingMode.Location = new System.Drawing.Point(312, 83);
             this.labelOperatingMode.Name = "labelOperatingMode";
             this.labelOperatingMode.Size = new System.Drawing.Size(48, 24);
             this.labelOperatingMode.TabIndex = 64;
@@ -316,7 +318,7 @@
             this.labelNextCheckLabel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.labelNextCheckLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelNextCheckLabel.ForeColor = System.Drawing.Color.DarkOrange;
-            this.labelNextCheckLabel.Location = new System.Drawing.Point(208, 96);
+            this.labelNextCheckLabel.Location = new System.Drawing.Point(208, 104);
             this.labelNextCheckLabel.Name = "labelNextCheckLabel";
             this.labelNextCheckLabel.Size = new System.Drawing.Size(96, 24);
             this.labelNextCheckLabel.TabIndex = 59;
@@ -328,7 +330,7 @@
             this.labelNextCheck.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.labelNextCheck.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelNextCheck.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelNextCheck.Location = new System.Drawing.Point(312, 96);
+            this.labelNextCheck.Location = new System.Drawing.Point(312, 104);
             this.labelNextCheck.Name = "labelNextCheck";
             this.labelNextCheck.Size = new System.Drawing.Size(80, 24);
             this.labelNextCheck.TabIndex = 61;
@@ -367,7 +369,7 @@
             this.label2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label2.ForeColor = System.Drawing.Color.DarkOrange;
-            this.label2.Location = new System.Drawing.Point(200, 66);
+            this.label2.Location = new System.Drawing.Point(200, 83);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(104, 24);
             this.label2.TabIndex = 63;
@@ -399,6 +401,18 @@
             this.label4.Text = "Status:";
             this.label4.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
+            // labelTime
+            // 
+            this.labelTime.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
+            this.labelTime.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelTime.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.labelTime.Location = new System.Drawing.Point(217, 63);
+            this.labelTime.Name = "labelTime";
+            this.labelTime.Size = new System.Drawing.Size(152, 27);
+            this.labelTime.TabIndex = 66;
+            this.labelTime.Text = "time";
+            this.labelTime.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
             // ObsMainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -406,6 +420,7 @@
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.ClientSize = new System.Drawing.Size(600, 726);
+            this.Controls.Add(this.labelTime);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.labelOperatingMode);
             this.Controls.Add(this.label2);
@@ -464,6 +479,7 @@
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label labelHumanInterventionStatus;
         private System.Windows.Forms.ToolStripMenuItem conditionsBypassToolStripMenuItem;
+        private System.Windows.Forms.Label labelTime;
     }
 }
 

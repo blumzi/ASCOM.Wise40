@@ -48,6 +48,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
         CancellationToken CT;
         Task workerTask;
         string safeToOperateStatus = string.Empty;
+        TimeZoneInfo tz = TimeZoneInfo.Local;
 
         public void CloseConnections()
         {
@@ -127,7 +128,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             InitializeComponent();
             listBoxLog.SelectionMode = SelectionMode.None;
             ReadProfile();
-            _nextCheck = DateTime.Now.Add(new TimeSpan(0, 0, 10));
+            _nextCheck = DateTime.Now.Add(TimeSpan.FromSeconds(10));
 
             menuStrip.RenderMode = ToolStripRenderMode.ManagerRenderMode;
             ToolStripManager.Renderer = new Wise40ToolstripRenderer();
@@ -222,13 +223,23 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             if (!active)
                 reasonsList.Add("Telescope is Idle");
 
+            bool alreadyParked = wisetelescope.AtPark && wisedome.AtPark;
+
             if (reasonsList.Count != 0)
             {
                 string reason = String.Join(" and ", reasonsList);
-                if (inControl)
-                    DoShutdownObservatory(reason);
+
+                if (alreadyParked)
+                {
+                    Log(string.Format("Wise40 already parked, shutdown(reason: {0}) skipped", reason));
+                }
                 else
-                    Log(string.Format("No ComputerControl, shutdown (reason: {0}) skipped.", reason));
+                {
+                    if (inControl)
+                        DoShutdownObservatory(reason);
+                    else
+                        Log(string.Format("No ComputerControl, shutdown (reason: {0}) skipped.", reason));
+                }
             }
             else
                 Log("OK");
@@ -239,7 +250,8 @@ namespace ASCOM.Wise40.ObservatoryMonitor
         void RefreshDisplay()
         {
             DateTime localTime = DateTime.Now.ToLocalTime();
-            labelDate.Text = localTime.ToString("ddd, dd MMM yyyy, HH:mm:ss");
+            labelDate.Text = localTime.ToString("ddd, dd MMM yyyy");
+            labelTime.Text = localTime.ToString("HH:mm:ss ") + tz.ToString();
 
             if (!_shuttingDown && DateTime.Now.CompareTo(_nextCheck) >= 0)
             {
@@ -567,10 +579,10 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 else
                     Log("Wise40 is parked and closed");
             }
-            catch (ValueNotSetException ex) when (ex.Message == "Target RA not set") {
-                // This is weird.  This exception seems to be from LCO's client access.
-                // Need to take this up with Peter!
-            }
+            //catch (ValueNotSetException ex) when (ex.Message == "Target RA not set") {
+            //    // This is weird.  This exception seems to be from LCO's client access.
+            //    // Need to take this up with Peter!
+            //}
             catch (Exception ex)
             {
                 if (ex.Message == "Shutdown aborted")
