@@ -85,6 +85,9 @@ namespace ASCOM.Wise40
             if (_shuttingDown)
                 return;
 
+            if (act == Activity.GoingIdle && _currentlyActive != Activity.None)
+                return;
+
             _currentlyActive |= act;
             if (act != Activity.GoingIdle)      // Any activity ends GoingIdle
                 EndActivity(Activity.GoingIdle);
