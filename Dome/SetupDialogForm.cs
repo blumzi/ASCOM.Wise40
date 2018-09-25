@@ -27,18 +27,20 @@ namespace ASCOM.Wise40 //.Dome
             textBoxShutterIpAddress.Text = wisedome.wisedomeshutter._ipAddress;
             textBoxShutterHighestValue.Text = wisedome.wisedomeshutter._highestValue.ToString();
             textBoxShutterLowestValue.Text = wisedome.wisedomeshutter._lowestValue.ToString();
+            checkBoxShutterUseWebClient.Checked = wisedome.wisedomeshutter._useShutterWebClient;
 
             using (ASCOM.Utilities.Profile driverProfile = new ASCOM.Utilities.Profile())
             {
                 driverProfile.DeviceType = "Telescope";
                 minimalStep = Convert.ToDouble(driverProfile.GetValue(Const.wiseTelescopeDriverID, 
-                    "Minimal Dome Tracking Movement", string.Empty, "2.0"));
+                    "MinimalDomeTrackingMovement", string.Empty, "2.0"));
                 textBoxMinimalStep.Text = minimalStep.ToString();
             }
         }
 
         private void cmdOK_Click(object sender, EventArgs e) // OK button event handler
         {
+            wisedome.wisedomeshutter._useShutterWebClient = checkBoxShutterUseWebClient.Checked;
             wisedome.wisedomeshutter._ipAddress = textBoxShutterIpAddress.Text.Trim();
             wisedome.wisedomeshutter._highestValue = Convert.ToInt32(textBoxShutterHighestValue.Text);
             wisedome.wisedomeshutter._lowestValue = Convert.ToInt32(textBoxShutterLowestValue.Text);
@@ -50,7 +52,7 @@ namespace ASCOM.Wise40 //.Dome
             using (ASCOM.Utilities.Profile driverProfile = new ASCOM.Utilities.Profile())
             {
                 driverProfile.DeviceType = "Telescope";
-                driverProfile.WriteValue(Const.wiseTelescopeDriverID, "Minimal Dome Tracking Movement", textBoxMinimalStep.Text);
+                driverProfile.WriteValue(Const.wiseTelescopeDriverID, "MinimalDomeTrackingMovement", textBoxMinimalStep.Text);
             }
             Close();
         }

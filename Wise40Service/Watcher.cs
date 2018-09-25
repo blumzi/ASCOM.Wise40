@@ -32,6 +32,10 @@ namespace Wise40Watcher
                     ret = Const.wiseASCOMServerPath;
                     break;
 
+                case "weatherlink":
+                    ret = Const.wiseWeatherLinkPath;
+                    break;
+
                 case "dash":                    
                     ret = top + "/Dash/bin/x86/Debug/Dash.exe";
                     break;

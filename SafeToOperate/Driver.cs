@@ -68,7 +68,6 @@ namespace ASCOM.Wise40SafeToOperate
     {
         public WiseSafeToOperate wisesafetooperate;
         private static string driverID = "ASCOM.Wise40SafeToOperate.SafetyMonitor";
-        private static string driverDescription;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Wise40.SafeToOperate"/> class.
@@ -77,8 +76,6 @@ namespace ASCOM.Wise40SafeToOperate
         public SafetyMonitor()
         {
             wisesafetooperate = WiseSafeToOperate.Instance;
-            wisesafetooperate.init();
-            driverDescription = wisesafetooperate.Description;
         }
 
         //
@@ -157,7 +154,6 @@ namespace ASCOM.Wise40SafeToOperate
 
         public string Description
         {
-            // TODO customise this device description
             get
             {
                 return wisesafetooperate.Description;

@@ -16,6 +16,7 @@ namespace ASCOM.Wise40
         private static volatile Slewers _instance;
         private static object syncObject = new object();
         private static List<WiseTele.SlewerTask> _active = new List<WiseTele.SlewerTask>();
+        private static ActivityMonitor activityMonitor = ActivityMonitor.Instance;
 
         public Slewers() { }
 
@@ -65,7 +66,7 @@ namespace ASCOM.Wise40
                 _active.Remove(slewerTask);
 
                 if (_active.Count == 0)
-                    WiseTele.Instance.inactivityMonitor.EndActivity(InactivityMonitor.Activity.Slewing);
+                    activityMonitor.EndActivity(ActivityMonitor.Activity.Slewing);
             }
             #region debug
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugAxes,

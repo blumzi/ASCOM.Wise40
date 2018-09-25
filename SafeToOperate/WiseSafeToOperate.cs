@@ -25,7 +25,7 @@ namespace ASCOM.Wise40SafeToOperate
         /// ASCOM DeviceID (COM ProgID) for this driver.
         /// The DeviceID is used by ASCOM applications to load the driver at runtime.
         /// </summary>
-        public string driverID;
+        public string driverID = Const.wiseSafeToOperateDriverID;
         // TODO Change the descriptive string for your driver then remove this line
         /// <summary>
         /// Driver description that displays in the ASCOM Chooser.
@@ -35,39 +35,35 @@ namespace ASCOM.Wise40SafeToOperate
 
         public Profile _profile;
         
-        public WindSensor windSensor;
-        public CloudsSensor cloudsSensor;
-        public RainSensor rainSensor;
-        public HumiditySensor humiditySensor;
-        public SunSensor sunSensor;
-        public HumanInterventionSensor humanInterventionSensor;
-        public WiseComputerControl wisecomputercontrol;
-        public List<Sensor> _sensors;
-        private bool _bypassed = false;
-        private bool _shuttingDown = false;
-        
-        internal static string ageMaxSecondsProfileName = "AgeMaxSeconds";
-        internal static string stableAfterMinProfileName = "StableAfterMin";
-        internal static string bypassedProfileName = "Bypassed";
-        public int ageMaxSeconds;
+        public static WindSensor windSensor;
+        public static CloudsSensor cloudsSensor;
+        public static RainSensor rainSensor;
+        public static HumiditySensor humiditySensor;
+        public static SunSensor sunSensor;
+        public static HumanInterventionSensor humanInterventionSensor;
+        public static WiseComputerControl wisecomputercontrol;
+        public static List<Sensor> _sensors;
+        private static bool _bypassed = false;
+        private static bool _shuttingDown = false;
+        public static int ageMaxSeconds;
 
         /// <summary>
         /// Private variable to hold the connected state
         /// </summary>
-        private bool _connected = false;
+        private static bool _connected = false;
 
         private Wise40.Common.Debugger debugger = Debugger.Instance;
-        private static TraceLogger tl;
+        private static TraceLogger tl = new TraceLogger("", "Wise40.SafeToOperate");
         
-        public ObservingConditions och = WiseSite.Instance.och;
+        public static ObservingConditions och = WiseSite.Instance.och;
         
         private static object syncObject = new object();
 
-        private static volatile WiseSafeToOperate _instance;
+        private static volatile WiseSafeToOperate _instance = new WiseSafeToOperate();
         private static bool initialized = false;
         
-        public TimeSpan _stabilizationPeriod;
-        private int _defaultStabilizationPeriodMinutes = 15;
+        public static TimeSpan _stabilizationPeriod;
+        private static int _defaultStabilizationPeriodMinutes = 15;
 
         private Astrometry.NOVAS.NOVAS31 novas31;
         private static AstroUtils astroutils;
@@ -95,9 +91,9 @@ namespace ASCOM.Wise40SafeToOperate
             }
         }
 
-        public WiseSafeToOperate()
-        {
-        }
+        public WiseSafeToOperate() { }
+
+        static WiseSafeToOperate() { }
 
         public void init()
         {
@@ -108,7 +104,6 @@ namespace ASCOM.Wise40SafeToOperate
             if (tl == null)
                 tl = new TraceLogger("", "Wise40.SafeToOperate");
             name = "Wise40 SafeToOperate";
-            driverID = Const.wiseSafeToOperateDriverID;
             driverDescription = string.Format("ASCOM Wise40.SafeToOperate v{0}", version.ToString());
 
             if (_profile == null)
@@ -181,7 +176,7 @@ namespace ASCOM.Wise40SafeToOperate
             }
         }
 
-        private ArrayList supportedActions = new ArrayList() { "start-bypass", "end-bypass", "status" };
+        private ArrayList supportedActions = new ArrayList() { "start-bypass", "end-bypass", "status", "sensor-is-safe" };
 
         public ArrayList SupportedActions
         {
@@ -194,23 +189,61 @@ namespace ASCOM.Wise40SafeToOperate
         public string Action(string actionName, string actionParameters)
         {
             string ret = string.Empty;
+            string parameter = actionParameters.ToLower();
 
             switch (actionName.ToLower())
             {
+                case "sensor-is-safe":
+                    switch(actionParameters)
+                    {
+                        case "HumanIntervention":
+                            ret = humanInterventionSensor.isSafe.ToString();
+                            break;
+
+                        case "Sun":
+                            ret = sunSensor.isSafe.ToString();
+                            break;
+
+                        case "Wind":
+                            ret = windSensor.isSafe.ToString();
+                            break;
+
+                        case "Rain":
+                            ret = rainSensor.isSafe.ToString();
+                            break;
+
+                        case "Humidity":
+                            ret = humiditySensor.isSafe.ToString();
+                            break;
+
+                        case "Clouds":
+                            ret = cloudsSensor.isSafe.ToString();
+                            break;
+                    }
+                    break;
+
                 case "start-bypass":
                     _bypassed = true;
-                    _profile.WriteValue(driverID, bypassedProfileName, _bypassed.ToString());
+                    if (parameter != "temporary")
+                        _profile.WriteValue(driverID, Const.ProfileName.SafeToOperate_Bypassed, _bypassed.ToString());
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Started bypass (parameter: {0})", parameter);
+                    #endregion
                     ret = "ok";
                     break;
 
                 case "end-bypass":
                     _bypassed = false;
-                    _profile.WriteValue(driverID, bypassedProfileName, _bypassed.ToString());
+                    if (parameter != "temporary")
+                        _profile.WriteValue(driverID, Const.ProfileName.SafeToOperate_Bypassed, _bypassed.ToString());
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Ended bypass (parameter: {0})", parameter);
+                    #endregion
                     ret = "ok";
                     break;
 
                 case "status":
-                    _bypassed = Convert.ToBoolean(_profile.GetValue(driverID, bypassedProfileName, string.Empty, false.ToString()));
+                    _bypassed = Convert.ToBoolean(_profile.GetValue(driverID, Const.ProfileName.SafeToOperate_Bypassed, string.Empty, false.ToString()));
 
                     List<string> stat = new List<string>() {
                         "computer-control:" + (!wisecomputercontrol.Maintenance).ToString().ToLower(),
@@ -230,11 +263,17 @@ namespace ASCOM.Wise40SafeToOperate
 
                 case "start-shutdown":      // hidden
                     _shuttingDown = true;
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Started shutdown");
+                    #endregion
                     ret = "ok";
                     break;
 
                 case "end-shutdown":        // hidden
                     _shuttingDown = false;
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Ended shutdown");
+                    #endregion
                     ret = "ok";
                     break;
 
@@ -315,7 +354,7 @@ namespace ASCOM.Wise40SafeToOperate
         public void startSensors()
         {
             foreach (Sensor s in _sensors)
-                s.Start();
+                s.Restart(0);
         }
 
         public string DriverId
@@ -400,18 +439,35 @@ namespace ASCOM.Wise40SafeToOperate
                     foreach (Sensor s in _sensors)
                     {
                         if (s.Name == "Sun")
-                            continue;
-                        if (s.nReadings < s._repeats)
                         {
-                            reasons.Add(string.Format("{0} - not enough readings ({1} < {2})", s.Name, s.nReadings, s._repeats));
+                            double elev = SunElevation, maxElevation = Convert.ToDouble(sunSensor.MaxAsString);
+                            if (elev > maxElevation)
+                                reasons.Add(string.Format("Sun elevation ({0:f1}deg) is higher than {1:f1}deg.", elev, maxElevation));
+                            continue;
+                        }
+
+                        if (s.Name == "HumanIntervention")
+                            continue;       // was handled above
+
+                        if (s._attr.IsSet(Sensor.SensorAttributes.Stale))
+                        {
+                            reasons.Add(string.Format("{0} contains stale data", s.Name));
+                        }
+                        else if (!s._attr.IsSet(Sensor.SensorAttributes.Ready))
+                        {
+                            reasons.Add(string.Format("{0} - not ready (less than {1} readings)",
+                                s.Name, s._repeats));
+                        } else if (s._attr.IsSet(Sensor.SensorAttributes.Stabilizing))
+                        {
+                            TimeSpan ts = s.TimeToStable;
+                            string fmt = ts.Minutes > 0 ? @"mm\m" : "" + @"ss\s";
+
+                            reasons.Add(string.Format("{0} - stabilizing in {1}", s.Name, ts.ToString(fmt)));
                         }
                         else if (!s.isSafe && (reason = s.reason()) != string.Empty)
                             reasons.Add(reason);
                     }
 
-                    double elev = SunElevation, maxElevation = Convert.ToDouble(sunSensor.MaxAsString);
-                    if (elev > maxElevation)
-                        reasons.Add(string.Format("Sun elevation ({0:f1}deg) is higher than {1:f1}deg.", elev, maxElevation));
                 }
                 return reasons;
             }
@@ -465,6 +521,8 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
+                if (!cloudsSensor._attr.IsSet(Sensor.SensorAttributes.Ready))
+                    return Const.TriStateStatus.Warning;
                 return cloudsSensor.isSafe ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
             }
         }
@@ -473,6 +531,8 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
+                if (!windSensor._attr.IsSet(Sensor.SensorAttributes.Ready))
+                    return Const.TriStateStatus.Warning;
                 return windSensor.isSafe ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
             }
         }
@@ -481,6 +541,8 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
+                if (!humiditySensor._attr.IsSet(Sensor.SensorAttributes.Ready))
+                    return Const.TriStateStatus.Warning;
                 return humiditySensor.isSafe ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
             }
         }
@@ -489,6 +551,8 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
+                if (!rainSensor._attr.IsSet(Sensor.SensorAttributes.Ready))
+                    return Const.TriStateStatus.Warning;
                 return rainSensor.isSafe ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
             }
         }
@@ -553,11 +617,16 @@ namespace ASCOM.Wise40SafeToOperate
             {
                 bool ret = true;
 
+                //
+                // NOTE: The following decisions are sorted by priority. TAKE CARE!
+                //
                 if (!_connected)
                     ret = false;
                 else if (!wisecomputercontrol.IsSafe)
                     ret = false;
-                else if (!_shuttingDown && !humanInterventionSensor.isSafe)
+                else if (_shuttingDown)
+                    ret = true;
+                else if (!humanInterventionSensor.isSafe)
                     ret = false;
                 else if (_bypassed)
                     return true;
@@ -589,10 +658,10 @@ namespace ASCOM.Wise40SafeToOperate
             {
                 foreach (Sensor s in _sensors)
                 {
-                    if (s.Name == "Sun")
+                    if (! s._attr.IsSet(Sensor.SensorAttributes.Accumulating))
                         continue;
 
-                    if (s.nReadings < s._repeats)
+                    if (! s._attr.IsSet(Sensor.SensorAttributes.Ready))
                         return false;
                 }
 
@@ -621,10 +690,10 @@ namespace ASCOM.Wise40SafeToOperate
         /// </summary>
         public void ReadProfile()
         {
-            ageMaxSeconds = Convert.ToInt32(_profile.GetValue(driverID, ageMaxSecondsProfileName, string.Empty, 180.ToString()));
-            _bypassed = Convert.ToBoolean(_profile.GetValue(driverID, bypassedProfileName, string.Empty, false.ToString()));
+            ageMaxSeconds = Convert.ToInt32(_profile.GetValue(driverID, Const.ProfileName.SafeToOperate_AgeMaxSeconds, string.Empty, 180.ToString()));
+            _bypassed = Convert.ToBoolean(_profile.GetValue(driverID, Const.ProfileName.SafeToOperate_Bypassed, string.Empty, false.ToString()));
 
-            int minutes = Convert.ToInt32(_profile.GetValue(driverID, stableAfterMinProfileName, string.Empty, _defaultStabilizationPeriodMinutes.ToString()));
+            int minutes = Convert.ToInt32(_profile.GetValue(driverID, Const.ProfileName.SafeToOperate_StableAfterMin, string.Empty, _defaultStabilizationPeriodMinutes.ToString()));
             _stabilizationPeriod = new TimeSpan(0, minutes, 0);
 
             foreach (Sensor s in _sensors)
@@ -633,11 +702,10 @@ namespace ASCOM.Wise40SafeToOperate
             using (Profile driverProfile = new Profile())
             {
                 string telescopeDriverId = Const.wiseTelescopeDriverID;
-                string astrometricAccuracyProfileName = "Astrometric accuracy";
 
                 driverProfile.DeviceType = "Telescope";
                 astrometricAccuracy =
-                    driverProfile.GetValue(telescopeDriverId, astrometricAccuracyProfileName, string.Empty, "Full") == "Full" ?
+                    driverProfile.GetValue(telescopeDriverId, Const.ProfileName.Telescope_AstrometricAccuracy, string.Empty, "Full") == "Full" ?
                         Accuracy.Full :
                         Accuracy.Reduced;
             }
@@ -648,8 +716,8 @@ namespace ASCOM.Wise40SafeToOperate
         /// </summary>
         public void WriteProfile()
         {
-            _profile.WriteValue(driverID, ageMaxSecondsProfileName, ageMaxSeconds.ToString());
-            _profile.WriteValue(driverID, stableAfterMinProfileName, _stabilizationPeriod.Minutes.ToString());
+            _profile.WriteValue(driverID, Const.ProfileName.SafeToOperate_AgeMaxSeconds, ageMaxSeconds.ToString());
+            _profile.WriteValue(driverID, Const.ProfileName.SafeToOperate_StableAfterMin, _stabilizationPeriod.Minutes.ToString());
             foreach (Sensor s in _sensors)
                 s.writeProfile();
         }

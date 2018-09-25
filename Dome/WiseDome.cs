@@ -38,7 +38,8 @@ namespace ASCOM.Wise40
         private static Object _caliWriteLock = new object();
 
         public WiseDomeShutter wisedomeshutter = WiseDomeShutter.Instance;
-                
+        private static ActivityMonitor activityMonitor = ActivityMonitor.Instance;
+
         [FlagsAttribute] public enum DomeState {
             Idle = 0,
             MovingCW = (1 << 0),
@@ -101,10 +102,10 @@ namespace ASCOM.Wise40
         private System.Threading.Timer _domeTimer;
         private System.Threading.Timer _movementTimer;
         private System.Threading.Timer _stuckTimer;
-        
+
         private readonly int _movementTimeout = 2000;
         private readonly int _domeTimeout = 50;
-        
+
         private bool _slaved = false;
         private bool _atPark = false;
 
@@ -115,7 +116,7 @@ namespace ASCOM.Wise40
         private static AutoResetEvent _foundCalibration = new AutoResetEvent(false);
         private static Hardware.Hardware hw = Hardware.Hardware.Instance;
 
-        private static TraceLogger tl;        
+        private static TraceLogger tl;
 
         // Explicit static constructor to tell C# compiler
         // not to mark type as beforefieldinit
@@ -170,8 +171,8 @@ namespace ASCOM.Wise40
 
                 calibrationPoints.Add(new CalibrationPoint(caliPins[0], new Angle(254.6, Angle.Type.Az), 10 + 2 * caliPointsSpacing));
                 calibrationPoints.Add(new CalibrationPoint(caliPins[1], new Angle(133.0, Angle.Type.Az), 10 + 1 * caliPointsSpacing));
-                calibrationPoints.Add(new CalibrationPoint(caliPins[2], new Angle( 18.0, Angle.Type.Az), 10 + 0 * caliPointsSpacing));
-                
+                calibrationPoints.Add(new CalibrationPoint(caliPins[2], new Angle(18.0, Angle.Type.Az), 10 + 0 * caliPointsSpacing));
+
                 ventPin = new WisePin("DomeVent", hw.domeboard, DigitalPortType.FirstPortA, 5, DigitalPortDirection.DigitalOut);
                 projectorPin = new WisePin("DomeProjector", hw.domeboard, DigitalPortType.FirstPortA, 4, DigitalPortDirection.DigitalOut);
 
@@ -189,18 +190,18 @@ namespace ASCOM.Wise40
             {
                 debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome: constructor caught: {0}.", e.Message);
             }
-            
+
             leftPin.SetOff();
             rightPin.SetOff();
 
             _calibrating = false;
             _state = DomeState.Idle;
-            
+
             _domeTimer = new System.Threading.Timer(new TimerCallback(onDomeTimer));
             _domeTimer.Change(_domeTimeout, _domeTimeout);
-            
+
             _movementTimer = new System.Threading.Timer(new TimerCallback(onMovementTimer));
-            
+
             _stuckTimer = new System.Threading.Timer(new TimerCallback(onStuckTimer));
 
             wisesite.init();
@@ -359,7 +360,7 @@ namespace ASCOM.Wise40
                 return ret;
             }
         }
-        
+
         /// <summary>
         /// The dome timer is always enabled, at 100 millisec intervals.
         /// </summary>
@@ -388,7 +389,7 @@ namespace ASCOM.Wise40
             {
                 Stop();
                 _targetAz = null;
-                
+
                 if (DomeStateIsOn(DomeState.Parking))
                 {
                     UnsetDomeState(DomeState.Parking);
@@ -405,9 +406,9 @@ namespace ASCOM.Wise40
                     #endregion
                     e.Set();
                 }
-            }            
+            }
         }
-        
+
         private bool ShutterIsMoving
         {
             get
@@ -415,7 +416,7 @@ namespace ASCOM.Wise40
                 return wisedomeshutter.IsMoving;
             }
         }
-        
+
         /// <summary>
         /// The movement timer is activated when the dome starts moving either CW or CCW, and 
         ///   gets disabled by Stop().
@@ -431,11 +432,11 @@ namespace ASCOM.Wise40
             SaveCalibrationData();
 
             // the movementTimer should not be Enabled unless the dome is moving
-            if (_isStuck || ! DomeIsMoving)
+            if (_isStuck || !DomeIsMoving)
                 return;
 
             deltaTicks = 0;
-            currTicks  = domeEncoder.Value;
+            currTicks = domeEncoder.Value;
 
             if (currTicks == _prevTicks)
                 _isStuck = true;
@@ -473,7 +474,7 @@ namespace ASCOM.Wise40
             _prevTicks = currTicks;
         }
 
-        
+
         private void onStuckTimer(object state)
         {
             DateTime rightNow;
@@ -584,10 +585,10 @@ namespace ASCOM.Wise40
             _movementTimer.Change(Timeout.Infinite, Timeout.Infinite);
             rightPin.SetOff();
             leftPin.SetOff();
-            UnsetDomeState(DomeState.MovingCCW|DomeState.MovingCW);
+            UnsetDomeState(DomeState.MovingCCW | DomeState.MovingCW);
             domeEncoder.setMovement(Direction.None);
 
-            for ( tries = 0; tries < 10; tries++)
+            for (tries = 0; tries < 10; tries++)
             {
                 uint prev = domeEncoder.Value;
                 Thread.Sleep(500);
@@ -606,6 +607,8 @@ namespace ASCOM.Wise40
                 debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome:Stop Fully stopped (not calibrated) (encoder: {0}) after {1} tries",
                     domeEncoder.Value, tries + 1);
             #endregion
+
+            activityMonitor.EndActivity(ActivityMonitor.Activity.Dome);
         }
 
         public void StartOpeningShutter()
@@ -621,7 +624,7 @@ namespace ASCOM.Wise40
             if (_syncVentWithShutter)
                 Vent = false;
         }
-        
+
         public CalibrationPoint AtCaliPoint
         {
             get
@@ -787,6 +790,8 @@ namespace ASCOM.Wise40
 
             tl.LogMessage("Dome: SlewToAzimuth", toAng.ToString());
 
+            activityMonitor.StartActivity(ActivityMonitor.Activity.Dome);
+
             if (!Calibrated)
             {
                 if (_autoCalibrate)
@@ -934,7 +939,7 @@ namespace ASCOM.Wise40
                 throw new ASCOM.InvalidOperationException("Cannot Park, shutter is active!");
             }
 
-            if (!Calibrated && ! _autoCalibrate)
+            if (!Calibrated && !_autoCalibrate)
             {
                 tl.LogMessage("Dome: Park", string.Format("Dome: Park", "Cannot Park, not calibrated and _autoCalibrate == {0}.", _autoCalibrate.ToString()));
                 throw new ASCOM.InvalidOperationException("Cannot Park, not calibrated!");
@@ -1189,18 +1194,70 @@ namespace ASCOM.Wise40
             }
         }
 
+
+        private static ArrayList supportedActions = new ArrayList() {
+            "dome:get-projector",
+            "dome:set-projector",
+            "dome:get-vent",
+            "dome:set-vent",
+        };
+
         public ArrayList SupportedActions
         {
             get
             {
-                tl.LogMessage("Dome: SupportedActions Get", "Returning empty arraylist");
-                return new ArrayList();
+                return supportedActions;
             }
         }
 
         public string Action(string actionName, string actionParameters)
         {
-            throw new ASCOM.ActionNotImplementedException("Action " + actionName + " is not implemented by this driver");
+            string param = actionParameters.ToLower();
+
+            switch (actionName)
+            {
+                case "dome:get-projector":
+                    return Projector.ToString().ToLower();
+
+                case "dome:set-projector":
+                    switch (param)
+                    {
+                        case "on":
+                            Projector = true;
+                            break;
+
+                        case "off":
+                            Projector = false;
+                            break;
+
+                        default:
+                            return "bad parameter";
+                    }
+                    return "ok";
+
+                case "dome:get-vent":
+                    return Vent.ToString().ToLower();
+
+                case "dome:set-vent":
+                    switch (param)
+                    {
+                        case "on":
+                            Vent = true;
+                            break;
+
+                        case "off":
+                            Vent = false;
+                            break;
+
+                        default:
+                            return "bad parameter";
+                    }
+                    return "ok";
+
+                default:
+                    throw new ASCOM.ActionNotImplementedException(
+                        "Action " + actionName + " is not implemented by this driver");
+            }
         }
 
         public void CommandBlind(string command, bool raw)
@@ -1371,8 +1428,6 @@ namespace ASCOM.Wise40
         }
 
         #region Profile
-        internal static string autoCalibrateProfileName = "AutoCalibrate";
-        internal static string syncVentWithShutterProfileName = "SyncVentWithShutter";
 
         /// <summary>
         /// Read the device configuration from the ASCOM Profile store
@@ -1383,8 +1438,8 @@ namespace ASCOM.Wise40
 
             using (Profile driverProfile = new Profile() { DeviceType = "Dome" })
             {
-                _autoCalibrate = Convert.ToBoolean(driverProfile.GetValue(Const.wiseDomeDriverID, autoCalibrateProfileName, string.Empty, true.ToString()));
-                _syncVentWithShutter = Convert.ToBoolean(driverProfile.GetValue(Const.wiseDomeDriverID, syncVentWithShutterProfileName, string.Empty, defaultSyncVentWithShutter.ToString()));
+                _autoCalibrate = Convert.ToBoolean(driverProfile.GetValue(Const.wiseDomeDriverID, Const.ProfileName.Dome_AutoCalibrate, string.Empty, true.ToString()));
+                _syncVentWithShutter = Convert.ToBoolean(driverProfile.GetValue(Const.wiseDomeDriverID, Const.ProfileName.Dome_SyncVentWithShutter, string.Empty, defaultSyncVentWithShutter.ToString()));
             }
             wisedomeshutter.ReadProfile();
         }
@@ -1396,8 +1451,8 @@ namespace ASCOM.Wise40
         {
             using (Profile driverProfile = new Profile() { DeviceType = "Dome" })
             {
-                driverProfile.WriteValue(Const.wiseDomeDriverID, autoCalibrateProfileName, _autoCalibrate.ToString());
-                driverProfile.WriteValue(Const.wiseDomeDriverID, syncVentWithShutterProfileName, _syncVentWithShutter.ToString());
+                driverProfile.WriteValue(Const.wiseDomeDriverID, Const.ProfileName.Dome_AutoCalibrate, _autoCalibrate.ToString());
+                driverProfile.WriteValue(Const.wiseDomeDriverID, Const.ProfileName.Dome_SyncVentWithShutter, _syncVentWithShutter.ToString());
             }
             wisedomeshutter.WriteProfile();
         }

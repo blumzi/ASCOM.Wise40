@@ -64,14 +64,6 @@ namespace ASCOM.Wise40 //.Telescope
     public class Telescope : ITelescopeV3, IDisposable
     {
         /// <summary>
-        /// ASCOM DeviceID (COM ProgID) for this driver.
-        /// The DeviceID is used by ASCOM applications to load the driver at runtime.
-        /// </summary>
-        internal static string astrometricAccuracyProfileName = "Astrometric accuracy";
-        internal static string enslaveDomeProfileName = "Enslave Dome";
-        internal static string calculateRefractionProfileName = "Calculate refraction";
-
-        /// <summary>
         /// Remembers if the ASCOM driver has initiated a SlewXXX or MoveAxis
         /// </summary>
         private bool _driverInitiatedSlew = false;
@@ -951,9 +943,9 @@ namespace ASCOM.Wise40 //.Telescope
             using (Profile driverProfile = new Profile())
             {
                 driverProfile.DeviceType = "Telescope";
-                wisetele._enslaveDome = Convert.ToBoolean(driverProfile.GetValue(Const.wiseTelescopeDriverID, enslaveDomeProfileName, string.Empty, "false"));
+                wisetele._enslaveDome = Convert.ToBoolean(driverProfile.GetValue(Const.wiseTelescopeDriverID, Const.ProfileName.Telescope_EnslaveDome, string.Empty, "false"));
                 wisesite.astrometricAccuracy = 
-                    driverProfile.GetValue(Const.wiseTelescopeDriverID, astrometricAccuracyProfileName, string.Empty, "Full") == "Full" ?
+                    driverProfile.GetValue(Const.wiseTelescopeDriverID, Const.ProfileName.Telescope_AstrometricAccuracy, string.Empty, "Full") == "Full" ?
                         Accuracy.Full :
                         Accuracy.Reduced;
             }
@@ -967,9 +959,9 @@ namespace ASCOM.Wise40 //.Telescope
             using (Profile driverProfile = new Profile())
             {
                 driverProfile.DeviceType = "Telescope";
-                driverProfile.WriteValue(Const.wiseTelescopeDriverID, astrometricAccuracyProfileName, wisesite.astrometricAccuracy == Accuracy.Full ? "Full" : "Reduced");
-                driverProfile.WriteValue(Const.wiseTelescopeDriverID, enslaveDomeProfileName, wisetele._enslaveDome.ToString());
-                driverProfile.WriteValue(Const.wiseTelescopeDriverID, calculateRefractionProfileName, wisetele._calculateRefraction.ToString());
+                driverProfile.WriteValue(Const.wiseTelescopeDriverID, Const.ProfileName.Telescope_AstrometricAccuracy, wisesite.astrometricAccuracy == Accuracy.Full ? "Full" : "Reduced");
+                driverProfile.WriteValue(Const.wiseTelescopeDriverID, Const.ProfileName.Telescope_EnslaveDome, wisetele._enslaveDome.ToString());
+                driverProfile.WriteValue(Const.wiseTelescopeDriverID, Const.ProfileName.Telescope_CalculateRefraction, wisetele._calculateRefraction.ToString());
             }
         }
 

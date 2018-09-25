@@ -10,11 +10,11 @@ using System.IO;
 
 namespace ASCOM.Wise40
 {
-    public class InactivityMonitor : WiseObject
+    public class ActivityMonitor : WiseObject
     {
         private Timer inactivityTimer;
-        private int realMillisToInactivity = 15 * 60 * 1000;        // 15 minutes
-        private int simulatedlMillisToInactivity = 3 * 60 * 1000;   //  3 minutes
+        private readonly int realMillisToInactivity = (int)TimeSpan.FromMinutes(15).TotalMilliseconds;
+        private readonly int simulatedlMillisToInactivity = (int)TimeSpan.FromMinutes(3).TotalMilliseconds;
         private WiseTele wisetele = WiseTele.Instance;
         private WiseDome wisedome = WiseDome.Instance;
         private Debugger debugger = WiseTele.Instance.debugger;
@@ -33,21 +33,35 @@ namespace ASCOM.Wise40
             Handpad = (1 << 4),
             GoingIdle = (1 << 5),
             Parking = (1 << 6),
-            ShuttingDown = (1 << 7),
+            Shutter = (1 << 7),
+            ShuttingDown = (1 << 8),
+
+            MaxActivity = ShuttingDown << 1,
         };
-        private Activity _activities = Activity.None;
+        private Activity _currentlyActive = Activity.None;
+        private List<Activity> _activities = new List<Activity> {
+            Activity.Tracking,
+            Activity.Slewing,
+            Activity.Pulsing,
+            Activity.Dome,
+            Activity.Handpad,
+            Activity.GoingIdle,
+            Activity.Parking,
+            Activity.Shutter,
+            Activity.ShuttingDown,
+        };
 
         public void BecomeIdle(object StateObject)
         {
             EndActivity(Activity.GoingIdle);
         }
 
-        public InactivityMonitor()
+        public ActivityMonitor()
         {
             wisesite.init();
             inactivityTimer = new System.Threading.Timer(BecomeIdle);
-            _activities = Activity.None;
-            Start("init");
+            _currentlyActive = Activity.None;
+            StartTimer("init");
         }
 
         public void StartActivity(Activity act)
@@ -55,13 +69,13 @@ namespace ASCOM.Wise40
             if (_shuttingDown)
                 return;
 
-            _activities |= act;
+            _currentlyActive |= act;
             if (act != Activity.GoingIdle)      // Any activity ends GoingIdle
                 EndActivity(Activity.GoingIdle);
             #region debug
             wisetele.debugger.WriteLine(Common.Debugger.DebugLevel.DebugLogic, "InactivityMonitor:StartActivity: {0}", act.ToString());
             #endregion
-            Stop();
+            StopTimer();
         }
 
         public void EndActivity(Activity act)
@@ -69,26 +83,24 @@ namespace ASCOM.Wise40
             if (_shuttingDown)
                 return;
 
-            _activities &= ~act;
+            _currentlyActive &= ~act;
             #region debug
             wisetele.debugger.WriteLine(Common.Debugger.DebugLevel.DebugLogic, "InactivityMonitor:EndActivity: {0}", act.ToString());
             #endregion
-            if (_activities == Activity.None)
-                Start("No activities");
         }
 
         public bool Active(Activity a)
         {
-            return (_activities & a) != 0;
+            return (_currentlyActive & a) != 0;
         }
 
-        public void Stop()
+        public void StopTimer()
         {
             inactivityTimer.Change(Timeout.Infinite, Timeout.Infinite);
             _due = DateTime.MinValue;
         }
 
-        public void Start(string reason)
+        public void StartTimer(string reason)
         {
             if (_shuttingDown)
                 return;
@@ -116,7 +128,7 @@ namespace ASCOM.Wise40
             #endregion
 
             StartActivity(Activity.GoingIdle);
-            inactivityTimer.Change(dueMillis, -1);
+            inactivityTimer.Change(dueMillis, Timeout.Infinite);
             File.Create(filename).Close();
 
             DateTime now = DateTime.Now;
@@ -136,31 +148,20 @@ namespace ASCOM.Wise40
         public bool ObservatoryIsActive()
         {
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "ObservatoryIsActive: {0}", _activities.ToString());
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "ObservatoryIsActive: {0}", _currentlyActive.ToString());
             #endregion
-            return _activities != Activity.None;
+            return _currentlyActive != Activity.None;
         }
 
         public string ObservatoryActivities
         {
             get
             {
-                if (_activities == Activity.None)
-                    return string.Empty;
-
                 List<string> ret = new List<string>();
-                if (Active(Activity.Tracking))
-                    ret.Add("Tracking");
-                if (Active(Activity.Slewing))
-                    ret.Add("Slewing");
-                if (Active(Activity.Pulsing))
-                    ret.Add("Pulsing");
-                if (Active(Activity.Parking))
-                    ret.Add("Parking");
-                if (Active(Activity.Handpad))
-                    ret.Add("Handpad");
-                if (Active(Activity.GoingIdle))
-                    ret.Add("GoingIdle");
+
+                foreach (Activity a in _activities)
+                    if (Active(a))
+                        ret.Add(a.ToString());
 
                 return string.Join(", ", ret);
             }

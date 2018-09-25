@@ -47,10 +47,43 @@ namespace ASCOM.Wise40.Common
         public const string wiseObservatoryMonitorDriverID = "ASCOM.Wise40.ObservatoryMonitor.SafetyMonitor";
 
         public const string wiseASCOMServerAppName = "ASCOM.RESTServer";
-        public const string wiseDashboardAppName = "Dash";
-        public const string wiseObservatoryMonitorAppName = "ObservatoryMonitor";
         public const string wiseASCOMServerPath = "c:/Program Files (x86)/ASCOM/Remote/ASCOM.RESTServer.exe";
+
+        public const string wiseObservatoryMonitorAppName = "ObservatoryMonitor";
+
+        public const string wiseDashboardAppName = "Dash";
         public const string wiseSimulatedDashPath = "c:/Users/Blumzi/Documents/Visual Studio 2015/Projects/Wise40/Dash/bin/x86/Debug/Dash.exe";
         public const string wiseRealDashPath = "c:/Users/mizpe/source/repos/ASCOM.Wise40/Dash/bin/x86/Debug/Dash.exe";
+
+        public const string wiseWeatherLinkPath = "c:/WeatherLink/WeatherLink 6.0.2.exe";
+
+        public class ProfileName
+        {
+            public static string Telescope_AstrometricAccuracy = "AstrometricAccuracy";
+            public static string Telescope_EnslaveDome = "EnslaveDome";
+            public static string Telescope_CalculateRefraction = "CalculateRefraction";
+            public static string Telescope_Tracing = "Tracing";
+            public static string Telescope_BypassCoordinatesSafety = "BypassCoordinatesSafety";
+            public static string Telescope_PlotSlews = "PlotSlews";
+
+            public static string SafeToOperate_AgeMaxSeconds = "AgeMaxSeconds";
+            public static string SafeToOperate_StableAfterMin = "StableAfterMin";
+            public static string SafeToOperate_Bypassed = "Bypassed";
+
+            public static string Dome_AutoCalibrate = "AutoCalibrate";
+            public static string Dome_SyncVentWithShutter = "SyncVentWithShutter";
+            public static string Dome_MinimalTrackingMovement = "MinimalDomeTrackingMovement";
+
+            public static string DomeShutter_IPAddress = "ShutterIPAddress";
+            public static string DomeShutter_HighestValue = "ShutterHighestValue";
+            public static string DomeShutter_LowestValue = "ShutterLowestValue";
+            public static string DomeShutter_UseWebClient = "ShutterUseWebClient";
+
+            public static string Boltwood_DataFile = "DataFile";
+
+            public static string VantagePro_OpMode = "OperationMode";
+            public static string VantagePro_DataFile = "DataFile";
+            public static string VantagePro_SerialPort = "Port";
+        }
     }
 }

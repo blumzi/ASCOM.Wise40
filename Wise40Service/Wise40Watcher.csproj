@@ -51,6 +51,7 @@
     <StartupObject>Wise40Watcher.Program</StartupObject>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ASCOM.Utilities, Version=6.0.0.0, Culture=neutral, PublicKeyToken=565de7938946fba7, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.Configuration.Install" />
     <Reference Include="System.Core" />
@@ -96,6 +97,10 @@
     <ProjectReference Include="..\Common\Common.csproj">
       <Project>{b76546e7-9832-4d28-b412-b34ca1c6177c}</Project>
       <Name>Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\VantagePro\VantagePro.csproj">
+      <Project>{59cc2a31-dec4-4eee-b5c3-efc8771438a7}</Project>
+      <Name>VantagePro</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

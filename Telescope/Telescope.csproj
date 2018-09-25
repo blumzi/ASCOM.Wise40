@@ -131,7 +131,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="InactivityMonitor.cs" />
     <Compile Include="ReadyToSlewFlags.cs" />
     <Compile Include="SlewPlotter.cs" />
     <Compile Include="MotionStudy.cs" />

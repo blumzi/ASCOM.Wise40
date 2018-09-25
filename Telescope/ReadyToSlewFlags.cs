@@ -63,13 +63,13 @@ namespace ASCOM.Wise40
         {
             lock (_lock)
             {
-                primaryReadyForSlew = 0;
-                primaryReadyForSet = 0;
-                primaryReadyForGuide = 0;
+                Interlocked.Exchange(ref primaryReadyForSlew, 0);
+                Interlocked.Exchange(ref primaryReadyForSet, 0);
+                Interlocked.Exchange(ref primaryReadyForGuide, 0);
 
-                secondaryReadyForSlew = 0;
-                secondaryReadyForSet = 0;
-                secondaryReadyForGuide = 0;
+                Interlocked.Exchange(ref secondaryReadyForSlew, 0);
+                Interlocked.Exchange(ref secondaryReadyForSet, 0);
+                Interlocked.Exchange(ref secondaryReadyForGuide, 0);
             }
         }
 
@@ -115,11 +115,11 @@ namespace ASCOM.Wise40
                 return true;        // the other axis has finished its slew, this axis can use any rate
 
             if (rate == Const.rateSlew)
-                ret = (primaryReadyForSlew == secondaryReadyForSlew);
+                ret = (Interlocked.Read(ref primaryReadyForSlew) == Interlocked.Read(ref secondaryReadyForSlew));
             else if (rate == Const.rateSet)
-                ret = (primaryReadyForSet == secondaryReadyForSet);
+                ret = (Interlocked.Read(ref primaryReadyForSet) == Interlocked.Read(ref secondaryReadyForSet));
             else if (rate == Const.rateGuide)
-                ret = (primaryReadyForGuide == secondaryReadyForGuide);
+                ret = (Interlocked.Read(ref primaryReadyForGuide) == Interlocked.Read(ref secondaryReadyForGuide));
 
             #region debug
             //debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "AxisCanMoveAtRate: {0} at {1} => {2}",

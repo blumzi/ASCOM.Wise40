@@ -71,7 +71,7 @@ namespace ASCOM.Wise40
         private bool _connected = false;
         private bool _parking = false;
 
-        public InactivityMonitor inactivityMonitor;
+        private ActivityMonitor activityMonitor = ActivityMonitor.Instance;
 
         private SlewPlotter slewPlotter = null;
 
@@ -226,10 +226,6 @@ namespace ASCOM.Wise40
 
         private Hardware.Hardware hardware = Hardware.Hardware.Instance;
         internal static string driverID = Const.wiseTelescopeDriverID;
-        internal static string astrometricAccuracyProfileName = "Astrometric accuracy";
-        internal static string traceStateProfileName = "Tracing";
-        internal static string bypassCoordinatesSafetyProfileName = "BypassCoordinatesSafety";
-        internal static string plotSlewsProfileName = "PlotSlews";
 
         public class MovementParameters
         {
@@ -258,7 +254,6 @@ namespace ASCOM.Wise40
         private DomeSlaveDriver domeSlaveDriver = DomeSlaveDriver.Instance;
 
         public bool _calculateRefraction = false;
-        private string minimalDomeTrackingMovementProfileName = "Minimal Dome Tracking Movement";
 
         private static WiseSafeToOperate wisesafetooperate = WiseSafeToOperate.Instance;
 
@@ -309,7 +304,7 @@ namespace ASCOM.Wise40
 
             set
             {
-                inactivityMonitor.Start("TargetDeclination was set");
+                activityMonitor.RestartGoindIdleTimer("TargetDeclination was set");
                 CheckCoordinateSanity(Angle.Type.Dec, value);
 
                 _targetDeclination = Angle.FromDegrees(value, Angle.Type.Dec);
@@ -345,7 +340,7 @@ namespace ASCOM.Wise40
 
             set
             {
-                inactivityMonitor.Start("TargetRightAscension was set");
+                activityMonitor.RestartGoindIdleTimer("TargetRightAscension was set");
                 CheckCoordinateSanity(Angle.Type.RA, value);
                 _targetRightAscension = Angle.FromHours(value, Angle.Type.RA);
                 #region trace
@@ -429,7 +424,7 @@ namespace ASCOM.Wise40
                 traceLogger.LogMessage("Connected Set", value.ToString());
                 #endregion
                 if (value == true)
-                    inactivityMonitor.Start("Connected was set to true");
+                    activityMonitor.RestartGoindIdleTimer("Connected was set to true");
 
                 if (value == _connected)
                     return;
@@ -495,10 +490,8 @@ namespace ASCOM.Wise40
             astroutils = new Astrometry.AstroUtils.AstroUtils();
             hardware.init();
             wisesite.init();
-            wisesafetooperate.init();
 
             _trackingRestorer = new TrackingRestorer();
-            inactivityMonitor = new InactivityMonitor();
 
             switch (wisesite.OperationalMode)
             {
@@ -772,7 +765,7 @@ namespace ASCOM.Wise40
 
         public void AbortSlew()
         {
-            inactivityMonitor.Start("AbortSlew");
+            activityMonitor.RestartGoindIdleTimer("AbortSlew");
             if (AtPark)
             {
                 //#region debug
@@ -782,7 +775,7 @@ namespace ASCOM.Wise40
             }
 
             Stop();
-            inactivityMonitor.EndActivity(InactivityMonitor.Activity.Slewing);
+            activityMonitor.EndActivity(ActivityMonitor.Activity.Slewing);
             #region trace
             traceLogger.LogMessage("AbortSlew", "");
             #endregion
@@ -949,13 +942,13 @@ namespace ASCOM.Wise40
 
                     if (TrackingMotor.isOff)
                         TrackingMotor.SetOn(Const.rateTrack);
-                    inactivityMonitor.StartActivity(InactivityMonitor.Activity.Tracking);
+                    activityMonitor.StartActivity(ActivityMonitor.Activity.Tracking);
                 }
                 else
                 {
                     if (TrackingMotor.isOn)
                         TrackingMotor.SetOff();
-                    inactivityMonitor.EndActivity(InactivityMonitor.Activity.Tracking);
+                    activityMonitor.EndActivity(ActivityMonitor.Activity.Tracking);
                 }
                 safetyMonitorTimer.EnableIfNeeded(SafetyMonitorTimer.ActionWhenNotSafe.Backoff);
 
@@ -1159,7 +1152,7 @@ namespace ASCOM.Wise40
             Const.AxisDirection direction = (Rate == Const.rateStopped) ? Const.AxisDirection.None :
                 (Rate < 0.0) ? Const.AxisDirection.Decreasing : Const.AxisDirection.Increasing;
 
-            inactivityMonitor.StartActivity(InactivityMonitor.Activity.Handpad);
+            activityMonitor.StartActivity(ActivityMonitor.Activity.Handpad);
             _moveAxis(Axis, Rate, direction, false);
 
             if (!BypassCoordinatesSafety)
@@ -1567,24 +1560,18 @@ namespace ASCOM.Wise40
             if (status.Contains("bypassed:false"))
             {
                 cancelSafetyBypass = true;
-                wisesafetooperate.Action("start-bypass", "");
+                wisesafetooperate.Action("start-bypass", "temporary");
             }
             wisesafetooperate.Action("start-shutdown", "");
 
-            try
-            {
-                inactivityMonitor.StartActivity(InactivityMonitor.Activity.ShuttingDown);
-                Park();
-                inactivityMonitor.EndActivity(InactivityMonitor.Activity.ShuttingDown);
-            } finally
+            activityMonitor.StartActivity(ActivityMonitor.Activity.ShuttingDown);
+            Task.Run(() => Park()).ContinueWith((afterPark) =>
             {
                 if (cancelSafetyBypass)
-                    wisesafetooperate.Action("end-bypass", "");
-            }
-
-            if (cancelSafetyBypass)
-                wisesafetooperate.Action("end-bypass", "");
-            wisesafetooperate.Action("end-shutdown", "");
+                    wisesafetooperate.Action("end-bypass", "temporary");
+                wisesafetooperate.Action("end-shutdown", "");
+                activityMonitor.EndActivity(ActivityMonitor.Activity.ShuttingDown);
+            }, TaskContinuationOptions.ExecuteSynchronously);
         }
 
         //
@@ -1605,26 +1592,40 @@ namespace ASCOM.Wise40
             Angle dec = Angle.FromDegrees(66.0, Angle.Type.Dec);
 
             bool wasEnslavingDome = _enslaveDome;
-            _parking = true;
-            inactivityMonitor.StartActivity(InactivityMonitor.Activity.Parking);
-            if (wasEnslavingDome)
+            bool wasTracking = Tracking;
+            try
             {
-                _enslaveDome = false;
-                DomeParker();
-            }
-            _instance.TargetRightAscension = ra.Hours;
-            _instance.TargetDeclination = dec.Degrees;
-            Tracking = true;
-            _slewToCoordinatesSync(ra, dec);
-            if (wasEnslavingDome)
+                _parking = true;
+                activityMonitor.StartActivity(ActivityMonitor.Activity.Parking);
+                if (wasEnslavingDome)
+                {
+                    _enslaveDome = false;
+                    DomeParker();
+                }
+                _instance.TargetRightAscension = ra.Hours;
+                _instance.TargetDeclination = dec.Degrees;
+                Tracking = true;
+                _slewToCoordinatesSync(ra, dec);
+                if (wasEnslavingDome)
+                {
+                    while (!domeSlaveDriver.AtPark)
+                        Thread.Sleep(2000);
+                }
+            } catch(Exception ex)
             {
-                while (!domeSlaveDriver.AtPark)
-                    Thread.Sleep(2000);
+                _parking = false;
+                _enslaveDome = wasEnslavingDome;
+                Tracking = wasTracking;
+                activityMonitor.EndActivity(ActivityMonitor.Activity.Parking);
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: Exception: {0}, aborted.", ex.Message);
+                #endregion
+                return;
             }
             AtPark = true;
             Tracking = false;
             _parking = false;
-            inactivityMonitor.EndActivity(InactivityMonitor.Activity.Parking);
+            activityMonitor.EndActivity(ActivityMonitor.Activity.Parking);
             _enslaveDome = wasEnslavingDome;
         }
 
@@ -2020,7 +2021,7 @@ namespace ASCOM.Wise40
 
             slewers.Clear();
             readyToSlewFlags.Reset();
-            inactivityMonitor.StartActivity(InactivityMonitor.Activity.Slewing);
+            activityMonitor.StartActivity(ActivityMonitor.Activity.Slewing);
             try
             {
                 if (_instance._enslaveDome)
@@ -2147,17 +2148,17 @@ namespace ASCOM.Wise40
             if (doChecks)
             {
                 if (AtPark)
-                    throw new InvalidOperationException("Cannot SlewToCoordinates while AtPark");
+                    throw new InvalidOperationException("Cannot SlewToCoordinatesAsync while AtPark");
 
                 if (!Tracking)
-                    throw new InvalidOperationException("Cannot SlewToCoordinates while NOT Tracking");
+                    throw new InvalidOperationException("Cannot SlewToCoordinatesAsync while NOT Tracking");
 
                 string notSafe = SafeAtCoordinates(ra, dec);
                 if (notSafe != string.Empty)
                     throw new InvalidOperationException(notSafe);
             }
 
-            if (!inactivityMonitor.Active(InactivityMonitor.Activity.ShuttingDown) && !wisesafetooperate.IsSafe)
+            if (!activityMonitor.Active(ActivityMonitor.Activity.ShuttingDown) && !wisesafetooperate.IsSafe)
                 throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasons));
 
             try
@@ -2863,6 +2864,9 @@ namespace ASCOM.Wise40
             if (Slewing)
                 throw new InvalidOperationException("Cannot PulseGuide while Slewing");
 
+            if (!wisesafetooperate.IsSafe)
+                throw new InvalidOperationException("Not safe to operate");
+
             if (pulsing.Active(Direction))
             {
                 throw new InvalidOperationException(string.Format(
@@ -2872,7 +2876,7 @@ namespace ASCOM.Wise40
             try
             {
                 pulsing.Start(Direction, Duration);
-                inactivityMonitor.StartActivity(InactivityMonitor.Activity.Pulsing);
+                activityMonitor.StartActivity(ActivityMonitor.Activity.Pulsing);
             }
             catch (Exception ex)
             {
@@ -2886,6 +2890,7 @@ namespace ASCOM.Wise40
             "telescope:get-active",
             "telescope:get-activities",
             "telescope:set-active",
+            "telescope:seconds-till-idle",
             "site:get-opmode",
             "site:set-opmode",
         };
@@ -2908,17 +2913,17 @@ namespace ASCOM.Wise40
             if (action == "dome:enslaved")
                 return _enslaveDome.ToString();
             else if (action == "telescope:get-active")
-                return inactivityMonitor.ObservatoryIsActive().ToString();
+                return activityMonitor.ObservatoryIsActive().ToString();
             else if (action == "telescope:get-activities")
-                return inactivityMonitor.ObservatoryActivities;
+                return activityMonitor.ObservatoryActivities;
             else if (action == "telescope:set-active")
             {
-                inactivityMonitor.Start("action telescope:set-active");
+                activityMonitor.RestartGoindIdleTimer("action telescope:set-active");
                 return "ok";
             }
             else if (action == "telescope:shutdown")  // this is a hidden action, not listed in SupportedActions
             {
-                Shutdown();
+                Task.Run(() => Shutdown());
                 return "ok";
             }
             else if (action == "site:get-opmode")
@@ -2929,6 +2934,9 @@ namespace ASCOM.Wise40
                 Enum.TryParse(parameter.ToUpper(), out mode);
                 wisesite.OperationalMode = mode;
                 return "ok";
+            } else if (action == "telescope:seconds-till-idle")
+            {
+                return ((int) activityMonitor.RemainingTime.TotalSeconds).ToString();
             }
 
             throw new ASCOM.ActionNotImplementedException("Action \"" + action + "\" is not implemented by this driver");
@@ -3015,16 +3023,16 @@ namespace ASCOM.Wise40
             {
                 Accuracy acc;
 
-                if (Enum.TryParse<Accuracy>(driverProfile.GetValue(driverID, astrometricAccuracyProfileName, string.Empty, "Full"), out acc))
+                if (Enum.TryParse<Accuracy>(driverProfile.GetValue(driverID, Const.ProfileName.Telescope_AstrometricAccuracy, string.Empty, "Full"), out acc))
                     wisesite.astrometricAccuracy = acc;
                 else
                     wisesite.astrometricAccuracy = Accuracy.Full;
-                _bypassCoordinatesSafety = Convert.ToBoolean(driverProfile.GetValue(driverID, bypassCoordinatesSafetyProfileName, string.Empty, false.ToString()));
-                _plotSlews = Convert.ToBoolean(driverProfile.GetValue(driverID, plotSlewsProfileName, string.Empty, false.ToString()));
+                _bypassCoordinatesSafety = Convert.ToBoolean(driverProfile.GetValue(driverID, Const.ProfileName.Telescope_BypassCoordinatesSafety, string.Empty, false.ToString()));
+                _plotSlews = Convert.ToBoolean(driverProfile.GetValue(driverID, Const.ProfileName.Telescope_PlotSlews, string.Empty, false.ToString()));
             }
 
             using (Profile driverProfile = new Profile() { DeviceType = "Dome" })
-                _minimalDomeTrackingMovement = Convert.ToDouble(driverProfile.GetValue(Const.wiseDomeDriverID, minimalDomeTrackingMovementProfileName, string.Empty, "2.0"));
+                _minimalDomeTrackingMovement = Convert.ToDouble(driverProfile.GetValue(Const.wiseDomeDriverID, Const.ProfileName.Dome_MinimalTrackingMovement, string.Empty, "2.0"));
         }
 
         /// <summary>
@@ -3034,14 +3042,14 @@ namespace ASCOM.Wise40
         {
             using (Profile driverProfile = new Profile() { DeviceType = "Telescope" })
             {
-                driverProfile.WriteValue(driverID, traceStateProfileName, traceLogger.Enabled.ToString());
-                driverProfile.WriteValue(driverID, astrometricAccuracyProfileName, wisesite.astrometricAccuracy.ToString());
-                driverProfile.WriteValue(driverID, bypassCoordinatesSafetyProfileName, _bypassCoordinatesSafety.ToString());
-                driverProfile.WriteValue(driverID, plotSlewsProfileName, _plotSlews.ToString());
+                driverProfile.WriteValue(driverID, Const.ProfileName.Telescope_Tracing, traceLogger.Enabled.ToString());
+                driverProfile.WriteValue(driverID, Const.ProfileName.Telescope_AstrometricAccuracy, wisesite.astrometricAccuracy.ToString());
+                driverProfile.WriteValue(driverID, Const.ProfileName.Telescope_BypassCoordinatesSafety, _bypassCoordinatesSafety.ToString());
+                driverProfile.WriteValue(driverID, Const.ProfileName.Telescope_PlotSlews, _plotSlews.ToString());
             }
 
             using (Profile driverProfile = new Profile() { DeviceType = "Dome" })
-                driverProfile.WriteValue(Const.wiseDomeDriverID, minimalDomeTrackingMovementProfileName, _minimalDomeTrackingMovement.ToString());
+                driverProfile.WriteValue(Const.wiseDomeDriverID, Const.ProfileName.Dome_MinimalTrackingMovement, _minimalDomeTrackingMovement.ToString());
         }
 
         public string Status

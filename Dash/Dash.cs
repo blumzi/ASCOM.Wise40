@@ -38,6 +38,7 @@ namespace Dash
         private ASCOM.Utilities.Util ascomutil = new Util();
         enum GoToMode { Ra, Ha, DeltaRa, DeltaHa };
         private GoToMode goToMode = GoToMode.Ra;
+        private ActivityMonitor activityMonitor = ActivityMonitor.Instance;
 
         DomeSlaveDriver domeSlaveDriver = DomeSlaveDriver.Instance;
         DebuggingForm debuggingForm = new DebuggingForm();
@@ -81,14 +82,11 @@ namespace Dash
             wisedome.wisedomeshutter.init();
             wisefocuser.init();
             wisefocuser.Connected = true;
-            wisesafetooperate.init();
             wisesafetooperate.Connected = true;
-            //wiseboltwood.Connected = true;
             wisesite.och.Connected = true;
             //wisefilterwheel.init();
             //wisefilterwheel.Connected = true;
             wisedomeplatform.init();
-            _bypassSafety = wisesafetooperate.Action("status", "").Contains("bypassed:false") ? false : true;
 
             InitializeComponent();
 
@@ -174,7 +172,7 @@ namespace Dash
             UpdateCheckmark(debugDomeToolStripMenuItem, debugger.Debugging(Debugger.DebugLevel.DebugDome));
             UpdateCheckmark(debugShutterToolStripMenuItem, debugger.Debugging(Debugger.DebugLevel.DebugShutter));
             UpdateCheckmark(debugDAQsToolStripMenuItem, debugger.Debugging(Debugger.DebugLevel.DebugDAQs));
-            UpdateCheckmark(bypassSafetyToolStripMenuItem, _bypassSafety);
+            //UpdateCheckmark(bypassSafetyToolStripMenuItem, _bypassSafety);
             UpdateCheckmark(tracingToolStripMenuItem, debugger.Tracing);
 
             buttonVent.Text = wisedome.Vent ? "Close Vent" : "Open Vent";
@@ -233,7 +231,7 @@ namespace Dash
 
             if (wisesite.OperationalMode == WiseSite.OpMode.WISE)
             {
-                TimeSpan ts = wisetele.inactivityMonitor.RemainingTime;
+                TimeSpan ts = activityMonitor.RemainingTime;
                 if (ts == TimeSpan.MaxValue)
                 {
                     // not started
@@ -344,25 +342,18 @@ namespace Dash
             #endregion
             #region DomePlatform
             tip = null;
-            if (_bypassSafety)
+
+            if (wisedomeplatform.IsSafe)
             {
+                annunciatorDomePlatform.Text = "Platform is safe";
                 annunciatorDomePlatform.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
-                tip = "Safety is bypassed";
+                tip = "Dome platform is at its lowest position.";
             }
             else
             {
-                if (wisedomeplatform.IsSafe)
-                {
-                    annunciatorDomePlatform.Text = "Platform is lowered";
-                    annunciatorDomePlatform.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
-                    tip = "Dome platform is at its lowest position.";
-                }
-                else
-                {
-                    annunciatorDomePlatform.Text = "Platform is RAISED";
-                    annunciatorDomePlatform.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
-                    tip = "Dome platform is NOT at its lowest position!";
-                }
+                annunciatorDomePlatform.Text = "Platform is NOT SAFE";
+                annunciatorDomePlatform.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+                tip = "Dome platform is NOT at its lowest position!";
             }
             toolTip.SetToolTip(annunciatorDomePlatform, tip);
             #endregion
@@ -379,14 +370,23 @@ namespace Dash
             {
                 string status = wisesafetooperate.Action("status", string.Empty);
                 bool bypassed = status.Contains("bypassed:true");
+                bool intervention = status.Contains("no-human-intervention:false");
+                bool safe = status.Contains("safe:true");
 
-                if (bypassed)
+                if (intervention)
+                {
+                    annunciatorSafeToOperate.Text = "Human Intervention";
+                    annunciatorSafeToOperate.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+                    string reasons = String.Join("\n", wisesafetooperate.UnsafeReasons);
+                    tip = reasons.Replace(";", "\n  ");
+                }
+                else if (bypassed)
                 {
                     annunciatorSafeToOperate.Text = "Safety bypassed";
                     annunciatorSafeToOperate.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
                     tip = "Safety checks are bypassed!";
                 }
-                else if (wisesite.safeToOperate.IsSafe)
+                else if (safe)
                 {
                     annunciatorSafeToOperate.Text = "Safe to operate";
                     annunciatorSafeToOperate.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
@@ -396,7 +396,8 @@ namespace Dash
                 {
                     annunciatorSafeToOperate.Text = "Not safe to operate";
                     annunciatorSafeToOperate.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
-                    tip = string.Join("\n", wisesafetooperate.UnsafeReasons);
+                    string reasons = string.Join("\n", wisesafetooperate.UnsafeReasons);
+                    tip = reasons.Replace(";", "\n  ");
                 }
             }
             toolTip.SetToolTip(annunciatorSafeToOperate, tip);
@@ -457,13 +458,12 @@ namespace Dash
             #endregion
             #endregion
 
-            #region RefreshWeather
+            #region RefreshSafeToOperate
             if (wisesite.och == null || !wisesite.och.Connected)
             {
                 string nc = "???";
 
                 List<Label> labels = new List<Label>() {
-                    labelAgeValue,
                     labelCloudCoverValue,
                     labelDewPointValue,
                     labelSkyTempValue,
@@ -489,12 +489,12 @@ namespace Dash
                     ASCOM.DriverAccess.ObservingConditions oc = wisesite.och;
 
                     #region ObservingConditions from OCH
-                    labelAgeValue.Text = ((int)Math.Round(oc.TimeSinceLastUpdate(""), 2)).ToString() + "sec";
                     labelDewPointValue.Text = oc.DewPoint.ToString() + "°C";
                     labelSkyTempValue.Text = oc.SkyTemperature.ToString() + "°C";
                     labelTempValue.Text = oc.Temperature.ToString() + "°C";
                     labelPressureValue.Text = oc.Pressure.ToString() + "mB";
                     labelWindDirValue.Text = oc.WindDirection.ToString() + "°";
+
                     labelHumidityValue.Text = oc.Humidity.ToString() + "%";
                     labelHumidityValue.ForeColor = Statuser.TriStateColor(wisesafetooperate.isSafeHumidity);
 
@@ -529,7 +529,8 @@ namespace Dash
                     else
                     {
                         weatherStatus.Show("Not safe to operate", 0, Statuser.Severity.Error, true);
-                        weatherStatus.SetToolTip(string.Join("\n", wisesafetooperate.UnsafeReasons));
+                        string reasons = string.Join("\n", wisesafetooperate.UnsafeReasons);
+                        weatherStatus.SetToolTip(reasons.Replace(";", "\n  "));
                     }
                     #endregion
                 }
@@ -712,7 +713,7 @@ namespace Dash
             //HandpadControlsEnabled(sender as Control, true);
 
             telescopeStatus.Show("Stopped", 1000, Statuser.Severity.Good);
-            wisetele.inactivityMonitor.EndActivity(InactivityMonitor.Activity.Handpad);
+            activityMonitor.EndActivity(ActivityMonitor.Activity.Handpad);
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Handpad: stopped");
             #endregion
@@ -1619,16 +1620,16 @@ namespace Dash
             new ASCOM.Wise40.Boltwood.SetupDialogForm().Show();
         }
 
-        private void safetyOverrideToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            _bypassSafety = !_bypassSafety;
-            bypassSafetyToolStripMenuItem.Tag = _bypassSafety;
-            UpdateCheckmark(bypassSafetyToolStripMenuItem, _bypassSafety);
+        //private void safetyOverrideToolStripMenuItem_Click(object sender, EventArgs e)
+        //{
+        //    _bypassSafety = !_bypassSafety;
+        //    bypassSafetyToolStripMenuItem.Tag = _bypassSafety;
+        //    UpdateCheckmark(bypassSafetyToolStripMenuItem, _bypassSafety);
 
-            wisetele.BypassCoordinatesSafety = _bypassSafety;
-            wisesafetooperate.Action(_bypassSafety ? "start-bypass" : "end-bypass", string.Empty);
-            annunciatorSafeToOperate.Text = (_bypassSafety) ? "Safety bypassed" : "Safe to Operate";
-        }
+        //    wisetele.BypassCoordinatesSafety = _bypassSafety;
+        //    wisesafetooperate.Action(_bypassSafety ? "start-bypass" : "end-bypass", string.Empty);
+        //    annunciatorSafeToOperate.Text = (_bypassSafety) ? "Safety bypassed" : "Safe to Operate";
+        //}
 
         public void UpdateCheckmark(ToolStripMenuItem item, bool state)
         {

@@ -67,6 +67,7 @@ namespace ASCOM.Wise40 //.Telescope
         private static object syncObject = new object();
         private static List<PulserTask> _active = new List<PulserTask>();
         private static WiseTele wisetele;
+        private static ActivityMonitor activityMonitor = ActivityMonitor.Instance;
 
         public static Dictionary<GuideDirections, TelescopeAxes> guideDirection2Axis = new Dictionary<GuideDirections, TelescopeAxes>
         {
@@ -170,7 +171,7 @@ namespace ASCOM.Wise40 //.Telescope
             }
             #region debug
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugAxes,
-                "ActiveSlewers: added {0}, \"{1}\" => \"{2}\"", t._axis.ToString(), before, ToString());
+                "ActivePulsers: added {0}, \"{1}\" => \"{2}\"", t._axis.ToString(), before, ToString());
             #endregion
         }
 
@@ -183,10 +184,10 @@ namespace ASCOM.Wise40 //.Telescope
             }
             #region debug
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugAxes,
-                "ActiveSlewers: deleted {0}, \"{1}\" => \"{2}\"", t._axis.ToString(), before, ToString());
+                "ActivePulsers: deleted {0}, \"{1}\" => \"{2}\"", t._axis.ToString(), before, ToString());
             #endregion
             if (_active.Count == 0)
-                wisetele.inactivityMonitor.EndActivity(InactivityMonitor.Activity.Pulsing);
+                activityMonitor.EndActivity(ActivityMonitor.Activity.Pulsing);
         }
 
         public override string ToString()

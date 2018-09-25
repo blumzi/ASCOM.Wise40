@@ -21,9 +21,9 @@ namespace ASCOM.Wise40
     {
         private static WiseSite _wisesite = new WiseSite();
         private static bool _initialized;
-        private Astrometry.NOVAS.NOVAS31 novas31;
-        private static AstroUtils astroutils;
-        private static ASCOM.Utilities.Util ascomutils;
+        private static Astrometry.NOVAS.NOVAS31 novas31 = new NOVAS31();
+        private static AstroUtils astroutils = new AstroUtils();
+        private static ASCOM.Utilities.Util ascomutils = new Util();
         public Astrometry.OnSurface onSurface;
         public Astrometry.Accuracy astrometricAccuracy;
         public Astrometry.RefractionOption refractionOption;
@@ -55,16 +55,11 @@ namespace ASCOM.Wise40
             if (_initialized)
                 return;
 
-            novas31 = new NOVAS31();
-            astroutils = new AstroUtils();
-            ascomutils = new Util();
-
             siteLatitude = ascomutils.DMSToDegrees("30:35:50.43");
             siteLongitude = ascomutils.DMSToDegrees("34:45:43.86");
             siteElevation = 882.9;
             novas31.MakeOnSurface(siteLatitude, siteLongitude, siteElevation, 0.0, 0.0, ref onSurface);
 
-            //WriteOCHProfile();  // Prepare a Wise profile for the OCH
             try
             {
                 och = new ObservingConditions("ASCOM.OCH.ObservingConditions");
@@ -233,6 +228,15 @@ namespace ASCOM.Wise40
                 #endregion
             }
         }
+
+        public bool OperationalModeRequiresRESTServer
+        {
+            get
+            {
+                // Not sure about ACP yet!
+                return (_opMode == OpMode.LCO || _opMode == OpMode.WISE);
+            }
+        }
     }
 
     public static class HumanIntervention
@@ -249,7 +253,7 @@ namespace ASCOM.Wise40
             {
                 sw.WriteLine("Operator: \"" + oper + "\"");
                 sw.WriteLine("Reason: \"" + reason + "\"");
-                sw.WriteLine("Created: " + DateTime.Now.ToString("MMM dd yyyy, HH:mm:ss"));
+                sw.WriteLine("Created: " + DateTime.Now.ToString("MMM dd yyyy, hh:mm:ss tt"));
             }
 
             while (!File.Exists(Const.humanInterventionFilePath))
@@ -304,9 +308,9 @@ namespace ASCOM.Wise40
                             info += line + "; ";
                     }
 
-                    info = "Human Intervention: " + ((info == string.Empty) ? string.Format("File \"{0}\" exists.",
+                    info = "Human Intervention; " + ((info == string.Empty) ? string.Format("File \"{0}\" exists.",
                         Const.humanInterventionFilePath) : info);
-                    _info = info;
+                    _info = info.TrimEnd(';', ' '); ;
                     _lastInfoRead = DateTime.Now;
                 }
                 return _info;
