@@ -203,8 +203,7 @@ namespace ASCOM.Wise40
         public Slewers slewers = Slewers.Instance;
         public Pulsing pulsing = Pulsing.Instance;
 
-        private PrimaryAxisMonitor primaryAxisMonitor;
-        private SecondaryAxisMonitor secondaryAxisMonitor;
+        private AxisMonitor primaryStatusMonitor, secondaryStatusMonitor;
         //Dictionary<TelescopeAxes, AxisMonitor> axisStatusMonitors;
 
         public double _lastTrackingLST;
@@ -689,6 +688,16 @@ namespace ASCOM.Wise40
                 simulatedMovementParameters :
                 realMovementParameters;
 
+            //// prevMovement remembers the previous movement, so we can detect change-of-direction
+            //_instance.prevMovement = new Dictionary<TelescopeAxes, Movement>();
+            //_instance.prevMovement[TelescopeAxes.axisPrimary] = new Movement() { direction = Const.AxisDirection.None, rate = Const.rateStopped };
+            //_instance.prevMovement[TelescopeAxes.axisSecondary] = new Movement() { direction = Const.AxisDirection.None, rate = Const.rateStopped };
+
+            // currMovement contains the current telescope-movement parameters
+            //_instance.currMovement = new Dictionary<TelescopeAxes, Movement>();
+            //_instance.currMovement[TelescopeAxes.axisPrimary] = new Movement() { direction = Const.AxisDirection.None, rate = Const.rateStopped };
+            //_instance.currMovement[TelescopeAxes.axisSecondary] = new Movement() { direction = Const.AxisDirection.None, rate = Const.rateStopped };
+
             _instance.movementDict = new MovementDictionary
             {
                 [new MovementSpecifier(TelescopeAxes.axisPrimary, Const.AxisDirection.Decreasing)] =
@@ -702,8 +711,8 @@ namespace ASCOM.Wise40
             };
 
 
-            primaryAxisMonitor = new PrimaryAxisMonitor();
-            secondaryAxisMonitor = new SecondaryAxisMonitor();
+            primaryStatusMonitor = new AxisMonitor(TelescopeAxes.axisPrimary);
+            secondaryStatusMonitor = new AxisMonitor(TelescopeAxes.axisSecondary);
 
             _instance.connectables.Add(_instance.NorthMotor);
             _instance.connectables.Add(_instance.EastMotor);
@@ -712,8 +721,8 @@ namespace ASCOM.Wise40
             _instance.connectables.Add(_instance.TrackingMotor);
             _instance.connectables.Add(_instance.HAEncoder);
             _instance.connectables.Add(_instance.DecEncoder);
-            _instance.connectables.Add(_instance.primaryAxisMonitor);
-            _instance.connectables.Add(_instance.secondaryAxisMonitor);
+            _instance.connectables.Add(_instance.primaryStatusMonitor);
+            _instance.connectables.Add(_instance.secondaryStatusMonitor);
 
             _instance.disposables.Add(_instance.NorthMotor);
             _instance.disposables.Add(_instance.EastMotor);
@@ -759,6 +768,9 @@ namespace ASCOM.Wise40
             activityMonitor.RestartGoindIdleTimer("AbortSlew");
             if (AtPark)
             {
+                //#region debug
+                //debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Got AbortSlew while AtPark, not throwing InvalidOperationException !!!");
+                //#endregion
                 throw new InvalidOperationException("Cannot AbortSlew while AtPark");
             }
 
@@ -776,7 +788,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                var ret = primaryAxisMonitor.RightAscension;
+                var ret = HAEncoder.RightAscension;
 
                 #region trace
                 traceLogger.LogMessage("RightAscension", string.Format("Get - {0} ({1})", ret, ret.Hours));
@@ -784,6 +796,7 @@ namespace ASCOM.Wise40
                 #region debug
                 debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, string.Format("RightAscension Get - {0} ({1})", ret, ret.Hours));
                 #endregion debug
+
                 return ret.Hours;
             }
         }
@@ -792,8 +805,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                Angle ret = primaryAxisMonitor.HourAngle;
-                return astroutils.ConditionHA(ret.Hours);
+                return astroutils.ConditionHA(HAEncoder.Angle.Hours);
             }
         }
 
@@ -801,7 +813,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                var ret = secondaryAxisMonitor.Declination;
+                var ret = Angle.FromDegrees(DecEncoder.Declination);
 
                 #region trace
                 traceLogger.LogMessage("Declination", string.Format("Get - {0} ({1})", ret, ret.Degrees));
@@ -1064,10 +1076,10 @@ namespace ASCOM.Wise40
             switch (axis)
             {
                 case TelescopeAxes.axisPrimary:
-                    ret = primaryAxisMonitor.IsMoving;
+                    ret = primaryStatusMonitor.IsMoving;
                     break;
                 case TelescopeAxes.axisSecondary:
-                    ret = secondaryAxisMonitor.IsMoving;
+                    ret = secondaryStatusMonitor.IsMoving;
                     break;
             }
 
@@ -1165,7 +1177,7 @@ namespace ASCOM.Wise40
             _moveAxis(Axis, Rate, direction, true);
         }
 
-        public void StopAxis(TelescopeAxes axis)
+        private void StopAxis(TelescopeAxes axis)
         {
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "StopAxis({0}): called", axis);
@@ -1228,7 +1240,7 @@ namespace ASCOM.Wise40
                 throw new InvalidValueException("Cannot MoveAxis while AtPark");
             }
 
-            if (Rate != Const.rateStopped && !wisesafetooperate.IsSafe)
+            if (!wisesafetooperate.IsSafe)
                 throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasons));
 
             TelescopeAxes _otherAxis = otherAxis[thisAxis];
@@ -1248,6 +1260,17 @@ namespace ASCOM.Wise40
             double absRate = Math.Abs(Rate);
             if (!((absRate == Const.rateSlew) || (absRate == Const.rateSet) || (absRate == Const.rateGuide)))
                 throw new InvalidValueException(string.Format("_moveAxis({0}, {1}): Invalid rate.", thisAxis, absRate));
+
+            //if (!slewingArbiter.AxisTryToSetRate(thisAxis, absRate))
+            //{
+            //    string msg = string.Format("Cannot _moveAxis({0}, {1}) ({2}) while {3} is moving at {4}",
+            //        thisAxis, RateName(absRate), axisDirectionName[thisAxis][direction], _otherAxis, RateName(currMovement[_otherAxis].rate));
+
+            //    #region debug
+            //    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, msg);
+            //    #endregion debug
+            //    return false;
+            //}
 
             if (!readyToSlewFlags.AxisCanMoveAtRate(thisAxis, absRate))
             {
@@ -1438,7 +1461,8 @@ namespace ASCOM.Wise40
                 reasons.Add(string.Format("Declination too high: {0} > {1}", dec.ToNiceString(), upper_decLimit.ToNiceString()));
             if (dec < lower_decLimit)
                 reasons.Add(string.Format("Declination too low: {0} < {1}", dec.ToNiceString(), lower_decLimit.ToNiceString()));
-            
+
+            //double ha = astroutils.ConditionHA((wisesite.LocalSiderealTime - ra).Hours);
             double ha = _instance.HourAngle;
             if (Math.Abs(ha) > haLimit.Hours)
                 reasons.Add(string.Format("HourAngle too high: Abs({0}) > {1}", ha, haLimit.ToNiceString()));
@@ -1684,6 +1708,8 @@ namespace ASCOM.Wise40
 
             try
             {
+                //readyToSlewFlags.Activate(thisAxis);
+
                 while (closeEnoughRates != nRates)
                 {
                     closeEnoughRates = 0;
@@ -1834,6 +1860,8 @@ namespace ASCOM.Wise40
                     }
                 }
 
+                //readyToSlewFlags.Deactivate(thisAxis);
+
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0} Done at {1} target: {2}, distance-to-target: {3}, status: {4}, total-duration: {5}",
                     slewerName, currentPosition, targetPosition, distanceToTarget.angle, status.ToString(), DateTime.Now.Subtract(start));
@@ -1910,6 +1938,7 @@ namespace ASCOM.Wise40
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes, msg + "at {0} {1} has stopped moving (stopping distance: {2})",
                 b, axis, stoppingDistance);
             #endregion debug
+            //slewingArbiter.AxisTryToSetRate(axis, Const.rateStopped);
         }
 
         private static SlewerTask domeSlewer;
