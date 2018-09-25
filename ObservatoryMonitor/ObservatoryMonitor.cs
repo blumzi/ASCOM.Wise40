@@ -32,10 +32,8 @@ namespace ASCOM.Wise40.ObservatoryMonitor
         static DriverAccess.Dome wisedome = null;
         static SafetyMonitor wisesafetooperate = null;
         Version version = new Version(0, 2);
-        //private static bool _shuttingDown = false;
         private static long _shuttingDown = 0;
         static DateTime _nextCheck = DateTime.Now + TimeSpan.FromSeconds(10);
-        static bool firstCheck = false;
         static public TimeSpan _intervalBetweenChecks;
         static TimeSpan _intervalBetweenLogs = _simulated ? TimeSpan.FromSeconds(10) : TimeSpan.FromSeconds(20);
         private static bool _telescopeEnslavesDome = false;

@@ -14,19 +14,21 @@ namespace ASCOM.Wise40
 {
     public abstract class AxisMonitor : WiseObject, IConnectable
     {
-        public struct AxisPosition
+        public struct AxisPositionSample
         {
             public double radians;
         };
 
-        private const int nSamples = 5;
-        private double _previousValue = double.NaN;
-        private double _previousEncoderValue = double.NaN;
-        private FixedSizedQueue<AxisPositionSample> _samples = new FixedSizedQueue<AxisPositionSample>(nSamples);
-        private TelescopeAxes _axis, _other_axis;
-        private WiseTele wisetele = WiseTele.Instance;
+        protected const int nSamples = 5;
+        //private double _previousValue = double.NaN;
+        //private double _previousEncoderValue = double.NaN;
+        protected FixedSizedQueue<AxisPositionSample> _samples = new FixedSizedQueue<AxisPositionSample>(nSamples);
+        protected AxisPositionSample _currPosition, _prevPosition;
+        protected TelescopeAxes _axis, _other_axis;
+        protected WiseTele wisetele = WiseTele.Instance;
+        protected WiseSite wisesite = WiseSite.Instance;
         private bool _connected = false;
-        private Debugger debugger = Debugger.Instance;
+        protected Debugger debugger = Debugger.Instance;
         private bool _whileTracking = false;
         private WiseVirtualMotor trackingMotor = WiseTele.Instance.TrackingMotor;
         
@@ -51,6 +53,7 @@ namespace ASCOM.Wise40
         {
             _axis = axis;
             Name = _axis.ToString() + "Monitor";
+            wisesite.init();
         }
 
         public abstract bool IsMoving { get; }
@@ -75,7 +78,7 @@ namespace ASCOM.Wise40
         /// <returns>acceleration in arcsec/sec-squared </returns>
         public double Acceleration()
         {
-            AxisPosition[] arr = _positions.ToArray();
+            AxisPositionSample[] arr = _samples.ToArray();
             int last = arr.Count() - 1;
 
             if (arr.Count() < 3)
@@ -103,50 +106,51 @@ namespace ASCOM.Wise40
             return ret;
         }
 
-        private void SampleAxisMovement(object StateObject)
-        {
-            bool tracking = trackingMotor.isOn;
+        protected abstract void SampleAxisMovement(object StateObject);
+        //private void SampleAxisMovement(object StateObject)
+        //{
+        //    bool tracking = trackingMotor.isOn;
 
-            if (_axis == TelescopeAxes.axisPrimary)
-            {
-                if (tracking != _whileTracking)
-                {
-                    // The tracking state has changed while we're sampling: discard previous
-                    //  samples and start a new sequence
-                    _whileTracking = tracking;
-                    _samples = new FixedSizedQueue<AxisPositionSample>(nSamples);
-                }
-            }
+        //    if (_axis == TelescopeAxes.axisPrimary)
+        //    {
+        //        if (tracking != _whileTracking)
+        //        {
+        //            // The tracking state has changed while we're sampling: discard previous
+        //            //  samples and start a new sequence
+        //            _whileTracking = tracking;
+        //            _samples = new FixedSizedQueue<AxisPositionSample>(nSamples);
+        //        }
+        //    }
 
-            double value = (_axis == TelescopeAxes.axisPrimary) ?
-                    (tracking ? wisetele.RightAscension : wisetele.HAEncoder.Value) :
-                    wisetele.DecEncoder.Angle.Radians;
+        //    double value = (_axis == TelescopeAxes.axisPrimary) ?
+        //            (tracking ? wisetele.RightAscension : wisetele.HAEncoder.Value) :
+        //            wisetele.DecEncoder.Angle.Radians;
 
-            if (Double.IsNaN(_previousValue))
-            {
-                _previousValue = value;
-                return;
-            }
+        //    if (Double.IsNaN(_previousValue))
+        //    {
+        //        _previousValue = value;
+        //        return;
+        //    }
 
-            double d = Math.Abs(value - _previousValue);
-            if (Double.IsNaN(d))
-                return;
+        //    double d = Math.Abs(value - _previousValue);
+        //    if (Double.IsNaN(d))
+        //        return;
 
-            AxisPositionSample sample = new AxisPositionSample { value = d };
-            double encoderValue = (_axis == TelescopeAxes.axisPrimary) ? wisetele.HAEncoder.Value : wisetele.DecEncoder.Value;
-            double encoderDelta = double.NaN;
-            if (!Double.IsNaN(_previousEncoderValue))
-                encoderDelta = encoderValue - _previousEncoderValue;
+        //    AxisPositionSample sample = new AxisPositionSample { value = d };
+        //    double encoderValue = (_axis == TelescopeAxes.axisPrimary) ? wisetele.HAEncoder.Value : wisetele.DecEncoder.Value;
+        //    double encoderDelta = double.NaN;
+        //    if (!Double.IsNaN(_previousEncoderValue))
+        //        encoderDelta = encoderValue - _previousEncoderValue;
 
-            #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                "AxisMonitor:SampleAxisMovement:{0}: value: {1}, _previousValue: {2}, enqueueing: {3:F15}, active: {4}, encoder: {5}, encoderDelta: {6}",
-                _axis, value, _previousValue, d, ActiveMotors(_axis), encoderValue, encoderDelta);
-            #endregion
-            _samples.Enqueue(sample);
-            _previousValue = value;
-            _previousEncoderValue = encoderValue;
-        }
+        //    #region debug
+        //    debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+        //        "AxisMonitor:SampleAxisMovement:{0}: value: {1}, _previousValue: {2}, enqueueing: {3:F15}, active: {4}, encoder: {5}, encoderDelta: {6}",
+        //        _axis, value, _previousValue, d, ActiveMotors(_axis), encoderValue, encoderDelta);
+        //    #endregion
+        //    _samples.Enqueue(sample);
+        //    _previousValue = value;
+        //    _previousEncoderValue = encoderValue;
+        //}
 
         public void AxisMovementChecker()
         {
@@ -232,7 +236,7 @@ namespace ASCOM.Wise40
 
         private WiseHAEncoder _encoder = WiseTele.Instance.HAEncoder;
 
-        public override void SampleAxisMovement(object StateObject)
+        protected override void SampleAxisMovement(object StateObject)
         {
             _currPosition.radians = _encoder.Angle.Radians;
 
@@ -259,7 +263,7 @@ namespace ASCOM.Wise40
 
             _rightAscension = (wisesite.LocalSiderealTime - Angle.FromRadians(_currPosition.radians)).Hours;
             _hourAngle = Angle.FromRadians(_currPosition.radians).Hours;
-            _positions.Enqueue(_currPosition);
+            _samples.Enqueue(_currPosition);
 
             double raDelta = Math.Abs(_rightAscension - _prevRightAscension);
             double haDelta = Math.Abs(_hourAngle - _prevHourAngle);
@@ -349,7 +353,7 @@ namespace ASCOM.Wise40
 
         public override double Velocity()
         {
-            AxisPosition[] samples = _positions.ToArray();
+            AxisPositionSample[] samples = _samples.ToArray();
             int last = samples.Count() - 1;
 
             if (samples.Count() < 2)
@@ -375,7 +379,7 @@ namespace ASCOM.Wise40
 
         private WiseDecEncoder _encoder = WiseTele.Instance.DecEncoder;
 
-        public override void SampleAxisMovement(object StateObject)
+        protected override void SampleAxisMovement(object StateObject)
         {
             _currPosition.radians = _encoder.Angle.Radians;
 
@@ -397,7 +401,7 @@ namespace ASCOM.Wise40
                 return;
             }
             _declination = Angle.FromRadians(_currPosition.radians).Degrees;
-            _positions.Enqueue(_currPosition);
+            _samples.Enqueue(_currPosition);
 
             double delta = Math.Abs(_declination - _prevDeclination);
             _decDeltas.Enqueue(delta);
@@ -418,11 +422,11 @@ namespace ASCOM.Wise40
                 double max = double.MinValue;
                 double[] arr = _decDeltas.ToArray();
 
-                if (arr.Count() < _positions.MaxSize)
+                if (arr.Count() < _samples.MaxSize)
                 {
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}:IsMoving: Not enough samples {1} < {2} = true",
-                        Name, arr.Count(), _positions.MaxSize);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}:IsMoving: Not enough samples: arr.Count() {1} < _samples.MaxSize: {2}",
+                        Name, arr.Count(), _samples.MaxSize);
                     #endregion
                     return true;    // not enough samples
                 }
@@ -456,7 +460,7 @@ namespace ASCOM.Wise40
 
         public override double Velocity()
         {
-            AxisPosition[] samples = _positions.ToArray();
+            AxisPositionSample[] samples = _samples.ToArray();
             int last = samples.Count() - 1;
 
             if (samples.Count() < 2)

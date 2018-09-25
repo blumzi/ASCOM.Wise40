@@ -154,7 +154,6 @@ namespace ASCOM.Wise40.VantagePro
             this.radioButtonSerialPort.TabIndex = 1;
             this.radioButtonSerialPort.Text = "Serial Port";
             this.radioButtonSerialPort.UseVisualStyleBackColor = true;
-            this.radioButtonSerialPort.Click += new System.EventHandler(this.radioButtonSerialPort_Click);
             // 
             // radioButtonDataFile
             // 
@@ -167,7 +166,6 @@ namespace ASCOM.Wise40.VantagePro
             this.radioButtonDataFile.TabStop = true;
             this.radioButtonDataFile.Text = "Datafile";
             this.radioButtonDataFile.UseVisualStyleBackColor = true;
-            this.radioButtonDataFile.Click += new System.EventHandler(this.radioButtonDataFile_Click);
             // 
             // label2
             // 
