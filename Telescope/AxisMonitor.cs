@@ -14,29 +14,26 @@ namespace ASCOM.Wise40
 {
     public abstract class AxisMonitor : WiseObject, IConnectable
     {
-        public struct AxisPositionSample
+        public struct AxisPosition
         {
             public double radians;
         };
 
-        protected const int nSamples = 5;
-        //private double _previousValue = double.NaN;
-        //private double _previousEncoderValue = double.NaN;
-        protected FixedSizedQueue<AxisPositionSample> _samples = new FixedSizedQueue<AxisPositionSample>(nSamples);
-        protected AxisPositionSample _currPosition, _prevPosition;
-        protected TelescopeAxes _axis, _other_axis;
-        protected WiseTele wisetele = WiseTele.Instance;
-        protected WiseSite wisesite = WiseSite.Instance;
-        private bool _connected = false;
-        protected Debugger debugger = Debugger.Instance;
-        private bool _whileTracking = false;
-        private WiseVirtualMotor trackingMotor = WiseTele.Instance.TrackingMotor;
-        
-        private static readonly int _samplingFrequency = 5;
-        private const double decEpsilon = 2e-6;       // epsilon for secondaryMonitor
-        private const double raEpsilon = 1e-5;        // epsilon for primaryMonitor, while tracking
-        private const double haEpsilon = 7.0;         // epsilon for primaryMonitor, while NOT tracking
-        private const double simulatedDelta = 0.4;
+        public const int nSamples = 5;               // # of samples to remember
+        public AxisPosition _prevPosition = new AxisPosition { radians = double.NaN };
+        public AxisPosition _currPosition = new AxisPosition { radians = double.NaN };
+        public static FixedSizedQueue<AxisPosition> _positions = new FixedSizedQueue<AxisPosition>(nSamples);
+        public TelescopeAxes _axis;
+        public WiseTele wisetele = WiseTele.Instance;
+        public bool _connected = false;
+        public Debugger debugger = Debugger.Instance;
+        public bool _whileTracking = false;
+        public WiseVirtualMotor trackingMotor = WiseTele.Instance.TrackingMotor;
+        public WiseSite wisesite = WiseSite.Instance;
+        public static Astrometry.AstroUtils.AstroUtils astroutils;
+
+        public static readonly int _samplingFrequency = 20; // samples per second
+        public const double simulatedDelta = 0.4;
 
         /// <summary>
         /// A background Task that checks whether the telescope axis is moving
@@ -461,6 +458,127 @@ namespace ASCOM.Wise40
         public override double Velocity()
         {
             AxisPositionSample[] samples = _samples.ToArray();
+            int last = samples.Count() - 1;
+
+            if (samples.Count() < 2)
+                return double.NaN;
+
+            double deltaRadians = Math.Abs(samples[last].radians - samples[last - 1].radians);
+            Angle a = Angle.FromRadians(deltaRadians / deltaT, Angle.Type.Dec);
+
+            return a.Degrees;
+        }
+
+        public override double Velocity()
+        {
+            AxisPosition[] samples = _positions.ToArray();
+            int last = samples.Count() - 1;
+
+            if (samples.Count() < 2)
+                return double.NaN;
+
+            double deltaRadians = Math.Abs(samples[last].radians - samples[last - 1].radians);
+            Angle a = Angle.FromRadians(deltaRadians / deltaT, Angle.Type.RA);
+
+            return  a.Hours;
+        }
+    }
+
+    public class SecondaryAxisMonitor : AxisMonitor
+    {
+        public static FixedSizedQueue<double> _decDeltas = new FixedSizedQueue<double>(nSamples);
+
+        private double _declination = double.NaN, _prevDeclination = double.NaN;
+        public const double decEpsilon = 2e-6;       // epsilon for secondaryMonitor
+        public FixedSizedQueue<double> _decSamples = new FixedSizedQueue<double>(nSamples);
+        public const double _maxSecondaryDeltaRadiansAtSlewRate = 0.0;  // maximum difference between two consequtive encoder readings (radians)
+
+        public SecondaryAxisMonitor() : base(TelescopeAxes.axisSecondary) { }
+
+        private WiseDecEncoder _encoder = WiseTele.Instance.DecEncoder;
+
+        public override void SampleAxisMovement(object StateObject)
+        {
+            _currPosition.radians = _encoder.Angle.Radians;
+
+            if (Double.IsNaN(_prevPosition.radians))
+            {
+                // We don't still have a _prevPosition to check against
+                _prevPosition.radians = _currPosition.radians;
+                _prevDeclination = Angle.FromRadians(_currPosition.radians).Degrees;
+                return;
+            }
+
+            if (Math.Abs(_currPosition.radians - _prevPosition.radians) < _maxSecondaryDeltaRadiansAtSlewRate)
+            {
+                // Discard non-reasonable encoder readings
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}: Rejected encoder value {1} radians !!! ({2} - {3} > {4})",
+                    Name, _currPosition.radians, _currPosition.radians, _prevPosition.radians, _maxSecondaryDeltaRadiansAtSlewRate);
+                #endregion
+                return;
+            }
+            _declination = Angle.FromRadians(_currPosition.radians).Degrees;
+            _positions.Enqueue(_currPosition);
+
+            double delta = Math.Abs(_declination - _prevDeclination);
+            _decDeltas.Enqueue(delta);
+
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}:SampleAxisMovement: _currPosition: {1}, _prevPosition: {2}, delta: {3}, active motors: {4}",
+                Name, _currPosition.radians, _prevPosition.radians, delta, ActiveMotors(_axis));
+            #endregion
+
+            _prevPosition.radians = _currPosition.radians;
+            _prevDeclination = _declination;
+        }
+
+        public override bool IsMoving
+        {
+            get
+            {
+                double max = double.MinValue;
+                double[] arr = _decDeltas.ToArray();
+
+                if (arr.Count() < _positions.MaxSize)
+                {
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}:IsMoving: Not enough samples {1} < {2} = true",
+                        Name, arr.Count(), _positions.MaxSize);
+                    #endregion
+                    return true;    // not enough samples
+                }
+
+                foreach (double d in arr)
+                    if (d > max)
+                        max = d;
+
+                double epsilon = decEpsilon;
+
+                bool ret = max > epsilon;
+
+                #region debug
+                string deb = string.Format("{0}:IsMoving: max: {1:F15}, epsilon: {2:F15}, ret: {3}, active: {4}",
+                    Name, max, epsilon, ret, ActiveMotors(_axis)) + "[";
+                foreach (double d in arr)
+                    deb += " " + d.ToString();
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, deb + " ]");
+                #endregion
+                return ret;
+            }
+        }
+
+        public Angle Declination
+        {
+            get
+            {
+                return Angle.FromDegrees(_declination);
+            }
+        }
+
+        public override double Velocity()
+        {
+            AxisPosition[] samples = _positions.ToArray();
             int last = samples.Count() - 1;
 
             if (samples.Count() < 2)
