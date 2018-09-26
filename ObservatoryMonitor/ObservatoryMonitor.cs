@@ -256,7 +256,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 else if (bypassed)
                     safetyMessage = "Not safe (but bypassed)";
                 else if (!ready)
-                    safetyMessage = "Not safe (info not ready)";
+                    safetyMessage = "Not safe (inconclusive safety info)";
                 else if (safe)
                     safetyMessage = "Safe";
                 else
@@ -478,6 +478,10 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
             try
             {
+                Log("Forcing dome calibration ...");
+                Angle domeAz = DomeAzimuth;
+                Log(string.Format("Dome is at {0}", domeAz.ToNiceString()));
+
                 if (wisedome.ShutterStatus == ShutterState.shutterClosing || wisedome.ShutterStatus == ShutterState.shutterOpening)
                 {
                     if (!_headerWasLogged) { Log(header); _headerWasLogged = true; }
@@ -534,6 +538,11 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                     if (!_headerWasLogged) { Log(header); _headerWasLogged = true; }
                     Log("   Starting Wise40 park ...");
 
+                    Log(string.Format("    Parking telescope at {0} {1} and dome at {2} ...",
+                        wisesite.LocalSiderealTime,
+                        (new Angle(66, Angle.Type.Dec)).ToString(),
+                        (new Angle(90, Angle.Type.Az).ToNiceString())));
+
                     Task parkerTask = Task.Run(() =>
                     {
                         try
@@ -560,20 +569,10 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                             throw new Exception("Shutdown aborted");
                         }
 
-                        bool first = true;
                         Angle ra, dec, az;
                         ra = Angle.FromDegrees(wisetelescope.RightAscension, Angle.Type.RA);
                         dec = Angle.FromDegrees(wisetelescope.Declination, Angle.Type.Dec);
-                        az = Angle.FromDegrees(wisedome.Azimuth, Angle.Type.Az);
-
-                        if (first)
-                        {
-                                Log(string.Format("    Parking telescope at {0} {1} and dome at {2} ...",
-                                    wisesite.LocalSiderealTime,
-                                    (new Angle(66, Angle.Type.Dec)).ToString(),
-                                    (new Angle(90, Angle.Type.Az).ToNiceString())));
-                            first = false;
-                        }
+                        az = DomeAzimuth;
 
                         Log(string.Format("    Telescope at {0} {1}  dome at {2} ...",
                             ra.ToNiceString(),
@@ -599,7 +598,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                                 throw new Exception("Shutdown aborted");
                             }
                             SleepWhileProcessingEvents();
-                            Angle az = Angle.FromDegrees(wisedome.Azimuth, Angle.Type.Az);
+                            Angle az = DomeAzimuth;
                             Log(string.Format("  Dome at {0} ...", az.ToNiceString()), 10);
                         } while (!wisedome.AtPark);
                         Log("    Dome is parked");
@@ -633,6 +632,33 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                     Log(string.Format("Exception occurred:\n{0}, aborting shutdown!", ex.Message));
             }
             ShuttingDown = false;
+        }
+
+        /// <summary>
+        /// If the dome is not calibrated the http transaction may timeout.
+        /// Wait till the dome calibrates and returns its Azimuth.
+        /// </summary>
+        private Angle DomeAzimuth
+        {
+            get
+            {
+                double degrees = Double.NaN;
+
+                while (Double.IsNaN(degrees))
+                {
+                    try
+                    {
+                        degrees = wisedome.Azimuth;
+                    }
+                    catch (Exception ex)
+                    {
+                        Exception inner = ex.InnerException;
+                        Log(string.Format("Waiting for dome Azimuth ({0}) ...",
+                            inner != null ? "inner: " + inner.Message : ex.Message));
+                    }
+                }
+                return Angle.FromDegrees(degrees, Angle.Type.Az);
+            }
         }
 
         private void buttonPark_Click(object sender, EventArgs e)
