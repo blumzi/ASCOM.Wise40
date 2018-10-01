@@ -305,9 +305,6 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             updateManualInterventionControls();
             UpdateConditionsControls();
 
-            if (ShuttingDown)
-                return;
-
             if (now >= _nextCheck)
                 CheckSituation();
         }
@@ -680,7 +677,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 labelHumanInterventionStatus.Text = "Active";
                 labelHumanInterventionStatus.ForeColor = unsafeColor;
                 buttonManualIntervention.Text = "Deactivate";
-                toolTip.SetToolTip(labelHumanInterventionStatus, HumanIntervention.Info);
+                toolTip.SetToolTip(labelHumanInterventionStatus, HumanIntervention.Info.Replace(";", "\n  "));
             } else
             {
                 labelHumanInterventionStatus.Text = "Inactive";
