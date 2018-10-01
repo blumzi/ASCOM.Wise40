@@ -48,6 +48,7 @@ namespace ASCOM.Wise40SafeToOperate
             this.textBoxSunElevation = new System.Windows.Forms.TextBox();
             this.textBoxRain = new System.Windows.Forms.TextBox();
             this.textBoxRestoreSafety = new System.Windows.Forms.TextBox();
+            this.textBoxCloudCoverPercent = new System.Windows.Forms.TextBox();
             this.label16 = new System.Windows.Forms.Label();
             this.label18 = new System.Windows.Forms.Label();
             this.textBoxCloudIntervalSeconds = new System.Windows.Forms.TextBox();
@@ -60,7 +61,6 @@ namespace ASCOM.Wise40SafeToOperate
             this.textBoxHumidityRepeats = new System.Windows.Forms.TextBox();
             this.textBoxRainRepeats = new System.Windows.Forms.TextBox();
             this.textBoxWindRepeats = new System.Windows.Forms.TextBox();
-            this.textBoxSunRepeats = new System.Windows.Forms.TextBox();
             this.textBoxSunIntervalSeconds = new System.Windows.Forms.TextBox();
             this.panelIntegration = new System.Windows.Forms.Panel();
             this.checkBoxCloud = new System.Windows.Forms.CheckBox();
@@ -71,7 +71,7 @@ namespace ASCOM.Wise40SafeToOperate
             this.label3 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
-            this.textBoxCloudCoverPercent = new System.Windows.Forms.TextBox();
+            this.label7 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).BeginInit();
             this.SuspendLayout();
             // 
@@ -285,6 +285,18 @@ namespace ASCOM.Wise40SafeToOperate
             this.textBoxRestoreSafety.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.toolTip1.SetToolTip(this.textBoxRestoreSafety, "Stabilizing period (in minutes) after conditions return to safe values.\r\n");
             // 
+            // textBoxCloudCoverPercent
+            // 
+            this.textBoxCloudCoverPercent.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
+            this.textBoxCloudCoverPercent.ForeColor = System.Drawing.Color.DarkOrange;
+            this.textBoxCloudCoverPercent.Location = new System.Drawing.Point(112, 128);
+            this.textBoxCloudCoverPercent.Margin = new System.Windows.Forms.Padding(6, 3, 3, 3);
+            this.textBoxCloudCoverPercent.Name = "textBoxCloudCoverPercent";
+            this.textBoxCloudCoverPercent.Size = new System.Drawing.Size(32, 20);
+            this.textBoxCloudCoverPercent.TabIndex = 59;
+            this.textBoxCloudCoverPercent.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.toolTip1.SetToolTip(this.textBoxCloudCoverPercent, "Maximal humidity (percent)");
+            // 
             // label16
             // 
             this.label16.AutoSize = true;
@@ -423,18 +435,6 @@ namespace ASCOM.Wise40SafeToOperate
             this.textBoxWindRepeats.Text = "3";
             this.textBoxWindRepeats.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
-            // textBoxSunRepeats
-            // 
-            this.textBoxSunRepeats.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.textBoxSunRepeats.ForeColor = System.Drawing.Color.DarkOrange;
-            this.textBoxSunRepeats.Location = new System.Drawing.Point(435, 248);
-            this.textBoxSunRepeats.Margin = new System.Windows.Forms.Padding(6, 3, 3, 3);
-            this.textBoxSunRepeats.Name = "textBoxSunRepeats";
-            this.textBoxSunRepeats.Size = new System.Drawing.Size(24, 20);
-            this.textBoxSunRepeats.TabIndex = 46;
-            this.textBoxSunRepeats.Text = "1";
-            this.textBoxSunRepeats.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            // 
             // textBoxSunIntervalSeconds
             // 
             this.textBoxSunIntervalSeconds.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
@@ -550,17 +550,15 @@ namespace ASCOM.Wise40SafeToOperate
             this.label6.TabIndex = 60;
             this.label6.Text = "%";
             // 
-            // textBoxCloudCoverPercent
+            // label7
             // 
-            this.textBoxCloudCoverPercent.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.textBoxCloudCoverPercent.ForeColor = System.Drawing.Color.DarkOrange;
-            this.textBoxCloudCoverPercent.Location = new System.Drawing.Point(112, 128);
-            this.textBoxCloudCoverPercent.Margin = new System.Windows.Forms.Padding(6, 3, 3, 3);
-            this.textBoxCloudCoverPercent.Name = "textBoxCloudCoverPercent";
-            this.textBoxCloudCoverPercent.Size = new System.Drawing.Size(32, 20);
-            this.textBoxCloudCoverPercent.TabIndex = 59;
-            this.textBoxCloudCoverPercent.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.toolTip1.SetToolTip(this.textBoxCloudCoverPercent, "Maximal humidity (percent)");
+            this.label7.AutoSize = true;
+            this.label7.ForeColor = System.Drawing.Color.DarkOrange;
+            this.label7.Location = new System.Drawing.Point(248, 252);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(63, 13);
+            this.label7.TabIndex = 61;
+            this.label7.Text = "(Calculated)";
             // 
             // SafeToOperateSetupDialogForm
             // 
@@ -568,6 +566,7 @@ namespace ASCOM.Wise40SafeToOperate
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.ClientSize = new System.Drawing.Size(562, 354);
+            this.Controls.Add(this.label7);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.textBoxCloudCoverPercent);
             this.Controls.Add(this.label3);
@@ -579,7 +578,6 @@ namespace ASCOM.Wise40SafeToOperate
             this.Controls.Add(this.checkBoxWind);
             this.Controls.Add(this.checkBoxRain);
             this.Controls.Add(this.checkBoxCloud);
-            this.Controls.Add(this.textBoxSunRepeats);
             this.Controls.Add(this.textBoxSunIntervalSeconds);
             this.Controls.Add(this.textBoxHumidityRepeats);
             this.Controls.Add(this.textBoxRainRepeats);
@@ -654,7 +652,6 @@ namespace ASCOM.Wise40SafeToOperate
         private System.Windows.Forms.TextBox textBoxHumidityRepeats;
         private System.Windows.Forms.TextBox textBoxRainRepeats;
         private System.Windows.Forms.TextBox textBoxWindRepeats;
-        private System.Windows.Forms.TextBox textBoxSunRepeats;
         private System.Windows.Forms.TextBox textBoxSunIntervalSeconds;
         private System.Windows.Forms.Panel panelIntegration;
         private System.Windows.Forms.CheckBox checkBoxCloud;
@@ -668,5 +665,6 @@ namespace ASCOM.Wise40SafeToOperate
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.TextBox textBoxCloudCoverPercent;
+        private System.Windows.Forms.Label label7;
     }
 }

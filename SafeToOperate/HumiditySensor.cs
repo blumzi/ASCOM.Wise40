@@ -15,7 +15,6 @@ namespace ASCOM.Wise40SafeToOperate
         public HumiditySensor(WiseSafeToOperate instance) :
             base("Humidity",
                 SensorAttribute.CanBeStale |
-                SensorAttribute.HasMaxValue |
                 SensorAttribute.CanBeBypassed, instance) { }
 
         public override void readSensorProfile()

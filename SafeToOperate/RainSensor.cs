@@ -15,7 +15,6 @@ namespace ASCOM.Wise40SafeToOperate
         public RainSensor(WiseSafeToOperate instance) :
             base("Rain", 
                 SensorAttribute.CanBeStale |
-                SensorAttribute.HasMaxValue |
                 SensorAttribute.CanBeBypassed, instance) { }
 
         public override void readSensorProfile()

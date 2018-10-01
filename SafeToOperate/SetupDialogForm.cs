@@ -105,7 +105,6 @@ namespace ASCOM.Wise40SafeToOperate
             WiseSafeToOperate.humiditySensor._intervalMillis = Convert.ToInt32(textBoxHumidityIntervalSeconds.Text);
             WiseSafeToOperate.humiditySensor.Enabled = checkBoxHumidity.Checked;
 
-            WiseSafeToOperate.sunSensor._repeats = Convert.ToInt32(textBoxSunRepeats.Text);
             WiseSafeToOperate.sunSensor._intervalMillis = Convert.ToInt32(textBoxSunIntervalSeconds.Text);
             WiseSafeToOperate.sunSensor.Enabled = checkBoxSun.Checked;
 
@@ -171,13 +170,13 @@ namespace ASCOM.Wise40SafeToOperate
             textBoxCloudRepeats.Tag = textBoxCloudRepeats.Text = WiseSafeToOperate.cloudsSensor._repeats.ToString();
             textBoxHumidityRepeats.Tag = textBoxHumidityRepeats.Text = WiseSafeToOperate.humiditySensor._repeats.ToString();
             textBoxRainRepeats.Tag = textBoxRainRepeats.Text = WiseSafeToOperate.rainSensor._repeats.ToString();
-            textBoxSunRepeats.Tag = textBoxSunRepeats.Text = WiseSafeToOperate.sunSensor._repeats.ToString();
             textBoxWindRepeats.Tag = textBoxWindRepeats.Text = WiseSafeToOperate.windSensor._repeats.ToString();
 
             toolTip1.SetToolTip(textBoxHumidity, "0 to 100 (%)");
             toolTip1.SetToolTip(textBoxAge, "0 to use data of any age (sec)");
             toolTip1.SetToolTip(textBoxHumidity, "between 0 and 100 (%)");
-            toolTip1.SetToolTip(textBoxWind, "greter than 0 (mps)");
+            toolTip1.SetToolTip(textBoxWind, "greater than 0 (mps)");
+            toolTip1.SetToolTip(textBoxSunElevation, "between -20 and 0 (deg)");
         }
 
         private void textBoxWind_Validating(object sender, CancelEventArgs e)

@@ -26,61 +26,49 @@ namespace ASCOM.Wise40SafeToOperate
                                         // - Readings may contain stale data
             AlwaysEnabled = (1 << 1),   // Cannot be disabled
             CanBeStale = (1 << 2),      // Reading the sensor may produce stale data
-            HasMaxValue = (1 << 3),     // Has a maximal value against which the current reading is checked
-            CanBeBypassed = (1 << 4),   // By the Safety Bypass
-            ForcesDecision = (1 << 5),  // If this sensor is not safe it forces SafeToOperate == false
+            CanBeBypassed = (1 << 3),   // By the Safety Bypass
+            ForcesDecision = (1 << 4),  // If this sensor is not safe it forces SafeToOperate == false
         };
 
-        public class SensorState
+        [Flags]
+        public enum SensorState
         {
-            public const uint None = 0;
-            public const uint Ready = (1 << 1);           // has enough readings to decide if safe or not
-            public const uint Safe = (1 << 2);            // at least one reading was safe
-            public const uint Stabilizing = (1 << 3);     // in transition from unsafe to safe
-            public const uint TimerIsRunning = (1 << 5);
-            public const uint Stale = (1 << 7);           // the data readings are too old
-            public const uint Enabled = (1 << 8);         // It is not AlwaysEnabled and was enabled
-            private uint _value;
+            None = 0,
+            Ready = (1 << 1),           // has enough readings to decide if safe or not
+            Safe = (1 << 2),            // at least one reading was safe
+            Stabilizing = (1 << 3),     // in transition from unsafe to safe
+            Stale = (1 << 4),           // the data readings are too old
+            Enabled = (1 << 5),         // It is not AlwaysEnabled and was enabled
+        };
 
-            public SensorState()
-            {
-                Reset();
-            }
+        public bool StateIsSet(SensorState s)
+        {
+            return (_state & s) != 0;
+        }
 
-            public bool IsSet(uint a)
-            {
-                return (_value & a) != 0;
-            }
+        public bool StateIsNotSet(SensorState s)
+        {
+            return !StateIsSet(s);
+        }
 
-            public bool IsNotSet(uint a)
-            {
-                return !IsSet(a);
-            }
+        public void SetState(SensorState s)
+        {
+            _state |= s;
+        }
 
-            public void Set(uint a)
-            {
-                _value |= a;
-            }
-
-            public void Unset(uint a)
-            {
-                _value &= ~a;
-            }
-
-            public void Reset()
-            {
-                _value = None;
-            }
+        public void UnsetState(SensorState s)
+        {
+            _state &= ~s;
         }
 
         public SensorAttribute _attributes;
+        public SensorState _state;
         public int _intervalMillis;
         public int _repeats;
         public int _nbad;
         public int _nstale;
         public bool _enabled;
         public int _nreadings;
-        public SensorState _state = new SensorState();
 
         public class Reading
         {
@@ -101,16 +89,11 @@ namespace ASCOM.Wise40SafeToOperate
             _attributes = attributes;
             if (HasAttribute(SensorAttribute.AlwaysEnabled))
                 Enabled = true;
-            _state = new SensorState();
+            _state = SensorState.None;
 
             _timer = new System.Threading.Timer(new TimerCallback(onTimer));
             wisesafetooperate = instance;
             Restart(0);
-        }
-
-        public bool HasState(uint s)
-        {
-            return (_state.IsSet(s));
         }
 
         public bool HasAttribute(SensorAttribute attr)
@@ -142,7 +125,7 @@ namespace ASCOM.Wise40SafeToOperate
             if (DoesNotHaveAttribute(SensorAttribute.Immediate))
                 _repeats = Convert.ToInt32(wisesafetooperate._profile.GetValue(Const.wiseSafeToOperateDriverID, Name, "Repeats", defaultRepeats.ToString()));
 
-            if (! HasAttribute(SensorAttribute.AlwaysEnabled))
+            if (DoesNotHaveAttribute(SensorAttribute.AlwaysEnabled))
                 Enabled = Convert.ToBoolean(wisesafetooperate._profile.GetValue(Const.wiseSafeToOperateDriverID, Name, "Enabled", true.ToString()));
 
             readSensorProfile();
@@ -155,7 +138,7 @@ namespace ASCOM.Wise40SafeToOperate
             if (DoesNotHaveAttribute(SensorAttribute.Immediate))
                 wisesafetooperate._profile.WriteValue(Const.wiseSafeToOperateDriverID, Name, _repeats.ToString(), "Repeats");
 
-            if (! HasAttribute(SensorAttribute.AlwaysEnabled))
+            if (DoesNotHaveAttribute(SensorAttribute.AlwaysEnabled))
                 wisesafetooperate._profile.WriteValue(Const.wiseSafeToOperateDriverID, Name, Enabled.ToString(), "Enabled");
 
             writeSensorProfile();
@@ -170,17 +153,17 @@ namespace ASCOM.Wise40SafeToOperate
 
         public bool IsStale(string propertyName)
         {
-            if (!HasAttribute(SensorAttribute.CanBeStale))
+            if (DoesNotHaveAttribute(SensorAttribute.CanBeStale))
                 return false;
 
             if (WiseSafeToOperate.och.TimeSinceLastUpdate(propertyName) > WiseSafeToOperate.ageMaxSeconds)
             {
-                _state.Set(SensorState.Stale);
-                _state.Unset(SensorState.Safe);
+                SetState(SensorState.Stale);
+                UnsetState(SensorState.Safe);
                 return true;
             }
 
-            _state.Unset(SensorState.Stale);
+            UnsetState(SensorState.Stale);
             return false;
         }
 
@@ -225,7 +208,7 @@ namespace ASCOM.Wise40SafeToOperate
                 return;
             }
             
-            if (HasState(SensorState.Stabilizing))
+            if (StateIsSet(SensorState.Stabilizing))
             {
                 // this timer event is at the end of the stabilization period
                 #region debug
@@ -235,17 +218,17 @@ namespace ASCOM.Wise40SafeToOperate
                 return;
             }
 
-            bool wassafe = HasState(SensorState.Safe);
-            bool wasready = HasState(SensorState.Ready);
+            bool wassafe = StateIsSet(SensorState.Safe);
+            bool wasready = StateIsSet(SensorState.Ready);
 
             Reading currentReading = getReading();
             _readings.Enqueue(currentReading);
             if (_readings.ToArray().Count() == _repeats)
-                _state.Set(SensorState.Ready);
+                SetState(SensorState.Ready);
             else
             {
-                _state.Unset(SensorState.Ready);
-                _state.Unset(SensorState.Safe);
+                UnsetState(SensorState.Ready);
+                UnsetState(SensorState.Safe);
             }
 
             Reading[] arr = _readings.ToArray();
@@ -269,23 +252,23 @@ namespace ASCOM.Wise40SafeToOperate
             {
                 _nstale = nstale;
                 if (_nstale > 0)
-                    _state.Set(SensorState.Stale);
+                    SetState(SensorState.Stale);
                 else
-                    _state.Unset(SensorState.Stale);
+                    UnsetState(SensorState.Stale);
             }
 
-            if (HasState(SensorState.Ready))
+            if (StateIsSet(SensorState.Ready))
             {
                 if (_nbad == _repeats)
-                    _state.Unset(SensorState.Safe);
+                    UnsetState(SensorState.Safe);
                 else
-                    _state.Set(SensorState.Safe);
+                    SetState(SensorState.Safe);
             }
 
-            if (!HasState(SensorState.Ready))
+            if (!StateIsSet(SensorState.Ready))
                 return;
 
-            bool issafe = HasState(SensorState.Safe);
+            bool issafe = StateIsSet(SensorState.Safe);
             #region debug
             if (wassafe != issafe)
                 debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}) isSafe changed from {1} to {2}", Name, wassafe, issafe);
@@ -294,7 +277,7 @@ namespace ASCOM.Wise40SafeToOperate
             if (wasready && (!wassafe && issafe))
             {
                 // the sensor transited from unsafe to safe
-                _state.Set(SensorState.Stabilizing);
+                SetState(SensorState.Stabilizing);
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}) started stabilizing", Name);
                 #endregion
@@ -312,7 +295,7 @@ namespace ASCOM.Wise40SafeToOperate
                 if (HasAttribute(SensorAttribute.Immediate))
                     return TimeSpan.Zero;
 
-                return HasState(SensorState.Stabilizing) ?
+                return StateIsSet(SensorState.Stabilizing) ?
                     _endOfStabilization - DateTime.Now :
                     TimeSpan.Zero;
             }
@@ -323,7 +306,6 @@ namespace ASCOM.Wise40SafeToOperate
             if (DoesNotHaveAttribute(SensorAttribute.Immediate))
             {
                 _timer.Change(Timeout.Infinite, Timeout.Infinite);
-                _state.Unset(SensorState.TimerIsRunning);
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}) Stop: stopped", Name);
                 #endregion
@@ -357,7 +339,7 @@ namespace ASCOM.Wise40SafeToOperate
                     return ret;
                 }
 
-                if (DoesNotHaveAttribute(SensorAttribute.Immediate) && !HasState(SensorState.Ready))
+                if (DoesNotHaveAttribute(SensorAttribute.Immediate) && !StateIsSet(SensorState.Ready))
                 {
                     ret = false;
                     #region debug
@@ -367,7 +349,7 @@ namespace ASCOM.Wise40SafeToOperate
                     return ret;
                 }
 
-                if (DoesNotHaveAttribute(SensorAttribute.Immediate) && HasState(SensorState.Stabilizing))
+                if (DoesNotHaveAttribute(SensorAttribute.Immediate) && StateIsSet(SensorState.Stabilizing))
                 {
                     ret = false;
                     #region debug
@@ -377,7 +359,7 @@ namespace ASCOM.Wise40SafeToOperate
                     return ret;
                 }
 
-                ret = HasState(SensorState.Safe);
+                ret = StateIsSet(SensorState.Safe);
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}), isSafe: {1} ({2} bad out of {3})",
                     Name, ret, _nbad, _repeats);
@@ -403,9 +385,9 @@ namespace ASCOM.Wise40SafeToOperate
 
                 _enabled = value;
                 if (_enabled)
-                    _state.Set(SensorState.Enabled);
+                    SetState(SensorState.Enabled);
                 else
-                    _state.Unset(SensorState.Enabled);
+                    UnsetState(SensorState.Enabled);
             }
         }
     }

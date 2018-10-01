@@ -12,7 +12,9 @@ namespace ASCOM.Wise40SafeToOperate
         private double _max;
 
         public SunSensor(WiseSafeToOperate instance) :
-            base("Sun", SensorAttribute.Immediate | SensorAttribute.AlwaysEnabled | SensorAttribute.HasMaxValue, instance) { }
+            base("Sun",
+                SensorAttribute.Immediate |
+                SensorAttribute.AlwaysEnabled, instance) { }
 
         public override void readSensorProfile()
         {

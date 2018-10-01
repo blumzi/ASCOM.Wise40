@@ -464,7 +464,7 @@ namespace ASCOM.Wise40SafeToOperate
 
                 foreach (Sensor s in _prioritizedSensors)
                 {
-                    if (!s.HasAttribute(Sensor.SensorAttribute.AlwaysEnabled) && !s.HasState(Sensor.SensorState.Enabled))
+                    if (!s.HasAttribute(Sensor.SensorAttribute.AlwaysEnabled) && !s.StateIsSet(Sensor.SensorState.Enabled))
                         continue;   // not enabled
 
                     if (_bypassed && s.HasAttribute(Sensor.SensorAttribute.CanBeBypassed))
@@ -478,13 +478,13 @@ namespace ASCOM.Wise40SafeToOperate
                             reason = s.reason();
                         else
                         {
-                            if (!s.HasState(Sensor.SensorState.Ready))
+                            if (!s.StateIsSet(Sensor.SensorState.Ready))
                             {
                                 // cummulative and not ready
                                 reason = String.Format("{0} - not ready (only {1} of {2} readings)",
                                     s.Name, s._nreadings, s._repeats);
                             }
-                            else if (s.HasState(Sensor.SensorState.Stabilizing))
+                            else if (s.StateIsSet(Sensor.SensorState.Stabilizing))
                             {
                                 // cummulative and stabilizing
                                 string time = string.Empty;
@@ -496,7 +496,7 @@ namespace ASCOM.Wise40SafeToOperate
 
                                 reason = String.Format("{0} - stabilizing in {1}", s.Name, time);
                             }
-                            else if (s.HasAttribute(Sensor.SensorAttribute.CanBeStale) && s.HasState(Sensor.SensorState.Stale))
+                            else if (s.HasAttribute(Sensor.SensorAttribute.CanBeStale) && s.StateIsSet(Sensor.SensorState.Stale))
                                 // cummulative and stale
                                 reason = String.Format("{0} - {1} out of {2} readings are stale",
                                     s.Name, s._nstale, s._repeats);
@@ -565,7 +565,7 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
-                if (!cloudsSensor.HasState(Sensor.SensorState.Ready))
+                if (!cloudsSensor.StateIsSet(Sensor.SensorState.Ready))
                     return Const.TriStateStatus.Warning;
                 return cloudsSensor.isSafe ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
             }
@@ -575,7 +575,7 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
-                if (!windSensor.HasState(Sensor.SensorState.Ready))
+                if (!windSensor.StateIsSet(Sensor.SensorState.Ready))
                     return Const.TriStateStatus.Warning;
                 return windSensor.isSafe ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
             }
@@ -585,7 +585,7 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
-                if (!humiditySensor.HasState(Sensor.SensorState.Ready))
+                if (!humiditySensor.StateIsSet(Sensor.SensorState.Ready))
                     return Const.TriStateStatus.Warning;
                 return humiditySensor.isSafe ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
             }
@@ -595,7 +595,7 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
-                if (!rainSensor.HasState(Sensor.SensorState.Ready))
+                if (!rainSensor.StateIsSet(Sensor.SensorState.Ready))
                     return Const.TriStateStatus.Warning;
                 return rainSensor.isSafe ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
             }
@@ -675,7 +675,7 @@ namespace ASCOM.Wise40SafeToOperate
 
                 foreach (Sensor s in _prioritizedSensors)
                 {
-                    if (!s.HasAttribute(Sensor.SensorAttribute.AlwaysEnabled) && !s.HasState(Sensor.SensorState.Enabled))
+                    if (!s.HasAttribute(Sensor.SensorAttribute.AlwaysEnabled) && !s.StateIsSet(Sensor.SensorState.Enabled))
                         continue;
 
                     if (_bypassed && s.HasAttribute(Sensor.SensorAttribute.CanBeBypassed))
@@ -704,7 +704,7 @@ namespace ASCOM.Wise40SafeToOperate
             {
                 foreach (Sensor s in _cumulativeSensors)
                 {
-                    if (! s.HasState(Sensor.SensorState.Ready) || s.HasState(Sensor.SensorState.Stabilizing))
+                    if (! s.StateIsSet(Sensor.SensorState.Ready) || s.StateIsSet(Sensor.SensorState.Stabilizing))
                         return false;
                 }
 
