@@ -456,6 +456,14 @@ namespace ASCOM.Wise40 //.Focuser
             if (!Connected)
                 throw new NotConnectedException("Not connected!");
 
+            if (IsMoving)
+            {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, "Discarding Move({0}) while IsMoving == true", targetPos);
+                #endregion
+                return;
+            }
+
             if (!safetooperate.IsSafe)
                 throw new InvalidOperationException("Not safe: " + string.Join(", ", safetooperate.UnsafeReasons));
 
