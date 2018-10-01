@@ -767,12 +767,7 @@ namespace ASCOM.Wise40
         {
             activityMonitor.RestartGoindIdleTimer("AbortSlew");
             if (AtPark)
-            {
-                //#region debug
-                //debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Got AbortSlew while AtPark, not throwing InvalidOperationException !!!");
-                //#endregion
                 throw new InvalidOperationException("Cannot AbortSlew while AtPark");
-            }
 
             Stop();
             activityMonitor.EndActivity(ActivityMonitor.Activity.Slewing);
@@ -879,7 +874,7 @@ namespace ASCOM.Wise40
 
             set
             {
-                if (!_enslaveDome)
+                if (!_enslaveDome || Parking)
                     return;
 
                 if (trackingTimer == null)
@@ -1595,7 +1590,7 @@ namespace ASCOM.Wise40
             bool wasTracking = Tracking;
             try
             {
-                _parking = true;
+                Parking = true;
                 activityMonitor.StartActivity(ActivityMonitor.Activity.Parking);
                 if (wasEnslavingDome)
                 {
@@ -1613,7 +1608,7 @@ namespace ASCOM.Wise40
                 }
             } catch(Exception ex)
             {
-                _parking = false;
+                Parking = false;
                 _enslaveDome = wasEnslavingDome;
                 Tracking = wasTracking;
                 activityMonitor.EndActivity(ActivityMonitor.Activity.Parking);
@@ -1623,8 +1618,8 @@ namespace ASCOM.Wise40
                 return;
             }
             AtPark = true;
+            Parking = false;
             Tracking = false;
-            _parking = false;
             activityMonitor.EndActivity(ActivityMonitor.Activity.Parking);
             _enslaveDome = wasEnslavingDome;
         }
@@ -3062,7 +3057,7 @@ namespace ASCOM.Wise40
                 {
                     Angle ra = Angle.FromHours(TargetRightAscension, Angle.Type.RA);
                     Angle dec = Angle.FromDegrees(TargetDeclination, Angle.Type.Dec);
-                    ret = _parking ? "Parking" : "Slewing" + string.Format(" to RA {0} DEC {1}", ra, dec);
+                    ret = Parking ? "Parking" : "Slewing" + string.Format(" to RA {0} DEC {1}", ra, dec);
                 }
                 else if (IsPulseGuiding)
                 {
@@ -3099,6 +3094,19 @@ namespace ASCOM.Wise40
             set
             {
                 _plotSlews = value;
+            }
+        }
+
+        public bool Parking
+        {
+            get
+            {
+                return _parking;
+            }
+
+            set
+            {
+                _parking = value;
             }
         }
 
