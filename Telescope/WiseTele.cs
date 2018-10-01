@@ -1578,7 +1578,7 @@ namespace ASCOM.Wise40
             traceLogger.LogMessage("Park", "");
             #endregion
             #region debug
-            debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, "Park");
+            debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, "Park: started");
             #endregion debug
             if (AtPark)
                 return;
@@ -1595,16 +1595,33 @@ namespace ASCOM.Wise40
                 if (wasEnslavingDome)
                 {
                     _enslaveDome = false;
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: starting DomeParker()");
+                    #endregion
                     DomeParker();
                 }
                 _instance.TargetRightAscension = ra.Hours;
                 _instance.TargetDeclination = dec.Degrees;
                 Tracking = true;
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: starting _slewToCoordinatesSync");
+                #endregion
                 _slewToCoordinatesSync(ra, dec);
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: after _slewToCoordinatesSync");
+                #endregion
                 if (wasEnslavingDome)
                 {
                     while (!domeSlaveDriver.AtPark)
+                    {
+                        #region debug
+                        debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: waiting 2000 for domeSlaveDriver.AtPark");
+                        #endregion
                         Thread.Sleep(2000);
+                    }
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: reached domeSlaveDriver.AtPark");
+                    #endregion
                 }
             } catch(Exception ex)
             {
@@ -1617,6 +1634,9 @@ namespace ASCOM.Wise40
                 #endregion
                 return;
             }
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: all done, setting AtPark == true");
+            #endregion
             AtPark = true;
             Parking = false;
             Tracking = false;
@@ -2247,6 +2267,14 @@ namespace ASCOM.Wise40
 
         public void Unpark()
         {
+            if (activityMonitor.Active(ActivityMonitor.Activity.ShuttingDown))
+            {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Unpark: ignored while ShuttingDown");
+                #endregion
+                return;
+            }
+
             if (AtPark)
                 AtPark = false;
 
