@@ -267,7 +267,12 @@ namespace ASCOM.Wise40
                 tl.LogMessage("Dome: Connected Set", value.ToString());
 
                 if (value == true)
+                {
                     RestoreCalibrationData();
+
+                    if (!Calibrated && _autoCalibrate)
+                        Task.Run(() => StartFindingHome());
+                }
 
                 if (value == _connected)
                     return;
@@ -720,14 +725,21 @@ namespace ASCOM.Wise40
 
         public void StartFindingHome()
         {
-            if (ShutterIsMoving)
+            if (Calibrated)
             {
-                tl.LogMessage("WiseDome:StartFindingHome", "Cannot move, shutter is active.");
-                throw new ASCOM.InvalidOperationException("Cannot move, shutter is active!");
-            }
+                //
+                // Consider safety only AFTER calibration, otherwise we ca never produce
+                //  an Azimuth reading
+                //
+                if (ShutterIsMoving)
+                {
+                    tl.LogMessage("WiseDome:StartFindingHome", "Cannot move, shutter is active.");
+                    throw new ASCOM.InvalidOperationException("Cannot move, shutter is active!");
+                }
 
-            if (wisesite.safeToOperate != null && !wisesite.safeToOperate.IsSafe)
-                throw new ASCOM.InvalidOperationException(wisesite.safeToOperate.Action("unsafereasons", ""));
+                if (wisesite.safeToOperate != null && !wisesite.safeToOperate.IsSafe)
+                    throw new ASCOM.InvalidOperationException(wisesite.safeToOperate.Action("unsafereasons", ""));
+            }
 
             AtPark = false;
 
@@ -736,6 +748,7 @@ namespace ASCOM.Wise40
             #endregion
             _calibrating = true;
 
+            activityMonitor.StartActivity(ActivityMonitor.Activity.Dome);
             if (Calibrated)
             {
                 List<ShortestDistanceResult> distanceToCaliPoints = new List<ShortestDistanceResult>();
@@ -764,6 +777,7 @@ namespace ASCOM.Wise40
             #endregion
             _foundCalibration.WaitOne();
             UnsetDomeState(DomeState.Calibrating);
+            activityMonitor.EndActivity(ActivityMonitor.Activity.Dome);
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome: FindHomePoint: _foundCalibration was Set()");
             #endregion

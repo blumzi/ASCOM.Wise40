@@ -41,8 +41,15 @@ namespace ASCOM.Wise40SafeToOperate
         public static HumiditySensor humiditySensor;
         public static SunSensor sunSensor;
         public static HumanInterventionSensor humanInterventionSensor;
+
+        public static DoorLockSensor doorLockSensor;
+        public static ComputerControlSensor computerControlSensor;
+        public static PlatformSensor platformSensor;
+
         public static WiseComputerControl wisecomputercontrol;
-        public static List<Sensor> _sensors;
+
+        public static List<Sensor> _cumulativeSensors, _prioritizedSensors;
+        //public static List<Sensor> _sensors;
         private static bool _bypassed = false;
         private static bool _shuttingDown = false;
         public static int ageMaxSeconds;
@@ -117,14 +124,36 @@ namespace ASCOM.Wise40SafeToOperate
             cloudsSensor = new CloudsSensor(this);
             rainSensor = new RainSensor(this);
             humanInterventionSensor = new HumanInterventionSensor(this);
+            computerControlSensor = new ComputerControlSensor(this);
+            platformSensor = new PlatformSensor(this);
+            doorLockSensor = new DoorLockSensor(this);
             wisecomputercontrol = WiseComputerControl.Instance;
-            _sensors = new List<Sensor>() {
+
+            //
+            // The sensors in priotity order.  The first one that:
+            //   - is enabled
+            //   - not bypassed
+            //   - forces decision
+            //   - is not safe
+            // causes SafeToOperate to be NOT SAFE
+            //
+            _prioritizedSensors = new List<Sensor>()
+            {
+                humanInterventionSensor,
+                computerControlSensor,
+                platformSensor,
+                doorLockSensor,
+                sunSensor,
                 windSensor,
                 cloudsSensor,
                 rainSensor,
                 humiditySensor,
-                sunSensor,
-                humanInterventionSensor };
+            };
+
+            _cumulativeSensors = new List<Sensor>();
+            foreach (Sensor s in _prioritizedSensors)
+                if (!s.HasAttribute(Sensor.SensorAttribute.Immediate))
+                    _cumulativeSensors.Add(s);
             
             tl.Enabled = debugger.Tracing;
             tl.LogMessage("SafetyMonitor", "Starting initialisation");
@@ -246,8 +275,8 @@ namespace ASCOM.Wise40SafeToOperate
                     _bypassed = Convert.ToBoolean(_profile.GetValue(driverID, Const.ProfileName.SafeToOperate_Bypassed, string.Empty, false.ToString()));
 
                     List<string> stat = new List<string>() {
-                        "computer-control:" + (!wisecomputercontrol.Maintenance).ToString().ToLower(),
-                        "platform-lowered:" + wisecomputercontrol.PlatformIsDown.ToString().ToLower(),
+                        "computer-control:" + computerControlSensor.isSafe.ToString().ToLower(),
+                        "platform-lowered:" + platformSensor.isSafe.ToString().ToLower(),
                         "no-human-intervention:" + humanInterventionSensor.isSafe.ToString().ToLower(),
                         "bypassed:" + _bypassed.ToString().ToLower(),
                         "ready:" + isReady.ToString().ToLower(),
@@ -258,7 +287,7 @@ namespace ASCOM.Wise40SafeToOperate
 
                 case "unsafereasons":
                     bool dummy = IsSafe;
-                    ret = string.Join(", ", UnsafeReasons);
+                    ret = string.Join(Const.lineSeparator, UnsafeReasons);
                     break;
 
                 case "start-shutdown":      // hidden
@@ -347,13 +376,13 @@ namespace ASCOM.Wise40SafeToOperate
 
         public void stopSensors()
         {
-            foreach (Sensor s in _sensors)
+            foreach (Sensor s in _cumulativeSensors)
                 s.Stop();
         }
 
         public void startSensors()
         {
-            foreach (Sensor s in _sensors)
+            foreach (Sensor s in _cumulativeSensors)
                 s.Restart(0);
         }
 
@@ -378,7 +407,7 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
-                string driverInfo = "Implements Wise40 weather max. values, wraps Boltwood CloudSensorII and Davis VantagePro. Version: " + DriverVersion;
+                string driverInfo = "Implements Wise40 SafeToOperate. Version: " + DriverVersion;
                 tl.LogMessage("DriverInfo Get", driverInfo);
                 return driverInfo;
             }
@@ -424,51 +453,69 @@ namespace ASCOM.Wise40SafeToOperate
             {
                 List<string> reasons = new List<string>();
 
-                if (!wisecomputercontrol.IsSafe)
+                if (!_connected)
                 {
-                    foreach (string reason in wisecomputercontrol.UnsafeReasons())
-                        reasons.Add(reason);
+                    reasons.Add("Not Connected");
+                    return reasons;
                 }
-                else if (!humanInterventionSensor.isSafe)
+
+                if (_shuttingDown)
+                    return reasons;     // when shutting down all sensors are ignored
+
+                foreach (Sensor s in _prioritizedSensors)
                 {
-                    reasons.Add(humanInterventionSensor.reason());
-                }
-                else
-                {
-                    string reason;
-                    foreach (Sensor s in _sensors)
+                    if (!s.HasAttribute(Sensor.SensorAttribute.AlwaysEnabled) && !s.StateIsSet(Sensor.SensorState.Enabled))
+                        continue;   // not enabled
+
+                    if (_bypassed && s.HasAttribute(Sensor.SensorAttribute.CanBeBypassed))
+                        continue;   // bypassed
+
+                    if (!s.isSafe)
                     {
-                        if (s.Name == "Sun")
+                        string reason = null;
+
+                        if (s.HasAttribute(Sensor.SensorAttribute.Immediate))
+                            reason = s.reason();
+                        else
                         {
-                            double elev = SunElevation, maxElevation = Convert.ToDouble(sunSensor.MaxAsString);
-                            if (elev > maxElevation)
-                                reasons.Add(string.Format("Sun elevation ({0:f1}deg) is higher than {1:f1}deg.", elev, maxElevation));
-                            continue;
+                            if (!s.StateIsSet(Sensor.SensorState.Ready))
+                            {
+                                // cummulative and not ready
+                                reason = String.Format("{0} - not ready (only {1} of {2} readings)",
+                                    s.Name, s._nreadings, s._repeats);
+                            }
+                            else if (s.StateIsSet(Sensor.SensorState.Stabilizing))
+                            {
+                                // cummulative and stabilizing
+                                string time = string.Empty;
+                                TimeSpan ts = s.TimeToStable;
+
+                                if (ts.TotalMinutes > 0)
+                                    time += ((int)ts.TotalMinutes).ToString() + "m";
+                                time += ts.Seconds.ToString() + "s";
+
+                                reason = String.Format("{0} - stabilizing in {1}", s.Name, time);
+                            }
+                            else if (s.HasAttribute(Sensor.SensorAttribute.CanBeStale) && s.StateIsSet(Sensor.SensorState.Stale))
+                                // cummulative and stale
+                                reason = String.Format("{0} - {1} out of {2} readings are stale",
+                                    s.Name, s._nstale, s._repeats);
                         }
 
-                        if (s.Name == "HumanIntervention")
-                            continue;       // was handled above
-
-                        if (s._attr.IsSet(Sensor.SensorAttributes.Stale))
+                        if (reason != null)
                         {
-                            reasons.Add(string.Format("{0} contains stale data", s.Name));
-                        }
-                        else if (!s._attr.IsSet(Sensor.SensorAttributes.Ready))
-                        {
-                            reasons.Add(string.Format("{0} - not ready (less than {1} readings)",
-                                s.Name, s._repeats));
-                        } else if (s._attr.IsSet(Sensor.SensorAttributes.Stabilizing))
-                        {
-                            TimeSpan ts = s.TimeToStable;
-                            string fmt = ts.Minutes > 0 ? @"mm\m" : "" + @"ss\s";
-
-                            reasons.Add(string.Format("{0} - stabilizing in {1}", s.Name, ts.ToString(fmt)));
-                        }
-                        else if (!s.isSafe && (reason = s.reason()) != string.Empty)
+                            // we have a reason for this sensor not being safe
                             reasons.Add(reason);
+                            if (s.HasAttribute(Sensor.SensorAttribute.ForcesDecision))
+                                break;      // don't bother with the remaining sensors
+                        }
                     }
-
                 }
+
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "UnsafeReasons: {0}",
+                    string.Join(Const.lineSeparator, reasons));
+                #endregion
                 return reasons;
             }
         }
@@ -482,9 +529,7 @@ namespace ASCOM.Wise40SafeToOperate
             string ret = "unknown";
             string msg = string.Empty;
 
-            //lock (reasonsLock)
             {
-                //unsafeReasons.Clear();
                 switch (command.ToLower())
                 {
                     case "humidity": status = isSafeHumidity; break;
@@ -494,7 +539,6 @@ namespace ASCOM.Wise40SafeToOperate
                     case "rain": status = isSafeRain; break;
                     default:
                         status = Const.TriStateStatus.Error;
-                        //unsafeReasons.Add(string.Format("invalid command \"{0}\"", command));
                         msg = string.Format("invalid command \"{0}\"", command);
                         break;
                 }
@@ -521,7 +565,7 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
-                if (!cloudsSensor._attr.IsSet(Sensor.SensorAttributes.Ready))
+                if (!cloudsSensor.StateIsSet(Sensor.SensorState.Ready))
                     return Const.TriStateStatus.Warning;
                 return cloudsSensor.isSafe ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
             }
@@ -531,7 +575,7 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
-                if (!windSensor._attr.IsSet(Sensor.SensorAttributes.Ready))
+                if (!windSensor.StateIsSet(Sensor.SensorState.Ready))
                     return Const.TriStateStatus.Warning;
                 return windSensor.isSafe ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
             }
@@ -541,7 +585,7 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
-                if (!humiditySensor._attr.IsSet(Sensor.SensorAttributes.Ready))
+                if (!humiditySensor.StateIsSet(Sensor.SensorState.Ready))
                     return Const.TriStateStatus.Warning;
                 return humiditySensor.isSafe ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
             }
@@ -551,7 +595,7 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
-                if (!rainSensor._attr.IsSet(Sensor.SensorAttributes.Ready))
+                if (!rainSensor.StateIsSet(Sensor.SensorState.Ready))
                     return Const.TriStateStatus.Warning;
                 return rainSensor.isSafe ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
             }
@@ -617,35 +661,37 @@ namespace ASCOM.Wise40SafeToOperate
             {
                 bool ret = true;
 
-                //
-                // NOTE: The following decisions are sorted by priority. TAKE CARE!
-                //
                 if (!_connected)
-                    ret = false;
-                else if (!wisecomputercontrol.IsSafe)
-                    ret = false;
-                else if (_shuttingDown)
-                    ret = true;
-                else if (!humanInterventionSensor.isSafe)
-                    ret = false;
-                else if (_bypassed)
-                    return true;
-                else
                 {
-                    foreach (Sensor s in _sensors)
-                    {
-                        if (!s.isSafe)
-                        {
-                            ret = false;
-                            break;
-                        }
-                    }
-
-                    if (SunElevation > Convert.ToDouble(sunSensor.MaxAsString))
-                        ret = false;
+                    ret = false;
+                    goto Out;
                 }
 
-                //tl.LogMessage("IsSafe Get", ret.ToString());
+                if (_shuttingDown)
+                {
+                    ret = true;
+                    goto Out;
+                }
+
+                foreach (Sensor s in _prioritizedSensors)
+                {
+                    if (!s.HasAttribute(Sensor.SensorAttribute.AlwaysEnabled) && !s.StateIsSet(Sensor.SensorState.Enabled))
+                        continue;
+
+                    if (_bypassed && s.HasAttribute(Sensor.SensorAttribute.CanBeBypassed))
+                        continue;
+
+                    if (! s.isSafe)
+                    {
+                        ret = false;    // The first non-safe sensor forces NOT SAFE
+                        goto Out;
+                    }
+                }
+
+                Out:
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "IsSafe: {0}", ret);
+                #endregion
                 return ret;
             }
         }
@@ -656,12 +702,9 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
-                foreach (Sensor s in _sensors)
+                foreach (Sensor s in _cumulativeSensors)
                 {
-                    if (! s._attr.IsSet(Sensor.SensorAttributes.Accumulating))
-                        continue;
-
-                    if (! s._attr.IsSet(Sensor.SensorAttributes.Ready))
+                    if (! s.StateIsSet(Sensor.SensorState.Ready) || s.StateIsSet(Sensor.SensorState.Stabilizing))
                         return false;
                 }
 
@@ -696,7 +739,7 @@ namespace ASCOM.Wise40SafeToOperate
             int minutes = Convert.ToInt32(_profile.GetValue(driverID, Const.ProfileName.SafeToOperate_StableAfterMin, string.Empty, _defaultStabilizationPeriodMinutes.ToString()));
             _stabilizationPeriod = new TimeSpan(0, minutes, 0);
 
-            foreach (Sensor s in _sensors)
+            foreach (Sensor s in _prioritizedSensors)
                 s.readProfile();
 
             using (Profile driverProfile = new Profile())
@@ -718,7 +761,7 @@ namespace ASCOM.Wise40SafeToOperate
         {
             _profile.WriteValue(driverID, Const.ProfileName.SafeToOperate_AgeMaxSeconds, ageMaxSeconds.ToString());
             _profile.WriteValue(driverID, Const.ProfileName.SafeToOperate_StableAfterMin, _stabilizationPeriod.Minutes.ToString());
-            foreach (Sensor s in _sensors)
+            foreach (Sensor s in _prioritizedSensors)
                 s.writeProfile();
         }
         #endregion

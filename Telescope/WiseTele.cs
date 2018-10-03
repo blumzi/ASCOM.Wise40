@@ -767,12 +767,7 @@ namespace ASCOM.Wise40
         {
             activityMonitor.RestartGoindIdleTimer("AbortSlew");
             if (AtPark)
-            {
-                //#region debug
-                //debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Got AbortSlew while AtPark, not throwing InvalidOperationException !!!");
-                //#endregion
                 throw new InvalidOperationException("Cannot AbortSlew while AtPark");
-            }
 
             Stop();
             activityMonitor.EndActivity(ActivityMonitor.Activity.Slewing);
@@ -879,7 +874,7 @@ namespace ASCOM.Wise40
 
             set
             {
-                if (!_enslaveDome)
+                if (!_enslaveDome || Parking)
                     return;
 
                 if (trackingTimer == null)
@@ -1583,7 +1578,7 @@ namespace ASCOM.Wise40
             traceLogger.LogMessage("Park", "");
             #endregion
             #region debug
-            debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, "Park");
+            debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, "Park: started");
             #endregion debug
             if (AtPark)
                 return;
@@ -1595,25 +1590,42 @@ namespace ASCOM.Wise40
             bool wasTracking = Tracking;
             try
             {
-                _parking = true;
+                Parking = true;
                 activityMonitor.StartActivity(ActivityMonitor.Activity.Parking);
                 if (wasEnslavingDome)
                 {
                     _enslaveDome = false;
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: starting DomeParker()");
+                    #endregion
                     DomeParker();
                 }
                 _instance.TargetRightAscension = ra.Hours;
                 _instance.TargetDeclination = dec.Degrees;
                 Tracking = true;
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: starting _slewToCoordinatesSync");
+                #endregion
                 _slewToCoordinatesSync(ra, dec);
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: after _slewToCoordinatesSync");
+                #endregion
                 if (wasEnslavingDome)
                 {
                     while (!domeSlaveDriver.AtPark)
+                    {
+                        #region debug
+                        debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: waiting 2000 for domeSlaveDriver.AtPark");
+                        #endregion
                         Thread.Sleep(2000);
+                    }
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: reached domeSlaveDriver.AtPark");
+                    #endregion
                 }
             } catch(Exception ex)
             {
-                _parking = false;
+                Parking = false;
                 _enslaveDome = wasEnslavingDome;
                 Tracking = wasTracking;
                 activityMonitor.EndActivity(ActivityMonitor.Activity.Parking);
@@ -1622,9 +1634,12 @@ namespace ASCOM.Wise40
                 #endregion
                 return;
             }
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: all done, setting AtPark == true");
+            #endregion
             AtPark = true;
+            Parking = false;
             Tracking = false;
-            _parking = false;
             activityMonitor.EndActivity(ActivityMonitor.Activity.Parking);
             _enslaveDome = wasEnslavingDome;
         }
@@ -2252,6 +2267,14 @@ namespace ASCOM.Wise40
 
         public void Unpark()
         {
+            if (activityMonitor.Active(ActivityMonitor.Activity.ShuttingDown))
+            {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Unpark: ignored while ShuttingDown");
+                #endregion
+                return;
+            }
+
             if (AtPark)
                 AtPark = false;
 
@@ -3062,7 +3085,7 @@ namespace ASCOM.Wise40
                 {
                     Angle ra = Angle.FromHours(TargetRightAscension, Angle.Type.RA);
                     Angle dec = Angle.FromDegrees(TargetDeclination, Angle.Type.Dec);
-                    ret = _parking ? "Parking" : "Slewing" + string.Format(" to RA {0} DEC {1}", ra, dec);
+                    ret = Parking ? "Parking" : "Slewing" + string.Format(" to RA {0} DEC {1}", ra, dec);
                 }
                 else if (IsPulseGuiding)
                 {
@@ -3099,6 +3122,19 @@ namespace ASCOM.Wise40
             set
             {
                 _plotSlews = value;
+            }
+        }
+
+        public bool Parking
+        {
+            get
+            {
+                return _parking;
+            }
+
+            set
+            {
+                _parking = value;
             }
         }
 

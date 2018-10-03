@@ -397,7 +397,8 @@ namespace Dash
                     annunciatorSafeToOperate.Text = "Not safe to operate";
                     annunciatorSafeToOperate.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
                     string reasons = string.Join("\n", wisesafetooperate.UnsafeReasons);
-                    tip = reasons.Replace(";", "\n  ");
+                    reasons = reasons.Replace(";", "\n  ");
+                    tip = reasons;
                 }
             }
             toolTip.SetToolTip(annunciatorSafeToOperate, tip);
