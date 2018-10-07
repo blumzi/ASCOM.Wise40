@@ -74,6 +74,11 @@ namespace ASCOM.Wise40SafeToOperate
         {
             public bool stale;
             public bool safe;
+
+            public override string ToString()
+            {
+                return string.Format("stale: {0}, safe: {1}", stale, safe);
+            }
         }
 
         protected FixedSizedQueue<Reading> _readings;

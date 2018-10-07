@@ -41,7 +41,7 @@ namespace ASCOM.Wise40SafeToOperate
                 double cover = WiseSafeToOperate.och.CloudCover;
 
                 if (_max == 0)
-                    r.safe = cover != 0.0;
+                    r.safe = cover == 0.0;
                 else
                     r.safe = cover <= _max;
             }

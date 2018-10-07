@@ -33,7 +33,12 @@ namespace ASCOM.Wise40SafeToOperate
             {
                 stale = IsStale("RainRate")
             };
-            r.safe = r.stale ? false : WiseSafeToOperate.och.RainRate <= _max;
+
+            double rainRate = WiseSafeToOperate.och.RainRate;
+            if (r.stale)
+                r.safe = false;
+            else
+                r.safe = (_max == 0.0) ? rainRate == 0.0 : rainRate < _max;
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "{0}: getIsSafe: {1}", Name, r.safe);
             #endregion
