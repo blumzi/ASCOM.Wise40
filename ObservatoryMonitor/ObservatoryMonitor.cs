@@ -475,7 +475,6 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
             try
             {
-                Log("Forcing dome calibration ...");
                 Angle domeAz = DomeAzimuth;
                 Log(string.Format("Dome is at {0}", domeAz.ToNiceString()));
 
