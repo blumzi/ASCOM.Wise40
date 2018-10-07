@@ -151,8 +151,8 @@ namespace ASCOM.Wise40
         private bool _syncingDomePosition = false;
         private bool _plotSlews = false;
 
-        private bool _atPark;
-        private bool _movingToSafety = false;
+        private static bool _atPark;
+        private static bool _movingToSafety = false;
 
         private double mainMirrorDiam = 1.016;    // 40inch (meters)
 
