@@ -189,7 +189,18 @@ namespace ASCOM.Wise40
 
                 foreach (Activity a in _activities)
                     if (Active(a))
-                        ret.Add(a.ToString());
+                    {
+                        if (a == Activity.GoingIdle)
+                        {
+                            TimeSpan ts = RemainingTime;
+                            string s = string.Empty;
+                            if (ts.TotalMinutes > 0)
+                                s += string.Format(a.ToString() + " in {0}m", (int) ts.TotalMinutes);
+                            s += string.Format("{0}s", ts.Seconds);
+                            ret.Add(s);
+                        } else
+                            ret.Add(a.ToString());
+                    }
 
                 return string.Join(", ", ret);
             }
