@@ -303,16 +303,16 @@
             this.comboBoxFocusStep.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.comboBoxFocusStep.FormattingEnabled = true;
             this.comboBoxFocusStep.Items.AddRange(new object[] {
-            "50",
-            "100",
-            "150",
-            "200"});
+            "  50",
+            "  100",
+            "  150",
+            "  200"});
             this.comboBoxFocusStep.Location = new System.Drawing.Point(48, 118);
             this.comboBoxFocusStep.Margin = new System.Windows.Forms.Padding(0);
             this.comboBoxFocusStep.Name = "comboBoxFocusStep";
             this.comboBoxFocusStep.Size = new System.Drawing.Size(72, 21);
             this.comboBoxFocusStep.TabIndex = 33;
-            this.comboBoxFocusStep.Text = "50";
+            this.comboBoxFocusStep.Text = "  50";
             // 
             // buttonFocusIncrease
             // 
@@ -351,14 +351,14 @@
             // labelFocuserStatus
             // 
             this.labelFocuserStatus.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.labelFocuserStatus.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelFocuserStatus.Font = new System.Drawing.Font("Lucida Sans Unicode", 9F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelFocuserStatus.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.labelFocuserStatus.Location = new System.Drawing.Point(8, 160);
             this.labelFocuserStatus.Name = "labelFocuserStatus";
             this.labelFocuserStatus.Size = new System.Drawing.Size(312, 20);
             this.labelFocuserStatus.TabIndex = 30;
             this.labelFocuserStatus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            this.toolTip.SetToolTip(this.labelFocuserStatus, "Filter wheel  status");
+            this.toolTip.SetToolTip(this.labelFocuserStatus, "Focuser  status");
             // 
             // buttonFocusGoto
             // 
@@ -398,6 +398,7 @@
             this.textBoxFocusGotoPosition.Name = "textBoxFocusGotoPosition";
             this.textBoxFocusGotoPosition.Size = new System.Drawing.Size(69, 21);
             this.textBoxFocusGotoPosition.TabIndex = 22;
+            this.textBoxFocusGotoPosition.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.textBoxFocusGotoPosition.Validated += new System.EventHandler(this.textBoxFocusGotoPosition_Validated);
             // 
             // buttonFocusDown
@@ -450,9 +451,9 @@
             this.buttonFocusAllDown.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonFocusAllDown.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonFocusAllDown.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonFocusAllDown.Location = new System.Drawing.Point(112, 33);
+            this.buttonFocusAllDown.Location = new System.Drawing.Point(99, 33);
             this.buttonFocusAllDown.Name = "buttonFocusAllDown";
-            this.buttonFocusAllDown.Size = new System.Drawing.Size(54, 24);
+            this.buttonFocusAllDown.Size = new System.Drawing.Size(67, 24);
             this.buttonFocusAllDown.TabIndex = 24;
             this.buttonFocusAllDown.Text = "All down";
             this.buttonFocusAllDown.UseVisualStyleBackColor = false;
@@ -676,7 +677,7 @@
             // labelDomeShutterStatus
             // 
             this.labelDomeShutterStatus.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.labelDomeShutterStatus.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelDomeShutterStatus.Font = new System.Drawing.Font("Lucida Sans Unicode", 9F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelDomeShutterStatus.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.labelDomeShutterStatus.Location = new System.Drawing.Point(8, 56);
             this.labelDomeShutterStatus.Name = "labelDomeShutterStatus";
@@ -806,6 +807,7 @@
             this.groupBoxTelescope.Controls.Add(this.labelRA);
             this.groupBoxTelescope.Controls.Add(this.labelDec);
             this.groupBoxTelescope.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.groupBoxTelescope.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
             this.groupBoxTelescope.ForeColor = System.Drawing.Color.DarkOrange;
             this.groupBoxTelescope.Location = new System.Drawing.Point(204, 27);
             this.groupBoxTelescope.Name = "groupBoxTelescope";
@@ -941,7 +943,7 @@
             this.labelTelescopeStatus.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.labelTelescopeStatus.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.labelTelescopeStatus.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelTelescopeStatus.Font = new System.Drawing.Font("Lucida Sans Unicode", 9F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelTelescopeStatus.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.labelTelescopeStatus.Location = new System.Drawing.Point(16, 408);
             this.labelTelescopeStatus.Name = "labelTelescopeStatus";
@@ -1503,7 +1505,7 @@
             this.labelRA.AutoSize = true;
             this.labelRA.Location = new System.Drawing.Point(68, 164);
             this.labelRA.Name = "labelRA";
-            this.labelRA.Size = new System.Drawing.Size(25, 13);
+            this.labelRA.Size = new System.Drawing.Size(24, 13);
             this.labelRA.TabIndex = 21;
             this.labelRA.Text = "RA:";
             // 
@@ -1512,7 +1514,7 @@
             this.labelDec.AutoSize = true;
             this.labelDec.Location = new System.Drawing.Point(190, 164);
             this.labelDec.Name = "labelDec";
-            this.labelDec.Size = new System.Drawing.Size(30, 13);
+            this.labelDec.Size = new System.Drawing.Size(29, 13);
             this.labelDec.TabIndex = 22;
             this.labelDec.Text = "Dec:";
             // 
@@ -2365,7 +2367,7 @@
             // labelDashStatus
             // 
             this.tableLayoutMain.SetColumnSpan(this.labelDashStatus, 2);
-            this.labelDashStatus.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, System.Drawing.FontStyle.Italic);
+            this.labelDashStatus.Font = new System.Drawing.Font("Lucida Sans Unicode", 9F, System.Drawing.FontStyle.Italic);
             this.labelDashStatus.Location = new System.Drawing.Point(204, 731);
             this.labelDashStatus.Name = "labelDashStatus";
             this.labelDashStatus.Size = new System.Drawing.Size(731, 23);
@@ -2498,14 +2500,14 @@
             // labelFilterWheelStatus
             // 
             this.labelFilterWheelStatus.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.labelFilterWheelStatus.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelFilterWheelStatus.Font = new System.Drawing.Font("Lucida Sans Unicode", 9F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelFilterWheelStatus.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.labelFilterWheelStatus.Location = new System.Drawing.Point(8, 224);
             this.labelFilterWheelStatus.Name = "labelFilterWheelStatus";
             this.labelFilterWheelStatus.Size = new System.Drawing.Size(312, 20);
             this.labelFilterWheelStatus.TabIndex = 33;
             this.labelFilterWheelStatus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            this.toolTip.SetToolTip(this.labelFilterWheelStatus, "Weather status");
+            this.toolTip.SetToolTip(this.labelFilterWheelStatus, "Filter wheel status");
             // 
             // groupBoxWeather
             // 
@@ -2525,7 +2527,7 @@
             // labelWeatherStatus
             // 
             this.labelWeatherStatus.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.labelWeatherStatus.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelWeatherStatus.Font = new System.Drawing.Font("Lucida Sans Unicode", 9F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelWeatherStatus.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.labelWeatherStatus.Location = new System.Drawing.Point(8, 232);
             this.labelWeatherStatus.Name = "labelWeatherStatus";
