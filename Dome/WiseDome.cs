@@ -46,7 +46,6 @@ namespace ASCOM.Wise40
             MovingCCW = (1 << 1),
             Calibrating = (1 << 2),
             Parking = (1 << 3),
-            //AllMovements = MovingCCW|MovingCW|Parking|Calibrating,
         };
         private DomeState _state;
 
@@ -154,7 +153,6 @@ namespace ASCOM.Wise40
             tl = new TraceLogger("", "Dome");
             tl.Enabled = debugger.Tracing;
             ReadProfile();
-            hw.init();
 
             try {
                 uint caliPointsSpacing = domeEncoder.Ticks / 3;
@@ -162,8 +160,8 @@ namespace ASCOM.Wise40
                 connectables = new List<IConnectable>();
                 disposables = new List<IDisposable>();
 
-                leftPin = new WisePin("DomeLeft", hw.domeboard, DigitalPortType.FirstPortA, 2, DigitalPortDirection.DigitalOut);
-                rightPin = new WisePin("DomeRight", hw.domeboard, DigitalPortType.FirstPortA, 3, DigitalPortDirection.DigitalOut);
+                leftPin = new WisePin("DomeLeft", hw.domeboard, DigitalPortType.FirstPortA, 2, DigitalPortDirection.DigitalOut, controlled: true);
+                rightPin = new WisePin("DomeRight", hw.domeboard, DigitalPortType.FirstPortA, 3, DigitalPortDirection.DigitalOut, controlled: true);
 
                 caliPins[0] = new WisePin(Const.notsign + "DomeCali0", hw.domeboard, DigitalPortType.FirstPortCL, 0, DigitalPortDirection.DigitalIn);
                 caliPins[1] = new WisePin(Const.notsign + "DomeCali1", hw.domeboard, DigitalPortType.FirstPortCL, 1, DigitalPortDirection.DigitalIn);
@@ -191,8 +189,12 @@ namespace ASCOM.Wise40
                 debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome: constructor caught: {0}.", e.Message);
             }
 
-            leftPin.SetOff();
-            rightPin.SetOff();
+            try
+            {
+                leftPin.SetOff();
+                rightPin.SetOff();
+            }
+            catch (Hardware.Hardware.MaintenanceModeException) { }
 
             _calibrating = false;
             _state = DomeState.Idle;
@@ -541,8 +543,15 @@ namespace ASCOM.Wise40
         {
             AtPark = false;
 
-            leftPin.SetOff();
-            rightPin.SetOn();
+            try
+            {
+                leftPin.SetOff();
+                rightPin.SetOn();
+            } catch (Hardware.Hardware.MaintenanceModeException)
+            {
+                return;
+            }
+
             SetDomeState(DomeState.MovingCW);
             domeEncoder.setMovement(Direction.CW);
             _movementTimer.Change(0, _movementTimeout);
@@ -559,9 +568,15 @@ namespace ASCOM.Wise40
         public void StartMovingCCW()
         {
             AtPark = false;
+            try
+            {
+                rightPin.SetOff();
+                leftPin.SetOn();
+            } catch (Hardware.Hardware.MaintenanceModeException)
+            {
+                return;
+            }
 
-            rightPin.SetOff();
-            leftPin.SetOn();
             SetDomeState(DomeState.MovingCCW);
             domeEncoder.setMovement(Direction.CCW);
             _movementTimer.Change(0, _movementTimeout);

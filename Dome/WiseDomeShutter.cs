@@ -39,7 +39,7 @@ namespace ASCOM.Wise40
 
         public WebClient webClient = null;
 
-        private ActivityMonitor activityMonitor = ActivityMonitor.Instance;
+        private static ActivityMonitor activityMonitor = ActivityMonitor.Instance;
 
         public class WebClient
         {
@@ -236,8 +236,8 @@ namespace ASCOM.Wise40
         {
             try
             {
-                openPin = new WisePin("ShutterOpen", hw.domeboard, DigitalPortType.FirstPortA, 0, DigitalPortDirection.DigitalOut);
-                closePin = new WisePin("ShutterClose", hw.domeboard, DigitalPortType.FirstPortA, 1, DigitalPortDirection.DigitalOut);
+                openPin = new WisePin("ShutterOpen", hw.domeboard, DigitalPortType.FirstPortA, 0, DigitalPortDirection.DigitalOut, controlled: true);
+                closePin = new WisePin("ShutterClose", hw.domeboard, DigitalPortType.FirstPortA, 1, DigitalPortDirection.DigitalOut, controlled: true);
             }
             catch (Exception ex)
             {
@@ -247,8 +247,12 @@ namespace ASCOM.Wise40
             _state = ShutterState.shutterClosed;
             _timer = new System.Threading.Timer(new TimerCallback(onTimer));
             _timeToFullShutterMovement = Simulated ? TimeSpan.FromSeconds(10) : TimeSpan.FromSeconds(25);
-            openPin.SetOff();
-            closePin.SetOff();
+            try
+            {
+                openPin.SetOff();
+                closePin.SetOff();
+            }
+            catch (Hardware.Hardware.MaintenanceModeException) { }
 
             if (_useShutterWebClient && _ipAddress != string.Empty)
                 webClient = new WebClient(_ipAddress);
@@ -257,8 +261,12 @@ namespace ASCOM.Wise40
 
         public void Dispose()
         {
-            openPin.SetOff();
-            closePin.SetOff();
+            try
+            {
+                openPin.SetOff();
+                closePin.SetOff();
+            }
+            catch (Hardware.Hardware.MaintenanceModeException) { }
         }
 
         public static WiseDomeShutter Instance

@@ -9,22 +9,6 @@ using ASCOM.Wise40.Common;
 
 namespace ASCOM.Wise40.Hardware
 {
-    public class FullStopper
-    {
-        private static List<WisePin> outputPins = new List<WisePin>();
-
-        public void Register(WisePin pin)
-        {
-            outputPins.Add(pin);
-        }
-
-        public void StopAll()
-        {
-            foreach (var pin in outputPins)
-                pin.SetOff();
-        }
-    }
-
     public class WisePin : WiseObject, IConnectable, IDisposable, IOnOff
     {
         private int bit;
@@ -32,6 +16,7 @@ namespace ASCOM.Wise40.Hardware
         private DigitalPortDirection dir;
         private bool inverse;
         private bool _connected = false;
+        private bool _controlled;
         private Const.Direction _direction = Const.Direction.None;  // Generally speaking - does it increase or decrease an encoder value
 
         public WisePin(string name,
@@ -40,7 +25,8 @@ namespace ASCOM.Wise40.Hardware
             int bit,
             DigitalPortDirection dir,
             bool inverse = false,
-            Const.Direction direction = Const.Direction.None)
+            Const.Direction direction = Const.Direction.None,
+            bool controlled = false)
         {
             this.Name = name +
                 "@Board" +
@@ -54,6 +40,7 @@ namespace ASCOM.Wise40.Hardware
             this.bit = bit;
             this.inverse = inverse;
             this._direction = direction;
+            this._controlled = controlled;
             daq.setDir(dir);
             if (daq.owners != null && daq.owners[bit].owner == null)
                 daq.setOwner(name, bit);
@@ -63,6 +50,10 @@ namespace ASCOM.Wise40.Hardware
         {
             if (dir != DigitalPortDirection.DigitalOut)
                 return;
+
+            if (_controlled && Hardware.computerControlPin.isOff)
+                throw new Hardware.MaintenanceModeException(Const.computerControlAtMaintenance);
+
             daq.Value |= (ushort)(1 << bit);
         }
 
@@ -70,6 +61,10 @@ namespace ASCOM.Wise40.Hardware
         {
             if (dir != DigitalPortDirection.DigitalOut)
                 return;
+
+            if (_controlled && Hardware.computerControlPin.isOff)
+                throw new Hardware.MaintenanceModeException(Const.computerControlAtMaintenance);
+
             daq.Value &= (ushort)~(1 << bit);
         }
 
