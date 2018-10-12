@@ -10,10 +10,27 @@ using System.IO;
 
 namespace ASCOM.Wise40
 {
-    public class ActivityMonitor : WiseObject
+    public sealed class ActivityMonitor : WiseObject
     {
-        private static volatile ActivityMonitor _instance; // Singleton
-        private static object syncObject = new object();
+        //private static volatile ActivityMonitor _instance = new ActivityMonitor(); // Singleton
+        //private static object syncObject = new object();
+
+        // start Singleton
+        private static readonly Lazy<ActivityMonitor> lazy = 
+            new Lazy<ActivityMonitor>(() => new ActivityMonitor()); // Singleton
+
+        public static ActivityMonitor Instance
+        {
+            get
+            {
+                lazy.Value.init();
+                return lazy.Value;
+            }
+        }
+
+        private ActivityMonitor() { }
+        // end Singleton
+
         private Timer inactivityTimer;
         private readonly int realMillisToInactivity = (int)TimeSpan.FromMinutes(15).TotalMilliseconds;
         private readonly int simulatedlMillisToInactivity = (int)TimeSpan.FromMinutes(3).TotalMilliseconds;
@@ -38,8 +55,8 @@ namespace ASCOM.Wise40
             Focuser = (1 << 9),
             FilterWheel = (1 << 10),
         };
-        private Activity _currentlyActive = Activity.None;
-        private List<Activity> _activities = new List<Activity> {
+        private static Activity _currentlyActive = Activity.None;
+        private static List<Activity> _activities = new List<Activity> {
             Activity.Tracking,
             Activity.Slewing,
             Activity.Pulsing,
@@ -56,23 +73,27 @@ namespace ASCOM.Wise40
             EndActivity(Activity.GoingIdle);
         }
 
-        public static ActivityMonitor Instance
-        {
-            get
-            {
-                if (_instance == null)
-                {
-                    lock (syncObject)
-                    {
-                        if (_instance == null)
-                            _instance = new ActivityMonitor();
-                    }
-                }
-                return _instance;
-            }
-        }
+        //public static ActivityMonitor Instance
+        //{
+        //    get
+        //    {
+        //        if (_instance == null)
+        //        {
+        //            lock (syncObject)
+        //            {
+        //                if (_instance == null)
+        //                    _instance = new ActivityMonitor();
+        //            }
+        //        }
+        //        _instance.init();
+        //        return _instance;
+        //    }
+        //}
 
-        public ActivityMonitor()
+        //public ActivityMonitor() { }
+        //static ActivityMonitor() { }
+
+        public void init()
         {
             wisesite.init();
             inactivityTimer = new System.Threading.Timer(BecomeIdle);
@@ -88,12 +109,12 @@ namespace ASCOM.Wise40
             if (act == Activity.GoingIdle && _currentlyActive != Activity.None)
                 return;
 
-            _currentlyActive |= act;
+            ActivityMonitor._currentlyActive |= act;
             if (act != Activity.GoingIdle)      // Any activity ends GoingIdle
                 EndActivity(Activity.GoingIdle);
             #region debug
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugLogic,
-                "ActivityMonitor:StartActivity: {0} (currentlyActive: {1})", act.ToString(), ObservatoryActivities);
+                "ActivityMonitor:StartActivity: started {0} (currentlyActive: {1})", act.ToString(), ObservatoryActivities);
             #endregion
             if (act != Activity.GoingIdle)
                 StopGoindIdleTimer();
@@ -109,7 +130,7 @@ namespace ASCOM.Wise40
             _currentlyActive &= ~act;
             #region debug
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugLogic,
-                "ActivityMonitor:EndActivity: {0} (currentlyActive: {1})", act.ToString(), ObservatoryActivities);
+                "ActivityMonitor:EndActivity: ended {0} (currentlyActive: {1})", act.ToString(), ObservatoryActivities);
             #endregion
 
             if (act == Activity.ShuttingDown)
@@ -168,7 +189,7 @@ namespace ASCOM.Wise40
             get
             {
                 if (_due == DateTime.MinValue)
-                    return TimeSpan.FromSeconds(0);
+                    return TimeSpan.MaxValue;
                 return _due.Subtract(DateTime.Now);
             }
         }
@@ -188,19 +209,27 @@ namespace ASCOM.Wise40
                 List<string> ret = new List<string>();
 
                 foreach (Activity a in _activities)
-                    if (Active(a))
+                {
+                    if (!Active(a))
+                        continue;
+
+                    if (a == Activity.GoingIdle)
                     {
-                        if (a == Activity.GoingIdle)
+                        TimeSpan ts = RemainingTime;
+
+                        string s = a.ToString();
+                        if (ts != TimeSpan.MaxValue)
                         {
-                            TimeSpan ts = RemainingTime;
-                            string s = string.Empty;
+                            s += " in ";
                             if (ts.TotalMinutes > 0)
-                                s += string.Format(a.ToString() + " in {0}m", (int) ts.TotalMinutes);
+                                s += string.Format("{0}m", (int)ts.TotalMinutes);
                             s += string.Format("{0}s", ts.Seconds);
-                            ret.Add(s);
-                        } else
-                            ret.Add(a.ToString());
+                        }
+                        ret.Add(s);
                     }
+                    else
+                        ret.Add(a.ToString());
+                }
 
                 return string.Join(", ", ret);
             }
