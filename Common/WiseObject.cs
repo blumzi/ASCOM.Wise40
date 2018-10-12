@@ -7,7 +7,7 @@ namespace ASCOM.Wise40.Common
     public class WiseObject
     {
         private string _name;
-        private bool _simulated = AreWeReallySimulated();
+        private static bool _simulated = Environment.MachineName.ToLower() != "dome-pc";
 
         public string Name
         {
@@ -28,16 +28,6 @@ namespace ASCOM.Wise40.Common
             {
                 return _simulated;
             }
-            set
-            {
-                _simulated = value;
-            }
-        }
-
-        private static bool AreWeReallySimulated()
-        {
-            return File.Exists(Const.topWise40Directory + "simulate") || 
-                (Environment.MachineName.ToLower() != "dome-pc");
         }
     }
 }
