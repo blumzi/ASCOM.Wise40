@@ -60,6 +60,8 @@ namespace ASCOM.Wise40.Common
 
         public const string wiseWeatherLinkPath = "c:/WeatherLink/WeatherLink 6.0.2.exe";
 
+        public const string computerControlAtMaintenance = "ComputerControl at Maintenance";
+
         public class ProfileName
         {
             public static string Telescope_AstrometricAccuracy = "AstrometricAccuracy";
