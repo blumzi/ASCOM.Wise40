@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using ASCOM.Wise40;
 using ASCOM.Wise40.Common;
 
 namespace ASCOM.Wise40SafeToOperate
@@ -34,7 +35,7 @@ namespace ASCOM.Wise40SafeToOperate
                 stale = IsStale("RainRate")
             };
 
-            double rainRate = WiseSafeToOperate.och.RainRate;
+            double rainRate = WiseSite.och.RainRate;
             if (r.stale)
                 r.safe = false;
             else

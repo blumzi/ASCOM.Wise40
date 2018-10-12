@@ -49,7 +49,6 @@ namespace ASCOM.Wise40SafeToOperate
         public static WiseComputerControl wisecomputercontrol;
 
         public static List<Sensor> _cumulativeSensors, _prioritizedSensors;
-        //public static List<Sensor> _sensors;
         private static bool _bypassed = false;
         private static bool _shuttingDown = false;
         public static int ageMaxSeconds;
@@ -61,8 +60,8 @@ namespace ASCOM.Wise40SafeToOperate
 
         private Wise40.Common.Debugger debugger = Debugger.Instance;
         private static TraceLogger tl = new TraceLogger("", "Wise40.SafeToOperate");
-        
-        public static ObservingConditions och = WiseSite.Instance.och;
+
+        private static WiseSite wisesite = WiseSite.Instance;
         
         private static object syncObject = new object();
 
@@ -87,6 +86,9 @@ namespace ASCOM.Wise40SafeToOperate
             {
                 if (_instance == null)
                 {
+                    if (syncObject == null)
+                        syncObject = new object();
+
                     lock(syncObject)
                     {
                         if (_instance == null)
@@ -107,7 +109,6 @@ namespace ASCOM.Wise40SafeToOperate
             if (initialized)
                 return;
 
-            och = new ObservingConditions("ASCOM.OCH.ObservingConditions");
             if (tl == null)
                 tl = new TraceLogger("", "Wise40.SafeToOperate");
             name = "Wise40 SafeToOperate";
@@ -117,6 +118,8 @@ namespace ASCOM.Wise40SafeToOperate
             {
                 _profile = new Profile() { DeviceType = "SafetyMonitor" };
             }
+
+            WiseSite.och.Connected = true;
             
             humiditySensor = new HumiditySensor(this);
             windSensor = new WindSensor(this);
@@ -364,8 +367,7 @@ namespace ASCOM.Wise40SafeToOperate
                 if (value == _connected)
                     return;
 
-                och.Connected = value;
-                _connected = och.Connected;
+                _connected = WiseSite.och.Connected;
 
                 if (_connected)
                     startSensors();

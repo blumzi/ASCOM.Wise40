@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using ASCOM.Wise40;
 using ASCOM.Wise40.Common;
 
 namespace ASCOM.Wise40SafeToOperate
@@ -36,7 +37,7 @@ namespace ASCOM.Wise40SafeToOperate
                 stale = IsStale("Humidity")
             };
 
-            double humidity = WiseSafeToOperate.och.Humidity;
+            double humidity = WiseSite.och.Humidity;
             if (r.stale)
                 r.safe = false;
             else

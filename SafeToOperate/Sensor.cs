@@ -5,9 +5,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ASCOM.Wise40;
 using ASCOM.Wise40.Common;
-using ASCOM.Utilities;
-using System.IO;
 
 namespace ASCOM.Wise40SafeToOperate
 {
@@ -161,7 +160,7 @@ namespace ASCOM.Wise40SafeToOperate
             if (DoesNotHaveAttribute(SensorAttribute.CanBeStale))
                 return false;
 
-            if (WiseSafeToOperate.och.TimeSinceLastUpdate(propertyName) > WiseSafeToOperate.ageMaxSeconds)
+            if (WiseSite.och.TimeSinceLastUpdate(propertyName) > WiseSafeToOperate.ageMaxSeconds)
             {
                 SetState(SensorState.Stale);
                 UnsetState(SensorState.Safe);

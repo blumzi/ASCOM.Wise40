@@ -19,7 +19,7 @@ namespace ASCOM.Wise40SafeToOperate
 
         public override string reason()
         {
-            return "ComputerControl at MAINTENANCE";
+            return Const.computerControlAtMaintenance;
         }
 
         public override string MaxAsString
