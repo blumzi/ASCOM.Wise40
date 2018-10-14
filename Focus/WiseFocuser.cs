@@ -622,20 +622,21 @@ namespace ASCOM.Wise40
         private void onTimer(object StateObject)
         {
             movementMonitoringTimer.Change(Timeout.Infinite, Timeout.Infinite);
-            const int maxDeltaBetweenReadings = 2;
+            const int maxDeltaBetweenReadings = 4;
 
             State oldState = _state;
-            uint reading;
+            uint reading = encoder.Value;
 
-            while (true)
-            {
-                reading = encoder.Value;
-                if ((int)Math.Abs(reading - _mostRecentPosition) < maxDeltaBetweenReadings)
-                    break;
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, "onTimer: discarded reading: {0}", reading);
-                #endregion
-            }
+            if (_mostRecentPosition != 0)
+                do
+                {
+                    if ((int)Math.Abs(reading - _mostRecentPosition) < maxDeltaBetweenReadings)
+                        break;
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, "onTimer: discarded reading: {0} ({1})", reading, _mostRecentPosition);
+                    #endregion
+                    reading = encoder.Value;
+                } while (true);
             _mostRecentPosition = reading;
 
             if (_state.IsSet(State.Flags.Testing))
@@ -757,8 +758,6 @@ namespace ASCOM.Wise40
             get
             {
                 List<string> ret = new List<string>();
-
-                ret.Add(string.Format("at-{0}", Position));
 
                 if (_state.IsSet(State.Flags.MovingUp))
                 {
