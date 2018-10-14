@@ -31,15 +31,17 @@ namespace ASCOM.Wise40
                 MovingDown = (1 << 1),                 //  ditto
                 MovingToTarget = (1 << 2),             // Trying to reach a specified target
                 MovingToIntermediateTarget = (1 << 3), // Moving to an intermediate target, below the specified target
-                Stopping = (1 << 4),                   // The motor(s) have been stopped
+                Stopping = (1 << 4),                   // The motor(s) have been stopped, maybe not yet fully stopped
                 Testing = (1 << 5),
             };
             public Flags _flags;
 
-            private const Flags motionFlags = Flags.MovingUp | 
+            private const Flags motionFlags = 
+                Flags.MovingUp | 
                 Flags.MovingDown | 
                 Flags.MovingToTarget | 
-                Flags.MovingToIntermediateTarget;
+                Flags.MovingToIntermediateTarget |
+                Flags.Stopping;
 
             public bool IsIdle()
             {
@@ -153,7 +155,6 @@ namespace ASCOM.Wise40
             tl = new TraceLogger("", "Focuser");
             tl.Enabled = debugger.Tracing;
 
-            //tl.LogMessage("init", "Initializing ...");
             wisesite.init();
 
             pinDown = new WisePin("FocusDown", hardware.miscboard, DigitalPortType.FirstPortCH, 0, DigitalPortDirection.DigitalOut, direction: Const.Direction.Decreasing, controlled: true);
@@ -512,7 +513,8 @@ namespace ASCOM.Wise40
 
         private ArrayList supportedActions = new ArrayList() {
             "status",
-            "start-test",
+            "start-testing",
+            "end-testing"
         };
 
         public ArrayList SupportedActions
@@ -531,16 +533,22 @@ namespace ASCOM.Wise40
         {
             if (actionName == "status")
                 return Status;
-            else if (actionName == "start-test")
+            else if (actionName == "start-testing")
             {
-                try
-                {
-                    runningTest = new Test(actionParameters);
-                }
-                catch (Exception ex)
-                {
-                    return ex.Message;
-                }
+                //try
+                //{
+                //    runningTest = new Test(actionParameters);
+                //}
+                //catch (Exception ex)
+                //{
+                //    return ex.Message;
+                //}
+                _state.Set(State.Flags.Testing);
+                return "ok";
+            }
+            else if (actionName == "end-testing")
+            {
+                _state.Unset(State.Flags.Testing);
                 return "ok";
             }
             else
@@ -618,9 +626,8 @@ namespace ASCOM.Wise40
             State oldState = _state;
             _mostRecentPosition = encoder.Value;
 
-            #region debug
-            //debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, "onTimer: _mostRecentPosition: {0}", _mostRecentPosition);
-            #endregion
+            if (_state.IsSet(State.Flags.Testing))
+                debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, "onTimer: _mostRecentPosition: {0}", _mostRecentPosition);
 
             recentPositions.Enqueue(_mostRecentPosition);
 
@@ -655,8 +662,7 @@ namespace ASCOM.Wise40
                     _mostRecentPosition, oldState);
                 #endregion
                 StartStopping();
-                movementMonitoringTimer.Change(movementMonitoringTimeSpan, movementMonitoringTimeSpan);
-                return;
+                goto RestartTimer;
             }
 
             if (_state.IsSet(State.Flags.Stopping) && !_encoderIsChanging)
@@ -716,6 +722,8 @@ namespace ASCOM.Wise40
                 if (!_state.IsSet(State.Flags.Stopping))
                     StartStopping();
             }
+
+        RestartTimer:
             movementMonitoringTimer.Change(movementMonitoringTimeSpan, movementMonitoringTimeSpan);
         }
 
@@ -736,33 +744,42 @@ namespace ASCOM.Wise40
         {
             get
             {
-                string ret = string.Empty;
+                List<string> ret = new List<string>();
+
+                ret.Add(string.Format("at-{0}", Position));
 
                 if (_state.IsSet(State.Flags.MovingUp))
                 {
-                    ret = "Moving up";
+                    ret.Add("moving-up");
                 }
-                else if (_state.IsSet(State.Flags.MovingDown))
+
+                if (_state.IsSet(State.Flags.MovingDown))
                 {
-                    ret = "Moving down";
+                    ret.Add("moving-down");
                 }
-                else if (_state.IsSet(State.Flags.MovingToTarget))
+
+                if (_state.IsSet(State.Flags.MovingToTarget))
                 {
-                    ret = string.Format("Moving to {0}", _targetPosition);
-                    if (_state.IsSet(State.Flags.Stopping))
-                        ret += " and stopping";
+                    ret.Add(string.Format("moving-to-{0}", _targetPosition));
                 }
-                else if (_state.IsSet(State.Flags.MovingToIntermediateTarget))
+
+                if (_state.IsSet(State.Flags.MovingToIntermediateTarget))
                 {
-                    ret = string.Format("Moving to {0} then to {1}",
-                        _intermediatePosition, _targetPosition);
-                    if (_state.IsSet(State.Flags.Stopping))
-                        ret += " and stopping";
+                    ret.Add(string.Format("moving-to-{0}-via-{1}", _targetPosition, _intermediatePosition));
                 }
+
+                if (_state.IsSet(State.Flags.Stopping))
+                    ret.Add("stopping");
+
+                if (_state.IsSet(State.Flags.Testing))
+                    ret.Add("testing");
+
+                string s = string.Join(",", ret);
+
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, "Status: {0}", ret);
+                debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, "Status: {0}", s);
                 #endregion
-                return ret;
+                return s;
             }
         }
 
