@@ -2283,6 +2283,10 @@ namespace ASCOM.Wise40
                 return;
             }
 
+            if (!wisesafetooperate.IsSafe)
+                throw new InvalidOperationException("Unpark: " +
+                    string.Join(", ", wisesafetooperate.UnsafeReasons));
+
             if (AtPark)
                 AtPark = false;
 
@@ -2290,7 +2294,7 @@ namespace ASCOM.Wise40
             traceLogger.LogMessage("Unpark", "Done");
             #endregion
             #region debug
-            debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, "Unpark");
+            debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, "Unpark: done.");
             #endregion debug
         }
 
