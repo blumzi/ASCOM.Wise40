@@ -6,15 +6,13 @@ using System.Threading.Tasks;
 using System.Threading;
 
 using ASCOM.Wise40.Common;
+using ASCOM.Utilities;
 using System.IO;
 
 namespace ASCOM.Wise40
 {
     public sealed class ActivityMonitor : WiseObject
     {
-        //private static volatile ActivityMonitor _instance = new ActivityMonitor(); // Singleton
-        //private static object syncObject = new object();
-
         // start Singleton
         private static readonly Lazy<ActivityMonitor> lazy = 
             new Lazy<ActivityMonitor>(() => new ActivityMonitor()); // Singleton
@@ -31,8 +29,9 @@ namespace ASCOM.Wise40
         private ActivityMonitor() { }
         // end Singleton
 
-        private Timer inactivityTimer;
-        private readonly int realMillisToInactivity = (int)TimeSpan.FromMinutes(15).TotalMilliseconds;
+        private System.Threading.Timer inactivityTimer;
+        private readonly int defaultRealMillisToInactivity = (int)TimeSpan.FromMinutes(15).TotalMilliseconds;
+        private int realMillisToInactivity;
         private readonly int simulatedlMillisToInactivity = (int)TimeSpan.FromMinutes(3).TotalMilliseconds;
         private Debugger debugger = Debugger.Instance;
         private bool _shuttingDown = false;
@@ -73,29 +72,33 @@ namespace ASCOM.Wise40
             EndActivity(Activity.GoingIdle);
         }
 
-        //public static ActivityMonitor Instance
-        //{
-        //    get
-        //    {
-        //        if (_instance == null)
-        //        {
-        //            lock (syncObject)
-        //            {
-        //                if (_instance == null)
-        //                    _instance = new ActivityMonitor();
-        //            }
-        //        }
-        //        _instance.init();
-        //        return _instance;
-        //    }
-        //}
+        public TimeSpan MinutesToInactive
+        {
+            get
+            {
+                return TimeSpan.FromMilliseconds(realMillisToInactivity);
+            }
 
-        //public ActivityMonitor() { }
-        //static ActivityMonitor() { }
+            set
+            {
+                realMillisToInactivity = (int) value.TotalMilliseconds;
+            }
+        }
 
         public void init()
         {
             wisesite.init();
+
+            int defaultMinutesToIdle = (int) TimeSpan.FromMilliseconds(defaultRealMillisToInactivity).TotalMinutes;
+            int minutesToIdle;
+
+            using (Profile p = new Profile() { DeviceType = "Telescope" })
+                minutesToIdle = Convert.ToInt32(p.GetValue(Const.wiseTelescopeDriverID,
+                    Const.ProfileName.Telescope_MinutesToIdle,
+                    string.Empty,
+                    defaultMinutesToIdle.ToString()));
+
+            realMillisToInactivity = (int) TimeSpan.FromMinutes(minutesToIdle).TotalMilliseconds;
             inactivityTimer = new System.Threading.Timer(BecomeIdle);
             _currentlyActive = Activity.None;
             RestartGoindIdleTimer("init");
@@ -133,10 +136,8 @@ namespace ASCOM.Wise40
                 "ActivityMonitor:EndActivity: ended {0} (currentlyActive: {1})", act.ToString(), ObservatoryActivities);
             #endregion
 
-            if (act == Activity.ShuttingDown)
+            if (act == Activity.ShuttingDown || _currentlyActive == Activity.None)
                 StopGoindIdleTimer();
-            else if (_currentlyActive == Activity.None)
-                RestartGoindIdleTimer("no activities");
         }
 
         public bool Active(Activity a)
@@ -161,16 +162,27 @@ namespace ASCOM.Wise40
 
             if (reason == "init")
             {
-                if (File.Exists(filename))
+                try
                 {
-                    double fileAgeMillis = DateTime.Now.Subtract(File.GetCreationTime(filename)).TotalMilliseconds;
+                    if (File.Exists(filename))
+                    {
+                        double fileAgeMillis = DateTime.Now.Subtract(File.GetLastAccessTime(filename)).TotalMilliseconds;
 
-                    if (fileAgeMillis < dueMillis)
-                        dueMillis = Math.Min(dueMillis, (int)fileAgeMillis);
-                    File.Delete(filename);
+                        if (fileAgeMillis < dueMillis)
+                            dueMillis = Math.Min(dueMillis, (int)fileAgeMillis);
+                    }
+                    else
+                    {
+                        Directory.CreateDirectory(Path.GetDirectoryName(filename));
+                        File.Create(filename).Close();
+                    }
+                    File.SetLastAccessTime(filename, DateTime.Now);
+                } catch (Exception ex)
+                {
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "RestartGoindIdleTimer: Exception: {0}", ex.Message);
+                    #endregion
                 }
-                else
-                    Directory.CreateDirectory(Path.GetDirectoryName(filename));
             }
             #region debug
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugLogic, "ActivityMonitor:RestartGoindIdleTimer (reason = {0}, due = {1} millis).",
@@ -179,7 +191,6 @@ namespace ASCOM.Wise40
 
             StartActivity(Activity.GoingIdle);
             inactivityTimer.Change(dueMillis, Timeout.Infinite);
-            File.Create(filename).Close();
 
             _due = DateTime.Now.AddMilliseconds(dueMillis);
         }
