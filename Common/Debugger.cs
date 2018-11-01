@@ -120,7 +120,7 @@ namespace ASCOM.Wise40.Common
             string taskInfo = (Task.CurrentId == null) ?
                 "-1" :
                 (Task.CurrentId.HasValue ? Task.CurrentId.Value : -1).ToString();
-            string line = string.Format("{0}:{1}: {2,4} {3,4} {4}/{5}/{6} {7} {8,-15} {9}",
+            string line = string.Format("{0}:{1}: {2,4} {3,4} {4}/{5}/{6} UT {7} {8,-15} {9}",
                 _appName, Process.GetCurrentProcess().Id,
                 Thread.CurrentThread.ManagedThreadId.ToString(),
                 taskInfo,
