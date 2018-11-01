@@ -622,21 +622,17 @@ namespace ASCOM.Wise40
         private void onTimer(object StateObject)
         {
             movementMonitoringTimer.Change(Timeout.Infinite, Timeout.Infinite);
-            const int maxDeltaBetweenReadings = 4;
+            const int maxDeltaBetweenReadings = 10;
 
             State oldState = _state;
             uint reading = encoder.Value;
 
-            if (_mostRecentPosition != 0)
-                do
-                {
-                    if ((int)Math.Abs(reading - _mostRecentPosition) < maxDeltaBetweenReadings)
-                        break;
-                    #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, "onTimer: discarded reading: {0} ({1})", reading, _mostRecentPosition);
-                    #endregion
-                    reading = encoder.Value;
-                } while (true);
+            if (_mostRecentPosition != 0 && (int)Math.Abs(reading - _mostRecentPosition) > maxDeltaBetweenReadings) {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, "onTimer: suspect reading: {0} (_mostRecentPosition: {1}, maxDeltaBetweenReadings: {2})",
+                    reading, _mostRecentPosition, maxDeltaBetweenReadings);
+                #endregion
+            }
             _mostRecentPosition = reading;
 
             if (_state.IsSet(State.Flags.Testing))
@@ -706,8 +702,8 @@ namespace ASCOM.Wise40
                         _state.BecomeIdle();
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugFocuser,
-                        "onTimer: stopped moving: at {0} (_state: {1} => {2})",
-                        _mostRecentPosition, oldState, _state);
+                        "onTimer: stopped moving: at {0} (target: {1}, intermediateTarget: {2}, old state: {3}, new state: {4})",
+                        _mostRecentPosition, _targetPosition, _intermediatePosition, oldState, _state);
                     #endregion
                 }
                 else if (_state.IsSet(State.Flags.Testing)) 
