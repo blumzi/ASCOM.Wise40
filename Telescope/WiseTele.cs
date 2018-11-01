@@ -1558,19 +1558,30 @@ namespace ASCOM.Wise40
         public void Shutdown()
         {
             string status = wisesafetooperate.Action("status", "");
-            bool cancelSafetyBypass = false;
+            bool rememberToCancelSafetyBypass = false;
 
             if (status.Contains("bypassed:false"))
             {
-                cancelSafetyBypass = true;
+                rememberToCancelSafetyBypass = true;
                 wisesafetooperate.Action("start-bypass", "temporary");
             }
             wisesafetooperate.Action("start-shutdown", "");
 
             activityMonitor.StartActivity(ActivityMonitor.Activity.ShuttingDown);
-            Task.Run(() => Park()).ContinueWith((afterPark) =>
+
+            Task.Run(() =>
             {
-                if (cancelSafetyBypass)
+                if (domeSlaveDriver.ShutterStatus != "Shutter is closed")
+                {
+                    domeSlaveDriver.CloseShutter();
+                    while (domeSlaveDriver.ShutterStatus != "Shutter is closed")
+                        Thread.Sleep(1000);
+                }
+
+            }).ContinueWith((park) => {
+                Park();
+            }, TaskContinuationOptions.ExecuteSynchronously).ContinueWith((afterPark) => {
+                if (rememberToCancelSafetyBypass)
                     wisesafetooperate.Action("end-bypass", "temporary");
                 wisesafetooperate.Action("end-shutdown", "");
                 activityMonitor.EndActivity(ActivityMonitor.Activity.ShuttingDown);
@@ -1961,7 +1972,6 @@ namespace ASCOM.Wise40
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes, msg + "at {0} {1} has stopped moving (stopping distance: {2})",
                 b, axis, stoppingDistance);
             #endregion debug
-            //slewingArbiter.AxisTryToSetRate(axis, Const.rateStopped);
         }
 
         private static SlewerTask domeSlewer;
