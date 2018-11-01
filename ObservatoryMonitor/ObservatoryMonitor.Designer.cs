@@ -52,6 +52,7 @@
             this.labelOperatingMode = new System.Windows.Forms.Label();
             this.labelComputerControl = new System.Windows.Forms.Label();
             this.labelHumanInterventionStatus = new System.Windows.Forms.Label();
+            this.buttonProjector = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.labelNextCheckLabel = new System.Windows.Forms.Label();
@@ -108,7 +109,7 @@
             // 
             this.setupToolStripMenuItemSetup.Name = "setupToolStripMenuItemSetup";
             this.setupToolStripMenuItemSetup.Size = new System.Drawing.Size(227, 22);
-            this.setupToolStripMenuItemSetup.Text = "Setup";
+            this.setupToolStripMenuItemSetup.Text = "Observatory Monitor Setup";
             this.setupToolStripMenuItemSetup.Click += new System.EventHandler(this.setupToolStripMenuItem_Click);
             // 
             // operationModeToolStripMenuItem
@@ -191,12 +192,12 @@
             this.buttonShutdown.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonShutdown.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonShutdown.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonShutdown.Location = new System.Drawing.Point(440, 136);
+            this.buttonShutdown.Location = new System.Drawing.Point(439, 135);
             this.buttonShutdown.Name = "buttonShutdown";
-            this.buttonShutdown.Size = new System.Drawing.Size(121, 88);
+            this.buttonShutdown.Size = new System.Drawing.Size(121, 42);
             this.buttonShutdown.TabIndex = 54;
             this.buttonShutdown.Text = "Shutdown Now";
-            this.toolTip.SetToolTip(this.buttonShutdown, "Stop activities\r\nPark the telescope\r\nPark the dome and close the shutter");
+            this.toolTip.SetToolTip(this.buttonShutdown, "Close the dome\r\nStop activities\r\nPark the telescope and dome");
             this.buttonShutdown.UseVisualStyleBackColor = false;
             this.buttonShutdown.Click += new System.EventHandler(this.buttonPark_Click);
             // 
@@ -287,6 +288,21 @@
             this.labelHumanInterventionStatus.Text = "Inactive";
             this.labelHumanInterventionStatus.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.toolTip.SetToolTip(this.labelHumanInterventionStatus, "The Computer Control switch states are either\r\n\"Operational\" or \"Maintenance\"");
+            // 
+            // buttonProjector
+            // 
+            this.buttonProjector.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonProjector.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonProjector.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.buttonProjector.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.buttonProjector.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.buttonProjector.Location = new System.Drawing.Point(454, 183);
+            this.buttonProjector.Name = "buttonProjector";
+            this.buttonProjector.Size = new System.Drawing.Size(92, 33);
+            this.buttonProjector.TabIndex = 67;
+            this.buttonProjector.Text = "Projector";
+            this.buttonProjector.UseVisualStyleBackColor = false;
+            this.buttonProjector.Click += new System.EventHandler(this.buttonProjector_Click);
             // 
             // label1
             // 
@@ -418,6 +434,7 @@
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.ClientSize = new System.Drawing.Size(600, 726);
+            this.Controls.Add(this.buttonProjector);
             this.Controls.Add(this.labelTime);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.labelOperatingMode);
@@ -434,7 +451,6 @@
             this.MainMenuStrip = this.menuStrip;
             this.Name = "ObsMainForm";
             this.Text = "Observatory Monitor";
-            this.Load += new System.EventHandler(this.ObsMainForm_Load);
             this.menuStrip.ResumeLayout(false);
             this.menuStrip.PerformLayout();
             this.groupBox1.ResumeLayout(false);
@@ -478,6 +494,7 @@
         private System.Windows.Forms.Label labelHumanInterventionStatus;
         private System.Windows.Forms.ToolStripMenuItem conditionsBypassToolStripMenuItem;
         private System.Windows.Forms.Label labelTime;
+        private System.Windows.Forms.Button buttonProjector;
     }
 }
 
