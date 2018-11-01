@@ -14,41 +14,42 @@ namespace Wise40Watcher
 {
     public class Watcher : WiseObject
     {
-        private string _path;
+        private string _applicationPath;
+        private string _applicationName;
         private static string _logFile;
         Process _process = null;
         bool _stopping = false;
         private static string serviceName = "Wise40Watcher";
 
-        private string applicationPath()
+        private void init(string name)
         {
-            string ret = string.Empty;
             string top = Simulated ?
                 "c:/Users/Blumzi/Documents/Visual Studio 2015/Projects/Wise40" :
                 "c:/Users/mizpe/source/repos/ASCOM.Wise40";
 
+            Name = name;
             switch (Name)
             {
                 case "ascom":
-                    ret = Const.wiseASCOMServerPath;
+                    _applicationPath = Const.wiseASCOMServerPath;
+                    _applicationName = Const.wiseASCOMServerAppName;
                     break;
 
                 case "weatherlink":
-                    ret = Const.wiseWeatherLinkPath;
+                    _applicationPath = Const.wiseWeatherLinkAppPath;
+                    _applicationName = Const.wiseWeatherLinkAppName;
                     break;
 
                 case "dash":
-                    ret = top + "/Dash/bin/x86/Debug/Dash.exe";
+                    _applicationPath = top + "/Dash/bin/x86/Debug/Dash.exe";
+                    _applicationName = Const.wiseDashboardAppName;
                     break;
 
                 case "obsmon":
-                    ret = top + "/ObservatoryMonitor/bin/x86/Debug/ObservatoryMonitor.exe";
-                    break;
-
-                default:
+                    _applicationPath = top + "/ObservatoryMonitor/bin/x86/Debug/ObservatoryMonitor.exe";
+                    _applicationName = Const.wiseObservatoryMonitorAppName;
                     break;
             }
-            return ret;
         }
 
         public Watcher(string name)
@@ -57,8 +58,7 @@ namespace Wise40Watcher
             Directory.CreateDirectory(logDir);
             _logFile = logDir + "/" + serviceName + ".log";
 
-            Name = name;
-            _path = applicationPath();
+            init(name);
         }
 
         public void watcher()
@@ -67,11 +67,11 @@ namespace Wise40Watcher
 
             while (!_stopping)
             {
-                CreateProcessAsUserWrapper.LaunchChildProcess(_path, out pid);
+                CreateProcessAsUserWrapper.LaunchChildProcess(_applicationPath, out pid);
                 if (pid != 0)
                 {
                     _process = Process.GetProcessById(pid);
-                    log("Start: waiting for pid {0} ({1}) ...", pid, _path);
+                    log("Start: waiting for pid {0} ({1}) ...", pid, _applicationPath);
                     _process.WaitForExit();
 
                     // TBD: Get the exit code
@@ -87,8 +87,22 @@ namespace Wise40Watcher
             }
         }
 
+        private void KillAllProcesses()
+        {
+            Process[] processes = Process.GetProcessesByName(_applicationName);
+
+            foreach (var p in processes)
+            {
+                log("KillAllProcesses: Killing pid: {0} ({1}) ...", p.Id, p.ProcessName);
+                p.Kill();
+                Thread.Sleep(1000);
+            }
+        }
+
         public void Start(string[] args)
         {
+            KillAllProcesses();
+
             try
             {
                 Thread thread = new Thread(watcher);
@@ -105,7 +119,10 @@ namespace Wise40Watcher
         {
             _stopping = true;
             log("The {0} service was Stopped, killing process {1} ...", serviceName, _process.Id);
-            _process.Kill(); ;
+            _process.Kill();
+            Thread.Sleep(1000);
+
+            KillAllProcesses();
         }
 
         public void log(string fmt, params object[] o)
