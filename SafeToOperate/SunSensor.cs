@@ -34,9 +34,9 @@ namespace ASCOM.Wise40SafeToOperate
                 stale = false,
                 safe = wisesafetooperate.SunElevation <= _max
             };
-            #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "{0}: getIsSafe: {1}", Name, r.safe);
-            #endregion
+            //#region debug
+            //debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "{0}: getIsSafe: {1}", Name, r.safe);
+            //#endregion
             return r;
         }
 
