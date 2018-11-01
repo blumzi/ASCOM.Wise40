@@ -309,6 +309,26 @@ namespace ASCOM.Wise40SafeToOperate
                     ret = "ok";
                     break;
 
+                case "start-door-debug":
+                    doorLockSensor.Debug = true;
+                    break;
+                case "end-door-debug":
+                    doorLockSensor.Debug = false;
+                    break;
+                case "door-safe":
+                    doorLockSensor.FakeDoorPin = 0;
+                    break;
+                case "door-unsafe":
+                    doorLockSensor.FakeDoorPin = 1;
+                        break;
+                case "door-bypass-safe":
+                    doorLockSensor.FakeBypassPin = 0; ;
+                    break;
+                case "door-bypass-unsafe":
+                    doorLockSensor.FakeBypassPin = 1;
+                    break;
+
+
                 default:
                     throw new ASCOM.ActionNotImplementedException("Action " + actionName + " is not implemented by this driver");
             }
