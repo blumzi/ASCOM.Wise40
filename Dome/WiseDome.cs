@@ -977,10 +977,6 @@ namespace ASCOM.Wise40
             tl.LogMessage("Dome: Park", "");
 
             SetDomeState(DomeState.Parking);
-            //#region debug
-            //debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome:Park: calling StartFindingHome");
-            //#endregion
-            //StartFindingHome();
 
             AtPark = false;
             SlewToAzimuth(_parkAzimuth);
@@ -988,65 +984,23 @@ namespace ASCOM.Wise40
 
         public void OpenShutter(bool bypassSafety = false)
         {
-            List<string> reasons = new List<string>();
-
             if (Slewing)
-                reasons.Add("Dome is slewing!");
+                throw new InvalidOperationException("Dome is slewing!");
 
             if (!bypassSafety && (wisesite.safeToOperate != null && !wisesite.safeToOperate.IsSafe))
-                reasons.Add("Not SafeToOperate: " + wisesite.safeToOperate.CommandString("unsafeReasons", false));
+                throw new InvalidOperationException(wisesite.safeToOperate.CommandString("unsafeReasons", false));
 
-            if (reasons.Count == 0)
-            {
-                #region trace
-                tl.LogMessage("Dome", "OpenShutter");
-                #endregion
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugASCOM, "WiseDome: OpenShutter: opening shutter: ");
-                #endregion
-                wisedomeshutter.Stop();
-                wisedomeshutter.StartOpening();
-            } else
-            {
-                string err = string.Join(", ", reasons);
-
-                #region trace
-                tl.LogMessage("Dome: OpenShutter", "");
-                #endregion
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugASCOM, "WiseDome: OpenShutter: Cannot open shutter: " + err);
-                #endregion
-                wisedomeshutter.State = ShutterState.shutterError;
-            }
+            wisedomeshutter.Stop();
+            wisedomeshutter.StartOpening();
         }
 
         public void CloseShutter()
         {
-            string err = null;
-
             if (Slewing)
-                err = "Cannot CloseShutter, dome is slewing!";
-
-            if (err == null)
-            {
-                #region trace
-                tl.LogMessage("Dome: CloseShutter", "");
-                #endregion
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugASCOM, "CloseShutter: started closing");
-                #endregion
-                wisedomeshutter.Stop();
-                wisedomeshutter.StartClosing();
-            } else
-            {
-                #region trace
-                tl.LogMessage("Dome: CloseShutter", err);
-                #endregion
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugASCOM, "CloseShutter: " + err);
-                #endregion
-                wisedomeshutter.State = ShutterState.shutterError;
-            }
+                throw new InvalidOperationException("Dome is slewing!");
+            
+            wisedomeshutter.Stop();
+            wisedomeshutter.StartClosing();
         }
 
         public void AbortSlew()
