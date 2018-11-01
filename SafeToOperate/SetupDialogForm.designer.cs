@@ -72,6 +72,9 @@ namespace ASCOM.Wise40SafeToOperate
             this.label5 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
+            this.label8 = new System.Windows.Forms.Label();
+            this.textBoxDoorLockDelay = new System.Windows.Forms.TextBox();
+            this.label12 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).BeginInit();
             this.SuspendLayout();
             // 
@@ -81,7 +84,7 @@ namespace ASCOM.Wise40SafeToOperate
             this.cmdOK.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.cmdOK.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.cmdOK.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.cmdOK.Location = new System.Drawing.Point(493, 278);
+            this.cmdOK.Location = new System.Drawing.Point(493, 319);
             this.cmdOK.Name = "cmdOK";
             this.cmdOK.Size = new System.Drawing.Size(59, 24);
             this.cmdOK.TabIndex = 0;
@@ -95,7 +98,7 @@ namespace ASCOM.Wise40SafeToOperate
             this.cmdCancel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.cmdCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.cmdCancel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.cmdCancel.Location = new System.Drawing.Point(493, 308);
+            this.cmdCancel.Location = new System.Drawing.Point(493, 350);
             this.cmdCancel.Name = "cmdCancel";
             this.cmdCancel.Size = new System.Drawing.Size(59, 25);
             this.cmdCancel.TabIndex = 1;
@@ -143,7 +146,7 @@ namespace ASCOM.Wise40SafeToOperate
             // 
             this.label4.AutoSize = true;
             this.label4.ForeColor = System.Drawing.Color.DarkOrange;
-            this.label4.Location = new System.Drawing.Point(64, 288);
+            this.label4.Location = new System.Drawing.Point(56, 294);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(133, 13);
             this.label4.TabIndex = 10;
@@ -153,7 +156,7 @@ namespace ASCOM.Wise40SafeToOperate
             // 
             this.textBoxAge.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.textBoxAge.ForeColor = System.Drawing.Color.DarkOrange;
-            this.textBoxAge.Location = new System.Drawing.Point(200, 284);
+            this.textBoxAge.Location = new System.Drawing.Point(192, 290);
             this.textBoxAge.Margin = new System.Windows.Forms.Padding(6, 3, 3, 3);
             this.textBoxAge.Name = "textBoxAge";
             this.textBoxAge.Size = new System.Drawing.Size(24, 20);
@@ -276,7 +279,7 @@ namespace ASCOM.Wise40SafeToOperate
             // 
             this.textBoxRestoreSafety.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.textBoxRestoreSafety.ForeColor = System.Drawing.Color.DarkOrange;
-            this.textBoxRestoreSafety.Location = new System.Drawing.Point(200, 316);
+            this.textBoxRestoreSafety.Location = new System.Drawing.Point(192, 322);
             this.textBoxRestoreSafety.Margin = new System.Windows.Forms.Padding(6, 3, 3, 3);
             this.textBoxRestoreSafety.Name = "textBoxRestoreSafety";
             this.textBoxRestoreSafety.Size = new System.Drawing.Size(24, 20);
@@ -301,7 +304,7 @@ namespace ASCOM.Wise40SafeToOperate
             // 
             this.label16.AutoSize = true;
             this.label16.ForeColor = System.Drawing.Color.DarkOrange;
-            this.label16.Location = new System.Drawing.Point(224, 288);
+            this.label16.Location = new System.Drawing.Point(216, 294);
             this.label16.Name = "label16";
             this.label16.Size = new System.Drawing.Size(24, 13);
             this.label16.TabIndex = 28;
@@ -346,9 +349,9 @@ namespace ASCOM.Wise40SafeToOperate
             this.label20.ForeColor = System.Drawing.Color.DarkOrange;
             this.label20.Location = new System.Drawing.Point(416, 88);
             this.label20.Name = "label20";
-            this.label20.Size = new System.Drawing.Size(62, 26);
+            this.label20.Size = new System.Drawing.Size(59, 26);
             this.label20.TabIndex = 35;
-            this.label20.Text = "Repeats for\r\nnot-safe";
+            this.label20.Text = "Repeats till\r\nnot-safe";
             this.label20.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // textBoxCloudRepeats
@@ -523,7 +526,7 @@ namespace ASCOM.Wise40SafeToOperate
             // 
             this.label3.AutoSize = true;
             this.label3.ForeColor = System.Drawing.Color.DarkOrange;
-            this.label3.Location = new System.Drawing.Point(224, 320);
+            this.label3.Location = new System.Drawing.Point(216, 326);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(23, 13);
             this.label3.TabIndex = 58;
@@ -533,7 +536,7 @@ namespace ASCOM.Wise40SafeToOperate
             // 
             this.label5.AutoSize = true;
             this.label5.ForeColor = System.Drawing.Color.DarkOrange;
-            this.label5.Location = new System.Drawing.Point(96, 320);
+            this.label5.Location = new System.Drawing.Point(88, 326);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(99, 13);
             this.label5.TabIndex = 56;
@@ -560,12 +563,48 @@ namespace ASCOM.Wise40SafeToOperate
             this.label7.TabIndex = 61;
             this.label7.Text = "(Calculated)";
             // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.ForeColor = System.Drawing.Color.DarkOrange;
+            this.label8.Location = new System.Drawing.Point(216, 357);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(24, 13);
+            this.label8.TabIndex = 64;
+            this.label8.Text = "sec";
+            // 
+            // textBoxDoorLockDelay
+            // 
+            this.textBoxDoorLockDelay.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
+            this.textBoxDoorLockDelay.ForeColor = System.Drawing.Color.DarkOrange;
+            this.textBoxDoorLockDelay.Location = new System.Drawing.Point(192, 353);
+            this.textBoxDoorLockDelay.Margin = new System.Windows.Forms.Padding(6, 3, 3, 3);
+            this.textBoxDoorLockDelay.Name = "textBoxDoorLockDelay";
+            this.textBoxDoorLockDelay.Size = new System.Drawing.Size(24, 20);
+            this.textBoxDoorLockDelay.TabIndex = 63;
+            this.textBoxDoorLockDelay.Text = "0";
+            this.textBoxDoorLockDelay.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.toolTip1.SetToolTip(this.textBoxDoorLockDelay, "Time allowed between opening the door lock\r\n  and activating the bypass\r\n");
+            // 
+            // label12
+            // 
+            this.label12.AutoSize = true;
+            this.label12.ForeColor = System.Drawing.Color.DarkOrange;
+            this.label12.Location = new System.Drawing.Point(106, 357);
+            this.label12.Name = "label12";
+            this.label12.Size = new System.Drawing.Size(81, 13);
+            this.label12.TabIndex = 62;
+            this.label12.Text = "Door lock delay";
+            // 
             // SafeToOperateSetupDialogForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.ClientSize = new System.Drawing.Size(562, 354);
+            this.ClientSize = new System.Drawing.Size(562, 391);
+            this.Controls.Add(this.label8);
+            this.Controls.Add(this.textBoxDoorLockDelay);
+            this.Controls.Add(this.label12);
             this.Controls.Add(this.label7);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.textBoxCloudCoverPercent);
@@ -666,5 +705,8 @@ namespace ASCOM.Wise40SafeToOperate
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.TextBox textBoxCloudCoverPercent;
         private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.TextBox textBoxDoorLockDelay;
+        private System.Windows.Forms.Label label12;
     }
 }

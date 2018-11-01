@@ -110,7 +110,9 @@ namespace ASCOM.Wise40SafeToOperate
 
             WiseSafeToOperate.rainSensor._repeats = Convert.ToInt32(textBoxRainRepeats.Text);
             WiseSafeToOperate.rainSensor._intervalMillis = Convert.ToInt32(textBoxRainIntervalSeconds.Text);
-            WiseSafeToOperate.rainSensor.Enabled = checkBoxRain.Checked;            
+            WiseSafeToOperate.rainSensor.Enabled = checkBoxRain.Checked;
+
+            WiseSafeToOperate.doorLockSensor.MaxAsString = textBoxDoorLockDelay.Text;
             
             wisesafetooperate.WriteProfile();
 
@@ -151,6 +153,7 @@ namespace ASCOM.Wise40SafeToOperate
             textBoxWind.Tag = textBoxWind.Text = WiseSafeToOperate.windSensor.MaxAsString;
             textBoxHumidity.Tag = textBoxHumidity.Text = WiseSafeToOperate.humiditySensor.MaxAsString;
             textBoxSunElevation.Tag = textBoxSunElevation.Text = WiseSafeToOperate.sunSensor.MaxAsString;
+            textBoxDoorLockDelay.Text = WiseSafeToOperate.doorLockSensor.MaxAsString;
 
             textBoxAge.Text = WiseSafeToOperate.ageMaxSeconds.ToString();
             textBoxRestoreSafety.Tag = textBoxRestoreSafety.Text = WiseSafeToOperate._stabilizationPeriod.Minutes.ToString();
