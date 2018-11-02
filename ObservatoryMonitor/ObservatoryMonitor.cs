@@ -304,7 +304,9 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
             buttonManualIntervention.Enabled = !ShuttingDown;
             updateManualInterventionControls();
-            UpdateConditionsControls();
+
+            if (!ShuttingDown)
+                UpdateConditionsControls();
 
             if (now >= _nextCheck)
                 CheckSituation();
