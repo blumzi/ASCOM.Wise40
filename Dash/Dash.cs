@@ -1491,8 +1491,8 @@ namespace Dash
             ToolStripMenuItem item = sender as ToolStripMenuItem;
             string text = item.Text;
 
-            wisedome._syncVentWithShutter = !wisedome._syncVentWithShutter;
-            UpdateCheckmark(item, wisedome._syncVentWithShutter);
+            wisedome.SyncVentWithShutter = !wisedome.SyncVentWithShutter;
+            UpdateCheckmark(item, wisedome.SyncVentWithShutter);
             UpdateAlteredItems(item, "Dome");
         }
 

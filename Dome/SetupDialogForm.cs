@@ -23,7 +23,7 @@ namespace ASCOM.Wise40 //.Dome
 
             wisedome.ReadProfile();
             checkBoxAutoCalibrate.Checked = wisedome._autoCalibrate;
-            checkBoxSyncVent.Checked = wisedome._syncVentWithShutter;
+            checkBoxSyncVent.Checked = wisedome.SyncVentWithShutter;
             textBoxShutterIpAddress.Text = wisedome.wisedomeshutter._ipAddress;
             textBoxShutterHighestValue.Text = wisedome.wisedomeshutter._highestValue.ToString();
             textBoxShutterLowestValue.Text = wisedome.wisedomeshutter._lowestValue.ToString();
@@ -45,7 +45,7 @@ namespace ASCOM.Wise40 //.Dome
             wisedome.wisedomeshutter._highestValue = Convert.ToInt32(textBoxShutterHighestValue.Text);
             wisedome.wisedomeshutter._lowestValue = Convert.ToInt32(textBoxShutterLowestValue.Text);
             wisedome._autoCalibrate = checkBoxAutoCalibrate.Checked;
-            wisedome._syncVentWithShutter = checkBoxSyncVent.Checked;
+            wisedome.SyncVentWithShutter = checkBoxSyncVent.Checked;
 
             wisedome.WriteProfile();
 

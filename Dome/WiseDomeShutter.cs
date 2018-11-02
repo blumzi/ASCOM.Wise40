@@ -19,10 +19,12 @@ namespace ASCOM.Wise40
         public static WisePin openPin, closePin;
         private static Hardware.Hardware hw = Hardware.Hardware.Instance;
         private Debugger debugger = Debugger.Instance;
+        private static WiseDome wisedome = WiseDome.Instance;
 
         public string _ipAddress;
         public int _lowestValue, _highestValue;
         public bool _useShutterWebClient = false;
+        public bool _syncVentWithShutter = false;
 
         private static WiseDomeShutter _instance; // Singleton
         private static object syncObject = new object();
@@ -174,6 +176,8 @@ namespace ASCOM.Wise40
             activityMonitor.StartActivity(ActivityMonitor.Activity.Shutter);
             closePin.SetOn();
             _state = ShutterState.shutterClosing;
+            if (_syncVentWithShutter)
+                wisedome.Vent = false;
             _timer.Change((int) _timeToFullShutterMovement.TotalMilliseconds, Timeout.Infinite);
         }
 
@@ -185,6 +189,8 @@ namespace ASCOM.Wise40
             activityMonitor.StartActivity(ActivityMonitor.Activity.Shutter);
             openPin.SetOn();
             _state = ShutterState.shutterOpening;
+            if (_syncVentWithShutter)
+                wisedome.Vent = true;
             _timer.Change((int) _timeToFullShutterMovement.TotalMilliseconds, Timeout.Infinite);
         }
 
@@ -243,7 +249,7 @@ namespace ASCOM.Wise40
             {
                 debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "WiseDomeShutter.init: Exception: {0}.", ex.Message);
             }
-            //_state = State;
+
             _state = ShutterState.shutterClosed;
             _timer = new System.Threading.Timer(new TimerCallback(onTimer));
             _timeToFullShutterMovement = Simulated ? TimeSpan.FromSeconds(10) : TimeSpan.FromSeconds(25);
@@ -292,12 +298,15 @@ namespace ASCOM.Wise40
 
         public void ReadProfile()
         {
+            bool defaultSyncVentWithShutter = (WiseSite.Instance.OperationalMode == WiseSite.OpMode.WISE) ? false : true;
+
             using (Profile driverProfile = new Profile() { DeviceType = "Dome" })
             {
                 _useShutterWebClient = Convert.ToBoolean(driverProfile.GetValue(Const.wiseDomeDriverID, Const.ProfileName.DomeShutter_UseWebClient, string.Empty, false.ToString()));
                 _ipAddress = driverProfile.GetValue(Const.wiseDomeDriverID, Const.ProfileName.DomeShutter_IPAddress, string.Empty, "").Trim();
                 _highestValue = Convert.ToInt32(driverProfile.GetValue(Const.wiseDomeDriverID, Const.ProfileName.DomeShutter_HighestValue, string.Empty, "-1"));
                 _lowestValue = Convert.ToInt32(driverProfile.GetValue(Const.wiseDomeDriverID, Const.ProfileName.DomeShutter_LowestValue, string.Empty, "-1"));
+                _syncVentWithShutter = Convert.ToBoolean(driverProfile.GetValue(Const.wiseDomeDriverID, Const.ProfileName.Dome_SyncVentWithShutter, string.Empty, defaultSyncVentWithShutter.ToString()));
             }
         }
 
@@ -309,6 +318,7 @@ namespace ASCOM.Wise40
                 driverProfile.WriteValue(Const.wiseDomeDriverID, Const.ProfileName.DomeShutter_IPAddress, _ipAddress.ToString());
                 driverProfile.WriteValue(Const.wiseDomeDriverID, Const.ProfileName.DomeShutter_HighestValue, _highestValue.ToString());
                 driverProfile.WriteValue(Const.wiseDomeDriverID, Const.ProfileName.DomeShutter_LowestValue, _lowestValue.ToString());
+                driverProfile.WriteValue(Const.wiseDomeDriverID, Const.ProfileName.Dome_SyncVentWithShutter, _syncVentWithShutter.ToString());
             }
         }
 
