@@ -225,9 +225,10 @@ namespace Wise40Watcher
         private static void log(string fmt, params object[] o)
         {
             string msg = string.Format(fmt, o);
+            string dir = ASCOM.Wise40.Common.Debugger.LogFolder();
 
-            string _logFile = string.Format(Const.topWise40Directory + "Logs/{0}", DateTime.Now.ToString("yyyy-MM-dd") + "/Wise40Watcher1.log");
-            using (var sw = new StreamWriter(_logFile, true))
+            Directory.CreateDirectory(dir);
+            using (var sw = new StreamWriter(dir + "/Wise40Watcher1.log", true))
             {
                 sw.WriteLine(DateTime.Now.ToString("yyyy-mm-dd, HH:mm:ss.ffff ") + msg);
             }

@@ -391,7 +391,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 log(string.Format("\n=== {0} ===\n", UTCnow.ToString("dd MMMM, yyyy (UT)")));
             
             log(string.Format("{0} - {1}", UTCnow.ToString("H:mm:ss UT"), msg));
-            _lastLog = DateTime.Now;
+            _lastLog = DateTime.UtcNow;
         }
 
         public void log(string line)
@@ -413,7 +413,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 listBoxLog.TopIndex = Math.Max(listBoxLog.Items.Count - visibleItems + 1, 0);
             }
 
-            string dir = string.Format(Const.topWise40Directory + "Logs/{0}", DateTime.Now.ToString("yyyy-MM-dd"));
+            string dir = Common.Debugger.LogFolder();
             Directory.CreateDirectory(dir);
             using (var sw = new StreamWriter(dir + "/ObservatoryMonitor.log", true))
             {
