@@ -2286,16 +2286,10 @@ namespace ASCOM.Wise40
         public void Unpark()
         {
             if (activityMonitor.Active(ActivityMonitor.Activity.ShuttingDown))
-            {
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Unpark: ignored while ShuttingDown");
-                #endregion
-                return;
-            }
+                throw new InvalidOperationException("Observatory is shutting down!");
 
             if (!wisesafetooperate.IsSafe)
-                throw new InvalidOperationException("Unpark: " +
-                    string.Join(", ", wisesafetooperate.UnsafeReasons));
+                throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasons));
 
             if (AtPark)
                 AtPark = false;

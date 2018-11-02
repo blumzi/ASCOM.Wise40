@@ -965,6 +965,9 @@ namespace ASCOM.Wise40
             if (!bypassSafety && (wisesite.safeToOperate != null && !wisesite.safeToOperate.IsSafe))
                 throw new InvalidOperationException(wisesite.safeToOperate.CommandString("unsafeReasons", false));
 
+            if (activityMonitor.Active(ActivityMonitor.Activity.ShuttingDown))
+                throw new InvalidOperationException("Observatory is shutting down!");
+
             wisedomeshutter.Stop();
             wisedomeshutter.StartOpening();
         }
