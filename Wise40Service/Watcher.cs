@@ -54,7 +54,7 @@ namespace Wise40Watcher
 
         public Watcher(string name)
         {
-            string logDir = ASCOM.Wise40.Common.Debugger.LogFolder();
+            string logDir = ASCOM.Wise40.Common.Debugger.LogDirectory();
             Directory.CreateDirectory(logDir);
             _logFile = logDir + "/" + serviceName + ".log";
 

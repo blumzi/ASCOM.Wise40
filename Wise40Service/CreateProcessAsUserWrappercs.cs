@@ -225,7 +225,7 @@ namespace Wise40Watcher
         private static void log(string fmt, params object[] o)
         {
             string msg = string.Format(fmt, o);
-            string dir = ASCOM.Wise40.Common.Debugger.LogFolder();
+            string dir = ASCOM.Wise40.Common.Debugger.LogDirectory();
 
             Directory.CreateDirectory(dir);
             using (var sw = new StreamWriter(dir + "/Wise40Watcher1.log", true))
