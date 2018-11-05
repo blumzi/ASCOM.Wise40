@@ -357,6 +357,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 text = "Not safe";
                 color = unsafeColor;
                 tip = wisesafetooperate.Action("unsafereasons", string.Empty).Replace(',', '\n');
+                tip = tip.Replace('|', '\n');
             }
             else
             {
@@ -390,7 +391,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
             DateTime UTCnow = DateTime.UtcNow;
             if (UTCnow.DayOfYear != _lastLog.DayOfYear)
-                log(string.Format("\n=== {0} ===\n", UTCnow.ToString("dd MMMM, yyyy (UT)")));
+                log(string.Format("\n=== {0} ===\n", UTCnow.ToString("dd MMMM, yyyy")));
             
             log(string.Format("{0} - {1}", UTCnow.ToString("H:mm:ss UT"), msg));
             _lastLog = DateTime.UtcNow;
@@ -415,7 +416,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 listBoxLog.TopIndex = Math.Max(listBoxLog.Items.Count - visibleItems + 1, 0);
             }
 
-            string dir = Common.Debugger.LogFolder();
+            string dir = Common.Debugger.LogDirectory();
             Directory.CreateDirectory(dir);
             using (var sw = new StreamWriter(dir + "/ObservatoryMonitor.log", true))
             {
