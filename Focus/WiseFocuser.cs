@@ -27,6 +27,7 @@ namespace ASCOM.Wise40
             [Flags]
             public enum Flags
             {
+                None = 0,
                 MovingUp = (1 << 0),                   // Movings without a specific target
                 MovingDown = (1 << 1),                 //  ditto
                 MovingToTarget = (1 << 2),             // Trying to reach a specified target
@@ -449,6 +450,10 @@ namespace ASCOM.Wise40
                 throw new InvalidOperationException(string.Format("Too short. Move at least {0} positions down!",
                     motionParameters[Direction.Down].stoppingDistance));
 
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, "Move: at {0}, targetPos: {1}",
+                currentPosition, targetPos);
+            #endregion
             activityMonitor.StartActivity(ActivityMonitor.Activity.Focuser);
             _targetPosition = targetPos;
             StartMovingToTarget();
@@ -494,8 +499,8 @@ namespace ASCOM.Wise40
             }
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugFocuser,
-                "StartMovingToTarget: _target: {0}, _intermediateTarget: {1}, _state: {2}",
-                _targetPosition, _intermediatePosition, _state);
+                "StartMovingToTarget: at {0}, _target: {1}, _intermediateTarget: {2}, _state: {3}",
+                currentPos, _targetPosition, _intermediatePosition, _state);
             #endregion
         }
 
@@ -622,15 +627,16 @@ namespace ASCOM.Wise40
         private void onTimer(object StateObject)
         {
             movementMonitoringTimer.Change(Timeout.Infinite, Timeout.Infinite);
-            const int maxDeltaBetweenReadings = 10;
+            const int maxDeltaBetweenReadings = 20;
 
             State oldState = _state;
             uint reading = encoder.Value;
+            int delta = (int)Math.Abs(reading - _mostRecentPosition);
 
-            if (_mostRecentPosition != 0 && (int)Math.Abs(reading - _mostRecentPosition) > maxDeltaBetweenReadings) {
+            if (_mostRecentPosition != 0 &&  delta > maxDeltaBetweenReadings) {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, "onTimer: suspect reading: {0} (_mostRecentPosition: {1}, maxDeltaBetweenReadings: {2})",
-                    reading, _mostRecentPosition, maxDeltaBetweenReadings);
+                debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, "onTimer: suspect reading: {0} (_mostRecentPosition: {1}, maxDeltaBetweenReadings: {2}, delta: {3})",
+                    reading, _mostRecentPosition, maxDeltaBetweenReadings, delta);
                 #endregion
             }
             _mostRecentPosition = reading;
