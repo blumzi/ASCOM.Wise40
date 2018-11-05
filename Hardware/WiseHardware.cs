@@ -99,5 +99,22 @@ namespace ASCOM.Wise40.Hardware
             {
             }
         }
+
+        public class DaqsException : Exception
+        {
+            public DaqsException()
+            {
+            }
+
+            public DaqsException(string message)
+                : base(message)
+            {
+            }
+
+            public DaqsException(string message, Exception inner)
+                : base(message, inner)
+            {
+            }
+        }
     }
 }
