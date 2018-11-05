@@ -16,10 +16,10 @@ namespace ASCOM.Wise40
 {
     public class WiseDomeShutter : WiseObject
     {
+        private static bool _initialized = false;
         public static WisePin openPin, closePin;
         private static Hardware.Hardware hw = Hardware.Hardware.Instance;
         private Debugger debugger = Debugger.Instance;
-        private static WiseDome wisedome = WiseDome.Instance;
 
         public string _ipAddress;
         public int _lowestValue, _highestValue;
@@ -176,8 +176,6 @@ namespace ASCOM.Wise40
             activityMonitor.StartActivity(ActivityMonitor.Activity.Shutter);
             closePin.SetOn();
             _state = ShutterState.shutterClosing;
-            if (_syncVentWithShutter)
-                wisedome.Vent = false;
             _timer.Change((int) _timeToFullShutterMovement.TotalMilliseconds, Timeout.Infinite);
         }
 
@@ -189,8 +187,6 @@ namespace ASCOM.Wise40
             activityMonitor.StartActivity(ActivityMonitor.Activity.Shutter);
             openPin.SetOn();
             _state = ShutterState.shutterOpening;
-            if (_syncVentWithShutter)
-                wisedome.Vent = true;
             _timer.Change((int) _timeToFullShutterMovement.TotalMilliseconds, Timeout.Infinite);
         }
 
@@ -240,6 +236,9 @@ namespace ASCOM.Wise40
 
         public void init()
         {
+            if (_initialized)
+                return;
+
             try
             {
                 openPin = new WisePin("ShutterOpen", hw.domeboard, DigitalPortType.FirstPortA, 0, DigitalPortDirection.DigitalOut, controlled: true);
@@ -263,6 +262,8 @@ namespace ASCOM.Wise40
             if (_useShutterWebClient && _ipAddress != string.Empty)
                 webClient = new WebClient(_ipAddress);
             shutterPins = new List<WisePin> { openPin, closePin };
+
+            _initialized = true;
         }
 
         public void Dispose()
@@ -285,6 +286,7 @@ namespace ASCOM.Wise40
                     {
                         if (_instance == null)
                             _instance = new WiseDomeShutter();
+                        _instance.init();
                     }
                 }
                 return _instance;

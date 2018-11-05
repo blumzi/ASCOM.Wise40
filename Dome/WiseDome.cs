@@ -18,7 +18,7 @@ namespace ASCOM.Wise40
 
         private Version version = new Version(0, 2);
 
-        private static volatile WiseDome _instance; // Singleton
+        private static WiseDome _instance; // Singleton
         private static object syncObject = new object();
         private static WiseSite wisesite = WiseSite.Instance;
         private static bool _initialized = false;
@@ -970,6 +970,8 @@ namespace ASCOM.Wise40
 
             wisedomeshutter.Stop();
             wisedomeshutter.StartOpening();
+            if (wisedomeshutter._syncVentWithShutter)
+                Vent = true;
         }
 
         public void CloseShutter()
@@ -979,6 +981,8 @@ namespace ASCOM.Wise40
             
             wisedomeshutter.Stop();
             wisedomeshutter.StartClosing();
+            if (wisedomeshutter._syncVentWithShutter)
+                Vent = false;
         }
 
         public void AbortSlew()
