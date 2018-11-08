@@ -332,6 +332,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             bool safe = safety.Contains("safe:false") ? false : true;
             bool intervention = safety.Contains("no-human-intervention:true") ? false : true;
             string text = string.Empty, tip = string.Empty;
+            string reasons = wisesafetooperate.Action("unsafereasons", string.Empty);
             Color color = normalColor;
             
             if (intervention)
@@ -348,15 +349,24 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             }
             else if (!ready)
             {
-                text = "Not ready";
-                color = normalColor;
-                tip = "Not enough safety information yet";
+                if (reasons.Contains("stabilizing"))
+                {
+                    text = "Stabilizing";
+                    color = normalColor;
+                    tip = "Waiting for data to stabilize";
+                }
+                else
+                {
+                    text = "Not ready";
+                    color = normalColor;
+                    tip = "Not enough safety information yet";
+                }
             }
             else if (!safe)
             {
                 text = "Not safe";
                 color = unsafeColor;
-                tip = wisesafetooperate.Action("unsafereasons", string.Empty).Replace(',', '\n');
+                tip = reasons.Replace(',', '\n');
                 tip = tip.Replace('|', '\n');
             }
             else
