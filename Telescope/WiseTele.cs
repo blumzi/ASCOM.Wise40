@@ -177,6 +177,8 @@ namespace ASCOM.Wise40
         System.Threading.Timer trackingTimer;
         const int trackingDomeAdjustmentInterval = 30 * 1000;   // half a minute
 
+        Task shutdownTask;
+
         /// <summary>
         /// Usually two or three tasks are used to perform a slew:
         /// - if the dome is slaved, a dome slewer
@@ -2962,8 +2964,13 @@ namespace ASCOM.Wise40
             }
             else if (action == "telescope:shutdown")  // this is a hidden action, not listed in SupportedActions
             {
-                Task.Run(() => Shutdown());
+                telescopeCT = telescopeCTS.Token;
+                shutdownTask = Task.Run(() => Shutdown(), telescopeCT);
                 return "ok";
+            }
+            else if (action == "telescope:abort-shutdown")
+            {
+                telescopeCTS.Cancel();
             }
             else if (action == "site:get-opmode")
                 return wisesite.OperationalMode.ToString();
