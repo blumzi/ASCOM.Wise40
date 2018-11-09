@@ -279,7 +279,7 @@ namespace ASCOM.Wise40
 
             if (done)
             {
-                _timer.Change(Timeout.Infinite, Timeout.Infinite);
+                Stop();
                 _startOfMovement = DateTime.MinValue;
             }
         }
