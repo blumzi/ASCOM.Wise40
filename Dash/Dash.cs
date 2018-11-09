@@ -125,6 +125,8 @@ namespace Dash
                 annunciatorReadonly.Text = string.Format("Readonly mode ({0})", wisesite.OperationalMode.ToString());
                 annunciatorReadonly.ForeColor = warningColor;
                 annunciatorReadonly.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+
+                pictureBoxStop.Visible = false;
             }
             else
                 annunciatorReadonly.Text = "";
@@ -437,13 +439,15 @@ namespace Dash
             buttonDomePark.Text = wisedome.AtPark ? "Unpark" : "Park";
             buttonVent.Text = wisedome.Vent ? "Close Vent" : "Open Vent";
 
-            if (_lastShutterStatusUpdate == DateTime.MinValue || now.Subtract(_lastShutterStatusUpdate).TotalSeconds >= 2)
+            if (_lastShutterStatusUpdate == DateTime.MinValue || 
+                now.Subtract(_lastShutterStatusUpdate).TotalSeconds >= 5)
             {
                 string stat = domeSlaveDriver.ShutterStatus;
                 Statuser.Severity severity = Statuser.Severity.Normal;
 
                 if (stat.Contains("error"))
                     severity = Statuser.Severity.Error;
+
                 shutterStatus.Show(domeSlaveDriver.ShutterStatus, 0, severity);
                 _lastShutterStatusUpdate = now;
             }

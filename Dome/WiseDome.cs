@@ -56,19 +56,11 @@ namespace ASCOM.Wise40
         private uint _prevTicks;      // for Stuck checks
         private DateTime nextStuckEvent;
 
-        public bool _shutterIsAlive
-        {
-            get
-            {
-                return wisedomeshutter.webClient != null && wisedomeshutter.webClient.Alive;
-            }
-        }
-
         public int ShutterPercent
         {
             get
             {
-                return wisedomeshutter.Percent;
+                return wisedomeshutter.PercentOpen;
             }
         }
 
@@ -959,8 +951,8 @@ namespace ASCOM.Wise40
 
         public void OpenShutter(bool bypassSafety = false)
         {
-            if (Slewing)
-                throw new InvalidOperationException("Dome is slewing!");
+            if (MotorsAreActive)
+                throw new InvalidOperationException("Cannot open shutter while dome is slewing!");
 
             if (!bypassSafety && (wisesite.safeToOperate != null && !wisesite.safeToOperate.IsSafe))
                 throw new InvalidOperationException(wisesite.safeToOperate.CommandString("unsafeReasons", false));
@@ -976,8 +968,8 @@ namespace ASCOM.Wise40
 
         public void CloseShutter()
         {
-            if (Slewing)
-                throw new InvalidOperationException("Dome is slewing!");
+            if (MotorsAreActive)
+                throw new InvalidOperationException("Cannot close shutter while dome is slewing!");
             
             wisedomeshutter.Stop();
             wisedomeshutter.StartClosing();
@@ -1136,24 +1128,12 @@ namespace ASCOM.Wise40
         {
             get
             {
-                string ret = "unknown";
-                int percent = wisedomeshutter.Percent;
+                int percent = wisedomeshutter.PercentOpen;
+                string ret = "Shutter is " + ShutterState.ToString().ToLower().Remove(0, "shutter".Length);
 
-                switch (ShutterState)
-                {
-                    case ShutterState.shutterClosed:
-                        ret = "Shutter is closed";
-                        break;
-                    case ShutterState.shutterClosing:
-                    case ShutterState.shutterOpening:
-                    case ShutterState.shutterOpen:
-                        ret = "Shutter is open";
-                        break;
-                    case ShutterState.shutterError:
-                        ret = "Shutter is in error!";
-                        break;
-                }
-                if (percent != -1)
+                if (percent == -1)
+                    ret += " (no open% reading)";
+                else
                     ret += string.Format(" ({0}% open)", percent);
                 return ret;
             }

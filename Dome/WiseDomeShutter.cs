@@ -33,7 +33,7 @@ namespace ASCOM.Wise40
         private TimeSpan _timeToFullShutterMovement;
 
         private ShutterState _state = ShutterState.shutterClosed; // till we know better ...
-        
+
         private static WiseObject wiseobject = new WiseObject();
         private static TimeSpan _simulatedAge = new TimeSpan(0, 0, 3);
 
@@ -43,90 +43,76 @@ namespace ASCOM.Wise40
 
         private static ActivityMonitor activityMonitor = ActivityMonitor.Instance;
 
+        private DateTime _startOfMovement;
+
         public class WebClient
         {
-            private static System.Threading.Timer _timer;
-            private static string _url;
-            private static DateTime _lastReading = DateTime.MinValue;
+            private static System.Threading.Timer _periodicWebReadTimer;
+            private static string _uri;
+            private static DateTime _lastReadingTime = DateTime.MinValue;
             private static HttpClient _client;
-            private static int _value;
+            private static int _lastReading;
             private static Debugger debugger = Debugger.Instance;
-            private static TimeSpan _maxAge = new TimeSpan(0, 0, 60);
+            private static TimeSpan _maxAge = new TimeSpan(0, 0, 30);
             private static object _lock = new object();
-
-            public TimeSpan Age
-            {
-                get
-                {
-                    return DateTime.Now.Subtract(_lastReading);
-                }
-            }
-
-            public bool Alive
-            {
-                get
-                {
-                    return Age <= _maxAge;
-                }
-            }
-
-            public int Value
-            {
-                get
-                {
-                    if (! Alive)
-                        return -1;
-                    return _value;
-                }
-            }
 
             public WebClient(string address)
             {
                 _client = new HttpClient();
-                _url = String.Format("http://{0}/encoder", address);
-                Task.Run(() =>
-                {
-                    _timer = new System.Threading.Timer(PeriodicallyReadShutterPosition);
-                    _timer.Change(0, 5000);
-                });
+                _client.Timeout = TimeSpan.FromSeconds(30);
+                _client.DefaultRequestHeaders.Accept.Add(
+                    new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/html"));
+                _client.DefaultRequestHeaders.ConnectionClose = true;
+                _uri = String.Format("http://{0}/range", address);
+
+                _periodicWebReadTimer = new System.Threading.Timer(new TimerCallback(PeriodicReader));
+                _periodicWebReadTimer.Change(1000, 5000);
             }
 
-            private static void PeriodicallyReadShutterPosition(object state)
+            public int ShutterRange
             {
-                lock (_lock)
+                get
                 {
-                    int res = GetShutterPosition().GetAwaiter().GetResult();
-                    if (res != -1)
-                    {
-                        _lastReading = DateTime.Now;
-                        _value = res;
-                    }
+                    if (DateTime.Now.Subtract(_lastReadingTime).TotalSeconds <= _maxAge.TotalSeconds)
+                        return _lastReading;
+                    return -1;
                 }
             }
 
-            public static async Task<int> GetShutterPosition()
+            private static void PeriodicReader(object state)
+            {
+                int res = GetWebShutterPosition().GetAwaiter().GetResult();
+                if (res > 0)
+                {
+                    _lastReadingTime = DateTime.Now;
+                    _lastReading = res;
+                }
+            }
+
+            public static async Task<int> GetWebShutterPosition()
             {
                 int ret = -7;
-                
+
                 try
                 {
-                    var result = await _client.GetAsync(_url);
-                    if (result.IsSuccessStatusCode)
+                    var response = await _client.GetAsync(_uri);
+
+                    //will throw an exception if not successful
+                    response.EnsureSuccessStatusCode();
+
+                    string prefix = "<!DOCTYPE HTML>\r\n<html>";
+                    string suffix = "</html>\r\n";
+
+                    string content = await response.Content.ReadAsStringAsync();
+                    if (content.StartsWith(prefix) && content.EndsWith(suffix))
                     {
-                        string prefix = "<!DOCTYPE HTML>\r\n<html>";
-                        string suffix = "</html>\r\n";
 
-                        string reply = await result.Content.ReadAsStringAsync();
-                        if (reply.StartsWith(prefix) && reply.EndsWith(suffix))
-                        {
-
-                            reply = reply.Remove(0, prefix.Length);
-                            reply = reply.Remove(reply.IndexOf(suffix[0]));
-                            ret = Convert.ToInt32(reply);
-                            #region debug
-                            debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "GetShutterPosition: got {0}", ret);
-                            #endregion
-                        }
+                        content = content.Remove(0, prefix.Length);
+                        content = content.Remove(content.IndexOf(suffix[0]));
+                        ret = Convert.ToInt32(content);
+                        #region debug
+                        debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "GetShutterPosition: got {0}", ret);
+                        #endregion
                     }
                 }
                 catch (Exception ex)
@@ -170,24 +156,52 @@ namespace ASCOM.Wise40
 
         public void StartClosing()
         {
+            if (CanUseWebShutter)
+            {
+                int percent = PercentOpen;
+
+                if (percent == 0)
+                {
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "StartClosing: shutter at {0}%, doing nothing", percent);
+                    #endregion debug
+                    return;
+                }
+            }
+
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "StartClosing: started closing the shutter");
             #endregion debug
             activityMonitor.StartActivity(ActivityMonitor.Activity.Shutter);
             closePin.SetOn();
+            _startOfMovement = DateTime.Now;
             _state = ShutterState.shutterClosing;
-            _timer.Change((int) _timeToFullShutterMovement.TotalMilliseconds, Timeout.Infinite);
+            _timer.Change(0, 1000);
         }
 
         public void StartOpening()
         {
+            if (CanUseWebShutter)
+            {
+                int percent = PercentOpen;
+
+                if (percent == 100)
+                {
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "StartOpening: shutter at {0}%, doing nothing", percent);
+                    #endregion debug
+                    return;
+                }
+            }
+
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "StartOpening: started opening the shutter");
             #endregion debug
             activityMonitor.StartActivity(ActivityMonitor.Activity.Shutter);
             openPin.SetOn();
+            _startOfMovement = DateTime.Now;
             _state = ShutterState.shutterOpening;
-            _timer.Change((int) _timeToFullShutterMovement.TotalMilliseconds, Timeout.Infinite);
+            _timer.Change(0, 1000);
         }
 
         public ShutterState State
@@ -196,21 +210,19 @@ namespace ASCOM.Wise40
             {
                 if (openPin.isOn)
                     return ShutterState.shutterOpening;
-                else if (closePin.isOn)
+
+                if (closePin.isOn)
                     return ShutterState.shutterClosing;
-                else if (!CanUseWebShutter)
+
+                if (!CanUseWebShutter)
                     return _state;
 
                 // Both motors are OFF and we can use the webShutter
-                int percentOpen = -1;
-                if ((percentOpen = Percent) == -1)
+                int percentOpen;
+                if ((percentOpen = PercentOpen) == -1)
                     return _state;
-                else if (percentOpen <= 2)
-                    return ShutterState.shutterClosed;
-                else if (percentOpen >= 98)
-                    return ShutterState.shutterOpen;
-                else
-                    return _state;
+
+                return (percentOpen == 0) ? ShutterState.shutterClosed : ShutterState.shutterOpen;
             }
 
             set
@@ -220,18 +232,56 @@ namespace ASCOM.Wise40
         }
 
         /// <summary>
-        /// Called after time-to-{open,close} passes.
+        /// Called every second after StartOpening or StartClosing.
+        /// Stops the timer if shutter is open/closed.
         /// </summary>
         /// <param name="state"></param>
         private void onTimer(object sender)
         {
-            ShutterState prev = State;
-            if (IsMoving)
-                Stop();
-            if (prev == ShutterState.shutterClosing)
-                State = ShutterState.shutterClosed;
-            else if (prev == ShutterState.shutterOpening)
-                State = ShutterState.shutterOpen;
+            DateTime now = DateTime.Now;
+            ShutterState prevState = State;
+            bool done = false;
+            int percent = -1;
+
+            if (CanUseWebShutter)
+                percent = PercentOpen;
+
+            if (percent != -1)
+            {
+                if (prevState == ShutterState.shutterOpening && percent == 100)
+                {
+                    State = ShutterState.shutterOpen;
+                    done = true;
+                }
+
+                if (prevState == ShutterState.shutterClosing && percent == 0)
+                {
+                    State = ShutterState.shutterClosed;
+                    done = true;
+                }
+            }
+            else
+            {
+                if (prevState == ShutterState.shutterClosing &&
+                        (now.Subtract(_startOfMovement).TotalSeconds >= _timeToFullShutterMovement.TotalSeconds))
+                {
+                    State = ShutterState.shutterClosed;
+                    done = true;
+                }
+
+                if (prevState == ShutterState.shutterOpening &&
+                        (now.Subtract(_startOfMovement).TotalSeconds >= _timeToFullShutterMovement.TotalSeconds))
+                {
+                    State = ShutterState.shutterOpen;
+                    done = true;
+                }
+            }
+
+            if (done)
+            {
+                _timer.Change(Timeout.Infinite, Timeout.Infinite);
+                _startOfMovement = DateTime.MinValue;
+            }
         }
 
         public void init()
@@ -249,7 +299,6 @@ namespace ASCOM.Wise40
                 debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "WiseDomeShutter.init: Exception: {0}.", ex.Message);
             }
 
-            _state = ShutterState.shutterClosed;
             _timer = new System.Threading.Timer(new TimerCallback(onTimer));
             _timeToFullShutterMovement = Simulated ? TimeSpan.FromSeconds(10) : TimeSpan.FromSeconds(25);
             try
@@ -259,9 +308,12 @@ namespace ASCOM.Wise40
             }
             catch (Hardware.Hardware.MaintenanceModeException) { }
 
+            ReadProfile();
             if (_useShutterWebClient && _ipAddress != string.Empty)
                 webClient = new WebClient(_ipAddress);
             shutterPins = new List<WisePin> { openPin, closePin };
+
+            _state = ShutterState.shutterClosed;
 
             _initialized = true;
         }
@@ -340,37 +392,22 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return false;
-                //return webClient != null && _lowestValue != -1 && _highestValue != -1;
+                return webClient != null && _lowestValue != -1 && _highestValue != -1;
             }
         }
 
-        public TimeSpan Age
-        {
-            get
-            {
-                if (Simulated)
-                    return _simulatedAge;
-
-                if (CanUseWebShutter)
-                    return webClient.Age;
-
-                return TimeSpan.Zero;
-            }
-        }
-
-        public int Percent
+        public int PercentOpen
         {
             get
             {
                 if (!CanUseWebShutter)
                     return -1;
 
-                int lastReadValue = webClient.Value;
-                if (lastReadValue == -1)
+                int currentRange = webClient.ShutterRange;
+                if (currentRange == -1)
                     return -1;
 
-                return (int)((lastReadValue - _lowestValue) * 100.0) / ((_highestValue - _lowestValue));
+                return (int)((currentRange - _lowestValue) * 100.0) / ((_highestValue - _lowestValue));
             }
         }
     }
