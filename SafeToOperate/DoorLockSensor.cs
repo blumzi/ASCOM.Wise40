@@ -41,12 +41,14 @@ namespace ASCOM.Wise40SafeToOperate
         {
             List<string> reasons = new List<string>();
 
-            reasons.Add(string.Format("debugging-{0}", _debugging));
-            reasons.Add(string.Format("_isSafe-{0}", _isSafe));
-            reasons.Add(string.Format("DoorIsSafe-{0}", DoorIsSafe));
-            reasons.Add(string.Format("BypassIsSafe-{0}", BypassIsSafe));
-            reasons.Add(string.Format("doorCounter-{0}", _doorCounter));
-            reasons.Add(string.Format("bypassCounter-{0}", _bypassCounter));
+            reasons.Add(string.Format("Door:Debugging-{0}", _debugging));
+            reasons.Add(string.Format("Door:_isSafe-{0}", _isSafe));
+            reasons.Add(string.Format("Lock:Pin-{0}", DoorPin.isOn ? 1 : 0));
+            reasons.Add(string.Format("Lock:IsSafe-{0}", DoorIsSafe));
+            reasons.Add(string.Format("Lock:Counter-{0}", _doorCounter));
+            reasons.Add(string.Format("Bypass:Pin-{0}", BypassPin.isOn ? 1 : 0));
+            reasons.Add(string.Format("Bypass:IsSafe-{0}", BypassIsSafe));
+            reasons.Add(string.Format("Bypass:Counter-{0}", _bypassCounter));
             return string.Join(", ", reasons);
 
             //return "Door unlocked and not bypassed";
