@@ -552,7 +552,10 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                     {
                         try
                         {
-                            wisetelescope.Action("telescope:shutdown", "");
+                            if (wisetelescope.Action("telescope:shutdown", "") != "ok")
+                                throw new OperationCanceledException("Action(\"telescope:shutdown\") did not reply with \"ok\"");
+
+                            Log("Action(\"telesope:shutdown\") was activated");
                         }
                         catch (Exception ex)
                         {
@@ -561,6 +564,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                     }, CT);
 
                     ShutterState shutterState;
+                    string activities;
                     do
                     {
                         if (CT.IsCancellationRequested)
@@ -580,6 +584,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                         dec = Angle.FromDegrees(wisetelescope.Declination, Angle.Type.Dec);
                         az = DomeAzimuth;
                         shutterState = wisedome.ShutterStatus;
+                        activities = wisetelescope.Action("telescope:get-activities", "");
 
                         Log(string.Format("    Telescope at {0} {1}, dome at {2}, shutter {3} ...",
                             ra.ToNiceString(),
@@ -587,7 +592,8 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                             az.ToNiceString(),
                             shutterState.ToString().ToLower().Remove(0, "shutter".Length)),
                             _simulated ? 1 : 10);
-                    } while (! (wisetelescope.AtPark && (shutterState == ShutterState.shutterClosed)));
+                    } while (activities.Contains("ShuttingDown"));
+
                     Log("   Wise40 is parked.");
                 }
 
@@ -633,6 +639,9 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                     Log("Shutdown aborted by operator");
                 else
                     Log(string.Format("Exception occurred:\n{0}, aborting shutdown!", ex.Message));
+
+                Log("Action(telescope:abort-shutdown)");
+                wisetelescope.Action("telescope:abort-shutdown", "");
             }
             ShuttingDown = false;
         }

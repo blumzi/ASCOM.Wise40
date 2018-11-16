@@ -1557,7 +1557,7 @@ namespace ASCOM.Wise40
             }
         }
 
-        public void Shutdown()
+        private void doShutdown()
         {
             string status = wisesafetooperate.Action("status", "");
             bool rememberToCancelSafetyBypass = false;
@@ -1571,23 +1571,26 @@ namespace ASCOM.Wise40
 
             activityMonitor.StartActivity(ActivityMonitor.Activity.ShuttingDown);
 
-            Task.Run(() =>
+            if (domeSlaveDriver.ShutterState != ShutterState.shutterClosed)
             {
-                if (domeSlaveDriver.ShutterStatus != "Shutter is closed")
-                {
-                    domeSlaveDriver.CloseShutter();
-                    while (domeSlaveDriver.ShutterStatus != "Shutter is closed")
-                        Thread.Sleep(1000);
-                }
+                domeSlaveDriver.CloseShutter();
+                while (domeSlaveDriver.ShutterState != ShutterState.shutterClosed)
+                    Thread.Sleep(1000);
+            }
 
-            }).ContinueWith((park) => {
-                Park();
-            }, TaskContinuationOptions.ExecuteSynchronously).ContinueWith((afterPark) => {
-                if (rememberToCancelSafetyBypass)
-                    wisesafetooperate.Action("end-bypass", "temporary");
-                wisesafetooperate.Action("end-shutdown", "");
-                activityMonitor.EndActivity(ActivityMonitor.Activity.ShuttingDown);
-            }, TaskContinuationOptions.ExecuteSynchronously);
+            Park();
+
+            if (rememberToCancelSafetyBypass)
+                wisesafetooperate.Action("end-bypass", "temporary");
+            wisesafetooperate.Action("end-shutdown", "");
+
+            activityMonitor.EndActivity(ActivityMonitor.Activity.ShuttingDown);
+        }
+
+        public void Shutdown()
+        {
+
+            Task.Run(() => doShutdown());
         }
 
         //
@@ -2970,7 +2973,9 @@ namespace ASCOM.Wise40
             }
             else if (action == "telescope:abort-shutdown")
             {
-                telescopeCTS.Cancel();
+                AbortSlew();
+                activityMonitor.EndActivity(ActivityMonitor.Activity.ShuttingDown);
+                return "ok";
             }
             else if (action == "site:get-opmode")
                 return wisesite.OperationalMode.ToString();
