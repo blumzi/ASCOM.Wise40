@@ -442,13 +442,22 @@ namespace Dash
             if (_lastShutterStatusUpdate == DateTime.MinValue || 
                 now.Subtract(_lastShutterStatusUpdate).TotalSeconds >= 5)
             {
-                string stat = domeSlaveDriver.ShutterStatus;
+                string stat = domeSlaveDriver.ShutterStatusString;
                 Statuser.Severity severity = Statuser.Severity.Normal;
+                string msg = "";
 
                 if (stat.Contains("error"))
+                {
+                    msg = "Shutter error";
                     severity = Statuser.Severity.Error;
+                }
+                else
+                {
+                    msg = "Shutter is " + stat;
+                    severity = Statuser.Severity.Normal;
+                }
 
-                shutterStatus.Show(domeSlaveDriver.ShutterStatus, 0, severity);
+                shutterStatus.Show(msg, 0, severity);
                 _lastShutterStatusUpdate = now;
             }
 

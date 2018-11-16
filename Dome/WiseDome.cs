@@ -1124,17 +1124,16 @@ namespace ASCOM.Wise40
             }
         }
 
-        public string ShutterStatus
+        public string ShutterStatusString
         {
             get
             {
                 int percent = wisedomeshutter.PercentOpen;
-                string ret = "Shutter is " + ShutterState.ToString().ToLower().Remove(0, "shutter".Length);
+                string ret = ShutterState.ToString().ToLower().Remove(0, "shutter".Length);
 
-                if (percent == -1)
-                    ret += " (no open% reading)";
-                else
+                if (percent != -1)
                     ret += string.Format(" ({0}% open)", percent);
+
                 return ret;
             }
         }
