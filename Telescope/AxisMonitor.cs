@@ -14,6 +14,19 @@ namespace ASCOM.Wise40
 {
     public abstract class AxisMonitor : WiseObject, IConnectable
     {
+        /// <summary>
+        /// An AxisMonitor supplies the following functionality:
+        /// 
+        ///   1. Can tell whether its axis is moving or stationary.
+        ///   
+        ///   2. Rejects spurious encoder readings.  We get this quite a lot, specially on the Dec axis.
+        ///      The encoders have parallel outputs (i.e. one wire per bit).  The longer the cables are and
+        ///      the more motors are in their vecinity, the more flipped bits occur.  The cables from the Dec 
+        ///      encoders are longer and pass near more motors within the telescopes body.
+        ///      
+        ///   3. Provides the last-known-as-good coordinate(s) for its axis
+        ///   
+        /// </summary>
         public struct AxisPosition
         {
             public double radians;
@@ -27,13 +40,16 @@ namespace ASCOM.Wise40
         public WiseTele wisetele = WiseTele.Instance;
         public bool _connected = false;
         public Debugger debugger = Debugger.Instance;
-        public bool _whileTracking = false;
-        public WiseVirtualMotor trackingMotor = WiseTele.Instance.TrackingMotor;
         public WiseSite wisesite = WiseSite.Instance;
         public static Astrometry.AstroUtils.AstroUtils astroutils;
 
         public static readonly int _samplingFrequency = 20; // samples per second
         public const double simulatedDelta = 0.4;
+
+        public FixedSizedQueue<AxisPosition> _samples;
+
+        protected abstract double MinRadians { get; }       // Minimal radians reading
+        protected abstract double MaxRadians { get; }       // Maximal radians reading
 
         /// <summary>
         /// A background Task that checks whether the telescope axis is moving
@@ -75,7 +91,7 @@ namespace ASCOM.Wise40
         /// <returns>acceleration in arcsec/sec-squared </returns>
         public double Acceleration()
         {
-            AxisPositionSample[] arr = _samples.ToArray();
+            AxisPosition[] arr = _samples.ToArray();
             int last = arr.Count() - 1;
 
             if (arr.Count() < 3)
@@ -104,50 +120,19 @@ namespace ASCOM.Wise40
         }
 
         protected abstract void SampleAxisMovement(object StateObject);
-        //private void SampleAxisMovement(object StateObject)
-        //{
-        //    bool tracking = trackingMotor.isOn;
 
-        //    if (_axis == TelescopeAxes.axisPrimary)
-        //    {
-        //        if (tracking != _whileTracking)
-        //        {
-        //            // The tracking state has changed while we're sampling: discard previous
-        //            //  samples and start a new sequence
-        //            _whileTracking = tracking;
-        //            _samples = new FixedSizedQueue<AxisPositionSample>(nSamples);
-        //        }
-        //    }
-
-        //    double value = (_axis == TelescopeAxes.axisPrimary) ?
-        //            (tracking ? wisetele.RightAscension : wisetele.HAEncoder.Value) :
-        //            wisetele.DecEncoder.Angle.Radians;
-
-        //    if (Double.IsNaN(_previousValue))
-        //    {
-        //        _previousValue = value;
-        //        return;
-        //    }
-
-        //    double d = Math.Abs(value - _previousValue);
-        //    if (Double.IsNaN(d))
-        //        return;
-
-        //    AxisPositionSample sample = new AxisPositionSample { value = d };
-        //    double encoderValue = (_axis == TelescopeAxes.axisPrimary) ? wisetele.HAEncoder.Value : wisetele.DecEncoder.Value;
-        //    double encoderDelta = double.NaN;
-        //    if (!Double.IsNaN(_previousEncoderValue))
-        //        encoderDelta = encoderValue - _previousEncoderValue;
-
-        //    #region debug
-        //    debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-        //        "AxisMonitor:SampleAxisMovement:{0}: value: {1}, _previousValue: {2}, enqueueing: {3:F15}, active: {4}, encoder: {5}, encoderDelta: {6}",
-        //        _axis, value, _previousValue, d, ActiveMotors(_axis), encoderValue, encoderDelta);
-        //    #endregion
-        //    _samples.Enqueue(sample);
-        //    _previousValue = value;
-        //    _previousEncoderValue = encoderValue;
-        //}
+        /// <summary>
+        /// Tests whether an encoder reading (transformed into radians) is acceptable.  This allows 
+        /// rejecting spurious encoder readings.
+        /// 
+        /// It should be a  multi-tiered process:
+        ///  1. Is it between the highest and lowest reading the respective axis can produce
+        ///  2. Is it reasonably close to the previous reading (if one is available)
+        ///     - must be less than the max delta at the current speed (or at least at Slew speed)
+        /// </summary>
+        /// <param name="rad"></param>
+        /// <returns></returns>
+        protected abstract bool Acceptable(double rad);
 
         public void AxisMovementChecker()
         {
@@ -219,9 +204,11 @@ namespace ASCOM.Wise40
 
     public class PrimaryAxisMonitor : AxisMonitor
     {
+        //public bool _whileTracking = false;
+        //public WiseVirtualMotor trackingMotor = WiseTele.Instance.TrackingMotor;
+
         public const double raEpsilon = 1e-5;        // epsilon for primaryMonitor, while tracking
         public const double haEpsilon = 7.0;         // epsilon for primaryMonitor, while NOT tracking
-        public const double _maxPrimaryDeltaRadiansAtSlewRate = 0.0;  // maximum difference between two consequtive encoder readings (radians)
 
         public static FixedSizedQueue<double> _raDeltas = new FixedSizedQueue<double>(nSamples);
         public static FixedSizedQueue<double> _haDeltas = new FixedSizedQueue<double>(nSamples);
@@ -235,7 +222,12 @@ namespace ASCOM.Wise40
 
         protected override void SampleAxisMovement(object StateObject)
         {
-            _currPosition.radians = _encoder.Angle.Radians;
+            double reading;
+
+            while (!Acceptable(reading = _encoder.Angle.Radians))
+                ;
+
+            _currPosition.radians = reading;
 
             if (Double.IsNaN(_prevPosition.radians))
             {
@@ -245,16 +237,6 @@ namespace ASCOM.Wise40
                 _prevPosition.radians = _currPosition.radians;
                 _prevHourAngle = currentAngle.Hours;
                 _prevRightAscension = (wisesite.LocalSiderealTime - currentAngle).Hours;
-                return;
-            }
-
-            if (Math.Abs(_currPosition.radians - _prevPosition.radians) < _maxPrimaryDeltaRadiansAtSlewRate)
-            {
-                // Discard non-reasonable encoder readings
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}: Rejected encoder value {1} radians !!! ({2} - {3} > {4})",
-                    Name, _currPosition.radians, _currPosition.radians, _prevPosition.radians, _maxPrimaryDeltaRadiansAtSlewRate);
-                #endregion
                 return;
             }
 
@@ -350,7 +332,7 @@ namespace ASCOM.Wise40
 
         public override double Velocity()
         {
-            AxisPositionSample[] samples = _samples.ToArray();
+            AxisPosition[] samples = _samples.ToArray();
             int last = samples.Count() - 1;
 
             if (samples.Count() < 2)
@@ -361,6 +343,46 @@ namespace ASCOM.Wise40
 
             return  a.Hours;
         }
+
+        protected override bool Acceptable(double rad)
+        {
+            if (rad < MinRadians || rad > MaxRadians)
+            {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}:Acceptable({1}): Rejected (out-of-bounds [{2} .. {3}])", Name, rad, MinRadians, MaxRadians);
+                #endregion
+                return false;
+            }
+
+            const double _maxDeltaRadiansAtSlewRate = 0.5;
+
+            if (!Double.IsNaN(_prevPosition.radians) && Math.Abs(_currPosition.radians - _prevPosition.radians) > _maxDeltaRadiansAtSlewRate)
+            {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}:Acceptable({1}): Rejected ( Abs({1} - {2}) > {3}) )",
+                    Name, rad, _prevPosition.radians, _maxDeltaRadiansAtSlewRate);
+                #endregion
+                return false;
+            }
+
+            return true;
+        }
+
+        protected override double MaxRadians
+        {
+            get
+            {
+                throw new System.NotImplementedException(); 
+            }
+        }
+
+        protected override double MinRadians
+        {
+            get
+            {
+                throw new System.NotImplementedException();
+            }
+        }
     }
 
     public class SecondaryAxisMonitor : AxisMonitor
@@ -368,9 +390,7 @@ namespace ASCOM.Wise40
         public static FixedSizedQueue<double> _decDeltas = new FixedSizedQueue<double>(nSamples);
 
         private double _declination = double.NaN, _prevDeclination = double.NaN;
-        public const double decEpsilon = 2e-6;       // epsilon for secondaryMonitor
         public FixedSizedQueue<double> _decSamples = new FixedSizedQueue<double>(nSamples);
-        public const double _maxSecondaryDeltaRadiansAtSlewRate = 0.0;  // maximum difference between two consequtive encoder readings (radians)
 
         public SecondaryAxisMonitor() : base(TelescopeAxes.axisSecondary) { }
 
@@ -378,7 +398,12 @@ namespace ASCOM.Wise40
 
         protected override void SampleAxisMovement(object StateObject)
         {
-            _currPosition.radians = _encoder.Angle.Radians;
+            double reading;
+
+            while (!Acceptable(reading = _encoder.Angle.Radians))
+                ;
+
+            _currPosition.radians = reading;
 
             if (Double.IsNaN(_prevPosition.radians))
             {
@@ -388,15 +413,6 @@ namespace ASCOM.Wise40
                 return;
             }
 
-            if (Math.Abs(_currPosition.radians - _prevPosition.radians) < _maxSecondaryDeltaRadiansAtSlewRate)
-            {
-                // Discard non-reasonable encoder readings
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}: Rejected encoder value {1} radians !!! ({2} - {3} > {4})",
-                    Name, _currPosition.radians, _currPosition.radians, _prevPosition.radians, _maxSecondaryDeltaRadiansAtSlewRate);
-                #endregion
-                return;
-            }
             _declination = Angle.FromRadians(_currPosition.radians).Degrees;
             _samples.Enqueue(_currPosition);
 
@@ -416,7 +432,6 @@ namespace ASCOM.Wise40
         {
             get
             {
-                double max = double.MinValue;
                 double[] arr = _decDeltas.ToArray();
 
                 if (arr.Count() < _samples.MaxSize)
@@ -429,21 +444,18 @@ namespace ASCOM.Wise40
                 }
 
                 foreach (double d in arr)
-                    if (d > max)
-                        max = d;
-
-                double epsilon = decEpsilon;
-
-                bool ret = max > epsilon;
+                    if (d != 0.0)
+                    {
+                        #region debug
+                        debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}:IsMoving: true", Name);
+                        #endregion
+                        return true;
+                    }
 
                 #region debug
-                string deb = string.Format("{0}:IsMoving: max: {1:F15}, epsilon: {2:F15}, ret: {3}, active: {4}",
-                    Name, max, epsilon, ret, ActiveMotors(_axis)) + "[";
-                foreach (double d in arr)
-                    deb += " " + d.ToString();
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, deb + " ]");
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}:IsMoving: false", Name);
                 #endregion
-                return ret;
+                return false;
             }
         }
 
@@ -457,7 +469,7 @@ namespace ASCOM.Wise40
 
         public override double Velocity()
         {
-            AxisPositionSample[] samples = _samples.ToArray();
+            AxisPosition[] samples = _samples.ToArray();
             int last = samples.Count() - 1;
 
             if (samples.Count() < 2)
@@ -469,125 +481,45 @@ namespace ASCOM.Wise40
             return a.Degrees;
         }
 
-        public override double Velocity()
+        protected override bool Acceptable(double rad)
         {
-            AxisPosition[] samples = _positions.ToArray();
-            int last = samples.Count() - 1;
 
-            if (samples.Count() < 2)
-                return double.NaN;
-
-            double deltaRadians = Math.Abs(samples[last].radians - samples[last - 1].radians);
-            Angle a = Angle.FromRadians(deltaRadians / deltaT, Angle.Type.RA);
-
-            return  a.Hours;
-        }
-    }
-
-    public class SecondaryAxisMonitor : AxisMonitor
-    {
-        public static FixedSizedQueue<double> _decDeltas = new FixedSizedQueue<double>(nSamples);
-
-        private double _declination = double.NaN, _prevDeclination = double.NaN;
-        public const double decEpsilon = 2e-6;       // epsilon for secondaryMonitor
-        public FixedSizedQueue<double> _decSamples = new FixedSizedQueue<double>(nSamples);
-        public const double _maxSecondaryDeltaRadiansAtSlewRate = 0.0;  // maximum difference between two consequtive encoder readings (radians)
-
-        public SecondaryAxisMonitor() : base(TelescopeAxes.axisSecondary) { }
-
-        private WiseDecEncoder _encoder = WiseTele.Instance.DecEncoder;
-
-        public override void SampleAxisMovement(object StateObject)
-        {
-            _currPosition.radians = _encoder.Angle.Radians;
-
-            if (Double.IsNaN(_prevPosition.radians))
+            if (rad < MinRadians || rad > MaxRadians)
             {
-                // We don't still have a _prevPosition to check against
-                _prevPosition.radians = _currPosition.radians;
-                _prevDeclination = Angle.FromRadians(_currPosition.radians).Degrees;
-                return;
-            }
-
-            if (Math.Abs(_currPosition.radians - _prevPosition.radians) < _maxSecondaryDeltaRadiansAtSlewRate)
-            {
-                // Discard non-reasonable encoder readings
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}: Rejected encoder value {1} radians !!! ({2} - {3} > {4})",
-                    Name, _currPosition.radians, _currPosition.radians, _prevPosition.radians, _maxSecondaryDeltaRadiansAtSlewRate);
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}:Acceptable({1}): Rejected (out-of-bounds: [{2} .. {3}])", Name, rad, MinRadians, MaxRadians);
                 #endregion
-                return;
+                return false;
             }
-            _declination = Angle.FromRadians(_currPosition.radians).Degrees;
-            _positions.Enqueue(_currPosition);
 
-            double delta = Math.Abs(_declination - _prevDeclination);
-            _decDeltas.Enqueue(delta);
+            const double _maxDeltaRadiansAtSlewRate = 0.5;  // maximum difference between two consequtive encoder readings (radians)
 
-            #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}:SampleAxisMovement: _currPosition: {1}, _prevPosition: {2}, delta: {3}, active motors: {4}",
-                Name, _currPosition.radians, _prevPosition.radians, delta, ActiveMotors(_axis));
-            #endregion
+            if (!Double.IsNaN(_prevPosition.radians) && Math.Abs(_currPosition.radians - _prevPosition.radians) > _maxDeltaRadiansAtSlewRate)
+            {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}:Acceptable({1}): Rejected (Abs({2} - {3}) > {4})",
+                    Name, rad, rad, _prevPosition.radians, _maxDeltaRadiansAtSlewRate);
+                #endregion
+                return false;
+            }
 
-            _prevPosition.radians = _currPosition.radians;
-            _prevDeclination = _declination;
+            return true;
         }
 
-        public override bool IsMoving
+        protected override double MaxRadians
         {
             get
             {
-                double max = double.MinValue;
-                double[] arr = _decDeltas.ToArray();
-
-                if (arr.Count() < _positions.MaxSize)
-                {
-                    #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}:IsMoving: Not enough samples {1} < {2} = true",
-                        Name, arr.Count(), _positions.MaxSize);
-                    #endregion
-                    return true;    // not enough samples
-                }
-
-                foreach (double d in arr)
-                    if (d > max)
-                        max = d;
-
-                double epsilon = decEpsilon;
-
-                bool ret = max > epsilon;
-
-                #region debug
-                string deb = string.Format("{0}:IsMoving: max: {1:F15}, epsilon: {2:F15}, ret: {3}, active: {4}",
-                    Name, max, epsilon, ret, ActiveMotors(_axis)) + "[";
-                foreach (double d in arr)
-                    deb += " " + d.ToString();
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, deb + " ]");
-                #endregion
-                return ret;
+                throw new System.NotImplementedException();
             }
         }
 
-        public Angle Declination
+        protected override double MinRadians
         {
             get
             {
-                return Angle.FromDegrees(_declination);
+                throw new System.NotImplementedException();
             }
-        }
-
-        public override double Velocity()
-        {
-            AxisPosition[] samples = _positions.ToArray();
-            int last = samples.Count() - 1;
-
-            if (samples.Count() < 2)
-                return double.NaN;
-
-            double deltaRadians = Math.Abs(samples[last].radians - samples[last - 1].radians);
-            Angle a = Angle.FromRadians(deltaRadians / deltaT, Angle.Type.Dec);
-
-            return a.Degrees;
         }
     }
 }
