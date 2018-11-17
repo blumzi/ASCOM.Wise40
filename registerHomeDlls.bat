@@ -16,7 +16,7 @@ cd "%top%\Focus\bin\x86\Debug"
 c:\Windows\Microsoft.NET\Framework\v4.0.30319\regasm /codebase /tlb "%top%\Focus\bin\x86\Debug\ASCOM.Wise40.Focuser.dll"
 
 cd "%top%\SafeToOperate\bin\x86\Debug"
-c:\Windows\Microsoft.NET\Framework\v4.0.30319\regasm /codebase /tlb "%top%\SafeToOperate\bin\x86\Debug\ASCOM.Wise40SafeToOperate.SafetyMonitor.dll"
+c:\Windows\Microsoft.NET\Framework\v4.0.30319\regasm /codebase /tlb "%top%\SafeToOperate\bin\Debug\ASCOM.Wise40SafeToOperate.SafetyMonitor.dll"
 
 cd "%top%\Telescope\bin\x86\Debug"
 c:\Windows\Microsoft.NET\Framework\v4.0.30319\regasm /codebase /tlb "%top%\Telescope\bin\x86\Debug\ASCOM.Wise40.Telescope.dll"
