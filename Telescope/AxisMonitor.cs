@@ -23,7 +23,7 @@ namespace ASCOM.Wise40
         private double _previousValue = double.NaN;
         private double _previousEncoderValue = double.NaN;
         private FixedSizedQueue<AxisPositionSample> _samples = new FixedSizedQueue<AxisPositionSample>(nSamples);
-        private TelescopeAxes _axis, _other_axis;
+        private TelescopeAxes _axis;
         private WiseTele wisetele = WiseTele.Instance;
         private bool _connected = false;
         private Debugger debugger = Debugger.Instance;
@@ -50,8 +50,6 @@ namespace ASCOM.Wise40
         public AxisMonitor(TelescopeAxes axis)
         {
             _axis = axis;
-            _other_axis = (_axis == TelescopeAxes.axisPrimary) ?
-                TelescopeAxes.axisSecondary : TelescopeAxes.axisPrimary;
         }
 
         public bool IsMoving
@@ -239,6 +237,40 @@ namespace ASCOM.Wise40
                     StopMovementChecker();
 
                 _connected = value;
+            }
+        }
+    }
+
+    public class PrimaryAxisMonitor: AxisMonitor
+    {
+        PrimaryAxisMonitor() : base(TelescopeAxes.axisPrimary) { }
+
+        public double RightAscension
+        {
+            get
+            {
+
+            }
+        }
+
+        public double HourAngle
+        {
+            get
+            {
+
+            }
+        }
+    }
+
+    public class SecondaryAxisMonitor: AxisMonitor
+    {
+        SecondaryAxisMonitor() : base(TelescopeAxes.axisSecondary) { }
+
+        public double Declination
+        {
+            get
+            {
+                ;
             }
         }
     }
