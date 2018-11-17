@@ -60,6 +60,9 @@ namespace ASCOM.Wise40
         {
             get
             {
+                if (Simulated)
+                    return false;
+
                 return !computerControlPin.isOn;
             }
         }
@@ -68,6 +71,9 @@ namespace ASCOM.Wise40
         {
             get
             {
+                if (Simulated)
+                    return true;
+
                 return wisedomeplatform.IsSafe;
             }
         }
