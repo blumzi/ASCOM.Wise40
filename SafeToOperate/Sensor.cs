@@ -156,7 +156,10 @@ namespace ASCOM.Wise40SafeToOperate
             if (DoesNotHaveAttribute(SensorAttribute.CanBeStale))
                 return false;
 
-            if (WiseSafeToOperate.och.TimeSinceLastUpdate(propertyName) > WiseSafeToOperate.ageMaxSeconds)
+            if (!WiseSafeToOperate.och.Connected)
+                WiseSafeToOperate.och.Connected = true;
+
+                if (WiseSafeToOperate.och.TimeSinceLastUpdate(propertyName) > WiseSafeToOperate.ageMaxSeconds)
             {
                 SetState(SensorState.Stale);
                 UnsetState(SensorState.Safe);
