@@ -32,10 +32,8 @@ namespace ASCOM.Wise40.ObservatoryMonitor
         static DriverAccess.Dome wisedome = null;
         static SafetyMonitor wisesafetooperate = null;
         Version version = new Version(0, 2);
-        //private static bool _shuttingDown = false;
         private static long _shuttingDown = 0;
         static DateTime _nextCheck = DateTime.Now + TimeSpan.FromSeconds(10);
-        static bool firstCheck = false;
         static public TimeSpan _intervalBetweenChecks;
         static TimeSpan _intervalBetweenLogs = _simulated ? TimeSpan.FromSeconds(10) : TimeSpan.FromSeconds(20);
         private static bool _telescopeEnslavesDome = false;
@@ -129,7 +127,6 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             wisesite.init();
             listBoxLog.SelectionMode = SelectionMode.None;
             ReadProfile();
-            //PrepareNextCheck(TimeSpan.FromSeconds(10));
 
             menuStrip.RenderMode = ToolStripRenderMode.ManagerRenderMode;
             ToolStripManager.Renderer = new Wise40ToolstripRenderer();
@@ -189,7 +186,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 inControl = safeToOperateStatus.Contains("computer-control:false") ? false : true;
             } catch (Exception ex)
             {
-                Log(string.Format("Oops: {0}", ex.InnerException == null ? ex.Message : ex.InnerException.Message));
+                Log(string.Format("Oops: {0}", ex.InnerException == null ? ex.Message : "(inner): " + ex.InnerException.Message));
                 return;
             }
 
@@ -801,8 +798,6 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             set
             {
                 _intervalBetweenChecks = new TimeSpan(0, value, 0);
-                //timerDoChecks.Interval = (int) _intervalBetweenChecks.TotalMilliseconds;
-                //PrepareNextCheck();
             }
         }
 
