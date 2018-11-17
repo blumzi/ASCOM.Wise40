@@ -111,6 +111,7 @@
     <Reference Include="ASCOM.SettingsProvider, Version=6.0.0.0, Culture=neutral, PublicKeyToken=565de7938946fba7, processorArchitecture=MSIL" />
     <Reference Include="ASCOM.Utilities, Version=6.0.0.0, Culture=neutral, PublicKeyToken=565de7938946fba7, processorArchitecture=MSIL" />
     <Reference Include="ASCOM.Utilities.Video, Version=6.1.0.0, Culture=neutral, PublicKeyToken=565de7938946fba7, processorArchitecture=MSIL" />
+    <Reference Include="MccDaq, Version=2.1.0.0, Culture=neutral, PublicKeyToken=a37eefcf5c6ca10a, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Configuration.Install" />
@@ -123,7 +124,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CloudsSensor.cs" />
+    <Compile Include="ComputerControlSensor.cs" />
+    <Compile Include="DoorLockSensor.cs" />
     <Compile Include="Driver.cs" />
+    <Compile Include="HumanInterventionSensor.cs" />
+    <Compile Include="HumiditySensor.cs" />
+    <Compile Include="PlatformSensor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -135,6 +142,7 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
+    <Compile Include="RainSensor.cs" />
     <Compile Include="Sensor.cs" />
     <Compile Include="SetupDialogForm.cs">
       <SubType>Form</SubType>
@@ -142,6 +150,8 @@
     <Compile Include="SetupDialogForm.designer.cs">
       <DependentUpon>SetupDialogForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="SunSensor.cs" />
+    <Compile Include="WindSensor.cs" />
     <Compile Include="WiseSafeToOperate.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -198,6 +208,10 @@
     <ProjectReference Include="..\ComputerControl\ComputerControl.csproj">
       <Project>{eef50bc4-becc-430b-9a05-769c80d8d25c}</Project>
       <Name>ComputerControl</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Hardware\Hardware.csproj">
+      <Project>{b3400ce2-9b66-4f0c-97fe-26343382ba7b}</Project>
+      <Name>Hardware</Name>
     </ProjectReference>
     <ProjectReference Include="..\VantagePro\VantagePro.csproj">
       <Project>{59cc2a31-dec4-4eee-b5c3-efc8771438a7}</Project>

@@ -34,6 +34,9 @@ namespace ASCOM.Wise40.Common
         public const string checkmark = " ✓";
         public const string notsign = "\u00AC";
 
+        public const string fieldSeparator = @"@";
+        public const string lineSeparator = @"|";
+
         public const string topWise40Directory = "c:/Wise40/";
         public const string humanInterventionFilePath = Const.topWise40Directory + "Observatory/HumanIntervention.txt";
 
@@ -55,7 +58,10 @@ namespace ASCOM.Wise40.Common
         public const string wiseSimulatedDashPath = "c:/Users/Blumzi/Documents/Visual Studio 2015/Projects/Wise40/Dash/bin/x86/Debug/Dash.exe";
         public const string wiseRealDashPath = "c:/Users/mizpe/source/repos/ASCOM.Wise40/Dash/bin/x86/Debug/Dash.exe";
 
-        public const string wiseWeatherLinkPath = "c:/WeatherLink/WeatherLink 6.0.2.exe";
+        public const string wiseWeatherLinkAppPath = "c:/WeatherLink/WeatherLink 6.0.2.exe";
+        public const string wiseWeatherLinkAppName = "WeatherLink 6.0.2";
+
+        public const string computerControlAtMaintenance = "ComputerControl at Maintenance";
 
         public const double twoPI = 2.0 * Math.PI;
 
@@ -67,10 +73,12 @@ namespace ASCOM.Wise40.Common
             public static string Telescope_Tracing = "Tracing";
             public static string Telescope_BypassCoordinatesSafety = "BypassCoordinatesSafety";
             public static string Telescope_PlotSlews = "PlotSlews";
+            public static string Telescope_MinutesToIdle = "MinutesToIdle";
 
             public static string SafeToOperate_AgeMaxSeconds = "AgeMaxSeconds";
             public static string SafeToOperate_StableAfterMin = "StableAfterMin";
             public static string SafeToOperate_Bypassed = "Bypassed";
+            public static string SafeToOperate_DoorLockDelay = "DoorLockDelay";
 
             public static string Dome_AutoCalibrate = "AutoCalibrate";
             public static string Dome_SyncVentWithShutter = "SyncVentWithShutter";

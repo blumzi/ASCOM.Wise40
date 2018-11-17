@@ -12,80 +12,105 @@ using System.IO;
 
 namespace Wise40Watcher
 {
-    public class Watcher: WiseObject
+    public class Watcher : WiseObject
     {
-        private string _path;
+        private string _applicationPath;
+        private string _applicationName;
         private static string _logFile;
         Process _process = null;
         bool _stopping = false;
+        private static string serviceName = "Wise40Watcher";
 
-        private string applicationPath()
+        private void init(string name)
         {
-            string ret = string.Empty;
-            string top = Simulated ? 
-                "c:/Users/Blumzi/Documents/Visual Studio 2015/Projects/Wise40" : 
+            string top = Simulated ?
+                "c:/Users/Blumzi/Documents/Visual Studio 2015/Projects/Wise40" :
                 "c:/Users/mizpe/source/repos/ASCOM.Wise40";
 
+            Name = name;
             switch (Name)
             {
                 case "ascom":
-                    ret = Const.wiseASCOMServerPath;
+                    _applicationPath = Const.wiseASCOMServerPath;
+                    _applicationName = Const.wiseASCOMServerAppName;
                     break;
 
                 case "weatherlink":
-                    ret = Const.wiseWeatherLinkPath;
+                    _applicationPath = Const.wiseWeatherLinkAppPath;
+                    _applicationName = Const.wiseWeatherLinkAppName;
                     break;
 
-                case "dash":                    
-                    ret = top + "/Dash/bin/x86/Debug/Dash.exe";
+                case "dash":
+                    _applicationPath = top + "/Dash/bin/x86/Debug/Dash.exe";
+                    _applicationName = Const.wiseDashboardAppName;
                     break;
 
                 case "obsmon":
-                    ret = top + "/ObservatoryMonitor/bin/x86/Debug/ObservatoryMonitor.exe";
-                    break;
-
-                default:
+                    _applicationPath = top + "/ObservatoryMonitor/bin/x86/Debug/ObservatoryMonitor.exe";
+                    _applicationName = Const.wiseObservatoryMonitorAppName;
                     break;
             }
-            log("Watcher[{0}]: path {1}", Name, ret);
-            return ret;
         }
 
         public Watcher(string name)
         {
-            string logDir = string.Format(Const.topWise40Directory + "Logs/{0}", DateTime.Now.ToString("yyyy-MM-dd"));
+            string logDir = ASCOM.Wise40.Common.Debugger.LogDirectory();
             Directory.CreateDirectory(logDir);
-            _logFile = logDir + "/Wise40Watcher.log";
+            _logFile = logDir + "/" + serviceName + ".log";
 
-            Name = name;
-            _path = applicationPath();
+            init(name);
         }
 
-        public void func()
+        public void watcher()
         {
             int pid;
 
             while (!_stopping)
             {
-                CreateProcessAsUserWrapper.LaunchChildProcess(_path, out pid);
+                CreateProcessAsUserWrapper.LaunchChildProcess(_applicationPath, out pid);
                 if (pid != 0)
                 {
-                    _process = Process.GetProcessById(pid);                    
+                    _process = Process.GetProcessById(pid);
+                    log("Start: waiting for pid {0} ({1}) ...", pid, _applicationPath);
                     _process.WaitForExit();
+
+                    // TBD: Get the exit code
+
+                    //while (!_process.HasExited)
+                    //{
+                    //    Thread.Sleep(10);
+                    //    _process.Refresh();
+                    //}
+                    //log("Start: process {0} exited with code: {1}", pid, _process.ExitCode);
+                    //_process.Close();
                 }
+            }
+        }
+
+        private void KillAllProcesses()
+        {
+            Process[] processes = Process.GetProcessesByName(_applicationName);
+
+            foreach (var p in processes)
+            {
+                log("KillAllProcesses: Killing pid: {0} ({1}) ...", p.Id, p.ProcessName);
+                p.Kill();
+                Thread.Sleep(1000);
             }
         }
 
         public void Start(string[] args)
         {
+            KillAllProcesses();
+
             try
             {
-                Thread thread = new Thread(func);
+                Thread thread = new Thread(watcher);
                 thread.Start();
             }
             catch (Exception ex)
             {
-                log("Watcher[{0}]: Thread start: Exception: {1}", Name, ex.Message);
+                log("Start: Exception: {0}", ex.Message);
                 return;
             }
         }
@@ -93,13 +118,17 @@ namespace Wise40Watcher
         public void Stop()
         {
             _stopping = true;
-            log("Watcher[{0}]: The service was Stopped, killing process {1} ...", Name, _process.Id);
-            _process.Kill(); ;
+            log("The {0} service was Stopped, killing process {1} ...", serviceName, _process.Id);
+            _process.Kill();
+            Thread.Sleep(1000);
+
+            KillAllProcesses();
         }
 
-        public static void log(string fmt, params object[] o)
+        public void log(string fmt, params object[] o)
         {
-            string msg = string.Format(fmt, o);
+            string pre = string.Format("{0,-12} ", Name);
+            string msg = string.Format(pre + fmt, o);
             using (var sw = new StreamWriter(_logFile, true))
             {
                 sw.WriteLine(DateTime.Now.ToString("yyyy-MM-dd, HH:mm:ss.ffff ") + msg);

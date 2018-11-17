@@ -245,14 +245,22 @@ namespace ASCOM.Wise40 //.Telescope
             wisedome.wisedomeshutter.Stop();
         }
 
-        public string ShutterStatus
+        public ASCOM.DeviceInterface.ShutterState ShutterState
+        {
+            get
+            {
+                return wisedome.ShutterState;
+            }
+        }
+
+        public string ShutterStatusString
         {
             get
             {
                 if (!Connected)
                     return "Not connected";
                 
-                return wisedome.ShutterStatus;
+                return wisedome.ShutterStatusString;
             }
         }
 

@@ -103,9 +103,9 @@ namespace ASCOM.Wise40.Common
             return (_currentLevel & l) != 0;
         }
 
-        public static string LogFolder()
+        public static string LogDirectory()
         {
-            DateTime now = DateTime.Now;
+            DateTime now = DateTime.UtcNow;
             return string.Format(Const.topWise40Directory + "Logs/{0}-{1:D2}-{2:D2}",
                     now.Year, now.Month, now.Day);
         }
@@ -115,19 +115,20 @@ namespace ASCOM.Wise40.Common
             if (! _initialized || !Debugging(level))
                 return;
 
-            DateTime now = DateTime.UtcNow;
+            DateTime utcNow = DateTime.UtcNow;
             string msg = string.Format(fmt, o);
             string taskInfo = (Task.CurrentId == null) ?
                 "-1" :
                 (Task.CurrentId.HasValue ? Task.CurrentId.Value : -1).ToString();
-            string line = string.Format("{0}: {1,4} {2,4} {3}/{4}/{5} {6} {7,-15} {8}",
-                _appName,
+
+            string line = string.Format("{0}:{1}: {2,4} {3,4} {4} UT {5,-15} {6}",
+                _appName, Process.GetCurrentProcess().Id,
                 Thread.CurrentThread.ManagedThreadId.ToString(),
                 taskInfo,
-                now.Day, now.Month, now.Year, now.TimeOfDay,
+                utcNow.ToString(@"hh\:mm\:ss\.fff"),
                 level.ToString() + ":",
                 msg);
-            string currentLogPath = LogFolder() + "/debug.txt";
+            string currentLogPath = LogDirectory() + "/debug.txt";
             if (currentLogPath != _logFile)
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(currentLogPath));

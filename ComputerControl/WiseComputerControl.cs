@@ -13,7 +13,6 @@ namespace ASCOM.Wise40
     {
         private static readonly WiseComputerControl instance = new WiseComputerControl(); // Singleton
         private static bool _initialized = false;
-        private WisePin computerControlPin;
         private Hardware.Hardware hardware = Hardware.Hardware.Instance;
         private WiseDomePlatform wisedomeplatform = WiseDomePlatform.Instance;
 
@@ -40,7 +39,6 @@ namespace ASCOM.Wise40
             if (_initialized)
                 return;
             
-            computerControlPin = new WisePin("CompControl", hardware.teleboard, DigitalPortType.SecondPortCH, 0, DigitalPortDirection.DigitalIn);
             _initialized = true;
             wisedomeplatform.init();
         }
@@ -60,6 +58,9 @@ namespace ASCOM.Wise40
         {
             get
             {
+                if (Simulated)
+                    return false;
+
                 return !computerControlPin.isOn;
             }
         }
@@ -68,6 +69,9 @@ namespace ASCOM.Wise40
         {
             get
             {
+                if (Simulated)
+                    return true;
+
                 return wisedomeplatform.IsSafe;
             }
         }
@@ -76,8 +80,9 @@ namespace ASCOM.Wise40
         {
             List<string> reasons = new List<string>();
 
-            if (!computerControlPin.isOn)
-                reasons.Add("ComputerControl switch is on MAINTENANCE");
+            if (Hardware.Hardware.computerControlPin.isOff)
+                reasons.Add(Const.computerControlAtMaintenance);
+
             if (!wisedomeplatform.IsSafe)
                 reasons.Add("Platform is RAISED");
 

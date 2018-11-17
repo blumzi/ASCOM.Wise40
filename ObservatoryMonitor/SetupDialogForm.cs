@@ -25,7 +25,8 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
         private void cmdOK_Click(object sender, EventArgs e) // OK button event handler
         {
-            _mainForm.Minutes = Convert.ToInt32(textBoxMonitoringFrequency.Text);
+            _mainForm.MinutesBetweenChecks = Convert.ToInt32(textBoxMonitoringFrequency.Text);
+            _mainForm.MinutesToIdle = Convert.ToInt32(textBoxIdleAfterMinutes.Text);
             _mainForm.WriteProfile();
             Close();
         }
@@ -55,7 +56,8 @@ namespace ASCOM.Wise40.ObservatoryMonitor
         private void InitUI()
         {
             _mainForm.ReadProfile();
-            textBoxMonitoringFrequency.Text = _mainForm.Minutes.ToString();
+            textBoxMonitoringFrequency.Text = _mainForm.MinutesBetweenChecks.ToString();
+            textBoxIdleAfterMinutes.Text = _mainForm.MinutesToIdle.ToString();
         }
     }
 }

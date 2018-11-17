@@ -37,6 +37,9 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             this.textBoxMonitoringFrequency = new System.Windows.Forms.TextBox();
             this.label10 = new System.Windows.Forms.Label();
             this.picASCOM = new System.Windows.Forms.PictureBox();
+            this.label2 = new System.Windows.Forms.Label();
+            this.textBoxIdleAfterMinutes = new System.Windows.Forms.TextBox();
+            this.label3 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).BeginInit();
             this.SuspendLayout();
             // 
@@ -125,12 +128,48 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             this.picASCOM.Click += new System.EventHandler(this.BrowseToAscom);
             this.picASCOM.DoubleClick += new System.EventHandler(this.BrowseToAscom);
             // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.ForeColor = System.Drawing.Color.DarkOrange;
+            this.label2.Location = new System.Drawing.Point(136, 147);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(43, 13);
+            this.label2.TabIndex = 44;
+            this.label2.Text = "minutes";
+            // 
+            // textBoxIdleAfterMinutes
+            // 
+            this.textBoxIdleAfterMinutes.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBoxIdleAfterMinutes.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.textBoxIdleAfterMinutes.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.textBoxIdleAfterMinutes.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.textBoxIdleAfterMinutes.Location = new System.Drawing.Point(104, 143);
+            this.textBoxIdleAfterMinutes.Name = "textBoxIdleAfterMinutes";
+            this.textBoxIdleAfterMinutes.Size = new System.Drawing.Size(29, 21);
+            this.textBoxIdleAfterMinutes.TabIndex = 43;
+            this.textBoxIdleAfterMinutes.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.ForeColor = System.Drawing.Color.DarkOrange;
+            this.label3.Location = new System.Drawing.Point(51, 147);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(48, 13);
+            this.label3.TabIndex = 42;
+            this.label3.Text = "Idle after";
+            this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
             // ObservatoryMonitorSetupDialogForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.ClientSize = new System.Drawing.Size(352, 189);
+            this.Controls.Add(this.label2);
+            this.Controls.Add(this.textBoxIdleAfterMinutes);
+            this.Controls.Add(this.label3);
             this.Controls.Add(this.label10);
             this.Controls.Add(this.textBoxMonitoringFrequency);
             this.Controls.Add(this.label9);
@@ -161,5 +200,8 @@ namespace ASCOM.Wise40.ObservatoryMonitor
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.TextBox textBoxMonitoringFrequency;
         private System.Windows.Forms.Label label10;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.TextBox textBoxIdleAfterMinutes;
+        private System.Windows.Forms.Label label3;
     }
 }
