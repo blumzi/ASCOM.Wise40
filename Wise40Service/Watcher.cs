@@ -12,7 +12,7 @@ using System.IO;
 
 namespace Wise40Watcher
 {
-    public class Watcher: WiseObject
+    public class Watcher : WiseObject
     {
         private string _path;
         private static string _logFile;
@@ -22,8 +22,8 @@ namespace Wise40Watcher
         private string applicationPath()
         {
             string ret = string.Empty;
-            string top = Simulated ? 
-                "c:/Users/Blumzi/Documents/Visual Studio 2015/Projects/Wise40" : 
+            string top = Simulated ?
+                "c:/Users/Blumzi/Documents/Visual Studio 2015/Projects/Wise40" :
                 "c:/Users/mizpe/source/repos/ASCOM.Wise40";
 
             switch (Name)
@@ -36,18 +36,20 @@ namespace Wise40Watcher
                     ret = Const.wiseWeatherLinkPath;
                     break;
 
-                case "dash":                    
+                case "dash":
                     ret = top + "/Dash/bin/x86/Debug/Dash.exe";
                     break;
 
                 case "obsmon":
-                    ret = top + "/ObservatoryMonitor/bin/x86/Debug/ObservatoryMonitor.exe";
+                    ret = top + (Simulated ? 
+                        "/ObservatoryMonitor/bin/Debug/ObservatoryMonitor.exe" :
+                        "/ObservatoryMonitor/bin/x86/Debug/ObservatoryMonitor.exe");
                     break;
 
                 default:
                     break;
             }
-            log("Watcher[{0}]: path {1}", Name, ret);
+
             return ret;
         }
 
@@ -70,8 +72,17 @@ namespace Wise40Watcher
                 CreateProcessAsUserWrapper.LaunchChildProcess(_path, out pid);
                 if (pid != 0)
                 {
-                    _process = Process.GetProcessById(pid);                    
+                    log("Watcher[{0}]: Started pid: {1} for {2}", Name, pid, _path);
+                    _process = Process.GetProcessById(pid);
                     _process.WaitForExit();
+
+                    // TBD: getting stuck if asking for ExitCode
+                    //log("Watcher[{0}]: pid: {1} exited with exit code {2}.", Name, pid, _process.ExitCode);
+                }
+                else
+                {
+                    log("Watcher[{0}]: Failed to start {1}", Name, _path);
+                    break;
                 }
             }
         }
