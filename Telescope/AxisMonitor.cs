@@ -16,14 +16,14 @@ namespace ASCOM.Wise40
     {
         public struct AxisPositionSample
         {
-            public double value;
+            public double delta;
         };
 
         private const int nSamples = 5;
         private double _previousValue = double.NaN;
         private double _previousEncoderValue = double.NaN;
         private FixedSizedQueue<AxisPositionSample> _samples = new FixedSizedQueue<AxisPositionSample>(nSamples);
-        private TelescopeAxes _axis, _other_axis;
+        private TelescopeAxes _axis;
         private WiseTele wisetele = WiseTele.Instance;
         private bool _connected = false;
         private Debugger debugger = Debugger.Instance;
@@ -50,15 +50,12 @@ namespace ASCOM.Wise40
         public AxisMonitor(TelescopeAxes axis)
         {
             _axis = axis;
-            _other_axis = (_axis == TelescopeAxes.axisPrimary) ?
-                TelescopeAxes.axisSecondary : TelescopeAxes.axisPrimary;
         }
 
         public bool IsMoving
         {
             get
             {
-                double max = double.MinValue;
                 var arr = _samples.ToArray();
 
                 if (arr.Count() < _samples.MaxSize)
@@ -70,21 +67,47 @@ namespace ASCOM.Wise40
                     return true;    // not enough samples
                 }
 
-                foreach (var sample in arr)
-                    if (sample.value > max)
-                        max = sample.value;
+                // Check the array of delta-movements
+                bool ret;
+                #region debug
+                string deb;
+                #endregion
+                if (_axis == TelescopeAxes.axisPrimary)
+                {
+                    double max = double.MinValue;
 
-                double epsilon = (_axis == TelescopeAxes.axisPrimary) ?
-                    (_whileTracking ? raEpsilon : haEpsilon) : decEpsilon;
+                    foreach (var sample in arr)
+                        if (sample.delta > max)
+                            max = sample.delta;
 
-                bool ret = max > epsilon;
+                    double epsilon = _whileTracking ? raEpsilon : haEpsilon;
+                    ret = max > epsilon;
+                    #region debug
+                    deb = string.Format("AxisMonitor:IsMoving:{0}: max: {1:F15}, epsilon: {2:F15}, ret: {3}",
+                        _axis, max, epsilon, ret);
+                    #endregion
+                }
+                else
+                {
+                    ret = false;
+                    foreach (var sample in arr)
+                        if (sample.delta != 0.0)
+                        {
+                            ret = true;
+                            break;
+                        }
+                    #region debug
+                    deb = string.Format("AxisMonitor:IsMoving:{0}: ret: {1}", _axis,ret);
+                    #endregion
+                }
 
                 #region debug
-                string deb = string.Format("AxisMonitor:IsMoving:{0}: max: {1:F15}, epsilon: {2:F15}, ret: {3}, active: {4}",
-                    _axis, max, epsilon, ret, ActiveMotors(_axis)) + "[";
+                deb += ", active motors: " + ActiveMotors(_axis);
+                List<string> list = new List<string>();
                 foreach (var sample in arr)
-                    deb += " " + sample.value.ToString();
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, deb + "]");
+                    list.Add(sample.delta.ToString());
+                deb += ", [" + string.Join(",", list) + "]";
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, deb);
                 #endregion
                 return ret;
             }
@@ -120,21 +143,21 @@ namespace ASCOM.Wise40
                 }
             }
 
-            double value = (_axis == TelescopeAxes.axisPrimary) ?
+            double currentValue = (_axis == TelescopeAxes.axisPrimary) ?
                     (tracking ? wisetele.RightAscension : wisetele.HAEncoder.Value) :
                     wisetele.DecEncoder.Angle.Radians;
 
             if (Double.IsNaN(_previousValue))
             {
-                _previousValue = value;
+                _previousValue = currentValue;
                 return;
             }
 
-            double d = Math.Abs(value - _previousValue);
-            if (Double.IsNaN(d))
+            double delta = Math.Abs(currentValue - _previousValue);
+            if (Double.IsNaN(delta))
                 return;
 
-            AxisPositionSample sample = new AxisPositionSample { value = d };
+            AxisPositionSample sample = new AxisPositionSample { delta = delta };
             double encoderValue = (_axis == TelescopeAxes.axisPrimary) ? wisetele.HAEncoder.Value : wisetele.DecEncoder.Value;
             double encoderDelta = double.NaN;
             if (!Double.IsNaN(_previousEncoderValue))
@@ -143,10 +166,10 @@ namespace ASCOM.Wise40
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
                 "AxisMonitor:SampleAxisMovement:{0}: value: {1}, _previousValue: {2}, enqueueing: {3:F15}, active: {4}, encoder: {5}, encoderDelta: {6}",
-                _axis, value, _previousValue, d, ActiveMotors(_axis), encoderValue, encoderDelta);
+                _axis, currentValue, _previousValue, delta, ActiveMotors(_axis), encoderValue, encoderDelta);
             #endregion
             _samples.Enqueue(sample);
-            _previousValue = value;
+            _previousValue = currentValue;
             _previousEncoderValue = encoderValue;
         }
 
@@ -214,6 +237,40 @@ namespace ASCOM.Wise40
                     StopMovementChecker();
 
                 _connected = value;
+            }
+        }
+    }
+
+    public class PrimaryAxisMonitor: AxisMonitor
+    {
+        PrimaryAxisMonitor() : base(TelescopeAxes.axisPrimary) { }
+
+        public double RightAscension
+        {
+            get
+            {
+
+            }
+        }
+
+        public double HourAngle
+        {
+            get
+            {
+
+            }
+        }
+    }
+
+    public class SecondaryAxisMonitor: AxisMonitor
+    {
+        SecondaryAxisMonitor() : base(TelescopeAxes.axisSecondary) { }
+
+        public double Declination
+        {
+            get
+            {
+                ;
             }
         }
     }

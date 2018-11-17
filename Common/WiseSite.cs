@@ -19,8 +19,7 @@ namespace ASCOM.Wise40
 {
     public class WiseSite : IDisposable
     {
-        private static WiseSite _wisesite = new WiseSite();
-        private static bool _initialized;
+        private static bool _initialized = false;
         private static Astrometry.NOVAS.NOVAS31 novas31 = new NOVAS31();
         private static AstroUtils astroutils = new AstroUtils();
         private static ASCOM.Utilities.Util ascomutils = new Util();
@@ -28,7 +27,7 @@ namespace ASCOM.Wise40
         public Astrometry.Accuracy astrometricAccuracy;
         public Astrometry.RefractionOption refractionOption;
         public double siteLatitude, siteLongitude, siteElevation;
-        public ObservingConditions och;
+        public static ObservingConditions och;
         public SafetyMonitor computerControl, safeToOperate;
         private DateTime lastOCFetch;
         private Debugger debugger = Debugger.Instance;
@@ -42,11 +41,25 @@ namespace ASCOM.Wise40
         private static readonly double[] averageTemperatures = { 9.7, 10.7, 14.0, 15.0, 21.1, 21.3, 24.4, 25.9, 24.7, 20.8, 16.1, 10.1 };
         private static readonly double[] averagePressures = { 1021, 1012, 1017, 1013, 1008, 1008, 1006, 1007, 1008, 1013, 1015, 1022 };
 
+        public WiseSite() { }
+        static WiseSite() { }
+        private static volatile WiseSite _instance; // Singleton
+        private static object syncObject = new object();
+
         public static WiseSite Instance
         {
             get
             {
-                return _wisesite;
+                if (_instance == null)
+                {
+                    lock (syncObject)
+                    {
+                        if (_instance == null)
+                            _instance = new WiseSite();
+                    }
+                }
+                _instance.init();
+                return _instance;
             }
         }
 

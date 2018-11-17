@@ -68,10 +68,7 @@ namespace ASCOM.Wise40 //.Focuser
         /// Initializes a new instance of the <see cref="Wise40"/> class.
         /// Must be public for COM registration.
         /// </summary>
-        public Focuser()
-        {
-            wisefocuser.init();
-        }
+        public Focuser() { }
 
         //
         // PUBLIC COM INTERFACE IFocuserV2 IMPLEMENTATION

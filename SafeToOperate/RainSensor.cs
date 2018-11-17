@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using ASCOM.Wise40;
 using ASCOM.Wise40.Common;
 
 namespace ASCOM.Wise40SafeToOperate
@@ -33,10 +34,15 @@ namespace ASCOM.Wise40SafeToOperate
             {
                 stale = IsStale("RainRate")
             };
-            r.safe = r.stale ? false : WiseSafeToOperate.och.RainRate <= _max;
-            #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "{0}: getIsSafe: {1}", Name, r.safe);
-            #endregion
+
+            double rainRate = WiseSite.och.RainRate;
+            if (r.stale)
+                r.safe = false;
+            else
+                r.safe = (_max == 0.0) ? rainRate == 0.0 : rainRate < _max;
+            //#region debug
+            //debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "{0}: getIsSafe: {1}", Name, r.safe);
+            //#endregion
             return r;
         }
 

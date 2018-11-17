@@ -30,7 +30,6 @@ namespace ASCOM.Wise40
             wisetele.Connected = true;
             wisedome.init();
             wisedome.Connected = true;
-            wisefocuser.init();
             wisefocuser.Connected = true;
 
             boards = new List<WiseBoard>();

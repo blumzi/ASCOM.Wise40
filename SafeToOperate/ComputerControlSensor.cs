@@ -19,7 +19,7 @@ namespace ASCOM.Wise40SafeToOperate
 
         public override string reason()
         {
-            return "ComputerControl at MAINTENANCE";
+            return Const.computerControlAtMaintenance;
         }
 
         public override string MaxAsString
@@ -36,9 +36,9 @@ namespace ASCOM.Wise40SafeToOperate
                 stale = false,
                 safe = !WiseSafeToOperate.wisecomputercontrol.Maintenance
             };
-            #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "ComputerControlSensor: getIsSafe: {0}", r.safe);
-            #endregion
+            //#region debug
+            //debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "ComputerControlSensor: getIsSafe: {0}", r.safe);
+            //#endregion
             return r;
         }
 

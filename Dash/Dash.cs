@@ -38,7 +38,7 @@ namespace Dash
         private ASCOM.Utilities.Util ascomutil = new Util();
         enum GoToMode { Ra, Ha, DeltaRa, DeltaHa };
         private GoToMode goToMode = GoToMode.Ra;
-        private ActivityMonitor activityMonitor = ActivityMonitor.Instance;
+        private static ActivityMonitor activityMonitor = ActivityMonitor.Instance;
 
         DomeSlaveDriver domeSlaveDriver = DomeSlaveDriver.Instance;
         DebuggingForm debuggingForm = new DebuggingForm();
@@ -70,29 +70,26 @@ namespace Dash
             LoadFilterWheelInformation();
         }
 
+        static List<Control> readonlyControls;
+
         #region Initialization
         public FormDash()
         {
             debugger.init();
-            hardware.init();
             wisetele.init();
             wisetele.Connected = true;
             wisedome.init();
             wisedome.Connected = true;
             wisedome.wisedomeshutter.init();
-            wisefocuser.init();
             wisefocuser.Connected = true;
             wisesafetooperate.Connected = true;
-            wisesite.och.Connected = true;
             //wisefilterwheel.init();
             //wisefilterwheel.Connected = true;
             wisedomeplatform.init();
 
             InitializeComponent();
 
-            if (wisesite.OperationalMode != WiseSite.OpMode.WISE)
-            {
-                List<Control> readonlyControls = new List<Control>()
+            readonlyControls = new List<Control>()
                 {
                     textBoxRA, textBoxDec,
                     buttonGoCoord,
@@ -118,6 +115,8 @@ namespace Dash
                     buttonFilterWheelGo, comboBoxFilterWheelPositions,
                 };
 
+            if (wisesite.OperationalMode != WiseSite.OpMode.WISE)
+            {
                 foreach (var c in readonlyControls)
                 {
                     c.Enabled = false;
@@ -126,6 +125,8 @@ namespace Dash
                 annunciatorReadonly.Text = string.Format("Readonly mode ({0})", wisesite.OperationalMode.ToString());
                 annunciatorReadonly.ForeColor = warningColor;
                 annunciatorReadonly.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+
+                pictureBoxStop.Visible = false;
             }
             else
                 annunciatorReadonly.Text = "";
@@ -319,28 +320,38 @@ namespace Dash
             #endregion
 
             #region RefreshSafety
-            #region ComputerControl
+            #region ComputerControl Annunciator
             string tip;
             if (wisesite.computerControl == null)
             {
                 annunciatorComputerControl.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
                 tip = "Cannot read the computer control switch!";
             }
-            else if (wisesite.computerControl.IsSafe)
-            {
-                annunciatorComputerControl.Text = "Computer has control";
-                annunciatorComputerControl.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
-                tip = "The computer control switch is ON";
-            }
             else
             {
-                annunciatorComputerControl.Text = "No computer control";
-                annunciatorComputerControl.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
-                tip = "The computer control switch is OFF!";
+                if (wisesite.computerControl.IsSafe)
+                {
+                    annunciatorComputerControl.Text = "Computer has control";
+                    annunciatorComputerControl.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+                    tip = "The computer control switch is ON";
+
+                    if (wisesite.OperationalMode == WiseSite.OpMode.WISE)
+                        foreach (Control c in readonlyControls)
+                            c.Enabled = true;
+                }
+                else
+                {
+                    annunciatorComputerControl.Text = "No computer control";
+                    annunciatorComputerControl.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+                    tip = "The computer control switch is OFF!";
+
+                    foreach (Control c in readonlyControls)
+                        c.Enabled = false;
+                }
             }
             toolTip.SetToolTip(annunciatorComputerControl, tip);
             #endregion
-            #region DomePlatform
+            #region Platform Annunciator
             tip = null;
 
             if (wisedomeplatform.IsSafe)
@@ -357,7 +368,7 @@ namespace Dash
             }
             toolTip.SetToolTip(annunciatorDomePlatform, tip);
             #endregion
-            #region SafeToOpen
+            #region SafeToOperate Annunciator
             tip = null;
 
             if (wisesite.safeToOperate == null)
@@ -403,7 +414,7 @@ namespace Dash
             }
             toolTip.SetToolTip(annunciatorSafeToOperate, tip);
             #endregion
-            #region Simulation
+            #region Simulation Annunciator
             tip = null;
 
             if (wiseobject.Simulated)
@@ -428,14 +439,25 @@ namespace Dash
             buttonDomePark.Text = wisedome.AtPark ? "Unpark" : "Park";
             buttonVent.Text = wisedome.Vent ? "Close Vent" : "Open Vent";
 
-            if (_lastShutterStatusUpdate == DateTime.MinValue || now.Subtract(_lastShutterStatusUpdate).TotalSeconds >= 2)
+            if (_lastShutterStatusUpdate == DateTime.MinValue || 
+                now.Subtract(_lastShutterStatusUpdate).TotalSeconds >= 5)
             {
-                string stat = domeSlaveDriver.ShutterStatus;
+                string stat = domeSlaveDriver.ShutterStatusString;
                 Statuser.Severity severity = Statuser.Severity.Normal;
+                string msg = "";
 
                 if (stat.Contains("error"))
+                {
+                    msg = "Shutter error";
                     severity = Statuser.Severity.Error;
-                shutterStatus.Show(domeSlaveDriver.ShutterStatus, 0, severity);
+                }
+                else
+                {
+                    msg = "Shutter is " + stat;
+                    severity = Statuser.Severity.Normal;
+                }
+
+                shutterStatus.Show(msg, 0, severity);
                 _lastShutterStatusUpdate = now;
             }
 
@@ -460,7 +482,7 @@ namespace Dash
             #endregion
 
             #region RefreshSafeToOperate
-            if (wisesite.och == null || !wisesite.och.Connected)
+            if (WiseSite.och == null || !WiseSite.och.Connected)
             {
                 string nc = "???";
 
@@ -487,7 +509,7 @@ namespace Dash
             {
                 try
                 {
-                    ASCOM.DriverAccess.ObservingConditions oc = wisesite.och;
+                    ASCOM.DriverAccess.ObservingConditions oc = WiseSite.och;
 
                     #region ObservingConditions from OCH
                     labelDewPointValue.Text = oc.DewPoint.ToString() + "°C";
@@ -1103,27 +1125,70 @@ namespace Dash
         #region FocuserControl
         private void focuserHalt(object sender, MouseEventArgs e)
         {
-            wisefocuser.Halt();
+            try
+            {
+                wisefocuser.Halt();
+            }
+            catch (Exception ex)
+            {
+                focuserStatus.Show(ex.Message, 2000, Statuser.Severity.Error);
+                return;
+            }
         }
 
         private void buttonFocuserStop_Click(object sender, EventArgs e)
         {
-            wisefocuser.Stop();
+            try
+            {
+                wisefocuser.StartStopping();
+            }
+            catch (Exception ex)
+            {
+                focuserStatus.Show(ex.Message, 2000, Statuser.Severity.Error);
+                return;
+            }
         }
 
         private void buttonFocusUp_MouseDown(object sender, MouseEventArgs e)
         {
-            wisefocuser.Move(WiseFocuser.Direction.Up);
+            try
+            {
+
+                wisefocuser.Move(WiseFocuser.Direction.Up);
+            }
+            catch (Exception ex)
+            {
+                focuserStatus.Show(ex.Message, 2000, Statuser.Severity.Error);
+                return;
+            }
         }
 
         private void buttonFocusDown_MouseDown(object sender, MouseEventArgs e)
         {
-            wisefocuser.Move(WiseFocuser.Direction.Down);
+            try
+            {
+
+                wisefocuser.Move(WiseFocuser.Direction.Down);
+            }
+            catch (Exception ex)
+            {
+                focuserStatus.Show(ex.Message, 2000, Statuser.Severity.Error);
+                return;
+            }
         }
 
         private void buttonFocusStop(object sender, MouseEventArgs e)
         {
-            wisefocuser.Stop();
+            try
+            {
+
+                wisefocuser.StartStopping();
+            }
+            catch (Exception ex)
+            {
+                focuserStatus.Show(ex.Message, 2000, Statuser.Severity.Error);
+                return;
+            }
         }
 
         private void buttonFocusGoto_Click(object sender, EventArgs e)
@@ -1159,13 +1224,29 @@ namespace Dash
 
         private void buttonFocusAllUp_Click(object sender, EventArgs e)
         {
-            wisefocuser.Move(WiseFocuser.Direction.AllUp);
+            try
+            {
+                wisefocuser.Move(WiseFocuser.Direction.AllUp);
+            } catch (Exception ex)
+            {
+                focuserStatus.Show(ex.Message, 2000, Statuser.Severity.Error);
+                return;
+            }
         }
 
         private void buttonFocusAllDown_Click(object sender, EventArgs e)
         {
-            if (wisefocuser.Position > 0)
-                wisefocuser.Move(WiseFocuser.Direction.AllDown);
+            try
+            {
+
+                if (wisefocuser.Position > 0)
+                    wisefocuser.Move(WiseFocuser.Direction.AllDown);
+            }
+            catch (Exception ex)
+            {
+                focuserStatus.Show(ex.Message, 2000, Statuser.Severity.Error);
+                return;
+            }
         }
         #endregion
 
@@ -1423,8 +1504,8 @@ namespace Dash
             ToolStripMenuItem item = sender as ToolStripMenuItem;
             string text = item.Text;
 
-            wisedome._syncVentWithShutter = !wisedome._syncVentWithShutter;
-            UpdateCheckmark(item, wisedome._syncVentWithShutter);
+            wisedome.SyncVentWithShutter = !wisedome.SyncVentWithShutter;
+            UpdateCheckmark(item, wisedome.SyncVentWithShutter);
             UpdateAlteredItems(item, "Dome");
         }
 
@@ -1518,7 +1599,7 @@ namespace Dash
             wisetele.FullStop();
             wisedome.Stop();
             wisedome.wisedomeshutter.Stop();
-            wisefocuser.Stop();
+            wisefocuser.StartStopping();
         }
 
         private void buttonProjector_Click(object sender, EventArgs e)
@@ -1655,7 +1736,7 @@ namespace Dash
                 wisetele.Tracking = false;
                 wisedome.Stop();
                 wisedome.wisedomeshutter.Stop();
-                wisefocuser.Stop();
+                wisefocuser.StartStopping();
             }
             catch { }
             #region debug

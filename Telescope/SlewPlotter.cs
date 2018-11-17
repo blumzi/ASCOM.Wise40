@@ -16,7 +16,7 @@ namespace ASCOM.Wise40 //.Telescope
         {
             Angle.Type angleType = axis == TelescopeAxes.axisPrimary ? Angle.Type.RA : Angle.Type.Dec;
             DateTime utcNow = DateTime.UtcNow;
-            string folder = Wise40.Common.Debugger.LogFolder() + 
+            string folder = Wise40.Common.Debugger.LogDirectory() + 
                 string.Format("/slew-started-at-{0:D2}h{1:D2}m{2:D2}s_UTC", utcNow.Hour, utcNow.Minute, utcNow.Second);
 
             Directory.CreateDirectory(folder);

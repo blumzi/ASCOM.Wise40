@@ -6,16 +6,32 @@ using System.Threading.Tasks;
 using System.Threading;
 
 using ASCOM.Wise40.Common;
+using ASCOM.Utilities;
 using System.IO;
 
 namespace ASCOM.Wise40
 {
-    public class ActivityMonitor : WiseObject
+    public sealed class ActivityMonitor : WiseObject
     {
-        private static volatile ActivityMonitor _instance; // Singleton
-        private static object syncObject = new object();
-        private Timer inactivityTimer;
-        private readonly int realMillisToInactivity = (int)TimeSpan.FromMinutes(15).TotalMilliseconds;
+        // start Singleton
+        private static readonly Lazy<ActivityMonitor> lazy = 
+            new Lazy<ActivityMonitor>(() => new ActivityMonitor()); // Singleton
+
+        public static ActivityMonitor Instance
+        {
+            get
+            {
+                lazy.Value.init();
+                return lazy.Value;
+            }
+        }
+
+        private ActivityMonitor() { }
+        // end Singleton
+
+        private System.Threading.Timer inactivityTimer;
+        private readonly int defaultRealMillisToInactivity = (int)TimeSpan.FromMinutes(15).TotalMilliseconds;
+        private int realMillisToInactivity;
         private readonly int simulatedlMillisToInactivity = (int)TimeSpan.FromMinutes(3).TotalMilliseconds;
         private Debugger debugger = Debugger.Instance;
         private bool _shuttingDown = false;
@@ -38,8 +54,8 @@ namespace ASCOM.Wise40
             Focuser = (1 << 9),
             FilterWheel = (1 << 10),
         };
-        private Activity _currentlyActive = Activity.None;
-        private List<Activity> _activities = new List<Activity> {
+        private static Activity _currentlyActive = Activity.None;
+        private static List<Activity> _activities = new List<Activity> {
             Activity.Tracking,
             Activity.Slewing,
             Activity.Pulsing,
@@ -56,25 +72,33 @@ namespace ASCOM.Wise40
             EndActivity(Activity.GoingIdle);
         }
 
-        public static ActivityMonitor Instance
+        public TimeSpan MinutesToInactive
         {
             get
             {
-                if (_instance == null)
-                {
-                    lock (syncObject)
-                    {
-                        if (_instance == null)
-                            _instance = new ActivityMonitor();
-                    }
-                }
-                return _instance;
+                return TimeSpan.FromMilliseconds(realMillisToInactivity);
+            }
+
+            set
+            {
+                realMillisToInactivity = (int) value.TotalMilliseconds;
             }
         }
 
-        public ActivityMonitor()
+        public void init()
         {
             wisesite.init();
+
+            int defaultMinutesToIdle = (int) TimeSpan.FromMilliseconds(defaultRealMillisToInactivity).TotalMinutes;
+            int minutesToIdle;
+
+            using (Profile p = new Profile() { DeviceType = "Telescope" })
+                minutesToIdle = Convert.ToInt32(p.GetValue(Const.wiseTelescopeDriverID,
+                    Const.ProfileName.Telescope_MinutesToIdle,
+                    string.Empty,
+                    defaultMinutesToIdle.ToString()));
+
+            realMillisToInactivity = (int) TimeSpan.FromMinutes(minutesToIdle).TotalMilliseconds;
             inactivityTimer = new System.Threading.Timer(BecomeIdle);
             _currentlyActive = Activity.None;
             RestartGoindIdleTimer("init");
@@ -88,12 +112,12 @@ namespace ASCOM.Wise40
             if (act == Activity.GoingIdle && _currentlyActive != Activity.None)
                 return;
 
-            _currentlyActive |= act;
+            ActivityMonitor._currentlyActive |= act;
             if (act != Activity.GoingIdle)      // Any activity ends GoingIdle
                 EndActivity(Activity.GoingIdle);
             #region debug
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugLogic,
-                "ActivityMonitor:StartActivity: {0} (currentlyActive: {1})", act.ToString(), ObservatoryActivities);
+                "ActivityMonitor:StartActivity: started {0} (currentlyActive: {1})", act.ToString(), ObservatoryActivities);
             #endregion
             if (act != Activity.GoingIdle)
                 StopGoindIdleTimer();
@@ -109,13 +133,11 @@ namespace ASCOM.Wise40
             _currentlyActive &= ~act;
             #region debug
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugLogic,
-                "ActivityMonitor:EndActivity: {0} (currentlyActive: {1})", act.ToString(), ObservatoryActivities);
+                "ActivityMonitor:EndActivity: ended {0} (currentlyActive: {1})", act.ToString(), ObservatoryActivities);
             #endregion
 
-            if (act == Activity.ShuttingDown)
+            if (act == Activity.ShuttingDown || _currentlyActive == Activity.None)
                 StopGoindIdleTimer();
-            else if (_currentlyActive == Activity.None)
-                RestartGoindIdleTimer("no activities");
         }
 
         public bool Active(Activity a)
@@ -140,16 +162,27 @@ namespace ASCOM.Wise40
 
             if (reason == "init")
             {
-                if (File.Exists(filename))
+                try
                 {
-                    double fileAgeMillis = DateTime.Now.Subtract(File.GetCreationTime(filename)).TotalMilliseconds;
+                    if (File.Exists(filename))
+                    {
+                        double fileAgeMillis = DateTime.Now.Subtract(File.GetLastAccessTime(filename)).TotalMilliseconds;
 
-                    if (fileAgeMillis < dueMillis)
-                        dueMillis = Math.Min(dueMillis, (int)fileAgeMillis);
-                    File.Delete(filename);
+                        if (fileAgeMillis < dueMillis)
+                            dueMillis = Math.Min(dueMillis, (int)fileAgeMillis);
+                    }
+                    else
+                    {
+                        Directory.CreateDirectory(Path.GetDirectoryName(filename));
+                        File.Create(filename).Close();
+                    }
+                    File.SetLastAccessTime(filename, DateTime.Now);
+                } catch (Exception ex)
+                {
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "RestartGoindIdleTimer: Exception: {0}", ex.Message);
+                    #endregion
                 }
-                else
-                    Directory.CreateDirectory(Path.GetDirectoryName(filename));
             }
             #region debug
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugLogic, "ActivityMonitor:RestartGoindIdleTimer (reason = {0}, due = {1} millis).",
@@ -158,7 +191,6 @@ namespace ASCOM.Wise40
 
             StartActivity(Activity.GoingIdle);
             inactivityTimer.Change(dueMillis, Timeout.Infinite);
-            File.Create(filename).Close();
 
             _due = DateTime.Now.AddMilliseconds(dueMillis);
         }
@@ -168,7 +200,7 @@ namespace ASCOM.Wise40
             get
             {
                 if (_due == DateTime.MinValue)
-                    return TimeSpan.FromSeconds(0);
+                    return TimeSpan.MaxValue;
                 return _due.Subtract(DateTime.Now);
             }
         }
@@ -188,8 +220,27 @@ namespace ASCOM.Wise40
                 List<string> ret = new List<string>();
 
                 foreach (Activity a in _activities)
-                    if (Active(a))
+                {
+                    if (!Active(a))
+                        continue;
+
+                    if (a == Activity.GoingIdle)
+                    {
+                        TimeSpan ts = RemainingTime;
+
+                        string s = a.ToString();
+                        if (ts != TimeSpan.MaxValue)
+                        {
+                            s += " in ";
+                            if (ts.TotalMinutes > 0)
+                                s += string.Format("{0}m", (int)ts.TotalMinutes);
+                            s += string.Format("{0}s", ts.Seconds);
+                        }
+                        ret.Add(s);
+                    }
+                    else
                         ret.Add(a.ToString());
+                }
 
                 return string.Join(", ", ret);
             }

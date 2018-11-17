@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using ASCOM.Wise40;
 using ASCOM.Wise40.Common;
 
 namespace ASCOM.Wise40SafeToOperate
@@ -38,16 +39,16 @@ namespace ASCOM.Wise40SafeToOperate
                 r.safe = false;
             else
             {
-                double cover = WiseSafeToOperate.och.CloudCover;
+                double cover = WiseSite.och.CloudCover;
 
                 if (_max == 0)
-                    r.safe = cover != 0.0;
+                    r.safe = cover == 0.0;
                 else
                     r.safe = cover <= _max;
             }
-            #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "{0}: getIsSafe: {1}", Name, r.safe);
-            #endregion
+            //#region debug
+            //debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "{0}: getIsSafe: {1}", Name, r.safe);
+            //#endregion
             return r;
         }
 
