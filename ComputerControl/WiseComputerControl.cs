@@ -61,7 +61,7 @@ namespace ASCOM.Wise40
                 if (Simulated)
                     return false;
 
-                return !computerControlPin.isOn;
+                return !Hardware.Hardware.computerControlPin.isOn;
             }
         }
 
