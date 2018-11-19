@@ -763,6 +763,7 @@ namespace ASCOM.Wise40
             if (AtPark)
             {
                 throw new InvalidOperationException("Cannot AbortSlew while AtPark");
+            }
 
             Stop();
             activityMonitor.EndActivity(ActivityMonitor.Activity.Slewing);
