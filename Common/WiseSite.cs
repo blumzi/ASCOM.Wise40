@@ -250,6 +250,56 @@ namespace ASCOM.Wise40
                 return (_opMode == OpMode.LCO || _opMode == OpMode.WISE);
             }
         }
+
+        ////4-----------------------------------------------------------------------------
+        //function CalcAM(alt:extended): extended;
+        ////------------------------------------------------------------------------------
+        ////Returns Air mass. Input: Zenith Distance [rad]
+        ////Uses hardie formula. Valid to zenith-distance of about 87deg.
+        ////By : Eran O. Ofek           January 1994
+        //var
+        //    secz1   : extended;
+        //begin
+        //  if (pi/2-alt)>1.466 then   //Calc up to ZD=1.466Radians=84 degrees
+        //    Result:=9.9
+        //  else begin
+        //     secz1:= Sec(pi/2-alt)-1;
+        //     Result := secz1+1 - 0.0018167*secz1 - 0.002875*sqr(secz1) - 0.0008083*power(secz1,3);
+        //   end;
+        //end;
+
+        /// <summary>
+        /// Air Mass at given altitude (radians)
+        /// </summary>
+        /// <param name="alt">Altitude in radians</param>
+        /// <returns></returns>
+        public double AirMass(double alt)
+        {
+            const double halfPI = Math.PI / 2;
+
+            if ((halfPI - alt) > 1.466)
+                return 9.9;
+
+            double secz1 = (1 / Math.Cos(halfPI - alt)) - 1;   // Secant(x) = 1 / Cos(x)
+
+            return secz1 + 1 - 0.0018167 * secz1 - 0.002875 * Math.Pow(secz1, 2) - 0.0008083 * Math.Pow(secz1, 3);
+        }
+
+        public double MoonIllumination
+        {
+            get
+            {
+                return astroutils.MoonIllumination(astroutils.JulianDateUT1(0));
+            }
+        }
+
+        public double MoonPhase
+        {
+            get
+            {
+                return astroutils.MoonPhase(astroutils.JulianDateUT1(0));
+            }
+        }
     }
 
     public static class HumanIntervention
