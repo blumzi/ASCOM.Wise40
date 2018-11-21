@@ -32,7 +32,6 @@ namespace ASCOM.Wise40
             public double radians;
         };
 
-        public const int nSamples = 5;               // # of samples to remember
         public AxisPosition _prevPosition = new AxisPosition { radians = double.NaN };
         public AxisPosition _currPosition = new AxisPosition { radians = double.NaN };
         public static FixedSizedQueue<AxisPosition> _positions = new FixedSizedQueue<AxisPosition>(nSamples);
@@ -43,13 +42,13 @@ namespace ASCOM.Wise40
         public WiseSite wisesite = WiseSite.Instance;
         public static Astrometry.AstroUtils.AstroUtils astroutils;
 
-        public static readonly int _samplingFrequency = 20; // samples per second
+        public const int _samplingFrequency = 20;     // samples per second
         public const double simulatedDelta = 0.4;
+        public const int nSamples = 1000 / _samplingFrequency;  // a second's worth of samples
 
-        public FixedSizedQueue<AxisPosition> _samples;
+        public FixedSizedQueue<AxisPosition> _samples = new FixedSizedQueue<AxisPosition>(nSamples);
 
-        protected abstract double MinRadians { get; }       // Minimal radians reading
-        protected abstract double MaxRadians { get; }       // Maximal radians reading
+        protected static double _maxDeltaRadiansAtSlewRate = new Angle("2d00m00s").Radians;
 
         /// <summary>
         /// A background Task that checks whether the telescope axis is moving
@@ -346,16 +345,6 @@ namespace ASCOM.Wise40
 
         protected override bool Acceptable(double rad)
         {
-            if (rad < MinRadians || rad > MaxRadians)
-            {
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}:Acceptable({1}): Rejected (out-of-bounds [{2} .. {3}])", Name, rad, MinRadians, MaxRadians);
-                #endregion
-                return false;
-            }
-
-            const double _maxDeltaRadiansAtSlewRate = 0.5;
-
             if (!Double.IsNaN(_prevPosition.radians) && Math.Abs(_currPosition.radians - _prevPosition.radians) > _maxDeltaRadiansAtSlewRate)
             {
                 #region debug
@@ -366,22 +355,6 @@ namespace ASCOM.Wise40
             }
 
             return true;
-        }
-
-        protected override double MaxRadians
-        {
-            get
-            {
-                throw new System.NotImplementedException(); 
-            }
-        }
-
-        protected override double MinRadians
-        {
-            get
-            {
-                throw new System.NotImplementedException();
-            }
         }
     }
 
@@ -440,7 +413,7 @@ namespace ASCOM.Wise40
                     debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}:IsMoving: Not enough samples: arr.Count() {1} < _samples.MaxSize: {2}",
                         Name, arr.Count(), _samples.MaxSize);
                     #endregion
-                    return true;    // not enough samples
+                    return false;    // not enough samples
                 }
 
                 foreach (double d in arr)
@@ -483,17 +456,6 @@ namespace ASCOM.Wise40
 
         protected override bool Acceptable(double rad)
         {
-
-            if (rad < MinRadians || rad > MaxRadians)
-            {
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}:Acceptable({1}): Rejected (out-of-bounds: [{2} .. {3}])", Name, rad, MinRadians, MaxRadians);
-                #endregion
-                return false;
-            }
-
-            const double _maxDeltaRadiansAtSlewRate = 0.5;  // maximum difference between two consequtive encoder readings (radians)
-
             if (!Double.IsNaN(_prevPosition.radians) && Math.Abs(_currPosition.radians - _prevPosition.radians) > _maxDeltaRadiansAtSlewRate)
             {
                 #region debug
@@ -504,22 +466,6 @@ namespace ASCOM.Wise40
             }
 
             return true;
-        }
-
-        protected override double MaxRadians
-        {
-            get
-            {
-                throw new System.NotImplementedException();
-            }
-        }
-
-        protected override double MinRadians
-        {
-            get
-            {
-                throw new System.NotImplementedException();
-            }
         }
     }
 }
