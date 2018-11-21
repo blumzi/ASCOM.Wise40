@@ -48,7 +48,7 @@ namespace ASCOM.Wise40
 
         public FixedSizedQueue<AxisPosition> _samples = new FixedSizedQueue<AxisPosition>(nSamples);
 
-        protected static double _maxDeltaRadiansAtSlewRate = new Angle("2d00m00s").Radians;
+        protected static double _maxDeltaRadiansAtSlewRate = new Angle("5d00m00s").Radians;
 
         /// <summary>
         /// A background Task that checks whether the telescope axis is moving
