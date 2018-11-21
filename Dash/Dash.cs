@@ -60,6 +60,10 @@ namespace Dash
         public Color unsafeColor = Statuser.colors[Statuser.Severity.Error];
         public Color warningColor = Statuser.colors[Statuser.Severity.Warning];
 
+        private Moon moon = Moon.Instance;
+        ASCOM.DriverAccess.Telescope remoteTelescope;
+        DateTime lastRemoteTelescopeAccessTime = DateTime.MinValue;
+
         void onWheelOrPositionChanged(object sender, EventArgs e)
         {
             #region debug
@@ -84,6 +88,11 @@ namespace Dash
             //wisefilterwheel.init();
             //wisefilterwheel.Connected = true;
             wisedomeplatform.init();
+
+            if (wisesite.OperationalModeRequiresRESTServer)
+            {
+                remoteTelescope = new ASCOM.DriverAccess.Telescope("ASCOM.Remote1.Telescope");
+            }
 
             InitializeComponent();
 
@@ -203,9 +212,11 @@ namespace Dash
             Angle ha = Angle.FromHours(wisetele.HourAngle, Angle.Type.HA);
             string safetyError = wisetele.SafeAtCoordinates(ra, dec);
 
-            labelDate.Text = localTime.ToString("ddd, dd MMM yyyy\n hh:mm:ss tt");
-
             #region RefreshTelescope
+
+            #region Coordinates Info
+
+            labelDate.Text = localTime.ToString("ddd, dd MMM yyyy\n hh:mm:ss tt");
             labelLTValue.Text = now.TimeOfDay.ToString(@"hh\hmm\mss\.f\s");
             labelUTValue.Text = utcTime.TimeOfDay.ToString(@"hh\hmm\mss\.f\s");
             labelSiderealValue.Text = wisesite.LocalSiderealTime.ToString();
@@ -226,8 +237,32 @@ namespace Dash
 
             labelAzimuthValue.Text = Angle.FromDegrees(wisetele.Azimuth).ToNiceString();
 
+            #region Remote Telescope Target
+            if (wisesite.OperationalMode == WiseSite.OpMode.WISE && localTime.Subtract(lastRemoteTelescopeAccessTime).TotalSeconds > 2)
+            {
+                try
+                {
+                    Angle remoteTargetRA = Angle.FromHours(remoteTelescope.TargetRightAscension);
+                    textBoxRA.Text = remoteTargetRA.ToNiceString();
+                }
+                catch (Exception ex) { }
+
+                try
+                {
+                    Angle remoteTargetDec = Angle.FromDegrees(remoteTelescope.TargetDeclination);
+                    textBoxDec.Text = remoteTargetDec.ToNiceString();
+                }
+                catch (Exception ex) { }
+
+                lastRemoteTelescopeAccessTime = localTime;
+            }
+            #endregion
+
+            #endregion
+
             buttonTelescopePark.Text = wisetele.AtPark ? "Unpark" : "Park";
 
+            #region Inactivity Countdown
             if (wisesite.OperationalMode == WiseSite.OpMode.WISE)
             {
                 TimeSpan ts = activityMonitor.RemainingTime;
@@ -250,7 +285,9 @@ namespace Dash
                     toolTip.SetToolTip(labelCountdown, "Inactivity countdown");
                 }
             }
+            #endregion
 
+            #region Annunciators
             annunciatorTrack.Cadence = wisetele.Tracking ? ASCOM.Controls.CadencePattern.SteadyOn : ASCOM.Controls.CadencePattern.SteadyOff;
             annunciatorSlew.Cadence = wisetele.Slewing ? ASCOM.Controls.CadencePattern.SteadyOn : ASCOM.Controls.CadencePattern.SteadyOff;
             annunciatorPulse.Cadence = wisetele.IsPulseGuiding ? ASCOM.Controls.CadencePattern.SteadyOn : ASCOM.Controls.CadencePattern.SteadyOff;
@@ -312,6 +349,7 @@ namespace Dash
                 annunciatorDECRateSet.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
             else if (secondaryRate == Const.rateGuide)
                 annunciatorDECRateGuide.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+            #endregion
 
             telescopeStatus.Show(wisetele.Status);
 
@@ -534,6 +572,15 @@ namespace Dash
                     labelSunElevationValue.ForeColor = Statuser.TriStateColor(wisesafetooperate.isSafeSunElevation);
                     #endregion
 
+                    #region Moon
+                    labelMoonIllum.Text = (moon.Illumination * 100).ToString("g2") + "%";
+                    labelMoonDist.Text = moon.Distance(ra.Radians, dec.Radians).ToNiceString();
+                    #endregion
+
+                    #region Air Mass
+                    labelAirMass.Text = wisesite.AirMass(wisetele.Altitude).ToString("g2");
+                    #endregion
+
                     #region SafeToOperate
                     if (wisesafetooperate.IsSafe)
                     {
@@ -658,7 +705,8 @@ namespace Dash
                 movements.Add(new Movement(Const.CardinalDirection.South, TelescopeAxes.axisSecondary, -handpadRate));
                 movements.Add(new Movement(Const.CardinalDirection.East, TelescopeAxes.axisPrimary, handpadRate));
             }
-            
+
+            toolTip.SetToolTip(telescopeStatus.Label, "");
             List<Const.CardinalDirection> whichWay = new List<Const.CardinalDirection>();
             List<string> Directions = new List<string>();
             foreach (var m in movements)
@@ -691,9 +739,17 @@ namespace Dash
                 string message = string.Format("Moving {0} at {1}", String.Join("-", Directions.ToArray()), WiseTele.RateName(handpadRate).Remove(0, 4));
                 telescopeStatus.Show(message, 0, Statuser.Severity.Good);
 
-                foreach (var m in movements)
+                try
                 {
-                    wisetele.HandpadMoveAxis(m._axis, m._rate);
+                    foreach (var m in movements)
+                    {
+                        wisetele.HandpadMoveAxis(m._axis, m._rate);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    telescopeStatus.Show("Not safe to move", 2000, Statuser.Severity.Error);
+                    toolTip.SetToolTip(telescopeStatus.Label, ex.Message.Replace(',', '\n'));
                 }
             }
             else

@@ -35,6 +35,15 @@ namespace ASCOM.Wise40.Common
             _toolTip = tooltip;
         }
 
+        public Label Label
+        {
+            get
+            {
+                return _label;
+            }
+        }
+
+
         public void Show(string s, int millis = 0, Severity severity = Severity.Normal, bool silent = false)
         {
             if (_busy)
