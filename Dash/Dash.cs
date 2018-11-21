@@ -578,7 +578,8 @@ namespace Dash
                     #endregion
 
                     #region Air Mass
-                    labelAirMass.Text = wisesite.AirMass(wisetele.Altitude).ToString("g2");
+                    Angle alt = Angle.FromDegrees(wisetele.Altitude);
+                    labelAirMass.Text = wisesite.AirMass(alt.Radians).ToString("g2");
                     #endregion
 
                     #region SafeToOperate
