@@ -263,7 +263,7 @@ namespace Dash
             buttonTelescopePark.Text = wisetele.AtPark ? "Unpark" : "Park";
 
             #region Inactivity Countdown
-            if (wisesite.OperationalMode == WiseSite.OpMode.WISE)
+            if (wisesite.OperationalMode == WiseSite.OpMode.LCO)
             {
                 TimeSpan ts = activityMonitor.RemainingTime;
                 if (ts == TimeSpan.MaxValue)
