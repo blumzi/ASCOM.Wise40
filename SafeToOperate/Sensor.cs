@@ -281,17 +281,20 @@ namespace ASCOM.Wise40SafeToOperate
                 debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}) isSafe changed from {1} to {2}", Name, wassafe, issafe);
             #endregion
 
-            if (wasready && (!wassafe && issafe))
+            if (wasready)
             {
-                // the sensor transited from unsafe to safe
-                SetState(SensorState.Stabilizing);
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}) started stabilizing", Name);
-                #endregion
-                int millis = (int)WiseSafeToOperate._stabilizationPeriod.TotalMilliseconds;
+                if ((!wassafe && issafe) || (wassafe && !issafe))
+                {
+                    // the sensor transited from unsafe to safe
+                    SetState(SensorState.Stabilizing);
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}) started stabilizing", Name);
+                    #endregion
+                    int millis = (int) WiseSafeToOperate._stabilizationPeriod.TotalMilliseconds;
 
-                _timer.Change(millis, Timeout.Infinite);
-                _endOfStabilization = DateTime.Now.AddMilliseconds(millis);
+                    _timer.Change(millis, Timeout.Infinite);
+                    _endOfStabilization = DateTime.Now.AddMilliseconds(millis);
+                }
             }
         }
 
