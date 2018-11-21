@@ -1150,7 +1150,7 @@ namespace ASCOM.Wise40
             } catch (Exception ex)
             {
                 activityMonitor.EndActivity(ActivityMonitor.Activity.Handpad);
-                return;
+                throw;
             }
 
             if (!BypassCoordinatesSafety)
