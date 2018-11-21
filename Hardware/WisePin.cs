@@ -53,7 +53,7 @@ namespace ASCOM.Wise40.Hardware
             if (dir != DigitalPortDirection.DigitalOut)
                 return;
 
-            if (_controlled && Hardware.computerControlPin.isOff)
+            if (!Simulated && _controlled && Hardware.computerControlPin.isOff)
                 throw new Hardware.MaintenanceModeException(Const.computerControlAtMaintenance);
 
             daq.Value |= (ushort)(1 << bit);
@@ -82,7 +82,7 @@ namespace ASCOM.Wise40.Hardware
             if (dir != DigitalPortDirection.DigitalOut)
                 return;
 
-            if (_controlled && Hardware.computerControlPin.isOff)
+            if (!Simulated && _controlled && Hardware.computerControlPin.isOff)
                 throw new Hardware.MaintenanceModeException(Const.computerControlAtMaintenance);
 
             daq.Value &= (ushort)~(1 << bit);
