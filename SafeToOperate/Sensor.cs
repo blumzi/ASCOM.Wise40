@@ -117,12 +117,12 @@ namespace ASCOM.Wise40SafeToOperate
 
             switch (Name)
             {
-                case "Wind": defaultInterval = 30; defaultRepeats = 3; break;
+                case "Wind": defaultInterval = 60; defaultRepeats = 3; break;
                 case "Sun": defaultInterval = 60; defaultRepeats = 1; break;
                 case "HumanIntervention": defaultInterval = 0; defaultRepeats = 1; break;
-                case "Rain": defaultInterval = 30; defaultRepeats = 2; break;
-                case "Clouds": defaultInterval = 30; defaultRepeats = 3; break;
-                case "Humidity": defaultInterval = 30; defaultRepeats = 4; break;
+                case "Rain": defaultInterval = 60; defaultRepeats = 2; break;
+                case "Clouds": defaultInterval = 60; defaultRepeats = 3; break;
+                case "Humidity": defaultInterval = 60; defaultRepeats = 4; break;
             }
 
             _intervalMillis = 1000 * Convert.ToInt32(wisesafetooperate._profile.GetValue(Const.wiseSafeToOperateDriverID, Name, "Interval", defaultInterval.ToString()));
