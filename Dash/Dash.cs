@@ -89,12 +89,13 @@ namespace Dash
             //wisefilterwheel.Connected = true;
             wisedomeplatform.init();
 
+            InitializeComponent();
+
             if (wisesite.OperationalModeRequiresRESTServer)
             {
                 remoteTelescope = new ASCOM.DriverAccess.Telescope("ASCOM.Remote1.Telescope");
+                groupBoxTarget.Text += string.Format("(from {0}) ", wisesite.OperationalMode.ToString());
             }
-
-            InitializeComponent();
 
             readonlyControls = new List<Control>()
                 {
@@ -238,21 +239,28 @@ namespace Dash
             labelAzimuthValue.Text = Angle.FromDegrees(wisetele.Azimuth).ToNiceString();
 
             #region Remote Telescope Target
-            if (wisesite.OperationalMode == WiseSite.OpMode.WISE && localTime.Subtract(lastRemoteTelescopeAccessTime).TotalSeconds > 2)
+            if (wisesite.OperationalMode == WiseSite.OpMode.LCO && localTime.Subtract(lastRemoteTelescopeAccessTime).TotalSeconds > 2)
             {
                 try
                 {
                     Angle remoteTargetRA = Angle.FromHours(remoteTelescope.TargetRightAscension);
                     textBoxRA.Text = remoteTargetRA.ToNiceString();
                 }
-                catch (Exception ex) { }
+                catch (Exception ex) {
+                    textBoxRA.Text = "no target";
+                    toolTip.SetToolTip(textBoxRA, ex.Message);
+                }
 
                 try
                 {
                     Angle remoteTargetDec = Angle.FromDegrees(remoteTelescope.TargetDeclination);
                     textBoxDec.Text = remoteTargetDec.ToNiceString();
                 }
-                catch (Exception ex) { }
+                catch (Exception ex)
+                {
+                    textBoxDec.Text = "no target";
+                    toolTip.SetToolTip(textBoxDec, ex.Message);
+                }
 
                 lastRemoteTelescopeAccessTime = localTime;
             }
@@ -407,6 +415,8 @@ namespace Dash
             #region SafeToOperate Annunciator
             tip = null;
 
+            string safetooperateStatus = "";
+
             if (wisesite.safeToOperate == null)
             {
                 annunciatorSafeToOperate.Text = "Safe to operate ???";
@@ -415,14 +425,15 @@ namespace Dash
             }
             else
             {
-                string status = wisesafetooperate.Action("status", string.Empty);
-                bool bypassed = status.Contains("bypassed:true");
-                bool intervention = status.Contains("no-human-intervention:false");
-                bool safe = status.Contains("safe:true");
+                safetooperateStatus = wisesafetooperate.Action("status", string.Empty);
+                bool bypassed = safetooperateStatus.Contains("bypassed:true");
+                bool intervention = safetooperateStatus.Contains("no-human-intervention:false");
+                bool safe = safetooperateStatus.Contains("safe:true");
 
                 if (intervention)
                 {
                     annunciatorSafeToOperate.Text = "Human Intervention";
+                    annunciatorSafeToOperate.ForeColor = unsafeColor;
                     annunciatorSafeToOperate.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
                     string reasons = String.Join("\n", wisesafetooperate.UnsafeReasons);
                     tip = reasons.Replace(";", "\n  ");
@@ -430,18 +441,21 @@ namespace Dash
                 else if (bypassed)
                 {
                     annunciatorSafeToOperate.Text = "Safety bypassed";
+                    annunciatorSafeToOperate.ForeColor = warningColor;
                     annunciatorSafeToOperate.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
                     tip = "Safety checks are bypassed!";
                 }
                 else if (safe)
                 {
                     annunciatorSafeToOperate.Text = "Safe to operate";
+                    annunciatorSafeToOperate.ForeColor = safeColor;
                     annunciatorSafeToOperate.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
                     tip = "Conditions are safe to operate.";
                 }
                 else
                 {
                     annunciatorSafeToOperate.Text = "Not safe to operate";
+                    annunciatorSafeToOperate.ForeColor = unsafeColor;
                     annunciatorSafeToOperate.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
                     string reasons = string.Join("\n", wisesafetooperate.UnsafeReasons);
                     reasons = reasons.Replace(";", "\n  ");
@@ -579,7 +593,7 @@ namespace Dash
 
                     #region Air Mass
                     Angle alt = Angle.FromDegrees(wisetele.Altitude);
-                    labelAirMass.Text = wisesite.AirMass(alt.Radians).ToString("g2");
+                    labelAirMass.Text = wisesite.AirMass(alt.Radians).ToString("g4");
                     #endregion
 
                     #region SafeToOperate
@@ -587,13 +601,14 @@ namespace Dash
                     {
                         Statuser.Severity severity = Statuser.Severity.Good;
                         string stat = "Safe to operate";
-                        if (_bypassSafety)
+                        if (safetooperateStatus.Contains("bypassed:true"))
                         {
                             stat += " (safety bypassed)";
                             severity = Statuser.Severity.Warning;
                         }
                         weatherStatus.Show(stat, 0, severity);
-                        weatherStatus.SetToolTip("");
+                        string reasons = string.Join("\n", wisesafetooperate.UnsafeReasons);
+                        weatherStatus.SetToolTip(reasons.Replace(";", "\n  "));
                     }
                     else
                     {
