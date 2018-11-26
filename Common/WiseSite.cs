@@ -247,8 +247,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                // Not sure about ACP yet!
-                return (_opMode == OpMode.LCO || _opMode == OpMode.WISE);
+                return (_opMode == OpMode.LCO || _opMode == OpMode.ACP);
             }
         }
 
