@@ -65,7 +65,7 @@ namespace Dash
                 move[TelescopeAxes.axisPrimary].moving = true;
                 move[TelescopeAxes.axisPrimary].millis = Convert.ToInt32(textBoxRaMillis.Text);
                 move[TelescopeAxes.axisPrimary].coord_before = wisetele.RightAscension;
-                move[TelescopeAxes.axisPrimary].enc_before = wisetele.HAEncoder.Value;
+                move[TelescopeAxes.axisPrimary].enc_before = wisetele.HAEncoder.EncoderValue;
                 move[TelescopeAxes.axisPrimary].dir = radioButtonWest.Checked ? 
                     GuideDirections.guideWest : GuideDirections.guideEast;
             }
@@ -75,7 +75,7 @@ namespace Dash
                 move[TelescopeAxes.axisSecondary].moving = true;
                 move[TelescopeAxes.axisSecondary].millis = Convert.ToInt32(textBoxDecMillis.Text);
                 move[TelescopeAxes.axisSecondary].coord_before = wisetele.Declination;
-                move[TelescopeAxes.axisSecondary].enc_before = wisetele.DecEncoder.Value;
+                move[TelescopeAxes.axisSecondary].enc_before = wisetele.DecEncoder.EncoderValue;
                 move[TelescopeAxes.axisSecondary].dir = radioButtonNorth.Checked ?
                     GuideDirections.guideNorth : GuideDirections.guideSouth;
             }
@@ -117,7 +117,7 @@ namespace Dash
             if (move[TelescopeAxes.axisPrimary].moving)
             {
                 move[TelescopeAxes.axisPrimary].coord_after = wisetele.RightAscension;
-                move[TelescopeAxes.axisPrimary].enc_after = wisetele.HAEncoder.Value;
+                move[TelescopeAxes.axisPrimary].enc_after = wisetele.HAEncoder.EncoderValue;
                 labelRaDeltaDeg.Text = (new Angle(Math.Abs(move[TelescopeAxes.axisPrimary].coord_after - move[TelescopeAxes.axisPrimary].coord_before), Angle.Type.RA)).ToString();
                 labelRaDeltaEnc.Text = (Math.Abs(move[TelescopeAxes.axisPrimary].enc_after - move[TelescopeAxes.axisPrimary].enc_before)).ToString("F0");
             }
@@ -125,7 +125,7 @@ namespace Dash
             if (move[TelescopeAxes.axisSecondary].moving)
             {
                 move[TelescopeAxes.axisSecondary].coord_after = wisetele.Declination;
-                move[TelescopeAxes.axisSecondary].enc_after = wisetele.DecEncoder.Value;
+                move[TelescopeAxes.axisSecondary].enc_after = wisetele.DecEncoder.EncoderValue;
                 labelDecDeltaDeg.Text = (new Angle(Math.Abs(move[TelescopeAxes.axisSecondary].coord_after - move[TelescopeAxes.axisSecondary].coord_before), Angle.Type.Dec)).ToString();
                 labelDecDeltaEnc.Text = (Math.Abs(move[TelescopeAxes.axisSecondary].enc_after - move[TelescopeAxes.axisSecondary].enc_before)).ToString("F0");
             }

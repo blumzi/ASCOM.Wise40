@@ -9,7 +9,7 @@ namespace ASCOM.Wise40.Hardware
 {
     public interface IEncoder : IConnectable, IDegrees, IDisposable, IWiseObject
     {
-        /*uint*/double Value { get; set; }        // from the Daqs or simulated
+        /*uint*/double EncoderValue { get; set; }        // from the Daqs or simulated
         Angle Angle { get; set; }
     }
 }
