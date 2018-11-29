@@ -59,7 +59,6 @@ namespace ASCOM.Wise40.Boltwood
             }
             catch { }
 
-            debugger.init();
             tl = new TraceLogger("", "Wise40.Boltwood");
             tl.Enabled = debugger.Tracing;
             tl.LogMessage("ObservingConditions", "initialized");
