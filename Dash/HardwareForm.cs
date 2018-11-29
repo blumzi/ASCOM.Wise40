@@ -28,7 +28,6 @@ namespace ASCOM.Wise40
             hw.init();
             wisetele.init();
             wisetele.Connected = true;
-            wisedome.init();
             wisedome.Connected = true;
             wisefocuser.Connected = true;
 
