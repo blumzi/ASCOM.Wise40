@@ -75,7 +75,6 @@ namespace ASCOM.Wise40.VantagePro
         public ObservingConditions()
         {
             vantagePro.init();
-            debugger.init();
 
             tl = new TraceLogger("", "Wise40.VantagePro");
             tl.Enabled = debugger.Tracing;

@@ -225,7 +225,6 @@ namespace ASCOM.Wise40.VantagePro
                 return;
 
             Name = "Wise40.VantagePro";
-            debugger.init();
             tl = new TraceLogger("", "Wise40.VantagePro");
             tl.Enabled = debugger.Tracing;
             tl.LogMessage("ObservingConditions", "initialized");
