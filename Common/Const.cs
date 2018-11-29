@@ -34,8 +34,9 @@ namespace ASCOM.Wise40.Common
         public const string checkmark = " ✓";
         public const string notsign = "\u00AC";
 
-        public const string fieldSeparator = @"@";
-        public const string lineSeparator = @"|";
+        public const string fieldSeparator = ",";
+        public const string subFieldSeparator = "@";
+        public const string recordSeparator = ";";
 
         public const string topWise40Directory = "c:/Wise40/";
         public const string humanInterventionFilePath = Const.topWise40Directory + "Observatory/HumanIntervention.txt";
@@ -64,6 +65,9 @@ namespace ASCOM.Wise40.Common
         public const string computerControlAtMaintenance = "ComputerControl at Maintenance";
 
         public const double twoPI = 2.0 * Math.PI;
+        public const double halfPI = Math.PI / 2;
+        public const double onePI = Math.PI;
+
 
         public class ProfileName
         {
