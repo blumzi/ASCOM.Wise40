@@ -1,0 +1,1 @@
+C:\cygwin64\bin\mintty.exe --size=132,40 --Title "Wise40 Shell"  --dir C:\cygwin64\home\mizpe\bin\ascom-restricted -i /Cygwin-Terminal.ico c:\cygwin64\bin\bash --restricted --rcfile .bashrc
