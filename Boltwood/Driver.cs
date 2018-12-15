@@ -66,7 +66,6 @@ namespace ASCOM.Wise40.Boltwood
         public ObservingConditions()
         {
             ReadProfile(); // Read device configuration from the ASCOM Profile store 
-            //boltwood.init();
         }
 
 
