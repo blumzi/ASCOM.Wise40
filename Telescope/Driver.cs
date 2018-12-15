@@ -103,8 +103,6 @@ namespace ASCOM.Wise40 //.Telescope
             astroUtils = new AstroUtils(); // Initialise astro utilities object
 
             wisetele.init();
-            wisesite.init();
-            debugger.init();
         }
 
         //
@@ -121,7 +119,7 @@ namespace ASCOM.Wise40 //.Telescope
         /// </summary>
         public void SetupDialog()
         {
-            using (TelescopeSetupDialogForm F = new TelescopeSetupDialogForm(wisetele.traceLogger.Enabled,
+            using (TelescopeSetupDialogForm F = new TelescopeSetupDialogForm(
                 wisetele.debugger.Level,
                 wisesite.astrometricAccuracy,
                 wisetele._enslaveDome))
@@ -225,7 +223,7 @@ namespace ASCOM.Wise40 //.Telescope
         {
             get
             {
-                return wisetele.Name;
+                return wisetele.WiseName;
             }
         }
 
@@ -571,6 +569,7 @@ namespace ASCOM.Wise40 //.Telescope
             {
                 return wisetele.RightAscensionRate;
             }
+
             set
             {
                 wisetele.RightAscensionRate = value;

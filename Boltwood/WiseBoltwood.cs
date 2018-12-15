@@ -22,7 +22,6 @@ namespace ASCOM.Wise40.Boltwood
         private DateTime _lastDataRead = DateTime.MinValue;
         private WiseSite wisesite = WiseSite.Instance;
 
-        private TraceLogger tl;
         private static volatile WiseBoltwood _instance; // Singleton
         private static object syncObject = new object();
         static WiseBoltwood() {}
@@ -58,10 +57,6 @@ namespace ASCOM.Wise40.Boltwood
                 GetSensorData();
             }
             catch { }
-
-            tl = new TraceLogger("", "Wise40.Boltwood");
-            tl.Enabled = debugger.Tracing;
-            tl.LogMessage("ObservingConditions", "initialized");
 
             _initialized = true;
         }
@@ -178,23 +173,17 @@ namespace ASCOM.Wise40.Boltwood
 
         public void Dispose()
         {
-            //Clean up the tracelogger and util objects
-            tl.Enabled = false;
-            tl.Dispose();
-            tl = null;
         }
 
         public bool Connected
         {
             get
             {
-                //tl.LogMessage("Connected Get", IsConnected.ToString());
-                //return IsConnected;
                 return _connected;
             }
+
             set
             {
-                tl.LogMessage("Connected Set", value.ToString());
                 if (value == _connected)
                     return;
 
@@ -216,7 +205,6 @@ namespace ASCOM.Wise40.Boltwood
             // TODO customise this device description
             get
             {
-                tl.LogMessage("Description Get", driverDescription);
                 return driverDescription;
             }
         }
@@ -225,9 +213,7 @@ namespace ASCOM.Wise40.Boltwood
         {
             get
             {
-                string driverInfo = "Information about the driver itself. Version: " + String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
-                tl.LogMessage("DriverInfo Get", driverInfo);
-                return driverInfo;
+                return "Information about the driver itself. Version: " + String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
             }
         }
 
@@ -243,9 +229,7 @@ namespace ASCOM.Wise40.Boltwood
         {
             get
             {
-                string driverVersion = String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
-                tl.LogMessage("DriverVersion Get", driverVersion);
-                return driverVersion;
+                return String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
             }
         }
 
@@ -254,18 +238,15 @@ namespace ASCOM.Wise40.Boltwood
             // set by the driver wizard
             get
             {
-                tl.LogMessage("InterfaceVersion Get", "1");
                 return Convert.ToInt16("1");
             }
         }
 
-        public new string Name
+        public string Name
         {
             get
             {
-                string name = "Wise40 Boltwood";
-                tl.LogMessage("Name Get", name);
-                return name;
+                return "Wise40 Boltwood";
             }
         }
 
@@ -286,13 +267,11 @@ namespace ASCOM.Wise40.Boltwood
         {
             get
             {
-                tl.LogMessage("AveragePeriod", "get - 0");
                 return 0;
             }
 
             set
             {
-                tl.LogMessage("AveragePeriod", string.Format("set - {0}", value));
                 if (value != 0)
                     throw new InvalidValueException("Only 0.0 accepted");
             }
@@ -330,7 +309,6 @@ namespace ASCOM.Wise40.Boltwood
                         break;
                 }
 
-                tl.LogMessage("CloudCover", string.Format("get - {0}", ret));
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugSafety, string.Format("Boltwood: CloudCover_numeric - get => {0}", ret.ToString()));
                 #endregion 
@@ -367,13 +345,12 @@ namespace ASCOM.Wise40.Boltwood
                 try
                 {
                     GetSensorData();
-                } catch
+                }
+                catch
                 {
                     return double.NaN;
                 }
-                double ret = _sensorData.dewPoint;
-                tl.LogMessage("DewPoint", string.Format("get - {0}", ret));
-                return ret;
+                return _sensorData.dewPoint;
             }
         }
 
@@ -395,9 +372,7 @@ namespace ASCOM.Wise40.Boltwood
                 {
                     return double.NaN;
                 }
-                double ret = _sensorData.humidity;
-                tl.LogMessage("Humidity", string.Format("get - {0}", ret));
-                return ret;
+                return _sensorData.humidity;
             }
         }
 
@@ -413,7 +388,6 @@ namespace ASCOM.Wise40.Boltwood
         {
             get
             {
-                tl.LogMessage("Pressure", "get - not implemented");
                 throw new PropertyNotImplementedException("Pressure", false);
             }
         }
@@ -429,7 +403,6 @@ namespace ASCOM.Wise40.Boltwood
         {
             get
             {
-                tl.LogMessage("RainRate", "get - not implemented");
                 throw new PropertyNotImplementedException("RainRate", false);
             }
         }
@@ -476,10 +449,8 @@ namespace ASCOM.Wise40.Boltwood
                 case "StarFWHM":
                 case "WindDirection":
                 case "WindGust":
-                    tl.LogMessage("SensorDescription", PropertyName + " - not implemented");
                     throw new MethodNotImplementedException("SensorDescription(" + PropertyName + ")");
                 default:
-                    tl.LogMessage("SensorDescription", PropertyName + " - unrecognised");
                     throw new ASCOM.InvalidValueException("SensorDescription(" + PropertyName + ")");
             }
         }
@@ -491,7 +462,6 @@ namespace ASCOM.Wise40.Boltwood
         {
             get
             {
-                tl.LogMessage("SkyBrightness", "get - not implemented");
                 throw new PropertyNotImplementedException("SkyBrightness", false);
             }
         }
@@ -503,7 +473,6 @@ namespace ASCOM.Wise40.Boltwood
         {
             get
             {
-                tl.LogMessage("SkyQuality", "get - not implemented");
                 throw new PropertyNotImplementedException("SkyQuality", false);
             }
         }
@@ -515,7 +484,6 @@ namespace ASCOM.Wise40.Boltwood
         {
             get
             {
-                tl.LogMessage("StarFWHM", "get - not implemented");
                 throw new PropertyNotImplementedException("StarFWHM", false);
             }
         }
@@ -542,7 +510,6 @@ namespace ASCOM.Wise40.Boltwood
                     ret = -100.0;
                 else if (ret == (double)SensorData.SpecialTempValue.specialTempWet)
                     ret = 100;
-                tl.LogMessage("SkyTemperature", string.Format("get - {0}", ret));
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugSafety, string.Format("Boltwood: SkyTemperature - get => {0}", ret.ToString()));
                 #endregion 
@@ -566,7 +533,6 @@ namespace ASCOM.Wise40.Boltwood
                 }
                 double ret = _sensorData.ambientTemp;
 
-                tl.LogMessage("Temperature", string.Format("get - {0}", ret));
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugSafety, string.Format("Boltwood: Temperature - get => {0}", ret.ToString()));
                 #endregion 
@@ -595,14 +561,10 @@ namespace ASCOM.Wise40.Boltwood
                 case "Pressure":
                 case "RainRate":
                 case "WindDirection":
-                    tl.LogMessage("TimeSinceLastUpdate", PropertyName + " - not implemented");
                     throw new MethodNotImplementedException("SensorDescription(" + PropertyName + ")");
             }
 
-            var ret = _sensorData.age;
-
-            tl.LogMessage("TimeSinceLastUpdate", string.Format("{0} {1}", PropertyName, ret.ToString()));
-            return ret;
+            return _sensorData.age;
         }
 
         /// <summary>
@@ -616,7 +578,6 @@ namespace ASCOM.Wise40.Boltwood
         {
             get
             {
-                tl.LogMessage("WindDirection", "get - not implemented");
                 throw new PropertyNotImplementedException("WindDirection", false);
             }
         }
@@ -628,7 +589,6 @@ namespace ASCOM.Wise40.Boltwood
         {
             get
             {
-                tl.LogMessage("WindGust", "get - not implemented");
                 throw new PropertyNotImplementedException("WindGust", false);
             }
         }
@@ -661,7 +621,6 @@ namespace ASCOM.Wise40.Boltwood
                         break;
                 }
 
-                tl.LogMessage("WindSpeed", string.Format("get - {0}", ret));
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugSafety, string.Format("Boltwood: WindSpeed - get => {0}", ret.ToString()));
                 #endregion 

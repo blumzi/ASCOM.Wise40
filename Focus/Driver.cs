@@ -181,7 +181,7 @@ namespace ASCOM.Wise40 //.Focuser
         {
             get
             {
-                return wisefocuser.Name;
+                return wisefocuser.WiseName;
             }
         }
 

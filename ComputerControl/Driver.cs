@@ -75,11 +75,6 @@ namespace ASCOM.Wise40.ComputerControl
         /// </summary>
         private bool _connected = false;
 
-        /// <summary>
-        /// Private variable to hold the trace logger object (creates a diagnostic log file with information that you specify)
-        /// </summary>
-        private TraceLogger tl;
-
         private WiseComputerControl wisesafety = WiseComputerControl.Instance;
 
         /// <summary>
@@ -91,14 +86,8 @@ namespace ASCOM.Wise40.ComputerControl
             ReadProfile(); // Read device configuration from the ASCOM Profile store
             Wise40.Common.Debugger debugger = Wise40.Common.Debugger.Instance;
 
-            tl = new TraceLogger("", "ComputerControl");
-            tl.Enabled = debugger.Tracing;
-            tl.LogMessage("SafetyMonitor", "Starting initialisation");
-
             _connected = false;
             wisesafety.init();
-
-            tl.LogMessage("SafetyMonitor", "Completed initialisation");
         }
 
 
@@ -135,7 +124,6 @@ namespace ASCOM.Wise40.ComputerControl
         {
             get
             {
-                tl.LogMessage("SupportedActions Get", "Returning empty arraylist");
                 return new ArrayList();
             }
         }
@@ -180,22 +168,17 @@ namespace ASCOM.Wise40.ComputerControl
 
         public void Dispose()
         {
-            // Clean up the tracelogger and util objects
-            tl.Enabled = false;
-            tl.Dispose();
-            tl = null;
         }
 
         public bool Connected
         {
             get
             {
-                tl.LogMessage("Connected Get", _connected.ToString());
                 return _connected;
             }
+
             set
             {
-                tl.LogMessage("Connected Set", value.ToString());
                 _connected = value;
             }
         }
@@ -204,7 +187,6 @@ namespace ASCOM.Wise40.ComputerControl
         {
             get
             {
-                tl.LogMessage("Description Get", driverDescription);
                 return driverDescription;
             }
         }
@@ -213,9 +195,7 @@ namespace ASCOM.Wise40.ComputerControl
         {
             get
             {
-                string driverInfo = "Reports Maintenance Switch status. Version: " + DriverVersion;
-                tl.LogMessage("DriverInfo Get", driverInfo);
-                return driverInfo;
+                return "Reports Maintenance Switch status. Version: " + DriverVersion;
             }
         }
 
@@ -223,18 +203,14 @@ namespace ASCOM.Wise40.ComputerControl
         {
             get
             {
-                string driverVersion = String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
-                tl.LogMessage("DriverVersion Get", driverVersion);
-                return driverVersion;
+                return String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
             }
         }
 
         public short InterfaceVersion
         {
-            // set by the driver wizard
             get
             {
-                tl.LogMessage("InterfaceVersion Get", "1");
                 return Convert.ToInt16("1");
             }
         }
@@ -243,9 +219,7 @@ namespace ASCOM.Wise40.ComputerControl
         {
             get
             {
-                string name = "Wise40 ComputerControl";
-                tl.LogMessage("Name Get", name);
-                return name;
+                return "Wise40 ComputerControl";
             }
         }
 
@@ -256,15 +230,7 @@ namespace ASCOM.Wise40.ComputerControl
         {
             get
             {
-                bool ret;
-
-                if (!_connected)
-                    ret = false;
-                else
-                    ret = wisesafety.IsSafe;
-
-                tl.LogMessage("IsSafe Get", ret.ToString());
-                return ret;
+                return _connected ? wisesafety.IsSafe : false;
             }
         }
 

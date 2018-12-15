@@ -86,11 +86,6 @@ namespace ASCOM.Wise40 //.Dome
         /// </summary>
         private AstroUtils astroUtilities;
 
-        /// <summary>
-        /// Private variable to hold the trace logger object (creates a diagnostic log file with information that you specify)
-        /// </summary>
-        public static TraceLogger tl;
-
         private  WiseDome wisedome = WiseDome.Instance;
 
         public AutoResetEvent arrived = new AutoResetEvent(false);
@@ -102,19 +97,11 @@ namespace ASCOM.Wise40 //.Dome
         public Dome()
         {
             wisedome.ReadProfile(); // Read device configuration from the ASCOM Profile store
-
-            tl = new TraceLogger("", "Dome");
-            tl.Enabled = debugger.Tracing;
-            tl.LogMessage("Dome", "Starting initialisation");
             
             utilities = new Util();
             astroUtilities = new AstroUtils();
 
-            debugger.init();
-            wisedome.init();
             wisedome.SetArrivedAtAzEvent(arrived);
-
-            tl.LogMessage("Dome", "Completed initialisation");
         }
 
         //
@@ -176,9 +163,6 @@ namespace ASCOM.Wise40 //.Dome
 
         public void Dispose()
         {
-            tl.Enabled = false;
-            tl.Dispose();
-            tl = null;
             utilities.Dispose();
             utilities = null;
             astroUtilities.Dispose();
@@ -237,7 +221,7 @@ namespace ASCOM.Wise40 //.Dome
         {
             get
             {
-                return wisedome.Name;
+                return wisedome.WiseName;
             }
         }
 
@@ -278,10 +262,7 @@ namespace ASCOM.Wise40 //.Dome
         {
             get
             {
-                double ret = wisedome.Azimuth.Degrees;
-
-                tl.LogMessage("Azimuth Get", ret.ToString());
-                return ret;
+                return wisedome.Azimuth.Degrees;
             }
         }
 
@@ -351,6 +332,9 @@ namespace ASCOM.Wise40 //.Dome
 
         public void CloseShutter()
         {
+            #region debug
+            debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, "CloseShutter");
+            #endregion
             wisedome.CloseShutter();
         }
 
@@ -361,6 +345,9 @@ namespace ASCOM.Wise40 //.Dome
 
         public void OpenShutter()
         {
+            #region debug
+            debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, "OpenShutter");
+            #endregion
             wisedome.OpenShutter();
         }
 
@@ -378,6 +365,10 @@ namespace ASCOM.Wise40 //.Dome
         {
             get
             {
+                #region debug
+                debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM,
+                    "ShutterStatus: returning {0}", wisedome.ShutterState.ToString());
+                #endregion
                 return wisedome.ShutterState;
             }
         }

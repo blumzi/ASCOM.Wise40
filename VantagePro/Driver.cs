@@ -64,23 +64,12 @@ namespace ASCOM.Wise40.VantagePro
         private WiseVantagePro vantagePro = WiseVantagePro.Instance;
 
         /// <summary>
-        /// Private variable to hold the trace logger object (creates a diagnostic log file with information that you specify)
-        /// </summary>
-        private TraceLogger tl;
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="Wise40.VantagePro"/> class.
         /// Must be public for COM registration.
         /// </summary>
         public ObservingConditions()
         {
             vantagePro.init();
-
-            tl = new TraceLogger("", "Wise40.VantagePro");
-            tl.Enabled = debugger.Tracing;
-            tl.LogMessage("ObservingConditions", "Starting initialisation");
-
-            tl.LogMessage("ObservingConditions", "Completed initialisation");
         }
 
 
@@ -117,7 +106,6 @@ namespace ASCOM.Wise40.VantagePro
         {
             get
             {
-                tl.LogMessage("SupportedActions Get", "Returning empty arraylist");
                 return new ArrayList();
             }
         }
@@ -147,22 +135,16 @@ namespace ASCOM.Wise40.VantagePro
 
         public void Dispose()
         {
-            tl.Enabled = false;
-            tl.Dispose();
-            tl = null;
         }
 
         public bool Connected
         {
             get
             {
-                var ret = vantagePro.Connected;
-                tl.LogMessage("Connected Get", ret.ToString());
-                return ret;
+                return vantagePro.Connected;
             }
             set
             {
-                tl.LogMessage("Connected Set", value.ToString());
                 if (value == vantagePro.Connected)
                     return;
 
@@ -174,10 +156,7 @@ namespace ASCOM.Wise40.VantagePro
         {
             get
             {
-                var ret = vantagePro.Description;
-
-                tl.LogMessage("Description Get", ret);
-                return ret;
+                return vantagePro.Description;
             }
         }
 
@@ -185,10 +164,7 @@ namespace ASCOM.Wise40.VantagePro
         {
             get
             {
-                string driverInfo = vantagePro.DriverInfo;
-
-                tl.LogMessage("DriverInfo Get", driverInfo);
-                return driverInfo;
+                return vantagePro.DriverInfo;
             }
         }
 
@@ -196,9 +172,7 @@ namespace ASCOM.Wise40.VantagePro
         {
             get
             {
-                string driverVersion = vantagePro.DriverVersion;
-                tl.LogMessage("DriverVersion Get", driverVersion);
-                return driverVersion;
+                return vantagePro.DriverVersion;
             }
         }
 
@@ -207,7 +181,6 @@ namespace ASCOM.Wise40.VantagePro
             // set by the driver wizard
             get
             {
-                tl.LogMessage("InterfaceVersion Get", "1");
                 return Convert.ToInt16("1");
             }
         }
@@ -216,9 +189,7 @@ namespace ASCOM.Wise40.VantagePro
         {
             get
             {
-                var name = vantagePro.Name;
-                tl.LogMessage("Name Get", name);
-                return name;
+                return vantagePro.WiseName;
             }
         }
 
@@ -239,9 +210,7 @@ namespace ASCOM.Wise40.VantagePro
         {
             get
             {
-                var ret = vantagePro.AveragePeriod;
-                tl.LogMessage("AveragePeriod", string.Format("get - {0}", ret));
-                return ret;
+                return vantagePro.AveragePeriod;;
             }
             set
             {
@@ -483,11 +452,6 @@ namespace ASCOM.Wise40.VantagePro
         }
 
         #endregion
-
-        private void LogMessage(string identifier, string message, params object[] args)
-        {
-            tl.LogMessage(identifier, string.Format(message, args));
-        }
 
         #endregion
 
