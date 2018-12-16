@@ -98,6 +98,23 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wise40Watcher", "Wise40Serv
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SafeToOperate", "SafeToOperate\SafeToOperate.csproj", "{7FA766D4-8F97-4D9F-8F62-F25C84C01FF2}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{67A75E21-6DE6-4FDA-88CB-59C839CCE862}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ascom-restricted", "ascom-restricted", "{778DD093-0F3C-4F2E-87A6-9987C20BA59E}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\..\..\..\cygwin64\home\mizpe\bin\ascom-restricted\.bashrc = ..\..\..\..\..\cygwin64\home\mizpe\bin\ascom-restricted\.bashrc
+		..\..\..\..\..\cygwin64\home\mizpe\bin\ascom-restricted\ascom.sh = ..\..\..\..\..\cygwin64\home\mizpe\bin\ascom-restricted\ascom.sh
+		..\..\..\..\..\cygwin64\home\mizpe\bin\ascom-restricted\computer-control.sh = ..\..\..\..\..\cygwin64\home\mizpe\bin\ascom-restricted\computer-control.sh
+		..\..\..\..\..\cygwin64\home\mizpe\bin\ascom-restricted\dome.sh.1 = ..\..\..\..\..\cygwin64\home\mizpe\bin\ascom-restricted\dome.sh.1
+		..\..\..\..\..\cygwin64\home\mizpe\bin\ascom-restricted\focuser.sh = ..\..\..\..\..\cygwin64\home\mizpe\bin\ascom-restricted\focuser.sh
+		..\..\..\..\..\cygwin64\home\mizpe\bin\ascom-restricted\safetooperate.sh = ..\..\..\..\..\cygwin64\home\mizpe\bin\ascom-restricted\safetooperate.sh
+		..\..\..\..\..\cygwin64\home\mizpe\bin\ascom-restricted\shortcut.txt = ..\..\..\..\..\cygwin64\home\mizpe\bin\ascom-restricted\shortcut.txt
+		..\..\..\..\..\cygwin64\home\mizpe\bin\ascom-restricted\shutter.sh = ..\..\..\..\..\cygwin64\home\mizpe\bin\ascom-restricted\shutter.sh
+		..\..\..\..\..\cygwin64\home\mizpe\bin\ascom-restricted\site.sh = ..\..\..\..\..\cygwin64\home\mizpe\bin\ascom-restricted\site.sh
+		..\..\..\..\..\cygwin64\home\mizpe\bin\ascom-restricted\telescope.sh = ..\..\..\..\..\cygwin64\home\mizpe\bin\ascom-restricted\telescope.sh
+		..\..\..\..\..\cygwin64\home\mizpe\bin\ascom-restricted\weather.sh = ..\..\..\..\..\cygwin64\home\mizpe\bin\ascom-restricted\weather.sh
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -332,6 +349,10 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{67A75E21-6DE6-4FDA-88CB-59C839CCE862} = {C2D939BB-B935-4F3D-A78F-06C9BC99D4A2}
+		{778DD093-0F3C-4F2E-87A6-9987C20BA59E} = {67A75E21-6DE6-4FDA-88CB-59C839CCE862}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {219CB79B-3327-4160-9EF5-8E4E5D326AB4}
