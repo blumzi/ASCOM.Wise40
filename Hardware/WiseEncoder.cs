@@ -71,7 +71,7 @@ namespace ASCOM.Wise40.Hardware
             _masks = new List<byte>(nSpecs);
             _isGray = isGray;
             _hwTicks = hwTicks;
-            Name = name;
+            WiseName = name;
             
             foreach (WiseEncSpec spec in specs)
             {
@@ -79,7 +79,7 @@ namespace ASCOM.Wise40.Hardware
                 byte mask;
 
                 if ((daq = spec.brd.daqs.Find(x => x.porttype == spec.port)) == null)
-                    throw new WiseException(name + ": Cannot find Daq for " + spec.port + " on " + spec.brd.Name);
+                    throw new WiseException(name + ": Cannot find Daq for " + spec.port + " on " + spec.brd.WiseName);
 
                 mask = (byte)((spec.mask == 0) ? ~(1 << daq.nbits) : spec.mask);
                 daq.setDir(MccDaq.DigitalPortDirection.DigitalIn);
@@ -93,7 +93,7 @@ namespace ASCOM.Wise40.Hardware
                 _daqs.Add(daq);
                 _masks.Add(mask);
             }
-            _atomicReader = new AtomicReader(Name, _daqs, timeoutMillis, retries);
+            _atomicReader = new AtomicReader(WiseName, _daqs, timeoutMillis, retries);
         }
 
         public uint Value
@@ -108,7 +108,7 @@ namespace ASCOM.Wise40.Hardware
                 if (_isGray)
                     ret = GrayCode[ret];
                 #region debug
-                debugger.WriteLine(Common.Debugger.DebugLevel.DebugDAQs, "{0}: value: {1}", Name, ret);
+                debugger.WriteLine(Common.Debugger.DebugLevel.DebugDAQs, "{0}: value: {1}", WiseName, ret);
                 #endregion
 
                 return ret;
@@ -252,7 +252,7 @@ namespace ASCOM.Wise40.Hardware
                 for (int daqBit = daq.nbits - 1; daqBit >= 0; daqBit--)
                     if ((_masks[_daqs.IndexOf(daq)] & (1 << daqBit)) != 0)
                         if (connected)
-                            daq.setOwner(Name + "[" + encBit-- + "]", daqBit);
+                            daq.setOwner(WiseName + "[" + encBit-- + "]", daqBit);
                         else
                             daq.unsetOwner(daqBit);
 

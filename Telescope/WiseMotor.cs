@@ -46,7 +46,7 @@ namespace ASCOM.Wise40.Hardware
             Const.AxisDirection direction,
             List<object> encoders = null)
         {
-            this.Name = name;
+            this.WiseName = name;
 
             this.motorPin = motorPin;
             this.guideMotorPin = guideMotorPin;
@@ -60,7 +60,7 @@ namespace ASCOM.Wise40.Hardware
             this._direction = direction;
 
             if (Simulated && (encoders == null || encoders.Count() == 0))
-                throw new WiseException(Name + ": A simulated WiseVirtualMotor must have at least one encoder reference");
+                throw new WiseException(WiseName + ": A simulated WiseVirtualMotor must have at least one encoder reference");
 
             if (Simulated)
             {
@@ -83,7 +83,7 @@ namespace ASCOM.Wise40.Hardware
                     if (pin == null)
                         continue;
 
-                    string shortName = pin.Name.Remove(pin.Name.IndexOf('@'));
+                    string shortName = pin.WiseName.Remove(pin.WiseName.IndexOf('@'));
 
                     if (pin.isOn && !active.Contains(shortName))
                         active.Add(shortName);
@@ -135,7 +135,7 @@ namespace ASCOM.Wise40.Hardware
             }
 
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}.SetOn at {1}: pins before: {2}, pins after: {3}",
-                Name, WiseTele.RateName(rate), activeBefore, ActiveMortorPins());
+                WiseName, WiseTele.RateName(rate), activeBefore, ActiveMortorPins());
 
             if (Simulated)
             {
@@ -173,7 +173,7 @@ namespace ASCOM.Wise40.Hardware
             }
 
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}.SetOff: pins before: {1}, pins after: {2}",
-                Name, activeBefore, ActiveMortorPins());
+                WiseName, activeBefore, ActiveMortorPins());
         }
 
         public bool isOn
@@ -215,7 +215,7 @@ namespace ASCOM.Wise40.Hardware
             //
             // Calculate the delta to be added/subtracted from the attached encoder(s)
             //
-            if (Name == "TrackMotor")
+            if (WiseName == "TrackMotor")
             {
                 //
                 // To better simulate the tracking-motor, we use the actual LocalSiderealTime
@@ -281,8 +281,8 @@ namespace ASCOM.Wise40.Hardware
 
                 debugger.WriteLine(Debugger.DebugLevel.DebugMotors,
                         "bumpEncoders: {0}: {1}: {13} {2}:  {3} {4} {5} = {6} ({7} {8} {9} = {10}) (#{11}, {12} ms)",
-                        Name,                   // 0
-                        encoder.Name,           // 1
+                        WiseName,                   // 0
+                        encoder.WiseName,           // 1
                         primary ? "ha" : "dec", // 2
                         before,                 // 3
                         op,                     // 4
@@ -326,7 +326,7 @@ namespace ASCOM.Wise40.Hardware
 
         public override string ToString()
         {
-            return Name;
+            return WiseName;
         }
 
         public double RateFromPins

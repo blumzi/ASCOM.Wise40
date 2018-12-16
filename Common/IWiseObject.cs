@@ -8,6 +8,6 @@ namespace ASCOM.Wise40.Common
 {
     public interface IWiseObject
     {
-        string Name { get; set; }
+        string WiseName { get; set; }
     }
 }

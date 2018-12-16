@@ -99,7 +99,7 @@ namespace ASCOM.Wise40
         {
             string s = "( ";
             foreach (WiseVirtualMotor m in motors)
-                s += m.Name + " ";
+                s += m.WiseName + " ";
             s += " )";
             return s;
         }

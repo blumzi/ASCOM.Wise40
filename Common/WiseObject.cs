@@ -9,7 +9,7 @@ namespace ASCOM.Wise40.Common
         private string _name;
         private static bool _simulated = Environment.MachineName.ToLower() != "dome-pc";
 
-        public string Name
+        public string WiseName
         {
             get
             {
