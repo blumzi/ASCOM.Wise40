@@ -10,6 +10,7 @@ namespace ASCOM.Wise40SafeToOperate
     public class SunSensor : Sensor
     {
         private double _max;
+        private const double defaultMax = -7.0;
 
         public SunSensor(WiseSafeToOperate instance) :
             base("Sun",
@@ -17,14 +18,23 @@ namespace ASCOM.Wise40SafeToOperate
                 SensorAttribute.AlwaysEnabled |
                 SensorAttribute.CanBeBypassed, instance) { }
 
+        public override object Digest()
+        {
+            return new SunDigest()
+            {
+                Name = WiseName,
+                IsSafe = isSafe,
+            };
+        }
+
         public override void readSensorProfile()
         {
-            MaxAsString = wisesafetooperate._profile.GetValue(Const.wiseSafeToOperateDriverID, Name, "Max", 0.0.ToString());
+            MaxAsString = wisesafetooperate._profile.GetValue(Const.wiseSafeToOperateDriverID, WiseName, "Max", defaultMax.ToString());
         }
 
         public override void writeSensorProfile()
         {
-            wisesafetooperate._profile.WriteValue(Const.wiseSafeToOperateDriverID, Name, MaxAsString, "Max");
+            wisesafetooperate._profile.WriteValue(Const.wiseSafeToOperateDriverID, WiseName, MaxAsString, "Max");
         }
 
         public override Reading getReading()
@@ -63,5 +73,11 @@ namespace ASCOM.Wise40SafeToOperate
                 return _max.ToString();
             }
         }
+    }
+
+    public class SunDigest
+    {
+        public string Name;
+        public bool IsSafe;
     }
 }

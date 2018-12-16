@@ -14,16 +14,15 @@ namespace ASCOM.Wise40SafeToOperate
 {
     public class DoorLockSensor : Sensor
     {
-        private static WisePin DoorPin;
+        private static WisePin DoorLockPin;
         private static WisePin BypassPin;
         public static int _doorLockDelaySeconds, _defaultDoorLockDelaySeconds = 30;
         private Hardware hardware = Hardware.Instance;
         private static Timer _timer = new Timer(new System.Threading.TimerCallback(Check));
-        private static bool _doorWasSafe = false, _bypassWasSafe = false;
+        private static bool _doorLockWasSafe = false, _bypassWasSafe = false;
         private static bool _isSafe = true;
         private static bool _debugging = false;
-        private static int _fakeDoorPin, _fakeBypassPin;
-        private static int _doorCounter, _bypassCounter;
+        private static int _doorLockCounter, _bypassCounter;
 
         public DoorLockSensor(WiseSafeToOperate instance) :
             base("DoorLock",
@@ -31,27 +30,31 @@ namespace ASCOM.Wise40SafeToOperate
                 SensorAttribute.AlwaysEnabled |
                 SensorAttribute.ForcesDecision, instance)
         {
-            DoorPin = new WisePin("DoorLock", hardware.domeboard, DigitalPortType.FirstPortCH, 3, DigitalPortDirection.DigitalIn);
+            DoorLockPin = new WisePin("DoorLock", hardware.domeboard, DigitalPortType.FirstPortCH, 3, DigitalPortDirection.DigitalIn);
             BypassPin = new WisePin("DoorBypass", hardware.domeboard, DigitalPortType.FirstPortCH, 2, DigitalPortDirection.DigitalIn);
 
             _timer.Change(0, (int)TimeSpan.FromSeconds(1).TotalMilliseconds);
         }
 
+        public override object Digest()
+        {
+            return new DoorLockDigest
+            {
+                Name = WiseName,
+                IsSafe = isSafe,
+                DoorLockPin = DoorLockPin.isOn ? 1 : 0,
+                DoorLockIsSafe = DoorLockIsSafe,
+                DoorLockCounter = _doorLockCounter,
+                BypassPin = BypassPin.isOn ? 1 : 0,
+                BypassIsSafe = BypassIsSafe,
+                BypassCounter = _bypassCounter,
+                UnsafeReason = reason(),
+            };
+        }
+
         public override string reason()
         {
-            List<string> reasons = new List<string>();
-
-            reasons.Add(string.Format("Door:Debugging-{0}", _debugging));
-            reasons.Add(string.Format("Door:_isSafe-{0}", _isSafe));
-            reasons.Add(string.Format("Lock:Pin-{0}", DoorPin.isOn ? 1 : 0));
-            reasons.Add(string.Format("Lock:IsSafe-{0}", DoorIsSafe));
-            reasons.Add(string.Format("Lock:Counter-{0}", _doorCounter));
-            reasons.Add(string.Format("Bypass:Pin-{0}", BypassPin.isOn ? 1 : 0));
-            reasons.Add(string.Format("Bypass:IsSafe-{0}", BypassIsSafe));
-            reasons.Add(string.Format("Bypass:Counter-{0}", _bypassCounter));
-            return string.Join(", ", reasons);
-
-            //return "Door unlocked and not bypassed";
+            return "Door unlocked and not bypassed";
         }
 
         public override string MaxAsString
@@ -70,7 +73,7 @@ namespace ASCOM.Wise40SafeToOperate
             Reading r = new Reading
             {
                 stale = false,
-                safe = true,    // _isSafe,
+                safe = _isSafe,
             };
 
             //#region debug
@@ -87,14 +90,11 @@ namespace ASCOM.Wise40SafeToOperate
             wisesafetooperate._profile.WriteValue(Const.wiseSafeToOperateDriverID, Const.ProfileName.SafeToOperate_DoorLockDelay, _doorLockDelaySeconds.ToString());
         }
 
-        private static bool DoorPinIsSafe
+        private static bool DoorLockPinIsSafe
         {
             get
             {
-                if (_debugging)
-                    return (_fakeDoorPin == 0) ? true : false;
-                else
-                    return DoorPin.isOff;
+                return DoorLockPin.isOff;
             }
         }
 
@@ -102,18 +102,15 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
-                if (_debugging)
-                    return (_fakeBypassPin == 0) ? true : false;
-                else
-                    return BypassPin.isOff;
+                return BypassPin.isOff;
             }
         }
 
-        private static bool DoorIsSafe
+        private static bool DoorLockIsSafe
         {
             get
             {
-                return DoorPinIsSafe || (_doorCounter > 0);
+                return DoorLockPinIsSafe || (_doorLockCounter > 0);
             }
         }
 
@@ -127,25 +124,29 @@ namespace ASCOM.Wise40SafeToOperate
 
         private static void Check(object o)
         {
-            bool doorIsSafe = DoorPinIsSafe;
+            bool doorLockIsSafe = DoorLockPinIsSafe;
             bool bypassIsSafe = BypassPinIsSafe;
 
-            if (_doorWasSafe && !doorIsSafe)
-                _doorCounter = _doorLockDelaySeconds;
+            if (_doorLockWasSafe && !doorLockIsSafe)
+                _doorLockCounter = _doorLockDelaySeconds;
+            else if (!_doorLockWasSafe && doorLockIsSafe)
+                _doorLockCounter = 0;
             else
-                if (_doorCounter > 0)
-                    _doorCounter--;
+                if (_doorLockCounter > 0)
+                _doorLockCounter--;
 
             if (_bypassWasSafe && !bypassIsSafe)
                 _bypassCounter = _doorLockDelaySeconds;
+            else if (!_bypassWasSafe && bypassIsSafe)
+                _bypassCounter = 0;
             else
                 if (_bypassCounter > 0)
-                    _bypassCounter--;
+                _bypassCounter--;
 
-            _doorWasSafe = doorIsSafe;
+            _doorLockWasSafe = doorLockIsSafe;
             _bypassWasSafe = bypassIsSafe;
 
-            _isSafe = DoorIsSafe || BypassIsSafe;
+            _isSafe = DoorLockIsSafe || BypassIsSafe;
         }
 
         public bool Debug
@@ -160,31 +161,18 @@ namespace ASCOM.Wise40SafeToOperate
                 _debugging = value;
             }
         }
+    }
 
-        public int FakeDoorPin
-        {
-            get
-            {
-                return _fakeDoorPin;
-            }
-
-            set
-            {
-                _fakeDoorPin = value;
-            }
-        }
-
-        public int FakeBypassPin
-        {
-            get
-            {
-                return _fakeBypassPin;
-            }
-
-            set
-            {
-                _fakeBypassPin = value;
-            }
-        }
+    public class DoorLockDigest
+    {
+        public string Name;
+        public bool IsSafe;
+        public int DoorLockPin;
+        public bool DoorLockIsSafe;
+        public int DoorLockCounter;
+        public int BypassPin;
+        public bool BypassIsSafe;
+        public int BypassCounter;
+        public string UnsafeReason;
     }
 }

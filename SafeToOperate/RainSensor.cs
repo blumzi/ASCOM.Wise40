@@ -17,15 +17,25 @@ namespace ASCOM.Wise40SafeToOperate
             base("Rain", 
                 SensorAttribute.CanBeStale |
                 SensorAttribute.CanBeBypassed, instance) { }
+        
+        public override object Digest()
+        {
+            return new RainDigest()
+            {
+                Name = WiseName,
+                IsSafe = isSafe,
+            };
+        }
 
         public override void readSensorProfile()
         {
-            MaxAsString = wisesafetooperate._profile.GetValue(Const.wiseSafeToOperateDriverID, Name, "Max", 0.0.ToString());
+            const double defaultMax = 0.0;
+            MaxAsString = wisesafetooperate._profile.GetValue(Const.wiseSafeToOperateDriverID, WiseName, "Max", defaultMax.ToString());
         }
 
         public override void writeSensorProfile()
         {
-            wisesafetooperate._profile.WriteValue(Const.wiseSafeToOperateDriverID, Name, MaxAsString, "Max");
+            wisesafetooperate._profile.WriteValue(Const.wiseSafeToOperateDriverID, WiseName, MaxAsString, "Max");
         }
 
         public override Reading getReading()
@@ -64,5 +74,11 @@ namespace ASCOM.Wise40SafeToOperate
                 return _max.ToString();
             }
         }
+    }
+
+    public class RainDigest
+    {
+        public string Name;
+        public bool IsSafe;
     }
 }

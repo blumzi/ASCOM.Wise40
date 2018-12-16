@@ -32,6 +32,15 @@ namespace ASCOM.Wise40SafeToOperate
             return r;
         }
 
+        public override object Digest()
+        {
+            return new HumanInterventionDigest()
+            {
+                Name = WiseName,
+                IsSafe = isSafe,
+            };
+        }
+
         public override string reason()
         {
             return Wise40.HumanIntervention.Info;
@@ -43,5 +52,11 @@ namespace ASCOM.Wise40SafeToOperate
 
             get { return 0.ToString(); }
         }
+    }
+
+    public class HumanInterventionDigest
+    {
+        public string Name;
+        public bool IsSafe;
     }
 }

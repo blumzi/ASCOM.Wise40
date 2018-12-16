@@ -17,6 +17,15 @@ namespace ASCOM.Wise40SafeToOperate
                 SensorAttribute.ForcesDecision, instance)
         { }
 
+        public override object Digest()
+        {
+            return new ComputerControlDigest()
+            {
+                Name = WiseName,
+                IsSafe = isSafe,
+            };
+        }
+
         public override string reason()
         {
             return Const.computerControlAtMaintenance;
@@ -44,5 +53,11 @@ namespace ASCOM.Wise40SafeToOperate
 
         public override void readSensorProfile() { }
         public override void writeSensorProfile() { }
+    }
+
+    public class ComputerControlDigest
+    {
+        public string Name;
+        public bool IsSafe;
     }
 }

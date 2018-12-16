@@ -17,6 +17,15 @@ namespace ASCOM.Wise40SafeToOperate
                 SensorAttribute.ForcesDecision, instance)
         { }
 
+        public override object Digest()
+        {
+            return new PlatformDigest()
+            {
+                Name = WiseName,
+                IsSafe = isSafe,
+            };
+        }
+
         public override string reason()
         {
             return "Platform is RAISED";
@@ -44,5 +53,11 @@ namespace ASCOM.Wise40SafeToOperate
 
         public override void readSensorProfile() { }
         public override void writeSensorProfile() { }
+    }
+
+    public class PlatformDigest
+    {
+        public string Name;
+        public bool IsSafe;
     }
 }

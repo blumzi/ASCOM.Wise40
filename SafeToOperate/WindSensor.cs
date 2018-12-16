@@ -18,14 +18,24 @@ namespace ASCOM.Wise40SafeToOperate
                 SensorAttribute.CanBeStale |
                 SensorAttribute.CanBeBypassed, instance) { }
 
+        public override object Digest()
+        {
+            return new WindDigest()
+            {
+                Name = WiseName,
+                IsSafe = isSafe,
+            };
+        }
+
         public override void readSensorProfile()
         {
-            MaxAsString = wisesafetooperate._profile.GetValue(Const.wiseSafeToOperateDriverID, Name, "Max", 0.0.ToString());
+            const double defaultMax = 40;
+            MaxAsString = wisesafetooperate._profile.GetValue(Const.wiseSafeToOperateDriverID, WiseName, "Max", defaultMax.ToString());
         }
 
         public override void writeSensorProfile()
         {
-            wisesafetooperate._profile.WriteValue(Const.wiseSafeToOperateDriverID, Name, MaxAsString, "Max");
+            wisesafetooperate._profile.WriteValue(Const.wiseSafeToOperateDriverID, WiseName, MaxAsString, "Max");
         }
 
         public override Reading getReading()
@@ -42,9 +52,6 @@ namespace ASCOM.Wise40SafeToOperate
                 double kmh = WiseSite.och.WindSpeed * 3.6;
                 r.safe = (_max == 0.0) ? kmh == 0.0 : kmh < _max;
             }
-            //#region debug
-            //debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "{0}: getIsSafe: {1}", Name, r.safe);
-            //#endregion
             return r;
         }
 
@@ -65,9 +72,15 @@ namespace ASCOM.Wise40SafeToOperate
             {
                 _max = Convert.ToDouble(value);
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}) Max: {1}", Name, MaxAsString);
+                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}) Max: {1}", WiseName, MaxAsString);
                 #endregion
             }
         }
+    }
+
+    public class WindDigest
+    {
+        public string Name;
+        public bool IsSafe;
     }
 }

@@ -89,7 +89,7 @@ namespace ASCOM.Wise40SafeToOperate
 
         protected Sensor(string name, SensorAttribute attributes, WiseSafeToOperate instance)
         {
-            Name = name;
+            WiseName = name;
             _attributes = attributes;
             if (HasAttribute(SensorAttribute.AlwaysEnabled))
                 Enabled = true;
@@ -115,7 +115,7 @@ namespace ASCOM.Wise40SafeToOperate
         {
             int defaultInterval = 0, defaultRepeats = 0;
 
-            switch (Name)
+            switch (WiseName)
             {
                 case "Wind": defaultInterval = 60; defaultRepeats = 3; break;
                 case "Sun": defaultInterval = 60; defaultRepeats = 1; break;
@@ -125,25 +125,25 @@ namespace ASCOM.Wise40SafeToOperate
                 case "Humidity": defaultInterval = 60; defaultRepeats = 4; break;
             }
 
-            _intervalMillis = 1000 * Convert.ToInt32(wisesafetooperate._profile.GetValue(Const.wiseSafeToOperateDriverID, Name, "Interval", defaultInterval.ToString()));
+            _intervalMillis = 1000 * Convert.ToInt32(wisesafetooperate._profile.GetValue(Const.wiseSafeToOperateDriverID, WiseName, "Interval", defaultInterval.ToString()));
             if (DoesNotHaveAttribute(SensorAttribute.Immediate))
-                _repeats = Convert.ToInt32(wisesafetooperate._profile.GetValue(Const.wiseSafeToOperateDriverID, Name, "Repeats", defaultRepeats.ToString()));
+                _repeats = Convert.ToInt32(wisesafetooperate._profile.GetValue(Const.wiseSafeToOperateDriverID, WiseName, "Repeats", defaultRepeats.ToString()));
 
             if (DoesNotHaveAttribute(SensorAttribute.AlwaysEnabled))
-                Enabled = Convert.ToBoolean(wisesafetooperate._profile.GetValue(Const.wiseSafeToOperateDriverID, Name, "Enabled", true.ToString()));
+                Enabled = Convert.ToBoolean(wisesafetooperate._profile.GetValue(Const.wiseSafeToOperateDriverID, WiseName, "Enabled", true.ToString()));
 
             readSensorProfile();
         }
 
         public void writeProfile()
         {
-            wisesafetooperate._profile.WriteValue(Const.wiseSafeToOperateDriverID, Name, (_intervalMillis / 1000).ToString(), "Interval");
+            wisesafetooperate._profile.WriteValue(Const.wiseSafeToOperateDriverID, WiseName, (_intervalMillis / 1000).ToString(), "Interval");
 
             if (DoesNotHaveAttribute(SensorAttribute.Immediate))
-                wisesafetooperate._profile.WriteValue(Const.wiseSafeToOperateDriverID, Name, _repeats.ToString(), "Repeats");
+                wisesafetooperate._profile.WriteValue(Const.wiseSafeToOperateDriverID, WiseName, _repeats.ToString(), "Repeats");
 
             if (DoesNotHaveAttribute(SensorAttribute.AlwaysEnabled))
-                wisesafetooperate._profile.WriteValue(Const.wiseSafeToOperateDriverID, Name, Enabled.ToString(), "Enabled");
+                wisesafetooperate._profile.WriteValue(Const.wiseSafeToOperateDriverID, WiseName, Enabled.ToString(), "Enabled");
 
             writeSensorProfile();
         }
@@ -154,6 +154,7 @@ namespace ASCOM.Wise40SafeToOperate
         public abstract void writeSensorProfile();
         public abstract Reading getReading();
         public abstract string MaxAsString { get; set; }
+        public abstract object Digest();
 
         public bool IsStale(string propertyName)
         {
@@ -219,7 +220,7 @@ namespace ASCOM.Wise40SafeToOperate
             {
                 // this timer event is at the end of the stabilization period
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}) - Stabilization ended, restarting", Name);
+                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}) - Stabilization ended, restarting", WiseName);
                 #endregion
                 Restart(0);
                 return;
@@ -251,7 +252,7 @@ namespace ASCOM.Wise40SafeToOperate
                     nstale++;
             }
             debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}) onTimer: added {1} [{2}]",
-                Name, currentReading, String.Join(",", values));
+                WiseName, currentReading, String.Join(",", values));
 
             _nreadings = nreadings;
             _nbad = nbad;
@@ -278,7 +279,7 @@ namespace ASCOM.Wise40SafeToOperate
             bool issafe = StateIsSet(SensorState.Safe);
             #region debug
             if (wassafe != issafe)
-                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}) isSafe changed from {1} to {2}", Name, wassafe, issafe);
+                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}) isSafe changed from {1} to {2}", WiseName, wassafe, issafe);
             #endregion
 
             if (wasready)
@@ -288,7 +289,7 @@ namespace ASCOM.Wise40SafeToOperate
                     // the sensor transited from unsafe to safe
                     SetState(SensorState.Stabilizing);
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}) started stabilizing", Name);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}) started stabilizing", WiseName);
                     #endregion
                     int millis = (int) WiseSafeToOperate._stabilizationPeriod.TotalMilliseconds;
 
@@ -317,7 +318,7 @@ namespace ASCOM.Wise40SafeToOperate
             {
                 _timer.Change(Timeout.Infinite, Timeout.Infinite);
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}) Stop: stopped", Name);
+                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}) Stop: stopped", WiseName);
                 #endregion
             }
         }
@@ -335,7 +336,7 @@ namespace ASCOM.Wise40SafeToOperate
                 {
                     ret = true;
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}), isSafe: {1} (not enabled)", Name, ret);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}), isSafe: {1} (not enabled)", WiseName, ret);
                     #endregion
                     return ret;
                 }
@@ -344,7 +345,7 @@ namespace ASCOM.Wise40SafeToOperate
                 {
                     ret = getReading().safe;
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}), isSafe: {1}", Name, ret);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}), isSafe: {1}", WiseName, ret);
                     #endregion
                     return ret;
                 }
@@ -354,7 +355,7 @@ namespace ASCOM.Wise40SafeToOperate
                     ret = false;
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}), isSafe: {1} (not ready)",
-                        Name, ret);
+                        WiseName, ret);
                     #endregion
                     return ret;
                 }
@@ -364,7 +365,7 @@ namespace ASCOM.Wise40SafeToOperate
                     ret = false;
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}), isSafe: {1} (stabilizing)",
-                        Name, ret);
+                        WiseName, ret);
                     #endregion
                     return ret;
                 }
@@ -372,7 +373,7 @@ namespace ASCOM.Wise40SafeToOperate
                 ret = StateIsSet(SensorState.Safe);
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}), isSafe: {1} ({2} bad out of {3})",
-                    Name, ret, _nbad, _repeats);
+                    WiseName, ret, _nbad, _repeats);
                 #endregion
                 return ret;
             }
