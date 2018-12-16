@@ -8,14 +8,12 @@ using ASCOM.Wise40.Hardware;
 using ASCOM.Wise40.Common;
 using ASCOM.Astrometry.AstroUtils;
 using System.Threading;
-//using ASCOM.Wise40.Dome;
 
-namespace ASCOM.Wise40 //.Telescope
+namespace ASCOM.Wise40
 {
     public class DomeSlaveDriver : IConnectable
     {
         private static WiseDome wisedome = WiseDome.Instance;
-        private static WiseTele wisetele = WiseTele.Instance;
         private bool _connected = false;
         private ASCOM.Astrometry.NOVAS.NOVAS31 novas31 = new Astrometry.NOVAS.NOVAS31();
         private AstroUtils astroutils = new AstroUtils();
@@ -55,9 +53,7 @@ namespace ASCOM.Wise40 //.Telescope
             instance.novas31 = new Astrometry.NOVAS.NOVAS31();
             instance.astroutils = new AstroUtils();
             _arrivedAtAz = new AutoResetEvent(false);
-            wisedome.init();
             wisedome.SetArrivedAtAzEvent(_arrivedAtAz);
-            wisesite.init();
             _minimalMovement = new Angle(WiseTele.Instance._minimalDomeTrackingMovement, Angle.Type.Az);
 
             _initialized = true;
@@ -83,9 +79,6 @@ namespace ASCOM.Wise40 //.Telescope
 
         public void SlewToAz(double az)
         {
-            if (wisetele == null)
-                wisetele = WiseTele.Instance;
-
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver: Asking dome to SlewToAzimuth({0})", new Angle(az, Angle.Type.Az));
             #endregion
@@ -117,9 +110,6 @@ namespace ASCOM.Wise40 //.Telescope
 
         public void Park()
         {
-            if (wisetele == null)
-                wisetele = WiseTele.Instance;
-
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver: Asking dome to Park");
             #endregion
@@ -145,10 +135,7 @@ namespace ASCOM.Wise40 //.Telescope
 
         public void FindHome()
         {
-            if (wisetele == null)
-                wisetele = WiseTele.Instance;
-
-            #region debug
+             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver: Asking dome to findHome");
             #endregion
             try
@@ -196,14 +183,14 @@ namespace ASCOM.Wise40 //.Telescope
         {
             get
             {
-                return wisetele.slewers.Active(Slewers.Type.Dome);
+                return WiseTele.Instance.slewers.Active(Slewers.Type.Dome);
             }
         }
 
         public void AbortSlew()
         {
             wisedome.AbortSlew();
-            wisetele.slewers.Delete(Slewers.Type.Dome);
+            WiseTele.Instance.slewers.Delete(Slewers.Type.Dome);
         }
 
         public string Azimuth
@@ -270,6 +257,11 @@ namespace ASCOM.Wise40 //.Telescope
             {
                 return wisedome.AtPark;
             }
+        }
+
+        public void Unpark()
+        {
+            wisedome.Unpark();
         }
 
         /// <summary>
