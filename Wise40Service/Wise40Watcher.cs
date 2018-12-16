@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using ASCOM.Wise40.Common;
 using ASCOM.Wise40.VantagePro;
 using ASCOM.Utilities;
+using System.Threading;
 
 namespace Wise40Watcher
 {
@@ -38,18 +39,20 @@ namespace Wise40Watcher
 
         protected override void OnStart(string[] args)
         {
-            ascomWatcher.Start(args);
+            if (watchWeatherLink)
+            {
+                weatherLinkWatcher.Start(args, waitForResponse: true);
+            }
+            ascomWatcher.Start(args, waitForResponse: true);
             dashWatcher.Start(args);
             obsmonWatcher.Start(args);
-            if (watchWeatherLink)
-                weatherLinkWatcher.Start(args);
         }
 
         protected override void OnStop()
         {
-            ascomWatcher.Stop();
             dashWatcher.Stop();
             obsmonWatcher.Stop();
+            ascomWatcher.Stop();
             if (watchWeatherLink)
                 weatherLinkWatcher.Stop();
         }

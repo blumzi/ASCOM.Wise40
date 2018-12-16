@@ -128,9 +128,9 @@ namespace Wise40Watcher
             string dir = ASCOM.Wise40.Common.Debugger.LogDirectory();
 
             Directory.CreateDirectory(dir);
-            using (var sw = new StreamWriter(dir + "/Wise40Watcher1.log", true))
+            using (var sw = new StreamWriter(dir + "/Wise40Watcher-CreateProcess.txt", true))
             {
-                sw.WriteLine(DateTime.Now.ToString("yyyy-mm-dd, HH:mm:ss.ffff ") + msg);
+                sw.WriteLine(DateTime.UtcNow.ToString("HH:mm:ss.ffff UT ") + msg);
             }
         }
     }

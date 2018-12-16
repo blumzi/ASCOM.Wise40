@@ -54,6 +54,7 @@ namespace ASCOM.Wise40.Common
         public const string wiseASCOMServerPath = "c:/Program Files (x86)/ASCOM/Remote/ASCOM.RESTServer.exe";
 
         public const string wiseObservatoryMonitorAppName = "ObservatoryMonitor";
+        public const string wiseASCOMOCHServerAppName = "ASCOM.OCH.Server";
 
         public const string wiseDashboardAppName = "Dash";
         public const string wiseSimulatedDashPath = "c:/Users/Blumzi/Documents/Visual Studio 2015/Projects/Wise40/Dash/bin/x86/Debug/Dash.exe";
@@ -68,6 +69,7 @@ namespace ASCOM.Wise40.Common
         public const double halfPI = Math.PI / 2;
         public const double onePI = Math.PI;
 
+        public const double noTarget = -500.0;  // An impossible angle (RightAscension, HourAngle or Declination)
 
         public class ProfileName
         {
