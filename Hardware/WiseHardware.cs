@@ -27,8 +27,10 @@ namespace ASCOM.Wise40.Hardware
                     lock (_syncObject)
                     {
                         if (_instance == null)
+                        {
                             _instance = new Hardware();
-                        _instance.init();
+                            _instance.init();
+                        }
                     }
                 }
                 return _instance;
