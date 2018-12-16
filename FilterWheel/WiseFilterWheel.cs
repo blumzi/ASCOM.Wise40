@@ -17,7 +17,6 @@ namespace ASCOM.Wise40.FilterWheel
         private static Version version = new Version(0, 2);
         private static readonly WiseFilterWheel _instance = new WiseFilterWheel();
 
-        public TraceLogger traceLogger = new TraceLogger();
         public Debugger debugger = Debugger.Instance;        
 
         private static bool _initialized = false;
@@ -155,7 +154,6 @@ namespace ASCOM.Wise40.FilterWheel
             if (_initialized)
                 return;
             
-            traceLogger.LogMessage("WiseFilterWheel", "Starting initialisation");
             Connected = false;
             ReadProfile();
             ReadFiltersFromCsvFile();
@@ -170,7 +168,6 @@ namespace ASCOM.Wise40.FilterWheel
             }
             Connected = true;
 
-            traceLogger.LogMessage("WiseFilterWheel", "Completed initialisation");
             _initialized = true;
         }
 
@@ -316,14 +313,11 @@ namespace ASCOM.Wise40.FilterWheel
 
                 bool connected = arduino.Connected;
 
-                traceLogger.LogMessage("Connected Get", connected.ToString());
                 return connected;
             }
 
             set
             {
-                traceLogger.LogMessage("Connected Set", value.ToString());
-
                 if (Simulated)
                 {
                     if (value == _connected)
@@ -345,7 +339,6 @@ namespace ASCOM.Wise40.FilterWheel
         {
             get
             {
-                traceLogger.LogMessage("Description Get", driverDescription);
                 return driverDescription;
             }
         }
@@ -354,9 +347,7 @@ namespace ASCOM.Wise40.FilterWheel
         {
             get
             {
-                string driverInfo = "First attempt. Version: " + String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
-                traceLogger.LogMessage("DriverInfo Get", driverInfo);
-                return driverInfo;
+                return "First attempt. Version: " + String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
             }
         }
 
@@ -364,9 +355,7 @@ namespace ASCOM.Wise40.FilterWheel
         {
             get
             {
-                string driverVersion = String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
-                traceLogger.LogMessage("DriverVersion Get", driverVersion);
-                return driverVersion;
+                return String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
             }
         }
 
@@ -374,7 +363,6 @@ namespace ASCOM.Wise40.FilterWheel
         {
             get
             {
-                traceLogger.LogMessage("SupportedActions Get", "Returning empty arraylist");
                 return new ArrayList();
             }
         }
@@ -414,13 +402,11 @@ namespace ASCOM.Wise40.FilterWheel
             }
         }
 
-        public new string Name
+        public string Name
         {
             get
             {
-                string name = string.Format("{0} ({1} slots)", currentWheel._name, currentWheel._nPositions);
-                traceLogger.LogMessage("Name Get", name);
-                return name;
+                return string.Format("{0} ({1} slots)", currentWheel._name, currentWheel._nPositions);
             }
         }
 
@@ -429,7 +415,6 @@ namespace ASCOM.Wise40.FilterWheel
             // set by the driver wizard
             get
             {
-                traceLogger.LogMessage("InterfaceVersion Get", "2");
                 return Convert.ToInt16("2");
             }
         }
@@ -489,7 +474,6 @@ namespace ASCOM.Wise40.FilterWheel
                     return names.ToArray();
                 foreach (FWPosition position in currentWheel._positions)
                 {
-                    traceLogger.LogMessage("Names Get", position.filterName);
                     names.Add(position.filterName);
                 }
 
@@ -543,10 +527,8 @@ namespace ASCOM.Wise40.FilterWheel
                 if (targetPosition == currentWheel._position)
                     return;
 
-                traceLogger.LogMessage("Position Set", targetPosition.ToString());
                 if ((targetPosition < 0) | (targetPosition > nPositions - 1))
                 {
-                    traceLogger.LogMessage("", "Throwing InvalidValueException - Position: " + targetPosition.ToString() + ", Range: 0 to " + (nPositions - 1).ToString());
                     throw new InvalidValueException("Position", targetPosition.ToString(), "0 to " + (nPositions - 1).ToString());
                 }
 
@@ -730,5 +712,10 @@ namespace ASCOM.Wise40.FilterWheel
                 }
             }
         }
+    }
+
+    public class FilterWheelDigest
+    {
+        public int Position;
     }
 }
