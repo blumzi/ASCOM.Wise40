@@ -53,25 +53,34 @@ namespace ASCOM.Wise40
             #endregion
         }
 
-        public void Delete(Slewers.Type type)
+        public bool Delete(Slewers.Type type)
         {
             string before;
-            WiseTele.SlewerTask slewerTask;
 
             lock (_lock)
             {
                 before = ToString();
 
-                slewerTask = _active.Find((s) => s.type == type);
-                _active.Remove(slewerTask);
+                int index = _active.FindIndex((s) => s.type == type);
+                if (index == -1)
+                {
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                        "ActiveSlewers: Could not find a slewer of type {0} in _active", type.ToString());
+                    #endregion
+                    return false;
+                }
+                _active.RemoveAt(index);
 
                 if (_active.Count == 0)
                     activityMonitor.EndActivity(ActivityMonitor.Activity.Slewing);
             }
+
             #region debug
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugAxes,
                 "ActiveSlewers: deleted {0}, \"{1}\" => \"{2}\" ({3})", type.ToString(), before, this.ToString(), _active.GetHashCode());
             #endregion
+            return true;
         }
 
         public int Count
