@@ -25,7 +25,6 @@ namespace ASCOM.Wise40
         public HardwareForm()
         {
             InitializeComponent();
-            hw.init();
             wisetele.init();
             wisetele.Connected = true;
             wisedome.Connected = true;

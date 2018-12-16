@@ -14,13 +14,12 @@ using ASCOM.Astrometry;
 using ASCOM.DriverAccess;
 using ASCOM.Wise40;
 using ASCOM.Wise40.Common;
-using ASCOM.Wise40.Boltwood;
 using ASCOM.Wise40.Hardware;
 using ASCOM.Wise40SafeToOperate;
 using ASCOM.Wise40.FilterWheel;
-using ASCOM.Wise40.VantagePro;
 
 using ASCOM.Utilities;
+using Newtonsoft.Json;
 
 namespace Dash
 {
@@ -33,7 +32,6 @@ namespace Dash
         public WiseSite wisesite = WiseSite.Instance;
         public WiseSafeToOperate wisesafetooperate = WiseSafeToOperate.Instance;
         public WiseFilterWheel wisefilterwheel = WiseFilterWheel.Instance;
-        public WiseDomePlatform wisedomeplatform = WiseDomePlatform.Instance;
         WiseObject wiseobject = new WiseObject();
         private ASCOM.Utilities.Util ascomutil = new Util();
         enum GoToMode { Ra, Ha, DeltaRa, DeltaHa };
@@ -45,13 +43,24 @@ namespace Dash
         Debugger debugger = Debugger.Instance;
         //FilterWheelForm filterWheelForm = new FilterWheelForm();
 
-        Statuser dashStatus, telescopeStatus, domeStatus, shutterStatus, focuserStatus, weatherStatus, filterWheelStatus;
+        Statuser dashStatus, telescopeStatus, domeStatus, shutterStatus, focuserStatus, safetooperateStatus, filterWheelStatus;
 
         private double handpadRate = Const.rateSlew;
         private bool _bypassSafety = false;
         private bool _saveFocusUpperLimit = false, _saveFocusLowerLimit = false;
 
-        DateTime _lastShutterStatusUpdate = DateTime.MinValue;
+        RefreshPacer domePacer = new RefreshPacer(TimeSpan.FromSeconds(1));
+        RefreshPacer safettoperatePacer = new RefreshPacer(TimeSpan.FromSeconds(20));
+        RefreshPacer weatherPacer = new RefreshPacer(TimeSpan.FromSeconds(20));
+        RefreshPacer focusPacer = new RefreshPacer(TimeSpan.FromSeconds(5));
+        RefreshPacer filterWheelPacer = new RefreshPacer(TimeSpan.FromSeconds(5));
+        RefreshPacer telescopePacer = new RefreshPacer(TimeSpan.FromMilliseconds(200));
+
+        SafeToOperateDigest safetooperateDigest = null;
+        DomeDigest domeDigest = null;
+        TelescopeDigest telescopeDigest = null;
+        FocuserDigest focuserDigest = null;
+        FilterWheelDigest filterWheelDigest = null;
 
         private List<ToolStripMenuItem> debugMenuItems;
         private Dictionary<object, string> alteredItems = new Dictionary<object, string>();
@@ -59,10 +68,14 @@ namespace Dash
         public Color safeColor = Statuser.colors[Statuser.Severity.Normal];
         public Color unsafeColor = Statuser.colors[Statuser.Severity.Error];
         public Color warningColor = Statuser.colors[Statuser.Severity.Warning];
+        public Color goodColor = Statuser.colors[Statuser.Severity.Good];
 
         private Moon moon = Moon.Instance;
         ASCOM.DriverAccess.Telescope remoteTelescope;
-        DateTime lastRemoteTelescopeAccessTime = DateTime.MinValue;
+        ASCOM.DriverAccess.Dome remoteDome;
+        ASCOM.DriverAccess.Focuser remoteFocuser;
+        //ASCOM.DriverAccess.FilterWheel remoteFilterWheel;
+        ASCOM.DriverAccess.SafetyMonitor remoteSafeToOperate;
 
         void onWheelOrPositionChanged(object sender, EventArgs e)
         {
@@ -77,28 +90,29 @@ namespace Dash
         #region Initialization
         public FormDash()
         {
-            debugger.init();
             wisetele.init();
             wisetele.Connected = true;
-            wisedome.init();
             wisedome.Connected = true;
-            wisedome.wisedomeshutter.init();
+            //wisedome.wisedomeshutter.init();
             wisefocuser.Connected = true;
             wisesafetooperate.Connected = true;
             //wisefilterwheel.init();
             //wisefilterwheel.Connected = true;
-            wisedomeplatform.init();
 
             InitializeComponent();
 
             if (wisesite.OperationalModeRequiresRESTServer)
             {
                 remoteTelescope = new ASCOM.DriverAccess.Telescope("ASCOM.Remote1.Telescope");
+                remoteDome = new ASCOM.DriverAccess.Dome("ASCOM.Remote1.Dome");
+                remoteFocuser = new ASCOM.DriverAccess.Focuser("ASCOM.Remote1.Focuser");
+                //remoteFilterWheel = new ASCOM.DriverAccess.FilterWheel("ASCOM.Remote1.FilterWheel");
+                remoteSafeToOperate = new ASCOM.DriverAccess.SafetyMonitor("ASCOM.Remote1.SafetyMonitor");
+
                 groupBoxTarget.Text += string.Format("(from {0}) ", wisesite.OperationalMode.ToString());
             }
 
-            readonlyControls = new List<Control>()
-                {
+            readonlyControls = new List<Control>() {
                     textBoxRA, textBoxDec,
                     buttonGoCoord,
                     buttonNorth, buttonSouth, buttonEast, buttonWest,
@@ -158,7 +172,7 @@ namespace Dash
             domeStatus = new Statuser(labelDomeStatus);
             shutterStatus = new Statuser(labelDomeShutterStatus);
             focuserStatus = new Statuser(labelFocuserStatus);
-            weatherStatus = new Statuser(labelWeatherStatus, toolTip);
+            safetooperateStatus = new Statuser(labelWeatherStatus, toolTip);
             filterWheelStatus = new Statuser(labelFilterWheelStatus);
 
             menuStrip.RenderMode = ToolStripRenderMode.ManagerRenderMode;
@@ -166,9 +180,7 @@ namespace Dash
 
             telescopeStatus.Show("");
             focuserStatus.Show("");
-            weatherStatus.Show("");
-
-            buttonVent.Text = wisedome.Vent ? "Close Vent" : "Open Vent";
+            safetooperateStatus.Show("");
 
             UpdateCheckmark(debugASCOMToolStripMenuItem, debugger.Debugging(Debugger.DebugLevel.DebugASCOM));
             UpdateCheckmark(debugDeviceToolStripMenuItem, debugger.Debugging(Debugger.DebugLevel.DebugDevice));
@@ -182,10 +194,6 @@ namespace Dash
             UpdateCheckmark(debugShutterToolStripMenuItem, debugger.Debugging(Debugger.DebugLevel.DebugShutter));
             UpdateCheckmark(debugDAQsToolStripMenuItem, debugger.Debugging(Debugger.DebugLevel.DebugDAQs));
             //UpdateCheckmark(bypassSafetyToolStripMenuItem, _bypassSafety);
-            UpdateCheckmark(tracingToolStripMenuItem, debugger.Tracing);
-
-            buttonVent.Text = wisedome.Vent ? "Close Vent" : "Open Vent";
-            buttonProjector.Text = wisedome.Projector ? "Turn projector Off" : "Turn projector On";
         }
         #endregion
 
@@ -207,139 +215,136 @@ namespace Dash
             DateTime utcTime = now.ToUniversalTime();
             DateTime localTime = now.ToLocalTime();
             ASCOM.Utilities.Util u = new ASCOM.Utilities.Util();
+            Statuser.Severity severity = Statuser.Severity.Normal;
 
-            Angle ra = Angle.FromHours(wisetele.RightAscension);
-            Angle dec = Angle.FromDegrees(wisetele.Declination);
-            Angle ha = Angle.FromHours(wisetele.HourAngle, Angle.Type.HA);
-            string safetyError = wisetele.SafeAtCoordinates(ra, dec);
+            bool refreshDome = domePacer.ShouldRefresh(now);
+            bool refreshSafeToOperate = safettoperatePacer.ShouldRefresh(now);
+            bool refreshTelescope = telescopePacer.ShouldRefresh(now);
+            bool refreshFocus = focusPacer.ShouldRefresh(now);
+            bool refreshFilterWheel = filterWheelPacer.ShouldRefresh(now);
+            string tip = null;
+
+            if (refreshTelescope)
+            {
+                telescopeDigest = JsonConvert.DeserializeObject<TelescopeDigest>(
+                    wisesite.OperationalModeRequiresRESTServer ?
+                        remoteTelescope.Action("status", "") :
+                        wisetele.Digest);
+            }
+
+            if (refreshDome)
+            {
+                domeDigest = JsonConvert.DeserializeObject<DomeDigest>(
+                        wisesite.OperationalModeRequiresRESTServer ?
+                            remoteDome.Action("status", "") :
+                            wisedome.Digest);
+            }
+
+            if (refreshSafeToOperate)
+            {
+                safetooperateDigest = JsonConvert.DeserializeObject<SafeToOperateDigest>(
+                    wisesite.OperationalModeRequiresRESTServer ?
+                        remoteSafeToOperate.Action("status", "") :
+                        wisesafetooperate.Digest);
+            }
+
+            if (refreshFocus)
+            {
+                focuserDigest = JsonConvert.DeserializeObject<FocuserDigest>(
+                    wisesite.OperationalModeRequiresRESTServer ?
+                    remoteFocuser.Action("status", "") :
+                    wisefocuser.Action("status", ""));
+            }
+
+            //if (refreshFilterWheel)
+            //{
+            //    filterWheelDigest = JsonConvert.DeserializeObject<FilterWheelDigest>(
+            //        wisesite.OperationalModeRequiresRESTServer ?
+            //        remoteFilterWheel.Action("status", "") :
+            //        wisefilterwheel.Action("status", ""));
+            //}
 
             #region RefreshTelescope
 
-            #region Coordinates Info
+            Angle telescopeRa = null, telescopeDec = null, telescopeHa = null;
 
+            #region Coordinates Info
             labelDate.Text = localTime.ToString("ddd, dd MMM yyyy\n hh:mm:ss tt");
             labelLTValue.Text = now.TimeOfDay.ToString(@"hh\hmm\mss\.f\s");
             labelUTValue.Text = utcTime.TimeOfDay.ToString(@"hh\hmm\mss\.f\s");
-            labelSiderealValue.Text = wisesite.LocalSiderealTime.ToString();
+            labelSiderealValue.Text = Angle.FromHours(telescopeDigest.LocalSiderealTime).ToNiceString();
 
-            labelRightAscensionValue.Text = ra.ToNiceString();
+            telescopeRa = Angle.FromHours(telescopeDigest.Current.RightAscension, Angle.Type.RA);
+            telescopeDec = Angle.FromDegrees(telescopeDigest.Current.Declination, Angle.Type.Dec);
+            telescopeHa = Angle.FromHours(telescopeDigest.HourAngle, Angle.Type.HA);
 
-            labelDeclinationValue.Text = dec.ToNiceString();
+            string safetyError = wisetele.SafeAtCoordinates(telescopeRa, telescopeDec);
+
+            labelRightAscensionValue.Text = telescopeRa.ToNiceString();
+            labelDeclinationValue.Text = telescopeDec.ToNiceString();
+
             if (safetyError.Contains("Declination"))
                 labelDeclinationValue.ForeColor = wisetele.BypassCoordinatesSafety ? warningColor : unsafeColor;
             else
                 labelDeclinationValue.ForeColor = safeColor;
 
-            labelHourAngleValue.Text = ha.ToNiceString();
+            labelHourAngleValue.Text = telescopeHa.ToNiceString();
             labelHourAngleValue.ForeColor = safetyError.Contains("HourAngle") ? unsafeColor : safeColor;
 
-            labelAltitudeValue.Text = Angle.FromDegrees(wisetele.Altitude).ToNiceString();
+            labelAltitudeValue.Text = Angle.FromDegrees(telescopeDigest.Altitude).ToNiceString();
             labelAltitudeValue.ForeColor = safetyError.Contains("Altitude") ? unsafeColor : safeColor;
 
-            labelAzimuthValue.Text = Angle.FromDegrees(wisetele.Azimuth).ToNiceString();
+            labelAzimuthValue.Text = Angle.FromDegrees(telescopeDigest.Azimuth).ToNiceString();
 
             #region Remote Telescope Target
-            if (wisesite.OperationalMode == WiseSite.OpMode.LCO && localTime.Subtract(lastRemoteTelescopeAccessTime).TotalSeconds > 2)
+            if (telescopeDigest.Target.RightAscension == Const.noTarget)
             {
-                try
-                {
-                    Angle remoteTargetRA = Angle.FromHours(remoteTelescope.TargetRightAscension);
-                    textBoxRA.Text = remoteTargetRA.ToNiceString();
-                }
-                catch (Exception ex) {
-                    textBoxRA.Text = "no target";
-                    toolTip.SetToolTip(textBoxRA, ex.Message);
-                }
+                textBoxRA.Text = "";
+                toolTip.SetToolTip(textBoxRA, "Target RightAscension either not set or already reached");
+            }
+            else
+            {
+                textBoxRA.Text = Angle.FromHours(telescopeDigest.Target.RightAscension, Angle.Type.RA).ToNiceString();
+                toolTip.SetToolTip(textBoxRA, "Current target RightAscension");
+            }
 
-                try
-                {
-                    Angle remoteTargetDec = Angle.FromDegrees(remoteTelescope.TargetDeclination);
-                    textBoxDec.Text = remoteTargetDec.ToNiceString();
-                }
-                catch (Exception ex)
-                {
-                    textBoxDec.Text = "no target";
-                    toolTip.SetToolTip(textBoxDec, ex.Message);
-                }
-
-                lastRemoteTelescopeAccessTime = localTime;
+            if (telescopeDigest.Target.Declination == Const.noTarget)
+            {
+                textBoxDec.Text = "";
+                toolTip.SetToolTip(textBoxDec, "Target Declination either not set or already reached");
+            }
+            else
+            {
+                textBoxDec.Text = Angle.FromDegrees(telescopeDigest.Target.Declination, Angle.Type.Dec).ToNiceString();
+                toolTip.SetToolTip(textBoxDec, "Current target Declination");
             }
             #endregion
 
-            #endregion
-
-            buttonTelescopePark.Text = wisetele.AtPark ? "Unpark" : "Park";
-
-            #region Inactivity Countdown
-            if (wisesite.OperationalMode == WiseSite.OpMode.LCO)
-            {
-                TimeSpan ts = activityMonitor.RemainingTime;
-                if (ts == TimeSpan.MaxValue)
-                {
-                    // not started
-                    labelCountdown.Text = "";
-                    toolTip.SetToolTip(labelCountdown, "");
-                }
-                else if (ts < new TimeSpan(0, 0, 0))
-                {
-                    // no remaining time, idle
-                    labelCountdown.Text = "Idle";
-                    toolTip.SetToolTip(labelCountdown, "Idle (no activity in the last 15 minutes)");
-                }
-                else
-                {
-                    // still some time till idle
-                    labelCountdown.Text = string.Format("{0:D2}:{1:D2}", ts.Minutes, ts.Seconds);
-                    toolTip.SetToolTip(labelCountdown, "Inactivity countdown");
-                }
-            }
             #endregion
 
             #region Annunciators
-            annunciatorTrack.Cadence = wisetele.Tracking ? ASCOM.Controls.CadencePattern.SteadyOn : ASCOM.Controls.CadencePattern.SteadyOff;
-            annunciatorSlew.Cadence = wisetele.Slewing ? ASCOM.Controls.CadencePattern.SteadyOn : ASCOM.Controls.CadencePattern.SteadyOff;
-            annunciatorPulse.Cadence = wisetele.IsPulseGuiding ? ASCOM.Controls.CadencePattern.SteadyOn : ASCOM.Controls.CadencePattern.SteadyOff;
 
-            if (wisedome.Slewing)
-            {
-                if (wisedome.MotorsAreActive)
-                    annunciatorDome.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
-                else
-                {
-                    // STUCK: Slewing but not moving
-                    annunciatorDome.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
-                }
-            }
-            else
-                annunciatorDome.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            buttonTelescopePark.Text = telescopeDigest.AtPark ? "Unpark" : "Park";
 
+            annunciatorTrack.Cadence = telescopeDigest.Tracking ? ASCOM.Controls.CadencePattern.SteadyOn : ASCOM.Controls.CadencePattern.SteadyOff;
+            annunciatorSlew.Cadence = telescopeDigest.Slewing ? ASCOM.Controls.CadencePattern.SteadyOn : ASCOM.Controls.CadencePattern.SteadyOff;
+            annunciatorPulse.Cadence = telescopeDigest.PulseGuiding ? ASCOM.Controls.CadencePattern.SteadyOn : ASCOM.Controls.CadencePattern.SteadyOff;
 
-            WiseVirtualMotor primaryMotor = null, secondaryMotor = null;
             double primaryRate = Const.rateStopped;
             double secondaryRate = Const.rateStopped;
 
-            annunciatorPrimary.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
-            primaryMotor = null;
-            if (wisetele.WestMotor.isOn)
-                primaryMotor = wisetele.WestMotor;
-            else if (wisetele.EastMotor.isOn)
-                primaryMotor = wisetele.EastMotor;
-            if (primaryMotor != null)
+            if (telescopeDigest.PrimaryPins.GuidePin)
+                primaryRate = Const.rateGuide;
+            else if (telescopeDigest.PrimaryPins.SetPin)
             {
-                annunciatorPrimary.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
-                primaryRate = primaryMotor.RateFromPins;
+                primaryRate = telescopeDigest.SlewPin ? Const.rateSlew : Const.rateSet;
             }
 
-            annunciatorSecondary.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
-            secondaryMotor = null;
-            if (wisetele.NorthMotor.isOn)
-                secondaryMotor = wisetele.NorthMotor;
-            else if (wisetele.SouthMotor.isOn)
-                secondaryMotor = wisetele.SouthMotor;
-            if (secondaryMotor != null)
+            if (telescopeDigest.SecondaryPins.GuidePin)
+                secondaryRate = Const.rateGuide;
+            else if (telescopeDigest.SecondaryPins.SetPin)
             {
-                annunciatorSecondary.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
-                secondaryRate = secondaryMotor.RateFromPins;
+                secondaryRate = telescopeDigest.SlewPin ? Const.rateSlew : Const.rateSet;
             }
 
             annunciatorRARateSlew.Cadence = annunciatorRARateSet.Cadence = annunciatorRARateGuide.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
@@ -359,46 +364,117 @@ namespace Dash
                 annunciatorDECRateGuide.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
             #endregion
 
+            #region Inactivity Countdown
+
+            if (telescopeDigest.Active)
+            {
+                if (telescopeDigest.Activities.Count() == 1 && telescopeDigest.Activities[0].StartsWith("GoingIdle"))
+                {
+                    TimeSpan ts = TimeSpan.FromSeconds(telescopeDigest.SecondsTillIdle);
+
+                    labelCountdown.Text = string.Format("{0:D2}:{1:D2}", ts.Minutes, ts.Seconds);
+                    toolTip.SetToolTip(labelCountdown, "Inactivity countdown");
+                }
+                else
+                {
+                    labelCountdown.Text = "Active";
+                    toolTip.SetToolTip(labelCountdown, string.Join(",", telescopeDigest.Activities));
+                }
+            }
+            else if (telescopeDigest.SecondsTillIdle == -1)
+            {
+                labelCountdown.Text = "Idle";
+                toolTip.SetToolTip(labelCountdown, "Observatory is idle");
+            }
+
+            #endregion
+
+            #region Moon
+            labelMoonIllum.Text = (moon.Illumination * 100).ToString("g2") + "%";
+            labelMoonDist.Text = moon.Distance(telescopeRa.Radians, telescopeDec.Radians).ToNiceString();
+            #endregion
+
+            #region Air Mass
+            Angle alt = Angle.FromDegrees(telescopeDigest.Altitude);
+            labelAirMass.Text = wisesite.AirMass(alt.Radians).ToString("g4");
+            #endregion
+
             telescopeStatus.Show(wisetele.Status);
 
             #endregion
 
             #region RefreshSafety
+
             #region ComputerControl Annunciator
-            string tip;
-            if (wisesite.computerControl == null)
+            if (safetooperateDigest.ComputerControlIsSafe)
             {
-                annunciatorComputerControl.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
-                tip = "Cannot read the computer control switch!";
+                annunciatorComputerControl.Text = "Computer has control";
+                annunciatorComputerControl.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+                tip = "The computer control switch is ON";
+
+                if (wisesite.OperationalMode == WiseSite.OpMode.WISE)
+                    foreach (Control c in readonlyControls)
+                        c.Enabled = true;
             }
             else
             {
-                if (wisesite.computerControl.IsSafe)
-                {
-                    annunciatorComputerControl.Text = "Computer has control";
-                    annunciatorComputerControl.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
-                    tip = "The computer control switch is ON";
+                annunciatorComputerControl.Text = "No computer control";
+                annunciatorComputerControl.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+                tip = "The computer control switch is OFF!";
 
-                    if (wisesite.OperationalMode == WiseSite.OpMode.WISE)
-                        foreach (Control c in readonlyControls)
-                            c.Enabled = true;
-                }
-                else
-                {
-                    annunciatorComputerControl.Text = "No computer control";
-                    annunciatorComputerControl.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
-                    tip = "The computer control switch is OFF!";
-
-                    foreach (Control c in readonlyControls)
-                        c.Enabled = false;
-                }
+                foreach (Control c in readonlyControls)
+                    c.Enabled = false;
             }
             toolTip.SetToolTip(annunciatorComputerControl, tip);
             #endregion
+
+            #region SafeToOperate Annunciator
+            tip = null;
+            string text = "";
+            severity = Statuser.Severity.Normal;
+
+            if (!safetooperateDigest.HumanInterventionIsSafe)
+            {
+                text = "Human Intervention";
+                annunciatorSafeToOperate.ForeColor = unsafeColor;
+                annunciatorSafeToOperate.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+                severity = Statuser.Severity.Error;
+                tip = String.Join("\n", safetooperateDigest.UnsafeReasons).Replace(Const.recordSeparator, "\n");
+            }
+            else if (safetooperateDigest.Bypassed)
+            {
+                text = "Safety bypassed";
+                annunciatorSafeToOperate.ForeColor = warningColor;
+                annunciatorSafeToOperate.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+                severity = Statuser.Severity.Warning;
+                tip = "Safety checks are bypassed!";
+            }
+            else if (safetooperateDigest.Safe)
+            {
+                text = "Safe to operate";
+                annunciatorSafeToOperate.ForeColor = goodColor;
+                annunciatorSafeToOperate.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+                severity = Statuser.Severity.Good;
+                tip = "Conditions are safe to operate.";
+            }
+            else
+            {
+                text = "Not safe to operate";
+                annunciatorSafeToOperate.ForeColor = unsafeColor;
+                annunciatorSafeToOperate.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+                severity = Statuser.Severity.Error;
+                tip = string.Join("\n", safetooperateDigest.UnsafeReasons).Replace(Const.recordSeparator, "\n");
+            }
+            annunciatorSafeToOperate.Text = text;
+            toolTip.SetToolTip(annunciatorSafeToOperate, tip);
+            toolTip.SetToolTip(safetooperateStatus.Label, tip);
+            safetooperateStatus.Show(text, 0, severity, true);
+            #endregion
+
             #region Platform Annunciator
             tip = null;
 
-            if (wisedomeplatform.IsSafe)
+            if (safetooperateDigest.PlatformIsSafe)
             {
                 annunciatorDomePlatform.Text = "Platform is safe";
                 annunciatorDomePlatform.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
@@ -412,58 +488,7 @@ namespace Dash
             }
             toolTip.SetToolTip(annunciatorDomePlatform, tip);
             #endregion
-            #region SafeToOperate Annunciator
-            tip = null;
 
-            string safetooperateStatus = "";
-
-            if (wisesite.safeToOperate == null)
-            {
-                annunciatorSafeToOperate.Text = "Safe to operate ???";
-                annunciatorSafeToOperate.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
-                tip = "Cannot connect to the SafeToOperate driver!";
-            }
-            else
-            {
-                safetooperateStatus = wisesafetooperate.Action("status", string.Empty);
-                bool bypassed = safetooperateStatus.Contains("bypassed:true");
-                bool intervention = safetooperateStatus.Contains("no-human-intervention:false");
-                bool safe = safetooperateStatus.Contains("safe:true");
-
-                if (intervention)
-                {
-                    annunciatorSafeToOperate.Text = "Human Intervention";
-                    annunciatorSafeToOperate.ForeColor = unsafeColor;
-                    annunciatorSafeToOperate.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
-                    string reasons = String.Join("\n", wisesafetooperate.UnsafeReasons);
-                    tip = reasons.Replace(";", "\n  ");
-                }
-                else if (bypassed)
-                {
-                    annunciatorSafeToOperate.Text = "Safety bypassed";
-                    annunciatorSafeToOperate.ForeColor = warningColor;
-                    annunciatorSafeToOperate.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
-                    tip = "Safety checks are bypassed!";
-                }
-                else if (safe)
-                {
-                    annunciatorSafeToOperate.Text = "Safe to operate";
-                    annunciatorSafeToOperate.ForeColor = safeColor;
-                    annunciatorSafeToOperate.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
-                    tip = "Conditions are safe to operate.";
-                }
-                else
-                {
-                    annunciatorSafeToOperate.Text = "Not safe to operate";
-                    annunciatorSafeToOperate.ForeColor = unsafeColor;
-                    annunciatorSafeToOperate.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
-                    string reasons = string.Join("\n", wisesafetooperate.UnsafeReasons);
-                    reasons = reasons.Replace(";", "\n  ");
-                    tip = reasons;
-                }
-            }
-            toolTip.SetToolTip(annunciatorSafeToOperate, tip);
-            #endregion
             #region Simulation Annunciator
             tip = null;
 
@@ -481,62 +506,62 @@ namespace Dash
             }
             toolTip.SetToolTip(annunciatorSimulation, tip);
             #endregion
+
             #endregion
 
             #region RefreshDome
-            labelDomeAzimuthValue.Text = domeSlaveDriver.Azimuth;
-            domeStatus.Show(domeSlaveDriver.Status);
-            buttonDomePark.Text = wisedome.AtPark ? "Unpark" : "Park";
-            buttonVent.Text = wisedome.Vent ? "Close Vent" : "Open Vent";
+            labelDomeAzimuthValue.Text = Angle.FromDegrees(domeDigest.Azimuth, Angle.Type.Az).ToNiceString();
+            domeStatus.Show(domeDigest.Status);
+            buttonDomePark.Text = domeDigest.AtPark ? "Unpark" : "Park";
+            buttonVent.Text = domeDigest.Vent ? "Close Vent" : "Open Vent";
+            buttonProjector.Text = domeDigest.Projector ? "Turn projector Off" : "Turn projector On";
 
-            if (_lastShutterStatusUpdate == DateTime.MinValue || 
-                now.Subtract(_lastShutterStatusUpdate).TotalSeconds >= 5)
-            {
-                string stat = domeSlaveDriver.ShutterStatusString;
-                Statuser.Severity severity = Statuser.Severity.Normal;
-                string msg = "";
-
-                if (stat.Contains("error"))
-                {
-                    msg = "Shutter error";
-                    severity = Statuser.Severity.Error;
-                }
-                else
-                {
-                    msg = "Shutter is " + stat;
-                    severity = Statuser.Severity.Normal;
-                }
-
-                shutterStatus.Show(msg, 0, severity);
-                _lastShutterStatusUpdate = now;
-            }
+            annunciatorDome.Cadence = wisedome.DirectionMotorsAreActive ?
+                ASCOM.Controls.CadencePattern.SteadyOn :
+                ASCOM.Controls.CadencePattern.SteadyOff;
 
             #region Shutter
-            switch (wisedome.ShutterState)
+            string msg = "";
+
+            if (domeDigest.ShutterStatus.Contains("error"))
+            {
+                msg = "Shutter error";
+                severity = Statuser.Severity.Error;
+            }
+            else
+            {
+                msg = "Shutter is " + domeDigest.ShutterStatus;
+                severity = Statuser.Severity.Normal;
+            }
+            shutterStatus.Show(msg, 0, severity);
+
+            switch (domeDigest.ShutterState)
             {
                 case ShutterState.shutterOpening:
-                    annunciatorShutter.ActiveColor = safeColor;
+                    annunciatorShutter.Text = "SHUTTER(<->)";
                     annunciatorShutter.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
                     break;
 
                 case ShutterState.shutterClosing:
-                    annunciatorShutter.ActiveColor = unsafeColor;
+                    annunciatorShutter.Text = "SHUTTER(>-<)";
                     annunciatorShutter.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
                     break;
 
                 default:
+                    annunciatorShutter.Text = "SHUTTER";
                     annunciatorShutter.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
                     break;
             }
             #endregion
+
             #endregion
 
             #region RefreshSafeToOperate
-            if (WiseSite.och == null || !WiseSite.och.Connected)
-            {
-                string nc = "???";
+                if (WiseSite.och == null || !WiseSite.och.Connected)
+                {
+                    string nc = "???";
 
-                List<Label> labels = new List<Label>() {
+                    List<Label> labels = new List<Label>() {
                     labelCloudCoverValue,
                     labelDewPointValue,
                     labelSkyTempValue,
@@ -549,98 +574,70 @@ namespace Dash
                     labelSunElevationValue,
                 };
 
-                foreach (var label in labels)
-                {
-                    label.Text = nc;
-                    label.ForeColor = warningColor;
-                }
-            }
-            else
-            {
-                try
-                {
-                    ASCOM.DriverAccess.ObservingConditions oc = WiseSite.och;
-
-                    #region ObservingConditions from OCH
-                    labelDewPointValue.Text = oc.DewPoint.ToString() + "°C";
-                    labelSkyTempValue.Text = oc.SkyTemperature.ToString() + "°C";
-                    labelTempValue.Text = oc.Temperature.ToString() + "°C";
-                    labelPressureValue.Text = oc.Pressure.ToString() + "mB";
-                    labelWindDirValue.Text = oc.WindDirection.ToString() + "°";
-
-                    labelHumidityValue.Text = oc.Humidity.ToString() + "%";
-                    labelHumidityValue.ForeColor = Statuser.TriStateColor(wisesafetooperate.isSafeHumidity);
-
-                    double d = oc.CloudCover;
-                    labelCloudCoverValue.Text = Math.Floor(oc.CloudCover).ToString();
-                    labelCloudCoverValue.ForeColor = Statuser.TriStateColor(wisesafetooperate.isSafeCloudCover);
-
-                    double windSpeedMps = oc.WindSpeed;
-                    labelWindSpeedValue.Text = string.Format("{0:G3} km/h", KMH(windSpeedMps));
-                    labelWindSpeedValue.ForeColor = Statuser.TriStateColor(wisesafetooperate.isSafeWindSpeed);
-
-                    labelRainRateValue.Text = (oc.RainRate > 0.0) ? "Wet" : "Dry";
-                    labelRainRateValue.ForeColor = Statuser.TriStateColor(wisesafetooperate.isSafeRain);
-
-                    labelSunElevationValue.Text = wisesafetooperate.SunElevation.ToString("f1") + "°";
-                    labelSunElevationValue.ForeColor = Statuser.TriStateColor(wisesafetooperate.isSafeSunElevation);
-                    #endregion
-
-                    #region Moon
-                    labelMoonIllum.Text = (moon.Illumination * 100).ToString("g2") + "%";
-                    labelMoonDist.Text = moon.Distance(ra.Radians, dec.Radians).ToNiceString();
-                    #endregion
-
-                    #region Air Mass
-                    Angle alt = Angle.FromDegrees(wisetele.Altitude);
-                    labelAirMass.Text = wisesite.AirMass(alt.Radians).ToString("g4");
-                    #endregion
-
-                    #region SafeToOperate
-                    if (wisesafetooperate.IsSafe)
+                    foreach (var label in labels)
                     {
-                        Statuser.Severity severity = Statuser.Severity.Good;
-                        string stat = "Safe to operate";
-                        if (safetooperateStatus.Contains("bypassed:true"))
-                        {
-                            stat += " (safety bypassed)";
-                            severity = Statuser.Severity.Warning;
-                        }
-                        weatherStatus.Show(stat, 0, severity);
-                        string reasons = string.Join("\n", wisesafetooperate.UnsafeReasons);
-                        weatherStatus.SetToolTip(reasons.Replace(";", "\n  "));
+                        label.Text = nc;
+                        label.ForeColor = warningColor;
                     }
-                    else
-                    {
-                        weatherStatus.Show("Not safe to operate", 0, Statuser.Severity.Error, true);
-                        string reasons = string.Join("\n", wisesafetooperate.UnsafeReasons);
-                        weatherStatus.SetToolTip(reasons.Replace(";", "\n  "));
-                    }
-                    #endregion
                 }
-                catch (ASCOM.PropertyNotImplementedException ex)
+                else
                 {
-                    weatherStatus.Show(ex.Message, 1000, Statuser.Severity.Error);
+                    try
+                    {
+                        #region ObservingConditions from OCH
+
+                        ASCOM.DriverAccess.ObservingConditions oc = WiseSite.och;
+
+                        labelDewPointValue.Text = oc.DewPoint.ToString() + "°C";
+                        labelSkyTempValue.Text = oc.SkyTemperature.ToString() + "°C";
+                        labelTempValue.Text = oc.Temperature.ToString() + "°C";
+                        labelPressureValue.Text = oc.Pressure.ToString() + "mB";
+                        labelWindDirValue.Text = oc.WindDirection.ToString() + "°";
+
+                        labelHumidityValue.Text = oc.Humidity.ToString() + "%";
+                        labelHumidityValue.ForeColor = Color.FromArgb(safetooperateDigest.Colors.HumidityColorArgb);
+
+                        double d = oc.CloudCover;
+                        labelCloudCoverValue.Text = Math.Floor(oc.CloudCover).ToString();
+                        labelCloudCoverValue.ForeColor = Color.FromArgb(safetooperateDigest.Colors.CloudCoverColorArgb);
+
+                        double windSpeedMps = oc.WindSpeed;
+                        labelWindSpeedValue.Text = string.Format("{0:G3} km/h", KMH(windSpeedMps));
+                        labelWindSpeedValue.ForeColor = Color.FromArgb(safetooperateDigest.Colors.WindSpeedColorArgb);
+
+                        labelRainRateValue.Text = (oc.RainRate > 0.0) ? "Wet" : "Dry";
+                        labelRainRateValue.ForeColor = Color.FromArgb(safetooperateDigest.Colors.RainColorArgb);
+
+                        labelSunElevationValue.Text = wisesafetooperate.SunElevation.ToString("f1") + "°";
+                        labelSunElevationValue.ForeColor = Color.FromArgb(safetooperateDigest.Colors.SunElevationColorArgb);
+                        #endregion
+                    }
+                    catch (ASCOM.PropertyNotImplementedException ex)
+                    {
+                        this.safetooperateStatus.Show(ex.Message, 1000, Statuser.Severity.Error);
+                    }
                 }
-            }
             #endregion
 
             #region RefreshFocuser
-            labelFocusCurrentValue.Text = wisefocuser.position.ToString();
-            focuserStatus.Show(wisefocuser.Status);
-            annunciatorFocus.Cadence = wisefocuser.IsMoving ? ASCOM.Controls.CadencePattern.SteadyOn : ASCOM.Controls.CadencePattern.SteadyOff;
+            labelFocusCurrentValue.Text = focuserDigest.Position.ToString();
+            focuserStatus.Show(focuserDigest.StatusString);
+            annunciatorFocus.Cadence = focuserDigest.IsMoving ?
+                ASCOM.Controls.CadencePattern.SteadyOn :
+                ASCOM.Controls.CadencePattern.SteadyOff;
             #endregion
 
             #region RefreshFilterWheel
-            //string fwstat = wisefilterwheel.Status;
-            //if (fwstat == "Idle")
-            //{
-            //    annunciatorFilterWheel.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
-            //} else
-            //{
-            //    annunciatorFilterWheel.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
-            //    filterWheelStatus.Show(fwstat);
-            //}
+            //    string fwstat = wisefilterwheel.Status;
+            //    if (fwstat == "Idle")
+            //    {
+            //        annunciatorFilterWheel.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            //    }
+            //    else
+            //    {
+            //        annunciatorFilterWheel.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+            //        filterWheelStatus.Show(fwstat);
+            //    }
             #endregion
         }
         #endregion
@@ -731,7 +728,8 @@ namespace Dash
                 {
                     telescopeStatus.Show("Primary axis is in motion", 1000, Statuser.Severity.Error);
                     return;
-                } else if ((m._direction == Const.CardinalDirection.North || m._direction == Const.CardinalDirection.South) && wisetele.AxisIsMoving(TelescopeAxes.axisSecondary))
+                }
+                else if ((m._direction == Const.CardinalDirection.North || m._direction == Const.CardinalDirection.South) && wisetele.AxisIsMoving(TelescopeAxes.axisSecondary))
                 {
                     telescopeStatus.Show("Secondary axis is in motion", 1000, Statuser.Severity.Error);
                     return;
@@ -1120,17 +1118,17 @@ namespace Dash
 
         private void buttonVent_Click(object sender, EventArgs e)
         {
-            if (wisedome.Vent)
+            bool status;
+
+            if (wisesite.OperationalModeRequiresRESTServer)
             {
-                wisedome.Vent = false;
-                domeStatus.Show("Closed dome vent", 1000, Statuser.Severity.Good);
-                buttonVent.Text = "Open Vent";
+                status = JsonConvert.DeserializeObject<bool>(remoteDome.Action("vent", ""));
+                remoteDome.Action("vent", (!status).ToString());
             }
             else
             {
-                wisedome.Vent = true;
-                domeStatus.Show("Opened dome vent", 1000, Statuser.Severity.Good);
-                buttonVent.Text = "Close Vent";
+                status = JsonConvert.DeserializeObject<bool>(wisedome.Action("vent", ""));
+                wisedome.Action("vent", (!status).ToString());
             }
         }
 
@@ -1168,7 +1166,7 @@ namespace Dash
         {
             try
             {
-                wisefocuser.StartStopping();
+                wisefocuser.StartStopping("Button focuser stop");
             }
             catch (Exception ex)
             {
@@ -1210,7 +1208,7 @@ namespace Dash
             try
             {
 
-                wisefocuser.StartStopping();
+                wisefocuser.StartStopping("Button focuser stop");
             }
             catch (Exception ex)
             {
@@ -1255,7 +1253,8 @@ namespace Dash
             try
             {
                 wisefocuser.Move(WiseFocuser.Direction.AllUp);
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 focuserStatus.Show(ex.Message, 2000, Statuser.Severity.Error);
                 return;
@@ -1502,15 +1501,6 @@ namespace Dash
             saveToProfileToolStripMenuItem.Text = "Save To Profile";
         }
 
-        private void tracingToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            ToolStripMenuItem item = sender as ToolStripMenuItem;
-
-            debugger.Tracing = !debugger.Tracing;
-            UpdateCheckmark(item, debugger.Tracing);
-            UpdateAlteredItems(item, "Tracing");
-        }
-
         private void toolStripMenuItemSafeToOperate_Click(object sender, EventArgs e)
         {
             new SafeToOperateSetupDialogForm().Show();
@@ -1627,24 +1617,33 @@ namespace Dash
             wisetele.FullStop();
             wisedome.Stop();
             wisedome.wisedomeshutter.Stop();
-            wisefocuser.StartStopping();
+            wisefocuser.StartStopping("Button full stop");
         }
 
         private void buttonProjector_Click(object sender, EventArgs e)
         {
-            wisedome.Projector = !wisedome.Projector;
-            buttonProjector.Text = wisedome.Projector ? "Turn projector Off" : "Turn projector On";
+            bool status;
+
+            if (wisesite.OperationalModeRequiresRESTServer)
+            {
+                status = JsonConvert.DeserializeObject<bool>(remoteDome.Action("projector", ""));
+                remoteDome.Action("projector", (!status).ToString());
+            }
+            else
+            {
+                status = JsonConvert.DeserializeObject<bool>(wisedome.Action("projector", ""));
+                wisedome.Action("projector", (!status).ToString());
+            }
         }
 
         private void telescopeToolStripMenuItem_Click(object sender, EventArgs e)
         {
             wisetele.init();
-            new TelescopeSetupDialogForm(wisetele.debugger.Tracing, wisetele.debugger.Level, wisesite.astrometricAccuracy, wisetele._enslaveDome).Show();
+            new TelescopeSetupDialogForm(wisetele.debugger.Level, wisesite.astrometricAccuracy, wisetele._enslaveDome).Show();
         }
 
         private void domeToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            wisedome.init();
             new DomeSetupDialogForm().Show();
         }
 
@@ -1659,7 +1658,8 @@ namespace Dash
             try
             {
                 wisetele.Tracking = !wisetele.Tracking;
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 telescopeStatus.Show(ex.Message, 2000, Statuser.Severity.Error);
             }
@@ -1715,7 +1715,7 @@ namespace Dash
         {
             ComboBox cb = sender as ComboBox;
 
-            goToMode = (GoToMode) cb.SelectedIndex;
+            goToMode = (GoToMode)cb.SelectedIndex;
             UpdateGoToControls();
             textBoxRA.Focus();
         }
@@ -1764,7 +1764,7 @@ namespace Dash
                 wisetele.Tracking = false;
                 wisedome.Stop();
                 wisedome.wisedomeshutter.Stop();
-                wisefocuser.StartStopping();
+                wisefocuser.StartStopping("Stop everything");
             }
             catch { }
             #region debug
@@ -1798,4 +1798,27 @@ namespace Dash
         }
         #endregion
     }
+
+    public class RefreshPacer
+    {
+        private TimeSpan _interval;
+        private DateTime _lastTime;
+
+        public RefreshPacer(TimeSpan interval)
+        {
+            _interval = interval;
+            _lastTime = DateTime.MinValue;
+        }
+
+        public bool ShouldRefresh(DateTime cachedTime)
+        {
+            if ((cachedTime - _lastTime) >= _interval)
+            {
+                _lastTime = cachedTime;
+                return true;
+            }
+            return false;
+        }
+    }
+
 }

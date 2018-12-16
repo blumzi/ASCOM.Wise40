@@ -113,6 +113,7 @@
             this.textBoxDec = new System.Windows.Forms.TextBox();
             this.labelRA = new System.Windows.Forms.Label();
             this.labelDec = new System.Windows.Forms.Label();
+            this.groupBoxTarget = new System.Windows.Forms.GroupBox();
             this.menuStrip = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -127,7 +128,6 @@
             this.manageFilterInventoryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.manage3FiltersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem5 = new System.Windows.Forms.ToolStripMenuItem();
-            this.tracingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.debuggingToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.debugASCOMToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.debugSafetyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -220,15 +220,14 @@
             this.label2 = new System.Windows.Forms.Label();
             this.label22 = new System.Windows.Forms.Label();
             this.labelWindSpeedValue = new System.Windows.Forms.Label();
-            this.timerRefreshDisplay = new System.Windows.Forms.Timer(this.components);
-            this.toolTip = new System.Windows.Forms.ToolTip(this.components);
-            this.groupBoxTarget = new System.Windows.Forms.GroupBox();
             this.label5 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
-            this.label7 = new System.Windows.Forms.Label();
             this.labelMoonIllum = new System.Windows.Forms.Label();
             this.labelMoonDist = new System.Windows.Forms.Label();
             this.labelAirMass = new System.Windows.Forms.Label();
+            this.label7 = new System.Windows.Forms.Label();
+            this.timerRefreshDisplay = new System.Windows.Forms.Timer(this.components);
+            this.toolTip = new System.Windows.Forms.ToolTip(this.components);
             this.tableLayoutMain.SuspendLayout();
             this.groupBoxFocuser.SuspendLayout();
             this.groupBoxDomeGroup.SuspendLayout();
@@ -803,6 +802,8 @@
             // 
             // groupBoxTelescope
             // 
+            this.groupBoxTelescope.Controls.Add(this.textBoxRA);
+            this.groupBoxTelescope.Controls.Add(this.textBoxDec);
             this.groupBoxTelescope.Controls.Add(this.comboBoxGoToMode);
             this.groupBoxTelescope.Controls.Add(this.buttonTrack);
             this.groupBoxTelescope.Controls.Add(this.panel1);
@@ -812,8 +813,6 @@
             this.groupBoxTelescope.Controls.Add(this.groupBoxSpeed);
             this.groupBoxTelescope.Controls.Add(this.tableLayoutPanelCoordinates);
             this.groupBoxTelescope.Controls.Add(this.buttonGoCoord);
-            this.groupBoxTelescope.Controls.Add(this.textBoxRA);
-            this.groupBoxTelescope.Controls.Add(this.textBoxDec);
             this.groupBoxTelescope.Controls.Add(this.labelRA);
             this.groupBoxTelescope.Controls.Add(this.labelDec);
             this.groupBoxTelescope.Controls.Add(this.groupBoxTarget);
@@ -1530,6 +1529,16 @@
             this.labelDec.TabIndex = 22;
             this.labelDec.Text = "Dec:";
             // 
+            // groupBoxTarget
+            // 
+            this.groupBoxTarget.ForeColor = System.Drawing.Color.DarkOrange;
+            this.groupBoxTarget.Location = new System.Drawing.Point(8, 156);
+            this.groupBoxTarget.Name = "groupBoxTarget";
+            this.groupBoxTarget.Size = new System.Drawing.Size(376, 48);
+            this.groupBoxTarget.TabIndex = 41;
+            this.groupBoxTarget.TabStop = false;
+            this.groupBoxTarget.Text = " Target ";
+            // 
             // menuStrip
             // 
             this.menuStrip.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
@@ -1577,7 +1586,6 @@
             this.toolStripMenuItemSafeToOperate,
             this.toolStripMenuItemFilterWheel,
             this.toolStripMenuItem5,
-            this.tracingToolStripMenuItem,
             this.debuggingToolStripMenuItem1,
             this.toolStripMenuItem2,
             this.saveToProfileToolStripMenuItem});
@@ -1659,14 +1667,6 @@
             this.toolStripMenuItem5.Name = "toolStripMenuItem5";
             this.toolStripMenuItem5.Size = new System.Drawing.Size(201, 22);
             this.toolStripMenuItem5.Text = "  ";
-            // 
-            // tracingToolStripMenuItem
-            // 
-            this.tracingToolStripMenuItem.Name = "tracingToolStripMenuItem";
-            this.tracingToolStripMenuItem.Size = new System.Drawing.Size(201, 22);
-            this.tracingToolStripMenuItem.Text = "Tracing";
-            this.tracingToolStripMenuItem.ToolTipText = "Toggle tracing ";
-            this.tracingToolStripMenuItem.Click += new System.EventHandler(this.tracingToolStripMenuItem_Click);
             // 
             // debuggingToolStripMenuItem1
             // 
@@ -2139,14 +2139,14 @@
             this.annunciatorDome.Location = new System.Drawing.Point(3, 17);
             this.annunciatorDome.Mute = false;
             this.annunciatorDome.Name = "annunciatorDome";
-            this.annunciatorDome.Padding = new System.Windows.Forms.Padding(35, 0, 0, 0);
-            this.annunciatorDome.Size = new System.Drawing.Size(75, 17);
+            this.annunciatorDome.Padding = new System.Windows.Forms.Padding(25, 0, 0, 0);
+            this.annunciatorDome.Size = new System.Drawing.Size(65, 17);
             this.annunciatorDome.TabIndex = 4;
             this.annunciatorDome.Text = "DOME";
             // 
             // annunciatorShutter
             // 
-            this.annunciatorShutter.ActiveColor = System.Drawing.Color.Green;
+            this.annunciatorShutter.ActiveColor = System.Drawing.Color.YellowGreen;
             this.annunciatorShutter.AutoSize = true;
             this.annunciatorShutter.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.annunciatorShutter.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
@@ -2154,7 +2154,7 @@
             this.annunciatorShutter.Font = new System.Drawing.Font("Consolas", 10F);
             this.annunciatorShutter.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorShutter.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorShutter.Location = new System.Drawing.Point(84, 17);
+            this.annunciatorShutter.Location = new System.Drawing.Point(74, 17);
             this.annunciatorShutter.Mute = false;
             this.annunciatorShutter.Name = "annunciatorShutter";
             this.annunciatorShutter.Size = new System.Drawing.Size(64, 17);
@@ -2367,7 +2367,7 @@
             // 
             // labelCountdown
             // 
-            this.labelCountdown.Font = new System.Drawing.Font("Lucida Console", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelCountdown.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelCountdown.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.labelCountdown.Location = new System.Drawing.Point(68, 8);
             this.labelCountdown.Name = "labelCountdown";
@@ -2890,25 +2890,6 @@
             this.labelWindSpeedValue.Text = "windspeed";
             this.labelWindSpeedValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
-            // timerRefreshDisplay
-            // 
-            this.timerRefreshDisplay.Enabled = true;
-            this.timerRefreshDisplay.Tick += new System.EventHandler(this.RefreshDisplay);
-            // 
-            // toolTip
-            // 
-            this.toolTip.IsBalloon = true;
-            // 
-            // groupBoxTarget
-            // 
-            this.groupBoxTarget.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBoxTarget.Location = new System.Drawing.Point(8, 156);
-            this.groupBoxTarget.Name = "groupBoxTarget";
-            this.groupBoxTarget.Size = new System.Drawing.Size(376, 48);
-            this.groupBoxTarget.TabIndex = 41;
-            this.groupBoxTarget.TabStop = false;
-            this.groupBoxTarget.Text = " Target ";
-            // 
             // label5
             // 
             this.label5.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -2936,20 +2917,6 @@
             this.label6.TabIndex = 23;
             this.label6.Text = "Moon Dist:";
             this.label6.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // label7
-            // 
-            this.label7.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.label7.AutoSize = true;
-            this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label7.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label7.Location = new System.Drawing.Point(133, 174);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(59, 33);
-            this.label7.TabIndex = 24;
-            this.label7.Text = "Air Mass:";
-            this.label7.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // labelMoonIllum
             // 
@@ -2995,6 +2962,30 @@
             this.labelAirMass.TabIndex = 27;
             this.labelAirMass.Text = "airmass";
             this.labelAirMass.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label7
+            // 
+            this.label7.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.label7.AutoSize = true;
+            this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label7.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
+            this.label7.Location = new System.Drawing.Point(133, 174);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(59, 33);
+            this.label7.TabIndex = 24;
+            this.label7.Text = "Air Mass:";
+            this.label7.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // timerRefreshDisplay
+            // 
+            this.timerRefreshDisplay.Enabled = true;
+            this.timerRefreshDisplay.Interval = 200;
+            this.timerRefreshDisplay.Tick += new System.EventHandler(this.RefreshDisplay);
+            // 
+            // toolTip
+            // 
+            this.toolTip.IsBalloon = true;
             // 
             // FormDash
             // 
@@ -3160,7 +3151,6 @@
         private System.Windows.Forms.Button buttonTelescopePark;
         private System.Windows.Forms.Button buttonDomePark;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem1;
-        private System.Windows.Forms.ToolStripMenuItem tracingToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem debuggingToolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem debugASCOMToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem debugDeviceToolStripMenuItem;
