@@ -16,11 +16,10 @@ namespace ASCOM.Wise40 //.Telescope
         private static WiseSite wisesite = WiseSite.Instance;
         private static WiseTele wisetele = WiseTele.Instance;
 
-        public TelescopeSetupDialogForm(bool traceState, Debugger.DebugLevel debugLevel, Accuracy accuracy, bool enslaveDome)
+        public TelescopeSetupDialogForm(Debugger.DebugLevel debugLevel, Accuracy accuracy, bool enslaveDome)
         {
             InitializeComponent();
             wisetele.init();
-            wisesite.init();
             
             accuracyBox.SelectedItem = (wisesite.astrometricAccuracy == Accuracy.Full) ? 0 : 1;
             checkBoxEnslaveDome.Checked = wisetele._enslaveDome;

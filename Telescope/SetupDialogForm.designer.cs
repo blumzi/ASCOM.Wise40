@@ -132,7 +132,7 @@ namespace ASCOM.Wise40 //.Telescope
             this.checkBoxCalculateRefraction.AutoSize = true;
             this.checkBoxCalculateRefraction.Checked = true;
             this.checkBoxCalculateRefraction.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBoxCalculateRefraction.Location = new System.Drawing.Point(24, 120);
+            this.checkBoxCalculateRefraction.Location = new System.Drawing.Point(24, 121);
             this.checkBoxCalculateRefraction.Name = "checkBoxCalculateRefraction";
             this.checkBoxCalculateRefraction.Size = new System.Drawing.Size(117, 17);
             this.checkBoxCalculateRefraction.TabIndex = 15;
