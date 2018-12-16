@@ -17,7 +17,6 @@ namespace ASCOM.Wise40.Common
         private ListBox listBox;
         private bool _appendToWindow = false;
         private static bool _initialized = false;
-        private static bool _tracing = false;
         private static string _appName = string.Empty;
         private static string _logFile = string.Empty;
 
@@ -38,7 +37,10 @@ namespace ASCOM.Wise40.Common
                     lock (syncObject)
                     {
                         if (_instance == null)
+                        {
                             _instance = new Debugger();
+                            _instance.init();
+                        }
                     }
                 }
                 return _instance;
@@ -61,7 +63,7 @@ namespace ASCOM.Wise40.Common
             DebugDAQs = (1 << 10),
             DebugFocuser = (1 << 11),
 
-            DebugDefault = DebugAxes | DebugExceptions | DebugASCOM | DebugLogic,
+            DebugDefault = DebugAxes | DebugExceptions | DebugASCOM | DebugLogic | DebugShutter,
 
             DebugAll = DebugASCOM|DebugDevice|DebugLogic|DebugExceptions|DebugAxes|DebugMotors|DebugEncoders|DebugSafety|DebugDome|DebugShutter|DebugDAQs|DebugFocuser,
             DebugNone = 0,
@@ -121,14 +123,14 @@ namespace ASCOM.Wise40.Common
                 "-1" :
                 (Task.CurrentId.HasValue ? Task.CurrentId.Value : -1).ToString();
 
-            string line = string.Format("{0}:{1}: {2,4} {3,4} {4} UT {5,-15} {6}",
-                _appName, Process.GetCurrentProcess().Id,
-                Thread.CurrentThread.ManagedThreadId.ToString(),
-                taskInfo,
-                utcNow.ToString(@"hh\:mm\:ss\.fff"),
-                level.ToString() + ":",
+            string line = string.Format("{0} UT {1,-14} {2,-15} {3}",
+                utcNow.ToString(@"HH\:mm\:ss\.fff"),
+                string.Format("{0},{1},{2}", Process.GetCurrentProcess().Id,
+                    Thread.CurrentThread.ManagedThreadId.ToString(),
+                    taskInfo),
+                level.ToString(),
                 msg);
-            string currentLogPath = LogDirectory() + "/debug.txt";
+            string currentLogPath = LogDirectory() + string.Format("/{0}.txt", _appName);
             if (currentLogPath != _logFile)
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(currentLogPath));
@@ -185,7 +187,6 @@ namespace ASCOM.Wise40.Common
                 if (!p.IsRegistered(Const.wiseTelescopeDriverID))
                     p.Register(Const.wiseTelescopeDriverID, "Wise40 global settings");
                 p.WriteValue(Const.wiseTelescopeDriverID, "SiteDebugLevel", Level.ToString());
-                p.WriteValue(Const.wiseTelescopeDriverID, "SiteTracing", _tracing.ToString());
             }
         }
 
@@ -199,21 +200,7 @@ namespace ASCOM.Wise40.Common
                     
                     if (Enum.TryParse<DebugLevel>(p.GetValue(Const.wiseTelescopeDriverID, "SiteDebugLevel", string.Empty, DebugLevel.DebugDefault.ToString()), out d))
                         _currentLevel = d;
-                    _tracing = Convert.ToBoolean(p.GetValue(Const.wiseTelescopeDriverID, "SiteTracing", string.Empty, false.ToString()));
                 }
-            }
-        }
-
-        public bool Tracing
-        {
-            get
-            {
-                return _tracing;
-            }
-
-            set
-            {
-                _tracing = value;
             }
         }
     }
