@@ -242,13 +242,5 @@ namespace ASCOM.Wise40 //.Telescope
                 tasks.Add(a.task);
             return tasks.ToArray();
         }
-
-        public static bool IsPulseGuising
-        {
-            get
-            {
-                return _active.Count != 0;
-            }
-        }
     }
 }
