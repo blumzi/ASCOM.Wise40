@@ -20,10 +20,8 @@ namespace ASCOM.Wise40
         private bool _connected = false;
 
         public Angle _angle = new Angle(0.0, Angle.Type.Dec);
-        private const double halfPI = Math.PI / 2.0;
-        private const double twoPI = Math.PI * 2.0;
 
-        const double DecMultiplier = twoPI / 600 / 4096;
+        const double DecMultiplier = Const.twoPI / 600 / 4096;
         const double DecCorrection = 0.35613322;                //20081231 SK: ActualDec-Encoder Dec [rad]
 
         private Common.Debugger debugger = Debugger.Instance;
@@ -35,10 +33,9 @@ namespace ASCOM.Wise40
 
         public WiseDecEncoder(string name)
         {
-            Name = "DecEncoder";
+            WiseName = "DecEncoder";
             Novas31 = new Astrometry.NOVAS.NOVAS31();
             astroutils = new Astrometry.AstroUtils.AstroUtils();
-            wisesite.init();
 
             axisEncoder = new WiseEncoder("DecAxis",
                 1 << 16,
@@ -56,11 +53,11 @@ namespace ASCOM.Wise40
                 }
             );
 
-            Name = name;
+            WiseName = name;
 
             Angle = Simulated ?
                 Angle.FromDegrees(85, Angle.Type.Dec) :
-                Angle.FromRadians((Value * DecMultiplier) + DecCorrection, Angle.Type.Dec);
+                Angle.FromRadians(Radians, Angle.Type.Dec);
         }
 
         public double Declination
@@ -96,7 +93,7 @@ namespace ASCOM.Wise40
         /// Reads the axis and worm encoders
         /// </summary>
         /// <returns>Combined Daq values</returns>
-        public double Value
+        public double EncoderValue
         {
             get
             {
@@ -133,7 +130,7 @@ namespace ASCOM.Wise40
                     }
                     #region debug
                     string dbg = string.Format("{0}: value: {1}, axis: {2} (0x{2:x}), worm: {3} (0x{3:x})",
-                        Name, _daqsValue, axis, worm);
+                        WiseName, _daqsValue, axis, worm);
                     if (prev_worm != int.MinValue)
                     {
                         dbg += string.Format(" prev_axis: {0} (0x{0:x}), prev_worm: {1} (0x{1:x})", prev_axis, prev_worm);
@@ -160,7 +157,14 @@ namespace ASCOM.Wise40
         {
             get
             {
-                _angle.Radians = (Value * DecMultiplier) + DecCorrection;
+                if (!Simulated)
+                {
+                    double radians = Radians;
+                    if (_angle == null)
+                        _angle = Angle.FromRadians(radians);
+                    else
+                        _angle.Radians = radians;
+                }
 
                 Angle ret = _angle;
 
@@ -177,7 +181,7 @@ namespace ASCOM.Wise40
                     if (_angle == null)
                         _angle = new Angle();
                     _angle.Radians = value.Radians;
-                    Value = (uint) Math.Round((_angle.Radians - DecCorrection) / DecMultiplier);
+                    EncoderValue = (uint) Math.Round((_angle.Radians - DecCorrection) / DecMultiplier);
                 }
             }
         }
@@ -198,17 +202,24 @@ namespace ASCOM.Wise40
             }
         }
 
+        public double Radians
+        {
+            get
+            {
+                return (EncoderValue * DecMultiplier) + DecCorrection;
+            }
+        }
+
         public double Degrees
         {
             get
             {
                 Angle ret = _angle;
 
-                double current_value = Value;
-                double radians = (current_value * DecMultiplier) + DecCorrection;
+                double radians = Radians;
 
-                if (radians > Math.PI)
-                    radians -= twoPI;
+                if (radians > Const.onePI)
+                    radians -= Const.twoPI;
                 _angle.Radians = radians;
 
                 ret = _angle;
@@ -217,13 +228,13 @@ namespace ASCOM.Wise40
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "WiseDecEncoder:Degrees: over90");
                     #endregion
-                    ret.Radians = Math.PI - ret.Radians;
+                    ret.Radians = Const.onePI - ret.Radians;
                 }
 
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugEncoders,
-                    "[{0}] {1} Degrees - Value: {2}, deg: {3}", this.GetHashCode(), Name, current_value, ret);
-                #endregion
+                //#region debug
+                //debugger.WriteLine(Debugger.DebugLevel.DebugEncoders,
+                //    "[{0}] {1} Degrees - Value: {2}, deg: {3}", this.GetHashCode(), Name, current_value, ret);
+                //#endregion
 
                 return ret.Degrees;
             }

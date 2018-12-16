@@ -34,10 +34,9 @@ namespace ASCOM.Wise40 //.Telescope
 
         public WiseHAEncoder(string name, WiseDecEncoder decEncoder)
         {
-            Name = "HAEncoder";
+            WiseName = "HAEncoder";
             Novas31 = new Astrometry.NOVAS.NOVAS31();
             astroutils = new Astrometry.AstroUtils.AstroUtils();
-            wisesite.init();
             _decEncoder = decEncoder;
 
             axisEncoder = new WiseEncoder("HAAxis",
@@ -56,7 +55,7 @@ namespace ASCOM.Wise40 //.Telescope
                 }
             );
 
-            Name = name;
+            WiseName = name;
 
             if (Simulated)
                 _angle = new Angle("00h00m00.0s");
@@ -66,7 +65,7 @@ namespace ASCOM.Wise40 //.Telescope
         /// Reads the axis and worm encoders
         /// </summary>
         /// <returns>Combined Daq values</returns>
-        public double Value
+        public double EncoderValue
         {
             get
             {
@@ -97,7 +96,7 @@ namespace ASCOM.Wise40 //.Telescope
                         _daqsValue = ((axis * 720 - worm) & 0xfff000) + worm;
                     }
                     #region debug
-                    string dbg = string.Format("{0}: value: {1}, axis: {2} (0x{2:x}), worm: {3} (0x{3:x})", Name, _daqsValue, axis, worm);
+                    string dbg = string.Format("{0}: value: {1}, axis: {2} (0x{2:x}), worm: {3} (0x{3:x})", WiseName, _daqsValue, axis, worm);
                     if (prev_worm != int.MinValue)
                     {
                         dbg += string.Format(" prev_axis: {0} (0x{0:x}), prev_worm: {1} (0x{1:x})",
@@ -147,13 +146,21 @@ namespace ASCOM.Wise40 //.Telescope
             }
         }
 
+        public double Radians
+        {
+            get
+            {
+                return (EncoderValue * HaMultiplier) + HaCorrection;
+            }
+        }
+
         public Angle Angle
         {
             get
             {
                 if (!Simulated)
                 {
-                    double radians = (Value * HaMultiplier) + HaCorrection;
+                    double radians = Radians;
                     if (_angle == null)
                         _angle = Angle.FromRadians(radians);
                     else
@@ -168,7 +175,7 @@ namespace ASCOM.Wise40 //.Telescope
                 if (Simulated)
                 {
                     _angle = Angle.FromHours(value.Hours);
-                    Value = (uint)Math.Round((_angle.Radians - HaCorrection) / HaMultiplier);
+                    EncoderValue = (uint)Math.Round((_angle.Radians - HaCorrection) / HaMultiplier);
                 }
             }
         }
@@ -190,7 +197,7 @@ namespace ASCOM.Wise40 //.Telescope
                 if (Simulated)
                 {
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "{0}: {1} + {2} = {3}", Name, before, delta, after);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "{0}: {1} + {2} = {3}", WiseName, before, delta, after);
                     #endregion
                     _daqsValue = /*(uint)*/((_angle.Radians + HaCorrection) / HaMultiplier);
                 }
@@ -224,14 +231,14 @@ namespace ASCOM.Wise40 //.Telescope
                 #endregion
                 if (_decEncoder.DecOver90Degrees)
                 {
-                    ret.Radians += Math.PI;     // Add 12 hours
+                    ret.Radians += Const.onePI;     // Add 12 hours
                 }
                 if (ret.Radians < 0)
                     ret.Radians += Const.twoPI;
                 if (ret.Radians > Const.twoPI)
                     ret.Radians -= Const.twoPI;
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "{0}: RightAscension: {1}", Name, ret);
+                debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "{0}: RightAscension: {1}", WiseName, ret);
                 #endregion
                 return ret;
             }
