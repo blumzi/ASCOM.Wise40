@@ -56,10 +56,12 @@ namespace ASCOM.Wise40
                     lock (syncObject)
                     {
                         if (_instance == null)
+                        {
                             _instance = new WiseSite();
-                    }
+                            _instance.init();
+                        }
+                        }
                 }
-                _instance.init();
                 return _instance;
             }
         }
