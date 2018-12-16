@@ -110,7 +110,7 @@ namespace ASCOM.Wise40 //.Focuser
             if (_initialized)
                 return;
 
-            Name = "FocusEnc";
+            WiseName = "FocusEnc";
             this._multiTurn = multiTurn;
 
             if (this._multiTurn)
