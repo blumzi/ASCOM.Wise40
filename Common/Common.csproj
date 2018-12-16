@@ -125,7 +125,6 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
-    <Compile Include="Digest.cs" />
     <Compile Include="ShortestDistanceResult.cs" />
     <Compile Include="Statuser.cs" />
     <Compile Include="Wise40Renderer.cs" />
