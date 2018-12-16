@@ -28,7 +28,8 @@ namespace ASCOM.Wise40 //.Dome
         
         private Hardware.Hardware hw = Hardware.Hardware.Instance;
 
-        private static readonly WiseDomeEncoder _instance = new WiseDomeEncoder(); // Singleton
+        private static WiseDomeEncoder _instance; // Singleton
+        private static object syncObject = new object();
 
         private object _lock = new object();
         // Explicit static constructor to tell C# compiler
@@ -45,6 +46,17 @@ namespace ASCOM.Wise40 //.Dome
         {
             get
             {
+                if (_instance == null)
+                {
+                    lock (syncObject)
+                    {
+                        if (_instance == null)
+                        {
+                            _instance = new WiseDomeEncoder();
+                            _instance.init();
+                        }
+                    }
+                }
                 return _instance;
             }
         }
@@ -54,7 +66,7 @@ namespace ASCOM.Wise40 //.Dome
             if (_initialized)
                 return;
 
-            Name = "DomeEnc";
+            WiseName = "DomeEnc";
             base.init("DomeEnc",
                 _hwTicks,
                 new List<WiseEncSpec>() {
@@ -176,7 +188,7 @@ namespace ASCOM.Wise40 //.Dome
 
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "WiseDome: {0}: Azimuth: {1}, currTicks: {2}, caliTicks: {3}, caliAz: {4}",
-                    Name, az.ToNiceString(), currTicks, _caliTicks, _caliAz.ToNiceString());
+                    WiseName, az.ToNiceString(), currTicks, _caliTicks, _caliAz.ToNiceString());
                 #endregion
                 return az;
             }
