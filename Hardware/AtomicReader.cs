@@ -28,7 +28,7 @@ namespace ASCOM.Wise40.Hardware
             double timeoutMillis = Const.defaultReadTimeoutMillis,
             int maxTries = Const.defaultReadRetries)
         {
-            Name = name;
+            WiseName = name;
             stopwatch = new Stopwatch();
             this.daqs = daqs;
             _timeoutMillis = timeoutMillis;
@@ -75,12 +75,12 @@ namespace ASCOM.Wise40.Hardware
                     if (results.Count() == daqs.Count())
                     {
                         #region debug
-                        string s = "[" + this.GetHashCode().ToString() + "] AtomicReader " + Name + " :Values: ";
+                        string s = "[" + this.GetHashCode().ToString() + "] AtomicReader " + WiseName + " :Values: ";
                         foreach (var res in results)
                             s += res.ToString() + " ";
                         s += "inter daqs (";
                         foreach (WiseDaq daq in daqs)
-                            s += daq.Name + " ";
+                            s += daq.WiseName + " ";
                         s += ") " + elapsedMillis.Count + " read times: ";
                         foreach (double m in elapsedMillis)
                             s += m.ToString() + " ";
@@ -98,9 +98,9 @@ namespace ASCOM.Wise40.Hardware
                 } while (--tries > 0);
 
                 #region debug
-                string err = "AtomicReader " + Name + " Failed to read daqs: ";
+                string err = "AtomicReader " + WiseName + " Failed to read daqs: ";
                 foreach (WiseDaq daq in daqs)
-                    err += daq.Name + " ";
+                    err += daq.WiseName + " ";
                 err += ", within " + _timeoutMillis.ToString() + " milliSeconds, max: ";
                 err += elapsedMillis.Max().ToString();
                 err += " [ ";
