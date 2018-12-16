@@ -189,6 +189,7 @@
             // 
             this.buttonShutdown.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonShutdown.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonShutdown.Enabled = false;
             this.buttonShutdown.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonShutdown.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonShutdown.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
@@ -221,6 +222,10 @@
             this.buttonManualIntervention.Text = "Activate";
             this.buttonManualIntervention.UseVisualStyleBackColor = false;
             this.buttonManualIntervention.Click += new System.EventHandler(this.buttonManualIntervention_Click);
+            // 
+            // toolTip
+            // 
+            this.toolTip.IsBalloon = true;
             // 
             // labelConditions
             // 
@@ -293,6 +298,7 @@
             // 
             this.buttonProjector.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonProjector.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonProjector.Enabled = false;
             this.buttonProjector.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonProjector.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonProjector.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));

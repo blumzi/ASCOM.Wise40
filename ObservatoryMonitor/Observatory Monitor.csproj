@@ -68,6 +68,9 @@
     </Reference>
     <Reference Include="ASCOM.Exceptions, Version=6.0.0.0, Culture=neutral, PublicKeyToken=565de7938946fba7, processorArchitecture=MSIL" />
     <Reference Include="ASCOM.Utilities, Version=6.0.0.0, Culture=neutral, PublicKeyToken=565de7938946fba7, processorArchitecture=MSIL" />
+    <Reference Include="ASCOM.Wise40SafeToOperate.SafetyMonitor">
+      <HintPath>..\SafeToOperate\bin\x86\Debug\ASCOM.Wise40SafeToOperate.SafetyMonitor.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.12.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
@@ -168,6 +171,14 @@
     <ProjectReference Include="..\Dome\Dome.csproj">
       <Project>{64308775-bd4a-469c-bcab-3ed830b811af}</Project>
       <Name>Dome</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SafeToOperate\SafeToOperate.csproj">
+      <Project>{7fa766d4-8f97-4d9f-8f62-f25c84c01ff2}</Project>
+      <Name>SafeToOperate</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Telescope\Telescope.csproj">
+      <Project>{e27802fc-efb5-4deb-bd4d-013f44a0813c}</Project>
+      <Name>Telescope</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
