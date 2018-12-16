@@ -16,6 +16,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Linq;
 
+using Newtonsoft.Json;
+
 /// <summary>
 /// From the Las Campanas web site (http://www.lco.cl/telescopes-information/henrietta-swope) for the Swope telescope,
 ///   an identical twin to the Wise40 telescope:
@@ -65,7 +67,6 @@ namespace ASCOM.Wise40
         private List<IConnectable> connectables;
         private List<IDisposable> disposables;
 
-        public TraceLogger traceLogger = new TraceLogger();
         public Debugger debugger = Debugger.Instance;
 
         private bool _connected = false;
@@ -176,6 +177,8 @@ namespace ASCOM.Wise40
 
         System.Threading.Timer trackingTimer;
         const int trackingDomeAdjustmentInterval = 30 * 1000;   // half a minute
+
+        public Angle parkingDeclination;
 
         Task shutdownTask;
 
@@ -298,9 +301,6 @@ namespace ASCOM.Wise40
             {
                 if (_targetDeclination == null)
                     throw new ValueNotSetException("Target not set");
-                #region trace
-                traceLogger.LogMessage("TargetDeclination Get", string.Format("{0}", _targetDeclination));
-                #endregion
                 #region debug
                 debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM,
                     string.Format("TargetDeclination Get - {0} ({1})", _targetDeclination, _targetDeclination.Degrees));
@@ -314,9 +314,6 @@ namespace ASCOM.Wise40
                 CheckCoordinateSanity(Angle.Type.Dec, value);
 
                 _targetDeclination = Angle.FromDegrees(value, Angle.Type.Dec);
-                #region trace
-                traceLogger.LogMessage("TargetDeclination Set", string.Format("{0}", _targetDeclination));
-                #endregion
                 #region debug
                 debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM,
                     string.Format("TargetDeclination Set - {0} ({1})", _targetDeclination, _targetDeclination.Degrees));
@@ -332,15 +329,10 @@ namespace ASCOM.Wise40
                     throw new ValueNotSetException("Target RA not set");
 
                 Angle ret = _targetRightAscension;
-
-                #region trace
-                traceLogger.LogMessage("TargetRightAscension Get", string.Format("{0}", _targetRightAscension));
-                #endregion
                 #region debug
                 debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM,
                     string.Format("TargetRightAscension Get - {0} ({1})", ret, ret.Hours));
                 #endregion debug
-
                 return _targetRightAscension.Hours;
             }
 
@@ -349,9 +341,6 @@ namespace ASCOM.Wise40
                 activityMonitor.RestartGoindIdleTimer("TargetRightAscension was set");
                 CheckCoordinateSanity(Angle.Type.RA, value);
                 _targetRightAscension = Angle.FromHours(value, Angle.Type.RA);
-                #region trace
-                traceLogger.LogMessage("TargetRightAscension Set", string.Format("{0}", _targetRightAscension));
-                #endregion
                 #region debug
                 debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM,
                     string.Format("TargetRightAscension Set - {0} ({1})",
@@ -382,10 +371,6 @@ namespace ASCOM.Wise40
             get
             {
                 bool ret = false;
-
-                #region trace
-                traceLogger.LogMessage("DoesRefraction Get", ret.ToString());
-                #endregion
                 return ret;
             }
 
@@ -418,20 +403,11 @@ namespace ASCOM.Wise40
         {
             get
             {
-                #region trace
-                traceLogger.LogMessage("Connected Get", _connected.ToString());
-                #endregion
                 return _connected;
             }
 
             set
             {
-                #region trace
-                traceLogger.LogMessage("Connected Set", value.ToString());
-                #endregion
-                if (value == true)
-                    activityMonitor.RestartGoindIdleTimer("Connected was set to true");
-
                 if (value == _connected)
                     return;
 
@@ -481,16 +457,14 @@ namespace ASCOM.Wise40
             if (_initialized)
                 return;
 
-            Name = "WiseTele";
+            WiseName = "WiseTele";
 
             ReadProfile();
-            debugger.init();
-            traceLogger = new TraceLogger("", "Tele");
-            traceLogger.Enabled = debugger.Tracing;
             novas31 = new NOVAS31();
             ascomutils = new Util();
             astroutils = new Astrometry.AstroUtils.AstroUtils();
-            wisesite.init();
+
+            parkingDeclination = Angle.FromDegrees(66.0, Angle.Type.Dec);
 
             _trackingRestorer = new TrackingRestorer();
 
@@ -748,12 +722,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                double ret = 7.112;  // from Las Campanas 40" (meters)
-
-                #region trace
-                traceLogger.LogMessage("FocalLength Get", ret.ToString());
-                #endregion
-                return ret;
+                return 7.112;  // from Las Campanas 40" (meters)
             }
         }
 
@@ -767,9 +736,6 @@ namespace ASCOM.Wise40
 
             Stop();
             activityMonitor.EndActivity(ActivityMonitor.Activity.Slewing);
-            #region trace
-            traceLogger.LogMessage("AbortSlew", "");
-            #endregion
             #region debug
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, "AbortSlew");
             #endregion debug
@@ -780,10 +746,6 @@ namespace ASCOM.Wise40
             get
             {
                 var ret = primaryAxisMonitor.RightAscension;
-
-                #region trace
-                traceLogger.LogMessage("RightAscension", string.Format("Get - {0} ({1})", ret, ret.Hours));
-                #endregion
                 #region debug
                 debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, string.Format("RightAscension Get - {0} ({1})", ret, ret.Hours));
                 #endregion debug
@@ -806,9 +768,6 @@ namespace ASCOM.Wise40
             {
                 var ret = secondaryAxisMonitor.Declination;
 
-                #region trace
-                traceLogger.LogMessage("Declination", string.Format("Get - {0} ({1})", ret, ret.Degrees));
-                #endregion
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugASCOM, string.Format("Declination Get - {0} ({1})", ret, ret.Degrees));
                 #endregion debug
@@ -831,9 +790,6 @@ namespace ASCOM.Wise40
                     wisesite.refractionOption,
                     ref zd, ref az, ref rar, ref decr);
 
-                #region trace
-                traceLogger.LogMessage("Azimuth Get", az.ToString());
-                #endregion
                 return az;
             }
         }
@@ -854,9 +810,6 @@ namespace ASCOM.Wise40
                     ref zd, ref az, ref rar, ref decr);
 
                 alt = 90.0 - zd;
-                #region trace
-                traceLogger.LogMessage("Altitude Get", alt.ToString());
-                #endregion
                 return alt;
             }
         }
@@ -906,9 +859,6 @@ namespace ASCOM.Wise40
             {
                 bool ret = TrackingMotor.isOn;
 
-                #region trace
-                traceLogger.LogMessage("Tracking", "Get - " + ret.ToString());
-                #endregion
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugASCOM, string.Format("Tracking Get - {0}", ret));
                 #endregion
@@ -917,9 +867,6 @@ namespace ASCOM.Wise40
 
             set
             {
-                #region trace
-                traceLogger.LogMessage("Tracking Set", value.ToString());
-                #endregion
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugASCOM, string.Format("Tracking Set - {0}", value));
                 #endregion
@@ -927,19 +874,20 @@ namespace ASCOM.Wise40
                 if (value)
                 {
                     if (!wisesafetooperate.IsSafe && !BypassCoordinatesSafety)
-                        throw new ASCOM.InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasons));
+                        throw new ASCOM.InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList));
 
-                    _lastTrackingLST = wisesite.LocalSiderealTime.Hours;
+                    if (Simulated)
+                        _lastTrackingLST = wisesite.LocalSiderealTime.Hours;
 
                     if (TrackingMotor.isOff)
                         TrackingMotor.SetOn(Const.rateTrack);
-                    activityMonitor.StartActivity(ActivityMonitor.Activity.Tracking);
+                    //activityMonitor.StartActivity(ActivityMonitor.Activity.Tracking);
                 }
                 else
                 {
                     if (TrackingMotor.isOn)
                         TrackingMotor.SetOff();
-                    activityMonitor.EndActivity(ActivityMonitor.Activity.Tracking);
+                    //activityMonitor.EndActivity(ActivityMonitor.Activity.Tracking);
                 }
                 safetyMonitorTimer.EnableIfNeeded(SafetyMonitorTimer.ActionWhenNotSafe.Backoff);
 
@@ -951,19 +899,11 @@ namespace ASCOM.Wise40
         {
             get
             {
-                var rates = DriveRates.driveSidereal;
-
-                #region trace
-                traceLogger.LogMessage("TrackingRate Get - ", rates.ToString());
-                #endregion
-                return rates;
+                return DriveRates.driveSidereal;
             }
 
             set
             {
-                #region trace
-                traceLogger.LogMessage("TrackingRate Set", "Not implemented");
-                #endregion
                 throw new ASCOM.PropertyNotImplementedException("TrackingRate", true);
             }
         }
@@ -1031,7 +971,7 @@ namespace ASCOM.Wise40
                 if (motor.isOn)
                 {
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseTele:Stop - Stopping {0}", motor.Name);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseTele:Stop - Stopping {0}", motor.WiseName);
                     #endregion
                     motor.SetOff();
                 }
@@ -1054,7 +994,7 @@ namespace ASCOM.Wise40
             foreach (WiseVirtualMotor motor in allMotors)
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseTele:FullStop - Stopping {0}", motor.Name);
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseTele:FullStop - Stopping {0}", motor.WiseName);
                 #endregion
                 motor.SetOff(); // ForceOff
             }
@@ -1100,9 +1040,6 @@ namespace ASCOM.Wise40
                     (!IsPulseGuiding && DirectionMotorsAreActive) ||
                     _movingToSafety;                // triggered by SafeAtCoordinates()
 
-                #region trace
-                traceLogger.LogMessage("Slewing Get", ret.ToString());
-                #endregion
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugASCOM, string.Format("Slewing Get - {0}", ret));
                 #endregion debug
@@ -1114,28 +1051,17 @@ namespace ASCOM.Wise40
         {
             get
             {
-                double decRate = 0.0;
-
-                #region trace
-                traceLogger.LogMessage("DeclinationRate", "Get - " + decRate.ToString());
-                #endregion
-                return decRate;
+                return 0.0;
             }
 
             set
             {
-                #region trace
-                traceLogger.LogMessage("DeclinationRate Set", "Not implemented");
-                #endregion
                 throw new ASCOM.PropertyNotImplementedException("DeclinationRate", true);
             }
         }
 
         public void HandpadMoveAxis(TelescopeAxes Axis, double Rate)
         {
-            #region trace
-            traceLogger.LogMessage("HandpadMoveAxis", string.Format("HandpadMoveAxis({0}, {1})", Axis, Rate));
-            #endregion
             #region debug
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, string.Format("HandpadMoveAxis({0}, {1})", Axis, Rate));
             #endregion debug
@@ -1159,15 +1085,12 @@ namespace ASCOM.Wise40
 
         public void MoveAxis(TelescopeAxes Axis, double Rate)
         {
-            #region trace
-            traceLogger.LogMessage("MoveAxis", string.Format("MoveAxis({0}, {1})", Axis, Rate));
-            #endregion
             #region debug
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, string.Format("MoveAxis({0}, {1})", Axis, Rate));
             #endregion debug
 
             if (!wisesafetooperate.IsSafe && !BypassCoordinatesSafety)
-                throw new ASCOM.InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasons));
+                throw new ASCOM.InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList));
 
             Const.AxisDirection direction = (Rate == Const.rateStopped) ? Const.AxisDirection.None :
                 (Rate < 0.0) ? Const.AxisDirection.Decreasing : Const.AxisDirection.Increasing;
@@ -1187,7 +1110,7 @@ namespace ASCOM.Wise40
                 {
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                        "StopAxis({0}):  {1} was on, stopping it.", axis, m.Name);
+                        "StopAxis({0}):  {1} was on, stopping it.", axis, m.WiseName);
                     #endregion debug
                     m.SetOff();
                 }
@@ -1239,7 +1162,7 @@ namespace ASCOM.Wise40
             }
 
             if (Rate != Const.rateStopped && !wisesafetooperate.IsSafe)
-                throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasons));
+                throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList));
 
             TelescopeAxes _otherAxis = otherAxis[thisAxis];
 
@@ -1304,7 +1227,7 @@ namespace ASCOM.Wise40
             {
                 m.SetOn(absRate);
                 #region debug
-                startedMotors.Add(m.Name);
+                startedMotors.Add(m.WiseName);
                 #endregion
             }
             #region debug
@@ -1322,7 +1245,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                bool ret = pulsing.Active();
+                bool ret = activityMonitor.Active(ActivityMonitor.Activity.Pulsing);
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "IsPulseGuiding: {0}", ret);
                 #endregion
@@ -1340,9 +1263,6 @@ namespace ASCOM.Wise40
             Angle ra = Angle.FromHours(_instance.TargetRightAscension, Angle.Type.RA);
             Angle dec = Angle.FromDegrees(_instance.TargetDeclination, Angle.Type.Dec);
 
-            #region trace
-            traceLogger.LogMessage("SlewToTargetAsync", string.Format("Started: ra: {0}, dec: {1}", ra, dec));
-            #endregion
             #region debug
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, string.Format("SlewToTargetAsync({0}, {1})", ra, dec));
             #endregion debug
@@ -1354,7 +1274,7 @@ namespace ASCOM.Wise40
                 throw new InvalidOperationException("Cannot SlewToTargetAsync while NOT Tracking");
 
             if (!wisesafetooperate.IsSafe)
-                throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasons));
+                throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList));
 
             string notSafe = SafeAtCoordinates(ra, dec);
             if (notSafe != string.Empty)
@@ -1484,7 +1404,7 @@ namespace ASCOM.Wise40
             if (_instance.TrackingMotor.isOn)
             {
                 Tracking = false;
-                if (wereActive.Find((x) => x.Name == "EastMotor") == null)
+                if (wereActive.Find((x) => x.WiseName == "EastMotor") == null)
                     wereActive.Add(_instance.TrackingMotor);
             }
             Stop();
@@ -1492,7 +1412,7 @@ namespace ASCOM.Wise40
             _movingToSafety = true;
             foreach (var m in wereActive)
             {
-                switch (m.Name)
+                switch (m.WiseName)
                 {
                     case "EastMotor":
                     case "TrackingMotor":
@@ -1518,14 +1438,9 @@ namespace ASCOM.Wise40
             get
             {
                 bool ret = _atPark;
-
-                #region trace
-                traceLogger.LogMessage("AtPark", "Get - " + ret.ToString());
-                #endregion
                 #region debug
                 debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, string.Format("AtPark Get - {0}", ret));
                 #endregion debug
-
                 return ret;
             }
 
@@ -1540,10 +1455,11 @@ namespace ASCOM.Wise40
 
         private void doShutdown()
         {
-            string status = wisesafetooperate.Action("status", "");
+            SafeToOperateDigest safetooperateDigest = JsonConvert.DeserializeObject<SafeToOperateDigest>(wisesafetooperate.Digest);
+
             bool rememberToCancelSafetyBypass = false;
 
-            if (status.Contains("bypassed:false"))
+            if (!safetooperateDigest.Bypassed)
             {
                 rememberToCancelSafetyBypass = true;
                 wisesafetooperate.Action("start-bypass", "temporary");
@@ -1551,6 +1467,41 @@ namespace ASCOM.Wise40
             wisesafetooperate.Action("start-shutdown", "");
 
             activityMonitor.StartActivity(ActivityMonitor.Activity.ShuttingDown);
+
+            if (AtPark)
+                Unpark();
+
+            if (domeSlaveDriver.AtPark)
+                domeSlaveDriver.Unpark();
+
+            if (Slewing)
+            {
+                AbortSlew();
+                do
+                {
+                    Thread.Sleep(1000);
+                } while (Slewing);
+            }
+
+            if (IsPulseGuiding)
+            {
+                AbortPulseGuiding();
+                do
+                {
+                    Thread.Sleep(1000);
+                } while (IsPulseGuiding);
+            }
+
+            if (domeSlaveDriver.Slewing)
+            {
+                domeSlaveDriver.AbortSlew();
+                do
+                {
+                    Thread.Sleep(1000);
+                } while (domeSlaveDriver.Slewing);
+            }
+
+            Tracking = false;
 
             if (domeSlaveDriver.ShutterState != ShutterState.shutterClosed)
             {
@@ -1579,9 +1530,6 @@ namespace ASCOM.Wise40
         //
         public void Park()
         {
-            #region trace
-            traceLogger.LogMessage("Park", "");
-            #endregion
             #region debug
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, "Park: started");
             #endregion debug
@@ -1589,7 +1537,7 @@ namespace ASCOM.Wise40
                 return;
 
             Angle ra = wisesite.LocalSiderealTime;
-            Angle dec = Angle.FromDegrees(66.0, Angle.Type.Dec);
+            Angle dec = parkingDeclination;
 
             bool wasEnslavingDome = _enslaveDome;
             bool wasTracking = Tracking;
@@ -1651,9 +1599,6 @@ namespace ASCOM.Wise40
 
         public void ParkFromGui(bool parkDome)
         {
-            #region trace
-            traceLogger.LogMessage("Park", "");
-            #endregion
             #region debug
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, "Park");
             #endregion debug
@@ -1661,7 +1606,7 @@ namespace ASCOM.Wise40
                 return;
 
             Angle ra = wisesite.LocalSiderealTime;
-            Angle dec = Angle.FromDegrees(66.0, Angle.Type.Dec);
+            Angle dec = parkingDeclination;
 
             if (parkDome)
                 DomeParker();
@@ -1938,8 +1883,8 @@ namespace ASCOM.Wise40
 
             #region debug
             Angle a = (axis == TelescopeAxes.axisPrimary) ?
-                Angle.FromHours(_instance.RightAscension) :
-                Angle.FromDegrees(_instance.Declination);
+                Angle.FromHours(_instance.RightAscension, Angle.Type.RA) :
+                Angle.FromDegrees(_instance.Declination, Angle.Type.Dec);
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes, msg + "at {0} waiting for {1} to stop moving ...", a, axis);
             #endregion debug
             while (AxisIsMoving(axis))
@@ -1948,11 +1893,11 @@ namespace ASCOM.Wise40
             }
             #region debug
             Angle b = (axis == TelescopeAxes.axisPrimary) ?
-                Angle.FromHours(_instance.RightAscension) :
-                Angle.FromDegrees(_instance.Declination);
+                Angle.FromHours(_instance.RightAscension, Angle.Type.RA) :
+                Angle.FromDegrees(_instance.Declination, Angle.Type.Dec);
             Angle stoppingDistance = b.ShortestDistance(a).angle;
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes, msg + "at {0} {1} has stopped moving (stopping distance: {2})",
-                b, axis, stoppingDistance);
+                b, axis, stoppingDistance.ToNiceString());
             #endregion debug
         }
 
@@ -2044,7 +1989,9 @@ namespace ASCOM.Wise40
                     DomeSlewer(RightAscension, Declination);
                 }
 
-                telescopeCT = telescopeCTS.Token;
+                if (! activityMonitor.Active(ActivityMonitor.Activity.ShuttingDown))
+                    telescopeCT = telescopeCTS.Token;
+
                 foreach (Slewers.Type slewerType in new List<Slewers.Type>() { Slewers.Type.Ra, Slewers.Type.Dec })
                 {
                     SlewerTask slewer = new SlewerTask() { type = slewerType, task = null };
@@ -2074,7 +2021,9 @@ namespace ASCOM.Wise40
                             debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
                                 "slewer \"{0}\" completed with status: {1}", slewer.type.ToString(), slewerTask.Status.ToString());
                             #endregion
-                            slewers.Delete(slewerType);
+                            if (slewers.Delete(slewerType))
+                                AnnulateTargetCoordinate(slewerType);
+
                         }, TaskContinuationOptions.ExecuteSynchronously);
                     }
                     catch (Exception ex)
@@ -2083,6 +2032,7 @@ namespace ASCOM.Wise40
                         debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Failed to run slewer {0}: {1}", slewerType.ToString(), ex.Message);
                         #endregion
                         slewers.Delete(slewerType);
+                        AnnulateTargetCoordinate(slewerType);
                     }
                 }
             }
@@ -2099,6 +2049,20 @@ namespace ASCOM.Wise40
             }
         }
 
+        public void AnnulateTargetCoordinate(Slewers.Type type)
+        {
+            switch (type)
+            {
+                case Slewers.Type.Ra:
+                    _targetRightAscension = null;
+
+                    break;
+                case Slewers.Type.Dec:
+                    _targetDeclination = null;
+                    break;
+            }
+        }
+
         public void SlewToCoordinates(double RightAscension, double Declination, bool noSafetyCheck = false)
         {
             _instance.TargetRightAscension = RightAscension;
@@ -2107,9 +2071,6 @@ namespace ASCOM.Wise40
             Angle ra = Angle.FromHours(_instance.TargetRightAscension, Angle.Type.RA);
             Angle dec = Angle.FromDegrees(_instance.TargetDeclination, Angle.Type.Dec);
 
-            #region trace
-            traceLogger.LogMessage("SlewToCoordinates", string.Format("ra: {0}, dec: {0}", ra, dec));
-            #endregion
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugASCOM, string.Format("SlewToCoordinates - {0}, {1}", ra, dec));
             #endregion debug
@@ -2121,7 +2082,7 @@ namespace ASCOM.Wise40
                 throw new InvalidOperationException("Cannot SlewToCoordinates while NOT Tracking");
 
             if (!wisesafetooperate.IsSafe)
-                throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasons));
+                throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList));
 
             if (!noSafetyCheck)
             {
@@ -2174,7 +2135,7 @@ namespace ASCOM.Wise40
             }
 
             if (!activityMonitor.Active(ActivityMonitor.Activity.ShuttingDown) && !wisesafetooperate.IsSafe)
-                throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasons));
+                throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList));
 
             try
             {
@@ -2271,14 +2232,11 @@ namespace ASCOM.Wise40
                 throw new InvalidOperationException("Observatory is shutting down!");
 
             if (!wisesafetooperate.IsSafe)
-                throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasons));
+                throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList));
 
             if (AtPark)
                 AtPark = false;
 
-            #region trace
-            traceLogger.LogMessage("Unpark", "Done");
-            #endregion
             #region debug
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, "Unpark: done.");
             #endregion debug
@@ -2288,18 +2246,11 @@ namespace ASCOM.Wise40
         {
             get
             {
-                DateTime utcDate = DateTime.UtcNow;
-                #region trace
-                traceLogger.LogMessage("UTCDate Get - ", utcDate.ToString());
-                #endregion
-                return utcDate;
+                return DateTime.UtcNow;
             }
 
             set
             {
-                #region trace
-                traceLogger.LogMessage("UTCDate Set", "Not implemented");
-                #endregion
                 throw new ASCOM.PropertyNotImplementedException("UTCDate", true);
             }
         }
@@ -2308,25 +2259,12 @@ namespace ASCOM.Wise40
         {
             get
             {
-                ITrackingRates trackingRates = new TrackingRates();
-                #region trace
-                traceLogger.LogMessage("TrackingRates", "Get - ");
-                #endregion
-                foreach (DriveRates driveRate in trackingRates)
-                {
-                    #region trace
-                    traceLogger.LogMessage("TrackingRates", "Get - " + driveRate.ToString());
-                    #endregion
-                }
-                return trackingRates;
+                return new TrackingRates();
             }
         }
 
         public void SyncToTarget()
         {
-            #region trace
-            traceLogger.LogMessage("SyncToTarget", "Not implemented");
-            #endregion
             throw new ASCOM.MethodNotImplementedException("SyncToTarget");
         }
 
@@ -2334,11 +2272,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                var ret = driverDescription;
-                #region trace
-                traceLogger.LogMessage("Description Get", ret);
-                #endregion
-                return ret;
+                return driverDescription;
             }
         }
 
@@ -2346,12 +2280,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                AlignmentModes mode = AlignmentModes.algGermanPolar;
-
-                #region trace
-                traceLogger.LogMessage("AlignmentMode Get", mode.ToString());
-                #endregion
-                return mode;
+                return AlignmentModes.algGermanPolar;
             }
         }
 
@@ -2359,12 +2288,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                double ret = wisesite.LocalSiderealTime.Hours;
-
-                #region trace
-                traceLogger.LogMessage("SiderealTime", "Get - " + ret.ToString());
-                #endregion
-                return ret;
+                return wisesite.LocalSiderealTime.Hours;
             }
         }
 
@@ -2372,19 +2296,11 @@ namespace ASCOM.Wise40
         {
             get
             {
-                double elevation = wisesite.Elevation;
-
-                #region trace
-                traceLogger.LogMessage("SiteElevation Get", elevation.ToString());
-                #endregion
-                return elevation;
+                return wisesite.Elevation;
             }
 
             set
             {
-                #region trace
-                traceLogger.LogMessage("SiteElevation Set", "Not implemented");
-                #endregion
                 throw new ASCOM.PropertyNotImplementedException("SiteElevation", true);
             }
         }
@@ -2393,18 +2309,11 @@ namespace ASCOM.Wise40
         {
             get
             {
-                double latitude = wisesite.Latitude.Degrees;
-
-                #region trace
-                traceLogger.LogMessage("SiteLatitude Get", latitude.ToString());
-                #endregion
-                return latitude;
+                return wisesite.Latitude.Degrees;
             }
+
             set
             {
-                #region trace
-                traceLogger.LogMessage("SiteLatitude Set", "Not implemented");
-                #endregion
                 throw new ASCOM.PropertyNotImplementedException("SiteLatitude", true);
             }
         }
@@ -2416,18 +2325,11 @@ namespace ASCOM.Wise40
         {
             get
             {
-                double longitude = wisesite.Longitude.Degrees;
-
-                #region trace
-                traceLogger.LogMessage("SiteLongitude Get", longitude.ToString());
-                #endregion
-                return longitude;
+                return wisesite.Longitude.Degrees;
             }
+
             set
             {
-                #region trace
-                traceLogger.LogMessage("SiteLongitude Set", "Not implemented");
-                #endregion
                 throw new ASCOM.PropertyNotImplementedException("SiteLongitude", true);
             }
         }
@@ -2437,9 +2339,6 @@ namespace ASCOM.Wise40
             Angle ra = Angle.FromHours(_instance.TargetRightAscension, Angle.Type.RA);
             Angle dec = Angle.FromDegrees(_instance.TargetDeclination, Angle.Type.Dec);
 
-            #region trace
-            traceLogger.LogMessage("SlewToTarget", string.Format("ra: {0}, dec: {0}", ra, dec));
-            #endregion
             #region debug
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, string.Format("SlewToTarget - {0}, {1}", ra, dec));
             #endregion debug
@@ -2451,7 +2350,7 @@ namespace ASCOM.Wise40
                 throw new InvalidOperationException("Cannot SlewToCoordinates while NOT Tracking");
 
             if (!wisesafetooperate.IsSafe)
-                throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasons));
+                throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList));
 
             string notSafe = SafeAtCoordinates(ra, dec);
             if (notSafe != string.Empty)
@@ -2462,17 +2361,11 @@ namespace ASCOM.Wise40
 
         public void SyncToAltAz(double Azimuth, double Altitude)
         {
-            #region trace
-            traceLogger.LogMessage("SyncToAltAz", "Not implemented");
-            #endregion
             throw new ASCOM.MethodNotImplementedException("SyncToAltAz");
         }
 
         public void SyncToCoordinates(double RightAscension, double Declination)
         {
-            #region trace
-            traceLogger.LogMessage("SyncToCoordinates", "Not implemented");
-            #endregion
             throw new ASCOM.MethodNotImplementedException("SyncToCoordinates");
         }
 
@@ -2483,13 +2376,10 @@ namespace ASCOM.Wise40
             switch (Axis)
             {
                 case TelescopeAxes.axisPrimary: ret = true; break;   // Right Ascension
-                case TelescopeAxes.axisSecondary: ret = true; break;   // Declination
-                case TelescopeAxes.axisTertiary: ret = false; break;  // Image Rotator/Derotator
+                case TelescopeAxes.axisSecondary: ret = true; break; // Declination
+                case TelescopeAxes.axisTertiary: ret = false; break; // Image Rotator/Derotator
                 default: throw new InvalidValueException("CanMoveAxis", Axis.ToString(), "0 to 2");
             }
-            #region trace
-            traceLogger.LogMessage("CanMoveAxis", "Get - " + Axis.ToString() + ": " + ret.ToString());
-            #endregion
 
             return ret;
         }
@@ -2498,39 +2388,24 @@ namespace ASCOM.Wise40
         {
             get
             {
-                EquatorialCoordinateType equatorialSystem = EquatorialCoordinateType.equJ2000;
-
-                #region trace
-                traceLogger.LogMessage("EquatorialSystem", "Get - " + equatorialSystem.ToString());
-                #endregion
-                return equatorialSystem;
+                return EquatorialCoordinateType.equJ2000;
             }
         }
 
         public void FindHome()
         {
-            #region trace
-            traceLogger.LogMessage("FindHome", "Not Implemented");
-            #endregion
             throw new MethodNotImplementedException("FindHome");
         }
 
         public PierSide DestinationSideOfPier(double RightAscension, double Declination)
         {
-            PierSide ret = PierSide.pierEast;
-            #region trace
-            traceLogger.LogMessage("DestinationSideOfPier Get", ret.ToString());
-            #endregion
-            return ret;
+            return PierSide.pierEast;
         }
 
         public bool CanPark
         {
             get
             {
-                #region trace
-                traceLogger.LogMessage("CanPark", "Get - " + true.ToString());
-                #endregion
                 return true;
             }
         }
@@ -2539,11 +2414,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                bool ret = true;
-                #region trace
-                traceLogger.LogMessage("CanPulseGuide", "Get - " + ret.ToString());
-                #endregion
-                return ret;
+                return true;
             }
         }
 
@@ -2551,9 +2422,6 @@ namespace ASCOM.Wise40
         {
             get
             {
-                #region trace
-                traceLogger.LogMessage("CanSetDeclinationRate", "Get - " + false.ToString());
-                #endregion
                 return false;
             }
         }
@@ -2562,9 +2430,6 @@ namespace ASCOM.Wise40
         {
             get
             {
-                #region trace
-                traceLogger.LogMessage("CanSetGuideRates", "Get - " + false.ToString());
-                #endregion
                 return false;
             }
         }
@@ -2573,12 +2438,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                bool ret = false;
-
-                #region trace
-                traceLogger.LogMessage("CanSetPark", "Get - " + ret.ToString());
-                #endregion
-                return ret;
+                return false;
             }
         }
 
@@ -2586,9 +2446,6 @@ namespace ASCOM.Wise40
         {
             get
             {
-                #region trace
-                traceLogger.LogMessage("CanSetPierSide", "Get - " + false.ToString());
-                #endregion
                 return false;
             }
         }
@@ -2597,9 +2454,6 @@ namespace ASCOM.Wise40
         {
             get
             {
-                #region trace
-                traceLogger.LogMessage("CanSetRightAscensionRate", "Get - " + false.ToString());
-                #endregion
                 return false;
             }
         }
@@ -2608,12 +2462,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                bool ret = true;
-
-                #region trace
-                traceLogger.LogMessage("CanSetTracking", "Get - " + ret.ToString());
-                #endregion
-                return ret;
+                return true;
             }
         }
 
@@ -2621,12 +2470,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                bool ret = true;
-
-                #region trace
-                traceLogger.LogMessage("CanSlew", "Get - " + ret.ToString());
-                #endregion
-                return ret;
+                return true;
             }
         }
 
@@ -2634,12 +2478,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                bool ret = false;
-
-                #region trace
-                traceLogger.LogMessage("CanSlewAltAz", "Get - " + ret.ToString());
-                #endregion
-                return ret;
+                return false;
             }
         }
 
@@ -2647,12 +2486,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                bool ret = false;
-
-                #region trace
-                traceLogger.LogMessage("CanSlewAltAzAsync", "Get - " + ret.ToString());
-                #endregion
-                return ret;
+                return false;
             }
         }
 
@@ -2660,12 +2494,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                bool ret = true;
-
-                #region trace
-                traceLogger.LogMessage("CanSlewAsync", "Get - " + ret.ToString());
-                #endregion
-                return ret;
+                return true;
             }
         }
 
@@ -2673,12 +2502,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                bool ret = false;
-
-                #region trace
-                traceLogger.LogMessage("CanSync", "Get - " + ret.ToString());
-                #endregion
-                return ret;
+                return false;
             }
         }
 
@@ -2686,12 +2510,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                bool ret = false;
-
-                #region trace
-                traceLogger.LogMessage("CanSyncAltAz", "Get - " + ret.ToString());
-                #endregion
-                return ret;
+                return false;
             }
         }
 
@@ -2699,12 +2518,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                bool ret = true;
-
-                #region trace
-                traceLogger.LogMessage("CanUnpark", "Get - " + ret.ToString());
-                #endregion
-                return ret;
+                return true;
             }
         }
 
@@ -2712,17 +2526,11 @@ namespace ASCOM.Wise40
         {
             get
             {
-                double rate = Const.rateGuide;
-                #region trace
-                traceLogger.LogMessage("GuideRateDeclination Get", rate.ToString());
-                #endregion
-                return rate;
+                return Const.rateGuide;
             }
+
             set
             {
-                #region trace
-                traceLogger.LogMessage("GuideRateDeclination Set", "Not implemented");
-                #endregion
                 throw new ASCOM.PropertyNotImplementedException("GuideRateDeclination - Set", true);
             }
         }
@@ -2731,18 +2539,10 @@ namespace ASCOM.Wise40
         {
             get
             {
-                double rate = Const.rateGuide;
-
-                #region trace
-                traceLogger.LogMessage("GuideRateRightAscension Get", rate.ToString());
-                #endregion
-                return rate;
+                return Const.rateGuide;
             }
             set
             {
-                #region trace
-                traceLogger.LogMessage("GuideRateRightAscension Set", "Not implemented");
-                #endregion
                 throw new ASCOM.PropertyNotImplementedException("GuideRateRightAscension - Set", true);
             }
         }
@@ -2751,15 +2551,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                bool ret = false;       // Homing is not implemented
-
-                #region trace
-                traceLogger.LogMessage("AtHome", "Get - " + ret.ToString());
-                #endregion
-                #region debug
-                debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, string.Format("AtHome Get - {0}", ret));
-                #endregion debug
-                return ret;
+                return false;
             }
         }
 
@@ -2767,57 +2559,35 @@ namespace ASCOM.Wise40
         {
             get
             {
-                bool ret = false;
-
-                #region trace
-                traceLogger.LogMessage("CanFindHome", "Get - " + ret.ToString());
-                #endregion
-                return ret;
+                return false;
             }
         }
 
         public IAxisRates AxisRates(TelescopeAxes Axis)
         {
-            IAxisRates rates = new AxisRates(Axis);
-
-            #region trace
-            traceLogger.LogMessage("AxisRates", "Get - " + rates.ToString());
-            #endregion
-            return rates;
+            return new AxisRates(Axis);
         }
 
         public short SlewSettleTime
         {
             get
             {
-                #region trace
-                traceLogger.LogMessage("SlewSettleTime Get", "Not implemented");
-                #endregion
                 throw new ASCOM.PropertyNotImplementedException("SlewSettleTime", false);
             }
 
             set
             {
-                #region trace
-                traceLogger.LogMessage("SlewSettleTime Set", "Not implemented");
-                #endregion
                 throw new ASCOM.PropertyNotImplementedException("SlewSettleTime", true);
             }
         }
 
         public void SlewToAltAz(double Azimuth, double Altitude)
         {
-            #region trace
-            traceLogger.LogMessage("SlewToAltAz", String.Format("SlewToAltAz({0}, {1})", Azimuth, Altitude));
-            #endregion
             throw new ASCOM.MethodNotImplementedException("SlewToAltAz");
         }
 
         public void SlewToAltAzAsync(double Azimuth, double Altitude)
         {
-            #region trace
-            traceLogger.LogMessage("SlewToAltAzAsync", String.Format("SlewToAltAzAsync({0}, {1})", Azimuth, Altitude));
-            #endregion
             throw new ASCOM.MethodNotImplementedException("SlewToAltAzAsync");
         }
 
@@ -2825,27 +2595,17 @@ namespace ASCOM.Wise40
         {
             get
             {
-                double rightAscensionRate = 0.0;
-                #region trace
-                traceLogger.LogMessage("RightAscensionRate", "Get - " + rightAscensionRate.ToString());
-                #endregion
-                return rightAscensionRate;
+                return 0.0;
             }
 
             set
             {
-                #region trace
-                traceLogger.LogMessage("RightAscensionRate Set", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("RightAscensionRate", true);
-                #endregion
+                throw new PropertyNotImplementedException("Set RightAscensionRate");
             }
         }
 
         public void SetPark()
         {
-            #region trace
-            traceLogger.LogMessage("SetPark", "Not implemented");
-            #endregion
             throw new ASCOM.MethodNotImplementedException("SetPark");
         }
 
@@ -2853,29 +2613,18 @@ namespace ASCOM.Wise40
         {
             get
             {
-                PierSide side = PierSide.pierEast;
-
-                #region trace
-                traceLogger.LogMessage("SideOfPier Get", side.ToString());
-                #endregion
-                return side;
+                return PierSide.pierEast;
             }
 
             set
             {
                 if (value != PierSide.pierEast)
                     throw new InvalidValueException("Only pierEast is valid!");
-                #region trace
-                traceLogger.LogMessage("SideOfPier Set", string.Format("Silently ignoring {0}", value.ToString()));
-                #endregion
             }
         }
 
         public void PulseGuide(GuideDirections Direction, int Duration)
         {
-            #region trace
-            traceLogger.LogMessage("PulseGuide", string.Format("Direction={0}, Duration={1}", Direction.ToString(), Duration.ToString()));
-            #endregion
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugASCOM, "PulseGuide: Direction={0}, Duration={1}", Direction.ToString(), Duration.ToString());
             #endregion
@@ -2886,7 +2635,8 @@ namespace ASCOM.Wise40
                 throw new InvalidOperationException("Cannot PulseGuide while Slewing");
 
             if (!wisesafetooperate.IsSafe)
-                throw new InvalidOperationException("Not safe to operate");
+                throw new InvalidOperationException(
+                    string.Format("Not safe to operate ({0})", wisesafetooperate.UnsafeReasons));
 
             if (pulsing.Active(Direction))
             {
@@ -2906,23 +2656,19 @@ namespace ASCOM.Wise40
             }
         }
 
-        private ArrayList supportedActions = new ArrayList() {
-            "dome:enslaved",
-            "telescope:get-active",
-            "telescope:get-activities",
-            "telescope:set-active",
-            "telescope:seconds-till-idle",
-            "site:get-opmode",
-            "site:set-opmode",
+        private static ArrayList supportedActions = new ArrayList() {
+            "active",
+            "activities",
+            "seconds-till-idle",
+            "opmode",
+            "status",
+            "nearly-parked",
         };
 
         public ArrayList SupportedActions
         {
             get
             {
-                #region trace
-                traceLogger.LogMessage("SupportedActions Get", string.Format("{0}", supportedActions));
-                #endregion
                 return supportedActions;
             }
         }
@@ -2931,48 +2677,78 @@ namespace ASCOM.Wise40
         {
             action = action.ToLower();
 
-            if (action == "dome:enslaved")
-                return _enslaveDome.ToString();
-            else if (action == "telescope:get-active")
-                return activityMonitor.ObservatoryIsActive().ToString();
-            else if (action == "telescope:get-activities")
-                return activityMonitor.ObservatoryActivities;
-            else if (action == "telescope:set-active")
+            if (action == "active")
             {
-                activityMonitor.RestartGoindIdleTimer("action telescope:set-active");
-                return "ok";
+                if (parameter != string.Empty) {
+                    bool x = Convert.ToBoolean(parameter);
+                    activityMonitor.RestartGoindIdleTimer(string.Format("action active={0}", x.ToString()));
+                }
+
+                return activityMonitor.ObservatoryIsActive().ToString();
             }
-            else if (action == "telescope:shutdown")  // this is a hidden action, not listed in SupportedActions
+            else if (action == "activities")
+            {
+                List<string> activities = activityMonitor.ObservatoryActivities;
+                return JsonConvert.SerializeObject(activities);
+            }
+            else if (action == "shutdown")  // this is a hidden action, not listed in SupportedActions
             {
                 telescopeCT = telescopeCTS.Token;
                 shutdownTask = Task.Run(() => Shutdown(), telescopeCT);
                 return "ok";
             }
-            else if (action == "telescope:abort-shutdown")
+            else if (action == "abort-shutdown")
             {
                 AbortSlew();
                 activityMonitor.EndActivity(ActivityMonitor.Activity.ShuttingDown);
                 return "ok";
             }
-            else if (action == "site:get-opmode")
-                return wisesite.OperationalMode.ToString();
-            else if (action == "site:set-opmode")
+            else if (action == "opmode")
             {
+                if (parameter == string.Empty)
+                    return wisesite.OperationalMode.ToString();
+
                 WiseSite.OpMode mode;
                 Enum.TryParse(parameter.ToUpper(), out mode);
                 wisesite.OperationalMode = mode;
                 return "ok";
-            } else if (action == "telescope:seconds-till-idle")
+            }
+            else if (action == "seconds-till-idle")
             {
                 TimeSpan ts = activityMonitor.RemainingTime;
 
                 if (ts != TimeSpan.MaxValue)
-                    return ((int)activityMonitor.RemainingTime.TotalSeconds).ToString();
+                    return (ts.TotalSeconds).ToString();
                 else
-                    return "unknown";
+                    return "-1";
             }
+            else if (action == "status")
+                return Digest;
+            else if (action == "nearly-parked")
+                return NearlyParked.ToString();
 
             throw new ASCOM.ActionNotImplementedException("Action \"" + action + "\" is not implemented by this driver");
+        }
+
+        private bool NearlyParked
+        {
+            get
+            {
+                ShortestDistanceResult delta;
+                
+                delta = Angle.FromHours(RightAscension).ShortestDistance(wisesite.LocalSiderealTime);
+                if (delta.angle > new Angle("00h10m00s"))
+                    return false;
+
+                delta = Angle.FromDegrees(Declination).ShortestDistance(parkingDeclination);
+                if (delta.angle > new Angle("00d10m00s"))
+                    return false;
+
+                if (domeSlaveDriver.ShutterState != ShutterState.shutterClosed)
+                    return false;
+
+                return true;
+            }
         }
 
         private void CheckConnected(string message)
@@ -2986,17 +2762,14 @@ namespace ASCOM.Wise40
         public void CommandBlind(string command, bool raw)
         {
             CheckConnected("CommandBlind");
-            if (command == "active")
-                Action("telescope:set-active", string.Empty);
-            else
-                throw new ASCOM.MethodNotImplementedException(string.Format("CommandBlind: {0}", command));
+            throw new ASCOM.MethodNotImplementedException(string.Format("CommandBlind: {0}", command));
         }
 
         public bool CommandBool(string command, bool raw)
         {
             CheckConnected("CommandBool");
             if (command == "active")
-                return Convert.ToBoolean(Action("telescope:get-active", string.Empty));
+                return Convert.ToBoolean(Action("active", string.Empty));
             else
                 throw new ASCOM.MethodNotImplementedException(string.Format("CommandBool {0}", command));
         }
@@ -3006,7 +2779,7 @@ namespace ASCOM.Wise40
             CheckConnected("CommandString");
 
             if (command == "opmode")
-                return Action("site:opmode", string.Empty);
+                return Action("opmode", string.Empty);
             else
                 throw new ASCOM.MethodNotImplementedException("CommandString");
         }
@@ -3015,11 +2788,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                string driverInfo = string.Format("ASCOM Wise40.Telescope v{0}", version.ToString());
-                #region trace
-                traceLogger.LogMessage("DriverInfo Get", driverInfo);
-                #endregion
-                return driverInfo;
+                return string.Format("ASCOM Wise40.Telescope v{0}", version.ToString());
             }
         }
 
@@ -3027,12 +2796,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-
-                string driverVersion = String.Format(System.Globalization.CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
-                #region trace
-                traceLogger.LogMessage("DriverVersion Get", driverVersion);
-                #endregion
-                return driverVersion;
+                return string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
             }
         }
 
@@ -3040,9 +2804,6 @@ namespace ASCOM.Wise40
         {
             get
             {
-                #region trace
-                traceLogger.LogMessage("InterfaceVersion Get", "3");
-                #endregion
                 return Convert.ToInt16("3");
             }
         }
@@ -3075,7 +2836,6 @@ namespace ASCOM.Wise40
         {
             using (Profile driverProfile = new Profile() { DeviceType = "Telescope" })
             {
-                driverProfile.WriteValue(driverID, Const.ProfileName.Telescope_Tracing, traceLogger.Enabled.ToString());
                 driverProfile.WriteValue(driverID, Const.ProfileName.Telescope_AstrometricAccuracy, wisesite.astrometricAccuracy.ToString());
                 driverProfile.WriteValue(driverID, Const.ProfileName.Telescope_BypassCoordinatesSafety, _bypassCoordinatesSafety.ToString());
                 driverProfile.WriteValue(driverID, Const.ProfileName.Telescope_PlotSlews, _plotSlews.ToString());
@@ -3106,6 +2866,71 @@ namespace ASCOM.Wise40
                         ret += " DEC";
                 }
                 return ret;
+            }
+        }
+
+        public string Digest
+        {
+            get
+            {
+                TimeSpan ts = activityMonitor.RemainingTime;
+                double secondsTillIdle = (ts == TimeSpan.MaxValue) ? -1 : ts.TotalSeconds;
+                double targetRightAscension, targetDeclination;
+
+                try
+                {
+                    targetRightAscension = TargetRightAscension;
+                } catch
+                {
+                    targetRightAscension = Const.noTarget;
+                }
+
+                try
+                {
+                    targetDeclination = TargetDeclination;
+                } catch
+                {
+                    targetDeclination = Const.noTarget;
+                }
+
+                return JsonConvert.SerializeObject(new TelescopeDigest()
+                {
+                    Current = new TelescopePosition
+                    {
+                        RightAscension = RightAscension,
+                        Declination = Declination,
+                    },
+
+                    Target = new TelescopePosition
+                    {
+                        RightAscension = targetRightAscension,
+                        Declination = targetDeclination,
+                    },
+
+                    LocalSiderealTime = wisesite.LocalSiderealTime.Hours,
+                    HourAngle = HourAngle,
+                    Altitude = Altitude,
+                    Azimuth = Azimuth,
+                    Slewing = Slewing,
+                    Tracking = Tracking,
+                    PulseGuiding = IsPulseGuiding,
+                    AtPark = AtPark,
+                    SecondsTillIdle = secondsTillIdle,
+                    EnslavesDome = _enslaveDome,
+                    Active = activityMonitor.ObservatoryIsActive(),
+                    Activities = activityMonitor.ObservatoryActivities,
+                    SlewPin = SlewPin.isOn,
+                    PrimaryPins = new AxisPins
+                    {
+                        SetPin = WestPin.isOn || EastPin.isOn,
+                        GuidePin = WestGuidePin.isOn || EastGuidePin.isOn,
+                    },
+                    SecondaryPins = new AxisPins
+                    {
+                        SetPin = NorthPin.isOn || SouthGuidePin.isOn,
+                        GuidePin = NorthGuidePin.isOn || SouthGuidePin.isOn,
+                    },
+                });
             }
         }
 
@@ -3155,5 +2980,33 @@ namespace ASCOM.Wise40
         //        return DecEncoder.DecOver90Degrees;
         //    }
         //}
+    }
+
+    public class TelescopePosition
+    {
+        public double RightAscension, Declination;
+    }
+
+    public class AxisPins
+    {
+        public bool SetPin, GuidePin;
+    }
+
+    public class TelescopeDigest
+    {
+        public TelescopePosition Current, Target;
+        public double HourAngle;
+        public double Altitude, Azimuth;
+        public double LocalSiderealTime;
+        public bool Slewing;
+        public bool Tracking;
+        public bool PulseGuiding;
+        public bool AtPark;
+        public bool Active;
+        public bool EnslavesDome;
+        public double SecondsTillIdle;
+        public List<string> Activities;
+        public bool SlewPin;
+        public AxisPins PrimaryPins, SecondaryPins;
     }
 }
