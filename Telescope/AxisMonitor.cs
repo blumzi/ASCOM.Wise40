@@ -64,8 +64,8 @@ namespace ASCOM.Wise40
         public AxisMonitor(TelescopeAxes axis)
         {
             _axis = axis;
-            Name = _axis.ToString() + "Monitor";
-            wisesite.init();
+            WiseName = _axis.ToString() + "Monitor";
+            astroutils = new Astrometry.AstroUtils.AstroUtils();
         }
 
         public abstract bool IsMoving { get; }
@@ -113,7 +113,7 @@ namespace ASCOM.Wise40
             foreach (var m in motors)
                 if (m.isOn)
                 {
-                    ret += m.Name + " (" + WiseTele.RateName(m.currentRate) + ") ";
+                    ret += m.WiseName + " (" + WiseTele.RateName(m.currentRate) + ") ";
                 }
             return ret;
         }
@@ -203,9 +203,6 @@ namespace ASCOM.Wise40
 
     public class PrimaryAxisMonitor : AxisMonitor
     {
-        //public bool _whileTracking = false;
-        //public WiseVirtualMotor trackingMotor = WiseTele.Instance.TrackingMotor;
-
         public const double raEpsilon = 1e-5;        // epsilon for primaryMonitor, while tracking
         public const double haEpsilon = 7.0;         // epsilon for primaryMonitor, while NOT tracking
 
@@ -223,7 +220,11 @@ namespace ASCOM.Wise40
         {
             double reading;
 
-            while (!Acceptable(reading = _encoder.Angle.Radians))
+            do
+            {
+                reading = _encoder.Angle.Radians;
+            }
+            while (!Acceptable(reading))
                 ;
 
             _currPosition.radians = reading;
@@ -251,7 +252,7 @@ namespace ASCOM.Wise40
 
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}:SampleAxisMovement: _currPosition: {1}, _prevPosition: {2}, raDelta: {3}, haDelta: {4}, active motors: {5}",
-                Name, _currPosition.radians, _prevPosition.radians, raDelta, haDelta, ActiveMotors(_axis));
+                WiseName, _currPosition.radians, _prevPosition.radians, raDelta, haDelta, ActiveMotors(_axis));
             #endregion
 
             _prevPosition.radians = _currPosition.radians;
@@ -263,8 +264,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                //return astroutils.ConditionRA(_rightAscension);
-                return Angle.FromHours(_rightAscension);
+                return Angle.FromHours(astroutils.ConditionRA(_rightAscension));
             }
         }
 
@@ -272,8 +272,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                //return astroutils.ConditionHA(_hourAngle);
-                return Angle.FromHours(_hourAngle);
+                return Angle.FromHours(astroutils.ConditionHA(_hourAngle));
             }
         }
 
@@ -293,7 +292,7 @@ namespace ASCOM.Wise40
                     {
                         #region debug
                         debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}:IsMoving: Not enough samples {1} < {2} = true",
-                            Name, arr.Count(), _raDeltas.MaxSize);
+                            WiseName, arr.Count(), _raDeltas.MaxSize);
                         #endregion
                         return false;    // not enough samples
                     }
@@ -305,7 +304,7 @@ namespace ASCOM.Wise40
                     {
                         #region debug
                         debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}:IsMoving: Not enough samples {1} < {2} = true",
-                            Name, arr.Count(), _haDeltas.MaxSize);
+                            WiseName, arr.Count(), _haDeltas.MaxSize);
                         #endregion
                         return false;    // not enough samples
                     }
@@ -320,7 +319,7 @@ namespace ASCOM.Wise40
 
                 #region debug
                 string deb = string.Format("{0}:IsMoving: max: {1:F15}, epsilon: {2:F15}, ret: {3}, active: {4}",
-                    Name, max, epsilon, ret, ActiveMotors(_axis)) + "[";
+                    WiseName, max, epsilon, ret, ActiveMotors(_axis)) + "[";
                 foreach (double d in arr)
                     deb += " " + d.ToString();
                 debugger.WriteLine(Debugger.DebugLevel.DebugAxes, deb + " ]");
@@ -345,13 +344,17 @@ namespace ASCOM.Wise40
 
         protected override bool Acceptable(double rad)
         {
-            if (!Double.IsNaN(_prevPosition.radians) && Math.Abs(_currPosition.radians - _prevPosition.radians) > _maxDeltaRadiansAtSlewRate)
+            if (Double.IsNaN(_prevPosition.radians))
+                return true;
+
+            double delta = Math.Abs(rad - _prevPosition.radians);
+            if (delta > _maxDeltaRadiansAtSlewRate)
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}:Acceptable({1}): Rejected ( Abs({1} - {2}) > {3}) )",
-                    Name, rad, _prevPosition.radians, _maxDeltaRadiansAtSlewRate);
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}:Acceptable({1}): Suspect ( Abs({1} - {2}) = {3} > {4}) )",
+                    WiseName, rad, _prevPosition.radians, delta, _maxDeltaRadiansAtSlewRate);
                 #endregion
-                return false;
+                return true;
             }
 
             return true;
@@ -373,7 +376,11 @@ namespace ASCOM.Wise40
         {
             double reading;
 
-            while (!Acceptable(reading = _encoder.Angle.Radians))
+            do
+            {
+                reading = _encoder.Angle.Radians;
+            }
+            while (!Acceptable(reading))
                 ;
 
             _currPosition.radians = reading;
@@ -386,7 +393,12 @@ namespace ASCOM.Wise40
                 return;
             }
 
-            _declination = Angle.FromRadians(_currPosition.radians).Degrees;
+            double rads = _currPosition.radians;
+
+            if (rads > Const.onePI)
+                rads -= Const.twoPI;
+
+            _declination = Angle.FromRadians(rads).Degrees;
             _samples.Enqueue(_currPosition);
 
             double delta = Math.Abs(_declination - _prevDeclination);
@@ -394,7 +406,7 @@ namespace ASCOM.Wise40
 
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}:SampleAxisMovement: _currPosition: {1}, _prevPosition: {2}, delta: {3}, active motors: {4}",
-                Name, _currPosition.radians, _prevPosition.radians, delta, ActiveMotors(_axis));
+                WiseName, _currPosition.radians, _prevPosition.radians, delta, ActiveMotors(_axis));
             #endregion
 
             _prevPosition.radians = _currPosition.radians;
@@ -411,7 +423,7 @@ namespace ASCOM.Wise40
                 {
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}:IsMoving: Not enough samples: arr.Count() {1} < _samples.MaxSize: {2}",
-                        Name, arr.Count(), _samples.MaxSize);
+                        WiseName, arr.Count(), _samples.MaxSize);
                     #endregion
                     return false;    // not enough samples
                 }
@@ -420,13 +432,13 @@ namespace ASCOM.Wise40
                     if (d != 0.0)
                     {
                         #region debug
-                        debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}:IsMoving: true", Name);
+                        debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}:IsMoving: true", WiseName);
                         #endregion
                         return true;
                     }
 
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}:IsMoving: false", Name);
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}:IsMoving: false", WiseName);
                 #endregion
                 return false;
             }
@@ -436,7 +448,9 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return Angle.FromDegrees(_declination);
+                double dec = _declination;
+
+                return Angle.FromDegrees(dec);
             }
         }
 
@@ -456,13 +470,18 @@ namespace ASCOM.Wise40
 
         protected override bool Acceptable(double rad)
         {
-            if (!Double.IsNaN(_prevPosition.radians) && Math.Abs(_currPosition.radians - _prevPosition.radians) > _maxDeltaRadiansAtSlewRate)
+            if (Double.IsNaN(_prevPosition.radians))
+                return true;
+
+            double delta = Math.Abs(rad - _prevPosition.radians);
+            if (delta > _maxDeltaRadiansAtSlewRate)
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}:Acceptable({1}): Rejected (Abs({2} - {3}) > {4})",
-                    Name, rad, rad, _prevPosition.radians, _maxDeltaRadiansAtSlewRate);
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                    "{0}:Acceptable({1}): Suspect (Abs({2} - {3}) = {4} > {5})",
+                        WiseName, rad, rad, _prevPosition.radians, delta, _maxDeltaRadiansAtSlewRate);
                 #endregion
-                return false;
+                return true;
             }
 
             return true;
