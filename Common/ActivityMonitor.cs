@@ -37,6 +37,7 @@ namespace ASCOM.Wise40
         private bool _shuttingDown = false;
         private DateTime _due = DateTime.MinValue;                  // not set
         private WiseSite wisesite = WiseSite.Instance;
+        private static bool initialized = false;
 
         [FlagsAttribute]
         public enum Activity
@@ -53,6 +54,8 @@ namespace ASCOM.Wise40
             ShuttingDown = (1 << 8),
             Focuser = (1 << 9),
             FilterWheel = (1 << 10),
+
+            RealActivities = Tracking | Slewing | Pulsing | Dome | Handpad | Parking | Shutter | Focuser | FilterWheel,
         };
         private static Activity _currentlyActive = Activity.None;
         private static List<Activity> _activities = new List<Activity> {
@@ -72,22 +75,10 @@ namespace ASCOM.Wise40
             EndActivity(Activity.GoingIdle);
         }
 
-        public TimeSpan MinutesToInactive
-        {
-            get
-            {
-                return TimeSpan.FromMilliseconds(realMillisToInactivity);
-            }
-
-            set
-            {
-                realMillisToInactivity = (int) value.TotalMilliseconds;
-            }
-        }
-
         public void init()
         {
-            wisesite.init();
+            if (initialized)
+                return;
 
             int defaultMinutesToIdle = (int) TimeSpan.FromMilliseconds(defaultRealMillisToInactivity).TotalMinutes;
             int minutesToIdle;
@@ -102,6 +93,7 @@ namespace ASCOM.Wise40
             inactivityTimer = new System.Threading.Timer(BecomeIdle);
             _currentlyActive = Activity.None;
             RestartGoindIdleTimer("init");
+            initialized = true;
         }
 
         public void StartActivity(Activity act)
@@ -110,14 +102,33 @@ namespace ASCOM.Wise40
                 return;
 
             if (act == Activity.GoingIdle && _currentlyActive != Activity.None)
+            {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "ActivityMonitor[{0}]:StartActivity: ignoring {1} (_currentlyActive: {2})",
+                    GetHashCode(), act.ToString(), _currentlyActive.ToString());
+                #endregion
                 return;
+            }
 
-            ActivityMonitor._currentlyActive |= act;
+            if ((_currentlyActive & act) != 0)
+            {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "ActivityMonitor[{0}]:StartActivity: ignoring {1} (already active)",
+                    GetHashCode(), act.ToString());
+                #endregion
+                return;
+            }
+
+            _currentlyActive |= act;
             if (act != Activity.GoingIdle)      // Any activity ends GoingIdle
                 EndActivity(Activity.GoingIdle);
             #region debug
+            string activities = string.Join(",", ObservatoryActivities);
+            activities = activities == "" ? "none" : activities;
+
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugLogic,
-                "ActivityMonitor:StartActivity: started {0} (currentlyActive: {1})", act.ToString(), ObservatoryActivities);
+                "ActivityMonitor[{0}]:StartActivity: started {1} (currentlyActive: {2})",
+                    GetHashCode(), act.ToString(), activities);
             #endregion
             if (act != Activity.GoingIdle)
                 StopGoindIdleTimer();
@@ -130,14 +141,29 @@ namespace ASCOM.Wise40
                 return;
             }
 
+            if ((_currentlyActive & act) == 0)
+            {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "ActivityMonitor[{0}]:EndActivity: ignoring {1} (not active)",
+                    GetHashCode(), act.ToString());
+                #endregion
+                return;
+            }
+
             _currentlyActive &= ~act;
             #region debug
+            string activities = string.Join(",", ObservatoryActivities);
+            activities = activities == "" ? "none" : activities;
+
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugLogic,
-                "ActivityMonitor:EndActivity: ended {0} (currentlyActive: {1})", act.ToString(), ObservatoryActivities);
+                "ActivityMonitor[{0}]:EndActivity: ended {1} (currentlyActive: {2})",
+                    GetHashCode(), act.ToString(), activities);
             #endregion
 
             if (act == Activity.ShuttingDown || _currentlyActive == Activity.None)
                 StopGoindIdleTimer();
+            else if ((_currentlyActive & Activity.RealActivities) == Activity.None)
+                RestartGoindIdleTimer("idle");
         }
 
         public bool Active(Activity a)
@@ -185,8 +211,8 @@ namespace ASCOM.Wise40
                 }
             }
             #region debug
-            debugger.WriteLine(Common.Debugger.DebugLevel.DebugLogic, "ActivityMonitor:RestartGoindIdleTimer (reason = {0}, due = {1} millis).",
-                reason, dueMillis);
+            debugger.WriteLine(Common.Debugger.DebugLevel.DebugLogic, "ActivityMonitor[{0}]:Restarted timer (reason = {1}, due = {2}).",
+                GetHashCode(), reason, TimeSpan.FromMilliseconds(dueMillis));
             #endregion
 
             StartActivity(Activity.GoingIdle);
@@ -213,7 +239,7 @@ namespace ASCOM.Wise40
             return _currentlyActive != Activity.None;
         }
 
-        public string ObservatoryActivities
+        public List<string> ObservatoryActivities
         {
             get
             {
@@ -242,7 +268,7 @@ namespace ASCOM.Wise40
                         ret.Add(a.ToString());
                 }
 
-                return string.Join(", ", ret);
+                return ret;
             }
         }
     }
