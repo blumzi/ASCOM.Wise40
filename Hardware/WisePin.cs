@@ -30,14 +30,14 @@ namespace ASCOM.Wise40.Hardware
             Const.Direction direction = Const.Direction.None,
             bool controlled = false)
         {
-            this.Name = name +
+            this.WiseName = name +
                 "@Board" +
                 (brd.type == WiseBoard.BoardType.Hard ? brd.mccBoard.BoardNum : brd.boardNum) +
                 port.ToString() +
                 "[" + bit.ToString() + "]";
 
             if ((daq = brd.daqs.Find(x => x.porttype == port)) == null)
-                throw new WiseException(this.Name + ": Invalid Daq spec, no " + port + " on this board");
+                throw new WiseException(this.WiseName + ": Invalid Daq spec, no " + port + " on this board");
             this.dir = dir;
             this.bit = bit;
             this.inverse = inverse;
@@ -56,25 +56,51 @@ namespace ASCOM.Wise40.Hardware
             if (!Simulated && _controlled && Hardware.computerControlPin.isOff)
                 throw new Hardware.MaintenanceModeException(Const.computerControlAtMaintenance);
 
-            daq.Value |= (ushort)(1 << bit);
-
-            if (Name.StartsWith("FocusLatch"))
-                return;     // We know this bit does not read as On
-
             int i, maxTries = 10;
-            for (i = 0; i < maxTries; i++)
+            lock (daq._lock)
             {
-                if (isOn)
+                ushort v, v1;
+                daq.wiseBoard.mccBoard.DIn(daq.porttype, out v);
+                v |= (ushort)(1 << bit);
+
+                if (WiseName.StartsWith("Focus"))
+                {
+                    //
+                    // Somehow the Focus pins (maybe this is specific to the DAQ board,
+                    //  behave differently from the pins on the other boards.
+                    // DON'T do the validation loop.
+                    //
+                    daq.wiseBoard.mccBoard.DOut(daq.porttype, v);
                     return;
-                Thread.Sleep(20);
+                }
+
+                for (i = 0; i < maxTries; i++)
+                {
+                    daq.wiseBoard.mccBoard.DOut(daq.porttype, v);
+                    if (WiseName.StartsWith("FocusLatch"))
+                        return;     // We know this bit does not read as On
+
+                    Thread.Sleep(100);
+                    daq.wiseBoard.mccBoard.DIn(daq.porttype, out v1);
+                    if (v1 == v)
+                    {
+                        if (i > 0)
+                            #region debug
+                            debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                                    string.Format("SetOn: pin {0} got On after {1} tries!",
+                                    WiseName, i + 1));
+                            #endregion
+                        return;
+                    }
+                    Thread.Sleep(20);
+                }
             }
 
-            string message = string.Format("SetOn: pin {0} does not get On after {1} tries!",
-                Name, maxTries);
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, message);
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                    string.Format("SetOn: pin {0} does not get On after {1} tries!",
+                    WiseName, maxTries));
             #endregion
-            //throw new Hardware.DaqsException(message);
         }
 
         public void SetOff()
@@ -85,22 +111,49 @@ namespace ASCOM.Wise40.Hardware
             if (!Simulated && _controlled && Hardware.computerControlPin.isOff)
                 throw new Hardware.MaintenanceModeException(Const.computerControlAtMaintenance);
 
-            daq.Value &= (ushort)~(1 << bit);
-
             int i, maxTries = 10;
-            for (i = 0; i < maxTries; i++)
+            lock (daq._lock)
             {
-                if (isOff)
+                ushort v, v1;
+                daq.wiseBoard.mccBoard.DIn(daq.porttype, out v);
+
+                v &= (ushort)~(1 << bit);
+
+                if (WiseName.StartsWith("Focus"))
+                {
+                    //
+                    // Somehow the Focus pins (maybe this is specific to the DAQ board,
+                    //  behave differently from the pins on the other boards.
+                    // DON'T do the validation loop.
+                    //
+                    daq.wiseBoard.mccBoard.DOut(daq.porttype, v);
                     return;
-                Thread.Sleep(20);
+                }
+
+                for (i = 0; i < maxTries; i++)
+                {
+                    daq.wiseBoard.mccBoard.DOut(daq.porttype, v);
+                    Thread.Sleep(100);
+                    daq.wiseBoard.mccBoard.DIn(daq.porttype, out v1);
+                    if (v == v1)
+                    {
+                        if (i > 0)
+                            #region debug
+                            debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                                    string.Format("SetOff: pin {0} got Off after {1} tries!",
+                                    WiseName, i + 1));
+                            #endregion
+                        return;
+                    }
+                    Thread.Sleep(20);
+                }
             }
 
-            string message = string.Format("SetOff: pin {0} does not get Off after {1} tries!",
-                Name, maxTries);
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, message);
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                string.Format("SetOff: pin {0} does not get Off after {1} tries!",
+                    WiseName, maxTries));
             #endregion
-            //throw new Hardware.DaqsException(message);
         }
 
         public bool isOn
@@ -124,7 +177,7 @@ namespace ASCOM.Wise40.Hardware
         public void Connect(bool connected)
         {
             if (connected)
-                daq.setOwner(Name, bit);
+                daq.setOwner(WiseName, bit);
             else
                 daq.unsetOwner(bit);
             _connected = connected;
