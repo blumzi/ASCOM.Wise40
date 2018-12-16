@@ -19,7 +19,6 @@ namespace ASCOM.Wise40.VantagePro
         private static Version version = new Version("0.2");
         public static string driverDescription = string.Format("ASCOM Wise40.VantagePro v{0}", version.ToString());
         private Util util = new Util();
-        private TraceLogger tl;
 
         public enum OpMode { File, Serial };
         public OpMode _opMode = WiseVantagePro.OpMode.File;
@@ -70,8 +69,6 @@ namespace ASCOM.Wise40.VantagePro
 
         public void RefreshFromDatafile()
         {
-            tl.LogMessage("Refresh", "dataFile: " + _dataFile);
-
             if (_dataFile == null || _dataFile == string.Empty)
             {
                 if (_connected)
@@ -224,13 +221,8 @@ namespace ASCOM.Wise40.VantagePro
             if (_initialized)
                 return;
 
-            Name = "Wise40.VantagePro";
-            tl = new TraceLogger("", "Wise40.VantagePro");
-            tl.Enabled = debugger.Tracing;
-            tl.LogMessage("ObservingConditions", "initialized");
-
+            WiseName = "Wise40.VantagePro";
             sensorData = new Dictionary<string, string>();
-
             ReadProfile();
             Refresh();
 
@@ -246,7 +238,6 @@ namespace ASCOM.Wise40.VantagePro
 
             set
             {
-                tl.LogMessage("Connected Set", value.ToString());
                 if (value == _connected)
                     return;
 
@@ -266,7 +257,6 @@ namespace ASCOM.Wise40.VantagePro
         {
             get
             {
-                tl.LogMessage("Description Get", driverDescription);
                 return driverDescription;
             }
         }
@@ -283,9 +273,7 @@ namespace ASCOM.Wise40.VantagePro
         {
             get
             {
-                string driverInfo = "Wrapper for VantagePro Report file. Version: " + String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
-                tl.LogMessage("DriverInfo Get", driverInfo);
-                return driverInfo;
+                return "Wrapper for VantagePro Report file. Version: " + String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
             }
         }
 
@@ -301,9 +289,7 @@ namespace ASCOM.Wise40.VantagePro
         {
             get
             {
-                string driverVersion = String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
-                tl.LogMessage("DriverVersion Get", driverVersion);
-                return driverVersion;
+                return String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
             }
         }
 
@@ -368,12 +354,11 @@ namespace ASCOM.Wise40.VantagePro
         {
             get
             {
-                tl.LogMessage("AveragePeriod", "get - 0");
                 return 0;
             }
+
             set
             {
-                tl.LogMessage("AveragePeriod", string.Format("set - {0}", value));
                 if (value != 0)
                     throw new InvalidValueException("Only 0.0 accepted");
             }
@@ -387,7 +372,6 @@ namespace ASCOM.Wise40.VantagePro
         {
             get
             {
-                tl.LogMessage("CloudCover", "get - not implemented");
                 throw new PropertyNotImplementedException("CloudCover", false);
             }
         }
@@ -406,7 +390,6 @@ namespace ASCOM.Wise40.VantagePro
                 Refresh();
                 var dewPoint = Convert.ToDouble(sensorData["outsideDewPt"]);
 
-                tl.LogMessage("DewPoint", "get - " + dewPoint.ToString());
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugSafety, string.Format("VantagePro: DewPoint - get => {0}", dewPoint.ToString()));
                 #endregion
@@ -428,7 +411,6 @@ namespace ASCOM.Wise40.VantagePro
                 Refresh();
                 var humidity = Convert.ToDouble(sensorData["outsideHumidity"]);
 
-                tl.LogMessage("Humidity", "get - " + humidity.ToString());
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugSafety, string.Format("VantagePro: Humidity - get => {0}", humidity.ToString()));
                 #endregion
@@ -451,7 +433,6 @@ namespace ASCOM.Wise40.VantagePro
                 Refresh();
                 var pressure = Convert.ToDouble(sensorData["barometer"]);
 
-                tl.LogMessage("Pressure", "get - " + pressure.ToString());
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugSafety, string.Format("VantagePro: Pressure - get => {0}", pressure.ToString()));
                 #endregion
@@ -473,7 +454,6 @@ namespace ASCOM.Wise40.VantagePro
                 Refresh();
                 var rainRate = Convert.ToDouble(sensorData["rainRate"]);
 
-                tl.LogMessage("RainRate", "get - " + rainRate.ToString());
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugSafety, string.Format("VantagePro: RainRate - get => {0}", rainRate.ToString()));
                 #endregion
@@ -513,10 +493,8 @@ namespace ASCOM.Wise40.VantagePro
                 case "SkyTemperature":
                 case "WindGust":
                 case "CloudCover":
-                    tl.LogMessage("SensorDescription", PropertyName + " - not implemented");
                     throw new MethodNotImplementedException("SensorDescription(" + PropertyName + ")");
                 default:
-                    tl.LogMessage("SensorDescription", PropertyName + " - unrecognised");
                     throw new ASCOM.InvalidValueException("SensorDescription(" + PropertyName + ")");
             }
         }
@@ -528,7 +506,6 @@ namespace ASCOM.Wise40.VantagePro
         {
             get
             {
-                tl.LogMessage("SkyBrightness", "get - not implemented");
                 throw new PropertyNotImplementedException("SkyBrightness", false);
             }
         }
@@ -540,7 +517,6 @@ namespace ASCOM.Wise40.VantagePro
         {
             get
             {
-                tl.LogMessage("SkyQuality", "get - not implemented");
                 throw new PropertyNotImplementedException("SkyQuality", false);
             }
         }
@@ -552,7 +528,6 @@ namespace ASCOM.Wise40.VantagePro
         {
             get
             {
-                tl.LogMessage("StarFWHM", "get - not implemented");
                 throw new PropertyNotImplementedException("StarFWHM", false);
             }
         }
@@ -564,7 +539,6 @@ namespace ASCOM.Wise40.VantagePro
         {
             get
             {
-                tl.LogMessage("SkyTemperature", "get - not implemented");
                 throw new PropertyNotImplementedException("SkyTemperature", false);
             }
         }
@@ -579,7 +553,6 @@ namespace ASCOM.Wise40.VantagePro
                 Refresh();
                 var temperature = Convert.ToDouble(sensorData["outsideTemp"]);
 
-                tl.LogMessage("Temperature", "get - " + temperature.ToString());
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugSafety, string.Format("VantagePro: Temperature - get => {0}", temperature.ToString()));
                 #endregion
@@ -607,7 +580,6 @@ namespace ASCOM.Wise40.VantagePro
                 case "SkyTemperature":
                 case "WindGust":
                 case "CloudCover":
-                    tl.LogMessage("TimeSinceLastUpdate", PropertyName + " - not implemented");
                     throw new MethodNotImplementedException("SensorDescription(" + PropertyName + ")");
             }
             Refresh();
@@ -620,7 +592,6 @@ namespace ASCOM.Wise40.VantagePro
                 seconds = (DateTime.UtcNow - lastUpdate).TotalSeconds;
             }
 
-            tl.LogMessage("TimeSinceLastUpdate", PropertyName + seconds.ToString());
             return seconds;
         }
 
@@ -636,10 +607,7 @@ namespace ASCOM.Wise40.VantagePro
             get
             {
                 Refresh();
-                var windDir = Convert.ToDouble(sensorData["windDir"]);
-
-                tl.LogMessage("WindDirection", "get - " + windDir.ToString());
-                return windDir;
+                return Convert.ToDouble(sensorData["windDir"]);
             }
         }
 
@@ -650,7 +618,6 @@ namespace ASCOM.Wise40.VantagePro
         {
             get
             {
-                tl.LogMessage("WindGust", "get - not implemented");
                 throw new PropertyNotImplementedException("WindGust", false);
             }
         }
@@ -676,7 +643,6 @@ namespace ASCOM.Wise40.VantagePro
                 double kmh = Convert.ToSingle(sensorData["windSpeed"]);
                 double windSpeed = MPS(kmh);
 
-                tl.LogMessage("WindSpeed", "get - " + windSpeed.ToString());
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugSafety, string.Format("VantagePro: WindSpeed - get => {0}", windSpeed.ToString()));
                 #endregion
