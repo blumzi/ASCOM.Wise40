@@ -77,8 +77,6 @@ namespace ASCOM.Wise40.Hardware
                 for (i = 0; i < maxTries; i++)
                 {
                     daq.wiseBoard.mccBoard.DOut(daq.porttype, v);
-                    if (WiseName.StartsWith("FocusLatch"))
-                        return;     // We know this bit does not read as On
 
                     Thread.Sleep(100);
                     daq.wiseBoard.mccBoard.DIn(daq.porttype, out v1);
