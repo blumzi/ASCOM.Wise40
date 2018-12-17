@@ -1137,6 +1137,23 @@ namespace ASCOM.Wise40
                     Unpark();
                     return "ok";
 
+                case "start-moving":
+                    string ret = "ok";
+
+                    switch(param)
+                    {
+                        case "cw":
+                            StartMovingCW();
+                            break;
+                        case "ccw":
+                            StartMovingCCW();
+                            break;
+                        default:
+                            ret = string.Format("Bad parameter \"{0}\" for \"start-moving\".  Can be either \"cw\" or \"ccw\"", param);
+                            break;
+                    }
+                    return ret;
+
                 default:
                     throw new ASCOM.ActionNotImplementedException(
                         "Action " + actionName + " is not implemented by this driver");
