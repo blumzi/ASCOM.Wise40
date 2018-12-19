@@ -106,13 +106,13 @@ namespace ASCOM.Wise40.VantagePro
         {
             get
             {
-                return new ArrayList();
+                return vantagePro.SupportedActions;
             }
         }
 
         public string Action(string actionName, string actionParameters)
         {
-            throw new ASCOM.ActionNotImplementedException("Action " + actionName + " is not implemented by this driver");
+            return vantagePro.Action(actionName, actionParameters);
         }
 
         public void CommandBlind(string command, bool raw)

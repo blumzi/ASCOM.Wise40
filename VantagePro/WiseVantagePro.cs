@@ -6,6 +6,7 @@ using System.Globalization;
 
 using System.IO;
 using System.Threading;
+using System.Collections;
 using ASCOM.Wise40.Common;
 using ASCOM.Utilities;
 
@@ -258,6 +259,32 @@ namespace ASCOM.Wise40.VantagePro
             get
             {
                 return driverDescription;
+            }
+        }
+
+        public static ArrayList supportedActions = new ArrayList {
+            "forecast",
+        };
+
+        public ArrayList SupportedActions
+        {
+            get
+            {
+                return supportedActions;
+            }
+        }
+
+        public string Action(string action, string parameter)
+        {
+            action = action.ToLower();
+            parameter = parameter.ToLower();
+
+            switch (action)
+            {
+                case "forecast":
+                    return Forecast;
+                default:
+                    throw new ASCOM.ActionNotImplementedException("Action " + action + " is not implemented by this driver");
             }
         }
 

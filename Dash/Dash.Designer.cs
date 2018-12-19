@@ -67,6 +67,8 @@
             this.labelDomeStatus = new System.Windows.Forms.Label();
             this.label17 = new System.Windows.Forms.Label();
             this.groupBoxTelescope = new System.Windows.Forms.GroupBox();
+            this.textBoxRA = new System.Windows.Forms.TextBox();
+            this.textBoxDec = new System.Windows.Forms.TextBox();
             this.comboBoxGoToMode = new System.Windows.Forms.ComboBox();
             this.buttonTrack = new System.Windows.Forms.Button();
             this.panel1 = new System.Windows.Forms.Panel();
@@ -109,8 +111,6 @@
             this.labelAzimuthValue = new System.Windows.Forms.Label();
             this.labelDeclination = new System.Windows.Forms.Label();
             this.buttonGoCoord = new System.Windows.Forms.Button();
-            this.textBoxRA = new System.Windows.Forms.TextBox();
-            this.textBoxDec = new System.Windows.Forms.TextBox();
             this.labelRA = new System.Windows.Forms.Label();
             this.labelDec = new System.Windows.Forms.Label();
             this.groupBoxTarget = new System.Windows.Forms.GroupBox();
@@ -827,6 +827,32 @@
             this.groupBoxTelescope.TabStop = false;
             this.groupBoxTelescope.Text = " Telescope ";
             // 
+            // textBoxRA
+            // 
+            this.textBoxRA.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.textBoxRA.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.textBoxRA.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.textBoxRA.Location = new System.Drawing.Point(101, 172);
+            this.textBoxRA.Margin = new System.Windows.Forms.Padding(7, 3, 3, 3);
+            this.textBoxRA.Name = "textBoxRA";
+            this.textBoxRA.Size = new System.Drawing.Size(93, 23);
+            this.textBoxRA.TabIndex = 23;
+            this.textBoxRA.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.textBoxRA.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.textBoxRA_MouseDoubleClick);
+            // 
+            // textBoxDec
+            // 
+            this.textBoxDec.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.textBoxDec.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.textBoxDec.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.textBoxDec.Location = new System.Drawing.Point(227, 172);
+            this.textBoxDec.Margin = new System.Windows.Forms.Padding(7, 3, 3, 3);
+            this.textBoxDec.Name = "textBoxDec";
+            this.textBoxDec.Size = new System.Drawing.Size(81, 23);
+            this.textBoxDec.TabIndex = 24;
+            this.textBoxDec.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.textBoxDec.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.textBoxDec_MouseDoubleClick);
+            // 
             // comboBoxGoToMode
             // 
             this.comboBoxGoToMode.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
@@ -1484,32 +1510,6 @@
             this.buttonGoCoord.Text = "Go";
             this.buttonGoCoord.UseVisualStyleBackColor = false;
             this.buttonGoCoord.Click += new System.EventHandler(this.buttonGoCoord_Click);
-            // 
-            // textBoxRA
-            // 
-            this.textBoxRA.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.textBoxRA.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.textBoxRA.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxRA.Location = new System.Drawing.Point(101, 172);
-            this.textBoxRA.Margin = new System.Windows.Forms.Padding(7, 3, 3, 3);
-            this.textBoxRA.Name = "textBoxRA";
-            this.textBoxRA.Size = new System.Drawing.Size(93, 23);
-            this.textBoxRA.TabIndex = 23;
-            this.textBoxRA.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.textBoxRA.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.textBoxRA_MouseDoubleClick);
-            // 
-            // textBoxDec
-            // 
-            this.textBoxDec.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.textBoxDec.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.textBoxDec.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxDec.Location = new System.Drawing.Point(227, 172);
-            this.textBoxDec.Margin = new System.Windows.Forms.Padding(7, 3, 3, 3);
-            this.textBoxDec.Name = "textBoxDec";
-            this.textBoxDec.Size = new System.Drawing.Size(81, 23);
-            this.textBoxDec.TabIndex = 24;
-            this.textBoxDec.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.textBoxDec.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.textBoxDec_MouseDoubleClick);
             // 
             // labelRA
             // 

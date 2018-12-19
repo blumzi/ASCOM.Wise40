@@ -55,12 +55,14 @@ namespace Dash
         RefreshPacer focusPacer = new RefreshPacer(TimeSpan.FromSeconds(5));
         RefreshPacer filterWheelPacer = new RefreshPacer(TimeSpan.FromSeconds(5));
         RefreshPacer telescopePacer = new RefreshPacer(TimeSpan.FromMilliseconds(200));
+        RefreshPacer forecastPacer = new RefreshPacer(TimeSpan.FromMinutes(2));
 
         SafeToOperateDigest safetooperateDigest = null;
         DomeDigest domeDigest = null;
         TelescopeDigest telescopeDigest = null;
         FocuserDigest focuserDigest = null;
         FilterWheelDigest filterWheelDigest = null;
+        string forecastString;
 
         private List<ToolStripMenuItem> debugMenuItems;
         private Dictionary<object, string> alteredItems = new Dictionary<object, string>();
@@ -76,6 +78,7 @@ namespace Dash
         ASCOM.DriverAccess.Focuser remoteFocuser;
         //ASCOM.DriverAccess.FilterWheel remoteFilterWheel;
         ASCOM.DriverAccess.SafetyMonitor remoteSafeToOperate;
+        ASCOM.DriverAccess.ObservingConditions remoteVantagePro;
 
         void onWheelOrPositionChanged(object sender, EventArgs e)
         {
@@ -108,6 +111,7 @@ namespace Dash
                 remoteFocuser = new ASCOM.DriverAccess.Focuser("ASCOM.Remote1.Focuser");
                 //remoteFilterWheel = new ASCOM.DriverAccess.FilterWheel("ASCOM.Remote1.FilterWheel");
                 remoteSafeToOperate = new ASCOM.DriverAccess.SafetyMonitor("ASCOM.Remote1.SafetyMonitor");
+                remoteVantagePro = new ASCOM.DriverAccess.ObservingConditions("ASCOM.Wise40.VantagePro.ObservingConditions");
 
                 groupBoxTarget.Text += string.Format("(from {0}) ", wisesite.OperationalMode.ToString());
             }
@@ -222,6 +226,7 @@ namespace Dash
             bool refreshTelescope = telescopePacer.ShouldRefresh(now);
             bool refreshFocus = focusPacer.ShouldRefresh(now);
             bool refreshFilterWheel = filterWheelPacer.ShouldRefresh(now);
+            bool refreshForecast = forecastPacer.ShouldRefresh(now);
             string tip = null;
 
             if (refreshTelescope)
@@ -255,6 +260,9 @@ namespace Dash
                     remoteFocuser.Action("status", "") :
                     wisefocuser.Action("status", ""));
             }
+
+            if (refreshForecast)
+                forecastString = remoteVantagePro.Action("forecast", "");
 
             //if (refreshFilterWheel)
             //{
@@ -638,6 +646,10 @@ namespace Dash
             //        annunciatorFilterWheel.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
             //        filterWheelStatus.Show(fwstat);
             //    }
+            #endregion
+
+            #region RefreshForecast
+            dashStatus.Show(forecastString);
             #endregion
         }
         #endregion
