@@ -27,7 +27,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 {
     public partial class ObsMainForm : Form
     {
-        static bool _simulated = new WiseObject().Simulated;
+        static bool _simulated = WiseObject.Simulated;
         public const int _maxLogItems = 100000;
         static DriverAccess.Telescope wisetelescope = null;
         static WiseSite wisesite = WiseSite.Instance;

@@ -336,7 +336,9 @@ namespace ASCOM.Wise40SafeToOperate
                         WindSpeedColorArgb = Statuser.TriStateColor(isSafeWindSpeed).ToArgb(),
                         CloudCoverColorArgb = Statuser.TriStateColor(isSafeCloudCover).ToArgb(),
                         HumidityColorArgb = Statuser.TriStateColor(isSafeHumidity).ToArgb(),
-                    }
+                    },
+                    SunElevation = SunElevation,
+
                 });
             }
         }
@@ -808,6 +810,7 @@ namespace ASCOM.Wise40SafeToOperate
         public bool Safe;
         public List<string> UnsafeReasons;
         public Colors Colors;
+        public double SunElevation;
     }
 
     public class Colors

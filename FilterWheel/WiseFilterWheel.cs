@@ -208,7 +208,7 @@ namespace ASCOM.Wise40.FilterWheel
                     }
                 }
            
-                port = driverProfile.GetValue(driverID, "Port", string.Empty, Instance.Simulated ? "COM5" : "COM6");
+                port = driverProfile.GetValue(driverID, "Port", string.Empty, Simulated ? "COM5" : "COM6");
             }
         }
 

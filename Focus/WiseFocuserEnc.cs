@@ -237,7 +237,7 @@ namespace ASCOM.Wise40 //.Focuser
 
         private static void simulateMovement(object o)
         {
-            if (!instance.Simulated)
+            if (!WiseObject.Simulated)
             {
                 _simulationTimer.Change(Timeout.Infinite, Timeout.Infinite);
                 return;
