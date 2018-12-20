@@ -52,12 +52,14 @@ namespace ASCOM.Wise40SafeToOperate
 
         public void SetState(SensorState s)
         {
-            _state |= s;
+            if (! StateIsSet(s))
+                _state |= s;
         }
 
         public void UnsetState(SensorState s)
         {
-            _state &= ~s;
+            if (StateIsSet(s))
+                _state &= ~s;
         }
 
         public SensorAttribute _attributes;
@@ -284,19 +286,26 @@ namespace ASCOM.Wise40SafeToOperate
 
             if (wasready)
             {
-                if ((!wassafe && issafe) || (wassafe && !issafe))
-                {
-                    // the sensor transited from unsafe to safe
-                    SetState(SensorState.Stabilizing);
-                    #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}) started stabilizing", WiseName);
-                    #endregion
-                    int millis = (int) WiseSafeToOperate._stabilizationPeriod.TotalMilliseconds;
-
-                    _timer.Change(millis, Timeout.Infinite);
-                    _endOfStabilization = DateTime.Now.AddMilliseconds(millis);
-                }
+                if (!wassafe && issafe)
+                    BumpStabilization("Became safe");
+                else if (wassafe && !issafe)
+                    BumpStabilization("Became unsafe");
+                else if (!wassafe && !issafe)
+                    BumpStabilization("Still not safe");
             }
+        }
+
+        private void BumpStabilization(string reason)
+        {
+            int millis = (int) WiseSafeToOperate._stabilizationPeriod.TotalMilliseconds;
+
+            SetState(SensorState.Stabilizing);
+            _timer.Change(millis, Timeout.Infinite);
+            _endOfStabilization = DateTime.Now.AddMilliseconds(millis);
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}) will stabilize in {1} millis (reason: {2})",
+                WiseName, millis, reason);
+            #endregion
         }
 
         public TimeSpan TimeToStable
