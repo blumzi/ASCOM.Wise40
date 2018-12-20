@@ -62,7 +62,7 @@ namespace Dash
         TelescopeDigest telescopeDigest = null;
         FocuserDigest focuserDigest = null;
         FilterWheelDigest filterWheelDigest = null;
-        string forecastString;
+        string forecast;
 
         private List<ToolStripMenuItem> debugMenuItems;
         private Dictionary<object, string> alteredItems = new Dictionary<object, string>();
@@ -262,7 +262,7 @@ namespace Dash
             }
 
             if (refreshForecast)
-                forecastString = remoteVantagePro.Action("forecast", "");
+                forecast = remoteVantagePro.Action("forecast", "");
 
             //if (refreshFilterWheel)
             //{
@@ -649,7 +649,7 @@ namespace Dash
             #endregion
 
             #region RefreshForecast
-            dashStatus.Show(forecastString);
+            dashStatus.Show(forecast);
             #endregion
         }
         #endregion
