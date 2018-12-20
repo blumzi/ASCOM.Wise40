@@ -850,7 +850,10 @@ namespace ASCOM.Wise40
             }
 
             if (_enslaveDome && !slewers.Active(Slewers.Type.Dome))
+            {
+                WiseDome._adjustingForTracking = true;
                 DomeSlewer(Angle.FromHours(RightAscension), Angle.FromDegrees(Declination));
+            }
         }
 
         public bool Tracking
@@ -873,8 +876,10 @@ namespace ASCOM.Wise40
 
                 if (value)
                 {
-                    if (!wisesafetooperate.IsSafe && !BypassCoordinatesSafety)
-                        throw new ASCOM.InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList));
+                    if (!wisesafetooperate.IsSafe && 
+                        !activityMonitor.InProgress(ActivityMonitor.Activity.ShuttingDown) &&
+                        !BypassCoordinatesSafety)
+                            throw new ASCOM.InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList));
 
                     if (Simulated)
                         _lastTrackingLST = wisesite.LocalSiderealTime.Hours;
@@ -1089,7 +1094,7 @@ namespace ASCOM.Wise40
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, string.Format("MoveAxis({0}, {1})", Axis, Rate));
             #endregion debug
 
-            if (!wisesafetooperate.IsSafe && !BypassCoordinatesSafety)
+            if (!wisesafetooperate.IsSafe && !activityMonitor.InProgress(ActivityMonitor.Activity.ShuttingDown) && !BypassCoordinatesSafety)
                 throw new ASCOM.InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList));
 
             Const.AxisDirection direction = (Rate == Const.rateStopped) ? Const.AxisDirection.None :
@@ -1161,7 +1166,7 @@ namespace ASCOM.Wise40
                 throw new InvalidValueException("Cannot MoveAxis while AtPark");
             }
 
-            if (Rate != Const.rateStopped && !wisesafetooperate.IsSafe)
+            if (Rate != Const.rateStopped && !wisesafetooperate.IsSafe && !activityMonitor.InProgress(ActivityMonitor.Activity.ShuttingDown))
                 throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList));
 
             TelescopeAxes _otherAxis = otherAxis[thisAxis];
@@ -1245,7 +1250,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                bool ret = activityMonitor.Active(ActivityMonitor.Activity.Pulsing);
+                bool ret = activityMonitor.InProgress(ActivityMonitor.Activity.Pulsing);
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "IsPulseGuiding: {0}", ret);
                 #endregion
@@ -1273,7 +1278,7 @@ namespace ASCOM.Wise40
             if (!Tracking)
                 throw new InvalidOperationException("Cannot SlewToTargetAsync while NOT Tracking");
 
-            if (!wisesafetooperate.IsSafe)
+            if (!wisesafetooperate.IsSafe && !activityMonitor.InProgress(ActivityMonitor.Activity.ShuttingDown))
                 throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList));
 
             string notSafe = SafeAtCoordinates(ra, dec);
@@ -1563,19 +1568,28 @@ namespace ASCOM.Wise40
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: after _slewToCoordinatesSync");
                 #endregion
-                if (wasEnslavingDome)
+                //if (wasEnslavingDome)
+                //{
+                //    while (!domeSlaveDriver.AtPark)
+                //    {
+                //        #region debug
+                //        debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: waiting 2000 for domeSlaveDriver.AtPark");
+                //        #endregion
+                //        Thread.Sleep(2000);
+                //    }
+                //    #region debug
+                //    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: reached domeSlaveDriver.AtPark");
+                //    #endregion
+                //}
+
+                do
                 {
-                    while (!domeSlaveDriver.AtPark)
-                    {
-                        #region debug
-                        debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: waiting 2000 for domeSlaveDriver.AtPark");
-                        #endregion
-                        Thread.Sleep(2000);
-                    }
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: reached domeSlaveDriver.AtPark");
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: still Slewing ...");
                     #endregion
-                }
+                    Thread.Sleep(1000);
+                } while (activityMonitor.InProgress(ActivityMonitor.Activity.Slewing));
+
             } catch(Exception ex)
             {
                 Parking = false;
@@ -1585,6 +1599,8 @@ namespace ASCOM.Wise40
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: Exception: {0}, aborted.", ex.Message);
                 #endregion
+                if (activityMonitor.InProgress(ActivityMonitor.Activity.ShuttingDown))
+                    throw;
                 return;
             }
             #region debug
@@ -1836,6 +1852,7 @@ namespace ASCOM.Wise40
                 #endregion debug
                 StopAxisAndWaitForHalt(thisAxis, slewerName, r);
                 status = ScopeSlewerStatus.Canceled;
+                throw;
             }
         }
         
@@ -1946,7 +1963,7 @@ namespace ASCOM.Wise40
                 }, TaskContinuationOptions.ExecuteSynchronously);
         }
 
-        public void DomeSlewer(Angle ra, Angle dec)
+        public void DomeSlewer(Angle ra, Angle dec, bool withActivity = false)
         {
             _genericDomeSlewerTask(() => domeSlaveDriver.SlewToAz(ra, dec));
         }
@@ -1989,7 +2006,7 @@ namespace ASCOM.Wise40
                     DomeSlewer(RightAscension, Declination);
                 }
 
-                if (! activityMonitor.Active(ActivityMonitor.Activity.ShuttingDown))
+                if (! activityMonitor.InProgress(ActivityMonitor.Activity.ShuttingDown))
                     telescopeCT = telescopeCTS.Token;
 
                 foreach (Slewers.Type slewerType in new List<Slewers.Type>() { Slewers.Type.Ra, Slewers.Type.Dec })
@@ -2010,7 +2027,7 @@ namespace ASCOM.Wise40
 
                         slewers.Add(slewer);
                         #region debug
-                        debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "Passing (#{0}) to slewer.task", telescopeCT.GetHashCode());
+                        debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "_doSlewToCoordinatesAsync: Passing (#{0}) to slewer.task", telescopeCT.GetHashCode());
                         #endregion
                         slewer.task = Task.Run(() =>
                         {
@@ -2019,17 +2036,31 @@ namespace ASCOM.Wise40
                         {
                             #region debug
                             debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
-                                "slewer \"{0}\" completed with status: {1}", slewer.type.ToString(), slewerTask.Status.ToString());
+                                "_doSlewToCoordinatesAsync: Slewer \"{0}\" completed with status: {1}", slewer.type.ToString(), slewerTask.Status.ToString());
                             #endregion
                             if (slewers.Delete(slewerType))
                                 AnnulateTargetCoordinate(slewerType);
 
+                            if (slewerTask.Status == TaskStatus.Canceled)
+                                throw new OperationCanceledException(string.Format("Slewer \"{0}\" Canceled",
+                                    slewer.type.ToString()));
+
                         }, TaskContinuationOptions.ExecuteSynchronously);
+                    }
+                    catch (OperationCanceledException ex)
+                    {
+                        #region debug
+                        debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "_doSlewToCoordinatesAsync: Slewer \"{0}\": Caught: {1}",
+                            slewer.type.ToString(),
+                            ex.InnerException == null ? ex.Message : ex.InnerException.Message);
+                        #endregion
+                        if (activityMonitor.InProgress(ActivityMonitor.Activity.ShuttingDown))
+                            throw;
                     }
                     catch (Exception ex)
                     {
                         #region debug
-                        debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Failed to run slewer {0}: {1}", slewerType.ToString(), ex.Message);
+                        debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "_doSlewToCoordinatesAsync: Failed to run slewer {0}: {1}", slewerType.ToString(), ex.Message);
                         #endregion
                         slewers.Delete(slewerType);
                         AnnulateTargetCoordinate(slewerType);
@@ -2042,7 +2073,7 @@ namespace ASCOM.Wise40
                 {
                     #region debug
                     debugger.WriteLine((Debugger.DebugLevel)Debugger.DebugLevel.DebugExceptions,
-                        "_slewToCoordinatesAsync: Caught {0}", ex.Message);
+                        "_doSlewToCoordinatesAsync: Caught {0}", ex.Message);
                     #endregion
                     return false;
                 }));
@@ -2081,7 +2112,7 @@ namespace ASCOM.Wise40
             if (!Tracking)
                 throw new InvalidOperationException("Cannot SlewToCoordinates while NOT Tracking");
 
-            if (!wisesafetooperate.IsSafe)
+            if (!wisesafetooperate.IsSafe && !activityMonitor.InProgress(ActivityMonitor.Activity.ShuttingDown))
                 throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList));
 
             if (!noSafetyCheck)
@@ -2134,7 +2165,7 @@ namespace ASCOM.Wise40
                     throw new InvalidOperationException(notSafe);
             }
 
-            if (!activityMonitor.Active(ActivityMonitor.Activity.ShuttingDown) && !wisesafetooperate.IsSafe)
+            if (!activityMonitor.InProgress(ActivityMonitor.Activity.ShuttingDown) && !wisesafetooperate.IsSafe)
                 throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList));
 
             try
@@ -2228,10 +2259,10 @@ namespace ASCOM.Wise40
 
         public void Unpark()
         {
-            if (activityMonitor.Active(ActivityMonitor.Activity.ShuttingDown))
+            if (activityMonitor.InProgress(ActivityMonitor.Activity.ShuttingDown))
                 throw new InvalidOperationException("Observatory is shutting down!");
 
-            if (!wisesafetooperate.IsSafe)
+            if (!wisesafetooperate.IsSafe && !activityMonitor.InProgress(ActivityMonitor.Activity.ShuttingDown))
                 throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList));
 
             if (AtPark)
@@ -2349,7 +2380,7 @@ namespace ASCOM.Wise40
             if (!Tracking)
                 throw new InvalidOperationException("Cannot SlewToCoordinates while NOT Tracking");
 
-            if (!wisesafetooperate.IsSafe)
+            if (!wisesafetooperate.IsSafe && !activityMonitor.InProgress(ActivityMonitor.Activity.ShuttingDown))
                 throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList));
 
             string notSafe = SafeAtCoordinates(ra, dec);
@@ -2634,7 +2665,7 @@ namespace ASCOM.Wise40
             if (Slewing)
                 throw new InvalidOperationException("Cannot PulseGuide while Slewing");
 
-            if (!wisesafetooperate.IsSafe)
+            if (!wisesafetooperate.IsSafe && !activityMonitor.InProgress(ActivityMonitor.Activity.ShuttingDown))
                 throw new InvalidOperationException(
                     string.Format("Not safe to operate ({0})", wisesafetooperate.UnsafeReasons));
 

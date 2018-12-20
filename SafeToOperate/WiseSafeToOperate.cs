@@ -698,11 +698,11 @@ namespace ASCOM.Wise40SafeToOperate
                     goto Out;
                 }
 
-                if (_shuttingDown)
-                {
-                    ret = true;
-                    goto Out;
-                }
+                //if (_shuttingDown)
+                //{
+                //    ret = true;
+                //    goto Out;
+                //}
 
                 foreach (Sensor s in _prioritizedSensors)
                 {

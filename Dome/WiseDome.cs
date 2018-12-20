@@ -9,6 +9,7 @@ using MccDaq;
 using ASCOM.Utilities;
 using ASCOM.DeviceInterface;
 using ASCOM.Wise40.Common;
+using ASCOM.Wise40SafeToOperate;
 using ASCOM.Wise40.Hardware;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -21,7 +22,7 @@ namespace ASCOM.Wise40
 
         private static WiseDome _instance; // Singleton
         private static object syncObject = new object();
-        private static WiseSite wisesite = WiseSite.Instance;
+        private static WiseSafeToOperate wiseSafeToOperate = WiseSafeToOperate.Instance;
         private static bool _initialized = false;
 
         private WisePin leftPin, rightPin;
@@ -99,6 +100,8 @@ namespace ASCOM.Wise40
         private static AutoResetEvent _foundCalibration = new AutoResetEvent(false);
         private static Hardware.Hardware hw = Hardware.Hardware.Instance;
 
+        public static bool _adjustingForTracking = false;
+
         // Explicit static constructor to tell C# compiler
         // not to mark type as beforefieldinit
         static WiseDome()
@@ -155,9 +158,6 @@ namespace ASCOM.Wise40
 
                 ventPin = new WisePin("DomeVent", hw.domeboard, DigitalPortType.FirstPortA, 5, DigitalPortDirection.DigitalOut);
                 projectorPin = new WisePin("DomeProjector", hw.domeboard, DigitalPortType.FirstPortA, 4, DigitalPortDirection.DigitalOut);
-
-                //domeEncoder.init();
-                //wisedomeshutter.init();
 
                 List<WisePin> domePins = new List<WisePin> { leftPin, rightPin, ventPin, projectorPin };
                 domePins.AddRange(caliPins);
@@ -605,7 +605,10 @@ namespace ASCOM.Wise40
                     domeEncoder.Value, tries + 1);
             #endregion
 
-            activityMonitor.EndActivity(ActivityMonitor.Activity.Dome);
+            if (_adjustingForTracking)
+                _adjustingForTracking = false;
+            else
+                activityMonitor.EndActivity(ActivityMonitor.Activity.Dome);
         }
 
         public CalibrationPoint AtCaliPoint
@@ -708,8 +711,8 @@ namespace ASCOM.Wise40
                     throw new ASCOM.InvalidOperationException("Cannot move, shutter is active!");
                 }
 
-                if (wisesite.safeToOperate != null && !wisesite.safeToOperate.IsSafe)
-                    throw new ASCOM.InvalidOperationException(wisesite.safeToOperate.Action("unsafereasons", ""));
+                if (!wiseSafeToOperate.IsSafe && !activityMonitor.InProgress(ActivityMonitor.Activity.ShuttingDown))
+                    throw new ASCOM.InvalidOperationException(wiseSafeToOperate.Action("unsafereasons", ""));
             }
 
             AtPark = false;
@@ -767,12 +770,13 @@ namespace ASCOM.Wise40
                 throw new ASCOM.InvalidOperationException("Cannot move, shutter is active!");
             }
 
-            if (wisesite.safeToOperate != null && !wisesite.safeToOperate.IsSafe)
-                throw new ASCOM.InvalidOperationException(wisesite.safeToOperate.Action("unsafereasons", ""));
+            if (!wiseSafeToOperate.IsSafe && activityMonitor.InProgress(ActivityMonitor.Activity.ShuttingDown))
+                throw new ASCOM.InvalidOperationException(wiseSafeToOperate.Action("unsafereasons", ""));
 
             Angle toAng = new Angle(degrees, Angle.Type.Az);
 
-            activityMonitor.StartActivity(ActivityMonitor.Activity.Dome);
+            if (! _adjustingForTracking)
+                activityMonitor.StartActivity(ActivityMonitor.Activity.Dome);
 
             if (!Calibrated)
             {
@@ -846,6 +850,7 @@ namespace ASCOM.Wise40
                 return JsonConvert.SerializeObject(new DomeDigest()
                 {
                     Azimuth = Azimuth.Degrees,
+                    TargetAzimuth = _targetAz == null ? Const.noTarget : _targetAz.Degrees,
                     Calibrated = Calibrated,
                     Status = Status,
                     ShutterStatus = ShutterStatusString,
@@ -946,10 +951,10 @@ namespace ASCOM.Wise40
             if (DirectionMotorsAreActive)
                 throw new InvalidOperationException("Cannot open shutter while dome is slewing!");
 
-            if (!bypassSafety && (wisesite.safeToOperate != null && !wisesite.safeToOperate.IsSafe))
-                throw new InvalidOperationException(wisesite.safeToOperate.CommandString("unsafeReasons", false));
+            if (!bypassSafety && (!wiseSafeToOperate.IsSafe && !activityMonitor.InProgress(ActivityMonitor.Activity.ShuttingDown)))
+                throw new InvalidOperationException(wiseSafeToOperate.CommandString("unsafeReasons", false));
 
-            if (activityMonitor.Active(ActivityMonitor.Activity.ShuttingDown))
+            if (activityMonitor.InProgress(ActivityMonitor.Activity.ShuttingDown))
                 throw new InvalidOperationException("Observatory is shutting down!");
 
             wisedomeshutter.Stop();
@@ -1120,18 +1125,21 @@ namespace ASCOM.Wise40
                     if (param != string.Empty)
                         Projector = Convert.ToBoolean(param);
 
-                    bool projector = Projector;
-                    return Newtonsoft.Json.JsonConvert.SerializeObject(projector);
+                    return JsonConvert.SerializeObject(Projector);
 
                 case "vent":
                     if (param != string.Empty)
                         Vent = Convert.ToBoolean(param);
 
-                    bool vent = Vent;
-                    return Newtonsoft.Json.JsonConvert.SerializeObject(vent);
+                    return JsonConvert.SerializeObject(Vent);
 
                 case "status":
                     return Digest;
+
+                case "halt":
+                case "stop":
+                    Stop();
+                    return "ok";
 
                 case "unpark":
                     Unpark();
@@ -1336,7 +1344,7 @@ namespace ASCOM.Wise40
         /// </summary>
         public void ReadProfile()
         {
-            bool defaultSyncVentWithShutter = (wisesite.OperationalMode == WiseSite.OpMode.WISE) ? false : true;
+            bool defaultSyncVentWithShutter = (WiseSite.Instance.OperationalMode == WiseSite.OpMode.WISE) ? false : true;
 
             using (Profile driverProfile = new Profile() { DeviceType = "Dome" })
             {
@@ -1362,6 +1370,7 @@ namespace ASCOM.Wise40
     public class DomeDigest
     {
         public double Azimuth;
+        public double TargetAzimuth;
         public bool Calibrated;
         public string Status;
         public string ShutterStatus;

@@ -258,7 +258,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                     safetyMessage = "Not safe (conditions)";
 
                 if (telescopeDigest.Active)
-                    activityMessage = "active (" + string.Join(" ", telescopeDigest.Activities) + ")";
+                    activityMessage = "active (" + string.Join(", ", telescopeDigest.Activities) + ")";
                 else
                     activityMessage = "idle";
                 
@@ -373,52 +373,43 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
         delegate void LogDelegate(string text);
 
-        public void Log(string msg, int afterSecs = 0)
+        private void Log(string msg, int afterSecs = 0)
         {
             if (afterSecs != 0 && DateTime.Now.CompareTo(_lastLog) < 0)
                 return;
 
-            DateTime UTCnow = DateTime.UtcNow;
-            string line = string.Format("{0} - {1}", UTCnow.ToString("H:mm:ss UT"), msg);
+            string line = string.Format("{0} - {1}", DateTime.UtcNow.ToString("H:mm:ss UT"), msg);
 
             string dailyDir = Common.Debugger.LogDirectory();
             Directory.CreateDirectory(dailyDir);
             string logFile = dailyDir + "/ObservatoryMonitor.txt";
 
-            //if (logFile != _logFile)
-            //{
-            //    //if (logStream != null)
-            //    //{
-            //    //    logStream.Close();
-            //    //    logStream.Dispose();
-            //    //    logStream = null;
-            //    //}
-            //    _logFile = logFile;
-            //    if (!File.Exists(_logFile))
-            //    {
-            //        Stream s = File.Create(_logFile);
-            //        s.Close();
-            //        s.Dispose();
-            //    }
-            //}
+            try
+            {
+                using (StreamWriter sw = File.Exists(logFile) ?
+                            File.AppendText(logFile) :
+                            File.CreateText(logFile))
+                {
+                    sw.WriteLine(line);
+                }
+            }
+            catch (Exception ex)
+            {
+                ;
+            }
 
-            //if (logStream == null)
-            //    logStream = new StreamWriter(_logFile, true);
-
-            log(line);
-            //logStream.WriteLine(line);
-
+            logToGUI(line);
             _lastLog = DateTime.UtcNow;
         }
 
-        public void log(string line)
+        public void logToGUI(string line)
         {
             // InvokeRequired required compares the thread ID of the  
             // calling thread to the thread ID of the creating thread.  
             // If these threads are different, it returns true.  
             if (listBoxLog.InvokeRequired)
             {
-                this.Invoke(new LogDelegate(log), new object[] { line });
+                this.Invoke(new LogDelegate(logToGUI), new object[] { line });
             }
             else
             {
@@ -575,7 +566,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                     Log("   Wise40 is parked.");
                 }
 
-                if (!telescope_EnslavesDome)
+                if (!telescopeDigest.EnslavesDome)
                 {
                     if (!wisedome.AtPark)
                     {
