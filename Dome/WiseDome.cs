@@ -537,11 +537,6 @@ namespace ASCOM.Wise40
             #endregion
         }
 
-        public void MoveRight()
-        {
-            StartMovingCW();
-        }
-
         public void StartMovingCCW()
         {
             AtPark = false;
@@ -560,11 +555,6 @@ namespace ASCOM.Wise40
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome: Started moving CCW");
             #endregion
-        }
-
-        public void MoveLeft()
-        {
-            StartMovingCCW();
         }
 
         public void Stop()
@@ -859,6 +849,7 @@ namespace ASCOM.Wise40
                     Projector = Projector,
                     AtPark = AtPark,
                     Slewing = Slewing,
+                    DirectionMotorsAreActive = DirectionMotorsAreActive,
                     PercentOpen = wisedomeshutter.PercentOpen,
                     RangeCm = wisedomeshutter.RangeCm,
                     TimeSinceLastShutterReading = wisedomeshutter.webClient.TimeSinceLastReading,
@@ -1118,6 +1109,7 @@ namespace ASCOM.Wise40
         public string Action(string actionName, string actionParameters)
         {
             string param = actionParameters.ToLower();
+            string ret = "ok";
 
             switch (actionName)
             {
@@ -1145,10 +1137,15 @@ namespace ASCOM.Wise40
                     Unpark();
                     return "ok";
 
-                case "start-moving":
-                    string ret = "ok";
+                case "set-zimuth":
+                    Azimuth = Angle.FromDegrees(Convert.ToDouble(actionParameters));
+                    return "ok";
 
-                    switch(param)
+                case "start-moving":
+                    if (!wiseSafeToOperate.IsSafe && !activityMonitor.InProgress(ActivityMonitor.Activity.ShuttingDown))
+                        throw new ASCOM.InvalidOperationException(wiseSafeToOperate.Action("unsafereasons", ""));
+
+                    switch (param)
                     {
                         case "cw":
                             StartMovingCW();
@@ -1158,6 +1155,55 @@ namespace ASCOM.Wise40
                             break;
                         default:
                             ret = string.Format("Bad parameter \"{0}\" for \"start-moving\".  Can be either \"cw\" or \"ccw\"", param);
+                            break;
+                    }
+                    return ret;
+
+                case "shutter":
+                    switch(param)
+                    {
+                        case "halt":
+                            wisedomeshutter.Stop();
+                            break;
+                    }
+                    return ret;
+
+                case "sync-vent-with-shutter":
+                    switch (param)
+                    {
+                        case "":
+                            ret = SyncVentWithShutter.ToString();
+                            break;
+
+                        default:
+                            bool onOff;
+
+                            if (bool.TryParse(param, out onOff))
+                            {
+                                SyncVentWithShutter = onOff;
+                            }
+                            else
+                                ret = string.Format("Bad parameter \"{0}\" to \"sync-vent-with-shutter\"", param);
+                            break;
+                    }
+                    return ret;
+
+                case "auto-calibrate":
+                    switch (param)
+                    {
+                        case "":
+                            ret = _autoCalibrate.ToString();
+                            break;
+
+                        default:
+                            bool calibrate;
+
+                            if (bool.TryParse(param, out calibrate))
+                            {
+                                _autoCalibrate = calibrate;
+                            }
+                            else
+                                ret = string.Format("Bad parameter \"{0}\" to \"auto-calibrate\"", param);
                             break;
                     }
                     return ret;
@@ -1379,6 +1425,7 @@ namespace ASCOM.Wise40
         public bool Projector;
         public bool AtPark;
         public bool Slewing;
+        public bool DirectionMotorsAreActive;
         public int PercentOpen;
         public int RangeCm;
         public TimeSpan TimeSinceLastShutterReading;

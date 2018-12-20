@@ -26,13 +26,8 @@ namespace Dash
     public partial class FormDash : Form
     {
         public WiseTele wisetele = WiseTele.Instance;
-        public WiseDome wisedome = WiseDome.Instance;
-        public WiseFocuser wisefocuser = WiseFocuser.Instance;
-        Hardware hardware = Hardware.Instance;
         public WiseSite wisesite = WiseSite.Instance;
-        public WiseSafeToOperate wisesafetooperate = WiseSafeToOperate.Instance;
         public WiseFilterWheel wisefilterwheel = WiseFilterWheel.Instance;
-        WiseObject wiseobject = new WiseObject();
         private ASCOM.Utilities.Util ascomutil = new Util();
         enum GoToMode { Ra, Ha, DeltaRa, DeltaHa };
         private GoToMode goToMode = GoToMode.Ra;
@@ -74,11 +69,15 @@ namespace Dash
 
         private Moon moon = Moon.Instance;
         ASCOM.DriverAccess.Telescope remoteTelescope;
-        ASCOM.DriverAccess.Dome remoteDome;
-        ASCOM.DriverAccess.Focuser remoteFocuser;
+        ASCOM.DriverAccess.Dome wiseDome;
+        ASCOM.DriverAccess.Focuser wiseFocuser;
         //ASCOM.DriverAccess.FilterWheel remoteFilterWheel;
-        ASCOM.DriverAccess.SafetyMonitor remoteSafeToOperate;
-        ASCOM.DriverAccess.ObservingConditions remoteVantagePro;
+        ASCOM.DriverAccess.SafetyMonitor wiseSafeToOperate;
+        ASCOM.DriverAccess.ObservingConditions wiseVantagePro;
+
+        private int focuserMaxStep = 0;
+        private int focuserLowerLimit = 0;
+        private int focuserUpperLimit = 0;
 
         void onWheelOrPositionChanged(object sender, EventArgs e)
         {
@@ -90,31 +89,34 @@ namespace Dash
 
         static List<Control> readonlyControls;
 
+        private static bool Readonly
+        {
+            get
+            {
+                return WiseSite.Instance.OperationalMode != WiseSite.OpMode.WISE;
+            }
+        }
+
         #region Initialization
         public FormDash()
         {
             wisetele.init();
             wisetele.Connected = true;
-            wisedome.Connected = true;
-            //wisedome.wisedomeshutter.init();
-            wisefocuser.Connected = true;
-            wisesafetooperate.Connected = true;
             //wisefilterwheel.init();
             //wisefilterwheel.Connected = true;
 
             InitializeComponent();
 
-            if (wisesite.OperationalModeRequiresRESTServer)
-            {
-                remoteTelescope = new ASCOM.DriverAccess.Telescope("ASCOM.Remote1.Telescope");
-                remoteDome = new ASCOM.DriverAccess.Dome("ASCOM.Remote1.Dome");
-                remoteFocuser = new ASCOM.DriverAccess.Focuser("ASCOM.Remote1.Focuser");
-                //remoteFilterWheel = new ASCOM.DriverAccess.FilterWheel("ASCOM.Remote1.FilterWheel");
-                remoteSafeToOperate = new ASCOM.DriverAccess.SafetyMonitor("ASCOM.Remote1.SafetyMonitor");
-                remoteVantagePro = new ASCOM.DriverAccess.ObservingConditions("ASCOM.Wise40.VantagePro.ObservingConditions");
+            remoteTelescope = new ASCOM.DriverAccess.Telescope("ASCOM.Remote1.Telescope");
+            wiseDome = new ASCOM.DriverAccess.Dome("ASCOM.Remote1.Dome");
+            wiseFocuser = new ASCOM.DriverAccess.Focuser("ASCOM.Remote1.Focuser");
+            //remoteFilterWheel = new ASCOM.DriverAccess.FilterWheel("ASCOM.Remote1.FilterWheel");
+            wiseSafeToOperate = new ASCOM.DriverAccess.SafetyMonitor("ASCOM.Remote1.SafetyMonitor");
+            wiseVantagePro = new ASCOM.DriverAccess.ObservingConditions("ASCOM.Wise40.VantagePro.ObservingConditions");
 
-                groupBoxTarget.Text += string.Format("(from {0}) ", wisesite.OperationalMode.ToString());
-            }
+            focuserMaxStep = wiseFocuser.MaxStep;
+            focuserLowerLimit = Convert.ToInt32(wiseFocuser.Action("limit", "lower"));
+            focuserUpperLimit = Convert.ToInt32(wiseFocuser.Action("limit", "upper"));
 
             readonlyControls = new List<Control>() {
                     textBoxRA, textBoxDec,
@@ -141,8 +143,10 @@ namespace Dash
                     buttonFilterWheelGo, comboBoxFilterWheelPositions,
                 };
 
-            if (wisesite.OperationalMode != WiseSite.OpMode.WISE)
+            if (Readonly)
             {
+                groupBoxTarget.Text += string.Format("(from {0}) ", wisesite.OperationalMode.ToString());
+
                 foreach (var c in readonlyControls)
                 {
                     c.Enabled = false;
@@ -155,7 +159,10 @@ namespace Dash
                 pictureBoxStop.Visible = false;
             }
             else
-                annunciatorReadonly.Text = "";
+            {
+                annunciatorReadonly.ForeColor = safeColor;
+                annunciatorReadonly.Text = "Controls are active";
+            }
 
             debugMenuItems = new List<ToolStripMenuItem> {
                 debugASCOMToolStripMenuItem ,
@@ -239,30 +246,19 @@ namespace Dash
 
             if (refreshDome)
             {
-                domeDigest = JsonConvert.DeserializeObject<DomeDigest>(
-                        wisesite.OperationalModeRequiresRESTServer ?
-                            remoteDome.Action("status", "") :
-                            wisedome.Digest);
+                domeDigest = JsonConvert.DeserializeObject<DomeDigest>(wiseDome.Action("status", ""));
             }
 
             if (refreshSafeToOperate)
             {
-                safetooperateDigest = JsonConvert.DeserializeObject<SafeToOperateDigest>(
-                    wisesite.OperationalModeRequiresRESTServer ?
-                        remoteSafeToOperate.Action("status", "") :
-                        wisesafetooperate.Digest);
+                safetooperateDigest = JsonConvert.DeserializeObject<SafeToOperateDigest>(wiseSafeToOperate.Action("status", ""));
             }
 
             if (refreshFocus)
-            {
-                focuserDigest = JsonConvert.DeserializeObject<FocuserDigest>(
-                    wisesite.OperationalModeRequiresRESTServer ?
-                    remoteFocuser.Action("status", "") :
-                    wisefocuser.Action("status", ""));
-            }
+                focuserDigest = JsonConvert.DeserializeObject<FocuserDigest>(wiseFocuser.Action("status", ""));
 
             if (refreshForecast)
-                forecast = remoteVantagePro.Action("forecast", "");
+                forecast = wiseVantagePro.Action("forecast", "");
 
             //if (refreshFilterWheel)
             //{
@@ -500,7 +496,7 @@ namespace Dash
             #region Simulation Annunciator
             tip = null;
 
-            if (wiseobject.Simulated)
+            if (WiseObject.Simulated)
             {
                 annunciatorSimulation.Text = "SIMULATED HARDWARE";
                 annunciatorSimulation.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
@@ -524,7 +520,7 @@ namespace Dash
             buttonVent.Text = domeDigest.Vent ? "Close Vent" : "Open Vent";
             buttonProjector.Text = domeDigest.Projector ? "Turn projector Off" : "Turn projector On";
 
-            annunciatorDome.Cadence = wisedome.DirectionMotorsAreActive ?
+            annunciatorDome.Cadence = domeDigest.DirectionMotorsAreActive ?
                 ASCOM.Controls.CadencePattern.SteadyOn :
                 ASCOM.Controls.CadencePattern.SteadyOff;
 
@@ -616,7 +612,7 @@ namespace Dash
                         labelRainRateValue.Text = (oc.RainRate > 0.0) ? "Wet" : "Dry";
                         labelRainRateValue.ForeColor = Color.FromArgb(safetooperateDigest.Colors.RainColorArgb);
 
-                        labelSunElevationValue.Text = wisesafetooperate.SunElevation.ToString("f1") + "°";
+                        labelSunElevationValue.Text = safetooperateDigest.SunElevation.ToString("f1") + "°";
                         labelSunElevationValue.ForeColor = Color.FromArgb(safetooperateDigest.Colors.SunElevationColorArgb);
                         #endregion
                     }
@@ -1073,7 +1069,7 @@ namespace Dash
                 textBoxDomeAzValue.Text = "";
             }
 
-            wisedome.Azimuth = Angle.FromDegrees(az, Angle.Type.Az);
+            wiseDome.Action("set-azimuth", az.ToString());
         }
 
         private void buttonDomeAzGo_Click(object sender, EventArgs e)
@@ -1086,46 +1082,74 @@ namespace Dash
             {
                 domeStatus.Show(string.Format("Invalid azimuth: {0}", textBoxDomeAzValue.Text), 2000, Statuser.Severity.Error);
                 textBoxDomeAzValue.Text = "";
+                return;
             }
 
-            wisetele.DomeSlewer(az);
+            try
+            {
+                wiseDome.SlewToAzimuth(az);
+                domeStatus.Show(string.Format("Slewing to {0}", Angle.FromDegrees(az).ToNiceString()), 0, Statuser.Severity.Normal);
+            }
+            catch (Exception ex)
+            {
+                domeStatus.Show(ex.Message, 2000, Statuser.Severity.Error);
+            }
         }
 
         private void buttonDomeLeft_MouseDown(object sender, MouseEventArgs e)
         {
-            domeStatus.Show("Moving CCW", 0, Statuser.Severity.Good);
-            wisedome.StartMovingCCW();
+            try
+            {
+                wiseDome.Action("start-moving", "ccw");
+                domeStatus.Show("Moving CCW", 0, Statuser.Severity.Good);
+            }
+            catch (Exception ex)
+            {
+                domeStatus.Show(ex.Message, 2000, Statuser.Severity.Error);
+            }
         }
 
         private void buttonDomeRight_MouseDown(object sender, MouseEventArgs e)
         {
-            domeStatus.Show("Moving CW", 0, Statuser.Severity.Good);
-            wisedome.StartMovingCW();
+            try
+            {
+                wiseDome.Action("start-moving", "cw");
+                domeStatus.Show("Moving CW", 0, Statuser.Severity.Good);
+            }
+            catch (Exception ex) {
+                domeStatus.Show(ex.Message, 2000, Statuser.Severity.Error);
+            }
         }
 
         private void buttonDomeRight_MouseUp(object sender, MouseEventArgs e)
         {
             domeStatus.Show("Stopped moving CW", 1000, Statuser.Severity.Good);
-            wisedome.Stop();
+            wiseDome.Action("halt", "");
         }
 
         private void buttonDomeLeft_MouseUp(object sender, MouseEventArgs e)
         {
             domeStatus.Show("Stopped moving CCW", 1000, Statuser.Severity.Good);
-            wisedome.Stop();
+            wiseDome.Action("halt", "");
         }
 
         private void buttonDomeStop_Click(object sender, EventArgs e)
         {
             domeStatus.Show("Stopped moving", 1000, Statuser.Severity.Good);
-            wisedome.Stop();
+            wiseDome.Action("halt", "");
             wisetele.DomeStopper();
         }
 
         private void buttonCalibrateDome_Click(object sender, EventArgs e)
         {
-            domeStatus.Show("Started dome calibration", 1000, Statuser.Severity.Good);
-            wisetele.DomeCalibrator();
+            try
+            {
+                wisetele.DomeCalibrator();
+                domeStatus.Show("Started dome calibration", 1000, Statuser.Severity.Good);
+            } catch (Exception ex)
+            {
+                domeStatus.Show(ex.Message, 2000, Statuser.Severity.Error);
+            }
         }
 
         private void buttonVent_Click(object sender, EventArgs e)
@@ -1134,13 +1158,13 @@ namespace Dash
 
             if (wisesite.OperationalModeRequiresRESTServer)
             {
-                status = JsonConvert.DeserializeObject<bool>(remoteDome.Action("vent", ""));
-                remoteDome.Action("vent", (!status).ToString());
+                status = JsonConvert.DeserializeObject<bool>(wiseDome.Action("vent", ""));
+                wiseDome.Action("vent", (!status).ToString());
             }
             else
             {
-                status = JsonConvert.DeserializeObject<bool>(wisedome.Action("vent", ""));
-                wisedome.Action("vent", (!status).ToString());
+                status = JsonConvert.DeserializeObject<bool>(wiseDome.Action("vent", ""));
+                wiseDome.Action("vent", (!status).ToString());
             }
         }
 
@@ -1148,8 +1172,8 @@ namespace Dash
         {
             try
             {
-                if (wisedome.AtPark)
-                    wisedome.AtPark = false;
+                if (wiseDome.AtPark)
+                    wiseDome.Action("unpark", "");
                 else
                     wisetele.DomeParker();
             }
@@ -1165,7 +1189,7 @@ namespace Dash
         {
             try
             {
-                wisefocuser.Halt();
+                wiseFocuser.Action("halt", "Button focust stop");
             }
             catch (Exception ex)
             {
@@ -1178,7 +1202,7 @@ namespace Dash
         {
             try
             {
-                wisefocuser.StartStopping("Button focuser stop");
+                wiseFocuser.Action("halt", "Button focuser stop");
             }
             catch (Exception ex)
             {
@@ -1192,7 +1216,7 @@ namespace Dash
             try
             {
 
-                wisefocuser.Move(WiseFocuser.Direction.Up);
+                wiseFocuser.Action("move", "up");
             }
             catch (Exception ex)
             {
@@ -1205,8 +1229,7 @@ namespace Dash
         {
             try
             {
-
-                wisefocuser.Move(WiseFocuser.Direction.Down);
+                wiseFocuser.Action("move", "down");
             }
             catch (Exception ex)
             {
@@ -1219,8 +1242,7 @@ namespace Dash
         {
             try
             {
-
-                wisefocuser.StartStopping("Button focuser stop");
+                wiseFocuser.Action("halt", "Button focuser stop");
             }
             catch (Exception ex)
             {
@@ -1236,7 +1258,7 @@ namespace Dash
 
             try
             {
-                wisefocuser.Move(Convert.ToUInt32(textBoxFocusGotoPosition.Text));
+                wiseFocuser.Move(Convert.ToInt32(textBoxFocusGotoPosition.Text));
             }
             catch (Exception ex)
             {
@@ -1253,7 +1275,7 @@ namespace Dash
 
             int pos = Convert.ToInt32(box.Text);
 
-            if (pos < 0 || pos >= wisefocuser.MaxStep)
+            if (pos < 0 || pos >= focuserMaxStep)
             {
                 focuserStatus.Show("Bad focuser target position", 1000, Statuser.Severity.Error);
                 box.Text = string.Empty;
@@ -1264,7 +1286,7 @@ namespace Dash
         {
             try
             {
-                wisefocuser.Move(WiseFocuser.Direction.AllUp);
+                wiseFocuser.Action("move", "all-up");
             }
             catch (Exception ex)
             {
@@ -1278,8 +1300,8 @@ namespace Dash
             try
             {
 
-                if (wisefocuser.Position > 0)
-                    wisefocuser.Move(WiseFocuser.Direction.AllDown);
+                if (wiseFocuser.Position > focuserLowerLimit)
+                    wiseFocuser.Action("move", "all-down");
             }
             catch (Exception ex)
             {
@@ -1301,9 +1323,10 @@ namespace Dash
         private void domeAutoCalibrateToolStripMenuItem_Click(object sender, EventArgs e)
         {
             ToolStripMenuItem item = sender as ToolStripMenuItem;
+            bool autoCalibrate = !IsCheckmarked(item);
 
-            wisedome._autoCalibrate = !IsCheckmarked(item);
-            UpdateCheckmark(item, wisedome._autoCalibrate);
+            wiseDome.Action("auto-calibrate", autoCalibrate.ToString());
+            UpdateCheckmark(item, autoCalibrate);
             UpdateAlteredItems(item, "Dome");
         }
 
@@ -1506,10 +1529,10 @@ namespace Dash
         private void saveToProfileToolStripMenuItem_Click(object sender, EventArgs e)
         {
             debugger.WriteProfile();
-            wisedome.WriteProfile();
+            WiseDome.Instance.WriteProfile();
             wisetele.WriteProfile();
             if (_saveFocusUpperLimit || _saveFocusLowerLimit)
-                wisefocuser.WriteProfile();
+                WiseFocuser.Instance.WriteProfile();
             saveToProfileToolStripMenuItem.Text = "Save To Profile";
         }
 
@@ -1534,29 +1557,32 @@ namespace Dash
             ToolStripMenuItem item = sender as ToolStripMenuItem;
             string text = item.Text;
 
-            wisedome.SyncVentWithShutter = !wisedome.SyncVentWithShutter;
-            UpdateCheckmark(item, wisedome.SyncVentWithShutter);
+            bool sync = Convert.ToBoolean(wiseDome.Action("sync-vent-with-shutter", ""));
+
+            sync = !sync;
+            wiseDome.Action("sync-vent-with-shutter", sync.ToString());
+            UpdateCheckmark(item, sync);
             UpdateAlteredItems(item, "Dome");
         }
 
         private void buttonFocusIncrease_Click(object sender, EventArgs e)
         {
-            uint newPos = wisefocuser.Position + Convert.ToUInt32(comboBoxFocusStep.Text);
-            if (newPos > wisefocuser.UpperLimit)
-                newPos = wisefocuser.UpperLimit;
+            int newPos = wiseFocuser.Position + Convert.ToInt32(comboBoxFocusStep.Text);
+            if (newPos > focuserUpperLimit)
+                newPos = focuserUpperLimit;
 
-            if (newPos != wisefocuser.Position)
-                wisefocuser.Move(newPos);
+            if (newPos != wiseFocuser.Position)
+                wiseFocuser.Move(newPos);
         }
 
         private void buttonFocusDecrease_Click(object sender, EventArgs e)
         {
-            uint newPos = wisefocuser.Position - Convert.ToUInt32(comboBoxFocusStep.Text);
-            if (newPos < wisefocuser.LowerLimit)
-                newPos = wisefocuser.LowerLimit;
+            int newPos = wiseFocuser.Position - Convert.ToInt32(comboBoxFocusStep.Text);
+            if (newPos < focuserLowerLimit)
+                newPos = focuserLowerLimit;
 
-            if (newPos != wisefocuser.Position)
-                wisefocuser.Move(newPos);
+            if (newPos != wiseFocuser.Position)
+                wiseFocuser.Move(newPos);
         }
 
         private void buttonFilterWheelGo_Click(object sender, EventArgs e)
@@ -1564,7 +1590,7 @@ namespace Dash
             short targetPosition = (short)comboBoxFilterWheelPositions.SelectedIndex;
             short humanTargetPosition = (short)(targetPosition + 1);
 
-            if (wisefilterwheel.Simulated)
+            if (WiseObject.Simulated)
             {
                 filterWheelStatus.Show(string.Format("Moved to position {0}", humanTargetPosition), 1000, Statuser.Severity.Good);
                 textBoxFilterWheelPosition.Text = humanTargetPosition.ToString();
@@ -1627,9 +1653,9 @@ namespace Dash
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "FullStop !!!");
             #endregion
             wisetele.FullStop();
-            wisedome.Stop();
-            wisedome.wisedomeshutter.Stop();
-            wisefocuser.StartStopping("Button full stop");
+            wiseDome.Action("halt", "");
+            wiseDome.Action("shutter", "halt");
+            wiseFocuser.Action("stop", "Button full stop");
         }
 
         private void buttonProjector_Click(object sender, EventArgs e)
@@ -1638,13 +1664,13 @@ namespace Dash
 
             if (wisesite.OperationalModeRequiresRESTServer)
             {
-                status = JsonConvert.DeserializeObject<bool>(remoteDome.Action("projector", ""));
-                remoteDome.Action("projector", (!status).ToString());
+                status = JsonConvert.DeserializeObject<bool>(wiseDome.Action("projector", ""));
+                wiseDome.Action("projector", (!status).ToString());
             }
             else
             {
-                status = JsonConvert.DeserializeObject<bool>(wisedome.Action("projector", ""));
-                wisedome.Action("projector", (!status).ToString());
+                status = JsonConvert.DeserializeObject<bool>(wiseDome.Action("projector", ""));
+                wiseDome.Action("projector", (!status).ToString());
             }
         }
 
@@ -1774,9 +1800,9 @@ namespace Dash
             {
                 wisetele.Stop();
                 wisetele.Tracking = false;
-                wisedome.Stop();
-                wisedome.wisedomeshutter.Stop();
-                wisefocuser.StartStopping("Stop everything");
+                wiseDome.Action("halt", "");
+                wiseDome.Action("shutter", "halt");
+                wiseFocuser.Action("halt", "Stop everything");
             }
             catch { }
             #region debug

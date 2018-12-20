@@ -779,7 +779,7 @@
             // 
             this.labelDomeStatus.AutoEllipsis = true;
             this.labelDomeStatus.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.labelDomeStatus.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelDomeStatus.Font = new System.Drawing.Font("Lucida Sans Unicode", 9F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelDomeStatus.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.labelDomeStatus.Location = new System.Drawing.Point(8, 72);
             this.labelDomeStatus.Name = "labelDomeStatus";

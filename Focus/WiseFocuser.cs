@@ -329,12 +329,12 @@ namespace ASCOM.Wise40
             Thread.Sleep(50);
         }
 
-        public void Halt()
+        public void Halt(string reason = "Halt")
         {
             if (!Connected)
                 throw new NotConnectedException("");
 
-            StartStopping("Halt");
+            StartStopping(reason);
         }
 
         public bool IsMoving
@@ -526,17 +526,67 @@ namespace ASCOM.Wise40
             }
         }
 
-        public string Action(string actionName, string actionParameters)
+        public string Action(string action, string parameter)
         {
-            if (actionName == "status")
+            action = action.ToLower();
+            parameter = parameter.ToLower();
+
+            if (action == "status")
                 return Digest;
-            else if (actionName == "debug")
+            else if (action == "debug")
             {
-                _debugging = Convert.ToBoolean(actionParameters);
+                _debugging = Convert.ToBoolean(parameter);
                 return JsonConvert.SerializeObject(_debugging);
             }
+            else if (action == "move")
+            {
+                switch (parameter)
+                {
+                    case "up":
+                        Move(Direction.Up);
+                        break;
+
+                    case "down":
+                        Move(Direction.Down);
+                        break;
+
+                    case "all-up":
+                        Move(Direction.AllUp);
+                        break;
+
+                    case "all-down":
+                        Move(Direction.AllDown);
+                        break;
+
+                    default:
+                        uint target = 0;
+
+                        if (UInt32.TryParse(parameter, out target))
+                            Move(target);
+                        else
+                            return string.Format("Bad parameter \"{0}\" to Action(\"move\")", parameter);
+                        break;
+                }
+                return "ok";
+            }
+            else if (action == "halt" || action == "stop")
+            {
+                Halt(reason: parameter);
+                return "ok";
+            }
+            else if (action == "limit")
+            {
+                switch (parameter)
+                {
+                    case "lower":
+                        return LowerLimit.ToString();
+                    case "upper":
+                        return UpperLimit.ToString();
+                }
+                return "ok";
+            }
             else
-                throw new ASCOM.ActionNotImplementedException("Action " + actionName +
+                throw new ASCOM.ActionNotImplementedException("Action " + action +
                     " is not implemented by this driver");
         }
 
