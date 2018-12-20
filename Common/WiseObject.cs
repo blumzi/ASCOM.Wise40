@@ -22,7 +22,7 @@ namespace ASCOM.Wise40.Common
             }
         }
 
-        public bool Simulated
+        public static bool Simulated
         {
             get
             {
