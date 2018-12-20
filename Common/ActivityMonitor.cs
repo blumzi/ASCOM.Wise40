@@ -141,7 +141,7 @@ namespace ASCOM.Wise40
                 return;
             }
 
-            if ((_currentlyActive & act) == 0)
+            if (! InProgress(act) )
             {
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "ActivityMonitor[{0}]:EndActivity: ignoring {1} (not active)",
@@ -160,13 +160,13 @@ namespace ASCOM.Wise40
                     GetHashCode(), act.ToString(), activities);
             #endregion
 
-            if (act == Activity.ShuttingDown || _currentlyActive == Activity.None)
+            if (act == Activity.ShuttingDown)
                 StopGoindIdleTimer();
             else if ((_currentlyActive & Activity.RealActivities) == Activity.None)
                 RestartGoindIdleTimer("idle");
         }
 
-        public bool Active(Activity a)
+        public bool InProgress(Activity a)
         {
             return (_currentlyActive & a) != 0;
         }
@@ -247,7 +247,7 @@ namespace ASCOM.Wise40
 
                 foreach (Activity a in _activities)
                 {
-                    if (!Active(a))
+                    if (!InProgress(a))
                         continue;
 
                     if (a == Activity.GoingIdle)
