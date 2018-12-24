@@ -122,7 +122,6 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
-    <Compile Include="WiseBitOwner.cs" />
     <Compile Include="WiseBoard.cs" />
     <Compile Include="WiseDaq.cs" />
     <Compile Include="WiseDomePlatform.cs" />

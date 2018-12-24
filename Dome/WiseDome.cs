@@ -1208,6 +1208,11 @@ namespace ASCOM.Wise40
                     }
                     return ret;
 
+                case "calibrate":
+                    if (! Calibrated)
+                        StartFindingHome();
+                    return ret;
+
                 default:
                     throw new ASCOM.ActionNotImplementedException(
                         "Action " + actionName + " is not implemented by this driver");

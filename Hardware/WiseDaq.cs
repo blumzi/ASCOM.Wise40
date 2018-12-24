@@ -43,7 +43,6 @@ namespace ASCOM.Wise40.Hardware
         public DigitalPortDirection portdir;
         public int nbits;
         public WiseBitOwner[] owners;
-        public GroupBox gb;
 
         private ushort _value;
         private ushort _mask;
@@ -223,21 +222,12 @@ namespace ASCOM.Wise40.Hardware
         /// </summary>
        public void setOwner(string owner, int bit)
         {
-            WiseBitOwner o = owners[bit];
-
-            //if (o.owner != null && o.owner != owner )
-            //    throw new WiseException(string.Format("Cannot set owner \"{0}\" for {1}[{2}]: Already owned by \"{3}\"!", owner, name, bit, o.owner));
-
-            o.owner = owner;
-            if (o.checkBox != null)
-                o.checkBox.Text = owner;
+            owners[bit].owner = owner;
         }
 
         public void unsetOwner(int bit)
         {
             owners[bit].owner = null;
-            if (owners[bit].checkBox != null)
-                owners[bit].checkBox.Text = "";
         }
 
         public void unsetOwners()
@@ -259,6 +249,43 @@ namespace ASCOM.Wise40.Hardware
             for (int bit = 0; bit < nbits; bit++)
                 if (owners[bit].owner != null)
                     ret += WiseName + "[" + bit.ToString() + "]: " + owners[bit].owner + '\n';
+            return ret;
+        }
+    }
+
+    public class DaqMetaDigest
+    {
+        public DigitalPortType Porttype;
+        public DigitalPortDirection Portdir;
+        public int Nbits;
+        public List<string> Owners;
+
+        public static DaqMetaDigest FromHardware(WiseDaq daq)
+        {
+            DaqMetaDigest ret = new DaqMetaDigest();
+
+            ret.Porttype = daq.porttype;
+            ret.Portdir = daq.portdir;
+            ret.Nbits = daq.nbits;
+
+            ret.Owners = new List<string>();
+            foreach (WiseBitOwner owner in daq.owners)
+                ret.Owners.Add(owner.owner);
+
+            return ret;
+        }
+    }
+
+    public class DaqDigest
+    {
+        public ushort Value;
+
+        public static DaqDigest FromHardware(WiseDaq daq)
+        {
+            DaqDigest ret = new DaqDigest();
+
+            ret.Value = daq.Value;
+
             return ret;
         }
     }

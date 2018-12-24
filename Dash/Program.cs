@@ -24,7 +24,7 @@ namespace Dash
             if (args.Length == 1)
             {
                 if (args[0] == "--dio-monitor")
-                    Application.Run(new ASCOM.Wise40.HardwareForm());
+                    Application.Run(new ASCOM.Wise40.HardwareForm(new ASCOM.DriverAccess.Telescope("ASCOM.Remote1.Telescope")));
                 else if (args[0].StartsWith("--mode="))
                 {
                     WiseSite.OpMode mode;

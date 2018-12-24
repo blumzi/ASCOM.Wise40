@@ -9,101 +9,42 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 
 using ASCOM.Wise40.Hardware;
+using Newtonsoft.Json;
 
 namespace ASCOM.Wise40
 {
     public partial class HardwareForm : Form
     {
-        private List<WiseBoard> boards;
-        private Hardware.Hardware hw = Hardware.Hardware.Instance;
-        private WiseTele wisetele = WiseTele.Instance;
-        private WiseDome wisedome = WiseDome.Instance;
-        private WiseFocuser wisefocuser = WiseFocuser.Instance;
-        private WiseSite wisesite = WiseSite.Instance;
-        private WiseDomePlatform wisedomeplatform = WiseDomePlatform.Instance;
+        private List<BoardControl> BoardControls;
+        public DriverAccess.Telescope _tele;
 
-        public HardwareForm()
+        public HardwareForm(DriverAccess.Telescope tele)
         {
             InitializeComponent();
-            wisetele.init();
-            wisetele.Connected = true;
-            wisedome.Connected = true;
-            wisefocuser.Connected = true;
 
-            boards = new List<WiseBoard>();
-            boards.Add(hw.miscboard);
-            boards.Add(hw.teleboard);
-            boards.Add(hw.domeboard);
+            _tele = tele;
 
-            Control[] controls;
+            HardwareMetaDigest meta = JsonConvert.DeserializeObject<HardwareMetaDigest>(
+                                                                _tele.Action("hardware-meta-digest", ""));
+            BoardControls = new List<BoardControl>();
 
-            foreach (WiseBoard board in boards)
-            {
-                controls = Controls.Find("gbBoard" + board.boardNum, true);
-                if (controls.Count() == 1)
-                {
-                    board.gb = (GroupBox)controls[0];
-                    if (board.type == WiseBoard.BoardType.Soft)
-                        board.gb.Text += " [Simulated]";
-                }
-                else
-                    Console.WriteLine("Missing: {0}", "gbBoard" + board.boardNum);
-
-                foreach (WiseDaq daq in board.daqs)
-                {
-                    string porttype = daq.porttype.ToString();
-                    if (porttype.EndsWith("C"))
-                        porttype += "L";
-
-                    controls = Controls.Find("gbBoard" + board.boardNum + porttype, true);
-                    if (controls.Count() == 1)
-                    {
-                        daq.gb = (GroupBox)controls[0];
-                        daq.gb.Text = porttype + ((daq.portdir == MccDaq.DigitalPortDirection.DigitalIn) ? " [I]" : " [O]");
-                    }
-                    else
-                        Console.WriteLine("Missing: {0}", "gbBoard" + board.boardNum + porttype);
-
-                    for (int bit = 0; bit < daq.nbits; bit++)
-                    {
-                        controls = Controls.Find("cb" + "Board" + board.boardNum.ToString() + porttype + "bit" + bit.ToString(), true);
-                        if (controls.Count() == 1)
-                            daq.owners[bit].checkBox = (CheckBox)controls[0];
-                        else
-                            Console.WriteLine("Missing: {0}", "cb" + "Board" + board.boardNum.ToString() + porttype + "bit" + bit.ToString());
-                        if (daq.owners[bit].checkBox != null)
-                        {
-                            string s = "[" + bit.ToString() + "] " + daq.owners[bit].owner;
-                            if (s != null)
-                            {
-                                int idx = s.IndexOf('@');
-                                if (idx != -1)
-                                    s = s.Remove(idx);
-                            }
-
-                            daq.owners[bit].checkBox.Text = ((s == null) ? "" : s);
-                        }
-                    }
-                }
-            }
+            foreach (BoardMetaDigest mb in meta.Boards)
+                BoardControls.Add(new BoardControl(mb, this));
         }
 
-        private void timerHardwareRefresh_Tick(object sender, EventArgs e)
+        public void timerHardwareRefresh_Tick(object sender, EventArgs e)
         {
-            foreach (WiseBoard board in boards)
-            {
-                foreach (WiseDaq daq in board.daqs)
-                {
-                    ushort val;
+            HardwareDigest hw = JsonConvert.DeserializeObject<HardwareDigest>(_tele.Action("hardware-digest", ""));
 
-                    val = daq.Value;
-                    for (int bit = 0; bit < daq.nbits; bit++)
-                    {
-                        if (daq.owners[bit].checkBox != null)
-                        {
-                            daq.owners[bit].checkBox.Checked = ((val & (1 << bit)) == 0) ? false : true;
-                        }
-                    }
+            for (int b = 0; b < BoardControls.Count; b++)
+            {
+                for (int d = 0; d < BoardControls[b].DaqControls.Count; d++)
+                {
+                    ushort val = hw.Boards[b].Daqs[d].Value;
+
+                    for (int bit = 0; bit < BoardControls[b].DaqControls[d].nbits; bit++)
+                        if (BoardControls[b].DaqControls[d].cbs[bit] != null)
+                            BoardControls[b].DaqControls[d].cbs[bit].Checked = ((val & (1 << bit)) == 0) ? false : true;
                 }
             }
         }
@@ -113,6 +54,77 @@ namespace ASCOM.Wise40
             Form form = sender as Form;
 
             timerHardwareRefresh.Enabled = form.Visible;
+        }
+    }
+
+
+    public class DaqControl
+    {
+        public CheckBox[] cbs;
+        public GroupBox gb;
+        public int nbits;
+
+        public DaqControl(DaqMetaDigest md, BoardMetaDigest mb, Form form)
+        {
+            string controlName;
+            string portType = md.Porttype.ToString();
+
+            if (portType.EndsWith("C"))
+                portType += "L";
+
+            controlName = "gbBoard" + mb.Number + portType;
+
+            Control[] found = form.Controls.Find(controlName, true);
+
+            if (found.Count() != 1)
+                return;
+
+            gb = (GroupBox)found[0];
+            gb.Text = md.Porttype + ((md.Portdir == MccDaq.DigitalPortDirection.DigitalIn) ? " [I]" : " [O]");
+
+            nbits = md.Nbits;
+            cbs = new CheckBox[nbits];
+            for (int bit = 0; bit < nbits; bit++)
+            {
+                controlName = "cb" +
+                    "Board" + mb.Number.ToString() +
+                    portType +
+                    "bit" + bit.ToString();
+
+                found = form.Controls.Find(controlName, true);
+                if (found.Count() != 1)
+                    continue;
+
+                cbs[bit] = (CheckBox)found[0];
+
+                string s = "[" + bit.ToString() + "] " + md.Owners[bit];
+                int idx = s.IndexOf('@');
+                if (idx != -1)
+                    s = s.Remove(idx);
+
+                cbs[bit].Text = s;
+            }
+        }
+    }
+
+    public class BoardControl
+    {
+        public GroupBox gb;
+        public List<DaqControl> DaqControls;
+
+        public BoardControl(BoardMetaDigest mb, Form form)
+        {
+            Control[] controls = form.Controls.Find("gbBoard" + mb.Number, true);
+            if (controls.Count() == 1)
+            {
+                gb = (GroupBox)controls[0];
+                if (mb.Type == WiseBoard.BoardType.Soft)
+                    gb.Text += " [Simulated]";
+            }
+
+            DaqControls = new List<DaqControl>(mb.Daqs.Count);
+            foreach (DaqMetaDigest md in mb.Daqs)
+                DaqControls.Add(new DaqControl(md, mb, form));
         }
     }
 }

@@ -39,16 +39,15 @@ namespace Dash
                 Const.crnl +
                 "Tel Aviv University" + Const.crnl +
                 Const.crnl +
-                "Author: Arie Blumenzweig <blumzi@013.net>" + Const.crnl +
+                "Author: Arie Blumenzweig <theblumz@gmail.com>" + Const.crnl +
                 "since October 2016" + Const.crnl;
 
             labelDashVersion.Text = appVersion;
-            labelTelescopeVersion.Text = _dash.wisetele.DriverVersion;
-            labelDomeVersion.Text = WiseDome.Instance.DriverVersion;
-            labelFocuserVersion.Text = WiseFocuser.Instance.DriverVersion;
-            labelSafeToOperateVersion.Text = _dash.wisesite.safeToOperate.DriverVersion;
-            //labelBoltwoodVersion.Text = _dash.wiseboltwood.DriverVersion;
-            labelBoltwoodVersion.Text = ASCOM.Wise40.Boltwood.WiseBoltwood.driverDescription;
+            labelTelescopeVersion.Text = _dash.wiseTelescope.DriverVersion;
+            labelDomeVersion.Text = _dash.wiseDome.DriverVersion;
+            labelFocuserVersion.Text = _dash.wiseFocuser.DriverVersion;
+            labelSafeToOperateVersion.Text = _dash.wiseSafeToOperate.DriverVersion;
+            labelBoltwoodVersion.Text = _dash.wiseBoltwood.DriverVersion;
             labelComputerControlVersion.Text = _dash.wisesite.computerControl.DriverVersion;
             labelVantageProVersion.Text = ASCOM.Wise40.VantagePro.WiseVantagePro.driverVersion;
             labelFilterWheelVersion.Text = _dash.wisefilterwheel.DriverVersion;

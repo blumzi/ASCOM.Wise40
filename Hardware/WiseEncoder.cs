@@ -72,6 +72,8 @@ namespace ASCOM.Wise40.Hardware
             _isGray = isGray;
             _hwTicks = hwTicks;
             WiseName = name;
+
+            int encBit = 0;
             
             foreach (WiseEncSpec spec in specs)
             {
@@ -88,6 +90,7 @@ namespace ASCOM.Wise40.Hardware
                     if ((mask & (1 << bit)) != 0)
                     {
                         _nbits++;
+                        daq.setOwner(name + "[" + encBit++ + "]", bit);
                     }
                 }
                 _daqs.Add(daq);

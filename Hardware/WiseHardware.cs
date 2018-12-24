@@ -5,14 +5,15 @@ using System.Text;
 using MccDaq;
 
 using ASCOM.Wise40.Common;
+using ASCOM.Wise40;
 
 namespace ASCOM.Wise40.Hardware
 {
     public class Hardware: WiseObject
     {
-        private List<WiseBoard> WiseBoards = new List<WiseBoard>();
+        public List<WiseBoard> WiseBoards = new List<WiseBoard>();
         public WiseBoard domeboard, teleboard, miscboard;
-        private static volatile Hardware _instance/* = new Hardware()*/;     // Singleton
+        private static volatile Hardware _instance;     // Singleton
         private static object _syncObject = new object();
         private bool _initialized = false;
         public float mccRevNum, mccVxdRevNum;
@@ -118,5 +119,45 @@ namespace ASCOM.Wise40.Hardware
             {
             }
         }
+    }
+
+    public class HardwareMetaDigest
+    {
+        public List<BoardMetaDigest> Boards;
+
+        public static HardwareMetaDigest FromHardware()
+        {
+            HardwareMetaDigest ret = new HardwareMetaDigest()
+            {
+                Boards = new List<BoardMetaDigest>()
+            };
+
+            foreach (WiseBoard board in Hardware.Instance.WiseBoards)
+                ret.Boards.Add(BoardMetaDigest.FromHardware(board));
+
+            return ret;
+        }
+    }
+
+    public class HardwareDigest
+    {
+        public List<BoardDigest> Boards;
+
+        public static HardwareDigest FromHardware()
+        {
+            HardwareDigest ret = new HardwareDigest();
+
+            ret.Boards = new List<BoardDigest>();
+
+            foreach (WiseBoard board in Hardware.Instance.WiseBoards)
+                ret.Boards.Add(BoardDigest.FromHardware(board));
+
+            return ret;
+        }
+    }
+
+    public class WiseBitOwner
+    {
+        public string owner;
     }
 }

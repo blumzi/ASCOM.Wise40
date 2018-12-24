@@ -25,7 +25,6 @@ namespace Dash
 {
     public partial class FormDash : Form
     {
-        public WiseTele wisetele = WiseTele.Instance;
         public WiseSite wisesite = WiseSite.Instance;
         public WiseFilterWheel wisefilterwheel = WiseFilterWheel.Instance;
         private ASCOM.Utilities.Util ascomutil = new Util();
@@ -68,12 +67,12 @@ namespace Dash
         public Color goodColor = Statuser.colors[Statuser.Severity.Good];
 
         private Moon moon = Moon.Instance;
-        ASCOM.DriverAccess.Telescope remoteTelescope;
-        ASCOM.DriverAccess.Dome wiseDome;
-        ASCOM.DriverAccess.Focuser wiseFocuser;
+        public ASCOM.DriverAccess.Telescope wiseTelescope;
+        public ASCOM.DriverAccess.Dome wiseDome;
+        public ASCOM.DriverAccess.Focuser wiseFocuser;
         //ASCOM.DriverAccess.FilterWheel remoteFilterWheel;
-        ASCOM.DriverAccess.SafetyMonitor wiseSafeToOperate;
-        ASCOM.DriverAccess.ObservingConditions wiseVantagePro;
+        public ASCOM.DriverAccess.SafetyMonitor wiseSafeToOperate;
+        public ASCOM.DriverAccess.ObservingConditions wiseVantagePro, wiseBoltwood;
 
         private int focuserMaxStep = 0;
         private int focuserLowerLimit = 0;
@@ -100,19 +99,18 @@ namespace Dash
         #region Initialization
         public FormDash()
         {
-            wisetele.init();
-            wisetele.Connected = true;
             //wisefilterwheel.init();
             //wisefilterwheel.Connected = true;
 
             InitializeComponent();
 
-            remoteTelescope = new ASCOM.DriverAccess.Telescope("ASCOM.Remote1.Telescope");
+            wiseTelescope = new ASCOM.DriverAccess.Telescope("ASCOM.Remote1.Telescope");
             wiseDome = new ASCOM.DriverAccess.Dome("ASCOM.Remote1.Dome");
             wiseFocuser = new ASCOM.DriverAccess.Focuser("ASCOM.Remote1.Focuser");
             //remoteFilterWheel = new ASCOM.DriverAccess.FilterWheel("ASCOM.Remote1.FilterWheel");
             wiseSafeToOperate = new ASCOM.DriverAccess.SafetyMonitor("ASCOM.Remote1.SafetyMonitor");
             wiseVantagePro = new ASCOM.DriverAccess.ObservingConditions("ASCOM.Wise40.VantagePro.ObservingConditions");
+            wiseBoltwood = new ASCOM.DriverAccess.ObservingConditions("ASCOM.Wise40.Boltwood.ObservingConditions");
 
             focuserMaxStep = wiseFocuser.MaxStep;
             focuserLowerLimit = Convert.ToInt32(wiseFocuser.Action("limit", "lower"));
@@ -238,10 +236,7 @@ namespace Dash
 
             if (refreshTelescope)
             {
-                telescopeDigest = JsonConvert.DeserializeObject<TelescopeDigest>(
-                    wisesite.OperationalModeRequiresRESTServer ?
-                        remoteTelescope.Action("status", "") :
-                        wisetele.Digest);
+                telescopeDigest = JsonConvert.DeserializeObject<TelescopeDigest>(wiseTelescope.Action("status", ""));
             }
 
             if (refreshDome)
@@ -282,13 +277,15 @@ namespace Dash
             telescopeDec = Angle.FromDegrees(telescopeDigest.Current.Declination, Angle.Type.Dec);
             telescopeHa = Angle.FromHours(telescopeDigest.HourAngle, Angle.Type.HA);
 
-            string safetyError = wisetele.SafeAtCoordinates(telescopeRa, telescopeDec);
+            string safetyError = telescopeDigest.SafeAtCurrentCoordinates;
 
             labelRightAscensionValue.Text = telescopeRa.ToNiceString();
             labelDeclinationValue.Text = telescopeDec.ToNiceString();
 
             if (safetyError.Contains("Declination"))
-                labelDeclinationValue.ForeColor = wisetele.BypassCoordinatesSafety ? warningColor : unsafeColor;
+                labelDeclinationValue.ForeColor = telescopeDigest.BypassCoordinatesSafety ?
+                    warningColor :
+                    unsafeColor;
             else
                 labelDeclinationValue.ForeColor = safeColor;
 
@@ -300,7 +297,7 @@ namespace Dash
 
             labelAzimuthValue.Text = Angle.FromDegrees(telescopeDigest.Azimuth).ToNiceString();
 
-            #region Remote Telescope Target
+            #region Telescope Target
             if (telescopeDigest.Target.RightAscension == Const.noTarget)
             {
                 textBoxRA.Text = "";
@@ -403,7 +400,7 @@ namespace Dash
             labelAirMass.Text = wisesite.AirMass(alt.Radians).ToString("g4");
             #endregion
 
-            telescopeStatus.Show(wisetele.Status);
+            telescopeStatus.Show(telescopeDigest.Status);
 
             #endregion
 
@@ -506,7 +503,7 @@ namespace Dash
             {
                 annunciatorSimulation.Text = "";
                 annunciatorSimulation.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
-                tip = "Real Hardware Access (not simulated)";
+                tip = "";
             }
             toolTip.SetToolTip(annunciatorSimulation, tip);
             #endregion
@@ -653,7 +650,7 @@ namespace Dash
         #region MainMenu
         private void digitalIOCardsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            ASCOM.Wise40.HardwareForm hardwareForm = new ASCOM.Wise40.HardwareForm();
+            HardwareForm hardwareForm = new HardwareForm(wiseTelescope);
             hardwareForm.Visible = true;
         }
 
@@ -685,7 +682,7 @@ namespace Dash
 
         private bool SafeAtCurrentCoords()
         {
-            return wisetele.SafeAtCoordinates(Angle.FromHours(wisetele.RightAscension), Angle.FromDegrees(wisetele.Declination)) == string.Empty;
+            return telescopeDigest.SafeAtCurrentCoordinates == string.Empty;
         }
 
         #region TelescopeControl
@@ -732,12 +729,12 @@ namespace Dash
             List<string> Directions = new List<string>();
             foreach (var m in movements)
             {
-                if ((m._direction == Const.CardinalDirection.East || m._direction == Const.CardinalDirection.West) && wisetele.AxisIsMoving(TelescopeAxes.axisPrimary))
+                if ((m._direction == Const.CardinalDirection.East || m._direction == Const.CardinalDirection.West) && telescopeDigest.PrimaryIsMoving)
                 {
                     telescopeStatus.Show("Primary axis is in motion", 1000, Statuser.Severity.Error);
                     return;
                 }
-                else if ((m._direction == Const.CardinalDirection.North || m._direction == Const.CardinalDirection.South) && wisetele.AxisIsMoving(TelescopeAxes.axisSecondary))
+                else if ((m._direction == Const.CardinalDirection.North || m._direction == Const.CardinalDirection.South) && telescopeDigest.SecondaryIsMoving)
                 {
                     telescopeStatus.Show("Secondary axis is in motion", 1000, Statuser.Severity.Error);
                     return;
@@ -746,17 +743,22 @@ namespace Dash
                 Directions.Add(m._direction.ToString());
             }
 
-            if (wisetele.BypassCoordinatesSafety)
+            if (telescopeDigest.BypassCoordinatesSafety)
             {
                 string message = string.Format("Moving {0} at {1} (safety bypassed)", String.Join("-", Directions.ToArray()), WiseTele.RateName(handpadRate).Remove(0, 4));
                 telescopeStatus.Show(message, 0, Statuser.Severity.Good);
 
                 foreach (var m in movements)
                 {
-                    wisetele.HandpadMoveAxis(m._axis, m._rate);
+                    wiseTelescope.Action("handpad-move-axis",
+                                                    JsonConvert.SerializeObject(new HandpadMoveAxisParameter {
+                                                        axis = m._axis,
+                                                        rate = m._rate }
+                                                    ));
                 }
             }
-            else if (SafeAtCurrentCoords() || wisetele.SafeToMove(whichWay))
+            else if (SafeAtCurrentCoords() || 
+                            Convert.ToBoolean(wiseTelescope.Action("safe-to-move", JsonConvert.SerializeObject(whichWay))))
             {
                 string message = string.Format("Moving {0} at {1}", String.Join("-", Directions.ToArray()), WiseTele.RateName(handpadRate).Remove(0, 4));
                 telescopeStatus.Show(message, 0, Statuser.Severity.Good);
@@ -765,7 +767,13 @@ namespace Dash
                 {
                     foreach (var m in movements)
                     {
-                        wisetele.HandpadMoveAxis(m._axis, m._rate);
+                        wiseTelescope.Action("handpad-move-axis",
+                                                        JsonConvert.SerializeObject(new HandpadMoveAxisParameter
+                                                        {
+                                                            axis = m._axis,
+                                                            rate = m._rate
+                                                        }
+                                                        ));
                     }
                 }
                 catch (Exception ex)
@@ -783,16 +791,7 @@ namespace Dash
 
         private void directionButton_MouseUp(object sender, MouseEventArgs e)
         {
-            if (wisetele.NorthMotor.isOn || wisetele.SouthMotor.isOn)
-                wisetele.StopAxis(TelescopeAxes.axisSecondary);
-            if (wisetele.WestMotor.isOn || wisetele.EastMotor.isOn)
-                wisetele.StopAxis(TelescopeAxes.axisPrimary);
-
-            telescopeStatus.Show("Stopped", 1000, Statuser.Severity.Good);
-            activityMonitor.EndActivity(ActivityMonitor.Activity.Handpad);
-            #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Handpad: stopped");
-            #endregion
+            wiseTelescope.Action("handpad-stop", "");
         }
 
         private void debuggingToolStripMenuItem_Click(object sender, EventArgs e)
@@ -804,13 +803,13 @@ namespace Dash
 
         private void buttonGoCoord_Click(object sender, EventArgs e)
         {
-            if ((goToMode == GoToMode.Ra || goToMode == GoToMode.DeltaRa) && !wisetele.Tracking)
+            if ((goToMode == GoToMode.Ra || goToMode == GoToMode.DeltaRa) && !telescopeDigest.Tracking)
             {
                 telescopeStatus.Show("Telescope is NOT tracking!", 1000, Statuser.Severity.Error);
                 return;
             }
 
-            if ((goToMode == GoToMode.Ha || goToMode == GoToMode.DeltaHa) && wisetele.Tracking)
+            if ((goToMode == GoToMode.Ha || goToMode == GoToMode.DeltaHa) && telescopeDigest.Tracking)
             {
                 telescopeStatus.Show("Telescope is TRACKING!", 1000, Statuser.Severity.Error);
                 return;
@@ -836,22 +835,22 @@ namespace Dash
                         break;
 
                     case GoToMode.DeltaRa:
-                        ra = wisetele.RightAscension + ascomutil.HMSToHours(textBoxRA.Text);
-                        dec = wisetele.Declination + ascomutil.DMSToDegrees(textBoxDec.Text);
+                        ra = telescopeDigest.Current.RightAscension + ascomutil.HMSToHours(textBoxRA.Text);
+                        dec = telescopeDigest.Current.Declination + ascomutil.DMSToDegrees(textBoxDec.Text);
                         break;
 
                     case GoToMode.DeltaHa:
-                        double ha = wisetele.HourAngle + ascomutil.HMSToHours(textBoxRA.Text);
+                        double ha = telescopeDigest.HourAngle + ascomutil.HMSToHours(textBoxRA.Text);
                         ang = Angle.FromHours(ha);
                         ra = (wisesite.LocalSiderealTime - ang).Hours;
-                        dec = wisetele.Declination + ascomutil.DMSToDegrees(textBoxDec.Text);
+                        dec = telescopeDigest.Current.Declination + ascomutil.DMSToDegrees(textBoxDec.Text);
                         break;
 
                 }
 
                 telescopeStatus.Show(string.Format("Slewing to ra: {0} dec: {1}",
                     Angle.FromHours(ra).ToNiceString(), Angle.FromDegrees(dec).ToNiceString()), 0, Statuser.Severity.Good);
-                wisetele.SlewToCoordinatesAsync(ra, dec);
+                wiseTelescope.SlewToCoordinatesAsync(ra, dec);
             }
             catch (Exception ex)
             {
@@ -861,7 +860,7 @@ namespace Dash
 
         private void buttonTelescopeStop_Click(object sender, EventArgs e)
         {
-            wisetele.AbortSlew();
+            wiseTelescope.AbortSlew();
             telescopeStatus.Show("Stopped", 1000, Statuser.Severity.Good);
         }
 
@@ -872,10 +871,10 @@ namespace Dash
             switch (goToMode)
             {
                 case GoToMode.Ra:
-                    text = Angle.FromHours(wisetele.RightAscension).ToString();
+                    text = Angle.FromHours(telescopeDigest.Current.RightAscension).ToString();
                     break;
                 case GoToMode.Ha:
-                    text = Angle.FromHours(wisetele.HourAngle, Angle.Type.HA).ToString();
+                    text = Angle.FromHours(telescopeDigest.HourAngle, Angle.Type.HA).ToString();
                     break;
                 case GoToMode.DeltaRa:
                 case GoToMode.DeltaHa:
@@ -894,7 +893,7 @@ namespace Dash
             {
                 case GoToMode.Ra:
                 case GoToMode.Ha:
-                    text = Angle.FromDegrees(wisetele.Declination).ToString();
+                    text = Angle.FromDegrees(telescopeDigest.Current.Declination).ToString();
                     break;
                 case GoToMode.DeltaRa:
                 case GoToMode.DeltaHa:
@@ -924,32 +923,7 @@ namespace Dash
 
         private void buttonTelescopePark_Click(object sender, EventArgs e)
         {
-            try
-            {
-                if (wisetele.AtPark)
-                    wisetele.AtPark = false;
-                else
-                {
-                    bool saveTracking = wisetele.Tracking;
-                    wisetele.Tracking = true;
-                    telescopeStatus.Show("Parking", 0, Statuser.Severity.Good);
-                    bool wasSlavingTheDome = wisetele._enslaveDome;
-                    wisetele._enslaveDome = false;
-                    wisetele.ParkFromGui(wasSlavingTheDome);
-                    while (wisetele.Slewing)
-                    {
-                        Application.DoEvents();
-                    }
-                    wisetele.AtPark = true;
-                    wisetele.Tracking = saveTracking;
-                    wisetele._enslaveDome = wasSlavingTheDome;
-                    telescopeStatus.Show("");
-                }
-            }
-            catch (Exception ex)
-            {
-                telescopeStatus.Show(ex.Message, 1000, Statuser.Severity.Error);
-            }
+            wiseTelescope.Action("park", "");            
         }
         #endregion
 
@@ -1135,16 +1109,15 @@ namespace Dash
 
         private void buttonDomeStop_Click(object sender, EventArgs e)
         {
-            domeStatus.Show("Stopped moving", 1000, Statuser.Severity.Good);
             wiseDome.Action("halt", "");
-            wisetele.DomeStopper();
+            domeStatus.Show("Stopped moving", 1000, Statuser.Severity.Good);
         }
 
         private void buttonCalibrateDome_Click(object sender, EventArgs e)
         {
             try
             {
-                wisetele.DomeCalibrator();
+                wiseDome.Action("calibrate", "");
                 domeStatus.Show("Started dome calibration", 1000, Statuser.Severity.Good);
             } catch (Exception ex)
             {
@@ -1175,7 +1148,7 @@ namespace Dash
                 if (wiseDome.AtPark)
                     wiseDome.Action("unpark", "");
                 else
-                    wisetele.DomeParker();
+                    Task.Run(() => wiseDome.Park());
             }
             catch (Exception ex)
             {
@@ -1333,69 +1306,35 @@ namespace Dash
         private void enslaveDomeToolStripMenuItem_Click(object sender, EventArgs e)
         {
             ToolStripMenuItem item = sender as ToolStripMenuItem;
+            bool onOff = !IsCheckmarked(item);
 
-            wisetele._enslaveDome = !IsCheckmarked(item);
-            UpdateCheckmark(item, wisetele._enslaveDome);
+            wiseTelescope.Action("enslave-dome", onOff.ToString());
+            UpdateCheckmark(item, onOff);
             UpdateAlteredItems(item, "Telescope");
         }
 
         private void buttonZenith_Click(object sender, EventArgs e)
         {
-            bool savedEnslaveDome = wisetele._enslaveDome;
-            double ra = wisesite.LocalSiderealTime.Hours;
-            double dec = wisesite.Latitude.Degrees;
-
-            wisetele._enslaveDome = false;
-            wisetele.Tracking = true;
-            try
-            {
-                wisetele.SlewToCoordinatesAsync(ra, dec, false);
-            }
-            catch (Exception ex)
-            {
-                telescopeStatus.Show(ex.Message, 2000, Statuser.Severity.Error);
-            }
-            wisetele._enslaveDome = savedEnslaveDome;
-            wisetele.Tracking = false;
-        }
-
-        private void MoveToPresetCoords(Angle ha, Angle dec)
-        {
-            Angle ra = wisesite.LocalSiderealTime - ha;
-            bool savedEnslaveDome = wisetele._enslaveDome;
-
-            wisetele._enslaveDome = false;
-            wisetele.Tracking = true;
-            try
-            {
-                wisetele.SlewToCoordinatesAsync(ra.Hours, dec.Degrees, false);
-                wisetele.DomeSlewer(90.0);
-            }
-            catch (Exception ex)
-            {
-                telescopeStatus.Show(ex.Message, 2000, Statuser.Severity.Error);
-            }
-            wisetele._enslaveDome = savedEnslaveDome;
-            wisetele.Tracking = false;
+            wiseTelescope.Action("move-to-preset", "zenith");
         }
 
         private void buttonHandleCover_Click(object sender, EventArgs e)
         {
             telescopeStatus.Show("Moving to cover station", 2000, Statuser.Severity.Good);
-            MoveToPresetCoords(new Angle("11h55m00.0s"), new Angle("88:00:00.0"));
+            wiseTelescope.Action("move-to-preset", "cover");
         }
 
         private void buttonFlat_Click(object sender, EventArgs e)
         {
             telescopeStatus.Show("Moving to Zenith", 2000, Statuser.Severity.Good);
-            MoveToPresetCoords(new Angle("-1h35m59.0s"), new Angle("41:59:20.0"));
+            wiseTelescope.Action("move-to-preset", "flat");
         }
 
         private void checkBoxTrack_Click(object sender, EventArgs e)
         {
             CheckBox box = sender as CheckBox;
 
-            wisetele.Tracking = box.Checked;
+            wiseTelescope.Tracking = box.Checked;
         }
 
         private void debugNoneToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1530,7 +1469,7 @@ namespace Dash
         {
             debugger.WriteProfile();
             WiseDome.Instance.WriteProfile();
-            wisetele.WriteProfile();
+            WiseTele.WriteProfile();
             if (_saveFocusUpperLimit || _saveFocusLowerLimit)
                 WiseFocuser.Instance.WriteProfile();
             saveToProfileToolStripMenuItem.Text = "Save To Profile";
@@ -1652,7 +1591,7 @@ namespace Dash
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "FullStop !!!");
             #endregion
-            wisetele.FullStop();
+            wiseTelescope.Action("full-stop", "");
             wiseDome.Action("halt", "");
             wiseDome.Action("shutter", "halt");
             wiseFocuser.Action("stop", "Button full stop");
@@ -1676,8 +1615,7 @@ namespace Dash
 
         private void telescopeToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            wisetele.init();
-            new TelescopeSetupDialogForm(wisetele.debugger.Level, wisesite.astrometricAccuracy, wisetele._enslaveDome).Show();
+            new TelescopeSetupDialogForm().Show();
         }
 
         private void domeToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1695,7 +1633,7 @@ namespace Dash
         {
             try
             {
-                wisetele.Tracking = !wisetele.Tracking;
+                wiseTelescope.Tracking = !wiseTelescope.Tracking;
             }
             catch (Exception ex)
             {
@@ -1768,17 +1706,6 @@ namespace Dash
             new ASCOM.Wise40.Boltwood.SetupDialogForm().Show();
         }
 
-        //private void safetyOverrideToolStripMenuItem_Click(object sender, EventArgs e)
-        //{
-        //    _bypassSafety = !_bypassSafety;
-        //    bypassSafetyToolStripMenuItem.Tag = _bypassSafety;
-        //    UpdateCheckmark(bypassSafetyToolStripMenuItem, _bypassSafety);
-
-        //    wisetele.BypassCoordinatesSafety = _bypassSafety;
-        //    wisesafetooperate.Action(_bypassSafety ? "start-bypass" : "end-bypass", string.Empty);
-        //    annunciatorSafeToOperate.Text = (_bypassSafety) ? "Safety bypassed" : "Safe to Operate";
-        //}
-
         public void UpdateCheckmark(ToolStripMenuItem item, bool state)
         {
             if (state && !item.Text.EndsWith(Const.checkmark))
@@ -1798,8 +1725,7 @@ namespace Dash
         {
             try
             {
-                wisetele.Stop();
-                wisetele.Tracking = false;
+                wiseTelescope.Action("full-stop", "");
                 wiseDome.Action("halt", "");
                 wiseDome.Action("shutter", "halt");
                 wiseFocuser.Action("halt", "Stop everything");

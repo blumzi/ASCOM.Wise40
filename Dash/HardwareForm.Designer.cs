@@ -2403,6 +2403,7 @@
             // 
             // timerHardwareRefresh
             // 
+            this.timerHardwareRefresh.Interval = 250;
             this.timerHardwareRefresh.Tick += new System.EventHandler(this.timerHardwareRefresh_Tick);
             // 
             // HardwareForm

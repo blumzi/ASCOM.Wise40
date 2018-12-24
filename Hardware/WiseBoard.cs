@@ -50,4 +50,44 @@ namespace ASCOM.Wise40.Hardware
             return ret;
         }
     }
+
+    public class BoardMetaDigest
+    {
+        public string Name;
+        public int Number;
+        public WiseBoard.BoardType Type;
+        public List<DaqMetaDigest> Daqs;
+
+        public static BoardMetaDigest FromHardware(WiseBoard board)
+        {
+            BoardMetaDigest ret = new BoardMetaDigest();
+
+            ret.Number = board.boardNum;
+            ret.Type = board.type;
+            ret.Name = board.WiseName;
+            ret.Daqs = new List<DaqMetaDigest>();
+
+            foreach (WiseDaq daq in board.daqs)
+                ret.Daqs.Add(DaqMetaDigest.FromHardware(daq));
+
+            return ret;
+        }
+    }
+
+    public class BoardDigest
+    {
+        public List<DaqDigest> Daqs;
+
+        public static BoardDigest FromHardware(WiseBoard board)
+        {
+            BoardDigest ret = new BoardDigest();
+
+            ret.Daqs = new List<DaqDigest>();
+
+            foreach (WiseDaq daq in board.daqs)
+                ret.Daqs.Add(DaqDigest.FromHardware(daq));
+
+            return ret;
+        }
+    }
 }
