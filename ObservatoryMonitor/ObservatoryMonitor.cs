@@ -827,7 +827,8 @@ namespace ASCOM.Wise40.ObservatoryMonitor
         private void buttonProjector_Click(object sender, EventArgs e) {
             bool status = JsonConvert.DeserializeObject<bool>(wisedome.Action("projector", ""));
 
-            wisedome.Action("projector", (!status).ToString());
+            status = Convert.ToBoolean(wisedome.Action("projector", (!status).ToString()));
+            buttonProjector.Text = "Projector " + ((status == true) ? "Off" : "On");
         }
 
         private void UpdateProjectorControls()
