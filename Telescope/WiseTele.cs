@@ -151,9 +151,9 @@ namespace ASCOM.Wise40
         WisePin NorthPin, SouthPin, EastPin, WestPin;                       // Set and Slew motors activation pins
         public WiseVirtualMotor NorthMotor, SouthMotor, EastMotor, WestMotor, TrackingMotor;
 
-        private bool _bypassCoordinatesSafety = false;
+        private static bool _bypassCoordinatesSafety = false;
         private bool _syncingDomePosition = false;
-        private bool _plotSlews = false;
+        private static bool _plotSlews = false;
 
         private static bool _atPark;
         private static bool _movingToSafety = false;
@@ -258,11 +258,11 @@ namespace ASCOM.Wise40
 
         public SafetyMonitorTimer safetyMonitorTimer;
 
-        public bool _enslaveDome = false;
-        public double _minimalDomeTrackingMovement;
+        public static bool _enslaveDome = false;
+        public static double _minimalDomeTrackingMovement;
         private DomeSlaveDriver domeSlaveDriver = DomeSlaveDriver.Instance;
 
-        public bool _calculateRefraction = false;
+        public static bool _calculateRefraction = false;
 
         private static WiseSafeToOperate wisesafetooperate = WiseSafeToOperate.Instance;
 
@@ -783,7 +783,7 @@ namespace ASCOM.Wise40
 
                 wisesite.prepareRefractionData(_calculateRefraction);
                 novas31.Equ2Hor(astroutils.JulianDateUT1(0), 0,
-                    wisesite.astrometricAccuracy,
+                    WiseSite.astrometricAccuracy,
                     0, 0,
                     wisesite.onSurface,
                     RightAscension, Declination,
@@ -802,7 +802,7 @@ namespace ASCOM.Wise40
 
                 wisesite.prepareRefractionData(_calculateRefraction);
                 novas31.Equ2Hor(astroutils.JulianDateUT1(0), 0,
-                    wisesite.astrometricAccuracy,
+                    WiseSite.astrometricAccuracy,
                     0, 0,
                     wisesite.onSurface,
                     RightAscension, Declination,
@@ -1088,6 +1088,19 @@ namespace ASCOM.Wise40
                 safetyMonitorTimer.EnableIfNeeded(SafetyMonitorTimer.ActionWhenNotSafe.StopMotors);
         }
 
+        public void HandpadStop()
+        {
+            if (NorthMotor.isOn ||SouthMotor.isOn)
+                StopAxis(TelescopeAxes.axisSecondary);
+            if (WestMotor.isOn || EastMotor.isOn)
+                StopAxis(TelescopeAxes.axisPrimary);
+
+            activityMonitor.EndActivity(ActivityMonitor.Activity.Handpad);
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Handpad: stopped");
+            #endregion
+        }
+
         public void MoveAxis(TelescopeAxes Axis, double Rate)
         {
             #region debug
@@ -1325,7 +1338,7 @@ namespace ASCOM.Wise40
 
             wisesite.prepareRefractionData(_calculateRefraction);
             novas31.Equ2Hor(astroutils.JulianDateUT1(0), 0,
-                wisesite.astrometricAccuracy,
+                WiseSite.astrometricAccuracy,
                 0, 0,
                 wisesite.onSurface,
                 ra.Hours, dec.Degrees,
@@ -1358,7 +1371,7 @@ namespace ASCOM.Wise40
 
             wisesite.prepareRefractionData(_calculateRefraction);
             novas31.Equ2Hor(astroutils.JulianDateUT1(0), 0,
-                wisesite.astrometricAccuracy,
+                WiseSite.astrometricAccuracy,
                 0, 0,
                 wisesite.onSurface,
                 ra.Hours, dec.Degrees,
@@ -2001,7 +2014,7 @@ namespace ASCOM.Wise40
             activityMonitor.StartActivity(ActivityMonitor.Activity.Slewing);
             try
             {
-                if (_instance._enslaveDome)
+                if (_enslaveDome)
                 {
                     DomeSlewer(RightAscension, Declination);
                 }
@@ -2704,61 +2717,141 @@ namespace ASCOM.Wise40
             }
         }
 
-        public string Action(string action, string parameter = null)
+        public string Action(string action, string parameter)
         {
             action = action.ToLower();
+            parameter = parameter.ToLower();
 
-            if (action == "active")
+            switch (action)
             {
-                if (parameter != string.Empty) {
-                    bool x = Convert.ToBoolean(parameter);
-                    activityMonitor.RestartGoindIdleTimer(string.Format("action active={0}", x.ToString()));
-                }
+                case "active":
+                    if (parameter != string.Empty)
+                    {
+                        bool x = Convert.ToBoolean(parameter);
+                        activityMonitor.RestartGoindIdleTimer(string.Format("action active={0}", x.ToString()));
+                    }
+                    return activityMonitor.ObservatoryIsActive().ToString();
 
-                return activityMonitor.ObservatoryIsActive().ToString();
-            }
-            else if (action == "activities")
-            {
-                List<string> activities = activityMonitor.ObservatoryActivities;
-                return JsonConvert.SerializeObject(activities);
-            }
-            else if (action == "shutdown")  // this is a hidden action, not listed in SupportedActions
-            {
-                telescopeCT = telescopeCTS.Token;
-                shutdownTask = Task.Run(() => Shutdown(), telescopeCT);
-                return "ok";
-            }
-            else if (action == "abort-shutdown")
-            {
-                AbortSlew();
-                activityMonitor.EndActivity(ActivityMonitor.Activity.ShuttingDown);
-                return "ok";
-            }
-            else if (action == "opmode")
-            {
-                if (parameter == string.Empty)
-                    return wisesite.OperationalMode.ToString();
+                case "activities":
+                    return JsonConvert.SerializeObject(activityMonitor.ObservatoryActivities);
 
-                WiseSite.OpMode mode;
-                Enum.TryParse(parameter.ToUpper(), out mode);
-                wisesite.OperationalMode = mode;
-                return "ok";
+                case "shutdown":
+                    telescopeCT = telescopeCTS.Token;
+                    shutdownTask = Task.Run(() => Shutdown(), telescopeCT);
+                    return "ok";
+
+                case "abort-shutdown":
+                    AbortSlew();
+                    activityMonitor.EndActivity(ActivityMonitor.Activity.ShuttingDown);
+                    return "ok";
+
+                case "opmode":
+                    if (parameter == string.Empty)
+                        return wisesite.OperationalMode.ToString();
+
+                    WiseSite.OpMode mode;
+                    Enum.TryParse(parameter.ToUpper(), out mode);
+                    wisesite.OperationalMode = mode;
+                    return "ok";
+
+                case "seconds-till-idle":
+                    TimeSpan ts = activityMonitor.RemainingTime;
+
+                    if (ts != TimeSpan.MaxValue)
+                        return (ts.TotalSeconds).ToString();
+                    else
+                        return "-1";
+
+                case "status":
+                    return Digest;
+
+                case "nearly-parked":
+                    return NearlyParked.ToString();
+
+                case "enslave-dome":
+                    if (parameter != string.Empty)
+                    {
+                        bool onOff = Convert.ToBoolean(parameter);
+                        _enslaveDome = onOff;
+                    }
+                    return _enslaveDome.ToString();
+
+                case "full-stop":
+                    FullStop();
+                    return "ok";
+
+                case "handpad-move-axis":
+                    HandpadMoveAxisParameter param = JsonConvert.DeserializeObject<HandpadMoveAxisParameter>(parameter);
+                    HandpadMoveAxis(param.axis, param.rate);
+                    return "ok";
+
+                case "handpad-stop":
+                    HandpadStop();
+                    return "ok";
+
+                case "safe-to-move":
+                    List<Const.CardinalDirection> directions = JsonConvert.DeserializeObject<List<Const.CardinalDirection>>(parameter);
+                    return JsonConvert.SerializeObject(SafeToMove(directions));
+
+                case "park":
+                    Task.Run(() => Park());
+                    return "ok";
+
+                case "move-to-preset":
+                    switch(parameter)
+                    {
+                        case "zenith":
+                            return MoveToKnownHaDec(new Angle("0h0m0s"), Angle.FromDegrees(wisesite.Latitude.Degrees));
+
+                        case "flat":
+                            return MoveToKnownHaDec(new Angle("-1h35m59.0s"), new Angle("41:59:20.0"));
+
+                        case "ha0":
+                            return "ok";
+
+                        case "cover":
+                            return MoveToKnownHaDec(new Angle("11h55m00.0s"), new Angle("88:00:00.0"));
+
+                        default:
+                            return string.Format("Bad parameter \"{0}\" to \"move-to-preset\"", parameter);
+                    }
+
+                case "hardware-meta-digest":
+                    Hardware.Hardware.Instance.init();
+                    WiseTele.Instance.init();
+                    WiseDome.Instance.init();
+                    WiseFocuser.Instance.init();
+
+                    return JsonConvert.SerializeObject(HardwareMetaDigest.FromHardware());
+
+                case "hardware-digest":
+                    return JsonConvert.SerializeObject(HardwareDigest.FromHardware());
+
+                default:
+                    throw new ASCOM.ActionNotImplementedException("Action \"" + action + "\" is not implemented by this driver");
             }
-            else if (action == "seconds-till-idle")
+        }
+
+
+        private string MoveToKnownHaDec(Angle ha, Angle dec)
+        {
+            Angle ra = wisesite.LocalSiderealTime - ha;
+            bool savedEnslaveDome = _enslaveDome;
+
+            _enslaveDome = false;
+            Tracking = true;
+            try
             {
-                TimeSpan ts = activityMonitor.RemainingTime;
-
-                if (ts != TimeSpan.MaxValue)
-                    return (ts.TotalSeconds).ToString();
-                else
-                    return "-1";
+                SlewToCoordinatesAsync(ra.Hours, dec.Degrees, false);
             }
-            else if (action == "status")
-                return Digest;
-            else if (action == "nearly-parked")
-                return NearlyParked.ToString();
+            catch (Exception ex)
+            {
+                return ex.Message;
+            }
+            _enslaveDome = savedEnslaveDome;
+            Tracking = false;
 
-            throw new ASCOM.ActionNotImplementedException("Action \"" + action + "\" is not implemented by this driver");
+            return "ok";
         }
 
         private bool NearlyParked
@@ -2842,16 +2935,16 @@ namespace ASCOM.Wise40
         /// <summary>
         /// Read the device configuration from the ASCOM Profile store
         /// </summary>
-        internal void ReadProfile()
+        internal static void ReadProfile()
         {
             using (Profile driverProfile = new Profile() { DeviceType = "Telescope" })
             {
                 Accuracy acc;
 
                 if (Enum.TryParse<Accuracy>(driverProfile.GetValue(driverID, Const.ProfileName.Telescope_AstrometricAccuracy, string.Empty, "Full"), out acc))
-                    wisesite.astrometricAccuracy = acc;
+                    WiseSite.astrometricAccuracy = acc;
                 else
-                    wisesite.astrometricAccuracy = Accuracy.Full;
+                    WiseSite.astrometricAccuracy = Accuracy.Full;
                 _bypassCoordinatesSafety = Convert.ToBoolean(driverProfile.GetValue(driverID, Const.ProfileName.Telescope_BypassCoordinatesSafety, string.Empty, false.ToString()));
                 _plotSlews = Convert.ToBoolean(driverProfile.GetValue(driverID, Const.ProfileName.Telescope_PlotSlews, string.Empty, false.ToString()));
             }
@@ -2863,11 +2956,11 @@ namespace ASCOM.Wise40
         /// <summary>
         /// Write the device configuration to the  ASCOM  Profile store
         /// </summary>
-        public void WriteProfile()
+        public static void WriteProfile()
         {
             using (Profile driverProfile = new Profile() { DeviceType = "Telescope" })
             {
-                driverProfile.WriteValue(driverID, Const.ProfileName.Telescope_AstrometricAccuracy, wisesite.astrometricAccuracy.ToString());
+                driverProfile.WriteValue(driverID, Const.ProfileName.Telescope_AstrometricAccuracy, WiseSite.astrometricAccuracy.ToString());
                 driverProfile.WriteValue(driverID, Const.ProfileName.Telescope_BypassCoordinatesSafety, _bypassCoordinatesSafety.ToString());
                 driverProfile.WriteValue(driverID, Const.ProfileName.Telescope_PlotSlews, _plotSlews.ToString());
             }
@@ -2961,11 +3054,18 @@ namespace ASCOM.Wise40
                         SetPin = NorthPin.isOn || SouthGuidePin.isOn,
                         GuidePin = NorthGuidePin.isOn || SouthGuidePin.isOn,
                     },
+                    SafeAtCurrentCoordinates = SafeAtCoordinates(
+                        Angle.FromHours(RightAscension),
+                        Angle.FromDegrees(Declination)),
+                    BypassCoordinatesSafety = BypassCoordinatesSafety,
+                    Status = Status,
+                    PrimaryIsMoving = AxisIsMoving(TelescopeAxes.axisPrimary),
+                    SecondaryIsMoving = AxisIsMoving(TelescopeAxes.axisSecondary),
                 });
             }
         }
 
-        public bool BypassCoordinatesSafety
+        public static bool BypassCoordinatesSafety
         {
             get
             {
@@ -2978,7 +3078,7 @@ namespace ASCOM.Wise40
             }
         }
 
-        public bool PlotSlews
+        public static bool PlotSlews
         {
             get
             {
@@ -3023,6 +3123,12 @@ namespace ASCOM.Wise40
         public bool SetPin, GuidePin;
     }
 
+    public class HandpadMoveAxisParameter
+    {
+        public TelescopeAxes axis;
+        public double rate;
+    }
+
     public class TelescopeDigest
     {
         public TelescopePosition Current, Target;
@@ -3039,5 +3145,9 @@ namespace ASCOM.Wise40
         public List<string> Activities;
         public bool SlewPin;
         public AxisPins PrimaryPins, SecondaryPins;
+        public bool PrimaryIsMoving, SecondaryIsMoving;
+        public string SafeAtCurrentCoordinates;
+        public bool BypassCoordinatesSafety;
+        public string Status;
     }
 }

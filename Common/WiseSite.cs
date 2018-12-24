@@ -25,7 +25,7 @@ namespace ASCOM.Wise40
         private static ASCOM.Utilities.Util ascomutils = new Util();
         public Astrometry.OnSurface onSurface;
         public Observer observer;
-        public Astrometry.Accuracy astrometricAccuracy;
+        public static Astrometry.Accuracy astrometricAccuracy;
         public Astrometry.RefractionOption refractionOption;
         public double siteLatitude, siteLongitude, siteElevation;
         public static ObservingConditions och;

@@ -54,7 +54,7 @@ namespace ASCOM.Wise40
             instance.astroutils = new AstroUtils();
             _arrivedAtAz = new AutoResetEvent(false);
             wisedome.SetArrivedAtAzEvent(_arrivedAtAz);
-            _minimalMovement = new Angle(WiseTele.Instance._minimalDomeTrackingMovement, Angle.Type.Az);
+            _minimalMovement = new Angle(WiseTele._minimalDomeTrackingMovement, Angle.Type.Az);
 
             _initialized = true;
             #region debug
@@ -285,7 +285,7 @@ namespace ASCOM.Wise40
             
             wisesite.prepareRefractionData(true);
             novas31.Equ2Hor(astroutils.JulianDateUT1(0), 0,
-                wisesite.astrometricAccuracy,
+                WiseSite.astrometricAccuracy,
                 0, 0,
                 wisesite.onSurface,
                 ra.Hours, dec.Degrees,

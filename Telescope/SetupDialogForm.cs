@@ -8,34 +8,36 @@ using ASCOM.Wise40.Common;
 using ASCOM.DeviceInterface;
 
 
-namespace ASCOM.Wise40 //.Telescope
+namespace ASCOM.Wise40
 {
     [ComVisible(false)]					// Form not registered for COM!
     public partial class TelescopeSetupDialogForm : Form
     {
         private static WiseSite wisesite = WiseSite.Instance;
-        private static WiseTele wisetele = WiseTele.Instance;
+        //private static WiseTele wisetele = WiseTele.Instance;
+        private static Debugger debugger = Debugger.Instance;
 
-        public TelescopeSetupDialogForm(Debugger.DebugLevel debugLevel, Accuracy accuracy, bool enslaveDome)
+        public TelescopeSetupDialogForm()
         {
             InitializeComponent();
-            wisetele.init();
-            
-            accuracyBox.SelectedItem = (wisesite.astrometricAccuracy == Accuracy.Full) ? 0 : 1;
-            checkBoxEnslaveDome.Checked = wisetele._enslaveDome;
-            checkBoxCalculateRefraction.Checked = wisetele._calculateRefraction;
-            checkBoxBypassSafety.Checked = wisetele.BypassCoordinatesSafety;
-            checkBoxPlotSlews.Checked = wisetele.PlotSlews;
+            //wisetele.init();
+
+            WiseTele.ReadProfile();
+            accuracyBox.SelectedItem = (WiseSite.astrometricAccuracy == Accuracy.Full) ? 0 : 1;
+            checkBoxEnslaveDome.Checked = WiseTele._enslaveDome;
+            checkBoxCalculateRefraction.Checked = WiseTele._calculateRefraction;
+            checkBoxBypassSafety.Checked = WiseTele.BypassCoordinatesSafety;
+            checkBoxPlotSlews.Checked = WiseTele.PlotSlews;
         }
 
         private void cmdOK_Click(object sender, EventArgs e) // OK button event handler
         {
-            wisesite.astrometricAccuracy = accuracyBox.Text == "Full" ? Accuracy.Full : Accuracy.Reduced;
-            wisetele._enslaveDome = checkBoxEnslaveDome.Checked;
-            wisetele._calculateRefraction = checkBoxCalculateRefraction.Checked;
-            wisetele.BypassCoordinatesSafety = checkBoxBypassSafety.Checked;
-            wisetele.PlotSlews = checkBoxPlotSlews.Checked;
-            wisetele.WriteProfile();
+            WiseSite.astrometricAccuracy = accuracyBox.Text == "Full" ? Accuracy.Full : Accuracy.Reduced;
+            WiseTele._enslaveDome = checkBoxEnslaveDome.Checked;
+            WiseTele._calculateRefraction = checkBoxCalculateRefraction.Checked;
+            WiseTele.BypassCoordinatesSafety = checkBoxBypassSafety.Checked;
+            WiseTele.PlotSlews = checkBoxPlotSlews.Checked;
+            WiseTele.WriteProfile();
             Close();
         }
 
