@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using ASCOM.Wise40.Common;
+using ASCOM.Wise40.Hardware;
 
 namespace ASCOM.Wise40SafeToOperate
 {
@@ -43,11 +44,12 @@ namespace ASCOM.Wise40SafeToOperate
             Reading r = new Reading
             {
                 stale = false,
-                safe = !WiseSafeToOperate.wisecomputercontrol.Maintenance
+                safe = Hardware.computerControlPin.isOn,
             };
-            //#region debug
-            //debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "ComputerControlSensor: getIsSafe: {0}", r.safe);
-            //#endregion
+
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "ComputerControlSensor: getIsSafe: {0}", r.safe);
+            #endregion
             return r;
         }
 

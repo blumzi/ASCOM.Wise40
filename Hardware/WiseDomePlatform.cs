@@ -11,10 +11,10 @@ namespace ASCOM.Wise40
 {
     public class WiseDomePlatform : WiseObject
     {
-        private static readonly WiseDomePlatform instance = new WiseDomePlatform(); // Singleton
+        private static volatile WiseDomePlatform _instance = new WiseDomePlatform(); // Singleton
+        private static object syncObject = new object();
         private static bool _initialized = false;
         private WisePin domePlatformIsDownPin;
-        private Hardware.Hardware hardware = Hardware.Hardware.Instance;
 
         // Explicit static constructor to tell C# compiler
         // not to mark type as beforefieldinit
@@ -30,7 +30,19 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return instance;
+                if (_instance == null)
+                {
+                    if (syncObject == null)
+                        syncObject = new object();
+
+                    lock (syncObject)
+                    {
+                        if (_instance == null)
+                            _instance = new WiseDomePlatform();
+                        _instance.init();
+                    }
+                }
+                return _instance;
             }
         }
 
@@ -39,7 +51,8 @@ namespace ASCOM.Wise40
             if (_initialized)
                 return;
 
-            domePlatformIsDownPin = new WisePin(Const.notsign + "PlatDown", hardware.domeboard, DigitalPortType.FirstPortCL, 3, DigitalPortDirection.DigitalIn);
+            domePlatformIsDownPin = new WisePin(Const.notsign + "PlatDown",
+                Hardware.Hardware.Instance.domeboard, DigitalPortType.FirstPortCL, 3, DigitalPortDirection.DigitalIn);
             _initialized = true;
         }
 

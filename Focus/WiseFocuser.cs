@@ -765,6 +765,9 @@ namespace ASCOM.Wise40
                 if (!_state.IsSet(State.Flags.Stopping))
                     StartStopping(string.Format("onTimer: close to intermediate target: at {0} (_state: {1})", _mostRecentPosition, _state));
             }
+
+            if (!_state.IsSet(State.Flags.AnyMoving) && _encoderIsChanging)
+                StartStopping("onTimer: Runaway");
         }
 
         private bool CloseEnough(int current, int target, Direction dir)

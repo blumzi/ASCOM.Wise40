@@ -39,7 +39,6 @@ namespace ASCOM.Wise40.ObservatoryMonitor
         static public TimeSpan _intervalBetweenChecks;
         static public int _minutesToIdle;
         static TimeSpan _intervalBetweenLogs = _simulated ? TimeSpan.FromSeconds(10) : TimeSpan.FromSeconds(20);
-        private static bool telescope_EnslavesDome = false;
         static DateTime _lastLog = DateTime.MinValue;
         static readonly string deltaFromUT = "(UT+" + DateTime.Now.Subtract(DateTime.UtcNow).Hours.ToString() + ")";
 
@@ -380,24 +379,6 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
             string line = string.Format("{0} - {1}", DateTime.UtcNow.ToString("H:mm:ss UT"), msg);
 
-            string dailyDir = Common.Debugger.LogDirectory();
-            Directory.CreateDirectory(dailyDir);
-            string logFile = dailyDir + "/ObservatoryMonitor.txt";
-
-            try
-            {
-                using (StreamWriter sw = File.Exists(logFile) ?
-                            File.AppendText(logFile) :
-                            File.CreateText(logFile))
-                {
-                    sw.WriteLine(line);
-                }
-            }
-            catch (Exception ex)
-            {
-                ;
-            }
-
             logToGUI(line);
             _lastLog = DateTime.UtcNow;
         }
@@ -419,6 +400,22 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
                 int visibleItems = listBoxLog.ClientSize.Height / listBoxLog.ItemHeight;
                 listBoxLog.TopIndex = Math.Max(listBoxLog.Items.Count - visibleItems + 1, 0);
+            }
+
+            string dailyDir = Common.Debugger.LogDirectory();
+
+            Directory.CreateDirectory(dailyDir);
+            string logFile = dailyDir + "/ObservatoryMonitor.txt";
+            try
+            {
+                using (StreamWriter sw = File.AppendText(logFile))
+                {
+                    sw.WriteLine(line);
+                }
+            }
+            catch (Exception ex)
+            {
+                ;
             }
         }
 

@@ -5,17 +5,24 @@ using System.Text;
 using System.Threading.Tasks;
 
 using ASCOM.Wise40.Common;
+using ASCOM.Wise40.Hardware;
+using MccDaq;
 
 namespace ASCOM.Wise40SafeToOperate
 {
     public class PlatformSensor : Sensor
     {
+        private WisePin domePlatformIsDownPin;
+
         public PlatformSensor(WiseSafeToOperate instance) :
             base("Platform",
                 SensorAttribute.Immediate |
                 SensorAttribute.AlwaysEnabled |
                 SensorAttribute.ForcesDecision, instance)
-        { }
+        {
+            domePlatformIsDownPin = new WisePin(Const.notsign + "PlatDown",
+                Hardware.Instance.domeboard, DigitalPortType.FirstPortCL, 3, DigitalPortDirection.DigitalIn);
+        }
 
         public override object Digest()
         {
@@ -43,11 +50,11 @@ namespace ASCOM.Wise40SafeToOperate
             Reading r = new Reading
             {
                 stale = false,
-                safe = WiseSafeToOperate.wisecomputercontrol.PlatformIsDown
+                safe = domePlatformIsDownPin.isOff,
             };
-            //#region debug
-            //debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "{0}: getIsSafe: {1}", Name, r.safe);
-            //#endregion
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "{0}: getIsSafe: {1}", WiseName, r.safe);
+            #endregion
             return r;
         }
 

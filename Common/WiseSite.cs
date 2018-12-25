@@ -29,7 +29,6 @@ namespace ASCOM.Wise40
         public Astrometry.RefractionOption refractionOption;
         public double siteLatitude, siteLongitude, siteElevation;
         public static ObservingConditions och;
-        public SafetyMonitor computerControl, safeToOperate;
         private DateTime lastOCFetch;
         private Debugger debugger = Debugger.Instance;
 
@@ -92,26 +91,6 @@ namespace ASCOM.Wise40
                 refractionOption = Astrometry.RefractionOption.NoRefraction;
             }
 
-            try
-            {
-                computerControl = new SafetyMonitor(Const.wiseComputerControlDriverID);
-                computerControl.Connected = true;
-            }
-            catch
-            {
-                computerControl = null;
-            }
-
-            try
-            {
-                safeToOperate = new SafetyMonitor(Const.wiseSafeToOperateDriverID);
-                safeToOperate.Connected = true;
-            }
-            catch
-            {
-                safeToOperate = null;
-            }
-
             _initialized = true;
         }
 
@@ -120,18 +99,6 @@ namespace ASCOM.Wise40
             novas31.Dispose();
             astroutils.Dispose();
             ascomutils.Dispose();
-
-            if (computerControl != null)
-            {
-                computerControl.Connected = false;
-                computerControl.Dispose();
-            }
-
-            if (safeToOperate != null)
-            {
-                safeToOperate.Connected = false;
-                safeToOperate.Dispose();
-            }
         }
 
         public Angle Longitude

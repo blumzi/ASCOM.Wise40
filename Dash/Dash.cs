@@ -688,8 +688,8 @@ namespace Dash
         #region TelescopeControl
         public void directionButton_MouseDown(object sender, MouseEventArgs e)
         {
-            if (!wisesite.computerControl.IsSafe)
-                telescopeStatus.Show(wisesite.computerControl.CommandString("unsafereasons", true), 1000, Statuser.Severity.Error);
+            if (!safetooperateDigest.ComputerControlIsSafe)
+                telescopeStatus.Show(string.Join(", ", safetooperateDigest.UnsafeReasons), 1000, Statuser.Severity.Error);
 
             Button button = (Button)sender;
 
