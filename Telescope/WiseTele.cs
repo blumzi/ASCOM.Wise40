@@ -300,7 +300,7 @@ namespace ASCOM.Wise40
             get
             {
                 if (_targetDeclination == null)
-                    throw new ValueNotSetException("Target not set");
+                    throw new ValueNotSetException("TargetDeclination not set");
                 #region debug
                 debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM,
                     string.Format("TargetDeclination Get - {0} ({1})", _targetDeclination, _targetDeclination.Degrees));
@@ -326,7 +326,7 @@ namespace ASCOM.Wise40
             get
             {
                 if (_targetRightAscension == null)
-                    throw new ValueNotSetException("Target RA not set");
+                    throw new ValueNotSetException("TargetRightAscension not set");
 
                 Angle ret = _targetRightAscension;
                 #region debug
@@ -2099,8 +2099,8 @@ namespace ASCOM.Wise40
             {
                 case Slewers.Type.Ra:
                     _targetRightAscension = null;
-
                     break;
+
                 case Slewers.Type.Dec:
                     _targetDeclination = null;
                     break;
@@ -2746,13 +2746,14 @@ namespace ASCOM.Wise40
                     return "ok";
 
                 case "opmode":
-                    if (parameter == string.Empty)
-                        return wisesite.OperationalMode.ToString();
+                    if (parameter != string.Empty)
+                    {
 
-                    WiseSite.OpMode mode;
-                    Enum.TryParse(parameter.ToUpper(), out mode);
-                    wisesite.OperationalMode = mode;
-                    return "ok";
+                        WiseSite.OpMode mode;
+                        Enum.TryParse(parameter.ToUpper(), out mode);
+                        wisesite.OperationalMode = mode;
+                    }
+                    return wisesite.OperationalMode.ToString();
 
                 case "seconds-till-idle":
                     TimeSpan ts = activityMonitor.RemainingTime;
@@ -2977,9 +2978,27 @@ namespace ASCOM.Wise40
 
                 if (slewers.Active(Slewers.Type.Dec) || slewers.Active(Slewers.Type.Ra))
                 {
-                    Angle ra = Angle.FromHours(TargetRightAscension, Angle.Type.RA);
-                    Angle dec = Angle.FromDegrees(TargetDeclination, Angle.Type.Dec);
-                    ret = Parking ? "Parking" : "Slewing" + string.Format(" to RA {0} DEC {1}", ra, dec);
+
+                    string to = null;
+
+                    Angle ra = null, dec = null;
+                    try
+                    {
+                        ra = Angle.FromHours(TargetRightAscension, Angle.Type.RA);
+                        to += " RA " + ra.ToNiceString();
+                    }
+                    catch { }
+
+                    try
+                    {
+                        dec = Angle.FromDegrees(TargetDeclination, Angle.Type.Dec);
+                        to += " DEC " + dec.ToNiceString();
+                    }
+                    catch { }
+
+                    if (to != null)
+                        to = "to" + to;
+                    ret = Parking ? "Parking " : "Slewing " + to;
                 }
                 else if (IsPulseGuiding)
                 {
@@ -2999,25 +3018,15 @@ namespace ASCOM.Wise40
             {
                 TimeSpan ts = activityMonitor.RemainingTime;
                 double secondsTillIdle = (ts == TimeSpan.MaxValue) ? -1 : ts.TotalSeconds;
-                double targetRightAscension, targetDeclination;
+                double targetRA = Const.noTarget, targetDec = Const.noTarget;
 
-                try
-                {
-                    targetRightAscension = TargetRightAscension;
-                } catch
-                {
-                    targetRightAscension = Const.noTarget;
-                }
+                if (_targetRightAscension != null)
+                    targetRA = _targetRightAscension.Hours;
 
-                try
-                {
-                    targetDeclination = TargetDeclination;
-                } catch
-                {
-                    targetDeclination = Const.noTarget;
-                }
+                if (_targetDeclination != null)
+                    targetDec = _targetDeclination.Degrees;
 
-                return JsonConvert.SerializeObject(new TelescopeDigest()
+                TelescopeDigest digest = new TelescopeDigest()                
                 {
                     Current = new TelescopePosition
                     {
@@ -3027,8 +3036,8 @@ namespace ASCOM.Wise40
 
                     Target = new TelescopePosition
                     {
-                        RightAscension = targetRightAscension,
-                        Declination = targetDeclination,
+                        RightAscension = targetRA,
+                        Declination = targetDec,
                     },
 
                     LocalSiderealTime = wisesite.LocalSiderealTime.Hours,
@@ -3061,7 +3070,9 @@ namespace ASCOM.Wise40
                     Status = Status,
                     PrimaryIsMoving = AxisIsMoving(TelescopeAxes.axisPrimary),
                     SecondaryIsMoving = AxisIsMoving(TelescopeAxes.axisSecondary),
-                });
+                };
+
+                return JsonConvert.SerializeObject(digest);
             }
         }
 
@@ -3131,7 +3142,8 @@ namespace ASCOM.Wise40
 
     public class TelescopeDigest
     {
-        public TelescopePosition Current, Target;
+        public TelescopePosition Current;
+        public TelescopePosition Target;
         public double HourAngle;
         public double Altitude, Azimuth;
         public double LocalSiderealTime;
