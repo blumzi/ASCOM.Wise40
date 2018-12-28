@@ -133,4 +133,7 @@
   <data name="Leomarc_stop_sign" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\Leomarc_stop_sign.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="CurrentCommit" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\CurrentCommit.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;windows-1255</value>
+  </data>
 </root>

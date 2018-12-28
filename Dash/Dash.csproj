@@ -264,6 +264,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Icons\Leomarc_stop_sign.png" />
+    <None Include="CurrentCommit.txt" />
     <Content Include="Icons\optica-filters%282%29.jpg" />
     <Content Include="Icons\optica_filters_2__x5l_icon.ico" />
     <None Include="Icons\stop-sign-smaller.jpg" />
@@ -292,6 +293,9 @@
   <PropertyGroup>
     <PostBuildEvent>rem "C:\Program Files (x86)\Inno Setup 5\ISCC.exe" "/DSolutionDir=$(SolutionDir)" "/O$(SolutionDir)\Deliveries" "$(ProjectDir)Installer\Wise40Dash.iss" 
 </PostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PreBuildEvent>git rev-parse --short HEAD &gt; "$(ProjectDir)\CurrentCommit.txt"</PreBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

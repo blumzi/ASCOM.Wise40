@@ -155,6 +155,8 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <None Include="CurrentCommit.txt" />
+    <Content Include="Resources\CurrentCommit.txt" />
     <Content Include="Sample Files\ClarityII-data.txt" />
     <None Include="app.config" />
     <None Include="ASCOM.png" />

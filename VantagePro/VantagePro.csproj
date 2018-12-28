@@ -155,6 +155,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <None Include="CurrentCommit.txt" />
     <Content Include="Sample Files\Weather_Wise40_Vantage_Pro.htm" />
     <None Include="app.config">
       <SubType>Designer</SubType>

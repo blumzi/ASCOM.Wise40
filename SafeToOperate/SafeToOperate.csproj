@@ -178,6 +178,7 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <Content Include="ASCOM.ico" />
+    <None Include="CurrentCommit.txt" />
     <Content Include="Installer\ReadMe.html" />
     <Content Include="Installer\SafeToOpen Setup.iss" />
     <Content Include="ReadMe.htm" />

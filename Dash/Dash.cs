@@ -236,9 +236,6 @@ namespace Dash
 
             if (refreshTelescope)
             {
-                string j;
-                TelescopeDigest d;
-
                 try
                 {
                     telescopeDigest = JsonConvert.DeserializeObject<TelescopeDigest>(wiseTelescope.Action("status", ""));

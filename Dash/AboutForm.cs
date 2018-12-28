@@ -50,6 +50,8 @@ namespace Dash
             labelBoltwoodVersion.Text = _dash.wiseBoltwood.DriverVersion;
             labelVantageProVersion.Text = ASCOM.Wise40.VantagePro.WiseVantagePro.driverVersion;
             labelFilterWheelVersion.Text = _dash.wisefilterwheel.DriverVersion;
+
+            labelCurrentCommit.Text = Dash.Properties.Resources.CurrentCommit;
         }
 
         private void button1_Click(object sender, EventArgs e)

@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace ASCOM.Wise40.Boltwood.Properties {
+namespace ASCOM.Wise40.Common.Properties {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace ASCOM.Wise40.Boltwood.Properties {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("ASCOM.Wise40.Boltwood.Properties.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("ASCOM.Wise40.Common.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -57,26 +57,6 @@ namespace ASCOM.Wise40.Boltwood.Properties {
             }
             set {
                 resourceCulture = value;
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap ASCOM {
-            get {
-                object obj = ResourceManager.GetObject("ASCOM", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
-        /// </summary>
-        internal static System.Drawing.Icon DefaultIcon {
-            get {
-                object obj = ResourceManager.GetObject("DefaultIcon", resourceCulture);
-                return ((System.Drawing.Icon)(obj));
             }
         }
     }

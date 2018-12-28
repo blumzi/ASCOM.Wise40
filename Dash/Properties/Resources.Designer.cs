@@ -61,6 +61,16 @@ namespace Dash.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to 81f0c81
+        ///.
+        /// </summary>
+        internal static string CurrentCommit {
+            get {
+                return ResourceManager.GetString("CurrentCommit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
         internal static System.Drawing.Bitmap images_clip_art_Leomarc_Leomarc_stop_sign {
