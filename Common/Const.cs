@@ -17,7 +17,7 @@ namespace ASCOM.Wise40.Common
         public enum CardinalDirection { North = 0, East = 1, South = 2, West = 3 };
         public enum AxisDirection { None = 0, Increasing = 1, Decreasing = -1 };
         public enum TriStateStatus { Normal = 0, Good = 1, Warning = 2, Error = 3 };
-        public enum Direction {  None, Increasing, Decreasing };
+        public enum Direction { None, Increasing, Decreasing };
 
         public const double rateStopped = 0.0;
         public const double rateSlew = 2.0;                           // two degrees/sec
@@ -101,5 +101,25 @@ namespace ASCOM.Wise40.Common
             public static string VantagePro_DataFile = "DataFile";
             public static string VantagePro_SerialPort = "Port";
         }
+
+        public class App
+        {
+            public string Name;
+            public string RealPath;
+            public string SimulatedPath;
+
+        }
+
+        public static Dictionary<string, App> Apps = new Dictionary<string, App>()
+            {
+                {
+                    "Dash", new App {
+                        Name = "Dash",
+                        RealPath = "c:/Users/mizpe/source/repos/ASCOM.Wise40/Dash/bin/x86/Debug/Dash.exe",
+                        SimulatedPath = "c:/Users/Blumzi/Documents/Visual Studio 2015/Projects/Wise40/Dash/bin/x86/Debug/Dash.exe"
+                    }
+                },
+            };
+
     }
 }
