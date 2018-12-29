@@ -160,6 +160,9 @@ namespace ASCOM.Wise40
                     GetHashCode(), act.ToString(), activities);
             #endregion
 
+            if (act == Activity.Parking && InProgress(Activity.ShuttingDown))
+                return;
+
             if (act == Activity.ShuttingDown)
                 StopGoindIdleTimer();
             else if ((_currentlyActive & Activity.RealActivities) == Activity.None)
