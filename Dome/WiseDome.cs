@@ -756,12 +756,10 @@ namespace ASCOM.Wise40
                 throw new InvalidValueException(string.Format("Invalid azimuth: {0}, must be >= 0 and < 360", degrees));
 
             if (ShutterIsMoving)
-            {
                 throw new ASCOM.InvalidOperationException("Cannot move, shutter is active!");
-            }
 
-            if (!wiseSafeToOperate.IsSafe && activityMonitor.InProgress(ActivityMonitor.Activity.ShuttingDown))
-                throw new ASCOM.InvalidOperationException(wiseSafeToOperate.Action("unsafereasons", ""));
+            if (!activityMonitor.InProgress(ActivityMonitor.Activity.ShuttingDown) && !wiseSafeToOperate.IsSafe)
+                throw new ASCOM.InvalidOperationException("Unsafe: " + wiseSafeToOperate.Action("unsafereasons", ""));
 
             Angle toAng = new Angle(degrees, Angle.Type.Az);
 
