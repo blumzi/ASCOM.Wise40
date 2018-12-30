@@ -1487,7 +1487,10 @@ namespace ASCOM.Wise40
             activityMonitor.StartActivity(ActivityMonitor.Activity.ShuttingDown);
 
             if (AtPark)
-                Unpark();
+            {
+                // Don't call Unpark(), it throws exception if while ShuttingDown
+                AtPark = false;
+            }
 
             if (domeSlaveDriver.AtPark)
                 domeSlaveDriver.Unpark();
