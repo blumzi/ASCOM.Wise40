@@ -34,7 +34,6 @@ namespace ASCOM.Wise40
         private int realMillisToInactivity;
         private readonly int simulatedlMillisToInactivity = (int)TimeSpan.FromMinutes(3).TotalMilliseconds;
         private Debugger debugger = Debugger.Instance;
-        private bool _shuttingDown = false;
         private DateTime _due = DateTime.MinValue;                  // not set
         private WiseSite wisesite = WiseSite.Instance;
         private static bool initialized = false;
@@ -98,9 +97,6 @@ namespace ASCOM.Wise40
 
         public void StartActivity(Activity act)
         {
-            if (_shuttingDown)
-                return;
-
             if (act == Activity.GoingIdle && _currentlyActive != Activity.None)
             {
                 #region debug
@@ -136,11 +132,6 @@ namespace ASCOM.Wise40
 
         public void EndActivity(Activity act)
         {
-            if (_shuttingDown)
-            {
-                return;
-            }
-
             if (! InProgress(act) )
             {
                 #region debug
@@ -182,9 +173,6 @@ namespace ASCOM.Wise40
 
         public void RestartGoindIdleTimer(string reason)
         {
-            if (_shuttingDown)
-                return;
-
             // The file's creation time is used in case we crashed after starting to idle.
             string filename = Const.topWise40Directory + "Observatory/ActivityMonitorRestart";
             int dueMillis = Simulated ? simulatedlMillisToInactivity : realMillisToInactivity;
