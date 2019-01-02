@@ -1078,7 +1078,7 @@ namespace ASCOM.Wise40
             {
                 activityMonitor.StartActivity(ActivityMonitor.Activity.Handpad);
                 _moveAxis(Axis, Rate, direction, false);
-            } catch (Exception ex)
+            } catch
             {
                 activityMonitor.EndActivity(ActivityMonitor.Activity.Handpad);
                 throw;
