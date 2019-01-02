@@ -91,7 +91,7 @@ namespace ASCOM.Wise40SafeToOperate
                 return;
 
             foreach (Sensor s in WiseSafeToOperate._cumulativeSensors)
-                s.Stop();
+                s.Enabled = false;
 
             WiseSafeToOperate.cloudsSensor._repeats = Convert.ToInt32(textBoxCloudRepeats.Text);
             WiseSafeToOperate.cloudsSensor._intervalMillis = Convert.ToInt32(textBoxCloudIntervalSeconds.Text) * 1000;
