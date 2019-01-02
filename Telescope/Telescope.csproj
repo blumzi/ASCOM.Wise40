@@ -229,10 +229,6 @@
       <Project>{b76546e7-9832-4d28-b412-b34ca1c6177c}</Project>
       <Name>Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\ComputerControl\ComputerControl.csproj">
-      <Project>{eef50bc4-becc-430b-9a05-769c80d8d25c}</Project>
-      <Name>ComputerControl</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Dome\Dome.csproj">
       <Project>{64308775-bd4a-469c-bcab-3ed830b811af}</Project>
       <Name>Dome</Name>
