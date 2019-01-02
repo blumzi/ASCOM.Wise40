@@ -413,10 +413,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                     sw.WriteLine(line);
                 }
             }
-            catch (Exception ex)
-            {
-                ;
-            }
+            catch { }
         }
 
         private void AbortShutdown()
