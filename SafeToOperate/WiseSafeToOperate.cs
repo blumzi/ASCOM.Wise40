@@ -48,6 +48,8 @@ namespace ASCOM.Wise40SafeToOperate
         public static ComputerControlSensor computerControlSensor;
         public static PlatformSensor platformSensor;
 
+        public static WiseComputerControl wisecomputercontrol;
+
         public static List<Sensor> _cumulativeSensors, _prioritizedSensors;
         private static bool _bypassed = false;
         private static bool _shuttingDown = false;
@@ -127,6 +129,7 @@ namespace ASCOM.Wise40SafeToOperate
             computerControlSensor = new ComputerControlSensor(this);
             platformSensor = new PlatformSensor(this);
             doorLockSensor = new DoorLockSensor(this);
+            wisecomputercontrol = WiseComputerControl.Instance;
 
             //
             // The sensors in priotity order.  The first one that:
@@ -324,7 +327,7 @@ namespace ASCOM.Wise40SafeToOperate
                     PlatformIsSafe = platformSensor.isSafe,
                     HumanInterventionIsSafe = humanInterventionSensor.isSafe,
                     Bypassed = _bypassed,
-                    Ready = CumulativeSensorsAreReady,
+                    Ready = isReady,
                     Safe = IsSafe,
                     UnsafeReasons = UnsafeReasonsList,
                     Colors = new Colors() {
@@ -363,7 +366,7 @@ namespace ASCOM.Wise40SafeToOperate
             CheckConnected("CommandBool");
 
             if (command.ToLower() == "ready")
-                return CumulativeSensorsAreReady;
+                return isReady;
             else
                 throw new ASCOM.MethodNotImplementedException("CommandBool");
         }
@@ -410,7 +413,7 @@ namespace ASCOM.Wise40SafeToOperate
         public void stopSensors()
         {
             foreach (Sensor s in _cumulativeSensors)
-                s.Enabled = false;
+                s.Stop();
         }
 
         public void startSensors()
@@ -728,7 +731,7 @@ namespace ASCOM.Wise40SafeToOperate
 
         #endregion
 
-        public bool CumulativeSensorsAreReady
+        public bool isReady
         {
             get
             {
