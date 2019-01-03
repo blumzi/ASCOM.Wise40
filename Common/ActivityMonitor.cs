@@ -42,7 +42,6 @@ namespace ASCOM.Wise40
         public enum Activity
         {
             None = 0,
-            Tracking = (1 << 0),
             Slewing = (1 << 1),
             Pulsing = (1 << 2),
             Dome = (1 << 3),
@@ -54,11 +53,10 @@ namespace ASCOM.Wise40
             Focuser = (1 << 9),
             FilterWheel = (1 << 10),
 
-            RealActivities = Tracking | Slewing | Pulsing | Dome | Handpad | Parking | Shutter | Focuser | FilterWheel,
+            RealActivities = Slewing | Pulsing | Dome | Handpad | Parking | Shutter | Focuser | FilterWheel,
         };
         private static Activity _currentlyActive = Activity.None;
         private static List<Activity> _activities = new List<Activity> {
-            Activity.Tracking,
             Activity.Slewing,
             Activity.Pulsing,
             Activity.Dome,
@@ -154,9 +152,10 @@ namespace ASCOM.Wise40
             if (act == Activity.Parking && InProgress(Activity.ShuttingDown))
                 return;
 
-            if (act == Activity.ShuttingDown)
+            if (act == Activity.ShuttingDown ||
+                    (act == Activity.GoingIdle && ! InProgress(Activity.RealActivities)))
                 StopGoindIdleTimer();
-            else if ((_currentlyActive & Activity.RealActivities) == Activity.None)
+            else if (! InProgress(Activity.RealActivities|Activity.ShuttingDown))
                 RestartGoindIdleTimer("idle");
         }
 
