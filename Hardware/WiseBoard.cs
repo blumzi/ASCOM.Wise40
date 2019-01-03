@@ -60,12 +60,14 @@ namespace ASCOM.Wise40.Hardware
 
         public static BoardMetaDigest FromHardware(WiseBoard board)
         {
-            BoardMetaDigest ret = new BoardMetaDigest();
+            BoardMetaDigest ret = new BoardMetaDigest()
+            {
 
-            ret.Number = board.boardNum;
-            ret.Type = board.type;
-            ret.Name = board.WiseName;
-            ret.Daqs = new List<DaqMetaDigest>();
+                Number = board.boardNum,
+                Type = board.type,
+                Name = board.WiseName,
+                Daqs = new List<DaqMetaDigest>(),
+            };
 
             foreach (WiseDaq daq in board.daqs)
                 ret.Daqs.Add(DaqMetaDigest.FromHardware(daq));
@@ -80,9 +82,10 @@ namespace ASCOM.Wise40.Hardware
 
         public static BoardDigest FromHardware(WiseBoard board)
         {
-            BoardDigest ret = new BoardDigest();
-
-            ret.Daqs = new List<DaqDigest>();
+            BoardDigest ret = new BoardDigest()
+            {
+                Daqs = new List<DaqDigest>(),
+            };
 
             foreach (WiseDaq daq in board.daqs)
                 ret.Daqs.Add(DaqDigest.FromHardware(daq));

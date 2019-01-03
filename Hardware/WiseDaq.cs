@@ -262,13 +262,14 @@ namespace ASCOM.Wise40.Hardware
 
         public static DaqMetaDigest FromHardware(WiseDaq daq)
         {
-            DaqMetaDigest ret = new DaqMetaDigest();
+            DaqMetaDigest ret = new DaqMetaDigest()
+            {
+                Porttype = daq.porttype,
+                Portdir = daq.portdir,
+                Nbits = daq.nbits,
+                Owners = new List<string>(),
+            };
 
-            ret.Porttype = daq.porttype;
-            ret.Portdir = daq.portdir;
-            ret.Nbits = daq.nbits;
-
-            ret.Owners = new List<string>();
             foreach (WiseBitOwner owner in daq.owners)
                 ret.Owners.Add(owner.owner);
 

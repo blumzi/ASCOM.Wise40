@@ -145,9 +145,9 @@ namespace ASCOM.Wise40.Hardware
 
         public static HardwareDigest FromHardware()
         {
-            HardwareDigest ret = new HardwareDigest();
-
-            ret.Boards = new List<BoardDigest>();
+            HardwareDigest ret = new HardwareDigest() {
+                Boards = new List<BoardDigest>(),
+            };
 
             foreach (WiseBoard board in Hardware.Instance.WiseBoards)
                 ret.Boards.Add(BoardDigest.FromHardware(board));
