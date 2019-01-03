@@ -48,8 +48,6 @@ namespace ASCOM.Wise40SafeToOperate
         public static ComputerControlSensor computerControlSensor;
         public static PlatformSensor platformSensor;
 
-        public static WiseComputerControl wisecomputercontrol;
-
         public static List<Sensor> _cumulativeSensors, _prioritizedSensors;
         private static bool _bypassed = false;
         private static bool _shuttingDown = false;
@@ -129,7 +127,6 @@ namespace ASCOM.Wise40SafeToOperate
             computerControlSensor = new ComputerControlSensor(this);
             platformSensor = new PlatformSensor(this);
             doorLockSensor = new DoorLockSensor(this);
-            wisecomputercontrol = WiseComputerControl.Instance;
 
             //
             // The sensors in priotity order.  The first one that:
@@ -413,7 +410,7 @@ namespace ASCOM.Wise40SafeToOperate
         public void stopSensors()
         {
             foreach (Sensor s in _cumulativeSensors)
-                s.Stop();
+                s.Enabled = false;
         }
 
         public void startSensors()
@@ -511,7 +508,7 @@ namespace ASCOM.Wise40SafeToOperate
                             reason = s.reason();
                         else
                         {
-                            if (!s.StateIsSet(Sensor.SensorState.Ready))
+                            if (!s.StateIsSet(Sensor.SensorState.EnoughReadings))
                             {
                                 // cummulative and not ready
                                 reason = String.Format("{0} - not ready (only {1} of {2} readings)",
@@ -598,7 +595,7 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
-                if (!cloudsSensor.StateIsSet(Sensor.SensorState.Ready))
+                if (!cloudsSensor.StateIsSet(Sensor.SensorState.EnoughReadings))
                     return Const.TriStateStatus.Warning;
                 return cloudsSensor.isSafe ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
             }
@@ -608,7 +605,7 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
-                if (!windSensor.StateIsSet(Sensor.SensorState.Ready))
+                if (!windSensor.StateIsSet(Sensor.SensorState.EnoughReadings))
                     return Const.TriStateStatus.Warning;
                 return windSensor.isSafe ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
             }
@@ -618,7 +615,7 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
-                if (!humiditySensor.StateIsSet(Sensor.SensorState.Ready))
+                if (!humiditySensor.StateIsSet(Sensor.SensorState.EnoughReadings))
                     return Const.TriStateStatus.Warning;
                 return humiditySensor.isSafe ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
             }
@@ -628,7 +625,7 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
-                if (!rainSensor.StateIsSet(Sensor.SensorState.Ready))
+                if (!rainSensor.StateIsSet(Sensor.SensorState.EnoughReadings))
                     return Const.TriStateStatus.Warning;
                 return rainSensor.isSafe ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
             }
@@ -737,7 +734,7 @@ namespace ASCOM.Wise40SafeToOperate
             {
                 foreach (Sensor s in _cumulativeSensors)
                 {
-                    if (! s.StateIsSet(Sensor.SensorState.Ready) || s.StateIsSet(Sensor.SensorState.Stabilizing))
+                    if (! s.StateIsSet(Sensor.SensorState.EnoughReadings))
                         return false;
                 }
 

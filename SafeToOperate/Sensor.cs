@@ -12,11 +12,13 @@ namespace ASCOM.Wise40SafeToOperate
 {
     public abstract class Sensor : WiseObject
     {
-        private System.Threading.Timer _timer;
+        private System.Threading.Timer _timer;  // for this specific sensor instance
         private DateTime _endOfStabilization;
+        private object _lock = new object();
 
         [Flags]
-        public enum SensorAttribute {
+        public enum SensorAttribute
+        {
             Immediate = (1 << 0),       // Decision is based on an immediate read of the sensor
                                         // Non-immediate sensors
                                         // - Are ready ONLY after _repeats readings have been accumulated
@@ -33,7 +35,7 @@ namespace ASCOM.Wise40SafeToOperate
         public enum SensorState
         {
             None = 0,
-            Ready = (1 << 1),           // has enough readings to decide if safe or not
+            EnoughReadings = (1 << 1),  // has enough readings to decide if safe or not
             Safe = (1 << 2),            // at least one reading was safe
             Stabilizing = (1 << 3),     // in transition from unsafe to safe
             Stale = (1 << 4),           // the data readings are too old
@@ -42,7 +44,13 @@ namespace ASCOM.Wise40SafeToOperate
 
         public bool StateIsSet(SensorState s)
         {
-            return (_state & s) != 0;
+            bool ret;
+
+            lock (_lock)
+            {
+                ret = (_state & s) != 0;
+            }
+            return ret;
         }
 
         public bool StateIsNotSet(SensorState s)
@@ -52,7 +60,7 @@ namespace ASCOM.Wise40SafeToOperate
 
         public void SetState(SensorState s)
         {
-            if (! StateIsSet(s))
+            if (!StateIsSet(s))
                 _state |= s;
         }
 
@@ -78,13 +86,13 @@ namespace ASCOM.Wise40SafeToOperate
 
             public override string ToString()
             {
-                return string.Format("stale: {0}, safe: {1}", stale, safe);
+                return safe ? "safe" : "not-safe";
             }
         }
 
         protected FixedSizedQueue<Reading> _readings;
         protected static Debugger debugger = Debugger.Instance;
-        
+
         protected static string deviceType = "SafetyMonitor";
 
         protected static WiseSafeToOperate wisesafetooperate;
@@ -166,10 +174,9 @@ namespace ASCOM.Wise40SafeToOperate
             if (!WiseSite.och.Connected)
                 WiseSite.och.Connected = true;
 
-                if (WiseSite.och.TimeSinceLastUpdate(propertyName) > WiseSafeToOperate.ageMaxSeconds)
+            if (WiseSite.och.TimeSinceLastUpdate(propertyName) > WiseSafeToOperate.ageMaxSeconds)
             {
                 SetState(SensorState.Stale);
-                UnsetState(SensorState.Safe);
                 return true;
             }
 
@@ -185,8 +192,9 @@ namespace ASCOM.Wise40SafeToOperate
             _nstale = 0;
 
             readProfile();
-            if (HasAttribute(SensorAttribute.AlwaysEnabled) && _timer != null) {
-                    _timer.Change(Timeout.Infinite, Timeout.Infinite);
+            if (HasAttribute(SensorAttribute.AlwaysEnabled) && _timer != null)
+            {
+                _timer.Change(Timeout.Infinite, Timeout.Infinite);
             }
             else
             {
@@ -211,100 +219,114 @@ namespace ASCOM.Wise40SafeToOperate
         // The timer is enabled ONLY on non-Immediate sensors
         //
         private void onTimer(object StateObject)
-        {        
+        {
             if (!Enabled)
-            {
-                Stop();
                 return;
-            }
-            
-            if (StateIsSet(SensorState.Stabilizing))
-            {
-                // this timer event is at the end of the stabilization period
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}) - Stabilization ended, restarting", WiseName);
-                #endregion
-                Restart(0);
-                return;
-            }
 
-            bool wassafe = StateIsSet(SensorState.Safe);
-            bool wasready = StateIsSet(SensorState.Ready);
-
+            DateTime now = DateTime.Now;
             Reading currentReading = getReading();
-            _readings.Enqueue(currentReading);
-            if (_readings.ToArray().Count() == _repeats)
-                SetState(SensorState.Ready);
-            else
-            {
-                UnsetState(SensorState.Ready);
-                UnsetState(SensorState.Safe);
-            }
 
             Reading[] arr = _readings.ToArray();
             List<string> values = new List<string>();
             int nbad = 0, nstale = 0, nreadings = 0;
-            foreach (Reading r in arr)
+            foreach (Reading r in arr)      // before current reading
             {
-                values.Add(r.safe.ToString());
+                values.Add(r.ToString());
                 nreadings++;
-                if (r.safe == false)
+                if (!r.safe)
                     nbad++;
-                if (r.stale == true)
+                if (r.stale)
                     nstale++;
             }
-            debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}) onTimer: added {1} [{2}]",
-                WiseName, currentReading, String.Join(",", values));
+            SensorState savedState = _state;
+            bool wassafe = StateIsSet(SensorState.Safe);
+            _readings.Enqueue(currentReading);
+
+            arr = _readings.ToArray();
+            values = new List<string>();
+            nbad = 0;
+            nstale = 0;
+            nreadings = 0;
+            foreach (Reading r in arr)      // including current reading
+            {
+                values.Add(r.ToString());
+                nreadings++;
+                if (!r.safe)
+                    nbad++;
+                if (r.stale)
+                    nstale++;
+            }
+
+            debugger.WriteLine(Debugger.DebugLevel.DebugSafety,
+                "onTimer: Sensor ({0}) readings: [{1}]",
+                WiseName, String.Join(",", values));
 
             _nreadings = nreadings;
             _nbad = nbad;
-            if (HasAttribute(SensorAttribute.CanBeStale))
+            _nstale = nstale;
+
+            lock (_lock)
             {
-                _nstale = nstale;
-                if (_nstale > 0)
+                UnsetState(SensorState.Safe);
+
+                if (HasAttribute(SensorAttribute.CanBeStale) && (_nstale > 0))
+                {
+                    ProlongUnsafety(string.Format("{0} stale reading{1}", _nstale, _nstale > 1 ? "s" : ""));
                     SetState(SensorState.Stale);
+                    return;     // Remain unsafe - at least one stale reading
+                }
                 else
                     UnsetState(SensorState.Stale);
-            }
 
-            if (StateIsSet(SensorState.Ready))
-            {
-                if (_nbad == _repeats)
-                    UnsetState(SensorState.Safe);
+                if (_readings.ToArray().Count() != _repeats)
+                {
+                    UnsetState(SensorState.EnoughReadings);
+                    return;     // Remain unsafe - not enough readings
+                }
                 else
-                    SetState(SensorState.Safe);
-            }
+                    SetState(SensorState.EnoughReadings);
 
-            if (!StateIsSet(SensorState.Ready))
-                return;
+                if (_nbad == _repeats)
+                {
+                    ProlongUnsafety("All readings are unsafe");
+                    return;     // Remain unsafe - all readings are unsafe
+                }
 
-            bool issafe = StateIsSet(SensorState.Safe);
-            #region debug
-            if (wassafe != issafe)
-                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}) isSafe changed from {1} to {2}", WiseName, wassafe, issafe);
-            #endregion
+                bool prolong = true;
+                if (StateIsSet(SensorState.Stabilizing)) {
+                    if (currentReading.stale || !currentReading.safe)
+                    {
+                        ProlongUnsafety("Unsafe reading while stabilizing");
+                        return;
+                    }
 
-            if (wasready)
-            {
-                if (!wassafe && issafe)
-                    BumpStabilization("Became safe");
-                else if (wassafe && !issafe)
-                    BumpStabilization("Became unsafe");
-                else if (!wassafe && !issafe)
-                    BumpStabilization("Still not safe");
+                    if (now.CompareTo(_endOfStabilization) <= 0)
+                        return;
+                    else {
+                        UnsetState(SensorState.Stabilizing);
+                        prolong = false;    // don't prolong if just ended stabilization
+                    }
+                }
+
+                // If we got here the sensor is currently safe
+                if (StateIsSet(SensorState.EnoughReadings) && !wassafe && prolong)
+                {
+                    ProlongUnsafety("Readings just turned safe");
+                    return;     // Remain unsafe - just begun stabilizing
+                }
+
+                SetState(SensorState.Safe);
             }
         }
 
-        private void BumpStabilization(string reason)
+        private void ProlongUnsafety(string reason)
         {
-            int millis = (int) WiseSafeToOperate._stabilizationPeriod.TotalMilliseconds;
-
             SetState(SensorState.Stabilizing);
-            _timer.Change(millis, Timeout.Infinite);
-            _endOfStabilization = DateTime.Now.AddMilliseconds(millis);
+            _endOfStabilization = DateTime.Now.AddMilliseconds((int)WiseSafeToOperate._stabilizationPeriod.TotalMilliseconds);
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}) will stabilize in {1} millis (reason: {2})",
-                WiseName, millis, reason);
+            debugger.WriteLine(Debugger.DebugLevel.DebugSafety,
+                "ProlongUnsafety: Sensor ({0}) will stabilize at {1} (reason: {2})",
+                WiseName, _endOfStabilization, reason);
             #endregion
         }
 
@@ -318,17 +340,6 @@ namespace ASCOM.Wise40SafeToOperate
                 return StateIsSet(SensorState.Stabilizing) ?
                     _endOfStabilization - DateTime.Now :
                     TimeSpan.Zero;
-            }
-        }
-
-        public void Stop()
-        {
-            if (DoesNotHaveAttribute(SensorAttribute.Immediate))
-            {
-                _timer.Change(Timeout.Infinite, Timeout.Infinite);
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}) Stop: stopped", WiseName);
-                #endregion
             }
         }
 
@@ -354,36 +365,21 @@ namespace ASCOM.Wise40SafeToOperate
                 {
                     ret = getReading().safe;
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}), isSafe: {1}", WiseName, ret);
-                    #endregion
-                    return ret;
-                }
-
-                if (DoesNotHaveAttribute(SensorAttribute.Immediate) && !StateIsSet(SensorState.Ready))
-                {
-                    ret = false;
-                    #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}), isSafe: {1} (not ready)",
+                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety,
+                        "Sensor ({0}), (immediate) isSafe: {1}",
                         WiseName, ret);
                     #endregion
-                    return ret;
                 }
-
-                if (DoesNotHaveAttribute(SensorAttribute.Immediate) && StateIsSet(SensorState.Stabilizing))
+                else
                 {
-                    ret = false;
-                    #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}), isSafe: {1} (stabilizing)",
-                        WiseName, ret);
-                    #endregion
-                    return ret;
-                }
 
-                ret = StateIsSet(SensorState.Safe);
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}), isSafe: {1} ({2} bad out of {3})",
-                    WiseName, ret, _nbad, _repeats);
-                #endregion
+                    ret = StateIsSet(SensorState.Safe);
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety,
+                        "Sensor ({0}), (cumulative) isSafe: {1} (state: {2})",
+                        WiseName, ret, _state.ToString());
+                    #endregion
+                }
                 return ret;
             }
         }
@@ -405,9 +401,15 @@ namespace ASCOM.Wise40SafeToOperate
 
                 _enabled = value;
                 if (_enabled)
+                {
                     SetState(SensorState.Enabled);
+                    _timer.Change(0, _intervalMillis);
+                }
                 else
+                {
                     UnsetState(SensorState.Enabled);
+                    _timer.Change(Timeout.Infinite, Timeout.Infinite);
+                }
             }
         }
     }
