@@ -249,8 +249,8 @@ namespace ASCOM.Wise40
                         {
                             s += " in ";
                             if (ts.TotalMinutes > 0)
-                                s += string.Format("{0}m", (int)ts.TotalMinutes);
-                            s += string.Format("{0}s", ts.Seconds);
+                                s += string.Format("{0:D2}m", (int)ts.TotalMinutes);
+                            s += string.Format("{0:D2}s", ts.Seconds);
                         }
                         ret.Add(s);
                     }
