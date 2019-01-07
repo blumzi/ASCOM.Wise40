@@ -681,7 +681,14 @@ namespace ASCOM.Wise40.VantagePro
         {
             get
             {
-                return sensorData["ForecastStr"];
+                Refresh();
+                var forecast = sensorData["ForecastStr"];
+
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugSafety,
+                    string.Format("VantagePro: Forecast - get => {0}", forecast));
+                #endregion
+                return forecast;
             }
         }
 

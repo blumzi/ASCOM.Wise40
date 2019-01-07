@@ -648,7 +648,7 @@ namespace Dash
             #endregion
 
             #region RefreshForecast
-            dashStatus.Show(forecast);
+            dashStatus.Show("VantagePro2 forecast: " + forecast);
             #endregion
         }
         #endregion
