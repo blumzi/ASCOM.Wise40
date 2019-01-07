@@ -191,7 +191,6 @@
     <None Include="Resources\ASCOM.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="CurrentCommit.txt" />
     <Content Include="Resources\Monitor.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

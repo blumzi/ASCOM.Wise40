@@ -195,7 +195,6 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <Content Include="ASCOM.ico" />
-    <None Include="CurrentCommit.txt" />
     <Content Include="Documents\DomeSync.txt" />
     <Content Include="Documents\Telescope Conform32 Results.txt" />
     <Content Include="Installer\ReadMe.html" />

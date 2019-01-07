@@ -182,7 +182,6 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <Content Include="ASCOM.ico" />
-    <None Include="CurrentCommit.txt" />
     <Content Include="Installer\ReadMe.html" />
     <Content Include="Installer\Wise40Dome Setup.iss" />
     <Content Include="Wise40-Dome-ReadMe.html" />
