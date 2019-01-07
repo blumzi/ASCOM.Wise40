@@ -502,7 +502,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 {
                     if (CT.IsCancellationRequested) throw new Exception("Shutdown aborted");
 
-                    Log("   Starting Wise40 park ...");
+                    Log(string.Format("   Starting Wise40 park (reason: {0}) ...", reason));
 
                     Log(string.Format("    Parking telescope at {0} {1} and dome at {2} ...",
                         wisesite.LocalSiderealTime,
@@ -545,7 +545,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                         Angle ra, dec, az;
                         ra = Angle.FromHours(telescopeDigest.Current.RightAscension, Angle.Type.RA);
                         dec = Angle.FromDegrees(telescopeDigest.Current.Declination, Angle.Type.Dec);
-                        az = Angle.FromDegrees(domeDigest.Azimuth);
+                        az = Angle.FromDegrees(domeDigest.Azimuth, Angle.Type.Az);
                         shutterState = domeDigest.ShutterState;
                         activities = telescopeDigest.Activities;
 
@@ -557,7 +557,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                             _simulated ? 1 : 10);
                     } while (activities.Contains("ShuttingDown"));
 
-                    Log("   Wise40 is parked.");
+                    Log("   Done parking Wise40.");
                 }
 
                 if (!telescopeDigest.EnslavesDome)
