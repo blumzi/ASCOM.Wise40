@@ -240,6 +240,8 @@ namespace ASCOM.Wise40SafeToOperate
             }
             SensorState savedState = _state;
             bool wassafe = StateIsSet(SensorState.Safe);
+            bool wasready = StateIsSet(SensorState.EnoughReadings);
+
             _readings.Enqueue(currentReading);
 
             arr = _readings.ToArray();
@@ -271,7 +273,7 @@ namespace ASCOM.Wise40SafeToOperate
 
                 if (HasAttribute(SensorAttribute.CanBeStale) && (_nstale > 0))
                 {
-                    ProlongUnsafety(string.Format("{0} stale reading{1}", _nstale, _nstale > 1 ? "s" : ""));
+                    ExtendUnsafety(string.Format("{0} stale reading{1}", _nstale, _nstale > 1 ? "s" : ""));
                     SetState(SensorState.Stale);
                     return;     // Remain unsafe - at least one stale reading
                 }
@@ -288,7 +290,7 @@ namespace ASCOM.Wise40SafeToOperate
 
                 if (_nbad == _repeats)
                 {
-                    ProlongUnsafety("All readings are unsafe");
+                    ExtendUnsafety("All readings are unsafe");
                     return;     // Remain unsafe - all readings are unsafe
                 }
 
@@ -296,7 +298,7 @@ namespace ASCOM.Wise40SafeToOperate
                 if (StateIsSet(SensorState.Stabilizing)) {
                     if (currentReading.stale || !currentReading.safe)
                     {
-                        ProlongUnsafety("Unsafe reading while stabilizing");
+                        ExtendUnsafety("Unsafe reading while stabilizing");
                         return;
                     }
 
@@ -309,9 +311,9 @@ namespace ASCOM.Wise40SafeToOperate
                 }
 
                 // If we got here the sensor is currently safe
-                if (StateIsSet(SensorState.EnoughReadings) && !wassafe && prolong)
+                if (wasready && StateIsSet(SensorState.EnoughReadings) && !wassafe && prolong)
                 {
-                    ProlongUnsafety("Readings just turned safe");
+                    ExtendUnsafety("Readings just turned safe");
                     return;     // Remain unsafe - just begun stabilizing
                 }
 
@@ -319,14 +321,14 @@ namespace ASCOM.Wise40SafeToOperate
             }
         }
 
-        private void ProlongUnsafety(string reason)
+        private void ExtendUnsafety(string reason)
         {
             SetState(SensorState.Stabilizing);
             _endOfStabilization = DateTime.Now.AddMilliseconds((int)WiseSafeToOperate._stabilizationPeriod.TotalMilliseconds);
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugSafety,
-                "ProlongUnsafety: Sensor ({0}) will stabilize at {1} (reason: {2})",
-                WiseName, _endOfStabilization, reason);
+                "ExtendUnsafety: Sensor ({0}) will stabilize at {1} (reason: {2})",
+                WiseName, _endOfStabilization.ToUniversalTime().ToShortTimeString(), reason);
             #endregion
         }
 
