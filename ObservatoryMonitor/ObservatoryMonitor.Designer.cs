@@ -43,7 +43,6 @@
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.listBoxLog = new System.Windows.Forms.ListBox();
             this.labelDate = new System.Windows.Forms.Label();
-            this.buttonShutdown = new System.Windows.Forms.Button();
             this.timerDisplayRefresh = new System.Windows.Forms.Timer(this.components);
             this.buttonManualIntervention = new System.Windows.Forms.Button();
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
@@ -185,23 +184,6 @@
             this.labelDate.TabIndex = 53;
             this.labelDate.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // buttonShutdown
-            // 
-            this.buttonShutdown.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonShutdown.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.buttonShutdown.Enabled = false;
-            this.buttonShutdown.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.buttonShutdown.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.buttonShutdown.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonShutdown.Location = new System.Drawing.Point(439, 135);
-            this.buttonShutdown.Name = "buttonShutdown";
-            this.buttonShutdown.Size = new System.Drawing.Size(121, 42);
-            this.buttonShutdown.TabIndex = 54;
-            this.buttonShutdown.Text = "Shutdown Now";
-            this.toolTip.SetToolTip(this.buttonShutdown, "Close the dome\r\nStop activities\r\nPark the telescope and dome");
-            this.buttonShutdown.UseVisualStyleBackColor = false;
-            this.buttonShutdown.Click += new System.EventHandler(this.buttonPark_Click);
-            // 
             // timerDisplayRefresh
             // 
             this.timerDisplayRefresh.Enabled = true;
@@ -302,9 +284,9 @@
             this.buttonProjector.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonProjector.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonProjector.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonProjector.Location = new System.Drawing.Point(454, 183);
+            this.buttonProjector.Location = new System.Drawing.Point(440, 160);
             this.buttonProjector.Name = "buttonProjector";
-            this.buttonProjector.Size = new System.Drawing.Size(92, 33);
+            this.buttonProjector.Size = new System.Drawing.Size(100, 40);
             this.buttonProjector.TabIndex = 67;
             this.buttonProjector.Text = "Projector";
             this.buttonProjector.UseVisualStyleBackColor = false;
@@ -448,7 +430,6 @@
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.labelNextCheck);
             this.Controls.Add(this.labelNextCheckLabel);
-            this.Controls.Add(this.buttonShutdown);
             this.Controls.Add(this.labelDate);
             this.Controls.Add(this.listBoxLog);
             this.Controls.Add(this.menuStrip);
@@ -474,7 +455,6 @@
         private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem;
         private System.Windows.Forms.ListBox listBoxLog;
         private System.Windows.Forms.Label labelDate;
-        private System.Windows.Forms.Button buttonShutdown;
         private System.Windows.Forms.Timer timerDisplayRefresh;
         private System.Windows.Forms.Button buttonManualIntervention;
         private System.Windows.Forms.ToolTip toolTip;

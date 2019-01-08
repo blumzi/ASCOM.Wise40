@@ -97,9 +97,6 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                     }
                 }
 
-                if (!buttonShutdown.Enabled)
-                    buttonShutdown.Enabled = true;
-
                 if (wisesafetooperate == null)
                     wisesafetooperate = new DriverAccess.SafetyMonitor("ASCOM.Remote1.SafetyMonitor");      // Must match ASCOM Remote Server Setup
                 if (!wisesafetooperate.Connected)
@@ -276,8 +273,6 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             {
                 labelNextCheck.Visible = false;
                 labelNextCheckLabel.Visible = false;
-                buttonShutdown.Text = "Abort Shutdown";
-                toolTip.SetToolTip(buttonShutdown, "Abort the shutdown procedure");
             }
             else
             {
@@ -289,9 +284,6 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                     s += string.Format("{0:D2}m", remaining.Minutes);
                 s += string.Format("{0:D2}s", remaining.Seconds);
                 labelNextCheck.Text = s;
-
-                buttonShutdown.Text = "Shutdown Now";
-                toolTip.SetToolTip(buttonShutdown, "Close shutter\nStop activities\nPark equipment");
             }
 
             buttonManualIntervention.Enabled = !ShuttingDown;
@@ -414,12 +406,6 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 }
             }
             catch { }
-        }
-
-        private void AbortShutdown()
-        {
-            CTS.Cancel();
-            CTS = new CancellationTokenSource();
         }
 
         private void DoShutdownObservatory(string reason)
@@ -636,14 +622,6 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 }
                 return Angle.FromDegrees(degrees, Angle.Type.Az);
             }
-        }
-
-        private void buttonPark_Click(object sender, EventArgs e)
-        {
-            if (ShuttingDown)
-                AbortShutdown();
-            else
-                DoShutdownObservatory("Manual Shutdown");
         }
 
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
