@@ -155,8 +155,8 @@ namespace ASCOM.Wise40 //.Telescope
             {
                 #region debug
                 debugger.WriteLine(Common.Debugger.DebugLevel.DebugLogic,
-                    "pulser \"{0}\" on {1} completed with status: {2}",
-                    t.ToString(), pulserTask._axis.ToString(), t.Status.ToString());
+                    "pulser on {0} completed with status: {1}",
+                    pulserTask._axis.ToString(), t.Status.ToString());
                 #endregion
                 Deactivate(pulserTask);
             }, TaskContinuationOptions.ExecuteSynchronously);
