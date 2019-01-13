@@ -2054,8 +2054,7 @@ namespace ASCOM.Wise40
                             debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
                                 "_doSlewToCoordinatesAsync: Slewer \"{0}\" completed with status: {1}", slewer.type.ToString(), slewerTask.Status.ToString());
                             #endregion
-                            if (slewers.Delete(slewerType))
-                                AnnulateTargetCoordinate(slewerType);
+                            slewers.Delete(slewerType);
 
                             if (slewerTask.Status == TaskStatus.Canceled)
                                 throw new OperationCanceledException(string.Format("Slewer \"{0}\" Canceled",
@@ -2079,7 +2078,6 @@ namespace ASCOM.Wise40
                         debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "_doSlewToCoordinatesAsync: Failed to run slewer {0}: {1}", slewerType.ToString(), ex.Message);
                         #endregion
                         slewers.Delete(slewerType);
-                        AnnulateTargetCoordinate(slewerType);
                     }
                 }
             }
@@ -2093,20 +2091,6 @@ namespace ASCOM.Wise40
                     #endregion
                     return false;
                 }));
-            }
-        }
-
-        public void AnnulateTargetCoordinate(Slewers.Type type)
-        {
-            switch (type)
-            {
-                case Slewers.Type.Ra:
-                    _targetRightAscension = null;
-                    break;
-
-                case Slewers.Type.Dec:
-                    _targetDeclination = null;
-                    break;
             }
         }
 

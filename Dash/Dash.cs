@@ -304,27 +304,35 @@ namespace Dash
             labelAzimuthValue.Text = Angle.FromDegrees(telescopeDigest.Azimuth).ToNiceString();
 
             #region Telescope Target
-            //if (telescopeDigest.Target.RightAscension == Const.noTarget)
-            //{
-            //    textBoxRA.Text = "";
-            //    toolTip.SetToolTip(textBoxRA, "Target RightAscension either not set or already reached");
-            //}
-            //else
-            //{
-            //    textBoxRA.Text = Angle.FromHours(telescopeDigest.Target.RightAscension, Angle.Type.RA).ToNiceString();
-            //    toolTip.SetToolTip(textBoxRA, "Current target RightAscension");
-            //}
+            if (telescopeDigest.Slewing)
+            {
+                if (telescopeDigest.Target.RightAscension == Const.noTarget)
+                {
+                    textBoxRA.Text = "";
+                    toolTip.SetToolTip(textBoxRA, "Target RightAscension either not set or already reached");
+                }
+                else
+                {
+                    textBoxRA.Text = Angle.FromHours(telescopeDigest.Target.RightAscension, Angle.Type.RA).ToNiceString();
+                    toolTip.SetToolTip(textBoxRA, "Current target RightAscension");
+                }
 
-            //if (telescopeDigest.Target.Declination == Const.noTarget)
-            //{
-            //    textBoxDec.Text = "";
-            //    toolTip.SetToolTip(textBoxDec, "Target Declination either not set or already reached");
-            //}
-            //else
-            //{
-            //    textBoxDec.Text = Angle.FromDegrees(telescopeDigest.Target.Declination, Angle.Type.Dec).ToNiceString();
-            //    toolTip.SetToolTip(textBoxDec, "Current target Declination");
-            //}
+                if (telescopeDigest.Target.Declination == Const.noTarget)
+                {
+                    textBoxDec.Text = "";
+                    toolTip.SetToolTip(textBoxDec, "Target Declination either not set or already reached");
+                }
+                else
+                {
+                    textBoxDec.Text = Angle.FromDegrees(telescopeDigest.Target.Declination, Angle.Type.Dec).ToNiceString();
+                    toolTip.SetToolTip(textBoxDec, "Current target Declination");
+                }
+            }
+            else
+            {
+                textBoxRA.Text = "";
+                textBoxDec.Text = "";
+            }
             #endregion
 
             #endregion
