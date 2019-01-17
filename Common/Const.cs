@@ -95,6 +95,9 @@ namespace ASCOM.Wise40.Common
             public static string DomeShutter_UseWebClient = "ShutterUseWebClient";
 
             public static string Boltwood_DataFile = "DataFile";
+            public static string Boltwood_Enabled = "Enabled";
+            public static string Boltwood_InputMethod = "InputMethod";
+            public static string Boltwood_Name = "Name";
 
             public static string VantagePro_OpMode = "OperationMode";
             public static string VantagePro_DataFile = "DataFile";

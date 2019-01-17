@@ -94,7 +94,7 @@ namespace ASCOM.Wise40.Boltwood
         public enum WetFlagValue { wetDry = 0, wetLastMinute = 1, wetRightNow = 2 };
         public WetFlagValue rainFlag;
         public WetFlagValue wetFlag;
-        public int sinceSeeconds;
+        public int secondsSinceLastValidData;
         public DateTime lastWriten;
         public enum CloudCondition
         {
@@ -189,7 +189,7 @@ namespace ASCOM.Wise40.Boltwood
                 heaterSetting = Convert.ToInt32(data.Substring(66, 3));
                 rainFlag = (WetFlagValue)Convert.ToInt32(data.Substring(70, 1));
                 wetFlag = (WetFlagValue)Convert.ToInt32(data.Substring(72, 1));
-                sinceSeeconds = Convert.ToInt32(data.Substring(74, 5));
+                secondsSinceLastValidData = Convert.ToInt32(data.Substring(74, 5));
                 //lastWriten = Convert.ToDateTime(data.Substring(80, 12));
                 cloudCondition = (CloudCondition)Convert.ToInt32(data.Substring(93, 1));
                 windCondition = (WindCondition)Convert.ToInt32(data.Substring(95, 1));

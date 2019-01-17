@@ -90,13 +90,13 @@ namespace ASCOM.Wise40.Boltwood
         {
             get
             {
-                return new ArrayList();
+                return boltwood.SupportedActions;
             }
         }
 
         public string Action(string actionName, string actionParameters)
         {
-            throw new ASCOM.ActionNotImplementedException("Action " + actionName + " is not implemented by this driver");
+            return boltwood.Action(actionName, actionParameters);
         }
 
         public void CommandBlind(string command, bool raw)

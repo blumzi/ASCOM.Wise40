@@ -7,27 +7,29 @@ using System.Globalization;
 using System.IO;
 
 using ASCOM.Utilities;
+using ASCOM.Wise40;
 using ASCOM.Wise40.Common;
+using Newtonsoft.Json;
 
 namespace ASCOM.Wise40.Boltwood
 {
-    public class WiseBoltwood: WiseObject
+    public class WiseBoltwood : WiseObject
     {
         private bool _initialized = false;
         private bool _connected = false;
         private static Version version = new Version("0.2");
         public static string driverDescription = string.Format("ASCOM Wise40.Boltwood v{0}", version.ToString());
-        private string _dataFile;
         private Util utilities = new Util();
-        private DateTime _lastDataRead = DateTime.MinValue;
         private WiseSite wisesite = WiseSite.Instance;
+
+        public const int nStations = 6;
+        public static BoltwoodStation[] stations = new BoltwoodStation[nStations];
+        private BoltwoodStation C18Station, C28Station;
 
         private static volatile WiseBoltwood _instance; // Singleton
         private static object syncObject = new object();
-        static WiseBoltwood() {}
-        public WiseBoltwood() {}
-
-        private SensorData _sensorData = null;
+        static WiseBoltwood() { }
+        public WiseBoltwood() { }
 
         public static WiseBoltwood Instance
         {
@@ -51,44 +53,23 @@ namespace ASCOM.Wise40.Boltwood
             if (_initialized)
                 return;
 
-            ReadProfile();
-            try
+            for (int i = 0; i < nStations; i++)
             {
-                GetSensorData();
-            }
-            catch { }
+                stations[i] = new BoltwoodStation(i);
+                stations[i].ReadProfile();
+                if (stations[i].Name == "C18")
+                    C18Station = stations[i];
+                else if (stations[i].Name == "C28")
+                    C28Station = stations[i];
 
-            _initialized = true;
-        }
-
-
-        public void GetSensorData()
-        {
-            string str;
-
-            if (_dataFile == null || _dataFile == string.Empty)
-                throw new InvalidOperationException("GetSensorData: _dataFile name is either null or empty!");
-
-            if (!File.Exists(_dataFile))
-                throw new InvalidOperationException(string.Format("GetSensorData: _dataFile \"{0}\" DOES NOT exist!", _dataFile));
-
-            if (_lastDataRead == DateTime.MinValue || File.GetLastWriteTime(_dataFile).CompareTo(_lastDataRead) > 0)
-            {
                 try
                 {
-                    using (StreamReader sr = new StreamReader(_dataFile))
-                    {
-                        str = sr.ReadToEnd();
-                    }
+                    stations[i].GetSensorData();
                 }
-                catch (Exception e)
-                {
-                    throw new InvalidOperationException(string.Format("GetSensorData: Cannot read \"{0}\", caught {1}", _dataFile, e.Message));
-                }
-                                    
-                _sensorData = new SensorData(str);
-                _lastDataRead = DateTime.Now;
+                catch { }
             }
+
+            _initialized = true;
         }
 
         private Common.Debugger debugger = Debugger.Instance;
@@ -122,18 +103,56 @@ namespace ASCOM.Wise40.Boltwood
             }
         }
 
+
+        private static ArrayList supportedActions = new ArrayList() {
+            "rawdata",
+            "OCHTag",
+        };
+
         public ArrayList SupportedActions
         {
             get
             {
-                //tl.LogMessage("SupportedActions Get", "Returning empty arraylist");
-                return new ArrayList();
+                return supportedActions;
             }
         }
 
-        public string Action(string actionName, string actionParameters)
+        public string Action(string action, string parameter)
         {
-            throw new ASCOM.ActionNotImplementedException("Action " + actionName + " is not implemented by this driver");
+            string ret = "";
+
+            switch (action)
+            {
+                case "OCHTag":
+                    ret = "Wise40Boltwood";
+                    break;
+
+                case "rawdata":
+                    ret = RawData;
+                    break;
+
+                default:
+                    throw new ASCOM.ActionNotImplementedException("Action " + action + " is not implemented by this driver");
+            }
+            return ret;
+        }
+
+        public string RawData
+        {
+            get
+            {
+                List<BoltwoodStation.BoltwoodStationRawData> list = new List<BoltwoodStation.BoltwoodStationRawData>();
+
+                foreach (var station in WiseBoltwood.stations)
+                    list.Add(new BoltwoodStation.BoltwoodStationRawData()
+                    {
+                        Name = station.Name,
+                        Vendor = station.Vendor.ToString(),
+                        Model = station.Model.ToString(),
+                        SensorData = station.SensorData,
+                    });
+                return JsonConvert.SerializeObject(list);
+            }
         }
 
         /// <summary>
@@ -202,7 +221,6 @@ namespace ASCOM.Wise40.Boltwood
 
         public string Description
         {
-            // TODO customise this device description
             get
             {
                 return driverDescription;
@@ -277,6 +295,26 @@ namespace ASCOM.Wise40.Boltwood
             }
         }
 
+        private double CloudConditionToNumeric(SensorData.CloudCondition condition)
+        {
+            double ret = 0.0;
+
+            switch (condition)
+            {
+                case SensorData.CloudCondition.cloudClear:
+                case SensorData.CloudCondition.cloudUnknown:
+                    ret = 0.0;
+                    break;
+                case SensorData.CloudCondition.cloudCloudy:
+                    ret = 50.0;
+                    break;
+                case SensorData.CloudCondition.cloudVeryCloudy:
+                    ret = 90.0;
+                    break;
+            }
+            return ret;
+        }
+
         /// <summary>
         /// Amount of sky obscured by cloud
         /// </summary>
@@ -289,31 +327,31 @@ namespace ASCOM.Wise40.Boltwood
 
                 try
                 {
-                    GetSensorData();
-                } catch
+                    GetAllStationsSensorData();
+                }
+                catch
                 {
                     return ret;
                 }
 
-                switch (_sensorData.cloudCondition)
-                {
-                    case SensorData.CloudCondition.cloudClear:
-                    case SensorData.CloudCondition.cloudUnknown:
-                        ret = 0.0;
-                        break;
-                    case SensorData.CloudCondition.cloudCloudy:
-                        ret = 50.0;
-                        break;
-                    case SensorData.CloudCondition.cloudVeryCloudy:
-                        ret = 90.0;
-                        break;
-                }
+                ret = CloudConditionToNumeric(C18Station.SensorData.cloudCondition);
 
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, string.Format("Boltwood: CloudCover_numeric - get => {0}", ret.ToString()));
+                debugger.WriteLine(Debugger.DebugLevel.DebugSafety,
+                    string.Format("Boltwood: CloudCover_numeric - get => {0} (C18: {1}, C28: {2})",
+                    ret.ToString(),
+                    CloudConditionToNumeric(C18Station.SensorData.cloudCondition),
+                    CloudConditionToNumeric(C28Station.SensorData.cloudCondition)));
                 #endregion 
                 return ret;
             }
+        }
+
+        private void GetAllStationsSensorData()
+        {
+            foreach (var station in stations)
+                if (station.Enabled)
+                    station.GetSensorData();
         }
 
         public SensorData.CloudCondition CloudCover_condition
@@ -322,12 +360,13 @@ namespace ASCOM.Wise40.Boltwood
             {
                 try
                 {
-                    GetSensorData();
-                } catch
+                    GetAllStationsSensorData();
+                }
+                catch
                 {
                     return SensorData.CloudCondition.cloudUnknown;
                 }
-                return _sensorData.cloudCondition;
+                return C18Station.SensorData.cloudCondition;
             }
         }
 
@@ -344,13 +383,13 @@ namespace ASCOM.Wise40.Boltwood
             {
                 try
                 {
-                    GetSensorData();
+                    GetAllStationsSensorData();
                 }
                 catch
                 {
                     return double.NaN;
                 }
-                return _sensorData.dewPoint;
+                return C18Station.SensorData.dewPoint;
             }
         }
 
@@ -367,12 +406,13 @@ namespace ASCOM.Wise40.Boltwood
             {
                 try
                 {
-                    GetSensorData();
-                } catch
+                    GetAllStationsSensorData();
+                }
+                catch
                 {
                     return double.NaN;
                 }
-                return _sensorData.humidity;
+                return C18Station.SensorData.humidity;
             }
         }
 
@@ -415,7 +455,7 @@ namespace ASCOM.Wise40.Boltwood
         {
             try
             {
-                GetSensorData();
+                GetAllStationsSensorData();
             }
             catch { }
         }
@@ -497,12 +537,13 @@ namespace ASCOM.Wise40.Boltwood
             {
                 try
                 {
-                    GetSensorData();
-                } catch
+                    GetAllStationsSensorData();
+                }
+                catch
                 {
                     return 100; // ???
                 }
-                var ret = _sensorData.skyAmbientTemp;
+                var ret = C18Station.SensorData.skyAmbientTemp;
 
                 if (ret == (double)SensorData.SpecialTempValue.specialTempSaturatedHot)
                     ret = 100;
@@ -526,12 +567,13 @@ namespace ASCOM.Wise40.Boltwood
             {
                 try
                 {
-                    GetSensorData();
-                } catch
+                    GetAllStationsSensorData();
+                }
+                catch
                 {
                     return double.NaN;
                 }
-                double ret = _sensorData.ambientTemp;
+                double ret = C18Station.SensorData.ambientTemp;
 
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugSafety, string.Format("Boltwood: Temperature - get => {0}", ret.ToString()));
@@ -564,7 +606,7 @@ namespace ASCOM.Wise40.Boltwood
                     throw new MethodNotImplementedException("SensorDescription(" + PropertyName + ")");
             }
 
-            return _sensorData.age;
+            return C18Station.SensorData.age;
         }
 
         /// <summary>
@@ -602,14 +644,15 @@ namespace ASCOM.Wise40.Boltwood
             {
                 try
                 {
-                    GetSensorData();
-                } catch
+                    GetAllStationsSensorData();
+                }
+                catch
                 {
                     return double.NaN;
                 }
-                double ret = _sensorData.windSpeed;
+                double ret = C18Station.SensorData.windSpeed;
 
-                switch (_sensorData.windUnits)
+                switch (C18Station.SensorData.windUnits)
                 {
                     case SensorData.WindUnits.windKmPerHour:
                         ret = ret * 1000 / 3600;
@@ -635,10 +678,8 @@ namespace ASCOM.Wise40.Boltwood
         /// </summary>
         internal void ReadProfile()
         {
-            string defaultDataFile = Simulated ? "c:/temp/ClarityII-data.txt" : "//WO-NEO/Temp/clarityII-data.txt";
-
-            using (Profile driverProfile = new Profile() { DeviceType = "ObservingConditions" })
-                _dataFile = driverProfile.GetValue(Const.wiseBoltwoodDriverID, Const.ProfileName.Boltwood_DataFile, string.Empty, defaultDataFile);
+            foreach (var station in stations)
+                station.ReadProfile();
         }
 
         /// <summary>
@@ -646,21 +687,193 @@ namespace ASCOM.Wise40.Boltwood
         /// </summary>
         internal void WriteProfile()
         {
-            using (Profile driverProfile = new Profile() { DeviceType = "ObservingConditions" })
-                driverProfile.WriteValue(Const.wiseBoltwoodDriverID, Const.ProfileName.Boltwood_DataFile, _dataFile);
+            foreach (var station in stations)
+                station.WriteProfile();
+        }
+    }
+
+    public class BoltwoodStation : WeatherStation
+    {
+        private int _id;
+        private bool _enabled;
+        private string _name;
+        private string _file;
+        private WeatherStationVendor _vendor = WeatherStationVendor.Boltwood;
+        public WeatherStationModel _model = WeatherStationModel.CloudSensorII;
+        private WeatherStationInputMethod _method;
+        private DateTime _lastDataRead = DateTime.MinValue;
+        private SensorData _sensorData = null;
+
+        public BoltwoodStation(int id)
+        {
+            _id = id;
+            ReadProfile();
         }
 
-        public string DataFile
+        public override WeatherStationVendor Vendor
         {
             get
             {
-                return _dataFile;
+                return _vendor;
+            }
+        }
+
+        public override WeatherStationModel Model
+        {
+            get
+            {
+                return _model;
+            }
+        }
+
+        public void ReadProfile()
+        {
+            string subKey = "Station" + _id.ToString();
+
+            using (Profile driverProfile = new Profile() { DeviceType = "ObservingConditions" })
+            {
+                _name = driverProfile.GetValue(Const.wiseBoltwoodDriverID, Const.ProfileName.Boltwood_Name, subKey, string.Empty);
+                _enabled = Convert.ToBoolean(driverProfile.GetValue(Const.wiseBoltwoodDriverID, Const.ProfileName.Boltwood_Enabled, subKey, "false"));
+                _file = driverProfile.GetValue(Const.wiseBoltwoodDriverID, Const.ProfileName.Boltwood_DataFile, subKey, string.Empty);
+
+                WeatherStationInputMethod method;
+
+                if (Enum.TryParse<WeatherStationInputMethod>(driverProfile.GetValue(Const.wiseBoltwoodDriverID, Const.ProfileName.Boltwood_InputMethod, null, "ClarityII"), out method))
+                    _method = method;
+            }
+        }
+
+        public void WriteProfile()
+        {
+            string subKey = "Station" + _id.ToString();
+
+            using (Profile driverProfile = new Profile() { DeviceType = "ObservingConditions" })
+            {
+                driverProfile.WriteValue(Const.wiseBoltwoodDriverID, Const.ProfileName.Boltwood_Name, _name, subKey);
+                driverProfile.WriteValue(Const.wiseBoltwoodDriverID, Const.ProfileName.Boltwood_Enabled, _enabled.ToString(), subKey);
+                driverProfile.WriteValue(Const.wiseBoltwoodDriverID, Const.ProfileName.Boltwood_DataFile, _file, subKey);
+                driverProfile.WriteValue(Const.wiseBoltwoodDriverID, Const.ProfileName.Boltwood_InputMethod, _method.ToString(), subKey);
+            }
+        }
+
+        public void GetSensorData()
+        {
+            switch (_method)
+            {
+                case WeatherStationInputMethod.ClarityII:
+                    GetClarityIISensorData();
+                    break;
+
+                case WeatherStationInputMethod.Weizmann_TBD:
+                case WeatherStationInputMethod.Korean_TBD:
+                    break;
+            }
+        }
+        private void GetWeizmannSensorData() { }
+        private void GetKoreanSensorData() { }
+        private void GetClarityIISensorData()
+        {
+            string str;
+
+            if (_file == null || _file == string.Empty)
+                throw new InvalidOperationException("GetSensorData: _dataFile name is either null or empty!");
+
+            if (!File.Exists(_file))
+                throw new InvalidOperationException(string.Format("GetSensorData: _dataFile \"{0}\" DOES NOT exist!", _file));
+
+            if (_lastDataRead == DateTime.MinValue || File.GetLastWriteTime(_file).CompareTo(_lastDataRead) > 0)
+            {
+                try
+                {
+                    using (StreamReader sr = new StreamReader(_file))
+                    {
+                        str = sr.ReadToEnd();
+                    }
+                }
+                catch (Exception e)
+                {
+                    throw new InvalidOperationException(string.Format("GetSensorData: Cannot read \"{0}\", caught {1}", _file, e.Message));
+                }
+
+                _sensorData = new SensorData(str);
+                _lastDataRead = DateTime.Now;
+            }
+        }
+
+        public SensorData SensorData
+        {
+            get
+            {
+                return _sensorData;
+            }
+        }
+
+        public string Name
+        {
+            get
+            {
+                return _name;
             }
 
             set
             {
-                _dataFile = value;
+                _name = value;
             }
+        }
+
+        public int Id
+        {
+            get
+            {
+                return _id;
+            }
+        }
+
+        public override bool Enabled
+        {
+            get
+            {
+                return _enabled;
+            }
+
+            set
+            {
+                _enabled = value;
+            }
+        }
+
+        public override WeatherStationInputMethod InputMethod
+        {
+            get
+            {
+                return _method;
+            }
+
+            set
+            {
+                _method = value;
+            }
+        }
+
+        public string FilePath
+        {
+            get
+            {
+                return _file;
+            }
+
+            set
+            {
+                _file = value;
+            }
+        }
+
+        public class BoltwoodStationRawData
+        {
+            public string Name;
+            public string Vendor;
+            public string Model;
+            public SensorData SensorData;
         }
     }
 }

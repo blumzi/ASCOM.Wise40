@@ -7,13 +7,16 @@ using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Collections;
+using ASCOM.Wise40;
 using ASCOM.Wise40.Common;
 using ASCOM.Utilities;
+
+using Newtonsoft.Json;
 
 
 namespace ASCOM.Wise40.VantagePro
 {
-    public class WiseVantagePro: WiseObject
+    public class WiseVantagePro: WeatherStation
     {
         private string _dataFile;
         private static WiseVantagePro _instance = new WiseVantagePro();
@@ -262,7 +265,9 @@ namespace ASCOM.Wise40.VantagePro
             }
         }
 
-        public static ArrayList supportedActions = new ArrayList {
+        private static ArrayList supportedActions = new ArrayList() {
+            "rawdata",
+            "OCHTag",
             "forecast",
         };
 
@@ -276,15 +281,40 @@ namespace ASCOM.Wise40.VantagePro
 
         public string Action(string action, string parameter)
         {
-            action = action.ToLower();
-            parameter = parameter.ToLower();
+            string ret = "";
 
             switch (action)
             {
+                case "OCHTag":
+                    ret = "Wise40VantagePro2";
+                    break;
+
+                case "rawdata":
+                    ret = RawData;
+                    break;
+
                 case "forecast":
                     return Forecast;
+
                 default:
                     throw new ASCOM.ActionNotImplementedException("Action " + action + " is not implemented by this driver");
+            }
+            return ret;
+        }
+
+        public string RawData
+        {
+            get
+            {
+                VantagePro2StationRawData raw = new VantagePro2StationRawData()
+                {
+                    Name = WiseName,
+                    Vendor = Vendor.ToString(),
+                    Model = Model.ToString(),
+                    SensorData = sensorData,
+                };
+
+                return JsonConvert.SerializeObject(raw);
             }
         }
 
@@ -693,5 +723,45 @@ namespace ASCOM.Wise40.VantagePro
         }
 
         #endregion
+
+        public override bool Enabled
+        {
+            get { return true; }
+            set { }
+        }
+
+        public override WeatherStationInputMethod InputMethod
+        {
+            get
+            {
+                return WeatherStationInputMethod.WeatherLink_HtmlReport;
+            }
+
+            set { }
+        }
+
+        public override WeatherStationVendor Vendor
+        {
+            get
+            {
+                return WeatherStationVendor.DavisInstruments;
+            }
+        }
+
+        public override WeatherStationModel Model
+        {
+            get
+            {
+                return WeatherStationModel.VantagePro2;
+            }
+        }
+
+        public class VantagePro2StationRawData
+        {
+            public string Name;
+            public string Vendor;
+            public string Model;
+            public Dictionary<string, string> SensorData;
+        }
     }
 }
