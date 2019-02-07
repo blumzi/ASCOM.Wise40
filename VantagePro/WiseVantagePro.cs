@@ -266,7 +266,7 @@ namespace ASCOM.Wise40.VantagePro
         }
 
         private static ArrayList supportedActions = new ArrayList() {
-            "rawdata",
+            "raw-data",
             "OCHTag",
             "forecast",
         };
@@ -286,10 +286,10 @@ namespace ASCOM.Wise40.VantagePro
             switch (action)
             {
                 case "OCHTag":
-                    ret = "Wise40VantagePro2";
+                    ret = "Wise40.VantagePro2";
                     break;
 
-                case "rawdata":
+                case "raw-data":
                     ret = RawData;
                     break;
 

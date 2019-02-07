@@ -105,7 +105,7 @@ namespace ASCOM.Wise40.Boltwood
 
 
         private static ArrayList supportedActions = new ArrayList() {
-            "rawdata",
+            "raw-data",
             "OCHTag",
         };
 
@@ -124,10 +124,10 @@ namespace ASCOM.Wise40.Boltwood
             switch (action)
             {
                 case "OCHTag":
-                    ret = "Wise40Boltwood";
+                    ret = "Wise40.Boltwood";
                     break;
 
-                case "rawdata":
+                case "raw-data":
                     ret = RawData;
                     break;
 
