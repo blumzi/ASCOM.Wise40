@@ -232,9 +232,9 @@ namespace ASCOM.Wise40
             wisedome.CloseShutter();
         }
 
-        public void StopShutter()
+        public void StopShutter(string reason)
         {
-            wisedome.wisedomeshutter.Stop();
+            wisedome.wisedomeshutter.Stop(reason);
         }
 
         public ASCOM.DeviceInterface.ShutterState ShutterState

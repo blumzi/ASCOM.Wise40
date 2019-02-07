@@ -656,7 +656,7 @@ namespace Dash
             #endregion
 
             #region RefreshForecast
-            dashStatus.Show("VantagePro2 forecast: " + forecast);
+            dashStatus.Show("Forecast: " + forecast);
             #endregion
         }
         #endregion
@@ -1008,7 +1008,7 @@ namespace Dash
         {
             try
             {
-                domeSlaveDriver.StopShutter();
+                domeSlaveDriver.StopShutter("User action");
                 shutterStatus.Show("Stopped shutter", 1000, Statuser.Severity.Good);
             }
             catch (Exception ex)
@@ -1021,7 +1021,7 @@ namespace Dash
         {
             try
             {
-                domeSlaveDriver.StopShutter();
+                domeSlaveDriver.StopShutter("User action");
                 shutterStatus.Show("Stopped shutter", 1000, Statuser.Severity.Good);
             }
             catch (Exception ex)
