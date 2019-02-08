@@ -28,6 +28,7 @@ namespace ASCOM.Wise40SafeToOperate
             base("DoorLock",
                 SensorAttribute.Immediate |
                 SensorAttribute.AlwaysEnabled |
+                SensorAttribute.CanBeBypassed |
                 SensorAttribute.ForcesDecision, instance)
         {
             DoorLockPin = new WisePin("DoorLock", hardware.domeboard, DigitalPortType.FirstPortCH, 3, DigitalPortDirection.DigitalIn);
