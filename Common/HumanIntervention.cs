@@ -20,7 +20,7 @@ namespace ASCOM.Wise40
             {
                 sw.WriteLine("Operator: \"" + oper + "\"");
                 sw.WriteLine("Reason: \"" + reason + "\"");
-                sw.WriteLine("Created: " + DateTime.Now.ToString("MMM dd yyyy, hh:mm:ss tt"));
+                sw.WriteLine("Created: " + DateTime.Now.ToString("MMM dd yyyy, hh:mm:ss tt") + " (local time)");
             }
 
             while (!File.Exists(Const.humanInterventionFilePath))
