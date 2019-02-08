@@ -540,7 +540,7 @@ namespace Dash
 
             if (domeDigest.ShutterStatus.Contains("error"))
             {
-                msg = "Shutter error";
+                msg = "Shutter error (WiFi ?!?)";
                 severity = Statuser.Severity.Error;
             }
             else
