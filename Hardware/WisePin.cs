@@ -54,7 +54,13 @@ namespace ASCOM.Wise40.Hardware
                 return;
 
             if (!Simulated && _controlled && Hardware.computerControlPin.isOff)
-                throw new Hardware.MaintenanceModeException(Const.computerControlAtMaintenance);
+            {
+                //throw new Hardware.MaintenanceModeException(Const.computerControlAtMaintenance);
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WisePin:SetOff: Cannot set OFF - MAINTENANCE mode");
+                #endregion
+                return;
+            }
 
             int i, maxTries = 10;
             lock (daq._lock)
@@ -107,7 +113,13 @@ namespace ASCOM.Wise40.Hardware
                 return;
 
             if (!Simulated && _controlled && Hardware.computerControlPin.isOff)
-                throw new Hardware.MaintenanceModeException(Const.computerControlAtMaintenance);
+            {
+                //throw new Hardware.MaintenanceModeException(Const.computerControlAtMaintenance);
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WisePin:SetOff: Cannot set OFF - MAINTENANCE mode");
+                #endregion
+                return;
+            }
 
             int i, maxTries = 10;
             lock (daq._lock)
