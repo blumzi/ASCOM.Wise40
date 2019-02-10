@@ -108,6 +108,8 @@ namespace ASCOM.Wise40.Common
         public static string LogDirectory()
         {
             DateTime now = DateTime.UtcNow;
+            if (now.Hour > 12)
+                now = now.AddDays(-1);
             return string.Format(Const.topWise40Directory + "Logs/{0}-{1:D2}-{2:D2}",
                     now.Year, now.Month, now.Day);
         }
