@@ -90,6 +90,19 @@ namespace ASCOM.Wise40.Common
             _appendToWindow = append;
         }
 
+        public bool Autoflush
+        {
+            get
+            {
+                return System.Diagnostics.Debug.AutoFlush;
+            }
+
+            set
+            {
+                System.Diagnostics.Debug.AutoFlush = value;
+            }
+        }
+
         public void AppendToWindow(bool append)
         {
             _appendToWindow = append;
@@ -108,7 +121,7 @@ namespace ASCOM.Wise40.Common
         public static string LogDirectory()
         {
             DateTime now = DateTime.UtcNow;
-            if (now.Hour > 12)
+            if (now.Hour < 12)
                 now = now.AddDays(-1);
             return string.Format(Const.topWise40Directory + "Logs/{0}-{1:D2}-{2:D2}",
                     now.Year, now.Month, now.Day);
@@ -142,6 +155,7 @@ namespace ASCOM.Wise40.Common
                 }
                 catch { }
                 _logFile = currentLogPath;
+
                 Debug.Listeners.Add(new TextWriterTraceListener(_logFile));
             }
 
