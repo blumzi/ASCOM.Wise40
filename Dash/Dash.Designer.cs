@@ -2995,10 +2995,12 @@
             this.Controls.Add(this.tableLayoutMain);
             this.DoubleBuffered = true;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.Location = new System.Drawing.Point(720, 100);
             this.MainMenuStrip = this.menuStrip;
             this.MaximizeBox = false;
             this.Name = "FormDash";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
+            this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "Wise40 Dashboard";
             this.tableLayoutMain.ResumeLayout(false);
             this.tableLayoutMain.PerformLayout();
