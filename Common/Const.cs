@@ -104,6 +104,11 @@ namespace ASCOM.Wise40.Common
             public static string VantagePro_SerialPort = "Port";
         }
 
+        public class RESTServer
+        {
+            public static string top = "http://132.66.65.9:11111/server/v1/";
+        }
+
         public class App
         {
             public string Name;

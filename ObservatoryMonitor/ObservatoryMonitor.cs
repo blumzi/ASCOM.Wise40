@@ -54,6 +54,10 @@ namespace ASCOM.Wise40.ObservatoryMonitor
         TelescopeDigest telescopeDigest;
         SafeToOperateDigest safetooperateDigest;
 
+        private static Common.Debugger debugger = Common.Debugger.Instance;
+
+        public static bool connected = false;
+
         public void CloseConnections()
         {
             if (wisetelescope != null)
@@ -79,9 +83,29 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 wisesafetooperate.Dispose();
                 wisesafetooperate = null;
             }
+            connected = false;
         }
 
-        public void CheckConnections() {
+        public void CheckConnections()
+        {
+            //Process[] ascomServer = Process.GetProcessesByName(Const.wiseASCOMServerAppName);
+            //if (ascomServer.Count() == 0)
+            //{
+            //    Log(string.Format("{0} is not running!", Const.wiseASCOMServerAppName), 20);
+            //    connected = false;
+            //    return;
+            //}
+            using (var client = new WebClient())
+            {
+                try
+                {
+                    client.DownloadData(Const.RESTServer.top + "concurrency"); // GET to http://www.xxx.yyy.zzz/server/v1/concurrency
+                } catch (Exception ex)
+                {
+                    connected = false;
+                    return;
+                }
+            }
 
             try
             {
@@ -123,15 +147,19 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
                 if (!buttonProjector.Enabled)
                     buttonProjector.Enabled = true;
+
+                connected = true;
             }
             catch (Exception ex)
             {
                 Log(string.Format("Exception[0]: {0}", ex.InnerException == null ? ex.Message : ex.InnerException.Message));
+                connected = false;
             }
         }
 
         public ObsMainForm()
         {
+            debugger.Autoflush = true;
             InitializeComponent();
             listBoxLog.SelectionMode = SelectionMode.None;
             ReadProfile();
@@ -160,17 +188,6 @@ namespace ASCOM.Wise40.ObservatoryMonitor
         {
             if (ShuttingDown)
                 return;
-
-            _nextCheck = DateTime.Now + _intervalBetweenChecks;
-
-            Process[] ascomServer = Process.GetProcessesByName(Const.wiseASCOMServerAppName);
-            if (ascomServer.Count() == 0)
-            {
-                Log(string.Format("No active {0}", Const.wiseASCOMServerAppName), 20);
-                return;
-            }
-
-            CheckConnections();
 
             telescopeDigest = JsonConvert.DeserializeObject<TelescopeDigest>(wisetelescope.Action("status", ""));
             safetooperateDigest = JsonConvert.DeserializeObject<Wise40SafeToOperate.SafeToOperateDigest>(wisesafetooperate.Action("status", ""));
@@ -290,15 +307,23 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             updateManualInterventionControls();
 
             if (now >= _nextCheck)
-                CheckSituation();
+            {
+                CheckConnections();
+                if (connected)
+                {
+                    CheckSituation();
 
-            if (!ShuttingDown)
-                UpdateConditionsControls();
+                    if (!ShuttingDown)
+                        UpdateConditionsControls();
+                }
+
+                _nextCheck = DateTime.Now + _intervalBetweenChecks;
+            }
         }
 
         private void UpdateConditionsControls()
         {
-            if (wisesafetooperate == null)
+            if (wisesafetooperate == null || safetooperateDigest == null)
                 return;
 
             string text = string.Empty, tip = string.Empty;
@@ -369,9 +394,9 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             if (afterSecs != 0 && DateTime.Now.CompareTo(_lastLog) < 0)
                 return;
 
-            string line = string.Format("{0} - {1}", DateTime.UtcNow.ToString("H:mm:ss UT"), msg);
+            debugger.WriteLine(Common.Debugger.DebugLevel.DebugLogic, msg);
+            logToGUI(string.Format("{0} - {1}", DateTime.UtcNow.ToString("H:mm:ss UT"), msg));
 
-            logToGUI(line);
             _lastLog = DateTime.UtcNow;
         }
 
@@ -393,19 +418,6 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 int visibleItems = listBoxLog.ClientSize.Height / listBoxLog.ItemHeight;
                 listBoxLog.TopIndex = Math.Max(listBoxLog.Items.Count - visibleItems + 1, 0);
             }
-
-            string dailyDir = Common.Debugger.LogDirectory();
-
-            Directory.CreateDirectory(dailyDir);
-            string logFile = dailyDir + "/ObservatoryMonitor.txt";
-            try
-            {
-                using (StreamWriter sw = File.AppendText(logFile))
-                {
-                    sw.WriteLine(line);
-                }
-            }
-            catch { }
         }
 
         private void DoShutdownObservatory(string reason)
@@ -423,7 +435,6 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             {
                 try
                 {
-                    //Log(string.Format("Started Wise40 shutdown (reason: {0})...", reason));
                     ShutdownObservatory(reason);
                 }
                 catch (Exception ex)
@@ -432,7 +443,6 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 }
             }, CT).ContinueWith((x) => {
                 ShuttingDown = false;
-                //Log(string.Format("Completed Wise40 shutdown (reason: {0})...", reason));
             },
             TaskContinuationOptions.ExecuteSynchronously);
         }
@@ -690,8 +700,15 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
         private void KillWise40Apps()
         {
-            foreach (var proc in Process.GetProcessesByName("ASCOM.RESTServer"))
-                proc.Kill();
+            using (var client = new WebClient()) {
+                try
+                {
+                    client.UploadData(Const.RESTServer.top + "restart", "PUT", null); // PUT to http://www.xxx.yyy.zzz/server/v1/restart
+                    Thread.Sleep(5000);
+                } catch { }
+            }
+            //foreach (var proc in Process.GetProcessesByName("ASCOM.RESTServer"))
+            //    proc.Kill();
 
             foreach (var proc in Process.GetProcessesByName("Dash"))
                 proc.Kill();
