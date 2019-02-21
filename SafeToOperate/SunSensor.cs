@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ASCOM.Wise40;
 using ASCOM.Wise40.Common;
 
 namespace ASCOM.Wise40SafeToOperate
@@ -11,6 +12,8 @@ namespace ASCOM.Wise40SafeToOperate
     {
         private double _max;
         private const double defaultMax = -7.0;
+        private bool _wasSafe = false;
+        private string _status;
 
         public SunSensor(WiseSafeToOperate instance) :
             base("Sun",
@@ -42,11 +45,20 @@ namespace ASCOM.Wise40SafeToOperate
             Reading r = new Reading
             {
                 stale = false,
+                usable = true,
                 safe = wisesafetooperate.SunElevation <= _max
             };
-            //#region debug
-            //debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "{0}: getIsSafe: {1}", Name, r.safe);
-            //#endregion
+
+            _status = string.Format("Sun elevation is {0:f1}deg (max: {1:f1}deg)", wisesafetooperate.SunElevation, _max);
+            if (r.safe != _wasSafe)
+            {
+                activityMonitor.Event(new Event.SafetyEvent(
+                    sensor: WiseName,
+                    details: _status,
+                    before: Event.SafetyEvent.ToSensorSafety(_wasSafe),
+                    after: Event.SafetyEvent.ToSensorSafety(r.safe)));
+            }
+            _wasSafe = r.safe;
             return r;
         }
 
@@ -59,6 +71,14 @@ namespace ASCOM.Wise40SafeToOperate
 
             return string.Format("The Sun elevation ({0:f1}deg) is higher than {1:f1}deg.",
                 currentElevation, _max);
+        }
+
+        public override string Status
+        {
+            get
+            {
+                return _status;
+            }
         }
 
         public override string MaxAsString

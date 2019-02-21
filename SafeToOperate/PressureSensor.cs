@@ -9,19 +9,22 @@ using ASCOM.Wise40.Common;
 
 namespace ASCOM.Wise40SafeToOperate
 {
-    public class RainSensor : Sensor
+    public class PressureSensor : Sensor
     {
-        private double _max;
-        private string _status;
+        double _max = 10000;
+        private string _status = "";
 
-        public RainSensor(WiseSafeToOperate instance) :
-            base("Rain", 
+        public PressureSensor(WiseSafeToOperate instance) :
+            base("Pressure",
+                SensorAttribute.ForInfoOnly |
                 SensorAttribute.CanBeStale |
-                SensorAttribute.CanBeBypassed, instance) { }
-        
+                SensorAttribute.CanBeBypassed |
+                SensorAttribute.AlwaysEnabled, instance)
+        { }
+
         public override object Digest()
         {
-            return new RainDigest()
+            return new PressureDigest()
             {
                 Name = WiseName,
                 IsSafe = isSafe,
@@ -30,7 +33,7 @@ namespace ASCOM.Wise40SafeToOperate
 
         public override void readSensorProfile()
         {
-            const double defaultMax = 0.0;
+            const double defaultMax = 10000;
             MaxAsString = wisesafetooperate._profile.GetValue(Const.wiseSafeToOperateDriverID, WiseName, "Max", defaultMax.ToString());
         }
 
@@ -43,10 +46,11 @@ namespace ASCOM.Wise40SafeToOperate
         {
             Reading r = new Reading
             {
-                stale = IsStale("RainRate")
+                stale = IsStale("Pressure")
             };
 
-            r.value = WiseSite.och.RainRate;
+            r.value = WiseSite.och.Pressure;
+
             if (r.stale)
             {
                 r.safe = false;
@@ -58,14 +62,8 @@ namespace ASCOM.Wise40SafeToOperate
                 r.usable = true;
             }
 
-            _status = string.Format("RainRate is {0} (max: {1})", r.value, _max);
+            _status = r.stale ? "Stale data" : string.Format("Pressure is {0:f1} mBar (max: {1:f1} mBar)", r.value, _max);
             return r;
-        }
-
-        public override string reason()
-        {
-            return string.Format("{0} out of {1} recent rain rate readings were higher than {2}",
-                _nbad, _repeats, MaxAsString);
         }
 
         public override string Status
@@ -76,21 +74,30 @@ namespace ASCOM.Wise40SafeToOperate
             }
         }
 
+        public override string reason()
+        {
+            return string.Format("{0} out of {1} recent pressure readings were higher than {2} mBar.",
+                _nbad, _repeats, _max);
+        }
+
         public override string MaxAsString
         {
-            set
-            {
-                _max = Convert.ToDouble(value);
-            }
-
             get
             {
                 return _max.ToString();
             }
+
+            set
+            {
+                _max = Convert.ToDouble(value);
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}) Max: {1}", WiseName, MaxAsString);
+                #endregion
+            }
         }
     }
 
-    public class RainDigest
+    public class PressureDigest
     {
         public string Name;
         public bool IsSafe;

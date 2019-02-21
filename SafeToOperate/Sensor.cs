@@ -15,6 +15,7 @@ namespace ASCOM.Wise40SafeToOperate
         private System.Threading.Timer _timer;  // for this specific sensor instance
         private DateTime _endOfStabilization;
         private object _lock = new object();
+        protected static ActivityMonitor activityMonitor = ActivityMonitor.Instance;
 
         [Flags]
         public enum SensorAttribute
@@ -29,6 +30,7 @@ namespace ASCOM.Wise40SafeToOperate
             CanBeStale = (1 << 2),      // Reading the sensor may produce stale data
             CanBeBypassed = (1 << 3),   // By the Safety Bypass
             ForcesDecision = (1 << 4),  // If this sensor is not safe it forces SafeToOperate == false
+            ForInfoOnly = (1 << 5),     // Will not affect the global isSafe state
         };
 
         [Flags]
@@ -78,11 +80,14 @@ namespace ASCOM.Wise40SafeToOperate
         public int _nstale;
         public bool _enabled;
         public int _nreadings;
+        Event.SafetyEvent.SensorState sensorState = Event.SafetyEvent.SensorState.NotSet;
 
         public class Reading
         {
             public bool stale;
             public bool safe;
+            public double value;
+            public bool usable = false;
 
             public override string ToString()
             {
@@ -95,19 +100,25 @@ namespace ASCOM.Wise40SafeToOperate
 
         protected static string deviceType = "SafetyMonitor";
 
-        protected static WiseSafeToOperate wisesafetooperate;
+        protected static WiseSafeToOperate wisesafetooperate = WiseSafeToOperate.Instance;
 
         protected Sensor(string name, SensorAttribute attributes, WiseSafeToOperate instance)
         {
+            wisesafetooperate = instance;
             WiseName = name;
             _attributes = attributes;
+            _timer = new System.Threading.Timer(new TimerCallback(onTimer));
             if (HasAttribute(SensorAttribute.AlwaysEnabled))
                 Enabled = true;
             _state = SensorState.None;
 
-            _timer = new System.Threading.Timer(new TimerCallback(onTimer));
-            wisesafetooperate = instance;
             Restart(0);
+            activityMonitor.Event(new Event.SafetyEvent(
+                sensor: WiseName,
+                details: "Created",
+                before: sensorState,
+                after: Event.SafetyEvent.SensorState.Init));
+            sensorState = Event.SafetyEvent.SensorState.Init;
         }
 
         public bool HasAttribute(SensorAttribute attr)
@@ -118,6 +129,22 @@ namespace ASCOM.Wise40SafeToOperate
         public bool DoesNotHaveAttribute(SensorAttribute attr)
         {
             return !HasAttribute(attr);
+        }
+
+        public Reading LatestReading
+        {
+            get
+            {
+                if (_readings == null)
+                    return new Reading
+                    {
+                        usable = false,
+                    };
+
+                var arr = _readings.ToArray();
+
+                return arr[arr.Count() - 1];
+            }
         }
 
         #region ASCOM Profile
@@ -133,6 +160,8 @@ namespace ASCOM.Wise40SafeToOperate
                 case "Rain": defaultInterval = 60; defaultRepeats = 2; break;
                 case "Clouds": defaultInterval = 60; defaultRepeats = 3; break;
                 case "Humidity": defaultInterval = 60; defaultRepeats = 4; break;
+                case "Pressure": defaultInterval = 60; defaultRepeats = 3; break;
+                case "Temperature": defaultInterval = 60; defaultRepeats = 3; break;
             }
 
             _intervalMillis = 1000 * Convert.ToInt32(wisesafetooperate._profile.GetValue(Const.wiseSafeToOperateDriverID, WiseName, "Interval", defaultInterval.ToString()));
@@ -165,14 +194,15 @@ namespace ASCOM.Wise40SafeToOperate
         public abstract Reading getReading();
         public abstract string MaxAsString { get; set; }
         public abstract object Digest();
+        public abstract string Status { get; }
 
         public bool IsStale(string propertyName)
         {
             if (DoesNotHaveAttribute(SensorAttribute.CanBeStale))
                 return false;
 
-            if (!WiseSite.och.Connected)
-                WiseSite.och.Connected = true;
+            //if (!WiseSite.och.Connected)
+            //    WiseSite.och.Connected = true;
 
             if (WiseSite.och.TimeSinceLastUpdate(propertyName) > WiseSafeToOperate.ageMaxSeconds)
             {
@@ -192,7 +222,7 @@ namespace ASCOM.Wise40SafeToOperate
             _nstale = 0;
 
             readProfile();
-            if (HasAttribute(SensorAttribute.AlwaysEnabled) && _timer != null)
+            if (HasAttribute(SensorAttribute.Immediate) && _timer != null)
             {
                 _timer.Change(Timeout.Infinite, Timeout.Infinite);
             }
@@ -226,6 +256,8 @@ namespace ASCOM.Wise40SafeToOperate
             DateTime now = DateTime.Now;
             Reading currentReading = getReading();
 
+            if (_readings == null)
+                _readings = new FixedSizedQueue<Reading>(_nreadings);
             Reading[] arr = _readings.ToArray();
             List<string> values = new List<string>();
             int nbad = 0, nstale = 0, nreadings = 0;
@@ -286,11 +318,29 @@ namespace ASCOM.Wise40SafeToOperate
                     return;     // Remain unsafe - not enough readings
                 }
                 else
+                {
+                    if (!StateIsSet(SensorState.EnoughReadings))
+                    {
+                        activityMonitor.Event(new Event.SafetyEvent(
+                            sensor: WiseName,
+                            details: "Became ready",
+                            before: sensorState,
+                            after: Event.SafetyEvent.SensorState.Ready));
+                        sensorState = Event.SafetyEvent.SensorState.Ready;
+                    }
                     SetState(SensorState.EnoughReadings);
+                }
 
                 if (_nbad == _repeats)
                 {
                     ExtendUnsafety("All readings are unsafe");
+                    if (wasready && wassafe)
+                        activityMonitor.Event(new Event.SafetyEvent(
+                            sensor: WiseName,
+                            details: "Became unsafe",
+                            before: sensorState,
+                            after: Event.SafetyEvent.SensorState.NotSafe));
+                    sensorState = Event.SafetyEvent.SensorState.NotSafe;
                     return;     // Remain unsafe - all readings are unsafe
                 }
 
@@ -318,6 +368,13 @@ namespace ASCOM.Wise40SafeToOperate
                 }
 
                 SetState(SensorState.Safe);
+                if (wasready && !wassafe)
+                    activityMonitor.Event(new Event.SafetyEvent(
+                        sensor: WiseName,
+                        details: "Became safe",
+                        before: sensorState,
+                        after: Event.SafetyEvent.SensorState.Safe));
+                sensorState = Event.SafetyEvent.SensorState.Safe;
             }
         }
 
@@ -398,9 +455,6 @@ namespace ASCOM.Wise40SafeToOperate
 
             set
             {
-                if (HasAttribute(SensorAttribute.AlwaysEnabled))
-                    return;
-
                 _enabled = value;
                 if (_enabled)
                 {

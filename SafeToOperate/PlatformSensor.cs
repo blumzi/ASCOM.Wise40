@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+
+using ASCOM.Wise40;
 using ASCOM.Wise40.Common;
 using ASCOM.Wise40.Hardware;
 using MccDaq;
@@ -13,6 +15,8 @@ namespace ASCOM.Wise40SafeToOperate
     public class PlatformSensor : Sensor
     {
         private WisePin domePlatformIsDownPin;
+        private bool _wasSafe = false;
+        private string _status;
 
         public PlatformSensor(WiseSafeToOperate instance) :
             base("Platform",
@@ -38,6 +42,14 @@ namespace ASCOM.Wise40SafeToOperate
             return "Platform is RAISED";
         }
 
+        public override string Status
+        {
+            get
+            {
+                return _status;
+            }
+        }
+
         public override string MaxAsString
         {
             set { }
@@ -51,10 +63,23 @@ namespace ASCOM.Wise40SafeToOperate
             {
                 stale = false,
                 safe = domePlatformIsDownPin.isOff,
+                usable = true,
             };
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "{0}: getIsSafe: {1}", WiseName, r.safe);
             #endregion
+
+            _status = string.Format("Platform is {0}", r.safe ? "lowered" : "raised");
+            if (r.safe != _wasSafe)
+            {
+
+                activityMonitor.Event(new Event.SafetyEvent(
+                    sensor: WiseName,
+                    details: _status,
+                    before: Event.SafetyEvent.ToSensorSafety(_wasSafe),
+                    after: Event.SafetyEvent.ToSensorSafety(r.safe)));
+            }
+            _wasSafe = r.safe;
             return r;
         }
 

@@ -12,6 +12,7 @@ namespace ASCOM.Wise40SafeToOperate
     public class WindSensor : Sensor
     {
         double _max;
+        private string _status = "";
 
         public WindSensor(WiseSafeToOperate instance) :
             base("Wind",
@@ -45,19 +46,34 @@ namespace ASCOM.Wise40SafeToOperate
                 stale = IsStale("WindSpeed")
             };
 
+            r.value = WiseSite.och.WindSpeed * 3.6;
+
             if (r.stale)
+            {
                 r.safe = false;
+                r.usable = false;
+            }
             else
             {
-                double kmh = WiseSite.och.WindSpeed * 3.6;
-                r.safe = (_max == 0.0) ? kmh == 0.0 : kmh < _max;
+                r.safe = (_max == 0.0) ? r.value == 0.0 : r.value < _max;
+                r.usable = true;
             }
+
+            _status = r.stale ? "Stale data" : string.Format("WindSpeed is {0:f1} km/h (max: {1:f1} km/h)", r.value, _max);
             return r;
+        }
+
+        public override string Status
+        {
+            get
+            {
+                return _status;
+            }
         }
 
         public override string reason()
         {
-            return string.Format("{0} out of {1} recent wind speed readings were higher than {2}km/h.",
+            return string.Format("{0} out of {1} recent wind speed readings were higher than {2} km/h.",
                 _nbad, _repeats, _max);
         }
 

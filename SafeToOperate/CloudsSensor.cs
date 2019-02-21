@@ -12,6 +12,7 @@ namespace ASCOM.Wise40SafeToOperate
     public class CloudsSensor : Sensor
     {
         private uint _max;
+        private string _status = "";
 
         public CloudsSensor(WiseSafeToOperate instance) :
             base("Clouds",
@@ -46,20 +47,23 @@ namespace ASCOM.Wise40SafeToOperate
                 stale = IsStale("CloudCover")
             };
 
-            if (r.stale)
+            if (r.stale) {
                 r.safe = false;
+                r.usable = false;
+                _status = "Stale data";
+            }
             else
             {
-                double cover = WiseSite.och.CloudCover;
+                r.value = WiseSite.och.CloudCover;
 
                 if (_max == 0)
-                    r.safe = cover == 0.0;
+                    r.safe = r.value == 0.0;
                 else
-                    r.safe = cover <= _max;
+                    r.safe = r.value <= _max;
+                r.usable = true;
+                _status = string.Format("Cloud cover {0:f1} (max: {1:f1})", r.value, _max);
             }
-            //#region debug
-            //debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "{0}: getIsSafe: {1}", Name, r.safe);
-            //#endregion
+
             return r;
         }
 
@@ -67,6 +71,14 @@ namespace ASCOM.Wise40SafeToOperate
         {
             return string.Format("{0} out of {1} recent cloud cover readings were higher than {2}%",
                 _nbad, _repeats, MaxAsString);
+        }
+
+        public override string Status
+        {
+            get
+            {
+                return _status;
+            }
         }
 
         public override string MaxAsString

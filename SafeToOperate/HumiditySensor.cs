@@ -12,6 +12,7 @@ namespace ASCOM.Wise40SafeToOperate
     public class HumiditySensor : Sensor
     {
         private double _max;
+        private string _status;
 
         public HumiditySensor(WiseSafeToOperate instance) :
             base("Humidity",
@@ -46,18 +47,29 @@ namespace ASCOM.Wise40SafeToOperate
                 stale = IsStale("Humidity")
             };
 
-            double humidity = WiseSite.och.Humidity;
+            r.value = WiseSite.och.Humidity;
             if (r.stale)
+            {
                 r.safe = false;
+                r.usable = false;
+            }
             else
-                r.safe = (_max == 0.0) ? humidity == 0.0 : humidity < _max;
+            {
+                r.safe = (_max == 0.0) ? r.value == 0.0 : r.value < _max;
+                r.usable = true;
+            }
 
-            //#region debug
-            //debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "{0}: getIsSafe: {1}", Name, r.safe);
-            //#endregion
+            _status = string.Format("Humidity is {0}% (max: {1}%)", r.value, _max);
             return r;
         }
 
+        public override string Status
+        {
+            get
+            {
+                return _status;
+            }
+        }
         public override string reason()
         {
             return string.Format("{0} out of {1} recent humidity readings were higher than {2}%",

@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Diagnostics;
 
+
+using ASCOM.Wise40;
 using ASCOM.Wise40.Common;
 using ASCOM.Wise40.Hardware;
 using MccDaq;
@@ -23,6 +25,8 @@ namespace ASCOM.Wise40SafeToOperate
         private static bool _isSafe = true;
         private static bool _debugging = false;
         private static int _doorLockCounter, _bypassCounter;
+        private bool _wasSafe = false;
+        private string _status;
 
         public DoorLockSensor(WiseSafeToOperate instance) :
             base("DoorLock",
@@ -75,12 +79,30 @@ namespace ASCOM.Wise40SafeToOperate
             {
                 stale = false,
                 safe = _isSafe,
+                usable = true,
             };
 
-            //#region debug
-            //debugger.WriteLine(Wise40.Common.Debugger.DebugLevel.DebugSafety, "{0}: getIsSafe: {1}", Name, r.safe);
-            //#endregion
+            _status = string.Format("Lock is {0}, bypass is {1}",
+                                            DoorLockIsSafe ? "closed" : "open",
+                                            BypassIsSafe ? "OFF" : "ON");
+            if (r.safe != _wasSafe)
+            {
+                activityMonitor.Event(new Event.SafetyEvent(
+                    sensor: WiseName,
+                    details: _status,
+                    before: Event.SafetyEvent.ToSensorSafety(_wasSafe),
+                    after: Event.SafetyEvent.ToSensorSafety(r.safe)));
+            }
+            _wasSafe = r.safe;
             return r;
+        }
+
+        public override string Status
+        {
+            get
+            {
+                return _status;
+            }
         }
 
         public override void readSensorProfile() {

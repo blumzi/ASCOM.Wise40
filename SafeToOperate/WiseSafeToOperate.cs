@@ -43,6 +43,8 @@ namespace ASCOM.Wise40SafeToOperate
         public static HumiditySensor humiditySensor;
         public static SunSensor sunSensor;
         public static HumanInterventionSensor humanInterventionSensor;
+        public static PressureSensor pressureSensor;
+        public static TemperatureSensor temperatureSensor;
 
         public static DoorLockSensor doorLockSensor;
         public static ComputerControlSensor computerControlSensor;
@@ -52,6 +54,10 @@ namespace ASCOM.Wise40SafeToOperate
         private static bool _bypassed = false;
         private static bool _shuttingDown = false;
         public static int ageMaxSeconds;
+
+        public static Activity.SafetyActivity.State _whyNotSafe = Activity.SafetyActivity.State.Warning;
+        public static bool _wasSafe = true;
+        public static ActivityMonitor activityMonitor = ActivityMonitor.Instance;
 
         /// <summary>
         /// Private variable to hold the connected state
@@ -127,6 +133,8 @@ namespace ASCOM.Wise40SafeToOperate
             computerControlSensor = new ComputerControlSensor(this);
             platformSensor = new PlatformSensor(this);
             doorLockSensor = new DoorLockSensor(this);
+            pressureSensor = new PressureSensor(this);
+            temperatureSensor = new TemperatureSensor(this);
 
             //
             // The sensors in priotity order.  The first one that:
@@ -138,15 +146,19 @@ namespace ASCOM.Wise40SafeToOperate
             //
             _prioritizedSensors = new List<Sensor>()
             {
-                humanInterventionSensor,
+                humanInterventionSensor,    // Immediate sensors
                 computerControlSensor,
                 platformSensor,
                 doorLockSensor,
-                sunSensor,
+
+                sunSensor,                  // Weather sensors - affecting isSafe
                 windSensor,
                 cloudsSensor,
                 rainSensor,
                 humiditySensor,
+
+                pressureSensor,             // Weather sensors - NOT affecting isSafe
+                temperatureSensor,
             };
 
             _cumulativeSensors = new List<Sensor>();
@@ -203,7 +215,8 @@ namespace ASCOM.Wise40SafeToOperate
             "start-bypass",
             "end-bypass",
             "status",
-            "sensor-is-safe"
+            "sensor-is-safe",
+            "weather-digest",
         };
 
         public ArrayList SupportedActions
@@ -305,6 +318,10 @@ namespace ASCOM.Wise40SafeToOperate
                     ret = JsonConvert.SerializeObject(objects);
                     break;
 
+                case "weather-digest":
+                    ret = WeatherDigest;
+                    break;
+
 
                 default:
                     throw new ASCOM.ActionNotImplementedException("Action " + actionName + " is not implemented by this driver");
@@ -346,7 +363,7 @@ namespace ASCOM.Wise40SafeToOperate
                 return JsonConvert.SerializeObject(_prioritizedSensors);
 
             foreach (var sensor in _prioritizedSensors)
-                if (sensor.WiseName == sensorName)
+                if (!sensor.HasAttribute(Sensor.SensorAttribute.ForInfoOnly) && sensor.WiseName == sensorName)
                     return JsonConvert.SerializeObject(sensor);
 
             return string.Format("unknown sensor \"{0}\"!", sensorName);
@@ -393,6 +410,7 @@ namespace ASCOM.Wise40SafeToOperate
             {
                 return _connected;
             }
+
             set
             {
                 if (value == _connected)
@@ -404,6 +422,9 @@ namespace ASCOM.Wise40SafeToOperate
                     startSensors();
                 else
                     stopSensors();
+
+                ActivityMonitor.Instance.Event(new Event.GlobalEvent(
+                    string.Format("{0} {1}", DriverId, value ? "Connected" : "Disconnected")));
             }
         }
 
@@ -494,6 +515,9 @@ namespace ASCOM.Wise40SafeToOperate
 
                 foreach (Sensor s in _prioritizedSensors)
                 {
+                    if (s.HasAttribute(Sensor.SensorAttribute.ForInfoOnly))
+                        continue;
+
                     if (!s.HasAttribute(Sensor.SensorAttribute.AlwaysEnabled) && !s.StateIsSet(Sensor.SensorState.Enabled))
                         continue;   // not enabled
 
@@ -697,14 +721,11 @@ namespace ASCOM.Wise40SafeToOperate
                     goto Out;
                 }
 
-                //if (_shuttingDown)
-                //{
-                //    ret = true;
-                //    goto Out;
-                //}
-
                 foreach (Sensor s in _prioritizedSensors)
                 {
+                    if (s.HasAttribute(Sensor.SensorAttribute.ForInfoOnly))
+                        continue;
+
                     if (!s.HasAttribute(Sensor.SensorAttribute.AlwaysEnabled) && !s.StateIsSet(Sensor.SensorState.Enabled))
                         continue;
 
@@ -719,6 +740,20 @@ namespace ASCOM.Wise40SafeToOperate
                 }
 
                 Out:
+                //if (ret != _wasSafe)
+                //{
+                //    if (ret == false)
+                //    {   // SafeToOperate becomes not-safe, a NotSafeActivity starts
+                //        activityMonitor.NewActivity(new Activity.NotSafeActivity(_whyNotSafe));
+                //    }
+                //    else
+                //    {
+                //        // SafeToOperate becomes safe, the NotSafeActivity ends
+                //        activityMonitor.EndActivity(ActivityMonitor.ActivityType.NotSafe, new Activity.EndParams());
+                //        _whyNotSafe = Activity.NotSafeActivity.State.Safe;
+                //    }
+                //    _wasSafe = ret;
+                //}
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "IsSafe: {0}", ret);
                 #endregion
@@ -734,11 +769,26 @@ namespace ASCOM.Wise40SafeToOperate
             {
                 foreach (Sensor s in _cumulativeSensors)
                 {
+                    if (s.HasAttribute(Sensor.SensorAttribute.ForInfoOnly))
+                        continue;
+
                     if (! s.StateIsSet(Sensor.SensorState.EnoughReadings))
                         return false;
                 }
 
                 return true;
+            }
+        }
+
+        public string WeatherDigest
+        {
+            get
+            {
+                return JsonConvert.SerializeObject(new WeatherDigest {
+                    Humidity = humiditySensor.LatestReading.usable ? humiditySensor.LatestReading.value : double.NaN,
+                    Pressure = pressureSensor.LatestReading.usable ? pressureSensor.LatestReading.value : double.NaN,
+                    Temperature = temperatureSensor.LatestReading.usable ? temperatureSensor.LatestReading.value : double.NaN,
+                });
             }
         }
 
@@ -817,5 +867,12 @@ namespace ASCOM.Wise40SafeToOperate
         public int WindSpeedColorArgb;
         public int HumidityColorArgb;
         public int CloudCoverColorArgb;
+    }
+
+    public class WeatherDigest
+    {
+        public double Temperature;
+        public double Pressure;
+        public double Humidity;
     }
 }
