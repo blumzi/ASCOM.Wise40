@@ -30,11 +30,13 @@ namespace ASCOM.Wise40
         public struct AxisPosition
         {
             public double radians;
+            public bool predicted; // true: encoder reading was !Acceptable, false: encoder reading was accepted
         };
 
         public AxisPosition _prevPosition = new AxisPosition { radians = double.NaN };
         public AxisPosition _currPosition = new AxisPosition { radians = double.NaN };
         public static FixedSizedQueue<AxisPosition> _positions = new FixedSizedQueue<AxisPosition>(nSamples);
+
         public TelescopeAxes _axis;
         public WiseTele wisetele = WiseTele.Instance;
         public bool _connected = false;
@@ -48,7 +50,7 @@ namespace ASCOM.Wise40
 
         public FixedSizedQueue<AxisPosition> _samples = new FixedSizedQueue<AxisPosition>(nSamples);
 
-        protected static double _maxDeltaRadiansAtSlewRate = new Angle("5d00m00s").Radians / nSamples;
+        protected static double _maxDeltaRadiansAtSlewRate = 0.0021; // approx. Angle("5d00m00s").Radians / nSamples;
 
         /// <summary>
         /// A background Task that checks whether the telescope axis is moving
@@ -133,6 +135,8 @@ namespace ASCOM.Wise40
         /// <returns></returns>
         protected abstract bool Acceptable(double rad);
 
+        protected abstract double Predicted(double rad);
+
         public void AxisMovementChecker()
         {
             TimerCallback axisMovementTimerCallback = new TimerCallback(SampleAxisMovement);
@@ -212,22 +216,35 @@ namespace ASCOM.Wise40
         private double _rightAscension = double.NaN, _hourAngle = double.NaN;
         private double _prevRightAscension = double.NaN, _prevHourAngle = double.NaN;
 
+        private double[] x = new double[3] { 0.0, 0.0, 0.0 };
+        private double[] dx = new double[2] { 0.0, 0.0 };
+        private double ddx = 0.0;
+
         public PrimaryAxisMonitor() : base(TelescopeAxes.axisPrimary) { }
 
         private WiseHAEncoder _encoder = WiseTele.Instance.HAEncoder;
 
         protected override void SampleAxisMovement(object StateObject)
         {
-            double reading;
+            double reading = _encoder.Angle.Radians;
+            AxisPosition position = Acceptable(reading) ?
+                new AxisPosition() {
+                    radians = reading,
+                    predicted = false,
+                } :
+                new AxisPosition() {
+                    radians = Predicted(reading),
+                    predicted = true,
+                };
 
-            do
-            {
-                reading = _encoder.Angle.Radians;
-            }
-            while (!Acceptable(reading))
-                ;
+            _currPosition = position;
 
-            _currPosition.radians = reading;
+            x[0] = x[1];
+            x[1] = x[2];
+            x[2] = _currPosition.radians;
+            dx[0] = dx[1];
+            dx[1] = x[2] - x[1];
+            ddx = dx[1] - dx[0];
 
             if (Double.IsNaN(_prevPosition.radians))
             {
@@ -249,10 +266,13 @@ namespace ASCOM.Wise40
             _raDeltas.Enqueue(raDelta);
             _haDeltas.Enqueue(haDelta);
 
-
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}:SampleAxisMovement: _currPosition: {1}, _prevPosition: {2}, raDelta: {3}, haDelta: {4}, active motors: {5}",
-                WiseName, _currPosition.radians, _prevPosition.radians, raDelta, haDelta, ActiveMotors(_axis));
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                "{0}:SampleAxisMovement: _currPosition: {1} ({2}), _prevPosition: {3} ({4}), raDelta: {5}, haDelta: {6}, active motors: {7}",
+                WiseName,
+                _currPosition.radians, _currPosition.predicted ? "PREDICTED" : "REAL",
+                _prevPosition.radians, _prevPosition.predicted ? "PREDICTED" : "REAL",
+                raDelta, haDelta, ActiveMotors(_axis));
             #endregion
 
             _prevPosition.radians = _currPosition.radians;
@@ -351,13 +371,37 @@ namespace ASCOM.Wise40
             if (delta > _maxDeltaRadiansAtSlewRate)
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}:Acceptable({1}): Suspect ( Abs({1} - {2}) = {3} > {4}) )",
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}:Acceptable({1}): Suspect (Abs({1} - {2}) = {3} > {4})",
                     WiseName, rad, _prevPosition.radians, delta, _maxDeltaRadiansAtSlewRate);
                 #endregion
-                return true;
+                return false;
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Predicted position (radians)
+        /// 
+        /// The SampleAxisMovement function maintains:
+        ///  . The last three acceptable positions are kept in x[0..2]
+        ///  . The first differences are kept in dx[0..1]:
+        ///   . dx[0] = x[1] - x[0]
+        ///   . dx[1] = x[2] - x[1]
+        ///  . The second difference is kept in ddx:
+        ///   . ddx = dx[1] - dx[0]
+        ///   
+        /// </summary>
+        protected override double Predicted(double reading)
+        {
+            double pred = x[2] + dx[1] + ddx;
+
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}:Predicted: r: {1}, p: {2}, r - p: {3}, (r - p)Angle: {4}",
+                WiseName, reading,  pred, reading - pred, Angle.FromHours(reading - pred, Angle.Type.RA).ToNiceString());
+            #endregion
+
+            return reading; // pred;
         }
     }
 
@@ -372,18 +416,33 @@ namespace ASCOM.Wise40
 
         private WiseDecEncoder _encoder = WiseTele.Instance.DecEncoder;
 
+        private double[] x = new double[3] { 0.0, 0.0, 0.0 };   // last three positions
+        private double[] dx = new double[2] { 0.0, 0.0 };       // first differences between last positions
+        private double ddx = 0.0;                               // second difference between first differences
+
         protected override void SampleAxisMovement(object StateObject)
         {
-            double reading;
+            double reading = _encoder.Angle.Radians;
+            AxisPosition position = Acceptable(reading) ?
+                new AxisPosition()
+                {
+                    radians = reading,
+                    predicted = false,
+                } :
+                new AxisPosition()
+                {
+                    radians = Predicted(reading),
+                    predicted = true,
+                };
 
-            do
-            {
-                reading = _encoder.Angle.Radians;
-            }
-            while (!Acceptable(reading))
-                ;
+            _currPosition = position;
 
-            _currPosition.radians = reading;
+            x[0] = x[1];
+            x[1] = x[2];
+            x[2] = _currPosition.radians;
+            dx[0] = dx[1];
+            dx[1] = x[2] - x[1];
+            ddx = dx[1] - dx[0];
 
             if (Double.IsNaN(_prevPosition.radians))
             {
@@ -473,6 +532,7 @@ namespace ASCOM.Wise40
             if (Double.IsNaN(_prevPosition.radians))
                 return true;
 
+
             double delta = Math.Abs(rad - _prevPosition.radians);
             if (delta > _maxDeltaRadiansAtSlewRate)
             {
@@ -481,10 +541,22 @@ namespace ASCOM.Wise40
                     "{0}:Acceptable({1}): Suspect (Abs({2} - {3}) = {4} > {5})",
                         WiseName, rad, rad, _prevPosition.radians, delta, _maxDeltaRadiansAtSlewRate);
                 #endregion
-                return true;
+                return false;
             }
 
             return true;
+        }
+
+        protected override double Predicted(double reading)
+        {
+            double pred = x[2] + dx[1] + ddx;
+
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}:Predicted: r: {1}, p: {2}, r - p: {3}, (r - p)Angle: {4}",
+                WiseName, reading, pred, reading - pred, Angle.FromDegrees(reading - pred, Angle.Type.Dec).ToNiceString());
+            #endregion
+
+            return reading; // pred;
         }
     }
 }
