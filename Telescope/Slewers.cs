@@ -73,7 +73,18 @@ namespace ASCOM.Wise40
                 _active.RemoveAt(index);
 
                 if (_active.Count == 0)
-                    activityMonitor.EndActivity(ActivityMonitor.Activity.Slewing);
+                {
+                    activityMonitor.EndActivity(ActivityMonitor.ActivityType.TelescopeSlew, new Activity.TelescopeSlewActivity.EndParams()
+                        {
+                            endState = Activity.State.Succeeded,
+                            endReason = "Reached target",
+                            end = new Activity.TelescopeSlewActivity.Coords
+                            {
+                                ra = WiseTele.Instance.RightAscension,
+                                dec = WiseTele.Instance.Declination,
+                            }
+                        });
+                }
             }
 
             #region debug

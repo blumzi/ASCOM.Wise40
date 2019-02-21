@@ -124,13 +124,13 @@ namespace ASCOM.Wise40
                 {
                     _wisedomeshutter._state = ShutterState.shutterClosed;
                     if (_prevState != ShutterState.shutterClosed)
-                        _wisedomeshutter.Stop();
+                        _wisedomeshutter.Stop("Shutter closed");
                 }
                 else if (Math.Abs(reading - _wisedomeshutter._highestValue) <= 5 && reading == _prevReading)
                 {
                     _wisedomeshutter._state = ShutterState.shutterOpen;
                     if (_prevState != ShutterState.shutterOpen)
-                        _wisedomeshutter.Stop();
+                        _wisedomeshutter.Stop("Shutter opened");
                 }
                 else if (_prevReading == Int32.MinValue)
                 {
@@ -198,7 +198,7 @@ namespace ASCOM.Wise40
 
         static WiseDomeShutter() { }
 
-        public void Stop()
+        public void Stop(string reason)
         {
             ShutterState prev = State;
             bool openPinWasOn = openPin.isOn;
@@ -208,7 +208,12 @@ namespace ASCOM.Wise40
             {
                 openPin.SetOff();
                 closePin.SetOff();
-                activityMonitor.EndActivity(ActivityMonitor.Activity.Shutter);
+                activityMonitor.EndActivity(ActivityMonitor.ActivityType.Shutter, new Activity.ShutterActivity.EndParams()
+                    {
+                        endState = Activity.State.Succeeded,
+                        endReason = reason,
+                        percentOpen = PercentOpen,
+                    });
                 webClient.SetReadingTimerInterval(WebClient.Pacing.Slow);
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugShutter,
@@ -254,7 +259,11 @@ namespace ASCOM.Wise40
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "StartClosing: started closing the shutter");
                 #endregion debug
-                activityMonitor.StartActivity(ActivityMonitor.Activity.Shutter);
+                activityMonitor.NewActivity(new Activity.ShutterActivity(new Activity.ShutterActivity.StartParams
+                {
+                    start = PercentOpen,
+                    target = 0,
+                }));
                 closePin.SetOn();
                 webClient.SetReadingTimerInterval(WebClient.Pacing.Fast);
             }
@@ -284,7 +293,11 @@ namespace ASCOM.Wise40
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "StartOpening: started opening the shutter");
                 #endregion debug
-                activityMonitor.StartActivity(ActivityMonitor.Activity.Shutter);
+                activityMonitor.NewActivity(new Activity.ShutterActivity(new Activity.ShutterActivity.StartParams
+                {
+                    start = PercentOpen,
+                    target = 100,
+                }));
                 openPin.SetOn();
                 webClient.SetReadingTimerInterval(WebClient.Pacing.Fast);
             }

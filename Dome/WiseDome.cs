@@ -20,8 +20,6 @@ namespace ASCOM.Wise40
 
         private Version version = new Version(0, 2);
 
-        private static WiseDome _instance; // Singleton
-        private static object syncObject = new object();
         private static WiseSafeToOperate wiseSafeToOperate = WiseSafeToOperate.Instance;
         private static bool _initialized = false;
 
@@ -47,6 +45,7 @@ namespace ASCOM.Wise40
             MovingCCW = (1 << 1),
             Calibrating = (1 << 2),
             Parking = (1 << 3),
+            Stopping = (1 << 4),
         };
         private DomeState _state;
 
@@ -102,32 +101,20 @@ namespace ASCOM.Wise40
 
         public static bool _adjustingForTracking = false;
 
-        // Explicit static constructor to tell C# compiler
-        // not to mark type as beforefieldinit
-        static WiseDome()
-        {
-        }
+        static WiseDome() { }
+        public WiseDome() { }
 
-        public WiseDome()
-        {
-        }
+        private static readonly Lazy<WiseDome> lazy = new Lazy<WiseDome>(() => new WiseDome()); // Singleton
 
         public static WiseDome Instance
         {
             get
             {
-                if (_instance == null)
-                {
-                    lock (syncObject)
-                    {
-                        if (_instance == null)
-                        {
-                            _instance = new WiseDome();
-                            _instance.init();
-                        }
-                    }
-                }
-                return _instance;
+                if (lazy.IsValueCreated)
+                    return lazy.Value;
+
+                lazy.Value.init();
+                return lazy.Value;
             }
         }
 
@@ -234,6 +221,9 @@ namespace ASCOM.Wise40
                 connectable.Connect(connected);
             }
             _connected = connected;
+
+            ActivityMonitor.Instance.Event(new Event.GlobalEvent(
+                string.Format("{0} {1}", Const.wiseDomeDriverID, connected ? "Connected" : "Disconnected")));
         }
 
         public bool Connected
@@ -298,7 +288,7 @@ namespace ASCOM.Wise40
             }
 
             Angle az = Azimuth;
-            ShortestDistanceResult shortest = _instance.Azimuth.ShortestDistance(there);
+            ShortestDistanceResult shortest = Azimuth.ShortestDistance(there);
             Angle inertial = inertiaAngle(there);
 
             if (DomeStateIsOn(DomeState.MovingCW) && (shortest.direction == Const.AxisDirection.Decreasing))
@@ -363,15 +353,18 @@ namespace ASCOM.Wise40
                     debugger.WriteLine(Debugger.DebugLevel.DebugDome,
                         "WiseDome: Setting _foundCalibration[{0}] == {1} ...", calibrationPoints.IndexOf(cp), cp.az.ToNiceString());
                     #endregion
-                    Stop();
+                    Stop(string.Format("Arrived at calibration point {0}", cp.az.ToNiceString()));
                     Thread.Sleep(2000);     // settle down
                     _foundCalibration.Set();
                 }
             }
 
-            if (_targetAz != null && arriving(_targetAz))
+            if (_targetAz != null && arriving(_targetAz) && !DomeStateIsOn(DomeState.Stopping))
             {
-                Stop();
+                SetDomeState(DomeState.Stopping);   // prevent onTimer from re-stopping
+                Stop("Reached target");
+                UnsetDomeState(DomeState.Stopping);
+
                 _targetAz = null;
 
                 if (DomeStateIsOn(DomeState.Parking))
@@ -479,7 +472,7 @@ namespace ASCOM.Wise40
                     _stuckPhase = StuckPhase.FirstStop;
                     nextStuckEvent = rightNow.AddMilliseconds(10000);
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome: stuck: {0}, phase1: stopped moving, letting wheels cool for 10 seconds", _instance.Azimuth);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome: stuck: {0}, phase1: stopped moving, letting wheels cool for 10 seconds", Azimuth);
                     #endregion
 
                     break;
@@ -489,7 +482,7 @@ namespace ASCOM.Wise40
                     _stuckPhase = StuckPhase.GoBackward;
                     nextStuckEvent = rightNow.AddMilliseconds(2000);
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome: stuck: {0}, phase2: going backwards for 2 seconds", _instance.Azimuth);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome: stuck: {0}, phase2: going backwards for 2 seconds", Azimuth);
                     #endregion
                     break;
 
@@ -498,7 +491,7 @@ namespace ASCOM.Wise40
                     _stuckPhase = StuckPhase.SecondStop;
                     nextStuckEvent = rightNow.AddMilliseconds(2000);
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome: stuck: {0}, phase3: stopping for 2 seconds", _instance.Azimuth);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome: stuck: {0}, phase3: stopping for 2 seconds", Azimuth);
                     #endregion
                     break;
 
@@ -509,7 +502,7 @@ namespace ASCOM.Wise40
                     _stuckTimer.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
                     nextStuckEvent = rightNow.AddYears(100);
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome: stuck: {0}, phase4: resumed original motion", _instance.Azimuth);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome: stuck: {0}, phase4: resumed original motion", Azimuth);
                     #endregion
                     break;
             }
@@ -557,12 +550,12 @@ namespace ASCOM.Wise40
             #endregion
         }
 
-        public void Stop()
+        public void Stop(string reason)
         {
             int tries;
 
             #region debug
-            string dbg = string.Format("WiseDome:Stop Starting to stop (encoder: {0}) ", domeEncoder.Value);
+            string dbg = string.Format("WiseDome:Stop({0}) Starting to stop (encoder: {1}) ", reason, domeEncoder.Value);
             if (Calibrated)
                 dbg += string.Format(", az: {0}", Azimuth);
             else
@@ -588,17 +581,24 @@ namespace ASCOM.Wise40
                 SaveCalibrationData();
             #region debug
             if (Calibrated)
-                debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome:Stop Fully stopped at az: {0} (encoder: {1}) after {2} tries",
-                    Azimuth, domeEncoder.Value, tries + 1);
+                debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome:Stop({0}) Fully stopped at az: {1} (encoder: {2}) after {3} tries",
+                    reason, Azimuth, domeEncoder.Value, tries + 1);
             else
-                debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome:Stop Fully stopped (not calibrated) (encoder: {0}) after {1} tries",
-                    domeEncoder.Value, tries + 1);
+                debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome:Stop({0}) Fully stopped (not calibrated) (encoder: {1}) after {2} tries",
+                    reason, domeEncoder.Value, tries + 1);
             #endregion
 
             if (_adjustingForTracking)
                 _adjustingForTracking = false;
             else
-                activityMonitor.EndActivity(ActivityMonitor.Activity.Dome);
+            {
+                activityMonitor.EndActivity(ActivityMonitor.ActivityType.DomeSlew, new Activity.DomeSlewActivity.EndParams()
+                    {
+                        endState = Activity.State.Succeeded,
+                        endReason = reason,
+                        endAz = Azimuth.Degrees,
+                    });
+            }
         }
 
         public CalibrationPoint AtCaliPoint
@@ -682,9 +682,19 @@ namespace ASCOM.Wise40
                     return;
 
                 if (value)
+                {
                     projectorPin.SetOn();
+                    activityMonitor.NewActivity(new Activity.ProjectorActivity());
+                }
                 else
+                {
                     projectorPin.SetOff();
+                    activityMonitor.EndActivity(ActivityMonitor.ActivityType.Projector, new Activity.EndParams()
+                    {
+                        endReason = "projector was turned OFF",
+                        endState = Activity.State.Succeeded,
+                    });
+                }
             }
         }
 
@@ -701,7 +711,7 @@ namespace ASCOM.Wise40
                     throw new ASCOM.InvalidOperationException("Cannot move, shutter is active!");
                 }
 
-                if (!wiseSafeToOperate.IsSafe && !activityMonitor.InProgress(ActivityMonitor.Activity.ShuttingDown))
+                if (!wiseSafeToOperate.IsSafe && !activityMonitor.InProgress(ActivityMonitor.ActivityType.ShuttingDown))
                     throw new ASCOM.InvalidOperationException(wiseSafeToOperate.Action("unsafereasons", ""));
             }
 
@@ -712,12 +722,16 @@ namespace ASCOM.Wise40
             #endregion
             _calibrating = true;
 
-            activityMonitor.StartActivity(ActivityMonitor.Activity.Dome);
+            activityMonitor.NewActivity(new Activity.DomeSlewActivity(new Activity.DomeSlewActivity.StartParams()
+            {
+                type = Activity.DomeSlewActivity.DomeEventType.FindHome,
+            }));
+
             if (Calibrated)
             {
                 List<ShortestDistanceResult> distanceToCaliPoints = new List<ShortestDistanceResult>();
                 foreach (var cp in calibrationPoints)
-                    distanceToCaliPoints.Add(_instance.Azimuth.ShortestDistance(cp.az));
+                    distanceToCaliPoints.Add(Azimuth.ShortestDistance(cp.az));
 
                 ShortestDistanceResult closest = new ShortestDistanceResult(new Angle(360.0, Angle.Type.Az), Const.AxisDirection.None);
                 foreach (var res in distanceToCaliPoints)
@@ -741,13 +755,18 @@ namespace ASCOM.Wise40
             #endregion
             _foundCalibration.WaitOne();
             UnsetDomeState(DomeState.Calibrating);
-            activityMonitor.EndActivity(ActivityMonitor.Activity.Dome);
+            activityMonitor.EndActivity(ActivityMonitor.ActivityType.DomeSlew, new Activity.DomeSlewActivity.EndParams()
+            {
+                endState = Activity.State.Succeeded,
+                endReason = string.Format("Found calibration point at {0}", Azimuth.ToNiceString()),
+                endAz = Azimuth.Degrees,
+            });
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome: FindHomePoint: _foundCalibration was Set()");
             #endregion
         }
 
-        public void SlewToAzimuth(double degrees)
+        public void SlewToAzimuth(double degrees, string reason)
         {
             if (Slaved)
                 throw new InvalidOperationException("Cannot SlewToAzimuth, dome is Slaved");
@@ -758,13 +777,19 @@ namespace ASCOM.Wise40
             if (ShutterIsMoving)
                 throw new ASCOM.InvalidOperationException("Cannot move, shutter is active!");
 
-            if (!activityMonitor.InProgress(ActivityMonitor.Activity.ShuttingDown) && !wiseSafeToOperate.IsSafe)
+            if (!activityMonitor.InProgress(ActivityMonitor.ActivityType.ShuttingDown) && !wiseSafeToOperate.IsSafe)
                 throw new ASCOM.InvalidOperationException("Unsafe: " + wiseSafeToOperate.Action("unsafereasons", ""));
 
             Angle toAng = new Angle(degrees, Angle.Type.Az);
 
-            if (! _adjustingForTracking)
-                activityMonitor.StartActivity(ActivityMonitor.Activity.Dome);
+            if (!_adjustingForTracking)
+                activityMonitor.NewActivity(new Activity.DomeSlewActivity(new Activity.DomeSlewActivity.StartParams
+                {
+                    type = Activity.DomeSlewActivity.DomeEventType.Slew,
+                    startAz = Azimuth.Degrees,
+                    targetAz = degrees,
+                    reason = reason,
+                }));
 
             if (!Calibrated)
             {
@@ -798,7 +823,7 @@ namespace ASCOM.Wise40
             }
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome: SlewToAzimuth: {0} => {1} (dist: {2}), moving {3}",
-                _instance.Azimuth, toAng, shortest.angle, shortest.direction);
+                Azimuth, toAng, shortest.angle, shortest.direction);
             #endregion
 
             if (Simulated && _targetAz == _simulatedStuckAz)
@@ -932,7 +957,7 @@ namespace ASCOM.Wise40
             SetDomeState(DomeState.Parking);
 
             AtPark = false;
-            SlewToAzimuth(_parkAzimuth);
+            SlewToAzimuth(_parkAzimuth, "Park");
         }
 
         public void OpenShutter(bool bypassSafety = false)
@@ -940,13 +965,14 @@ namespace ASCOM.Wise40
             if (DirectionMotorsAreActive)
                 throw new InvalidOperationException("Cannot open shutter while dome is slewing!");
 
-            if (!bypassSafety && (!wiseSafeToOperate.IsSafe && !activityMonitor.InProgress(ActivityMonitor.Activity.ShuttingDown)))
+            if (!bypassSafety && (!wiseSafeToOperate.IsSafe && !activityMonitor.InProgress(ActivityMonitor.ActivityType.ShuttingDown)))
                 throw new InvalidOperationException(wiseSafeToOperate.CommandString("unsafeReasons", false));
 
-            if (activityMonitor.InProgress(ActivityMonitor.Activity.ShuttingDown))
+            if (activityMonitor.InProgress(ActivityMonitor.ActivityType.ShuttingDown))
                 throw new InvalidOperationException("Observatory is shutting down!");
 
-            wisedomeshutter.Stop();
+            if (wisedomeshutter.IsMoving && !(wisedomeshutter.State == ShutterState.shutterOpening))
+                wisedomeshutter.Stop("Stopped before StartOpening");
             wisedomeshutter.StartOpening();
             if (wisedomeshutter._syncVentWithShutter)
                 Vent = true;
@@ -957,7 +983,8 @@ namespace ASCOM.Wise40
             if (DirectionMotorsAreActive)
                 throw new InvalidOperationException("Cannot close shutter while dome is slewing!");
             
-            wisedomeshutter.Stop();
+            if (wisedomeshutter.IsMoving && !(wisedomeshutter.State == ShutterState.shutterClosing))
+                wisedomeshutter.Stop("Stopped before StartClosing");
             wisedomeshutter.StartClosing();
             if (wisedomeshutter._syncVentWithShutter)
                 Vent = false;
@@ -965,7 +992,7 @@ namespace ASCOM.Wise40
 
         public void AbortSlew()
         {
-            Stop();
+            Stop("Slew Aborted");
         }
 
         public double Altitude
@@ -1054,7 +1081,7 @@ namespace ASCOM.Wise40
 
             if (degrees < 0.0 || degrees >= 360.0)
                 throw new InvalidValueException(string.Format("Cannot SyncToAzimuth({0}), must be >= 0 and < 360", ang));
-            _instance.Azimuth = ang;
+            Azimuth = ang;
         }
 
         public void SlewToAltitude(double Altitude)
@@ -1128,7 +1155,7 @@ namespace ASCOM.Wise40
 
                 case "halt":
                 case "stop":
-                    Stop();
+                    Stop(string.Format("Action: \"{0}\"", actionName));
                     return "ok";
 
                 case "unpark":
@@ -1140,7 +1167,7 @@ namespace ASCOM.Wise40
                     return "ok";
 
                 case "start-moving":
-                    if (!wiseSafeToOperate.IsSafe && !activityMonitor.InProgress(ActivityMonitor.Activity.ShuttingDown))
+                    if (!wiseSafeToOperate.IsSafe && !activityMonitor.InProgress(ActivityMonitor.ActivityType.ShuttingDown))
                         throw new ASCOM.InvalidOperationException(wiseSafeToOperate.Action("unsafereasons", ""));
 
                     switch (param)
@@ -1161,7 +1188,7 @@ namespace ASCOM.Wise40
                     switch(param)
                     {
                         case "halt":
-                            wisedomeshutter.Stop();
+                            wisedomeshutter.Stop(string.Format("Action \"{0}\".", actionName));
                             break;
                     }
                     return ret;

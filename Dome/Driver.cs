@@ -393,7 +393,7 @@ namespace ASCOM.Wise40 //.Dome
 
         public void SlewToAzimuth(double Azimuth)
         {
-            wisedome.SlewToAzimuth(Azimuth);
+            wisedome.SlewToAzimuth(Azimuth, "ASCOM SlewToAzimuth");
         }
 
         public bool Slewing

@@ -229,7 +229,7 @@ namespace ASCOM.Wise40 //.Telescope
         #region ITelescope Implementation
         public void AbortSlew()
         {
-            wisetele.AbortSlew();
+            wisetele.AbortSlew("ASCOM AbortSlew");
             _driverInitiatedSlew = false;
         }
 

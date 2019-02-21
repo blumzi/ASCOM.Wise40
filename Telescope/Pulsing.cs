@@ -149,7 +149,7 @@ namespace ASCOM.Wise40 //.Telescope
                         "Caught exception: {0}, aborting pulse guiding", ex.Message);
                     #endregion
                     Abort();
-                    Deactivate(pulserTask);
+                    Deactivate(pulserTask, Activity.State.Aborted, string.Format("Caught exception: {0}, aborting pulse guiding", ex.Message));
                 }
             }, pulseGuideCT).ContinueWith((t) =>
             {
@@ -158,7 +158,8 @@ namespace ASCOM.Wise40 //.Telescope
                     "pulser on {0} completed with status: {1}",
                     pulserTask._axis.ToString(), t.Status.ToString());
                 #endregion
-                Deactivate(pulserTask);
+                Deactivate(pulserTask, Activity.State.Succeeded, string.Format("pulser on {0} completed with status: {1}",
+                    pulserTask._axis.ToString(), t.Status.ToString()));
             }, TaskContinuationOptions.ExecuteSynchronously);
         }
 
@@ -175,7 +176,7 @@ namespace ASCOM.Wise40 //.Telescope
             #endregion
         }
 
-        private void Deactivate(PulserTask t)
+        private void Deactivate(PulserTask t, Activity.State completionState, string completionReason)
         {
             string before = ToString();
             lock (_lock)
@@ -187,7 +188,21 @@ namespace ASCOM.Wise40 //.Telescope
                 "ActivePulsers: deleted {0}, \"{1}\" => \"{2}\"", t._axis.ToString(), before, ToString());
             #endregion
             if (_active.Count == 0)
-                activityMonitor.EndActivity(ActivityMonitor.Activity.Pulsing);
+            {
+                Activity activity = activityMonitor.LookupInProgress(ActivityMonitor.ActivityType.Pulsing);
+                if (activity != null)
+                    (activity as Activity.PulsingActivity).EndActivity(new Activity.PulsingActivity.EndParams()
+                    {
+                        endState = completionState,
+                        endReason = completionReason,
+                        _end = new Activity.TelescopeSlewActivity.Coords
+                        {
+                            ra = WiseTele.Instance.RightAscension,
+                            dec = WiseTele.Instance.Declination,
+                        }
+                    });
+            }
+                
         }
 
         public override string ToString()

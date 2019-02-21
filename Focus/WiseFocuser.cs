@@ -63,7 +63,12 @@ namespace ASCOM.Wise40
 
             public void BecomeIdle()
             {
-                activityMonitor.EndActivity(ActivityMonitor.Activity.Focuser);
+                activityMonitor.EndActivity(ActivityMonitor.ActivityType.Focuser, new Activity.FocuserActivity.EndParams()
+                    {
+                        endState = Activity.State.Succeeded,
+                        endReason = "Reached target",
+                        end = (int) WiseFocuser.Instance.Position,
+                    });
             }
 
             public bool Equals(Flags f)
@@ -198,6 +203,9 @@ namespace ASCOM.Wise40
                     connectable.Connect(value);
 
                 _connected = value;
+
+                ActivityMonitor.Instance.Event(new Event.GlobalEvent(
+                    string.Format("{0} {1}", Const.wiseFocusDriverID, value ? "Connected" : "Disconnected")));
             }
         }
 
@@ -382,14 +390,21 @@ namespace ASCOM.Wise40
 
         public void Move(Direction dir)
         {
-            if (!safetooperate.IsSafe && !activityMonitor.InProgress(ActivityMonitor.Activity.ShuttingDown))
+            if (!safetooperate.IsSafe && !activityMonitor.InProgress(ActivityMonitor.ActivityType.ShuttingDown))
                 throw new InvalidOperationException(string.Join(", ", safetooperate.UnsafeReasonsList));
 
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, "Starting Move({0}) at {1}",
                 dir.ToString(), Position);
             #endregion
-            activityMonitor.StartActivity(ActivityMonitor.Activity.Focuser);
+            activityMonitor.NewActivity(new Activity.FocuserActivity(new Activity.FocuserActivity.StartParams
+            {
+                start = (int)Position,
+                direction = (dir == Direction.Up || dir == Direction.AllUp) ?
+                    Activity.FocuserActivity.Direction.Up :
+                    Activity.FocuserActivity.Direction.Down,
+                target = -1,
+            }));
             switch (dir)
             {
                 case Direction.Up:
@@ -419,7 +434,7 @@ namespace ASCOM.Wise40
             if (IsMoving)
                 throw new InvalidOperationException("Cannot Move while IsMoving == true");
 
-            if (!safetooperate.IsSafe && !activityMonitor.InProgress(ActivityMonitor.Activity.ShuttingDown))
+            if (!safetooperate.IsSafe && !activityMonitor.InProgress(ActivityMonitor.ActivityType.ShuttingDown))
                 throw new InvalidOperationException(string.Join(", ", safetooperate.UnsafeReasonsList));
 
             if (TempComp)
@@ -450,7 +465,6 @@ namespace ASCOM.Wise40
             debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, "Move: at {0}, targetPos: {1}",
                 currentPosition, targetPos);
             #endregion
-            activityMonitor.StartActivity(ActivityMonitor.Activity.Focuser);
             _targetPosition = (int) targetPos;
             StartMovingToTarget();
         }
@@ -480,19 +494,33 @@ namespace ASCOM.Wise40
         private void StartMovingToTarget()
         {
             uint currentPos = Position;
+            Direction dir;
 
             if (_targetPosition > currentPos)
             {
                 _intermediatePosition = 0;
                 _state.Set(State.Flags.MovingToTarget);
-                StartMoving(Direction.Up);
+                dir = Direction.Up;
+                StartMoving(dir);
             }
             else
             {
                 _intermediatePosition = _targetPosition - _upwardCompensation;
                 _state.Set(State.Flags.MovingToIntermediateTarget);
-                StartMoving(Direction.Down);
+                dir = Direction.Down;
+                StartMoving(dir);
             }
+
+            activityMonitor.NewActivity(new Activity.FocuserActivity(new Activity.FocuserActivity.StartParams
+            {
+                start = (int)currentPos,
+                target = _targetPosition,
+                intermediateTarget = _intermediatePosition,
+                direction = (dir == Direction.Up) ?
+                    Activity.FocuserActivity.Direction.Up :
+                    Activity.FocuserActivity.Direction.Down,
+            }));
+
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugFocuser,
                 "StartMovingToTarget: at {0}, _target: {1}, _intermediateTarget: {2}, _state: {3}",

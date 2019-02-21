@@ -332,6 +332,9 @@ namespace ASCOM.Wise40.FilterWheel
                 arduino.Connected = value;
                 if (value == true)
                     currentWheel = wheelUnknown;
+
+                ActivityMonitor.Instance.Event(new Event.GlobalEvent(
+                    string.Format("{0} {1}", driverID, value ? "Connected" : "Disconnected")));
             }
         }
 

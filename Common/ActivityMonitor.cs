@@ -5,46 +5,53 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
 
+using ASCOM.Wise40;
 using ASCOM.Wise40.Common;
 using ASCOM.Utilities;
 using System.IO;
+using MongoDB.Bson;
+using MongoDB.Driver;
 
 namespace ASCOM.Wise40
 {
     public sealed class ActivityMonitor : WiseObject
     {
         // start Singleton
-        private static readonly Lazy<ActivityMonitor> lazy = 
-            new Lazy<ActivityMonitor>(() => new ActivityMonitor()); // Singleton
+        private static readonly Lazy<ActivityMonitor> lazy = new Lazy<ActivityMonitor>(() => new ActivityMonitor()); // Singleton
 
         public static ActivityMonitor Instance
         {
             get
             {
+                if (lazy.IsValueCreated)
+                    return lazy.Value;
+
                 lazy.Value.init();
                 return lazy.Value;
             }
         }
 
         private ActivityMonitor() { }
+        static ActivityMonitor() { }
         // end Singleton
 
-        private System.Threading.Timer inactivityTimer;
-        private readonly int defaultRealMillisToInactivity = (int)TimeSpan.FromMinutes(15).TotalMilliseconds;
-        private int realMillisToInactivity;
-        private readonly int simulatedlMillisToInactivity = (int)TimeSpan.FromMinutes(3).TotalMilliseconds;
-        private Debugger debugger = Debugger.Instance;
+        public static int defaultRealMillisToInactivity = (int)TimeSpan.FromMinutes(15).TotalMilliseconds;
+        public static int realMillisToInactivity;
+        public static readonly int simulatedlMillisToInactivity = (int)TimeSpan.FromMinutes(3).TotalMilliseconds;
+        public static Debugger debugger = Debugger.Instance;
         private DateTime _due = DateTime.MinValue;                  // not set
         private WiseSite wisesite = WiseSite.Instance;
         private static bool initialized = false;
+        public static int millisToInactivity;
+        public static int _activityId = 0;
 
         [FlagsAttribute]
-        public enum Activity
+        public enum ActivityType
         {
             None = 0,
-            Slewing = (1 << 1),
+            TelescopeSlew = (1 << 1),
             Pulsing = (1 << 2),
-            Dome = (1 << 3),
+            DomeSlew = (1 << 3),
             Handpad = (1 << 4),
             GoingIdle = (1 << 5),
             Parking = (1 << 6),
@@ -52,25 +59,37 @@ namespace ASCOM.Wise40
             ShuttingDown = (1 << 8),
             Focuser = (1 << 9),
             FilterWheel = (1 << 10),
+            Projector = (1 << 11),
+            Safety = (1 << 12),
 
-            RealActivities = Slewing | Pulsing | Dome | Handpad | Parking | Shutter | Focuser | FilterWheel,
-        };
-        private static Activity _currentlyActive = Activity.None;
-        private static List<Activity> _activities = new List<Activity> {
-            Activity.Slewing,
-            Activity.Pulsing,
-            Activity.Dome,
-            Activity.Handpad,
-            Activity.GoingIdle,
-            Activity.Parking,
-            Activity.Shutter,
-            Activity.ShuttingDown,
+            // activities that affect the observatory's Idle state
+            RealActivities = TelescopeSlew | Pulsing | DomeSlew | Handpad | Parking | Shutter | Focuser | FilterWheel | ShuttingDown,
         };
 
-        public void BecomeIdle(object StateObject)
+        private static List<ActivityType> _activities = new List<ActivityType> {
+            ActivityType.TelescopeSlew,
+            ActivityType.Pulsing,
+            ActivityType.DomeSlew,
+            ActivityType.Handpad,
+            ActivityType.GoingIdle,
+            ActivityType.Parking,
+            ActivityType.Shutter,
+            ActivityType.ShuttingDown,
+        };
+
+
+        public static IMongoDatabase db;
+
+        public static IMongoCollection<Activity> ActivitiesCollection
         {
-            EndActivity(Activity.GoingIdle);
+            get
+            {
+                string collectionName = Debugger.LogDirectory().Remove(0, (Const.topWise40Directory + "Logs/").Length);
+
+                return db.GetCollection<Activity>(collectionName);
+            }
         }
+
 
         public void init()
         {
@@ -87,164 +106,90 @@ namespace ASCOM.Wise40
                     defaultMinutesToIdle.ToString()));
 
             realMillisToInactivity = (int) TimeSpan.FromMinutes(minutesToIdle).TotalMilliseconds;
-            inactivityTimer = new System.Threading.Timer(BecomeIdle);
-            _currentlyActive = Activity.None;
-            RestartGoindIdleTimer("init");
+            millisToInactivity = WiseObject.Simulated ?
+                ActivityMonitor.simulatedlMillisToInactivity :
+                ActivityMonitor.realMillisToInactivity;
+
+            db = (new MongoClient()).GetDatabase("activities");
+
+            NewActivity(new Activity.GoingIdleActivity("ActivityMonitor init"));
             initialized = true;
         }
 
-        public void StartActivity(Activity act)
+        public void EndActivity(ActivityType type, Activity.EndParams p)
         {
-            if (act == Activity.GoingIdle && _currentlyActive != Activity.None)
+            Activity activity = LookupInProgress(type);
+            if (activity == null)
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "ActivityMonitor[{0}]:StartActivity: ignoring {1} (_currentlyActive: {2})",
-                    GetHashCode(), act.ToString(), _currentlyActive.ToString());
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "ActivityMonitor:EndActivity: No \"{0}\" inProgress", type.ToString());
                 #endregion
                 return;
             }
 
-            if ((_currentlyActive & act) != 0)
-            {
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "ActivityMonitor[{0}]:StartActivity: ignoring {1} (already active)",
-                    GetHashCode(), act.ToString());
-                #endregion
-                return;
-            }
-
-            _currentlyActive |= act;
-            if (act != Activity.GoingIdle)      // Any activity ends GoingIdle
-                EndActivity(Activity.GoingIdle);
             #region debug
-            string activities = string.Join(",", ObservatoryActivities);
-            activities = activities == "" ? "none" : activities;
-
-            debugger.WriteLine(Common.Debugger.DebugLevel.DebugLogic,
-                "ActivityMonitor[{0}]:StartActivity: started {1} (currentlyActive: {2})",
-                    GetHashCode(), act.ToString(), activities);
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "ActivityMonitor:EndActivity: Calling {0}.End()", type.ToString());
             #endregion
-            if (act != Activity.GoingIdle)
-                StopGoindIdleTimer();
+            activity._endTime = DateTime.Now;
+            activity.End(p);
         }
 
-        public void EndActivity(Activity act)
+        public bool InProgress(ActivityType a)
         {
-            if (! InProgress(act) )
-            {
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "ActivityMonitor[{0}]:EndActivity: ignoring {1} (not active)",
-                    GetHashCode(), act.ToString());
-                #endregion
-                return;
-            }
-
-            _currentlyActive &= ~act;
-            #region debug
-            string activities = string.Join(",", ObservatoryActivities);
-            activities = activities == "" ? "none" : activities;
-
-            debugger.WriteLine(Common.Debugger.DebugLevel.DebugLogic,
-                "ActivityMonitor[{0}]:EndActivity: ended {1} (currentlyActive: {2})",
-                    GetHashCode(), act.ToString(), activities);
-            #endregion
-
-            if (act == Activity.Parking && InProgress(Activity.ShuttingDown))
-                return;
-
-            if (act == Activity.ShuttingDown ||
-                    (act == Activity.GoingIdle && ! InProgress(Activity.RealActivities)))
-                StopGoindIdleTimer();
-            else if (! InProgress(Activity.RealActivities|Activity.ShuttingDown))
-                RestartGoindIdleTimer("idle");
+            return LookupInProgress(a) != null;
         }
 
-        public bool InProgress(Activity a)
+        /// <summary>
+        /// Called by activities that reset the idle-time counter (e.g. AbortSlew or setting the target)
+        /// </summary>
+        /// <param name="reason"></param>
+        public void StayActive(string reason)
         {
-            return (_currentlyActive & a) != 0;
-        }
+            Activity activity = LookupInProgress(ActivityType.GoingIdle);
 
-        public void StopGoindIdleTimer()
-        {
-            inactivityTimer.Change(Timeout.Infinite, Timeout.Infinite);
-            _due = DateTime.MinValue;
-        }
-
-        public void RestartGoindIdleTimer(string reason)
-        {
-            // The file's creation time is used in case we crashed after starting to idle.
-            string filename = Const.topWise40Directory + "Observatory/ActivityMonitorRestart";
-            int dueMillis = Simulated ? simulatedlMillisToInactivity : realMillisToInactivity;
-
-            if (reason == "init")
-            {
-                try
-                {
-                    if (File.Exists(filename))
-                    {
-                        double fileAgeMillis = DateTime.Now.Subtract(File.GetLastAccessTime(filename)).TotalMilliseconds;
-
-                        if (fileAgeMillis < dueMillis)
-                            dueMillis = Math.Min(dueMillis, (int)fileAgeMillis);
-                    }
-                    else
-                    {
-                        Directory.CreateDirectory(Path.GetDirectoryName(filename));
-                        File.Create(filename).Close();
-                    }
-                    File.SetLastAccessTime(filename, DateTime.Now);
-                } catch (Exception ex)
-                {
-                    #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "RestartGoindIdleTimer: Exception: {0}", ex.Message);
-                    #endregion
-                }
-            }
-            #region debug
-            debugger.WriteLine(Common.Debugger.DebugLevel.DebugLogic, "ActivityMonitor[{0}]:Restarted timer (reason = {1}, due = {2}).",
-                GetHashCode(), reason, TimeSpan.FromMilliseconds(dueMillis));
-            #endregion
-
-            StartActivity(Activity.GoingIdle);
-            inactivityTimer.Change(dueMillis, Timeout.Infinite);
-
-            _due = DateTime.Now.AddMilliseconds(dueMillis);
+            if (activity != null)
+                (activity as Activity.GoingIdleActivity).RestartTimer(reason);
         }
 
         public TimeSpan RemainingTime
         {
             get
             {
-                if (_due == DateTime.MinValue)
-                    return TimeSpan.MaxValue;
-                return _due.Subtract(DateTime.Now);
+                Activity activity = LookupInProgress(ActivityType.GoingIdle);
+                if (activity != null)
+                    return (activity as Activity.GoingIdleActivity).RemainingTime;
+                return TimeSpan.MaxValue;
             }
         }
 
         public bool ObservatoryIsActive()
         {
+            List<string> activities = ObservatoryActivities;
+            bool ret = activities.Count() != 0;
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "ObservatoryIsActive: {0}", _currentlyActive.ToString());
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "ActivityMonitor:ObservatoryIsActive: ret: {0} [{1}]",
+                ret, string.Join(",", activities));
             #endregion
-            return _currentlyActive != Activity.None;
+            return ret;
         }
 
-        public List<string> ObservatoryActivities
+        public static List<string> ObservatoryActivities
         {
             get
             {
                 List<string> ret = new List<string>();
 
-                foreach (Activity a in _activities)
+                foreach (Activity a in ActivityMonitor.Instance.inProgressActivities)
                 {
-                    if (!InProgress(a))
+                    if ((a._type & ActivityMonitor.ActivityType.RealActivities) == 0)
                         continue;
 
-                    if (a == Activity.GoingIdle)
+                    if (a._type == ActivityType.GoingIdle)
                     {
-                        TimeSpan ts = RemainingTime;
+                        Activity.GoingIdleActivity gia = (a as Activity.GoingIdleActivity);
+                        TimeSpan ts = gia.RemainingTime;
 
-                        string s = a.ToString();
+                        string s = a._type.ToString();
                         if (ts != TimeSpan.MaxValue)
                         {
                             s += " in ";
@@ -255,10 +200,803 @@ namespace ASCOM.Wise40
                         ret.Add(s);
                     }
                     else
-                        ret.Add(a.ToString());
+                        ret.Add(a._type.ToString());
                 }
 
                 return ret;
+            }
+        }
+
+        public List<Activity> activityLog = new List<Activity>();
+        public List<Activity> inProgressActivities = new List<Activity>();
+        public List<Activity> endedActivities = new List<Activity>();
+
+        public Activity LookupInProgress(ActivityType type)
+        {
+            #region debug
+            string dbg = string.Format("ActivityMonitor:LookupInProgress: type: {0}, in progress: [", type);
+            foreach (Activity a in inProgressActivities)
+                dbg += string.Format(" {0} ({1})", a._type.ToString(), a.GetHashCode());
+            dbg += " ] ";
+            #endregion
+            Activity ret = inProgressActivities.Find((x) => x._type == type);
+
+            #region debug
+            dbg += (ret == default(Activity) ? "NOT found" : "found");
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, dbg);
+            #endregion
+            return ret;
+        }
+
+        public bool AnyInProgress(ActivityType types)
+        {
+            foreach (var activity in inProgressActivities)
+                if ((activity._type & types) != 0)
+                    return true;
+
+            return false;
+        }
+
+        public void NewActivity(Activity activity)
+        {
+            activityLog.Add(activity);
+            if (!inProgressActivities.Contains(activity))
+                inProgressActivities.Add(activity);
+
+            if (activity.effectOnGoingIdle_AtStart == Activity.EffectOnGoingIdle.Remove)
+            {
+                string reason = string.Format("{0} started", activity._type.ToString());
+
+                EndActivity(ActivityType.GoingIdle, new Activity.GoingIdleActivity.EndParams()
+                {
+                    endState = Activity.State.Aborted,
+                    endReason = reason,
+                    reason = reason,
+                });
+            }
+        }
+
+        public void Event(Event e)
+        {
+            e.EmitEvent();
+        }
+    }
+
+    public abstract class Activity: IEquatable<Activity>
+    {
+        public ActivityMonitor.ActivityType _type;
+
+        public enum State { NotSet, Pending, Succeeded, Failed, Aborted, Idle };
+        public State _state;
+        public int _id;
+
+        public enum EffectOnGoingIdle  {
+            NotSet,     // default, needs to be changed
+            NoEffect,   // does not affect the GoingIdleActivity (usually for weather or log-only activities)
+            Remove,     // removes the GoingIdleActivity
+            Renew,      // restarts the GoingIdleActivity (usually onEnd)
+        };
+        public EffectOnGoingIdle effectOnGoingIdle_AtStart = EffectOnGoingIdle.NotSet;
+        public EffectOnGoingIdle effectOnGoingIdle_AtEnd = EffectOnGoingIdle.NotSet;
+
+        public DateTime _startTime;
+        public string _startDetails;
+
+        public DateTime _endTime;
+        public string _endDetails;
+        public string _endReason;
+
+        public TimeSpan _duration;
+
+        protected static Debugger debugger = Debugger.Instance;
+        private static ActivityMonitor monitor = ActivityMonitor.Instance;
+
+        public Activity() { }
+
+        public Activity(ActivityMonitor.ActivityType type)
+        {
+            _id = Interlocked.Increment(ref ActivityMonitor._activityId);
+            _type = type;
+            _startTime = DateTime.Now;
+
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                "Activity: \"{0}\" created. (id: {1}, start: {2})", type.ToString(), _id, _startTime.ToString(@"dd\:hh\:mm\:ss\.fff"));
+            #endregion
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj == null)
+                return false;
+
+            Activity objAsActivity = obj as Activity;
+            if (objAsActivity == null)
+                return false;
+            else
+                return Equals(objAsActivity);
+        }
+
+        public override int GetHashCode()
+        {
+            return (int) _type;
+        }
+
+        public bool Equals(Activity other)
+        {
+            if (other == null)
+                return false;
+            return (_type.Equals(other._type));
+        }
+
+        public void EmitStart()
+        {
+            string msg = string.Format("log4net: START: _activity: {0} _id: {1}", _type.ToString(), _id);
+            if (_startDetails != string.Empty)
+            {
+                msg += string.Format(", details: {0}", _startDetails);
+            }
+
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, msg);
+            //ActivityMonitor.ActivitiesCollection.InsertOne(this);
+        }
+
+        public void EmitEnd()
+        {
+            string msg = string.Format("log4net:   END: _activity: {0} _id: {1}", _type.ToString(), _id);
+            TimeSpan ts = _endTime - _startTime;
+            msg += string.Format(", duration: {0}", ts.ToString(@"dd\:hh\:mm\:ss\.fff"));
+            if (_endDetails != string.Empty)
+            {
+                msg += string.Format(", _details: {0}", _endDetails);
+            }
+            msg += string.Format(", _completionState: {0}, _completionReason: {1}",
+                _state,
+                _endReason);
+
+            //Activity activity = ActivityMonitor.ActivitiesCollection.FindOneAndUpdate<Activity>(a => a._type == this._type,
+            //    Builders<Activity>.Update.obj);
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, msg);
+        }
+
+        public void EndActivity(EndParams par)
+        {
+            if (par.endState == State.NotSet)
+                throw new InvalidValueException(string.Format("Activity:EndActivity: Activity {0}: endState NOT set", this._type.ToString()));
+            if (par.endReason == string.Empty)
+                throw new InvalidValueException(string.Format("Activity:EndActivity: Activity {0}: endReason NOT set", this._type.ToString()));
+
+            _endTime = DateTime.Now;
+            _state = par.endState;
+            _endReason = par.endReason;
+            _duration = _endTime - _startTime;
+
+            EmitEnd();
+
+            monitor.endedActivities.Add(this);
+            monitor.inProgressActivities.Remove(this);
+
+            if (this._type != ActivityMonitor.ActivityType.GoingIdle && 
+                ActivityMonitor.ObservatoryActivities.Count() == 0 &&
+                effectOnGoingIdle_AtEnd == EffectOnGoingIdle.Renew)
+            {
+                monitor.NewActivity(new GoingIdleActivity("no activities in progress"));
+            }
+        }
+
+        public class EndParams
+        {
+            public Activity.State endState = State.NotSet;  // How did the activity end?
+            public string endReason = string.Empty;         // Why did the activity end?
+        }
+
+        public abstract void End(EndParams par);
+
+        public class TimeConsumingActivity : Activity
+        {
+            public TimeConsumingActivity(ActivityMonitor.ActivityType type) : base(type)
+            {
+                effectOnGoingIdle_AtStart = EffectOnGoingIdle.Remove;
+                effectOnGoingIdle_AtEnd = EffectOnGoingIdle.Renew;
+            }
+
+            public override void End(EndParams par)
+            {
+                End(par);
+            }
+        }
+
+        public class TelescopeSlewActivity : TimeConsumingActivity
+        {
+            public class Coords
+            {
+                public double ra, dec;
+            };
+
+            public Coords _start, _target, _end;
+
+            public class StartParams
+            {
+                public Coords start, target;
+            }
+
+            public new class EndParams : Activity.EndParams
+            {
+                public Coords end;
+            }
+
+            public override void End(Activity.EndParams p)
+            {
+                TelescopeSlewActivity.EndParams par = p as TelescopeSlewActivity.EndParams;
+
+                _end = new Coords() {
+                    ra = par.end.ra,
+                    dec = par.end.dec,
+                };
+                _endDetails = string.Format("endRa: {0}, endDec: {1}",
+                    Angle.FromHours(_end.ra).ToNiceString(),
+                    Angle.FromDegrees(_end.dec).ToNiceString());
+                EndActivity(par);
+            }
+
+            public TelescopeSlewActivity(StartParams par) : base(ActivityMonitor.ActivityType.TelescopeSlew)
+            {
+                _start = new Coords() {
+                    ra = par.start.ra,
+                    dec = par.start.dec,
+                };
+                _target = new Coords()
+                {
+                    ra = par.target.ra,
+                    dec = par.target.dec,
+                };
+                _startDetails = string.Format("startRa: {0}, startDec: {1}, targetRa: {2}, targetDec: {3}",
+                    Angle.FromHours(_start.ra).ToNiceString(),
+                    Angle.FromDegrees(_start.dec).ToNiceString(),
+                    Angle.FromHours(_target.ra).ToNiceString(),
+                    Angle.FromDegrees(_target.dec).ToNiceString()
+                    );
+
+                EmitStart();
+            }
+        }
+
+        public class DomeSlewActivity : TimeConsumingActivity
+        {
+            public enum DomeEventType { FindHome, Slew };
+            public double _startAz, _targetAz, _endAz;
+            public string _reason;
+
+            public class StartParams
+            {
+                public DomeEventType type;
+                public double startAz, targetAz;
+                public string reason;
+            }
+
+            public new class EndParams : Activity.EndParams
+            {
+                public double endAz;
+            }
+
+            public DomeSlewActivity(StartParams par): base(ActivityMonitor.ActivityType.DomeSlew)
+            {
+                if (par.type == DomeEventType.Slew)
+                {
+                    _startAz = par.startAz;
+                    _targetAz = par.targetAz;
+                    _reason = par.reason;
+                    _startDetails = string.Format("startAz: {0}, targetAz: {1}, reason: {2}",
+                        Angle.FromDegrees(_startAz, Angle.Type.Az).ToNiceString(),
+                        Angle.FromDegrees(_targetAz, Angle.Type.Az).ToNiceString(),
+                        _reason);
+                }
+                else
+                    _startDetails = "FindHome";
+
+                EmitStart();
+            }
+
+            public override void End(Activity.EndParams p)
+            {
+                DomeSlewActivity.EndParams par = p as DomeSlewActivity.EndParams;
+
+                _endAz = par.endAz;
+                _endDetails = string.Format("endAz: {0}",
+                    Angle.FromDegrees(_endAz, Angle.Type.Az).ToNiceString());
+                EndActivity(par);
+            }
+        }
+
+        public class FocuserActivity : TimeConsumingActivity
+        {
+            public enum Direction { NotSet, Up, Down };
+            public Direction _direction;
+            public int _start, _target, _end;
+
+            public class StartParams
+            {
+                public int start, target, intermediateTarget;
+                public Direction direction;
+            }
+
+            public new class EndParams : Activity.EndParams
+            {
+                public int end;
+            }
+
+            public FocuserActivity(StartParams par): base(ActivityMonitor.ActivityType.Focuser)
+            {
+                _direction = par.direction;
+                _target = par.target;
+                _start = par.start;
+                _startDetails = string.Format("start: {0}, target: {1}, direction: {2}",
+                    _start, _target, _direction);
+
+                EmitStart();
+            }
+
+            public override void End(Activity.EndParams p)
+            {
+                FocuserActivity.EndParams par = p as FocuserActivity.EndParams;
+
+                _endDetails = string.Format("end: {0}", par.end);
+                EndActivity(par);
+            }
+        }
+
+        public class ShutterActivity : TimeConsumingActivity
+        {
+            public int _start, _target, _end;
+
+            public class StartParams
+            {
+                public int start, target;
+            }
+
+            public new class EndParams : Activity.EndParams
+            {
+                public int percentOpen;
+            }
+
+            public ShutterActivity(StartParams par): base (ActivityMonitor.ActivityType.Shutter)
+            {
+                _start = par.start;
+                _target= par.target;
+                _startDetails = string.Format("startPercent: {0}, targetPercent: {1}",
+                    _start.ToString(),
+                    _target.ToString());
+
+                EmitStart();
+            }
+
+            public override void End(Activity.EndParams p)
+            {
+                ShutterActivity.EndParams par = p as ShutterActivity.EndParams;
+
+                _end = par.percentOpen;
+                _endDetails = string.Format("endPercent: {0}",  _end.ToString());
+
+                EndActivity(par);
+            }
+        }
+
+        public class PulsingActivity : TimeConsumingActivity
+        {
+            public DeviceInterface.GuideDirections _direction;
+            public int _millis;
+            public TelescopeSlewActivity.Coords _start, _end;
+
+            public class StartParams
+            {
+                public TelescopeSlewActivity.Coords _start;
+                public DeviceInterface.GuideDirections _direction;
+                public int _millis;
+            }
+
+            public new class EndParams : Activity.EndParams
+            {
+                public TelescopeSlewActivity.Coords _end;
+            }
+
+            public PulsingActivity(StartParams par): base(ActivityMonitor.ActivityType.Pulsing)
+            {
+                _direction = par._direction;
+                _millis = par._millis;
+                _start = new TelescopeSlewActivity.Coords()
+                {
+                    ra = par._start.ra,
+                    dec = par._start.dec,
+                };
+                _startDetails = string.Format("startRa: {0}, startDec: {1}, direction: {2}, millis: {3}",
+                    Angle.FromHours(_start.ra).ToNiceString(),
+                    Angle.FromDegrees(_start.dec, Angle.Type.Dec).ToNiceString(),
+                    _direction.ToString(),
+                    _millis.ToString());
+
+                EmitStart(); ;
+            }
+
+            public override void End(Activity.EndParams p)
+            {
+                PulsingActivity.EndParams par = p as PulsingActivity.EndParams;
+
+                _end = new TelescopeSlewActivity.Coords()
+                {
+                    ra = par._end.ra,
+                    dec = par._end.dec,
+                };
+                _endDetails = string.Format("endRa: {0}, endDec: {1}",
+                    Angle.FromHours(_end.ra, Angle.Type.RA).ToNiceString(),
+                    Angle.FromDegrees(_end.dec, Angle.Type.Dec).ToNiceString());
+
+                EndActivity(par);
+            }
+        }
+
+        public class FilterWheelActivity : TimeConsumingActivity
+        {
+            public int _startPos, _targetPos, _endPos;
+
+            public class StartParams
+            {
+                public int start, target;
+            }
+
+            public new class EndParams: Activity.EndParams
+            {
+                public int end;
+            }
+
+            public FilterWheelActivity(StartParams par) : base(ActivityMonitor.ActivityType.FilterWheel)
+            {
+                _startPos = par.start;
+                _targetPos = par.target;
+                _startDetails = string.Format("start: {0}, target: {1}",
+                    _startPos.ToString(),
+                    _targetPos.ToString());
+
+                EmitStart();
+            }
+
+            public override void End(Activity.EndParams p)
+            {
+                FilterWheelActivity.EndParams par = p as FilterWheelActivity.EndParams;
+
+                _endPos = par.end;
+                _endDetails = string.Format("end: {0}", _endPos);
+
+                EndActivity(par);
+            }
+        }
+
+        public class GoingIdleActivity : TimeConsumingActivity
+        {
+            public DateTime _due;
+            private System.Threading.Timer _timer = new System.Threading.Timer(BecomeIdle);
+            public string startReason, endReason;
+
+            public GoingIdleActivity(string reason) : base(ActivityMonitor.ActivityType.GoingIdle)
+            {
+                RestartTimer(reason);
+            }
+
+            public new class EndParams : Activity.EndParams
+            {
+                public string reason;
+            }
+
+            public override void End(Activity.EndParams p)
+            {
+                GoingIdleActivity.EndParams par = p as GoingIdleActivity.EndParams;
+
+                _due = DateTime.MinValue;
+                _timer.Change(Timeout.Infinite, Timeout.Infinite);
+                _endReason = par.reason;
+                _endDetails = "";
+
+                EndActivity(par);
+            }
+
+            public void RestartTimer(string reason)
+            {
+                startReason = reason;
+                _startDetails = string.Format("restart: {0}", startReason);
+                EmitStart();
+
+                _due = DateTime.Now.AddMilliseconds(ActivityMonitor.millisToInactivity);
+                _timer.Change(ActivityMonitor.millisToInactivity, Timeout.Infinite);
+            }
+
+            private static void BecomeIdle(object state)
+            {
+                monitor.EndActivity(ActivityMonitor.ActivityType.GoingIdle, new EndParams() {
+                    endState = State.Idle,
+                    endReason = "Time is up",
+                    reason = "Time is up",
+                });
+            }
+
+            public TimeSpan RemainingTime
+            {
+                get
+                {
+                    if (_due == DateTime.MinValue)
+                        return TimeSpan.MaxValue;
+                    return _due.Subtract(DateTime.Now);
+                }
+            }
+        }
+
+        public class ProjectorActivity : TimeConsumingActivity
+        {
+            public bool _onOff;
+
+            public ProjectorActivity() : base(ActivityMonitor.ActivityType.Projector)
+            {
+                effectOnGoingIdle_AtStart = EffectOnGoingIdle.NoEffect;
+                effectOnGoingIdle_AtEnd = EffectOnGoingIdle.NoEffect;
+
+                _onOff = true;
+                _startDetails = string.Format("projector: {0}", _onOff ? "ON" : "OFF");
+
+                EmitStart();
+            }
+
+            public override void End(Activity.EndParams p)
+            {
+                EndActivity(p);
+            }
+        }
+
+        public class ParkActivity : TimeConsumingActivity
+        {
+            public TelescopeSlewActivity.Coords _start, _target, _end;
+            public double _startAz, _targetAz, _endAz;
+            public int _shutterPercentStart, _shutterPercentEnd;
+            public ASCOM.DeviceInterface.ShutterState _shutterEndState;
+
+            public class StartParams
+            {
+                public TelescopeSlewActivity.Coords start, target;
+                public double domeStartAz, domeTargetAz;
+                public int shutterPercent;
+            }
+
+            public new class EndParams : Activity.EndParams
+            {
+                public TelescopeSlewActivity.Coords end;
+                public double domeAz;
+                public int shutterPercent;
+            }
+
+            public ParkActivity(StartParams par): base(ActivityMonitor.ActivityType.Parking)
+            {
+                _start = new TelescopeSlewActivity.Coords()
+                {
+                    ra = par.start.ra,
+                    dec = par.start.dec,
+                };
+                _startAz = par.domeStartAz;
+                _shutterPercentStart = par.shutterPercent;
+
+                _target = new TelescopeSlewActivity.Coords()
+                {
+                    ra = par.target.ra,
+                    dec = par.start.dec,
+                };
+                _targetAz = par.domeTargetAz;
+                
+                _startDetails = string.Format("start: [ra: {0}, dec: {1}, az: {2}, percent: {3}], target: [ra: {4}, dec: {5}, az: {6}, percent: {7}]",
+                    Angle.FromHours(_start.ra, Angle.Type.RA).ToNiceString(),
+                    Angle.FromDegrees(_start.dec, Angle.Type.Dec).ToNiceString(),
+                    Angle.FromDegrees(_startAz, Angle.Type.Az).ToNiceString(),
+                    _shutterPercentStart.ToString(),
+                    Angle.FromHours(_target.ra, Angle.Type.RA).ToNiceString(),
+                    Angle.FromDegrees(_target.dec, Angle.Type.Dec).ToNiceString(),
+                    Angle.FromDegrees(_targetAz, Angle.Type.Az).ToNiceString(),
+                    100.ToString()
+                    );
+
+                EmitStart();
+            }
+
+            public override void End(Activity.EndParams p)
+            {
+                ParkActivity.EndParams par = p as ParkActivity.EndParams;
+
+                _end = new TelescopeSlewActivity.Coords()
+                {
+                    ra = par.end.ra,
+                    dec = par.end.dec,
+                };
+                _endAz = par.domeAz;
+                _shutterPercentEnd = par.shutterPercent;
+                _endDetails = string.Format("end: [ra: {0}, dec: {1}, az: {2}, percent: {3}]",
+                    Angle.FromHours(_end.ra, Angle.Type.RA).ToNiceString(),
+                    Angle.FromDegrees(_end.dec, Angle.Type.Dec).ToNiceString(),
+                    Angle.FromDegrees(_endAz, Angle.Type.Az).ToNiceString(),
+                    _shutterPercentEnd.ToString()
+                    );
+
+                EndActivity(par);
+            }
+        }
+
+        public class ShutdownActivity : TimeConsumingActivity
+        {
+            public ShutdownActivity(): base(ActivityMonitor.ActivityType.ShuttingDown)
+            {
+                effectOnGoingIdle_AtEnd = EffectOnGoingIdle.NoEffect;
+                EmitStart();
+            }
+
+            public override void End(Activity.EndParams p)
+            {
+                ShutdownActivity.EndParams par = p as ShutdownActivity.EndParams;
+
+                EndActivity(par);
+            }
+        }
+
+        public class HandpadActivity : TimeConsumingActivity
+        {
+            public DeviceInterface.TelescopeAxes _axis;
+            public double _rate;
+            public double _start, _end;
+
+            public class StartParams
+            {
+                public DeviceInterface.TelescopeAxes axis;
+                public double rate;
+                public double start;
+            }
+
+            public new class EndParams : Activity.EndParams
+            {
+                public double end;
+            }
+
+            public HandpadActivity(StartParams par) : base(ActivityMonitor.ActivityType.Handpad)
+            {
+                _axis = par.axis;
+                _rate = par.rate;
+                _startDetails = string.Format("axis: {0}, start: {1}, rate: {2}",
+                    _axis.ToString().Remove(0, "rate".Length),
+                    (_axis == DeviceInterface.TelescopeAxes.axisPrimary) ?
+                        Angle.FromHours(_start, Angle.Type.RA).ToNiceString() :
+                        Angle.FromDegrees(_start, Angle.Type.Dec).ToNiceString(),
+                    RateName(_rate));
+
+                EmitStart(); ;
+            }
+
+            public override void End(Activity.EndParams p)
+            {
+                HandpadActivity.EndParams par = p as HandpadActivity.EndParams;
+
+                _end = par.end;
+                _endDetails = string.Format("end: {0}",
+                    (_axis == DeviceInterface.TelescopeAxes.axisPrimary) ?
+                        Angle.FromHours(_end, Angle.Type.RA).ToNiceString() :
+                        Angle.FromDegrees(_end, Angle.Type.Dec).ToNiceString()
+                    );
+            }
+
+            public static string RateName(double rate)
+            {
+                Dictionary<double, string> names = new Dictionary<double, string> {
+                { Const.rateStopped,  "rateStopped" },
+                { Const.rateSlew,  "rateSlew" },
+                { Const.rateSet,  "rateSet" },
+                { Const.rateGuide,  "rateGuide" },
+                { -Const.rateSlew,  "-rateSlew" },
+                { -Const.rateSet,  "-rateSet" },
+                { -Const.rateGuide,  "-rateGuide" },
+                { Const. rateTrack, "rateTrack" },
+            };
+
+                if (names.ContainsKey(rate))
+                    return names[rate];
+                return rate.ToString();
+            }
+        }
+
+        public class SafetyActivity : TimeConsumingActivity
+        {
+            public new enum State {
+                Warning, Good, Error
+            }
+            public new State _state = State.Warning;
+
+            public SafetyActivity(State state) : base(ActivityMonitor.ActivityType.Safety)
+            {
+                effectOnGoingIdle_AtStart = EffectOnGoingIdle.NoEffect;
+                effectOnGoingIdle_AtEnd = EffectOnGoingIdle.NoEffect;
+
+                _state = state;
+                _startDetails = string.Format("state: {0}", _state.ToString());
+
+                EmitStart();
+            }
+
+            public override void End(Activity.EndParams p)
+            {
+                _endDetails = string.Format("state: {0}", State.Good);
+
+                EndActivity(p);
+            }
+        }
+    }
+
+    public class Event
+    {
+        public enum EventType { NotSet, Safety, Global };
+
+        public EventType _type = EventType.NotSet;
+        public DateTime _utcTime;
+        public string _details;
+
+        private static Debugger debugger = Debugger.Instance;
+
+        public Event(EventType type)
+        {
+            _type = type;
+            _utcTime = DateTime.UtcNow;
+        }
+
+        public void EmitEvent()
+        {
+            string msg = string.Format("log4net: EVENT: {0}", _type.ToString());
+            if (_details != string.Empty)
+            {
+                msg += string.Format(", details: {0}", _details);
+            }
+
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, msg);
+        }
+
+        public class SafetyEvent : Event
+        {
+            public enum SensorState {  NotSet, Init, NotReady, Ready, Safe, NotSafe };
+            public string _sensor;
+            public SensorState _before = SensorState.NotSet;
+            public SensorState _after = SensorState.NotSet;
+
+            public SafetyEvent() : base (EventType.NotSet) { }
+            static SafetyEvent() { }
+
+            public static SensorState ToSensorSafety(bool b)
+            {
+                return b ? SensorState.Safe : SensorState.NotSafe;
+            }
+
+            public SafetyEvent(string sensor, string details, SensorState before, SensorState after) : base(EventType.Safety)
+            {
+                if (sensor == string.Empty)
+                    throw new InvalidValueException("SensorSafetyEvent:ctor: empty \"sensor\"");
+                if (details == string.Empty)
+                    throw new InvalidValueException(string.Format("SensorSafetyEvent:ctor: empty \"details\" for {0}", sensor));
+                if (after == SensorState.NotSet)
+                    throw new InvalidValueException(string.Format("SensorSafetyEvent:ctor: \"after\" NotSet for {0}", sensor));
+
+                _sensor = sensor;
+                _before = before;
+                _after = after;
+
+                _details = string.Format("sensor: {0}Sensor, details: {1}, before: {2}, after: {3}",
+                    sensor, details, before, after);
+            }
+        }
+
+        public class GlobalEvent : Event
+        {
+            public GlobalEvent(string details) : base(EventType.Global)
+            {
+                if (details == string.Empty)
+                    throw new InvalidValueException("GlobalEvent:ctor: bad args");
+
+                _details = string.Format("details: {0}", details);
             }
         }
     }

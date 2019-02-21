@@ -77,14 +77,15 @@ namespace ASCOM.Wise40
             _connected = value;
         }
 
-        public void SlewToAz(double az)
+        public void SlewToAz(double az, string reason)
         {
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver: Asking dome to SlewToAzimuth({0})", new Angle(az, Angle.Type.Az));
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver: Asking dome to SlewToAzimuth({0}, {1})",
+                new Angle(az, Angle.Type.Az), reason);
             #endregion
             try
             {
-                wisedome.SlewToAzimuth(az);
+                wisedome.SlewToAzimuth(az, reason);
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver:SlewToAz Waiting for dome to arrive to target {0}",
                     Angle.FromDegrees(az).ToString());
@@ -161,7 +162,7 @@ namespace ASCOM.Wise40
             #endregion
         }
 
-        public void SlewToAz(Angle ra, Angle dec)
+        public void SlewToAz(Angle ra, Angle dec, string reason)
         {
             Angle newDomeAz = CalculateDomeAzimuth(ra, dec);
             Angle currentDomeAz = wisedome.Azimuth;
@@ -170,8 +171,8 @@ namespace ASCOM.Wise40
             if (delta.angle.Radians < _minimalMovement.Radians)
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "DomeSlaveDriver:SlewToAz (tracking): delta={0}, _minimalMovement={1}: Not moving",
-                    delta.angle.ToNiceString(), _minimalMovement.ToNiceString());
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "DomeSlaveDriver:SlewToAz ({0}): delta={1}, _minimalMovement={2}: Not moving",
+                    reason, delta.angle.ToNiceString(), _minimalMovement.ToNiceString());
                 #endregion
                 return;
             }
@@ -181,7 +182,7 @@ namespace ASCOM.Wise40
                 "DomeSlaveDriver:SlewToAz (tracking): ra: {0}, dec: {1} => {2}",
                 ra.ToString(), dec.ToString(), newDomeAz.ToNiceString());
             #endregion
-            SlewToAz(newDomeAz.Degrees);
+            SlewToAz(newDomeAz.Degrees, reason);
         }
 
         public bool Slewing

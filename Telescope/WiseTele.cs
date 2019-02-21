@@ -310,7 +310,7 @@ namespace ASCOM.Wise40
 
             set
             {
-                activityMonitor.RestartGoindIdleTimer("TargetDeclination was set");
+                activityMonitor.StayActive("TargetDeclination was set");
                 CheckCoordinateSanity(Angle.Type.Dec, value);
 
                 _targetDeclination = Angle.FromDegrees(value, Angle.Type.Dec);
@@ -338,7 +338,7 @@ namespace ASCOM.Wise40
 
             set
             {
-                activityMonitor.RestartGoindIdleTimer("TargetRightAscension was set");
+                activityMonitor.StayActive("TargetRightAscension was set");
                 CheckCoordinateSanity(Angle.Type.RA, value);
                 _targetRightAscension = Angle.FromHours(value, Angle.Type.RA);
                 #region debug
@@ -419,6 +419,9 @@ namespace ASCOM.Wise40
                     connectable.Connect(value);
                 }
                 _connected = value;
+
+                activityMonitor.Event(new Event.GlobalEvent(
+                    string.Format("{0} {1}", driverID, value ? "Connected" : "Disconnected")));
             }
         }
 
@@ -726,16 +729,30 @@ namespace ASCOM.Wise40
             }
         }
 
-        public void AbortSlew()
+        public void AbortSlew(string reason)
         {
-            activityMonitor.RestartGoindIdleTimer("AbortSlew");
+            activityMonitor.StayActive("AbortSlew");
             if (AtPark)
             {
                 throw new InvalidOperationException("Cannot AbortSlew while AtPark");
             }
 
             Stop();
-            activityMonitor.EndActivity(ActivityMonitor.Activity.Slewing);
+
+            try
+            {
+                activityMonitor.EndActivity(ActivityMonitor.ActivityType.TelescopeSlew, 
+                        new Activity.TelescopeSlewActivity.EndParams
+                        {
+                            endState = Activity.State.Aborted,
+                            endReason = reason,
+                            end = new Activity.TelescopeSlewActivity.Coords() {
+                            ra = RightAscension,
+                            dec = Declination
+                        },
+                    });
+            }
+            catch { }
             #region debug
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, "AbortSlew");
             #endregion debug
@@ -852,7 +869,7 @@ namespace ASCOM.Wise40
             if (_enslaveDome && !slewers.Active(Slewers.Type.Dome))
             {
                 WiseDome._adjustingForTracking = true;
-                DomeSlewer(Angle.FromHours(RightAscension), Angle.FromDegrees(Declination));
+                DomeSlewer(Angle.FromHours(RightAscension), Angle.FromDegrees(Declination), "Follow telescope tracking");
             }
         }
 
@@ -877,7 +894,7 @@ namespace ASCOM.Wise40
                 if (value)
                 {
                     if (!wisesafetooperate.IsSafe && 
-                        !activityMonitor.InProgress(ActivityMonitor.Activity.ShuttingDown) &&
+                        !activityMonitor.InProgress(ActivityMonitor.ActivityType.ShuttingDown) &&
                         !BypassCoordinatesSafety)
                             throw new ASCOM.InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList));
 
@@ -886,13 +903,11 @@ namespace ASCOM.Wise40
 
                     if (TrackingMotor.isOff)
                         TrackingMotor.SetOn(Const.rateTrack);
-                    //activityMonitor.StartActivity(ActivityMonitor.Activity.Tracking);
                 }
                 else
                 {
                     if (TrackingMotor.isOn)
                         TrackingMotor.SetOff();
-                    //activityMonitor.EndActivity(ActivityMonitor.Activity.Tracking);
                 }
                 safetyMonitorTimer.EnableIfNeeded(SafetyMonitorTimer.ActionWhenNotSafe.Backoff);
 
@@ -1076,11 +1091,24 @@ namespace ASCOM.Wise40
 
             try
             {
-                activityMonitor.StartActivity(ActivityMonitor.Activity.Handpad);
+                activityMonitor.NewActivity(new Activity.HandpadActivity(new Activity.HandpadActivity.StartParams() {
+                    axis = Axis,
+                    rate = Rate,
+                    start = (Axis == TelescopeAxes.axisPrimary) ?
+                        WiseTele.Instance.RightAscension :
+                        WiseTele.Instance.Declination,
+                }));
                 _moveAxis(Axis, Rate, direction, false);
-            } catch
+            } catch (Exception ex)
             {
-                activityMonitor.EndActivity(ActivityMonitor.Activity.Handpad);
+                activityMonitor.EndActivity(ActivityMonitor.ActivityType.Handpad, new Activity.HandpadActivity.EndParams()
+                {
+                    endState = Activity.State.Aborted,
+                    endReason = string.Format("Exception: {0}", ex.Message),
+                    end = (Axis == TelescopeAxes.axisPrimary) ?
+                        WiseTele.Instance.RightAscension :
+                        WiseTele.Instance.Declination,
+                });
                 throw;
             }
 
@@ -1090,12 +1118,25 @@ namespace ASCOM.Wise40
 
         public void HandpadStop()
         {
-            if (NorthMotor.isOn ||SouthMotor.isOn)
-                StopAxis(TelescopeAxes.axisSecondary);
-            if (WestMotor.isOn || EastMotor.isOn)
-                StopAxis(TelescopeAxes.axisPrimary);
+            TelescopeAxes axis;
 
-            activityMonitor.EndActivity(ActivityMonitor.Activity.Handpad);
+            if (NorthMotor.isOn || SouthMotor.isOn)
+                axis = TelescopeAxes.axisSecondary;
+            else if (WestMotor.isOn || EastMotor.isOn)
+                axis = TelescopeAxes.axisPrimary;
+            else
+                return;
+
+            StopAxis(axis);
+
+            activityMonitor.EndActivity(ActivityMonitor.ActivityType.Handpad, new Activity.HandpadActivity.EndParams()
+            {
+                endState = Activity.State.Succeeded,
+                endReason = "HandpadStop()",
+                end = (axis == TelescopeAxes.axisPrimary) ?
+                        WiseTele.Instance.RightAscension :
+                        WiseTele.Instance.Declination,
+            });
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Handpad: stopped");
             #endregion
@@ -1107,7 +1148,7 @@ namespace ASCOM.Wise40
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, string.Format("MoveAxis({0}, {1})", Axis, Rate));
             #endregion debug
 
-            if (!wisesafetooperate.IsSafe && !activityMonitor.InProgress(ActivityMonitor.Activity.ShuttingDown) && !BypassCoordinatesSafety)
+            if (!wisesafetooperate.IsSafe && !activityMonitor.InProgress(ActivityMonitor.ActivityType.ShuttingDown) && !BypassCoordinatesSafety)
                 throw new ASCOM.InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList));
 
             Const.AxisDirection direction = (Rate == Const.rateStopped) ? Const.AxisDirection.None :
@@ -1179,7 +1220,7 @@ namespace ASCOM.Wise40
                 throw new InvalidValueException("Cannot MoveAxis while AtPark");
             }
 
-            if (Rate != Const.rateStopped && !wisesafetooperate.IsSafe && !activityMonitor.InProgress(ActivityMonitor.Activity.ShuttingDown))
+            if (Rate != Const.rateStopped && !wisesafetooperate.IsSafe && !activityMonitor.InProgress(ActivityMonitor.ActivityType.ShuttingDown))
                 throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList));
 
             TelescopeAxes _otherAxis = otherAxis[thisAxis];
@@ -1263,7 +1304,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                bool ret = activityMonitor.InProgress(ActivityMonitor.Activity.Pulsing);
+                bool ret = activityMonitor.InProgress(ActivityMonitor.ActivityType.Pulsing);
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "IsPulseGuiding: {0}", ret);
                 #endregion
@@ -1291,7 +1332,7 @@ namespace ASCOM.Wise40
             if (!Tracking)
                 throw new InvalidOperationException("Cannot SlewToTargetAsync while NOT Tracking");
 
-            if (!wisesafetooperate.IsSafe && !activityMonitor.InProgress(ActivityMonitor.Activity.ShuttingDown))
+            if (!wisesafetooperate.IsSafe && !activityMonitor.InProgress(ActivityMonitor.ActivityType.ShuttingDown))
                 throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList));
 
             string notSafe = SafeAtCoordinates(ra, dec);
@@ -1484,7 +1525,7 @@ namespace ASCOM.Wise40
             }
             wisesafetooperate.Action("start-shutdown", "");
 
-            activityMonitor.StartActivity(ActivityMonitor.Activity.ShuttingDown);
+            activityMonitor.NewActivity(new Activity.ShutdownActivity());
 
             if (AtPark)
             {
@@ -1497,7 +1538,7 @@ namespace ASCOM.Wise40
 
             if (Slewing)
             {
-                AbortSlew();
+                AbortSlew("WiseTele:Shutdown():doShutdown()");
                 do
                 {
                     Thread.Sleep(1000);
@@ -1537,7 +1578,12 @@ namespace ASCOM.Wise40
                 wisesafetooperate.Action("end-bypass", "temporary");
             wisesafetooperate.Action("end-shutdown", "");
 
-            activityMonitor.EndActivity(ActivityMonitor.Activity.ShuttingDown);
+            activityMonitor.EndActivity(ActivityMonitor.ActivityType.ShuttingDown,
+                new Activity.ShutdownActivity.EndParams()
+                {
+                    endState = Activity.State.Succeeded,
+                    endReason = "Shutdown done"
+                });
         }
 
         public void Shutdown()
@@ -1565,7 +1611,21 @@ namespace ASCOM.Wise40
             try
             {
                 Parking = true;
-                activityMonitor.StartActivity(ActivityMonitor.Activity.Parking);
+                activityMonitor.NewActivity(new Activity.ParkActivity(new Activity.ParkActivity.StartParams() {
+                    start = new Activity.TelescopeSlewActivity.Coords
+                    {
+                        ra = RightAscension,
+                        dec = Declination,
+                    },
+                    target = new Activity.TelescopeSlewActivity.Coords
+                    {
+                        ra = ra.Hours,
+                        dec = dec.Degrees,
+                    },
+                    domeStartAz = WiseDome.Instance.Azimuth.Degrees,
+                    domeTargetAz = 90.0,
+                    shutterPercent = 100,
+                }));
                 if (wasEnslavingDome)
                 {
                     _enslaveDome = false;
@@ -1604,18 +1664,29 @@ namespace ASCOM.Wise40
                     debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: still Slewing ...");
                     #endregion
                     Thread.Sleep(1000);
-                } while (activityMonitor.InProgress(ActivityMonitor.Activity.Slewing));
+                } while (activityMonitor.InProgress(ActivityMonitor.ActivityType.TelescopeSlew));
 
             } catch(Exception ex)
             {
                 Parking = false;
                 _enslaveDome = wasEnslavingDome;
                 Tracking = wasTracking;
-                activityMonitor.EndActivity(ActivityMonitor.Activity.Parking);
+                activityMonitor.EndActivity(ActivityMonitor.ActivityType.Parking, new Activity.ParkActivity.EndParams()
+                {
+                    endState = Activity.State.Failed,
+                    endReason = string.Format("Exception: \"{0}\".", ex.Message),
+                    end = new Activity.TelescopeSlewActivity.Coords
+                    {
+                        ra = RightAscension,
+                        dec = Declination,
+                    },
+                    domeAz = WiseDome.Instance.Azimuth.Degrees,
+                    shutterPercent = WiseDome.Instance.wisedomeshutter.PercentOpen,
+                });
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: Exception: {0}, aborted.", ex.Message);
                 #endregion
-                if (activityMonitor.InProgress(ActivityMonitor.Activity.ShuttingDown))
+                if (activityMonitor.InProgress(ActivityMonitor.ActivityType.ShuttingDown))
                     throw;
                 return;
             }
@@ -1625,7 +1696,18 @@ namespace ASCOM.Wise40
             AtPark = true;
             Parking = false;
             Tracking = false;
-            activityMonitor.EndActivity(ActivityMonitor.Activity.Parking);
+            activityMonitor.EndActivity(ActivityMonitor.ActivityType.Parking, new Activity.ParkActivity.EndParams()
+            {
+                endState = Activity.State.Succeeded,
+                endReason = "Parking done",
+                end = new Activity.TelescopeSlewActivity.Coords
+                {
+                    ra = RightAscension,
+                    dec = Declination,
+                },
+                domeAz = WiseDome.Instance.Azimuth.Degrees,
+                shutterPercent = WiseDome.Instance.wisedomeshutter.PercentOpen,
+            });
             _enslaveDome = wasEnslavingDome;
         }
 
@@ -1979,14 +2061,14 @@ namespace ASCOM.Wise40
                 }, TaskContinuationOptions.ExecuteSynchronously);
         }
 
-        public void DomeSlewer(Angle ra, Angle dec, bool withActivity = false)
+        public void DomeSlewer(Angle ra, Angle dec, string reason, bool withActivity = false)
         {
-            _genericDomeSlewerTask(() => domeSlaveDriver.SlewToAz(ra, dec));
+            _genericDomeSlewerTask(() => domeSlaveDriver.SlewToAz(ra, dec, reason));
         }
 
-        public void DomeSlewer(double az)
+        public void DomeSlewer(double az, string reason)
         {
-            _genericDomeSlewerTask(() => domeSlaveDriver.SlewToAz(az));
+            _genericDomeSlewerTask(() => domeSlaveDriver.SlewToAz(az, reason));
         }
 
         public void DomeParker()
@@ -2006,23 +2088,36 @@ namespace ASCOM.Wise40
             SyncDomePosition = false;
         }
                       
-        private void _doSlewToCoordinatesAsync(Angle RightAscension, Angle Declination)
+        private void _doSlewToCoordinatesAsync(Angle targetRightAscension, Angle targetDeclination)
         {
-            CheckCoordinateSanity(Angle.Type.RA, RightAscension.Hours);
-            CheckCoordinateSanity(Angle.Type.Dec, Declination.Degrees);
+            CheckCoordinateSanity(Angle.Type.RA, targetRightAscension.Hours);
+            CheckCoordinateSanity(Angle.Type.Dec, targetDeclination.Degrees);
             // Check coordinates safety ???
 
             slewers.Clear();
             readyToSlewFlags.Reset();
-            activityMonitor.StartActivity(ActivityMonitor.Activity.Slewing);
+            activityMonitor.NewActivity(new Activity.TelescopeSlewActivity(new Activity.TelescopeSlewActivity.StartParams()
+            {
+                start = new Activity.TelescopeSlewActivity.Coords()
+                {
+                    ra = RightAscension,
+                    dec = Declination
+                },
+                target = new Activity.TelescopeSlewActivity.Coords()
+                {
+                    ra = targetRightAscension.Hours,
+                    dec = targetDeclination.Degrees
+                }
+            }));
+
             try
             {
                 if (_enslaveDome)
                 {
-                    DomeSlewer(RightAscension, Declination);
+                    DomeSlewer(targetRightAscension, targetDeclination, "Follow telescope to new target");
                 }
 
-                if (! activityMonitor.InProgress(ActivityMonitor.Activity.ShuttingDown))
+                if (! activityMonitor.InProgress(ActivityMonitor.ActivityType.ShuttingDown))
                     telescopeCT = telescopeCTS.Token;
 
                 foreach (Slewers.Type slewerType in new List<Slewers.Type>() { Slewers.Type.Ra, Slewers.Type.Dec })
@@ -2034,11 +2129,11 @@ namespace ASCOM.Wise40
                         Angle angle;
                         if (slewerType == Slewers.Type.Ra)
                         {
-                            axis = TelescopeAxes.axisPrimary; angle = RightAscension;
+                            axis = TelescopeAxes.axisPrimary; angle = targetRightAscension;
                         }
                         else
                         {
-                            axis = TelescopeAxes.axisSecondary; angle = Declination;
+                            axis = TelescopeAxes.axisSecondary; angle = targetDeclination;
                         }
 
                         slewers.Add(slewer);
@@ -2069,7 +2164,7 @@ namespace ASCOM.Wise40
                             slewer.type.ToString(),
                             ex.InnerException == null ? ex.Message : ex.InnerException.Message);
                         #endregion
-                        if (activityMonitor.InProgress(ActivityMonitor.Activity.ShuttingDown))
+                        if (activityMonitor.InProgress(ActivityMonitor.ActivityType.ShuttingDown))
                             throw;
                     }
                     catch (Exception ex)
@@ -2112,7 +2207,7 @@ namespace ASCOM.Wise40
             if (!Tracking)
                 throw new InvalidOperationException("Cannot SlewToCoordinates while NOT Tracking");
 
-            if (!wisesafetooperate.IsSafe && !activityMonitor.InProgress(ActivityMonitor.Activity.ShuttingDown))
+            if (!wisesafetooperate.IsSafe && !activityMonitor.InProgress(ActivityMonitor.ActivityType.ShuttingDown))
                 throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList));
 
             if (!noSafetyCheck)
@@ -2165,7 +2260,7 @@ namespace ASCOM.Wise40
                     throw new InvalidOperationException(notSafe);
             }
 
-            if (!activityMonitor.InProgress(ActivityMonitor.Activity.ShuttingDown) && !wisesafetooperate.IsSafe)
+            if (!activityMonitor.InProgress(ActivityMonitor.ActivityType.ShuttingDown) && !wisesafetooperate.IsSafe)
                 throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList));
 
             try
@@ -2259,10 +2354,10 @@ namespace ASCOM.Wise40
 
         public void Unpark()
         {
-            if (activityMonitor.InProgress(ActivityMonitor.Activity.ShuttingDown))
+            if (activityMonitor.InProgress(ActivityMonitor.ActivityType.ShuttingDown))
                 throw new InvalidOperationException("Observatory is shutting down!");
 
-            if (!wisesafetooperate.IsSafe && !activityMonitor.InProgress(ActivityMonitor.Activity.ShuttingDown))
+            if (!wisesafetooperate.IsSafe && !activityMonitor.InProgress(ActivityMonitor.ActivityType.ShuttingDown))
                 throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList));
 
             if (AtPark)
@@ -2380,7 +2475,7 @@ namespace ASCOM.Wise40
             if (!Tracking)
                 throw new InvalidOperationException("Cannot SlewToCoordinates while NOT Tracking");
 
-            if (!wisesafetooperate.IsSafe && !activityMonitor.InProgress(ActivityMonitor.Activity.ShuttingDown))
+            if (!wisesafetooperate.IsSafe && !activityMonitor.InProgress(ActivityMonitor.ActivityType.ShuttingDown))
                 throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList));
 
             string notSafe = SafeAtCoordinates(ra, dec);
@@ -2665,7 +2760,7 @@ namespace ASCOM.Wise40
             if (Slewing)
                 throw new InvalidOperationException("Cannot PulseGuide while Slewing");
 
-            if (!wisesafetooperate.IsSafe && !activityMonitor.InProgress(ActivityMonitor.Activity.ShuttingDown))
+            if (!wisesafetooperate.IsSafe && !activityMonitor.InProgress(ActivityMonitor.ActivityType.ShuttingDown))
                 throw new InvalidOperationException(
                     string.Format("Not safe to operate ({0})", wisesafetooperate.UnsafeReasons));
 
@@ -2678,7 +2773,16 @@ namespace ASCOM.Wise40
             try
             {
                 pulsing.Start(Direction, Duration);
-                activityMonitor.StartActivity(ActivityMonitor.Activity.Pulsing);
+                activityMonitor.NewActivity(new Activity.PulsingActivity(new Activity.PulsingActivity.StartParams()
+                {
+                    _start = new Activity.TelescopeSlewActivity.Coords
+                    {
+                        ra = RightAscension,
+                        dec = Declination,
+                    },
+                    _direction = Direction,
+                    _millis = Duration,
+                }));
             }
             catch (Exception ex)
             {
@@ -2715,12 +2819,12 @@ namespace ASCOM.Wise40
                     if (parameter != string.Empty)
                     {
                         bool x = Convert.ToBoolean(parameter);
-                        activityMonitor.RestartGoindIdleTimer(string.Format("action active={0}", x.ToString()));
+                        activityMonitor.StayActive(string.Format("action active={0}", x.ToString()));
                     }
                     return activityMonitor.ObservatoryIsActive().ToString();
 
                 case "activities":
-                    return JsonConvert.SerializeObject(activityMonitor.ObservatoryActivities);
+                    return JsonConvert.SerializeObject(ActivityMonitor.ObservatoryActivities);
 
                 case "shutdown":
                     telescopeCT = telescopeCTS.Token;
@@ -2728,8 +2832,7 @@ namespace ASCOM.Wise40
                     return "ok";
 
                 case "abort-shutdown":
-                    AbortSlew();
-                    activityMonitor.EndActivity(ActivityMonitor.Activity.ShuttingDown);
+                    AbortSlew("Action(\"abort-Shutdown\"");
                     return "ok";
 
                 case "opmode":
@@ -2743,12 +2846,15 @@ namespace ASCOM.Wise40
                     return wisesite.OperationalMode.ToString();
 
                 case "seconds-till-idle":
-                    TimeSpan ts = activityMonitor.RemainingTime;
+                    Activity activity = activityMonitor.LookupInProgress(ActivityMonitor.ActivityType.GoingIdle);
+                    if (activity != null)
+                    {
+                        TimeSpan ts = (activity as Activity.GoingIdleActivity).RemainingTime;
 
-                    if (ts != TimeSpan.MaxValue)
-                        return (ts.TotalSeconds).ToString();
-                    else
-                        return "-1";
+                        if (ts != TimeSpan.MaxValue)
+                            return (ts.TotalSeconds).ToString();
+                    }
+                    return "-1";
 
                 case "status":
                     return Digest;
@@ -3038,7 +3144,7 @@ namespace ASCOM.Wise40
                     SecondsTillIdle = secondsTillIdle,
                     EnslavesDome = _enslaveDome,
                     Active = activityMonitor.ObservatoryIsActive(),
-                    Activities = activityMonitor.ObservatoryActivities,
+                    Activities = ActivityMonitor.ObservatoryActivities,
                     SlewPin = SlewPin.isOn,
                     PrimaryPins = new AxisPins
                     {
