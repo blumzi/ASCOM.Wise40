@@ -165,7 +165,7 @@ namespace ASCOM.Wise40
             onSurface.Temperature = averageTemperatures[month];
             onSurface.Pressure = averagePressures[month];
 
-            if (och != null && DateTime.Now.Subtract(lastOCFetch).TotalMinutes > freqOCFetchMinutes)
+            if (och != null && now.Subtract(lastOCFetch).TotalMinutes > freqOCFetchMinutes)
             {
                 try
                 {
@@ -176,6 +176,7 @@ namespace ASCOM.Wise40
                         onSurface.Temperature = och.Temperature;
                         onSurface.Pressure = och.Pressure;
                         refractionOption = RefractionOption.LocationRefraction;
+                        lastOCFetch = now;
                     }
                 }
                 catch { }
@@ -194,7 +195,7 @@ namespace ASCOM.Wise40
                         _opMode = mode;
                 }
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "OperationalMode:get => {0}", _opMode.ToString());
+                //debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "OperationalMode:get => {0}", _opMode.ToString());
                 #endregion
                 return _opMode;
             }
