@@ -10,35 +10,35 @@ using System.Windows.Forms;
 
 using ASCOM.Wise40;
 using ASCOM.Wise40.Common;
-using ASCOM.Wise40.FilterWheel;
+
+using Newtonsoft.Json;
 
 namespace Dash
 {
     public partial class FiltersForm : Form
     {
-        private WiseFilterWheel wisefilterwheel = WiseFilterWheel.Instance;
+        private ASCOM.DriverAccess.FilterWheel _wiseFilterWheel;
+        //BindingList<Filter> boundFilters;
         BindingList<Filter> boundFilters;
         BindingSource source;
         Debugger debugger = Debugger.Instance;
-        private int _filterSize;
+        private WiseFilterWheel.FilterSize _filterSize;
+        private WiseFilterWheel.FiltersInventoryDigest _inventoryDigest;
 
-        //static public class Util
-        //{
-        //    static public T Find<T>(Control container) where T : Control
-        //    {
-        //        foreach (Control child in container.Controls)
-        //            return (child is T ? (T)child : Find<T>(child));
-        //        // Not found.
-        //        return null;
-        //    }
-        //}
-
-        public FiltersForm(int filterSize)
+        public FiltersForm(ASCOM.DriverAccess.FilterWheel wiseFilterWheel, WiseFilterWheel.FilterSize filterSize)
         {
+            _wiseFilterWheel = wiseFilterWheel;
             _filterSize = filterSize;
+            _inventoryDigest = JsonConvert.DeserializeObject<WiseFilterWheel.FiltersInventoryDigest>(_wiseFilterWheel.Action("get-filter-inventory", ""));
+            List<WiseFilterWheel.FilterDigest> filterDigests = _inventoryDigest.FilterInventory[WiseFilterWheel.filterSizeToIndex[_filterSize]].Filters;
 
-            boundFilters = new BindingList<Filter>(WiseFilterWheel.filterInventory[_filterSize]);
-            ReadProfile();
+            //boundFilters = new BindingList<Filter>(WiseFilterWheel.filterInventory[_filterSize]);
+            List<Filter> filters = new List<Filter>();
+            foreach (var filterDigest in filterDigests)
+                filters.Add(new Filter(filterDigest.Name, filterDigest.Description, filterDigest.Offset));
+
+            boundFilters = new BindingList<Filter>(filters);
+            //ReadProfile();
             InitializeComponent();
             labelTitle.Text = string.Format("Wise40 {0}\" filters", _filterSize);
             source = new BindingSource(boundFilters, null);
@@ -49,15 +49,15 @@ namespace Dash
             dataGridView.EnableHeadersVisualStyles = false;
         }
 
-        void ReadProfile()
-        {
-            WiseFilterWheel.ReadProfile();
-        }
+        //void ReadProfile()
+        //{
+        //    WiseFilterWheel.ReadProfile();
+        //}
 
-        void WriteProfile()
-        {
-            WiseFilterWheel.WriteProfile();
-        }
+        //void WriteProfile()
+        //{
+        //    WiseFilterWheel.WriteProfile();
+        //}
 
         private void buttonAdd_Click(object sender, EventArgs e)
         {
@@ -114,9 +114,15 @@ namespace Dash
                 return;
             }
 
-            WiseFilterWheel.filterInventory[_filterSize] = filters;
-            WiseFilterWheel.SaveFiltersToCsvFile(_filterSize);
-            WriteProfile();
+            //WiseFilterWheel.filterInventory[_filterSize] = filters;
+            //WiseFilterWheel.SaveFiltersToCsvFile(_filterSize);
+            //WriteProfile();
+
+            _wiseFilterWheel.Action("set-filters-inventory", JsonConvert.SerializeObject(new WiseFilterWheel.SetFilterInventoryParam
+            {
+                FilterSize = _filterSize,
+                Filters = filters.ToArray(),
+            }));
             Close();
         }
 

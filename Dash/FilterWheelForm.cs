@@ -10,14 +10,16 @@ using System.Windows.Forms;
 
 using ASCOM.Wise40;
 using ASCOM.Wise40.Common;
-using ASCOM.Wise40.FilterWheel;
+
+using Newtonsoft.Json;
 
 namespace Dash
 {
     public partial class FilterWheelForm : Form
     {
-        private WiseFilterWheel wisefilterwheel = WiseFilterWheel.Instance;
-        private Statuser filterWheelStatus;
+        private ASCOM.DriverAccess.FilterWheel _wiseFilterWheel;
+        private Statuser _filterWheelStatus;
+        private WiseFilterWheel.Wheel.WheelDigest _currentWheel;
 
         private string FilterName(string s)
         {
@@ -26,8 +28,10 @@ namespace Dash
 
         private void RefreshWheelInfo()
         {
-            labelCurrentWheelValue.Text = string.IsNullOrEmpty(wisefilterwheel.currentWheel._name) ? "Unknown" : wisefilterwheel.currentWheel._name;
-            short position = wisefilterwheel.Position;
+           _currentWheel = JsonConvert.DeserializeObject<WiseFilterWheel.Wheel.WheelDigest>(_wiseFilterWheel.Action("current-wheel", ""));
+
+            labelCurrentWheelValue.Text = _currentWheel.Name;
+            short position = _currentWheel.CurrentPosition;
 
             if (position == -1)
             {
@@ -39,29 +43,25 @@ namespace Dash
 
             labelCurrentPositionValue.Text = (position + 1).ToString();
 
-            int nFilters = wisefilterwheel.Positions;
+            int nFilters = _currentWheel.Npositions;
             TableLayoutPanel table = (nFilters == 8) ? tableLayoutPanelWheel8 : tableLayoutPanelWheel4;
             TableLayoutPanel otherTable = (table == tableLayoutPanelWheel8) ? tableLayoutPanelWheel4 : tableLayoutPanelWheel8;
 
             for (int i = 0; i < nFilters; i++)
             {
-                Label label = (Label)table.Controls.Find(string.Format("label{0}Filter{1}", wisefilterwheel.currentWheel._name, i), true)[0];
-                label.Text = FilterName(wisefilterwheel.Names[i]);
+                Label label = (Label)table.Controls.Find(string.Format("label{0}Filter{1}", _currentWheel.Name, i), true)[0];
+                label.Text = FilterName(_currentWheel.Positions[i].FilterName);
                 label.ForeColor = (i == position) ? Color.DarkOrange : Color.FromArgb(176, 161, 142);
             }
             table.Visible = true;
             otherTable.Visible = false;
         }
 
-        public FilterWheelForm()
+        public FilterWheelForm(ASCOM.DriverAccess.FilterWheel wiseFilterWheel)
         {
+            _wiseFilterWheel = wiseFilterWheel;
+            _filterWheelStatus = new Statuser(labelFilterWheelStatus);
             InitializeComponent();
-            filterWheelStatus = new Statuser(labelFilterWheelStatus);
-            
-            wisefilterwheel.init();
-
-            if (!wisefilterwheel.Connected)
-                wisefilterwheel.Connected = true;
         }
 
         private void buttonIdentify_Click(object sender, EventArgs e)
@@ -78,39 +78,39 @@ namespace Dash
             }
             catch
             {
-                filterWheelStatus.Show("Invalid position", 1000, Statuser.Severity.Error);
+                _filterWheelStatus.Show("Invalid position", 1000, Statuser.Severity.Error);
                 return;
             }
 
-            if (targetPosition < 1 || targetPosition > wisefilterwheel.Positions)
+            if (targetPosition < 1 || targetPosition > _currentWheel.Npositions)
             {
-                filterWheelStatus.Show(string.Format("Invalid position: {0}", targetPosition), 1000, Statuser.Severity.Error);
+                _filterWheelStatus.Show(string.Format("Invalid position: {0}", targetPosition), 1000, Statuser.Severity.Error);
                 return;
             }
 
-            string filterName = FilterName(wisefilterwheel.Names[targetPosition - 1]);
-            filterWheelStatus.Show(string.Format("Moving to position {0} ({1})", targetPosition, filterName));
-            wisefilterwheel.Position = (short) (targetPosition - 1);
+            string filterName = FilterName(_currentWheel.Positions[targetPosition - 1].FilterName);
+            _filterWheelStatus.Show(string.Format("Moving to position {0} ({1})", targetPosition, filterName));
+            _wiseFilterWheel.Position = (short) (targetPosition - 1);
         }
 
         private void buttonPrev_Click(object sender, EventArgs e)
         {
-            short currentPosition = wisefilterwheel.Position;
-            short targetPosition = (short) ((currentPosition == 0) ? wisefilterwheel.Positions - 1 : currentPosition - 1);
+            short currentPosition = _currentWheel.CurrentPosition;
+            short targetPosition = (short) ((currentPosition == 0) ? _currentWheel.Npositions - 1 : currentPosition - 1);
 
-            string filterName = FilterName(wisefilterwheel.Names[targetPosition]);
-            filterWheelStatus.Show(string.Format("Moving to position {0} ({1})", targetPosition + 1, filterName));
-            wisefilterwheel.Position = targetPosition;
+            string filterName = FilterName(_currentWheel.Positions[targetPosition].FilterName);
+            _filterWheelStatus.Show(string.Format("Moving to position {0} ({1})", targetPosition + 1, filterName));
+            _wiseFilterWheel.Position = targetPosition;
         }
 
         private void buttonNext_Click(object sender, EventArgs e)
         {
-            short currentPosition = wisefilterwheel.Position;
-            short targetPosition = (short)((currentPosition == wisefilterwheel.Positions - 1) ? 0 : currentPosition + 1);
+            short currentPosition = _currentWheel.CurrentPosition;
+            short targetPosition = (short)((currentPosition == _currentWheel.Npositions - 1) ? 0 : currentPosition + 1);
 
-            string filterName = FilterName(wisefilterwheel.Names[targetPosition]);
-            filterWheelStatus.Show(string.Format("Moving to position {0} ({1})", targetPosition + 1, filterName));
-            wisefilterwheel.Position = targetPosition;
+            string filterName = FilterName(_currentWheel.Positions[targetPosition].FilterName);
+            _filterWheelStatus.Show(string.Format("Moving to position {0} ({1})", targetPosition + 1, filterName));
+            _wiseFilterWheel.Position = targetPosition;
         }
 
         private void timerRefresh_Tick(object sender, EventArgs e)

@@ -30,7 +30,7 @@ namespace Dash
                     WiseSite.OpMode mode;
 
                     if (Enum.TryParse<WiseSite.OpMode>(args[0].Substring("--mode=".Length).ToUpper(), out mode))
-                        WiseSite.Instance.OperationalMode = mode;
+                        WiseSite.OperationalMode = mode;
                 }
 
                 Environment.Exit(0);

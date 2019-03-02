@@ -48,8 +48,8 @@ namespace Dash
             labelFocuserVersion.Text = _dash.wiseFocuser.DriverVersion;
             labelSafeToOperateVersion.Text = _dash.wiseSafeToOperate.DriverVersion;
             labelBoltwoodVersion.Text = _dash.wiseBoltwood.DriverVersion;
-            labelVantageProVersion.Text = ASCOM.Wise40.VantagePro.WiseVantagePro.driverVersion;
-            labelFilterWheelVersion.Text = _dash.wisefilterwheel.DriverVersion;
+            labelVantageProVersion.Text = ASCOM.Wise40.VantagePro.WiseVantagePro.DriverVersion;
+            labelFilterWheelVersion.Text = _dash.wiseFilterWheel.DriverVersion;
 
             labelCurrentCommit.Text = Dash.Properties.Resources.CurrentCommit;
         }
