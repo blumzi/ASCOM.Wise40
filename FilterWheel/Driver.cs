@@ -32,7 +32,7 @@ using System.Runtime.InteropServices;
 
 using ASCOM.DeviceInterface;
 
-namespace ASCOM.Wise40.FilterWheel
+namespace ASCOM.Wise40 //.FilterWheel
 {
     //
     // Your driver's DeviceID is ASCOM.Wise40.FilterWheel
@@ -140,7 +140,7 @@ namespace ASCOM.Wise40.FilterWheel
         {
             get
             {
-                return wisefilterwheel.Description;
+                return WiseFilterWheel.Description;
             }
         }
 
@@ -231,11 +231,11 @@ namespace ASCOM.Wise40.FilterWheel
                 P.DeviceType = "FilterWheel";
                 if (bRegister)
                 {
-                    P.Register(WiseFilterWheel.Instance.DriverID, WiseFilterWheel.Instance.Description);
+                    P.Register(WiseFilterWheel.DriverID, WiseFilterWheel.Description);
                 }
                 else
                 {
-                    P.Unregister(WiseFilterWheel.Instance.DriverID);
+                    P.Unregister(WiseFilterWheel.DriverID);
                 }
             }
         }

@@ -9,7 +9,7 @@ using ASCOM.Utilities;
 using ASCOM.Wise40;
 using RavSoft;
 
-namespace ASCOM.Wise40.FilterWheel
+namespace ASCOM.Wise40 //.FilterWheel
 {
     [ComVisible(false)]					// Form not registered for COM!
     public partial class FilterWheelSetupDialogForm : Form
@@ -29,7 +29,7 @@ namespace ASCOM.Wise40.FilterWheel
         {
             Form F = this.FindForm();
 
-            foreach (var w in WiseFilterWheel.knownWheels)
+            foreach (var w in WiseFilterWheel.wheels)
             {
                 for (int i = 0; i < w._nPositions; i++)
                 {
@@ -79,7 +79,7 @@ namespace ASCOM.Wise40.FilterWheel
             Form F = this.FindForm();
             WiseFilterWheel.ReadProfile();
 
-            foreach (var w in WiseFilterWheel.knownWheels)
+            foreach (var w in WiseFilterWheel.wheels)
             {
                 for (int i = 0; i < w._nPositions; i++)
                 {
@@ -89,21 +89,78 @@ namespace ASCOM.Wise40.FilterWheel
                     if (w._positions[i].filterName == string.Empty)
                         cb.Text = string.Empty;
                     else {
-                        Filter f = WiseFilterWheel.filterInventory[w._filterSize].Find((x) => x.FilterName == w._positions[i].filterName);
+                        Filter f = WiseFilterWheel._filterInventory[WiseFilterWheel.filterSizeToIndex[w._filterSize]].Find((x) => x.FilterName == w._positions[i].filterName);
                         cb.Text = (f == null) ? "<??>" : string.Format("{0}: {1}", f.FilterName, f.FilterDescription);
                     }
-                    foreach (Filter f in WiseFilterWheel.filterInventory[w._filterSize])
+                    foreach (Filter f in WiseFilterWheel._filterInventory[WiseFilterWheel.filterSizeToIndex[w._filterSize]])
                         cb.Items.Add(string.Format("{0}: {1}", f.FilterName, f.FilterDescription));
-
+                     
                     TextBox tb;
                     tb = (TextBox)F.Controls.Find(string.Format("textBoxWheel{0}RFID{1}", w._nPositions, i), true)[0];
                     tb.Text = w._positions[i].tag ?? string.Empty;
                     tb.Enabled = checkBoxEditableRFIDs.Checked;
                 }
             }
-            comboBoxPort.Items.AddRange(System.IO.Ports.SerialPort.GetPortNames());
-            if (!String.IsNullOrEmpty(WiseFilterWheel.port) && comboBoxPort.Items.Contains(WiseFilterWheel.port))
-                comboBoxPort.Text = WiseFilterWheel.port;
+
+            string[] existingPorts = System.IO.Ports.SerialPort.GetPortNames();
+            comboBoxPort.Items.AddRange(existingPorts);
+            if (!String.IsNullOrEmpty(WiseFilterWheel.port))
+            {
+                foreach (var p in existingPorts)
+                    if (p == WiseFilterWheel.port)
+                    {
+                        comboBoxPort.Text = WiseFilterWheel.port;
+                        break;
+                    }
+            } else
+            {
+                comboBoxPort.Text = "";
+            }
+
+            WiseSite.OpMode opMode = WiseSite.OperationalMode;
+            labelOpModeValue.Text = opMode.ToString();
+            if (opMode == WiseSite.OpMode.LCO)
+            {
+                labelError.Text = "Wise40.FilterWheel not available in this operational mode";
+                checkBoxEnabled.AutoCheck = false;
+                checkBoxEnabled.Checked = false;
+
+                checkBoxEditableRFIDs.Checked = false;
+                checkBoxEditableRFIDs.AutoCheck = false;
+            }
+
+            UpdateEditability();
+        }
+
+        private void UpdateEditability()
+        {
+            Form F = this.FindForm();
+            bool editable = true;
+
+            if (WiseSite.OperationalMode == WiseSite.OpMode.LCO || !Enabled)
+            {
+                checkBoxEnabled.Checked = false;
+                checkBoxEnabled.AutoCheck = false;
+                checkBoxEditableRFIDs.Checked = false;
+                checkBoxEditableRFIDs.AutoCheck = false;
+                comboBoxPort.Enabled = false;
+                editable = false;
+            }
+
+            foreach (var w in WiseFilterWheel.wheels)
+            {
+                for (int i = 0; i < w._nPositions; i++)
+                {
+                    ComboBox cb;
+
+                    cb = (ComboBox)F.Controls.Find(string.Format("comboBox{0}{1}", w._nPositions, i), true)[0];
+                    cb.Enabled = editable;
+
+                    TextBox tb;
+                    tb = (TextBox)F.Controls.Find(string.Format("textBoxWheel{0}RFID{1}", w._nPositions, i), true)[0];
+                    tb.Enabled = editable;
+                }
+            }
         }
 
         private void FilterWheelSetupDialogForm_Load(object sender, EventArgs e)
@@ -125,7 +182,7 @@ namespace ASCOM.Wise40.FilterWheel
             Form F = this.FindForm();
             CheckBox cb = sender as CheckBox;
 
-            foreach (var w in WiseFilterWheel.knownWheels)
+            foreach (var w in WiseFilterWheel.wheels)
             {
                 for (int i = 0; i < w._nPositions; i++)
                 {

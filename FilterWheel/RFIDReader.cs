@@ -5,18 +5,22 @@ using System.Text;
 
 using ASCOM.Wise40.Common;
 
-namespace ASCOM.Wise40.FilterWheel
+namespace ASCOM.Wise40 //.FilterWheel
 {
     public class RFIDReader
     {
         private Debugger debugger = Debugger.Instance;
 
-        private static readonly RFIDReader _instance = new RFIDReader();
+        private static readonly Lazy<RFIDReader> lazy = new Lazy<RFIDReader>(() => new RFIDReader()); // Singleton
+
         public static RFIDReader Instance
         {
             get
             {
-                return _instance;
+                if (lazy.IsValueCreated)
+                    return lazy.Value;
+
+                return null;
             }
         }
 

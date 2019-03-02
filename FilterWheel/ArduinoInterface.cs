@@ -7,12 +7,11 @@ using System.Threading;
 
 using ASCOM.Wise40.Common;
 
-namespace ASCOM.Wise40.FilterWheel
+namespace ASCOM.Wise40
 {
     public class ArduinoInterface
     {
         private static ASCOM.Wise40.Common.Debugger debugger = Debugger.Instance;
-        private static readonly ArduinoInterface _instance = new ArduinoInterface();
 
         private bool _initialized = false;
         private string _serialPort;
@@ -27,6 +26,20 @@ namespace ASCOM.Wise40.FilterWheel
         private string Etx = etx.ToString();
         
         private static string _error;
+
+        private static readonly Lazy<ArduinoInterface> lazy = new Lazy<ArduinoInterface>(() => new ArduinoInterface()); // Singleton
+
+        public static ArduinoInterface Instance
+        {
+            get
+            {
+                if (lazy.IsValueCreated)
+                    return lazy.Value;
+
+                lazy.Value.init(WiseFilterWheel.port);
+                return lazy.Value;
+            }
+        }
 
         static void onCommunicationComplete(object sender, CommunicationCompleteEventArgs e)
         {
@@ -62,7 +75,7 @@ namespace ASCOM.Wise40.FilterWheel
         private static string _tag;
 
         public enum StepperDirection { CW, CCW };
-        public enum ArduinoStatus { Idle, Connecting, Communicating, Moving };
+        public enum ArduinoStatus { Idle, BadPort, Connecting, Communicating, Moving };
         private static ArduinoStatus _status = ArduinoStatus.Idle;
 
         public class ArduinoCommunicationException : Exception
@@ -76,13 +89,25 @@ namespace ASCOM.Wise40.FilterWheel
         {
             get
             {
-                if (serial == null)
+                if (_serialPort == null || !System.IO.Ports.SerialPort.GetPortNames().Contains(_serialPort) || serial == null)
                     return false;
                 return serial.IsOpen;
             }
 
             set
             {
+                if (_serialPort == null)
+                    _serialPort = WiseFilterWheel.port;
+
+                if (_serialPort == null || !System.IO.Ports.SerialPort.GetPortNames().Contains(_serialPort))
+                    return;
+
+                if (serial != null && serial.IsOpen)
+                    serial.Close();
+
+                serial = new System.IO.Ports.SerialPort(_serialPort, 57600);
+                communicationCompleteHandler += onCommunicationComplete;
+
                 if (value == serial.IsOpen)
                     return;
 
@@ -122,16 +147,10 @@ namespace ASCOM.Wise40.FilterWheel
                 return string.Empty;
             string skipped = serial.ReadTo(Stx);
             string msg = serial.ReadTo(Etx).TrimEnd(etx);
+            #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "getPacket: skipped: [{0}], got: [{1}]", skipped, msg);
+            #endregion
             return msg;
-        }
-
-        public static ArduinoInterface Instance
-        {
-            get
-            {
-                return _instance;
-            }
         }
 
         public ArduinoInterface()
@@ -142,9 +161,15 @@ namespace ASCOM.Wise40.FilterWheel
         {
             if (_initialized)
                 return;
-            this._serialPort = port;
-            serial = new System.IO.Ports.SerialPort(port, 57600);
-            debugger.StartDebugging(Debugger.DebugLevel.DebugLogic);
+
+            if (! System.IO.Ports.SerialPort.GetPortNames().Contains(port))
+            {
+                _initialized = true;
+                return;
+            }
+
+            _serialPort = port;
+            serial = new System.IO.Ports.SerialPort(_serialPort, 57600);
             communicationCompleteHandler += onCommunicationComplete;
             _initialized = true;
         }
@@ -167,6 +192,18 @@ namespace ASCOM.Wise40.FilterWheel
             ArduinoStatus interimStatus = ArduinoStatus.Communicating,
             int timeoutMillis = 0)
         {
+            string[] serialPorts = System.IO.Ports.SerialPort.GetPortNames();
+            if (_serialPort == null) {
+                _error = string.Format("_serialPort is null");
+                _status = ArduinoStatus.BadPort;
+                return;
+            } else if (!serialPorts.Contains(_serialPort))
+            {
+                _error = string.Format("No such serial port \"{0}\"in {1}.", _serialPort, serialPorts.ToString());
+                _status = ArduinoStatus.BadPort;
+                return;
+            }
+
             char[] crnls = { '\r', '\n' };
 
             if (timeoutMillis != 0)

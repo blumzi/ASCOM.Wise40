@@ -8,7 +8,7 @@
     <ProjectGuid>{371009F1-23D3-41EA-A431-DFD1C08D6CAA}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ASCOM.Wise40.FilterWheel</RootNamespace>
+    <RootNamespace>ASCOM.Wise40</RootNamespace>
     <AssemblyName>ASCOM.Wise40.FilterWheel</AssemblyName>
     <FileUpgradeFlags>
     </FileUpgradeFlags>

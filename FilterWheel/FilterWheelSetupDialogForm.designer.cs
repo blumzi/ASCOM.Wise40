@@ -1,4 +1,4 @@
-namespace ASCOM.Wise40.FilterWheel
+namespace ASCOM.Wise40
 {
     partial class FilterWheelSetupDialogForm
     {
@@ -28,6 +28,7 @@ namespace ASCOM.Wise40.FilterWheel
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.cmdOK = new System.Windows.Forms.Button();
             this.cmdCancel = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
@@ -81,6 +82,11 @@ namespace ASCOM.Wise40.FilterWheel
             this.comboBoxPort = new System.Windows.Forms.ComboBox();
             this.label19 = new System.Windows.Forms.Label();
             this.checkBoxEditableRFIDs = new System.Windows.Forms.CheckBox();
+            this.checkBoxEnabled = new System.Windows.Forms.CheckBox();
+            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.label1Mode = new System.Windows.Forms.Label();
+            this.labelOpModeValue = new System.Windows.Forms.Label();
+            this.labelError = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
@@ -94,7 +100,7 @@ namespace ASCOM.Wise40.FilterWheel
             this.cmdOK.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.cmdOK.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.cmdOK.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.cmdOK.Location = new System.Drawing.Point(530, 496);
+            this.cmdOK.Location = new System.Drawing.Point(530, 556);
             this.cmdOK.Name = "cmdOK";
             this.cmdOK.Size = new System.Drawing.Size(59, 24);
             this.cmdOK.TabIndex = 0;
@@ -108,7 +114,7 @@ namespace ASCOM.Wise40.FilterWheel
             this.cmdCancel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.cmdCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.cmdCancel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.cmdCancel.Location = new System.Drawing.Point(530, 520);
+            this.cmdCancel.Location = new System.Drawing.Point(530, 580);
             this.cmdCancel.Name = "cmdCancel";
             this.cmdCancel.Size = new System.Drawing.Size(59, 25);
             this.cmdCancel.TabIndex = 1;
@@ -119,7 +125,7 @@ namespace ASCOM.Wise40.FilterWheel
             // label1
             // 
             this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.Location = new System.Drawing.Point(16, 32);
+            this.label1.Location = new System.Drawing.Point(25, 90);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(252, 39);
             this.label1.TabIndex = 2;
@@ -130,8 +136,8 @@ namespace ASCOM.Wise40.FilterWheel
             // 
             this.picASCOM.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.picASCOM.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.picASCOM.Image = global::ASCOM.Wise40.FilterWheel.Properties.Resources.ASCOM;
-            this.picASCOM.Location = new System.Drawing.Point(544, 32);
+            this.picASCOM.Image = global::ASCOM.Wise40.Properties.Resources.ASCOM;
+            this.picASCOM.Location = new System.Drawing.Point(544, 26);
             this.picASCOM.Name = "picASCOM";
             this.picASCOM.Size = new System.Drawing.Size(48, 56);
             this.picASCOM.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
@@ -144,7 +150,7 @@ namespace ASCOM.Wise40.FilterWheel
             // 
             this.groupBox1.Controls.Add(this.tableLayoutPanel1);
             this.groupBox1.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBox1.Location = new System.Drawing.Point(16, 104);
+            this.groupBox1.Location = new System.Drawing.Point(16, 153);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(504, 272);
             this.groupBox1.TabIndex = 4;
@@ -524,7 +530,7 @@ namespace ASCOM.Wise40.FilterWheel
             // 
             this.groupBox2.Controls.Add(this.tableLayoutPanel2);
             this.groupBox2.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBox2.Location = new System.Drawing.Point(16, 392);
+            this.groupBox2.Location = new System.Drawing.Point(16, 441);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Size = new System.Drawing.Size(504, 160);
             this.groupBox2.TabIndex = 17;
@@ -747,15 +753,14 @@ namespace ASCOM.Wise40.FilterWheel
             // comboBoxPort
             // 
             this.comboBoxPort.FormattingEnabled = true;
-            this.comboBoxPort.Location = new System.Drawing.Point(424, 38);
+            this.comboBoxPort.Location = new System.Drawing.Point(431, 87);
             this.comboBoxPort.Name = "comboBoxPort";
             this.comboBoxPort.Size = new System.Drawing.Size(56, 21);
             this.comboBoxPort.TabIndex = 18;
-            this.comboBoxPort.Text = "COM5";
             // 
             // label19
             // 
-            this.label19.Location = new System.Drawing.Point(344, 32);
+            this.label19.Location = new System.Drawing.Point(344, 81);
             this.label19.Name = "label19";
             this.label19.Size = new System.Drawing.Size(68, 32);
             this.label19.TabIndex = 19;
@@ -765,7 +770,8 @@ namespace ASCOM.Wise40.FilterWheel
             // checkBoxEditableRFIDs
             // 
             this.checkBoxEditableRFIDs.AutoSize = true;
-            this.checkBoxEditableRFIDs.Location = new System.Drawing.Point(360, 72);
+            this.checkBoxEditableRFIDs.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.checkBoxEditableRFIDs.Location = new System.Drawing.Point(344, 116);
             this.checkBoxEditableRFIDs.Name = "checkBoxEditableRFIDs";
             this.checkBoxEditableRFIDs.Size = new System.Drawing.Size(100, 17);
             this.checkBoxEditableRFIDs.TabIndex = 20;
@@ -773,12 +779,56 @@ namespace ASCOM.Wise40.FilterWheel
             this.checkBoxEditableRFIDs.UseVisualStyleBackColor = true;
             this.checkBoxEditableRFIDs.CheckedChanged += new System.EventHandler(this.checkBoxEditableRFIDs_CheckedChanged);
             // 
+            // checkBoxEnabled
+            // 
+            this.checkBoxEnabled.AutoSize = true;
+            this.checkBoxEnabled.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.checkBoxEnabled.Location = new System.Drawing.Point(16, 52);
+            this.checkBoxEnabled.Name = "checkBoxEnabled";
+            this.checkBoxEnabled.Size = new System.Drawing.Size(65, 17);
+            this.checkBoxEnabled.TabIndex = 21;
+            this.checkBoxEnabled.Text = "Enabled";
+            this.checkBoxEnabled.UseVisualStyleBackColor = true;
+            // 
+            // label1Mode
+            // 
+            this.label1Mode.AutoSize = true;
+            this.label1Mode.Location = new System.Drawing.Point(16, 26);
+            this.label1Mode.Name = "label1Mode";
+            this.label1Mode.Size = new System.Drawing.Size(86, 13);
+            this.label1Mode.TabIndex = 22;
+            this.label1Mode.Text = "Operating Mode:";
+            // 
+            // labelOpModeValue
+            // 
+            this.labelOpModeValue.AutoSize = true;
+            this.labelOpModeValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
+            this.labelOpModeValue.Location = new System.Drawing.Point(108, 26);
+            this.labelOpModeValue.Name = "labelOpModeValue";
+            this.labelOpModeValue.Size = new System.Drawing.Size(39, 13);
+            this.labelOpModeValue.TabIndex = 23;
+            this.labelOpModeValue.Text = "XXXX";
+            this.labelOpModeValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // labelError
+            // 
+            this.labelError.AutoSize = true;
+            this.labelError.ForeColor = System.Drawing.Color.OrangeRed;
+            this.labelError.Location = new System.Drawing.Point(153, 26);
+            this.labelError.Name = "labelError";
+            this.labelError.Size = new System.Drawing.Size(0, 13);
+            this.labelError.TabIndex = 24;
+            // 
             // FilterWheelSetupDialogForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.ClientSize = new System.Drawing.Size(603, 556);
+            this.ClientSize = new System.Drawing.Size(603, 616);
+            this.Controls.Add(this.labelError);
+            this.Controls.Add(this.labelOpModeValue);
+            this.Controls.Add(this.label1Mode);
+            this.Controls.Add(this.checkBoxEnabled);
             this.Controls.Add(this.checkBoxEditableRFIDs);
             this.Controls.Add(this.label19);
             this.Controls.Add(this.comboBoxPort);
@@ -864,5 +914,10 @@ namespace ASCOM.Wise40.FilterWheel
         private System.Windows.Forms.ComboBox comboBox41;
         private System.Windows.Forms.ComboBox comboBox40;
         private System.Windows.Forms.CheckBox checkBoxEditableRFIDs;
+        private System.Windows.Forms.CheckBox checkBoxEnabled;
+        private System.Windows.Forms.ToolTip toolTip1;
+        private System.Windows.Forms.Label label1Mode;
+        private System.Windows.Forms.Label labelOpModeValue;
+        private System.Windows.Forms.Label labelError;
     }
 }
