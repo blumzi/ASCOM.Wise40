@@ -1653,6 +1653,7 @@ namespace ASCOM.Wise40
                 TargetRightAscension = ra.Hours;
                 TargetDeclination = dec.Degrees;
                 Tracking = true;
+                _enslaveDome = false;
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: starting _slewToCoordinatesSync");
                 #endregion
