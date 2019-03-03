@@ -37,33 +37,42 @@ namespace ASCOM.Wise40
 
         // Explicit static constructor to tell C# compiler
         // not to mark type as beforefieldinit
-        static SlewingArbiter()
-        {
-        }
+        static SlewingArbiter() { }
 
-        public SlewingArbiter()
-        {
-        }
+        public SlewingArbiter() { }
+
+        //public static SlewingArbiter Instance
+        //{
+        //    get
+        //    {
+        //        if (_instance == null)
+        //        {
+        //            lock (syncObject)
+        //            {
+        //                if (_instance == null)
+        //                    _instance = new SlewingArbiter();
+        //            }
+        //        }
+
+        //        if (!_initialized)
+        //        {
+        //            _instance.Reset();
+        //            _initialized = true;
+        //        }
+        //        return _instance;
+        //    }
+        //}
+
+        private static readonly Lazy<SlewingArbiter> lazy = new Lazy<SlewingArbiter>(() => new SlewingArbiter()); // Singleton
 
         public static SlewingArbiter Instance
         {
             get
             {
-                if (_instance == null)
-                {
-                    lock (syncObject)
-                    {
-                        if (_instance == null)
-                            _instance = new SlewingArbiter();
-                    }
-                }
+                if (lazy.IsValueCreated)
+                    return lazy.Value;
 
-                if (!_initialized)
-                {
-                    _instance.Reset();
-                    _initialized = true;
-                }
-                return _instance;
+                return null;
             }
         }
 
