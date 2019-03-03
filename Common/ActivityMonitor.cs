@@ -43,7 +43,7 @@ namespace ASCOM.Wise40
         private WiseSite wisesite = WiseSite.Instance;
         private static bool initialized = false;
         public static int millisToInactivity;
-        public static int _activityId = 0;
+        public int _mongoDbId = 0;
 
         [FlagsAttribute]
         public enum ActivityType
@@ -80,13 +80,13 @@ namespace ASCOM.Wise40
 
         public static IMongoDatabase db;
 
-        public static IMongoCollection<Activity> ActivitiesCollection
+        public static IMongoCollection<BsonDocument> ActivitiesCollection
         {
             get
             {
                 string collectionName = Debugger.LogDirectory().Remove(0, (Const.topWise40Directory + "Logs/").Length);
 
-                return db.GetCollection<Activity>(collectionName);
+                return db.GetCollection<BsonDocument>(collectionName);
             }
         }
 
@@ -181,9 +181,6 @@ namespace ASCOM.Wise40
 
                 foreach (Activity a in ActivityMonitor.Instance.inProgressActivities)
                 {
-                    if ((a._type & ActivityMonitor.ActivityType.RealActivities) == 0)
-                        continue;
-
                     if (a._type == ActivityType.GoingIdle)
                     {
                         Activity.GoingIdleActivity gia = (a as Activity.GoingIdleActivity);
@@ -199,6 +196,9 @@ namespace ASCOM.Wise40
                         }
                         ret.Add(s);
                     }
+                    else
+                        if ((a._type & ActivityMonitor.ActivityType.RealActivities) == 0)
+                            continue;
                     else
                         ret.Add(a._type.ToString());
                 }
@@ -268,7 +268,6 @@ namespace ASCOM.Wise40
 
         public enum State { NotSet, Pending, Succeeded, Failed, Aborted, Idle };
         public State _state;
-        public int _id;
 
         public enum EffectOnGoingIdle  {
             NotSet,     // default, needs to be changed
@@ -287,6 +286,7 @@ namespace ASCOM.Wise40
         public string _endReason;
 
         public TimeSpan _duration;
+        public MongoDB.Bson.ObjectId _objectId;
 
         protected static Debugger debugger = Debugger.Instance;
         private static ActivityMonitor monitor = ActivityMonitor.Instance;
@@ -295,13 +295,12 @@ namespace ASCOM.Wise40
 
         public Activity(ActivityMonitor.ActivityType type)
         {
-            _id = Interlocked.Increment(ref ActivityMonitor._activityId);
             _type = type;
             _startTime = DateTime.Now;
 
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
-                "Activity: \"{0}\" created. (id: {1}, start: {2})", type.ToString(), _id, _startTime.ToString(@"dd\:hh\:mm\:ss\.fff"));
+                "Activity: \"{0}\" created. start: {1}", type.ToString(), _startTime.ToString(@"dd\:hh\:mm\:ss\.fff"));
             #endregion
         }
 
@@ -331,19 +330,28 @@ namespace ASCOM.Wise40
 
         public void EmitStart()
         {
-            string msg = string.Format("log4net: START: _activity: {0} _id: {1}", _type.ToString(), _id);
+            var document = new BsonDocument
+            {
+                { "Type", "ACTIVITY" },
+                { "ActivityType", _type.ToString() },
+                { "StartTime", _startTime },
+                { "StartDetails", _startDetails },
+            };
+            ActivityMonitor.ActivitiesCollection.InsertOne(document);
+            _objectId = (ObjectId) document.GetValue("_id");
+
+            string msg = string.Format("log4net: START: _activity: {0} ({1})", _type.ToString(), _objectId.ToString());
             if (_startDetails != string.Empty)
             {
                 msg += string.Format(", details: {0}", _startDetails);
             }
 
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic, msg);
-            //ActivityMonitor.ActivitiesCollection.InsertOne(this);
         }
 
         public void EmitEnd()
         {
-            string msg = string.Format("log4net:   END: _activity: {0} _id: {1}", _type.ToString(), _id);
+            string msg = string.Format("log4net:   END: _activity: {0} ({1})", _type.ToString(), _objectId.ToString());
             TimeSpan ts = _endTime - _startTime;
             msg += string.Format(", duration: {0}", ts.ToString(@"dd\:hh\:mm\:ss\.fff"));
             if (_endDetails != string.Empty)
@@ -354,9 +362,16 @@ namespace ASCOM.Wise40
                 _state,
                 _endReason);
 
-            //Activity activity = ActivityMonitor.ActivitiesCollection.FindOneAndUpdate<Activity>(a => a._type == this._type,
-            //    Builders<Activity>.Update.obj);
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, msg);
+            FilterDefinition<BsonDocument> filter = new BsonDocument("_id", _objectId);
+
+            var update = Builders<BsonDocument>.Update.
+                Set("EndTime", _endTime).
+                Set("Duration", _duration).
+                Set("EndDetails", _endDetails).
+                Set("EndReason", _endReason).
+                Set("EndState", _state.ToString());
+
+            var result = ActivityMonitor.ActivitiesCollection.FindOneAndUpdate(filter, update);
         }
 
         public void EndActivity(EndParams par)
@@ -548,10 +563,12 @@ namespace ASCOM.Wise40
         public class ShutterActivity : TimeConsumingActivity
         {
             public int _start, _target, _end;
+            public ASCOM.DeviceInterface.ShutterState _operation;
 
             public class StartParams
             {
                 public int start, target;
+                public ASCOM.DeviceInterface.ShutterState operation;
             }
 
             public new class EndParams : Activity.EndParams
@@ -561,9 +578,11 @@ namespace ASCOM.Wise40
 
             public ShutterActivity(StartParams par): base (ActivityMonitor.ActivityType.Shutter)
             {
+                _operation = par.operation;
                 _start = par.start;
                 _target= par.target;
-                _startDetails = string.Format("startPercent: {0}, targetPercent: {1}",
+                _startDetails = string.Format("operation: {0}, startPercent: {1}, targetPercent: {2}",
+                    _operation.ToString(),
                     _start.ToString(),
                     _target.ToString());
 
@@ -678,6 +697,8 @@ namespace ASCOM.Wise40
 
             public GoingIdleActivity(string reason) : base(ActivityMonitor.ActivityType.GoingIdle)
             {
+                effectOnGoingIdle_AtStart = EffectOnGoingIdle.NoEffect;
+
                 RestartTimer(reason);
             }
 
@@ -825,8 +846,12 @@ namespace ASCOM.Wise40
 
         public class ShutdownActivity : TimeConsumingActivity
         {
-            public ShutdownActivity(): base(ActivityMonitor.ActivityType.ShuttingDown)
+            public string _reason;
+
+            public ShutdownActivity(string reason): base(ActivityMonitor.ActivityType.ShuttingDown)
             {
+                _reason = reason;
+                _startDetails = string.Format("reason: {0}", _reason);
                 effectOnGoingIdle_AtEnd = EffectOnGoingIdle.NoEffect;
                 EmitStart();
             }
@@ -931,7 +956,7 @@ namespace ASCOM.Wise40
 
     public class Event
     {
-        public enum EventType { NotSet, Safety, Global };
+        public enum EventType { NotSet, Safety, Generic };
 
         public EventType _type = EventType.NotSet;
         public DateTime _utcTime;
@@ -954,6 +979,13 @@ namespace ASCOM.Wise40
             }
 
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic, msg);
+
+            ActivityMonitor.ActivitiesCollection.InsertOne(new BsonDocument {
+                { "Type", "EVENT" },
+                { "EventType", _type.ToString() },
+                { "Time", _utcTime },
+                { "Details", _details },
+            });
         }
 
         public class SafetyEvent : Event
@@ -991,12 +1023,12 @@ namespace ASCOM.Wise40
 
         public class GlobalEvent : Event
         {
-            public GlobalEvent(string details) : base(EventType.Global)
+            public GlobalEvent(string details) : base(EventType.Generic)
             {
                 if (details == string.Empty)
                     throw new InvalidValueException("GlobalEvent:ctor: bad args");
 
-                _details = string.Format("details: {0}", details);
+                _details = details;
             }
         }
     }
