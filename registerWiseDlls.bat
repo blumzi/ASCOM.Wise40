@@ -23,4 +23,3 @@ c:\Windows\Microsoft.NET\Framework\v4.0.30319\regasm /codebase /tlb "%top%\Teles
 
 cd "%top%\VantagePro\bin\x86\Debug"
 c:\Windows\Microsoft.NET\Framework\v4.0.30319\regasm /codebase /tlb "%top%\VantagePro\bin\x86\Debug\ASCOM.Wise40.VantagePro.ObservingConditions.dll"
-
