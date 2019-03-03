@@ -52,7 +52,7 @@ namespace ASCOM.Wise40 //.Telescope
             }
 
             #region debug
-            wisetele.debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "SafetyChecker: activated (action: {0}, reason: {1})",
+            WiseTele.debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "SafetyChecker: activated (action: {0}, reason: {1})",
                 WhenNotSafe.ToString(), reason);
             #endregion
 

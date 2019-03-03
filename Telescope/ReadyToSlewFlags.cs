@@ -23,19 +23,14 @@ namespace ASCOM.Wise40
         private long secondaryReadyForGuide = 0;
 
         private static volatile ReadyToSlewFlags _instance; // Singleton
-
         private static object syncObject = new object();
         private static bool _initialized = false;
 
         // Explicit static constructor to tell C# compiler
         // not to mark type as beforefieldinit
-        static ReadyToSlewFlags()
-        {
-        }
+        static ReadyToSlewFlags() { }
 
-        public ReadyToSlewFlags()
-        {
-        }
+        public ReadyToSlewFlags() { }
 
         public static ReadyToSlewFlags Instance
         {
