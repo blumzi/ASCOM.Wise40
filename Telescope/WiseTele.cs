@@ -1601,6 +1601,14 @@ namespace ASCOM.Wise40
                     endState = Activity.State.Succeeded,
                     endReason = "Shutdown done"
                 });
+
+            activityMonitor.EndActivity(ActivityMonitor.ActivityType.GoingIdle,
+                new Activity.GoingIdleActivity.EndParams()
+                {
+                    endReason = "Shutdown completed",
+                    endState = Activity.State.Aborted,
+                    reason = "Shutdown completed",
+                });
         }
 
         public void Shutdown(string reason)
