@@ -180,14 +180,14 @@ namespace ASCOM.Wise40
             debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome: init() done.");
         }
 
-        private bool DomeStateIsOn(DomeState flag)
+        private bool StateIsOn(DomeState flag)
         {
             return (_state & flag) != 0;
         }
 
         private bool StateIsOff(DomeState flag)
         {
-            return !DomeStateIsOn(flag);
+            return !StateIsOn(flag);
         }
 
         private void SetDomeState(DomeState flags)
@@ -291,14 +291,14 @@ namespace ASCOM.Wise40
             ShortestDistanceResult shortest = Azimuth.ShortestDistance(there);
             Angle inertial = inertiaAngle(there);
 
-            if (DomeStateIsOn(DomeState.MovingCW) && (shortest.direction == Const.AxisDirection.Decreasing))
+            if (StateIsOn(DomeState.MovingCW) && (shortest.direction == Const.AxisDirection.Decreasing))
             {
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugDome, message + "direction changed CW to CCW => true", az, there);
                 #endregion
                 return true;
             }
-            else if (DomeStateIsOn(DomeState.MovingCCW) && (shortest.direction == Const.AxisDirection.Increasing))
+            else if (StateIsOn(DomeState.MovingCCW) && (shortest.direction == Const.AxisDirection.Increasing))
             {
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugDome, message + "direction changed CCW to CW => true");
@@ -326,7 +326,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                var ret = DomeStateIsOn(DomeState.MovingCCW) | DomeStateIsOn(DomeState.MovingCW);
+                var ret = StateIsOn(DomeState.MovingCCW) | StateIsOn(DomeState.MovingCW);
 
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugDome, "DomeIsMoving: {0}", ret);
@@ -359,7 +359,7 @@ namespace ASCOM.Wise40
                 }
             }
 
-            if (_targetAz != null && arriving(_targetAz) && !DomeStateIsOn(DomeState.Stopping))
+            if (_targetAz != null && arriving(_targetAz) && !StateIsOn(DomeState.Stopping))
             {
                 SetDomeState(DomeState.Stopping);   // prevent onTimer from re-stopping
                 Stop("Reached target");
@@ -367,7 +367,7 @@ namespace ASCOM.Wise40
 
                 _targetAz = null;
 
-                if (DomeStateIsOn(DomeState.Parking))
+                if (StateIsOn(DomeState.Parking))
                 {
                     UnsetDomeState(DomeState.Parking);
                     AtPark = true;
@@ -419,7 +419,7 @@ namespace ASCOM.Wise40
                 _isStuck = true;
             else
             {
-                if (DomeStateIsOn(DomeState.MovingCW))
+                if (StateIsOn(DomeState.MovingCW))
                 {
                     if (_prevTicks > currTicks)
                         deltaTicks = _prevTicks - currTicks;
@@ -429,7 +429,7 @@ namespace ASCOM.Wise40
                     if (deltaTicks < leastExpectedTicks)
                         _isStuck = true;
                 }
-                else if (DomeStateIsOn(DomeState.MovingCCW))
+                else if (StateIsOn(DomeState.MovingCCW))
                 {
                     if (_prevTicks > currTicks)
                         deltaTicks = _prevTicks - currTicks;
@@ -462,8 +462,8 @@ namespace ASCOM.Wise40
             if (DateTime.Compare(rightNow, nextStuckEvent) < 0)
                 return;
 
-            forwardPin = DomeStateIsOn(DomeState.MovingCCW) ? leftPin : rightPin;
-            backwardPin = DomeStateIsOn(DomeState.MovingCCW) ? rightPin : leftPin;
+            forwardPin = StateIsOn(DomeState.MovingCCW) ? leftPin : rightPin;
+            backwardPin = StateIsOn(DomeState.MovingCCW) ? rightPin : leftPin;
 
             switch (_stuckPhase) {
                 case StuckPhase.NotStuck:              // Stop, let the wheels cool down
@@ -777,7 +777,7 @@ namespace ASCOM.Wise40
             if (ShutterIsMoving)
                 throw new ASCOM.InvalidOperationException("Cannot move, shutter is active!");
 
-            if (!activityMonitor.InProgress(ActivityMonitor.ActivityType.ShuttingDown) && !wiseSafeToOperate.IsSafe)
+            if ((!activityMonitor.InProgress(ActivityMonitor.ActivityType.ShuttingDown) && !StateIsOn(DomeState.Parking)) && !wiseSafeToOperate.IsSafe)
                 throw new ASCOM.InvalidOperationException("Unsafe: " + wiseSafeToOperate.Action("unsafereasons", ""));
 
             Angle toAng = new Angle(degrees, Angle.Type.Az);
@@ -889,17 +889,17 @@ namespace ASCOM.Wise40
                 if (!DomeIsMoving)
                     return ret;
 
-                if (DomeStateIsOn(DomeState.MovingCW))
+                if (StateIsOn(DomeState.MovingCW))
                     ret = "Moving CW";
-                else if (DomeStateIsOn(DomeState.MovingCCW))
+                else if (StateIsOn(DomeState.MovingCCW))
                     ret = "Moving CCW";
 
                 if (_targetAz != null)
                     ret += string.Format(" to {0}", _targetAz.ToNiceString());
 
-                if (DomeStateIsOn(DomeState.Calibrating))
+                if (StateIsOn(DomeState.Calibrating))
                     ret += " (calibrating)";
-                if (DomeStateIsOn(DomeState.Parking))
+                if (StateIsOn(DomeState.Parking))
                     ret += " (parking)";
 
                 return ret;
@@ -971,6 +971,10 @@ namespace ASCOM.Wise40
             if (activityMonitor.InProgress(ActivityMonitor.ActivityType.ShuttingDown))
                 throw new InvalidOperationException("Observatory is shutting down!");
 
+            int percentOpen = wisedomeshutter.PercentOpen;
+            if (percentOpen != -1 && percentOpen > 98)
+                return;
+
             if (wisedomeshutter.IsMoving && !(wisedomeshutter.State == ShutterState.shutterOpening))
                 wisedomeshutter.Stop("Stopped before StartOpening");
             wisedomeshutter.StartOpening();
@@ -982,7 +986,11 @@ namespace ASCOM.Wise40
         {
             if (DirectionMotorsAreActive)
                 throw new InvalidOperationException("Cannot close shutter while dome is slewing!");
-            
+
+            int percentOpen = wisedomeshutter.PercentOpen;
+            if (percentOpen != -1 && percentOpen < 1)
+                return;
+
             if (wisedomeshutter.IsMoving && !(wisedomeshutter.State == ShutterState.shutterClosing))
                 wisedomeshutter.Stop("Stopped before StartClosing");
             wisedomeshutter.StartClosing();
@@ -1420,7 +1428,7 @@ namespace ASCOM.Wise40
         /// </summary>
         public void ReadProfile()
         {
-            bool defaultSyncVentWithShutter = (WiseSite.Instance.OperationalMode == WiseSite.OpMode.WISE) ? false : true;
+            bool defaultSyncVentWithShutter = (WiseSite.OperationalMode == WiseSite.OpMode.WISE) ? false : true;
 
             using (Profile driverProfile = new Profile() { DeviceType = "Dome" })
             {
