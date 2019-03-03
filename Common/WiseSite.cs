@@ -26,14 +26,15 @@ namespace ASCOM.Wise40
         public Astrometry.OnSurface onSurface;
         public Observer observer;
         public static Astrometry.Accuracy astrometricAccuracy;
-        public Astrometry.RefractionOption refractionOption;
+        public static Astrometry.RefractionOption refractionOption;
         public double siteLatitude, siteLongitude, siteElevation;
         public static ObservingConditions och;
-        private DateTime lastOCFetch;
-        private Debugger debugger = Debugger.Instance;
+        private static DateTime lastOCFetch;
+        private static bool och_initialized = false;
+        private static Debugger debugger = Debugger.Instance;
 
         public enum OpMode { LCO, ACP, WISE, NONE };
-        public OpMode _opMode = OpMode.WISE;
+        public static OpMode _opMode = OpMode.WISE;
 
         //
         // From the VantagePro summary graphs for 2015
@@ -43,25 +44,18 @@ namespace ASCOM.Wise40
 
         public WiseSite() { }
         static WiseSite() { }
-        private static volatile WiseSite _instance; // Singleton
-        private static object syncObject = new object();
+
+        private static readonly Lazy<WiseSite> lazy = new Lazy<WiseSite>(() => new WiseSite()); // Singleton
 
         public static WiseSite Instance
         {
             get
             {
-                if (_instance == null)
-                {
-                    lock (syncObject)
-                    {
-                        if (_instance == null)
-                        {
-                            _instance = new WiseSite();
-                            _instance.init();
-                        }
-                        }
-                }
-                return _instance;
+                if (lazy.IsValueCreated)
+                    return lazy.Value;
+
+                lazy.Value.init();
+                return lazy.Value;
             }
         }
 
@@ -74,6 +68,14 @@ namespace ASCOM.Wise40
             siteLongitude = ascomutils.DMSToDegrees("34:45:43.86");
             siteElevation = 882.9;
             novas31.MakeOnSurface(siteLatitude, siteLongitude, siteElevation, 0.0, 0.0, ref onSurface);
+
+            _initialized = true;
+        }
+
+        public static void initOCH()
+        {
+            if (och_initialized)
+                return;
 
             try
             {
@@ -91,7 +93,7 @@ namespace ASCOM.Wise40
                 refractionOption = Astrometry.RefractionOption.NoRefraction;
             }
 
-            _initialized = true;
+            och_initialized = true;
         }
 
         public void Dispose()
@@ -154,6 +156,8 @@ namespace ASCOM.Wise40
         {
             const int freqOCFetchMinutes = 10;
 
+            initOCH();
+
             if (!calculateRefraction)
             {
                 refractionOption = RefractionOption.NoRefraction;
@@ -183,7 +187,7 @@ namespace ASCOM.Wise40
             }
         }
         
-        public OpMode OperationalMode
+        public static OpMode OperationalMode
         {
             get
             {
@@ -194,9 +198,6 @@ namespace ASCOM.Wise40
                     if (Enum.TryParse<OpMode>(driverProfile.GetValue(Const.wiseTelescopeDriverID, "SiteOperationMode", null, "WISE").ToUpper(), out mode))
                         _opMode = mode;
                 }
-                #region debug
-                //debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "OperationalMode:get => {0}", _opMode.ToString());
-                #endregion
                 return _opMode;
             }
 
