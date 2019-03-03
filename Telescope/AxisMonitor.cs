@@ -46,7 +46,7 @@ namespace ASCOM.Wise40
 
         public const int _samplingFrequency = 20;     // samples per second
         public const double simulatedDelta = 0.4;
-        public const int nSamples = 1000 / _samplingFrequency;  // a second's worth of samples
+        public const int nSamples = 500 / _samplingFrequency;  // a half second's worth of samples
 
         public FixedSizedQueue<AxisPosition> _samples = new FixedSizedQueue<AxisPosition>(nSamples);
 
@@ -207,7 +207,7 @@ namespace ASCOM.Wise40
 
     public class PrimaryAxisMonitor : AxisMonitor
     {
-        public const double raEpsilon = 1e-5;        // epsilon for primaryMonitor, while tracking
+        public const double raEpsilon = 2e-3;        // epsilon for primaryMonitor, while tracking
         public const double haEpsilon = 7.0;         // epsilon for primaryMonitor, while NOT tracking
 
         public static FixedSizedQueue<double> _raDeltas = new FixedSizedQueue<double>(nSamples);
@@ -223,6 +223,11 @@ namespace ASCOM.Wise40
         public PrimaryAxisMonitor() : base(TelescopeAxes.axisPrimary) { }
 
         private WiseHAEncoder _encoder = WiseTele.Instance.HAEncoder;
+
+        public void ResetRASamples()
+        {
+            _raDeltas = new FixedSizedQueue<double>(nSamples);
+        }
 
         protected override void SampleAxisMovement(object StateObject)
         {
@@ -257,8 +262,8 @@ namespace ASCOM.Wise40
                 return;
             }
 
-            _rightAscension = (wisesite.LocalSiderealTime - Angle.FromRadians(_currPosition.radians)).Hours;
             _hourAngle = Angle.FromRadians(_currPosition.radians).Hours;
+            _rightAscension = wisesite.LocalSiderealTime.Hours - _hourAngle;
             _samples.Enqueue(_currPosition);
 
             double raDelta = Math.Abs(_rightAscension - _prevRightAscension);
@@ -341,7 +346,7 @@ namespace ASCOM.Wise40
                 string deb = string.Format("{0}:IsMoving: max: {1:F15}, epsilon: {2:F15}, ret: {3}, active: {4}",
                     WiseName, max, epsilon, ret, ActiveMotors(_axis)) + "[";
                 foreach (double d in arr)
-                    deb += " " + d.ToString();
+                    deb += " " + d.ToString("F10");
                 debugger.WriteLine(Debugger.DebugLevel.DebugAxes, deb + " ]");
                 #endregion
                 return ret;
