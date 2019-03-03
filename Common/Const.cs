@@ -47,6 +47,7 @@ namespace ASCOM.Wise40.Common
         public const string wiseBoltwoodDriverID = "ASCOM.Wise40.Boltwood.ObservingConditions";
         public const string wiseSafeToOperateDriverID = "ASCOM.Wise40SafeToOperate.SafetyMonitor";
         public const string wiseFocusDriverID = "ASCOM.Wise40.Focuser";
+        public const string wiseFilterWheelDriverID = "ASCOM.Wise40.FilterWheel";
         public const string wiseObservatoryMonitorDriverID = "ASCOM.Wise40.ObservatoryMonitor.SafetyMonitor";
 
         public const string wiseASCOMServerAppName = "ASCOM.RESTServer";
