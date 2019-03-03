@@ -11,38 +11,25 @@ namespace ASCOM.Wise40
 {
     public class WiseDomePlatform : WiseObject
     {
-        private static volatile WiseDomePlatform _instance = new WiseDomePlatform(); // Singleton
-        private static object syncObject = new object();
         private static bool _initialized = false;
         private WisePin domePlatformIsDownPin;
 
         // Explicit static constructor to tell C# compiler
         // not to mark type as beforefieldinit
-        static WiseDomePlatform()
-        {
-        }
+        static WiseDomePlatform() { }
+        public WiseDomePlatform() { }
 
-        public WiseDomePlatform()
-        {
-        }
+        private static readonly Lazy<WiseDomePlatform> lazy = new Lazy<WiseDomePlatform>(() => new WiseDomePlatform()); // Singleton
 
         public static WiseDomePlatform Instance
         {
             get
             {
-                if (_instance == null)
-                {
-                    if (syncObject == null)
-                        syncObject = new object();
+                if (lazy.IsValueCreated)
+                    return lazy.Value;
 
-                    lock (syncObject)
-                    {
-                        if (_instance == null)
-                            _instance = new WiseDomePlatform();
-                        _instance.init();
-                    }
-                }
-                return _instance;
+                lazy.Value.init();
+                return lazy.Value;
             }
         }
 

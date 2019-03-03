@@ -58,6 +58,7 @@ namespace ASCOM.Wise40SafeToOperate
         public static Activity.SafetyActivity.State _whyNotSafe = Activity.SafetyActivity.State.Warning;
         public static bool _wasSafe = true;
         public static ActivityMonitor activityMonitor = ActivityMonitor.Instance;
+        public static bool _unsafeBecauseNotReady = false;
 
         /// <summary>
         /// Private variable to hold the connected state
@@ -68,9 +69,6 @@ namespace ASCOM.Wise40SafeToOperate
 
         private static WiseSite wisesite = WiseSite.Instance;
 
-        private static object syncObject = new object();
-
-        private static volatile WiseSafeToOperate _instance = new WiseSafeToOperate();
         private static bool initialized = false;
 
         public static TimeSpan _stabilizationPeriod;
@@ -85,29 +83,25 @@ namespace ASCOM.Wise40SafeToOperate
         public Astrometry.RefractionOption refractionOption = Astrometry.RefractionOption.NoRefraction;
         Object3 Sun = new Object3();
 
+        static WiseSafeToOperate() { }
+        public WiseSafeToOperate() { }
+
+        private static readonly Lazy<WiseSafeToOperate> lazy = new Lazy<WiseSafeToOperate>(() => new WiseSafeToOperate()); // Singleton
+
         public static WiseSafeToOperate Instance
         {
             get
             {
-                if (_instance == null)
-                {
-                    if (syncObject == null)
-                        syncObject = new object();
+                if (lazy == null)
+                    return null;
 
-                    lock (syncObject)
-                    {
-                        if (_instance == null)
-                            _instance = new WiseSafeToOperate();
-                    }
-                }
-                _instance.init();
-                return _instance;
+                if (lazy.IsValueCreated)
+                    return lazy.Value;
+
+                lazy.Value.init();
+                return lazy.Value;
             }
         }
-
-        public WiseSafeToOperate() { }
-
-        static WiseSafeToOperate() { }
 
         public void init()
         {
@@ -115,13 +109,14 @@ namespace ASCOM.Wise40SafeToOperate
                 return;
 
             name = "Wise40 SafeToOperate";
-            driverDescription = string.Format("ASCOM Wise40.SafeToOperate v{0}", version.ToString());
+            driverDescription = string.Format("{0} v{1}", driverID, version.ToString());
 
             if (_profile == null)
             {
                 _profile = new Profile() { DeviceType = "SafetyMonitor" };
             }
 
+            WiseSite.initOCH();
             WiseSite.och.Connected = true;
 
             humiditySensor = new HumiditySensor(this);
@@ -344,6 +339,7 @@ namespace ASCOM.Wise40SafeToOperate
                     Ready = isReady,
                     Safe = IsSafe,
                     UnsafeReasons = UnsafeReasonsList,
+                    UnsafeBecauseNotReady = _unsafeBecauseNotReady,
                     Colors = new Colors() {
                         SunElevationColorArgb = Statuser.TriStateColor(isSafeSunElevation).ToArgb(),
                         RainColorArgb = Statuser.TriStateColor(isSafeRain).ToArgb(),
@@ -437,7 +433,7 @@ namespace ASCOM.Wise40SafeToOperate
         public void startSensors()
         {
             foreach (Sensor s in _cumulativeSensors)
-                s.Restart(0);
+                s.Restart(5000);
         }
 
         public string DriverId
@@ -671,6 +667,9 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
+                if (astroutils == null)
+                    return 0.0;
+
                 double ra = 0, dec = 0, dis = 0;
                 double jdt = astroutils.JulianDateUT1(0);
                 short res;
@@ -714,6 +713,7 @@ namespace ASCOM.Wise40SafeToOperate
             get
             {
                 bool ret = true;
+                _unsafeBecauseNotReady = false;
 
                 if (!_connected)
                 {
@@ -735,6 +735,8 @@ namespace ASCOM.Wise40SafeToOperate
                     if (! s.isSafe)
                     {
                         ret = false;    // The first non-safe sensor forces NOT SAFE
+                        if (!s.HasAttribute(Sensor.SensorAttribute.Immediate))
+                            _unsafeBecauseNotReady = true;
                         goto Out;
                     }
                 }
@@ -855,6 +857,7 @@ namespace ASCOM.Wise40SafeToOperate
         public bool Bypassed;
         public bool Ready;
         public bool Safe;
+        public bool UnsafeBecauseNotReady;
         public List<string> UnsafeReasons;
         public Colors Colors;
         public double SunElevation;

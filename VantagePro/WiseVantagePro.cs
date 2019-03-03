@@ -19,7 +19,6 @@ namespace ASCOM.Wise40.VantagePro
     public class WiseVantagePro: WeatherStation
     {
         private string _dataFile;
-        private static WiseVantagePro _instance = new WiseVantagePro();
         private static Version version = new Version("0.2");
         public static string driverDescription = string.Format("ASCOM Wise40.VantagePro v{0}", version.ToString());
         private Util util = new Util();
@@ -40,22 +39,18 @@ namespace ASCOM.Wise40.VantagePro
 
         private Dictionary<string, string> sensorData = null;
         private DateTime _lastDataRead = DateTime.MinValue;
-        private static object syncObject = new object();
+
+        private static readonly Lazy<WiseVantagePro> lazy = new Lazy<WiseVantagePro>(() => new WiseVantagePro()); // Singleton
 
         public static WiseVantagePro Instance
         {
             get
             {
-                if (_instance == null)
-                {
-                    lock (syncObject)
-                    {
-                        if (_instance == null)
-                            _instance = new WiseVantagePro();
-                    }
-                }
-                _instance.init();
-                return _instance;
+                if (lazy.IsValueCreated)
+                    return lazy.Value;
+
+                lazy.Value.init();
+                return lazy.Value;
             }
         }
 
@@ -337,15 +332,7 @@ namespace ASCOM.Wise40.VantagePro
             }
         }
 
-        public static string driverVersion
-        {
-            get
-            {
-                return _instance.DriverVersion;
-            }
-        }
-
-        public string DriverVersion
+        public static string DriverVersion
         {
             get
             {

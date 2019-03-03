@@ -26,8 +26,6 @@ namespace ASCOM.Wise40
         public bool ShutterWebClientEnabled = false;
         public bool _syncVentWithShutter = false;
 
-        private static WiseDomeShutter _instance; // Singleton
-        private static object syncObject = new object();
         private ShutterState _state = ShutterState.shutterError;
 
         private static WiseObject wiseobject = new WiseObject();
@@ -261,6 +259,7 @@ namespace ASCOM.Wise40
                 #endregion debug
                 activityMonitor.NewActivity(new Activity.ShutterActivity(new Activity.ShutterActivity.StartParams
                 {
+                    operation = ShutterState.shutterClosing,
                     start = PercentOpen,
                     target = 0,
                 }));
@@ -295,6 +294,7 @@ namespace ASCOM.Wise40
                 #endregion debug
                 activityMonitor.NewActivity(new Activity.ShutterActivity(new Activity.ShutterActivity.StartParams
                 {
+                    operation = ShutterState.shutterOpening,
                     start = PercentOpen,
                     target = 100,
                 }));
@@ -382,22 +382,17 @@ namespace ASCOM.Wise40
             catch (Hardware.Hardware.MaintenanceModeException) { }
         }
 
+        private static readonly Lazy<WiseDomeShutter> lazy = new Lazy<WiseDomeShutter>(() => new WiseDomeShutter()); // Singleton
+
         public static WiseDomeShutter Instance
         {
             get
             {
-                if (_instance == null)
-                {
-                    lock (syncObject)
-                    {
-                        if (_instance == null)
-                        {
-                            _instance = new WiseDomeShutter();
-                            _instance.init();
-                        }
-                    }
-                }
-                return _instance;
+                if (lazy.IsValueCreated)
+                    return lazy.Value;
+
+                lazy.Value.init();
+                return lazy.Value;
             }
         }
 
@@ -408,7 +403,7 @@ namespace ASCOM.Wise40
 
         public void ReadProfile()
         {
-            bool defaultSyncVentWithShutter = (WiseSite.Instance.OperationalMode == WiseSite.OpMode.WISE) ? false : true;
+            bool defaultSyncVentWithShutter = (WiseSite.OperationalMode == WiseSite.OpMode.WISE) ? false : true;
 
             using (Profile driverProfile = new Profile() { DeviceType = "Dome" })
             {

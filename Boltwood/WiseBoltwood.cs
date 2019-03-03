@@ -26,25 +26,20 @@ namespace ASCOM.Wise40.Boltwood
         public static BoltwoodStation[] stations = new BoltwoodStation[nStations];
         private BoltwoodStation C18Station, C28Station;
 
-        private static volatile WiseBoltwood _instance; // Singleton
-        private static object syncObject = new object();
         static WiseBoltwood() { }
         public WiseBoltwood() { }
+
+        private static readonly Lazy<WiseBoltwood> lazy = new Lazy<WiseBoltwood>(() => new WiseBoltwood()); // Singleton
 
         public static WiseBoltwood Instance
         {
             get
             {
-                if (_instance == null)
-                {
-                    lock (syncObject)
-                    {
-                        if (_instance == null)
-                            _instance = new WiseBoltwood();
-                    }
-                }
-                _instance.init();
-                return _instance;
+                if (lazy.IsValueCreated)
+                    return lazy.Value;
+
+                lazy.Value.init();
+                return lazy.Value;
             }
         }
 
@@ -242,11 +237,11 @@ namespace ASCOM.Wise40.Boltwood
         {
             get
             {
-                return _instance.DriverVersion;
+                return DriverVersion;
             }
         }
 
-        public string DriverVersion
+        public static string DriverVersion
         {
             get
             {

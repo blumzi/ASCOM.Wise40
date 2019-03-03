@@ -12,8 +12,6 @@ namespace ASCOM.Wise40.Common
 {
     public class Debugger
     {
-        private static volatile Debugger _instance; // Singleton
-        private static object syncObject = new object();
         private ListBox listBox;
         private bool _appendToWindow = false;
         private static bool _initialized = false;
@@ -28,22 +26,17 @@ namespace ASCOM.Wise40.Common
         {
         }
 
+        private static readonly Lazy<Debugger> lazy = new Lazy<Debugger>(() => new Debugger()); // Singleton
+
         public static Debugger Instance
         {
             get
             {
-                if (_instance == null)
-                {
-                    lock (syncObject)
-                    {
-                        if (_instance == null)
-                        {
-                            _instance = new Debugger();
-                            _instance.init();
-                        }
-                    }
-                }
-                return _instance;
+                if (lazy.IsValueCreated)
+                    return lazy.Value;
+
+                lazy.Value.init();
+                return lazy.Value;
             }
         }
 

@@ -13,28 +13,21 @@ namespace ASCOM.Wise40.Hardware
     {
         public List<WiseBoard> WiseBoards = new List<WiseBoard>();
         public WiseBoard domeboard, teleboard, miscboard;
-        private static volatile Hardware _instance;     // Singleton
-        private static object _syncObject = new object();
         private bool _initialized = false;
         public float mccRevNum, mccVxdRevNum;
         public static WisePin computerControlPin;
+
+        private static readonly Lazy<Hardware> lazy = new Lazy<Hardware>(() => new Hardware()); // Singleton
 
         public static Hardware Instance
         {
             get
             {
-                if (_instance == null)
-                {
-                    lock (_syncObject)
-                    {
-                        if (_instance == null)
-                        {
-                            _instance = new Hardware();
-                            _instance.init();
-                        }
-                    }
-                }
-                return _instance;
+                if (lazy.IsValueCreated)
+                    return lazy.Value;
+
+                lazy.Value.init();
+                return lazy.Value;
             }
         }
 

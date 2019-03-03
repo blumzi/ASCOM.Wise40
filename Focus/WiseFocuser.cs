@@ -118,32 +118,25 @@ namespace ASCOM.Wise40
 
         public static string driverID = Const.wiseFocusDriverID;
 
-        private static string driverDescription = string.Format("ASCOM Wise40.Focuser v{0}", version.ToString());
+        private static string driverDescription = string.Format("{0} v{1}", driverID, version.ToString());
 
         public WiseFocuser() { }
         static WiseFocuser() { }
-        private static volatile WiseFocuser _instance; // Singleton
-        private static object syncObject = new object();
 
         private static DateTime _lastRead = DateTime.MinValue;
         private static bool _debugging;
+
+        private static readonly Lazy<WiseFocuser> lazy = new Lazy<WiseFocuser>(() => new WiseFocuser()); // Singleton
 
         public static WiseFocuser Instance
         {
             get
             {
-                if (_instance == null)
-                {
-                    lock (syncObject)
-                    {
-                        if (_instance == null)
-                        {
-                            _instance = new WiseFocuser();
-                            _instance.init();
-                        }
-                    }
-                }
-                return _instance;
+                if (lazy.IsValueCreated)
+                    return lazy.Value;
+
+                lazy.Value.init();
+                return lazy.Value;
             }
         }
 
@@ -161,8 +154,8 @@ namespace ASCOM.Wise40
             pinDown = new WisePin("FocusDown", hardware.miscboard, DigitalPortType.FirstPortCH, 0, DigitalPortDirection.DigitalOut, direction: Const.Direction.Decreasing, controlled: true);
             pinUp = new WisePin("FocusUp", hardware.miscboard, DigitalPortType.FirstPortCH, 1, DigitalPortDirection.DigitalOut, direction: Const.Direction.Increasing, controlled: true);
 
-            connectables.AddRange(new List<IConnectable> { _instance.pinUp, _instance.pinDown, _instance.encoder });
-            disposables.AddRange(new List<IDisposable> { _instance.pinUp, _instance.pinDown, _instance.encoder });
+            connectables.AddRange(new List<IConnectable> { pinUp, pinDown, encoder });
+            disposables.AddRange(new List<IDisposable> { pinUp, pinDown, encoder });
             
             movementMonitoringTimer = new System.Threading.Timer(new TimerCallback(onTimer));
             movementMonitoringTimer.Change(movementMonitoringMillis, movementMonitoringMillis);

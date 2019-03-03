@@ -28,36 +28,23 @@ namespace ASCOM.Wise40 //.Dome
         
         private Hardware.Hardware hw = Hardware.Hardware.Instance;
 
-        private static WiseDomeEncoder _instance; // Singleton
-        private static object syncObject = new object();
-
         private object _lock = new object();
         // Explicit static constructor to tell C# compiler
         // not to mark type as beforefieldinit
-        static WiseDomeEncoder()
-        {
-        }
-        
-        public WiseDomeEncoder()
-        {
-        }
+        static WiseDomeEncoder() { }
+        public WiseDomeEncoder() { }
+
+        private static readonly Lazy<WiseDomeEncoder> lazy = new Lazy<WiseDomeEncoder>(() => new WiseDomeEncoder()); // Singleton
 
         public static WiseDomeEncoder Instance
         {
             get
             {
-                if (_instance == null)
-                {
-                    lock (syncObject)
-                    {
-                        if (_instance == null)
-                        {
-                            _instance = new WiseDomeEncoder();
-                            _instance.init();
-                        }
-                    }
-                }
-                return _instance;
+                if (lazy.IsValueCreated)
+                    return lazy.Value;
+
+                lazy.Value.init();
+                return lazy.Value;
             }
         }
 
@@ -98,9 +85,9 @@ namespace ASCOM.Wise40 //.Dome
 
             DateTime rightNow = DateTime.Now;
 
-            if (_instance.simulatedStuckAzimuth != Angle.invalidAz)                // A simulatedStuck is required
+            if (simulatedStuckAzimuth != Angle.invalidAz)                // A simulatedStuck is required
             {
-                if (Math.Abs(_instance.Azimuth.Degrees - simulatedStuckAzimuth.Degrees) <= 1.0)       // we're in the vicinity of the simulatedStuckAzimuth
+                if (Math.Abs(Azimuth.Degrees - simulatedStuckAzimuth.Degrees) <= 1.0)       // we're in the vicinity of the simulatedStuckAzimuth
                 {
                     if (endSimulatedStuck.Equals(DateTime.MinValue))        // endSimulatedStuck is not set
                         endSimulatedStuck = rightNow.AddSeconds(3);         // set it to (now + 3sec)
@@ -115,21 +102,21 @@ namespace ASCOM.Wise40 //.Dome
                 }
             }
 
-            switch (_instance._movingDirection)
+            switch (_movingDirection)
             {
                 case WiseDome.Direction.CCW:
-                    _instance.simulatedValue++;
+                    simulatedValue++;
                     break;
 
                 case WiseDome.Direction.CW:
-                    _instance.simulatedValue--;
+                    simulatedValue--;
                     break;
             }
 
-            if (_instance.simulatedValue < 0)
-                _instance.simulatedValue = 1023;
-            if (_instance.simulatedValue > 1023)
-                _instance.simulatedValue = 0;
+            if (simulatedValue < 0)
+                simulatedValue = 1023;
+            if (simulatedValue > 1023)
+                simulatedValue = 0;
         }
 
 
