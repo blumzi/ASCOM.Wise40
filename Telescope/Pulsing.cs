@@ -79,7 +79,7 @@ namespace ASCOM.Wise40 //.Telescope
 
         private static Dictionary<GuideDirections, WiseVirtualMotor> guideDirection2Motor;
 
-        public void Init()
+        public void init()
         {
             debugger = Common.Debugger.Instance;
             wisetele = WiseTele.Instance;
@@ -98,7 +98,7 @@ namespace ASCOM.Wise40 //.Telescope
 
         static Pulsing() { }
 
-        public static Pulsing Instance        
+        public static Pulsing Instance
         {
             get
             {
