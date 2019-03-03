@@ -159,7 +159,7 @@ namespace ASCOM.Wise40.Boltwood
         {
             get
             {
-                return boltwood.DriverVersion;
+                return WiseBoltwood.DriverVersion;
             }
         }
 

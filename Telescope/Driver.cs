@@ -87,7 +87,7 @@ namespace ASCOM.Wise40 //.Telescope
 
         private Common.Debugger debugger = Common.Debugger.Instance;
 
-        private WiseTele wisetele = WiseTele.Instance;
+        private static WiseTele wisetele = WiseTele.Instance;
         private static WiseSite wisesite = WiseSite.Instance;
 
         /// <summary>
@@ -936,10 +936,23 @@ namespace ASCOM.Wise40 //.Telescope
         /// </summary>
         internal void ReadProfile()
         {
+            WiseSite.OpMode opMode = WiseSite.OperationalMode;
+
             using (Profile driverProfile = new Profile())
             {
                 driverProfile.DeviceType = "Telescope";
-                WiseTele._enslaveDome = Convert.ToBoolean(driverProfile.GetValue(Const.wiseTelescopeDriverID, Const.ProfileName.Telescope_EnslaveDome, string.Empty, "false"));
+                switch (opMode)
+                {
+                    case WiseSite.OpMode.LCO:
+                        WiseTele._enslaveDome = true;
+                        break;
+                    case WiseSite.OpMode.WISE:
+                        WiseTele._enslaveDome = Convert.ToBoolean(driverProfile.GetValue(Const.wiseTelescopeDriverID, Const.ProfileName.Telescope_EnslaveDome, string.Empty, "false"));
+                        break;
+                    case WiseSite.OpMode.ACP:
+                        WiseTele._enslaveDome = false;
+                        break;
+                }
                 WiseSite.astrometricAccuracy = 
                     driverProfile.GetValue(Const.wiseTelescopeDriverID, Const.ProfileName.Telescope_AstrometricAccuracy, string.Empty, "Full") == "Full" ?
                         Accuracy.Full :

@@ -172,7 +172,7 @@ namespace ASCOM.Wise40.VantagePro
         {
             get
             {
-                return vantagePro.DriverVersion;
+                return WiseVantagePro.DriverVersion;
             }
         }
 

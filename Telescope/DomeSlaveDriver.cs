@@ -295,7 +295,7 @@ namespace ASCOM.Wise40
                 0, 0,
                 wisesite.onSurface,
                 ra.Hours, dec.Degrees,
-                wisesite.refractionOption,
+                WiseSite.refractionOption,
                 ref zd, ref targetAz, ref rar, ref decr);
 
             targetHA = (wisesite.LocalSiderealTime - ra).Radians;

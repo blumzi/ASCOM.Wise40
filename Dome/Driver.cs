@@ -86,7 +86,7 @@ namespace ASCOM.Wise40 //.Dome
         /// </summary>
         private AstroUtils astroUtilities;
 
-        private  WiseDome wisedome = WiseDome.Instance;
+        private static WiseDome wisedome = WiseDome.Instance;
 
         public AutoResetEvent arrived = new AutoResetEvent(false);
 
