@@ -284,7 +284,7 @@
             this.buttonProjector.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonProjector.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonProjector.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonProjector.Location = new System.Drawing.Point(440, 175);
+            this.buttonProjector.Location = new System.Drawing.Point(456, 156);
             this.buttonProjector.Name = "buttonProjector";
             this.buttonProjector.Size = new System.Drawing.Size(100, 40);
             this.buttonProjector.TabIndex = 67;
@@ -325,7 +325,7 @@
             this.labelNextCheckLabel.Name = "labelNextCheckLabel";
             this.labelNextCheckLabel.Size = new System.Drawing.Size(96, 24);
             this.labelNextCheckLabel.TabIndex = 59;
-            this.labelNextCheckLabel.Text = "Next Check in:";
+            this.labelNextCheckLabel.Text = "Next Check:";
             this.labelNextCheckLabel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // labelNextCheck
@@ -335,7 +335,7 @@
             this.labelNextCheck.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.labelNextCheck.Location = new System.Drawing.Point(312, 104);
             this.labelNextCheck.Name = "labelNextCheck";
-            this.labelNextCheck.Size = new System.Drawing.Size(80, 24);
+            this.labelNextCheck.Size = new System.Drawing.Size(228, 24);
             this.labelNextCheck.TabIndex = 61;
             this.labelNextCheck.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -348,7 +348,7 @@
             this.groupBox1.Controls.Add(this.labelActivity);
             this.groupBox1.Controls.Add(this.label3);
             this.groupBox1.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBox1.Location = new System.Drawing.Point(24, 128);
+            this.groupBox1.Location = new System.Drawing.Point(40, 128);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(240, 96);
             this.groupBox1.TabIndex = 62;
@@ -385,7 +385,7 @@
             this.groupBox2.Controls.Add(this.labelHumanInterventionStatus);
             this.groupBox2.Controls.Add(this.buttonManualIntervention);
             this.groupBox2.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBox2.Location = new System.Drawing.Point(288, 128);
+            this.groupBox2.Location = new System.Drawing.Point(304, 128);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Size = new System.Drawing.Size(128, 96);
             this.groupBox2.TabIndex = 65;
