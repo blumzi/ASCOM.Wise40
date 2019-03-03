@@ -75,6 +75,9 @@ namespace ASCOM.Wise40SafeToOperate
 
         public override Reading getReading()
         {
+            if (DoorLockPin == null || BypassPin == null)
+                return null;
+
             Reading r = new Reading
             {
                 stale = false,
@@ -117,6 +120,9 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
+                if (DoorLockPin == null)
+                    return true;
+
                 return DoorLockPin.isOff;
             }
         }
@@ -125,6 +131,9 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
+                if (BypassPin == null)
+                    return true;
+
                 return BypassPin.isOff;
             }
         }

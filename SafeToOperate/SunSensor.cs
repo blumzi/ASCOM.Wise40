@@ -42,11 +42,14 @@ namespace ASCOM.Wise40SafeToOperate
 
         public override Reading getReading()
         {
+            if (wisesafetooperate == null)
+                return null;
+
             Reading r = new Reading
             {
                 stale = false,
                 usable = true,
-                safe = wisesafetooperate.SunElevation <= _max
+                safe = wisesafetooperate.SunElevation <= _max,
             };
 
             _status = string.Format("Sun elevation is {0:f1}deg (max: {1:f1}deg)", wisesafetooperate.SunElevation, _max);

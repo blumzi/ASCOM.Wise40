@@ -112,7 +112,7 @@ namespace ASCOM.Wise40SafeToOperate
                 Enabled = true;
             _state = SensorState.None;
 
-            Restart(0);
+            Restart(5000);
             activityMonitor.Event(new Event.SafetyEvent(
                 sensor: WiseName,
                 details: "Created",
@@ -214,7 +214,7 @@ namespace ASCOM.Wise40SafeToOperate
             return false;
         }
 
-        public void Restart(int due)
+        public void Restart(int dueMillis)
         {
             _state = new SensorState();
             _nbad = 0;
@@ -233,7 +233,7 @@ namespace ASCOM.Wise40SafeToOperate
                     if (_repeats > 1)
                     {
                         _readings = new FixedSizedQueue<Reading>(_repeats);
-                        _timer.Change(due, _intervalMillis);
+                        _timer.Change(dueMillis, _intervalMillis);
                     }
                     else
                         _timer.Change(Timeout.Infinite, Timeout.Infinite);
@@ -255,6 +255,8 @@ namespace ASCOM.Wise40SafeToOperate
 
             DateTime now = DateTime.Now;
             Reading currentReading = getReading();
+            if (currentReading == null)
+                return;
 
             if (_readings == null)
                 _readings = new FixedSizedQueue<Reading>(_nreadings);

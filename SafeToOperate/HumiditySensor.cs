@@ -42,6 +42,10 @@ namespace ASCOM.Wise40SafeToOperate
 
         public override Reading getReading()
         {
+            if (WiseSite.och == null)
+                return null;
+
+
             Reading r = new Reading
             {
                 stale = IsStale("Humidity")

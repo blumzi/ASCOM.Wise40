@@ -27,7 +27,7 @@ namespace ASCOM.Wise40SafeToOperate
             Reading r = new Reading
             {
                 stale = false,
-                safe = !Wise40.HumanIntervention.IsSet(),
+                safe = !HumanIntervention.IsSet(),
                 usable = true,
             };
 

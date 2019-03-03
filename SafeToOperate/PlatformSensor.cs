@@ -59,6 +59,9 @@ namespace ASCOM.Wise40SafeToOperate
 
         public override Reading getReading()
         {
+            if (domePlatformIsDownPin == null)
+                return null;
+
             Reading r = new Reading
             {
                 stale = false,

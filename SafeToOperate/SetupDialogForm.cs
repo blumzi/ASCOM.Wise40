@@ -117,7 +117,7 @@ namespace ASCOM.Wise40SafeToOperate
             wisesafetooperate.WriteProfile();
 
             foreach (Sensor s in WiseSafeToOperate._cumulativeSensors)
-                s.Restart(0);
+                s.Restart(5000);
 
             Close();
         }
