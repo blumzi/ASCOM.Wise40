@@ -19,7 +19,6 @@ namespace ASCOM.Wise40
         private static ActivityMonitor activityMonitor = ActivityMonitor.Instance;
 
         public Slewers() { }
-
         static Slewers() { }
 
         public static Slewers Instance

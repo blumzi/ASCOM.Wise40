@@ -14,13 +14,11 @@ namespace ASCOM.Wise40
     public partial class TelescopeSetupDialogForm : Form
     {
         private static WiseSite wisesite = WiseSite.Instance;
-        //private static WiseTele wisetele = WiseTele.Instance;
         private static Debugger debugger = Debugger.Instance;
 
         public TelescopeSetupDialogForm()
         {
             InitializeComponent();
-            //wisetele.init();
 
             WiseTele.ReadProfile();
             accuracyBox.SelectedItem = (WiseSite.astrometricAccuracy == Accuracy.Full) ? 0 : 1;
