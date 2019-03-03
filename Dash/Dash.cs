@@ -413,8 +413,13 @@ namespace Dash
                     {
                         TimeSpan ts = TimeSpan.FromSeconds(telescopeDigest.SecondsTillIdle);
 
-                        labelCountdown.Text = string.Format("{0:D2}:{1:D2}", ts.Minutes, ts.Seconds);
-                        toolTip.SetToolTip(labelCountdown, "Inactivity countdown");
+                        string s = "Idle in ";
+                        if (ts.Minutes > 0)
+                            s += string.Format("{0:D2}m", ts.Minutes);
+                        s += string.Format("{0:D2}s", ts.Seconds);
+
+                        labelCountdown.Text = s;
+                        toolTip.SetToolTip(labelCountdown, "Time to observatory idle.");
                     }
                     else
                     {
