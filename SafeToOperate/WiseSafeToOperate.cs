@@ -170,6 +170,7 @@ namespace ASCOM.Wise40SafeToOperate
             activityMonitor.Event(new Event.SafetyEvent()
             {
                 _safetyState = _safetyState,
+                _details = "WiseSafeToOperate.init()",
             });
             initialized = true;
         }
@@ -783,6 +784,12 @@ namespace ASCOM.Wise40SafeToOperate
                     Humidity = humiditySensor.LatestReading.usable ? humiditySensor.LatestReading.value : double.NaN,
                     Pressure = pressureSensor.LatestReading.usable ? pressureSensor.LatestReading.value : double.NaN,
                     Temperature = temperatureSensor.LatestReading.usable ? temperatureSensor.LatestReading.value : double.NaN,
+                    CloudCover = cloudsSensor.LatestReading.usable ? cloudsSensor.LatestReading.value : double.NaN,
+                    RainRate = rainSensor.LatestReading.usable ? rainSensor.LatestReading.value : double.NaN,
+                    DewPoint = WiseSite.och.DewPoint,
+                    WindSpeed = windSensor.LatestReading.usable ? windSensor.LatestReading.value : double.NaN,
+                    WindDirection = WiseSite.och.WindDirection,
+                    SkyTemperature = WiseSite.och.SkyTemperature,
                 });
             }
         }
@@ -870,5 +877,11 @@ namespace ASCOM.Wise40SafeToOperate
         public double Temperature;
         public double Pressure;
         public double Humidity;
+        public double RainRate;
+        public double WindSpeed;
+        public double WindDirection;
+        public double CloudCover;
+        public double DewPoint;
+        public double SkyTemperature;
     }
 }

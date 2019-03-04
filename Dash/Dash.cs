@@ -29,7 +29,6 @@ namespace Dash
         enum GoToMode { Ra, Ha, DeltaRa, DeltaHa };
         private GoToMode goToMode = GoToMode.Ra;
 
-        DomeSlaveDriver domeSlaveDriver = DomeSlaveDriver.Instance;
         DebuggingForm debuggingForm = new DebuggingForm();
         Debugger debugger = Debugger.Instance;
         FilterWheelForm filterWheelForm;
@@ -53,6 +52,7 @@ namespace Dash
         TelescopeDigest telescopeDigest = null;
         FocuserDigest focuserDigest = null;
         FilterWheelDigest filterWheelDigest = null;
+        WeatherDigest weatherDigest = null;
         string forecast;
 
         private List<ToolStripMenuItem> debugMenuItems;
@@ -252,6 +252,7 @@ namespace Dash
             bool refreshFocus = focusPacer.ShouldRefresh(now);
             bool refreshFilterWheel = filterWheelPacer.ShouldRefresh(now);
             bool refreshForecast = forecastPacer.ShouldRefresh(now);
+            bool refreshWeather = weatherPacer.ShouldRefresh(now);
             string tip = null;
 
             if (refreshTelescope)
@@ -266,14 +267,10 @@ namespace Dash
             }
 
             if (refreshDome)
-            {
                 domeDigest = JsonConvert.DeserializeObject<DomeDigest>(wiseDome.Action("status", ""));
-            }
 
             if (refreshSafeToOperate)
-            {
                 safetooperateDigest = JsonConvert.DeserializeObject<SafeToOperateDigest>(wiseSafeToOperate.Action("status", ""));
-            }
 
             if (refreshFocus)
                 focuserDigest = JsonConvert.DeserializeObject<FocuserDigest>(wiseFocuser.Action("status", ""));
@@ -282,9 +279,10 @@ namespace Dash
                 forecast = wiseVantagePro.Action("forecast", "");
 
             if (refreshFilterWheel)
-            {
                 filterWheelDigest = JsonConvert.DeserializeObject<FilterWheelDigest>(wiseFilterWheel.Action("status", ""));
-            }
+
+            if (refreshWeather)
+                weatherDigest = JsonConvert.DeserializeObject<WeatherDigest>(wiseSafeToOperate.Action("weather-digest", ""));
 
             #region RefreshTelescope
 
@@ -615,8 +613,8 @@ namespace Dash
 
             #endregion
 
-            #region RefreshSafeToOperate
-                if (WiseSite.och == null || !WiseSite.och.Connected)
+            #region RefreshWeather
+                if (weatherDigest == null)
                 {
                     string nc = "???";
 
@@ -643,32 +641,29 @@ namespace Dash
                 {
                     try
                     {
-                        #region ObservingConditions from OCH
+                        #region Observing Conditions from SafeToOperate
 
-                        ASCOM.DriverAccess.ObservingConditions oc = WiseSite.och;
+                        labelDewPointValue.Text = weatherDigest.DewPoint.ToString() + "°C";
+                        labelSkyTempValue.Text = weatherDigest.SkyTemperature.ToString() + "°C";
+                        labelTempValue.Text = weatherDigest.Temperature.ToString() + "°C";
+                        labelPressureValue.Text = weatherDigest.Pressure.ToString() + "mB";
+                        labelWindDirValue.Text = weatherDigest.WindDirection.ToString() + "°";
 
-                        labelDewPointValue.Text = oc.DewPoint.ToString() + "°C";
-                        labelSkyTempValue.Text = oc.SkyTemperature.ToString() + "°C";
-                        labelTempValue.Text = oc.Temperature.ToString() + "°C";
-                        labelPressureValue.Text = oc.Pressure.ToString() + "mB";
-                        labelWindDirValue.Text = oc.WindDirection.ToString() + "°";
-
-                        labelHumidityValue.Text = oc.Humidity.ToString() + "%";
+                        labelHumidityValue.Text = weatherDigest.Humidity.ToString() + "%";
                         labelHumidityValue.ForeColor = Color.FromArgb(safetooperateDigest.Colors.HumidityColorArgb);
 
-                        double d = oc.CloudCover;
-                        labelCloudCoverValue.Text = Math.Floor(oc.CloudCover).ToString();
+                        labelCloudCoverValue.Text = Math.Floor(weatherDigest.CloudCover).ToString();
                         labelCloudCoverValue.ForeColor = Color.FromArgb(safetooperateDigest.Colors.CloudCoverColorArgb);
 
-                        double windSpeedMps = oc.WindSpeed;
-                        labelWindSpeedValue.Text = string.Format("{0:G3} km/h", KMH(windSpeedMps));
+                        double windSpeedMps = weatherDigest.WindSpeed;                        labelWindSpeedValue.Text = string.Format("{0:G3} km/h", KMH(weatherDigest.WindSpeed));
                         labelWindSpeedValue.ForeColor = Color.FromArgb(safetooperateDigest.Colors.WindSpeedColorArgb);
 
-                        labelRainRateValue.Text = (oc.RainRate > 0.0) ? "Wet" : "Dry";
+                        labelRainRateValue.Text = (weatherDigest.RainRate > 0.0) ? "Wet" : "Dry";
                         labelRainRateValue.ForeColor = Color.FromArgb(safetooperateDigest.Colors.RainColorArgb);
 
                         labelSunElevationValue.Text = safetooperateDigest.SunElevation.ToString("f1") + "°";
                         labelSunElevationValue.ForeColor = Color.FromArgb(safetooperateDigest.Colors.SunElevationColorArgb);
+
                         #endregion
                     }
                     catch (ASCOM.PropertyNotImplementedException ex)
@@ -992,9 +987,9 @@ namespace Dash
             try
             {
                 if (open)
-                    domeSlaveDriver.OpenShutter(_bypassSafety);
+                    wiseDome.OpenShutter();
                 else
-                    domeSlaveDriver.CloseShutter();
+                    wiseDome.CloseShutter();
             }
             catch (Exception ex)
             {
@@ -1052,7 +1047,7 @@ namespace Dash
         {
             try
             {
-                domeSlaveDriver.StopShutter("User action");
+                wiseDome.Action("shutter", "halt");
                 shutterStatus.Show("Stopped shutter", 1000, Statuser.Severity.Good);
             }
             catch (Exception ex)
@@ -1065,7 +1060,7 @@ namespace Dash
         {
             try
             {
-                domeSlaveDriver.StopShutter("User action");
+                wiseDome.Action("shutter", "halt");
                 shutterStatus.Show("Stopped shutter", 1000, Statuser.Severity.Good);
             }
             catch (Exception ex)
