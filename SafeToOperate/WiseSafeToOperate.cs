@@ -76,10 +76,7 @@ namespace ASCOM.Wise40SafeToOperate
         private Astrometry.NOVAS.NOVAS31 novas31;
         private static AstroUtils astroutils;
         private static ASCOM.Utilities.Util ascomutils;
-        public double siteLatitude, siteLongitude, siteElevation;
-        public Astrometry.OnSurface onSurface;
         public Astrometry.Accuracy astrometricAccuracy;
-        public Astrometry.RefractionOption refractionOption = Astrometry.RefractionOption.NoRefraction;
         Object3 Sun = new Object3();
 
         static WiseSafeToOperate() { }
@@ -166,10 +163,6 @@ namespace ASCOM.Wise40SafeToOperate
             astroutils = new AstroUtils();
             ascomutils = new Util();
 
-            siteLatitude = ascomutils.DMSToDegrees("30:35:50.43");
-            siteLongitude = ascomutils.DMSToDegrees("34:45:43.86");
-            siteElevation = 882.9;
-            novas31.MakeOnSurface(siteLatitude, siteLongitude, siteElevation, 0.0, 0.0, ref onSurface);
             novas31.MakeObject(0, Convert.ToInt16(Body.Sun), "Sun", new CatEntry3(), ref Sun);
 
             ReadProfile(); // Read device configuration from the ASCOM Profile store
@@ -682,7 +675,7 @@ namespace ASCOM.Wise40SafeToOperate
                     astroutils.JulianDateUT1(0),
                     Sun,
                     astroutils.DeltaT(),
-                    onSurface,
+                    WiseSite.Instance.onSurface,
                     astrometricAccuracy,
                     ref ra, ref dec, ref dis);
 
@@ -696,9 +689,9 @@ namespace ASCOM.Wise40SafeToOperate
                 novas31.Equ2Hor(jdt, 0,
                     astrometricAccuracy,
                     0, 0,
-                    onSurface,
+                    WiseSite.Instance.onSurface,
                     ra, dec,
-                    refractionOption,
+                    WiseSite.refractionOption,
                     ref zd, ref az, ref rar, ref decr);
 
                 if (res != 0)
