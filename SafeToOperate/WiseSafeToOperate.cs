@@ -55,8 +55,7 @@ namespace ASCOM.Wise40SafeToOperate
         private static bool _shuttingDown = false;
         public static int ageMaxSeconds;
 
-        public static Activity.SafetyActivity.State _whyNotSafe = Activity.SafetyActivity.State.Warning;
-        public static bool _wasSafe = true;
+        public static Event.SafetyEvent.SafetyState _safetyState = Event.SafetyEvent.SafetyState.Unknown;
         public static ActivityMonitor activityMonitor = ActivityMonitor.Instance;
         public static bool _unsafeBecauseNotReady = false;
 
@@ -174,6 +173,11 @@ namespace ASCOM.Wise40SafeToOperate
             novas31.MakeObject(0, Convert.ToInt16(Body.Sun), "Sun", new CatEntry3(), ref Sun);
 
             ReadProfile(); // Read device configuration from the ASCOM Profile store
+            _safetyState = Event.SafetyEvent.SafetyState.Unknown;
+            activityMonitor.Event(new Event.SafetyEvent()
+            {
+                _safetyState = _safetyState,
+            });
             initialized = true;
         }
 
@@ -742,20 +746,16 @@ namespace ASCOM.Wise40SafeToOperate
                 }
 
                 Out:
-                //if (ret != _wasSafe)
-                //{
-                //    if (ret == false)
-                //    {   // SafeToOperate becomes not-safe, a NotSafeActivity starts
-                //        activityMonitor.NewActivity(new Activity.NotSafeActivity(_whyNotSafe));
-                //    }
-                //    else
-                //    {
-                //        // SafeToOperate becomes safe, the NotSafeActivity ends
-                //        activityMonitor.EndActivity(ActivityMonitor.ActivityType.NotSafe, new Activity.EndParams());
-                //        _whyNotSafe = Activity.NotSafeActivity.State.Safe;
-                //    }
-                //    _wasSafe = ret;
-                //}
+                Event.SafetyEvent.SafetyState currentSafetyState = (ret == true) ?
+                    Event.SafetyEvent.SafetyState.Safe :
+                    Event.SafetyEvent.SafetyState.Unsafe;
+
+                if (currentSafetyState != _safetyState)
+                {
+                    _safetyState = currentSafetyState;
+                    ActivityMonitor.Instance.Event(new Event.SafetyEvent(_safetyState));
+                }
+
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "IsSafe: {0}", ret);
                 #endregion

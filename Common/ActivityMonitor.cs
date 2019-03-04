@@ -93,6 +93,9 @@ namespace ASCOM.Wise40
 
         public void init()
         {
+            if (!WiseSite.CurrentProcessIsASCOMServer)
+                return;
+
             if (initialized)
                 return;
 
@@ -113,6 +116,8 @@ namespace ASCOM.Wise40
             db = (new MongoClient()).GetDatabase("activities");
 
             NewActivity(new Activity.GoingIdleActivity("ActivityMonitor init"));
+            Event(new Event.SafetyEvent(Wise40.Event.SafetyEvent.SafetyState.Unknown));
+
             initialized = true;
         }
 
@@ -852,6 +857,7 @@ namespace ASCOM.Wise40
             {
                 _reason = reason;
                 _startDetails = string.Format("reason: {0}", _reason);
+                effectOnGoingIdle_AtStart = EffectOnGoingIdle.Remove;
                 effectOnGoingIdle_AtEnd = EffectOnGoingIdle.NoEffect;
                 EmitStart();
             }
@@ -926,32 +932,6 @@ namespace ASCOM.Wise40
                 return rate.ToString();
             }
         }
-
-        public class SafetyActivity : TimeConsumingActivity
-        {
-            public new enum State {
-                Warning, Good, Error
-            }
-            public new State _state = State.Warning;
-
-            public SafetyActivity(State state) : base(ActivityMonitor.ActivityType.Safety)
-            {
-                effectOnGoingIdle_AtStart = EffectOnGoingIdle.NoEffect;
-                effectOnGoingIdle_AtEnd = EffectOnGoingIdle.NoEffect;
-
-                _state = state;
-                _startDetails = string.Format("state: {0}", _state.ToString());
-
-                EmitStart();
-            }
-
-            public override void End(Activity.EndParams p)
-            {
-                _endDetails = string.Format("state: {0}", State.Good);
-
-                EndActivity(p);
-            }
-        }
     }
 
     public class Event
@@ -990,10 +970,12 @@ namespace ASCOM.Wise40
 
         public class SafetyEvent : Event
         {
+            public enum SafetyState { Unknown, Safe, Unsafe }
             public enum SensorState {  NotSet, Init, NotReady, Ready, Safe, NotSafe };
             public string _sensor;
             public SensorState _before = SensorState.NotSet;
             public SensorState _after = SensorState.NotSet;
+            public SafetyState _safetyState;
 
             public SafetyEvent() : base (EventType.NotSet) { }
             static SafetyEvent() { }
@@ -1018,6 +1000,12 @@ namespace ASCOM.Wise40
 
                 _details = string.Format("sensor: {0}Sensor, details: {1}, before: {2}, after: {3}",
                     sensor, details, before, after);
+            }
+
+            public SafetyEvent(SafetyState newState): base(EventType.Safety)
+            {
+                _safetyState = newState;
+                _details = string.Format("safetyState: {0}", _safetyState.ToString());
             }
         }
 

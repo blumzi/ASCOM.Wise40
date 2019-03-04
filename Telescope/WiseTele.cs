@@ -1584,6 +1584,7 @@ namespace ASCOM.Wise40
 
             if (domeSlaveDriver.ShutterState != ShutterState.shutterClosed)
             {
+                // Wait for shutter to close before continuing
                 domeSlaveDriver.CloseShutter();
                 while (domeSlaveDriver.ShutterState != ShutterState.shutterClosed)
                     Thread.Sleep(1000);
@@ -1600,14 +1601,6 @@ namespace ASCOM.Wise40
                 {
                     endState = Activity.State.Succeeded,
                     endReason = "Shutdown done"
-                });
-
-            activityMonitor.EndActivity(ActivityMonitor.ActivityType.GoingIdle,
-                new Activity.GoingIdleActivity.EndParams()
-                {
-                    endReason = "Shutdown completed",
-                    endState = Activity.State.Aborted,
-                    reason = "Shutdown completed",
                 });
         }
 

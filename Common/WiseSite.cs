@@ -256,5 +256,11 @@ namespace ASCOM.Wise40
             return secz1 + 1 - 0.0018167 * secz1 - 0.002875 * Math.Pow(secz1, 2) - 0.0008083 * Math.Pow(secz1, 3);
         }
 
+        public static bool CurrentProcessIsASCOMServer
+        {
+            get {
+                return System.Diagnostics.Process.GetCurrentProcess().ProcessName == Const.wiseASCOMServerAppName;
+            }
+        }
     }
 }
