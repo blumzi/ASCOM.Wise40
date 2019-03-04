@@ -26,7 +26,7 @@ namespace ASCOM.Wise40
         public Astrometry.OnSurface onSurface;
         public Observer observer;
         public static Astrometry.Accuracy astrometricAccuracy;
-        public static Astrometry.RefractionOption refractionOption;
+        public static Astrometry.RefractionOption refractionOption = RefractionOption.LocationRefraction;
         public double siteLatitude, siteLongitude, siteElevation;
         public static ObservingConditions och;
         private static DateTime lastOCFetch;
@@ -68,6 +68,7 @@ namespace ASCOM.Wise40
             siteLongitude = ascomutils.DMSToDegrees("34:45:43.86");
             siteElevation = 882.9;
             novas31.MakeOnSurface(siteLatitude, siteLongitude, siteElevation, 0.0, 0.0, ref onSurface);
+            refractionOption = Astrometry.RefractionOption.LocationRefraction;
 
             _initialized = true;
         }
@@ -81,7 +82,6 @@ namespace ASCOM.Wise40
             {
                 och = new ObservingConditions("ASCOM.OCH.ObservingConditions");
                 och.Connected = true;
-                refractionOption = Astrometry.RefractionOption.LocationRefraction;
                 lastOCFetch = DateTime.Now;
             }
             catch (Exception ex)
@@ -90,7 +90,6 @@ namespace ASCOM.Wise40
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Could not connect to OCH: {0}", ex.Message);
                 #endregion
                 och = null;
-                refractionOption = Astrometry.RefractionOption.NoRefraction;
             }
 
             och_initialized = true;
