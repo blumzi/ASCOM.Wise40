@@ -36,7 +36,6 @@ namespace Dash
         Statuser dashStatus, telescopeStatus, domeStatus, shutterStatus, focuserStatus, safetooperateStatus, filterWheelStatus;
 
         private double handpadRate = Const.rateSlew;
-        private bool _bypassSafety = false;
         private bool _saveFocusUpperLimit = false, _saveFocusLowerLimit = false;
 
         RefreshPacer domePacer = new RefreshPacer(TimeSpan.FromSeconds(1));
