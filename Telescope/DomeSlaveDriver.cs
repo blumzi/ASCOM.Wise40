@@ -20,7 +20,6 @@ namespace ASCOM.Wise40
         public AutoResetEvent _arrivedAtAz;
         private Debugger debugger;
 
-        public static readonly DomeSlaveDriver instance = new DomeSlaveDriver(); // Singleton
         private static WiseSite wisesite = WiseSite.Instance;
 
         private bool _initialized = false;
@@ -28,19 +27,20 @@ namespace ASCOM.Wise40
 
         // Explicit static constructor to tell C# compiler
         // not to mark type as beforefieldinit
-        static DomeSlaveDriver()
-        {
-        }
+        static DomeSlaveDriver() { }
+        public DomeSlaveDriver() { }
 
-        public DomeSlaveDriver()
-        {
-        }
+        private static readonly Lazy<DomeSlaveDriver> lazy = new Lazy<DomeSlaveDriver>(() => new DomeSlaveDriver()); // Singleton
 
         public static DomeSlaveDriver Instance
         {
             get
             {
-                return instance;
+                if (lazy.IsValueCreated)
+                    return lazy.Value;
+
+                lazy.Value.init();
+                return lazy.Value;
             }
         }
 
@@ -50,8 +50,8 @@ namespace ASCOM.Wise40
                 return;
 
             debugger = Debugger.Instance;
-            instance.novas31 = new Astrometry.NOVAS.NOVAS31();
-            instance.astroutils = new AstroUtils();
+            novas31 = new Astrometry.NOVAS.NOVAS31();
+            astroutils = new AstroUtils();
             _arrivedAtAz = new AutoResetEvent(false);
             wisedome.SetArrivedAtAzEvent(_arrivedAtAz);
             _minimalMovement = new Angle(WiseTele._minimalDomeTrackingMovement, Angle.Type.Az);

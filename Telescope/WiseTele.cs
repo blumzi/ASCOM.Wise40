@@ -259,7 +259,7 @@ namespace ASCOM.Wise40
 
         public static bool _enslaveDome = false;
         public static double _minimalDomeTrackingMovement;
-        private DomeSlaveDriver domeSlaveDriver = DomeSlaveDriver.Instance;
+        private DomeSlaveDriver domeSlaveDriver;
 
         public static bool _calculateRefraction = false;
 
@@ -482,6 +482,7 @@ namespace ASCOM.Wise40
             novas31 = new NOVAS31();
             ascomutils = new Util();
             astroutils = new Astrometry.AstroUtils.AstroUtils();
+            domeSlaveDriver = DomeSlaveDriver.Instance;
 
             parkingDeclination = Angle.FromDegrees(66.0, Angle.Type.Dec);
 
