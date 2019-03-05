@@ -866,16 +866,20 @@ namespace ASCOM.Wise40
                     TargetAzimuth = _targetAz == null ? Const.noTarget : _targetAz.Degrees,
                     Calibrated = Calibrated,
                     Status = Status,
-                    ShutterStatus = ShutterStatusString,
-                    ShutterState = ShutterState,
                     Vent = Vent,
                     Projector = Projector,
                     AtPark = AtPark,
                     Slewing = Slewing,
                     DirectionMotorsAreActive = DirectionMotorsAreActive,
-                    PercentOpen = wisedomeshutter.PercentOpen,
-                    RangeCm = wisedomeshutter.RangeCm,
-                    TimeSinceLastShutterReading = wisedomeshutter.webClient.TimeSinceLastReading,
+                    Shutter = new ShutterDigest()
+                    {
+                        Status = ShutterStatusString,
+                        State = ShutterState,
+                        RangeCm = wisedomeshutter.RangeCm,
+                        PercentOpen = wisedomeshutter.PercentOpen,
+                        TimeSinceLastReading = wisedomeshutter.webClient.TimeSinceLastReading,
+                        Connection =  wisedomeshutter.webClient.Connection,
+                    }
                 });
             }
         }
@@ -1114,11 +1118,16 @@ namespace ASCOM.Wise40
         {
             get
             {
-                int percent = wisedomeshutter.PercentOpen;
                 string ret = ShutterState.ToString().ToLower().Remove(0, "shutter".Length);
 
-                if (percent != -1)
-                    ret += string.Format(" ({0}% open)", percent);
+                if (wisedomeshutter.webClient.Connection.Working)
+                {
+                    int percent = wisedomeshutter.PercentOpen;
+
+                    if (percent != -1)
+                        ret += string.Format(" ({0}% open)", percent);
+                } else
+                    ret += " (error: No WiFi connection!)";
 
                 return ret;
             }
@@ -1451,21 +1460,49 @@ namespace ASCOM.Wise40
         #endregion
     }
 
+    public class ConnectionDigest
+    {
+        public enum ConnectionState { Working, Dead };
+
+        private ConnectionState _state;
+        public string Reason;
+
+        public bool Working
+        {
+            get
+            {
+                return _state == ConnectionState.Working;
+            }
+
+            set
+            {
+                _state = value == true ? ConnectionState.Working : ConnectionState.Dead;
+            }
+        }
+    }
+
+    public class ShutterDigest
+    {
+
+        public ShutterState State;
+        public string Status;
+        public int PercentOpen;
+        public int RangeCm;
+        public TimeSpan TimeSinceLastReading;
+        public ConnectionDigest Connection;
+    }
+
     public class DomeDigest
     {
         public double Azimuth;
         public double TargetAzimuth;
         public bool Calibrated;
         public string Status;
-        public string ShutterStatus;
-        public ShutterState ShutterState;
         public bool Vent;
         public bool Projector;
         public bool AtPark;
         public bool Slewing;
         public bool DirectionMotorsAreActive;
-        public int PercentOpen;
-        public int RangeCm;
-        public TimeSpan TimeSinceLastShutterReading;
+        public ShutterDigest Shutter;
     }
 }

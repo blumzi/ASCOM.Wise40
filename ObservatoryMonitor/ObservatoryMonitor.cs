@@ -595,7 +595,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                             ra = Angle.FromHours(telescopeDigest.Current.RightAscension, Angle.Type.RA);
                             dec = Angle.FromDegrees(telescopeDigest.Current.Declination, Angle.Type.Dec);
                             az = Angle.FromDegrees(domeDigest.Azimuth, Angle.Type.Az);
-                            shutterState = domeDigest.ShutterState;
+                            shutterState = domeDigest.Shutter.State;
                             activities = telescopeDigest.Activities;
 
                             done = telescopeDigest.AtPark && domeDigest.AtPark && shutterState == ShutterState.shutterClosed;

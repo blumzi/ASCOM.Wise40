@@ -49,6 +49,8 @@ namespace ASCOM.Wise40
             private static object _lock = new object();
             private static WiseDomeShutter _wisedomeshutter;
             private static ShutterState _prevState = ShutterState.shutterError;
+            private ConnectionDigest _connection = new ConnectionDigest() { Working = false, Reason = "Init" };
+            public DateTime _startOfShutterMotion = DateTime.MinValue;
 
             public enum Pacing { None, Slow, Fast };
             private Pacing _pacing = Pacing.None;
@@ -57,32 +59,49 @@ namespace ASCOM.Wise40
                 { Pacing.Slow, 15 * 1000 },
                 { Pacing.Fast,  3 * 1000 },
             };
+            private int _timeoutMillis;
 
             public WebClient(string address, WiseDomeShutter wisedomeshutter)
             {
+                _pacing = Pacing.Slow;
+                _timeoutMillis = PacingToMillis[_pacing];
+
                 _client = new HttpClient();
-                _client.Timeout = TimeSpan.FromSeconds(30);
+                _client.Timeout = TimeSpan.FromMilliseconds(_timeoutMillis);
                 _client.DefaultRequestHeaders.Accept.Add(
                     new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/html"));
                 _client.DefaultRequestHeaders.ConnectionClose = true;
                 _uri = String.Format("http://{0}/range", address);
 
                 _periodicWebReadTimer = new System.Threading.Timer(new TimerCallback(PeriodicReader));
-                SetReadingTimerInterval(Pacing.Slow);
+                SetPacing(_pacing);
                 _wisedomeshutter = wisedomeshutter;
             }
 
-            public void SetReadingTimerInterval(Pacing pacing)
+            public ConnectionDigest Connection
+            {
+                get
+                {
+                    return _connection;
+                }
+
+                set
+                {
+                    _connection = value;
+                }
+            }
+
+            public void SetPacing(Pacing pacing)
             {
                 if (_pacing != pacing)
                 {
                     _pacing = pacing;
-                    int millis = PacingToMillis[_pacing];
+                    _timeoutMillis = PacingToMillis[_pacing] - 50;
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugDome, "Changed  pacing to {0} ({1} millis)",
-                        _pacing, millis);
+                        _pacing, _timeoutMillis);
                     #endregion
-                    _periodicWebReadTimer.Change(0, millis);
+                    _periodicWebReadTimer.Change(0, _timeoutMillis);
                 }
             }
 
@@ -104,14 +123,20 @@ namespace ASCOM.Wise40
             private static void PeriodicReader(object state)
             {
                 int reading = GetWebShutterPosition().GetAwaiter().GetResult();
+                const int maxTravelTimeSeconds = 22;
 
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugDome, "PeriodicReader: cm: {0}", reading);
                 #endregion
-                if (reading < 0)
+                if (! Instance.webClient.Connection.Working)
                 {
                     _wisedomeshutter._state = ShutterState.shutterError;
                     _prevState = ShutterState.shutterError;
+                    
+                    if (DateTime.Now.Subtract(Instance.webClient._startOfShutterMotion).TotalSeconds > maxTravelTimeSeconds)
+                    {
+                        _wisedomeshutter.Stop(string.Format("{0} seconds passed from startOfMotion", maxTravelTimeSeconds));
+                    }
                     return;
                 }
 
@@ -177,13 +202,12 @@ namespace ASCOM.Wise40
                         content = content.Remove(0, prefix.Length);
                         content = content.Remove(content.IndexOf(suffix[0]));
                         ret = Convert.ToInt32(content);
-                        #region debug
-                        debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "GetShutterPosition: got {0}", ret);
-                        #endregion
+                        Instance.webClient.Connection = new ConnectionDigest() { Working = true, Reason = "" };
                     }
                 }
                 catch (Exception ex)
                 {
+                    Instance.webClient.Connection = new ConnectionDigest() { Working = false, Reason = ex.Message };
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "GetShutterPosition: Exception: {0}", ex.Message);
                     #endregion
@@ -212,7 +236,7 @@ namespace ASCOM.Wise40
                         endReason = reason,
                         percentOpen = PercentOpen,
                     });
-                webClient.SetReadingTimerInterval(WebClient.Pacing.Slow);
+                webClient.SetPacing(WebClient.Pacing.Slow);
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugShutter,
                     "Stop: was moving (openPin: {0}, closePin: {1})",
@@ -243,13 +267,16 @@ namespace ASCOM.Wise40
                 return;
             }
 
-            int rangeCm = RangeCm;
-            if (rangeCm != -1 && CloseEnough(rangeCm, _lowestValue))
+            if (webClient.Connection.Working)
             {
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "StartClosing: ignored (close enough to closed)");
-                #endregion debug
-                return;
+                int rangeCm = RangeCm;
+                if (rangeCm != -1 && CloseEnough(rangeCm, _lowestValue))
+                {
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "StartClosing: ignored (close enough to closed)");
+                    #endregion debug
+                    return;
+                }
             }
 
             if (!closePin.isOn)
@@ -263,8 +290,9 @@ namespace ASCOM.Wise40
                     start = PercentOpen,
                     target = 0,
                 }));
+                webClient._startOfShutterMotion = DateTime.Now;
                 closePin.SetOn();
-                webClient.SetReadingTimerInterval(WebClient.Pacing.Fast);
+                webClient.SetPacing(WebClient.Pacing.Fast);
             }
         }
 
@@ -278,13 +306,16 @@ namespace ASCOM.Wise40
                 return;
             }
 
-            int rangeCm = RangeCm;
-            if (rangeCm != -1 && CloseEnough(rangeCm, _highestValue))
+            if (webClient.Connection.Working)
             {
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "StartOpening: ignored (close enough to open)");
-                #endregion debug
-                return;
+                int rangeCm = RangeCm;
+                if (rangeCm != -1 && CloseEnough(rangeCm, _highestValue))
+                {
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "StartOpening: ignored (close enough to open)");
+                    #endregion debug
+                    return;
+                }
             }
 
             if (!openPin.isOn)
@@ -298,8 +329,9 @@ namespace ASCOM.Wise40
                     start = PercentOpen,
                     target = 100,
                 }));
+                webClient._startOfShutterMotion = DateTime.Now;
                 openPin.SetOn();
-                webClient.SetReadingTimerInterval(WebClient.Pacing.Fast);
+                webClient.SetPacing(WebClient.Pacing.Fast);
             }
         }
 

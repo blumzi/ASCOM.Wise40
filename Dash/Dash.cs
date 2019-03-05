@@ -576,21 +576,12 @@ namespace Dash
                     ASCOM.Controls.CadencePattern.SteadyOff;
 
                 #region Shutter
-                string msg = "";
+                string msg = "Shutter is " + domeDigest.Shutter.Status;
 
-                if (domeDigest.ShutterStatus.Contains("error"))
-                {
-                    msg = "Shutter error (WiFi ?!?)";
-                    severity = Statuser.Severity.Error;
-                }
-                else
-                {
-                    msg = "Shutter is " + domeDigest.ShutterStatus;
-                    severity = Statuser.Severity.Normal;
-                }
+                severity = msg.Contains("error:") ? Statuser.Severity.Error : Statuser.Severity.Normal;
                 shutterStatus.Show(msg, 0, severity);
 
-                switch (domeDigest.ShutterState)
+                switch (domeDigest.Shutter.State)
                 {
                     case ShutterState.shutterOpening:
                         annunciatorShutter.Text = "SHUTTER(<->)";
