@@ -188,6 +188,8 @@
             this.labelCountdown = new System.Windows.Forms.Label();
             this.labelDashStatus = new System.Windows.Forms.Label();
             this.groupBoxFilterWheel = new System.Windows.Forms.GroupBox();
+            this.labelFilterWheelSatte = new System.Windows.Forms.Label();
+            this.label8 = new System.Windows.Forms.Label();
             this.groupBoxFWSelect = new System.Windows.Forms.GroupBox();
             this.radioButtonSelectFilterWheel8 = new System.Windows.Forms.RadioButton();
             this.radioButtonSelectFilterWheel4 = new System.Windows.Forms.RadioButton();
@@ -228,8 +230,6 @@
             this.label7 = new System.Windows.Forms.Label();
             this.timerRefreshDisplay = new System.Windows.Forms.Timer(this.components);
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
-            this.label8 = new System.Windows.Forms.Label();
-            this.labelFilterWheelSatte = new System.Windows.Forms.Label();
             this.tableLayoutMain.SuspendLayout();
             this.groupBoxFocuser.SuspendLayout();
             this.groupBoxDomeGroup.SuspendLayout();
@@ -2369,12 +2369,16 @@
             // 
             // labelCountdown
             // 
-            this.labelCountdown.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelCountdown.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.labelCountdown.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelCountdown.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelCountdown.Location = new System.Drawing.Point(68, 8);
+            this.labelCountdown.Location = new System.Drawing.Point(39, 8);
             this.labelCountdown.Name = "labelCountdown";
-            this.labelCountdown.Size = new System.Drawing.Size(62, 21);
+            this.labelCountdown.Size = new System.Drawing.Size(119, 20);
             this.labelCountdown.TabIndex = 42;
+            this.labelCountdown.Text = "Idle in 19m00s";
             this.labelCountdown.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.toolTip.SetToolTip(this.labelCountdown, "Time to Observatory Shutdown (if not active).");
             // 
@@ -2408,6 +2412,30 @@
             this.groupBoxFilterWheel.TabIndex = 35;
             this.groupBoxFilterWheel.TabStop = false;
             this.groupBoxFilterWheel.Text = " FilterWheel ";
+            // 
+            // labelFilterWheelSatte
+            // 
+            this.labelFilterWheelSatte.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.labelFilterWheelSatte.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelFilterWheelSatte.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.labelFilterWheelSatte.Location = new System.Drawing.Point(85, 35);
+            this.labelFilterWheelSatte.Name = "labelFilterWheelSatte";
+            this.labelFilterWheelSatte.Size = new System.Drawing.Size(223, 20);
+            this.labelFilterWheelSatte.TabIndex = 48;
+            this.labelFilterWheelSatte.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label8
+            // 
+            this.label8.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label8.AutoSize = true;
+            this.label8.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))));
+            this.label8.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
+            this.label8.Location = new System.Drawing.Point(20, 35);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(56, 18);
+            this.label8.TabIndex = 47;
+            this.label8.Text = "State:";
+            this.label8.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // groupBoxFWSelect
             // 
@@ -2990,30 +3018,6 @@
             // toolTip
             // 
             this.toolTip.IsBalloon = true;
-            // 
-            // label8
-            // 
-            this.label8.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.label8.AutoSize = true;
-            this.label8.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))));
-            this.label8.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label8.Location = new System.Drawing.Point(20, 35);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(56, 18);
-            this.label8.TabIndex = 47;
-            this.label8.Text = "State:";
-            this.label8.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // labelFilterWheelSatte
-            // 
-            this.labelFilterWheelSatte.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.labelFilterWheelSatte.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelFilterWheelSatte.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelFilterWheelSatte.Location = new System.Drawing.Point(85, 35);
-            this.labelFilterWheelSatte.Name = "labelFilterWheelSatte";
-            this.labelFilterWheelSatte.Size = new System.Drawing.Size(223, 20);
-            this.labelFilterWheelSatte.TabIndex = 48;
-            this.labelFilterWheelSatte.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // FormDash
             // 

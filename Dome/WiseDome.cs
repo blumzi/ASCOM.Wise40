@@ -878,7 +878,7 @@ namespace ASCOM.Wise40
                         RangeCm = wisedomeshutter.RangeCm,
                         PercentOpen = wisedomeshutter.PercentOpen,
                         TimeSinceLastReading = wisedomeshutter.webClient.TimeSinceLastReading,
-                        Connection =  wisedomeshutter.webClient.Connection,
+                        WiFiIsWorking = wisedomeshutter.webClient.WiFiIsWorking,
                     }
                 });
             }
@@ -1120,14 +1120,14 @@ namespace ASCOM.Wise40
             {
                 string ret = ShutterState.ToString().ToLower().Remove(0, "shutter".Length);
 
-                if (wisedomeshutter.webClient.Connection.Working)
+                if (wisedomeshutter.webClient.WiFiIsWorking)
                 {
                     int percent = wisedomeshutter.PercentOpen;
 
                     if (percent != -1)
                         ret += string.Format(" ({0}% open)", percent);
                 } else
-                    ret += " (error: No WiFi connection!)";
+                    ret += " (error:No WiFi connection!)";
 
                 return ret;
             }
@@ -1489,7 +1489,8 @@ namespace ASCOM.Wise40
         public int PercentOpen;
         public int RangeCm;
         public TimeSpan TimeSinceLastReading;
-        public ConnectionDigest Connection;
+        public bool WiFiIsWorking;
+        //public ConnectionDigest Connection;
     }
 
     public class DomeDigest

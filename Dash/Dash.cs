@@ -578,7 +578,12 @@ namespace Dash
                 #region Shutter
                 string msg = "Shutter is " + domeDigest.Shutter.Status;
 
-                severity = msg.Contains("error:") ? Statuser.Severity.Error : Statuser.Severity.Normal;
+                severity = Statuser.Severity.Normal;
+                if (msg.Contains("error:"))
+                {
+                    severity = Statuser.Severity.Error;
+                    msg = msg.Replace("error:", "");
+                }
                 shutterStatus.Show(msg, 0, severity);
 
                 switch (domeDigest.Shutter.State)
@@ -645,7 +650,7 @@ namespace Dash
                         labelCloudCoverValue.Text = Math.Floor(weatherDigest.CloudCover).ToString();
                         labelCloudCoverValue.ForeColor = Color.FromArgb(safetooperateDigest.Colors.CloudCoverColorArgb);
 
-                        double windSpeedMps = weatherDigest.WindSpeed;                        labelWindSpeedValue.Text = string.Format("{0:G3} km/h", KMH(weatherDigest.WindSpeed));
+                        labelWindSpeedValue.Text = string.Format("{0:G3} km/h", weatherDigest.WindSpeed);
                         labelWindSpeedValue.ForeColor = Color.FromArgb(safetooperateDigest.Colors.WindSpeedColorArgb);
 
                         labelRainRateValue.Text = (weatherDigest.RainRate > 0.0) ? "Wet" : "Dry";

@@ -49,7 +49,7 @@ namespace ASCOM.Wise40
             private static object _lock = new object();
             private static WiseDomeShutter _wisedomeshutter;
             private static ShutterState _prevState = ShutterState.shutterError;
-            private ConnectionDigest _connection = new ConnectionDigest() { Working = false, Reason = "Init" };
+            private bool _wifiIsWorking;
             public DateTime _startOfShutterMotion = DateTime.MinValue;
 
             public enum Pacing { None, Slow, Fast };
@@ -78,16 +78,16 @@ namespace ASCOM.Wise40
                 _wisedomeshutter = wisedomeshutter;
             }
 
-            public ConnectionDigest Connection
+            public bool WiFiIsWorking
             {
                 get
                 {
-                    return _connection;
+                    return _wifiIsWorking;
                 }
 
                 set
                 {
-                    _connection = value;
+                    _wifiIsWorking = value;
                 }
             }
 
@@ -128,7 +128,7 @@ namespace ASCOM.Wise40
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugDome, "PeriodicReader: cm: {0}", reading);
                 #endregion
-                if (! Instance.webClient.Connection.Working)
+                if (! Instance.webClient.WiFiIsWorking)
                 {
                     _wisedomeshutter._state = ShutterState.shutterError;
                     _prevState = ShutterState.shutterError;
@@ -202,12 +202,12 @@ namespace ASCOM.Wise40
                         content = content.Remove(0, prefix.Length);
                         content = content.Remove(content.IndexOf(suffix[0]));
                         ret = Convert.ToInt32(content);
-                        Instance.webClient.Connection = new ConnectionDigest() { Working = true, Reason = "" };
+                        Instance.webClient.WiFiIsWorking = true;
                     }
                 }
                 catch (Exception ex)
                 {
-                    Instance.webClient.Connection = new ConnectionDigest() { Working = false, Reason = ex.Message };
+                    Instance.webClient.WiFiIsWorking = false;
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "GetShutterPosition: Exception: {0}", ex.Message);
                     #endregion
@@ -267,7 +267,7 @@ namespace ASCOM.Wise40
                 return;
             }
 
-            if (webClient.Connection.Working)
+            if (webClient.WiFiIsWorking)
             {
                 int rangeCm = RangeCm;
                 if (rangeCm != -1 && CloseEnough(rangeCm, _lowestValue))
@@ -306,7 +306,7 @@ namespace ASCOM.Wise40
                 return;
             }
 
-            if (webClient.Connection.Working)
+            if (webClient.WiFiIsWorking)
             {
                 int rangeCm = RangeCm;
                 if (rangeCm != -1 && CloseEnough(rangeCm, _highestValue))
