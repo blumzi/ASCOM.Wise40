@@ -784,7 +784,13 @@ namespace ASCOM.Wise40 //.FilterWheel
         {
             get
             {
-                string status =  Simulated ? "Idle" : arduino.StatusAsString;
+                string status = "";
+                if (currentWheel._targetPosition != -1)
+                    status = string.Format("Moving to position {0}", currentWheel._targetPosition);
+                else
+                    status = "Idle";
+
+                // TBD: show arduino.StatusAsString
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, string.Format("WiseFilterWheel status: {0}", status));
                 #endregion

@@ -1456,6 +1456,8 @@ namespace Dash
                     comboBoxFilterWheelPositions.Items[pos] = string.Format("{0} - {1}: {2}", pos + 1, filterWheelDigest.Wheel.Filters[pos].Name, filterWheelDigest.Wheel.Filters[pos].Description);
 
             }
+
+            filterWheelStatus.Show(filterWheelDigest.Status);
         }
 
         private void UpdateAlteredItems(ToolStripMenuItem item, string title)
