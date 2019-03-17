@@ -11,13 +11,14 @@ namespace ASCOM.Wise40
 {
     public class ArduinoInterface
     {
-        private static ASCOM.Wise40.Common.Debugger debugger = Debugger.Instance;
+        private static Debugger debugger = Debugger.Instance;
 
         private bool _initialized = false;
-        private string _serialPort;
+        private string _serialPortName;
+        private int _serialPortSpeed = 57600;   // Fixed
         private static object _serialLock = new Object();
 
-        private System.IO.Ports.SerialPort serial;
+        private System.IO.Ports.SerialPort _serialPort;
         private const char stx = (char)2;
         private const char etx = (char)3;
         private const char cr = (char)13;
@@ -36,7 +37,7 @@ namespace ASCOM.Wise40
                 if (lazy.IsValueCreated)
                     return lazy.Value;
 
-                lazy.Value.init(WiseFilterWheel.port);
+                lazy.Value.init();
                 return lazy.Value;
             }
         }
@@ -51,7 +52,7 @@ namespace ASCOM.Wise40
                 _tag = e.reply.Substring("tag:".Length);
             }
             else if (e.reply.StartsWith("error:"))
-                _error = e.reply.Substring("error:".Length);
+                _error = "(arduino) " + e.reply.Substring("error:".Length);
         }
 
         public class CommunicationCompleteEventArgs : EventArgs
@@ -75,7 +76,7 @@ namespace ASCOM.Wise40
         private static string _tag;
 
         public enum StepperDirection { CW, CCW };
-        public enum ArduinoStatus { Idle, BadPort, Connecting, Communicating, Moving };
+        public enum ArduinoStatus { Idle, BadPort, PortNotOpen, Connecting, Communicating, Moving };
         private static ArduinoStatus _status = ArduinoStatus.Idle;
 
         public class ArduinoCommunicationException : Exception
@@ -89,37 +90,31 @@ namespace ASCOM.Wise40
         {
             get
             {
-                if (_serialPort == null || !System.IO.Ports.SerialPort.GetPortNames().Contains(_serialPort) || serial == null)
+                if (_serialPort == null)
                     return false;
-                return serial.IsOpen;
+                return _serialPort.IsOpen;
             }
 
             set
             {
-                if (_serialPort == null)
-                    _serialPort = WiseFilterWheel.port;
+                if (_serialPort != null && _serialPort.IsOpen)
+                    _serialPort.Close();
 
-                if (_serialPort == null || !System.IO.Ports.SerialPort.GetPortNames().Contains(_serialPort))
-                    return;
-
-                if (serial != null && serial.IsOpen)
-                    serial.Close();
-
-                serial = new System.IO.Ports.SerialPort(_serialPort, 57600);
+                _serialPort = new System.IO.Ports.SerialPort(_serialPortName, _serialPortSpeed);
                 communicationCompleteHandler += onCommunicationComplete;
 
-                if (value == serial.IsOpen)
+                if (value == _serialPort.IsOpen)
                     return;
 
                 if (value)
                 {
-                    if (!serial.IsOpen)
+                    if (!_serialPort.IsOpen)
                     {
                         try
                         {
                             _status = ArduinoStatus.Connecting;
-                            serial.Open();
-                            serial.ReadExisting();  // flush
+                            _serialPort.Open();
+                            _serialPort.ReadExisting();  // flush
                             _status = ArduinoStatus.Idle;
                         }
                         catch (Exception ex)
@@ -130,7 +125,32 @@ namespace ASCOM.Wise40
                 }
                 else
                 {
-                    serial.Close();
+                    _serialPort.Close();
+                }
+            }
+        }
+
+        public int SerialPortSpeed
+        {
+            get
+            {
+                return _serialPortSpeed;
+            }
+        }
+
+        public string SerialPortName
+        {
+            get
+            {
+                return _serialPortName;
+            }
+
+            set
+            {
+                _serialPortName = value;
+                using (ASCOM.Utilities.Profile driverProfile = new ASCOM.Utilities.Profile() { DeviceType = "FilterWheel" })
+                {
+                    driverProfile.WriteValue(Const.wiseFilterWheelDriverID, "Port", _serialPortName);
                 }
             }
         }
@@ -143,10 +163,10 @@ namespace ASCOM.Wise40
 
         private string getPacket()
         {
-            if (!serial.IsOpen)
+            if (!_serialPort.IsOpen)
                 return string.Empty;
-            string skipped = serial.ReadTo(Stx);
-            string msg = serial.ReadTo(Etx).TrimEnd(etx);
+            string skipped = _serialPort.ReadTo(Stx);
+            string msg = _serialPort.ReadTo(Etx).TrimEnd(etx);
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "getPacket: skipped: [{0}], got: [{1}]", skipped, msg);
             #endregion
@@ -157,20 +177,22 @@ namespace ASCOM.Wise40
         {
         }
 
-        public void init(string port)
+        public void init()
         {
             if (_initialized)
                 return;
 
-            if (! System.IO.Ports.SerialPort.GetPortNames().Contains(port))
+            using (ASCOM.Utilities.Profile driverProfile = new ASCOM.Utilities.Profile() { DeviceType = "FilterWheel" })
             {
-                _initialized = true;
-                return;
+                string port = driverProfile.GetValue(Const.wiseFilterWheelDriverID, "Port", string.Empty,"COM7");
+                if (System.IO.Ports.SerialPort.GetPortNames().Contains(port))
+                {
+                    _serialPortName = port;
+                    _serialPort = new System.IO.Ports.SerialPort(_serialPortName, _serialPortSpeed);
+                    communicationCompleteHandler += onCommunicationComplete;
+                }
             }
 
-            _serialPort = port;
-            serial = new System.IO.Ports.SerialPort(_serialPort, 57600);
-            communicationCompleteHandler += onCommunicationComplete;
             _initialized = true;
         }
 
@@ -192,15 +214,14 @@ namespace ASCOM.Wise40
             ArduinoStatus interimStatus = ArduinoStatus.Communicating,
             int timeoutMillis = 0)
         {
-            string[] serialPorts = System.IO.Ports.SerialPort.GetPortNames();
             if (_serialPort == null) {
-                _error = string.Format("_serialPort is null");
+                _error = "(domepc) _serialPort is null";
                 _status = ArduinoStatus.BadPort;
                 return;
-            } else if (!serialPorts.Contains(_serialPort))
+            } else if (! _serialPort.IsOpen)
             {
-                _error = string.Format("No such serial port \"{0}\"in {1}.", _serialPort, serialPorts.ToString());
-                _status = ArduinoStatus.BadPort;
+                _error = string.Format("(domepc) _serialPort ({0}) not open", _serialPortName);
+                _status = ArduinoStatus.PortNotOpen;
                 return;
             }
 
@@ -232,7 +253,7 @@ namespace ASCOM.Wise40
                     #endregion
                     lock (_serialLock)
                     {
-                        serial.Write(packet);
+                        _serialPort.Write(packet);
                         if (waitForReply)
                         {
                             Thread.Sleep(1000);
@@ -280,11 +301,27 @@ namespace ASCOM.Wise40
             }
         }
 
-        public string Status
+        public bool PortIsOpen
         {
             get
             {
-                return string.Format("{0}{1}", _status.ToString(), (_error == null) ? "" : " (" + _error + ")");
+                return _serialPort.IsOpen;
+            }
+        }
+
+        public string StatusAsString
+        {
+            get
+            {
+                return _status.ToString();
+            }
+        }
+
+        public string Error
+        {
+            get
+            {
+                return _error;
             }
         }
 

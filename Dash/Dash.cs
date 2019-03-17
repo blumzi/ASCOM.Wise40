@@ -50,7 +50,7 @@ namespace Dash
         DomeDigest domeDigest = null;
         TelescopeDigest telescopeDigest = null;
         FocuserDigest focuserDigest = null;
-        FilterWheelDigest filterWheelDigest = null;
+        WiseFilterWheelDigest filterWheelDigest = null;
         WeatherDigest weatherDigest = null;
         string forecast;
 
@@ -73,14 +73,6 @@ namespace Dash
         private int focuserMaxStep = 0;
         private int focuserLowerLimit = 0;
         private int focuserUpperLimit = 0;
-
-        void onWheelOrPositionChanged(object sender, EventArgs e)
-        {
-            #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Dash.onWheelOrFilterChanged");
-            #endregion
-            LoadFilterWheelInformation();
-        }
 
         static List<Control> readonlyControls;
 
@@ -131,8 +123,7 @@ namespace Dash
 
                     pictureBoxStop,
 
-                    radioButtonGuide, radioButtonSet, radioButtonSlew, radioButtonSelectFilterWheel4, radioButtonSelectFilterWheel8,
-                    textBoxFilterWheelPosition, buttonSetFilterWheelPosition,
+                    radioButtonGuide, radioButtonSet, radioButtonSlew,
                     buttonFilterWheelGo, comboBoxFilterWheelPositions,
                 };
 
@@ -197,7 +188,6 @@ namespace Dash
             UpdateCheckmark(debugDomeToolStripMenuItem, debugger.Debugging(Debugger.DebugLevel.DebugDome));
             UpdateCheckmark(debugShutterToolStripMenuItem, debugger.Debugging(Debugger.DebugLevel.DebugShutter));
             UpdateCheckmark(debugDAQsToolStripMenuItem, debugger.Debugging(Debugger.DebugLevel.DebugDAQs));
-            //UpdateCheckmark(bypassSafetyToolStripMenuItem, _bypassSafety);
 
             UpdateFilterWheelControls();
         }
@@ -208,21 +198,20 @@ namespace Dash
             if (WiseSite.OperationalMode == WiseSite.OpMode.LCO)
             {
                 toolStripMenuItemFilterWheel.Enabled = false;
+                labelFWWheel.Text = "";
+                labelFWPosition.Text = "";
                 filterWheelStatus.Show("Not available in LCO mode");
+                return;
             }
-            else
-            {
-                bool enabled = Convert.ToBoolean(wiseFilterWheel.Action("enabled", ""));
 
-                if (enabled)
-                {
-                    toolStripMenuItemFilterWheel.Enabled = true;
-                }
-                else
-                {
-                    toolStripMenuItemFilterWheel.Enabled = false;
-                    filterWheelStatus.Show("Disabled (see Settings->FilterWheel->Settings)");
-                }
+            if (filterWheelDigest == null)
+                return;
+
+            toolStripMenuItemFilterWheel.Enabled = true;
+
+            if (!filterWheelDigest.Enabled)
+            {
+                filterWheelStatus.Show("Disabled (see Settings->FilterWheel->Settings)");
             }
         }
 
@@ -249,7 +238,7 @@ namespace Dash
             bool refreshSafeToOperate = safettoperatePacer.ShouldRefresh(now);
             bool refreshTelescope = telescopePacer.ShouldRefresh(now);
             bool refreshFocus = focusPacer.ShouldRefresh(now);
-            bool refreshFilterWheel = filterWheelPacer.ShouldRefresh(now);
+            bool refreshFilterWheel = WiseSite.OperationalMode != WiseSite.OpMode.LCO && filterWheelPacer.ShouldRefresh(now);
             bool refreshForecast = forecastPacer.ShouldRefresh(now);
             bool refreshWeather = weatherPacer.ShouldRefresh(now);
             string tip = null;
@@ -278,7 +267,7 @@ namespace Dash
                 forecast = wiseVantagePro.Action("forecast", "");
 
             if (refreshFilterWheel)
-                filterWheelDigest = JsonConvert.DeserializeObject<FilterWheelDigest>(wiseFilterWheel.Action("status", ""));
+                filterWheelDigest = JsonConvert.DeserializeObject<WiseFilterWheelDigest>(wiseFilterWheel.Action("status", ""));
 
             if (refreshWeather)
                 weatherDigest = JsonConvert.DeserializeObject<WeatherDigest>(wiseSafeToOperate.Action("weather-digest", ""));
@@ -677,16 +666,7 @@ namespace Dash
             #endregion
 
             #region RefreshFilterWheel
-            //    string fwstat = wisefilterwheel.Status;
-            //    if (fwstat == "Idle")
-            //    {
-            //        annunciatorFilterWheel.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
-            //    }
-            //    else
-            //    {
-            //        annunciatorFilterWheel.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
-            //        filterWheelStatus.Show(fwstat);
-            //    }
+            LoadFilterWheelInformation();
             #endregion
 
             #region RefreshForecast
@@ -1446,49 +1426,36 @@ namespace Dash
             if (!filterWheelDigest.Enabled)
                 return;
 
-            WiseFilterWheel.Wheel.WheelDigest currentWheelDigest = JsonConvert.DeserializeObject<WiseFilterWheel.Wheel.WheelDigest>(wiseFilterWheel.Action("current-wheel", ""));
-            short position = currentWheelDigest.CurrentPosition;
+            short position = filterWheelDigest.Wheel.CurrentPosition;
 
-            WiseFilterWheel.FiltersInventoryDigest filtersInventoryDigest =
-                JsonConvert.DeserializeObject<WiseFilterWheel.FiltersInventoryDigest>(wiseFilterWheel.Action("get-filter-inventory", ""));
-            int inventoryIndex = WiseFilterWheel.filterSizeToIndex[currentWheelDigest.FilterSize];
-            WiseFilterWheel.WheelFilterDigest filterDigests = filtersInventoryDigest.FilterInventory[inventoryIndex];
-
-#if RFID_IS_WORKING
-            if (position == -1)
+            if (filterWheelDigest.Wheel.Type == WiseFilterWheel.WheelType.WheelUnknown)
             {
-                labelFilterWheelName.Text = "Unknown";
-                labelFilterWheelPosition.Text = "";
+                labelFWWheel.Text = "Unknown";
+                labelFWPosition.Text = "";
+                labelFWFilter.Text = "";
+
+                filterWheelStatus.Show("Cannot detect filter wheel!", 0, Statuser.Severity.Error);
                 return;
             }
 
-            labelFilterWheelName.Text = string.Format("{0} ({1} filters)", wheel.name, wheel.positions.Length);
-            labelFilterWheelPosition.Text = (position + 1).ToString();
-#endif
-            comboBoxFilterWheelPositions.Items.Clear();
-            for (int pos = 0; pos < currentWheelDigest.Positions.Count(); pos++)
+            labelFWWheel.Text = string.Format("{0} ({1} inch filters)", filterWheelDigest.Wheel.Name, filterWheelDigest.Wheel.Type == WiseFilterWheel.WheelType.Wheel4 ? "3" : "2");
+            labelFWPosition.Text = (position + 1).ToString();
+            WiseFilterWheel.Wheel.PositionDigest currentFilter = filterWheelDigest.Wheel.Filters[filterWheelDigest.Wheel.CurrentPosition];
+            labelFWFilter.Text = currentFilter.Name == string.Empty ? "Clear" : string.Format("{0}: {1}", currentFilter.Name, currentFilter.Description);
+
+            if (filterWheelDigest.Wheel.Filters.Count() != comboBoxFilterWheelPositions.Items.Count)
             {
-                string filterName = currentWheelDigest.Positions[pos].FilterName;
-                string item = "";
-                if (filterName == string.Empty)
-                    item = string.Format("{0} - Clear", pos + 1);
-                else
-                {
-                    for (var i = 0; i < filterDigests.Filters.Count; i++)
-                    {
-                        if (filterDigests.Filters[i].Name == filterName)
-                        {
-                            item = string.Format("{0} - {1}: {2}", pos + 1, filterName, filterDigests.Filters[i].Description);
-                            break;
-                        }
-                    }
-                }
-                comboBoxFilterWheelPositions.Items.Add(item);
-                if (pos == position)
-                    comboBoxFilterWheelPositions.Text = item;
+                comboBoxFilterWheelPositions.Items.Clear();
+                for (int pos = 0; pos < filterWheelDigest.Wheel.Filters.Count(); pos++)
+                    comboBoxFilterWheelPositions.Items.Add(string.Format("{0} - Clear", pos + 1));
             }
 
-            comboBoxFilterWheelPositions.Invalidate();
+            for (int pos = 0; pos < filterWheelDigest.Wheel.Filters.Count(); pos++)
+            {
+                if (filterWheelDigest.Wheel.Filters[pos].Name != string.Empty)
+                    comboBoxFilterWheelPositions.Items[pos] = string.Format("{0} - {1}: {2}", pos + 1, filterWheelDigest.Wheel.Filters[pos].Name, filterWheelDigest.Wheel.Filters[pos].Description);
+
+            }
         }
 
         private void UpdateAlteredItems(ToolStripMenuItem item, string title)
@@ -1587,54 +1554,10 @@ namespace Dash
 
         private void buttonFilterWheelGo_Click(object sender, EventArgs e)
         {
-            short targetPosition = (short)comboBoxFilterWheelPositions.SelectedIndex;
-            short humanTargetPosition = (short)(targetPosition + 1);
+            int targetPosition = comboBoxFilterWheelPositions.SelectedIndex + 1;
 
-            if (WiseObject.Simulated)
-            {
-                filterWheelStatus.Show(string.Format("Moved to position {0}", humanTargetPosition), 1000, Statuser.Severity.Good);
-                textBoxFilterWheelPosition.Text = humanTargetPosition.ToString();
-            }
-            else
-            {
-                filterWheelStatus.Show(string.Format("Moving to position {0}", humanTargetPosition), 5000, Statuser.Severity.Good);
-            }
-            wiseFilterWheel.Position = targetPosition;
-        }
-
-        private void buttonSetFilterWheelPosition_Click(object sender, EventArgs e)
-        {
-            short selectedPosition = -1;
-            try
-            {
-                selectedPosition = Convert.ToInt16(textBoxFilterWheelPosition.Text);
-            }
-            catch (FormatException)
-            {
-                filterWheelStatus.Show("Invalid position \"Current position\"", 1000, Statuser.Severity.Error);
-                textBoxFilterWheelPosition.Text = "";
-                return;
-            }
-
-            WiseFilterWheel.WheelType selectedWheelType = radioButtonSelectFilterWheel8.Checked ? WiseFilterWheel.WheelType.Wheel8 : WiseFilterWheel.WheelType.Wheel4;
-            int maxPositions = (selectedWheelType == WiseFilterWheel.WheelType.Wheel4) ? 4 : 8;
-
-            if (!(selectedPosition > 0 && selectedPosition < maxPositions))
-            {
-                textBoxFilterWheelPosition.Text = "";
-                filterWheelStatus.Show(
-                    string.Format("Position must be between 1 and {0}", maxPositions), 2000, Statuser.Severity.Error);
-                return;
-            }
-
-            wiseFilterWheel.Action("current-wheel", JsonConvert.SerializeObject(new WiseFilterWheel.Wheel.WheelDigest
-            {
-                Type = selectedWheelType,
-                CurrentPosition = (short)(selectedPosition - 1),
-            }));
-
-            LoadFilterWheelInformation();
-            filterWheelStatus.Show(string.Format("Manually set to {0}, position {1}",  selectedWheelType.ToString(), selectedPosition), 1000, Statuser.Severity.Good);
+            filterWheelStatus.Show(string.Format("Moving to position {0}", targetPosition), 5000, Statuser.Severity.Good);
+            wiseFilterWheel.Position = (short) targetPosition;
         }
 
         private void manage2InchFilterInventoryToolStripMenuItem_Click(object sender, EventArgs e)

@@ -188,13 +188,11 @@
             this.labelCountdown = new System.Windows.Forms.Label();
             this.labelDashStatus = new System.Windows.Forms.Label();
             this.groupBoxFilterWheel = new System.Windows.Forms.GroupBox();
-            this.labelFilterWheelSatte = new System.Windows.Forms.Label();
+            this.labelFWFilter = new System.Windows.Forms.Label();
+            this.label9 = new System.Windows.Forms.Label();
+            this.labelFWPosition = new System.Windows.Forms.Label();
+            this.labelFWWheel = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
-            this.groupBoxFWSelect = new System.Windows.Forms.GroupBox();
-            this.radioButtonSelectFilterWheel8 = new System.Windows.Forms.RadioButton();
-            this.radioButtonSelectFilterWheel4 = new System.Windows.Forms.RadioButton();
-            this.textBoxFilterWheelPosition = new System.Windows.Forms.TextBox();
-            this.buttonSetFilterWheelPosition = new System.Windows.Forms.Button();
             this.label4 = new System.Windows.Forms.Label();
             this.comboBoxFilterWheelPositions = new System.Windows.Forms.ComboBox();
             this.buttonFilterWheelGo = new System.Windows.Forms.Button();
@@ -249,7 +247,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxStop)).BeginInit();
             this.panel4.SuspendLayout();
             this.groupBoxFilterWheel.SuspendLayout();
-            this.groupBoxFWSelect.SuspendLayout();
             this.groupBoxWeather.SuspendLayout();
             this.tableLayoutPanelWeather.SuspendLayout();
             this.SuspendLayout();
@@ -2396,11 +2393,11 @@
             // 
             // groupBoxFilterWheel
             // 
-            this.groupBoxFilterWheel.Controls.Add(this.labelFilterWheelSatte);
+            this.groupBoxFilterWheel.Controls.Add(this.labelFWFilter);
+            this.groupBoxFilterWheel.Controls.Add(this.label9);
+            this.groupBoxFilterWheel.Controls.Add(this.labelFWPosition);
+            this.groupBoxFilterWheel.Controls.Add(this.labelFWWheel);
             this.groupBoxFilterWheel.Controls.Add(this.label8);
-            this.groupBoxFilterWheel.Controls.Add(this.groupBoxFWSelect);
-            this.groupBoxFilterWheel.Controls.Add(this.textBoxFilterWheelPosition);
-            this.groupBoxFilterWheel.Controls.Add(this.buttonSetFilterWheelPosition);
             this.groupBoxFilterWheel.Controls.Add(this.label4);
             this.groupBoxFilterWheel.Controls.Add(this.comboBoxFilterWheelPositions);
             this.groupBoxFilterWheel.Controls.Add(this.buttonFilterWheelGo);
@@ -2413,92 +2410,69 @@
             this.groupBoxFilterWheel.TabStop = false;
             this.groupBoxFilterWheel.Text = " FilterWheel ";
             // 
-            // labelFilterWheelSatte
+            // labelFWFilter
             // 
-            this.labelFilterWheelSatte.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.labelFilterWheelSatte.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelFilterWheelSatte.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelFilterWheelSatte.Location = new System.Drawing.Point(85, 35);
-            this.labelFilterWheelSatte.Name = "labelFilterWheelSatte";
-            this.labelFilterWheelSatte.Size = new System.Drawing.Size(223, 20);
-            this.labelFilterWheelSatte.TabIndex = 48;
-            this.labelFilterWheelSatte.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.labelFWFilter.AutoEllipsis = true;
+            this.labelFWFilter.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.labelFWFilter.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelFWFilter.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.labelFWFilter.Location = new System.Drawing.Point(77, 95);
+            this.labelFWFilter.Name = "labelFWFilter";
+            this.labelFWFilter.Size = new System.Drawing.Size(241, 20);
+            this.labelFWFilter.TabIndex = 52;
+            this.labelFWFilter.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label9
+            // 
+            this.label9.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.label9.AutoSize = true;
+            this.label9.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))));
+            this.label9.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
+            this.label9.Location = new System.Drawing.Point(7, 97);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(57, 18);
+            this.label9.TabIndex = 51;
+            this.label9.Text = "Filter:";
+            this.label9.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // labelFWPosition
+            // 
+            this.labelFWPosition.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.labelFWPosition.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelFWPosition.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.labelFWPosition.Location = new System.Drawing.Point(77, 72);
+            this.labelFWPosition.Name = "labelFWPosition";
+            this.labelFWPosition.Size = new System.Drawing.Size(18, 20);
+            this.labelFWPosition.TabIndex = 50;
+            this.labelFWPosition.Text = "6";
+            this.labelFWPosition.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // labelFWWheel
+            // 
+            this.labelFWWheel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.labelFWWheel.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelFWWheel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.labelFWWheel.Location = new System.Drawing.Point(74, 48);
+            this.labelFWWheel.Name = "labelFWWheel";
+            this.labelFWWheel.Size = new System.Drawing.Size(203, 20);
+            this.labelFWWheel.TabIndex = 49;
+            this.labelFWWheel.Text = "Wheel8 (2 inch filters)";
+            this.labelFWWheel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // label8
             // 
-            this.label8.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.label8.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.label8.AutoSize = true;
             this.label8.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))));
             this.label8.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label8.Location = new System.Drawing.Point(20, 35);
+            this.label8.Location = new System.Drawing.Point(7, 49);
             this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(56, 18);
-            this.label8.TabIndex = 47;
-            this.label8.Text = "State:";
-            this.label8.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // groupBoxFWSelect
-            // 
-            this.groupBoxFWSelect.Controls.Add(this.radioButtonSelectFilterWheel8);
-            this.groupBoxFWSelect.Controls.Add(this.radioButtonSelectFilterWheel4);
-            this.groupBoxFWSelect.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBoxFWSelect.Location = new System.Drawing.Point(22, 68);
-            this.groupBoxFWSelect.Name = "groupBoxFWSelect";
-            this.groupBoxFWSelect.Size = new System.Drawing.Size(200, 40);
-            this.groupBoxFWSelect.TabIndex = 46;
-            this.groupBoxFWSelect.TabStop = false;
-            this.groupBoxFWSelect.Text = "Wheel";
-            // 
-            // radioButtonSelectFilterWheel8
-            // 
-            this.radioButtonSelectFilterWheel8.AutoSize = true;
-            this.radioButtonSelectFilterWheel8.Checked = true;
-            this.radioButtonSelectFilterWheel8.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.radioButtonSelectFilterWheel8.Location = new System.Drawing.Point(24, 16);
-            this.radioButtonSelectFilterWheel8.Name = "radioButtonSelectFilterWheel8";
-            this.radioButtonSelectFilterWheel8.Size = new System.Drawing.Size(75, 17);
-            this.radioButtonSelectFilterWheel8.TabIndex = 0;
-            this.radioButtonSelectFilterWheel8.TabStop = true;
-            this.radioButtonSelectFilterWheel8.Text = "8-positions";
-            this.radioButtonSelectFilterWheel8.UseVisualStyleBackColor = true;
-            // 
-            // radioButtonSelectFilterWheel4
-            // 
-            this.radioButtonSelectFilterWheel4.AutoSize = true;
-            this.radioButtonSelectFilterWheel4.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.radioButtonSelectFilterWheel4.Location = new System.Drawing.Point(112, 16);
-            this.radioButtonSelectFilterWheel4.Name = "radioButtonSelectFilterWheel4";
-            this.radioButtonSelectFilterWheel4.Size = new System.Drawing.Size(75, 17);
-            this.radioButtonSelectFilterWheel4.TabIndex = 1;
-            this.radioButtonSelectFilterWheel4.Text = "4-positions";
-            this.radioButtonSelectFilterWheel4.UseVisualStyleBackColor = true;
-            // 
-            // textBoxFilterWheelPosition
-            // 
-            this.textBoxFilterWheelPosition.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxFilterWheelPosition.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.textBoxFilterWheelPosition.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.textBoxFilterWheelPosition.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxFilterWheelPosition.Location = new System.Drawing.Point(190, 115);
-            this.textBoxFilterWheelPosition.Name = "textBoxFilterWheelPosition";
-            this.textBoxFilterWheelPosition.Size = new System.Drawing.Size(30, 21);
-            this.textBoxFilterWheelPosition.TabIndex = 45;
-            this.textBoxFilterWheelPosition.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            // 
-            // buttonSetFilterWheelPosition
-            // 
-            this.buttonSetFilterWheelPosition.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonSetFilterWheelPosition.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.buttonSetFilterWheelPosition.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.buttonSetFilterWheelPosition.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.buttonSetFilterWheelPosition.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonSetFilterWheelPosition.Location = new System.Drawing.Point(246, 72);
-            this.buttonSetFilterWheelPosition.Name = "buttonSetFilterWheelPosition";
-            this.buttonSetFilterWheelPosition.Size = new System.Drawing.Size(62, 64);
-            this.buttonSetFilterWheelPosition.TabIndex = 44;
-            this.buttonSetFilterWheelPosition.Text = "Set";
-            this.buttonSetFilterWheelPosition.UseVisualStyleBackColor = false;
-            this.buttonSetFilterWheelPosition.Click += new System.EventHandler(this.buttonSetFilterWheelPosition_Click);
+            this.label8.Size = new System.Drawing.Size(63, 18);
+            this.label8.TabIndex = 46;
+            this.label8.Text = "Wheel:";
+            this.label8.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // label4
             // 
@@ -2507,11 +2481,11 @@
             this.label4.AutoSize = true;
             this.label4.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))));
             this.label4.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label4.Location = new System.Drawing.Point(20, 116);
+            this.label4.Location = new System.Drawing.Point(7, 73);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(151, 18);
+            this.label4.Size = new System.Drawing.Size(43, 18);
             this.label4.TabIndex = 41;
-            this.label4.Text = "Current position:";
+            this.label4.Text = "Pos:";
             this.label4.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // comboBoxFilterWheelPositions
@@ -2520,10 +2494,10 @@
             this.comboBoxFilterWheelPositions.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.comboBoxFilterWheelPositions.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.comboBoxFilterWheelPositions.FormattingEnabled = true;
-            this.comboBoxFilterWheelPositions.Location = new System.Drawing.Point(94, 148);
+            this.comboBoxFilterWheelPositions.Location = new System.Drawing.Point(70, 140);
             this.comboBoxFilterWheelPositions.Margin = new System.Windows.Forms.Padding(0);
             this.comboBoxFilterWheelPositions.Name = "comboBoxFilterWheelPositions";
-            this.comboBoxFilterWheelPositions.Size = new System.Drawing.Size(216, 21);
+            this.comboBoxFilterWheelPositions.Size = new System.Drawing.Size(250, 21);
             this.comboBoxFilterWheelPositions.TabIndex = 37;
             this.toolTip.SetToolTip(this.comboBoxFilterWheelPositions, "Select a filter and press GO.");
             // 
@@ -2534,7 +2508,7 @@
             this.buttonFilterWheelGo.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonFilterWheelGo.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonFilterWheelGo.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonFilterWheelGo.Location = new System.Drawing.Point(22, 148);
+            this.buttonFilterWheelGo.Location = new System.Drawing.Point(14, 140);
             this.buttonFilterWheelGo.Name = "buttonFilterWheelGo";
             this.buttonFilterWheelGo.Size = new System.Drawing.Size(49, 23);
             this.buttonFilterWheelGo.TabIndex = 36;
@@ -3064,8 +3038,6 @@
             this.panel4.ResumeLayout(false);
             this.groupBoxFilterWheel.ResumeLayout(false);
             this.groupBoxFilterWheel.PerformLayout();
-            this.groupBoxFWSelect.ResumeLayout(false);
-            this.groupBoxFWSelect.PerformLayout();
             this.groupBoxWeather.ResumeLayout(false);
             this.tableLayoutPanelWeather.ResumeLayout(false);
             this.tableLayoutPanelWeather.PerformLayout();
@@ -3236,11 +3208,6 @@
         private System.Windows.Forms.ToolStripMenuItem manageFilterInventoryToolStripMenuItem;
         private ASCOM.Controls.Annunciator annunciatorDomePlatform;
         private ASCOM.Controls.Annunciator annunciatorSimulation;
-        private System.Windows.Forms.Button buttonSetFilterWheelPosition;
-        private System.Windows.Forms.TextBox textBoxFilterWheelPosition;
-        private System.Windows.Forms.GroupBox groupBoxFWSelect;
-        private System.Windows.Forms.RadioButton radioButtonSelectFilterWheel8;
-        private System.Windows.Forms.RadioButton radioButtonSelectFilterWheel4;
         private System.Windows.Forms.ToolStripMenuItem manage3FiltersToolStripMenuItem;
         private ASCOM.Controls.Annunciator annunciatorPulse;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemPulseGuide;
@@ -3273,8 +3240,11 @@
         private System.Windows.Forms.Label labelMoonDist;
         private System.Windows.Forms.Label labelAirMass;
         private System.Windows.Forms.Label label7;
-        private System.Windows.Forms.Label labelFilterWheelSatte;
+        private System.Windows.Forms.Label labelFWPosition;
+        private System.Windows.Forms.Label labelFWWheel;
         private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.Label labelFWFilter;
+        private System.Windows.Forms.Label label9;
     }
 }
 

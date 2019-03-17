@@ -50,7 +50,7 @@ namespace Dash
             for (int i = 0; i < nFilters; i++)
             {
                 Label label = (Label)table.Controls.Find(string.Format("label{0}Filter{1}", _currentWheel.Name, i), true)[0];
-                label.Text = FilterName(_currentWheel.Positions[i].FilterName);
+                label.Text = FilterName(_currentWheel.Filters[i].Name);
                 label.ForeColor = (i == position) ? Color.DarkOrange : Color.FromArgb(176, 161, 142);
             }
             table.Visible = true;
@@ -88,7 +88,7 @@ namespace Dash
                 return;
             }
 
-            string filterName = FilterName(_currentWheel.Positions[targetPosition - 1].FilterName);
+            string filterName = FilterName(_currentWheel.Filters[targetPosition - 1].Name);
             _filterWheelStatus.Show(string.Format("Moving to position {0} ({1})", targetPosition, filterName));
             _wiseFilterWheel.Position = (short) (targetPosition - 1);
         }
@@ -98,7 +98,7 @@ namespace Dash
             short currentPosition = _currentWheel.CurrentPosition;
             short targetPosition = (short) ((currentPosition == 0) ? _currentWheel.Npositions - 1 : currentPosition - 1);
 
-            string filterName = FilterName(_currentWheel.Positions[targetPosition].FilterName);
+            string filterName = FilterName(_currentWheel.Filters[targetPosition].Name);
             _filterWheelStatus.Show(string.Format("Moving to position {0} ({1})", targetPosition + 1, filterName));
             _wiseFilterWheel.Position = targetPosition;
         }
@@ -108,7 +108,7 @@ namespace Dash
             short currentPosition = _currentWheel.CurrentPosition;
             short targetPosition = (short)((currentPosition == _currentWheel.Npositions - 1) ? 0 : currentPosition + 1);
 
-            string filterName = FilterName(_currentWheel.Positions[targetPosition].FilterName);
+            string filterName = FilterName(_currentWheel.Filters[targetPosition].Name);
             _filterWheelStatus.Show(string.Format("Moving to position {0} ({1})", targetPosition + 1, filterName));
             _wiseFilterWheel.Position = targetPosition;
         }

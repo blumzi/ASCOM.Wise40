@@ -46,7 +46,8 @@ namespace ASCOM.Wise40 //.FilterWheel
                     w._positions[i].tag = tb.Text ?? string.Empty;
                 }
             }
-            WiseFilterWheel.port = comboBoxPort.Text;
+            WiseFilterWheel.Instance.arduino.SerialPortName = comboBoxPort.Text;
+            WiseFilterWheel.Enabled = checkBoxEnabled.Checked;
 
             WiseFilterWheel.WriteProfile();
             Close();
@@ -89,11 +90,11 @@ namespace ASCOM.Wise40 //.FilterWheel
                     if (w._positions[i].filterName == string.Empty)
                         cb.Text = string.Empty;
                     else {
-                        Filter f = WiseFilterWheel._filterInventory[WiseFilterWheel.filterSizeToIndex[w._filterSize]].Find((x) => x.FilterName == w._positions[i].filterName);
-                        cb.Text = (f == null) ? "<??>" : string.Format("{0}: {1}", f.FilterName, f.FilterDescription);
+                        Filter f = WiseFilterWheel._filterInventory[WiseFilterWheel.filterSizeToIndex[w._filterSize]].Find((x) => x.Name == w._positions[i].filterName);
+                        cb.Text = (f == null) ? "<??>" : string.Format("{0}: {1}", f.Name, f.Description);
                     }
                     foreach (Filter f in WiseFilterWheel._filterInventory[WiseFilterWheel.filterSizeToIndex[w._filterSize]])
-                        cb.Items.Add(string.Format("{0}: {1}", f.FilterName, f.FilterDescription));
+                        cb.Items.Add(string.Format("{0}: {1}", f.Name, f.Description));
                      
                     TextBox tb;
                     tb = (TextBox)F.Controls.Find(string.Format("textBoxWheel{0}RFID{1}", w._nPositions, i), true)[0];
@@ -104,12 +105,14 @@ namespace ASCOM.Wise40 //.FilterWheel
 
             string[] existingPorts = System.IO.Ports.SerialPort.GetPortNames();
             comboBoxPort.Items.AddRange(existingPorts);
-            if (!String.IsNullOrEmpty(WiseFilterWheel.port))
+
+            string port = WiseFilterWheel.Instance.arduino.SerialPortName;
+            if (!String.IsNullOrEmpty(port))
             {
                 foreach (var p in existingPorts)
-                    if (p == WiseFilterWheel.port)
+                    if (p == port)
                     {
-                        comboBoxPort.Text = WiseFilterWheel.port;
+                        comboBoxPort.Text = port;
                         break;
                     }
             } else
@@ -117,17 +120,7 @@ namespace ASCOM.Wise40 //.FilterWheel
                 comboBoxPort.Text = "";
             }
 
-            WiseSite.OpMode opMode = WiseSite.OperationalMode;
-            labelOpModeValue.Text = opMode.ToString();
-            if (opMode == WiseSite.OpMode.LCO)
-            {
-                labelError.Text = "Wise40.FilterWheel not available in this operational mode";
-                checkBoxEnabled.AutoCheck = false;
-                checkBoxEnabled.Checked = false;
-
-                checkBoxEditableRFIDs.Checked = false;
-                checkBoxEditableRFIDs.AutoCheck = false;
-            }
+            labelOpModeValue.Text = WiseSite.OperationalMode.ToString();
 
             UpdateEditability();
         }
@@ -137,7 +130,14 @@ namespace ASCOM.Wise40 //.FilterWheel
             Form F = this.FindForm();
             bool editable = true;
 
-            if (WiseSite.OperationalMode == WiseSite.OpMode.LCO || !Enabled)
+            if (WiseFilterWheel.Enabled)
+            {
+                checkBoxEnabled.Checked = true;
+                checkBoxEditableRFIDs.Checked = false;
+                comboBoxPort.Enabled = true;
+                editable = true;
+            }
+            else
             {
                 checkBoxEnabled.Checked = false;
                 checkBoxEnabled.AutoCheck = false;
@@ -147,6 +147,7 @@ namespace ASCOM.Wise40 //.FilterWheel
                 editable = false;
             }
 
+            bool editableRFIDs = checkBoxEditableRFIDs.Checked;
             foreach (var w in WiseFilterWheel.wheels)
             {
                 for (int i = 0; i < w._nPositions; i++)
@@ -158,7 +159,7 @@ namespace ASCOM.Wise40 //.FilterWheel
 
                     TextBox tb;
                     tb = (TextBox)F.Controls.Find(string.Format("textBoxWheel{0}RFID{1}", w._nPositions, i), true)[0];
-                    tb.Enabled = editable;
+                    tb.Enabled = editableRFIDs;
                 }
             }
         }

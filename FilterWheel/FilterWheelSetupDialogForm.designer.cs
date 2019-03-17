@@ -100,9 +100,9 @@ namespace ASCOM.Wise40
             this.cmdOK.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.cmdOK.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.cmdOK.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.cmdOK.Location = new System.Drawing.Point(530, 556);
+            this.cmdOK.Location = new System.Drawing.Point(536, 478);
             this.cmdOK.Name = "cmdOK";
-            this.cmdOK.Size = new System.Drawing.Size(59, 24);
+            this.cmdOK.Size = new System.Drawing.Size(75, 40);
             this.cmdOK.TabIndex = 0;
             this.cmdOK.Text = "OK";
             this.cmdOK.UseVisualStyleBackColor = false;
@@ -114,9 +114,9 @@ namespace ASCOM.Wise40
             this.cmdCancel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.cmdCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.cmdCancel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.cmdCancel.Location = new System.Drawing.Point(530, 580);
+            this.cmdCancel.Location = new System.Drawing.Point(536, 524);
             this.cmdCancel.Name = "cmdCancel";
-            this.cmdCancel.Size = new System.Drawing.Size(59, 25);
+            this.cmdCancel.Size = new System.Drawing.Size(75, 40);
             this.cmdCancel.TabIndex = 1;
             this.cmdCancel.Text = "Cancel";
             this.cmdCancel.UseVisualStyleBackColor = false;
@@ -125,7 +125,7 @@ namespace ASCOM.Wise40
             // label1
             // 
             this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.Location = new System.Drawing.Point(25, 90);
+            this.label1.Location = new System.Drawing.Point(27, 43);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(252, 39);
             this.label1.TabIndex = 2;
@@ -137,7 +137,7 @@ namespace ASCOM.Wise40
             this.picASCOM.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.picASCOM.Cursor = System.Windows.Forms.Cursors.Hand;
             this.picASCOM.Image = global::ASCOM.Wise40.Properties.Resources.ASCOM;
-            this.picASCOM.Location = new System.Drawing.Point(544, 26);
+            this.picASCOM.Location = new System.Drawing.Point(553, 43);
             this.picASCOM.Name = "picASCOM";
             this.picASCOM.Size = new System.Drawing.Size(48, 56);
             this.picASCOM.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
@@ -149,6 +149,7 @@ namespace ASCOM.Wise40
             // groupBox1
             // 
             this.groupBox1.Controls.Add(this.tableLayoutPanel1);
+            this.groupBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
             this.groupBox1.ForeColor = System.Drawing.Color.DarkOrange;
             this.groupBox1.Location = new System.Drawing.Point(16, 153);
             this.groupBox1.Name = "groupBox1";
@@ -529,6 +530,7 @@ namespace ASCOM.Wise40
             // groupBox2
             // 
             this.groupBox2.Controls.Add(this.tableLayoutPanel2);
+            this.groupBox2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
             this.groupBox2.ForeColor = System.Drawing.Color.DarkOrange;
             this.groupBox2.Location = new System.Drawing.Point(16, 441);
             this.groupBox2.Name = "groupBox2";
@@ -753,16 +755,17 @@ namespace ASCOM.Wise40
             // comboBoxPort
             // 
             this.comboBoxPort.FormattingEnabled = true;
-            this.comboBoxPort.Location = new System.Drawing.Point(431, 87);
+            this.comboBoxPort.Location = new System.Drawing.Point(247, 122);
             this.comboBoxPort.Name = "comboBoxPort";
             this.comboBoxPort.Size = new System.Drawing.Size(56, 21);
             this.comboBoxPort.TabIndex = 18;
             // 
             // label19
             // 
-            this.label19.Location = new System.Drawing.Point(344, 81);
+            this.label19.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
+            this.label19.Location = new System.Drawing.Point(161, 114);
             this.label19.Name = "label19";
-            this.label19.Size = new System.Drawing.Size(68, 32);
+            this.label19.Size = new System.Drawing.Size(80, 32);
             this.label19.TabIndex = 19;
             this.label19.Text = "Arduino Port";
             this.label19.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -771,9 +774,10 @@ namespace ASCOM.Wise40
             // 
             this.checkBoxEditableRFIDs.AutoSize = true;
             this.checkBoxEditableRFIDs.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.checkBoxEditableRFIDs.Location = new System.Drawing.Point(344, 116);
+            this.checkBoxEditableRFIDs.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
+            this.checkBoxEditableRFIDs.Location = new System.Drawing.Point(349, 122);
             this.checkBoxEditableRFIDs.Name = "checkBoxEditableRFIDs";
-            this.checkBoxEditableRFIDs.Size = new System.Drawing.Size(100, 17);
+            this.checkBoxEditableRFIDs.Size = new System.Drawing.Size(111, 19);
             this.checkBoxEditableRFIDs.TabIndex = 20;
             this.checkBoxEditableRFIDs.Text = "Editable  RFIDs";
             this.checkBoxEditableRFIDs.UseVisualStyleBackColor = true;
@@ -783,9 +787,10 @@ namespace ASCOM.Wise40
             // 
             this.checkBoxEnabled.AutoSize = true;
             this.checkBoxEnabled.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.checkBoxEnabled.Location = new System.Drawing.Point(16, 52);
+            this.checkBoxEnabled.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
+            this.checkBoxEnabled.Location = new System.Drawing.Point(64, 122);
             this.checkBoxEnabled.Name = "checkBoxEnabled";
-            this.checkBoxEnabled.Size = new System.Drawing.Size(65, 17);
+            this.checkBoxEnabled.Size = new System.Drawing.Size(72, 19);
             this.checkBoxEnabled.TabIndex = 21;
             this.checkBoxEnabled.Text = "Enabled";
             this.checkBoxEnabled.UseVisualStyleBackColor = true;
@@ -793,9 +798,10 @@ namespace ASCOM.Wise40
             // label1Mode
             // 
             this.label1Mode.AutoSize = true;
-            this.label1Mode.Location = new System.Drawing.Point(16, 26);
+            this.label1Mode.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
+            this.label1Mode.Location = new System.Drawing.Point(37, 93);
             this.label1Mode.Name = "label1Mode";
-            this.label1Mode.Size = new System.Drawing.Size(86, 13);
+            this.label1Mode.Size = new System.Drawing.Size(99, 15);
             this.label1Mode.TabIndex = 22;
             this.label1Mode.Text = "Operating Mode:";
             // 
@@ -803,7 +809,7 @@ namespace ASCOM.Wise40
             // 
             this.labelOpModeValue.AutoSize = true;
             this.labelOpModeValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
-            this.labelOpModeValue.Location = new System.Drawing.Point(108, 26);
+            this.labelOpModeValue.Location = new System.Drawing.Point(137, 94);
             this.labelOpModeValue.Name = "labelOpModeValue";
             this.labelOpModeValue.Size = new System.Drawing.Size(39, 13);
             this.labelOpModeValue.TabIndex = 23;
@@ -824,7 +830,7 @@ namespace ASCOM.Wise40
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.ClientSize = new System.Drawing.Size(603, 616);
+            this.ClientSize = new System.Drawing.Size(633, 616);
             this.Controls.Add(this.labelError);
             this.Controls.Add(this.labelOpModeValue);
             this.Controls.Add(this.label1Mode);

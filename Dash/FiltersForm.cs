@@ -23,24 +23,15 @@ namespace Dash
         BindingSource source;
         Debugger debugger = Debugger.Instance;
         private WiseFilterWheel.FilterSize _filterSize;
-        private WiseFilterWheel.FiltersInventoryDigest _inventoryDigest;
 
         public FiltersForm(ASCOM.DriverAccess.FilterWheel wiseFilterWheel, WiseFilterWheel.FilterSize filterSize)
         {
             _wiseFilterWheel = wiseFilterWheel;
             _filterSize = filterSize;
-            _inventoryDigest = JsonConvert.DeserializeObject<WiseFilterWheel.FiltersInventoryDigest>(_wiseFilterWheel.Action("get-filter-inventory", ""));
-            List<WiseFilterWheel.FilterDigest> filterDigests = _inventoryDigest.FilterInventory[WiseFilterWheel.filterSizeToIndex[_filterSize]].Filters;
 
-            //boundFilters = new BindingList<Filter>(WiseFilterWheel.filterInventory[_filterSize]);
-            List<Filter> filters = new List<Filter>();
-            foreach (var filterDigest in filterDigests)
-                filters.Add(new Filter(filterDigest.Name, filterDigest.Description, filterDigest.Offset));
-
-            boundFilters = new BindingList<Filter>(filters);
-            //ReadProfile();
+            boundFilters = new BindingList<Filter>(WiseFilterWheel.GetKnownFilters(filterSize));
             InitializeComponent();
-            labelTitle.Text = string.Format("Wise40 {0}\" filters", _filterSize);
+            labelTitle.Text = string.Format("Wise40 {0}\" filters", _filterSize == WiseFilterWheel.FilterSize.TwoInch ? 2 : 3);
             source = new BindingSource(boundFilters, null);
             dataGridView.DataSource = source;
             dataGridView.AllowUserToAddRows = true;
@@ -48,16 +39,6 @@ namespace Dash
             dataGridView.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(64, 64, 64);
             dataGridView.EnableHeadersVisualStyles = false;
         }
-
-        //void ReadProfile()
-        //{
-        //    WiseFilterWheel.ReadProfile();
-        //}
-
-        //void WriteProfile()
-        //{
-        //    WiseFilterWheel.WriteProfile();
-        //}
 
         private void buttonAdd_Click(object sender, EventArgs e)
         {
@@ -94,9 +75,9 @@ namespace Dash
 
             foreach (Filter f in source.List)
             {
-                if (f.FilterName == string.Empty)
+                if (f.Name == string.Empty)
                     continue;
-                names.Add(f.FilterName);
+                names.Add(f.Name);
                 filters.Add(f);
             }
 
@@ -113,10 +94,6 @@ namespace Dash
                     MessageBox.Show(string.Format("The name \"{0}\" is duplicated!", dups[0]));
                 return;
             }
-
-            //WiseFilterWheel.filterInventory[_filterSize] = filters;
-            //WiseFilterWheel.SaveFiltersToCsvFile(_filterSize);
-            //WriteProfile();
 
             _wiseFilterWheel.Action("set-filters-inventory", JsonConvert.SerializeObject(new WiseFilterWheel.SetFilterInventoryParam
             {
