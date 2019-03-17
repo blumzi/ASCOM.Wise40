@@ -259,7 +259,7 @@ namespace ASCOM.Wise40
 
         public static bool _enslaveDome = false;
         public static double _minimalDomeTrackingMovement;
-        private DomeSlaveDriver domeSlaveDriver;
+        private DomeSlaveDriver domeSlaveDriver = DomeSlaveDriver.Instance;
 
         public static bool _calculateRefraction = false;
 
@@ -880,13 +880,21 @@ namespace ASCOM.Wise40
                 return;
             }
 
-            if (activityMonitor.InProgress(ActivityMonitor.ActivityType.ShuttingDown))
+            if (ShuttingDown)
                 return;
 
             if (_enslaveDome && !slewers.Active(Slewers.Type.Dome))
             {
                 WiseDome._adjustingForTracking = true;
                 DomeSlewer(Angle.FromHours(RightAscension), Angle.FromDegrees(Declination), "Follow telescope tracking");
+            }
+        }
+
+        public bool ShuttingDown
+        {
+            get
+            {
+                return activityMonitor.InProgress(ActivityMonitor.ActivityType.ShuttingDown);
             }
         }
 
@@ -911,7 +919,7 @@ namespace ASCOM.Wise40
                 if (value)
                 {
                     if (!wisesafetooperate.IsSafe && 
-                        !activityMonitor.InProgress(ActivityMonitor.ActivityType.ShuttingDown) &&
+                        !ShuttingDown &&
                         !BypassCoordinatesSafety)
                             throw new ASCOM.InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList));
 
@@ -1167,7 +1175,7 @@ namespace ASCOM.Wise40
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, string.Format("MoveAxis({0}, {1})", Axis, Rate));
             #endregion debug
 
-            if (!wisesafetooperate.IsSafe && !activityMonitor.InProgress(ActivityMonitor.ActivityType.ShuttingDown) && !BypassCoordinatesSafety)
+            if (!wisesafetooperate.IsSafe && !ShuttingDown && !BypassCoordinatesSafety)
                 throw new ASCOM.InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList));
 
             Const.AxisDirection direction = (Rate == Const.rateStopped) ? Const.AxisDirection.None :
@@ -1238,7 +1246,7 @@ namespace ASCOM.Wise40
                 throw new InvalidValueException("Cannot MoveAxis while AtPark");
             }
 
-            if (Rate != Const.rateStopped && !wisesafetooperate.IsSafe && !activityMonitor.InProgress(ActivityMonitor.ActivityType.ShuttingDown))
+            if (Rate != Const.rateStopped && !wisesafetooperate.IsSafe && !ShuttingDown)
                 throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList));
 
             TelescopeAxes _otherAxis = otherAxis[thisAxis];
@@ -1350,7 +1358,7 @@ namespace ASCOM.Wise40
             if (!Tracking)
                 throw new InvalidOperationException("Cannot SlewToTargetAsync while NOT Tracking");
 
-            if (!wisesafetooperate.IsSafe && !activityMonitor.InProgress(ActivityMonitor.ActivityType.ShuttingDown))
+            if (!wisesafetooperate.IsSafe && !ShuttingDown)
                 throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList));
 
             string notSafe = SafeAtCoordinates(ra, dec);
@@ -1692,7 +1700,7 @@ namespace ASCOM.Wise40
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: Exception: {0}, aborted.", ex.Message);
                 #endregion
-                if (activityMonitor.InProgress(ActivityMonitor.ActivityType.ShuttingDown))
+                if (ShuttingDown)
                     throw;
                 return;
             }
@@ -2123,7 +2131,7 @@ namespace ASCOM.Wise40
                     DomeSlewer(targetRightAscension, targetDeclination, "Follow telescope to new target");
                 }
 
-                if (! activityMonitor.InProgress(ActivityMonitor.ActivityType.ShuttingDown))
+                if (!ShuttingDown)
                     telescopeCT = telescopeCTS.Token;
 
                 foreach (Slewers.Type slewerType in new List<Slewers.Type>() { Slewers.Type.Ra, Slewers.Type.Dec })
@@ -2170,7 +2178,7 @@ namespace ASCOM.Wise40
                             slewer.type.ToString(),
                             ex.InnerException == null ? ex.Message : ex.InnerException.Message);
                         #endregion
-                        if (activityMonitor.InProgress(ActivityMonitor.ActivityType.ShuttingDown))
+                        if (ShuttingDown)
                             throw;
                     }
                     catch (Exception ex)
@@ -2213,7 +2221,7 @@ namespace ASCOM.Wise40
             if (!Tracking)
                 throw new InvalidOperationException("Cannot SlewToCoordinates while NOT Tracking");
 
-            if (!wisesafetooperate.IsSafe && !activityMonitor.InProgress(ActivityMonitor.ActivityType.ShuttingDown))
+            if (!wisesafetooperate.IsSafe && !ShuttingDown)
                 throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList));
 
             if (!noSafetyCheck)
@@ -2266,7 +2274,7 @@ namespace ASCOM.Wise40
                     throw new InvalidOperationException(notSafe);
             }
 
-            if (!activityMonitor.InProgress(ActivityMonitor.ActivityType.ShuttingDown) && !wisesafetooperate.IsSafe)
+            if (!ShuttingDown && !wisesafetooperate.IsSafe)
                 throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList));
 
             try
@@ -2360,10 +2368,7 @@ namespace ASCOM.Wise40
 
         public void Unpark()
         {
-            if (activityMonitor.InProgress(ActivityMonitor.ActivityType.ShuttingDown))
-                throw new InvalidOperationException("Observatory is shutting down!");
-
-            if (!wisesafetooperate.IsSafe && !activityMonitor.InProgress(ActivityMonitor.ActivityType.ShuttingDown))
+            if (!wisesafetooperate.IsSafe && !ShuttingDown)
                 throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList));
 
             if (AtPark)
@@ -2481,7 +2486,7 @@ namespace ASCOM.Wise40
             if (!Tracking)
                 throw new InvalidOperationException("Cannot SlewToCoordinates while NOT Tracking");
 
-            if (!wisesafetooperate.IsSafe && !activityMonitor.InProgress(ActivityMonitor.ActivityType.ShuttingDown))
+            if (!wisesafetooperate.IsSafe && !ShuttingDown)
                 throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList));
 
             string notSafe = SafeAtCoordinates(ra, dec);
@@ -2766,7 +2771,7 @@ namespace ASCOM.Wise40
             if (Slewing)
                 throw new InvalidOperationException("Cannot PulseGuide while Slewing");
 
-            if (!wisesafetooperate.IsSafe && !activityMonitor.InProgress(ActivityMonitor.ActivityType.ShuttingDown))
+            if (!wisesafetooperate.IsSafe && !ShuttingDown)
                 throw new InvalidOperationException(
                     string.Format("Not safe to operate ({0})", wisesafetooperate.UnsafeReasons));
 
@@ -3178,6 +3183,7 @@ namespace ASCOM.Wise40
                     Status = Status,
                     PrimaryIsMoving = AxisIsMoving(TelescopeAxes.axisPrimary),
                     SecondaryIsMoving = AxisIsMoving(TelescopeAxes.axisSecondary),
+                    ShuttingDown = ShuttingDown,
                 };
 
                 return JsonConvert.SerializeObject(digest);
@@ -3269,5 +3275,6 @@ namespace ASCOM.Wise40
         public string SafeAtCurrentCoordinates;
         public bool BypassCoordinatesSafety;
         public string Status;
+        public bool ShuttingDown;
     }
 }

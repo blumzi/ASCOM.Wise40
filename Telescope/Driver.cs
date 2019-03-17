@@ -544,11 +544,17 @@ namespace ASCOM.Wise40 //.Telescope
 
         public void Park()
         {
+            if (wisetele.ShuttingDown)
+                throw new InvalidOperationException("Wise40 is shutting down");
+
             wisetele.Park();
         }
 
         public void PulseGuide(GuideDirections Direction, int Duration)
         {
+            if (wisetele.ShuttingDown)
+                throw new InvalidOperationException("Wise40 is shutting down");
+
             wisetele.PulseGuide(Direction, Duration);
         }
 
@@ -651,6 +657,9 @@ namespace ASCOM.Wise40 //.Telescope
 
         public void SlewToAltAz(double Azimuth, double Altitude)
         {
+            if (wisetele.ShuttingDown)
+                throw new InvalidOperationException("Wise40 is shutting down");
+
             try
             {
                 _driverInitiatedSlew = true;
@@ -664,7 +673,10 @@ namespace ASCOM.Wise40 //.Telescope
         }
 
         public void SlewToAltAzAsync(double Azimuth, double Altitude)
-        {            
+        {
+            if (wisetele.ShuttingDown)
+                throw new InvalidOperationException("Wise40 is shutting down");
+
             try
             {
                 _driverInitiatedSlew = true;
@@ -680,6 +692,9 @@ namespace ASCOM.Wise40 //.Telescope
 
         public void SlewToCoordinates(double RightAscension, double Declination)
         {
+            if (wisetele.ShuttingDown)
+                throw new InvalidOperationException("Wise40 is shutting down");
+
             try
             {
                 _driverInitiatedSlew = true;
@@ -695,6 +710,9 @@ namespace ASCOM.Wise40 //.Telescope
 
         public void SlewToCoordinatesAsync(double RightAscension, double Declination)
         {
+            if (wisetele.ShuttingDown)
+                throw new InvalidOperationException("Wise40 is shutting down");
+
             try
             {
                 _driverInitiatedSlew = true;
@@ -710,6 +728,9 @@ namespace ASCOM.Wise40 //.Telescope
 
         public void SlewToTarget()
         {
+            if (wisetele.ShuttingDown)
+                throw new InvalidOperationException("Wise40 is shutting down");
+
             try
             {
                 _driverInitiatedSlew = true;
@@ -725,6 +746,9 @@ namespace ASCOM.Wise40 //.Telescope
 
         public void SlewToTargetAsync()
         {
+            if (wisetele.ShuttingDown)
+                throw new InvalidOperationException("Wise40 is shutting down");
+
             try
             {
                 _driverInitiatedSlew = true;
@@ -770,6 +794,9 @@ namespace ASCOM.Wise40 //.Telescope
 
             set
             {
+                if (wisetele.ShuttingDown)
+                    throw new InvalidOperationException("Wise40 is shutting down");
+
                 wisetele.TargetDeclination = value;
             }
         }
@@ -783,6 +810,9 @@ namespace ASCOM.Wise40 //.Telescope
 
             set
             {
+                if (wisetele.ShuttingDown)
+                    throw new InvalidOperationException("Wise40 is shutting down");
+
                 wisetele.TargetRightAscension = value;
             }
         }
@@ -796,6 +826,9 @@ namespace ASCOM.Wise40 //.Telescope
 
             set
             {
+                if (wisetele.ShuttingDown)
+                    throw new InvalidOperationException("Wise40 is shutting down");
+
                 wisetele.Tracking = value;
             }
         }
@@ -836,6 +869,9 @@ namespace ASCOM.Wise40 //.Telescope
 
         public void Unpark()
         {
+            if (wisetele.ShuttingDown)
+                throw new InvalidOperationException("Wise40 is shutting down");
+
             wisetele.Unpark();
         }
 

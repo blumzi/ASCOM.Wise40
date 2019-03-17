@@ -264,7 +264,11 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 #region ShouldShutdown
                 string shutdownReason = String.Join(" and ", reasonsList);
 
-                if (ObservatoryIsLogicallyParked && ObservatoryIsPhysicallyParked)
+                if (telescopeDigest.ShuttingDown)
+                {
+                    Log("Wise40 already shutting down");
+                }
+                else if (ObservatoryIsLogicallyParked && ObservatoryIsPhysicallyParked)
                 {
                     Log("Wise40 already parked.");
                 }

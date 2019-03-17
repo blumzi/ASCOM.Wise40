@@ -287,7 +287,7 @@ namespace ASCOM.Wise40SafeToOperate
                     break;
 
                 case "start-shutdown":      // hidden
-                    _shuttingDown = true;
+                    ShuttingDown = true;
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Started shutdown");
                     #endregion
@@ -295,7 +295,7 @@ namespace ASCOM.Wise40SafeToOperate
                     break;
 
                 case "end-shutdown":        // hidden
-                    _shuttingDown = false;
+                    ShuttingDown = false;
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Ended shutdown");
                     #endregion
@@ -320,6 +320,19 @@ namespace ASCOM.Wise40SafeToOperate
                     throw new ASCOM.ActionNotImplementedException("Action " + actionName + " is not implemented by this driver");
             }
             return ret;
+        }
+
+        public bool ShuttingDown
+        {
+            get
+            {
+                return _shuttingDown;
+            }
+
+            set
+            {
+                _shuttingDown = value;
+            }
         }
 
         public string Digest
@@ -504,8 +517,11 @@ namespace ASCOM.Wise40SafeToOperate
                     return reasons;
                 }
 
-                if (_shuttingDown)
+                if (ShuttingDown)
+                {
+                    reasons.Add("Wise40 is shutting down");
                     return reasons;     // when shutting down all sensors are ignored
+                }
 
                 foreach (Sensor s in _prioritizedSensors)
                 {
