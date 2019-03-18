@@ -479,6 +479,12 @@ namespace ASCOM.Wise40 //.FilterWheel
                     {
                         Enabled = Enabled,
                         Status = Status,
+                        Arduino = new ArduinoDigest
+                        {
+                            Status = arduino.Status,
+                            StatusString = arduino.StatusAsString,
+                            Error = arduino.Error,
+                        },
                         Serial = new SerialPortDigest
                         {
                             Port = arduino.SerialPortName,
@@ -952,6 +958,13 @@ namespace ASCOM.Wise40 //.FilterWheel
         }
     }
 
+    public class ArduinoDigest
+    {
+        public ArduinoInterface.ArduinoStatus Status;
+        public string StatusString;
+        public string Error;
+    }
+
     public class SerialPortDigest
     {
         public string Port;
@@ -963,6 +976,7 @@ namespace ASCOM.Wise40 //.FilterWheel
     {
         public bool Enabled;
         public string Status;
+        public ArduinoDigest Arduino;
         public SerialPortDigest Serial;
         public WiseFilterWheel.Wheel.WheelDigest Wheel;
     }

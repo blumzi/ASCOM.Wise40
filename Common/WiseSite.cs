@@ -186,6 +186,14 @@ namespace ASCOM.Wise40
             }
         }
         
+        public static bool FilterWheelInUse
+        {
+            get
+            {
+                return OperationalMode != OpMode.LCO;
+            }
+        }
+
         public static OpMode OperationalMode
         {
             get

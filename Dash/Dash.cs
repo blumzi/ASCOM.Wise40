@@ -33,7 +33,7 @@ namespace Dash
         Debugger debugger = Debugger.Instance;
         FilterWheelForm filterWheelForm;
 
-        Statuser dashStatus, telescopeStatus, domeStatus, shutterStatus, focuserStatus, safetooperateStatus, filterWheelStatus;
+        Statuser dashStatus, telescopeStatus, domeStatus, shutterStatus, focuserStatus, safetooperateStatus, filterWheelStatus, filterWheelArduinoStatus;
 
         private double handpadRate = Const.rateSlew;
         private bool _saveFocusUpperLimit = false, _saveFocusLowerLimit = false;
@@ -169,6 +169,7 @@ namespace Dash
             focuserStatus = new Statuser(labelFocuserStatus);
             safetooperateStatus = new Statuser(labelWeatherStatus, toolTip);
             filterWheelStatus = new Statuser(labelFilterWheelStatus);
+            filterWheelArduinoStatus = new Statuser(labelFilterWheelStatus);
 
             menuStrip.RenderMode = ToolStripRenderMode.ManagerRenderMode;
             ToolStripManager.Renderer = new ASCOM.Wise40.Common.Wise40ToolstripRenderer();
@@ -666,6 +667,12 @@ namespace Dash
             #endregion
 
             #region RefreshFilterWheel
+            if (filterWheelDigest != null &&
+                filterWheelDigest.Enabled &&
+                (filterWheelDigest.Arduino.Status == ArduinoInterface.ArduinoStatus.Communicating || filterWheelDigest.Arduino.Status == ArduinoInterface.ArduinoStatus.Moving))
+                annunciatorFilterWheel.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+            else
+                annunciatorFilterWheel.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
             LoadFilterWheelInformation();
             #endregion
 
@@ -1421,22 +1428,33 @@ namespace Dash
             #endregion
         }
 
+        private void DashOutFilterWheelControls()
+        {
+            labelFWWheel.Text = "--";
+            labelFWPosition.Text = "--";
+            labelFWFilter.Text = "--";
+        }
+
         private void LoadFilterWheelInformation()
         {
-            if (!filterWheelDigest.Enabled)
-                return;
-
-            short position = filterWheelDigest.Wheel.CurrentPosition;
-
-            if (filterWheelDigest.Wheel.Type == WiseFilterWheel.WheelType.WheelUnknown)
+            if (!WiseSite.FilterWheelInUse)
             {
-                labelFWWheel.Text = "Unknown";
-                labelFWPosition.Text = "";
-                labelFWFilter.Text = "";
-
-                filterWheelStatus.Show("Cannot detect filter wheel!", 0, Statuser.Severity.Error);
+                DashOutFilterWheelControls();
+                filterWheelStatus.Show(string.Format("Not available in {0} mode!", WiseSite.OperationalMode));
                 return;
             }
+            else if (filterWheelDigest == null || filterWheelDigest.Wheel.Type == WiseFilterWheel.WheelType.WheelUnknown)
+            {
+                DashOutFilterWheelControls();
+                return;
+            } else if (!filterWheelDigest.Enabled)
+            {
+                DashOutFilterWheelControls();
+                filterWheelStatus.Show("Disabled (see Settings->FilterWheel->Settings)");
+                return;
+            }
+
+            short position = filterWheelDigest.Wheel.CurrentPosition;
 
             labelFWWheel.Text = string.Format("{0} ({1} inch filters)", filterWheelDigest.Wheel.Name, filterWheelDigest.Wheel.Type == WiseFilterWheel.WheelType.Wheel4 ? "3" : "2");
             labelFWPosition.Text = (position + 1).ToString();
@@ -1458,6 +1476,14 @@ namespace Dash
             }
 
             filterWheelStatus.Show(filterWheelDigest.Status);
+            if (filterWheelDigest.Arduino.Status == ArduinoInterface.ArduinoStatus.Idle)
+                filterWheelArduinoStatus.Show("");
+
+            if (filterWheelDigest.Arduino.Error != string.Empty)
+                filterWheelArduinoStatus.Show(filterWheelDigest.Arduino.Error, 0, Statuser.Severity.Error);
+            else if (filterWheelDigest.Arduino.StatusString != string.Empty)
+                filterWheelArduinoStatus.Show(filterWheelDigest.Arduino.StatusString);
+
         }
 
         private void UpdateAlteredItems(ToolStripMenuItem item, string title)

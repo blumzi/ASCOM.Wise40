@@ -52,7 +52,7 @@ namespace ASCOM.Wise40
                 _tag = e.reply.Substring("tag:".Length);
             }
             else if (e.reply.StartsWith("error:"))
-                _error = "(arduino) " + e.reply.Substring("error:".Length);
+                _error = e.reply.Substring("error:".Length);
         }
 
         public class CommunicationCompleteEventArgs : EventArgs
@@ -215,12 +215,12 @@ namespace ASCOM.Wise40
             int timeoutMillis = 0)
         {
             if (_serialPort == null) {
-                _error = "(domepc) _serialPort is null";
+                _error = "_serialPort is null";
                 _status = ArduinoStatus.BadPort;
                 return;
             } else if (! _serialPort.IsOpen)
             {
-                _error = string.Format("(domepc) _serialPort ({0}) not open", _serialPortName);
+                _error = string.Format("port \"{0}\" not open", _serialPortName);
                 _status = ArduinoStatus.PortNotOpen;
                 return;
             }
@@ -314,6 +314,14 @@ namespace ASCOM.Wise40
             get
             {
                 return _status.ToString();
+            }
+        }
+
+        public ArduinoStatus Status
+        {
+            get
+            {
+                return _status;
             }
         }
 
