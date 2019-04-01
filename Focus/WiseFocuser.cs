@@ -383,7 +383,7 @@ namespace ASCOM.Wise40
 
         public void Move(Direction dir)
         {
-            if (!safetooperate.IsSafe && !activityMonitor.InProgress(ActivityMonitor.ActivityType.ShuttingDown))
+            if (!safetooperate.IsSafe && !activityMonitor.ShuttingDown)
                 throw new InvalidOperationException(string.Join(", ", safetooperate.UnsafeReasonsList));
 
             #region debug
@@ -427,7 +427,7 @@ namespace ASCOM.Wise40
             if (IsMoving)
                 throw new InvalidOperationException("Cannot Move while IsMoving == true");
 
-            if (!safetooperate.IsSafe && !activityMonitor.InProgress(ActivityMonitor.ActivityType.ShuttingDown))
+            if (!safetooperate.IsSafe && !activityMonitor.ShuttingDown)
                 throw new InvalidOperationException(string.Join(", ", safetooperate.UnsafeReasonsList));
 
             if (TempComp)

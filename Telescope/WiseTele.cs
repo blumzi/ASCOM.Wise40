@@ -894,7 +894,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return activityMonitor.InProgress(ActivityMonitor.ActivityType.ShuttingDown);
+                return activityMonitor.ShuttingDown;
             }
         }
 
@@ -1544,6 +1544,8 @@ namespace ASCOM.Wise40
 
             bool rememberToCancelSafetyBypass = false;
 
+            activityMonitor.NewActivity(new Activity.ShutdownActivity(reason));
+
             if (!safetooperateDigest.Bypassed)
             {
                 rememberToCancelSafetyBypass = true;
@@ -1551,12 +1553,9 @@ namespace ASCOM.Wise40
             }
             wisesafetooperate.Action("start-shutdown", "");
 
-            activityMonitor.NewActivity(new Activity.ShutdownActivity(reason));
-
             if (AtPark)
             {
-                // Don't call Unpark(), it throws exception if while ShuttingDown
-                AtPark = false;
+                AtPark = false; // Don't call Unpark(), it throws exception if while ShuttingDown
             }
 
             if (domeSlaveDriver.AtPark)
@@ -2847,7 +2846,12 @@ namespace ASCOM.Wise40
                     return "ok";
 
                 case "abort-shutdown":
-                    AbortSlew("Action(\"abort-Shutdown\"");
+                    AbortSlew("Action(\"abort-shutdown\"");
+                    activityMonitor.EndActivity(ActivityMonitor.ActivityType.ShuttingDown, new Activity.EndParams
+                    {
+                        endReason = "Action(\"abort-shutdown\"",
+                        endState = Activity.State.Aborted,
+                    });
                     return "ok";
 
                 case "opmode":
@@ -3183,7 +3187,7 @@ namespace ASCOM.Wise40
                     Status = Status,
                     PrimaryIsMoving = AxisIsMoving(TelescopeAxes.axisPrimary),
                     SecondaryIsMoving = AxisIsMoving(TelescopeAxes.axisSecondary),
-                    ShuttingDown = ShuttingDown,
+                    ShuttingDown = activityMonitor.ShuttingDown,
                 };
 
                 return JsonConvert.SerializeObject(digest);

@@ -332,6 +332,9 @@ namespace ASCOM.Wise40 //.Dome
 
         public void CloseShutter()
         {
+            if (WiseDome.activityMonitor.ShuttingDown)
+                throw new InvalidOperationException("Observatory is shutting down!");
+
             #region debug
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, "CloseShutter");
             #endregion
@@ -345,6 +348,9 @@ namespace ASCOM.Wise40 //.Dome
 
         public void OpenShutter()
         {
+            if (WiseDome.activityMonitor.ShuttingDown)
+                throw new InvalidOperationException("Observatory is shutting down!");
+
             #region debug
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, "OpenShutter");
             #endregion
