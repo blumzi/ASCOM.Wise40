@@ -81,7 +81,7 @@ namespace Wise40Watcher
                 if (pid != 0)
                 {
                     _process = Process.GetProcessById(pid);
-                    log("Start: waiting for pid {0} ({1}) ...", pid, _applicationPath);
+                    log("Start: watching for pid {0} ({1}) ...", pid, _applicationPath);
                     _process.WaitForExit();
 
                     // TBD: Get the exit code
@@ -101,9 +101,7 @@ namespace Wise40Watcher
         {
             if (WiseName == "ascom")
             {
-                Process[] ochs = Process.GetProcessesByName(Const.wiseASCOMOCHServerAppName);
-
-                foreach (var p in ochs)
+                foreach (var p in Process.GetProcessesByName(Const.wiseASCOMOCHServerAppName))
                 {
                     log("KillAllProcesses: Killing pid: {0} ({1}) ...", p.Id, p.ProcessName);
                     p.Kill();
@@ -111,13 +109,21 @@ namespace Wise40Watcher
                 }
             }
 
-            Process[] processes = Process.GetProcessesByName(_applicationName);
-
-            foreach (var p in processes)
+            foreach (var p in Process.GetProcessesByName(_applicationName))
             {
                 log("KillAllProcesses: Killing pid: {0} ({1}) ...", p.Id, p.ProcessName);
                 p.Kill();
                 Thread.Sleep(1000);
+            }
+
+            if (WiseName == "ascom")
+            {
+                foreach (var p in Process.GetProcessesByName(Const.wiseASCOMRemoteClientLocalServerAppName))
+                {
+                    log("KillAllProcesses: Killing pid: {0} ({1}) ...", p.Id, p.ProcessName);
+                    p.Kill();
+                    Thread.Sleep(1000);
+                }
             }
         }
 
@@ -155,7 +161,7 @@ namespace Wise40Watcher
         public void Stop()
         {
             _stopping = true;
-            log("Stop: The {0} service was Stopped, killing process {1} ...", serviceName, _process.Id);
+            log("Stop: The {0} service was Stopped, killing process {1} ({2})...", serviceName, _process.Id, _process.ProcessName);
             _process.Kill();
             Thread.Sleep(1000);
 
