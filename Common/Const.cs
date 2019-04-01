@@ -56,6 +56,8 @@ namespace ASCOM.Wise40.Common
         public const string wiseObservatoryMonitorAppName = "ObservatoryMonitor";
         public const string wiseASCOMOCHServerAppName = "ASCOM.OCH.Server";
 
+        public const string wiseASCOMRemoteClientLocalServerAppName = "ASCOM.RemoteClientLocalServer";
+
         public const string wiseDashboardAppName = "Dash";
         public const string wiseSimulatedDashPath = "c:/Users/Blumzi/Documents/Visual Studio 2015/Projects/Wise40/Dash/bin/x86/Debug/Dash.exe";
         public const string wiseRealDashPath = "c:/Users/mizpe/source/repos/ASCOM.Wise40/Dash/bin/x86/Debug/Dash.exe";
