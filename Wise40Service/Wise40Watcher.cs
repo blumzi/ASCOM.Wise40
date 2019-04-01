@@ -65,7 +65,7 @@ namespace Wise40Watcher
             ascomWatcher.Start(args, waitForResponse: true);
             dashWatcher.Start(args);
             obsmonWatcher.Start(args);
-            Thread.Sleep(1000);
+            Thread.Sleep(2000);
             log("=========== Start done ===========");
         }
 
