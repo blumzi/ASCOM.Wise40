@@ -34,7 +34,6 @@ namespace ASCOM.Wise40.ObservatoryMonitor
         static DriverAccess.Dome wisedome = null;
         static DriverAccess.SafetyMonitor wisesafetooperate = null;
         Version version = new Version(0, 2);
-        private static long _shuttingDown = 0;
         static DateTime _nextCheck = DateTime.Now + TimeSpan.FromSeconds(10);
         static public TimeSpan _intervalBetweenChecks;
         static public int _minutesToIdle;
@@ -195,9 +194,6 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
         private void CheckSituation()
         {
-            if (ShuttingDown)
-                return;
-
             #region GetStatus
             try
             {
@@ -233,7 +229,17 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             #endregion
 
             #region ActivityLabel
-            if (telescopeDigest.Active)
+            if (telescopeDigest == null)
+            {
+                labelActivity.Text = "";
+            }
+            else if (telescopeDigest.ShuttingDown)
+            {
+                labelActivity.Text = "ShuttingDown";
+                labelActivity.ForeColor = warningColor;
+                toolTip.SetToolTip(labelActivity, "Wise40 is shutting down");
+            }
+            else if (telescopeDigest.Active)
             {
                 labelActivity.Text = "Active";
                 labelActivity.ForeColor = safeColor;
@@ -266,7 +272,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
                 if (telescopeDigest.ShuttingDown)
                 {
-                    Log("Wise40 already shutting down");
+                    ;   // Do nothing
                 }
                 else if (ObservatoryIsLogicallyParked && ObservatoryIsPhysicallyParked)
                 {
@@ -341,7 +347,9 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             s += string.Format("{0:D2}s", remaining.Seconds);
             labelNextCheck.Text = "in " + s;
 
-            buttonManualIntervention.Enabled = !ShuttingDown;
+            if (telescopeDigest != null && !telescopeDigest.ShuttingDown)
+                buttonManualIntervention.Enabled = true;
+
             updateManualInterventionControls();
 
             if (now >= _nextCheck)
@@ -351,7 +359,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 {
                     CheckSituation();
 
-                    if (!ShuttingDown)
+                    if (telescopeDigest != null && !telescopeDigest.ShuttingDown)
                         UpdateConditionsControls();
                 }
 
@@ -468,7 +476,6 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
             CT = CTS.Token;
 
-            ShuttingDown = true;
             Task.Run(() =>
             {
                 try
@@ -479,23 +486,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 {
                     Log(string.Format("DoShutdownObservatory:Exception: {0}", ex.InnerException == null ? ex.Message : ex.InnerException.Message));
                 }
-            }, CT).ContinueWith((x) => {
-                ShuttingDown = false;
-            },
-            TaskContinuationOptions.ExecuteSynchronously);
-        }
-
-        bool ShuttingDown
-        {
-            get
-            {
-                return Interlocked.Read(ref _shuttingDown) == 1;
-            }
-
-            set
-            {
-                Interlocked.Exchange(ref _shuttingDown, value ? 1 : 0);
-            }
+            }, CT);
         }
 
         private static void SleepWhileProcessingEvents()
@@ -561,6 +552,9 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                         {
                             if (wisetelescope.Action("shutdown", reason) != "ok")
                                 throw new OperationCanceledException("Action(\"telescope:shutdown\") did not reply with \"ok\"");
+                            labelActivity.Text = "ShuttingDown";
+                            labelActivity.ForeColor = warningColor;
+                            toolTip.SetToolTip(labelActivity, "Wise40 is shutting down");
                         }
                         catch (Exception ex)
                         {
@@ -617,6 +611,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                     } while (!done);
 
                     Log("   Done parking Wise40.");
+                    labelActivity.Text = "";
                 }
 
                 if (!telescopeDigest.EnslavesDome)
@@ -667,7 +662,6 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
                 wisetelescope.Action("abort-shutdown", "");
             }
-            ShuttingDown = false;
         }
 
         /// <summary>
