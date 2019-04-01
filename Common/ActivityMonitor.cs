@@ -139,6 +139,20 @@ namespace ASCOM.Wise40
             activity.End(p);
         }
 
+        public bool ShuttingDown
+        {
+            get
+            {
+                bool ret;
+
+                lock (inProgressActivitiesLock)
+                {
+                    ret = (inProgressActivities.Find((x) => x._type == ActivityType.ShuttingDown) != default(Activity));
+                }
+                return ret;
+            }
+        }
+
         public bool InProgress(ActivityType a)
         {
             return LookupInProgress(a) != null;
@@ -184,28 +198,28 @@ namespace ASCOM.Wise40
             {
                 List<string> ret = new List<string>();
 
-                foreach (Activity a in ActivityMonitor.Instance.inProgressActivities)
+                lock (inProgressActivitiesLock)
                 {
-                    if (a._type == ActivityType.GoingIdle)
+                    foreach (Activity a in ActivityMonitor.Instance.inProgressActivities)
                     {
-                        Activity.GoingIdleActivity gia = (a as Activity.GoingIdleActivity);
-                        TimeSpan ts = gia.RemainingTime;
-
-                        string s = a._type.ToString();
-                        if (ts != TimeSpan.MaxValue)
+                        if (a._type == ActivityType.GoingIdle)
                         {
-                            s += " in ";
-                            if (ts.TotalMinutes > 0)
-                                s += string.Format("{0:D2}m", (int)ts.TotalMinutes);
-                            s += string.Format("{0:D2}s", ts.Seconds);
+                            Activity.GoingIdleActivity gia = (a as Activity.GoingIdleActivity);
+                            TimeSpan ts = gia.RemainingTime;
+
+                            string s = a._type.ToString();
+                            if (ts != TimeSpan.MaxValue)
+                            {
+                                s += " in ";
+                                if (ts.TotalMinutes > 0)
+                                    s += string.Format("{0:D2}m", (int)ts.TotalMinutes);
+                                s += string.Format("{0:D2}s", ts.Seconds);
+                            }
+                            ret.Add(s);
                         }
-                        ret.Add(s);
+                        else if ((a._type & ActivityMonitor.ActivityType.RealActivities) != 0)
+                            ret.Add(a._type.ToString());
                     }
-                    else
-                        if ((a._type & ActivityMonitor.ActivityType.RealActivities) == 0)
-                            continue;
-                    else
-                        ret.Add(a._type.ToString());
                 }
 
                 return ret;
@@ -215,16 +229,23 @@ namespace ASCOM.Wise40
         public List<Activity> activityLog = new List<Activity>();
         public List<Activity> inProgressActivities = new List<Activity>();
         public List<Activity> endedActivities = new List<Activity>();
+        public static object inProgressActivitiesLock = new object();
 
         public Activity LookupInProgress(ActivityType type)
         {
-            #region debug
-            string dbg = string.Format("ActivityMonitor:LookupInProgress: type: {0}, in progress: [", type);
-            foreach (Activity a in inProgressActivities)
-                dbg += string.Format(" {0} ({1})", a._type.ToString(), a.GetHashCode());
-            dbg += " ] ";
-            #endregion
-            Activity ret = inProgressActivities.Find((x) => x._type == type);
+            Activity ret;
+            string dbg;
+
+            lock (inProgressActivitiesLock)
+            {
+                #region debug
+                dbg = string.Format("ActivityMonitor:LookupInProgress: type: {0}, in progress: [", type);
+                foreach (Activity a in inProgressActivities)
+                    dbg += string.Format(" {0} ({1})", a._type.ToString(), a.GetHashCode());
+                dbg += " ] ";
+                #endregion
+                ret = inProgressActivities.Find((x) => x._type == type);
+            }
 
             #region debug
             dbg += (ret == default(Activity) ? "NOT found" : "found");
@@ -233,20 +254,14 @@ namespace ASCOM.Wise40
             return ret;
         }
 
-        public bool AnyInProgress(ActivityType types)
-        {
-            foreach (var activity in inProgressActivities)
-                if ((activity._type & types) != 0)
-                    return true;
-
-            return false;
-        }
-
         public void NewActivity(Activity activity)
         {
             activityLog.Add(activity);
-            if (!inProgressActivities.Contains(activity))
-                inProgressActivities.Add(activity);
+            lock (inProgressActivitiesLock)
+            {
+                if (!inProgressActivities.Contains(activity))
+                    inProgressActivities.Add(activity);
+            }
 
             if (activity.effectOnGoingIdle_AtStart == Activity.EffectOnGoingIdle.Remove)
             {
@@ -350,8 +365,9 @@ namespace ASCOM.Wise40
             {
                 msg += string.Format(", details: {0}", _startDetails);
             }
-
+            #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic, msg);
+            #endregion
         }
 
         public void EmitEnd()
@@ -363,9 +379,7 @@ namespace ASCOM.Wise40
             {
                 msg += string.Format(", _details: {0}", _endDetails);
             }
-            msg += string.Format(", _completionState: {0}, _completionReason: {1}",
-                _state,
-                _endReason);
+            msg += string.Format(", _completionState: {0}, _completionReason: {1}", _state, _endReason);
 
             FilterDefinition<BsonDocument> filter = new BsonDocument("_id", _objectId);
 
@@ -377,6 +391,9 @@ namespace ASCOM.Wise40
                 Set("EndState", _state.ToString());
 
             var result = ActivityMonitor.ActivitiesCollection.FindOneAndUpdate(filter, update);
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, msg);
+            #endregion
         }
 
         public void EndActivity(EndParams par)
@@ -394,7 +411,10 @@ namespace ASCOM.Wise40
             EmitEnd();
 
             monitor.endedActivities.Add(this);
-            monitor.inProgressActivities.Remove(this);
+            lock (ActivityMonitor.inProgressActivitiesLock)
+            {
+                monitor.inProgressActivities.Remove(this);
+            }
 
             if (this._type != ActivityMonitor.ActivityType.GoingIdle && 
                 ActivityMonitor.ObservatoryActivities.Count() == 0 &&
@@ -858,7 +878,7 @@ namespace ASCOM.Wise40
                 _reason = reason;
                 _startDetails = string.Format("reason: {0}", _reason);
                 effectOnGoingIdle_AtStart = EffectOnGoingIdle.Remove;
-                effectOnGoingIdle_AtEnd = EffectOnGoingIdle.NoEffect;
+                effectOnGoingIdle_AtEnd = EffectOnGoingIdle.Remove;
                 EmitStart();
             }
 
