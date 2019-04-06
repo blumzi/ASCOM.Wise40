@@ -167,11 +167,6 @@ namespace ASCOM.Wise40SafeToOperate
 
             ReadProfile(); // Read device configuration from the ASCOM Profile store
             _safetyState = Event.SafetyEvent.SafetyState.Unknown;
-            activityMonitor.Event(new Event.SafetyEvent()
-            {
-                _safetyState = _safetyState,
-                _details = "WiseSafeToOperate.init()",
-            });
             initialized = true;
         }
 

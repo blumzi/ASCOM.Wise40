@@ -86,6 +86,8 @@ namespace ASCOM.Wise40
             {
                 string collectionName = Debugger.LogDirectory().Remove(0, (Const.topWise40Directory + "Logs/").Length);
 
+                if (db == null)
+                    db = (new MongoClient()).GetDatabase("activities");
                 return db.GetCollection<BsonDocument>(collectionName);
             }
         }
