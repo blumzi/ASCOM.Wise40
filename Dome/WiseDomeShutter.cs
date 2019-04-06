@@ -28,7 +28,6 @@ namespace ASCOM.Wise40
 
         private ShutterState _state = ShutterState.shutterError;
 
-        private static WiseObject wiseobject = new WiseObject();
         private static TimeSpan _simulatedAge = new TimeSpan(0, 0, 3);
 
         List<WisePin> shutterPins;
@@ -39,6 +38,22 @@ namespace ASCOM.Wise40
 
         public class WebClient
         {
+
+            public class CommunicationAttempt
+            {
+                public int Id;
+                public DateTime Time;
+                private static int nextId = 0;
+
+                public CommunicationAttempt()
+                {
+                    Id = nextId++;
+                    Time = DateTime.Now;
+                }
+            }
+            public static int _totalCommunicationAttempts = 0, _failedCommunicationAttempts = 0;
+            public static CommunicationAttempt _lastSuccessfullAttempt, _lastFailedAttempt;
+
             private static System.Threading.Timer _periodicWebReadTimer;
             private static string _uri;
             private static DateTime _lastReadingTime = DateTime.MinValue;
@@ -63,18 +78,16 @@ namespace ASCOM.Wise40
 
             public WebClient(string address, WiseDomeShutter wisedomeshutter)
             {
-                _pacing = Pacing.Slow;
-                _timeoutMillis = PacingToMillis[_pacing];
-
                 _client = new HttpClient();
-                _client.Timeout = TimeSpan.FromMilliseconds(_timeoutMillis);
                 _client.DefaultRequestHeaders.Accept.Add(
                     new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/html"));
-                _client.DefaultRequestHeaders.ConnectionClose = true;
+                _client.DefaultRequestHeaders.ConnectionClose = false;
                 _uri = String.Format("http://{0}/range", address);
 
                 _periodicWebReadTimer = new System.Threading.Timer(new TimerCallback(PeriodicReader));
-                SetPacing(_pacing);
+
+                _client.Timeout = TimeSpan.FromSeconds(1.5);
+                SetPacing(Pacing.Slow);
                 _wisedomeshutter = wisedomeshutter;
             }
 
@@ -185,31 +198,54 @@ namespace ASCOM.Wise40
             {
                 int ret = -7;
 
+                _totalCommunicationAttempts++;
+                CommunicationAttempt communicationAttempt = new CommunicationAttempt();
+
+                DateTime start = DateTime.Now;
+                TimeSpan duration;
                 try
                 {
                     var response = await _client.GetAsync(_uri);
+                    duration = DateTime.Now.Subtract(start);
 
-                    //will throw an exception if not successful
-                    response.EnsureSuccessStatusCode();
+                    Instance.webClient.WiFiIsWorking = true;
 
-                    string prefix = "<!DOCTYPE HTML>\r\n<html>";
-                    string suffix = "</html>\r\n";
-
-                    string content = await response.Content.ReadAsStringAsync();
-                    if (content.StartsWith(prefix) && content.EndsWith(suffix))
+                    if (response.IsSuccessStatusCode)
                     {
+                        string prefix = "<!DOCTYPE HTML>\r\n<html>";
+                        string suffix = "</html>\r\n";
 
-                        content = content.Remove(0, prefix.Length);
-                        content = content.Remove(content.IndexOf(suffix[0]));
-                        ret = Convert.ToInt32(content);
-                        Instance.webClient.WiFiIsWorking = true;
+                        _lastSuccessfullAttempt = communicationAttempt;
+                        string content = await response.Content.ReadAsStringAsync();
+                        if (content.StartsWith(prefix) && content.EndsWith(suffix))
+                        {
+
+                            content = content.Remove(0, prefix.Length);
+                            content = content.Remove(content.IndexOf(suffix[0]));
+                            ret = Convert.ToInt32(content);
+                            #region debug
+                            debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "GetShutterPosition: Success: ret = {0}, duration: {1}", ret, duration);
+                            #endregion
+                        }
                     }
-                }
-                catch (Exception ex)
+                    else
+                    {
+                        _failedCommunicationAttempts++;
+                        _lastFailedAttempt = communicationAttempt;
+                        #region debug
+                        debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "GetShutterPosition: Azimuth: {0}, FAILED: StatusCode: {1}, ReasonPhrase: {2} duration: {3}",
+                            WiseDome.Instance.Azimuth.ToNiceString(), response.StatusCode, response.ReasonPhrase, duration);
+                        #endregion
+                    }
+                } catch (Exception ex)
                 {
+                    duration = DateTime.Now.Subtract(start);
                     Instance.webClient.WiFiIsWorking = false;
+                    _failedCommunicationAttempts++;
+                    _lastFailedAttempt = communicationAttempt;
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "GetShutterPosition: Exception: {0}", ex.Message);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "GetShutterPosition: Azimuth: {0}, Exception: {1}, duration: {2}",
+                        WiseDome.Instance.Azimuth.ToNiceString(), ex.Message, duration);
                     #endregion
                 }
                 return ret;
