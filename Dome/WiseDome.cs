@@ -860,6 +860,13 @@ namespace ASCOM.Wise40
         {
             get
             {
+                TimeSpan _sinceLastSuccess = TimeSpan.Zero, _sinceLastFailure = TimeSpan.Zero;
+
+                if (WiseDomeShutter.WebClient._lastSuccessfullAttempt != null)
+                    _sinceLastSuccess = DateTime.Now.Subtract(WiseDomeShutter.WebClient._lastSuccessfullAttempt.Time);
+                if (WiseDomeShutter.WebClient._lastFailedAttempt != null)
+                    _sinceLastFailure = DateTime.Now.Subtract(WiseDomeShutter.WebClient._lastFailedAttempt.Time);
+
                 return JsonConvert.SerializeObject(new DomeDigest()
                 {
                     Azimuth = Azimuth.Degrees,
@@ -879,6 +886,10 @@ namespace ASCOM.Wise40
                         PercentOpen = wisedomeshutter.PercentOpen,
                         TimeSinceLastReading = wisedomeshutter.webClient.TimeSinceLastReading,
                         WiFiIsWorking = wisedomeshutter.webClient.WiFiIsWorking,
+                        TotalCommunicationAttempts = WiseDomeShutter.WebClient._totalCommunicationAttempts,
+                        FailedCommunicationAttempts = WiseDomeShutter.WebClient._failedCommunicationAttempts,
+                        TimeSinceLastSuccessfullReading = _sinceLastSuccess,
+                        TimeSinceLastFailedReading = _sinceLastFailure,
                     }
                 });
             }
@@ -1487,6 +1498,9 @@ namespace ASCOM.Wise40
         public int RangeCm;
         public TimeSpan TimeSinceLastReading;
         public bool WiFiIsWorking;
+        public TimeSpan TimeSinceLastSuccessfullReading;
+        public TimeSpan TimeSinceLastFailedReading;
+        public int TotalCommunicationAttempts, FailedCommunicationAttempts;
         //public ConnectionDigest Connection;
     }
 
