@@ -611,7 +611,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                     } while (!done);
 
                     Log("   Done parking Wise40.");
-                    labelActivity.Text = "";
+                    labelActivity.Text = telescopeDigest.Active ? "Active" : "Idle";
                 }
 
                 if (!telescopeDigest.EnslavesDome)
