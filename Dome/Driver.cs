@@ -66,7 +66,7 @@ namespace ASCOM.Wise40 //.Dome
         /// ASCOM DeviceID (COM ProgID) for this driver.
         /// The DeviceID is used by ASCOM applications to load the driver at runtime.
         /// </summary>
-        internal static string driverID = Const.wiseDomeDriverID;
+        internal static string driverID = Const.WiseDriverID.Dome;
 
         private static Version version = new Version("0.2");
         /// <summary>

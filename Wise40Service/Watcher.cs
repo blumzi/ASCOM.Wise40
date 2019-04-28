@@ -14,8 +14,9 @@ namespace Wise40Watcher
 {
     public class Watcher : WiseObject
     {
-        private string _applicationPath;
-        private string _applicationName;
+        //private string _applicationPath;
+        //private string _applicationName;
+        Const.App _application;
         private static string _logFile;
         Process _process = null;
         bool _stopping = false;
@@ -23,31 +24,23 @@ namespace Wise40Watcher
 
         private void init(string name)
         {
-            string top = Simulated ?
-                "c:/Users/Blumzi/Documents/Visual Studio 2015/Projects/Wise40" :
-                "c:/Users/mizpe/source/repos/ASCOM.Wise40";
-
             WiseName = name;
             switch (WiseName)
             {
                 case "ascom":
-                    _applicationPath = Const.wiseASCOMServerPath;
-                    _applicationName = Const.wiseASCOMServerAppName;
+                    _application = Const.Apps[Const.Application.RESTServer];
                     break;
 
                 case "weatherlink":
-                    _applicationPath = Const.wiseWeatherLinkAppPath;
-                    _applicationName = Const.wiseWeatherLinkAppName;
+                    _application = Const.Apps[Const.Application.WeatherLink];
                     break;
 
                 case "dash":
-                    _applicationPath = top + "/Dash/bin/x86/Debug/Dash.exe";
-                    _applicationName = Const.wiseDashboardAppName;
+                    _application = Const.Apps[Const.Application.Dash];
                     break;
 
                 case "obsmon":
-                    _applicationPath = top + "/ObservatoryMonitor/bin/Debug/ObservatoryMonitor.exe";
-                    _applicationName = Const.wiseObservatoryMonitorAppName;
+                    _application = Const.Apps[Const.Application.ObservatoryMonitor];
                     break;
             }
         }
@@ -77,11 +70,11 @@ namespace Wise40Watcher
 
             while (!_stopping)
             {
-                CreateProcessAsUserWrapper.LaunchChildProcess(_applicationPath, out pid);
+                CreateProcessAsUserWrapper.LaunchChildProcess(_application.Path, out pid);
                 if (pid != 0)
                 {
                     _process = Process.GetProcessById(pid);
-                    log("Start: watching for pid {0} ({1}) ...", pid, _applicationPath);
+                    log("Start: watching for pid {0} ({1}) ...", pid, _application.Path);
                     _process.WaitForExit();
 
                     // TBD: Get the exit code
@@ -101,7 +94,7 @@ namespace Wise40Watcher
         {
             if (WiseName == "ascom")
             {
-                foreach (var p in Process.GetProcessesByName(Const.wiseASCOMOCHServerAppName))
+                foreach (var p in Process.GetProcessesByName(Const.Apps[Const.Application.OCHServer].appName))
                 {
                     log("KillAllProcesses: Killing pid: {0} ({1}) ...", p.Id, p.ProcessName);
                     p.Kill();
@@ -109,7 +102,7 @@ namespace Wise40Watcher
                 }
             }
 
-            foreach (var p in Process.GetProcessesByName(_applicationName))
+            foreach (var p in Process.GetProcessesByName(_application.appName))
             {
                 log("KillAllProcesses: Killing pid: {0} ({1}) ...", p.Id, p.ProcessName);
                 p.Kill();
@@ -118,7 +111,7 @@ namespace Wise40Watcher
 
             if (WiseName == "ascom")
             {
-                foreach (var p in Process.GetProcessesByName(Const.wiseASCOMRemoteClientLocalServerAppName))
+                foreach (var p in Process.GetProcessesByName(Const.Apps[Const.Application.RemoteClientLocalServer].appName))
                 {
                     log("KillAllProcesses: Killing pid: {0} ({1}) ...", p.Id, p.ProcessName);
                     p.Kill();

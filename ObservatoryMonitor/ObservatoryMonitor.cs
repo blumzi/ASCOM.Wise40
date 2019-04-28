@@ -804,17 +804,18 @@ namespace ASCOM.Wise40.ObservatoryMonitor
         {            
             using (Profile driverProfile = new Profile() { DeviceType = "SafetyMonitor" })
             {
-                driverProfile.Register(Const.wiseObservatoryMonitorDriverID, "Wise40 ObservatoryMonitor");
+                driverProfile.Register(Const.WiseDriverID.ObservatoryMonitor, "Wise40 ObservatoryMonitor");
 
-                int minutes = Convert.ToInt32(driverProfile.GetValue(Const.wiseObservatoryMonitorDriverID,
+                int minutes = Convert.ToInt32(driverProfile.GetValue(Const.WiseDriverID.ObservatoryMonitor,
                     "MinutesBetweenChecks", string.Empty, "5"));
+
 
                 _intervalBetweenChecks = new TimeSpan(0, minutes, 0);
             }
 
             using (Profile driverProfile = new Profile() { DeviceType = "Telescope" })
             {
-                MinutesToIdle = Convert.ToInt32(driverProfile.GetValue(Const.wiseTelescopeDriverID,
+                MinutesToIdle = Convert.ToInt32(driverProfile.GetValue(Const.WiseDriverID.Telescope,
                     Const.ProfileName.Telescope_MinutesToIdle, string.Empty, "15"));
             }
         }
@@ -823,13 +824,13 @@ namespace ASCOM.Wise40.ObservatoryMonitor
         {
             using (Profile driverProfile = new Profile() { DeviceType = "SafetyMonitor" })
             {
-                driverProfile.WriteValue(Const.wiseObservatoryMonitorDriverID, "MinutesBetweenChecks",
+                driverProfile.WriteValue(Const.WiseDriverID.ObservatoryMonitor, "MinutesBetweenChecks",
                     MinutesBetweenChecks.ToString());
             }
 
             using (Profile driverProfile = new Profile() { DeviceType = "Telescope" })
             {
-                driverProfile.WriteValue(Const.wiseTelescopeDriverID,
+                driverProfile.WriteValue(Const.WiseDriverID.Telescope,
                     Const.ProfileName.Telescope_MinutesToIdle, MinutesToIdle.ToString());
             }
         }

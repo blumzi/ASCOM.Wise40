@@ -41,29 +41,17 @@ namespace ASCOM.Wise40.Common
         public const string topWise40Directory = "c:/Wise40/";
         public const string humanInterventionFilePath = Const.topWise40Directory + "Observatory/HumanIntervention.txt";
 
-        public const string wiseTelescopeDriverID = "ASCOM.Wise40.Telescope";
-        public const string wiseDomeDriverID = "ASCOM.Wise40.Dome";
-        public const string wiseVantageProDriverID = "ASCOM.Wise40.VantagePro.ObservingConditions";
-        public const string wiseBoltwoodDriverID = "ASCOM.Wise40.Boltwood.ObservingConditions";
-        public const string wiseSafeToOperateDriverID = "ASCOM.Wise40SafeToOperate.SafetyMonitor";
-        public const string wiseFocusDriverID = "ASCOM.Wise40.Focuser";
-        public const string wiseFilterWheelDriverID = "ASCOM.Wise40.FilterWheel";
-        public const string wiseObservatoryMonitorDriverID = "ASCOM.Wise40.ObservatoryMonitor.SafetyMonitor";
-
-        public const string wiseASCOMServerAppName = "ASCOM.RESTServer";
-        public const string wiseASCOMServerPath = "c:/Program Files (x86)/ASCOM/Remote/ASCOM.RESTServer.exe";
-
-        public const string wiseObservatoryMonitorAppName = "ObservatoryMonitor";
-        public const string wiseASCOMOCHServerAppName = "ASCOM.OCH.Server";
-
-        public const string wiseASCOMRemoteClientLocalServerAppName = "ASCOM.RemoteClientLocalServer";
-
-        public const string wiseDashboardAppName = "Dash";
-        public const string wiseSimulatedDashPath = "c:/Users/Blumzi/Documents/Visual Studio 2015/Projects/Wise40/Dash/bin/x86/Debug/Dash.exe";
-        public const string wiseRealDashPath = "c:/Users/mizpe/source/repos/ASCOM.Wise40/Dash/bin/x86/Debug/Dash.exe";
-
-        public const string wiseWeatherLinkAppPath = "c:/WeatherLink/WeatherLink 6.0.2.exe";
-        public const string wiseWeatherLinkAppName = "WeatherLink 6.0.2";
+        public class WiseDriverID
+        {
+            public const string Telescope = "ASCOM.Wise40.Telescope";
+            public const string Dome = "ASCOM.Wise40.Dome";
+            public const string VantagePro = "ASCOM.Wise40.VantagePro.ObservingConditions";
+            public const string Boltwood = "ASCOM.Wise40.Boltwood.ObservingConditions";
+            public const string SafeToOperate = "ASCOM.Wise40SafeToOperate.SafetyMonitor";
+            public const string Focus = "ASCOM.Wise40.Focuser";
+            public const string FilterWheel = "ASCOM.Wise40.FilterWheel";
+            public const string ObservatoryMonitor = "ASCOM.Wise40.ObservatoryMonitor.SafetyMonitor";
+        }
 
         public const string computerControlAtMaintenance = "ComputerControl at Maintenance";
 
@@ -114,22 +102,80 @@ namespace ASCOM.Wise40.Common
 
         public class App
         {
-            public string Name;
-            public string RealPath;
-            public string SimulatedPath;
+            private const string SimulatedTopDir = "c:/Users/Blumzi/Documents/Visual Studio 2015/Projects/Wise40/";
+            private const string RealTopDir = "c:/Users/mizpe/source/repos/ASCOM.Wise40/";
 
+            public string appName;
+            public string path;
+            public bool locallyDeveloped;
+
+            public string Path
+            {
+                get
+                {
+                    if (path == null)
+                        return null;
+
+                    if (locallyDeveloped)
+                        return (WiseObject.Simulated ? SimulatedTopDir : RealTopDir) + path;
+                    return path;
+                }
+            }
         }
 
-        public static Dictionary<string, App> Apps = new Dictionary<string, App>()
+        public enum Application { RESTServer, Dash, WeatherLink, ObservatoryMonitor, OCHServer, RemoteClientLocalServer }
+
+        public static Dictionary<Application, App> Apps = new Dictionary<Application, App>()
             {
                 {
-                    "Dash", new App {
-                        Name = "Dash",
-                        RealPath = "c:/Users/mizpe/source/repos/ASCOM.Wise40/Dash/bin/x86/Debug/Dash.exe",
-                        SimulatedPath = "c:/Users/Blumzi/Documents/Visual Studio 2015/Projects/Wise40/Dash/bin/x86/Debug/Dash.exe"
+                    Application.RESTServer, new App
+                    {
+                        locallyDeveloped = false,
+                        appName = "ASCOM.RESTServer",
+                        path = "c:/Program Files (x86)/ASCOM/Remote/ASCOM.RESTServer.exe",
+                    }
+                },
+                {
+                    Application.Dash, new App {
+                        locallyDeveloped = true,
+                        appName = "Dash",
+                        path = "Dash/bin/x86/Debug/Dash.exe",
+                    }
+                },
+
+                {
+                    Application.WeatherLink, new App
+                    {
+                        locallyDeveloped = false,
+                        path = "c:/WeatherLink/WeatherLink 6.0.2.exe",
+                        appName = "WeatherLink 6.0.2",
+                    }
+                },
+
+                {
+                    Application.ObservatoryMonitor, new App
+                    {
+                        locallyDeveloped = true,
+                        appName = "ObservatoryMonitor",
+                        path = "ObservatoryMonitor/bin/Debug/ObservatoryMonitor.exe",
+                    }
+                },
+
+                {
+                    Application.OCHServer, new App
+                    {
+                        locallyDeveloped = false,
+                        appName = "ASCOM.OCHServer",
+                    }
+                },
+
+                {
+                    Application.RemoteClientLocalServer, new App
+                    {
+                        locallyDeveloped = false,
+                        appName = "ASCOM.RemoteClientLocalServer",
                     }
                 },
             };
-
     }
 }

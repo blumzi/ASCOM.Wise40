@@ -460,7 +460,7 @@ namespace ASCOM.Wise40.VantagePro
         // to help with driver development
 
 
-        public static string driverID = Const.wiseVantageProDriverID;
+        public static string driverID = Const.WiseDriverID.VantagePro;
         private static Version version = new Version("0.2");
         public static string driverDescription = string.Format("ASCOM Wise40.VantagePro v{0}", version.ToString());
         #region ASCOM Registration

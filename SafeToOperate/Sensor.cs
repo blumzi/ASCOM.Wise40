@@ -164,25 +164,25 @@ namespace ASCOM.Wise40SafeToOperate
                 case "Temperature": defaultInterval = 60; defaultRepeats = 3; break;
             }
 
-            _intervalMillis = 1000 * Convert.ToInt32(wisesafetooperate._profile.GetValue(Const.wiseSafeToOperateDriverID, WiseName, "Interval", defaultInterval.ToString()));
+            _intervalMillis = 1000 * Convert.ToInt32(wisesafetooperate._profile.GetValue(Const.WiseDriverID.SafeToOperate, WiseName, "Interval", defaultInterval.ToString()));
             if (DoesNotHaveAttribute(SensorAttribute.Immediate))
-                _repeats = Convert.ToInt32(wisesafetooperate._profile.GetValue(Const.wiseSafeToOperateDriverID, WiseName, "Repeats", defaultRepeats.ToString()));
+                _repeats = Convert.ToInt32(wisesafetooperate._profile.GetValue(Const.WiseDriverID.SafeToOperate, WiseName, "Repeats", defaultRepeats.ToString()));
 
             if (DoesNotHaveAttribute(SensorAttribute.AlwaysEnabled))
-                Enabled = Convert.ToBoolean(wisesafetooperate._profile.GetValue(Const.wiseSafeToOperateDriverID, WiseName, "Enabled", true.ToString()));
+                Enabled = Convert.ToBoolean(wisesafetooperate._profile.GetValue(Const.WiseDriverID.SafeToOperate, WiseName, "Enabled", true.ToString()));
 
             readSensorProfile();
         }
 
         public void writeProfile()
         {
-            wisesafetooperate._profile.WriteValue(Const.wiseSafeToOperateDriverID, WiseName, (_intervalMillis / 1000).ToString(), "Interval");
+            wisesafetooperate._profile.WriteValue(Const.WiseDriverID.SafeToOperate, WiseName, (_intervalMillis / 1000).ToString(), "Interval");
 
             if (DoesNotHaveAttribute(SensorAttribute.Immediate))
-                wisesafetooperate._profile.WriteValue(Const.wiseSafeToOperateDriverID, WiseName, _repeats.ToString(), "Repeats");
+                wisesafetooperate._profile.WriteValue(Const.WiseDriverID.SafeToOperate, WiseName, _repeats.ToString(), "Repeats");
 
             if (DoesNotHaveAttribute(SensorAttribute.AlwaysEnabled))
-                wisesafetooperate._profile.WriteValue(Const.wiseSafeToOperateDriverID, WiseName, Enabled.ToString(), "Enabled");
+                wisesafetooperate._profile.WriteValue(Const.WiseDriverID.SafeToOperate, WiseName, Enabled.ToString(), "Enabled");
 
             writeSensorProfile();
         }

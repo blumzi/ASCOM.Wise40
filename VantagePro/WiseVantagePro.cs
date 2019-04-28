@@ -251,7 +251,7 @@ namespace ASCOM.Wise40.VantagePro
                     _connected = value;
 
                 ActivityMonitor.Instance.Event(new Event.GlobalEvent(
-                    string.Format("{0} {1}", Const.wiseVantageProDriverID, value ? "Connected" : "Disconnected")));
+                    string.Format("{0} {1}", Const.WiseDriverID.VantagePro, value ? "Connected" : "Disconnected")));
             }
         }
 
@@ -353,10 +353,10 @@ namespace ASCOM.Wise40.VantagePro
             {
                 OpMode mode;
 
-                Enum.TryParse<OpMode>(driverProfile.GetValue(Const.wiseVantageProDriverID, Const.ProfileName.VantagePro_OpMode, string.Empty, OpMode.File.ToString()), out mode);
+                Enum.TryParse<OpMode>(driverProfile.GetValue(Const.WiseDriverID.VantagePro, Const.ProfileName.VantagePro_OpMode, string.Empty, OpMode.File.ToString()), out mode);
                 _opMode = mode;
-                _dataFile = driverProfile.GetValue(Const.wiseVantageProDriverID, Const.ProfileName.VantagePro_DataFile, string.Empty, defaultReportFile);
-                _portName = driverProfile.GetValue(Const.wiseVantageProDriverID, Const.ProfileName.VantagePro_SerialPort, string.Empty, "");
+                _dataFile = driverProfile.GetValue(Const.WiseDriverID.VantagePro, Const.ProfileName.VantagePro_DataFile, string.Empty, defaultReportFile);
+                _portName = driverProfile.GetValue(Const.WiseDriverID.VantagePro, Const.ProfileName.VantagePro_SerialPort, string.Empty, "");
             }
         }
 
@@ -367,9 +367,9 @@ namespace ASCOM.Wise40.VantagePro
         {
             using (Profile driverProfile = new Profile() { DeviceType = "ObservingConditions" })
             {
-                driverProfile.WriteValue(Const.wiseVantageProDriverID, Const.ProfileName.VantagePro_OpMode, _opMode.ToString());
-                driverProfile.WriteValue(Const.wiseVantageProDriverID, Const.ProfileName.VantagePro_DataFile, _dataFile);
-                driverProfile.WriteValue(Const.wiseVantageProDriverID, Const.ProfileName.VantagePro_SerialPort, _portName);
+                driverProfile.WriteValue(Const.WiseDriverID.VantagePro, Const.ProfileName.VantagePro_OpMode, _opMode.ToString());
+                driverProfile.WriteValue(Const.WiseDriverID.VantagePro, Const.ProfileName.VantagePro_DataFile, _dataFile);
+                driverProfile.WriteValue(Const.WiseDriverID.VantagePro, Const.ProfileName.VantagePro_SerialPort, _portName);
             }
         }
 

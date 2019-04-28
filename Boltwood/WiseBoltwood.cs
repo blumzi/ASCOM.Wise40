@@ -213,7 +213,7 @@ namespace ASCOM.Wise40.Boltwood
                 }
 
                 ActivityMonitor.Instance.Event(new Event.GlobalEvent(
-                    string.Format("{0} {1}", Const.wiseBoltwoodDriverID, value ? "Connected" : "Disconnected")));
+                    string.Format("{0} {1}", Const.WiseDriverID.Boltwood, value ? "Connected" : "Disconnected")));
             }
         }
 
@@ -730,13 +730,13 @@ namespace ASCOM.Wise40.Boltwood
 
             using (Profile driverProfile = new Profile() { DeviceType = "ObservingConditions" })
             {
-                _name = driverProfile.GetValue(Const.wiseBoltwoodDriverID, Const.ProfileName.Boltwood_Name, subKey, string.Empty);
-                _enabled = Convert.ToBoolean(driverProfile.GetValue(Const.wiseBoltwoodDriverID, Const.ProfileName.Boltwood_Enabled, subKey, "false"));
-                _file = driverProfile.GetValue(Const.wiseBoltwoodDriverID, Const.ProfileName.Boltwood_DataFile, subKey, string.Empty);
+                _name = driverProfile.GetValue(Const.WiseDriverID.Boltwood, Const.ProfileName.Boltwood_Name, subKey, string.Empty);
+                _enabled = Convert.ToBoolean(driverProfile.GetValue(Const.WiseDriverID.Boltwood, Const.ProfileName.Boltwood_Enabled, subKey, "false"));
+                _file = driverProfile.GetValue(Const.WiseDriverID.Boltwood, Const.ProfileName.Boltwood_DataFile, subKey, string.Empty);
 
                 WeatherStationInputMethod method;
 
-                if (Enum.TryParse<WeatherStationInputMethod>(driverProfile.GetValue(Const.wiseBoltwoodDriverID, Const.ProfileName.Boltwood_InputMethod, null, "ClarityII"), out method))
+                if (Enum.TryParse<WeatherStationInputMethod>(driverProfile.GetValue(Const.WiseDriverID.Boltwood, Const.ProfileName.Boltwood_InputMethod, null, "ClarityII"), out method))
                     _method = method;
             }
         }
@@ -747,10 +747,10 @@ namespace ASCOM.Wise40.Boltwood
 
             using (Profile driverProfile = new Profile() { DeviceType = "ObservingConditions" })
             {
-                driverProfile.WriteValue(Const.wiseBoltwoodDriverID, Const.ProfileName.Boltwood_Name, _name, subKey);
-                driverProfile.WriteValue(Const.wiseBoltwoodDriverID, Const.ProfileName.Boltwood_Enabled, _enabled.ToString(), subKey);
-                driverProfile.WriteValue(Const.wiseBoltwoodDriverID, Const.ProfileName.Boltwood_DataFile, _file, subKey);
-                driverProfile.WriteValue(Const.wiseBoltwoodDriverID, Const.ProfileName.Boltwood_InputMethod, _method.ToString(), subKey);
+                driverProfile.WriteValue(Const.WiseDriverID.Boltwood, Const.ProfileName.Boltwood_Name, _name, subKey);
+                driverProfile.WriteValue(Const.WiseDriverID.Boltwood, Const.ProfileName.Boltwood_Enabled, _enabled.ToString(), subKey);
+                driverProfile.WriteValue(Const.WiseDriverID.Boltwood, Const.ProfileName.Boltwood_DataFile, _file, subKey);
+                driverProfile.WriteValue(Const.WiseDriverID.Boltwood, Const.ProfileName.Boltwood_InputMethod, _method.ToString(), subKey);
             }
         }
 

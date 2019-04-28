@@ -32,7 +32,7 @@ namespace ASCOM.Wise40 //.Dome
             using (ASCOM.Utilities.Profile driverProfile = new ASCOM.Utilities.Profile())
             {
                 driverProfile.DeviceType = "Telescope";
-                minimalStep = Convert.ToDouble(driverProfile.GetValue(Const.wiseTelescopeDriverID, 
+                minimalStep = Convert.ToDouble(driverProfile.GetValue(Const.WiseDriverID.Telescope, 
                     Const.ProfileName.Dome_MinimalTrackingMovement, string.Empty, "2.0"));
                 textBoxMinimalStep.Text = minimalStep.ToString();
             }
@@ -52,7 +52,7 @@ namespace ASCOM.Wise40 //.Dome
             using (ASCOM.Utilities.Profile driverProfile = new ASCOM.Utilities.Profile())
             {
                 driverProfile.DeviceType = "Telescope";
-                driverProfile.WriteValue(Const.wiseTelescopeDriverID,
+                driverProfile.WriteValue(Const.WiseDriverID.Telescope,
                     Const.ProfileName.Dome_MinimalTrackingMovement, textBoxMinimalStep.Text);
             }
             Close();

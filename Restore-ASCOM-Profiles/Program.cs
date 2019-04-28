@@ -167,9 +167,9 @@ namespace Restore_ASCOM_Profiles
         //    using (Profile driverProfile = new Profile())
         //    {
         //        driverProfile.DeviceType = "Dome";
-        //        driverProfile.WriteValue(Const.wiseDomeDriverID, autoCalibrateProfileName, true.ToString());
-        //        driverProfile.WriteValue(Const.wiseDomeDriverID, bypassSafetyProfileName, true.ToString());
-        //        driverProfile.WriteValue(Const.wiseDomeDriverID, syncVentWithShutterProfileName, mode == Mode.WISE ? false.ToString() : true.ToString());
+        //        driverProfile.WriteValue(Const.WiseDriverID.Dome, autoCalibrateProfileName, true.ToString());
+        //        driverProfile.WriteValue(Const.WiseDriverID.Dome, bypassSafetyProfileName, true.ToString());
+        //        driverProfile.WriteValue(Const.WiseDriverID.Dome, syncVentWithShutterProfileName, mode == Mode.WISE ? false.ToString() : true.ToString());
         //    }
         //}
 

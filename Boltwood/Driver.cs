@@ -463,11 +463,11 @@ namespace ASCOM.Wise40.Boltwood
                 P.DeviceType = "ObservingConditions";
                 if (bRegister)
                 {
-                    P.Register(Const.wiseBoltwoodDriverID, WiseBoltwood.driverDescription);
+                    P.Register(Const.WiseDriverID.Boltwood, WiseBoltwood.driverDescription);
                 }
                 else
                 {
-                    P.Unregister(Const.wiseBoltwoodDriverID);
+                    P.Unregister(Const.WiseDriverID.Boltwood);
                 }
             }
         }

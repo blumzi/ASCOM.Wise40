@@ -223,7 +223,7 @@ namespace ASCOM.Wise40
             _connected = connected;
 
             ActivityMonitor.Instance.Event(new Event.GlobalEvent(
-                string.Format("{0} {1}", Const.wiseDomeDriverID, connected ? "Connected" : "Disconnected")));
+                string.Format("{0} {1}", Const.WiseDriverID.Dome, connected ? "Connected" : "Disconnected")));
         }
 
         public bool Connected
@@ -1449,7 +1449,7 @@ namespace ASCOM.Wise40
 
             using (Profile driverProfile = new Profile() { DeviceType = "Dome" })
             {
-                _autoCalibrate = Convert.ToBoolean(driverProfile.GetValue(Const.wiseDomeDriverID, Const.ProfileName.Dome_AutoCalibrate, string.Empty, true.ToString()));
+                _autoCalibrate = Convert.ToBoolean(driverProfile.GetValue(Const.WiseDriverID.Dome, Const.ProfileName.Dome_AutoCalibrate, string.Empty, true.ToString()));
             }
             wisedomeshutter.ReadProfile();
         }
@@ -1461,7 +1461,7 @@ namespace ASCOM.Wise40
         {
             using (Profile driverProfile = new Profile() { DeviceType = "Dome" })
             {
-                driverProfile.WriteValue(Const.wiseDomeDriverID, Const.ProfileName.Dome_AutoCalibrate, _autoCalibrate.ToString());
+                driverProfile.WriteValue(Const.WiseDriverID.Dome, Const.ProfileName.Dome_AutoCalibrate, _autoCalibrate.ToString());
             }
             wisedomeshutter.WriteProfile();
         }

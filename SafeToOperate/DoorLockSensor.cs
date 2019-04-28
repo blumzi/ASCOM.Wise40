@@ -109,11 +109,11 @@ namespace ASCOM.Wise40SafeToOperate
         }
 
         public override void readSensorProfile() {
-            _doorLockDelaySeconds = Convert.ToInt32(wisesafetooperate._profile.GetValue(Const.wiseSafeToOperateDriverID, Const.ProfileName.SafeToOperate_DoorLockDelay, string.Empty, _defaultDoorLockDelaySeconds.ToString()));
+            _doorLockDelaySeconds = Convert.ToInt32(wisesafetooperate._profile.GetValue(Const.WiseDriverID.SafeToOperate, Const.ProfileName.SafeToOperate_DoorLockDelay, string.Empty, _defaultDoorLockDelaySeconds.ToString()));
         }
 
         public override void writeSensorProfile() {
-            wisesafetooperate._profile.WriteValue(Const.wiseSafeToOperateDriverID, Const.ProfileName.SafeToOperate_DoorLockDelay, _doorLockDelaySeconds.ToString());
+            wisesafetooperate._profile.WriteValue(Const.WiseDriverID.SafeToOperate, Const.ProfileName.SafeToOperate_DoorLockDelay, _doorLockDelaySeconds.ToString());
         }
 
         private static bool DoorLockPinIsSafe

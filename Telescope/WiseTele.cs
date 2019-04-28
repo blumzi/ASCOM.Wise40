@@ -233,11 +233,12 @@ namespace ASCOM.Wise40
             };
 
         private Hardware.Hardware hardware = Hardware.Hardware.Instance;
-        internal static string driverID = Const.wiseTelescopeDriverID;
+        internal static string driverID = Const.WiseDriverID.Telescope;
 
         public class MovementParameters
         {
             public Angle minimalMovement;
+            public Angle maximalMovement;
             public Angle stopMovement;
         };
 
@@ -3063,7 +3064,7 @@ namespace ASCOM.Wise40
             }
 
             using (Profile driverProfile = new Profile() { DeviceType = "Dome" })
-                _minimalDomeTrackingMovement = Convert.ToDouble(driverProfile.GetValue(Const.wiseDomeDriverID, Const.ProfileName.Dome_MinimalTrackingMovement, string.Empty, "2.0"));
+                _minimalDomeTrackingMovement = Convert.ToDouble(driverProfile.GetValue(Const.WiseDriverID.Dome, Const.ProfileName.Dome_MinimalTrackingMovement, string.Empty, "2.0"));
         }
 
         /// <summary>
@@ -3079,7 +3080,7 @@ namespace ASCOM.Wise40
             }
 
             using (Profile driverProfile = new Profile() { DeviceType = "Dome" })
-                driverProfile.WriteValue(Const.wiseDomeDriverID, Const.ProfileName.Dome_MinimalTrackingMovement, _minimalDomeTrackingMovement.ToString());
+                driverProfile.WriteValue(Const.WiseDriverID.Dome, Const.ProfileName.Dome_MinimalTrackingMovement, _minimalDomeTrackingMovement.ToString());
         }
 
         public string Status

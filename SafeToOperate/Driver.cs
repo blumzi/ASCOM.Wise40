@@ -67,7 +67,7 @@ namespace ASCOM.Wise40SafeToOperate
     public class SafetyMonitor : ISafetyMonitor
     {
         public static WiseSafeToOperate wisesafetooperate;
-        private static string driverID = "ASCOM.Wise40SafeToOperate.SafetyMonitor";
+        private static string driverID = Const.WiseDriverID.SafeToOperate;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Wise40.SafeToOperate"/> class.

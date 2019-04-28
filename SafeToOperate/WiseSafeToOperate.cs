@@ -27,7 +27,7 @@ namespace ASCOM.Wise40SafeToOperate
         /// ASCOM DeviceID (COM ProgID) for this driver.
         /// The DeviceID is used by ASCOM applications to load the driver at runtime.
         /// </summary>
-        public string driverID = Const.wiseSafeToOperateDriverID;
+        public string driverID = Const.WiseDriverID.SafeToOperate;
         // TODO Change the descriptive string for your driver then remove this line
         /// <summary>
         /// Driver description that displays in the ASCOM Chooser.
@@ -837,7 +837,7 @@ namespace ASCOM.Wise40SafeToOperate
 
             using (Profile driverProfile = new Profile())
             {
-                string telescopeDriverId = Const.wiseTelescopeDriverID;
+                string telescopeDriverId = Const.WiseDriverID.Telescope;
 
                 driverProfile.DeviceType = "Telescope";
                 astrometricAccuracy =

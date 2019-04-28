@@ -116,7 +116,7 @@ namespace ASCOM.Wise40
         private Hardware.Hardware hardware = Hardware.Hardware.Instance;
         private WiseSite wisesite = WiseSite.Instance;
 
-        public static string driverID = Const.wiseFocusDriverID;
+        public static string driverID = Const.WiseDriverID.Focus;
 
         private static string driverDescription = string.Format("{0} v{1}", driverID, version.ToString());
 
@@ -198,7 +198,7 @@ namespace ASCOM.Wise40
                 _connected = value;
 
                 ActivityMonitor.Instance.Event(new Event.GlobalEvent(
-                    string.Format("{0} {1}", Const.wiseFocusDriverID, value ? "Connected" : "Disconnected")));
+                    string.Format("{0} {1}", Const.WiseDriverID.Focus, value ? "Connected" : "Disconnected")));
             }
         }
 

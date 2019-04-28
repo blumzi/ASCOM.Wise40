@@ -898,11 +898,11 @@ namespace ASCOM.Wise40 //.Telescope
                 P.DeviceType = "Telescope";
                 if (bRegister)
                 {
-                    P.Register(Const.wiseTelescopeDriverID, WiseTele.driverDescription);
+                    P.Register(Const.WiseDriverID.Telescope, WiseTele.driverDescription);
                 }
                 else
                 {
-                    P.Unregister(Const.wiseTelescopeDriverID);
+                    P.Unregister(Const.WiseDriverID.Telescope);
                 }
             }
         }
@@ -983,14 +983,14 @@ namespace ASCOM.Wise40 //.Telescope
                         WiseTele._enslaveDome = true;
                         break;
                     case WiseSite.OpMode.WISE:
-                        WiseTele._enslaveDome = Convert.ToBoolean(driverProfile.GetValue(Const.wiseTelescopeDriverID, Const.ProfileName.Telescope_EnslaveDome, string.Empty, "false"));
+                        WiseTele._enslaveDome = Convert.ToBoolean(driverProfile.GetValue(Const.WiseDriverID.Telescope, Const.ProfileName.Telescope_EnslaveDome, string.Empty, "false"));
                         break;
                     case WiseSite.OpMode.ACP:
                         WiseTele._enslaveDome = false;
                         break;
                 }
                 WiseSite.astrometricAccuracy = 
-                    driverProfile.GetValue(Const.wiseTelescopeDriverID, Const.ProfileName.Telescope_AstrometricAccuracy, string.Empty, "Full") == "Full" ?
+                    driverProfile.GetValue(Const.WiseDriverID.Telescope, Const.ProfileName.Telescope_AstrometricAccuracy, string.Empty, "Full") == "Full" ?
                         Accuracy.Full :
                         Accuracy.Reduced;
             }
@@ -1004,9 +1004,9 @@ namespace ASCOM.Wise40 //.Telescope
             using (Profile driverProfile = new Profile())
             {
                 driverProfile.DeviceType = "Telescope";
-                driverProfile.WriteValue(Const.wiseTelescopeDriverID, Const.ProfileName.Telescope_AstrometricAccuracy, WiseSite.astrometricAccuracy == Accuracy.Full ? "Full" : "Reduced");
-                driverProfile.WriteValue(Const.wiseTelescopeDriverID, Const.ProfileName.Telescope_EnslaveDome, WiseTele._enslaveDome.ToString());
-                driverProfile.WriteValue(Const.wiseTelescopeDriverID, Const.ProfileName.Telescope_CalculateRefraction, WiseTele._calculateRefraction.ToString());
+                driverProfile.WriteValue(Const.WiseDriverID.Telescope, Const.ProfileName.Telescope_AstrometricAccuracy, WiseSite.astrometricAccuracy == Accuracy.Full ? "Full" : "Reduced");
+                driverProfile.WriteValue(Const.WiseDriverID.Telescope, Const.ProfileName.Telescope_EnslaveDome, WiseTele._enslaveDome.ToString());
+                driverProfile.WriteValue(Const.WiseDriverID.Telescope, Const.ProfileName.Telescope_CalculateRefraction, WiseTele._calculateRefraction.ToString());
             }
         }
 

@@ -31,12 +31,12 @@ namespace ASCOM.Wise40SafeToOperate
         public override void readSensorProfile()
         {
             const double defaultMax = 0.0;
-            MaxAsString = wisesafetooperate._profile.GetValue(Const.wiseSafeToOperateDriverID, WiseName, "Max", defaultMax.ToString());
+            MaxAsString = wisesafetooperate._profile.GetValue(Const.WiseDriverID.SafeToOperate, WiseName, "Max", defaultMax.ToString());
         }
 
         public override void writeSensorProfile()
         {
-            wisesafetooperate._profile.WriteValue(Const.wiseSafeToOperateDriverID, WiseName, MaxAsString, "Max");
+            wisesafetooperate._profile.WriteValue(Const.WiseDriverID.SafeToOperate, WiseName, MaxAsString, "Max");
         }
 
         public override Reading getReading()

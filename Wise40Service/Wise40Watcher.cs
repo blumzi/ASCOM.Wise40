@@ -29,7 +29,7 @@ namespace Wise40Watcher
             {
                 WiseVantagePro.OpMode mode;
 
-                Enum.TryParse<WiseVantagePro.OpMode>(driverProfile.GetValue(Const.wiseVantageProDriverID, Const.ProfileName.VantagePro_OpMode, string.Empty, WiseVantagePro.OpMode.File.ToString()), out mode);
+                Enum.TryParse<WiseVantagePro.OpMode>(driverProfile.GetValue(Const.WiseDriverID.VantagePro, Const.ProfileName.VantagePro_OpMode, string.Empty, WiseVantagePro.OpMode.File.ToString()), out mode);
                 watchWeatherLink = (mode == WiseVantagePro.OpMode.File);
             }
             ascomWatcher = new Watcher("ascom");

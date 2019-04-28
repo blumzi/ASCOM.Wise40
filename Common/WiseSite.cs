@@ -202,7 +202,7 @@ namespace ASCOM.Wise40
                 {
                     OpMode mode;
 
-                    if (Enum.TryParse<OpMode>(driverProfile.GetValue(Const.wiseTelescopeDriverID, "SiteOperationMode", null, "WISE").ToUpper(), out mode))
+                    if (Enum.TryParse<OpMode>(driverProfile.GetValue(Const.WiseDriverID.Telescope, "SiteOperationMode", null, "WISE").ToUpper(), out mode))
                         _opMode = mode;
                 }
                 return _opMode;
@@ -213,7 +213,7 @@ namespace ASCOM.Wise40
                 _opMode = value;
                 using (Profile driverProfile = new Profile() { DeviceType = "Telescope" })
                 {
-                    driverProfile.WriteValue(Const.wiseTelescopeDriverID, "SiteOperationMode", _opMode.ToString());
+                    driverProfile.WriteValue(Const.WiseDriverID.Telescope, "SiteOperationMode", _opMode.ToString());
                 }
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "OperationalMode:set {0}", _opMode.ToString());
@@ -266,7 +266,7 @@ namespace ASCOM.Wise40
         public static bool CurrentProcessIsASCOMServer
         {
             get {
-                return System.Diagnostics.Process.GetCurrentProcess().ProcessName == Const.wiseASCOMServerAppName;
+                return System.Diagnostics.Process.GetCurrentProcess().ProcessName == Const.Apps[Const.Application.RESTServer].appName;
             }
         }
     }
