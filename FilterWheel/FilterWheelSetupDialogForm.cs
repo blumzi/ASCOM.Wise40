@@ -42,7 +42,7 @@ namespace ASCOM.Wise40 //.FilterWheel
                     else
                         w._positions[i].filterName = string.Empty;
 
-                    tb = (TextBox)F.Controls.Find(string.Format("textBox{0}RFID{1}", w._name, i), true)[0];
+                    tb = (TextBox)F.Controls.Find(string.Format("textBox{0}RFID{1}", w.WiseName, i), true)[0];
                     w._positions[i].tag = tb.Text ?? string.Empty;
                 }
             }
@@ -172,7 +172,7 @@ namespace ASCOM.Wise40 //.FilterWheel
             {
                 for (int i = 0; i < w._nPositions; i++)
                 {
-                    TextBox tb = (TextBox)F.Controls.Find(string.Format("textBox{0}RFID{1}", w._name, i), true)[0];
+                    TextBox tb = (TextBox)F.Controls.Find(string.Format("textBox{0}RFID{1}", w.WiseName, i), true)[0];
                     CueProvider.SetCue(tb, "Missing");
                 }
             }
@@ -189,7 +189,7 @@ namespace ASCOM.Wise40 //.FilterWheel
                 {
                     TextBox tb;
 
-                    tb = (TextBox)F.Controls.Find(string.Format("textBox{0}RFID{1}", w._name, i), true)[0];
+                    tb = (TextBox)F.Controls.Find(string.Format("textBox{0}RFID{1}", w.WiseName, i), true)[0];
                     CueProvider.SetCue(tb, "Missing");
                     tb.Enabled = cb.Checked;
                 }

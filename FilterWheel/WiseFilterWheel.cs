@@ -25,14 +25,14 @@ namespace ASCOM.Wise40 //.FilterWheel
 
         public WiseFilterWheel() { }
         static WiseFilterWheel() { }
-        internal static string driverID = Const.wiseFilterWheelDriverID;
+        internal static string driverID = Const.WiseDriverID.FilterWheel;
         private static string driverDescription = string.Format("{0} v{1}", driverID, version.ToString());
         public ArduinoInterface arduino = ArduinoInterface.Instance;
         public static ActivityMonitor activityMonitor = ActivityMonitor.Instance;
 
         public enum WheelType { WheelUnknown, Wheel8, Wheel4};
         public enum FilterSize { TwoInch, ThreeInch, Unknown };
-        public static List<FilterSize> filterSizes = new List<FilterSize> { FilterSize.TwoInch, FilterSize.ThreeInch };
+        public static List<FilterSize> filterSizes = new List<FilterSize> { FilterSize.TwoInch, FilterSize.ThreeInch, FilterSize.Unknown };
 
         public static Wheel wheel8 = new Wheel(WheelType.Wheel8);
         public static Wheel wheel4 = new Wheel(WheelType.Wheel4);
@@ -61,7 +61,6 @@ namespace ASCOM.Wise40 //.FilterWheel
         {
             public WheelType _type;
             public FWPosition[] _positions;
-            public string _name;
             public short _position;
             public short _targetPosition;
             public int _nPositions;
@@ -88,7 +87,7 @@ namespace ASCOM.Wise40 //.FilterWheel
                 _positions = new FWPosition[_nPositions];
 
                 _targetPosition = -1;
-                _name = _type.ToString();
+                WiseName = _type.ToString();
 
                 for (int i = 0; i < _nPositions; i++)
                 {
@@ -112,7 +111,7 @@ namespace ASCOM.Wise40 //.FilterWheel
                 public string Name;
                 public string FilterSizeAsString;
                 public int Npositions;
-                public short CurrentPosition;
+                public PositionDigest CurrentPosition;
                 public List<PositionDigest> Filters;
             }
 
@@ -123,7 +122,16 @@ namespace ASCOM.Wise40 //.FilterWheel
                     List<PositionDigest> positions = new List<PositionDigest>();
 
                     if (_type == WheelType.WheelUnknown)
+                    {
+                        positions.Add(new PositionDigest
+                        {
+                            Position = 0,
+                            RFIDTag = "????????",
+                            Offset = 0,
+                            Name = "Dummy",
+                        });
                         return positions;
+                    }
 
                     int idx = filterSizeToIndex[_filterSize];
 
@@ -149,13 +157,16 @@ namespace ASCOM.Wise40 //.FilterWheel
             {
                 get
                 {
+                    if (_type == WheelType.WheelUnknown)
+                        return null;
+
                     return new WheelDigest
                     {
                         Type = _type,
-                        Name = _name,
+                        Name = WiseName,
                         Npositions = _nPositions,
                         Filters = Positions,
-                        CurrentPosition = _position,
+                        CurrentPosition = Positions[_position],
                         FilterSizeAsString = _filterSize.ToString(),
                     };
                 }
@@ -175,7 +186,7 @@ namespace ASCOM.Wise40 //.FilterWheel
                         ret._position = pos;
                         #region debug
                         debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "lookupWheel({0}) ==> wheel: {1}, position: {2}",
-                            tag, ret._name, ret._position);
+                            tag, ret.WiseName, ret._position);
                         #endregion
                         return ret;
                     }
@@ -187,7 +198,7 @@ namespace ASCOM.Wise40 //.FilterWheel
         {
             get
             {
-                return Const.wiseFilterWheelDriverID;
+                return Const.WiseDriverID.FilterWheel;
             }
         }
 
@@ -236,6 +247,7 @@ namespace ASCOM.Wise40 //.FilterWheel
 
             foreach (var size in filterSizes)
                 ReadFiltersFromCsvFile(size);
+            _filterInventory[filterSizeToIndex[FilterSize.Unknown]].Add(new Filter("Dummy", "Dummy filter for dummy wheel", 0));
 
             RestoreCurrentWheelFromFile();
 
@@ -249,21 +261,21 @@ namespace ASCOM.Wise40 //.FilterWheel
         }
 
         private static String[] defaultWheel8RFIDs = {
-            "7F0007F75E",
-            "7F000817F7",
-            "7F000AEFC5",
-            "7C00563E5A",
-            "7F001B2B73",
-            "7F000ACAD5",
-            "7F001B4A83",
-            "7F0007BC0E",
+            "7F0007F75E",   // 1
+            "7F000817F7",   // 2
+            "7F000AEFC5",   // 3
+            "7C00563E5A",   // 4
+            "7F001B2B73",   // 5
+            "7F000ACAD5",   // 6
+            "7F001B4A83",   // 7
+            "7F0007BC0E",   // 8
         };
 
         private static String[] defaultWheel4RFIDs = {
-            "7F001B4C16",
-            "7C0055F4EB",
-            "7F0007F75E",
-            "7F001B0573",
+            "7F001B4C16",   // A
+            "7C0055F4EB",   // B
+            "7F001B0573",   // C
+            "7F000AF9A0",   // D
         };
 
         public static void ReadProfile()
@@ -300,6 +312,7 @@ namespace ASCOM.Wise40 //.FilterWheel
         {
             {FilterSize.TwoInch, 0 },
             {FilterSize.ThreeInch, 1 },
+            {FilterSize.Unknown, 2 },
         };
 
         //
@@ -314,6 +327,9 @@ namespace ASCOM.Wise40 //.FilterWheel
                 _filterInventory = new List<Filter>[filterSizes.Count()];
             if (_filterInventory[idx] == null)
                 _filterInventory[idx] = new List<Filter>();
+
+            if (filterSize == FilterSize.Unknown)
+                return;
 
             string csvFile = filterCsvFiles[filterSize];
             if (!System.IO.File.Exists(csvFile))
@@ -366,7 +382,7 @@ namespace ASCOM.Wise40 //.FilterWheel
                 driverProfile.WriteValue(driverID, "Enabled", Enabled.ToString());
                 foreach (Wheel w in wheels)
                 {
-                    string name = w._name.ToString();
+                    string name = w.WiseName.ToString();
                     for (int pos = 0; pos < w._nPositions; pos++)
                     {
                         subKey = string.Format("{0}/Position{1}", name, pos + 1);
@@ -385,6 +401,9 @@ namespace ASCOM.Wise40 //.FilterWheel
                 if (Simulated)
                     return _connected;
 
+                if (WiseSite.OperationalMode == WiseSite.OpMode.LCO)
+                    return false;
+
                 return arduino.Connected;
             }
 
@@ -399,17 +418,28 @@ namespace ASCOM.Wise40 //.FilterWheel
                     return;
                 }
 
+                if (WiseSite.OperationalMode == WiseSite.OpMode.LCO)
+                    return;
+
                 if (value == arduino.Connected)
                     return;
-                arduino.Connected = value;
+                try
+                {
+                    arduino.Connected = value;
+                }
+                catch (Exception ex)
+                {
+                    throw;
+                }
+                
+                activityMonitor.Event(new Event.GlobalEvent(
+                    string.Format("{0} {1}", driverID, value ? "Connected" : "Disconnected")));
+
                 if (value == true)
                 {
                     currentWheel = wheelUnknown;
                     arduino.StartReadingTag();
                 }
-
-                //activityMonitor.Event(new Event.GlobalEvent(
-                //    string.Format("{0} {1}", driverID, value ? "Connected" : "Disconnected")));
             }
         }
 
@@ -484,6 +514,8 @@ namespace ASCOM.Wise40 //.FilterWheel
                             Status = arduino.Status,
                             StatusString = arduino.StatusAsString,
                             Error = arduino.Error,
+                            LastCommand = arduino.LastCommand,
+                            WaitingForReply = arduino.WaitingForReply,
                         },
                         Serial = new SerialPortDigest
                         {
@@ -630,7 +662,7 @@ namespace ASCOM.Wise40 //.FilterWheel
         {
             get
             {
-                return Const.wiseFilterWheelDriverID;
+                return Const.WiseDriverID.FilterWheel;
             }
         }
 
@@ -849,12 +881,12 @@ namespace ASCOM.Wise40 //.FilterWheel
                         currentWheel = wheel8;
                         break;
                 }
-                currentWheel._position = value.CurrentPosition;
+                currentWheel._position = (short) value.CurrentPosition.Position;
 
                 SaveCurrentWheelToFile();
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseFilterWheel:SetCurrent: wheel = {0}, position = {1}",
-                    currentWheel._name, currentWheel._position);
+                    currentWheel.WiseName, currentWheel._position);
                 #endregion
             }
         }
@@ -928,7 +960,7 @@ namespace ASCOM.Wise40 //.FilterWheel
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
                 "WiseFilterWheel:RestoreCurrentFromFile: wheel = {0}, position = {1}",
-                currentWheel._name, currentWheel._position);
+                currentWheel.WiseName, currentWheel._position);
             #endregion
         }
 
@@ -963,6 +995,8 @@ namespace ASCOM.Wise40 //.FilterWheel
         public ArduinoInterface.ArduinoStatus Status;
         public string StatusString;
         public string Error;
+        public string LastCommand;
+        public bool WaitingForReply;
     }
 
     public class SerialPortDigest

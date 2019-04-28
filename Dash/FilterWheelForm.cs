@@ -31,7 +31,7 @@ namespace Dash
            _currentWheel = JsonConvert.DeserializeObject<WiseFilterWheel.Wheel.WheelDigest>(_wiseFilterWheel.Action("current-wheel", ""));
 
             labelCurrentWheelValue.Text = _currentWheel.Name;
-            short position = _currentWheel.CurrentPosition;
+            short position = (short) _currentWheel.CurrentPosition.Position;
 
             if (position == -1)
             {
@@ -95,7 +95,7 @@ namespace Dash
 
         private void buttonPrev_Click(object sender, EventArgs e)
         {
-            short currentPosition = _currentWheel.CurrentPosition;
+            short currentPosition = (short) _currentWheel.CurrentPosition.Position;
             short targetPosition = (short) ((currentPosition == 0) ? _currentWheel.Npositions - 1 : currentPosition - 1);
 
             string filterName = FilterName(_currentWheel.Filters[targetPosition].Name);
@@ -105,7 +105,7 @@ namespace Dash
 
         private void buttonNext_Click(object sender, EventArgs e)
         {
-            short currentPosition = _currentWheel.CurrentPosition;
+            short currentPosition = (short) _currentWheel.CurrentPosition.Position;
             short targetPosition = (short)((currentPosition == _currentWheel.Npositions - 1) ? 0 : currentPosition + 1);
 
             string filterName = FilterName(_currentWheel.Filters[targetPosition].Name);

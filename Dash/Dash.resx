@@ -120,6 +120,19 @@
   <metadata name="toolTip.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>531, 5</value>
   </metadata>
+  <data name="labelDomeShutterStatus.ToolTip" xml:space="preserve">
+    <value>Shutter status
+  The shutter status can be one of the following:
+   - open: Doors are within 5cm from maximal range
+   - closed: Doors are within 5cm of minimal range
+   - opening: The motors are actively opening the doors
+   - closing: The motors are actively closing the doors
+   - error:  The last reading of the distance between the
+                  doors (via WiFi) resulted in an error
+
+  If the distance between the doors is available (read via WiFi),
+   the calculated opening percent is shown in paranthesis.</value>
+  </data>
   <metadata name="menuStrip.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>135, 4</value>
   </metadata>

@@ -94,8 +94,8 @@ namespace Dash
             wiseFocuser = new ASCOM.DriverAccess.Focuser("ASCOM.Remote1.Focuser");
             wiseFilterWheel = new ASCOM.DriverAccess.FilterWheel("ASCOM.Remote1.FilterWheel");
             wiseSafeToOperate = new ASCOM.DriverAccess.SafetyMonitor("ASCOM.Remote1.SafetyMonitor");
-            wiseVantagePro = new ASCOM.DriverAccess.ObservingConditions("ASCOM.Wise40.VantagePro.ObservingConditions");
-            wiseBoltwood = new ASCOM.DriverAccess.ObservingConditions("ASCOM.Wise40.Boltwood.ObservingConditions");
+            wiseVantagePro = new ASCOM.DriverAccess.ObservingConditions(Const.WiseDriverID.VantagePro);
+            wiseBoltwood = new ASCOM.DriverAccess.ObservingConditions(Const.WiseDriverID.Boltwood);
 
             filterWheelForm = new FilterWheelForm(wiseFilterWheel);
 
@@ -566,13 +566,16 @@ namespace Dash
                     ASCOM.Controls.CadencePattern.SteadyOff;
 
                 #region Shutter
-                string msg = "Shutter is " + domeDigest.Shutter.Status;
-
-                severity = Statuser.Severity.Normal;
-                if (msg.Contains("error:"))
+                string status = domeDigest.Shutter.Status, msg;
+                if (status.Contains("error:") || domeDigest.Shutter.State == ShutterState.shutterError)
                 {
                     severity = Statuser.Severity.Error;
-                    msg = msg.Replace("error:", "");
+                    msg = "Shutter error: " + status.Replace("error:", "").Replace("error ", "");
+                }
+                else
+                {
+                    severity = Statuser.Severity.Normal;
+                    msg = "Shutter is " + status;
                 }
                 shutterStatus.Show(msg, 0, severity);
 
@@ -1443,7 +1446,7 @@ namespace Dash
                 filterWheelStatus.Show(string.Format("Not available in {0} mode!", WiseSite.OperationalMode));
                 return;
             }
-            else if (filterWheelDigest == null || filterWheelDigest.Wheel.Type == WiseFilterWheel.WheelType.WheelUnknown)
+            else if (filterWheelDigest == null)
             {
                 DashOutFilterWheelControls();
                 return;
@@ -1452,14 +1455,47 @@ namespace Dash
                 DashOutFilterWheelControls();
                 filterWheelStatus.Show("Disabled (see Settings->FilterWheel->Settings)");
                 return;
+            } else if (filterWheelDigest.Wheel == null)
+            {
+                DashOutFilterWheelControls();
+                filterWheelStatus.Show("Cannot detect a filter wheel", 0, Statuser.Severity.Error);
+
+                string arduinoStatus = filterWheelDigest.Arduino.StatusString;
+                Statuser.Severity severity = Statuser.Severity.Normal;
+
+                if (filterWheelDigest.Arduino.Error != null)
+                {
+                    arduinoStatus += string.Format(" (error: {0})", filterWheelDigest.Arduino.Error);
+                    severity = Statuser.Severity.Error;
+                }
+                filterWheelArduinoStatus.Show(arduinoStatus, 0, severity);
+
+                string tip = "Arduino status:\r\n";
+                tip += string.Format("  WaitingForReply: {0}\r\n", filterWheelDigest.Arduino.WaitingForReply);
+                if (filterWheelDigest.Arduino.LastCommand != null)
+                    tip += string.Format("     LastCommand: {0}\r\n", filterWheelDigest.Arduino.LastCommand);
+                toolTip.SetToolTip(filterWheelArduinoStatus.Label, tip);
+                return;
             }
 
-            short position = filterWheelDigest.Wheel.CurrentPosition;
+            short position = (short) filterWheelDigest.Wheel.CurrentPosition.Position;
 
-            labelFWWheel.Text = string.Format("{0} ({1} inch filters)", filterWheelDigest.Wheel.Name, filterWheelDigest.Wheel.Type == WiseFilterWheel.WheelType.Wheel4 ? "3" : "2");
+            labelFWWheel.Text = string.Format("{0} ({1} inch filters)", filterWheelDigest.Wheel.Name,
+                filterWheelDigest.Wheel.Type == WiseFilterWheel.WheelType.Wheel4 ? "3" : "2");
             labelFWPosition.Text = (position + 1).ToString();
-            WiseFilterWheel.Wheel.PositionDigest currentFilter = filterWheelDigest.Wheel.Filters[filterWheelDigest.Wheel.CurrentPosition];
-            labelFWFilter.Text = currentFilter.Name == string.Empty ? "Clear" : string.Format("{0}: {1}", currentFilter.Name, currentFilter.Description);
+
+            WiseFilterWheel.Wheel.PositionDigest currentFilter = filterWheelDigest.Wheel.Filters[position];
+            if (currentFilter.Name == string.Empty)
+            {
+                labelFWFilter.Text = "Clear";
+                toolTip.SetToolTip(labelFWFilter,  "");
+            } else {
+                labelFWFilter.Text = string.Format("{0}: {1}", currentFilter.Name, currentFilter.Description);
+                toolTip.SetToolTip(labelFWFilter,
+                    " Name: " + currentFilter.Name + Const.crnl +
+                    " Desc: " + currentFilter.Description + Const.crnl +
+                    " Offset: " + currentFilter.Offset.ToString());
+            }
 
             if (filterWheelDigest.Wheel.Filters.Count() != comboBoxFilterWheelPositions.Items.Count)
             {
@@ -1582,9 +1618,9 @@ namespace Dash
 
         private void buttonFilterWheelGo_Click(object sender, EventArgs e)
         {
-            int targetPosition = comboBoxFilterWheelPositions.SelectedIndex + 1;
+            int targetPosition = comboBoxFilterWheelPositions.SelectedIndex;
 
-            filterWheelStatus.Show(string.Format("Moving to position {0}", targetPosition), 5000, Statuser.Severity.Good);
+            filterWheelStatus.Show(string.Format("Moving to position {0}", targetPosition + 1), 5000, Statuser.Severity.Good);
             wiseFilterWheel.Position = (short) targetPosition;
         }
 

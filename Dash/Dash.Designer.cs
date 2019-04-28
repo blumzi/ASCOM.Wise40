@@ -692,7 +692,7 @@
             this.labelDomeShutterStatus.Size = new System.Drawing.Size(296, 28);
             this.labelDomeShutterStatus.TabIndex = 19;
             this.labelDomeShutterStatus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            this.toolTip.SetToolTip(this.labelDomeShutterStatus, "Shutter status");
+            this.toolTip.SetToolTip(this.labelDomeShutterStatus, resources.GetString("labelDomeShutterStatus.ToolTip"));
             // 
             // textBoxDomeAzValue
             // 
