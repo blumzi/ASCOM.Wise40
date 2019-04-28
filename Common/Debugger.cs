@@ -17,6 +17,7 @@ namespace ASCOM.Wise40.Common
         private static bool _initialized = false;
         private static string _appName = string.Empty;
         private static string _logFile = string.Empty;
+        private static TextWriterTraceListener traceListener;
 
         static Debugger()
         {
@@ -74,6 +75,7 @@ namespace ASCOM.Wise40.Common
                 _currentLevel = level;
 
             _appName = Path.GetFileNameWithoutExtension(Application.ExecutablePath);
+            Trace.AutoFlush = true;
             _initialized = true;
         }
 
@@ -142,14 +144,19 @@ namespace ASCOM.Wise40.Common
             if (currentLogPath != _logFile)
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(currentLogPath));
-                try
+                if (traceListener != null)
                 {
-                    Debug.Listeners.Remove(_logFile);
+                    try
+                    {
+                        traceListener.Flush();
+                        traceListener.Close();
+                        Debug.Listeners.Remove(traceListener);
+                    }
+                    catch { }
                 }
-                catch { }
                 _logFile = currentLogPath;
-
-                Debug.Listeners.Add(new TextWriterTraceListener(_logFile));
+                traceListener = new TextWriterTraceListener(_logFile);
+                Debug.Listeners.Add(traceListener);
             }
 
             System.Diagnostics.Debug.WriteLine(line);
@@ -193,9 +200,9 @@ namespace ASCOM.Wise40.Common
         {
             using (ASCOM.Utilities.Profile p = new Utilities.Profile() { DeviceType = "Telescope" })
             {
-                if (!p.IsRegistered(Const.wiseTelescopeDriverID))
-                    p.Register(Const.wiseTelescopeDriverID, "Wise40 global settings");
-                p.WriteValue(Const.wiseTelescopeDriverID, "SiteDebugLevel", Level.ToString());
+                if (!p.IsRegistered(Const.WiseDriverID.Telescope))
+                    p.Register(Const.WiseDriverID.Telescope, "Wise40 global settings");
+                p.WriteValue(Const.WiseDriverID.Telescope, "SiteDebugLevel", Level.ToString());
             }
         }
 
@@ -203,11 +210,11 @@ namespace ASCOM.Wise40.Common
         {
             using (ASCOM.Utilities.Profile p = new Utilities.Profile() { DeviceType = "Telescope" })
             {
-                if (p.IsRegistered(Const.wiseTelescopeDriverID))
+                if (p.IsRegistered(Const.WiseDriverID.Telescope))
                 {
                     DebugLevel d;
                     
-                    if (Enum.TryParse<DebugLevel>(p.GetValue(Const.wiseTelescopeDriverID, "SiteDebugLevel", string.Empty, DebugLevel.DebugDefault.ToString()), out d))
+                    if (Enum.TryParse<DebugLevel>(p.GetValue(Const.WiseDriverID.Telescope, "SiteDebugLevel", string.Empty, DebugLevel.DebugDefault.ToString()), out d))
                         _currentLevel = d;
                 }
             }
