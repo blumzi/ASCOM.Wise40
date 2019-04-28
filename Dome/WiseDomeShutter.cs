@@ -74,7 +74,7 @@ namespace ASCOM.Wise40
                 { Pacing.Slow, 15 * 1000 },
                 { Pacing.Fast,  3 * 1000 },
             };
-            private int _timeoutMillis;
+            public static int _timeoutMillis;
 
             public WebClient(string address, WiseDomeShutter wisedomeshutter)
             {
@@ -86,7 +86,7 @@ namespace ASCOM.Wise40
 
                 _periodicWebReadTimer = new System.Threading.Timer(new TimerCallback(PeriodicReader));
 
-                _client.Timeout = TimeSpan.FromSeconds(1.5);
+                _client.Timeout = TimeSpan.FromSeconds(5);
                 SetPacing(Pacing.Slow);
                 _wisedomeshutter = wisedomeshutter;
             }
@@ -114,7 +114,7 @@ namespace ASCOM.Wise40
                     debugger.WriteLine(Debugger.DebugLevel.DebugDome, "Changed  pacing to {0} ({1} millis)",
                         _pacing, _timeoutMillis);
                     #endregion
-                    _periodicWebReadTimer.Change(0, _timeoutMillis);
+                    _periodicWebReadTimer.Change(_timeoutMillis, 0);
                 }
             }
 
@@ -150,6 +150,7 @@ namespace ASCOM.Wise40
                     {
                         _wisedomeshutter.Stop(string.Format("{0} seconds passed from startOfMotion", maxTravelTimeSeconds));
                     }
+                    _periodicWebReadTimer.Change(WebClient._timeoutMillis, 0);
                     return;
                 }
 
@@ -184,6 +185,7 @@ namespace ASCOM.Wise40
 
                 _prevReading = _lastReading;
                 _prevState = _wisedomeshutter._state;
+                _periodicWebReadTimer.Change(_timeoutMillis, 0);
             }
 
             public TimeSpan TimeSinceLastReading
@@ -196,17 +198,48 @@ namespace ASCOM.Wise40
 
             public static async Task<int> GetWebShutterPosition()
             {
-                int ret = -7;
+                int ret = -1;
+                int maxTries = 10, tryNo;
 
                 _totalCommunicationAttempts++;
-                CommunicationAttempt communicationAttempt = new CommunicationAttempt();
+                CommunicationAttempt attempt = new CommunicationAttempt();
 
                 DateTime start = DateTime.Now;
-                TimeSpan duration;
-                try
+                TimeSpan duration = TimeSpan.Zero;
+
+                HttpResponseMessage response = null;
+                for (tryNo = 0; tryNo < maxTries; tryNo++)
                 {
-                    var response = await _client.GetAsync(_uri);
-                    duration = DateTime.Now.Subtract(start);
+                    try
+                    {
+                        response = await _client.GetAsync(_uri);
+                        duration = DateTime.Now.Subtract(start);
+                        break;
+                    }
+                    catch (HttpRequestException ex)
+                    {
+                        duration = DateTime.Now.Subtract(start);
+                        #region debug
+                        debugger.WriteLine(Debugger.DebugLevel.DebugShutter,
+                            "GetShutterPosition: attempt: {0}, try#: {1}, Azimuth: {2}, HttpRequestException = {3}, duration: {4}",
+                            attempt.Id, tryNo, WiseDome.Instance.Azimuth.ToNiceString(), ex.Message, duration);
+                        #endregion
+                        continue;
+                    }
+                    catch (Exception ex)
+                    {
+                        duration = DateTime.Now.Subtract(start);
+                        #region debug
+                        debugger.WriteLine(Debugger.DebugLevel.DebugShutter,
+                            "GetShutterPosition: attempt: {0}, try#: {1}, Azimuth: {2}, Exception = {3}, duration: {4}",
+                            attempt.Id, tryNo, WiseDome.Instance.Azimuth.ToNiceString(), ex.Message, duration);
+                        #endregion
+                        continue;
+                    }
+                }
+
+                if (response != null)
+                {
 
                     Instance.webClient.WiFiIsWorking = true;
 
@@ -215,7 +248,7 @@ namespace ASCOM.Wise40
                         string prefix = "<!DOCTYPE HTML>\r\n<html>";
                         string suffix = "</html>\r\n";
 
-                        _lastSuccessfullAttempt = communicationAttempt;
+                        _lastSuccessfullAttempt = attempt;
                         string content = await response.Content.ReadAsStringAsync();
                         if (content.StartsWith(prefix) && content.EndsWith(suffix))
                         {
@@ -224,28 +257,30 @@ namespace ASCOM.Wise40
                             content = content.Remove(content.IndexOf(suffix[0]));
                             ret = Convert.ToInt32(content);
                             #region debug
-                            debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "GetShutterPosition: Success: ret = {0}, duration: {1}", ret, duration);
+                            debugger.WriteLine(Debugger.DebugLevel.DebugShutter,
+                                "GetShutterPosition: attempt: {0}, try#: {1}, Success = {2}, duration: {3}", attempt.Id, tryNo, ret, duration);
                             #endregion
                         }
                     }
                     else
                     {
                         _failedCommunicationAttempts++;
-                        _lastFailedAttempt = communicationAttempt;
+                        _lastFailedAttempt = attempt;
                         #region debug
-                        debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "GetShutterPosition: Azimuth: {0}, FAILED: StatusCode: {1}, ReasonPhrase: {2} duration: {3}",
-                            WiseDome.Instance.Azimuth.ToNiceString(), response.StatusCode, response.ReasonPhrase, duration);
+                        debugger.WriteLine(Debugger.DebugLevel.DebugShutter,
+                            "GetShutterPosition: attempt: {0}, try#: {1}, Azimuth: {2}, HTTP failure: StatusCode: {3}, ReasonPhrase: {4} duration: {5}",
+                            attempt.Id, tryNo, WiseDome.Instance.Azimuth.ToNiceString(), response.StatusCode, response.ReasonPhrase, duration);
                         #endregion
                     }
-                } catch (Exception ex)
+                }
+                else
                 {
-                    duration = DateTime.Now.Subtract(start);
                     Instance.webClient.WiFiIsWorking = false;
                     _failedCommunicationAttempts++;
-                    _lastFailedAttempt = communicationAttempt;
+                    _lastFailedAttempt = attempt;
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "GetShutterPosition: Azimuth: {0}, Exception: {1}, duration: {2}",
-                        WiseDome.Instance.Azimuth.ToNiceString(), ex.Message, duration);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "GetShutterPosition: attempt: {0}, try#: {1}, Azimuth: {2}, HTTP response == null, duration: {3}",
+                        attempt.Id, tryNo, WiseDome.Instance.Azimuth.ToNiceString(), DateTime.Now.Subtract(start));
                     #endregion
                 }
                 return ret;
@@ -290,7 +325,7 @@ namespace ASCOM.Wise40
 
         public bool CloseEnough(int value, int limit)
         {
-            return Math.Abs(value - limit) < 5;
+            return Math.Abs(value - limit) < 10;
         }
 
         public void StartClosing()
@@ -475,11 +510,11 @@ namespace ASCOM.Wise40
 
             using (Profile driverProfile = new Profile() { DeviceType = "Dome" })
             {
-                ShutterWebClientEnabled = Convert.ToBoolean(driverProfile.GetValue(Const.wiseDomeDriverID, Const.ProfileName.DomeShutter_UseWebClient, string.Empty, false.ToString()));
-                _ipAddress = driverProfile.GetValue(Const.wiseDomeDriverID, Const.ProfileName.DomeShutter_IPAddress, string.Empty, "").Trim();
-                _highestValue = Convert.ToInt32(driverProfile.GetValue(Const.wiseDomeDriverID, Const.ProfileName.DomeShutter_HighestValue, string.Empty, "-1"));
-                _lowestValue = Convert.ToInt32(driverProfile.GetValue(Const.wiseDomeDriverID, Const.ProfileName.DomeShutter_LowestValue, string.Empty, "-1"));
-                _syncVentWithShutter = Convert.ToBoolean(driverProfile.GetValue(Const.wiseDomeDriverID, Const.ProfileName.Dome_SyncVentWithShutter, string.Empty, defaultSyncVentWithShutter.ToString()));
+                ShutterWebClientEnabled = Convert.ToBoolean(driverProfile.GetValue(Const.WiseDriverID.Dome, Const.ProfileName.DomeShutter_UseWebClient, string.Empty, false.ToString()));
+                _ipAddress = driverProfile.GetValue(Const.WiseDriverID.Dome, Const.ProfileName.DomeShutter_IPAddress, string.Empty, "").Trim();
+                _highestValue = Convert.ToInt32(driverProfile.GetValue(Const.WiseDriverID.Dome, Const.ProfileName.DomeShutter_HighestValue, string.Empty, "-1"));
+                _lowestValue = Convert.ToInt32(driverProfile.GetValue(Const.WiseDriverID.Dome, Const.ProfileName.DomeShutter_LowestValue, string.Empty, "-1"));
+                _syncVentWithShutter = Convert.ToBoolean(driverProfile.GetValue(Const.WiseDriverID.Dome, Const.ProfileName.Dome_SyncVentWithShutter, string.Empty, defaultSyncVentWithShutter.ToString()));
             }
         }
 
@@ -487,11 +522,11 @@ namespace ASCOM.Wise40
         {
             using (Profile driverProfile = new Profile() { DeviceType = "Dome" })
             {
-                driverProfile.WriteValue(Const.wiseDomeDriverID, Const.ProfileName.DomeShutter_UseWebClient, ShutterWebClientEnabled.ToString());
-                driverProfile.WriteValue(Const.wiseDomeDriverID, Const.ProfileName.DomeShutter_IPAddress, _ipAddress.ToString());
-                driverProfile.WriteValue(Const.wiseDomeDriverID, Const.ProfileName.DomeShutter_HighestValue, _highestValue.ToString());
-                driverProfile.WriteValue(Const.wiseDomeDriverID, Const.ProfileName.DomeShutter_LowestValue, _lowestValue.ToString());
-                driverProfile.WriteValue(Const.wiseDomeDriverID, Const.ProfileName.Dome_SyncVentWithShutter, _syncVentWithShutter.ToString());
+                driverProfile.WriteValue(Const.WiseDriverID.Dome, Const.ProfileName.DomeShutter_UseWebClient, ShutterWebClientEnabled.ToString());
+                driverProfile.WriteValue(Const.WiseDriverID.Dome, Const.ProfileName.DomeShutter_IPAddress, _ipAddress.ToString());
+                driverProfile.WriteValue(Const.WiseDriverID.Dome, Const.ProfileName.DomeShutter_HighestValue, _highestValue.ToString());
+                driverProfile.WriteValue(Const.WiseDriverID.Dome, Const.ProfileName.DomeShutter_LowestValue, _lowestValue.ToString());
+                driverProfile.WriteValue(Const.WiseDriverID.Dome, Const.ProfileName.Dome_SyncVentWithShutter, _syncVentWithShutter.ToString());
             }
         }
 
