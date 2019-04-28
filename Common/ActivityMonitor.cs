@@ -105,7 +105,7 @@ namespace ASCOM.Wise40
             int minutesToIdle;
 
             using (Profile p = new Profile() { DeviceType = "Telescope" })
-                minutesToIdle = Convert.ToInt32(p.GetValue(Const.wiseTelescopeDriverID,
+                minutesToIdle = Convert.ToInt32(p.GetValue(Const.WiseDriverID.Telescope,
                     Const.ProfileName.Telescope_MinutesToIdle,
                     string.Empty,
                     defaultMinutesToIdle.ToString()));
