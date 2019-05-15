@@ -19,7 +19,10 @@ namespace ASCOM.Wise40SafeToOperate
                 SensorAttribute.ForInfoOnly |
                 SensorAttribute.CanBeStale |
                 SensorAttribute.CanBeBypassed |
-                SensorAttribute.AlwaysEnabled, instance)
+                SensorAttribute.Immediate |
+                SensorAttribute.AlwaysEnabled,
+                "°C", " deg", "G3", "Temperature",
+                instance)
         { }
 
         public override object Digest()
@@ -47,26 +50,27 @@ namespace ASCOM.Wise40SafeToOperate
             if (WiseSite.och == null)
                 return null;
 
-
+            double seconds = SecondsSinceLastUpdate;
             Reading r = new Reading
             {
-                stale = IsStale("Temperature")
+                Stale = IsStale,
+                value = WiseSite.och.Temperature,
+                secondsSinceLastUpdate = seconds,
+                timeOfLastUpdate = DateTime.Now.Subtract(TimeSpan.FromSeconds(seconds)),
             };
 
-            r.value = WiseSite.och.Temperature;
-
-            if (r.stale)
+            if (r.Stale)
             {
-                r.safe = false;
-                r.usable = false;
+                r.Safe = false;
+                r.Usable = false;
             }
             else
             {
-                r.safe = (_max == 0.0) ? r.value == 0.0 : r.value < _max;
-                r.usable = true;
+                r.Safe = (_max == 0.0) ? r.value == 0.0 : r.value < _max;
+                r.Usable = true;
             }
 
-            _status = r.stale ? "Stale data" : string.Format("Temperature is {0:f1} deg (max: {1:f1} deg)", r.value, _max);
+            _status = string.Format("Temperature is {0} (max: {1})", FormatVerbal(r.value), FormatVerbal(_max));
             return r;
         }
 
@@ -80,8 +84,7 @@ namespace ASCOM.Wise40SafeToOperate
 
         public override string reason()
         {
-            return string.Format("{0} out of {1} recent temperature readings were higher than {2} deg.",
-                _nbad, _repeats, _max);
+            return string.Format("{0} out of {1} recent temperature readings were higher than {2}.", _nbad, _repeats, FormatVerbal(_max));
         }
 
         public override string MaxAsString

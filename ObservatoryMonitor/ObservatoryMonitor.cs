@@ -215,7 +215,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             UpdateConditionsBypassToolStripMenuItem(safetooperateDigest.Bypassed);
 
             #region ComputerControlLabel
-            if (safetooperateDigest.ComputerControlIsSafe)
+            if (safetooperateDigest.ComputerControl.Safe)
             {
                 labelComputerControl.Text = "Operational";
                 labelComputerControl.ForeColor = safeColor;
@@ -272,7 +272,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
                 if (telescopeDigest.ShuttingDown)
                 {
-                    ;   // Do nothing
+                    //Log("Wise40 is shutting down.");
                 }
                 else if (ObservatoryIsLogicallyParked && ObservatoryIsPhysicallyParked)
                 {
@@ -280,7 +280,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 }
                 else
                 {
-                    if (!safetooperateDigest.ComputerControlIsSafe)
+                    if (!safetooperateDigest.ComputerControl.Safe)
                         Log("No ComputerControl, shutdown skipped.");
                     else
                         DoShutdownObservatory(shutdownReason);
@@ -303,7 +303,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                     safetyMessage = "Not safe";
                     if (safetooperateDigest.UnsafeBecauseNotReady)
                         safetyMessage += " (inconclusive safety info)";
-                    else if (!safetooperateDigest.HumanInterventionIsSafe)
+                    else if (!safetooperateDigest.HumanIntervention.Safe)
                         safetyMessage += " (intervention)";
                 }
 
@@ -358,9 +358,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 if (connected)
                 {
                     CheckSituation();
-
-                    if (telescopeDigest != null && !telescopeDigest.ShuttingDown)
-                        UpdateConditionsControls();
+                    UpdateConditionsControls();
                 }
 
                 _nextCheck = DateTime.Now + _intervalBetweenChecks;
@@ -373,10 +371,10 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 return;
 
             string text = string.Empty, tip = string.Empty;
-            string reasons = wisesafetooperate.Action("unsafereasons", string.Empty);
+            string reasons = string.Join(",", safetooperateDigest.UnsafeReasons);
             Color color = normalColor;
             
-            if (!safetooperateDigest.HumanInterventionIsSafe)
+            if (!safetooperateDigest.HumanIntervention.Safe)
             {
                 text = "Intervention";
                 color = unsafeColor;

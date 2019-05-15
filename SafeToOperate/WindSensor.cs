@@ -17,7 +17,9 @@ namespace ASCOM.Wise40SafeToOperate
         public WindSensor(WiseSafeToOperate instance) :
             base("Wind",
                 SensorAttribute.CanBeStale |
-                SensorAttribute.CanBeBypassed, instance) { }
+                SensorAttribute.CanBeBypassed,
+                " km/h", " km/h", "G3", "WindSpeed",
+                instance) { }
 
         public override object Digest()
         {
@@ -44,26 +46,28 @@ namespace ASCOM.Wise40SafeToOperate
             if (WiseSite.och == null)
                 return null;
 
-
+            double seconds = SecondsSinceLastUpdate;
             Reading r = new Reading
             {
-                stale = IsStale("WindSpeed")
+                Stale = IsStale,
+                value = WiseSite.och.WindSpeed * 3.6,
+                secondsSinceLastUpdate = seconds,
+                timeOfLastUpdate = DateTime.Now.Subtract(TimeSpan.FromSeconds(seconds)),
             };
 
-            r.value = WiseSite.och.WindSpeed * 3.6;
 
-            if (r.stale)
+            if (r.Stale)
             {
-                r.safe = false;
-                r.usable = false;
+                r.Safe = false;
+                r.Usable = false;
             }
             else
             {
-                r.safe = (_max == 0.0) ? r.value == 0.0 : r.value < _max;
-                r.usable = true;
+                r.Safe = (_max == 0.0) ? r.value == 0.0 : r.value < _max;
+                r.Usable = true;
             }
 
-            _status = r.stale ? "Stale data" : string.Format("WindSpeed is {0:f1} km/h (max: {1:f1} km/h)", r.value, _max);
+            _status = string.Format("WindSpeed is {0} (max: {1})", FormatVerbal(r.value), FormatVerbal(_max));
             return r;
         }
 
@@ -77,8 +81,7 @@ namespace ASCOM.Wise40SafeToOperate
 
         public override string reason()
         {
-            return string.Format("{0} out of {1} recent wind speed readings were higher than {2} km/h.",
-                _nbad, _repeats, _max);
+            return string.Format("{0} out of {1} recent wind speed readings were higher than {2}.", _nbad, _repeats, FormatVerbal(_max));
         }
 
         public override string MaxAsString

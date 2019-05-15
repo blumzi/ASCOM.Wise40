@@ -19,7 +19,9 @@ namespace ASCOM.Wise40SafeToOperate
             base("Sun",
                 SensorAttribute.Immediate |
                 SensorAttribute.AlwaysEnabled |
-                SensorAttribute.CanBeBypassed, instance) { }
+                SensorAttribute.CanBeBypassed,
+                "°", " deg", "f1", "",
+                instance) { }
 
         public override object Digest()
         {
@@ -47,21 +49,24 @@ namespace ASCOM.Wise40SafeToOperate
 
             Reading r = new Reading
             {
-                stale = false,
-                usable = true,
-                safe = wisesafetooperate.SunElevation <= _max,
+                Stale = false,
+                Usable = true,
+                Safe = wisesafetooperate.SunElevation <= _max,
+                value = wisesafetooperate.SunElevation,
+                timeOfLastUpdate = DateTime.Now,
+                secondsSinceLastUpdate = 0,
             };
 
-            _status = string.Format("Sun elevation is {0:f1}deg (max: {1:f1}deg)", wisesafetooperate.SunElevation, _max);
-            if (r.safe != _wasSafe)
+            _status = string.Format("Sun elevation is {0} (max: {1})", FormatVerbal(wisesafetooperate.SunElevation), FormatVerbal(_max));
+            if (r.Safe != _wasSafe)
             {
                 activityMonitor.Event(new Event.SafetyEvent(
                     sensor: WiseName,
                     details: _status,
                     before: Event.SafetyEvent.ToSensorSafety(_wasSafe),
-                    after: Event.SafetyEvent.ToSensorSafety(r.safe)));
+                    after: Event.SafetyEvent.ToSensorSafety(r.Safe)));
             }
-            _wasSafe = r.safe;
+            _wasSafe = r.Safe;
             return r;
         }
 
@@ -72,8 +77,7 @@ namespace ASCOM.Wise40SafeToOperate
             if (currentElevation <= _max)
                 return string.Empty;
 
-            return string.Format("The Sun elevation ({0:f1}deg) is higher than {1:f1}deg.",
-                currentElevation, _max);
+            return string.Format("The Sun elevation ({0}) is higher than {1}.", FormatVerbal(currentElevation), FormatVerbal(_max));
         }
 
         public override string Status

@@ -51,7 +51,6 @@ namespace Dash
         TelescopeDigest telescopeDigest = null;
         FocuserDigest focuserDigest = null;
         WiseFilterWheelDigest filterWheelDigest = null;
-        WeatherDigest weatherDigest = null;
         string forecast;
 
         private List<ToolStripMenuItem> debugMenuItems;
@@ -241,7 +240,7 @@ namespace Dash
             bool refreshFocus = focusPacer.ShouldRefresh(now);
             bool refreshFilterWheel = WiseSite.OperationalMode != WiseSite.OpMode.LCO && filterWheelPacer.ShouldRefresh(now);
             bool refreshForecast = forecastPacer.ShouldRefresh(now);
-            bool refreshWeather = weatherPacer.ShouldRefresh(now);
+            //bool refreshWeather = weatherPacer.ShouldRefresh(now);
             string tip = null;
 
             if (refreshTelescope)
@@ -269,9 +268,6 @@ namespace Dash
 
             if (refreshFilterWheel)
                 filterWheelDigest = JsonConvert.DeserializeObject<WiseFilterWheelDigest>(wiseFilterWheel.Action("status", ""));
-
-            if (refreshWeather)
-                weatherDigest = JsonConvert.DeserializeObject<WeatherDigest>(wiseSafeToOperate.Action("weather-digest", ""));
 
             #region RefreshTelescope
 
@@ -448,7 +444,7 @@ namespace Dash
             #region ComputerControl Annunciator
             if (safetooperateDigest != null)
             {
-                if (safetooperateDigest.ComputerControlIsSafe)
+                if (safetooperateDigest.ComputerControl.Safe)
                 {
                     annunciatorComputerControl.Text = "Computer has control";
                     annunciatorComputerControl.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
@@ -475,7 +471,7 @@ namespace Dash
                 string text = "";
                 severity = Statuser.Severity.Normal;
 
-                if (!safetooperateDigest.HumanInterventionIsSafe)
+                if (!safetooperateDigest.HumanIntervention.Safe)
                 {
                     text = "Human Intervention";
                     annunciatorSafeToOperate.ForeColor = unsafeColor;
@@ -516,7 +512,7 @@ namespace Dash
                 #region Platform Annunciator
                 tip = null;
 
-                if (safetooperateDigest.PlatformIsSafe)
+                if (safetooperateDigest.Platform.Safe)
                 {
                     annunciatorDomePlatform.Text = "Platform is safe";
                     annunciatorDomePlatform.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
@@ -602,7 +598,7 @@ namespace Dash
             #endregion
 
             #region RefreshWeather
-                if (weatherDigest == null)
+                if (safetooperateDigest == null)
                 {
                     string nc = "???";
 
@@ -631,26 +627,16 @@ namespace Dash
                     {
                         #region Observing Conditions from SafeToOperate
 
-                        labelDewPointValue.Text = weatherDigest.DewPoint.ToString() + "°C";
-                        labelSkyTempValue.Text = weatherDigest.SkyTemperature.ToString() + "°C";
-                        labelTempValue.Text = weatherDigest.Temperature.ToString() + "°C";
-                        labelPressureValue.Text = weatherDigest.Pressure.ToString() + "mB";
-                        labelWindDirValue.Text = weatherDigest.WindDirection.ToString() + "°";
-
-                        labelHumidityValue.Text = weatherDigest.Humidity.ToString() + "%";
-                        labelHumidityValue.ForeColor = Color.FromArgb(safetooperateDigest.Colors.HumidityColorArgb);
-
-                        labelCloudCoverValue.Text = Math.Floor(weatherDigest.CloudCover).ToString();
-                        labelCloudCoverValue.ForeColor = Color.FromArgb(safetooperateDigest.Colors.CloudCoverColorArgb);
-
-                        labelWindSpeedValue.Text = string.Format("{0:G3} km/h", weatherDigest.WindSpeed);
-                        labelWindSpeedValue.ForeColor = Color.FromArgb(safetooperateDigest.Colors.WindSpeedColorArgb);
-
-                        labelRainRateValue.Text = (weatherDigest.RainRate > 0.0) ? "Wet" : "Dry";
-                        labelRainRateValue.ForeColor = Color.FromArgb(safetooperateDigest.Colors.RainColorArgb);
-
-                        labelSunElevationValue.Text = safetooperateDigest.SunElevation.ToString("f1") + "°";
-                        labelSunElevationValue.ForeColor = Color.FromArgb(safetooperateDigest.Colors.SunElevationColorArgb);
+                        RefreshInConditionsformation(labelDewPointValue, safetooperateDigest.DewPoint);
+                        RefreshInConditionsformation(labelSkyTempValue, safetooperateDigest.SkyTemperature);
+                        RefreshInConditionsformation(labelTempValue, safetooperateDigest.Temperature);
+                        RefreshInConditionsformation(labelPressureValue, safetooperateDigest.Pressure);
+                        RefreshInConditionsformation(labelWindDirValue, safetooperateDigest.WindDirection);
+                        RefreshInConditionsformation(labelWindSpeedValue, safetooperateDigest.WindSpeed);
+                        RefreshInConditionsformation(labelHumidityValue, safetooperateDigest.Humidity);
+                        RefreshInConditionsformation(labelCloudCoverValue, safetooperateDigest.CloudCover);
+                        RefreshInConditionsformation(labelRainRateValue, safetooperateDigest.RainRate);
+                        RefreshInConditionsformation(labelSunElevationValue, safetooperateDigest.SunElevation);
 
                         #endregion
                     }
@@ -682,6 +668,17 @@ namespace Dash
             #region RefreshForecast
             dashStatus.Show("Forecast: " + forecast);
             #endregion
+        }
+
+        void RefreshInConditionsformation(Label label, Sensor.SensorDigest digest)
+        {
+            label.Text = digest.Symbolic;
+            label.ForeColor = digest.Color;
+            if (digest.ToolTip != string.Empty)
+                toolTip.SetToolTip(label, digest.ToolTip);
+            else
+                toolTip.SetToolTip(label, string.Format("latest reading {0:f1} seconds ago",
+                    DateTime.Now.Subtract(digest.LatestReading.timeOfLastUpdate).TotalSeconds));
         }
         #endregion
 
@@ -726,7 +723,7 @@ namespace Dash
         #region TelescopeControl
         public void directionButton_MouseDown(object sender, MouseEventArgs e)
         {
-            if (!safetooperateDigest.ComputerControlIsSafe)
+            if (!safetooperateDigest.ComputerControl.Safe)
                 telescopeStatus.Show(string.Join(", ", safetooperateDigest.UnsafeReasons), 1000, Statuser.Severity.Error);
 
             Button button = (Button)sender;

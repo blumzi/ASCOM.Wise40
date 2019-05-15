@@ -17,7 +17,9 @@ namespace ASCOM.Wise40SafeToOperate
             base("HumanIntervention",
                 SensorAttribute.Immediate |
                 SensorAttribute.AlwaysEnabled |
-                SensorAttribute.ForcesDecision, instance) { }
+                SensorAttribute.ForcesDecision,
+                "", "", "", "",
+                instance) { }
 
         public override void readSensorProfile() { }
         public override void writeSensorProfile() { }
@@ -26,21 +28,24 @@ namespace ASCOM.Wise40SafeToOperate
         {
             Reading r = new Reading
             {
-                stale = false,
-                safe = !HumanIntervention.IsSet(),
-                usable = true,
+                Stale = false,
+                Safe = !HumanIntervention.IsSet(),
+                Usable = true,
+                secondsSinceLastUpdate = 0,
+                timeOfLastUpdate = DateTime.Now,
             };
 
-            _status = string.Format("{0}", r.safe ? "Not set" : HumanIntervention.Info);
-            if (r.safe != _wasSafe)
+            r.value = r.Safe ? 1 : 0;
+            _status = string.Format("{0}", r.Safe ? "Not set" : HumanIntervention.Info);
+            if (r.Safe != _wasSafe)
             {
                 activityMonitor.Event(new Event.SafetyEvent(
                     sensor: WiseName,
                     details: _status,
                     before: Event.SafetyEvent.ToSensorSafety(_wasSafe),
-                    after: Event.SafetyEvent.ToSensorSafety(r.safe)));
+                    after: Event.SafetyEvent.ToSensorSafety(r.Safe)));
             }
-            _wasSafe = r.safe;
+            _wasSafe = r.Safe;
             return r;
         }
 

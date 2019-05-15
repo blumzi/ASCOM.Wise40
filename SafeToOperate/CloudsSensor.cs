@@ -17,7 +17,9 @@ namespace ASCOM.Wise40SafeToOperate
         public CloudsSensor(WiseSafeToOperate instance) :
             base("Clouds",
                 SensorAttribute.CanBeStale |
-                SensorAttribute.CanBeBypassed, instance) { }
+                SensorAttribute.CanBeBypassed,
+                "", "", "f0", "CloudCover",
+                instance) { }
 
         public override object Digest()
         {
@@ -45,26 +47,28 @@ namespace ASCOM.Wise40SafeToOperate
             if (WiseSite.och == null)
                 return null;
 
+            double seconds = SecondsSinceLastUpdate;
             Reading r = new Reading
             {
-                stale = IsStale("CloudCover")
+                Stale = IsStale,
+                secondsSinceLastUpdate = seconds,
+                timeOfLastUpdate = DateTime.Now.Subtract(TimeSpan.FromSeconds(seconds)),
+                value = WiseSite.och.CloudCover,
             };
 
-            if (r.stale) {
-                r.safe = false;
-                r.usable = false;
+            if (r.Stale) {
+                r.Safe = false;
+                r.Usable = false;
                 _status = "Stale data";
             }
             else
             {
-                r.value = WiseSite.och.CloudCover;
-
                 if (_max == 0)
-                    r.safe = r.value == 0.0;
+                    r.Safe = r.value == 0.0;
                 else
-                    r.safe = r.value <= _max;
-                r.usable = true;
-                _status = string.Format("Cloud cover {0:f1} (max: {1:f1})", r.value, _max);
+                    r.Safe = r.value <= _max;
+                r.Usable = true;
+                _status = string.Format("Cloud cover {0} (max: {1})", FormatVerbal(r.value), FormatVerbal(_max));
             }
 
             return r;
@@ -72,8 +76,7 @@ namespace ASCOM.Wise40SafeToOperate
 
         public override string reason()
         {
-            return string.Format("{0} out of {1} recent cloud cover readings were higher than {2}%",
-                _nbad, _repeats, MaxAsString);
+            return string.Format("{0} out of {1} recent cloud cover readings were higher than {2}", _nbad, _repeats, FormatVerbal(_max));
         }
 
         public override string Status

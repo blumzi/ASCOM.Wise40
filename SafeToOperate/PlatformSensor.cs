@@ -22,7 +22,9 @@ namespace ASCOM.Wise40SafeToOperate
             base("Platform",
                 SensorAttribute.Immediate |
                 SensorAttribute.AlwaysEnabled |
-                SensorAttribute.ForcesDecision, instance)
+                SensorAttribute.ForcesDecision,
+                "", "", "", "",
+                instance)
         {
             domePlatformIsDownPin = new WisePin(Const.notsign + "PlatDown",
                 Hardware.Instance.domeboard, DigitalPortType.FirstPortCL, 3, DigitalPortDirection.DigitalIn);
@@ -64,25 +66,29 @@ namespace ASCOM.Wise40SafeToOperate
 
             Reading r = new Reading
             {
-                stale = false,
-                safe = domePlatformIsDownPin.isOff,
-                usable = true,
+                Stale = false,
+                Safe = domePlatformIsDownPin.isOff,
+                Usable = true,
+                secondsSinceLastUpdate = 0,
+                timeOfLastUpdate = DateTime.Now,
             };
+
+            r.value = r.Safe ? 1 : 0;
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "{0}: getIsSafe: {1}", WiseName, r.safe);
+            debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "{0}: getIsSafe: {1}", WiseName, r.Safe);
             #endregion
 
-            _status = string.Format("Platform is {0}", r.safe ? "lowered" : "raised");
-            if (r.safe != _wasSafe)
+            _status = string.Format("Platform is {0}", r.Safe ? "lowered" : "raised");
+            if (r.Safe != _wasSafe)
             {
 
                 activityMonitor.Event(new Event.SafetyEvent(
                     sensor: WiseName,
                     details: _status,
                     before: Event.SafetyEvent.ToSensorSafety(_wasSafe),
-                    after: Event.SafetyEvent.ToSensorSafety(r.safe)));
+                    after: Event.SafetyEvent.ToSensorSafety(r.Safe)));
             }
-            _wasSafe = r.safe;
+            _wasSafe = r.Safe;
             return r;
         }
 

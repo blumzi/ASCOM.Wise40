@@ -277,57 +277,20 @@ namespace ASCOM.Wise40SafeToOperate
                         return DigestSensors(actionParameters);
 
                 case "unsafereasons":
-                    bool dummy = IsSafe;
                     ret = string.Join(Const.recordSeparator, UnsafeReasonsList);
                     break;
 
-                case "start-shutdown":      // hidden
-                    ShuttingDown = true;
-                    #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Started shutdown");
-                    #endregion
-                    ret = "ok";
-                    break;
+                //case "weather-digest":
+                //    int safeColor = Statuser.TriStateColor(Const.TriStateStatus.Normal).ToArgb();
 
-                case "end-shutdown":        // hidden
-                    ShuttingDown = false;
-                    #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Ended shutdown");
-                    #endregion
-                    ret = "ok";
-                    break;
-
-                case "digest":
-                    List<object> objects = new List<object>();
-
-                    foreach (Sensor s in _prioritizedSensors)
-                        if (s.WiseName == "DoorLock")
-                            objects.Add(s.Digest());
-                    ret = JsonConvert.SerializeObject(objects);
-                    break;
-
-                case "weather-digest":
-                    ret = WeatherDigest;
-                    break;
+                //    ret = JsonConvert.SerializeObject(new WeatherDigest());
+                //    break;
 
 
                 default:
                     throw new ASCOM.ActionNotImplementedException("Action " + actionName + " is not implemented by this driver");
             }
             return ret;
-        }
-
-        public bool ShuttingDown
-        {
-            get
-            {
-                return _shuttingDown;
-            }
-
-            set
-            {
-                _shuttingDown = value;
-            }
         }
 
         public string Digest
@@ -338,23 +301,27 @@ namespace ASCOM.Wise40SafeToOperate
 
                 return JsonConvert.SerializeObject(new SafeToOperateDigest()
                 {
-                    ComputerControlIsSafe = computerControlSensor.isSafe,
-                    PlatformIsSafe = platformSensor.isSafe,
-                    HumanInterventionIsSafe = humanInterventionSensor.isSafe,
                     Bypassed = _bypassed,
                     Ready = isReady,
                     Safe = IsSafe,
                     UnsafeReasons = UnsafeReasonsList,
                     UnsafeBecauseNotReady = _unsafeBecauseNotReady,
-                    Colors = new Colors() {
-                        SunElevationColorArgb = Statuser.TriStateColor(isSafeSunElevation).ToArgb(),
-                        RainColorArgb = Statuser.TriStateColor(isSafeRain).ToArgb(),
-                        WindSpeedColorArgb = Statuser.TriStateColor(isSafeWindSpeed).ToArgb(),
-                        CloudCoverColorArgb = Statuser.TriStateColor(isSafeCloudCover).ToArgb(),
-                        HumidityColorArgb = Statuser.TriStateColor(isSafeHumidity).ToArgb(),
-                    },
-                    SunElevation = SunElevation,
+                    ShuttingDown = activityMonitor.ShuttingDown,
+                    ComputerControl = Sensor.SensorDigest.FromSensor(computerControlSensor),
+                    SunElevation = Sensor.SensorDigest.FromSensor(sunSensor),
+                    HumanIntervention = Sensor.SensorDigest.FromSensor(humanInterventionSensor),
+                    Platform = Sensor.SensorDigest.FromSensor(platformSensor),
 
+                    Temperature = Sensor.SensorDigest.FromSensor(temperatureSensor),
+                    Pressure = Sensor.SensorDigest.FromSensor(pressureSensor),
+                    Humidity = Sensor.SensorDigest.FromSensor(humiditySensor),
+                    RainRate = Sensor.SensorDigest.FromSensor(rainSensor),
+                    WindSpeed = Sensor.SensorDigest.FromSensor(windSensor),
+                    CloudCover = Sensor.SensorDigest.FromSensor(cloudsSensor),
+
+                    WindDirection =  Sensor.SensorDigest.FromOCHProperty("WindDirection"),
+                    DewPoint = Sensor.SensorDigest.FromOCHProperty("DewPoint"),
+                    SkyTemperature = Sensor.SensorDigest.FromOCHProperty("SkyTemperature"),
                 });
             }
         }
@@ -500,6 +467,53 @@ namespace ASCOM.Wise40SafeToOperate
             }
         }
 
+        public static string GenericUnsafeReason(Sensor s)
+        {
+            if (s.HasAttribute(Sensor.SensorAttribute.ForInfoOnly))
+                return null;
+
+            if (!s.HasAttribute(Sensor.SensorAttribute.AlwaysEnabled) && !s.StateIsSet(Sensor.SensorState.Enabled))
+                return null;   // not enabled
+
+            if (_bypassed && s.HasAttribute(Sensor.SensorAttribute.CanBeBypassed))
+                return null;   // bypassed
+
+            string reason = null;
+
+            if (!s.isSafe)
+            {
+                if (s.HasAttribute(Sensor.SensorAttribute.Immediate))
+                    reason = s.reason();
+                else
+                {
+                    if (!s.StateIsSet(Sensor.SensorState.EnoughReadings))
+                    {
+                        // cummulative and not ready
+                        reason = String.Format("{0} - not ready (only {1} of {2} readings)",
+                            s.WiseName, s._nreadings, s._repeats);
+                    }
+                    else if (s.StateIsSet(Sensor.SensorState.Stabilizing))
+                    {
+                        // cummulative and stabilizing
+                        string time = string.Empty;
+                        TimeSpan ts = s.TimeToStable;
+
+                        if (ts.TotalMinutes > 0)
+                            time += ((int)ts.TotalMinutes).ToString() + "m";
+                        time += ts.Seconds.ToString() + "s";
+
+                        reason = String.Format("{0} - stabilizing in {1}", s.WiseName, time);
+                    }
+                    else if (s.HasAttribute(Sensor.SensorAttribute.CanBeStale) && s.StateIsSet(Sensor.SensorState.Stale))
+                        // cummulative and stale
+                        reason = String.Format("{0} - {1} out of {2} readings are stale",
+                            s.WiseName, s._nstale, s._repeats);
+                }
+            }
+
+            return reason;
+        }
+
         public List<string> UnsafeReasonsList
         {
             get
@@ -512,9 +526,9 @@ namespace ASCOM.Wise40SafeToOperate
                     return reasons;
                 }
 
-                if (ShuttingDown)
+                if (activityMonitor.ShuttingDown)
                 {
-                    reasons.Add("Wise40 is shutting down");
+                    reasons.Add(Const.UnsafeReasons.ShuttingDown);
                     return reasons;     // when shutting down all sensors are ignored
                 }
 
@@ -531,35 +545,7 @@ namespace ASCOM.Wise40SafeToOperate
 
                     if (!s.isSafe)
                     {
-                        string reason = null;
-
-                        if (s.HasAttribute(Sensor.SensorAttribute.Immediate))
-                            reason = s.reason();
-                        else
-                        {
-                            if (!s.StateIsSet(Sensor.SensorState.EnoughReadings))
-                            {
-                                // cummulative and not ready
-                                reason = String.Format("{0} - not ready (only {1} of {2} readings)",
-                                    s.WiseName, s._nreadings, s._repeats);
-                            }
-                            else if (s.StateIsSet(Sensor.SensorState.Stabilizing))
-                            {
-                                // cummulative and stabilizing
-                                string time = string.Empty;
-                                TimeSpan ts = s.TimeToStable;
-
-                                if (ts.TotalMinutes > 0)
-                                    time += ((int)ts.TotalMinutes).ToString() + "m";
-                                time += ts.Seconds.ToString() + "s";
-
-                                reason = String.Format("{0} - stabilizing in {1}", s.WiseName, time);
-                            }
-                            else if (s.HasAttribute(Sensor.SensorAttribute.CanBeStale) && s.StateIsSet(Sensor.SensorState.Stale))
-                                // cummulative and stale
-                                reason = String.Format("{0} - {1} out of {2} readings are stale",
-                                    s.WiseName, s._nstale, s._repeats);
-                        }
+                        string reason = GenericUnsafeReason(s);
 
                         if (reason != null)
                         {
@@ -721,8 +707,21 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
+                if (activityMonitor.ShuttingDown)
+                    return false;
+
+                return IsSafeWithoutCheckingForShutdown;
+            }
+        }
+
+        public bool IsSafeWithoutCheckingForShutdown
+        {
+            get
+            {
                 bool ret = true;
                 _unsafeBecauseNotReady = false;
+
+                init();
 
                 if (!_connected)
                 {
@@ -762,7 +761,7 @@ namespace ASCOM.Wise40SafeToOperate
                 }
 
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "IsSafe: {0}", ret);
+                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "IsReallySafe: {0}", ret);
                 #endregion
                 return ret;
             }
@@ -784,24 +783,6 @@ namespace ASCOM.Wise40SafeToOperate
                 }
 
                 return true;
-            }
-        }
-
-        public string WeatherDigest
-        {
-            get
-            {
-                return JsonConvert.SerializeObject(new WeatherDigest {
-                    Humidity = humiditySensor.LatestReading.usable ? humiditySensor.LatestReading.value : double.NaN,
-                    Pressure = pressureSensor.LatestReading.usable ? pressureSensor.LatestReading.value : double.NaN,
-                    Temperature = temperatureSensor.LatestReading.usable ? temperatureSensor.LatestReading.value : double.NaN,
-                    CloudCover = cloudsSensor.LatestReading.usable ? cloudsSensor.LatestReading.value : double.NaN,
-                    RainRate = rainSensor.LatestReading.usable ? rainSensor.LatestReading.value : double.NaN,
-                    DewPoint = WiseSite.och.DewPoint,
-                    WindSpeed = windSensor.LatestReading.usable ? windSensor.LatestReading.value : double.NaN,
-                    WindDirection = WiseSite.och.WindDirection,
-                    SkyTemperature = WiseSite.och.SkyTemperature,
-                });
             }
         }
 
@@ -862,37 +843,41 @@ namespace ASCOM.Wise40SafeToOperate
 
     public class SafeToOperateDigest
     {
-        public bool ComputerControlIsSafe;
-        public bool PlatformIsSafe;
-        public bool HumanInterventionIsSafe;
         public bool Bypassed;
         public bool Ready;
         public bool Safe;
         public bool UnsafeBecauseNotReady;
         public List<string> UnsafeReasons;
-        public Colors Colors;
-        public double SunElevation;
-    }
+        public bool ShuttingDown;
 
-    public class Colors
-    {
-        public int SunElevationColorArgb;
-        public int RainColorArgb;
-        public int WindSpeedColorArgb;
-        public int HumidityColorArgb;
-        public int CloudCoverColorArgb;
+        // global sensors
+        public Sensor.SensorDigest ComputerControl;
+        public Sensor.SensorDigest Platform;
+        public Sensor.SensorDigest HumanIntervention;
+        public Sensor.SensorDigest SunElevation;
+
+        // weather sensors
+        public Sensor.SensorDigest Temperature;
+        public Sensor.SensorDigest Pressure;
+        public Sensor.SensorDigest Humidity;
+        public Sensor.SensorDigest RainRate;
+        public Sensor.SensorDigest WindSpeed;
+        public Sensor.SensorDigest WindDirection;
+        public Sensor.SensorDigest CloudCover;
+        public Sensor.SensorDigest DewPoint;
+        public Sensor.SensorDigest SkyTemperature;
     }
 
     public class WeatherDigest
     {
-        public double Temperature;
-        public double Pressure;
-        public double Humidity;
-        public double RainRate;
-        public double WindSpeed;
-        public double WindDirection;
-        public double CloudCover;
-        public double DewPoint;
-        public double SkyTemperature;
+        public Sensor.SensorDigest Temperature;
+        public Sensor.SensorDigest Pressure;
+        public Sensor.SensorDigest Humidity;
+        public Sensor.SensorDigest RainRate;
+        public Sensor.SensorDigest WindSpeed;
+        public Sensor.SensorDigest WindDirection;
+        public Sensor.SensorDigest CloudCover;
+        public Sensor.SensorDigest DewPoint;
+        public Sensor.SensorDigest SkyTemperature;
     }
 }

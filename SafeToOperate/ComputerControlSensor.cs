@@ -20,7 +20,9 @@ namespace ASCOM.Wise40SafeToOperate
             base("ComputerControl",
                 SensorAttribute.Immediate |
                 SensorAttribute.AlwaysEnabled |
-                SensorAttribute.ForcesDecision, instance)
+                SensorAttribute.ForcesDecision,
+                "", "", "", "",
+                instance)
         { }
 
         public override object Digest()
@@ -59,25 +61,28 @@ namespace ASCOM.Wise40SafeToOperate
 
             Reading r = new Reading
             {
-                stale = false,
-                safe = Hardware.computerControlPin.isOn,
-                usable = true,
+                Stale = false,
+                Safe = Hardware.computerControlPin.isOn,
+                Usable = true,
+                secondsSinceLastUpdate = 0,
+                timeOfLastUpdate = DateTime.Now,
+                value = Hardware.computerControlPin.isOn ? 1 : 0,
             };
 
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "ComputerControlSensor: getIsSafe: {0}", r.safe);
+            debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "ComputerControlSensor: getIsSafe: {0}", r.Safe);
             #endregion
 
-            if (r.safe != _wasSafe)
+            _status = r.Safe ? "Operational" : "Maintenance";
+            if (r.Safe != _wasSafe)
             {
-                _status = r.safe ? "Operational" : "Maintenance";
                 activityMonitor.Event(new Event.SafetyEvent(
                     sensor: WiseName,
                     details: _status,
                     before: Event.SafetyEvent.ToSensorSafety(_wasSafe),
-                    after: Event.SafetyEvent.ToSensorSafety(r.safe)));
+                    after: Event.SafetyEvent.ToSensorSafety(r.Safe)));
             }
-            _wasSafe = r.safe;
+            _wasSafe = r.Safe;
             return r;
         }
 

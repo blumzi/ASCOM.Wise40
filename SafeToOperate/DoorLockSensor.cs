@@ -33,7 +33,9 @@ namespace ASCOM.Wise40SafeToOperate
                 SensorAttribute.Immediate |
                 SensorAttribute.AlwaysEnabled |
                 SensorAttribute.CanBeBypassed |
-                SensorAttribute.ForcesDecision, instance)
+                SensorAttribute.ForcesDecision,
+                "", "", "", "",
+                instance)
         {
             DoorLockPin = new WisePin("DoorLock", hardware.domeboard, DigitalPortType.FirstPortCH, 3, DigitalPortDirection.DigitalIn);
             BypassPin = new WisePin("DoorBypass", hardware.domeboard, DigitalPortType.FirstPortCH, 2, DigitalPortDirection.DigitalIn);
@@ -80,23 +82,26 @@ namespace ASCOM.Wise40SafeToOperate
 
             Reading r = new Reading
             {
-                stale = false,
-                safe = _isSafe,
-                usable = true,
+                Stale = false,
+                Safe = _isSafe,
+                Usable = true,
+                secondsSinceLastUpdate = 0,
+                timeOfLastUpdate = DateTime.Now,
             };
 
+            r.value = r.Safe ? 1 : 0;
             _status = string.Format("Lock is {0}, bypass is {1}",
                                             DoorLockIsSafe ? "closed" : "open",
                                             BypassIsSafe ? "OFF" : "ON");
-            if (r.safe != _wasSafe)
+            if (r.Safe != _wasSafe)
             {
                 activityMonitor.Event(new Event.SafetyEvent(
                     sensor: WiseName,
                     details: _status,
                     before: Event.SafetyEvent.ToSensorSafety(_wasSafe),
-                    after: Event.SafetyEvent.ToSensorSafety(r.safe)));
+                    after: Event.SafetyEvent.ToSensorSafety(r.Safe)));
             }
-            _wasSafe = r.safe;
+            _wasSafe = r.Safe;
             return r;
         }
 

@@ -16,6 +16,7 @@ namespace ASCOM.Wise40SafeToOperate
         private DateTime _endOfStabilization;
         private object _lock = new object();
         protected static ActivityMonitor activityMonitor = ActivityMonitor.Instance;
+        private string _propertyName;
 
         [Flags]
         public enum SensorAttribute
@@ -80,18 +81,265 @@ namespace ASCOM.Wise40SafeToOperate
         public int _nstale;
         public bool _enabled;
         public int _nreadings;
+        public Units _units;
+        public string _formatValue;
         Event.SafetyEvent.SensorState sensorState = Event.SafetyEvent.SensorState.NotSet;
+
+        [FlagsAttribute] public enum Usability
+        {
+            None = 0,
+            Usable = (1 << 0),
+            Stale = (1 << 1),
+            Safe = (1 << 2),
+        }
+
+        public class Units
+        {
+            public string symbolic;
+            public string verbal;
+        }
+
+        public string FormatSymbolic(double value)
+        {
+            if (_formatValue == string.Empty)
+                return string.Empty;
+
+            string ret = LatestReading.value.ToString(_formatValue);
+            if (_units.symbolic != string.Empty)
+                ret += _units.symbolic;
+            return ret;
+        }
+
+        public string FormatVerbal(double value)
+        {
+            if (_formatValue == string.Empty)
+                return string.Empty;
+
+            string ret = value.ToString(_formatValue);
+            if (_units.verbal != string.Empty)
+                ret += _units.verbal;
+            return ret;
+        }
+
+        public class SensorDigest
+        {
+            public SensorState State;
+            public Reading LatestReading;
+            public string ToolTip;
+            private string _symbolic;
+            private string _verbal;
+            private bool _safe;
+            private bool _stale;
+
+            public SensorDigest() { }
+            static SensorDigest() { }
+
+            public static SensorDigest FromSensor(Sensor sensor)
+            {
+                SensorDigest digest = new SensorDigest();
+
+                digest.State = sensor._state;
+                digest.LatestReading = sensor.LatestReading;
+                digest.ToolTip = sensor.ToolTip;
+                digest.Safe = sensor.isSafe;
+                digest.Symbolic = sensor.FormatSymbolic(sensor.LatestReading.value);
+                digest.Verbal = sensor.FormatVerbal(sensor.LatestReading.value);
+
+                return digest;
+            }
+
+            public static SensorDigest FromOCHProperty(string property)
+            {
+                SensorDigest digest = new SensorDigest();
+                double v = 0, s = 0;
+
+                digest.Safe = true;
+                switch (property)
+                {
+                    case "WindDirection":
+                        v = WiseSite.och.WindDirection;
+                        s = WiseSite.och.TimeSinceLastUpdate(property);
+                        digest.Symbolic = string.Format("{0}°", v);
+                        digest.Verbal = string.Format("{0} deg", v);
+                        break;
+                    case "DewPoint":
+                        v = WiseSite.och.DewPoint;
+                        s = WiseSite.och.TimeSinceLastUpdate(property);
+                        digest.Symbolic = string.Format("{0}°C", v);
+                        digest.Verbal = string.Format("{0} deg", v);
+                        break;
+                    case "SkyTemperature":
+                        v = WiseSite.och.SkyTemperature;
+                        s = WiseSite.och.TimeSinceLastUpdate(property);
+                        digest.Symbolic = string.Format("{0}°C", v);
+                        digest.Verbal = string.Format("{0} deg", v);
+                        break;
+                    default:
+                        return null;
+                }
+
+                digest.ToolTip = "";
+
+                digest.LatestReading = new Reading
+                {
+                    value = v,
+                    Safe = true,
+                    Stale = false,
+                    Usable = true,
+                    secondsSinceLastUpdate = s,
+                    timeOfLastUpdate = DateTime.Now.Subtract(TimeSpan.FromSeconds(s)),
+                };
+                return digest;
+            }
+
+            public string Symbolic
+            {
+                get
+                {
+                    return _symbolic;
+                }
+
+                set
+                {
+                    _symbolic = value;
+                }
+            }
+
+            public string Verbal
+            {
+                get
+                {
+                    return _verbal;
+                }
+
+                set
+                {
+                    _verbal = value;
+                }
+            }
+
+            public bool Stale
+            {
+                get
+                {
+                    return _stale;
+                }
+
+                set
+                {
+                    _stale = value;
+                }
+            }
+
+            public System.Drawing.Color Color
+            {
+                get
+                {
+                    Const.TriStateStatus triState = Const.TriStateStatus.Normal;
+                    if (Stale)
+                        triState = Const.TriStateStatus.Warning;
+                    else
+                    {
+                        if (Safe)
+                            triState = Const.TriStateStatus.Good;
+                        else
+                            triState = Const.TriStateStatus.Error;
+                    }
+                    return Statuser.TriStateColor(triState);
+                }
+            }
+
+            public bool Safe
+            {
+                get
+                {
+                    return _safe;
+                }
+
+                set
+                {
+                    _safe = value;
+                }
+            }
+        }
+
+        public string ToolTip
+        {
+            get
+            {
+                return isSafe ? "" : WiseSafeToOperate.GenericUnsafeReason(this);
+            }
+        }
 
         public class Reading
         {
-            public bool stale;
-            public bool safe;
             public double value;
-            public bool usable = false;
+            public Usability usability;
+            public double secondsSinceLastUpdate;
+            public DateTime timeOfLastUpdate;
+
+            public Reading()
+            {
+                value = double.NaN;
+                usability = Usability.None;
+            }
 
             public override string ToString()
             {
-                return safe ? "safe" : "not-safe";
+                if (Stale)
+                    return "stale";
+                else if (Safe)
+                    return "safe";
+                else
+                    return "not-safe";
+            }
+
+            public bool Usable
+            {
+                get
+                {
+                    return (usability & Usability.Usable) != 0;
+                }
+
+                set
+                {
+                    if (value)
+                        usability |= Usability.Usable;
+                    else
+                        usability &= ~Usability.Usable;
+                }
+            }
+
+            public bool Stale
+            {
+                get
+                {
+                    return (usability & Usability.Stale) != 0;
+                }
+
+                set
+                {
+                    if (value)
+                        usability |= Usability.Stale;
+                    else
+                        usability &= ~Usability.Stale;
+                }
+            }
+
+            public bool Safe
+            {
+                get
+                {
+                    return (usability & Usability.Safe) != 0;
+                }
+
+                set
+                {
+                    if (value)
+                        usability |= Usability.Safe;
+                    else
+                        usability &= ~Usability.Safe;
+                }
             }
         }
 
@@ -102,7 +350,7 @@ namespace ASCOM.Wise40SafeToOperate
 
         protected static WiseSafeToOperate wisesafetooperate = WiseSafeToOperate.Instance;
 
-        protected Sensor(string name, SensorAttribute attributes, WiseSafeToOperate instance)
+        protected Sensor(string name, SensorAttribute attributes, string symbolicUnits, string verbalUnits, string formatValue, string propertyName, WiseSafeToOperate instance)
         {
             wisesafetooperate = instance;
             WiseName = name;
@@ -111,6 +359,9 @@ namespace ASCOM.Wise40SafeToOperate
             if (HasAttribute(SensorAttribute.AlwaysEnabled))
                 Enabled = true;
             _state = SensorState.None;
+            _units = new Units { symbolic = symbolicUnits, verbal = verbalUnits };
+            _formatValue = formatValue;
+            _propertyName = propertyName;
 
             Restart(5000);
             activityMonitor.Event(new Event.SafetyEvent(
@@ -135,13 +386,15 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
+                if (HasAttribute(SensorAttribute.Immediate))
+                    return getReading();
+
                 if (_readings == null)
-                    return new Reading
-                    {
-                        usable = false,
-                    };
+                    return new Reading();
 
                 var arr = _readings.ToArray();
+                if (arr.Count() == 0)
+                    return new Reading();
 
                 return arr[arr.Count() - 1];
             }
@@ -196,22 +449,33 @@ namespace ASCOM.Wise40SafeToOperate
         public abstract object Digest();
         public abstract string Status { get; }
 
-        public bool IsStale(string propertyName)
+        public double SecondsSinceLastUpdate
         {
-            if (DoesNotHaveAttribute(SensorAttribute.CanBeStale))
-                return false;
-
-            //if (!WiseSite.och.Connected)
-            //    WiseSite.och.Connected = true;
-
-            if (WiseSite.och.TimeSinceLastUpdate(propertyName) > WiseSafeToOperate.ageMaxSeconds)
+            get
             {
-                SetState(SensorState.Stale);
-                return true;
-            }
+                if (DoesNotHaveAttribute(SensorAttribute.CanBeStale))
+                    return double.NaN;
 
-            UnsetState(SensorState.Stale);
-            return false;
+                return WiseSite.och.TimeSinceLastUpdate(_propertyName);
+            }
+        }
+
+        public bool IsStale
+        {
+            get
+            {
+                if (DoesNotHaveAttribute(SensorAttribute.CanBeStale))
+                    return false;
+
+                if (SecondsSinceLastUpdate > WiseSafeToOperate.ageMaxSeconds)
+                {
+                    SetState(SensorState.Stale);
+                    return true;
+                }
+
+                UnsetState(SensorState.Stale);
+                return false;
+            }
         }
 
         public void Restart(int dueMillis)
@@ -267,9 +531,9 @@ namespace ASCOM.Wise40SafeToOperate
             {
                 values.Add(r.ToString());
                 nreadings++;
-                if (!r.safe)
+                if (!r.Safe)
                     nbad++;
-                if (r.stale)
+                if (r.Stale)
                     nstale++;
             }
             SensorState savedState = _state;
@@ -287,9 +551,9 @@ namespace ASCOM.Wise40SafeToOperate
             {
                 values.Add(r.ToString());
                 nreadings++;
-                if (!r.safe)
+                if (!r.Safe)
                     nbad++;
-                if (r.stale)
+                if (r.Stale)
                     nstale++;
             }
 
@@ -348,7 +612,7 @@ namespace ASCOM.Wise40SafeToOperate
 
                 bool prolong = true;
                 if (StateIsSet(SensorState.Stabilizing)) {
-                    if (currentReading.stale || !currentReading.safe)
+                    if (currentReading.Stale || !currentReading.Safe)
                     {
                         ExtendUnsafety("Unsafe reading while stabilizing");
                         return;
@@ -424,7 +688,7 @@ namespace ASCOM.Wise40SafeToOperate
 
                 if (HasAttribute(SensorAttribute.Immediate))
                 {
-                    ret = getReading().safe;
+                    ret = getReading().Safe;
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugSafety,
                         "Sensor ({0}), (immediate) isSafe: {1}",
