@@ -919,8 +919,7 @@ namespace ASCOM.Wise40
 
                 if (value)
                 {
-                    if (!wisesafetooperate.IsSafe && 
-                        !ShuttingDown &&
+                    if ((!wisesafetooperate.IsSafeWithoutCheckingForShutdown && !ShuttingDown) &&
                         !BypassCoordinatesSafety)
                             throw new ASCOM.InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList));
 
@@ -1176,7 +1175,7 @@ namespace ASCOM.Wise40
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, string.Format("MoveAxis({0}, {1})", Axis, Rate));
             #endregion debug
 
-            if (!wisesafetooperate.IsSafe && !ShuttingDown && !BypassCoordinatesSafety)
+            if (!wisesafetooperate.IsSafeWithoutCheckingForShutdown && !ShuttingDown && !BypassCoordinatesSafety)
                 throw new ASCOM.InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList));
 
             Const.AxisDirection direction = (Rate == Const.rateStopped) ? Const.AxisDirection.None :
@@ -1545,68 +1544,126 @@ namespace ASCOM.Wise40
 
             bool rememberToCancelSafetyBypass = false;
 
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "doShutdown: starting activity ShuttingDown ...");
+            #endregion
             activityMonitor.NewActivity(new Activity.ShutdownActivity(reason));
 
             if (!safetooperateDigest.Bypassed)
             {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "doShutdown: starting safetooperate bypass ...");
+                #endregion
                 rememberToCancelSafetyBypass = true;
                 wisesafetooperate.Action("start-bypass", "temporary");
             }
-            wisesafetooperate.Action("start-shutdown", "");
 
             if (AtPark)
             {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "doShutdown: setting AtPark to false ...");
+                #endregion
                 AtPark = false; // Don't call Unpark(), it throws exception if while ShuttingDown
             }
 
             if (domeSlaveDriver.AtPark)
+            {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "doShutdown: calling domeSlaveDriver.Unpark() ...");
+                #endregion
                 domeSlaveDriver.Unpark();
+            }
 
             if (Slewing)
             {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "doShutdown: calling AbortSlew() ...");
+                #endregion
                 AbortSlew("WiseTele:Shutdown():doShutdown()");
                 do
                 {
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "doShutdown: waiting for !Slewing ...");
+                    #endregion
                     Thread.Sleep(1000);
                 } while (Slewing);
             }
 
             if (IsPulseGuiding)
             {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "doShutdown: calling AbortPulseGuiding() ...");
+                #endregion
                 AbortPulseGuiding();
                 do
                 {
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "doShutdown: waiting for !IsPulseGuiding ...");
+                    #endregion
                     Thread.Sleep(1000);
                 } while (IsPulseGuiding);
             }
 
             if (domeSlaveDriver.Slewing)
             {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "doShutdown: calling domeSlaveDriver.AbortSlew() ...");
+                #endregion
                 domeSlaveDriver.AbortSlew();
                 do
                 {
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "doShutdown: waiting for !domeSlaveDriver.Slewing ...");
+                    #endregion
                     Thread.Sleep(1000);
                 } while (domeSlaveDriver.Slewing);
             }
 
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "doShutdown: setting Tracking to false ...");
+            #endregion
             Tracking = false;
 
             if (domeSlaveDriver.ShutterState != ShutterState.shutterClosed)
             {
                 // Wait for shutter to close before continuing
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "doShutdown: calling domeSlaveDriver.CloseShutter() ...");
+                #endregion
                 domeSlaveDriver.CloseShutter();
                 while (domeSlaveDriver.ShutterState != ShutterState.shutterClosed)
+                {
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "doShutdown: waiting for domeSlaveDriver.ShutterState == ShutterState.shutterClosed ...");
+                    #endregion
                     Thread.Sleep(1000);
+                }
             }
 
-            Park();
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "doShutdown: calling Park() ...");
+            #endregion
+            try
+            {
+                Park();
+            } catch (Exception ex)
+            {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "doShutdown: exception during Park(): {0}", ex.ToString());
+                #endregion
+            }
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "doShutdown: after Park() ...");
+            #endregion
 
             if (rememberToCancelSafetyBypass)
                 wisesafetooperate.Action("end-bypass", "temporary");
-            wisesafetooperate.Action("end-shutdown", "");
 
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "doShutdown: ending activity ShuttingDown ...");
+            #endregion
             activityMonitor.EndActivity(ActivityMonitor.ActivityType.ShuttingDown,
-                new Activity.ShutdownActivity.EndParams()
+            new Activity.ShutdownActivity.EndParams()
                 {
                     endState = Activity.State.Succeeded,
                     endReason = "Shutdown done"
@@ -1656,26 +1713,30 @@ namespace ASCOM.Wise40
                 if (wasEnslavingDome)
                 {
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: starting DomeParker()");
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: starting DomeParker() ...");
                     #endregion
                     DomeParker();
                 }
                 TargetRightAscension = ra.Hours;
                 TargetDeclination = dec.Degrees;
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: setting Tracking = true ...");
+                #endregion
                 Tracking = true;
+
                 _enslaveDome = false;
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: starting _slewToCoordinatesSync");
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: starting _slewToCoordinatesSync ...");
                 #endregion
                 _slewToCoordinatesSync(ra, dec);
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: after _slewToCoordinatesSync");
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: after _slewToCoordinatesSync ...");
                 #endregion
 
                 do
                 {
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: still Slewing ...");
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: waiting for Telescope to stop Slewing ...");
                     #endregion
                     Thread.Sleep(1000);
                 } while (activityMonitor.InProgress(ActivityMonitor.ActivityType.TelescopeSlew));
@@ -1688,7 +1749,7 @@ namespace ASCOM.Wise40
                 activityMonitor.EndActivity(ActivityMonitor.ActivityType.Parking, new Activity.ParkActivity.EndParams()
                 {
                     endState = Activity.State.Failed,
-                    endReason = string.Format("Exception: \"{0}\".", ex.Message),
+                    endReason = string.Format("Exception: \"{0}\".", ex.ToString()),
                     end = new Activity.TelescopeSlewActivity.Coords
                     {
                         ra = RightAscension,
@@ -1698,10 +1759,25 @@ namespace ASCOM.Wise40
                     shutterPercent = WiseDome.Instance.wisedomeshutter.PercentOpen,
                 });
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: Exception: {0}, aborted.", ex.Message);
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: Aborted due to Exception: {0}", ex.ToString());
                 #endregion
                 if (ShuttingDown)
                     throw;
+                Parking = false;
+                Tracking = false;
+                activityMonitor.EndActivity(ActivityMonitor.ActivityType.Parking, new Activity.ParkActivity.EndParams()
+                {
+                    endState = Activity.State.Failed,
+                    endReason = string.Format("Parking failed due to Exception: {0}", ex.ToString()),
+                    end = new Activity.TelescopeSlewActivity.Coords
+                    {
+                        ra = RightAscension,
+                        dec = Declination,
+                    },
+                    domeAz = WiseDome.Instance.Azimuth.Degrees,
+                    shutterPercent = WiseDome.Instance.wisedomeshutter.PercentOpen,
+                });
+                _enslaveDome = wasEnslavingDome;
                 return;
             }
             #region debug
