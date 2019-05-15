@@ -704,7 +704,7 @@ namespace ASCOM.Wise40.Boltwood
 
         public BoltwoodStation(int id)
         {
-            _id = id;
+            Id = id;
             ReadProfile();
         }
 
@@ -726,37 +726,37 @@ namespace ASCOM.Wise40.Boltwood
 
         public void ReadProfile()
         {
-            string subKey = "Station" + _id.ToString();
+            string subKey = "Station" + Id.ToString();
 
             using (Profile driverProfile = new Profile() { DeviceType = "ObservingConditions" })
             {
-                _name = driverProfile.GetValue(Const.WiseDriverID.Boltwood, Const.ProfileName.Boltwood_Name, subKey, string.Empty);
-                _enabled = Convert.ToBoolean(driverProfile.GetValue(Const.WiseDriverID.Boltwood, Const.ProfileName.Boltwood_Enabled, subKey, "false"));
-                _file = driverProfile.GetValue(Const.WiseDriverID.Boltwood, Const.ProfileName.Boltwood_DataFile, subKey, string.Empty);
+                Name = driverProfile.GetValue(Const.WiseDriverID.Boltwood, Const.ProfileName.Boltwood_Name, subKey, string.Empty);
+                Enabled = Convert.ToBoolean(driverProfile.GetValue(Const.WiseDriverID.Boltwood, Const.ProfileName.Boltwood_Enabled, subKey, "false"));
+                FilePath = driverProfile.GetValue(Const.WiseDriverID.Boltwood, Const.ProfileName.Boltwood_DataFile, subKey, string.Empty);
 
                 WeatherStationInputMethod method;
 
                 if (Enum.TryParse<WeatherStationInputMethod>(driverProfile.GetValue(Const.WiseDriverID.Boltwood, Const.ProfileName.Boltwood_InputMethod, null, "ClarityII"), out method))
-                    _method = method;
+                    InputMethod = method;
             }
         }
 
         public void WriteProfile()
         {
-            string subKey = "Station" + _id.ToString();
+            string subKey = "Station" + Id.ToString();
 
             using (Profile driverProfile = new Profile() { DeviceType = "ObservingConditions" })
             {
-                driverProfile.WriteValue(Const.WiseDriverID.Boltwood, Const.ProfileName.Boltwood_Name, _name, subKey);
-                driverProfile.WriteValue(Const.WiseDriverID.Boltwood, Const.ProfileName.Boltwood_Enabled, _enabled.ToString(), subKey);
-                driverProfile.WriteValue(Const.WiseDriverID.Boltwood, Const.ProfileName.Boltwood_DataFile, _file, subKey);
-                driverProfile.WriteValue(Const.WiseDriverID.Boltwood, Const.ProfileName.Boltwood_InputMethod, _method.ToString(), subKey);
+                driverProfile.WriteValue(Const.WiseDriverID.Boltwood, Const.ProfileName.Boltwood_Name, Name, subKey);
+                driverProfile.WriteValue(Const.WiseDriverID.Boltwood, Const.ProfileName.Boltwood_Enabled, Enabled.ToString(), subKey);
+                driverProfile.WriteValue(Const.WiseDriverID.Boltwood, Const.ProfileName.Boltwood_DataFile, FilePath, subKey);
+                driverProfile.WriteValue(Const.WiseDriverID.Boltwood, Const.ProfileName.Boltwood_InputMethod, InputMethod.ToString(), subKey);
             }
         }
 
         public void GetSensorData()
         {
-            switch (_method)
+            switch (InputMethod)
             {
                 case WeatherStationInputMethod.ClarityII:
                     GetClarityIISensorData();
@@ -773,24 +773,24 @@ namespace ASCOM.Wise40.Boltwood
         {
             string str;
 
-            if (_file == null || _file == string.Empty)
+            if (FilePath == null || FilePath == string.Empty)
                 throw new InvalidOperationException("GetSensorData: _dataFile name is either null or empty!");
 
-            if (!File.Exists(_file))
-                throw new InvalidOperationException(string.Format("GetSensorData: _dataFile \"{0}\" DOES NOT exist!", _file));
+            if (!File.Exists(FilePath))
+                throw new InvalidOperationException(string.Format("GetSensorData: _dataFile \"{0}\" DOES NOT exist!", FilePath));
 
-            if (_lastDataRead == DateTime.MinValue || File.GetLastWriteTime(_file).CompareTo(_lastDataRead) > 0)
+            if (_lastDataRead == DateTime.MinValue || File.GetLastWriteTime(FilePath).CompareTo(_lastDataRead) > 0)
             {
                 try
                 {
-                    using (StreamReader sr = new StreamReader(_file))
+                    using (StreamReader sr = new StreamReader(FilePath))
                     {
                         str = sr.ReadToEnd();
                     }
                 }
                 catch (Exception e)
                 {
-                    throw new InvalidOperationException(string.Format("GetSensorData: Cannot read \"{0}\", caught {1}", _file, e.Message));
+                    throw new InvalidOperationException(string.Format("GetSensorData: Cannot read \"{0}\", caught {1}", FilePath, e.Message));
                 }
 
                 _sensorData = new SensorData(str);
@@ -824,6 +824,11 @@ namespace ASCOM.Wise40.Boltwood
             get
             {
                 return _id;
+            }
+
+            set
+            {
+                _id = value;
             }
         }
 

@@ -35,6 +35,7 @@ namespace ASCOM.Wise40.Boltwood
             this.picASCOM = new System.Windows.Forms.PictureBox();
             this.openFileDialog0 = new System.Windows.Forms.OpenFileDialog();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
+            this.label4 = new System.Windows.Forms.Label();
             this.buttonChoose0 = new System.Windows.Forms.Button();
             this.buttonChoose1 = new System.Windows.Forms.Button();
             this.buttonChoose2 = new System.Windows.Forms.Button();
@@ -44,16 +45,17 @@ namespace ASCOM.Wise40.Boltwood
             this.checkBox4 = new System.Windows.Forms.CheckBox();
             this.checkBox5 = new System.Windows.Forms.CheckBox();
             this.checkBox0 = new System.Windows.Forms.CheckBox();
+            this.buttonChoose3 = new System.Windows.Forms.Button();
+            this.buttonChoose4 = new System.Windows.Forms.Button();
+            this.buttonChoose5 = new System.Windows.Forms.Button();
+            this.label2 = new System.Windows.Forms.Label();
             this.comboBoxMethod0 = new System.Windows.Forms.ComboBox();
             this.comboBoxMethod1 = new System.Windows.Forms.ComboBox();
             this.comboBoxMethod2 = new System.Windows.Forms.ComboBox();
             this.comboBoxMethod3 = new System.Windows.Forms.ComboBox();
             this.comboBoxMethod4 = new System.Windows.Forms.ComboBox();
             this.comboBoxMethod5 = new System.Windows.Forms.ComboBox();
-            this.buttonChoose3 = new System.Windows.Forms.Button();
-            this.buttonChoose4 = new System.Windows.Forms.Button();
-            this.buttonChoose5 = new System.Windows.Forms.Button();
-            this.label2 = new System.Windows.Forms.Label();
+            this.label3 = new System.Windows.Forms.Label();
             this.labelPath0 = new System.Windows.Forms.Label();
             this.labelPath1 = new System.Windows.Forms.Label();
             this.labelPath2 = new System.Windows.Forms.Label();
@@ -66,8 +68,6 @@ namespace ASCOM.Wise40.Boltwood
             this.openFileDialog4 = new System.Windows.Forms.OpenFileDialog();
             this.openFileDialog5 = new System.Windows.Forms.OpenFileDialog();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.label3 = new System.Windows.Forms.Label();
-            this.label4 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).BeginInit();
             this.tableLayoutPanel1.SuspendLayout();
             this.SuspendLayout();
@@ -107,7 +107,7 @@ namespace ASCOM.Wise40.Boltwood
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(266, 49);
             this.label1.TabIndex = 2;
-            this.label1.Text = "Multi-station ASCOM driver for \r\nthe Boltwood CloudSensor\r\nweather station";
+            this.label1.Text = "Multi-station ASCOM driver for \r\nBoltwood CloudSensor\r\nweather stations";
             this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // picASCOM
@@ -156,7 +156,7 @@ namespace ASCOM.Wise40.Boltwood
             this.tableLayoutPanel1.Controls.Add(this.comboBoxMethod3, 1, 4);
             this.tableLayoutPanel1.Controls.Add(this.comboBoxMethod4, 1, 5);
             this.tableLayoutPanel1.Controls.Add(this.comboBoxMethod5, 1, 6);
-            this.tableLayoutPanel1.Controls.Add(this.label3, 2, 0);
+            this.tableLayoutPanel1.Controls.Add(this.label3, 3, 0);
             this.tableLayoutPanel1.Controls.Add(this.labelPath0, 3, 1);
             this.tableLayoutPanel1.Controls.Add(this.labelPath1, 3, 2);
             this.tableLayoutPanel1.Controls.Add(this.labelPath2, 3, 3);
@@ -176,6 +176,19 @@ namespace ASCOM.Wise40.Boltwood
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             this.tableLayoutPanel1.Size = new System.Drawing.Size(628, 194);
             this.tableLayoutPanel1.TabIndex = 9;
+            // 
+            // label4
+            // 
+            this.label4.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(177)));
+            this.label4.Location = new System.Drawing.Point(3, 0);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(84, 20);
+            this.label4.TabIndex = 38;
+            this.label4.Text = "Station";
+            this.label4.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // buttonChoose0
             // 
@@ -282,6 +295,58 @@ namespace ASCOM.Wise40.Boltwood
             this.checkBox0.Text = "C18";
             this.checkBox0.UseVisualStyleBackColor = true;
             // 
+            // buttonChoose3
+            // 
+            this.buttonChoose3.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonChoose3.Enabled = false;
+            this.buttonChoose3.Location = new System.Drawing.Point(181, 110);
+            this.buttonChoose3.Name = "buttonChoose3";
+            this.buttonChoose3.Size = new System.Drawing.Size(75, 21);
+            this.buttonChoose3.TabIndex = 27;
+            this.buttonChoose3.Text = "Choose";
+            this.toolTip1.SetToolTip(this.buttonChoose3, "Select a data file");
+            this.buttonChoose3.UseVisualStyleBackColor = false;
+            this.buttonChoose3.Click += new System.EventHandler(this.buttonChooseDataFile3_Click);
+            // 
+            // buttonChoose4
+            // 
+            this.buttonChoose4.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonChoose4.Enabled = false;
+            this.buttonChoose4.Location = new System.Drawing.Point(181, 139);
+            this.buttonChoose4.Name = "buttonChoose4";
+            this.buttonChoose4.Size = new System.Drawing.Size(75, 21);
+            this.buttonChoose4.TabIndex = 28;
+            this.buttonChoose4.Text = "Choose";
+            this.toolTip1.SetToolTip(this.buttonChoose4, "Select a data file");
+            this.buttonChoose4.UseVisualStyleBackColor = false;
+            this.buttonChoose4.Click += new System.EventHandler(this.buttonChooseDataFile4_Click);
+            // 
+            // buttonChoose5
+            // 
+            this.buttonChoose5.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonChoose5.Enabled = false;
+            this.buttonChoose5.Location = new System.Drawing.Point(181, 168);
+            this.buttonChoose5.Name = "buttonChoose5";
+            this.buttonChoose5.Size = new System.Drawing.Size(75, 21);
+            this.buttonChoose5.TabIndex = 29;
+            this.buttonChoose5.Text = "Choose";
+            this.toolTip1.SetToolTip(this.buttonChoose5, "Select a data file");
+            this.buttonChoose5.UseVisualStyleBackColor = false;
+            this.buttonChoose5.Click += new System.EventHandler(this.buttonChooseDataFile5_Click);
+            // 
+            // label2
+            // 
+            this.label2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(177)));
+            this.label2.Location = new System.Drawing.Point(93, 0);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(82, 20);
+            this.label2.TabIndex = 30;
+            this.label2.Text = "Input method";
+            this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
             // comboBoxMethod0
             // 
             this.comboBoxMethod0.Enabled = false;
@@ -366,57 +431,18 @@ namespace ASCOM.Wise40.Boltwood
             this.comboBoxMethod5.TabIndex = 25;
             this.comboBoxMethod5.Text = "Korean";
             // 
-            // buttonChoose3
+            // label3
             // 
-            this.buttonChoose3.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.buttonChoose3.Enabled = false;
-            this.buttonChoose3.Location = new System.Drawing.Point(181, 110);
-            this.buttonChoose3.Name = "buttonChoose3";
-            this.buttonChoose3.Size = new System.Drawing.Size(75, 21);
-            this.buttonChoose3.TabIndex = 27;
-            this.buttonChoose3.Text = "Choose";
-            this.toolTip1.SetToolTip(this.buttonChoose3, "Select a data file");
-            this.buttonChoose3.UseVisualStyleBackColor = false;
-            this.buttonChoose3.Click += new System.EventHandler(this.buttonChooseDataFile3_Click);
-            // 
-            // buttonChoose4
-            // 
-            this.buttonChoose4.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.buttonChoose4.Enabled = false;
-            this.buttonChoose4.Location = new System.Drawing.Point(181, 139);
-            this.buttonChoose4.Name = "buttonChoose4";
-            this.buttonChoose4.Size = new System.Drawing.Size(75, 21);
-            this.buttonChoose4.TabIndex = 28;
-            this.buttonChoose4.Text = "Choose";
-            this.toolTip1.SetToolTip(this.buttonChoose4, "Select a data file");
-            this.buttonChoose4.UseVisualStyleBackColor = false;
-            this.buttonChoose4.Click += new System.EventHandler(this.buttonChooseDataFile4_Click);
-            // 
-            // buttonChoose5
-            // 
-            this.buttonChoose5.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.buttonChoose5.Enabled = false;
-            this.buttonChoose5.Location = new System.Drawing.Point(181, 168);
-            this.buttonChoose5.Name = "buttonChoose5";
-            this.buttonChoose5.Size = new System.Drawing.Size(75, 21);
-            this.buttonChoose5.TabIndex = 29;
-            this.buttonChoose5.Text = "Choose";
-            this.toolTip1.SetToolTip(this.buttonChoose5, "Select a data file");
-            this.buttonChoose5.UseVisualStyleBackColor = false;
-            this.buttonChoose5.Click += new System.EventHandler(this.buttonChooseDataFile5_Click);
-            // 
-            // label2
-            // 
-            this.label2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.label3.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(177)));
-            this.label2.Location = new System.Drawing.Point(93, 0);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(82, 20);
-            this.label2.TabIndex = 30;
-            this.label2.Text = "Input method";
-            this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.label3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(177)));
+            this.label3.Location = new System.Drawing.Point(262, 0);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(444, 20);
+            this.label3.TabIndex = 37;
+            this.label3.Text = "Data file path";
+            this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // labelPath0
             // 
@@ -425,7 +451,7 @@ namespace ASCOM.Wise40.Boltwood
             | System.Windows.Forms.AnchorStyles.Right)));
             this.labelPath0.Location = new System.Drawing.Point(262, 20);
             this.labelPath0.Name = "labelPath0";
-            this.labelPath0.Size = new System.Drawing.Size(363, 29);
+            this.labelPath0.Size = new System.Drawing.Size(444, 29);
             this.labelPath0.TabIndex = 31;
             this.labelPath0.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -436,7 +462,7 @@ namespace ASCOM.Wise40.Boltwood
             | System.Windows.Forms.AnchorStyles.Right)));
             this.labelPath1.Location = new System.Drawing.Point(262, 49);
             this.labelPath1.Name = "labelPath1";
-            this.labelPath1.Size = new System.Drawing.Size(363, 29);
+            this.labelPath1.Size = new System.Drawing.Size(444, 29);
             this.labelPath1.TabIndex = 32;
             this.labelPath1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -447,7 +473,7 @@ namespace ASCOM.Wise40.Boltwood
             | System.Windows.Forms.AnchorStyles.Right)));
             this.labelPath2.Location = new System.Drawing.Point(262, 78);
             this.labelPath2.Name = "labelPath2";
-            this.labelPath2.Size = new System.Drawing.Size(363, 29);
+            this.labelPath2.Size = new System.Drawing.Size(444, 29);
             this.labelPath2.TabIndex = 33;
             this.labelPath2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -458,7 +484,7 @@ namespace ASCOM.Wise40.Boltwood
             | System.Windows.Forms.AnchorStyles.Right)));
             this.labelPath3.Location = new System.Drawing.Point(262, 107);
             this.labelPath3.Name = "labelPath3";
-            this.labelPath3.Size = new System.Drawing.Size(363, 29);
+            this.labelPath3.Size = new System.Drawing.Size(444, 29);
             this.labelPath3.TabIndex = 34;
             this.labelPath3.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -469,7 +495,7 @@ namespace ASCOM.Wise40.Boltwood
             | System.Windows.Forms.AnchorStyles.Right)));
             this.labelPath4.Location = new System.Drawing.Point(262, 136);
             this.labelPath4.Name = "labelPath4";
-            this.labelPath4.Size = new System.Drawing.Size(363, 29);
+            this.labelPath4.Size = new System.Drawing.Size(444, 29);
             this.labelPath4.TabIndex = 35;
             this.labelPath4.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -480,7 +506,7 @@ namespace ASCOM.Wise40.Boltwood
             | System.Windows.Forms.AnchorStyles.Right)));
             this.labelPath5.Location = new System.Drawing.Point(262, 165);
             this.labelPath5.Name = "labelPath5";
-            this.labelPath5.Size = new System.Drawing.Size(363, 29);
+            this.labelPath5.Size = new System.Drawing.Size(444, 29);
             this.labelPath5.TabIndex = 36;
             this.labelPath5.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -508,33 +534,6 @@ namespace ASCOM.Wise40.Boltwood
             // 
             this.openFileDialog5.Title = " ClarityII data file ";
             this.openFileDialog5.FileOk += new System.ComponentModel.CancelEventHandler(this.openFileDialog5_FileOk);
-            // 
-            // label3
-            // 
-            this.label3.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.tableLayoutPanel1.SetColumnSpan(this.label3, 2);
-            this.label3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(177)));
-            this.label3.Location = new System.Drawing.Point(181, 0);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(444, 20);
-            this.label3.TabIndex = 37;
-            this.label3.Text = "Data file path";
-            this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // label4
-            // 
-            this.label4.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(177)));
-            this.label4.Location = new System.Drawing.Point(3, 0);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(84, 20);
-            this.label4.TabIndex = 38;
-            this.label4.Text = "Station";
-            this.label4.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // SetupDialogForm
             // 

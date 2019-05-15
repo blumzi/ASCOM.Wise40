@@ -43,6 +43,8 @@ namespace ASCOM.Wise40.Boltwood
                 }
                 WiseBoltwood.stations[id].WriteProfile();
             }
+
+            Close();
         }
 
         private void cmdCancel_Click(object sender, EventArgs e) // Cancel button event handler
@@ -67,33 +69,17 @@ namespace ASCOM.Wise40.Boltwood
             }
         }
 
-        private struct Station {
-            public bool Enabled;
-            public string Name;
-            public string Path;
-        };
-
         private void InitUI()
         {
             Control[] controls;
-            Dictionary<int, Station> stations = new Dictionary<int, Station>(WiseBoltwood.nStations);
-            stations[0] = new Station { Enabled = true, Name = "C18", Path = "//WO-NEO/Temp/clarityII-data.txt" };
-            stations[1] = new Station { Enabled = true, Name = "C28", Path = "//C28-PC/Temp/ClarityII-data.txt" };
 
-            for (int i = 2; i < WiseBoltwood.nStations; i++)
+            for (int i = 0; i < WiseBoltwood.nStations; i++)
             {
-                Station dummy = new Station { Enabled = false, Name = "", Path = "" };
-                if (i == 2)
-                    dummy.Name = "Weizmann";
-                else
-                    dummy.Name = "Korean" + (i - 2).ToString();
-                stations[i] = dummy;
-
                 controls = Controls.Find("checkBox" + i.ToString(), true);
-                (controls[0] as CheckBox).Text = stations[i].Name;
-                (controls[0] as CheckBox).Checked = stations[i].Enabled;
+                (controls[0] as CheckBox).Text = WiseBoltwood.stations[i].Name;
+                (controls[0] as CheckBox).Checked = WiseBoltwood.stations[i].Enabled;
                 controls = Controls.Find("labelPath" + i.ToString(), true);
-                (controls[0] as Label).Text = stations[i].Path;
+                (controls[0] as Label).Text = WiseBoltwood.stations[i].FilePath;
             }
         }
 
