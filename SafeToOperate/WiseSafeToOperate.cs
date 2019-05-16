@@ -650,7 +650,7 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
-                double max = Convert.ToDouble(sunSensor.MaxAsString);
+                double max = DateTime.Now.Hour < 12 ? Convert.ToDouble(sunSensor.MaxAtDawnAsString) : Convert.ToDouble(sunSensor.MaxAtDuskAsString);
 
                 return SunElevation <=  max ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
             }

@@ -78,14 +78,23 @@ namespace ASCOM.Wise40SafeToOperate
                 valid = false;
             }
 
-            double deg = Convert.ToDouble(textBoxSunElevation.Text);
+            double deg = Convert.ToDouble(textBoxSunElevationAtDawn.Text);
             if (deg > 0 || deg < -20)
             {
-                textBoxSunElevation.ForeColor = errorColor;
+                textBoxSunElevationAtDawn.ForeColor = errorColor;
                 valid = false;
             }
             else
-                WiseSafeToOperate.sunSensor.MaxAsString = deg.ToString();
+                WiseSafeToOperate.sunSensor.MaxAtDawnAsString = deg.ToString();
+
+            deg = Convert.ToDouble(textBoxSunElevationAtDusk.Text);
+            if (deg > 0 || deg < -20)
+            {
+                textBoxSunElevationAtDusk.ForeColor = errorColor;
+                valid = false;
+            }
+            else
+                WiseSafeToOperate.sunSensor.MaxAtDuskAsString = deg.ToString();
 
             if (!valid)
                 return;
@@ -152,7 +161,8 @@ namespace ASCOM.Wise40SafeToOperate
             textBoxRain.Tag = textBoxRain.Text = WiseSafeToOperate.rainSensor.MaxAsString;
             textBoxWind.Tag = textBoxWind.Text = WiseSafeToOperate.windSensor.MaxAsString;
             textBoxHumidity.Tag = textBoxHumidity.Text = WiseSafeToOperate.humiditySensor.MaxAsString;
-            textBoxSunElevation.Tag = textBoxSunElevation.Text = WiseSafeToOperate.sunSensor.MaxAsString;
+            textBoxSunElevationAtDawn.Tag = textBoxSunElevationAtDawn.Text = WiseSafeToOperate.sunSensor.MaxAtDawnAsString;
+            textBoxSunElevationAtDusk.Tag = textBoxSunElevationAtDusk.Text = WiseSafeToOperate.sunSensor.MaxAtDuskAsString;
             textBoxDoorLockDelay.Text = WiseSafeToOperate.doorLockSensor.MaxAsString;
 
             textBoxAge.Text = WiseSafeToOperate.ageMaxSeconds.ToString();
@@ -179,7 +189,8 @@ namespace ASCOM.Wise40SafeToOperate
             toolTip1.SetToolTip(textBoxAge, "0 to use data of any age (sec)");
             toolTip1.SetToolTip(textBoxHumidity, "between 0 and 100 (%)");
             toolTip1.SetToolTip(textBoxWind, "greater than 0 (mps)");
-            toolTip1.SetToolTip(textBoxSunElevation, "between -20 and 0 (deg)");
+            toolTip1.SetToolTip(textBoxSunElevationAtDawn, "between -20 and 0 (deg)");
+            toolTip1.SetToolTip(textBoxSunElevationAtDusk, "between -20 and 0 (deg)");
         }
 
         private void textBoxWind_Validating(object sender, CancelEventArgs e)

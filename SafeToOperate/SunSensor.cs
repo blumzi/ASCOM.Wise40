@@ -10,7 +10,7 @@ namespace ASCOM.Wise40SafeToOperate
 {
     public class SunSensor : Sensor
     {
-        private double _max;
+        private double _maxAtDawn, _maxAtDusk;
         private const double defaultMax = -7.0;
         private bool _wasSafe = false;
         private string _status;
@@ -34,12 +34,14 @@ namespace ASCOM.Wise40SafeToOperate
 
         public override void readSensorProfile()
         {
-            MaxAsString = wisesafetooperate._profile.GetValue(Const.WiseDriverID.SafeToOperate, WiseName, "Max", defaultMax.ToString());
+            MaxAtDawnAsString = wisesafetooperate._profile.GetValue(Const.WiseDriverID.SafeToOperate, WiseName, "MaxAtDawn", defaultMax.ToString());
+            MaxAtDuskAsString = wisesafetooperate._profile.GetValue(Const.WiseDriverID.SafeToOperate, WiseName, "MaxAtDusk", defaultMax.ToString());
         }
 
         public override void writeSensorProfile()
         {
-            wisesafetooperate._profile.WriteValue(Const.WiseDriverID.SafeToOperate, WiseName, MaxAsString, "Max");
+            wisesafetooperate._profile.WriteValue(Const.WiseDriverID.SafeToOperate, WiseName, MaxAtDawnAsString, "MaxAtDawn");
+            wisesafetooperate._profile.WriteValue(Const.WiseDriverID.SafeToOperate, WiseName, MaxAtDuskAsString, "MaxAtDusk");
         }
 
         public override Reading getReading()
@@ -47,17 +49,19 @@ namespace ASCOM.Wise40SafeToOperate
             if (wisesafetooperate == null)
                 return null;
 
+            double max = DateTime.Now.Hour < 12 ? _maxAtDawn : _maxAtDusk;
+
             Reading r = new Reading
             {
                 Stale = false,
                 Usable = true,
-                Safe = wisesafetooperate.SunElevation <= _max,
+                Safe = wisesafetooperate.SunElevation <= max,
                 value = wisesafetooperate.SunElevation,
                 timeOfLastUpdate = DateTime.Now,
                 secondsSinceLastUpdate = 0,
             };
 
-            _status = string.Format("Sun elevation is {0} (max: {1})", FormatVerbal(wisesafetooperate.SunElevation), FormatVerbal(_max));
+            _status = string.Format("Sun elevation is {0} (max: {1})", FormatVerbal(wisesafetooperate.SunElevation), FormatVerbal(max));
             if (r.Safe != _wasSafe)
             {
                 activityMonitor.Event(new Event.SafetyEvent(
@@ -73,11 +77,10 @@ namespace ASCOM.Wise40SafeToOperate
         public override string reason()
         {
             double currentElevation = wisesafetooperate.SunElevation;
+            double max = DateTime.Now.Hour < 12 ? _maxAtDawn : _maxAtDusk;
 
-            if (currentElevation <= _max)
-                return string.Empty;
-
-            return string.Format("The Sun elevation ({0}) is higher than {1}.", FormatVerbal(currentElevation), FormatVerbal(_max));
+            return currentElevation <= max ? "" : string.Format("The Sun elevation ({0}) is higher than {1}.",
+                FormatVerbal(currentElevation), FormatVerbal(max));
         }
 
         public override string Status
@@ -88,18 +91,33 @@ namespace ASCOM.Wise40SafeToOperate
             }
         }
 
-        public override string MaxAsString
+        public string MaxAtDuskAsString
         {
             set
             {
-                _max = Convert.ToDouble(value);
+                _maxAtDusk = Convert.ToDouble(value);
             }
 
             get
             {
-                return _max.ToString();
+                return _maxAtDusk.ToString();
             }
         }
+
+        public string MaxAtDawnAsString
+        {
+            set
+            {
+                _maxAtDawn = Convert.ToDouble(value);
+            }
+
+            get
+            {
+                return _maxAtDawn.ToString();
+            }
+        }
+
+        public override string MaxAsString { get { return ""; } set { } }
     }
 
     public class SunDigest
