@@ -111,7 +111,7 @@ namespace ASCOM.Wise40
                     _pacing = pacing;
                     _timeoutMillis = PacingToMillis[_pacing] - 50;
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugDome, "Changed  pacing to {0} ({1} millis)",
+                    debugger.WriteLine(Debugger.DebugLevel.DebugDome, "SetPacing: Changed  pacing to {0} ({1} millis)",
                         _pacing, _timeoutMillis);
                     #endregion
                     _periodicWebReadTimer.Change(_timeoutMillis, 0);
@@ -125,7 +125,7 @@ namespace ASCOM.Wise40
                     if (DateTime.Now.Subtract(_lastReadingTime) <= _maxAge)
                     {
                         #region debug
-                        debugger.WriteLine(Debugger.DebugLevel.DebugDome, "Returning: {0}", _lastReading);
+                        debugger.WriteLine(Debugger.DebugLevel.DebugDome, "ShutterRange: returning: {0}", _lastReading);
                         #endregion
                         return _lastReading;
                     }
@@ -536,7 +536,7 @@ namespace ASCOM.Wise40
             {
                 var ret = openPin.isOn || closePin.isOn;
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "ShutterIsMoving: {0}", ret.ToString());
+                debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "IsMoving: {0}", ret.ToString());
                 #endregion
                 return ret;
             }
