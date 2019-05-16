@@ -177,5 +177,10 @@ namespace ASCOM.Wise40.Common
                     }
                 },
             };
+
+        public class UnsafeReasons
+        {
+            public static string ShuttingDown = "Wise40 is shutting down";
+        }
     }
 }
