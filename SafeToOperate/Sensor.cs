@@ -130,6 +130,8 @@ namespace ASCOM.Wise40SafeToOperate
             private string _verbal;
             private bool _safe;
             private bool _stale;
+            private bool _affectsSafety;
+            public string Name;
 
             public SensorDigest() { }
             static SensorDigest() { }
@@ -138,12 +140,15 @@ namespace ASCOM.Wise40SafeToOperate
             {
                 SensorDigest digest = new SensorDigest();
 
+                digest.Name = sensor.WiseName;
                 digest.State = sensor._state;
                 digest.LatestReading = sensor.LatestReading;
                 digest.ToolTip = sensor.ToolTip;
                 digest.Safe = sensor.isSafe;
+                digest.Stale = sensor.IsStale;
                 digest.Symbolic = sensor.FormatSymbolic(sensor.LatestReading.value);
                 digest.Verbal = sensor.FormatVerbal(sensor.LatestReading.value);
+                digest.AffectsSafety = !sensor.HasAttribute(SensorAttribute.ForInfoOnly);
 
                 return digest;
             }
@@ -154,6 +159,7 @@ namespace ASCOM.Wise40SafeToOperate
                 double v = 0, s = 0;
 
                 digest.Safe = true;
+                digest.Name = property;
                 switch (property)
                 {
                     case "WindDirection":
@@ -161,19 +167,25 @@ namespace ASCOM.Wise40SafeToOperate
                         s = WiseSite.och.TimeSinceLastUpdate(property);
                         digest.Symbolic = string.Format("{0}°", v);
                         digest.Verbal = string.Format("{0} deg", v);
+                        digest.AffectsSafety = false;
                         break;
+
                     case "DewPoint":
                         v = WiseSite.och.DewPoint;
                         s = WiseSite.och.TimeSinceLastUpdate(property);
                         digest.Symbolic = string.Format("{0}°C", v);
                         digest.Verbal = string.Format("{0} deg", v);
+                        digest.AffectsSafety = false;
                         break;
+
                     case "SkyTemperature":
                         v = WiseSite.och.SkyTemperature;
                         s = WiseSite.och.TimeSinceLastUpdate(property);
                         digest.Symbolic = string.Format("{0}°C", v);
                         digest.Verbal = string.Format("{0} deg", v);
+                        digest.AffectsSafety = false;
                         break;
+
                     default:
                         return null;
                 }
@@ -184,12 +196,25 @@ namespace ASCOM.Wise40SafeToOperate
                 {
                     value = v,
                     Safe = true,
-                    Stale = false,
+                    Stale = s > WiseSafeToOperate.ageMaxSeconds,
                     Usable = true,
                     secondsSinceLastUpdate = s,
                     timeOfLastUpdate = DateTime.Now.Subtract(TimeSpan.FromSeconds(s)),
                 };
                 return digest;
+            }
+
+            public bool AffectsSafety
+            {
+                get
+                {
+                    return _affectsSafety;
+                }
+
+                set
+                {
+                    _affectsSafety = value;
+                }
             }
 
             public string Symbolic

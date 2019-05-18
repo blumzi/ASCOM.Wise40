@@ -478,21 +478,15 @@ namespace ASCOM.Wise40SafeToOperate
             if (_bypassed && s.HasAttribute(Sensor.SensorAttribute.CanBeBypassed))
                 return null;   // bypassed
 
-            string reason = null;
+            string reason = string.Format("{0} - ", s.WiseName);
 
             if (!s.isSafe)
             {
                 if (s.HasAttribute(Sensor.SensorAttribute.Immediate))
-                    reason = s.reason();
+                    reason += s.reason();
                 else
-                {
-                    if (!s.StateIsSet(Sensor.SensorState.EnoughReadings))
-                    {
-                        // cummulative and not ready
-                        reason = String.Format("{0} - not ready (only {1} of {2} readings)",
-                            s.WiseName, s._nreadings, s._repeats);
-                    }
-                    else if (s.StateIsSet(Sensor.SensorState.Stabilizing))
+                {                    
+                    if (s.StateIsSet(Sensor.SensorState.Stabilizing))
                     {
                         // cummulative and stabilizing
                         string time = string.Empty;
@@ -502,13 +496,19 @@ namespace ASCOM.Wise40SafeToOperate
                             time += ((int)ts.TotalMinutes).ToString() + "m";
                         time += ts.Seconds.ToString() + "s";
 
-                        reason = String.Format("{0} - stabilizing in {1}", s.WiseName, time);
+                        reason += String.Format("stabilizing in {0}", time);
                     }
-                    else if (s.HasAttribute(Sensor.SensorAttribute.CanBeStale) && s.StateIsSet(Sensor.SensorState.Stale))
-                        // cummulative and stale
-                        reason = String.Format("{0} - {1} out of {2} readings are stale",
-                            s.WiseName, s._nstale, s._repeats);
+                    else if (!s.StateIsSet(Sensor.SensorState.EnoughReadings))
+                    {
+                        // cummulative and not ready
+                        reason += String.Format("not ready (only {0} of {1} readings)",
+                            s._nreadings, s._repeats);
+                    }
                 }
+
+                if (s.HasAttribute(Sensor.SensorAttribute.CanBeStale) && s.StateIsSet(Sensor.SensorState.Stale))
+                    // cummulative and stale
+                    reason += String.Format(" ({0} stale readings)", s._nstale);
             }
 
             return reason;

@@ -674,11 +674,24 @@ namespace Dash
         {
             label.Text = digest.Symbolic;
             label.ForeColor = digest.Color;
-            if (digest.ToolTip != string.Empty)
-                toolTip.SetToolTip(label, digest.ToolTip);
+
+            string tip;
+            if (digest.ToolTip != null && digest.ToolTip != string.Empty)
+                tip = digest.ToolTip;
             else
-                toolTip.SetToolTip(label, string.Format("latest reading {0:f1} seconds ago",
-                    DateTime.Now.Subtract(digest.LatestReading.timeOfLastUpdate).TotalSeconds));
+                tip = string.Format("latest reading {0:f1} seconds ago",
+                    DateTime.Now.Subtract(digest.LatestReading.timeOfLastUpdate).TotalSeconds);
+
+            if (!digest.AffectsSafety)
+                tip += tip != string.Empty ? " (does not affect safety)" : "Does not affect safety";
+
+            if (digest.Stale && !tip.Contains("stale"))
+                tip += tip != string.Empty ? " (stale)" : "Stale";
+
+            if (!tip.StartsWith(digest.Name + " - "))
+                tip = digest.Name + " - " + tip;
+
+            toolTip.SetToolTip(label, tip);
         }
         #endregion
 
