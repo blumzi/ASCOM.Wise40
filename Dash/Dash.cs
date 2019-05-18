@@ -422,7 +422,7 @@ namespace Dash
             #region Moon
             if (telescopeDigest != null)
             {
-                labelMoonIllum.Text = (moon.Illumination * 100).ToString("g2") + "%";
+                labelMoonIllum.Text = (moon.Illumination * 100).ToString("F0") + "%";
                 labelMoonDist.Text = moon.Distance(telescopeRa.Radians, telescopeDec.Radians).ToNiceString();
             }
             #endregion
