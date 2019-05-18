@@ -11,7 +11,8 @@ namespace ASCOM.Wise40SafeToOperate
     public class SunSensor : Sensor
     {
         private double _maxAtDawn, _maxAtDusk;
-        private const double defaultMax = -7.0;
+        private const double defaultMaxAtDawn = -10.0;
+        private const double defaultMaxAtDusk = -4.0;
         private bool _wasSafe = false;
         private string _status;
 
@@ -34,8 +35,8 @@ namespace ASCOM.Wise40SafeToOperate
 
         public override void readSensorProfile()
         {
-            MaxAtDawnAsString = wisesafetooperate._profile.GetValue(Const.WiseDriverID.SafeToOperate, WiseName, "MaxAtDawn", defaultMax.ToString());
-            MaxAtDuskAsString = wisesafetooperate._profile.GetValue(Const.WiseDriverID.SafeToOperate, WiseName, "MaxAtDusk", defaultMax.ToString());
+            MaxAtDawnAsString = wisesafetooperate._profile.GetValue(Const.WiseDriverID.SafeToOperate, WiseName, "MaxAtDawn", defaultMaxAtDawn.ToString());
+            MaxAtDuskAsString = wisesafetooperate._profile.GetValue(Const.WiseDriverID.SafeToOperate, WiseName, "MaxAtDusk", defaultMaxAtDusk.ToString());
         }
 
         public override void writeSensorProfile()
