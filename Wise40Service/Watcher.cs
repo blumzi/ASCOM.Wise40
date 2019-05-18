@@ -90,28 +90,16 @@ namespace Wise40Watcher
             }
         }
 
-        private void KillAllProcesses()
+        private void KillAllProcesses(string appName)
         {
-            if (WiseName == "ascom")
+            for (int tries = 3; tries != 0; tries--)
             {
-                foreach (var p in Process.GetProcessesByName(Const.Apps[Const.Application.OCHServer].appName))
-                {
-                    log("KillAllProcesses: Killing pid: {0} ({1}) ...", p.Id, p.ProcessName);
-                    p.Kill();
-                    Thread.Sleep(1000);
-                }
-            }
+                var processes = Process.GetProcessesByName(appName);
 
-            foreach (var p in Process.GetProcessesByName(_application.appName))
-            {
-                log("KillAllProcesses: Killing pid: {0} ({1}) ...", p.Id, p.ProcessName);
-                p.Kill();
-                Thread.Sleep(1000);
-            }
+                if (processes.Count() == 0)
+                    return;
 
-            if (WiseName == "ascom")
-            {
-                foreach (var p in Process.GetProcessesByName(Const.Apps[Const.Application.RemoteClientLocalServer].appName))
+                foreach (var p in processes)
                 {
                     log("KillAllProcesses: Killing pid: {0} ({1}) ...", p.Id, p.ProcessName);
                     p.Kill();
@@ -120,9 +108,20 @@ namespace Wise40Watcher
             }
         }
 
+        private void KillAll()
+        {
+            if (WiseName == "ascom")
+                KillAllProcesses(Const.Apps[Const.Application.OCH].appName);
+
+            KillAllProcesses(_application.appName);
+
+            if (WiseName == "ascom")
+                KillAllProcesses(Const.Apps[Const.Application.RemoteClientLocalServer].appName);
+        }
+
         public void Start(string[] args, bool waitForResponse = false)
         {
-            KillAllProcesses();
+            KillAll();
             int waitMillis = 1000;
 
             try
@@ -158,7 +157,7 @@ namespace Wise40Watcher
             _process.Kill();
             Thread.Sleep(1000);
 
-            KillAllProcesses();
+            KillAll();
         }
 
         public void log(string fmt, params object[] o)

@@ -123,7 +123,7 @@ namespace ASCOM.Wise40.Common
             }
         }
 
-        public enum Application { RESTServer, Dash, WeatherLink, ObservatoryMonitor, OCHServer, RemoteClientLocalServer }
+        public enum Application { RESTServer, Dash, WeatherLink, ObservatoryMonitor, OCH, RemoteClientLocalServer }
 
         public static Dictionary<Application, App> Apps = new Dictionary<Application, App>()
             {
@@ -162,10 +162,10 @@ namespace ASCOM.Wise40.Common
                 },
 
                 {
-                    Application.OCHServer, new App
+                    Application.OCH, new App
                     {
                         locallyDeveloped = false,
-                        appName = "ASCOM.OCHServer",
+                        appName = "ASCOM.OCH.Server",
                     }
                 },
 
