@@ -168,6 +168,7 @@ namespace ASCOM.Wise40SafeToOperate
                         digest.Symbolic = string.Format("{0}°", v);
                         digest.Verbal = string.Format("{0} deg", v);
                         digest.AffectsSafety = false;
+                        digest.Stale = TooOld(s);
                         break;
 
                     case "DewPoint":
@@ -176,6 +177,7 @@ namespace ASCOM.Wise40SafeToOperate
                         digest.Symbolic = string.Format("{0}°C", v);
                         digest.Verbal = string.Format("{0} deg", v);
                         digest.AffectsSafety = false;
+                        digest.Stale = TooOld(s);
                         break;
 
                     case "SkyTemperature":
@@ -184,6 +186,7 @@ namespace ASCOM.Wise40SafeToOperate
                         digest.Symbolic = string.Format("{0}°C", v);
                         digest.Verbal = string.Format("{0} deg", v);
                         digest.AffectsSafety = false;
+                        digest.Stale = TooOld(s);
                         break;
 
                     default:
@@ -196,7 +199,7 @@ namespace ASCOM.Wise40SafeToOperate
                 {
                     value = v,
                     Safe = true,
-                    Stale = s > WiseSafeToOperate.ageMaxSeconds,
+                    Stale = TooOld(s),
                     Usable = true,
                     secondsSinceLastUpdate = s,
                     timeOfLastUpdate = DateTime.Now.Subtract(TimeSpan.FromSeconds(s)),
@@ -265,10 +268,10 @@ namespace ASCOM.Wise40SafeToOperate
                         triState = Const.TriStateStatus.Warning;
                     else
                     {
-                        if (Safe)
-                            triState = Const.TriStateStatus.Good;
+                        if (AffectsSafety)
+                            triState = Safe ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
                         else
-                            triState = Const.TriStateStatus.Error;
+                            triState = Const.TriStateStatus.Normal;
                     }
                     return Statuser.TriStateColor(triState);
                 }
@@ -485,6 +488,11 @@ namespace ASCOM.Wise40SafeToOperate
             }
         }
 
+        public static bool TooOld(double seconds)
+        {
+            return seconds > WiseSafeToOperate.ageMaxSeconds;
+        }
+
         public bool IsStale
         {
             get
@@ -492,7 +500,7 @@ namespace ASCOM.Wise40SafeToOperate
                 if (DoesNotHaveAttribute(SensorAttribute.CanBeStale))
                     return false;
 
-                if (StateIsSet(SensorState.EnoughReadings) && SecondsSinceLastUpdate > WiseSafeToOperate.ageMaxSeconds)
+                if (StateIsSet(SensorState.EnoughReadings) && TooOld(SecondsSinceLastUpdate))
                 {
                     SetState(SensorState.Stale);
                     return true;
