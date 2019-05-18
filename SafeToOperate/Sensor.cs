@@ -492,7 +492,7 @@ namespace ASCOM.Wise40SafeToOperate
                 if (DoesNotHaveAttribute(SensorAttribute.CanBeStale))
                     return false;
 
-                if (SecondsSinceLastUpdate > WiseSafeToOperate.ageMaxSeconds)
+                if (StateIsSet(SensorState.EnoughReadings) && SecondsSinceLastUpdate > WiseSafeToOperate.ageMaxSeconds)
                 {
                     SetState(SensorState.Stale);
                     return true;
