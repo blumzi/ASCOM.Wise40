@@ -2942,14 +2942,10 @@ namespace ASCOM.Wise40
                     return WiseSite.OperationalMode.ToString();
 
                 case "seconds-till-idle":
-                    Activity activity = activityMonitor.LookupInProgress(ActivityMonitor.ActivityType.GoingIdle);
-                    if (activity != null)
-                    {
-                        TimeSpan ts = (activity as Activity.GoingIdleActivity).RemainingTime;
+                    TimeSpan ts = ActivityMonitor.idler.RemainingTime;
 
-                        if (ts != TimeSpan.MaxValue)
-                            return (ts.TotalSeconds).ToString();
-                    }
+                    if (ts != TimeSpan.MaxValue)
+                        return (ts.TotalSeconds).ToString();
                     return "-1";
 
                 case "status":

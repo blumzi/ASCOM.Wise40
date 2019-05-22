@@ -117,7 +117,6 @@ namespace ASCOM.Wise40
 
             db = (new MongoClient()).GetDatabase("activities");
 
-            NewActivity(new Activity.GoingIdleActivity("ActivityMonitor init"));
             Event(new Event.SafetyEvent(Wise40.Event.SafetyEvent.SafetyState.Unknown));
 
             initialized = true;
@@ -166,30 +165,23 @@ namespace ASCOM.Wise40
         /// <param name="reason"></param>
         public void StayActive(string reason)
         {
-            Activity activity = LookupInProgress(ActivityType.GoingIdle);
-
-            if (activity != null)
-                (activity as Activity.GoingIdleActivity).RestartTimer(reason);
+            idler.StartGoingIdle(reason);
         }
 
         public TimeSpan RemainingTime
         {
             get
             {
-                Activity activity = LookupInProgress(ActivityType.GoingIdle);
-                if (activity != null)
-                    return (activity as Activity.GoingIdleActivity).RemainingTime;
-                return TimeSpan.MaxValue;
+                return idler.RemainingTime;
             }
         }
 
         public bool ObservatoryIsActive()
         {
-            List<string> activities = ObservatoryActivities;
-            bool ret = activities.Count() != 0;
+            bool ret = !idler.Idle;
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "ActivityMonitor:ObservatoryIsActive: ret: {0} [{1}]",
-                ret, string.Join(",", activities));
+                ret, string.Join(",", ObservatoryActivities));
             #endregion
             return ret;
         }
@@ -202,24 +194,13 @@ namespace ASCOM.Wise40
 
                 lock (inProgressActivitiesLock)
                 {
-                    foreach (Activity a in ActivityMonitor.Instance.inProgressActivities)
-                    {
-                        if (a._type == ActivityType.GoingIdle)
-                        {
-                            Activity.GoingIdleActivity gia = (a as Activity.GoingIdleActivity);
-                            TimeSpan ts = gia.RemainingTime;
+                    string status = idler.Status;
+                    if (status.StartsWith("GoingIdle"))
+                        ret.Add(status);
 
-                            string s = a._type.ToString();
-                            if (ts != TimeSpan.MaxValue)
-                            {
-                                s += " in ";
-                                if (ts.TotalMinutes > 0)
-                                    s += string.Format("{0:D2}m", (int)ts.TotalMinutes);
-                                s += string.Format("{0:D2}s", ts.Seconds);
-                            }
-                            ret.Add(s);
-                        }
-                        else if ((a._type & ActivityMonitor.ActivityType.RealActivities) != 0)
+                    foreach (Activity a in Instance.inProgressActivities)
+                    {
+                        if ((a._type & ActivityMonitor.ActivityType.RealActivities) != 0)
                             ret.Add(a._type.ToString());
                     }
                 }
@@ -232,6 +213,7 @@ namespace ASCOM.Wise40
         public List<Activity> inProgressActivities = new List<Activity>();
         public List<Activity> endedActivities = new List<Activity>();
         public static object inProgressActivitiesLock = new object();
+        public static Idler idler = Idler.Instance;
 
         public Activity LookupInProgress(ActivityType type)
         {
@@ -267,14 +249,9 @@ namespace ASCOM.Wise40
 
             if (activity.effectOnGoingIdle_AtStart == Activity.EffectOnGoingIdle.Remove)
             {
-                string reason = string.Format("{0} started", activity._type.ToString());
+                string reason = string.Format("Activity {0} started", activity._type.ToString());
 
-                EndActivity(ActivityType.GoingIdle, new Activity.GoingIdleActivity.EndParams()
-                {
-                    endState = Activity.State.Aborted,
-                    endReason = reason,
-                    reason = reason,
-                });
+                idler.AbortGoingIdle(reason);
             }
         }
 
@@ -418,12 +395,8 @@ namespace ASCOM.Wise40
                 monitor.inProgressActivities.Remove(this);
             }
 
-            if (this._type != ActivityMonitor.ActivityType.GoingIdle && 
-                ActivityMonitor.ObservatoryActivities.Count() == 0 &&
-                effectOnGoingIdle_AtEnd == EffectOnGoingIdle.Renew)
-            {
-                monitor.NewActivity(new GoingIdleActivity("no activities in progress"));
-            }
+            if (ActivityMonitor.ObservatoryActivities.Count() == 0 && effectOnGoingIdle_AtEnd == EffectOnGoingIdle.Renew)
+                ActivityMonitor.idler.StartGoingIdle("no activities in progress");
         }
 
         public class EndParams
@@ -716,66 +689,6 @@ namespace ASCOM.Wise40
             }
         }
 
-        public class GoingIdleActivity : TimeConsumingActivity
-        {
-            public DateTime _due;
-            private System.Threading.Timer _timer = new System.Threading.Timer(BecomeIdle);
-            public string startReason, endReason;
-
-            public GoingIdleActivity(string reason) : base(ActivityMonitor.ActivityType.GoingIdle)
-            {
-                effectOnGoingIdle_AtStart = EffectOnGoingIdle.NoEffect;
-
-                RestartTimer(reason);
-            }
-
-            public new class EndParams : Activity.EndParams
-            {
-                public string reason;
-            }
-
-            public override void End(Activity.EndParams p)
-            {
-                GoingIdleActivity.EndParams par = p as GoingIdleActivity.EndParams;
-
-                _due = DateTime.MinValue;
-                _timer.Change(Timeout.Infinite, Timeout.Infinite);
-                _endReason = par.reason;
-                _endDetails = "";
-
-                EndActivity(par);
-            }
-
-            public void RestartTimer(string reason)
-            {
-                startReason = reason;
-                _startDetails = string.Format("restart: {0}", startReason);
-                EmitStart();
-
-                _due = DateTime.Now.AddMilliseconds(ActivityMonitor.millisToInactivity);
-                _timer.Change(ActivityMonitor.millisToInactivity, Timeout.Infinite);
-            }
-
-            private static void BecomeIdle(object state)
-            {
-                monitor.EndActivity(ActivityMonitor.ActivityType.GoingIdle, new EndParams() {
-                    endState = State.Idle,
-                    endReason = "Time is up",
-                    reason = "Time is up",
-                });
-            }
-
-            public TimeSpan RemainingTime
-            {
-                get
-                {
-                    if (_due == DateTime.MinValue)
-                        return TimeSpan.MaxValue;
-                    return _due.Subtract(DateTime.Now);
-                }
-            }
-        }
-
         public class ProjectorActivity : TimeConsumingActivity
         {
             public bool _onOff;
@@ -889,6 +802,7 @@ namespace ASCOM.Wise40
                 ShutdownActivity.EndParams par = p as ShutdownActivity.EndParams;
 
                 EndActivity(par);
+                Idler.BecomeIdle("end of ShuttingDown");
             }
         }
 
@@ -952,6 +866,131 @@ namespace ASCOM.Wise40
                 if (names.ContainsKey(rate))
                     return names[rate];
                 return rate.ToString();
+            }
+        }
+    }
+
+
+    public sealed class Idler : Activity
+    {
+        public DateTime _due;
+        private System.Threading.Timer _timer = new System.Threading.Timer(onTimer);
+        public string startReason, endReason;
+        public enum IdlerState { GoingIdle, Idle, ActivitiesInProgress }
+        private IdlerState _idlerState;
+
+        // start Singleton
+        private static readonly Lazy<Idler> lazy = new Lazy<Idler>(() => new Idler()); // Singleton
+
+        public static Idler Instance
+        {
+            get
+            {
+                if (lazy.IsValueCreated)
+                    return lazy.Value;
+
+                lazy.Value.init();
+                return lazy.Value;
+            }
+        }
+
+        private Idler() { }
+        static Idler() { }
+        // end Singleton
+
+        public override void End(Activity.EndParams endParams) { }
+        public void init()
+        {
+            StartGoingIdle("init()");
+        }
+
+        public void AbortGoingIdle(string reason)
+        {
+            _due = DateTime.MinValue;
+            _timer.Change(Timeout.Infinite, Timeout.Infinite);
+            _idlerState = IdlerState.ActivitiesInProgress;
+            _endDetails = string.Format("GoingIdle: aborted, reason: {0}",reason);
+
+            EndActivity(new EndParams
+            {
+                endReason = reason,
+                endState = Activity.State.Aborted,
+            });
+        }
+
+        /// <summary>
+        /// Start GoingIdle.  This can end either by Abortion (when
+        ///  an activity starts, End() is called) or by Success (when
+        ///  the timer expires (BecomeIdle is called))
+        /// </summary>
+        /// <param name="reason"></param>
+        public void StartGoingIdle(string reason)
+        {
+            _type = ActivityMonitor.ActivityType.GoingIdle;
+            _startTime = DateTime.Now;
+            startReason = reason;
+            _startDetails = string.Format("GoingIdle: started: {0}", startReason);
+            EmitStart();
+
+            _idlerState = IdlerState.GoingIdle;
+            _due = DateTime.Now.AddMilliseconds(ActivityMonitor.millisToInactivity);
+            _timer.Change(Timeout.Infinite, Timeout.Infinite);
+            _timer.Change(ActivityMonitor.millisToInactivity, Timeout.Infinite);
+        }
+
+        private static void onTimer(object state)
+        {
+            BecomeIdle(string.Format("GoingIdle: Became idle after {0} seconds", ActivityMonitor.millisToInactivity / 1000));
+        }
+
+        public static void BecomeIdle(string reason)
+        {
+            ActivityMonitor.idler.EndActivity(new EndParams()
+            {
+                endState = Activity.State.Idle,
+                endReason = reason,
+            });
+
+            Instance._idlerState = IdlerState.Idle;
+        }
+
+        public TimeSpan RemainingTime
+        {
+            get
+            {
+                if (_idlerState == IdlerState.GoingIdle)
+                    return _due.Subtract(DateTime.Now);
+                return TimeSpan.MaxValue;
+            }
+        }
+
+        public string Status
+        {
+            get
+            {
+                string ret = "";
+
+                if (_idlerState == IdlerState.GoingIdle) {
+                        TimeSpan ts = RemainingTime;
+
+                        ret = "GoingIdle in ";
+                        if (ts != TimeSpan.MaxValue)
+                        {
+                            if (ts.TotalMinutes > 0)
+                                ret += string.Format("{0:D2}m", (int)ts.TotalMinutes);
+                            ret += string.Format("{0:D2}s", ts.Seconds);
+                        }
+                }
+
+                return ret;
+            }
+        }
+
+        public bool Idle
+        {
+            get
+            {
+                return _idlerState == IdlerState.Idle;
             }
         }
     }
