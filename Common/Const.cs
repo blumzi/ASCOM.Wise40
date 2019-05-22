@@ -131,8 +131,8 @@ namespace ASCOM.Wise40.Common
                     Application.RESTServer, new App
                     {
                         locallyDeveloped = false,
-                        appName = "ASCOM.RESTServer",
-                        path = "c:/Program Files (x86)/ASCOM/Remote/ASCOM.RESTServer.exe",
+                        appName = "ASCOM.RemoteServer",
+                        path = "c:/Program Files (x86)/ASCOM/Remote/ASCOM.RemoteServer.exe",
                     }
                 },
                 {
