@@ -247,7 +247,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             }
             else
             {
-                labelActivity.Text = "Idle";
+                labelActivity.Text = "Idle (ignored)";
                 labelActivity.ForeColor = unsafeColor;
                 toolTip.SetToolTip(labelActivity, "");
             }
@@ -262,8 +262,8 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             if (!safetooperateDigest.Safe)
                 reasonsList.Add(string.Join(Const.recordSeparator, safetooperateDigest.UnsafeReasons));
 
-            if (!telescopeDigest.Active)
-                reasonsList.Add("Telescope is Idle");
+            //if (!telescopeDigest.Active)
+            //    reasonsList.Add("Telescope is Idle");
 
             if (reasonsList.Count != 0)
             {
@@ -310,7 +310,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 if (telescopeDigest.Active)
                     activityMessage = "active (" + string.Join(", ", telescopeDigest.Activities) + ")";
                 else
-                    activityMessage = "idle";
+                    activityMessage = "idle (ignored)";
                 
                 Log(safetyMessage + " and " + activityMessage);
                 #endregion
@@ -609,7 +609,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                     } while (!done);
 
                     Log("   Done parking Wise40.");
-                    labelActivity.Text = telescopeDigest.Active ? "Active" : "Idle";
+                    labelActivity.Text = telescopeDigest.Active ? "Active" : "Idle (ignored)";
                 }
 
                 if (!telescopeDigest.EnslavesDome)
