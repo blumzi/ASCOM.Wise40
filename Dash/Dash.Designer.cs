@@ -2951,6 +2951,7 @@
             this.labelMoonIllum.TabIndex = 25;
             this.labelMoonIllum.Text = "moonillum";
             this.labelMoonIllum.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.toolTip.SetToolTip(this.labelMoonIllum, "Does not affect safety");
             // 
             // labelMoonDist
             // 
@@ -2966,6 +2967,7 @@
             this.labelMoonDist.TabIndex = 26;
             this.labelMoonDist.Text = "moondist";
             this.labelMoonDist.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.toolTip.SetToolTip(this.labelMoonDist, "Does not affect safety");
             // 
             // labelAirMass
             // 
