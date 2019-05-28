@@ -262,8 +262,9 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             if (!safetooperateDigest.Safe)
                 reasonsList.Add(string.Join(Const.recordSeparator, safetooperateDigest.UnsafeReasons));
 
-            //if (!telescopeDigest.Active)
-            //    reasonsList.Add("Telescope is Idle");
+            // Comment this out to ignore telescope being idle
+            if (!telescopeDigest.Active)
+                reasonsList.Add("Telescope is Idle");
 
             if (reasonsList.Count != 0)
             {
