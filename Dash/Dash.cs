@@ -164,7 +164,7 @@ namespace Dash
             dashStatus = new Statuser(labelDashStatus);
             telescopeStatus = new Statuser(labelTelescopeStatus);
             domeStatus = new Statuser(labelDomeStatus);
-            shutterStatus = new Statuser(labelDomeShutterStatus);
+            shutterStatus = new Statuser(labelDomeShutterStatus, toolTip);
             focuserStatus = new Statuser(labelFocuserStatus);
             safetooperateStatus = new Statuser(labelWeatherStatus, toolTip);
             filterWheelStatus = new Statuser(labelFilterWheelStatus);
@@ -466,67 +466,67 @@ namespace Dash
                 toolTip.SetToolTip(annunciatorComputerControl, tip);
                 #endregion
 
-                #region SafeToOperate Annunciator
-                tip = null;
-                string text = "";
-                severity = Statuser.Severity.Normal;
+            #region SafeToOperate Annunciator
+            tip = null;
+            string text = "";
+            severity = Statuser.Severity.Normal;
 
-                if (!safetooperateDigest.HumanIntervention.Safe)
-                {
-                    text = "Human Intervention";
-                    annunciatorSafeToOperate.ForeColor = unsafeColor;
-                    annunciatorSafeToOperate.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
-                    severity = Statuser.Severity.Error;
-                    tip = String.Join("\n", safetooperateDigest.UnsafeReasons).Replace(Const.recordSeparator, "\n");
-                }
-                else if (safetooperateDigest.Bypassed)
-                {
-                    text = "Safety bypassed";
-                    annunciatorSafeToOperate.ForeColor = warningColor;
-                    annunciatorSafeToOperate.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
-                    severity = Statuser.Severity.Warning;
-                    tip = "Safety checks are bypassed!";
-                }
-                else if (safetooperateDigest.Safe)
-                {
-                    text = "Safe to operate";
-                    annunciatorSafeToOperate.ForeColor = goodColor;
-                    annunciatorSafeToOperate.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
-                    severity = Statuser.Severity.Good;
-                    tip = "Conditions are safe to operate.";
-                }
-                else
-                {
-                    text = "Not safe to operate";
-                    annunciatorSafeToOperate.ForeColor = unsafeColor;
-                    annunciatorSafeToOperate.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
-                    severity = Statuser.Severity.Error;
-                    tip = string.Join("\n", safetooperateDigest.UnsafeReasons).Replace(Const.recordSeparator, "\n");
-                }
-                annunciatorSafeToOperate.Text = text;
-                toolTip.SetToolTip(annunciatorSafeToOperate, tip);
-                toolTip.SetToolTip(safetooperateStatus.Label, tip);
-                safetooperateStatus.Show(text, 0, severity, true);
-                #endregion
-
-                #region Platform Annunciator
-                tip = null;
-
-                if (safetooperateDigest.Platform.Safe)
-                {
-                    annunciatorDomePlatform.Text = "Platform is safe";
-                    annunciatorDomePlatform.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
-                    tip = "Dome platform is at its lowest position.";
-                }
-                else
-                {
-                    annunciatorDomePlatform.Text = "Platform is NOT SAFE";
-                    annunciatorDomePlatform.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
-                    tip = "Dome platform is NOT at its lowest position!";
-                }
-                toolTip.SetToolTip(annunciatorDomePlatform, tip);
+            if (!safetooperateDigest.HumanIntervention.Safe)
+            {
+                text = "Human Intervention";
+                annunciatorSafeToOperate.ForeColor = unsafeColor;
+                annunciatorSafeToOperate.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+                severity = Statuser.Severity.Error;
+                tip = String.Join("\n", safetooperateDigest.UnsafeReasons).Replace(Const.recordSeparator, "\n");
             }
+            else if (safetooperateDigest.Bypassed)
+            {
+                text = "Safety bypassed";
+                annunciatorSafeToOperate.ForeColor = warningColor;
+                annunciatorSafeToOperate.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+                severity = Statuser.Severity.Warning;
+                tip = "Safety checks are bypassed!";
+            }
+            else if (safetooperateDigest.Safe)
+            {
+                text = "Safe to operate";
+                annunciatorSafeToOperate.ForeColor = goodColor;
+                annunciatorSafeToOperate.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+                severity = Statuser.Severity.Good;
+                tip = "Conditions are safe to operate.";
+            }
+            else
+            {
+                text = "Not safe to operate";
+                annunciatorSafeToOperate.ForeColor = unsafeColor;
+                annunciatorSafeToOperate.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+                severity = Statuser.Severity.Error;
+                tip = string.Join("\n", safetooperateDigest.UnsafeReasons).Replace(Const.recordSeparator, "\n");
+            }
+            annunciatorSafeToOperate.Text = text;
+            toolTip.SetToolTip(annunciatorSafeToOperate, tip);
+            toolTip.SetToolTip(safetooperateStatus.Label, tip);
+            safetooperateStatus.Show(text, 0, severity, true);
             #endregion
+
+            #region Platform Annunciator
+            tip = null;
+
+            if (safetooperateDigest.Platform.Safe)
+            {
+                annunciatorDomePlatform.Text = "Platform is safe";
+                annunciatorDomePlatform.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+                tip = "Dome platform is at its lowest position.";
+            }
+            else
+            {
+                annunciatorDomePlatform.Text = "Platform is NOT SAFE";
+                annunciatorDomePlatform.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+                tip = "Dome platform is NOT at its lowest position!";
+            }
+            toolTip.SetToolTip(annunciatorDomePlatform, tip);
+        }
+        #endregion
 
             #region Simulation Annunciator
             tip = null;
@@ -574,6 +574,7 @@ namespace Dash
                     msg = "Shutter is " + status;
                 }
                 shutterStatus.Show(msg, 0, severity);
+                shutterStatus.SetToolTip(domeDigest.Shutter.Reason);
 
                 switch (domeDigest.Shutter.State)
                 {

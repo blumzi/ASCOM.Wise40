@@ -882,6 +882,7 @@ namespace ASCOM.Wise40
                     {
                         Status = ShutterStatusString,
                         State = ShutterState,
+                        Reason = ShutterStateReason,
                         RangeCm = wisedomeshutter.RangeCm,
                         PercentOpen = wisedomeshutter.PercentOpen,
                         TimeSinceLastReading = wisedomeshutter.webClient.TimeSinceLastReading,
@@ -1119,6 +1120,14 @@ namespace ASCOM.Wise40
             get
             {
                 return wisedomeshutter.State;
+            }
+        }
+
+        public string ShutterStateReason
+        {
+            get
+            {
+                return wisedomeshutter.StateReason;
             }
         }
 
@@ -1493,6 +1502,7 @@ namespace ASCOM.Wise40
     {
 
         public ShutterState State;
+        public string Reason;
         public string Status;
         public int PercentOpen;
         public int RangeCm;

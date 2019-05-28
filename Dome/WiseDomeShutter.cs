@@ -27,6 +27,7 @@ namespace ASCOM.Wise40
         public bool _syncVentWithShutter = false;
 
         private ShutterState _state = ShutterState.shutterError;
+        private string _stateReason;
 
         private static TimeSpan _simulatedAge = new TimeSpan(0, 0, 3);
 
@@ -144,6 +145,7 @@ namespace ASCOM.Wise40
                 if (! Instance.webClient.WiFiIsWorking)
                 {
                     _wisedomeshutter._state = ShutterState.shutterError;
+                    _wisedomeshutter._stateReason = "PeriodicReader: WiFi is not working";
                     _prevState = ShutterState.shutterError;
                     
                     if (DateTime.Now.Subtract(Instance.webClient._startOfShutterMotion).TotalSeconds > maxTravelTimeSeconds)
@@ -157,30 +159,47 @@ namespace ASCOM.Wise40
                 _lastReadingTime = DateTime.Now;
                 _lastReading = reading;
 
-                if (Math.Abs(reading - _wisedomeshutter._lowestValue) <= 5 && reading == _prevReading)
+                if (_wisedomeshutter.CloseEnough(reading, _wisedomeshutter._lowestValue) && reading == _prevReading)
+                //if (Math.Abs(reading - _wisedomeshutter._lowestValue) <= 5 && reading == _prevReading)
                 {
                     _wisedomeshutter._state = ShutterState.shutterClosed;
+                    _wisedomeshutter._stateReason =
+                        string.Format("PeriodicReader: Shutter at {0} (close enough to lowest value {1}) and not moving", reading, _wisedomeshutter._lowestValue);
                     if (_prevState != ShutterState.shutterClosed)
                         _wisedomeshutter.Stop("Shutter closed");
                 }
-                else if (Math.Abs(reading - _wisedomeshutter._highestValue) <= 5 && reading == _prevReading)
+
+                else if (_wisedomeshutter.CloseEnough(reading, _wisedomeshutter._highestValue) && reading == _prevReading)
+                //else if (Math.Abs(reading - _wisedomeshutter._highestValue) <= 5 && reading == _prevReading)
                 {
                     _wisedomeshutter._state = ShutterState.shutterOpen;
+                    _wisedomeshutter._stateReason =
+                        string.Format("PeriodicReader: Shutter at {0} (close enough to highest value {1}) and not moving", reading, _wisedomeshutter._highestValue);
                     if (_prevState != ShutterState.shutterOpen)
                         _wisedomeshutter.Stop("Shutter opened");
                 }
                 else if (_prevReading == Int32.MinValue)
                 {
                     _wisedomeshutter._state = ShutterState.shutterError;
+                    _wisedomeshutter._stateReason = "PeriodicReader: _prevReading == Int32.MinValue";
                 }
                 else
                 {
                     if (openPin.isOn && closePin.isOn)
+                    {
                         _wisedomeshutter._state = ShutterState.shutterError;
+                        _wisedomeshutter._stateReason = "PeriodicReader: Both openPin and closePin are ON!";
+                    }
                     else if (openPin.isOn)
+                    {
                         _wisedomeshutter._state = ShutterState.shutterOpening;
+                        _wisedomeshutter._stateReason = "PeriodicReader: openPin is ON!";
+                    }
                     else if (closePin.isOn)
+                    {
                         _wisedomeshutter._state = ShutterState.shutterClosing;
+                        _wisedomeshutter._stateReason = "PeriodicReader: closePin is ON!";
+                    }
                 }
 
                 _prevReading = _lastReading;
@@ -406,6 +425,14 @@ namespace ASCOM.Wise40
             }
         }
 
+        public string StateReason
+        {
+            get
+            {
+                return _stateReason;
+            }
+        }
+
         public ShutterState State
         {
             get
@@ -413,26 +440,44 @@ namespace ASCOM.Wise40
                 ShutterState ret = ShutterState.shutterError;
 
                 if (openPin.isOn && closePin.isOn)
+                {
                     ret = ShutterState.shutterError;
+                    _stateReason = "Both openPin and closePin are ON";
+                }
                 else if (openPin.isOn)
-                    return ShutterState.shutterOpening;
+                {
+                    ret = ShutterState.shutterOpening;
+                    _stateReason = "openPin is ON";
+                }
                 else if (closePin.isOn)
-                    return ShutterState.shutterClosing;
+                {
+                    ret = ShutterState.shutterClosing;
+                    _stateReason = "closePin is ON";
+                }
                 else
                 {
                     int rangeCm = RangeCm;
 
                     if (rangeCm == -1)
+                    {
                         ret = ShutterState.shutterError;
+                        _stateReason = Instance.webClient.WiFiIsWorking ? "rangeCM == -1 (unknown problem)" : "WiFi problem";
+                    }
                     else if (CloseEnough(rangeCm, _lowestValue))
+                    {
                         ret = ShutterState.shutterClosed;
+                        _stateReason = string.Format("range: {0}cm is close enough to lower limit: {1}cm", rangeCm, _lowestValue);
+                    }
                     else if (CloseEnough(rangeCm, _highestValue))
+                    {
                         ret = ShutterState.shutterOpen;
+                        _stateReason = string.Format("range: {0}cm is close enough to highest limit: {1}cm", rangeCm, _highestValue);
+                    }
                 }
 
                 _state = ret;
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "State: {0}", _state.ToString());
+                debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "State: {0} (reason: {1})", _state.ToString(), _stateReason);
                 #endregion
                 return _state;
             }
