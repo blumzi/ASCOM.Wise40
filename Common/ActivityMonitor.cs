@@ -908,7 +908,12 @@ namespace ASCOM.Wise40
         {
             _due = DateTime.MinValue;
             _timer.Change(Timeout.Infinite, Timeout.Infinite);
+
+            IdlerState prevState = _idlerState;
             _idlerState = IdlerState.ActivitiesInProgress;
+            if (prevState != IdlerState.GoingIdle)
+                return;
+
             _endDetails = string.Format("GoingIdle: aborted, reason: {0}",reason);
 
             EndActivity(new EndParams
