@@ -58,17 +58,38 @@ namespace ASCOM.Wise40
             return res.TrimEnd(' ');
         }
 
+
+        static Dictionary<int, string> connectorName = new Dictionary<int, string>
+        {
+            [2] = "CD2",
+            [3] = "CD3",
+            [4] = "CD4",
+        };
+
         static void onCommunicationComplete(object sender, CommunicationCompleteEventArgs e)
         {
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "ArduinoInterface.onCommunicationComplete: reply = {0}", hexdump(e.Reply));
             #endregion
+            _tag = null;
+            _error = null;
+
             if (e.Reply.StartsWith("tag:"))
             {
                 _tag = e.Reply.Substring("tag:".Length);
             }
             else if (e.Reply.StartsWith("error:"))
+            {
                 _error = e.Reply.Substring("error:".Length);
+                if (_error.StartsWith("connector:"))
+                {
+                    int[] nums = Array.ConvertAll(_error.Substring("connector:".Length).Split(' '), int.Parse);
+                    List<string> notConected = new List<string>();
+                    foreach (int n in nums)
+                        notConected.Add(connectorName[n]);
+                    _error = "not connected: " + String.Join(",", notConected);
+                }
+            }
         }
 
         public class CommunicationCompleteEventArgs : EventArgs
@@ -389,7 +410,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return _error;
+                return (_error == null || _error == String.Empty) ? null : _error;
             }
         }
 
