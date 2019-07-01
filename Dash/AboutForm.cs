@@ -1,18 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 using ASCOM.Wise40.Common;
-using ASCOM.Wise40;
-//using ASCOM.Wise40.SafeToOperate;
-//using ASCOM.Wise40.Focuser;
-using ASCOM.DriverAccess;
 
 namespace Dash
 {
