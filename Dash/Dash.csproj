@@ -291,7 +291,7 @@
 </PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PreBuildEvent>git rev-parse --short HEAD &gt; "$(ProjectDir)\CurrentCommit.txt"</PreBuildEvent>
+    <PreBuildEvent>rem git rev-parse --short HEAD &gt; C:\Users/Blumzi/Documents/Visual Studio 2015/Projects/Wise40/Dash\CurrentCommit.txt</PreBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

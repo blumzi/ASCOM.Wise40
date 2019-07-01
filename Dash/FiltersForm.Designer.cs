@@ -51,7 +51,7 @@
             this.labelTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelTitle.Location = new System.Drawing.Point(24, 26);
             this.labelTitle.Name = "labelTitle";
-            this.labelTitle.Size = new System.Drawing.Size(160, 40);
+            this.labelTitle.Size = new System.Drawing.Size(200, 40);
             this.labelTitle.TabIndex = 0;
             this.labelTitle.Text = "Wise40 filters";
             this.labelTitle.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -212,6 +212,7 @@
             this.Controls.Add(this.labelTitle);
             this.ForeColor = System.Drawing.Color.DarkOrange;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            //this.Name = "FiltersForm";
             this.Text = "Wise40 Filters";
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).EndInit();
             this.ResumeLayout(false);

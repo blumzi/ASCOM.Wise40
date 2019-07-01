@@ -29,7 +29,8 @@ namespace Dash
             _wiseFilterWheel = wiseFilterWheel;
             _filterSize = filterSize;
 
-            boundFilters = new BindingList<Filter>(WiseFilterWheel.GetKnownFilters(filterSize));
+            WiseFilterWheel.Wheel wheel = filterSize == WiseFilterWheel.FilterSize.ThreeInch ? WiseFilterWheel.wheel4 : WiseFilterWheel.wheel8;
+            boundFilters = new BindingList<Filter>(wheel.GetKnownFilters);
             InitializeComponent();
             labelTitle.Text = string.Format("Wise40 {0}\" filters", _filterSize == WiseFilterWheel.FilterSize.TwoInch ? 2 : 3);
             source = new BindingSource(boundFilters, null);
