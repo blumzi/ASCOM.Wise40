@@ -43,6 +43,7 @@ namespace ASCOM.Wise40SafeToOperate
             Stabilizing = (1 << 3),     // in transition from unsafe to safe
             Stale = (1 << 4),           // the data readings are too old
             Enabled = (1 << 5),         // It is not AlwaysEnabled and was enabled
+            Connected = (1 << 6),
         };
 
         public bool StateIsSet(SensorState s)
@@ -80,6 +81,7 @@ namespace ASCOM.Wise40SafeToOperate
         public int _nbad;
         public int _nstale;
         public bool _enabled;
+        public bool _connected;
         public int _nreadings;
         public Units _units;
         public string _formatValue;
@@ -547,7 +549,7 @@ namespace ASCOM.Wise40SafeToOperate
         //
         private void onTimer(object StateObject)
         {
-            if (!Enabled)
+            if (!Enabled || !Connected)
                 return;
 
             DateTime now = DateTime.Now;
@@ -739,6 +741,27 @@ namespace ASCOM.Wise40SafeToOperate
                     #endregion
                 }
                 return ret;
+            }
+        }
+
+        public bool Connected
+        {
+            get
+            {
+                return _connected;
+            }
+
+            set
+            {
+                _connected = value;
+                if (_connected)
+                {
+                    SetState(SensorState.Connected);
+                } else
+                {
+                    UnsetState(SensorState.Connected);
+                    _timer.Change(Timeout.Infinite, Timeout.Infinite);
+                }
             }
         }
 
