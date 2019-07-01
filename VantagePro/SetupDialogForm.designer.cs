@@ -50,7 +50,7 @@ namespace ASCOM.Wise40.VantagePro
             this.cmdOK.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.cmdOK.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.cmdOK.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.cmdOK.Location = new System.Drawing.Point(500, 96);
+            this.cmdOK.Location = new System.Drawing.Point(705, 96);
             this.cmdOK.Name = "cmdOK";
             this.cmdOK.Size = new System.Drawing.Size(59, 24);
             this.cmdOK.TabIndex = 0;
@@ -64,7 +64,7 @@ namespace ASCOM.Wise40.VantagePro
             this.cmdCancel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.cmdCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.cmdCancel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.cmdCancel.Location = new System.Drawing.Point(500, 126);
+            this.cmdCancel.Location = new System.Drawing.Point(705, 126);
             this.cmdCancel.Name = "cmdCancel";
             this.cmdCancel.Size = new System.Drawing.Size(59, 25);
             this.cmdCancel.TabIndex = 1;
@@ -87,7 +87,7 @@ namespace ASCOM.Wise40.VantagePro
             this.picASCOM.Cursor = System.Windows.Forms.Cursors.Hand;
             this.picASCOM.ErrorImage = global::ASCOM.Wise40.VantagePro.Properties.Resources.ASCOM;
             this.picASCOM.Image = global::ASCOM.Wise40.VantagePro.Properties.Resources.ASCOM;
-            this.picASCOM.Location = new System.Drawing.Point(505, 9);
+            this.picASCOM.Location = new System.Drawing.Point(710, 9);
             this.picASCOM.Name = "picASCOM";
             this.picASCOM.Size = new System.Drawing.Size(48, 56);
             this.picASCOM.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
@@ -113,7 +113,7 @@ namespace ASCOM.Wise40.VantagePro
             this.labelReportFileValue.Location = new System.Drawing.Point(184, 17);
             this.labelReportFileValue.Name = "labelReportFileValue";
             this.labelReportFileValue.Padding = new System.Windows.Forms.Padding(5, 0, 0, 0);
-            this.labelReportFileValue.Size = new System.Drawing.Size(268, 23);
+            this.labelReportFileValue.Size = new System.Drawing.Size(472, 23);
             this.labelReportFileValue.TabIndex = 8;
             this.labelReportFileValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -132,7 +132,7 @@ namespace ASCOM.Wise40.VantagePro
             this.groupBox1.ForeColor = System.Drawing.Color.DarkOrange;
             this.groupBox1.Location = new System.Drawing.Point(18, 72);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(464, 80);
+            this.groupBox1.Size = new System.Drawing.Size(670, 80);
             this.groupBox1.TabIndex = 9;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = " Operation mode ";
@@ -181,7 +181,7 @@ namespace ASCOM.Wise40.VantagePro
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.ClientSize = new System.Drawing.Size(563, 193);
+            this.ClientSize = new System.Drawing.Size(768, 193);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.picASCOM);
             this.Controls.Add(this.label1);
