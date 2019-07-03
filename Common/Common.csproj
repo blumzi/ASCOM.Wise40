@@ -130,6 +130,7 @@
     <Compile Include="CueProvider.cs" />
     <Compile Include="Debugger.cs" />
     <Compile Include="DMS.cs" />
+    <Compile Include="EnvironmentLogger.cs" />
     <Compile Include="FixedSizeQueue.cs" />
     <Compile Include="HumanIntervention.cs" />
     <Compile Include="IOnOff.cs" />

@@ -82,6 +82,7 @@ namespace ASCOM.Wise40 //.FilterWheel
 
             foreach (var w in WiseFilterWheel.wheels)
             {
+                WiseFilterWheel.Instance.init();
                 for (int i = 0; i < w._nPositions; i++)
                 {
                     ComboBox cb;
@@ -90,10 +91,10 @@ namespace ASCOM.Wise40 //.FilterWheel
                     if (w._positions[i].filterName == string.Empty)
                         cb.Text = string.Empty;
                     else {
-                        Filter f = WiseFilterWheel._filterInventory[WiseFilterWheel.filterSizeToIndex[w._filterSize]].Find((x) => x.Name == w._positions[i].filterName);
+                        Filter f = w._filterInventory.Find((x) => x.Name == w._positions[i].filterName);
                         cb.Text = (f == null) ? "<??>" : string.Format("{0}: {1}", f.Name, f.Description);
                     }
-                    foreach (Filter f in WiseFilterWheel._filterInventory[WiseFilterWheel.filterSizeToIndex[w._filterSize]])
+                    foreach (Filter f in w._filterInventory)
                         cb.Items.Add(string.Format("{0}: {1}", f.Name, f.Description));
                      
                     TextBox tb;

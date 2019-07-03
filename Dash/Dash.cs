@@ -10,11 +10,8 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 
 using ASCOM.DeviceInterface;
-using ASCOM.Astrometry;
-using ASCOM.DriverAccess;
 using ASCOM.Wise40;
 using ASCOM.Wise40.Common;
-using ASCOM.Wise40.Hardware;
 using ASCOM.Wise40SafeToOperate;
 
 using ASCOM.Utilities;
@@ -37,7 +34,7 @@ namespace Dash
 
         private double handpadRate = Const.rateSlew;
         private bool _saveFocusUpperLimit = false, _saveFocusLowerLimit = false;
-
+        
         RefreshPacer domePacer = new RefreshPacer(TimeSpan.FromSeconds(1));
         RefreshPacer safettoperatePacer = new RefreshPacer(TimeSpan.FromSeconds(20));
         RefreshPacer weatherPacer = new RefreshPacer(TimeSpan.FromSeconds(20));
@@ -83,11 +80,11 @@ namespace Dash
             }
         }
 
-        #region Initialization
+#region Initialization
         public FormDash()
         {
             InitializeComponent();
-
+            
             wiseTelescope = new ASCOM.DriverAccess.Telescope("ASCOM.Remote1.Telescope");
             wiseDome = new ASCOM.DriverAccess.Dome("ASCOM.Remote1.Dome");
             wiseFocuser = new ASCOM.DriverAccess.Focuser("ASCOM.Remote1.Focuser");
@@ -97,7 +94,7 @@ namespace Dash
             wiseBoltwood = new ASCOM.DriverAccess.ObservingConditions(Const.WiseDriverID.Boltwood);
 
             filterWheelForm = new FilterWheelForm(wiseFilterWheel);
-
+            
             focuserMaxStep = wiseFocuser.MaxStep;
             focuserLowerLimit = Convert.ToInt32(wiseFocuser.Action("limit", "lower"));
             focuserUpperLimit = Convert.ToInt32(wiseFocuser.Action("limit", "upper"));
@@ -168,7 +165,7 @@ namespace Dash
             focuserStatus = new Statuser(labelFocuserStatus);
             safetooperateStatus = new Statuser(labelWeatherStatus, toolTip);
             filterWheelStatus = new Statuser(labelFilterWheelStatus);
-            filterWheelArduinoStatus = new Statuser(labelFilterWheelStatus);
+            filterWheelArduinoStatus = new Statuser(labelFWArduinoStatus);
 
             menuStrip.RenderMode = ToolStripRenderMode.ManagerRenderMode;
             ToolStripManager.Renderer = new ASCOM.Wise40.Common.Wise40ToolstripRenderer();
@@ -191,7 +188,7 @@ namespace Dash
 
             UpdateFilterWheelControls();
         }
-        #endregion
+#endregion
 
         public void UpdateFilterWheelControls()
         {
@@ -204,10 +201,10 @@ namespace Dash
                 return;
             }
 
+            toolStripMenuItemFilterWheel.Enabled = true;
+
             if (filterWheelDigest == null)
                 return;
-
-            toolStripMenuItemFilterWheel.Enabled = true;
 
             if (!filterWheelDigest.Enabled)
             {
@@ -225,7 +222,7 @@ namespace Dash
             return mps * 3.6;
         }
 
-        #region Refresh
+#region Refresh
         public void RefreshDisplay(object sender, EventArgs e)
         {
             DateTime now = DateTime.Now;
@@ -233,7 +230,7 @@ namespace Dash
             DateTime localTime = now.ToLocalTime();
             ASCOM.Utilities.Util u = new ASCOM.Utilities.Util();
             Statuser.Severity severity = Statuser.Severity.Normal;
-
+            
             bool refreshDome = domePacer.ShouldRefresh(now);
             bool refreshSafeToOperate = safettoperatePacer.ShouldRefresh(now);
             bool refreshTelescope = telescopePacer.ShouldRefresh(now);
@@ -242,7 +239,7 @@ namespace Dash
             bool refreshForecast = forecastPacer.ShouldRefresh(now);
             //bool refreshWeather = weatherPacer.ShouldRefresh(now);
             string tip = null;
-
+            
             if (refreshTelescope)
             {
                 try
@@ -269,11 +266,11 @@ namespace Dash
             if (refreshFilterWheel)
                 filterWheelDigest = JsonConvert.DeserializeObject<WiseFilterWheelDigest>(wiseFilterWheel.Action("status", ""));
 
-            #region RefreshTelescope
+#region RefreshTelescope
 
             Angle telescopeRa = null, telescopeDec = null, telescopeHa = null;
-
-            #region Coordinates Info
+            
+#region Coordinates Info
             labelDate.Text = localTime.ToString("ddd, dd MMM yyyy\n hh:mm:ss tt");
             labelLTValue.Text = now.TimeOfDay.ToString(@"hh\hmm\mss\.f\s");
             labelUTValue.Text = utcTime.TimeOfDay.ToString(@"hh\hmm\mss\.f\s");
@@ -306,7 +303,7 @@ namespace Dash
 
                 labelAzimuthValue.Text = Angle.FromDegrees(telescopeDigest.Azimuth).ToNiceString();
 
-                #region Telescope Target
+#region Telescope Target
                 if (telescopeDigest.Slewing)
                 {
                     if (telescopeDigest.Target.RightAscension == Const.noTarget)
@@ -337,11 +334,11 @@ namespace Dash
                     textBoxDec.Text = "";
                 }
             }
-            #endregion
+#endregion
 
-            #endregion
+#endregion
 
-            #region Annunciators
+#region Annunciators
 
             if (telescopeDigest != null)
             {
@@ -384,9 +381,9 @@ namespace Dash
                 else if (secondaryRate == Const.rateGuide)
                     annunciatorDECRateGuide.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
             }
-            #endregion
+#endregion
 
-            #region Inactivity Countdown
+#region Inactivity Countdown
 
             if (telescopeDigest != null)
             {
@@ -417,31 +414,31 @@ namespace Dash
                 }
             }
 
-            #endregion
+#endregion
 
-            #region Moon
+#region Moon
             if (telescopeDigest != null)
             {
                 labelMoonIllum.Text = (moon.Illumination * 100).ToString("F0") + "%";
                 labelMoonDist.Text = moon.Distance(telescopeRa.Radians, telescopeDec.Radians).ToNiceString();
             }
-            #endregion
+#endregion
 
-            #region Air Mass
+#region Air Mass
             if (telescopeDigest != null)
             {
                 Angle alt = Angle.FromDegrees(telescopeDigest.Altitude);
                 labelAirMass.Text = wisesite.AirMass(alt.Radians).ToString("g4");
-                #endregion
+#endregion
 
                 telescopeStatus.Show(telescopeDigest.Status);
             }
 
-            #endregion
+#endregion
+            
+#region RefreshSafety
 
-            #region RefreshSafety
-
-            #region ComputerControl Annunciator
+#region ComputerControl Annunciator
             if (safetooperateDigest != null)
             {
                 if (safetooperateDigest.ComputerControl.Safe)
@@ -464,9 +461,9 @@ namespace Dash
                         c.Enabled = false;
                 }
                 toolTip.SetToolTip(annunciatorComputerControl, tip);
-                #endregion
+#endregion
 
-            #region SafeToOperate Annunciator
+#region SafeToOperate Annunciator
             tip = null;
             string text = "";
             severity = Statuser.Severity.Normal;
@@ -507,9 +504,9 @@ namespace Dash
             toolTip.SetToolTip(annunciatorSafeToOperate, tip);
             toolTip.SetToolTip(safetooperateStatus.Label, tip);
             safetooperateStatus.Show(text, 0, severity, true);
-            #endregion
+#endregion
 
-            #region Platform Annunciator
+#region Platform Annunciator
             tip = null;
 
             if (safetooperateDigest.Platform.Safe)
@@ -526,9 +523,9 @@ namespace Dash
             }
             toolTip.SetToolTip(annunciatorDomePlatform, tip);
         }
-        #endregion
+#endregion
 
-            #region Simulation Annunciator
+#region Simulation Annunciator
             tip = null;
 
             if (WiseObject.Simulated)
@@ -544,11 +541,11 @@ namespace Dash
                 tip = "";
             }
             toolTip.SetToolTip(annunciatorSimulation, tip);
-            #endregion
+#endregion
 
-            #endregion
-
-            #region RefreshDome
+#endregion
+            
+#region RefreshDome
             if (domeDigest != null)
             {
                 labelDomeAzimuthValue.Text = Angle.FromDegrees(domeDigest.Azimuth, Angle.Type.Az).ToNiceString();
@@ -561,7 +558,7 @@ namespace Dash
                     ASCOM.Controls.CadencePattern.SteadyOn :
                     ASCOM.Controls.CadencePattern.SteadyOff;
 
-                #region Shutter
+#region Shutter
                 string status = domeDigest.Shutter.Status, msg;
                 if (status.Contains("error:") || domeDigest.Shutter.State == ShutterState.shutterError)
                 {
@@ -594,11 +591,11 @@ namespace Dash
                         break;
                 }
             }
-            #endregion
+#endregion
 
-            #endregion
+#endregion
 
-            #region RefreshWeather
+#region RefreshWeather
                 if (safetooperateDigest == null)
                 {
                     string nc = "???";
@@ -626,7 +623,7 @@ namespace Dash
                 {
                     try
                     {
-                        #region Observing Conditions from SafeToOperate
+#region Observing Conditions from SafeToOperate
 
                         RefreshInConditionsformation(labelDewPointValue, safetooperateDigest.DewPoint);
                         RefreshInConditionsformation(labelSkyTempValue, safetooperateDigest.SkyTemperature);
@@ -639,24 +636,24 @@ namespace Dash
                         RefreshInConditionsformation(labelRainRateValue, safetooperateDigest.RainRate);
                         RefreshInConditionsformation(labelSunElevationValue, safetooperateDigest.SunElevation);
 
-                        #endregion
+#endregion
                     }
                     catch (ASCOM.PropertyNotImplementedException ex)
                     {
                         this.safetooperateStatus.Show(ex.Message, 1000, Statuser.Severity.Error);
                     }
                 }
-            #endregion
+#endregion
 
-            #region RefreshFocuser
+#region RefreshFocuser
             labelFocusCurrentValue.Text = focuserDigest.Position.ToString();
             focuserStatus.Show(focuserDigest.StatusString);
             annunciatorFocus.Cadence = focuserDigest.IsMoving ?
                 ASCOM.Controls.CadencePattern.SteadyOn :
                 ASCOM.Controls.CadencePattern.SteadyOff;
-            #endregion
+#endregion
 
-            #region RefreshFilterWheel
+#region RefreshFilterWheel
             if (filterWheelDigest != null &&
                 filterWheelDigest.Enabled &&
                 (filterWheelDigest.Arduino.Status == ArduinoInterface.ArduinoStatus.Communicating || filterWheelDigest.Arduino.Status == ArduinoInterface.ArduinoStatus.Moving))
@@ -664,11 +661,11 @@ namespace Dash
             else
                 annunciatorFilterWheel.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
             LoadFilterWheelInformation();
-            #endregion
+#endregion
 
-            #region RefreshForecast
+#region RefreshForecast
             dashStatus.Show("Forecast: " + forecast);
-            #endregion
+#endregion
         }
 
         void RefreshInConditionsformation(Label label, Sensor.SensorDigest digest)
@@ -694,9 +691,9 @@ namespace Dash
 
             toolTip.SetToolTip(label, tip);
         }
-        #endregion
+#endregion
 
-        #region MainMenu
+#region MainMenu
         private void digitalIOCardsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             HardwareForm hardwareForm = new HardwareForm(wiseTelescope);
@@ -713,7 +710,7 @@ namespace Dash
             AboutForm form = new AboutForm(this);
             form.Visible = true;
         }
-        #endregion
+#endregion
 
         class Movement
         {
@@ -734,7 +731,7 @@ namespace Dash
             return telescopeDigest.SafeAtCurrentCoordinates == string.Empty;
         }
 
-        #region TelescopeControl
+#region TelescopeControl
         public void directionButton_MouseDown(object sender, MouseEventArgs e)
         {
             if (!safetooperateDigest.ComputerControl.Safe)
@@ -972,11 +969,11 @@ namespace Dash
 
         private void buttonTelescopePark_Click(object sender, EventArgs e)
         {
-            wiseTelescope.Action("park", "");            
+            wiseTelescope.Action("park", "");
         }
-        #endregion
+#endregion
 
-        #region ShutterControl
+#region ShutterControl
 
         private void _startMovingShutter(bool open)
         {
@@ -1064,9 +1061,9 @@ namespace Dash
                 shutterStatus.Show(ex.Message, 1000, Statuser.Severity.Error);
             }
         }
-        #endregion
+#endregion
 
-        #region DomeControl
+#region DomeControl
         private void textBoxDomeAzGo_Validated(object sender, EventArgs e)
         {
             TextBox tb = sender as TextBox;
@@ -1237,7 +1234,6 @@ namespace Dash
         {
             try
             {
-
                 wiseFocuser.Action("move", "up");
             }
             catch (Exception ex)
@@ -1437,9 +1433,9 @@ namespace Dash
             UpdateCheckmark(item, debugger.Debugging(selectedLevel));
             UpdateAlteredItems(item, "Debugging");
 
-            #region debug
+#region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "New debug level: {0}", debugger.Level);
-            #endregion
+#endregion
         }
 
         private void DashOutFilterWheelControls()
@@ -1461,31 +1457,26 @@ namespace Dash
             {
                 DashOutFilterWheelControls();
                 return;
-            } else if (!filterWheelDigest.Enabled)
+            }
+            else if (!filterWheelDigest.Enabled)
             {
                 DashOutFilterWheelControls();
                 filterWheelStatus.Show("Disabled (see Settings->FilterWheel->Settings)");
                 return;
-            } else if (filterWheelDigest.Wheel == null)
+            }
+            else if (filterWheelDigest.Wheel == null)
             {
                 DashOutFilterWheelControls();
-                filterWheelStatus.Show("Cannot detect a filter wheel", 0, Statuser.Severity.Error);
+                filterWheelStatus.Show("Cannot detect a filter wheel", 5000, Statuser.Severity.Error);
 
                 string arduinoStatus = filterWheelDigest.Arduino.StatusString;
                 Statuser.Severity severity = Statuser.Severity.Normal;
 
                 if (filterWheelDigest.Arduino.Error != null)
                 {
-                    arduinoStatus += string.Format(" (error: {0})", filterWheelDigest.Arduino.Error);
                     severity = Statuser.Severity.Error;
                 }
-                filterWheelArduinoStatus.Show(arduinoStatus, 0, severity);
-
-                string tip = "Arduino status:\r\n";
-                tip += string.Format("  WaitingForReply: {0}\r\n", filterWheelDigest.Arduino.WaitingForReply);
-                if (filterWheelDigest.Arduino.LastCommand != null)
-                    tip += string.Format("     LastCommand: {0}\r\n", filterWheelDigest.Arduino.LastCommand);
-                toolTip.SetToolTip(filterWheelArduinoStatus.Label, tip);
+                filterWheelArduinoStatus.Show(arduinoStatus, 5000, severity);
                 return;
             }
 
@@ -1522,15 +1513,25 @@ namespace Dash
 
             }
 
-            filterWheelStatus.Show(filterWheelDigest.Status);
+            filterWheelStatus.Show((filterWheelDigest.Status != null && filterWheelDigest.Status != "Idle") ? filterWheelDigest.Status : "");
             if (filterWheelDigest.Arduino.Status == ArduinoInterface.ArduinoStatus.Idle)
                 filterWheelArduinoStatus.Show("");
 
-            if (filterWheelDigest.Arduino.Error != string.Empty)
-                filterWheelArduinoStatus.Show(filterWheelDigest.Arduino.Error, 0, Statuser.Severity.Error);
+            if (filterWheelDigest.Arduino.Error != null && filterWheelDigest.Arduino.Error != string.Empty)
+                filterWheelArduinoStatus.Show(filterWheelDigest.Arduino.Error, 5000, Statuser.Severity.Error);
             else if (filterWheelDigest.Arduino.StatusString != string.Empty)
                 filterWheelArduinoStatus.Show(filterWheelDigest.Arduino.StatusString);
 
+            string tip = "Arduino:\r\n";
+            TimeSpan ts = DateTime.Now.Subtract(Convert.ToDateTime(filterWheelDigest.LastDataReceived));
+            tip += string.Format("  Age:  {0} seconds\r\n", ts.ToString(@"s\.ff"));
+            string err = filterWheelDigest.Arduino.Error != null && filterWheelDigest.Arduino.Error != string.Empty ?
+                filterWheelDigest.Arduino.Error : "none";
+            tip += string.Format("  Status:  {0}\r\n", filterWheelDigest.Arduino.StatusString);
+            if (filterWheelDigest.Arduino.LastCommand != null)
+                tip += string.Format("  Last cmd: {0}\r\n", filterWheelDigest.Arduino.LastCommand);
+            tip += string.Format("  Error:   {0}\r\n", err);
+            toolTip.SetToolTip(filterWheelArduinoStatus.Label, tip);
         }
 
         private void UpdateAlteredItems(ToolStripMenuItem item, string title)
@@ -1649,7 +1650,7 @@ namespace Dash
         {
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "FullStop !!!");
-            #endregion
+#endregion
             wiseTelescope.Action("full-stop", "");
             wiseDome.Action("halt", "");
             wiseDome.Action("shutter", "halt");
@@ -1789,7 +1790,7 @@ namespace Dash
                 wiseFocuser.Action("halt", "Stop everything");
             }
             catch { }
-            #region debug
+#region debug
             string msg = "\nStopEverything:\n";
             if (e != null)
             {
@@ -1800,7 +1801,7 @@ namespace Dash
             }
             msg += "Application will exit!";
             debugger.WriteLine(Debugger.DebugLevel.DebugExceptions, msg);
-            #endregion
+#endregion
             Application.Exit();
         }
 
@@ -1818,7 +1819,7 @@ namespace Dash
         {
             StopEverything(e.ExceptionObject as Exception);
         }
-        #endregion
+#endregion
     }
 
     public class RefreshPacer

@@ -400,7 +400,10 @@ namespace ASCOM.Wise40SafeToOperate
         public void stopSensors()
         {
             foreach (Sensor s in _cumulativeSensors)
+            {
                 s.Enabled = false;
+                s.Connected = false;
+            }
         }
 
         public void startSensors()

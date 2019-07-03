@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+<script type='text/javascript'>
+  google.charts.load('current');
+  function drawVisualization() {
+    var dataTable = [
+      ["Country", "Population Density"],
+      ["Indonesia", 117],
+      ["China", 137],
+      ["Nigeria", 142],
+      ["Pakistan", 198],
+      ["India", 336],
+      ["Japan", 339],
+      ["Bangladesh", 1045]
+    ];
+    google.visualization.drawChart({
+      "containerId": "visualization_div",
+      "dataTable": dataTable,
+      "refreshInterval": 5,
+      "chartType": "Table",
+      "options": {
+        "alternatingRowStyle": true,
+        "showRowNumber" : true,
+      }
+    });
+  }
+  google.charts.setOnLoadCallback(drawVisualization);
+</script>
+
+</head>
+
+<body>
+    <div id="visualization_div">
+    </div>
+
+</body>
+</html>

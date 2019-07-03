@@ -100,7 +100,7 @@ namespace ASCOM.Wise40
             this.cmdOK.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.cmdOK.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.cmdOK.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.cmdOK.Location = new System.Drawing.Point(536, 478);
+            this.cmdOK.Location = new System.Drawing.Point(536, 513);
             this.cmdOK.Name = "cmdOK";
             this.cmdOK.Size = new System.Drawing.Size(75, 40);
             this.cmdOK.TabIndex = 0;
@@ -114,7 +114,7 @@ namespace ASCOM.Wise40
             this.cmdCancel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.cmdCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.cmdCancel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.cmdCancel.Location = new System.Drawing.Point(536, 524);
+            this.cmdCancel.Location = new System.Drawing.Point(536, 561);
             this.cmdCancel.Name = "cmdCancel";
             this.cmdCancel.Size = new System.Drawing.Size(75, 40);
             this.cmdCancel.TabIndex = 1;
@@ -125,11 +125,11 @@ namespace ASCOM.Wise40
             // label1
             // 
             this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.Location = new System.Drawing.Point(27, 43);
+            this.label1.Location = new System.Drawing.Point(27, 32);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(252, 39);
+            this.label1.Size = new System.Drawing.Size(261, 39);
             this.label1.TabIndex = 2;
-            this.label1.Text = "Use this form to update which filters\r\nhave been loaded into the filter-wheel.";
+            this.label1.Text = "Use this form to update which filters\r\nhave been loaded into the filter-wheels.";
             this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // picASCOM
@@ -137,7 +137,7 @@ namespace ASCOM.Wise40
             this.picASCOM.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.picASCOM.Cursor = System.Windows.Forms.Cursors.Hand;
             this.picASCOM.Image = global::ASCOM.Wise40.Properties.Resources.ASCOM;
-            this.picASCOM.Location = new System.Drawing.Point(553, 43);
+            this.picASCOM.Location = new System.Drawing.Point(553, 32);
             this.picASCOM.Name = "picASCOM";
             this.picASCOM.Size = new System.Drawing.Size(48, 56);
             this.picASCOM.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
@@ -780,6 +780,7 @@ namespace ASCOM.Wise40
             this.checkBoxEditableRFIDs.Size = new System.Drawing.Size(111, 19);
             this.checkBoxEditableRFIDs.TabIndex = 20;
             this.checkBoxEditableRFIDs.Text = "Editable  RFIDs";
+            this.toolTip1.SetToolTip(this.checkBoxEditableRFIDs, "Use this ONLY if any of the RFIDs failed\r\nand was replaced!");
             this.checkBoxEditableRFIDs.UseVisualStyleBackColor = true;
             this.checkBoxEditableRFIDs.CheckedChanged += new System.EventHandler(this.checkBoxEditableRFIDs_CheckedChanged);
             // 

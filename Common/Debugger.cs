@@ -56,10 +56,11 @@ namespace ASCOM.Wise40.Common
             DebugShutter = (1 << 9),
             DebugDAQs = (1 << 10),
             DebugFocuser = (1 << 11),
+            DebugFilterWheel = (1 << 12),
 
             DebugDefault = DebugAxes | DebugExceptions | DebugASCOM | DebugLogic | DebugShutter,
 
-            DebugAll = DebugASCOM|DebugDevice|DebugLogic|DebugExceptions|DebugAxes|DebugMotors|DebugEncoders|DebugSafety|DebugDome|DebugShutter|DebugDAQs|DebugFocuser,
+            DebugAll = DebugASCOM|DebugDevice|DebugLogic|DebugExceptions|DebugAxes|DebugMotors|DebugEncoders|DebugSafety|DebugDome|DebugShutter|DebugDAQs|DebugFocuser|DebugFilterWheel,
             DebugNone = 0,
         };
 
@@ -133,7 +134,7 @@ namespace ASCOM.Wise40.Common
                 "-1" :
                 (Task.CurrentId.HasValue ? Task.CurrentId.Value : -1).ToString();
 
-            string line = string.Format("{0} UT {1,-18} {2,-15} {3}",
+            string line = string.Format("{0} UT {1,-18} {2,-16} {3}",
                 utcNow.ToString(@"HH\:mm\:ss\.fff"),
                 string.Format("{0},{1},{2}", Process.GetCurrentProcess().Id,
                     Thread.CurrentThread.ManagedThreadId.ToString(),

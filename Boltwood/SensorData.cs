@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using ASCOM.Wise40.Common;
+
 namespace ASCOM.Wise40.Boltwood
 {
 
@@ -153,7 +155,7 @@ namespace ASCOM.Wise40.Boltwood
         public bool roofCloseRequested;
         public bool alerting;
 
-        public SensorData(string data)
+        public SensorData(string data, EnvironmentLogger env)
         {
             try
             {
@@ -197,6 +199,15 @@ namespace ASCOM.Wise40.Boltwood
                 dayCondition = (DayCondition)Convert.ToInt32(data.Substring(99, 1));
                 var x = Convert.ToInt32(data.Substring(101, 1));
                 roofCloseRequested = (x == 1) ? true : false;
+
+                env.log("SkyAmbientTemp", date, skyAmbientTemp.ToString());
+                env.log("SensorTemp", date, sensorTemp.ToString());
+                env.log("WindSpeed", date, windSpeed.ToString());
+                env.log("Humidity", date, humidity.ToString());
+                env.log("DewPoint", date, dewPoint.ToString());
+                env.log("CloudCondition", date, ((int)cloudCondition).ToString());
+                env.log("WindCondition", date, ((int)windCondition).ToString());
+                env.log("RainCondition", date, ((int)rainCondition).ToString());
             }
             catch (Exception e)
             {

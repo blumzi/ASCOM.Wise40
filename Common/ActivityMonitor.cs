@@ -266,7 +266,7 @@ namespace ASCOM.Wise40
         public ActivityMonitor.ActivityType _type;
 
         public enum State { NotSet, Pending, Succeeded, Failed, Aborted, Idle };
-        public State _state;
+        public State _endState;
 
         public enum EffectOnGoingIdle  {
             NotSet,     // default, needs to be changed
@@ -358,7 +358,7 @@ namespace ASCOM.Wise40
             {
                 msg += string.Format(", _details: {0}", _endDetails);
             }
-            msg += string.Format(", _completionState: {0}, _completionReason: {1}", _state, _endReason);
+            msg += string.Format(", _completionState: {0}, _completionReason: {1}", _endState, _endReason);
 
             FilterDefinition<BsonDocument> filter = new BsonDocument("_id", _objectId);
 
@@ -367,7 +367,7 @@ namespace ASCOM.Wise40
                 Set("Duration", _duration).
                 Set("EndDetails", _endDetails).
                 Set("EndReason", _endReason).
-                Set("EndState", _state.ToString());
+                Set("EndState", _endState.ToString());
 
             var result = ActivityMonitor.ActivitiesCollection.FindOneAndUpdate(filter, update);
             #region debug
@@ -383,7 +383,7 @@ namespace ASCOM.Wise40
                 throw new InvalidValueException(string.Format("Activity:EndActivity: Activity {0}: endReason NOT set", this._type.ToString()));
 
             _endTime = DateTime.Now;
-            _state = par.endState;
+            _endState = par.endState;
             _endReason = par.endReason;
             _duration = _endTime - _startTime;
 
@@ -655,25 +655,34 @@ namespace ASCOM.Wise40
 
         public class FilterWheelActivity : TimeConsumingActivity
         {
-            public int _startPos, _targetPos, _endPos;
+            public enum Operation { Detect, Move };
+            public const int UnknownPosition = int.MinValue;
 
             public class StartParams
             {
-                public int start, target;
+                public Operation operation;
+                public string startWheel;
+                public int startPosition, targetPosition;
             }
 
             public new class EndParams: Activity.EndParams
             {
-                public int end;
+                public string endWheel;
+                public int endPosition;
+                public string endTag;
             }
 
             public FilterWheelActivity(StartParams par) : base(ActivityMonitor.ActivityType.FilterWheel)
             {
-                _startPos = par.start;
-                _targetPos = par.target;
-                _startDetails = string.Format("start: {0}, target: {1}",
-                    _startPos.ToString(),
-                    _targetPos.ToString());
+                if (par.operation == Operation.Detect)
+                    _startDetails = string.Format("op: Detect, startWheel: {0},  startPos: {1}",
+                        par.startWheel == null ? "none" : par.startWheel,
+                        par.startPosition == FilterWheelActivity.UnknownPosition ? "none" : par.startPosition.ToString());
+                else if (par.operation == Operation.Move)
+                    _startDetails = string.Format("op: Move, startWheel: {0},  startPos: {1}, targetPos: {2}",
+                        par.startWheel == null ? "none" : par.startWheel,
+                        par.startPosition == FilterWheelActivity.UnknownPosition ? "none" : par.startPosition.ToString(),
+                        par.targetPosition.ToString());
 
                 EmitStart();
             }
@@ -681,9 +690,11 @@ namespace ASCOM.Wise40
             public override void End(Activity.EndParams p)
             {
                 FilterWheelActivity.EndParams par = p as FilterWheelActivity.EndParams;
-
-                _endPos = par.end;
-                _endDetails = string.Format("end: {0}", _endPos);
+                
+                _endDetails = string.Format("endWheel: {0}, endPosition: {1}, endTag: {2}",
+                    par.endWheel == null ? "none" : par.endWheel,
+                    par.endPosition == FilterWheelActivity.UnknownPosition ? "none" : par.endPosition.ToString(),
+                    par.endTag);
 
                 EndActivity(par);
             }

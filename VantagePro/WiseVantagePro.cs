@@ -100,6 +100,19 @@ namespace ASCOM.Wise40.VantagePro
                                     continue;
                                 sensorData[words[0]] = words[1];
                             }
+
+                            string dateTime = sensorData["utcDate"] + " " + sensorData["utcTime"] + "m";
+                            DateTime date = Convert.ToDateTime(dateTime);
+                            _env.log("Temperature", date, sensorData["outsideTemp"]);
+                            _env.log("Pressure", date, sensorData["barometer"]);
+                            double mph = Convert.ToDouble(sensorData["windSpeed"]);
+                            _env.log("WindSpeed", date, util.ConvertUnits(mph, Units.milesPerHour, Units.metresPerSecond).ToString());
+                            _env.log("WindDir", date, sensorData["windDir"]);
+                            _env.log("Humidity", date, sensorData["outsideHumidity"]);
+                            _env.log("RainRate", date, sensorData["rainRate"]);
+                            double dew = Convert.ToDouble(sensorData["outsideDewPt"]);
+                            _env.log("dewPoint", date, util.ConvertUnits(dew, Units.degreesFarenheit, Units.degreesCelsius).ToString());
+
                             _lastDataRead = DateTime.Now;
                         }
                     } catch
@@ -224,6 +237,7 @@ namespace ASCOM.Wise40.VantagePro
             sensorData = new Dictionary<string, string>();
             ReadProfile();
             Refresh();
+            _env = new EnvironmentLogger(WiseName);
 
             _initialized = true;
         }

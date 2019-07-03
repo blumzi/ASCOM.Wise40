@@ -26,10 +26,16 @@ namespace ASCOM.Wise40
         public bool ShutterWebClientEnabled = false;
         public bool _syncVentWithShutter = false;
 
+        public static System.Threading.Timer _sim_Timer = new System.Threading.Timer(_sim_OnTimer);
+        public static TimeSpan _sim_FullTravelTimeSpan = new TimeSpan(0, 0, 5);
+        public static ShutterState _sim_State = ShutterState.shutterClosed;
+        public static DateTime _sim_StartOfMovement;
+        public static double _sim_Precent;
+        public static int _sim_Range;
+        public static bool _sim_IsMoving = false;
+
         private ShutterState _state = ShutterState.shutterError;
         private string _stateReason;
-
-        private static TimeSpan _simulatedAge = new TimeSpan(0, 0, 3);
 
         List<WisePin> shutterPins;
 
@@ -312,6 +318,13 @@ namespace ASCOM.Wise40
 
         public void Stop(string reason)
         {
+            if (Simulated)
+            {
+                if (IsMoving)
+                    _sim_stopTimer();
+                return;
+            }
+
             ShutterState prev = State;
             bool openPinWasOn = openPin.isOn;
             bool closePinWasOn = closePin.isOn;
@@ -349,6 +362,14 @@ namespace ASCOM.Wise40
 
         public void StartClosing()
         {
+            if (Simulated)
+            {
+                _sim_State = ShutterState.shutterClosing;
+                _sim_StartOfMovement = DateTime.Now;
+                _sim_Timer.Change(Convert.ToInt32(_sim_FullTravelTimeSpan.TotalMilliseconds), Timeout.Infinite);
+                return;
+            }
+
             if (openPin.isOn)
             {
                 #region debug
@@ -388,6 +409,14 @@ namespace ASCOM.Wise40
 
         public void StartOpening()
         {
+            if (Simulated)
+            {
+                _sim_State = ShutterState.shutterOpening;
+                _sim_StartOfMovement = DateTime.Now;
+                _sim_Timer.Change(Convert.ToInt32(_sim_FullTravelTimeSpan.TotalMilliseconds), Timeout.Infinite);
+                return;
+            }
+
             if (closePin.isOn)
             {
                 #region debug
@@ -437,6 +466,9 @@ namespace ASCOM.Wise40
         {
             get
             {
+                if (Simulated)
+                    return _sim_State;
+
                 ShutterState ret = ShutterState.shutterError;
 
                 if (openPin.isOn && closePin.isOn)
@@ -492,6 +524,12 @@ namespace ASCOM.Wise40
         {
             if (_initialized)
                 return;
+
+            if (Simulated)
+            {
+                _initialized = true;
+                return;
+            }
 
             try
             {
@@ -579,6 +617,11 @@ namespace ASCOM.Wise40
         {
             get
             {
+                if (Simulated)
+                {
+                    return _sim_State == ShutterState.shutterOpening || _sim_State == ShutterState.shutterClosing;
+                }
+
                 var ret = openPin.isOn || closePin.isOn;
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "IsMoving: {0}", ret.ToString());
@@ -591,6 +634,9 @@ namespace ASCOM.Wise40
         {
             get
             {
+                if (Simulated)
+                    return _sim_Range;
+
                 return webClient.ShutterRange;
             }
         }
@@ -605,6 +651,45 @@ namespace ASCOM.Wise40
                     return -1;
 
                 return (int)((currentRange - _lowestValue) * 100.0) / ((_highestValue - _lowestValue));
+            }
+        }
+
+        public static void _sim_startTimer()
+        {
+            _sim_Timer.Change(Convert.ToInt32(_sim_FullTravelTimeSpan.TotalMilliseconds), Timeout.Infinite);
+            _sim_IsMoving = true;
+            _sim_StartOfMovement = DateTime.Now;
+        }
+
+        public static void _sim_CalculatePosition()
+        {
+            _sim_Precent = (DateTime.Now.Subtract(_sim_StartOfMovement).TotalMilliseconds / _sim_FullTravelTimeSpan.TotalMilliseconds) * 100;
+            _sim_Range = Instance._lowestValue + (int) ((Instance._highestValue - Instance._lowestValue) * (1 + _sim_Precent / 100));
+        }
+
+        public static void _sim_stopTimer()
+        {
+            _sim_Timer.Change(Timeout.Infinite, Timeout.Infinite);
+            _sim_IsMoving = false;
+            _sim_CalculatePosition();
+        }
+
+        public static void _sim_OnTimer(object state)
+        {
+            if (!Simulated)
+                return;
+
+            _sim_stopTimer(); ;
+
+            switch(_sim_State)
+            {
+                case ShutterState.shutterClosing:
+                    _sim_State = ShutterState.shutterClosed;
+                    break;
+
+                case ShutterState.shutterOpening:
+                    _sim_State = ShutterState.shutterOpen;
+                    break;
             }
         }
     }
