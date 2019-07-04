@@ -409,7 +409,10 @@ namespace ASCOM.Wise40SafeToOperate
         public void startSensors()
         {
             foreach (Sensor s in _cumulativeSensors)
+            {
+                s.Connected = true;
                 s.Restart(5000);
+            }
         }
 
         public string DriverId
