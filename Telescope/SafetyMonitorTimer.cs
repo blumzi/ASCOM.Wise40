@@ -91,7 +91,7 @@ namespace ASCOM.Wise40 //.Telescope
                 if (_enabled && !WiseTele.BypassCoordinatesSafety)
                     _timer.Change(_dueTime, _period);
                 else
-                    _timer.Change(0, 0);
+                    _timer.Change(Timeout.Infinite, Timeout.Infinite);
             }
         }
 
