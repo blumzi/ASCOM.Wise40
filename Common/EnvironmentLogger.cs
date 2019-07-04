@@ -32,7 +32,7 @@ namespace ASCOM.Wise40.Common
                 _sw = new StreamWriter(_fileNames[sensorName], append: true);
             }
 
-            _sw.WriteLine(date.ToString(@"HH:mm.ss") + ',' + value);
+            _sw.WriteLine(date.ToString(@"HH:mm:ss.fff") + ',' + value);
             _sw.Flush();
         }
     }
