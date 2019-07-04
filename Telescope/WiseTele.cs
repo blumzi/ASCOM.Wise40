@@ -1447,16 +1447,16 @@ namespace ASCOM.Wise40
 
             Angle alt = Angle.FromDegrees(90.0 - zd, Angle.Type.Alt);
             if (alt < altLimit)
-                reasons.Add(string.Format("Altitude too low: {0} < {1}", alt.ToNiceString(), altLimit.ToNiceString()));
+                reasons.Add(string.Format("Altitude too low: {0} < {1}", alt.ToString(), altLimit.ToString()));
 
             if (dec > upper_decLimit)
-                reasons.Add(string.Format("Declination too high: {0} > {1}", dec.ToNiceString(), upper_decLimit.ToNiceString()));
+                reasons.Add(string.Format("Declination too high: {0} > {1}", dec.ToString(), upper_decLimit.ToString()));
             if (dec < lower_decLimit)
-                reasons.Add(string.Format("Declination too low: {0} < {1}", dec.ToNiceString(), lower_decLimit.ToNiceString()));
+                reasons.Add(string.Format("Declination too low: {0} < {1}", dec.ToString(), lower_decLimit.ToString()));
             
             double ha = HourAngle;
             if (Math.Abs(ha) > haLimit.Hours)
-                reasons.Add(string.Format("HourAngle too high: Abs({0}) > {1}", ha, haLimit.ToNiceString()));
+                reasons.Add(string.Format("HourAngle too high: Abs({0}) > {1}", ha, haLimit.ToString()));
 
             if (reasons.Count > 0)
             {
@@ -1476,6 +1476,11 @@ namespace ASCOM.Wise40
         /// </summary>
         public void Backoff()
         {
+            if (_movingToSafety)    // timer callback while being disabled
+                return;
+
+            safetyMonitorTimer.Enabled = false;
+
             List<WiseVirtualMotor> wereActive = new List<WiseVirtualMotor>();
 
             // Remember which motors were active when we became unsafe
@@ -1497,25 +1502,53 @@ namespace ASCOM.Wise40
             _movingToSafety = true;
             foreach (var m in wereActive)
             {
+                TelescopeAxes axis = TelescopeAxes.axisPrimary;
+                double rate = -1;
+
                 switch (m.WiseName)
                 {
-                    case "EastMotor":
-                    case "TrackingMotor":
-                        MoveAxis(TelescopeAxes.axisPrimary, -Const.rateSlew);
-                        break;
                     case "WestMotor":
-                        MoveAxis(TelescopeAxes.axisPrimary, Const.rateSlew);
+                    case "TrackMotor":
+                        axis = TelescopeAxes.axisPrimary;
+                        rate = Const.rateSlew;
+                        break;
+                    case "EastMotor":
+                        axis = TelescopeAxes.axisPrimary;
+                        rate = -Const.rateSlew;
                         break;
                     case "NorthMotor":
-                        MoveAxis(TelescopeAxes.axisSecondary, -Const.rateSlew);
+                        axis = TelescopeAxes.axisSecondary;
+                        rate = -Const.rateSlew;
                         break;
                     case "SouthMotor":
-                        MoveAxis(TelescopeAxes.axisSecondary, Const.rateSlew);
+                        axis = TelescopeAxes.axisSecondary;
+                        rate = Const.rateSlew;
                         break;
                 }
+
+                if (rate != -1)
+                {
+                    int millis = 1000;
+
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Backoff: {0} was active: calling MoveAxis({1}, {2}) for {3} millis ...",
+                        m.WiseName, axis.ToString(), RateName(rate), millis);
+                    #endregion
+                    MoveAxis(axis, rate);
+                    Thread.Sleep(millis);
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Backoff: stopping {0}",axis.ToString());
+                    #endregion
+                    MoveAxis(axis, Const.rateStopped);
+                }
             }
-            Thread.Sleep(1000);
+
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Backoff: done");
+            #endregion
+
             _movingToSafety = false;
+            safetyMonitorTimer.Enabled = true;
         }
 
         public bool AtPark
