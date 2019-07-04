@@ -203,7 +203,7 @@ namespace ASCOM.Wise40.Common
             {
                 if (!p.IsRegistered(Const.WiseDriverID.Telescope))
                     p.Register(Const.WiseDriverID.Telescope, "Wise40 global settings");
-                p.WriteValue(Const.WiseDriverID.Telescope, "SiteDebugLevel", Level.ToString());
+                p.WriteValue(Const.WiseDriverID.Telescope, Const.ProfileName.Site_DebugLevel, Level.ToString());
             }
         }
 
@@ -215,7 +215,7 @@ namespace ASCOM.Wise40.Common
                 {
                     DebugLevel d;
                     
-                    if (Enum.TryParse<DebugLevel>(p.GetValue(Const.WiseDriverID.Telescope, "SiteDebugLevel", string.Empty, DebugLevel.DebugDefault.ToString()), out d))
+                    if (Enum.TryParse<DebugLevel>(p.GetValue(Const.WiseDriverID.Telescope, Const.ProfileName.Site_DebugLevel, string.Empty, DebugLevel.DebugDefault.ToString()), out d))
                         _currentLevel = d;
                 }
             }

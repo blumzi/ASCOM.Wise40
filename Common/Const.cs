@@ -93,6 +93,8 @@ namespace ASCOM.Wise40.Common
             public static string VantagePro_OpMode = "OperationMode";
             public static string VantagePro_DataFile = "DataFile";
             public static string VantagePro_SerialPort = "Port";
+
+            public static string Site_DebugLevel = "SiteDebugLevel";
         }
 
         public class RESTServer
