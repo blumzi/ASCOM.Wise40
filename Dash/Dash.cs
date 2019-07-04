@@ -1441,8 +1441,9 @@ namespace Dash
         private void DashOutFilterWheelControls()
         {
             labelFWWheel.Text = "--";
+            labelFWFilterSize.Text = "--";
             labelFWPosition.Text = "--";
-            labelFWFilter.Text = "--";
+            labelFWFilter.Text = "";
         }
 
         private void LoadFilterWheelInformation()
@@ -1482,8 +1483,8 @@ namespace Dash
 
             short position = (short) filterWheelDigest.Wheel.CurrentPosition.Position;
 
-            labelFWWheel.Text = string.Format("{0} ({1} inch filters)", filterWheelDigest.Wheel.Name,
-                filterWheelDigest.Wheel.Type == WiseFilterWheel.WheelType.Wheel4 ? "3" : "2");
+            labelFWWheel.Text = string.Format("{0}", filterWheelDigest.Wheel.Name);
+            labelFWFilterSize.Text = filterWheelDigest.Wheel.Type == WiseFilterWheel.WheelType.Wheel4 ? "3 inch" : "2 inch";
             labelFWPosition.Text = (position + 1).ToString();
 
             WiseFilterWheel.Wheel.PositionDigest currentFilter = filterWheelDigest.Wheel.Filters[position];
@@ -1494,9 +1495,9 @@ namespace Dash
             } else {
                 labelFWFilter.Text = string.Format("{0}: {1}", currentFilter.Name, currentFilter.Description);
                 toolTip.SetToolTip(labelFWFilter,
-                    " Name: " + currentFilter.Name + Const.crnl +
-                    " Desc: " + currentFilter.Description + Const.crnl +
-                    " Offset: " + currentFilter.Offset.ToString());
+                    " Filter name:  " + currentFilter.Name + Const.crnl +
+                    " Description:  " + currentFilter.Description + Const.crnl +
+                    " Focus offset: " + currentFilter.Offset.ToString());
             }
 
             if (filterWheelDigest.Wheel.Filters.Count() != comboBoxFilterWheelPositions.Items.Count)
@@ -1744,6 +1745,11 @@ namespace Dash
             toolTip.SetToolTip(comboBoxGoToMode, modeTip);
             toolTip.SetToolTip(textBoxRA, raTip);
             toolTip.SetToolTip(textBoxDec, decTip);
+        }
+
+        private void groupBoxFilterWheel_Enter(object sender, EventArgs e)
+        {
+
         }
 
         private void comboBoxGoToMode_SelectedIndexChanged(object sender, EventArgs e)
