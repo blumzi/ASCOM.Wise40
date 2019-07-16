@@ -188,6 +188,8 @@
             this.labelCountdown = new System.Windows.Forms.Label();
             this.labelDashStatus = new System.Windows.Forms.Label();
             this.groupBoxFilterWheel = new System.Windows.Forms.GroupBox();
+            this.labelFWFilterSize = new System.Windows.Forms.Label();
+            this.label15 = new System.Windows.Forms.Label();
             this.labelFWArduinoStatus = new System.Windows.Forms.Label();
             this.labelFWFilter = new System.Windows.Forms.Label();
             this.label9 = new System.Windows.Forms.Label();
@@ -2394,6 +2396,8 @@
             // 
             // groupBoxFilterWheel
             // 
+            this.groupBoxFilterWheel.Controls.Add(this.labelFWFilterSize);
+            this.groupBoxFilterWheel.Controls.Add(this.label15);
             this.groupBoxFilterWheel.Controls.Add(this.labelFWArduinoStatus);
             this.groupBoxFilterWheel.Controls.Add(this.labelFWFilter);
             this.groupBoxFilterWheel.Controls.Add(this.label9);
@@ -2411,6 +2415,33 @@
             this.groupBoxFilterWheel.TabIndex = 35;
             this.groupBoxFilterWheel.TabStop = false;
             this.groupBoxFilterWheel.Text = " FilterWheel ";
+            this.groupBoxFilterWheel.Enter += new System.EventHandler(this.groupBoxFilterWheel_Enter);
+            // 
+            // labelFWFilterSize
+            // 
+            this.labelFWFilterSize.AutoEllipsis = true;
+            this.labelFWFilterSize.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.labelFWFilterSize.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelFWFilterSize.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.labelFWFilterSize.Location = new System.Drawing.Point(115, 61);
+            this.labelFWFilterSize.Name = "labelFWFilterSize";
+            this.labelFWFilterSize.Size = new System.Drawing.Size(207, 20);
+            this.labelFWFilterSize.TabIndex = 55;
+            this.labelFWFilterSize.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label15
+            // 
+            this.label15.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.label15.AutoSize = true;
+            this.label15.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))));
+            this.label15.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
+            this.label15.Location = new System.Drawing.Point(9, 62);
+            this.label15.Name = "label15";
+            this.label15.Size = new System.Drawing.Size(96, 18);
+            this.label15.TabIndex = 54;
+            this.label15.Text = "Filter size:";
+            this.label15.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // labelFWArduinoStatus
             // 
@@ -2418,10 +2449,11 @@
             this.labelFWArduinoStatus.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.labelFWArduinoStatus.Font = new System.Drawing.Font("Lucida Sans Unicode", 9F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelFWArduinoStatus.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelFWArduinoStatus.Location = new System.Drawing.Point(10, 203);
+            this.labelFWArduinoStatus.Location = new System.Drawing.Point(10, 209);
             this.labelFWArduinoStatus.Name = "labelFWArduinoStatus";
             this.labelFWArduinoStatus.Size = new System.Drawing.Size(312, 20);
             this.labelFWArduinoStatus.TabIndex = 53;
+            this.labelFWArduinoStatus.Text = "arduino status";
             this.labelFWArduinoStatus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.toolTip.SetToolTip(this.labelFWArduinoStatus, "Filter wheel Arduino status");
             // 
@@ -2429,12 +2461,13 @@
             // 
             this.labelFWFilter.AutoEllipsis = true;
             this.labelFWFilter.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.labelFWFilter.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelFWFilter.Font = new System.Drawing.Font("Lucida Sans Unicode", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelFWFilter.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelFWFilter.Location = new System.Drawing.Point(96, 95);
+            this.labelFWFilter.Location = new System.Drawing.Point(20, 135);
             this.labelFWFilter.Name = "labelFWFilter";
-            this.labelFWFilter.Size = new System.Drawing.Size(224, 20);
+            this.labelFWFilter.Size = new System.Drawing.Size(296, 20);
             this.labelFWFilter.TabIndex = 52;
+            this.labelFWFilter.Text = "filter description";
             this.labelFWFilter.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // label9
@@ -2444,11 +2477,11 @@
             this.label9.AutoSize = true;
             this.label9.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))));
             this.label9.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label9.Location = new System.Drawing.Point(7, 97);
+            this.label9.Location = new System.Drawing.Point(7, 114);
             this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(57, 18);
+            this.label9.Size = new System.Drawing.Size(157, 18);
             this.label9.TabIndex = 51;
-            this.label9.Text = "Filter:";
+            this.label9.Text = "Filter description:";
             this.label9.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // labelFWPosition
@@ -2456,7 +2489,7 @@
             this.labelFWPosition.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.labelFWPosition.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelFWPosition.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelFWPosition.Location = new System.Drawing.Point(96, 72);
+            this.labelFWPosition.Location = new System.Drawing.Point(115, 87);
             this.labelFWPosition.Name = "labelFWPosition";
             this.labelFWPosition.Size = new System.Drawing.Size(43, 20);
             this.labelFWPosition.TabIndex = 50;
@@ -2467,7 +2500,7 @@
             this.labelFWWheel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.labelFWWheel.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelFWWheel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelFWWheel.Location = new System.Drawing.Point(96, 48);
+            this.labelFWWheel.Location = new System.Drawing.Point(115, 35);
             this.labelFWWheel.Name = "labelFWWheel";
             this.labelFWWheel.Size = new System.Drawing.Size(203, 20);
             this.labelFWWheel.TabIndex = 49;
@@ -2480,7 +2513,7 @@
             this.label8.AutoSize = true;
             this.label8.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))));
             this.label8.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label8.Location = new System.Drawing.Point(7, 49);
+            this.label8.Location = new System.Drawing.Point(7, 36);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(63, 18);
             this.label8.TabIndex = 46;
@@ -2494,7 +2527,7 @@
             this.label4.AutoSize = true;
             this.label4.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))));
             this.label4.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label4.Location = new System.Drawing.Point(7, 73);
+            this.label4.Location = new System.Drawing.Point(7, 88);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(81, 18);
             this.label4.TabIndex = 41;
@@ -2507,7 +2540,7 @@
             this.comboBoxFilterWheelPositions.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.comboBoxFilterWheelPositions.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.comboBoxFilterWheelPositions.FormattingEnabled = true;
-            this.comboBoxFilterWheelPositions.Location = new System.Drawing.Point(56, 140);
+            this.comboBoxFilterWheelPositions.Location = new System.Drawing.Point(50, 175);
             this.comboBoxFilterWheelPositions.Margin = new System.Windows.Forms.Padding(0);
             this.comboBoxFilterWheelPositions.Name = "comboBoxFilterWheelPositions";
             this.comboBoxFilterWheelPositions.Size = new System.Drawing.Size(264, 21);
@@ -2521,7 +2554,7 @@
             this.buttonFilterWheelGo.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonFilterWheelGo.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonFilterWheelGo.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonFilterWheelGo.Location = new System.Drawing.Point(14, 140);
+            this.buttonFilterWheelGo.Location = new System.Drawing.Point(8, 175);
             this.buttonFilterWheelGo.Name = "buttonFilterWheelGo";
             this.buttonFilterWheelGo.Size = new System.Drawing.Size(34, 23);
             this.buttonFilterWheelGo.TabIndex = 36;
@@ -2539,6 +2572,7 @@
             this.labelFilterWheelStatus.Name = "labelFilterWheelStatus";
             this.labelFilterWheelStatus.Size = new System.Drawing.Size(312, 20);
             this.labelFilterWheelStatus.TabIndex = 33;
+            this.labelFilterWheelStatus.Text = "status";
             this.labelFilterWheelStatus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.toolTip.SetToolTip(this.labelFilterWheelStatus, "Filter wheel status");
             // 
@@ -3261,6 +3295,8 @@
         private System.Windows.Forms.Label labelFWFilter;
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.Label labelFWArduinoStatus;
+        private System.Windows.Forms.Label labelFWFilterSize;
+        private System.Windows.Forms.Label label15;
     }
 }
 

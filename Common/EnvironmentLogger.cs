@@ -50,10 +50,11 @@ namespace ASCOM.Wise40.Common
                 _fileNames[sensorName] = currentFile;
                 if (_sw != null)
                     _sw.Close();
-                _sw = new StreamWriter(_fileNames[sensorName]);
+                _sw = new StreamWriter(_fileNames[sensorName], append: true);
             }
 
-            _sw.WriteLine(date.ToShortTimeString() + ' ' + value);
+            _sw.WriteLine(date.ToString(@"HH:mm:ss.fff") + ',' + value);
+            _sw.Flush();
         }
     }
 }
