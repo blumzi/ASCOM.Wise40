@@ -200,14 +200,17 @@ namespace ASCOM.Wise40.Boltwood
                 var x = Convert.ToInt32(data.Substring(101, 1));
                 roofCloseRequested = (x == 1) ? true : false;
 
-                env.log("SkyAmbientTemp", date, skyAmbientTemp.ToString());
-                env.log("SensorTemp", date, sensorTemp.ToString());
-                env.log("WindSpeed", date, windSpeed.ToString());
-                env.log("Humidity", date, humidity.ToString());
-                env.log("DewPoint", date, dewPoint.ToString());
-                env.log("CloudCondition", date, ((int)cloudCondition).ToString());
-                env.log("WindCondition", date, ((int)windCondition).ToString());
-                env.log("RainCondition", date, ((int)rainCondition).ToString());
+                env.Log(new Dictionary<string, string>()
+                {
+                    ["SkyAmbientTemp"] = skyAmbientTemp.ToString(),
+                    ["SensorTemp"] = sensorTemp.ToString(),
+                    ["WindSpeed"] = windSpeed.ToString(),
+                    ["Humidity"] = humidity.ToString(),
+                    ["DewPoint"] = dewPoint.ToString(),
+                    ["CloudCondition"] = ((int)cloudCondition).ToString(),
+                    ["WindSpeed"] = ((int)windCondition).ToString(),
+                    ["RainRate"] = ((int)rainCondition).ToString(),
+                }, date);
             }
             catch (Exception e)
             {
