@@ -16,8 +16,8 @@ namespace ASCOM.Wise40SafeToOperate
 
         public RainSensor(WiseSafeToOperate instance) :
             base("Rain", 
-                SensorAttribute.CanBeStale |
-                SensorAttribute.CanBeBypassed,
+                Attribute.CanBeStale |
+                Attribute.CanBeBypassed,
                 "", "", "f0", "RainRate",
                 instance) { }
         

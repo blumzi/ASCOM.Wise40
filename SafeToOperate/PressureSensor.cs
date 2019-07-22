@@ -16,11 +16,11 @@ namespace ASCOM.Wise40SafeToOperate
 
         public PressureSensor(WiseSafeToOperate instance) :
             base("Pressure",
-                SensorAttribute.ForInfoOnly |
-                SensorAttribute.CanBeStale |
-                SensorAttribute.CanBeBypassed |
-                SensorAttribute.Immediate |
-                SensorAttribute.AlwaysEnabled,
+                Attribute.ForInfoOnly |
+                Attribute.CanBeStale |
+                Attribute.CanBeBypassed |
+                Attribute.Immediate |
+                Attribute.AlwaysEnabled,
                 " mBar", " miiliBar", "f1", "Pressure",
                 instance)
         { }

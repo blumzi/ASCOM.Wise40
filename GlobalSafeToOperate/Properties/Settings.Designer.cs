@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace ASCOM.Wise40SafeToOperate.Properties {
+namespace ASCOM.Wise40.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]

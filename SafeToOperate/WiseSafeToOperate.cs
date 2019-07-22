@@ -51,8 +51,11 @@ namespace ASCOM.Wise40SafeToOperate
         public static PlatformSensor platformSensor;
 
         public static List<Sensor> _cumulativeSensors, _prioritizedSensors;
+        private enum SafetyScope { Wise40, WiseWide };
+        private static SafetyScope safetyScope = SafetyScope.Wise40;
+        private static Object safetyScopeLock = new object();
+
         private static bool _bypassed = false;
-        private static bool _shuttingDown = false;
         public static int ageMaxSeconds;
 
         public static Event.SafetyEvent.SafetyState _safetyState = Event.SafetyEvent.SafetyState.Unknown;
@@ -154,7 +157,7 @@ namespace ASCOM.Wise40SafeToOperate
 
             _cumulativeSensors = new List<Sensor>();
             foreach (Sensor s in _prioritizedSensors)
-                if (!s.HasAttribute(Sensor.SensorAttribute.Immediate))
+                if (!s.HasAttribute(Sensor.Attribute.Immediate))
                     _cumulativeSensors.Add(s);
 
             _connected = false;
@@ -205,6 +208,7 @@ namespace ASCOM.Wise40SafeToOperate
             "status",
             "sensor-is-safe",
             "weather-digest",
+            "wise-issafe",
         };
 
         public ArrayList SupportedActions
@@ -280,11 +284,9 @@ namespace ASCOM.Wise40SafeToOperate
                     ret = string.Join(Const.recordSeparator, UnsafeReasonsList);
                     break;
 
-                //case "weather-digest":
-                //    int safeColor = Statuser.TriStateColor(Const.TriStateStatus.Normal).ToArgb();
-
-                //    ret = JsonConvert.SerializeObject(new WeatherDigest());
-                //    break;
+                case "wise-issafe":
+                    ret = Convert.ToString(WiseIsSafe);
+                    break;
 
 
                 default:
@@ -332,7 +334,7 @@ namespace ASCOM.Wise40SafeToOperate
                 return JsonConvert.SerializeObject(_prioritizedSensors);
 
             foreach (var sensor in _prioritizedSensors)
-                if (!sensor.HasAttribute(Sensor.SensorAttribute.ForInfoOnly) && sensor.WiseName == sensorName)
+                if (!sensor.HasAttribute(Sensor.Attribute.ForInfoOnly) && sensor.WiseName == sensorName)
                     return JsonConvert.SerializeObject(sensor);
 
             return string.Format("unknown sensor \"{0}\"!", sensorName);
@@ -475,24 +477,24 @@ namespace ASCOM.Wise40SafeToOperate
 
         public static string GenericUnsafeReason(Sensor s)
         {
-            if (s.HasAttribute(Sensor.SensorAttribute.ForInfoOnly))
+            if (s.HasAttribute(Sensor.Attribute.ForInfoOnly))
                 return null;
 
-            if (!s.HasAttribute(Sensor.SensorAttribute.AlwaysEnabled) && !s.StateIsSet(Sensor.SensorState.Enabled))
+            if (!s.HasAttribute(Sensor.Attribute.AlwaysEnabled) && !s.StateIsSet(Sensor.State.Enabled))
                 return null;   // not enabled
 
-            if (_bypassed && s.HasAttribute(Sensor.SensorAttribute.CanBeBypassed))
+            if (_bypassed && s.HasAttribute(Sensor.Attribute.CanBeBypassed))
                 return null;   // bypassed
 
             string reason = string.Format("{0} - ", s.WiseName);
 
             if (!s.isSafe)
             {
-                if (s.HasAttribute(Sensor.SensorAttribute.Immediate))
+                if (s.HasAttribute(Sensor.Attribute.Immediate))
                     reason += s.reason();
                 else
                 {                    
-                    if (s.StateIsSet(Sensor.SensorState.Stabilizing))
+                    if (s.StateIsSet(Sensor.State.Stabilizing))
                     {
                         // cummulative and stabilizing
                         string time = string.Empty;
@@ -504,7 +506,7 @@ namespace ASCOM.Wise40SafeToOperate
 
                         reason += String.Format("stabilizing in {0}", time);
                     }
-                    else if (!s.StateIsSet(Sensor.SensorState.EnoughReadings))
+                    else if (!s.StateIsSet(Sensor.State.EnoughReadings))
                     {
                         // cummulative and not ready
                         reason += String.Format("not ready (only {0} of {1} readings)",
@@ -512,7 +514,7 @@ namespace ASCOM.Wise40SafeToOperate
                     }
                 }
 
-                if (s.HasAttribute(Sensor.SensorAttribute.CanBeStale) && s.StateIsSet(Sensor.SensorState.Stale))
+                if (s.HasAttribute(Sensor.Attribute.CanBeStale) && s.StateIsSet(Sensor.State.Stale))
                     // cummulative and stale
                     reason += String.Format(" ({0} stale readings)", s._nstale);
             }
@@ -540,13 +542,13 @@ namespace ASCOM.Wise40SafeToOperate
 
                 foreach (Sensor s in _prioritizedSensors)
                 {
-                    if (s.HasAttribute(Sensor.SensorAttribute.ForInfoOnly))
+                    if (s.HasAttribute(Sensor.Attribute.ForInfoOnly))
                         continue;
 
-                    if (!s.HasAttribute(Sensor.SensorAttribute.AlwaysEnabled) && !s.StateIsSet(Sensor.SensorState.Enabled))
+                    if (!s.HasAttribute(Sensor.Attribute.AlwaysEnabled) && !s.StateIsSet(Sensor.State.Enabled))
                         continue;   // not enabled
 
-                    if (_bypassed && s.HasAttribute(Sensor.SensorAttribute.CanBeBypassed))
+                    if (_bypassed && s.HasAttribute(Sensor.Attribute.CanBeBypassed))
                         continue;   // bypassed
 
                     if (!s.isSafe)
@@ -557,7 +559,7 @@ namespace ASCOM.Wise40SafeToOperate
                         {
                             // we have a reason for this sensor not being safe
                             reasons.Add(reason);
-                            if (s.HasAttribute(Sensor.SensorAttribute.ForcesDecision))
+                            if (s.HasAttribute(Sensor.Attribute.ForcesDecision))
                                 break;      // don't bother with the remaining sensors
                         }
                     }
@@ -616,7 +618,7 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
-                if (!cloudsSensor.StateIsSet(Sensor.SensorState.EnoughReadings))
+                if (!cloudsSensor.StateIsSet(Sensor.State.EnoughReadings))
                     return Const.TriStateStatus.Warning;
                 return cloudsSensor.isSafe ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
             }
@@ -626,7 +628,7 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
-                if (!windSensor.StateIsSet(Sensor.SensorState.EnoughReadings))
+                if (!windSensor.StateIsSet(Sensor.State.EnoughReadings))
                     return Const.TriStateStatus.Warning;
                 return windSensor.isSafe ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
             }
@@ -636,7 +638,7 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
-                if (!humiditySensor.StateIsSet(Sensor.SensorState.EnoughReadings))
+                if (!humiditySensor.StateIsSet(Sensor.State.EnoughReadings))
                     return Const.TriStateStatus.Warning;
                 return humiditySensor.isSafe ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
             }
@@ -646,7 +648,7 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
-                if (!rainSensor.StateIsSet(Sensor.SensorState.EnoughReadings))
+                if (!rainSensor.StateIsSet(Sensor.State.EnoughReadings))
                     return Const.TriStateStatus.Warning;
                 return rainSensor.isSafe ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
             }
@@ -716,9 +718,33 @@ namespace ASCOM.Wise40SafeToOperate
                 if (activityMonitor.ShuttingDown)
                     return false;
 
-                return IsSafeWithoutCheckingForShutdown;
+                bool ret = false;
+                lock (safetyScopeLock)
+                {
+                    safetyScope = SafetyScope.Wise40;
+                    ret = IsSafeWithoutCheckingForShutdown;
+                }
+                return ret;
             }
         }
+
+        private bool WiseIsSafe
+        {
+            get
+            {
+                if (activityMonitor.ShuttingDown)
+                    return false;
+
+                bool ret = false;
+                lock (safetyScopeLock)
+                {
+                    safetyScope = SafetyScope.WiseWide;
+                    ret = IsSafeWithoutCheckingForShutdown;
+                }
+                return ret;
+            }
+        }
+
 
         public bool IsSafeWithoutCheckingForShutdown
         {
@@ -737,19 +763,22 @@ namespace ASCOM.Wise40SafeToOperate
 
                 foreach (Sensor s in _prioritizedSensors)
                 {
-                    if (s.HasAttribute(Sensor.SensorAttribute.ForInfoOnly))
+                    if (s.HasAttribute(Sensor.Attribute.ForInfoOnly))
                         continue;
 
-                    if (!s.HasAttribute(Sensor.SensorAttribute.AlwaysEnabled) && !s.StateIsSet(Sensor.SensorState.Enabled))
+                    if (!s.HasAttribute(Sensor.Attribute.AlwaysEnabled) && !s.StateIsSet(Sensor.State.Enabled))
                         continue;
 
-                    if (_bypassed && s.HasAttribute(Sensor.SensorAttribute.CanBeBypassed))
+                    if (_bypassed && s.HasAttribute(Sensor.Attribute.CanBeBypassed))
+                        continue;
+
+                    if (s.HasAttribute(Sensor.Attribute.Wise40Specific) && safetyScope != SafetyScope.Wise40)
                         continue;
 
                     if (! s.isSafe)
                     {
                         ret = false;    // The first non-safe sensor forces NOT SAFE
-                        if (!s.HasAttribute(Sensor.SensorAttribute.Immediate))
+                        if (!s.HasAttribute(Sensor.Attribute.Immediate))
                             _unsafeBecauseNotReady = true;
                         goto Out;
                     }
@@ -781,10 +810,13 @@ namespace ASCOM.Wise40SafeToOperate
             {
                 foreach (Sensor s in _cumulativeSensors)
                 {
-                    if (s.HasAttribute(Sensor.SensorAttribute.ForInfoOnly))
+                    if (s.HasAttribute(Sensor.Attribute.ForInfoOnly))
                         continue;
 
-                    if (! s.StateIsSet(Sensor.SensorState.EnoughReadings))
+                    if (s.HasAttribute(Sensor.Attribute.Wise40Specific) && safetyScope != SafetyScope.Wise40)
+                        continue;
+
+                    if (! s.StateIsSet(Sensor.State.EnoughReadings))
                         return false;
                 }
 

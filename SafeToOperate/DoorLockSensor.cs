@@ -30,10 +30,11 @@ namespace ASCOM.Wise40SafeToOperate
 
         public DoorLockSensor(WiseSafeToOperate instance) :
             base("DoorLock",
-                SensorAttribute.Immediate |
-                SensorAttribute.AlwaysEnabled |
-                SensorAttribute.CanBeBypassed |
-                SensorAttribute.ForcesDecision,
+                Attribute.Immediate |
+                Attribute.AlwaysEnabled |
+                Attribute.CanBeBypassed |
+                Attribute.ForcesDecision |
+                Attribute.Wise40Specific,
                 "", "", "", "",
                 instance)
         {

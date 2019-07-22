@@ -18,9 +18,9 @@ namespace ASCOM.Wise40SafeToOperate
 
         public SunSensor(WiseSafeToOperate instance) :
             base("Sun",
-                SensorAttribute.Immediate |
-                SensorAttribute.AlwaysEnabled |
-                SensorAttribute.CanBeBypassed,
+                Attribute.Immediate |
+                Attribute.AlwaysEnabled |
+                Attribute.CanBeBypassed,
                 "°", " deg", "f1", "",
                 instance) { }
 

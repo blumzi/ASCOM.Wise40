@@ -16,8 +16,8 @@ namespace ASCOM.Wise40SafeToOperate
 
         public HumiditySensor(WiseSafeToOperate instance) :
             base("Humidity",
-                SensorAttribute.CanBeStale |
-                SensorAttribute.CanBeBypassed,
+                Attribute.CanBeStale |
+                Attribute.CanBeBypassed,
                 "%", " percent", "G3", "Humidity",
                 instance) { }
 

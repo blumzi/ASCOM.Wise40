@@ -20,9 +20,10 @@ namespace ASCOM.Wise40SafeToOperate
 
         public PlatformSensor(WiseSafeToOperate instance) :
             base("Platform",
-                SensorAttribute.Immediate |
-                SensorAttribute.AlwaysEnabled |
-                SensorAttribute.ForcesDecision,
+                Attribute.Immediate |
+                Attribute.AlwaysEnabled |
+                Attribute.ForcesDecision |
+                Attribute.Wise40Specific,
                 "", "", "", "",
                 instance)
         {
