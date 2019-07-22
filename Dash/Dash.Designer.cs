@@ -2453,7 +2453,6 @@
             this.labelFWArduinoStatus.Name = "labelFWArduinoStatus";
             this.labelFWArduinoStatus.Size = new System.Drawing.Size(312, 20);
             this.labelFWArduinoStatus.TabIndex = 53;
-            this.labelFWArduinoStatus.Text = "arduino status";
             this.labelFWArduinoStatus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.toolTip.SetToolTip(this.labelFWArduinoStatus, "Filter wheel Arduino status");
             // 
