@@ -103,17 +103,21 @@ namespace ASCOM.Wise40.VantagePro
 
                             if (_env != null)
                             {
-                                string dateTime = sensorData["utcDate"] + " " + sensorData["utcTime"] + "m";
-                                DateTime date = Convert.ToDateTime(dateTime);
-                                _env.log("Temperature", date, sensorData["outsideTemp"]);
-                                _env.log("Pressure", date, sensorData["barometer"]);
-                                double mph = Convert.ToDouble(sensorData["windSpeed"]);
-                                _env.log("WindSpeed", date, util.ConvertUnits(mph, Units.milesPerHour, Units.metresPerSecond).ToString());
-                                _env.log("WindDir", date, sensorData["windDir"]);
-                                _env.log("Humidity", date, sensorData["outsideHumidity"]);
-                                _env.log("RainRate", date, sensorData["rainRate"]);
-                                double dew = Convert.ToDouble(sensorData["outsideDewPt"]);
-                                _env.log("dewPoint", date, util.ConvertUnits(dew, Units.degreesFarenheit, Units.degreesCelsius).ToString());
+                                DateTime date = Convert.ToDateTime(sensorData["utcDate"] + " " + sensorData["utcTime"] + "m");
+
+                                _env.Log(new Dictionary<string, string>()
+                                {
+                                    ["Temperature"] = sensorData["outsideTemp"],
+                                    ["Pressure"] = sensorData["barometer"],
+                                    ["WindSpeed"] = util.ConvertUnits(Convert.ToDouble(sensorData["windSpeed"]),
+                                                        Units.milesPerHour, Units.metresPerSecond).ToString(),
+                                    ["WindDir"] = sensorData["windDir"],
+                                    ["Humidity"] = sensorData["outsideHumidity"],
+                                    ["RainRate"] = sensorData["rainRate"],
+                                    ["DewPoint"] = util.ConvertUnits(Convert.ToDouble(sensorData["outsideDewPt"]),
+                                                        Units.degreesFarenheit, Units.degreesCelsius).ToString()
+
+                                }, date);
                             }
 
                             _lastDataRead = DateTime.Now;
