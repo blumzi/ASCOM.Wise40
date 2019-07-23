@@ -30,10 +30,10 @@ namespace ASCOM.Wise40
             { Const.rateGuide, StateGuide },
         };
 
-        private static volatile SlewingArbiter _instance; // Singleton
+        //private static volatile SlewingArbiter _instance; // Singleton
 
         private static object syncObject = new object();
-        private static bool _initialized = false;
+        //private static bool _initialized = false;
 
         // Explicit static constructor to tell C# compiler
         // not to mark type as beforefieldinit
