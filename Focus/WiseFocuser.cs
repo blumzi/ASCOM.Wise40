@@ -384,7 +384,7 @@ namespace ASCOM.Wise40
         public void Move(Direction dir)
         {
             if (!safetooperate.IsSafeWithoutCheckingForShutdown())
-                throw new InvalidOperationException(string.Join(", ", safetooperate.UnsafeReasonsList));
+                throw new InvalidOperationException(string.Join(", ", safetooperate.UnsafeReasonsList()));
 
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, "Starting Move({0}) at {1}",
@@ -428,7 +428,7 @@ namespace ASCOM.Wise40
                 throw new InvalidOperationException("Cannot Move while IsMoving == true");
 
             if (!safetooperate.IsSafe)
-                throw new InvalidOperationException(string.Join(", ", safetooperate.UnsafeReasonsList));
+                throw new InvalidOperationException(string.Join(", ", safetooperate.UnsafeReasonsList()));
 
             if (TempComp)
                 throw new InvalidOperationException("Cannot Move while TempComp == true");

@@ -282,7 +282,7 @@ namespace ASCOM.Wise40SafeToOperate
                         return DigestSensors(actionParameters);
 
                 case "unsafereasons":
-                    ret = string.Join(Const.recordSeparator, UnsafeReasonsList);
+                    ret = string.Join(Const.recordSeparator, UnsafeReasonsList());
                     break;
 
                 case "wise-issafe":
@@ -290,7 +290,7 @@ namespace ASCOM.Wise40SafeToOperate
                     break;
 
                 case "wise-unsafereasons":
-                    ret = string.Join(Const.recordSeparator, WiseUnsafeReasonsList);
+                    ret = string.Join(Const.recordSeparator, UnsafeReasonsList(toBeIgnored: Sensor.Attribute.Wise40Specific));
                     break;
 
 
@@ -311,7 +311,7 @@ namespace ASCOM.Wise40SafeToOperate
                     Bypassed = _bypassed,
                     Ready = isReady(toBeIgnored: Sensor.Attribute.None),
                     Safe = IsSafe,
-                    UnsafeReasons = UnsafeReasonsList,
+                    UnsafeReasons = UnsafeReasonsList(),
                     UnsafeBecauseNotReady = _unsafeBecauseNotReady,
                     ShuttingDown = activityMonitor.ShuttingDown,
                     ComputerControl = Sensor.SensorDigest.FromSensor(computerControlSensor),
@@ -476,7 +476,7 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
-                return string.Join(Const.subFieldSeparator, UnsafeReasonsList);
+                return string.Join(Const.subFieldSeparator, UnsafeReasonsList());
             }
         }
 
@@ -527,55 +527,55 @@ namespace ASCOM.Wise40SafeToOperate
             return reason;
         }
 
-        public List<string> UnsafeReasonsList
+        public List<string> UnsafeReasonsList(Sensor.Attribute toBeIgnored = Sensor.Attribute.None)
         {
-            get
+            List<string> reasons = new List<string>();
+
+            if (!_connected)
             {
-                List<string> reasons = new List<string>();
-
-                if (!_connected)
-                {
-                    reasons.Add("Not Connected");
-                    return reasons;
-                }
-
-                if (activityMonitor.ShuttingDown)
-                {
-                    reasons.Add(Const.UnsafeReasons.ShuttingDown);
-                    return reasons;     // when shutting down all sensors are ignored
-                }
-
-                foreach (Sensor s in _prioritizedSensors)
-                {
-                    if (s.HasAttribute(Sensor.Attribute.ForInfoOnly))
-                        continue;
-
-                    if (!s.HasAttribute(Sensor.Attribute.AlwaysEnabled) && !s.StateIsSet(Sensor.State.Enabled))
-                        continue;   // not enabled
-
-                    if (_bypassed && s.HasAttribute(Sensor.Attribute.CanBeBypassed))
-                        continue;   // bypassed
-
-                    if (!s.isSafe)
-                    {
-                        string reason = GenericUnsafeReason(s);
-
-                        if (reason != null)
-                        {
-                            // we have a reason for this sensor not being safe
-                            reasons.Add(reason);
-                            if (s.HasAttribute(Sensor.Attribute.ForcesDecision))
-                                break;      // don't bother with the remaining sensors
-                        }
-                    }
-                }
-
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "UnsafeReasons: {0}",
-                    string.Join(Const.recordSeparator, reasons));
-                #endregion
+                reasons.Add("Not Connected");
                 return reasons;
             }
+
+            if ((toBeIgnored & Sensor.Attribute.Wise40Specific) == 0 && activityMonitor.ShuttingDown)
+            {
+                reasons.Add(Const.UnsafeReasons.ShuttingDown);
+                return reasons;     // when shutting down all sensors are ignored
+            }
+
+            foreach (Sensor s in _prioritizedSensors)
+            {
+                if (s.HasAttribute(Sensor.Attribute.ForInfoOnly))
+                    continue;
+
+                if (toBeIgnored != Sensor.Attribute.None && s.HasAttribute(toBeIgnored))
+                    continue;
+
+                if (!s.HasAttribute(Sensor.Attribute.AlwaysEnabled) && !s.StateIsSet(Sensor.State.Enabled))
+                    continue;   // not enabled
+
+                if (_bypassed && s.HasAttribute(Sensor.Attribute.CanBeBypassed))
+                    continue;   // bypassed
+
+                if (!s.isSafe)
+                {
+                    string reason = GenericUnsafeReason(s);
+
+                    if (reason != null)
+                    {
+                        // we have a reason for this sensor not being safe
+                        reasons.Add(reason);
+                        if (s.HasAttribute(Sensor.Attribute.ForcesDecision))
+                            break;      // don't bother with the remaining sensors
+                    }
+                }
+            }
+
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "UnsafeReasons: {0}",
+                string.Join(Const.recordSeparator, reasons));
+            #endregion
+            return reasons;
         }
 
         #region Individual Property Implementations

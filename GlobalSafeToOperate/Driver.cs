@@ -73,12 +73,7 @@ namespace ASCOM.Wise
         /// Driver description that displays in the ASCOM Chooser.
         /// </summary>
         private static string driverDescription = "ASCOM SafetyMonitor Driver for Wise.SafeToOperate.";
-
-        /// <summary>
-        /// Private variable to hold the connected state
-        /// </summary>
-        private bool _connected;
-
+        
         private static Wise40.Common.Debugger debugger = Wise40.Common.Debugger.Instance;
 
         static DriverAccess.SafetyMonitor  wisesafetooperate = null;
@@ -89,7 +84,6 @@ namespace ASCOM.Wise
         /// </summary>
         public SafetyMonitor()
         {
-            _connected = false; // Initialise connected to false
             wisesafetooperate = new DriverAccess.SafetyMonitor("ASCOM.Remote1.SafetyMonitor");
         }
 
@@ -173,15 +167,15 @@ namespace ASCOM.Wise
         {
             get
             {
-                return _connected;
+                return wisesafetooperate.Connected;
             }
+
             set
             {
-                if (value == _connected)
+                if (value == wisesafetooperate.Connected)
                     return;
 
-                _connected = value;
-                wisesafetooperate.Connected = _connected;
+                wisesafetooperate.Connected = value;
             }
         }
 
@@ -325,8 +319,7 @@ namespace ASCOM.Wise
         {
             get
             {
-                // TODO check that the driver hardware connection exists and is connected to the hardware
-                return _connected;
+                return Connected;
             }
         }
 

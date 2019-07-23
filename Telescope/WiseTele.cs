@@ -921,7 +921,7 @@ namespace ASCOM.Wise40
                 {
                     if ((!wisesafetooperate.IsSafeWithoutCheckingForShutdown() && !ShuttingDown) &&
                         !BypassCoordinatesSafety)
-                            throw new ASCOM.InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList));
+                            throw new ASCOM.InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList()));
 
                     if (Simulated)
                         _lastTrackingLST = wisesite.LocalSiderealTime.Hours;
@@ -1176,7 +1176,7 @@ namespace ASCOM.Wise40
             #endregion debug
 
             if (!wisesafetooperate.IsSafeWithoutCheckingForShutdown() && !ShuttingDown && !BypassCoordinatesSafety)
-                throw new ASCOM.InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList));
+                throw new ASCOM.InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList()));
 
             Const.AxisDirection direction = (Rate == Const.rateStopped) ? Const.AxisDirection.None :
                 (Rate < 0.0) ? Const.AxisDirection.Decreasing : Const.AxisDirection.Increasing;
@@ -1247,7 +1247,7 @@ namespace ASCOM.Wise40
             }
 
             if (Rate != Const.rateStopped && !wisesafetooperate.IsSafe && !ShuttingDown)
-                throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList));
+                throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList()));
 
             TelescopeAxes _otherAxis = otherAxis[thisAxis];
 
@@ -1359,7 +1359,7 @@ namespace ASCOM.Wise40
                 throw new InvalidOperationException("Cannot SlewToTargetAsync while NOT Tracking");
 
             if (!wisesafetooperate.IsSafe && !ShuttingDown)
-                throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList));
+                throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList()));
 
             string notSafe = SafeAtCoordinates(ra, dec);
             if (notSafe != string.Empty)
@@ -2331,7 +2331,7 @@ namespace ASCOM.Wise40
                 throw new InvalidOperationException("Cannot SlewToCoordinates while NOT Tracking");
 
             if (!wisesafetooperate.IsSafe && !ShuttingDown)
-                throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList));
+                throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList()));
 
             if (!noSafetyCheck)
             {
@@ -2384,7 +2384,7 @@ namespace ASCOM.Wise40
             }
 
             if (!ShuttingDown && !wisesafetooperate.IsSafe)
-                throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList));
+                throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList()));
 
             try
             {
@@ -2478,7 +2478,7 @@ namespace ASCOM.Wise40
         public void Unpark()
         {
             if (!wisesafetooperate.IsSafe && !ShuttingDown)
-                throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList));
+                throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList()));
 
             if (AtPark)
                 AtPark = false;
@@ -2596,7 +2596,7 @@ namespace ASCOM.Wise40
                 throw new InvalidOperationException("Cannot SlewToCoordinates while NOT Tracking");
 
             if (!wisesafetooperate.IsSafe && !ShuttingDown)
-                throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList));
+                throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList()));
 
             string notSafe = SafeAtCoordinates(ra, dec);
             if (notSafe != string.Empty)
