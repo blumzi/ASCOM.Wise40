@@ -919,7 +919,7 @@ namespace ASCOM.Wise40
 
                 if (value)
                 {
-                    if ((!wisesafetooperate.IsSafeWithoutCheckingForShutdown && !ShuttingDown) &&
+                    if ((!wisesafetooperate.IsSafeWithoutCheckingForShutdown() && !ShuttingDown) &&
                         !BypassCoordinatesSafety)
                             throw new ASCOM.InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList));
 
@@ -1175,7 +1175,7 @@ namespace ASCOM.Wise40
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, string.Format("MoveAxis({0}, {1})", Axis, Rate));
             #endregion debug
 
-            if (!wisesafetooperate.IsSafeWithoutCheckingForShutdown && !ShuttingDown && !BypassCoordinatesSafety)
+            if (!wisesafetooperate.IsSafeWithoutCheckingForShutdown() && !ShuttingDown && !BypassCoordinatesSafety)
                 throw new ASCOM.InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList));
 
             Const.AxisDirection direction = (Rate == Const.rateStopped) ? Const.AxisDirection.None :

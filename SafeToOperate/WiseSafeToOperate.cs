@@ -53,7 +53,6 @@ namespace ASCOM.Wise40SafeToOperate
         public static List<Sensor> _cumulativeSensors, _prioritizedSensors;
         private enum SafetyScope { Wise40, WiseWide };
         private static SafetyScope safetyScope = SafetyScope.Wise40;
-        private static Object safetyScopeLock = new object();
 
         private static bool _bypassed = false;
         public static int ageMaxSeconds;
@@ -209,6 +208,8 @@ namespace ASCOM.Wise40SafeToOperate
             "sensor-is-safe",
             "weather-digest",
             "wise-issafe",
+            "wise-unsafereasons",
+            "unsafereasons",
         };
 
         public ArrayList SupportedActions
@@ -288,6 +289,10 @@ namespace ASCOM.Wise40SafeToOperate
                     ret = Convert.ToString(WiseIsSafe);
                     break;
 
+                case "wise-unsafereasons":
+                    ret = string.Join(Const.recordSeparator, WiseUnsafeReasonsList);
+                    break;
+
 
                 default:
                     throw new ASCOM.ActionNotImplementedException("Action " + actionName + " is not implemented by this driver");
@@ -304,7 +309,7 @@ namespace ASCOM.Wise40SafeToOperate
                 return JsonConvert.SerializeObject(new SafeToOperateDigest()
                 {
                     Bypassed = _bypassed,
-                    Ready = isReady,
+                    Ready = isReady(toBeIgnored: Sensor.Attribute.None),
                     Safe = IsSafe,
                     UnsafeReasons = UnsafeReasonsList,
                     UnsafeBecauseNotReady = _unsafeBecauseNotReady,
@@ -351,7 +356,7 @@ namespace ASCOM.Wise40SafeToOperate
             CheckConnected("CommandBool");
 
             if (command.ToLower() == "ready")
-                return isReady;
+                return isReady(toBeIgnored: Sensor.Attribute.None);
             else
                 throw new ASCOM.MethodNotImplementedException("CommandBool");
         }
@@ -718,13 +723,7 @@ namespace ASCOM.Wise40SafeToOperate
                 if (activityMonitor.ShuttingDown)
                     return false;
 
-                bool ret = false;
-                lock (safetyScopeLock)
-                {
-                    safetyScope = SafetyScope.Wise40;
-                    ret = IsSafeWithoutCheckingForShutdown;
-                }
-                return ret;
+                return IsSafeWithoutCheckingForShutdown();
             }
         }
 
@@ -735,93 +734,92 @@ namespace ASCOM.Wise40SafeToOperate
                 if (activityMonitor.ShuttingDown)
                     return false;
 
-                bool ret = false;
-                lock (safetyScopeLock)
-                {
-                    safetyScope = SafetyScope.WiseWide;
-                    ret = IsSafeWithoutCheckingForShutdown;
-                }
-                return ret;
+                return IsSafeWithoutCheckingForShutdown(toBeIgnored: Sensor.Attribute.Wise40Specific);
+            }
+        }
+
+        private List<string> WiseUnsafeReasonsList
+        {
+            get
+            {
+                return new List<string>();
             }
         }
 
 
-        public bool IsSafeWithoutCheckingForShutdown
+        public bool IsSafeWithoutCheckingForShutdown(Sensor.Attribute toBeIgnored = Sensor.Attribute.None)
         {
-            get
+            bool ret = true;
+            _unsafeBecauseNotReady = false;
+
+            init();
+
+            if (!_connected)
             {
-                bool ret = true;
-                _unsafeBecauseNotReady = false;
+                ret = false;
+                goto Out;
+            }
 
-                init();
+            foreach (Sensor s in _prioritizedSensors)
+            {
+                if (s.HasAttribute(Sensor.Attribute.ForInfoOnly))
+                    continue;
 
-                if (!_connected)
+                if (!s.HasAttribute(Sensor.Attribute.AlwaysEnabled) && !s.StateIsSet(Sensor.State.Enabled))
+                    continue;
+
+                if (_bypassed && s.HasAttribute(Sensor.Attribute.CanBeBypassed))
+                    continue;
+
+                if (toBeIgnored != Sensor.Attribute.None && !s.HasAttribute(toBeIgnored))
+                    continue;
+
+                if (!s.isSafe)
                 {
-                    ret = false;
+                    ret = false;    // The first non-safe sensor forces NOT SAFE
+                    if (!s.HasAttribute(Sensor.Attribute.Immediate))
+                        _unsafeBecauseNotReady = true;
                     goto Out;
                 }
-
-                foreach (Sensor s in _prioritizedSensors)
-                {
-                    if (s.HasAttribute(Sensor.Attribute.ForInfoOnly))
-                        continue;
-
-                    if (!s.HasAttribute(Sensor.Attribute.AlwaysEnabled) && !s.StateIsSet(Sensor.State.Enabled))
-                        continue;
-
-                    if (_bypassed && s.HasAttribute(Sensor.Attribute.CanBeBypassed))
-                        continue;
-
-                    if (s.HasAttribute(Sensor.Attribute.Wise40Specific) && safetyScope != SafetyScope.Wise40)
-                        continue;
-
-                    if (! s.isSafe)
-                    {
-                        ret = false;    // The first non-safe sensor forces NOT SAFE
-                        if (!s.HasAttribute(Sensor.Attribute.Immediate))
-                            _unsafeBecauseNotReady = true;
-                        goto Out;
-                    }
-                }
-
-                Out:
-                Event.SafetyEvent.SafetyState currentSafetyState = (ret == true) ?
-                    Event.SafetyEvent.SafetyState.Safe :
-                    Event.SafetyEvent.SafetyState.Unsafe;
-
-                if (currentSafetyState != _safetyState)
-                {
-                    _safetyState = currentSafetyState;
-                    ActivityMonitor.Instance.Event(new Event.SafetyEvent(_safetyState));
-                }
-
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "IsReallySafe: {0}", ret);
-                #endregion
-                return ret;
             }
+
+        Out:
+            Event.SafetyEvent.SafetyState currentSafetyState = (ret == true) ?
+                Event.SafetyEvent.SafetyState.Safe :
+                Event.SafetyEvent.SafetyState.Unsafe;
+
+            if (currentSafetyState != _safetyState)
+            {
+                _safetyState = currentSafetyState;
+                ActivityMonitor.Instance.Event(new Event.SafetyEvent(_safetyState));
+            }
+
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "IsReallySafe: {0}", ret);
+            #endregion
+            return ret;
         }
 
         #endregion
 
-        public bool isReady
+        public bool isReady(Sensor.Attribute toBeIgnored = Sensor.Attribute.None)
         {
-            get
+            foreach (Sensor s in _cumulativeSensors)
             {
-                foreach (Sensor s in _cumulativeSensors)
-                {
-                    if (s.HasAttribute(Sensor.Attribute.ForInfoOnly))
-                        continue;
+                if (s.HasAttribute(Sensor.Attribute.ForInfoOnly))
+                    continue;
 
-                    if (s.HasAttribute(Sensor.Attribute.Wise40Specific) && safetyScope != SafetyScope.Wise40)
-                        continue;
+                if (toBeIgnored != Sensor.Attribute.None && s.HasAttribute(toBeIgnored))
+                    continue;
 
-                    if (! s.StateIsSet(Sensor.State.EnoughReadings))
-                        return false;
-                }
+                if (s.HasAttribute(Sensor.Attribute.Wise40Specific) && safetyScope != SafetyScope.Wise40)
+                    continue;
 
-                return true;
+                if (!s.StateIsSet(Sensor.State.EnoughReadings))
+                    return false;
             }
+
+            return true;
         }
 
         #region Private properties and methods

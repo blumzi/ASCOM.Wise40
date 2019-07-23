@@ -711,7 +711,7 @@ namespace ASCOM.Wise40
                     throw new ASCOM.InvalidOperationException("Cannot move, shutter is active!");
                 }
 
-                if (!wiseSafeToOperate.IsSafeWithoutCheckingForShutdown)
+                if (!wiseSafeToOperate.IsSafeWithoutCheckingForShutdown())
                         throw new ASCOM.InvalidOperationException(wiseSafeToOperate.Action("unsafereasons", ""));
             }
 
@@ -777,7 +777,7 @@ namespace ASCOM.Wise40
             if (ShutterIsMoving)
                 throw new ASCOM.InvalidOperationException("Cannot move, shutter is active!");
 
-            if ((!StateIsOn(DomeState.Parking)) && !wiseSafeToOperate.IsSafeWithoutCheckingForShutdown)
+            if ((!StateIsOn(DomeState.Parking)) && !wiseSafeToOperate.IsSafeWithoutCheckingForShutdown())
                 throw new ASCOM.InvalidOperationException("Unsafe: " + wiseSafeToOperate.Action("unsafereasons", ""));
 
             Angle toAng = new Angle(degrees, Angle.Type.Az);
@@ -981,7 +981,7 @@ namespace ASCOM.Wise40
             if (DirectionMotorsAreActive)
                 throw new InvalidOperationException("Cannot open shutter while dome is slewing!");
 
-            if (!bypassSafety && !wiseSafeToOperate.IsSafeWithoutCheckingForShutdown)
+            if (!bypassSafety && !wiseSafeToOperate.IsSafeWithoutCheckingForShutdown())
                 throw new InvalidOperationException(wiseSafeToOperate.CommandString("unsafeReasons", false));
 
             int percentOpen = wisedomeshutter.PercentOpen;
@@ -1201,7 +1201,7 @@ namespace ASCOM.Wise40
                     return "ok";
 
                 case "start-moving":
-                    if (!wiseSafeToOperate.IsSafeWithoutCheckingForShutdown && !activityMonitor.ShuttingDown)
+                    if (!wiseSafeToOperate.IsSafeWithoutCheckingForShutdown() && !activityMonitor.ShuttingDown)
                         throw new ASCOM.InvalidOperationException(wiseSafeToOperate.Action("unsafereasons", ""));
 
                     switch (param)

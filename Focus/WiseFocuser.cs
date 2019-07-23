@@ -383,7 +383,7 @@ namespace ASCOM.Wise40
 
         public void Move(Direction dir)
         {
-            if (!safetooperate.IsSafeWithoutCheckingForShutdown)
+            if (!safetooperate.IsSafeWithoutCheckingForShutdown())
                 throw new InvalidOperationException(string.Join(", ", safetooperate.UnsafeReasonsList));
 
             #region debug

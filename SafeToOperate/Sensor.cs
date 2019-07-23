@@ -21,6 +21,7 @@ namespace ASCOM.Wise40SafeToOperate
         [Flags]
         public enum Attribute
         {
+            None = 0,
             Immediate = (1 << 0),       // Decision is based on an immediate read of the sensor
                                         // Non-immediate sensors
                                         // - Are ready ONLY after _repeats readings have been accumulated
