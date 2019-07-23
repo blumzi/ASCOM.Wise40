@@ -603,7 +603,8 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                                 az.ToNiceString(),
                                 shutterState.ToString().ToLower().Remove(0, "shutter".Length)),
                                 _simulated ? 1 : 10);
-                        } catch (Exception ex)
+                        }
+                        catch /*(Exception ex)*/
                         {
                             //Log(string.Format("    ShutdownObservatory:Exception: {0}", ex.Message));
                         }
