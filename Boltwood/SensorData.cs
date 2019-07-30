@@ -160,6 +160,7 @@ namespace ASCOM.Wise40.Boltwood
             try
             {
                 date = Convert.ToDateTime(data.Substring(0, 22));
+                DateTime utcDate = date.ToUniversalTime();
                 age = DateTime.Now.Subtract(date).TotalSeconds;
                 switch (data.Substring(23, 1))
                 {
@@ -210,7 +211,7 @@ namespace ASCOM.Wise40.Boltwood
                     ["CloudCondition"] = ((int)cloudCondition).ToString(),
                     ["WindSpeed"] = ((int)windCondition).ToString(),
                     ["RainRate"] = ((int)rainCondition).ToString(),
-                }, date);
+                }, utcDate);
             }
             catch (Exception e)
             {

@@ -393,7 +393,6 @@ namespace ASCOM.Wise40SafeToOperate
                     return;
 
                 _connected = WiseSite.och.Connected;
-
                 if (_connected)
                     startSensors();
                 else
@@ -771,7 +770,7 @@ namespace ASCOM.Wise40SafeToOperate
                 if (_bypassed && s.HasAttribute(Sensor.Attribute.CanBeBypassed))
                     continue;
 
-                if (toBeIgnored != Sensor.Attribute.None && !s.HasAttribute(toBeIgnored))
+                if (toBeIgnored != Sensor.Attribute.None && s.HasAttribute(toBeIgnored))
                     continue;
 
                 if (!s.isSafe)

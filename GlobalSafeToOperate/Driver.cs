@@ -181,10 +181,9 @@ namespace ASCOM.Wise
 
         public string Description
         {
-            // TODO customise this device description
             get
             {
-                return driverDescription;
+                return Const.WiseDriverID.WiseSafeToOperate;
             }
         }
 
@@ -192,7 +191,7 @@ namespace ASCOM.Wise
         {
             get
             {
-                return "Wise Global SafeToOperate. Version: " + DriverVersion;
+                return Description + " v" + DriverVersion;
             }
         }
 

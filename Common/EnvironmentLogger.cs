@@ -26,7 +26,9 @@ namespace ASCOM.Wise40.Common
 
         public void Log(Dictionary<string, string> dict, DateTime date)
         {
-            string sql = string.Format("insert into weather_events(Time, Station, {0}) values('{1}', '{2}', {3})",
+            //return;
+
+            string sql = string.Format("insert into weather(Time, Station, {0}) values('{1}', '{2}', {3})",
                 string.Join(", ", dict.Keys),
                 date.ToString(@"yyyy-MM-dd HH:mm:ss.fff"),
                 _stationName,
@@ -34,7 +36,7 @@ namespace ASCOM.Wise40.Common
 
             try
             {
-                MySqlConnection sqlConn = new MySqlConnection("server=localhost;user=root;database=weather_events;port=3306;password=@!ab4131!@");
+                MySqlConnection sqlConn = new MySqlConnection("server=localhost;user=root;database=weather;port=3306;password=@!ab4131!@");
                 sqlConn.Open();
                 MySqlCommand sqlCmd = new MySqlCommand(sql, sqlConn);
                 sqlCmd.ExecuteNonQuery();
@@ -44,7 +46,7 @@ namespace ASCOM.Wise40.Common
             catch (Exception ex)
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "EnvironmentLogger.log: cmd.ExecuteNonQuery failed: {0}", ex.StackTrace);
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "EnvironmentLogger.log: \nsql: {0}\n failed: {1}", sql, ex.StackTrace);
                 #endregion
             }
         }

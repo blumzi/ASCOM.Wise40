@@ -396,7 +396,7 @@ namespace ASCOM.Wise40 //.FilterWheel
                 {
                     arduino.Connected = value;
                 }
-                catch (Exception ex)
+                catch /* (Exception ex) */
                 {
                     throw;
                 }

@@ -252,7 +252,7 @@ namespace ASCOM.Wise40
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugFilterWheel, "getPacket: got: [{0}]", msg);
                 #endregion
-            } catch (Exception ex) {
+            } catch /* (Exception ex) */{
                 ;
             }
             return msg;

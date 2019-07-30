@@ -50,8 +50,7 @@ namespace ASCOM.Wise40.Boltwood
 
             for (int i = 0; i < nStations; i++)
             {
-                stations[i] = new BoltwoodStation(i);
-                stations[i].ReadProfile();
+                stations[i] = new BoltwoodStation(i);   // calls ReadProfile()
                 if (stations[i].Name == "C18")
                     C18Station = stations[i];
                 else if (stations[i].Name == "C28")
@@ -706,7 +705,7 @@ namespace ASCOM.Wise40.Boltwood
         {
             Id = id;
             ReadProfile();
-            _env = new EnvironmentLogger(_name);
+            _env = new EnvironmentLogger(stationName: Name);
         }
 
         public override WeatherStationVendor Vendor

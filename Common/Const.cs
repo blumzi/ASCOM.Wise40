@@ -48,6 +48,7 @@ namespace ASCOM.Wise40.Common
             public const string VantagePro = "ASCOM.Wise40.VantagePro.ObservingConditions";
             public const string Boltwood = "ASCOM.Wise40.Boltwood.ObservingConditions";
             public const string SafeToOperate = "ASCOM.Wise40SafeToOperate.SafetyMonitor";
+            public const string WiseSafeToOperate = "ASCOM.WiseSafeToOperate.SafetyMonitor";
             public const string Focus = "ASCOM.Wise40.Focuser";
             public const string FilterWheel = "ASCOM.Wise40.FilterWheel";
             public const string ObservatoryMonitor = "ASCOM.Wise40.ObservatoryMonitor.SafetyMonitor";

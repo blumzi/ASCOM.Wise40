@@ -61,7 +61,8 @@ namespace Dash.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to .
+        ///   Looks up a localized string similar to d62307f
+        ///.
         /// </summary>
         internal static string CurrentCommit {
             get {

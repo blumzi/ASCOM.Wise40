@@ -42,7 +42,7 @@ namespace ASCOM.Wise40
                     File.Delete(Const.humanInterventionFilePath);
                     deleted = true;
                 }
-                catch (System.IO.IOException ex)    // in use
+                catch /*(System.IO.IOException ex) */
                 {
                     ;
                 }
