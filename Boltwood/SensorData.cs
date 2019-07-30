@@ -154,6 +154,7 @@ namespace ASCOM.Wise40.Boltwood
         public DayCondition dayCondition;
         public bool roofCloseRequested;
         public bool alerting;
+        private ASCOM.Utilities.Util util = new Utilities.Util();
 
         public SensorData(string data, EnvironmentLogger env)
         {
@@ -162,6 +163,7 @@ namespace ASCOM.Wise40.Boltwood
                 date = Convert.ToDateTime(data.Substring(0, 22));
                 DateTime utcDate = date.ToUniversalTime();
                 age = DateTime.Now.Subtract(date).TotalSeconds;
+
                 switch (data.Substring(23, 1))
                 {
                     case "C":
@@ -171,6 +173,10 @@ namespace ASCOM.Wise40.Boltwood
                         tempUnits = TempUnits.tempFahrenheit;
                         break;
                 }
+                skyAmbientTemp = Convert.ToDouble(data.Substring(27, 6));
+                ambientTemp = Convert.ToDouble(data.Substring(34, 6));
+                sensorTemp = Convert.ToDouble(data.Substring(40, 6));
+                windSpeed = Convert.ToDouble(data.Substring(48, 6));
                 switch (data.Substring(25, 1))
                 {
                     case "K":
@@ -183,10 +189,6 @@ namespace ASCOM.Wise40.Boltwood
                         windUnits = WindUnits.windMeterPerSecond;
                         break;
                 }
-                skyAmbientTemp = Convert.ToDouble(data.Substring(27, 6));
-                ambientTemp = Convert.ToDouble(data.Substring(34, 6));
-                sensorTemp = Convert.ToDouble(data.Substring(40, 6));
-                windSpeed = Convert.ToDouble(data.Substring(48, 6));
                 humidity = Convert.ToInt32(data.Substring(55, 3));
                 dewPoint = Convert.ToDouble(data.Substring(59, 6));
                 heaterSetting = Convert.ToInt32(data.Substring(66, 3));
@@ -201,6 +203,18 @@ namespace ASCOM.Wise40.Boltwood
                 var x = Convert.ToInt32(data.Substring(101, 1));
                 roofCloseRequested = (x == 1) ? true : false;
 
+                switch (windUnits)
+                {
+                    case SensorData.WindUnits.windKmPerHour:
+                        windSpeed = windSpeed * 1000 / 3600;
+                        break;
+                    case SensorData.WindUnits.windMilesPerHour:
+                        windSpeed = util.ConvertUnits(windSpeed, Utilities.Units.milesPerHour, Utilities.Units.metresPerSecond);
+                        break;
+                    case SensorData.WindUnits.windMeterPerSecond:
+                        break;
+                }
+
                 env.Log(new Dictionary<string, string>()
                 {
                     ["SkyAmbientTemp"] = skyAmbientTemp.ToString(),
@@ -209,7 +223,6 @@ namespace ASCOM.Wise40.Boltwood
                     ["Humidity"] = humidity.ToString(),
                     ["DewPoint"] = dewPoint.ToString(),
                     ["CloudCondition"] = ((int)cloudCondition).ToString(),
-                    ["WindSpeed"] = ((int)windCondition).ToString(),
                     ["RainRate"] = ((int)rainCondition).ToString(),
                 }, utcDate);
             }
