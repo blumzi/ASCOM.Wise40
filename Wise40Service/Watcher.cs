@@ -110,13 +110,14 @@ namespace Wise40Watcher
 
         private void KillAll()
         {
-            if (WiseName == "ascom")
-                KillAllProcesses(Const.Apps[Const.Application.OCH].appName);
 
             KillAllProcesses(_application.appName);
 
             if (WiseName == "ascom")
+            {
+                KillAllProcesses(Const.Apps[Const.Application.OCH].appName);
                 KillAllProcesses(Const.Apps[Const.Application.RemoteClientLocalServer].appName);
+            }
         }
 
         public void Start(string[] args, bool waitForResponse = false)
