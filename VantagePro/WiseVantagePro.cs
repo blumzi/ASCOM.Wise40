@@ -103,7 +103,8 @@ namespace ASCOM.Wise40.VantagePro
 
                             if (_env != null)
                             {
-                                DateTime date = Convert.ToDateTime(sensorData["utcDate"] + " " + sensorData["utcTime"] + "m");
+                                DateTime utcTime = Convert.ToDateTime(sensorData["utcDate"] + " " + sensorData["utcTime"] + "m");
+                                DateTime localTime = Convert.ToDateTime(sensorData["date"] + " " + sensorData["time"] + "m");
 
                                 _env.Log(new Dictionary<string, string>()
                                 {
@@ -117,7 +118,7 @@ namespace ASCOM.Wise40.VantagePro
                                     ["DewPoint"] = util.ConvertUnits(Convert.ToDouble(sensorData["outsideDewPt"]),
                                                         Units.degreesFarenheit, Units.degreesCelsius).ToString()
 
-                                }, date);
+                                }, localTime);
                             }
 
                             _lastDataRead = DateTime.Now;

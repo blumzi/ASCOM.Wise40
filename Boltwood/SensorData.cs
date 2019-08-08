@@ -57,7 +57,7 @@ namespace ASCOM.Wise40.Boltwood
     public class SensorData
     {
         public double age;
-        public DateTime date;
+        public DateTime localTime;
         public enum TempUnits
         {
             tempCelsius = 0,
@@ -160,9 +160,9 @@ namespace ASCOM.Wise40.Boltwood
         {
             try
             {
-                date = Convert.ToDateTime(data.Substring(0, 22));
-                DateTime utcDate = date.ToUniversalTime();
-                age = DateTime.Now.Subtract(date).TotalSeconds;
+                localTime = Convert.ToDateTime(data.Substring(0, 22));
+                DateTime utcTime = localTime.ToUniversalTime();
+                age = DateTime.Now.Subtract(localTime).TotalSeconds;
 
                 switch (data.Substring(23, 1))
                 {
@@ -176,6 +176,12 @@ namespace ASCOM.Wise40.Boltwood
                 skyAmbientTemp = Convert.ToDouble(data.Substring(27, 6));
                 ambientTemp = Convert.ToDouble(data.Substring(34, 6));
                 sensorTemp = Convert.ToDouble(data.Substring(40, 6));
+                if (tempUnits != TempUnits.tempCelsius)
+                {
+                    skyAmbientTemp = util.ConvertUnits(skyAmbientTemp, Utilities.Units.degreesFarenheit, Utilities.Units.degreesCelsius);
+                    ambientTemp = util.ConvertUnits(ambientTemp, Utilities.Units.degreesFarenheit, Utilities.Units.degreesCelsius);
+                    sensorTemp = util.ConvertUnits(sensorTemp, Utilities.Units.degreesFarenheit, Utilities.Units.degreesCelsius);
+                }
                 windSpeed = Convert.ToDouble(data.Substring(48, 6));
                 switch (data.Substring(25, 1))
                 {
@@ -224,7 +230,7 @@ namespace ASCOM.Wise40.Boltwood
                     ["DewPoint"] = dewPoint.ToString(),
                     ["CloudCondition"] = ((int)cloudCondition).ToString(),
                     ["RainRate"] = ((int)rainCondition).ToString(),
-                }, utcDate);
+                }, localTime);
             }
             catch (Exception e)
             {
