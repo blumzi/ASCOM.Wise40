@@ -222,8 +222,11 @@ namespace ASCOM.Wise40
             }
             _connected = connected;
 
-            ActivityMonitor.Instance.Event(new Event.GlobalEvent(
-                string.Format("{0} {1}", Const.WiseDriverID.Dome, connected ? "Connected" : "Disconnected")));
+            //ActivityMonitor.Instance.Event(new Event.GlobalEvent(
+            //    string.Format("{0} {1}", Const.WiseDriverID.Dome, connected ? "Connected" : "Disconnected")));
+
+            ActivityMonitor.Tracer.Reset(ActivityMonitor.Tracer.shutter, connected ? "Connected" : "Disconnected");
+            ActivityMonitor.Tracer.Reset(ActivityMonitor.Tracer.dome, connected ? "Connected" : "Disconnected");
         }
 
         public bool Connected
@@ -592,7 +595,7 @@ namespace ASCOM.Wise40
                 _adjustingForTracking = false;
             else
             {
-                activityMonitor.EndActivity(ActivityMonitor.ActivityType.DomeSlew, new Activity.DomeSlewActivity.EndParams()
+                activityMonitor.EndActivity(ActivityMonitor.ActivityType.DomeSlew, new Activity.DomeSlew.EndParams()
                     {
                         endState = Activity.State.Succeeded,
                         endReason = reason,
@@ -684,12 +687,12 @@ namespace ASCOM.Wise40
                 if (value)
                 {
                     projectorPin.SetOn();
-                    activityMonitor.NewActivity(new Activity.ProjectorActivity());
+                    activityMonitor.NewActivity(new Activity.Projector(new Activity.Projector.StartParams()));
                 }
                 else
                 {
                     projectorPin.SetOff();
-                    activityMonitor.EndActivity(ActivityMonitor.ActivityType.Projector, new Activity.EndParams()
+                    activityMonitor.EndActivity(ActivityMonitor.ActivityType.Projector, new Activity.GenericEndParams()
                     {
                         endReason = "projector was turned OFF",
                         endState = Activity.State.Succeeded,
@@ -722,9 +725,9 @@ namespace ASCOM.Wise40
             #endregion
             _calibrating = true;
 
-            activityMonitor.NewActivity(new Activity.DomeSlewActivity(new Activity.DomeSlewActivity.StartParams()
+            activityMonitor.NewActivity(new Activity.DomeSlew(new Activity.DomeSlew.StartParams()
             {
-                type = Activity.DomeSlewActivity.DomeEventType.FindHome,
+                type = Activity.DomeSlew.DomeEventType.FindHome,
             }));
 
             if (Calibrated)
@@ -755,7 +758,7 @@ namespace ASCOM.Wise40
             #endregion
             _foundCalibration.WaitOne();
             UnsetDomeState(DomeState.Calibrating);
-            activityMonitor.EndActivity(ActivityMonitor.ActivityType.DomeSlew, new Activity.DomeSlewActivity.EndParams()
+            activityMonitor.EndActivity(ActivityMonitor.ActivityType.DomeSlew, new Activity.DomeSlew.EndParams()
             {
                 endState = Activity.State.Succeeded,
                 endReason = string.Format("Found calibration point at {0}", Azimuth.ToNiceString()),
@@ -783,9 +786,9 @@ namespace ASCOM.Wise40
             Angle toAng = new Angle(degrees, Angle.Type.Az);
 
             if (!_adjustingForTracking)
-                activityMonitor.NewActivity(new Activity.DomeSlewActivity(new Activity.DomeSlewActivity.StartParams
+                activityMonitor.NewActivity(new Activity.DomeSlew(new Activity.DomeSlew.StartParams
                 {
-                    type = Activity.DomeSlewActivity.DomeEventType.Slew,
+                    type = Activity.DomeSlew.DomeEventType.Slew,
                     startAz = Azimuth.Degrees,
                     targetAz = degrees,
                     reason = reason,

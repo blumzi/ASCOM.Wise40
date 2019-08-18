@@ -63,7 +63,7 @@ namespace ASCOM.Wise40
 
             public void BecomeIdle()
             {
-                activityMonitor.EndActivity(ActivityMonitor.ActivityType.Focuser, new Activity.FocuserActivity.EndParams()
+                activityMonitor.EndActivity(ActivityMonitor.ActivityType.Focuser, new Activity.Focuser.EndParams()
                     {
                         endState = Activity.State.Succeeded,
                         endReason = "Reached target",
@@ -197,8 +197,9 @@ namespace ASCOM.Wise40
 
                 _connected = value;
 
-                ActivityMonitor.Instance.Event(new Event.GlobalEvent(
-                    string.Format("{0} {1}", Const.WiseDriverID.Focus, value ? "Connected" : "Disconnected")));
+                //ActivityMonitor.Instance.Event(new Event.GlobalEvent(
+                //    string.Format("{0} {1}", Const.WiseDriverID.Focus, value ? "Connected" : "Disconnected")));
+                ActivityMonitor.Tracer.Reset(ActivityMonitor.Tracer.Focuser.focuser, value ? "Connected" : "Disconnected");
             }
         }
 
@@ -390,12 +391,12 @@ namespace ASCOM.Wise40
             debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, "Starting Move({0}) at {1}",
                 dir.ToString(), Position);
             #endregion
-            activityMonitor.NewActivity(new Activity.FocuserActivity(new Activity.FocuserActivity.StartParams
+            activityMonitor.NewActivity(new Activity.Focuser(new Activity.Focuser.StartParams
             {
                 start = (int)Position,
                 direction = (dir == Direction.Up || dir == Direction.AllUp) ?
-                    Activity.FocuserActivity.Direction.Up :
-                    Activity.FocuserActivity.Direction.Down,
+                    Activity.Focuser.Direction.Up :
+                    Activity.Focuser.Direction.Down,
                 target = -1,
             }));
             switch (dir)
@@ -504,14 +505,14 @@ namespace ASCOM.Wise40
                 StartMoving(dir);
             }
 
-            activityMonitor.NewActivity(new Activity.FocuserActivity(new Activity.FocuserActivity.StartParams
+            activityMonitor.NewActivity(new Activity.Focuser(new Activity.Focuser.StartParams
             {
                 start = (int)currentPos,
                 target = _targetPosition,
                 intermediateTarget = _intermediatePosition,
                 direction = (dir == Direction.Up) ?
-                    Activity.FocuserActivity.Direction.Up :
-                    Activity.FocuserActivity.Direction.Down,
+                    Activity.Focuser.Direction.Up :
+                    Activity.Focuser.Direction.Down,
             }));
 
             #region debug

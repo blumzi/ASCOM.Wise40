@@ -72,9 +72,9 @@ namespace ASCOM.Wise40
         {
             string data = (sender as SerialPort).ReadLine().TrimEnd(crnls);
             WiseFilterWheel.Wheel wheel = null;
-            Activity.FilterWheelActivity.Operation op = ArduinoInterface._lastCommandSent == "get-tag" ?
-                        Activity.FilterWheelActivity.Operation.Detect :
-                        Activity.FilterWheelActivity.Operation.Move;
+            Activity.FilterWheel.Operation op = ArduinoInterface._lastCommandSent == "get-tag" ?
+                        Activity.FilterWheel.Operation.Detect :
+                        Activity.FilterWheel.Operation.Move;
 
             _status = ArduinoStatus.Idle;
             _tag = null;
@@ -86,14 +86,14 @@ namespace ASCOM.Wise40
                 _tag = data.Substring("tag:".Length);
                 WiseFilterWheel.Instance.currentWheel = wheel = WiseFilterWheel.lookupWheel(_tag);
 
-                if (op == Activity.FilterWheelActivity.Operation.Move)
+                if (op == Activity.FilterWheel.Operation.Move)
                 {
                     if (wheel == null)
                     {
                         WiseFilterWheel.EndActivity(
                             op: op,
                             endWheel: null,
-                            endPos: Activity.FilterWheelActivity.UnknownPosition,
+                            endPos: Activity.FilterWheel.UnknownPosition,
                             endTag: _tag,
                             endState: Activity.State.Failed,
                             endReason: string.Format("Unknown tag: {0}", _tag));
@@ -125,11 +125,11 @@ namespace ASCOM.Wise40
                         _error = "Connectors " + String.Join(" and ", nums) + " are NOT CONNECTED!";
                 }
 
-                if (op == Activity.FilterWheelActivity.Operation.Move)
+                if (op == Activity.FilterWheel.Operation.Move)
                     WiseFilterWheel.EndActivity(
                         op: op,
                         endWheel: null,
-                        endPos: Activity.FilterWheelActivity.UnknownPosition,
+                        endPos: Activity.FilterWheel.UnknownPosition,
                         endTag: _tag,
                         endState: Activity.State.Failed,
                         endReason: _error);

@@ -26,8 +26,6 @@ namespace ASCOM.Wise40.Common
 
         public void Log(Dictionary<string, string> dict, DateTime date)
         {
-            //return;
-
             string sql = string.Format("insert into weather(Time, Station, {0}) values('{1}', '{2}', {3})",
                 string.Join(", ", dict.Keys),
                 date.ToString(@"yyyy-MM-dd HH:mm:ss.fff"),
@@ -36,12 +34,14 @@ namespace ASCOM.Wise40.Common
 
             try
             {
-                MySqlConnection sqlConn = new MySqlConnection("server=localhost;user=root;database=weather;port=3306;password=@!ab4131!@");
-                sqlConn.Open();
-                MySqlCommand sqlCmd = new MySqlCommand(sql, sqlConn);
-                sqlCmd.ExecuteNonQuery();
-                sqlCmd.Dispose();
-                sqlConn.Close();
+                using (var sqlConn = new MySqlConnection(ActivityMonitor.Tracer.MySqlActivitiesConnectionString))
+                {
+                    sqlConn.Open();
+                    using (var sqlCmd = new MySqlCommand(sql, sqlConn))
+                    {
+                        sqlCmd.ExecuteNonQuery();
+                    }
+                }
             }
             catch (Exception ex)
             {

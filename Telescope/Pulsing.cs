@@ -191,11 +191,11 @@ namespace ASCOM.Wise40 //.Telescope
             {
                 Activity activity = activityMonitor.LookupInProgress(ActivityMonitor.ActivityType.Pulsing);
                 if (activity != null)
-                    (activity as Activity.PulsingActivity).EndActivity(new Activity.PulsingActivity.EndParams()
+                    (activity as Activity.Pulsing).EndActivity(new Activity.Pulsing.EndParams()
                     {
                         endState = completionState,
                         endReason = completionReason,
-                        _end = new Activity.TelescopeSlewActivity.Coords
+                        _end = new Activity.TelescopeSlew.Coords
                         {
                             ra = WiseTele.Instance.RightAscension,
                             dec = WiseTele.Instance.Declination,

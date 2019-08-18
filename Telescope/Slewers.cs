@@ -73,11 +73,11 @@ namespace ASCOM.Wise40
 
                 if (_active.Count == 0)
                 {
-                    activityMonitor.EndActivity(ActivityMonitor.ActivityType.TelescopeSlew, new Activity.TelescopeSlewActivity.EndParams()
+                    activityMonitor.EndActivity(ActivityMonitor.ActivityType.TelescopeSlew, new Activity.TelescopeSlew.EndParams()
                         {
                             endState = Activity.State.Succeeded,
                             endReason = "Reached target",
-                            end = new Activity.TelescopeSlewActivity.Coords
+                            end = new Activity.TelescopeSlew.Coords
                             {
                                 ra = WiseTele.Instance.RightAscension,
                                 dec = WiseTele.Instance.Declination,

@@ -333,7 +333,7 @@ namespace ASCOM.Wise40
             {
                 openPin.SetOff();
                 closePin.SetOff();
-                activityMonitor.EndActivity(ActivityMonitor.ActivityType.Shutter, new Activity.ShutterActivity.EndParams()
+                activityMonitor.EndActivity(ActivityMonitor.ActivityType.Shutter, new Activity.Shutter.EndParams()
                     {
                         endState = Activity.State.Succeeded,
                         endReason = reason,
@@ -395,7 +395,7 @@ namespace ASCOM.Wise40
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "StartClosing: started closing the shutter");
                 #endregion debug
-                activityMonitor.NewActivity(new Activity.ShutterActivity(new Activity.ShutterActivity.StartParams
+                activityMonitor.NewActivity(new Activity.Shutter(new Activity.Shutter.StartParams
                 {
                     operation = ShutterState.shutterClosing,
                     start = PercentOpen,
@@ -442,7 +442,7 @@ namespace ASCOM.Wise40
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "StartOpening: started opening the shutter");
                 #endregion debug
-                activityMonitor.NewActivity(new Activity.ShutterActivity(new Activity.ShutterActivity.StartParams
+                activityMonitor.NewActivity(new Activity.Shutter(new Activity.Shutter.StartParams
                 {
                     operation = ShutterState.shutterOpening,
                     start = PercentOpen,

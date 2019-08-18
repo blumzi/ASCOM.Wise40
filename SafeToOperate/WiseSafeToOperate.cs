@@ -398,8 +398,9 @@ namespace ASCOM.Wise40SafeToOperate
                 else
                     stopSensors();
 
-                ActivityMonitor.Instance.Event(new Event.GlobalEvent(
-                    string.Format("{0} {1}", DriverId, value ? "Connected" : "Disconnected")));
+                //ActivityMonitor.Instance.Event(new Event.GlobalEvent(
+                //    string.Format("{0} {1}", DriverId, value ? "Connected" : "Disconnected")));
+                ActivityMonitor.Tracer.Reset(ActivityMonitor.Tracer.safety, value ? "Connected" : "Disconnected");
             }
         }
 

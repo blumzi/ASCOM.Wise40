@@ -15,7 +15,7 @@ using MySql.Data.MySqlClient;
 
 namespace ASCOM.Wise40
 {
-    public sealed class ActivityMonitor : WiseObject
+    public class ActivityMonitor : WiseObject
     {
         // start Singleton
         private static readonly Lazy<ActivityMonitor> lazy = new Lazy<ActivityMonitor>(() => new ActivityMonitor()); // Singleton
@@ -44,7 +44,6 @@ namespace ASCOM.Wise40
         private WiseSite wisesite = WiseSite.Instance;
         private static bool initialized = false;
         public static int millisToInactivity;
-        public int _mongoDbId = 0;
 
         [FlagsAttribute]
         public enum ActivityType
@@ -69,36 +68,9 @@ namespace ASCOM.Wise40
         };
 
 
-        private static List<ActivityType> _activities = new List<ActivityType> {
-            ActivityType.TelescopeSlew,
-            ActivityType.Pulsing,
-            ActivityType.DomeSlew,
-            ActivityType.Handpad,
-            ActivityType.GoingIdle,
-            ActivityType.Parking,
-            ActivityType.Shutter,
-            ActivityType.ShuttingDown,
-        };
-
-
-        //public static IMongoDatabase db;
-
-        //public static IMongoCollection<BsonDocument> ActivitiesCollection
-        //{
-        //    get
-        //    {
-        //        string collectionName = Debugger.LogDirectory().Remove(0, (Const.topWise40Directory + "Logs/").Length);
-
-        //        if (db == null)
-        //            db = (new MongoClient()).GetDatabase("activities");
-        //        return db.GetCollection<BsonDocument>(collectionName);
-        //    }
-        //}
-
-
         public void init()
         {
-            if (!WiseSite.CurrentProcessIsASCOMServer)
+            if (!Simulated && !WiseSite.CurrentProcessIsASCOMServer)
                 return;
 
             if (initialized)
@@ -118,17 +90,17 @@ namespace ASCOM.Wise40
                 ActivityMonitor.simulatedlMillisToInactivity :
                 ActivityMonitor.realMillisToInactivity;
 
-            //db = (new MongoClient()).GetDatabase("activities");
-
-            Event(new Event.SafetyEvent(Wise40.Event.SafetyEvent.SafetyState.Unknown));
+            //Event(new Event.SafetyEvent(Wise40.Event.SafetyEvent.SafetyState.Unknown));
 
             initialized = true;
         }
 
-        public void EndActivity(ActivityType type, Activity.EndParams p)
+        
+        public void EndActivity(ActivityType type, Activity.GenericEndParams par)
         {
-            Activity activity = LookupInProgress(type);
-            if (activity == null)
+            Activity inProgress = LookupInProgress(type);
+
+            if (inProgress == null)
             {
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "ActivityMonitor:EndActivity: No \"{0}\" inProgress", type.ToString());
@@ -139,8 +111,8 @@ namespace ASCOM.Wise40
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "ActivityMonitor:EndActivity: Calling {0}.End()", type.ToString());
             #endregion
-            activity._endTime = DateTime.Now;
-            activity.End(p);
+            inProgress._endTime = par.endTime == null ? DateTime.Now : par.endTime;
+            inProgress.End(par);
         }
 
         public bool ShuttingDown
@@ -168,7 +140,7 @@ namespace ASCOM.Wise40
         /// <param name="reason"></param>
         public void StayActive(string reason)
         {
-            idler.StartGoingIdle(reason);
+            idler.StartGoingIdle(new Idler.StartParams() { reason = reason });
         }
 
         public TimeSpan RemainingTime
@@ -241,7 +213,7 @@ namespace ASCOM.Wise40
             return ret;
         }
 
-        public void NewActivity(Activity activity)
+        public Activity NewActivity(Activity activity)
         {
             activityLog.Add(activity);
             lock (inProgressActivitiesLock)
@@ -252,56 +224,158 @@ namespace ASCOM.Wise40
 
             if (activity.effectOnGoingIdle_AtStart == Activity.EffectOnGoingIdle.Remove)
             {
-                string reason = string.Format("Activity {0} started", activity._type.ToString());
+                string reason = string.Format("{0} started", activity._type.ToString());
 
-                idler.AbortGoingIdle(reason);
+                idler.AbortGoingIdle(new Idler.EndParams() { reason = reason });
             }
+
+            return activity;
         }
 
         public void Event(Event e)
         {
             e.EmitEvent();
         }
+
+        public class Tracer
+        {
+            public static string MySqlActivitiesConnectionString = "server=localhost;user=root;database=activities;port=3306;password=@!ab4131!@";
+            private string _line;
+            private string _name;
+
+            public const int resetValue = 0;
+
+            public Tracer(string line, string name)
+            {
+                _line = line;
+                _name = name;
+            }
+
+            public string Line
+            {
+                get
+                {
+                    return _line;
+                }
+            }
+
+            public string Name
+            {
+                get
+                {
+                    return _name;
+                }
+            }
+
+            public class Safety : Tracer
+            {
+                public enum Code { NotSafe = 150 };
+
+                public Safety() : base("safety", "Safety") { }
+            }
+            public static Safety safety = new Safety();
+
+            public class Projector : Tracer
+            {
+                public Projector() : base("projector", "Projector") { }
+                public enum Code { On = 140 };
+            }
+            public static Projector projector = new Projector();
+
+            public class Telescope : Tracer
+            {
+                public Telescope() : base("telescope", "Telescope") { }
+                public enum Code { Slewing = 100, Pulsing = 110, Tracking = 120 };
+            }
+            public static Telescope telescope = new Telescope();
+
+            public class Dome : Tracer
+            {
+                public Dome() : base("dome", "Dome") { }
+                public enum Code { Idle = 0, FindingHome = 160, Slewing = 50, Tracking = 60 };
+            }
+            public static Dome dome = new Dome();
+
+            public class Shutter : Tracer
+            {
+                public Shutter() : base("shutter", "Shutter") { }
+                public enum Code { Opening = 80, Closing = 90, Open = 70 };
+            }
+            public static Shutter shutter = new Shutter();
+
+            public class Parking : Tracer
+            {
+                public Parking() : base("parking", "Parking") { }
+                public enum Code { Active = 20 };
+            }
+            public static Parking parking = new Parking();
+
+            public class Shutdown : Tracer
+            {
+                public Shutdown() : base("shutdown", "Shutdown") { }
+                public enum Code { Idle = 0, Active = 20 };
+            }
+            public static Shutdown shutdown = new Shutdown();
+
+            public class Focuser : Tracer
+            {
+                public Focuser() : base("focuser", "Focuser") { }
+                public enum Code { Moving = 30 };
+            }
+            public static Focuser focuser = new Focuser();
+
+            public class FilterWheel : Tracer
+            {
+                public FilterWheel() : base("focuser", "FilterWheel") { }
+                public enum Code { Moving = 40 };
+            }
+            public static FilterWheel filterwheel = new FilterWheel();
+
+            public class Idler : Tracer
+            {
+                public Idler() : base("idler", "Idler") { }
+                public enum Code { GoingIdle = 130 };
+            }
+            public static Idler idler = new Idler();
+
+            public static void Reset(Tracer t, string reason)
+            {
+                string sql = string.Format("insert into activities(time, line, code, text, tags) values('{0}', '{1}', '{2}', '{3}', '{4}'); ",
+                        DateTime.Now.ToString(@"yyyy-MM-dd HH:mm:ss.fff"),
+                        t.Line,
+                        Tracer.resetValue,
+                        t.Name + " " + reason,
+                        t.Name + "," + reason);
+                try
+                {
+                    using (var sqlConn = new MySqlConnection(MySqlActivitiesConnectionString))
+                    {
+                        sqlConn.Open();
+                        using (var sqlCmd = new MySqlCommand(sql, sqlConn))
+                        {
+                            sqlCmd.ExecuteNonQuery();
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Tracking.ResetTracer: \nsql: {0}\n failed: {1}", sql, ex.StackTrace);
+                    #endregion
+                }
+            }
+        }
     }
+
 
     public abstract class Activity: IEquatable<Activity>
     {
         public ActivityMonitor.ActivityType _type;
-
-        public class Code
-        {
-            public const int Idle = 0;
-            public const int Shutdown = 10;
-            public const int Parking = 20;
-            public const int Focuser = 30;
-            public const int FilterWheel = 40;
-            public class Dome
-            {
-                public const int Slewing = 50;
-                public const int Tracking = 60;
-                public const int FindHome = 160;
-            }
-            public class Shutter
-            {
-                public const int Open = 70;
-                public const int Opening = 80;
-                public const int Closing = 90;
-                public const int Closed = Idle;
-            }
-            public class Telescope
-            {
-                public const int Slewing = 100;
-                public const int Pulsing = 110;
-                public const int Tracking = 120;
-            }
-            public const int GoingIdle = 130;
-            public const int Projector = 140;
-            public const int NotSafe = 150;
-        }
-
+        
         public enum State { NotSet, Pending, Succeeded, Failed, Aborted, Idle };
         public State _endState;
         public int _code;
+        public string _line;
         public string _annotation;
         public List<string> _tags;
 
@@ -322,7 +396,7 @@ namespace ASCOM.Wise40
         public string _endReason;
 
         public TimeSpan _duration;
-        public int _objectId;
+        public int _activityId;
 
         protected static Debugger debugger = Debugger.Instance;
         private static ActivityMonitor monitor = ActivityMonitor.Instance;
@@ -366,24 +440,37 @@ namespace ASCOM.Wise40
 
         public void EmitStart()
         {
+            if (_startTime == DateTime.MinValue)
+                _startTime = DateTime.Now;
+
             _annotation = _startDetails;
             string sql = 
-                "insert into activities(time, code, text, tags) " + 
-                string.Format("values('{0}', '{1}', '{2}', '{3}');",
+                "insert into activities(time, line, code, text, tags) " + 
+                string.Format("values('{0}', '{1}', '{2}', '{3}', '{4}');",
                     _startTime.ToString(@"yyyy-MM-dd HH:mm:ss.fff"),
+                    _line,
                     _code,
-                    _annotation + "\n",
+                    _annotation,
                     string.Join(",", _tags)) + 
                 " select last_insert_id();";
 
             try
             {
-                MySqlConnection sqlConn = new MySqlConnection("server=localhost;user=root;database=activities;port=3306;password=@!ab4131!@");
-                sqlConn.Open();
-                MySqlCommand sqlCmd = new MySqlCommand(sql, sqlConn);
-                _objectId = Convert.ToInt32(sqlCmd.ExecuteScalar());
-                sqlCmd.Dispose();
-                sqlConn.Close();
+                using (var sqlConn = new MySqlConnection(ActivityMonitor.Tracer.MySqlActivitiesConnectionString))
+                {
+                    sqlConn.Open();
+                    using (var sqlCmd = new MySqlCommand(sql, sqlConn))
+                    {
+                        _activityId = Convert.ToInt32(sqlCmd.ExecuteScalar());
+                    }
+
+                    _annotation = string.Format("Activity id: {0}\n", _activityId) + _annotation;
+                    sql = string.Format(@"update activities set text='{0}' where id='{1}';", _annotation, _activityId);
+                    using (var sqlCmd = new MySqlCommand(sql, sqlConn))
+                    {
+                        sqlCmd.ExecuteNonQuery();
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -395,29 +482,45 @@ namespace ASCOM.Wise40
 
         public void EmitEnd()
         {
-            _tags.RemoveAt(_tags.Count - 1);
-            _tags.Add(_endState.ToString());
+            string end = _endState.ToString();
+            ;
+            if (_tags[0] == "Idler" && _tags[1] == "GoingIdle" && end == "Aborted")
+                end = "Stopped";
 
+            if (_tags[_tags.Count - 1] == "InProgress")
+                _tags.RemoveAt(_tags.Count - 1);
+            _tags.Add(end);
+
+
+            _duration = _endTime > _startTime ? _endTime.Subtract(_startTime) : TimeSpan.Zero;
             _annotation +=
                 string.Format("Duration: {0}\n", _duration) +
-                string.Format("End:\n") +
-                string.Format(" Details: {0}\n", _endDetails) +
-                string.Format(" State: {0}\n", _endState.ToString()) +
-                string.Format(" Reason: {0}\n", _endReason);
+                _endDetails +
+                string.Format("End state: {0}\n", end) +
+                string.Format("End reason: {0}\n", _endReason);
 
             string sql = string.Format(@"UPDATE activities SET text='{0}', tags='{1}' where id={2};",
-                _annotation, string.Join(",", _tags), _objectId);
+                _annotation, string.Join(",", _tags), _activityId);
 
-            sql += string.Format(@"INSERT into activities(time, code) VALUES({0}, {1});", _endTime, _code);
+            _tags.Add(string.Format("End of #{0}", _activityId));
+            sql += string.Format(@"insert into activities(time, code, line, text, tags) values('{0}', '{1}', '{2}', '{3}', '{4}');",
+                _endTime.ToString(@"yyyy-MM-dd HH:mm:ss.fff"),
+                ActivityMonitor.Tracer.resetValue,
+                _line,
+                _annotation,
+                string.Join(",", _tags)
+                );
 
             try
             {
-                MySqlConnection sqlConn = new MySqlConnection("server=localhost;user=root;database=activities;port=3306;password=@!ab4131!@");
-                sqlConn.Open();
-                MySqlCommand sqlCmd = new MySqlCommand(sql, sqlConn);
-                sqlCmd.ExecuteNonQuery();
-                sqlCmd.Dispose();
-                sqlConn.Close();
+                using (var sqlConn = new MySqlConnection(ActivityMonitor.Tracer.MySqlActivitiesConnectionString))
+                {
+                    sqlConn.Open();
+                    using (var sqlCmd = new MySqlCommand(sql, sqlConn))
+                    {
+                        sqlCmd.ExecuteNonQuery();
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -427,17 +530,17 @@ namespace ASCOM.Wise40
             }
         }
 
-        public void EndActivity(EndParams par)
+        public void EndActivity(GenericEndParams par)
         {
             if (par.endState == State.NotSet)
                 throw new InvalidValueException(string.Format("Activity:EndActivity: Activity {0}: endState NOT set", this._type.ToString()));
             if (par.endReason == string.Empty)
                 throw new InvalidValueException(string.Format("Activity:EndActivity: Activity {0}: endReason NOT set", this._type.ToString()));
 
-            _endTime = DateTime.Now;
+            if (_endTime == null)
+                _endTime = DateTime.Now;
             _endState = par.endState;
             _endReason = par.endReason;
-            _duration = _endTime - _startTime;
 
             EmitEnd();
 
@@ -448,20 +551,26 @@ namespace ASCOM.Wise40
             }
 
             if (ActivityMonitor.ObservatoryActivities.Count() == 0 && effectOnGoingIdle_AtEnd == EffectOnGoingIdle.Renew)
-                ActivityMonitor.idler.StartGoingIdle("no activities in progress");
+                ActivityMonitor.idler.StartGoingIdle(new Idler.StartParams() { reason = "no activities in progress" });
         }
 
-        public class EndParams
+        public class GenericStartParams
+        {
+            public DateTime startTime = DateTime.MinValue;
+        }
+
+        public class GenericEndParams
         {
             public Activity.State endState = State.NotSet;  // How did the activity end?
             public string endReason = string.Empty;         // Why did the activity end?
+            public DateTime endTime = DateTime.MinValue;
         }
 
-        public abstract void End(EndParams par);
+        public abstract void End(GenericEndParams par);
 
-        public class TimeConsumingActivity : Activity
+        public abstract class TimeConsuming : Activity
         {
-            public TimeConsumingActivity(ActivityMonitor.ActivityType type) : base(type)
+            public TimeConsuming(ActivityMonitor.ActivityType type) : base(type)
             {
                 if (type == ActivityMonitor.ActivityType.DomeTracking)
                 {
@@ -475,13 +584,13 @@ namespace ASCOM.Wise40
                 }
             }
 
-            public override void End(EndParams par)
+            public override void End(GenericEndParams par)
             {
                 End(par);
             }
         }
 
-        public class TelescopeSlewActivity : TimeConsumingActivity
+        public class TelescopeSlew : TimeConsuming
         {
             public class Coords
             {
@@ -490,31 +599,31 @@ namespace ASCOM.Wise40
 
             public Coords _start, _target, _end;
 
-            public class StartParams
+            public class StartParams: Activity.GenericStartParams
             {
                 public Coords start, target;
             }
 
-            public new class EndParams : Activity.EndParams
+            public class EndParams : GenericEndParams
             {
                 public Coords end;
             }
 
-            public override void End(Activity.EndParams p)
+            public override void End(GenericEndParams p)
             {
-                TelescopeSlewActivity.EndParams par = p as TelescopeSlewActivity.EndParams;
+                TelescopeSlew.EndParams par = p as TelescopeSlew.EndParams;
 
                 _end = new Coords() {
                     ra = par.end.ra,
                     dec = par.end.dec,
                 };
-                _endDetails = string.Format("endRa: {0}, endDec: {1}",
-                    Angle.FromHours(_end.ra).ToNiceString(),
-                    Angle.FromDegrees(_end.dec).ToNiceString());
+                _endDetails = string.Format("End: {0}, {1}\n",
+                    Angle.FromHours(_end.ra).ToString(),
+                    Angle.FromDegrees(_end.dec).ToString());
                 EndActivity(par);
             }
 
-            public TelescopeSlewActivity(StartParams par) : base(ActivityMonitor.ActivityType.TelescopeSlew)
+            public TelescopeSlew(StartParams par) : base(ActivityMonitor.ActivityType.TelescopeSlew)
             {
                 _start = new Coords() {
                     ra = par.start.ra,
@@ -525,44 +634,46 @@ namespace ASCOM.Wise40
                     ra = par.target.ra,
                     dec = par.target.dec,
                 };
-                _code = Activity.Code.Telescope.Slewing;
+                _code = (int) ActivityMonitor.Tracer.Telescope.Code.Slewing;
+                _line = ActivityMonitor.Tracer.Telescope.telescope.Line;
                 _tags = new List<string>() { "Telescope", "Slew", "InProgress" };
                 _startDetails = 
                     string.Format("Start: {0}, {1}\n",
-                        Angle.FromHours(_start.ra).ToNiceString(),
-                        Angle.FromDegrees(_start.dec).ToNiceString()) + 
+                        Angle.FromHours(_start.ra).ToString(),
+                        Angle.FromDegrees(_start.dec).ToString()) + 
                     string.Format("Target: {0}, {1}\n",
-                        Angle.FromHours(_target.ra).ToNiceString(),
-                        Angle.FromDegrees(_target.dec).ToNiceString()
+                        Angle.FromHours(_target.ra).ToString(),
+                        Angle.FromDegrees(_target.dec).ToString()
                     );
 
                 EmitStart();
             }
         }
 
-        public class DomeSlewActivity : TimeConsumingActivity
+        public class DomeSlew : TimeConsuming
         {
             public enum DomeEventType { FindHome, Slew, Tracking };
             public double _startAz, _targetAz, _endAz;
             public string _reason;
 
-            public class StartParams
+            public class StartParams : Activity.GenericStartParams
             {
                 public DomeEventType type;
                 public double startAz, targetAz;
                 public string reason;
             }
 
-            public new class EndParams : Activity.EndParams
+            public class EndParams : Activity.GenericEndParams
             {
                 public double endAz;
             }
 
-            public DomeSlewActivity(StartParams par): base(ActivityMonitor.ActivityType.DomeSlew)
+            public DomeSlew(StartParams par): base(ActivityMonitor.ActivityType.DomeSlew)
             {
+                _line = ActivityMonitor.Tracer.Dome.dome.Line;
                 if (par.type == DomeEventType.FindHome)
                 {
-                    _code = Code.Dome.FindHome;
+                    _code = (int) ActivityMonitor.Tracer.Dome.Code.FindingHome;
                     _tags = new List<string>() { "Dome", "FindHome", "InProgress" };
                     _reason = "FindHome";
                     _startDetails = "Reason: " + _reason;
@@ -575,54 +686,55 @@ namespace ASCOM.Wise40
                     _tags = new List<string>() { "Dome" };
                     if (par.type == DomeEventType.Tracking)
                     {
-                        _code = Code.Dome.Tracking;
+                        _code = (int) ActivityMonitor.Tracer.Dome.Code.Tracking;
                         _tags.Add("Tracking");
                     } else
                     {
-                        _code = Code.Dome.Slewing;
+                        _code = (int) ActivityMonitor.Tracer.Dome.Code.Slewing;
                         _tags.Add("Slew");
                     }
                     _tags.Add("InProgress");
 
                     _startDetails =
-                        string.Format("Start: {0}\n", Angle.FromDegrees(_startAz, Angle.Type.Az).ToNiceString()) +
-                        string.Format("Target: {0}\n" + Angle.FromDegrees(_targetAz, Angle.Type.Az).ToNiceString()) +
+                        string.Format("Start: {0}\n", Angle.FromDegrees(_startAz, Angle.Type.Az).ToString()) +
+                        string.Format("Target: {0}\n" + Angle.FromDegrees(_targetAz, Angle.Type.Az).ToString()) +
                         string.Format("Reason: {0}\n",_reason);
                 }
 
                 EmitStart();
             }
 
-            public override void End(Activity.EndParams p)
+            public override void End(Activity.GenericEndParams p)
             {
-                DomeSlewActivity.EndParams par = p as DomeSlewActivity.EndParams;
+                DomeSlew.EndParams par = p as DomeSlew.EndParams;
 
                 _endAz = par.endAz;
-                _endDetails = string.Format("End: {0}", Angle.FromDegrees(_endAz, Angle.Type.Az).ToNiceString());
+                _endDetails = string.Format("End: {0}", Angle.FromDegrees(_endAz, Angle.Type.Az).ToString());
                 EndActivity(par);
             }
         }
 
-        public class FocuserActivity : TimeConsumingActivity
+        public class Focuser : TimeConsuming
         {
             public enum Direction { NotSet, Up, Down };
             public Direction _direction;
             public int _start, _target, _end;
 
-            public class StartParams
+            public class StartParams : Activity.GenericStartParams
             {
                 public int start, target, intermediateTarget;
                 public Direction direction;
             }
 
-            public new class EndParams : Activity.EndParams
+            public class EndParams : Activity.GenericEndParams
             {
                 public int end;
             }
 
-            public FocuserActivity(StartParams par): base(ActivityMonitor.ActivityType.Focuser)
+            public Focuser(StartParams par): base(ActivityMonitor.ActivityType.Focuser)
             {
-                _code = Code.Focuser;
+                _code = (int) ActivityMonitor.Tracer.Focuser.Code.Moving;
+                _line = ActivityMonitor.Tracer.Focuser.focuser.Line;
                 _tags = new List<string>() { "Focuser", "InProgress" };
                 _direction = par.direction;
                 _target = par.target;
@@ -633,49 +745,50 @@ namespace ASCOM.Wise40
                 EmitStart();
             }
 
-            public override void End(Activity.EndParams p)
+            public override void End(Activity.GenericEndParams p)
             {
-                FocuserActivity.EndParams par = p as FocuserActivity.EndParams;
+                Focuser.EndParams par = p as Focuser.EndParams;
 
                 _endDetails = string.Format("End: {0}", par.end);
                 EndActivity(par);
             }
         }
 
-        public class ShutterActivity : TimeConsumingActivity
+        public class Shutter : TimeConsuming
         {
             public int _start, _target, _end;
             public ASCOM.DeviceInterface.ShutterState _operation;
 
-            public class StartParams
+            public class StartParams : Activity.GenericStartParams
             {
                 public int start, target;
                 public ASCOM.DeviceInterface.ShutterState operation;
             }
 
-            public new class EndParams : Activity.EndParams
+            public class EndParams : Activity.GenericEndParams
             {
                 public int percentOpen;
             }
 
-            public ShutterActivity(StartParams par): base (ActivityMonitor.ActivityType.Shutter)
+            public Shutter(StartParams par): base (ActivityMonitor.ActivityType.Shutter)
             {
                 _operation = par.operation;
                 switch (_operation)
                 {
                     case DeviceInterface.ShutterState.shutterOpening:
-                        _code = Code.Shutter.Opening;
+                        _code = (int) ActivityMonitor.Tracer.Shutter.Code.Opening;
                         break;
                     case DeviceInterface.ShutterState.shutterOpen:
-                        _code = Code.Shutter.Open;
+                        _code = (int) ActivityMonitor.Tracer.Shutter.Code.Open;
                         break;
                     case DeviceInterface.ShutterState.shutterClosing:
-                        _code = Code.Shutter.Closing;
+                        _code = (int) ActivityMonitor.Tracer.Shutter.Code.Closing;
                         break;
                     case DeviceInterface.ShutterState.shutterClosed:
-                        _code = Code.Shutter.Closed;
+                        _code = (int) ActivityMonitor.Tracer.resetValue;
                         break;
                 }
+                _line = ActivityMonitor.Tracer.Shutter.shutter.Line;
                 _tags = new List<string>() { "Shutter", _code.ToString(), "InProgress ??" };
                 _start = par.start;
                 _target= par.target;
@@ -687,9 +800,9 @@ namespace ASCOM.Wise40
                 EmitStart();
             }
 
-            public override void End(Activity.EndParams p)
+            public override void End(Activity.GenericEndParams p)
             {
-                ShutterActivity.EndParams par = p as ShutterActivity.EndParams;
+                Shutter.EndParams par = p as Shutter.EndParams;
 
                 _end = par.percentOpen;
                 _endDetails = string.Format("End: {0}%",  _end.ToString());
@@ -698,89 +811,91 @@ namespace ASCOM.Wise40
             }
         }
 
-        public class PulsingActivity : TimeConsumingActivity
+        public class Pulsing : TimeConsuming
         {
             public DeviceInterface.GuideDirections _direction;
             public int _millis;
-            public TelescopeSlewActivity.Coords _start, _end;
+            public TelescopeSlew.Coords _start, _end;
 
-            public class StartParams
+            public class StartParams : Activity.GenericStartParams
             {
-                public TelescopeSlewActivity.Coords _start;
+                public TelescopeSlew.Coords _start;
                 public DeviceInterface.GuideDirections _direction;
                 public int _millis;
             }
 
-            public new class EndParams : Activity.EndParams
+            public class EndParams : Activity.GenericEndParams
             {
-                public TelescopeSlewActivity.Coords _end;
+                public TelescopeSlew.Coords _end;
             }
 
-            public PulsingActivity(StartParams par): base(ActivityMonitor.ActivityType.Pulsing)
+            public Pulsing(StartParams par): base(ActivityMonitor.ActivityType.Pulsing)
             {
-                _code = Code.Telescope.Pulsing;
-                _tags = new List<string>() { "Pulsing", "InProgress" };
+                _line = ActivityMonitor.Tracer.Telescope.telescope.Line; ;
+                _code = (int) ActivityMonitor.Tracer.Telescope.Code.Pulsing;
+                _tags = new List<string>() { "Telescope", "Pulsing", "InProgress" };
                 _direction = par._direction;
                 _millis = par._millis;
-                _start = new TelescopeSlewActivity.Coords()
+                _start = new TelescopeSlew.Coords()
                 {
                     ra = par._start.ra,
                     dec = par._start.dec,
                 };
                 _startDetails =
                     string.Format("Start: {0}, {1}\n",
-                        Angle.FromHours(_start.ra).ToNiceString(),
-                        Angle.FromDegrees(_start.dec, Angle.Type.Dec).ToNiceString()) +
-                    string.Format("Direction: {0}\n", _direction.ToString()) +
+                        Angle.FromHours(_start.ra).ToString(),
+                        Angle.FromDegrees(_start.dec, Angle.Type.Dec).ToString()) +
+                    string.Format("Direction: {0}\n", _direction.ToString().Remove(0, "guide".Length)) +
                     string.Format("Millis: {0}\n", _millis.ToString());
 
                 EmitStart(); ;
             }
 
-            public override void End(Activity.EndParams p)
+            public override void End(Activity.GenericEndParams p)
             {
-                PulsingActivity.EndParams par = p as PulsingActivity.EndParams;
+                Pulsing.EndParams par = p as Pulsing.EndParams;
 
-                _end = new TelescopeSlewActivity.Coords()
+                _end = new TelescopeSlew.Coords()
                 {
                     ra = par._end.ra,
                     dec = par._end.dec,
                 };
                 _endDetails = string.Format("End: {0}, {1}\n",
-                    Angle.FromHours(_end.ra, Angle.Type.RA).ToNiceString(),
-                    Angle.FromDegrees(_end.dec, Angle.Type.Dec).ToNiceString());
+                    Angle.FromHours(_end.ra, Angle.Type.RA).ToString(),
+                    Angle.FromDegrees(_end.dec, Angle.Type.Dec).ToString());
 
                 EndActivity(par);
             }
         }
 
-        public class FilterWheelActivity : TimeConsumingActivity
+        public class FilterWheel : TimeConsuming
         {
             public enum Operation { Detect, Move };
             public const int UnknownPosition = int.MinValue;
 
-            public class StartParams
+            public class StartParams : Activity.GenericStartParams
             {
                 public Operation operation;
                 public string startWheel;
                 public int startPosition, targetPosition;
             }
 
-            public new class EndParams: Activity.EndParams
+            public class EndParams: Activity.GenericEndParams
             {
                 public string endWheel;
                 public int endPosition;
                 public string endTag;
             }
 
-            public FilterWheelActivity(StartParams par) : base(ActivityMonitor.ActivityType.FilterWheel)
+            public FilterWheel(StartParams par) : base(ActivityMonitor.ActivityType.FilterWheel)
             {
-                _code = Code.FilterWheel;
+                _line = ActivityMonitor.Tracer.FilterWheel.filterwheel.Line;
+                _code = (int) ActivityMonitor.Tracer.FilterWheel.Code.Moving;
                 _tags = new List<string>() { "FilterWheel", par.operation.ToString(), "InProgress" };
                 _startDetails = string.Format("Start: {0}\n", par.operation.ToString());
                 _startDetails +=
                     string.Format(" Wheel: {0}\n", par.startWheel == null ? "none" : par.startWheel) +
-                    string.Format(" Position: {0}\n", par.startPosition == FilterWheelActivity.UnknownPosition ? 
+                    string.Format(" Position: {0}\n", par.startPosition == FilterWheel.UnknownPosition ? 
                         "none" : par.startPosition.ToString());
                 if (par.operation == Operation.Move)
                     _startDetails += string.Format(" Target: {0}\n", par.targetPosition.ToString());
@@ -788,13 +903,13 @@ namespace ASCOM.Wise40
                 EmitStart();
             }
 
-            public override void End(Activity.EndParams p)
+            public override void End(Activity.GenericEndParams p)
             {
-                FilterWheelActivity.EndParams par = p as FilterWheelActivity.EndParams;
+                FilterWheel.EndParams par = p as FilterWheel.EndParams;
 
                 _endDetails = "End:\n" +
                     string.Format("Wheel: {0}\n", par.endWheel) +
-                    string.Format("Position: {0}\n", par.endPosition == FilterWheelActivity.UnknownPosition ? 
+                    string.Format("Position: {0}\n", par.endPosition == FilterWheel.UnknownPosition ? 
                         "none" : par.endPosition.ToString()) +
                     string.Format("Tag: {0}\n", par.endTag);
 
@@ -802,53 +917,64 @@ namespace ASCOM.Wise40
             }
         }
 
-        public class ProjectorActivity : TimeConsumingActivity
+        public class Projector : TimeConsuming
         {
             public bool _onOff;
 
-            public ProjectorActivity() : base(ActivityMonitor.ActivityType.Projector)
+            public class StartParams : Activity.GenericStartParams
+            {
+            }
+
+            public class EndParams : Activity.GenericEndParams
+            {
+            }
+
+            public Projector(StartParams par) : base(ActivityMonitor.ActivityType.Projector)
             {
                 effectOnGoingIdle_AtStart = EffectOnGoingIdle.NoEffect;
                 effectOnGoingIdle_AtEnd = EffectOnGoingIdle.NoEffect;
 
                 _onOff = true;
-                _code = Code.Projector;
-                _tags = new List<string>() { "Projector" };
-                _startDetails = string.Format("projector: {0}", _onOff ? "ON" : "OFF");
+                _code = (int) ActivityMonitor.Tracer.Projector.Code.On;
+                _line = ActivityMonitor.Tracer.Projector.projector.Line;
+                _tags = new List<string>() { "Projector", "InProgress" };
+                _startDetails = string.Format("State: {0}\n", "On");
 
                 EmitStart();
             }
 
-            public override void End(Activity.EndParams p)
+            public void End(EndParams par)
             {
-                EndActivity(p);
+                _onOff = false;
+                _endDetails = string.Format("State: {0}\n", "Off");
+                EndActivity(par);
             }
         }
 
-        public class ParkActivity : TimeConsumingActivity
+        public class Park : TimeConsuming
         {
-            public TelescopeSlewActivity.Coords _start, _target, _end;
+            public TelescopeSlew.Coords _start, _target, _end;
             public double _startAz, _targetAz, _endAz;
             public int _shutterPercentStart, _shutterPercentEnd;
             public ASCOM.DeviceInterface.ShutterState _shutterEndState;
 
-            public class StartParams
+            public class StartParams: Activity.GenericStartParams
             {
-                public TelescopeSlewActivity.Coords start, target;
+                public TelescopeSlew.Coords start, target;
                 public double domeStartAz, domeTargetAz;
                 public int shutterPercent;
             }
 
-            public new class EndParams : Activity.EndParams
+            public class EndParams : Activity.GenericEndParams
             {
-                public TelescopeSlewActivity.Coords end;
+                public TelescopeSlew.Coords end;
                 public double domeAz;
                 public int shutterPercent;
             }
 
-            public ParkActivity(StartParams par): base(ActivityMonitor.ActivityType.Parking)
+            public Park(StartParams par): base(ActivityMonitor.ActivityType.Parking)
             {
-                _start = new TelescopeSlewActivity.Coords()
+                _start = new TelescopeSlew.Coords()
                 {
                     ra = par.start.ra,
                     dec = par.start.dec,
@@ -856,36 +982,37 @@ namespace ASCOM.Wise40
                 _startAz = par.domeStartAz;
                 _shutterPercentStart = par.shutterPercent;
 
-                _target = new TelescopeSlewActivity.Coords()
+                _target = new TelescopeSlew.Coords()
                 {
                     ra = par.target.ra,
                     dec = par.start.dec,
                 };
                 _targetAz = par.domeTargetAz;
-                _code = Code.Parking;
+                _code = (int) ActivityMonitor.Tracer.Parking.Code.Active;
+                _line = "parking";
                 _tags = new List<string>() { "Parking", "InProgress" };
 
                 _startDetails = "Start:\n" +
                     string.Format(" Telescope: {0}, {1}\n",
-                        Angle.FromHours(_start.ra, Angle.Type.RA).ToNiceString(),
-                        Angle.FromDegrees(_start.dec, Angle.Type.Dec).ToNiceString()) +
-                    string.Format(" Dome: {0}\n", Angle.FromDegrees(_startAz, Angle.Type.Az).ToNiceString()) +
+                        Angle.FromHours(_start.ra, Angle.Type.RA).ToString(),
+                        Angle.FromDegrees(_start.dec, Angle.Type.Dec).ToString()) +
+                    string.Format(" Dome: {0}\n", Angle.FromDegrees(_startAz, Angle.Type.Az).ToString()) +
                     string.Format(" Shutter: {0}%\n", _shutterPercentStart.ToString()) +
                     "Target:\n" +
                     string.Format(" Telescope: {0}, {1}\n",
-                        Angle.FromHours(_target.ra, Angle.Type.RA).ToNiceString(),
-                        Angle.FromDegrees(_target.dec, Angle.Type.Dec).ToNiceString()) +
-                    string.Format(" Dome: {0}\n", Angle.FromDegrees(_targetAz, Angle.Type.Az).ToNiceString()) +
+                        Angle.FromHours(_target.ra, Angle.Type.RA).ToString(),
+                        Angle.FromDegrees(_target.dec, Angle.Type.Dec).ToString()) +
+                    string.Format(" Dome: {0}\n", Angle.FromDegrees(_targetAz, Angle.Type.Az).ToString()) +
                     string.Format(" Shutter: {0}%\n", "100");
 
                 EmitStart();
             }
 
-            public override void End(Activity.EndParams p)
+            public override void End(Activity.GenericEndParams p)
             {
-                ParkActivity.EndParams par = p as ParkActivity.EndParams;
+                Park.EndParams par = p as Park.EndParams;
 
-                _end = new TelescopeSlewActivity.Coords()
+                _end = new TelescopeSlew.Coords()
                 {
                     ra = par.end.ra,
                     dec = par.end.dec,
@@ -895,23 +1022,29 @@ namespace ASCOM.Wise40
 
                 _endDetails = "End:\n" +
                     string.Format(" Telescope: {0}, {1}\n",
-                        Angle.FromHours(_end.ra, Angle.Type.RA).ToNiceString(),
-                        Angle.FromDegrees(_end.dec, Angle.Type.Dec).ToNiceString()) +
-                    string.Format(" Dome: {0}\n", Angle.FromDegrees(_endAz, Angle.Type.Az).ToNiceString()) +
+                        Angle.FromHours(_end.ra, Angle.Type.RA).ToString(),
+                        Angle.FromDegrees(_end.dec, Angle.Type.Dec).ToString()) +
+                    string.Format(" Dome: {0}\n", Angle.FromDegrees(_endAz, Angle.Type.Az).ToString()) +
                     string.Format(" Shutter: {0}%\n", _shutterPercentEnd.ToString());
 
                 EndActivity(par);
             }
         }
 
-        public class ShutdownActivity : TimeConsumingActivity
+        public class Shutdown : TimeConsuming
         {
             public string _reason;
 
-            public ShutdownActivity(string reason): base(ActivityMonitor.ActivityType.ShuttingDown)
+            public class StartParams: Activity.GenericStartParams
             {
-                _reason = reason;
-                _code = Code.Shutdown;
+                public string reason;
+            }
+
+            public Shutdown(StartParams par): base(ActivityMonitor.ActivityType.ShuttingDown)
+            {
+                _reason = par.reason;
+                _code = (int) ActivityMonitor.Tracer.Shutdown.Code.Active;
+                _line = ActivityMonitor.Tracer.Shutdown.shutdown.Line;
                 _tags = new List<string>() { "Shutdown", "InProgress" };
 
                 _startDetails = string.Format("Reason: {0}\n", _reason);
@@ -920,56 +1053,56 @@ namespace ASCOM.Wise40
                 EmitStart();
             }
 
-            public override void End(Activity.EndParams p)
+            public override void End(Activity.GenericEndParams p)
             {
-                ShutdownActivity.EndParams par = p as ShutdownActivity.EndParams;
+                Shutdown.GenericEndParams par = p as Shutdown.GenericEndParams;
 
                 EndActivity(par);
-                Idler.BecomeIdle("end of ShuttingDown");
+                Idler.BecomeIdle("End of Shuttdown");
             }
         }
 
-        public class HandpadActivity : TimeConsumingActivity
+        public class Handpad : TimeConsuming
         {
             public DeviceInterface.TelescopeAxes _axis;
             public double _rate;
             public double _start, _end;
 
-            public class StartParams
+            public class StartParams : Activity.GenericStartParams
             {
                 public DeviceInterface.TelescopeAxes axis;
                 public double rate;
                 public double start;
             }
 
-            public new class EndParams : Activity.EndParams
+            public class EndParams : Activity.GenericEndParams
             {
                 public double end;
             }
 
-            public HandpadActivity(StartParams par) : base(ActivityMonitor.ActivityType.Handpad)
+            public Handpad(StartParams par) : base(ActivityMonitor.ActivityType.Handpad)
             {
                 _axis = par.axis;
                 _rate = par.rate;
                 _startDetails = string.Format("axis: {0}, start: {1}, rate: {2}",
                     _axis.ToString().Remove(0, "rate".Length),
                     (_axis == DeviceInterface.TelescopeAxes.axisPrimary) ?
-                        Angle.FromHours(_start, Angle.Type.RA).ToNiceString() :
-                        Angle.FromDegrees(_start, Angle.Type.Dec).ToNiceString(),
+                        Angle.FromHours(_start, Angle.Type.RA).ToString() :
+                        Angle.FromDegrees(_start, Angle.Type.Dec).ToString(),
                     RateName(_rate));
 
                 EmitStart(); ;
             }
 
-            public override void End(Activity.EndParams p)
+            public override void End(Activity.GenericEndParams p)
             {
-                HandpadActivity.EndParams par = p as HandpadActivity.EndParams;
+                Handpad.EndParams par = p as Handpad.EndParams;
 
                 _end = par.end;
                 _endDetails = string.Format("end: {0}",
                     (_axis == DeviceInterface.TelescopeAxes.axisPrimary) ?
-                        Angle.FromHours(_end, Angle.Type.RA).ToNiceString() :
-                        Angle.FromDegrees(_end, Angle.Type.Dec).ToNiceString()
+                        Angle.FromHours(_end, Angle.Type.RA).ToString() :
+                        Angle.FromDegrees(_end, Angle.Type.Dec).ToString()
                     );
             }
 
@@ -992,7 +1125,6 @@ namespace ASCOM.Wise40
             }
         }
     }
-
 
     public sealed class Idler : Activity
     {
@@ -1021,13 +1153,24 @@ namespace ASCOM.Wise40
         static Idler() { }
         // end Singleton
 
-        public override void End(Activity.EndParams endParams) { }
-        public void init()
+        public class StartParams: Activity.GenericStartParams
         {
-            StartGoingIdle("init()");
+            public string reason;
         }
 
-        public void AbortGoingIdle(string reason)
+        public class EndParams : Activity.GenericEndParams
+        {
+            public string reason;
+        }
+
+        public override void End(Activity.GenericEndParams endParams) { }
+        public void init()
+        {
+            StartGoingIdle(new StartParams() { reason = "Initial GoingIdle" });
+        }
+
+
+        public void AbortGoingIdle(EndParams par)
         {
             _due = DateTime.MinValue;
             _timer.Change(Timeout.Infinite, Timeout.Infinite);
@@ -1037,13 +1180,11 @@ namespace ASCOM.Wise40
             if (prevState != IdlerState.GoingIdle)
                 return;
 
-            _endDetails = string.Format("GoingIdle: aborted, reason: {0}",reason);
-
             EndActivity(new EndParams
-            {
-                endReason = reason,
-                endState = Activity.State.Aborted,
-            });
+                {
+                    endReason = par.reason,
+                    endState = Activity.State.Aborted,
+                });
         }
 
         /// <summary>
@@ -1052,18 +1193,21 @@ namespace ASCOM.Wise40
         ///  the timer expires (BecomeIdle is called))
         /// </summary>
         /// <param name="reason"></param>
-        public void StartGoingIdle(string reason)
+        public void StartGoingIdle(StartParams par)
         {
             _type = ActivityMonitor.ActivityType.GoingIdle;
-            _code = Code.GoingIdle;
-            _tags = new List<string>() { "GoingIdle", "InProgress" };
+            _code = (int) ActivityMonitor.Tracer.Idler.Code.GoingIdle;
+            _line = ActivityMonitor.Tracer.Idler.idler.Line;
+            _tags = new List<string>() { "Idler", "GoingIdle", "InProgress" };
 
-            _startTime = DateTime.Now;
-            startReason = reason;
-            _startDetails = string.Format("Reason: {0}\n", startReason);
+            _startTime = par.startTime == DateTime.MinValue ? DateTime.Now : par.startTime;
+            startReason = par.reason;
+            _startDetails = string.Format("Start: {0}\n", startReason);
             EmitStart();
 
             _idlerState = IdlerState.GoingIdle;
+            if (ActivityMonitor.millisToInactivity == 0)
+                ActivityMonitor.Instance.init();
             _due = DateTime.Now.AddMilliseconds(ActivityMonitor.millisToInactivity);
             _timer.Change(Timeout.Infinite, Timeout.Infinite);
             _timer.Change(ActivityMonitor.millisToInactivity, Timeout.Infinite);
@@ -1071,16 +1215,18 @@ namespace ASCOM.Wise40
 
         private static void onTimer(object state)
         {
-            BecomeIdle(string.Format("GoingIdle: Became idle after {0} seconds", ActivityMonitor.millisToInactivity / 1000));
+            BecomeIdle(string.Format("No activity for {0} seconds", ActivityMonitor.millisToInactivity / 1000));
         }
 
-        public static void BecomeIdle(string reason)
+        public static void BecomeIdle(string reason = "")
         {
             ActivityMonitor.idler.EndActivity(new EndParams()
             {
                 endState = Activity.State.Idle,
                 endReason = reason,
             });
+
+            ActivityMonitor.Instance.Event(new Event.GlobalEvent("Wise40 is idle"));
 
             Instance._idlerState = IdlerState.Idle;
         }
@@ -1154,12 +1300,14 @@ namespace ASCOM.Wise40
 
             try
             {
-                MySqlConnection sqlConn = new MySqlConnection("server=localhost;user=root;database=activities;port=3306;password=@!ab4131!@");
-                sqlConn.Open();
-                MySqlCommand sqlCmd = new MySqlCommand(sql, sqlConn);
-                sqlCmd.ExecuteNonQuery();
-                sqlCmd.Dispose();
-                sqlConn.Close();
+                using (var sqlConn = new MySqlConnection(ActivityMonitor.Tracer.MySqlActivitiesConnectionString))
+                {
+                    sqlConn.Open();
+                    using (var sqlCmd = new MySqlCommand(sql, sqlConn))
+                    {
+                        sqlCmd.ExecuteNonQuery();
+                    }
+                }
             }
             catch (Exception ex)
             {

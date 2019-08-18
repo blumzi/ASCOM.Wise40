@@ -401,8 +401,10 @@ namespace ASCOM.Wise40 //.FilterWheel
                     throw;
                 }
 
-                activityMonitor.Event(new Event.GlobalEvent(
-                    string.Format("{0} {1}", driverID, value ? "Connected" : "Disconnected")));
+                //activityMonitor.Event(new Event.GlobalEvent(
+                //    string.Format("{0} {1}", driverID, value ? "Connected" : "Disconnected")));
+
+                ActivityMonitor.Tracer.Reset(ActivityMonitor.Tracer.filterwheel, value ? "Connected" : "Disconnected");
 
                 if (value)
                     _updateTimer.Change(2000, 30000);
@@ -781,7 +783,7 @@ namespace ASCOM.Wise40 //.FilterWheel
                 #endregion
 
                 StartActivity(
-                    Activity.FilterWheelActivity.Operation.Move,
+                    Activity.FilterWheel.Operation.Move,
                     currentWheel.WiseName,
                     currentWheel._position,
                     targetPosition);
@@ -979,9 +981,9 @@ namespace ASCOM.Wise40 //.FilterWheel
             }
         }
 
-        public static void StartActivity(Activity.FilterWheelActivity.Operation op, string startWheel, int startPos, int targetPos)
+        public static void StartActivity(Activity.FilterWheel.Operation op, string startWheel, int startPos, int targetPos)
         {
-            activityMonitor.NewActivity(new Activity.FilterWheelActivity(new Activity.FilterWheelActivity.StartParams
+            activityMonitor.NewActivity(new Activity.FilterWheel(new Activity.FilterWheel.StartParams
             {
                 operation = op,
                 startWheel = startWheel,
@@ -990,9 +992,9 @@ namespace ASCOM.Wise40 //.FilterWheel
             }));
         }
 
-        public static void EndActivity(Activity.FilterWheelActivity.Operation op, string endWheel, int endPos, string endTag, Activity.State endState, string endReason)
+        public static void EndActivity(Activity.FilterWheel.Operation op, string endWheel, int endPos, string endTag, Activity.State endState, string endReason)
         {
-            activityMonitor.EndActivity(ActivityMonitor.ActivityType.FilterWheel, new Activity.FilterWheelActivity.EndParams()
+            activityMonitor.EndActivity(ActivityMonitor.ActivityType.FilterWheel, new Activity.FilterWheel.EndParams()
             {
                 endWheel = endWheel,
                 endPosition = endPos,

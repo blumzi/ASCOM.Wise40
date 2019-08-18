@@ -413,7 +413,7 @@ namespace ASCOM.Wise40
 
                 if (_enslaveDome && connectables.Find(x => x.Equals(domeSlaveDriver)) == null)
                     connectables.Add(domeSlaveDriver);
-
+                
                 foreach (var connectable in connectables)
                 {
                     connectable.Connect(value);
@@ -422,6 +422,8 @@ namespace ASCOM.Wise40
 
                 activityMonitor.Event(new Event.GlobalEvent(
                     string.Format("{0} {1}", driverID, value ? "Connected" : "Disconnected")));
+
+                ActivityMonitor.Tracer.Reset(ActivityMonitor.Tracer.telescope, value ? "Connected" : "Disconnected");
             }
         }
 
@@ -757,11 +759,11 @@ namespace ASCOM.Wise40
             try
             {
                 activityMonitor.EndActivity(ActivityMonitor.ActivityType.TelescopeSlew, 
-                        new Activity.TelescopeSlewActivity.EndParams
+                        new Activity.TelescopeSlew.EndParams
                         {
                             endState = Activity.State.Aborted,
                             endReason = reason,
-                            end = new Activity.TelescopeSlewActivity.Coords() {
+                            end = new Activity.TelescopeSlew.Coords() {
                             ra = RightAscension,
                             dec = Declination
                         },
@@ -1118,7 +1120,7 @@ namespace ASCOM.Wise40
 
             try
             {
-                activityMonitor.NewActivity(new Activity.HandpadActivity(new Activity.HandpadActivity.StartParams() {
+                activityMonitor.NewActivity(new Activity.Handpad(new Activity.Handpad.StartParams() {
                     axis = Axis,
                     rate = Rate,
                     start = (Axis == TelescopeAxes.axisPrimary) ?
@@ -1128,7 +1130,7 @@ namespace ASCOM.Wise40
                 _moveAxis(Axis, Rate, direction, false);
             } catch (Exception ex)
             {
-                activityMonitor.EndActivity(ActivityMonitor.ActivityType.Handpad, new Activity.HandpadActivity.EndParams()
+                activityMonitor.EndActivity(ActivityMonitor.ActivityType.Handpad, new Activity.Handpad.EndParams()
                 {
                     endState = Activity.State.Aborted,
                     endReason = string.Format("Exception: {0}", ex.Message),
@@ -1156,7 +1158,7 @@ namespace ASCOM.Wise40
 
             StopAxis(axis);
 
-            activityMonitor.EndActivity(ActivityMonitor.ActivityType.Handpad, new Activity.HandpadActivity.EndParams()
+            activityMonitor.EndActivity(ActivityMonitor.ActivityType.Handpad, new Activity.Handpad.EndParams()
             {
                 endState = Activity.State.Succeeded,
                 endReason = "HandpadStop()",
@@ -1580,7 +1582,7 @@ namespace ASCOM.Wise40
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "doShutdown: starting activity ShuttingDown ...");
             #endregion
-            activityMonitor.NewActivity(new Activity.ShutdownActivity(reason));
+            activityMonitor.NewActivity(new Activity.Shutdown(new Activity.Shutdown.StartParams() { reason = reason }));
 
             if (!safetooperateDigest.Bypassed)
             {
@@ -1696,7 +1698,7 @@ namespace ASCOM.Wise40
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "doShutdown: ending activity ShuttingDown ...");
             #endregion
             activityMonitor.EndActivity(ActivityMonitor.ActivityType.ShuttingDown,
-            new Activity.ShutdownActivity.EndParams()
+            new Activity.Shutdown.GenericEndParams()
                 {
                     endState = Activity.State.Succeeded,
                     endReason = "Shutdown done"
@@ -1728,13 +1730,13 @@ namespace ASCOM.Wise40
             try
             {
                 Parking = true;
-                activityMonitor.NewActivity(new Activity.ParkActivity(new Activity.ParkActivity.StartParams() {
-                    start = new Activity.TelescopeSlewActivity.Coords
+                activityMonitor.NewActivity(new Activity.Park(new Activity.Park.StartParams() {
+                    start = new Activity.TelescopeSlew.Coords
                     {
                         ra = RightAscension,
                         dec = Declination,
                     },
-                    target = new Activity.TelescopeSlewActivity.Coords
+                    target = new Activity.TelescopeSlew.Coords
                     {
                         ra = ra.Hours,
                         dec = dec.Degrees,
@@ -1779,11 +1781,11 @@ namespace ASCOM.Wise40
                 Parking = false;
                 _enslaveDome = wasEnslavingDome;
                 Tracking = wasTracking;
-                activityMonitor.EndActivity(ActivityMonitor.ActivityType.Parking, new Activity.ParkActivity.EndParams()
+                activityMonitor.EndActivity(ActivityMonitor.ActivityType.Parking, new Activity.Park.EndParams()
                 {
                     endState = Activity.State.Failed,
                     endReason = string.Format("Exception: \"{0}\".", ex.ToString()),
-                    end = new Activity.TelescopeSlewActivity.Coords
+                    end = new Activity.TelescopeSlew.Coords
                     {
                         ra = RightAscension,
                         dec = Declination,
@@ -1798,11 +1800,11 @@ namespace ASCOM.Wise40
                     throw;
                 Parking = false;
                 Tracking = false;
-                activityMonitor.EndActivity(ActivityMonitor.ActivityType.Parking, new Activity.ParkActivity.EndParams()
+                activityMonitor.EndActivity(ActivityMonitor.ActivityType.Parking, new Activity.Park.EndParams()
                 {
                     endState = Activity.State.Failed,
                     endReason = string.Format("Parking failed due to Exception: {0}", ex.ToString()),
-                    end = new Activity.TelescopeSlewActivity.Coords
+                    end = new Activity.TelescopeSlew.Coords
                     {
                         ra = RightAscension,
                         dec = Declination,
@@ -1819,11 +1821,11 @@ namespace ASCOM.Wise40
             AtPark = true;
             Parking = false;
             Tracking = false;
-            activityMonitor.EndActivity(ActivityMonitor.ActivityType.Parking, new Activity.ParkActivity.EndParams()
+            activityMonitor.EndActivity(ActivityMonitor.ActivityType.Parking, new Activity.Park.EndParams()
             {
                 endState = Activity.State.Succeeded,
                 endReason = "Parking done",
-                end = new Activity.TelescopeSlewActivity.Coords
+                end = new Activity.TelescopeSlew.Coords
                 {
                     ra = RightAscension,
                     dec = Declination,
@@ -2219,14 +2221,14 @@ namespace ASCOM.Wise40
 
             slewers.Clear();
             readyToSlewFlags.Reset();
-            activityMonitor.NewActivity(new Activity.TelescopeSlewActivity(new Activity.TelescopeSlewActivity.StartParams()
+            activityMonitor.NewActivity(new Activity.TelescopeSlew(new Activity.TelescopeSlew.StartParams()
             {
-                start = new Activity.TelescopeSlewActivity.Coords()
+                start = new Activity.TelescopeSlew.Coords()
                 {
                     ra = RightAscension,
                     dec = Declination
                 },
-                target = new Activity.TelescopeSlewActivity.Coords()
+                target = new Activity.TelescopeSlew.Coords()
                 {
                     ra = targetRightAscension.Hours,
                     dec = targetDeclination.Degrees
@@ -2897,9 +2899,9 @@ namespace ASCOM.Wise40
             try
             {
                 pulsing.Start(Direction, Duration);
-                activityMonitor.NewActivity(new Activity.PulsingActivity(new Activity.PulsingActivity.StartParams()
+                activityMonitor.NewActivity(new Activity.Pulsing(new Activity.Pulsing.StartParams()
                 {
-                    _start = new Activity.TelescopeSlewActivity.Coords
+                    _start = new Activity.TelescopeSlew.Coords
                     {
                         ra = RightAscension,
                         dec = Declination,
@@ -2957,7 +2959,7 @@ namespace ASCOM.Wise40
 
                 case "abort-shutdown":
                     AbortSlew("Action(\"abort-shutdown\"");
-                    activityMonitor.EndActivity(ActivityMonitor.ActivityType.ShuttingDown, new Activity.EndParams
+                    activityMonitor.EndActivity(ActivityMonitor.ActivityType.ShuttingDown, new Activity.GenericEndParams
                     {
                         endReason = "Action(\"abort-shutdown\"",
                         endState = Activity.State.Aborted,
