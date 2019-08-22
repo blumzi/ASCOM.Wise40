@@ -230,7 +230,7 @@ namespace ASCOM.Wise40.Boltwood
                     ["DewPoint"] = dewPoint.ToString(),
                     ["CloudCondition"] = ((int)cloudCondition).ToString(),
                     ["RainRate"] = ((int)rainCondition).ToString(),
-                }, localTime);
+                }, utcTime);
             }
             catch (Exception e)
             {

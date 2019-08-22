@@ -26,11 +26,8 @@ namespace ASCOM.Wise40.Common
 
         public void Log(Dictionary<string, string> dict, DateTime date)
         {
-            string sql = string.Format("insert into weather(Time, Station, {0}) values('{1}', '{2}', {3})",
-                string.Join(", ", dict.Keys),
-                date.ToString(@"yyyy-MM-dd HH:mm:ss.fff"),
-                _stationName,
-                string.Join(", ", dict.Values));
+            string sql =
+                string.Format($"insert into weather.weather(Time, Station, {string.Join(", ", dict.Keys)}) values('{date.ToMySqlDateTime()}', '{_stationName}', {string.Join(", ", dict.Values)})");
 
             try
             {
@@ -46,7 +43,8 @@ namespace ASCOM.Wise40.Common
             catch (Exception ex)
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "EnvironmentLogger.log: \nsql: {0}\n failed: {1}", sql, ex.StackTrace);
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                    $"EnvironmentLogger.log: \nsql: {sql}\n Caught: {ex.Message} at\n{ex.StackTrace}");
                 #endregion
             }
         }

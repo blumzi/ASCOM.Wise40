@@ -420,10 +420,7 @@ namespace ASCOM.Wise40
                 }
                 _connected = value;
 
-                activityMonitor.Event(new Event.GlobalEvent(
-                    string.Format("{0} {1}", driverID, value ? "Connected" : "Disconnected")));
-
-                ActivityMonitor.Tracer.Reset(ActivityMonitor.Tracer.telescope, value ? "Connected" : "Disconnected");
+                activityMonitor.Event(new Event.DriverConnectEvent(driverID, value, ActivityMonitor.Tracer.telescope.Line));
             }
         }
 
@@ -1722,8 +1719,8 @@ namespace ASCOM.Wise40
             if (AtPark)
                 return;
 
-            Angle ra = wisesite.LocalSiderealTime;
-            Angle dec = parkingDeclination;
+            Angle targetRa = wisesite.LocalSiderealTime;
+            Angle targetDec = parkingDeclination;
 
             bool wasEnslavingDome = _enslaveDome;
             bool wasTracking = Tracking;
@@ -1738,8 +1735,8 @@ namespace ASCOM.Wise40
                     },
                     target = new Activity.TelescopeSlew.Coords
                     {
-                        ra = ra.Hours,
-                        dec = dec.Degrees,
+                        ra = targetRa.Hours,
+                        dec = targetDec.Degrees,
                     },
                     domeStartAz = WiseDome.Instance.Azimuth.Degrees,
                     domeTargetAz = 90.0,
@@ -1752,8 +1749,8 @@ namespace ASCOM.Wise40
                     #endregion
                     DomeParker();
                 }
-                TargetRightAscension = ra.Hours;
-                TargetDeclination = dec.Degrees;
+                TargetRightAscension = targetRa.Hours;
+                TargetDeclination = targetDec.Degrees;
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: setting Tracking = true ...");
                 #endregion
@@ -1763,7 +1760,7 @@ namespace ASCOM.Wise40
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: starting _slewToCoordinatesSync ...");
                 #endregion
-                _slewToCoordinatesSync(ra, dec);
+                _slewToCoordinatesSync(targetRa, targetDec);
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: after _slewToCoordinatesSync ...");
                 #endregion
@@ -2234,6 +2231,25 @@ namespace ASCOM.Wise40
                     dec = targetDeclination.Degrees
                 }
             }));
+
+            ShortestDistanceResult raDistance = targetRightAscension.ShortestDistance(Angle.FromHours(RightAscension));
+            ShortestDistanceResult decDistance = targetDeclination.ShortestDistance(Angle.FromDegrees(Declination));
+
+            if (! EnoughDistanceToMove(TelescopeAxes.axisPrimary, raDistance.angle, Const.rateGuide) && 
+                ! EnoughDistanceToMove(TelescopeAxes.axisSecondary, decDistance.angle, Const.rateGuide))
+            {
+                activityMonitor.EndActivity(ActivityMonitor.ActivityType.TelescopeSlew, new Activity.TelescopeSlew.EndParams
+                    {
+                        endState = Activity.State.Ignored,
+                        endReason = "Distance too short",
+                        end = new Activity.TelescopeSlew.Coords()
+                        {
+                            ra = RightAscension,
+                            dec = Declination,
+                        },
+                    });
+                return;
+            }
 
             try
             {

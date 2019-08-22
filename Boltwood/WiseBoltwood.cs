@@ -211,8 +211,7 @@ namespace ASCOM.Wise40.Boltwood
                     // TODO disconnect from the device
                 }
 
-                ActivityMonitor.Instance.Event(new Event.GlobalEvent(
-                    string.Format("{0} {1}", Const.WiseDriverID.Boltwood, value ? "Connected" : "Disconnected")));
+                ActivityMonitor.Instance.Event(new Event.DriverConnectEvent(Const.WiseDriverID.Boltwood, value, line: ActivityMonitor.Tracer.safety.Line));
             }
         }
 

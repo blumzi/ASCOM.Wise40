@@ -197,9 +197,7 @@ namespace ASCOM.Wise40
 
                 _connected = value;
 
-                //ActivityMonitor.Instance.Event(new Event.GlobalEvent(
-                //    string.Format("{0} {1}", Const.WiseDriverID.Focus, value ? "Connected" : "Disconnected")));
-                ActivityMonitor.Tracer.Reset(ActivityMonitor.Tracer.Focuser.focuser, value ? "Connected" : "Disconnected");
+                ActivityMonitor.Instance.Event(new Event.DriverConnectEvent(Const.WiseDriverID.Focus, _connected, line: ActivityMonitor.Tracer.focuser.Line));
             }
         }
 

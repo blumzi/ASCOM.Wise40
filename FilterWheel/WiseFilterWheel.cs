@@ -401,10 +401,7 @@ namespace ASCOM.Wise40 //.FilterWheel
                     throw;
                 }
 
-                //activityMonitor.Event(new Event.GlobalEvent(
-                //    string.Format("{0} {1}", driverID, value ? "Connected" : "Disconnected")));
-
-                ActivityMonitor.Tracer.Reset(ActivityMonitor.Tracer.filterwheel, value ? "Connected" : "Disconnected");
+                ActivityMonitor.Instance.Event(new Event.DriverConnectEvent(Const.WiseDriverID.FilterWheel, value, line: ActivityMonitor.Tracer.filterwheel.Line));
 
                 if (value)
                     _updateTimer.Change(2000, 30000);

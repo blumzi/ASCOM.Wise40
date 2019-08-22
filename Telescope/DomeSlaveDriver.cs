@@ -126,8 +126,9 @@ namespace ASCOM.Wise40
             catch (Exception ex)
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver: Caught {0}(\"{1}\") while waiting for dome to park at {2}",
-                    ex.GetType().ToString(), ex.Message,
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                    "DomeSlaveDriver: Caught {0}(\"{1}\") at {2} while waiting for dome to park at {3}",
+                    ex.GetType().ToString(), ex.Message, ex.StackTrace,
                     Angle.FromDegrees(wisedome.ParkAzimuth).ToString());
                 #endregion
                 wisedome.AbortSlew();

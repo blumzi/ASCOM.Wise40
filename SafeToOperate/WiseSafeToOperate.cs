@@ -398,9 +398,7 @@ namespace ASCOM.Wise40SafeToOperate
                 else
                     stopSensors();
 
-                //ActivityMonitor.Instance.Event(new Event.GlobalEvent(
-                //    string.Format("{0} {1}", DriverId, value ? "Connected" : "Disconnected")));
-                ActivityMonitor.Tracer.Reset(ActivityMonitor.Tracer.safety, value ? "Connected" : "Disconnected");
+                ActivityMonitor.Instance.Event(new Event.DriverConnectEvent(Const.WiseDriverID.WiseSafeToOperate, _connected, line: ActivityMonitor.Tracer.safety.Line));
             }
         }
 
@@ -791,7 +789,8 @@ namespace ASCOM.Wise40SafeToOperate
             if (currentSafetyState != _safetyState)
             {
                 _safetyState = currentSafetyState;
-                ActivityMonitor.Instance.Event(new Event.SafetyEvent(_safetyState));
+                ActivityMonitor.Instance.Event(new Event.SafetyEvent(_safetyState,
+                    currentSafetyState == Event.SafetyEvent.SafetyState.Unsafe ? UnsafeReasons.Replace(Const.recordSeparator, "\n") : ""));
             }
 
             #region debug

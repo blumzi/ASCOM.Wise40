@@ -222,11 +222,9 @@ namespace ASCOM.Wise40
             }
             _connected = connected;
 
-            //ActivityMonitor.Instance.Event(new Event.GlobalEvent(
-            //    string.Format("{0} {1}", Const.WiseDriverID.Dome, connected ? "Connected" : "Disconnected")));
-
-            ActivityMonitor.Tracer.Reset(ActivityMonitor.Tracer.shutter, connected ? "Connected" : "Disconnected");
-            ActivityMonitor.Tracer.Reset(ActivityMonitor.Tracer.dome, connected ? "Connected" : "Disconnected");
+            ActivityMonitor.Instance.Event(new Event.DriverConnectEvent(Const.WiseDriverID.Dome, _connected, line: ActivityMonitor.Tracer.dome.Line));
+            ActivityMonitor.Instance.Event(new Event.DriverConnectEvent(Const.WiseDriverID.Dome, _connected, line: ActivityMonitor.Tracer.shutter.Line));
+            ActivityMonitor.Instance.Event(new Event.ProjectorEvent(Projector));
         }
 
         public bool Connected
@@ -687,16 +685,12 @@ namespace ASCOM.Wise40
                 if (value)
                 {
                     projectorPin.SetOn();
-                    activityMonitor.NewActivity(new Activity.Projector(new Activity.Projector.StartParams()));
+                    activityMonitor.Event(new Event.ProjectorEvent(true));
                 }
                 else
                 {
                     projectorPin.SetOff();
-                    activityMonitor.EndActivity(ActivityMonitor.ActivityType.Projector, new Activity.GenericEndParams()
-                    {
-                        endReason = "projector was turned OFF",
-                        endState = Activity.State.Succeeded,
-                    });
+                    activityMonitor.Event(new Event.ProjectorEvent(false));
                 }
             }
         }

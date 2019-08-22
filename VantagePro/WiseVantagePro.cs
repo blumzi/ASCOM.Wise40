@@ -118,7 +118,7 @@ namespace ASCOM.Wise40.VantagePro
                                     ["DewPoint"] = util.ConvertUnits(Convert.ToDouble(sensorData["outsideDewPt"]),
                                                         Units.degreesFarenheit, Units.degreesCelsius).ToString()
 
-                                }, localTime);
+                                }, utcTime);
                             }
 
                             _lastDataRead = DateTime.Now;
@@ -272,8 +272,7 @@ namespace ASCOM.Wise40.VantagePro
                 } else
                     _connected = value;
 
-                ActivityMonitor.Instance.Event(new Event.GlobalEvent(
-                    string.Format("{0} {1}", Const.WiseDriverID.VantagePro, value ? "Connected" : "Disconnected")));
+                ActivityMonitor.Instance.Event(new Event.DriverConnectEvent(Const.WiseDriverID.VantagePro, value, line: ActivityMonitor.Tracer.safety.Line));
             }
         }
 
