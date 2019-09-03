@@ -96,6 +96,9 @@ namespace ASCOM.Wise40 //.Dome
         /// </summary>
         public Dome()
         {
+            if (wisedome == null)
+                wisedome = WiseDome.Instance;
+
             wisedome.ReadProfile(); // Read device configuration from the ASCOM Profile store
             
             utilities = new Util();
