@@ -421,38 +421,14 @@ namespace ASCOM.Wise40
                 _connected = value;
 
                 activityMonitor.Event(new Event.DriverConnectEvent(driverID, value, ActivityMonitor.Tracer.telescope.Line));
+                activityMonitor.Event(new Event.DriverConnectEvent(driverID, value, ActivityMonitor.Tracer.tracking.Line));
+                activityMonitor.Event(new Event.DriverConnectEvent(driverID, value, ActivityMonitor.Tracer.parking.Line));
+                activityMonitor.Event(new Event.DriverConnectEvent(driverID, value, ActivityMonitor.Tracer.shutdown.Line));
+                activityMonitor.Event(new Event.DriverConnectEvent(driverID, value, ActivityMonitor.Tracer.idler.Line));
             }
         }
 
-        //private static volatile WiseTele _instance; // Singleton
-        //private static object syncObject = new object();
         private static bool _initialized = false;
-
-        // Explicit static constructor to tell C# compiler
-        // not to mark type as beforefieldinit
-        //static WiseTele()
-        //{
-        //}
-
-        //public WiseTele()
-        //{
-        //}
-
-        //public static WiseTele Instance
-        //{
-        //    get
-        //    {
-        //        if (_instance == null)
-        //        {
-        //            lock (syncObject)
-        //            {
-        //                if (_instance == null)
-        //                    _instance = new WiseTele();
-        //            }
-        //        }
-        //        return _instance;
-        //    }
-        //}
 
         static WiseTele() { }
         public WiseTele() { }
@@ -938,6 +914,7 @@ namespace ASCOM.Wise40
                 safetyMonitorTimer.EnableIfNeeded(SafetyMonitorTimer.ActionWhenNotSafe.Backoff);
 
                 SyncDomePosition = value;
+                ActivityMonitor.Instance.Event(new Event.TrackingEvent(value));
             }
         }
 
@@ -1329,7 +1306,8 @@ namespace ASCOM.Wise40
         {
             get
             {
-                bool ret = activityMonitor.InProgress(ActivityMonitor.ActivityType.Pulsing);
+                bool ret = activityMonitor.InProgress(ActivityMonitor.ActivityType.PulsingRa) ||
+                            activityMonitor.InProgress(ActivityMonitor.ActivityType.PulsingDec);
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "IsPulseGuiding: {0}", ret);
                 #endregion
@@ -2900,36 +2878,49 @@ namespace ASCOM.Wise40
 
             if (!wisesafetooperate.IsSafe && !ShuttingDown)
                 throw new InvalidOperationException(
-                    string.Format("Not safe to operate ({0})", wisesafetooperate.UnsafeReasons));
+                    string.Format($"Not safe to operate ({wisesafetooperate.UnsafeReasons})"));
 
             if (pulsing == null)
                 pulsing = Pulsing.Instance;
             pulsing.init();
 
-            if (pulsing.Active(Direction))
+            TelescopeAxes axis = Pulsing.guideDirection2Axis[Direction];
+            if (pulsing.Active(axis))
             {
                 throw new InvalidOperationException(string.Format(
-                    "Already PulseGuiding on {0}", Pulsing.guideDirection2Axis[Direction].ToString()));
+                    $"Already PulseGuiding on {axis}"));
             }
 
             try
             {
                 pulsing.Start(Direction, Duration);
-                activityMonitor.NewActivity(new Activity.Pulsing(new Activity.Pulsing.StartParams()
-                {
-                    _start = new Activity.TelescopeSlew.Coords
+                if (axis == TelescopeAxes.axisPrimary)
+                    activityMonitor.NewActivity(new Activity.PulsingRa(new Activity.PulsingRa.StartParams()
                     {
-                        ra = RightAscension,
-                        dec = Declination,
-                    },
-                    _direction = Direction,
-                    _millis = Duration,
-                }));
+                        _start = new Activity.TelescopeSlew.Coords
+                        {
+                            ra = RightAscension,
+                            dec = Declination,
+                        },
+                        _direction = Direction,
+                        _millis = Duration,
+                    }));
+                else
+                    activityMonitor.NewActivity(new Activity.PulsingDec(new Activity.PulsingDec.StartParams()
+                    {
+                        _start = new Activity.TelescopeSlew.Coords
+                        {
+                            ra = RightAscension,
+                            dec = Declination,
+                        },
+                        _direction = Direction,
+                        _millis = Duration,
+                    }));
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException(string.Format("PulseGuide: Cannot Start({0}, {1}): {2}",
-                    Direction.ToString(), Duration.ToString(), ex.Message));
+                throw new InvalidOperationException(
+                    string.Format($"PulseGuide: Cannot Start({Direction}, {Duration}): Caught {ex.Message} at {ex.StackTrace}"));
             }
         }
 
@@ -3243,11 +3234,7 @@ namespace ASCOM.Wise40
                 }
                 else if (IsPulseGuiding)
                 {
-                    ret = "PulseGuiding in";
-                    if (pulsing.Active(TelescopeAxes.axisPrimary))
-                        ret += " RA";
-                    if (pulsing.Active(TelescopeAxes.axisSecondary))
-                        ret += " DEC";
+                    ret = "PulseGuiding in " + pulsing.ToString();
                 }
                 return ret;
             }
