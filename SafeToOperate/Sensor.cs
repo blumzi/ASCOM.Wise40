@@ -554,8 +554,17 @@ namespace ASCOM.Wise40SafeToOperate
             if (!Enabled || !Connected)
                 return;
 
+            Reading currentReading = null;
+
             DateTime now = DateTime.Now;
-            Reading currentReading = getReading();
+            try
+            {
+                currentReading = getReading();
+            } catch (Exception ex)
+            {
+                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, $"Sensor:onTimer: Caught {ex.Message} at {ex.StackTrace}");
+                return;
+            }
             if (currentReading == null)
                 return;
 
