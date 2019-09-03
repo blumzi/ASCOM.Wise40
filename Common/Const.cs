@@ -52,6 +52,7 @@ namespace ASCOM.Wise40.Common
             public const string Focus = "ASCOM.Wise40.Focuser";
             public const string FilterWheel = "ASCOM.Wise40.FilterWheel";
             public const string ObservatoryMonitor = "ASCOM.Wise40.ObservatoryMonitor.SafetyMonitor";
+            public const string TessW = "ASCOM.Wise40.TessW.ObservingConditions";
         }
 
         public const string computerControlAtMaintenance = "ComputerControl at Maintenance";
@@ -94,6 +95,9 @@ namespace ASCOM.Wise40.Common
             public static string VantagePro_OpMode = "OperationMode";
             public static string VantagePro_DataFile = "DataFile";
             public static string VantagePro_SerialPort = "Port";
+
+            public static string TessW_IpAddress = "IPAddress";
+            public static string TessW_Enabled = "Enabled";
 
             public static string Site_DebugLevel = "SiteDebugLevel";
         }
