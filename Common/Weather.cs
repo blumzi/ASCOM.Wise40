@@ -10,12 +10,13 @@ namespace ASCOM.Wise40
 {
     public abstract class WeatherStation: WiseObject
     {
-        public enum WeatherStationVendor { DavisInstruments, Boltwood };
-        public enum WeatherStationModel { VantagePro2, CloudSensorII };
+        public enum WeatherStationVendor { DavisInstruments, Boltwood, Stars4All };
+        public enum WeatherStationModel { VantagePro2, CloudSensorII, TessW };
         public enum WeatherStationInputMethod
         {
             ClarityII,
             WeatherLink_HtmlReport,
+            TessW,
             Weizmann_TBD,
             Korean_TBD
         };
