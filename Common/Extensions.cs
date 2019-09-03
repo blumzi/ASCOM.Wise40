@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -60,6 +61,11 @@ namespace ASCOM.Wise40.Common
         public static string ToCSV(this List<string> list)
         {
             return string.Join(",", list);
+        }
+
+        public static string ToCSV<TKey, TValue>(this ConcurrentDictionary<TKey, TValue> dict)
+        {
+            return string.Join(",", dict.Keys);
         }
 
         public static string ToMySqlDateTime(this DateTime dateTime)
