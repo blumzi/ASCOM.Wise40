@@ -166,7 +166,6 @@ namespace ASCOM.Wise40
                 _lastReading = reading;
 
                 if (_wisedomeshutter.CloseEnough(reading, _wisedomeshutter._lowestValue) && reading == _prevReading)
-                //if (Math.Abs(reading - _wisedomeshutter._lowestValue) <= 5 && reading == _prevReading)
                 {
                     _wisedomeshutter._state = ShutterState.shutterClosed;
                     _wisedomeshutter._stateReason =
@@ -176,7 +175,6 @@ namespace ASCOM.Wise40
                 }
 
                 else if (_wisedomeshutter.CloseEnough(reading, _wisedomeshutter._highestValue) && reading == _prevReading)
-                //else if (Math.Abs(reading - _wisedomeshutter._highestValue) <= 5 && reading == _prevReading)
                 {
                     _wisedomeshutter._state = ShutterState.shutterOpen;
                     _wisedomeshutter._stateReason =
@@ -345,6 +343,8 @@ namespace ASCOM.Wise40
                     "Stop: was moving (openPin: {0}, closePin: {1})",
                     openPinWasOn.ToString(), closePinWasOn.ToString());
                 #endregion
+
+                //activityMonitor.Event(new Event.ShutterEvent(closePinWasOn));
             }
             else
             {
