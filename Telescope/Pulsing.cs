@@ -9,8 +9,9 @@ using System.Diagnostics;
 using ASCOM.Wise40.Common;
 using ASCOM.Wise40.Hardware;
 using ASCOM.DeviceInterface;
+using System.Collections.Concurrent;
 
-namespace ASCOM.Wise40 //.Telescope
+namespace ASCOM.Wise40
 {
     /// <summary>
     /// A PulserTask performs an Asynchronous PulseGuide on a WiseTelescope
@@ -62,12 +63,11 @@ namespace ASCOM.Wise40 //.Telescope
     {
 
         public Common.Debugger debugger;
-        private Object _lock = new object();
         private static volatile Pulsing _instance;
         private static object syncObject = new object();
-        private static List<PulserTask> _active = new List<PulserTask>();
+        private static ConcurrentDictionary<TelescopeAxes, PulserTask> _active = new ConcurrentDictionary<TelescopeAxes, PulserTask>();
         private static WiseTele wisetele;
-        private static ActivityMonitor activityMonitor = ActivityMonitor.Instance;
+        private static readonly ActivityMonitor activityMonitor = ActivityMonitor.Instance;
 
         public static Dictionary<GuideDirections, TelescopeAxes> guideDirection2Axis = new Dictionary<GuideDirections, TelescopeAxes>
         {
@@ -149,49 +149,71 @@ namespace ASCOM.Wise40 //.Telescope
                         "Caught exception: {0}, aborting pulse guiding", ex.Message);
                     #endregion
                     Abort();
-                    Deactivate(pulserTask, Activity.State.Aborted, string.Format("Caught exception: {0}, aborting pulse guiding", ex.Message));
+                    Deactivate(pulserTask, Activity.State.Aborted,
+                        string.Format($"Caught exception: {ex.Message}\n at {ex.StackTrace}\n"));
                 }
             }, pulseGuideCT).ContinueWith((t) =>
             {
                 #region debug
                 debugger.WriteLine(Common.Debugger.DebugLevel.DebugLogic,
-                    "pulser on {0} completed with status: {1}",
-                    pulserTask._axis.ToString(), t.Status.ToString());
+                    $"pulser on {pulserTask._axis} completed with status: {t.Status}");
                 #endregion
-                Deactivate(pulserTask, Activity.State.Succeeded, string.Format("pulser on {0} completed with status: {1}",
-                    pulserTask._axis.ToString(), t.Status.ToString()));
+                Deactivate(pulserTask, Activity.State.Succeeded, string.Format($"pulsing on {pulserTask._axis} completed"));
             }, TaskContinuationOptions.ExecuteSynchronously);
         }
 
         private void Activate(PulserTask t)
         {
             string before = ToString();
-            lock (_lock)
+
+            if (! _active.TryAdd(t._axis, t))
             {
-                _active.Add(t);
+                #region debug
+                debugger.WriteLine(Common.Debugger.DebugLevel.DebugAxes, $"ActivePulsers:Activate {t._axis} already active [{_active}]");
+                #endregion
+                return;
             }
+
             #region debug
-            debugger.WriteLine(Common.Debugger.DebugLevel.DebugAxes,
-                "ActivePulsers: added {0}, \"{1}\" => \"{2}\"", t._axis.ToString(), before, ToString());
+            debugger.WriteLine(Common.Debugger.DebugLevel.DebugAxes, $"ActivePulsers:Activate added {t._axis} [{before}] => [{ToString()}]");
             #endregion
         }
 
         private void Deactivate(PulserTask t, Activity.State completionState, string completionReason)
         {
             string before = ToString();
-            lock (_lock)
+
+            if (! _active.TryRemove(t._axis, out PulserTask o))
             {
-                _active.Remove(t);
+                #region debug
+                debugger.WriteLine(Common.Debugger.DebugLevel.DebugAxes, $"ActivePulsers:Deactivate {t._axis} not active [{before}]");
+                #endregion
+                return;
             }
+
             #region debug
-            debugger.WriteLine(Common.Debugger.DebugLevel.DebugAxes,
-                "ActivePulsers: deleted {0}, \"{1}\" => \"{2}\"", t._axis.ToString(), before, ToString());
+            debugger.WriteLine(Common.Debugger.DebugLevel.DebugAxes, $"ActivePulsers:Deactivate removed {t._axis} [{before}] => [{ToString()}]");
             #endregion
-            if (_active.Count == 0)
-            {
-                Activity activity = activityMonitor.LookupInProgress(ActivityMonitor.ActivityType.Pulsing);
-                if (activity != null)
-                    (activity as Activity.Pulsing).EndActivity(new Activity.Pulsing.EndParams()
+
+            ActivityMonitor.ActivityType activityType = t._axis == TelescopeAxes.axisPrimary ?
+                ActivityMonitor.ActivityType.PulsingRa :
+                ActivityMonitor.ActivityType.PulsingDec;
+
+            Activity activity = activityMonitor.LookupInProgress(activityType);
+            if (activity != null) {
+                if (activityType == ActivityMonitor.ActivityType.PulsingRa)
+                    (activity as Activity.PulsingRa).EndActivity(new Activity.PulsingRa.EndParams()
+                    {
+                        endState = completionState,
+                        endReason = completionReason,
+                        _end = new Activity.TelescopeSlew.Coords
+                        {
+                            ra = WiseTele.Instance.RightAscension,
+                            dec = WiseTele.Instance.Declination,
+                        }
+                    });
+                else
+                    (activity as Activity.PulsingDec).EndActivity(new Activity.PulsingDec.EndParams()
                     {
                         endState = completionState,
                         endReason = completionReason,
@@ -202,60 +224,21 @@ namespace ASCOM.Wise40 //.Telescope
                         }
                     });
             }
-                
         }
 
         public override string ToString()
         {
-            List<string> s = new List<string>();
-            lock (_lock)
-            {
-                foreach (var a in _active)
-                    s.Add(a.ToString());
-            }
-
-            return string.Join(",", s.ToArray());
+            return _active.ToCSV();
         }
 
         public bool Active(TelescopeAxes axis)
         {
-            bool ret = false;
-
-            lock (_lock)
-                foreach (var a in _active)
-                {
-                    if (a._axis == axis)
-                    {
-                        ret = true;
-                        break;
-                    }
-                }
-            return ret;
+            return _active.ContainsKey(axis);
         }
 
         public bool Active(GuideDirections direction)
         {
-            return Active(guideDirection2Axis[direction]);
-        }
-
-        public bool Active()
-        {
-            return _active.Count != 0;
-        }
-
-        public void Clear()
-        {
-            lock (_lock)
-                _active.Clear();
-        }
-
-        public Task[] ToArray()
-        {
-            List<Task> tasks = new List<Task>();
-
-            foreach (var a in _active)
-                tasks.Add(a.task);
-            return tasks.ToArray();
+            return _active.ContainsKey(guideDirection2Axis[direction]);
         }
     }
 }
