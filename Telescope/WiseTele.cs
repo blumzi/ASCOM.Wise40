@@ -1306,8 +1306,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                bool ret = activityMonitor.InProgress(ActivityMonitor.ActivityType.PulsingRa) ||
-                            activityMonitor.InProgress(ActivityMonitor.ActivityType.PulsingDec);
+                bool ret = Pulsing.Instance.IsPulseGuiding;
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "IsPulseGuiding: {0}", ret);
                 #endregion

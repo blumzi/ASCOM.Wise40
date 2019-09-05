@@ -201,28 +201,21 @@ namespace ASCOM.Wise40
 
             Activity activity = activityMonitor.LookupInProgress(activityType);
             if (activity != null) {
+                Activity.PulsingEndParams endParams = new Activity.PulsingEndParams()
+                {
+                    endState = completionState,
+                    endReason = completionReason,
+                    _end = new Activity.TelescopeSlew.Coords
+                    {
+                        ra = WiseTele.Instance.RightAscension,
+                        dec = WiseTele.Instance.Declination,
+                    }
+                };
+
                 if (activityType == ActivityMonitor.ActivityType.PulsingRa)
-                    (activity as Activity.PulsingRa).EndActivity(new Activity.PulsingRa.EndParams()
-                    {
-                        endState = completionState,
-                        endReason = completionReason,
-                        _end = new Activity.TelescopeSlew.Coords
-                        {
-                            ra = WiseTele.Instance.RightAscension,
-                            dec = WiseTele.Instance.Declination,
-                        }
-                    });
+                    (activity as Activity.PulsingRa).EndActivity(endParams);
                 else
-                    (activity as Activity.PulsingDec).EndActivity(new Activity.PulsingDec.EndParams()
-                    {
-                        endState = completionState,
-                        endReason = completionReason,
-                        _end = new Activity.TelescopeSlew.Coords
-                        {
-                            ra = WiseTele.Instance.RightAscension,
-                            dec = WiseTele.Instance.Declination,
-                        }
-                    });
+                    (activity as Activity.PulsingDec).EndActivity(endParams);
             }
         }
 
@@ -239,6 +232,14 @@ namespace ASCOM.Wise40
         public bool Active(GuideDirections direction)
         {
             return _active.ContainsKey(guideDirection2Axis[direction]);
+        }
+
+        public bool IsPulseGuiding
+        {
+            get
+            {
+                return _active.Count > 0;
+            }
         }
     }
 }
