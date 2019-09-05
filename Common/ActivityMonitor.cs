@@ -782,6 +782,11 @@ namespace ASCOM.Wise40
             }
         }
 
+        public class PulsingEndParams :  Activity.GenericEndParams
+        {
+            public TelescopeSlew.Coords _end;
+        }
+
         public class PulsingRa : TimeConsuming
         {
             public DeviceInterface.GuideDirections _direction;
@@ -794,11 +799,6 @@ namespace ASCOM.Wise40
                 public TelescopeSlew.Coords _start;
                 public DeviceInterface.GuideDirections _direction;
                 public int _millis;
-            }
-
-            public class EndParams : Activity.GenericEndParams
-            {
-                public TelescopeSlew.Coords _end;
             }
 
             public PulsingRa(StartParams par): base(ActivityMonitor.ActivityType.PulsingRa)
@@ -825,7 +825,7 @@ namespace ASCOM.Wise40
 
             public override void End(Activity.GenericEndParams p)
             {
-                PulsingRa.EndParams par = p as PulsingRa.EndParams;
+                PulsingEndParams par = p as PulsingEndParams;
 
                 _end = new TelescopeSlew.Coords()
                 {
@@ -849,11 +849,6 @@ namespace ASCOM.Wise40
                 public TelescopeSlew.Coords _start;
                 public DeviceInterface.GuideDirections _direction;
                 public int _millis;
-            }
-
-            public class EndParams : Activity.GenericEndParams
-            {
-                public TelescopeSlew.Coords _end;
             }
 
             public PulsingDec(StartParams par) : base(ActivityMonitor.ActivityType.PulsingDec)
@@ -880,7 +875,7 @@ namespace ASCOM.Wise40
 
             public override void End(Activity.GenericEndParams p)
             {
-                PulsingDec.EndParams par = p as PulsingDec.EndParams;
+                PulsingEndParams par = p as PulsingEndParams;
 
                 _end = new TelescopeSlew.Coords()
                 {
