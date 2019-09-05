@@ -225,7 +225,7 @@ namespace ASCOM.Wise40.Boltwood
                 {
                     ["SkyAmbientTemp"] = skyAmbientTemp.ToString(),
                     ["SensorTemp"] = sensorTemp.ToString(),
-                    ["WindSpeed"] = windSpeed.ToString(),
+                    ["WindSpeed"] = (windSpeed * 3.6).ToString(),   // mps -> kmh
                     ["Humidity"] = humidity.ToString(),
                     ["DewPoint"] = dewPoint.ToString(),
                     ["CloudCondition"] = ((int)cloudCondition).ToString(),

@@ -110,8 +110,7 @@ namespace ASCOM.Wise40.VantagePro
                                 {
                                     ["Temperature"] = sensorData["outsideTemp"],
                                     ["Pressure"] = sensorData["barometer"],
-                                    ["WindSpeed"] = util.ConvertUnits(Convert.ToDouble(sensorData["windSpeed"]),
-                                                        Units.milesPerHour, Units.metresPerSecond).ToString(),
+                                    ["WindSpeed"] = sensorData["windSpeed"].ToString(),
                                     ["WindDir"] = sensorData["windDir"],
                                     ["Humidity"] = sensorData["outsideHumidity"],
                                     ["RainRate"] = sensorData["rainRate"],
