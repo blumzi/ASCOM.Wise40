@@ -118,10 +118,6 @@ namespace ASCOM.Wise40.TessW
                 {
                     string content = await response.Content.ReadAsStringAsync();
 
-                    #region debug
-                    Instance.debugger.WriteLine(Debugger.DebugLevel.DebugSafety, $"GetTessWInfo: content: [{content}]");
-                    #endregion
-
                     /// <!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,user-scalable=0">
                     /// <title>STA mode</title></head>
                     /// <body><META HTTP-EQUIV="Refresh" Content= "4" > <h2>STARS4ALL<br>TESS-W Data</h2>
@@ -130,7 +126,7 @@ namespace ASCOM.Wise40.TessW
                     Regex r = new Regex(@"Mag.V :\s+(?<mag>[\d.]+).*" +
                                         @"Frec.[\s:]+(?<frec>[\d.-]+).*" +
                                         @"T. IR[\s:]+(?<tempSky>[\d.-]+).*" +
-                                        @"T. Sens[\s:]+(?<tempSensor>[\d.-]+).*" +
+                                        @"T. Sens[\s:]+(?<tempAmb>[\d.-]+).*" +
                                         @"Wifi[\s:]+(?<wifi>[\d.-]+).*" +
                                         @"mqtt sec.[\s:]+(?<mqtt>\d+).*");
                     Match m = r.Match(content);
@@ -139,25 +135,30 @@ namespace ASCOM.Wise40.TessW
                         Instance.sensorData["mag"] = m.Result("${mag}");
                         Instance.sensorData["frec"] = m.Result("${frec}");
                         Instance.sensorData["tempSky"] = m.Result("${tempSky}");
-                        Instance.sensorData["tempSensor"] = m.Result("${tempSensor}");
+                        Instance.sensorData["tempAmb"] = m.Result("${tempAmb}");
                         Instance.sensorData["wifi"] = m.Result("${wifi}");
                         Instance.sensorData["mqtt"] = m.Result("${mqtt}");
+
+                        double tAmb = Convert.ToDouble(Instance.sensorData["tempAmb"]);
+                        double tSky = Convert.ToDouble(Instance.sensorData["tempSky"]);
+                        Instance.sensorData["cloudCover"] = (100 - 3 * (tAmb - tSky)).ToString();
 
                         if (Instance._env != null)
                         {
                             Instance._env.Log(new Dictionary<string, string>()
                             {
-                                ["Temperature"] = Instance.sensorData["tempSensor"],
+                                ["Temperature"] = Instance.sensorData["tempAmb"],
                                 ["SkyAmbientTemp"] = Instance.sensorData["tempSky"],
+                                ["CloudCover"] = Instance.sensorData["cloudCover"],
 
                             }, DateTime.UtcNow);
                         }
 
+                        succeeded = true;
                         #region debug
                         Instance.debugger.WriteLine(Debugger.DebugLevel.DebugSafety,
-                            $"GetTessWInfo: try#: {tryNo}, Success = {succeeded}, duration: {duration}");
+                            $"GetTessWInfo: try#: {tryNo}, Success, content: [{content}], duration: {duration}, Wifi: {Instance.sensorData["wifi"]}");
                         #endregion
-                        succeeded = true;
                     }
                 }
                 else
@@ -372,7 +373,7 @@ namespace ASCOM.Wise40.TessW
         {
             get
             {
-                throw new PropertyNotImplementedException("CloudCover", false);
+                return Convert.ToDouble(sensorData["cloudCover"]);
             }
         }
 
@@ -456,6 +457,7 @@ namespace ASCOM.Wise40.TessW
 
                 case "Temperature":
                 case "SkyTemperature":
+                case "CloudCover":
                     return "SensorDescription - " + PropertyName;
 
                 case "DewPoint":
@@ -465,7 +467,6 @@ namespace ASCOM.Wise40.TessW
                 case "SkyQuality":
                 case "StarFWHM":
                 case "WindGust":
-                case "CloudCover":
                 case "WindDirection":
                 case "WindSpeed":
                 case "RainRate":
@@ -533,7 +534,7 @@ namespace ASCOM.Wise40.TessW
             get
             {
                 Refresh();
-                var temperature = Convert.ToDouble(sensorData["tempSensor"]);
+                var temperature = Convert.ToDouble(sensorData["tempAmb"]);
 
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugSafety, string.Format($"TessW: Temperature - get => {temperature}"));
@@ -563,7 +564,6 @@ namespace ASCOM.Wise40.TessW
                 case "SkyQuality":
                 case "StarFWHM":
                 case "WindGust":
-                case "CloudCover":
                 case "WindDirection":
                 case "WindSpeed":
                 case "RainRate":
