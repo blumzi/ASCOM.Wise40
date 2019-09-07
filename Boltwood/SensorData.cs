@@ -107,7 +107,7 @@ namespace ASCOM.Wise40.Boltwood
             cloudWet = 4,
         }
         public CloudCondition cloudCondition;
-        public static Dictionary<CloudCondition, double> doubleCloudCondition = new Dictionary<CloudCondition, double>() {
+        private static Dictionary<CloudCondition, double> cloudCondition2CloudCover = new Dictionary<CloudCondition, double>() {
                     { CloudCondition.cloudUnknown, 0.0 },
                     { CloudCondition.cloudClear, 0.0 },
                     { CloudCondition.cloudCloudy, 50.0 },
@@ -228,7 +228,7 @@ namespace ASCOM.Wise40.Boltwood
                     ["WindSpeed"] = (windSpeed * 3.6).ToString(),   // mps -> kmh
                     ["Humidity"] = humidity.ToString(),
                     ["DewPoint"] = dewPoint.ToString(),
-                    ["CloudCondition"] = ((int)cloudCondition).ToString(),
+                    ["CloudCover"] = cloudCondition2CloudCover[cloudCondition].ToString(),
                     ["RainRate"] = ((int)rainCondition).ToString(),
                 }, utcTime);
             }
