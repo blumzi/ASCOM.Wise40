@@ -237,6 +237,7 @@ namespace ASCOM.Wise40.TessW
 
         private static ArrayList supportedActions = new ArrayList() {
             "OCHTag",
+            "raw-data",
         };
 
         public ArrayList SupportedActions
@@ -255,6 +256,10 @@ namespace ASCOM.Wise40.TessW
             {
                 case "OCHTag":
                     ret = "Wise40.TessW";
+                    break;
+
+                case "raw-data":
+                    ret = RawData;
                     break;
 
                 default:
