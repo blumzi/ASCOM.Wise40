@@ -480,8 +480,12 @@ namespace ASCOM.Wise40
                 string.Format($"End state: {endState}\n") +
                 string.Format($"End reason: {_endReason}\n");
 
+            int code = ActivityMonitor.Tracer.resetValue;
+            if (_tags[0] == "Shutter" && _tags[1] == "Opening" && _tags[2] == "Succeeded")
+                code = (int) ActivityMonitor.Tracer.Shutter.Code.Open;
+
             string sql = string.Format($@"update activities set text='{_annotation}', tags='{_tags.ToCSV()}' where id={_activityId};");
-            sql += string.Format($"insert into activities(time, code, text, line, tags) values('{_endTime.ToMySqlDateTime()}', '{ActivityMonitor.Tracer.resetValue}', '{_annotation}', '{_line}', '{_tags.ToCSV()}');");
+            sql += string.Format($"insert into activities(time, code, text, line, tags) values('{_endTime.ToMySqlDateTime()}', '{code}', '{_annotation}', '{_line}', '{_tags.ToCSV()}');");
 
             try
             {
