@@ -12,6 +12,7 @@ using ASCOM.Wise40.Common;
 using ASCOM.Utilities;
 
 using Newtonsoft.Json;
+using MySql.Data.MySqlClient;
 
 
 namespace ASCOM.Wise40.VantagePro
@@ -30,7 +31,7 @@ namespace ASCOM.Wise40.VantagePro
         public int _portSpeed = 19200;
         System.IO.Ports.SerialPort _port = new System.IO.Ports.SerialPort();
 
-        Common.Debugger debugger = Debugger.Instance;
+        public static Common.Debugger debugger = Debugger.Instance;
         private bool _connected = false;
         private bool _initialized = false;
 
@@ -41,6 +42,8 @@ namespace ASCOM.Wise40.VantagePro
         private DateTime _lastDataRead = DateTime.MinValue;
 
         private static readonly Lazy<WiseVantagePro> lazy = new Lazy<WiseVantagePro>(() => new WiseVantagePro()); // Singleton
+
+        private Seeing _seeing = new Seeing();
 
         public static WiseVantagePro Instance
         {
@@ -64,6 +67,7 @@ namespace ASCOM.Wise40.VantagePro
                 RefreshFromDatafile();
             else
                 RefreshFromSerialPort();
+            _seeing.Refresh();
         }
 
         public void RefreshFromDatafile()
@@ -104,7 +108,6 @@ namespace ASCOM.Wise40.VantagePro
                             if (_env != null)
                             {
                                 DateTime utcTime = Convert.ToDateTime(sensorData["utcDate"] + " " + sensorData["utcTime"] + "m");
-                                DateTime localTime = Convert.ToDateTime(sensorData["date"] + " " + sensorData["time"] + "m");
 
                                 _env.Log(new Dictionary<string, string>()
                                 {
@@ -115,7 +118,7 @@ namespace ASCOM.Wise40.VantagePro
                                     ["Humidity"] = sensorData["outsideHumidity"],
                                     ["RainRate"] = sensorData["rainRate"],
                                     ["DewPoint"] = util.ConvertUnits(Convert.ToDouble(sensorData["outsideDewPt"]),
-                                                        Units.degreesFarenheit, Units.degreesCelsius).ToString()
+                                                        Units.degreesFarenheit, Units.degreesCelsius).ToString(),
 
                                 }, utcTime);
                             }
@@ -243,8 +246,9 @@ namespace ASCOM.Wise40.VantagePro
             WiseName = "VantagePro";
             sensorData = new Dictionary<string, string>();
             ReadProfile();
+            _env = new WeatherLogger(WiseName);
+            Seeing.init();
             Refresh();
-            _env = new EnvironmentLogger(WiseName);
 
             _initialized = true;
         }
@@ -552,11 +556,11 @@ namespace ASCOM.Wise40.VantagePro
                 case "WindDirection":
                 case "WindSpeed":
                 case "RainRate":
+                case "StarFWHM":
                     return "SensorDescription - " + PropertyName;
 
                 case "SkyBrightness":
                 case "SkyQuality":
-                case "StarFWHM":
                 case "SkyTemperature":
                 case "WindGust":
                 case "CloudCover":
@@ -595,7 +599,9 @@ namespace ASCOM.Wise40.VantagePro
         {
             get
             {
-                throw new PropertyNotImplementedException("StarFWHM", false);
+                if (_seeing == null)
+                    throw new PropertyNotImplementedException("StarFWHM", false);
+                return _seeing.FWHM;
             }
         }
 
@@ -643,13 +649,19 @@ namespace ASCOM.Wise40.VantagePro
             {
                 case "SkyBrightness":
                 case "SkyQuality":
-                case "StarFWHM":
                 case "SkyTemperature":
                 case "WindGust":
                 case "CloudCover":
                     throw new MethodNotImplementedException("SensorDescription(" + PropertyName + ")");
             }
             Refresh();
+
+            if (PropertyName == "StartFWHM")
+            {
+                return (_seeing != null) ?
+                    _seeing.TimeSinceLastUpdate.TotalSeconds :
+                    DateTime.Now.Subtract(DateTime.MinValue).TotalSeconds;
+            }
 
             double seconds = 0.0;
             if (_opMode == OpMode.File)
@@ -772,6 +784,99 @@ namespace ASCOM.Wise40.VantagePro
             public string Vendor;
             public string Model;
             public Dictionary<string, string> SensorData;
+        }
+
+        public class Seeing
+        {
+            private static WeatherLogger _logger;
+            private double _fwhm;
+            private DateTime _timeUTC = DateTime.MinValue;
+
+            public Seeing() { }
+
+            public static void init()
+            {
+                _logger = new WeatherLogger(stationName: "LCO");
+            }
+
+            public void Refresh()
+            {
+                //
+                //  mysql -uhibernate -phibernate -hpubsubdb.tlv.lco.gtn hibernate 
+                //      -e "select from_unixtime(TIMESTAMP_/1000), VALUE_ from LIVEVALUE  where  IDENTIFIER=5743146590416427613"
+                //
+                string sql = "select from_unixtime(TIMESTAMP_/1000) as time, VALUE_ from LIVEVALUE  where  IDENTIFIER=5743146590416427613";
+                try
+                {
+                    using (var sqlConn = new MySqlConnection(Const.MySql.DatabaseConnectionString.LCO_hibernate))
+                    {
+                        sqlConn.Open();
+                        using (var sqlCmd = new MySqlCommand(sql, sqlConn))
+                        {
+                            using (var cursor = sqlCmd.ExecuteReader())
+                            {
+                                cursor.Read();
+
+                                _timeUTC = Convert.ToDateTime(cursor["time"]);
+                                _fwhm = Convert.ToDouble(cursor["VALUE_"]);
+
+                                if ((string) cursor["VALUE_"] == "NaN")
+                                {
+                                    _fwhm = Double.NaN;
+                                }
+                                else
+                                {
+                                    _fwhm = Convert.ToDouble(cursor["VALUE_"]);
+                                    _logger.Log(new Dictionary<string, string>()
+                                    {
+                                        ["StarFWHM"] = _fwhm.ToString(),
+                                    }, _timeUTC);
+                                }
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    #region debug
+                    WiseVantagePro.debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"RefreshSeeing:\nsql: {sql}\nCaught: {ex.Message} at\n{ex.StackTrace}");
+                    #endregion
+                }
+            }
+
+            public TimeSpan TimeSinceLastUpdate
+            {
+                get
+                {
+                    return DateTime.UtcNow.Subtract(TimeUTC);
+                }
+            }
+
+            public DateTime TimeUTC
+            {
+                get
+                {
+                    return _timeUTC;
+                }
+
+                set
+                {
+                    _timeUTC = value;
+                }
+            }
+
+            public double FWHM
+            {
+                get
+                {
+                    return _fwhm;
+                }
+
+                set
+                {
+                    _fwhm = value;
+                }
+            }
         }
     }
 }
