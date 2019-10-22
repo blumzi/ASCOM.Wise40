@@ -141,7 +141,9 @@ namespace ASCOM.Wise40.TessW
 
                         double tAmb = Convert.ToDouble(Instance.sensorData["tempAmb"]);
                         double tSky = Convert.ToDouble(Instance.sensorData["tempSky"]);
-                        Instance.sensorData["cloudCover"] = (100 - 3 * (tAmb - tSky)).ToString();
+
+                        double percent = 100 - 3 * (tAmb - tSky);
+                        Instance.sensorData["cloudCover"] = (Math.Max(percent, 0.0)).ToString();
 
                         if (Instance._env != null)
                         {
@@ -199,7 +201,7 @@ namespace ASCOM.Wise40.TessW
             _periodicWebReadTimer = new System.Threading.Timer(new TimerCallback(PeriodicReader));
 
             Refresh();
-            _env = new EnvironmentLogger("TESS-w");
+            _env = new WeatherLogger("TESS-w");
 
             _initialized = true;
         }

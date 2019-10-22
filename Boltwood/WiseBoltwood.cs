@@ -704,7 +704,7 @@ namespace ASCOM.Wise40.Boltwood
         {
             Id = id;
             ReadProfile();
-            _env = new EnvironmentLogger(stationName: Name);
+            _env = new WeatherLogger(stationName: Name);
         }
 
         public override WeatherStationVendor Vendor

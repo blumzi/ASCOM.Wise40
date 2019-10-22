@@ -156,7 +156,7 @@ namespace ASCOM.Wise40.Boltwood
         public bool alerting;
         private ASCOM.Utilities.Util util = new Utilities.Util();
 
-        public SensorData(string data, EnvironmentLogger env)
+        public SensorData(string data, WeatherLogger env)
         {
             try
             {
