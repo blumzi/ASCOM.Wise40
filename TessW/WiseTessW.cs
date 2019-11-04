@@ -57,6 +57,9 @@ namespace ASCOM.Wise40.TessW
         /// </summary>
         public void Refresh()
         {
+            if (_lastDataRead != DateTime.MinValue && DateTime.Now.Subtract(_lastDataRead) < _interval)
+                return;
+
             PeriodicReader(new object());
         }
 
@@ -145,9 +148,9 @@ namespace ASCOM.Wise40.TessW
                         double percent = 100 - 3 * (tAmb - tSky);
                         Instance.sensorData["cloudCover"] = (Math.Max(percent, 0.0)).ToString();
 
-                        if (Instance._env != null)
+                        if (Instance._weatherLogger != null)
                         {
-                            Instance._env.Log(new Dictionary<string, string>()
+                            Instance._weatherLogger.Log(new Dictionary<string, string>()
                             {
                                 ["Temperature"] = Instance.sensorData["tempAmb"],
                                 ["SkyAmbientTemp"] = Instance.sensorData["tempSky"],
@@ -201,7 +204,7 @@ namespace ASCOM.Wise40.TessW
             _periodicWebReadTimer = new System.Threading.Timer(new TimerCallback(PeriodicReader));
 
             Refresh();
-            _env = new WeatherLogger("TESS-w");
+            _weatherLogger = new WeatherLogger("TESS-w");
 
             _initialized = true;
         }

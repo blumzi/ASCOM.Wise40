@@ -319,7 +319,7 @@ namespace ASCOM.Wise40.TessW
         /// </summary>
         public void Refresh()
         {
-            throw new ASCOM.MethodNotImplementedException();
+            tessw.Refresh();
         }
 
         /// <summary>
