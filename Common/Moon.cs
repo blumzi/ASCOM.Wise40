@@ -39,7 +39,7 @@ namespace ASCOM.Wise40
             InSpace ObsSpace = new InSpace();
 
             novas31.MakeInSpace(ScPos, ScVel, ref ObsSpace);
-            novas31.MakeObserver(ObserverLocation.EarthSurface, WiseSite.Instance.onSurface, ObsSpace, ref observer);
+            novas31.MakeObserver(ObserverLocation.EarthSurface, WiseSite.Instance._onSurface, ObsSpace, ref observer);
             novas31.MakeCatEntry("DUMMY", "xxx", 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, ref dummy_star);
             novas31.MakeObject(ObjectType.MajorPlanetSunOrMoon, 11, "Moon", dummy_star, ref moon);
         }
