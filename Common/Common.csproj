@@ -125,7 +125,7 @@
     <Compile Include="CueProvider.cs" />
     <Compile Include="Debugger.cs" />
     <Compile Include="DMS.cs" />
-    <Compile Include="EnvironmentLogger.cs" />
+    <Compile Include="WeatherLogger.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="FixedSizeQueue.cs" />
     <Compile Include="HumanIntervention.cs" />
@@ -151,6 +151,7 @@
     <Compile Include="Wise40Renderer.cs" />
     <Compile Include="WiseException.cs" />
     <Compile Include="WiseObject.cs" />
+    <Compile Include="OperationalProfile.cs" />
     <Compile Include="WiseSite.cs" />
   </ItemGroup>
   <ItemGroup>
