@@ -18,7 +18,8 @@ namespace ASCOM.Wise40SafeToOperate
 
         public ComputerControlSensor(WiseSafeToOperate instance) :
             base("ComputerControl",
-                Attribute.Immediate |
+                Attribute.SingleReading |
+                Attribute.Periodic |
                 Attribute.AlwaysEnabled |
                 Attribute.ForcesDecision |
                 Attribute.Wise40Specific,

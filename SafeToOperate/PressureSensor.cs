@@ -19,7 +19,8 @@ namespace ASCOM.Wise40SafeToOperate
                 Attribute.ForInfoOnly |
                 Attribute.CanBeStale |
                 Attribute.CanBeBypassed |
-                Attribute.Immediate |
+                Attribute.SingleReading |
+                Attribute.Periodic |
                 Attribute.AlwaysEnabled,
                 " mBar", " miiliBar", "f1", "Pressure",
                 instance)

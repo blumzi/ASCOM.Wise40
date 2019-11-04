@@ -16,6 +16,7 @@ namespace ASCOM.Wise40SafeToOperate
 
         public CloudsSensor(WiseSafeToOperate instance) :
             base("Clouds",
+                Attribute.Periodic |
                 Attribute.CanBeStale |
                 Attribute.CanBeBypassed,
                 "", "", "f0", "CloudCover",

@@ -16,6 +16,7 @@ namespace ASCOM.Wise40SafeToOperate
 
         public WindSensor(WiseSafeToOperate instance) :
             base("Wind",
+                Attribute.Periodic |
                 Attribute.CanBeStale |
                 Attribute.CanBeBypassed,
                 " km/h", " km/h", "G3", "WindSpeed",

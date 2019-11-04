@@ -22,8 +22,8 @@ namespace ASCOM.Wise40SafeToOperate
         public enum Attribute
         {
             None = 0,
-            Immediate = (1 << 0),       // Decision is based on an immediate read of the sensor
-                                        // Non-immediate sensors
+            SingleReading = (1 << 0),   // Decision is based on an immediate read of the sensor
+                                        // Multiple-readings sensors
                                         // - Are ready ONLY after _repeats readings have been accumulated
                                         // - Not Safe while not ready
                                         // - Once transited from unsafe to safe, must stabilize
@@ -33,7 +33,8 @@ namespace ASCOM.Wise40SafeToOperate
             CanBeBypassed = (1 << 3),   // By the Safety Bypass
             ForcesDecision = (1 << 4),  // If this sensor is not safe it forces SafeToOperate == false
             ForInfoOnly = (1 << 5),     // Will not affect the global isSafe state
-            Wise40Specific = ( 1 << 6), // Relevant only to the Wise40 observatory safety, not to other Wise observatories
+            Wise40Specific = (1 << 6),  // Relevant only to the Wise40 observatory safety, not to other Wise observatories
+            Periodic = (1 << 7),        // Needs to be read periodically (may not accumulate readings)
         };
 
         [Flags]
@@ -387,15 +388,20 @@ namespace ASCOM.Wise40SafeToOperate
             wisesafetooperate = instance;
             WiseName = name;
             _attributes = attributes;
-            _timer = new System.Threading.Timer(new TimerCallback(onTimer));
+
+            if (HasAttribute(Attribute.Periodic))
+                _timer = new System.Threading.Timer(new TimerCallback(onTimer));
+
             if (HasAttribute(Attribute.AlwaysEnabled))
                 Enabled = true;
+
             _state = State.None;
             _units = new Units { symbolic = symbolicUnits, verbal = verbalUnits };
             _formatValue = formatValue;
             _propertyName = propertyName;
 
-            Restart(5000);
+            Restart();
+
             activityMonitor.Event(new Event.SafetyEvent(
                 sensor: WiseName,
                 details: "Created",
@@ -418,7 +424,7 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
-                if (HasAttribute(Attribute.Immediate))
+                if (HasAttribute(Attribute.SingleReading))
                     return getReading();
 
                 if (_readings == null)
@@ -435,23 +441,38 @@ namespace ASCOM.Wise40SafeToOperate
         #region ASCOM Profile
         public void readProfile()
         {
-            int defaultInterval = 0, defaultRepeats = 0;
+            int defaultInterval = 60, defaultRepeats = -1;
 
             switch (WiseName)
             {
-                case "Wind": defaultInterval = 60; defaultRepeats = 3; break;
-                case "Sun": defaultInterval = 60; defaultRepeats = 1; break;
-                case "HumanIntervention": defaultInterval = 0; defaultRepeats = 1; break;
-                case "Rain": defaultInterval = 60; defaultRepeats = 2; break;
-                case "Clouds": defaultInterval = 60; defaultRepeats = 3; break;
-                case "Humidity": defaultInterval = 60; defaultRepeats = 4; break;
-                case "Pressure": defaultInterval = 60; defaultRepeats = 3; break;
-                case "Temperature": defaultInterval = 60; defaultRepeats = 3; break;
+                case "Wind": defaultRepeats = 3; break;
+                case "Sun": defaultRepeats = 1; break;
+                case "HumanIntervention":
+                    defaultInterval = 0;
+                    defaultRepeats = 1;
+                    break;
+                case "Rain": defaultRepeats = 2; break;
+                case "Clouds": defaultRepeats = 3; break;
+                case "Humidity": defaultRepeats = 4; break;
+                case "Pressure": defaultRepeats = 3; break;
+                case "Temperature": defaultRepeats = 3; break;
             }
 
-            _intervalMillis = 1000 * Convert.ToInt32(wisesafetooperate._profile.GetValue(Const.WiseDriverID.SafeToOperate, WiseName, "Interval", defaultInterval.ToString()));
-            if (DoesNotHaveAttribute(Attribute.Immediate))
-                _repeats = Convert.ToInt32(wisesafetooperate._profile.GetValue(Const.WiseDriverID.SafeToOperate, WiseName, "Repeats", defaultRepeats.ToString()));
+            if (HasAttribute(Attribute.Periodic))
+            {
+                int fromProfile = Convert.ToInt32(wisesafetooperate._profile.GetValue(
+                    Const.WiseDriverID.SafeToOperate, WiseName, "Interval", defaultInterval.ToString()));
+                if (_intervalMillis == -1)
+                    _intervalMillis = 1000;
+                else
+                    _intervalMillis = 1000 * fromProfile;
+            }
+
+            if (HasAttribute(Attribute.SingleReading))
+                _repeats = 1;
+            else
+                _repeats = Convert.ToInt32(wisesafetooperate._profile.GetValue(
+                    Const.WiseDriverID.SafeToOperate, WiseName, "Repeats", defaultRepeats.ToString()));
 
             if (DoesNotHaveAttribute(Attribute.AlwaysEnabled))
                 Enabled = Convert.ToBoolean(wisesafetooperate._profile.GetValue(Const.WiseDriverID.SafeToOperate, WiseName, "Enabled", true.ToString()));
@@ -463,7 +484,7 @@ namespace ASCOM.Wise40SafeToOperate
         {
             wisesafetooperate._profile.WriteValue(Const.WiseDriverID.SafeToOperate, WiseName, (_intervalMillis / 1000).ToString(), "Interval");
 
-            if (DoesNotHaveAttribute(Attribute.Immediate))
+            if (DoesNotHaveAttribute(Attribute.SingleReading))
                 wisesafetooperate._profile.WriteValue(Const.WiseDriverID.SafeToOperate, WiseName, _repeats.ToString(), "Repeats");
 
             if (DoesNotHaveAttribute(Attribute.AlwaysEnabled))
@@ -515,7 +536,7 @@ namespace ASCOM.Wise40SafeToOperate
             }
         }
 
-        public void Restart(int dueMillis)
+        public void Restart(int dueMillis = 5000)
         {
             _state = new State();
             _nbad = 0;
@@ -523,26 +544,19 @@ namespace ASCOM.Wise40SafeToOperate
             _nstale = 0;
 
             readProfile();
-            if (HasAttribute(Attribute.Immediate) && _timer != null)
+            if (Enabled)
             {
-                _timer.Change(Timeout.Infinite, Timeout.Infinite);
+                if (_repeats > 1)
+                    _readings = new FixedSizedQueue<Reading>(_repeats);
+
+                if (HasAttribute(Attribute.Periodic))
+                    _timer.Change(dueMillis, _intervalMillis);
+                else
+                    _timer.Change(Timeout.Infinite, Timeout.Infinite);
             }
             else
             {
-                if (Enabled)
-                {
-                    if (_repeats > 1)
-                    {
-                        _readings = new FixedSizedQueue<Reading>(_repeats);
-                        _timer.Change(dueMillis, _intervalMillis);
-                    }
-                    else
-                        _timer.Change(Timeout.Infinite, Timeout.Infinite);
-                }
-                else
-                {
-                    _timer.Change(Timeout.Infinite, Timeout.Infinite);
-                }
+                _timer.Change(Timeout.Infinite, Timeout.Infinite);
             }
         }
 
@@ -562,7 +576,7 @@ namespace ASCOM.Wise40SafeToOperate
                 currentReading = getReading();
             } catch (Exception ex)
             {
-                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, $"Sensor:onTimer: Caught {ex.Message} at {ex.StackTrace}");
+                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, $"Sensor:onTimer: Caught {ex.Message} at\n{ex.StackTrace}");
                 return;
             }
             if (currentReading == null)
@@ -705,7 +719,7 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
-                if (HasAttribute(Attribute.Immediate))
+                if (HasAttribute(Attribute.SingleReading))
                     return TimeSpan.Zero;
 
                 return StateIsSet(State.Stabilizing) ?
@@ -732,7 +746,7 @@ namespace ASCOM.Wise40SafeToOperate
                     return ret;
                 }
 
-                if (HasAttribute(Attribute.Immediate))
+                if (HasAttribute(Attribute.SingleReading))
                 {
                     ret = getReading().Safe;
                     #region debug

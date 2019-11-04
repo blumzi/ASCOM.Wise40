@@ -16,10 +16,11 @@ namespace ASCOM.Wise40SafeToOperate
 
         public TemperatureSensor(WiseSafeToOperate instance) :
             base("Temperature",
+                Attribute.Periodic |
                 Attribute.ForInfoOnly |
                 Attribute.CanBeStale |
                 Attribute.CanBeBypassed |
-                Attribute.Immediate |
+                Attribute.SingleReading |
                 Attribute.AlwaysEnabled,
                 "°C", " deg", "G3", "Temperature",
                 instance)

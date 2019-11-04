@@ -15,7 +15,8 @@ namespace ASCOM.Wise40SafeToOperate
 
         public HumanInterventionSensor(WiseSafeToOperate instance) :
             base("HumanIntervention",
-                Attribute.Immediate |
+                Attribute.SingleReading |
+                Attribute.Periodic |
                 Attribute.AlwaysEnabled |
                 Attribute.ForcesDecision |
                 Attribute.Wise40Specific,

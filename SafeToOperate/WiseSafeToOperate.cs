@@ -46,6 +46,9 @@ namespace ASCOM.Wise40SafeToOperate
         public static PressureSensor pressureSensor;
         public static TemperatureSensor temperatureSensor;
 
+        public static TessWRefresher tessWRefresher;
+        public static OWLRefresher OWLRefresher;
+
         public static DoorLockSensor doorLockSensor;
         public static ComputerControlSensor computerControlSensor;
         public static PlatformSensor platformSensor;
@@ -129,6 +132,9 @@ namespace ASCOM.Wise40SafeToOperate
             pressureSensor = new PressureSensor(this);
             temperatureSensor = new TemperatureSensor(this);
 
+            tessWRefresher = new TessWRefresher(this);
+            OWLRefresher = new OWLRefresher(this);
+
             //
             // The sensors in priotity order.  The first one that:
             //   - is enabled
@@ -152,11 +158,14 @@ namespace ASCOM.Wise40SafeToOperate
 
                 pressureSensor,             // Weather sensors - NOT affecting isSafe
                 temperatureSensor,
+
+                tessWRefresher,             // Refreshers
+                OWLRefresher,
             };
 
             _cumulativeSensors = new List<Sensor>();
             foreach (Sensor s in _prioritizedSensors)
-                if (!s.HasAttribute(Sensor.Attribute.Immediate))
+                if (!s.HasAttribute(Sensor.Attribute.SingleReading))
                     _cumulativeSensors.Add(s);
 
             _connected = false;
@@ -404,7 +413,7 @@ namespace ASCOM.Wise40SafeToOperate
 
         public void stopSensors()
         {
-            foreach (Sensor s in _cumulativeSensors)
+            foreach (Sensor s in _prioritizedSensors)
             {
                 s.Enabled = false;
                 s.Connected = false;
@@ -413,10 +422,15 @@ namespace ASCOM.Wise40SafeToOperate
 
         public void startSensors()
         {
-            foreach (Sensor s in _cumulativeSensors)
+            if (_prioritizedSensors == null)
+                return;
+
+            foreach (Sensor s in _prioritizedSensors)
             {
                 s.Connected = true;
-                s.Restart(5000);
+
+                if (s.HasAttribute(Sensor.Attribute.Periodic))
+                    s.Restart();
             }
         }
 
@@ -493,7 +507,7 @@ namespace ASCOM.Wise40SafeToOperate
 
             if (!s.isSafe)
             {
-                if (s.HasAttribute(Sensor.Attribute.Immediate))
+                if (s.HasAttribute(Sensor.Attribute.SingleReading))
                     reason += s.reason();
                 else
                 {                    
@@ -684,7 +698,7 @@ namespace ASCOM.Wise40SafeToOperate
                     astroutils.JulianDateUT1(0),
                     Sun,
                     astroutils.DeltaT(),
-                    WiseSite.Instance.onSurface,
+                    WiseSite.Instance._onSurface,
                     astrometricAccuracy,
                     ref ra, ref dec, ref dis);
 
@@ -698,7 +712,7 @@ namespace ASCOM.Wise40SafeToOperate
                 novas31.Equ2Hor(jdt, 0,
                     astrometricAccuracy,
                     0, 0,
-                    WiseSite.Instance.onSurface,
+                    WiseSite.Instance._onSurface,
                     ra, dec,
                     WiseSite.refractionOption,
                     ref zd, ref az, ref rar, ref decr);
@@ -775,7 +789,7 @@ namespace ASCOM.Wise40SafeToOperate
                 if (!s.isSafe)
                 {
                     ret = false;    // The first non-safe sensor forces NOT SAFE
-                    if (!s.HasAttribute(Sensor.Attribute.Immediate))
+                    if (!s.HasAttribute(Sensor.Attribute.SingleReading))
                         _unsafeBecauseNotReady = true;
                     goto Out;
                 }
