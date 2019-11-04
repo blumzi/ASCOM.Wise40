@@ -704,7 +704,7 @@ namespace ASCOM.Wise40.Boltwood
         {
             Id = id;
             ReadProfile();
-            _env = new WeatherLogger(stationName: Name);
+            _weatherLogger = new WeatherLogger(stationName: Name);
         }
 
         public override WeatherStationVendor Vendor
@@ -792,7 +792,7 @@ namespace ASCOM.Wise40.Boltwood
                     throw new InvalidOperationException(string.Format("GetSensorData: Cannot read \"{0}\", caught {1}", FilePath, e.Message));
                 }
 
-                _sensorData = new SensorData(str, _env);
+                _sensorData = new SensorData(str, _weatherLogger);
                 _lastDataRead = DateTime.Now;
             }
         }
