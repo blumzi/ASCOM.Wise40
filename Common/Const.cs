@@ -66,8 +66,6 @@ namespace ASCOM.Wise40.Common
         public class ProfileName
         {
             public static string Telescope_AstrometricAccuracy = "AstrometricAccuracy";
-            public static string Telescope_EnslaveDome = "EnslaveDome";
-            public static string Telescope_CalculateRefraction = "CalculateRefraction";
             public static string Telescope_Tracing = "Tracing";
             public static string Telescope_BypassCoordinatesSafety = "BypassCoordinatesSafety";
             public static string Telescope_PlotSlews = "PlotSlews";
@@ -80,7 +78,7 @@ namespace ASCOM.Wise40.Common
 
             public static string Dome_AutoCalibrate = "AutoCalibrate";
             public static string Dome_SyncVentWithShutter = "SyncVentWithShutter";
-            public static string Dome_MinimalTrackingMovement = "MinimalDomeTrackingMovement";
+            public static string Dome_MinimalMovement = "MinimalMovement";
 
             public static string DomeShutter_IPAddress = "ShutterIPAddress";
             public static string DomeShutter_HighestValue = "ShutterHighestValue";
@@ -188,6 +186,16 @@ namespace ASCOM.Wise40.Common
         public class UnsafeReasons
         {
             public static string ShuttingDown = "Wise40 is shutting down";
+        }
+
+        public class MySql
+        {
+            public class DatabaseConnectionString
+            {
+                public static string LCO_hibernate = "server=pubsubdb.tlv.lco.gtn;user=hibernate;database=hibernate;port=3306;password=hibernate";
+                public static string Wise_weather = "server=localhost;user=root;database=weather;port=3306;password=@!ab4131!@";
+                public static string Wise_activities = "server=localhost;user=root;database=activities;port=3306;password=@!ab4131!@";
+            }
         }
     }
 }
