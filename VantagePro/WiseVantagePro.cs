@@ -105,11 +105,11 @@ namespace ASCOM.Wise40.VantagePro
                                 sensorData[words[0]] = words[1];
                             }
 
-                            if (_env != null)
+                            if (_weatherLogger != null)
                             {
                                 DateTime utcTime = Convert.ToDateTime(sensorData["utcDate"] + " " + sensorData["utcTime"] + "m");
 
-                                _env.Log(new Dictionary<string, string>()
+                                _weatherLogger.Log(new Dictionary<string, string>()
                                 {
                                     ["Temperature"] = sensorData["outsideTemp"],
                                     ["Pressure"] = sensorData["barometer"],
@@ -246,7 +246,7 @@ namespace ASCOM.Wise40.VantagePro
             WiseName = "VantagePro";
             sensorData = new Dictionary<string, string>();
             ReadProfile();
-            _env = new WeatherLogger(WiseName);
+            _weatherLogger = new WeatherLogger(WiseName);
             Seeing.init();
             Refresh();
 
