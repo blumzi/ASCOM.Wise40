@@ -23,24 +23,27 @@ namespace ASCOM.Wise40
         private static Astrometry.NOVAS.NOVAS31 novas31 = new NOVAS31();
         private static AstroUtils astroutils = new AstroUtils();
         private static ASCOM.Utilities.Util ascomutils = new Util();
-        public Astrometry.OnSurface onSurface;
-        public Observer observer;
+        public Astrometry.OnSurface _onSurface;
+        public Observer _observer;
         public static Astrometry.Accuracy astrometricAccuracy;
         public static Astrometry.RefractionOption refractionOption = RefractionOption.LocationRefraction;
         public double siteLatitude, siteLongitude, siteElevation;
         public static ObservingConditions och;
         private static DateTime lastOCFetch;
-        private static bool och_initialized = false;
+        private static bool _och_initialized = false;
         private static Debugger debugger = Debugger.Instance;
-
+        private static OperationalProfile _operationalProfile;
+        private static ASCOM.Astrometry.Transform.Transform _transform = new Astrometry.Transform.Transform();
+        private static TempFetcher _tempFetcher = new TempFetcher(10);
+        private static string _processName;
+ 
         public enum OpMode { LCO, ACP, WISE, NONE };
-        public static OpMode _opMode = OpMode.WISE;
 
         //
         // From the VantagePro summary graphs for 2015
         //
-        private static readonly double[] averageTemperatures = { 9.7, 10.7, 14.0, 15.0, 21.1, 21.3, 24.4, 25.9, 24.7, 20.8, 16.1, 10.1 };
-        private static readonly double[] averagePressures = { 1021, 1012, 1017, 1013, 1008, 1008, 1006, 1007, 1008, 1013, 1015, 1022 };
+        public static readonly double[] averageTemperatures = { 9.7, 10.7, 14.0, 15.0, 21.1, 21.3, 24.4, 25.9, 24.7, 20.8, 16.1, 10.1 };
+        public static readonly double[] averagePressures = { 1021, 1012, 1017, 1013, 1008, 1008, 1006, 1007, 1008, 1013, 1015, 1022 };
 
         public WiseSite() { }
         static WiseSite() { }
@@ -67,15 +70,71 @@ namespace ASCOM.Wise40
             siteLatitude = ascomutils.DMSToDegrees("30:35:50.43");
             siteLongitude = ascomutils.DMSToDegrees("34:45:43.86");
             siteElevation = 882.9;
-            novas31.MakeOnSurface(siteLatitude, siteLongitude, siteElevation, 0.0, 0.0, ref onSurface);
+            novas31.MakeOnSurface(siteLatitude, siteLongitude, siteElevation, 0.0, 0.0, ref _onSurface);
+            _operationalProfile = new OperationalProfile(OpMode.WISE);
             refractionOption = Astrometry.RefractionOption.LocationRefraction;
+
+            _transform.SiteElevation = siteElevation;
+            _transform.SiteLatitude = siteLatitude;
+            _transform.SiteLongitude = siteLongitude;
+            _transform.Refraction = true;
+
+            _processName = System.Diagnostics.Process.GetCurrentProcess().ProcessName;
 
             _initialized = true;
         }
 
+        public bool TransformApparentToJ2000(double apparentRA, double apparentDEC, ref double j2000RA, ref double j2000DEC)
+        {
+            _transform.SiteTemperature = _tempFetcher.Temperature;
+            _transform.SetApparent(apparentRA, apparentDEC);
+
+            try
+            {
+                j2000RA = _transform.RAJ2000;
+                j2000DEC = _transform.DecJ2000;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"TransformApparentToJ2000: Caught {ex.Message} at {ex.StackTrace}");
+                #endregion
+                return false;
+            }
+        }
+
+        public bool TransformJ2000ToApparent(double j2000RA, double j2000DEC , ref double apparentRA, ref double apparentDEC)
+        {
+            _transform.SiteTemperature = _tempFetcher.Temperature;
+            _transform.SetJ2000(j2000RA, j2000DEC);
+
+            try
+            {
+                apparentRA = _transform.RAApparent;
+                apparentDEC = _transform.DECApparent;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"TransformJ2000ToApparent: Caught {ex.Message} at {ex.StackTrace}");
+                #endregion
+                return false;
+            }
+        }
+
+        public static OperationalProfile OperationalProfile
+        {
+            get
+            {
+                return _operationalProfile;
+            }
+        }
+
         public static void initOCH()
         {
-            if (och_initialized)
+            if (_och_initialized)
                 return;
 
             try
@@ -92,7 +151,7 @@ namespace ASCOM.Wise40
                 och = null;
             }
 
-            och_initialized = true;
+            _och_initialized = true;
         }
 
         public void Dispose()
@@ -106,7 +165,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return Angle.FromHours(onSurface.Longitude / 15.0);
+                return Angle.FromHours(_onSurface.Longitude / 15.0);
             }
         }
 
@@ -114,7 +173,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return Angle.FromDegrees(onSurface.Latitude, Angle.Type.Dec);
+                return Angle.FromDegrees(_onSurface.Latitude, Angle.Type.Dec);
             }
         }
 
@@ -122,7 +181,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return onSurface.Height;
+                return _onSurface.Height;
             }
         }
 
@@ -151,22 +210,23 @@ namespace ASCOM.Wise40
         // If we haven't checked in a long enough time (10 minutes ?!?)
         //  get temperature and pressure.
         /// </summary>
-        public void prepareRefractionData(bool calculateRefraction)
+        public void prepareRefractionData()
         {
             const int freqOCFetchMinutes = 10;
 
             initOCH();
 
-            if (!calculateRefraction)
+            if (!OperationalProfile.CalculatesRefractionForHorizCoords)
             {
                 refractionOption = RefractionOption.NoRefraction;
                 return;
             }
+
             DateTime now = DateTime.Now;
             int month = now.Month - 1;
 
-            onSurface.Temperature = averageTemperatures[month];
-            onSurface.Pressure = averagePressures[month];
+            _onSurface.Temperature = averageTemperatures[month];
+            _onSurface.Pressure = averagePressures[month];
 
             if (och != null && now.Subtract(lastOCFetch).TotalMinutes > freqOCFetchMinutes)
             {
@@ -176,8 +236,8 @@ namespace ASCOM.Wise40
 
                     if (timeSinceLastUpdate > (freqOCFetchMinutes * 60))
                     {
-                        onSurface.Temperature = och.Temperature;
-                        onSurface.Pressure = och.Pressure;
+                        _onSurface.Temperature = och.Temperature;
+                        _onSurface.Pressure = och.Pressure;
                         refractionOption = RefractionOption.LocationRefraction;
                         lastOCFetch = now;
                     }
@@ -203,20 +263,20 @@ namespace ASCOM.Wise40
                     OpMode mode;
 
                     if (Enum.TryParse<OpMode>(driverProfile.GetValue(Const.WiseDriverID.Telescope, "SiteOperationMode", null, "WISE").ToUpper(), out mode))
-                        _opMode = mode;
+                        OperationalProfile.OpMode = mode;
                 }
-                return _opMode;
+                return OperationalProfile.OpMode;
             }
 
             set
             {
-                _opMode = value;
+                OperationalProfile.OpMode = value;
                 using (Profile driverProfile = new Profile() { DeviceType = "Telescope" })
                 {
-                    driverProfile.WriteValue(Const.WiseDriverID.Telescope, "SiteOperationMode", _opMode.ToString());
+                    driverProfile.WriteValue(Const.WiseDriverID.Telescope, "SiteOperationMode", OperationalProfile.OpMode.ToString());
                 }
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "OperationalMode:set {0}", _opMode.ToString());
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "OperationalMode:set {0}", OperationalProfile.OpMode.ToString());
                 #endregion
             }
         }
@@ -225,7 +285,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return (_opMode == OpMode.LCO || _opMode == OpMode.ACP);
+                return (OperationalProfile.OpMode == OpMode.LCO || OperationalProfile.OpMode == OpMode.ACP);
             }
         }
 
@@ -263,10 +323,38 @@ namespace ASCOM.Wise40
             return secz1 + 1 - 0.0018167 * secz1 - 0.002875 * Math.Pow(secz1, 2) - 0.0008083 * Math.Pow(secz1, 3);
         }
 
-        public static bool CurrentProcessIsASCOMServer
+        public static bool CurrentProcessIs(Const.Application app)
         {
-            get {
-                return System.Diagnostics.Process.GetCurrentProcess().ProcessName == Const.Apps[Const.Application.RESTServer].appName;
+            return _processName == Const.Apps[app].appName;
+        }
+    }
+
+    public class TempFetcher
+    {
+        private TimeSpan _ts;
+        private double _temp;
+        private DateTime _lastFetch;
+
+        public TempFetcher(int seconds)
+        {
+            _ts = new TimeSpan(0, 0, seconds);
+            _lastFetch = DateTime.Now.Subtract(new TimeSpan(0, 0, (int) seconds + 1));
+        }
+
+        public double Temperature
+        {
+            get
+            {
+                if (WiseSite.och == null)
+                    return WiseSite.averageTemperatures[DateTime.Now.Month - 1];
+
+                DateTime now = DateTime.Now;
+                if (now.Subtract(_lastFetch) > _ts)
+                {
+                    _temp = WiseSite.och.Temperature;
+                    _lastFetch = now;
+                }
+                return _temp;
             }
         }
     }
