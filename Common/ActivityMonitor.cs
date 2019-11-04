@@ -72,7 +72,7 @@ namespace ASCOM.Wise40
 
         public void init()
         {
-            if (!Simulated && !WiseSite.CurrentProcessIsASCOMServer)
+            if (!Simulated && !WiseSite.CurrentProcessIs(Const.Application.RESTServer))
                 return;
 
             if (initialized)
@@ -218,7 +218,6 @@ namespace ASCOM.Wise40
 
         public class Tracer
         {
-            public static string MySqlActivitiesConnectionString = "server=localhost;user=root;database=activities;port=3306;password=@!ab4131!@";
             private string _line;
             private string _name;
 
@@ -436,7 +435,7 @@ namespace ASCOM.Wise40
 
             try
             {
-                using (var sqlConn = new MySqlConnection(ActivityMonitor.Tracer.MySqlActivitiesConnectionString))
+                using (var sqlConn = new MySqlConnection(Const.MySql.DatabaseConnectionString.Wise_activities))
                 {
                     sqlConn.Open();                    
                     using (var sqlCmd = new MySqlCommand(sql, sqlConn))
@@ -489,7 +488,7 @@ namespace ASCOM.Wise40
 
             try
             {
-                using (var sqlConn = new MySqlConnection(ActivityMonitor.Tracer.MySqlActivitiesConnectionString))
+                using (var sqlConn = new MySqlConnection(Const.MySql.DatabaseConnectionString.Wise_activities))
                 {
                     sqlConn.Open();
                     using (var sqlCmd = new MySqlCommand(sql, sqlConn))
@@ -1297,7 +1296,7 @@ namespace ASCOM.Wise40
 
             try
             {
-                using (var sqlConn = new MySqlConnection(ActivityMonitor.Tracer.MySqlActivitiesConnectionString))
+                using (var sqlConn = new MySqlConnection(Const.MySql.DatabaseConnectionString.Wise_activities))
                 {
                     sqlConn.Open();
                     using (var sqlCmd = new MySqlCommand(sql, sqlConn))
