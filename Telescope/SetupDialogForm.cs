@@ -22,8 +22,6 @@ namespace ASCOM.Wise40
 
             WiseTele.ReadProfile();
             accuracyBox.SelectedItem = (WiseSite.astrometricAccuracy == Accuracy.Full) ? 0 : 1;
-            checkBoxEnslaveDome.Checked = WiseTele._enslaveDome;
-            checkBoxCalculateRefraction.Checked = WiseTele._calculateRefraction;
             checkBoxBypassSafety.Checked = WiseTele.BypassCoordinatesSafety;
             checkBoxPlotSlews.Checked = WiseTele.PlotSlews;
         }
@@ -31,8 +29,6 @@ namespace ASCOM.Wise40
         private void cmdOK_Click(object sender, EventArgs e) // OK button event handler
         {
             WiseSite.astrometricAccuracy = accuracyBox.Text == "Full" ? Accuracy.Full : Accuracy.Reduced;
-            WiseTele._enslaveDome = checkBoxEnslaveDome.Checked;
-            WiseTele._calculateRefraction = checkBoxCalculateRefraction.Checked;
             WiseTele.BypassCoordinatesSafety = checkBoxBypassSafety.Checked;
             WiseTele.PlotSlews = checkBoxPlotSlews.Checked;
             WiseTele.WriteProfile();

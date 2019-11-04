@@ -33,6 +33,7 @@ namespace ASCOM.Wise40
         private bool _connected = false;
         private bool _calibrating = false;
         public bool _autoCalibrate = false;
+        private Angle _minimalMove = Angle.FromDegrees(2.0, Angle.Type.Az);
         private bool _isStuck;
         private static Object _caliWriteLock = new object();
 
@@ -123,6 +124,7 @@ namespace ASCOM.Wise40
             if (_initialized)
                 return;
 
+            debugger.WriteLine(Debugger.DebugLevel.DebugDome, "Starting init()");
             WiseName = "Wise40 Dome";
             ReadProfile();
 
@@ -169,7 +171,7 @@ namespace ASCOM.Wise40
             _state = DomeState.Idle;
 
             _domeTimer = new System.Threading.Timer(new TimerCallback(onDomeTimer));
-            _domeTimer.Change(_domeTimeout, _domeTimeout);
+            //_domeTimer.Change(_domeTimeout, _domeTimeout);
 
             _movementTimer = new System.Threading.Timer(new TimerCallback(onMovementTimer));
 
@@ -779,15 +781,6 @@ namespace ASCOM.Wise40
 
             Angle toAng = new Angle(degrees, Angle.Type.Az);
 
-            if (!_adjustingForTracking)
-                activityMonitor.NewActivity(new Activity.DomeSlew(new Activity.DomeSlew.StartParams
-                {
-                    type = Activity.DomeSlew.DomeEventType.Slew,
-                    startAz = Azimuth.Degrees,
-                    targetAz = degrees,
-                    reason = reason,
-                }));
-
             if (!Calibrated)
             {
                 if (_autoCalibrate)
@@ -799,11 +792,28 @@ namespace ASCOM.Wise40
                 } else
                 {
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome: SlewToAzimuth: {0}, not calibrated, _autoCalibrate == false, throwing InvalidOperationException", toAng.ToNiceString());
+                    debugger.WriteLine(Debugger.DebugLevel.DebugDome, $"WiseDome: SlewToAzimuth({toAng.ToNiceString()}), not calibrated, _autoCalibrate == false, throwing InvalidOperationException");
                     #endregion
                     throw new ASCOM.InvalidOperationException("Not calibrated!");
                 }
             }
+
+            if (!FarEnoughToMove(toAng))
+            {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugDome, $"WiseDome: SlewToAzimuth({toAng.ToNiceString()}): at {Azimuth.ToNiceString()} not FarEnoughToMove");
+                #endregion
+                return;
+            }
+
+            if (!_adjustingForTracking)
+                activityMonitor.NewActivity(new Activity.DomeSlew(new Activity.DomeSlew.StartParams
+                {
+                    type = Activity.DomeSlew.DomeEventType.Slew,
+                    startAz = Azimuth.Degrees,
+                    targetAz = degrees,
+                    reason = reason,
+                }));
 
             _targetAz = toAng;
             AtPark = false;
@@ -819,8 +829,7 @@ namespace ASCOM.Wise40
                     break;
             }
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome: SlewToAzimuth: {0} => {1} (dist: {2}), moving {3}",
-                Azimuth, toAng, shortest.angle, shortest.direction);
+            debugger.WriteLine(Debugger.DebugLevel.DebugDome, $"WiseDome: SlewToAzimuth({toAng}) => at: {Azimuth}, dist: {shortest.angle}), moving {shortest.direction}");
             #endregion
 
             if (Simulated && _targetAz == _simulatedStuckAz)
@@ -1338,7 +1347,6 @@ namespace ASCOM.Wise40
 
         public short InterfaceVersion
         {
-            // set by the driver wizard
             get
             {
                 return Convert.ToInt16("2");
@@ -1444,6 +1452,11 @@ namespace ASCOM.Wise40
             }
         }
 
+        public bool FarEnoughToMove(Angle target)
+        {
+            return Azimuth.ShortestDistance(target).angle > _minimalMove;
+        }
+
         #region Profile
 
         /// <summary>
@@ -1451,12 +1464,15 @@ namespace ASCOM.Wise40
         /// </summary>
         public void ReadProfile()
         {
-            bool defaultSyncVentWithShutter = (WiseSite.OperationalMode == WiseSite.OpMode.WISE) ? false : true;
-
             using (Profile driverProfile = new Profile() { DeviceType = "Dome" })
             {
-                _autoCalibrate = Convert.ToBoolean(driverProfile.GetValue(Const.WiseDriverID.Dome, Const.ProfileName.Dome_AutoCalibrate, string.Empty, true.ToString()));
+                _autoCalibrate = Convert.ToBoolean(driverProfile.GetValue(
+                    Const.WiseDriverID.Dome, Const.ProfileName.Dome_AutoCalibrate, string.Empty, true.ToString()));
+
+                _minimalMove = Angle.FromDegrees(Convert.ToDouble(driverProfile.GetValue(
+                    Const.WiseDriverID.Dome, Const.ProfileName.Dome_MinimalMovement, string.Empty, "2.0")), Angle.Type.Az);
             }
+
             wisedomeshutter.ReadProfile();
         }
 

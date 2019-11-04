@@ -23,7 +23,6 @@ namespace ASCOM.Wise40
         private static WiseSite wisesite = WiseSite.Instance;
 
         private bool _initialized = false;
-        private Angle _minimalMovement;
 
         // Explicit static constructor to tell C# compiler
         // not to mark type as beforefieldinit
@@ -49,17 +48,25 @@ namespace ASCOM.Wise40
             if (_initialized)
                 return;
 
-            debugger = Debugger.Instance;
-            novas31 = new Astrometry.NOVAS.NOVAS31();
-            astroutils = new AstroUtils();
-            _arrivedAtAz = new AutoResetEvent(false);
-            wisedome.SetArrivedAtAzEvent(_arrivedAtAz);
-            _minimalMovement = new Angle(WiseTele._minimalDomeTrackingMovement, Angle.Type.Az);
+            try
+            {
+                debugger = Debugger.Instance;
+                novas31 = new Astrometry.NOVAS.NOVAS31();
+                astroutils = new AstroUtils();
+                _arrivedAtAz = new AutoResetEvent(false);
+                wisedome.SetArrivedAtAzEvent(_arrivedAtAz);
 
-            _initialized = true;
-            #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver: init() done.");
-            #endregion
+                _initialized = true;
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver: init() done.");
+                #endregion
+            }
+            catch (Exception ex)
+            {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, $"DomeSlaveDriver: init() Caught:\n{ex.Message} at\n{ex.StackTrace}");
+                #endregion
+            }
         }
 
         public bool Connected
@@ -80,15 +87,15 @@ namespace ASCOM.Wise40
         public void SlewToAz(double az, string reason)
         {
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver: Asking dome to SlewToAzimuth({0}, {1})",
-                new Angle(az, Angle.Type.Az), reason);
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                $"DomeSlaveDriver: Asking dome to SlewToAzimuth({new Angle(az, Angle.Type.Az)}, {reason})");
             #endregion
             try
             {
                 wisedome.SlewToAzimuth(az, reason);
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver:SlewToAz Waiting for dome to arrive to target {0}",
-                    Angle.FromDegrees(az).ToString());
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                    $"DomeSlaveDriver:SlewToAz Waiting for dome to arrive to target {Angle.FromDegrees(az)}");
                 #endregion
                 _arrivedAtAz.WaitOne();
                 #region debug
@@ -118,8 +125,8 @@ namespace ASCOM.Wise40
             {
                 wisedome.Park();
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver: Waiting for dome to park at {0}",
-                    Angle.FromDegrees(wisedome.ParkAzimuth).ToString());
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                    $"DomeSlaveDriver: Waiting for dome to park at {Angle.FromDegrees(wisedome.ParkAzimuth)}");
                 #endregion
                 _arrivedAtAz.WaitOne();
             }
@@ -127,9 +134,7 @@ namespace ASCOM.Wise40
             {
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                    "DomeSlaveDriver: Caught {0}(\"{1}\") at {2} while waiting for dome to park at {3}",
-                    ex.GetType().ToString(), ex.Message, ex.StackTrace,
-                    Angle.FromDegrees(wisedome.ParkAzimuth).ToString());
+                    $"DomeSlaveDriver:  while waiting for dome to park at {Angle.FromDegrees(wisedome.ParkAzimuth)}nCaught {ex.Message} at\n{ex.StackTrace}");
                 #endregion
                 wisedome.AbortSlew();
                 throw ex;
@@ -167,13 +172,12 @@ namespace ASCOM.Wise40
         {
             Angle newDomeAz = CalculateDomeAzimuth(ra, dec);
             Angle currentDomeAz = wisedome.Azimuth;
-            var delta = currentDomeAz.ShortestDistance(newDomeAz);
 
-            if (delta.angle.Radians < _minimalMovement.Radians)
+            if (! wisedome.FarEnoughToMove(newDomeAz))
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "DomeSlaveDriver:SlewToAz ({0}): delta={1}, _minimalMovement={2}: Not moving",
-                    reason, delta.angle.ToNiceString(), _minimalMovement.ToNiceString());
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                    $"DomeSlaveDriver:SlewToAz({newDomeAz}): reason: {reason}, from: {currentDomeAz} => not FarEnoughToMove.");
                 #endregion
                 return;
             }
@@ -290,11 +294,11 @@ namespace ASCOM.Wise40
             double Lx, Ly, Lz, Px, Py, Pz, PL, QA, QB, QC, A1, Rx1, Ry1, DomeAz;
             double rar = 0, decr = 0, targetHA, targetAlt, targetAz = 0, zd = 0;
             
-            wisesite.prepareRefractionData(true);
+            wisesite.prepareRefractionData();
             novas31.Equ2Hor(astroutils.JulianDateUT1(0), 0,
                 WiseSite.astrometricAccuracy,
                 0, 0,
-                wisesite.onSurface,
+                wisesite._onSurface,
                 ra.Hours, dec.Degrees,
                 WiseSite.refractionOption,
                 ref zd, ref targetAz, ref rar, ref decr);

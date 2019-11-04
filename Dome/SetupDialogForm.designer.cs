@@ -42,13 +42,13 @@ namespace ASCOM.Wise40 //.Dome
             this.textBoxShutterIpAddress = new System.Windows.Forms.TextBox();
             this.textBoxShutterHighestValue = new System.Windows.Forms.TextBox();
             this.textBoxShutterLowestValue = new System.Windows.Forms.TextBox();
+            this.checkBoxShutterUseWebClient = new System.Windows.Forms.CheckBox();
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.label6 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
-            this.checkBoxShutterUseWebClient = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
@@ -130,7 +130,7 @@ namespace ASCOM.Wise40 //.Dome
             // 
             // textBoxMinimalStep
             // 
-            this.textBoxMinimalStep.Location = new System.Drawing.Point(176, 132);
+            this.textBoxMinimalStep.Location = new System.Drawing.Point(135, 132);
             this.textBoxMinimalStep.Name = "textBoxMinimalStep";
             this.textBoxMinimalStep.Size = new System.Drawing.Size(24, 20);
             this.textBoxMinimalStep.TabIndex = 12;
@@ -161,21 +161,33 @@ namespace ASCOM.Wise40 //.Dome
             this.textBoxShutterLowestValue.TabIndex = 20;
             this.toolTip1.SetToolTip(this.textBoxShutterLowestValue, "When tracking the telescope do not adjust Azimuth for less than this step");
             // 
+            // checkBoxShutterUseWebClient
+            // 
+            this.checkBoxShutterUseWebClient.AutoSize = true;
+            this.checkBoxShutterUseWebClient.Location = new System.Drawing.Point(11, 21);
+            this.checkBoxShutterUseWebClient.Name = "checkBoxShutterUseWebClient";
+            this.checkBoxShutterUseWebClient.Size = new System.Drawing.Size(100, 17);
+            this.checkBoxShutterUseWebClient.TabIndex = 21;
+            this.checkBoxShutterUseWebClient.TabStop = false;
+            this.checkBoxShutterUseWebClient.Text = "Use Web Client";
+            this.toolTip1.SetToolTip(this.checkBoxShutterUseWebClient, "If not calibrated, send dome to find nearest calibration point.");
+            this.checkBoxShutterUseWebClient.UseVisualStyleBackColor = true;
+            // 
             // label2
             // 
             this.label2.AutoSize = true;
             this.label2.Location = new System.Drawing.Point(40, 136);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(135, 13);
+            this.label2.Size = new System.Drawing.Size(94, 13);
             this.label2.TabIndex = 13;
-            this.label2.Text = "Minimal step when tracking";
+            this.label2.Text = "Minimal movement";
             this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.label2.Click += new System.EventHandler(this.label2_Click);
             // 
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(200, 136);
+            this.label3.Location = new System.Drawing.Point(159, 136);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(25, 13);
             this.label3.TabIndex = 14;
@@ -227,18 +239,6 @@ namespace ASCOM.Wise40 //.Dome
             this.label5.TabIndex = 17;
             this.label5.Text = "Highest value";
             this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // checkBoxShutterUseWebClient
-            // 
-            this.checkBoxShutterUseWebClient.AutoSize = true;
-            this.checkBoxShutterUseWebClient.Location = new System.Drawing.Point(11, 21);
-            this.checkBoxShutterUseWebClient.Name = "checkBoxShutterUseWebClient";
-            this.checkBoxShutterUseWebClient.Size = new System.Drawing.Size(100, 17);
-            this.checkBoxShutterUseWebClient.TabIndex = 21;
-            this.checkBoxShutterUseWebClient.TabStop = false;
-            this.checkBoxShutterUseWebClient.Text = "Use Web Client";
-            this.toolTip1.SetToolTip(this.checkBoxShutterUseWebClient, "If not calibrated, send dome to find nearest calibration point.");
-            this.checkBoxShutterUseWebClient.UseVisualStyleBackColor = true;
             // 
             // DomeSetupDialogForm
             // 

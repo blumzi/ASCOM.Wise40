@@ -212,7 +212,6 @@ namespace ASCOM.Wise40
 
         private static PrimaryAxisMonitor primaryAxisMonitor;
         private static SecondaryAxisMonitor secondaryAxisMonitor;
-        //Dictionary<TelescopeAxes, AxisMonitor> axisStatusMonitors;
 
         public double _lastTrackingLST;
 
@@ -240,6 +239,8 @@ namespace ASCOM.Wise40
             public Angle minimalMovement;
             public Angle maximalMovement;
             public Angle stopMovement;
+            public Angle minimalExpectedMovementPerTimeSlot;
+            public Angle maximalExpectedMovementPerTimeSlot;
         };
 
         public class Movement
@@ -251,16 +252,14 @@ namespace ASCOM.Wise40
         };
 
         public Dictionary<TelescopeAxes, Dictionary<double, MovementParameters>> movementParameters, realMovementParameters, simulatedMovementParameters;
-        //public Dictionary<TelescopeAxes, Movement> prevMovement;         // remembers data about the previous axes movement, specifically the direction
         public Dictionary<TelescopeAxes, Movement> currMovement;         // the current axes movement
 
         public MovementDictionary movementDict;
 
         public SafetyMonitorTimer safetyMonitorTimer;
 
-        public static bool _enslaveDome = false;
-        public static double _minimalDomeTrackingMovement;
-        private DomeSlaveDriver domeSlaveDriver = DomeSlaveDriver.Instance;
+        public static bool _enslavesDome = false;
+        private DomeSlaveDriver domeSlaveDriver;
 
         public static bool _calculateRefraction = false;
 
@@ -411,8 +410,15 @@ namespace ASCOM.Wise40
                 if (value == _connected)
                     return;
 
-                if (_enslaveDome && connectables.Find(x => x.Equals(domeSlaveDriver)) == null)
-                    connectables.Add(domeSlaveDriver);
+                if (value == true && EnslavesDome)
+                {
+                    if (domeSlaveDriver == null)
+                        domeSlaveDriver = DomeSlaveDriver.Instance;
+
+                    if (domeSlaveDriver != null && connectables.Find(x => x.Equals(domeSlaveDriver)) == null)
+                        connectables.Add(domeSlaveDriver);
+                }
+
                 
                 foreach (var connectable in connectables)
                 {
@@ -458,26 +464,13 @@ namespace ASCOM.Wise40
             novas31 = new NOVAS31();
             ascomutils = new Util();
             astroutils = new Astrometry.AstroUtils.AstroUtils();
-            domeSlaveDriver = DomeSlaveDriver.Instance;
 
             parkingDeclination = Angle.FromDegrees(66.0, Angle.Type.Dec);
 
             _trackingRestorer = new TrackingRestorer();
 
-            switch (WiseSite.OperationalMode)
-            {
-                case WiseSite.OpMode.LCO:
-                    _calculateRefraction = true;
-                    break;
-
-                case WiseSite.OpMode.WISE:
-                    _calculateRefraction = true;
-
-                    break;
-                case WiseSite.OpMode.ACP:
-                    _calculateRefraction = true;
-                    break;
-            }
+            CalculatesRefraction = WiseSite.OperationalProfile.CalculatesRefractionForHorizCoords;
+            EnslavesDome = WiseSite.OperationalProfile.EnslavesDome;
 
             #region MotorDefinitions
             //
@@ -700,11 +693,6 @@ namespace ASCOM.Wise40
             catch (Hardware.Hardware.MaintenanceModeException) {
             }
 
-            domeSlaveDriver.init();
-            connectables.Add(domeSlaveDriver);
-
-            //pulsing.init();
-
             _initialized = true;
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseTele init() done.");
@@ -788,11 +776,11 @@ namespace ASCOM.Wise40
             {
                 double rar = 0, decr = 0, az = 0, zd = 0;
 
-                wisesite.prepareRefractionData(_calculateRefraction);
+                wisesite.prepareRefractionData();
                 novas31.Equ2Hor(astroutils.JulianDateUT1(0), 0,
                     WiseSite.astrometricAccuracy,
                     0, 0,
-                    wisesite.onSurface,
+                    wisesite._onSurface,
                     RightAscension, Declination,
                     WiseSite.refractionOption,
                     ref zd, ref az, ref rar, ref decr);
@@ -807,11 +795,11 @@ namespace ASCOM.Wise40
             {
                 double rar = 0, decr = 0, az = 0, zd = 0, alt;
 
-                wisesite.prepareRefractionData(_calculateRefraction);
+                wisesite.prepareRefractionData();
                 novas31.Equ2Hor(astroutils.JulianDateUT1(0), 0,
                     WiseSite.astrometricAccuracy,
                     0, 0,
-                    wisesite.onSurface,
+                    wisesite._onSurface,
                     RightAscension, Declination,
                     WiseSite.refractionOption,
                     ref zd, ref az, ref rar, ref decr);
@@ -830,7 +818,7 @@ namespace ASCOM.Wise40
 
             set
             {
-                if (!_enslaveDome || Parking)
+                if (!EnslavesDome || Parking)
                     return;
 
                 if (trackingTimer == null)
@@ -859,7 +847,7 @@ namespace ASCOM.Wise40
             if (ShuttingDown)
                 return;
 
-            if (_enslaveDome && !slewers.Active(Slewers.Type.Dome))
+            if (EnslavesDome && !slewers.Active(Slewers.Type.Dome))
             {
                 WiseDome._adjustingForTracking = true;
                 DomeSlewer(Angle.FromHours(RightAscension), Angle.FromDegrees(Declination), "Follow telescope tracking");
@@ -918,6 +906,32 @@ namespace ASCOM.Wise40
             }
         }
 
+        public static bool EnslavesDome
+        {
+            get
+            {
+                return _enslavesDome;
+            }
+
+            set
+            {
+                _enslavesDome = value;
+            }
+        }
+
+        public static bool CalculatesRefraction
+        {
+            get
+            {
+                return _calculateRefraction;
+            }
+
+            set
+            {
+                _calculateRefraction = value;
+            }
+        }
+
         public DriveRates TrackingRate
         {
             get
@@ -965,7 +979,7 @@ namespace ASCOM.Wise40
                     }));
                 }
 
-                if (_enslaveDome)
+                if (EnslavesDome)
                 {
                     try
                     {
@@ -1379,11 +1393,11 @@ namespace ASCOM.Wise40
         {
             double rar = 0, decr = 0, az = 0, zd = 0;
 
-            wisesite.prepareRefractionData(_calculateRefraction);
+            wisesite.prepareRefractionData();
             novas31.Equ2Hor(astroutils.JulianDateUT1(0), 0,
                 WiseSite.astrometricAccuracy,
                 0, 0,
-                wisesite.onSurface,
+                wisesite._onSurface,
                 ra.Hours, dec.Degrees,
                 WiseSite.refractionOption,
                 ref zd, ref az, ref rar, ref decr);
@@ -1412,11 +1426,11 @@ namespace ASCOM.Wise40
             double rar = 0, decr = 0, az = 0, zd = 0; 
             List<string> reasons = new List<string>();
 
-            wisesite.prepareRefractionData(_calculateRefraction);
+            wisesite.prepareRefractionData();
             novas31.Equ2Hor(astroutils.JulianDateUT1(0), 0,
                 WiseSite.astrometricAccuracy,
                 0, 0,
-                wisesite.onSurface,
+                wisesite._onSurface,
                 ra.Hours, dec.Degrees,
                 WiseSite.refractionOption,
                 ref zd, ref az, ref rar, ref decr);
@@ -1699,7 +1713,7 @@ namespace ASCOM.Wise40
             Angle targetRa = wisesite.LocalSiderealTime;
             Angle targetDec = parkingDeclination;
 
-            bool wasEnslavingDome = _enslaveDome;
+            bool wasEnslavingDome = EnslavesDome;
             bool wasTracking = Tracking;
             try
             {
@@ -1733,7 +1747,7 @@ namespace ASCOM.Wise40
                 #endregion
                 Tracking = true;
 
-                _enslaveDome = false;
+                EnslavesDome = false;
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: starting _slewToCoordinatesSync ...");
                 #endregion
@@ -1753,7 +1767,7 @@ namespace ASCOM.Wise40
             } catch(Exception ex)
             {
                 Parking = false;
-                _enslaveDome = wasEnslavingDome;
+                EnslavesDome = wasEnslavingDome;
                 Tracking = wasTracking;
                 activityMonitor.EndActivity(ActivityMonitor.ActivityType.Parking, new Activity.Park.EndParams()
                 {
@@ -1786,7 +1800,7 @@ namespace ASCOM.Wise40
                     domeAz = WiseDome.Instance.Azimuth.Degrees,
                     shutterPercent = WiseDome.Instance.wisedomeshutter.PercentOpen,
                 });
-                _enslaveDome = wasEnslavingDome;
+                EnslavesDome = wasEnslavingDome;
                 return;
             }
             #region debug
@@ -1807,7 +1821,7 @@ namespace ASCOM.Wise40
                 domeAz = WiseDome.Instance.Azimuth.Degrees,
                 shutterPercent = WiseDome.Instance.wisedomeshutter.PercentOpen,
             });
-            _enslaveDome = wasEnslavingDome;
+            EnslavesDome = wasEnslavingDome;
         }
 
         public void ParkFromGui(bool parkDome)
@@ -2230,7 +2244,7 @@ namespace ASCOM.Wise40
 
             try
             {
-                if (_enslaveDome)
+                if (EnslavesDome)
                 {
                     DomeSlewer(targetRightAscension, targetDeclination, "Follow telescope to new target");
                 }
@@ -2629,7 +2643,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return EquatorialCoordinateType.equJ2000;
+                return WiseSite.OperationalProfile.EquatorialSystem;
             }
         }
 
@@ -2997,11 +3011,8 @@ namespace ASCOM.Wise40
 
                 case "enslave-dome":
                     if (parameter != string.Empty)
-                    {
-                        bool onOff = Convert.ToBoolean(parameter);
-                        _enslaveDome = onOff;
-                    }
-                    return _enslaveDome.ToString();
+                        EnslavesDome = Convert.ToBoolean(parameter);
+                    return EnslavesDome.ToString();
 
                 case "full-stop":
                     FullStop();
@@ -3063,9 +3074,9 @@ namespace ASCOM.Wise40
         private string MoveToKnownHaDec(Angle ha, Angle dec)
         {
             Angle ra = wisesite.LocalSiderealTime - ha;
-            bool savedEnslaveDome = _enslaveDome;
+            bool savedEnslaveDome = EnslavesDome;
 
-            _enslaveDome = false;
+            EnslavesDome = false;
             Tracking = true;
             try
             {
@@ -3075,7 +3086,7 @@ namespace ASCOM.Wise40
             {
                 return ex.Message;
             }
-            _enslaveDome = savedEnslaveDome;
+            EnslavesDome = savedEnslaveDome;
             Tracking = false;
 
             return "ok";
@@ -3175,9 +3186,6 @@ namespace ASCOM.Wise40
                 _bypassCoordinatesSafety = Convert.ToBoolean(driverProfile.GetValue(driverID, Const.ProfileName.Telescope_BypassCoordinatesSafety, string.Empty, false.ToString()));
                 _plotSlews = Convert.ToBoolean(driverProfile.GetValue(driverID, Const.ProfileName.Telescope_PlotSlews, string.Empty, false.ToString()));
             }
-
-            using (Profile driverProfile = new Profile() { DeviceType = "Dome" })
-                _minimalDomeTrackingMovement = Convert.ToDouble(driverProfile.GetValue(Const.WiseDriverID.Dome, Const.ProfileName.Dome_MinimalTrackingMovement, string.Empty, "2.0"));
         }
 
         /// <summary>
@@ -3191,9 +3199,6 @@ namespace ASCOM.Wise40
                 driverProfile.WriteValue(driverID, Const.ProfileName.Telescope_BypassCoordinatesSafety, _bypassCoordinatesSafety.ToString());
                 driverProfile.WriteValue(driverID, Const.ProfileName.Telescope_PlotSlews, _plotSlews.ToString());
             }
-
-            using (Profile driverProfile = new Profile() { DeviceType = "Dome" })
-                driverProfile.WriteValue(Const.WiseDriverID.Dome, Const.ProfileName.Dome_MinimalTrackingMovement, _minimalDomeTrackingMovement.ToString());
         }
 
         public string Status
@@ -3276,7 +3281,7 @@ namespace ASCOM.Wise40
                     PulseGuiding = IsPulseGuiding,
                     AtPark = AtPark,
                     SecondsTillIdle = secondsTillIdle,
-                    EnslavesDome = _enslaveDome,
+                    EnslavesDome = EnslavesDome,
                     Active = activityMonitor.ObservatoryIsActive(),
                     Activities = ActivityMonitor.ObservatoryActivities,
                     SlewPin = SlewPin.isOn,

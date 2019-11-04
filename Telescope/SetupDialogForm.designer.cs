@@ -37,8 +37,6 @@ namespace ASCOM.Wise40 //.Telescope
             this.picASCOM = new System.Windows.Forms.PictureBox();
             this.accuracyBox = new System.Windows.Forms.ComboBox();
             this.acuracyLabel = new System.Windows.Forms.Label();
-            this.checkBoxEnslaveDome = new System.Windows.Forms.CheckBox();
-            this.checkBoxCalculateRefraction = new System.Windows.Forms.CheckBox();
             this.checkBoxBypassSafety = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.checkBoxPlotSlews = new System.Windows.Forms.CheckBox();
@@ -50,10 +48,11 @@ namespace ASCOM.Wise40 //.Telescope
             this.cmdOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.cmdOK.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.cmdOK.DialogResult = System.Windows.Forms.DialogResult.OK;
+            this.cmdOK.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
             this.cmdOK.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.cmdOK.Location = new System.Drawing.Point(248, 133);
+            this.cmdOK.Location = new System.Drawing.Point(322, 95);
             this.cmdOK.Name = "cmdOK";
-            this.cmdOK.Size = new System.Drawing.Size(59, 24);
+            this.cmdOK.Size = new System.Drawing.Size(59, 32);
             this.cmdOK.TabIndex = 0;
             this.cmdOK.Text = "OK";
             this.cmdOK.UseVisualStyleBackColor = false;
@@ -64,10 +63,11 @@ namespace ASCOM.Wise40 //.Telescope
             this.cmdCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.cmdCancel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.cmdCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            this.cmdCancel.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
             this.cmdCancel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.cmdCancel.Location = new System.Drawing.Point(248, 159);
+            this.cmdCancel.Location = new System.Drawing.Point(322, 131);
             this.cmdCancel.Name = "cmdCancel";
-            this.cmdCancel.Size = new System.Drawing.Size(59, 25);
+            this.cmdCancel.Size = new System.Drawing.Size(59, 32);
             this.cmdCancel.TabIndex = 1;
             this.cmdCancel.Text = "Cancel";
             this.cmdCancel.UseVisualStyleBackColor = false;
@@ -75,7 +75,8 @@ namespace ASCOM.Wise40 //.Telescope
             // 
             // descriptionLabel
             // 
-            this.descriptionLabel.Location = new System.Drawing.Point(24, 24);
+            this.descriptionLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
+            this.descriptionLabel.Location = new System.Drawing.Point(97, 34);
             this.descriptionLabel.Name = "descriptionLabel";
             this.descriptionLabel.Size = new System.Drawing.Size(165, 20);
             this.descriptionLabel.TabIndex = 2;
@@ -87,7 +88,7 @@ namespace ASCOM.Wise40 //.Telescope
             this.picASCOM.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.picASCOM.Cursor = System.Windows.Forms.Cursors.Hand;
             this.picASCOM.Image = global::ASCOM.Wise40.Properties.Resources.ASCOM;
-            this.picASCOM.Location = new System.Drawing.Point(253, 16);
+            this.picASCOM.Location = new System.Drawing.Point(327, 16);
             this.picASCOM.Name = "picASCOM";
             this.picASCOM.Size = new System.Drawing.Size(48, 56);
             this.picASCOM.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
@@ -102,7 +103,7 @@ namespace ASCOM.Wise40 //.Telescope
             this.accuracyBox.Items.AddRange(new object[] {
             "Full",
             "Reduced"});
-            this.accuracyBox.Location = new System.Drawing.Point(136, 70);
+            this.accuracyBox.Location = new System.Drawing.Point(209, 85);
             this.accuracyBox.Name = "accuracyBox";
             this.accuracyBox.Size = new System.Drawing.Size(69, 21);
             this.accuracyBox.TabIndex = 8;
@@ -111,40 +112,21 @@ namespace ASCOM.Wise40 //.Telescope
             // acuracyLabel
             // 
             this.acuracyLabel.AutoSize = true;
-            this.acuracyLabel.Location = new System.Drawing.Point(24, 72);
+            this.acuracyLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
+            this.acuracyLabel.Location = new System.Drawing.Point(62, 87);
             this.acuracyLabel.Name = "acuracyLabel";
-            this.acuracyLabel.Size = new System.Drawing.Size(107, 13);
+            this.acuracyLabel.Size = new System.Drawing.Size(141, 17);
             this.acuracyLabel.TabIndex = 10;
             this.acuracyLabel.Text = "Astrometric Accuracy";
-            // 
-            // checkBoxEnslaveDome
-            // 
-            this.checkBoxEnslaveDome.AutoSize = true;
-            this.checkBoxEnslaveDome.Location = new System.Drawing.Point(24, 100);
-            this.checkBoxEnslaveDome.Name = "checkBoxEnslaveDome";
-            this.checkBoxEnslaveDome.Size = new System.Drawing.Size(93, 17);
-            this.checkBoxEnslaveDome.TabIndex = 14;
-            this.checkBoxEnslaveDome.Text = "Enslave dome";
-            this.checkBoxEnslaveDome.UseVisualStyleBackColor = true;
-            // 
-            // checkBoxCalculateRefraction
-            // 
-            this.checkBoxCalculateRefraction.AutoSize = true;
-            this.checkBoxCalculateRefraction.Checked = true;
-            this.checkBoxCalculateRefraction.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBoxCalculateRefraction.Location = new System.Drawing.Point(24, 121);
-            this.checkBoxCalculateRefraction.Name = "checkBoxCalculateRefraction";
-            this.checkBoxCalculateRefraction.Size = new System.Drawing.Size(117, 17);
-            this.checkBoxCalculateRefraction.TabIndex = 15;
-            this.checkBoxCalculateRefraction.Text = "Calculate refraction";
-            this.checkBoxCalculateRefraction.UseVisualStyleBackColor = true;
             // 
             // checkBoxBypassSafety
             // 
             this.checkBoxBypassSafety.AutoSize = true;
-            this.checkBoxBypassSafety.Location = new System.Drawing.Point(24, 144);
+            this.checkBoxBypassSafety.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.checkBoxBypassSafety.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
+            this.checkBoxBypassSafety.Location = new System.Drawing.Point(24, 113);
             this.checkBoxBypassSafety.Name = "checkBoxBypassSafety";
-            this.checkBoxBypassSafety.Size = new System.Drawing.Size(152, 17);
+            this.checkBoxBypassSafety.Size = new System.Drawing.Size(197, 21);
             this.checkBoxBypassSafety.TabIndex = 16;
             this.checkBoxBypassSafety.Text = "Bypass Coordinates Safety";
             this.toolTip1.SetToolTip(this.checkBoxBypassSafety, "Dangerous!!!  Telescope will not perform safety checks!");
@@ -153,9 +135,11 @@ namespace ASCOM.Wise40 //.Telescope
             // checkBoxPlotSlews
             // 
             this.checkBoxPlotSlews.AutoSize = true;
-            this.checkBoxPlotSlews.Location = new System.Drawing.Point(24, 167);
+            this.checkBoxPlotSlews.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.checkBoxPlotSlews.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
+            this.checkBoxPlotSlews.Location = new System.Drawing.Point(76, 143);
             this.checkBoxPlotSlews.Name = "checkBoxPlotSlews";
-            this.checkBoxPlotSlews.Size = new System.Drawing.Size(115, 17);
+            this.checkBoxPlotSlews.Size = new System.Drawing.Size(145, 21);
             this.checkBoxPlotSlews.TabIndex = 17;
             this.checkBoxPlotSlews.Text = "Produce slew plots";
             this.toolTip1.SetToolTip(this.checkBoxPlotSlews, "Dangerous!!!  Telescope will not perform safety checks!");
@@ -167,11 +151,9 @@ namespace ASCOM.Wise40 //.Telescope
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.ClientSize = new System.Drawing.Size(321, 196);
+            this.ClientSize = new System.Drawing.Size(395, 184);
             this.Controls.Add(this.checkBoxPlotSlews);
             this.Controls.Add(this.checkBoxBypassSafety);
-            this.Controls.Add(this.checkBoxCalculateRefraction);
-            this.Controls.Add(this.checkBoxEnslaveDome);
             this.Controls.Add(this.acuracyLabel);
             this.Controls.Add(this.accuracyBox);
             this.Controls.Add(this.picASCOM);
@@ -200,8 +182,6 @@ namespace ASCOM.Wise40 //.Telescope
         private System.Windows.Forms.PictureBox picASCOM;
         private System.Windows.Forms.ComboBox accuracyBox;
         private System.Windows.Forms.Label acuracyLabel;
-        private System.Windows.Forms.CheckBox checkBoxEnslaveDome;
-        private System.Windows.Forms.CheckBox checkBoxCalculateRefraction;
         private System.Windows.Forms.CheckBox checkBoxBypassSafety;
         private System.Windows.Forms.ToolTip toolTip1;
         private System.Windows.Forms.CheckBox checkBoxPlotSlews;
