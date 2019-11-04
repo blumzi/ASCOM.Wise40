@@ -41,7 +41,7 @@ namespace ASCOM.Wise40.Common
                     }
                 }
             }
-            catch (Exception ex)
+            catch
             {
                 _lastLoggedTime = DateTime.MinValue;
             }
@@ -51,7 +51,7 @@ namespace ASCOM.Wise40.Common
 
         public void Log(Dictionary<string, string> dict, DateTime date)
         {
-            if (!WiseSite.CurrentProcessIsASCOMServer)
+            if (!WiseSite.CurrentProcessIs(Const.Application.RESTServer))
                 return;
 
             lock (_lock)

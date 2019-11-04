@@ -22,7 +22,7 @@ namespace ASCOM.Wise40
         };
 
         public int _unitId;
-        protected WeatherLogger _env;
+        protected WeatherLogger _weatherLogger;
 
         public abstract WeatherStationVendor Vendor
         {
