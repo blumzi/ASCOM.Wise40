@@ -171,7 +171,7 @@ namespace ASCOM.Wise40
             _state = DomeState.Idle;
 
             _domeTimer = new System.Threading.Timer(new TimerCallback(onDomeTimer));
-            //_domeTimer.Change(_domeTimeout, _domeTimeout);
+            _domeTimer.Change(_domeTimeout, _domeTimeout);
 
             _movementTimer = new System.Threading.Timer(new TimerCallback(onMovementTimer));
 
@@ -283,12 +283,7 @@ namespace ASCOM.Wise40
             string message = string.Format("WiseDome:arriving: at {0} target {1}: ", Azimuth, there);
 
             if (!DomeIsMoving)
-            {
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugDome, message + "Dome is not moving => false");
-                #endregion
                 return false;
-            }
 
             Angle az = Azimuth;
             ShortestDistanceResult shortest = Azimuth.ShortestDistance(there);
@@ -798,15 +793,13 @@ namespace ASCOM.Wise40
                 }
             }
 
-            if (!FarEnoughToMove(toAng))
-            {
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugDome, $"WiseDome: SlewToAzimuth({toAng.ToNiceString()}): at {Azimuth.ToNiceString()} not FarEnoughToMove");
-                #endregion
+            if (!FarEnoughToMove(toAng))    // Silently ignore
                 return;
-            }
 
+            // At this point we're commited to slewing
             if (!_adjustingForTracking)
+            {
+                // Log only real slew requests
                 activityMonitor.NewActivity(new Activity.DomeSlew(new Activity.DomeSlew.StartParams
                 {
                     type = Activity.DomeSlew.DomeEventType.Slew,
@@ -814,6 +807,7 @@ namespace ASCOM.Wise40
                     targetAz = degrees,
                     reason = reason,
                 }));
+            }
 
             _targetAz = toAng;
             AtPark = false;
@@ -1452,9 +1446,17 @@ namespace ASCOM.Wise40
             }
         }
 
-        public bool FarEnoughToMove(Angle target)
+        public bool FarEnoughToMove(Angle targetAz)
         {
-            return Azimuth.ShortestDistance(target).angle > _minimalMove;
+            Angle currentAz = Azimuth;
+            bool ret = currentAz.ShortestDistance(targetAz).angle > _minimalMove;
+
+            if (!ret)
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugDome,
+                    $"Not far enough: current: {currentAz}, target: {targetAz}, minimal: {_minimalMove}");
+                #endregion
+            return ret;
         }
 
         #region Profile

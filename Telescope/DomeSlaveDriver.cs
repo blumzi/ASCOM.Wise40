@@ -171,16 +171,9 @@ namespace ASCOM.Wise40
         public void SlewToAz(Angle ra, Angle dec, string reason)
         {
             Angle newDomeAz = CalculateDomeAzimuth(ra, dec);
-            Angle currentDomeAz = wisedome.Azimuth;
 
-            if (! wisedome.FarEnoughToMove(newDomeAz))
-            {
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
-                    $"DomeSlaveDriver:SlewToAz({newDomeAz}): reason: {reason}, from: {currentDomeAz} => not FarEnoughToMove.");
-                #endregion
+            if (! wisedome.FarEnoughToMove(newDomeAz))  // Silently ignore slew request
                 return;
-            }
 
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
