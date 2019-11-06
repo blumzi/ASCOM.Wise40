@@ -51,6 +51,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
         static TimeZoneInfo tz = TimeZoneInfo.Local;
 
         TelescopeDigest telescopeDigest;
+        DomeDigest domeDigest;
         SafeToOperateDigest safetooperateDigest;
 
         private static Common.Debugger debugger = Common.Debugger.Instance;
@@ -528,8 +529,6 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
         private void ShutdownObservatory(string reason)
         {
-            DomeDigest domeDigest;
-
             try
             {
                 Angle domeAz = DomeAzimuth; // Possibly force dome calibration
@@ -648,7 +647,8 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                     }
                 }
 
-                Log("Wise40 is parked and closed");
+                if (telescopeDigest.AtPark && domeDigest.AtPark && domeDigest.Shutter.State == ShutterState.shutterClosed)
+                    Log("Wise40 is parked and closed");
             }
             catch (Exception ex)
             {
