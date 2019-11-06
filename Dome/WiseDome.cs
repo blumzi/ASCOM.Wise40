@@ -860,7 +860,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                TimeSpan _sinceLastSuccess = TimeSpan.Zero, _sinceLastFailure = TimeSpan.Zero;
+                TimeSpan _sinceLastSuccess = TimeSpan.MaxValue, _sinceLastFailure = TimeSpan.MaxValue;
 
                 if (WiseDomeShutter.WebClient._lastSuccessfullAttempt != null)
                     _sinceLastSuccess = DateTime.Now.Subtract(WiseDomeShutter.WebClient._lastSuccessfullAttempt.Time);

@@ -498,12 +498,16 @@ namespace ASCOM.Wise40
                     else if (CloseEnough(rangeCm, _lowestValue))
                     {
                         ret = ShutterState.shutterClosed;
-                        _stateReason = string.Format("range: {0}cm is close enough to lower limit: {1}cm", rangeCm, _lowestValue);
+                        _stateReason = string.Format($"range: {rangeCm}cm is close enough to lower limit: {_lowestValue}cm");
                     }
                     else if (CloseEnough(rangeCm, _highestValue))
                     {
                         ret = ShutterState.shutterOpen;
-                        _stateReason = string.Format("range: {0}cm is close enough to highest limit: {1}cm", rangeCm, _highestValue);
+                        _stateReason = string.Format($"range: {rangeCm}cm is close enough to highest limit: {_highestValue}cm");
+                    } else
+                    {
+                        ret = ShutterState.shutterOpen;
+                        _stateReason = string.Format($"range: {rangeCm}cm is between lowest: {_lowestValue}cm and {_highestValue}cm");
                     }
                 }
 
