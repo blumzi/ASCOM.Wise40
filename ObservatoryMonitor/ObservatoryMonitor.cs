@@ -58,6 +58,8 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
         public static bool connected = false;
 
+        public static bool shuttingDown = false;
+
         public void CloseConnections()
         {
             if (wisetelescope != null)
@@ -88,6 +90,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
         public void CheckConnections()
         {
+            #region Check connectivity to RemoteServer
             using (var client = new WebClient())
             {
                 try
@@ -115,7 +118,9 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                     return;
                 }
             }
+            #endregion
 
+            #region Connect to remote ASCOM Drivers
             try
             {
                 if (wisetelescope == null)
@@ -164,6 +169,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 Log(string.Format("CheckConnections:Exception: {0}", ex.InnerException == null ? ex.Message : ex.InnerException.Message));
                 connected = false;
             }
+            #endregion
         }
 
         public ObsMainForm()
@@ -257,7 +263,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             UpdateProjectorControls();
             #endregion
 
-            #region DecideIfShutdownIsNeeded
+            #region Decide if shutdown is needed
             List<string> reasonsList = new List<string>();
 
             if (!safetooperateDigest.Safe)
@@ -470,11 +476,13 @@ namespace ASCOM.Wise40.ObservatoryMonitor
         {
             if (ObservatoryIsLogicallyParked && ObservatoryIsPhysicallyParked)
             {
-                Log(string.Format("Observatory is logically and physically parked. Ignoring \"{0}\".", reason));
+                Log(string.Format($"Observatory is logically and physically parked. Ignoring \"{reason}\"."));
                 return;
             }
 
             CT = CTS.Token;
+
+            shuttingDown = true;
 
             Task.Run(() =>
             {
@@ -562,7 +570,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
                     ShutterState shutterState;
                     List<string> activities;
-                    bool done = false;
+                    bool done = false, aborted = false;
 
                     do
                     {
@@ -583,25 +591,35 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                             UpdateCheckingStatus("telescope status");
                             telescopeDigest = JsonConvert.DeserializeObject<TelescopeDigest>(wisetelescope.Action("status", ""));
 
-                            UpdateCheckingStatus("safetooperate status");
+                            UpdateCheckingStatus("dome status");
                             domeDigest = JsonConvert.DeserializeObject<DomeDigest>(wisedome.Action("status", ""));
+
+                            UpdateCheckingStatus("safetooperate status");
+                            safetooperateDigest = JsonConvert.DeserializeObject<SafeToOperateDigest>(wisesafetooperate.Action("status", ""));
                             UpdateCheckingStatus("");
 
-                            Angle ra, dec, az;
-                            ra = Angle.FromHours(telescopeDigest.Current.RightAscension, Angle.Type.RA);
-                            dec = Angle.FromDegrees(telescopeDigest.Current.Declination, Angle.Type.Dec);
-                            az = Angle.FromDegrees(domeDigest.Azimuth, Angle.Type.Az);
-                            shutterState = domeDigest.Shutter.State;
-                            activities = telescopeDigest.Activities;
+                            if (!safetooperateDigest.ComputerControl.Safe)
+                            {
+                                Log("  Computer control switched to MAINTENANCE, shutdown aborted!", 10);
+                                done = true;
+                            }
+                            else
+                            {
+                                Angle ra, dec, az;
+                                ra = Angle.FromHours(telescopeDigest.Current.RightAscension, Angle.Type.RA);
+                                dec = Angle.FromDegrees(telescopeDigest.Current.Declination, Angle.Type.Dec);
+                                az = Angle.FromDegrees(domeDigest.Azimuth, Angle.Type.Az);
+                                shutterState = domeDigest.Shutter.State;
+                                activities = telescopeDigest.Activities;
 
-                            done = telescopeDigest.AtPark && domeDigest.AtPark && shutterState == ShutterState.shutterClosed;
+                                done = telescopeDigest.AtPark && domeDigest.AtPark && shutterState == ShutterState.shutterClosed;
 
-                            Log(string.Format("    Telescope at {0} {1}, dome at {2}, shutter {3} ...",
-                                ra.ToNiceString(),
-                                dec.ToNiceString(),
-                                az.ToNiceString(),
-                                shutterState.ToString().ToLower().Remove(0, "shutter".Length)),
-                                _simulated ? 1 : 10);
+                                Log("    " +
+                                    $"Telescope at {ra.ToNiceString()} {dec.ToNiceString()}, " +
+                                    $"dome at {az.ToNiceString()}, " +
+                                    $"shutter {shutterState.ToString().ToLower().Remove(0, "shutter".Length)} ...",
+                                    _simulated ? 1 : 10);
+                            }
                         }
                         catch /*(Exception ex)*/
                         {
@@ -611,6 +629,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
                     Log("   Done parking Wise40.");
                     labelActivity.Text = telescopeDigest.Active ? "Active" : "Idle";
+                    shuttingDown = false;
                 }
 
                 if (!telescopeDigest.EnslavesDome)
