@@ -16,6 +16,9 @@ using ASCOM.Wise40;
 using ASCOM.DriverAccess;
 
 using Newtonsoft.Json;
+using ASCOM.Wise40.Boltwood;
+using ASCOM.Wise40.VantagePro;
+using ASCOM.Wise40.TessW;    
 
 namespace ASCOM.Wise40SafeToOperate
 {
@@ -47,7 +50,7 @@ namespace ASCOM.Wise40SafeToOperate
         public static TemperatureSensor temperatureSensor;
 
         public static TessWRefresher tessWRefresher;
-        public static OWLRefresher OWLRefresher;
+        public static OWLRefresher owlRefresher;
 
         public static DoorLockSensor doorLockSensor;
         public static ComputerControlSensor computerControlSensor;
@@ -64,6 +67,8 @@ namespace ASCOM.Wise40SafeToOperate
         public static ActivityMonitor activityMonitor = ActivityMonitor.Instance;
         public static bool _unsafeBecauseNotReady = false;
 
+        private static ASCOM.DriverAccess.ObservingConditions tessw = new ASCOM.DriverAccess.ObservingConditions("ASCOM.Wise40.TessW.ObservingConditions");
+
         /// <summary>
         /// Private variable to hold the connected state
         /// </summary>
@@ -71,7 +76,7 @@ namespace ASCOM.Wise40SafeToOperate
 
         private Wise40.Common.Debugger debugger = Debugger.Instance;
 
-        private static WiseSite wisesite = WiseSite.Instance;
+        public static WiseSite wisesite = WiseSite.Instance;
 
         private static bool initialized = false;
 
@@ -133,7 +138,7 @@ namespace ASCOM.Wise40SafeToOperate
             temperatureSensor = new TemperatureSensor(this);
 
             tessWRefresher = new TessWRefresher(this);
-            OWLRefresher = new OWLRefresher(this);
+            owlRefresher = new OWLRefresher(this);
 
             //
             // The sensors in priotity order.  The first one that:
@@ -160,7 +165,7 @@ namespace ASCOM.Wise40SafeToOperate
                 temperatureSensor,
 
                 tessWRefresher,             // Refreshers
-                OWLRefresher,
+                owlRefresher,
             };
 
             _cumulativeSensors = new List<Sensor>();
@@ -210,7 +215,7 @@ namespace ASCOM.Wise40SafeToOperate
             }
         }
 
-        private ArrayList supportedActions = new ArrayList() {
+        private readonly ArrayList supportedActions = new ArrayList() {
             "start-bypass",
             "end-bypass",
             "status",
@@ -219,6 +224,7 @@ namespace ASCOM.Wise40SafeToOperate
             "wise-issafe",
             "wise-unsafereasons",
             "unsafereasons",
+            "raw-weather-data",
         };
 
         public ArrayList SupportedActions
@@ -302,6 +308,8 @@ namespace ASCOM.Wise40SafeToOperate
                     ret = string.Join(Const.recordSeparator, UnsafeReasonsList(toBeIgnored: Sensor.Attribute.Wise40Specific));
                     break;
 
+                case "raw-weather-data":
+                    return RawWeatherData;
 
                 default:
                     throw new ASCOM.ActionNotImplementedException("Action " + actionName + " is not implemented by this driver");
@@ -335,7 +343,7 @@ namespace ASCOM.Wise40SafeToOperate
                     WindSpeed = Sensor.SensorDigest.FromSensor(windSensor),
                     CloudCover = Sensor.SensorDigest.FromSensor(cloudsSensor),
 
-                    WindDirection =  Sensor.SensorDigest.FromOCHProperty("WindDirection"),
+                    WindDirection = Sensor.SensorDigest.FromOCHProperty("WindDirection"),
                     DewPoint = Sensor.SensorDigest.FromOCHProperty("DewPoint"),
                     SkyTemperature = Sensor.SensorDigest.FromOCHProperty("SkyTemperature"),
                 });
@@ -510,7 +518,7 @@ namespace ASCOM.Wise40SafeToOperate
                 if (s.HasAttribute(Sensor.Attribute.SingleReading))
                     reason += s.reason();
                 else
-                {                    
+                {
                     if (s.StateIsSet(Sensor.State.Stabilizing))
                     {
                         // cummulative and stabilizing
@@ -677,7 +685,7 @@ namespace ASCOM.Wise40SafeToOperate
             {
                 double max = DateTime.Now.Hour < 12 ? Convert.ToDouble(sunSensor.MaxAtDawnAsString) : Convert.ToDouble(sunSensor.MaxAtDuskAsString);
 
-                return SunElevation <=  max ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
+                return SunElevation <= max ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
             }
         }
         #endregion
@@ -888,6 +896,22 @@ namespace ASCOM.Wise40SafeToOperate
                 s.writeProfile();
         }
         #endregion
+
+        private string RawWeatherData
+        {
+            get
+            {
+                RawWeatherData ret = new RawWeatherData
+                {
+                    Boltwood = JsonConvert.DeserializeObject<List<BoltwoodStation.RawData>>(WiseSite.och.Action("//Wise40.Boltwood:raw-data", "")),
+                    VantagePro2 = JsonConvert.DeserializeObject<WiseVantagePro.VantagePro2StationRawData>(WiseSite.och.Action("//Wise40.VantagePro2:raw-data", "")),
+                    TessW = JsonConvert.DeserializeObject<WiseTessW.TessWStationRawData>(tessw.Action("raw-data", "")),
+                    OWL = WiseSafeToOperate.owlRefresher.Digest() as OWLRefresher.OWLDigest,
+                };
+
+                return JsonConvert.SerializeObject(ret);
+            }
+        }
     }
 
     public class SafeToOperateDigest
@@ -928,5 +952,14 @@ namespace ASCOM.Wise40SafeToOperate
         public Sensor.SensorDigest CloudCover;
         public Sensor.SensorDigest DewPoint;
         public Sensor.SensorDigest SkyTemperature;
+    }
+
+
+    public class RawWeatherData
+    {
+        public List<BoltwoodStation.RawData> Boltwood;
+        public WiseVantagePro.VantagePro2StationRawData VantagePro2;
+        public WiseTessW.TessWStationRawData TessW;
+        public OWLRefresher.OWLDigest OWL;
     }
 }

@@ -10,6 +10,7 @@ using ASCOM.Utilities;
 using ASCOM.Wise40;
 using ASCOM.Wise40.Common;
 using Newtonsoft.Json;
+using IWshRuntimeLibrary;
 
 namespace ASCOM.Wise40.Boltwood
 {
@@ -19,10 +20,9 @@ namespace ASCOM.Wise40.Boltwood
         private bool _connected = false;
         private static Version version = new Version("0.2");
         public static string driverDescription = string.Format("ASCOM Wise40.Boltwood v{0}", version.ToString());
-        private Util utilities = new Util();
-        private WiseSite wisesite = WiseSite.Instance;
+        private readonly Util utilities = new Util();
 
-        public const int nStations = 6;
+        public const int nStations = 3;
         public static BoltwoodStation[] stations = new BoltwoodStation[nStations];
         private BoltwoodStation C18Station, C28Station;
 
@@ -60,7 +60,12 @@ namespace ASCOM.Wise40.Boltwood
                 {
                     stations[i].GetSensorData();
                 }
-                catch { }
+                catch (Exception ex){
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, $"Boltwood:init() Caught {ex.Message} at\n{ex.StackTrace}");
+                    #endregion
+                    continue;
+                }
             }
 
             _initialized = true;
@@ -122,7 +127,7 @@ namespace ASCOM.Wise40.Boltwood
                     break;
 
                 case "raw-data":
-                    ret = RawData;
+                    ret = AllStationsRawData;
                     break;
 
                 default:
@@ -131,21 +136,16 @@ namespace ASCOM.Wise40.Boltwood
             return ret;
         }
 
-        public string RawData
+        public string AllStationsRawData
         {
             get
             {
-                List<BoltwoodStation.BoltwoodStationRawData> list = new List<BoltwoodStation.BoltwoodStationRawData>();
+                List<BoltwoodStation.RawData> ret = new List<BoltwoodStation.RawData>();
 
                 foreach (var station in WiseBoltwood.stations)
-                    list.Add(new BoltwoodStation.BoltwoodStationRawData()
-                    {
-                        Name = station.Name,
-                        Vendor = station.Vendor.ToString(),
-                        Model = station.Model.ToString(),
-                        SensorData = station.SensorData,
-                    });
-                return JsonConvert.SerializeObject(list);
+                    ret.Add(station.GetRawData());
+
+                return JsonConvert.SerializeObject(ret);
             }
         }
 
@@ -762,12 +762,10 @@ namespace ASCOM.Wise40.Boltwood
                     break;
 
                 case WeatherStationInputMethod.Weizmann_TBD:
-                case WeatherStationInputMethod.Korean_TBD:
                     break;
             }
         }
         private void GetWeizmannSensorData() { }
-        private void GetKoreanSensorData() { }
         private void GetClarityIISensorData()
         {
             string str;
@@ -775,10 +773,10 @@ namespace ASCOM.Wise40.Boltwood
             if (FilePath == null || FilePath == string.Empty)
                 throw new InvalidOperationException("GetSensorData: _dataFile name is either null or empty!");
 
-            if (!File.Exists(FilePath))
+            if (!System.IO.File.Exists(FilePath))
                 throw new InvalidOperationException(string.Format("GetSensorData: _dataFile \"{0}\" DOES NOT exist!", FilePath));
 
-            if (_lastDataRead == DateTime.MinValue || File.GetLastWriteTime(FilePath).CompareTo(_lastDataRead) > 0)
+            if (_lastDataRead == DateTime.MinValue || System.IO.File.GetLastWriteTime(FilePath).CompareTo(_lastDataRead) > 0)
             {
                 try
                 {
@@ -792,7 +790,7 @@ namespace ASCOM.Wise40.Boltwood
                     throw new InvalidOperationException(string.Format("GetSensorData: Cannot read \"{0}\", caught {1}", FilePath, e.Message));
                 }
 
-                _sensorData = new SensorData(str, _weatherLogger);
+                _sensorData = new SensorData(str, this);
                 _lastDataRead = DateTime.Now;
             }
         }
@@ -870,11 +868,32 @@ namespace ASCOM.Wise40.Boltwood
             }
         }
 
-        public class BoltwoodStationRawData
+        public RawData GetRawData()
+        {
+            try
+            {
+                GetSensorData();
+            }
+            catch { }
+
+            return new RawData
+            {
+                Name = Name,
+                Vendor = Vendor.ToString(),
+                Model = Model.ToString(),
+                UpdatedAtUT = _sensorData != null ? _sensorData.updatedAtUT : DateTime.MinValue,
+                AgeInSeconds = _sensorData != null ? _sensorData.age : Int32.MaxValue,
+                SensorData = _sensorData,
+            };
+        }
+
+        public class RawData
         {
             public string Name;
             public string Vendor;
             public string Model;
+            public DateTime UpdatedAtUT;
+            public double AgeInSeconds;
             public SensorData SensorData;
         }
     }

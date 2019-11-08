@@ -41,27 +41,15 @@ namespace ASCOM.Wise40.Boltwood
             this.buttonChoose2 = new System.Windows.Forms.Button();
             this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.checkBox2 = new System.Windows.Forms.CheckBox();
-            this.checkBox3 = new System.Windows.Forms.CheckBox();
-            this.checkBox4 = new System.Windows.Forms.CheckBox();
-            this.checkBox5 = new System.Windows.Forms.CheckBox();
             this.checkBox0 = new System.Windows.Forms.CheckBox();
-            this.buttonChoose3 = new System.Windows.Forms.Button();
-            this.buttonChoose4 = new System.Windows.Forms.Button();
-            this.buttonChoose5 = new System.Windows.Forms.Button();
             this.label2 = new System.Windows.Forms.Label();
             this.comboBoxMethod0 = new System.Windows.Forms.ComboBox();
             this.comboBoxMethod1 = new System.Windows.Forms.ComboBox();
             this.comboBoxMethod2 = new System.Windows.Forms.ComboBox();
-            this.comboBoxMethod3 = new System.Windows.Forms.ComboBox();
-            this.comboBoxMethod4 = new System.Windows.Forms.ComboBox();
-            this.comboBoxMethod5 = new System.Windows.Forms.ComboBox();
             this.label3 = new System.Windows.Forms.Label();
             this.labelPath0 = new System.Windows.Forms.Label();
             this.labelPath1 = new System.Windows.Forms.Label();
             this.labelPath2 = new System.Windows.Forms.Label();
-            this.labelPath3 = new System.Windows.Forms.Label();
-            this.labelPath4 = new System.Windows.Forms.Label();
-            this.labelPath5 = new System.Windows.Forms.Label();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.openFileDialog2 = new System.Windows.Forms.OpenFileDialog();
             this.openFileDialog3 = new System.Windows.Forms.OpenFileDialog();
@@ -78,7 +66,7 @@ namespace ASCOM.Wise40.Boltwood
             this.cmdOK.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.cmdOK.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.cmdOK.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.cmdOK.Location = new System.Drawing.Point(663, 224);
+            this.cmdOK.Location = new System.Drawing.Point(663, 130);
             this.cmdOK.Name = "cmdOK";
             this.cmdOK.Size = new System.Drawing.Size(59, 24);
             this.cmdOK.TabIndex = 0;
@@ -92,7 +80,7 @@ namespace ASCOM.Wise40.Boltwood
             this.cmdCancel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.cmdCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.cmdCancel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.cmdCancel.Location = new System.Drawing.Point(663, 254);
+            this.cmdCancel.Location = new System.Drawing.Point(663, 160);
             this.cmdCancel.Name = "cmdCancel";
             this.cmdCancel.Size = new System.Drawing.Size(59, 25);
             this.cmdCancel.TabIndex = 1;
@@ -142,39 +130,24 @@ namespace ASCOM.Wise40.Boltwood
             this.tableLayoutPanel1.Controls.Add(this.buttonChoose2, 2, 3);
             this.tableLayoutPanel1.Controls.Add(this.checkBox1, 0, 2);
             this.tableLayoutPanel1.Controls.Add(this.checkBox2, 0, 3);
-            this.tableLayoutPanel1.Controls.Add(this.checkBox3, 0, 4);
-            this.tableLayoutPanel1.Controls.Add(this.checkBox4, 0, 5);
-            this.tableLayoutPanel1.Controls.Add(this.checkBox5, 0, 6);
             this.tableLayoutPanel1.Controls.Add(this.checkBox0, 0, 1);
-            this.tableLayoutPanel1.Controls.Add(this.buttonChoose3, 2, 4);
-            this.tableLayoutPanel1.Controls.Add(this.buttonChoose4, 2, 5);
-            this.tableLayoutPanel1.Controls.Add(this.buttonChoose5, 2, 6);
             this.tableLayoutPanel1.Controls.Add(this.label2, 1, 0);
             this.tableLayoutPanel1.Controls.Add(this.comboBoxMethod0, 1, 1);
             this.tableLayoutPanel1.Controls.Add(this.comboBoxMethod1, 1, 2);
             this.tableLayoutPanel1.Controls.Add(this.comboBoxMethod2, 1, 3);
-            this.tableLayoutPanel1.Controls.Add(this.comboBoxMethod3, 1, 4);
-            this.tableLayoutPanel1.Controls.Add(this.comboBoxMethod4, 1, 5);
-            this.tableLayoutPanel1.Controls.Add(this.comboBoxMethod5, 1, 6);
             this.tableLayoutPanel1.Controls.Add(this.label3, 3, 0);
             this.tableLayoutPanel1.Controls.Add(this.labelPath0, 3, 1);
             this.tableLayoutPanel1.Controls.Add(this.labelPath1, 3, 2);
             this.tableLayoutPanel1.Controls.Add(this.labelPath2, 3, 3);
-            this.tableLayoutPanel1.Controls.Add(this.labelPath3, 3, 4);
-            this.tableLayoutPanel1.Controls.Add(this.labelPath4, 3, 5);
-            this.tableLayoutPanel1.Controls.Add(this.labelPath5, 3, 6);
             this.tableLayoutPanel1.Location = new System.Drawing.Point(15, 83);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-            this.tableLayoutPanel1.RowCount = 8;
+            this.tableLayoutPanel1.RowCount = 4;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(628, 194);
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(628, 109);
             this.tableLayoutPanel1.TabIndex = 9;
             // 
             // label4
@@ -250,39 +223,6 @@ namespace ASCOM.Wise40.Boltwood
             this.checkBox2.Text = "Weizzmann";
             this.checkBox2.UseVisualStyleBackColor = true;
             // 
-            // checkBox3
-            // 
-            this.checkBox3.AutoSize = true;
-            this.checkBox3.Enabled = false;
-            this.checkBox3.Location = new System.Drawing.Point(3, 110);
-            this.checkBox3.Name = "checkBox3";
-            this.checkBox3.Size = new System.Drawing.Size(66, 17);
-            this.checkBox3.TabIndex = 17;
-            this.checkBox3.Text = "Korean1";
-            this.checkBox3.UseVisualStyleBackColor = true;
-            // 
-            // checkBox4
-            // 
-            this.checkBox4.AutoSize = true;
-            this.checkBox4.Enabled = false;
-            this.checkBox4.Location = new System.Drawing.Point(3, 139);
-            this.checkBox4.Name = "checkBox4";
-            this.checkBox4.Size = new System.Drawing.Size(66, 17);
-            this.checkBox4.TabIndex = 18;
-            this.checkBox4.Text = "Korean2";
-            this.checkBox4.UseVisualStyleBackColor = true;
-            // 
-            // checkBox5
-            // 
-            this.checkBox5.AutoSize = true;
-            this.checkBox5.Enabled = false;
-            this.checkBox5.Location = new System.Drawing.Point(3, 168);
-            this.checkBox5.Name = "checkBox5";
-            this.checkBox5.Size = new System.Drawing.Size(66, 17);
-            this.checkBox5.TabIndex = 19;
-            this.checkBox5.Text = "Korean3";
-            this.checkBox5.UseVisualStyleBackColor = true;
-            // 
             // checkBox0
             // 
             this.checkBox0.AutoSize = true;
@@ -294,45 +234,6 @@ namespace ASCOM.Wise40.Boltwood
             this.checkBox0.TabIndex = 14;
             this.checkBox0.Text = "C18";
             this.checkBox0.UseVisualStyleBackColor = true;
-            // 
-            // buttonChoose3
-            // 
-            this.buttonChoose3.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.buttonChoose3.Enabled = false;
-            this.buttonChoose3.Location = new System.Drawing.Point(181, 110);
-            this.buttonChoose3.Name = "buttonChoose3";
-            this.buttonChoose3.Size = new System.Drawing.Size(75, 21);
-            this.buttonChoose3.TabIndex = 27;
-            this.buttonChoose3.Text = "Choose";
-            this.toolTip1.SetToolTip(this.buttonChoose3, "Select a data file");
-            this.buttonChoose3.UseVisualStyleBackColor = false;
-            this.buttonChoose3.Click += new System.EventHandler(this.buttonChooseDataFile3_Click);
-            // 
-            // buttonChoose4
-            // 
-            this.buttonChoose4.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.buttonChoose4.Enabled = false;
-            this.buttonChoose4.Location = new System.Drawing.Point(181, 139);
-            this.buttonChoose4.Name = "buttonChoose4";
-            this.buttonChoose4.Size = new System.Drawing.Size(75, 21);
-            this.buttonChoose4.TabIndex = 28;
-            this.buttonChoose4.Text = "Choose";
-            this.toolTip1.SetToolTip(this.buttonChoose4, "Select a data file");
-            this.buttonChoose4.UseVisualStyleBackColor = false;
-            this.buttonChoose4.Click += new System.EventHandler(this.buttonChooseDataFile4_Click);
-            // 
-            // buttonChoose5
-            // 
-            this.buttonChoose5.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.buttonChoose5.Enabled = false;
-            this.buttonChoose5.Location = new System.Drawing.Point(181, 168);
-            this.buttonChoose5.Name = "buttonChoose5";
-            this.buttonChoose5.Size = new System.Drawing.Size(75, 21);
-            this.buttonChoose5.TabIndex = 29;
-            this.buttonChoose5.Text = "Choose";
-            this.toolTip1.SetToolTip(this.buttonChoose5, "Select a data file");
-            this.buttonChoose5.UseVisualStyleBackColor = false;
-            this.buttonChoose5.Click += new System.EventHandler(this.buttonChooseDataFile5_Click);
             // 
             // label2
             // 
@@ -389,48 +290,6 @@ namespace ASCOM.Wise40.Boltwood
             this.comboBoxMethod2.TabIndex = 23;
             this.comboBoxMethod2.Text = "Weizmann";
             // 
-            // comboBoxMethod3
-            // 
-            this.comboBoxMethod3.Enabled = false;
-            this.comboBoxMethod3.FormattingEnabled = true;
-            this.comboBoxMethod3.Items.AddRange(new object[] {
-            "ClarityII",
-            "Weizmann",
-            "Korean"});
-            this.comboBoxMethod3.Location = new System.Drawing.Point(93, 110);
-            this.comboBoxMethod3.Name = "comboBoxMethod3";
-            this.comboBoxMethod3.Size = new System.Drawing.Size(77, 21);
-            this.comboBoxMethod3.TabIndex = 24;
-            this.comboBoxMethod3.Text = "Korean";
-            // 
-            // comboBoxMethod4
-            // 
-            this.comboBoxMethod4.Enabled = false;
-            this.comboBoxMethod4.FormattingEnabled = true;
-            this.comboBoxMethod4.Items.AddRange(new object[] {
-            "ClarityII",
-            "Weizmann",
-            "Korean"});
-            this.comboBoxMethod4.Location = new System.Drawing.Point(93, 139);
-            this.comboBoxMethod4.Name = "comboBoxMethod4";
-            this.comboBoxMethod4.Size = new System.Drawing.Size(77, 21);
-            this.comboBoxMethod4.TabIndex = 26;
-            this.comboBoxMethod4.Text = "Korean";
-            // 
-            // comboBoxMethod5
-            // 
-            this.comboBoxMethod5.Enabled = false;
-            this.comboBoxMethod5.FormattingEnabled = true;
-            this.comboBoxMethod5.Items.AddRange(new object[] {
-            "ClarityII",
-            "Weizmann",
-            "Korean"});
-            this.comboBoxMethod5.Location = new System.Drawing.Point(93, 168);
-            this.comboBoxMethod5.Name = "comboBoxMethod5";
-            this.comboBoxMethod5.Size = new System.Drawing.Size(77, 21);
-            this.comboBoxMethod5.TabIndex = 25;
-            this.comboBoxMethod5.Text = "Korean";
-            // 
             // label3
             // 
             this.label3.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -473,42 +332,9 @@ namespace ASCOM.Wise40.Boltwood
             | System.Windows.Forms.AnchorStyles.Right)));
             this.labelPath2.Location = new System.Drawing.Point(262, 78);
             this.labelPath2.Name = "labelPath2";
-            this.labelPath2.Size = new System.Drawing.Size(444, 29);
+            this.labelPath2.Size = new System.Drawing.Size(444, 31);
             this.labelPath2.TabIndex = 33;
             this.labelPath2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // labelPath3
-            // 
-            this.labelPath3.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.labelPath3.Location = new System.Drawing.Point(262, 107);
-            this.labelPath3.Name = "labelPath3";
-            this.labelPath3.Size = new System.Drawing.Size(444, 29);
-            this.labelPath3.TabIndex = 34;
-            this.labelPath3.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // labelPath4
-            // 
-            this.labelPath4.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.labelPath4.Location = new System.Drawing.Point(262, 136);
-            this.labelPath4.Name = "labelPath4";
-            this.labelPath4.Size = new System.Drawing.Size(444, 29);
-            this.labelPath4.TabIndex = 35;
-            this.labelPath4.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // labelPath5
-            // 
-            this.labelPath5.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.labelPath5.Location = new System.Drawing.Point(262, 165);
-            this.labelPath5.Name = "labelPath5";
-            this.labelPath5.Size = new System.Drawing.Size(444, 29);
-            this.labelPath5.TabIndex = 36;
-            this.labelPath5.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // openFileDialog1
             // 
@@ -540,7 +366,7 @@ namespace ASCOM.Wise40.Boltwood
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.ClientSize = new System.Drawing.Size(732, 291);
+            this.ClientSize = new System.Drawing.Size(732, 197);
             this.Controls.Add(this.tableLayoutPanel1);
             this.Controls.Add(this.picASCOM);
             this.Controls.Add(this.label1);
@@ -575,26 +401,14 @@ namespace ASCOM.Wise40.Boltwood
         private System.Windows.Forms.Button buttonChoose2;
         private System.Windows.Forms.CheckBox checkBox1;
         private System.Windows.Forms.CheckBox checkBox2;
-        private System.Windows.Forms.CheckBox checkBox3;
-        private System.Windows.Forms.CheckBox checkBox4;
-        private System.Windows.Forms.CheckBox checkBox5;
         private System.Windows.Forms.CheckBox checkBox0;
         private System.Windows.Forms.ComboBox comboBoxMethod0;
         private System.Windows.Forms.ComboBox comboBoxMethod1;
         private System.Windows.Forms.ComboBox comboBoxMethod2;
-        private System.Windows.Forms.ComboBox comboBoxMethod3;
-        private System.Windows.Forms.ComboBox comboBoxMethod4;
-        private System.Windows.Forms.ComboBox comboBoxMethod5;
-        private System.Windows.Forms.Button buttonChoose3;
-        private System.Windows.Forms.Button buttonChoose4;
-        private System.Windows.Forms.Button buttonChoose5;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label labelPath0;
         private System.Windows.Forms.Label labelPath1;
         private System.Windows.Forms.Label labelPath2;
-        private System.Windows.Forms.Label labelPath3;
-        private System.Windows.Forms.Label labelPath4;
-        private System.Windows.Forms.Label labelPath5;
         private System.Windows.Forms.OpenFileDialog openFileDialog1;
         private System.Windows.Forms.OpenFileDialog openFileDialog2;
         private System.Windows.Forms.OpenFileDialog openFileDialog3;

@@ -25,6 +25,7 @@ namespace ASCOM.Wise40.TessW
         private bool _connected = false;
         private bool _initialized = false;
         private int _reading = 0;
+        public DateTime updatedAtUT;
 
         public WiseTessW() { }
         static WiseTessW() { }
@@ -148,6 +149,8 @@ namespace ASCOM.Wise40.TessW
                         double percent = 100 - 3 * (tAmb - tSky);
                         Instance.sensorData["cloudCover"] = (Math.Max(percent, 0.0)).ToString();
 
+                        Instance.updatedAtUT = DateTime.UtcNow;
+
                         if (Instance._weatherLogger != null)
                         {
                             Instance._weatherLogger.Log(new Dictionary<string, string>()
@@ -156,7 +159,7 @@ namespace ASCOM.Wise40.TessW
                                 ["SkyAmbientTemp"] = Instance.sensorData["tempSky"],
                                 ["CloudCover"] = Instance.sensorData["cloudCover"],
 
-                            }, DateTime.UtcNow);
+                            }, Instance.updatedAtUT);
                         }
 
                         succeeded = true;
@@ -282,6 +285,8 @@ namespace ASCOM.Wise40.TessW
                     Name = WiseName,
                     Vendor = Vendor.ToString(),
                     Model = Model.ToString(),
+                    UpdatedAtUT = updatedAtUT,
+                    AgeInSeconds = (DateTime.UtcNow - updatedAtUT).TotalSeconds,
                     SensorData = sensorData,
                 };
 
@@ -663,6 +668,8 @@ namespace ASCOM.Wise40.TessW
             public string Name;
             public string Vendor;
             public string Model;
+            public DateTime UpdatedAtUT;
+            public double AgeInSeconds;
             public Dictionary<string, string> SensorData;
         }
     }

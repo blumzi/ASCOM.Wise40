@@ -58,6 +58,7 @@ namespace ASCOM.Wise40.Boltwood
     {
         public double age;
         public DateTime localTime;
+        public DateTime updatedAtUT;
         public enum TempUnits
         {
             tempCelsius = 0,
@@ -155,13 +156,19 @@ namespace ASCOM.Wise40.Boltwood
         public bool roofCloseRequested;
         public bool alerting;
         private ASCOM.Utilities.Util util = new Utilities.Util();
+        private BoltwoodStation _station;
 
-        public SensorData(string data, WeatherLogger env)
+        public SensorData(string data, BoltwoodStation station)
         {
+            if (data == null)
+                return;
+
+            _station = station;
             try
             {
                 localTime = Convert.ToDateTime(data.Substring(0, 22));
                 DateTime utcTime = localTime.ToUniversalTime();
+                updatedAtUT = utcTime;
                 age = DateTime.Now.Subtract(localTime).TotalSeconds;
 
                 switch (data.Substring(23, 1))
@@ -221,7 +228,7 @@ namespace ASCOM.Wise40.Boltwood
                         break;
                 }
 
-                env.Log(new Dictionary<string, string>()
+                _station._weatherLogger.Log(new Dictionary<string, string>()
                 {
                     ["SkyAmbientTemp"] = skyAmbientTemp.ToString(),
                     ["SensorTemp"] = sensorTemp.ToString(),

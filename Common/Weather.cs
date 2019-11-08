@@ -18,11 +18,10 @@ namespace ASCOM.Wise40
             WeatherLink_HtmlReport,
             TessW,
             Weizmann_TBD,
-            Korean_TBD
         };
 
         public int _unitId;
-        protected WeatherLogger _weatherLogger;
+        public WeatherLogger _weatherLogger;
 
         public abstract WeatherStationVendor Vendor
         {

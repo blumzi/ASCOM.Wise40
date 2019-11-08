@@ -18,14 +18,14 @@ namespace ASCOM.Wise40SafeToOperate
         private static DateTime lastSTWMReadTime = DateTime.MinValue;
         private static TimeSpan _interval = new TimeSpan(0, 1, 0);
 
-        private class Station
+        public class Station
         {
             public WeatherLogger _weatherLogger;
             public Dictionary<string, double> _sensorData;
             public DateTime _dateUtc;
         }
 
-        private Dictionary<string, Station> stations = new Dictionary<string, Station>()
+        public static Dictionary<string, Station> stations = new Dictionary<string, Station>()
         {
             { "AWS_22", new Station() },
             { "WDS_1", new Station() }, { "WDS_2", new Station() }, { "WDS_3", new Station() },
@@ -224,7 +224,7 @@ namespace ASCOM.Wise40SafeToOperate
 
         public override object Digest()
         {
-            return "TBD";
+            return new OWLDigest();
         }
 
         public override string MaxAsString
@@ -243,5 +243,103 @@ namespace ASCOM.Wise40SafeToOperate
                 return "";
             }
         }
+
+        public class WDSDigest
+        {
+            public string Name;
+            public double WindSpeed;
+            public double WindDir;
+
+        }
+
+        public class THSDigest
+        {
+            public string Name;
+            public double Temperature;
+            public double Humidity;
+        }
+
+        public class CLSDigest
+        {
+            public string Name;
+            public double SkyAmbientTemp;
+        }
+
+        public class AWSDigest
+        {
+            public string Name;
+            public double Temperature;
+            public double Humidity;
+            public double WindSpeed;
+            public double WindDir;
+        }
+
+        public class OWLDigest {
+            public string Vendor;
+            public string Model;
+            public DateTime UpdatedAtUT;
+            public double AgeInSeconds;
+            public AWSDigest AWS;
+            public List<WDSDigest> WDS;
+            public List<THSDigest> THS;
+            public List<CLSDigest> CLS;
+
+            public OWLDigest()
+            {
+                string name;
+                Station station;
+
+                Vendor = "Korea Astronomy & Space Science Institute";
+                Model = "Optical Wide-field patroL (OWL)";
+                UpdatedAtUT = stations["AWS_22"]._dateUtc;
+                AgeInSeconds = (DateTime.UtcNow - UpdatedAtUT).TotalSeconds;
+                WDS = new List<WDSDigest>();
+                foreach (var s in new List<string> { "1", "2", "3" }) {
+                    name = "WDS_" + s;
+                    station = stations[name];
+                    WDS.Add(new WDSDigest
+                    {
+                        Name = name,
+                        WindSpeed = station._sensorData["windSpeed"],
+                        WindDir = station._sensorData["windDir"],
+                    });
+                }
+
+                THS = new List<THSDigest>();
+                foreach (var s in new List<string> { "4", "5", "6", "7", "8" })
+                {
+                    name = "THS_" + s;
+                    station = stations[name];
+                    THS.Add(new THSDigest
+                    {
+                        Name = name,
+                        Temperature = station._sensorData["temperature"],
+                        Humidity = station._sensorData["humidity"],
+                    });
+                }
+
+                CLS = new List<CLSDigest>();
+                foreach (var s in new List<string> { "10", "11", "12" })
+                {
+                    name = "CLS_" + s;
+                    station = stations[name];
+                    CLS.Add(new CLSDigest
+                    {
+                        Name = name,
+                        SkyAmbientTemp = station._sensorData["skyAmbientTemp"],
+                    });
+                }
+
+                name = "AWS_22";
+                station = stations[name];
+                AWS = new AWSDigest {
+                    Name = name,
+                    Temperature = station._sensorData["temperature"],
+                    Humidity = station._sensorData["humidity"],
+                    WindSpeed = station._sensorData["windSpeed"],
+                    WindDir = station._sensorData["windDir"],
+                };
+            }
+        };
     }
 }

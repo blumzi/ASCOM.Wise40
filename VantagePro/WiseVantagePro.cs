@@ -40,6 +40,7 @@ namespace ASCOM.Wise40.VantagePro
 
         private Dictionary<string, string> sensorData = null;
         private DateTime _lastDataRead = DateTime.MinValue;
+        public DateTime updatedAtUT;
 
         private static readonly Lazy<WiseVantagePro> lazy = new Lazy<WiseVantagePro>(() => new WiseVantagePro()); // Singleton
 
@@ -104,11 +105,10 @@ namespace ASCOM.Wise40.VantagePro
                                     continue;
                                 sensorData[words[0]] = words[1];
                             }
+                            updatedAtUT = Convert.ToDateTime(sensorData["utcDate"] + " " + sensorData["utcTime"] + "m");
 
                             if (_weatherLogger != null)
                             {
-                                DateTime utcTime = Convert.ToDateTime(sensorData["utcDate"] + " " + sensorData["utcTime"] + "m");
-
                                 _weatherLogger.Log(new Dictionary<string, string>()
                                 {
                                     ["Temperature"] = sensorData["outsideTemp"],
@@ -120,7 +120,7 @@ namespace ASCOM.Wise40.VantagePro
                                     ["DewPoint"] = util.ConvertUnits(Convert.ToDouble(sensorData["outsideDewPt"]),
                                                         Units.degreesFarenheit, Units.degreesCelsius).ToString(),
 
-                                }, utcTime);
+                                }, updatedAtUT);
                             }
 
                             _lastDataRead = DateTime.Now;
@@ -328,12 +328,27 @@ namespace ASCOM.Wise40.VantagePro
         {
             get
             {
+                VantagePro2StationRawData.Quality quality = null;
+
+                if (_seeing != null)
+                {
+                    quality = new VantagePro2StationRawData.Quality
+                    {
+                        StarFWHM = _seeing.FWHM,
+                        UpdatedAtUT = _seeing.TimeUTC,
+                        AgeInSeconds = _seeing.TimeSinceLastUpdate.TotalSeconds,
+                    };
+                }
+
                 VantagePro2StationRawData raw = new VantagePro2StationRawData()
                 {
                     Name = WiseName,
                     Vendor = Vendor.ToString(),
                     Model = Model.ToString(),
+                    UpdateAtUT = updatedAtUT,
+                    AgeInSeconds = TimeSinceLastUpdate("Temperature"),
                     SensorData = sensorData,
+                    SkyQuality = quality,
                 };
 
                 return JsonConvert.SerializeObject(raw);
@@ -666,9 +681,7 @@ namespace ASCOM.Wise40.VantagePro
             double seconds = 0.0;
             if (_opMode == OpMode.File)
             {
-                string dateTime = sensorData["utcDate"] + " " + sensorData["utcTime"] + "m";
-                DateTime lastUpdate = Convert.ToDateTime(dateTime);
-                seconds = (DateTime.UtcNow - lastUpdate).TotalSeconds;
+                seconds = (DateTime.UtcNow - updatedAtUT).TotalSeconds;
             }
 
             return seconds;
@@ -780,10 +793,20 @@ namespace ASCOM.Wise40.VantagePro
 
         public class VantagePro2StationRawData
         {
+            public class Quality
+            {
+                public DateTime UpdatedAtUT;
+                public double AgeInSeconds;
+                public double StarFWHM;
+            };
+
             public string Name;
             public string Vendor;
             public string Model;
+            public DateTime UpdateAtUT;
+            public double AgeInSeconds;
             public Dictionary<string, string> SensorData;
+            public Quality SkyQuality;
         }
 
         public class Seeing
