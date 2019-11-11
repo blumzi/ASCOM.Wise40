@@ -441,15 +441,17 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
         delegate void LogDelegate(string text);
 
-        private void Log(string msg, int afterSecs = 0)
+        private void Log(string msg, int afterSecs = 0, bool debugOnly = false)
         {
             if (afterSecs != 0 && DateTime.Now.CompareTo(_lastLog) < 0)
                 return;
 
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugLogic, msg);
-            logToGUI(string.Format("{0} - {1}", DateTime.UtcNow.ToString("H:mm:ss UT"), msg));
-
-            _lastLog = DateTime.UtcNow;
+            if (!debugOnly)
+            {
+                logToGUI(string.Format("{0} - {1}", DateTime.UtcNow.ToString("H:mm:ss UT"), msg));
+                _lastLog = DateTime.UtcNow;
+            }
         }
 
         public void logToGUI(string line)
@@ -481,8 +483,6 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             }
 
             CT = CTS.Token;
-
-            shuttingDown = true;
 
             Task.Run(() =>
             {
@@ -537,6 +537,9 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
         private void ShutdownObservatory(string reason)
         {
+            if (shuttingDown)
+                return;
+
             try
             {
                 Angle domeAz = DomeAzimuth; // Possibly force dome calibration
@@ -545,6 +548,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 {
                     if (CT.IsCancellationRequested) throw new Exception("Shutdown aborted");
 
+                    shuttingDown = true;
                     Log(string.Format("   Starting Wise40 park (reason: {0}) ...", reason));
 
                     Log(string.Format("    Parking telescope at {0} {1} and dome at {2} ...",
@@ -552,6 +556,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                         (new Angle(66, Angle.Type.Dec)).ToString(),
                         (new Angle(90, Angle.Type.Az).ToNiceString())));
 
+                    #region Initiate shutdown
                     Task telescopeShutdownTask = Task.Run(() =>
                     {
                         try
@@ -567,11 +572,13 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                             Log(string.Format("ShutdownObservatory:Exception: {0}", ex.InnerException == null ? ex.Message : ex.InnerException.Message));
                         }
                     }, CT);
+                    #endregion
 
                     ShutterState shutterState;
                     List<string> activities;
-                    bool done = false, aborted = false;
+                    bool done = false;
 
+                    #region Wait for shutdown completion
                     do
                     {
                         if (CT.IsCancellationRequested)
@@ -588,6 +595,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
                         try
                         {
+                            #region Fetch various statuses
                             UpdateCheckingStatus("telescope status");
                             telescopeDigest = JsonConvert.DeserializeObject<TelescopeDigest>(wisetelescope.Action("status", ""));
 
@@ -597,6 +605,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                             UpdateCheckingStatus("safetooperate status");
                             safetooperateDigest = JsonConvert.DeserializeObject<SafeToOperateDigest>(wisesafetooperate.Action("status", ""));
                             UpdateCheckingStatus("");
+                            #endregion
 
                             if (!safetooperateDigest.ComputerControl.Safe)
                             {
@@ -621,11 +630,14 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                                     _simulated ? 1 : 10);
                             }
                         }
-                        catch /*(Exception ex)*/
+                        catch (Exception ex)
                         {
-                            //Log(string.Format("    ShutdownObservatory:Exception: {0}", ex.Message));
+                            Log($"    Exception: {ex.Message}");
+                            Log($"Caught: {ex.Message} at\n{ex.StackTrace}", debugOnly: true);
+                            done = true;
                         }
                     } while (!done);
+                    #endregion
 
                     Log("   Done parking Wise40.");
                     labelActivity.Text = telescopeDigest.Active ? "Active" : "Idle";
