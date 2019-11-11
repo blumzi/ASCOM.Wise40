@@ -793,8 +793,12 @@ namespace ASCOM.Wise40
                 }
             }
 
-            if (!FarEnoughToMove(toAng))    // Silently ignore
+            if (!FarEnoughToMove(toAng))
+            {
+                if (StateIsOn(DomeState.Parking))
+                    AtPark = true;
                 return;
+            }
 
             // At this point we're commited to slewing
             if (!_adjustingForTracking)
