@@ -51,7 +51,8 @@ namespace ASCOM.Wise40.Common
 
         public void Log(Dictionary<string, string> dict, DateTime date)
         {
-            if (!WiseSite.CurrentProcessIs(Const.Application.RESTServer))
+            if (! (WiseSite.CurrentProcessIs(Const.Application.RESTServer) ||
+                    WiseSite.CurrentProcessIs(Const.Application.OCH)))
                 return;
 
             lock (_lock)
