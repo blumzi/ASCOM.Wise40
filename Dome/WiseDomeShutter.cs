@@ -145,15 +145,18 @@ namespace ASCOM.Wise40
                 int reading = GetWebShutterPosition().GetAwaiter().GetResult();
                 const int maxTravelTimeSeconds = 22;
 
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugDome, "PeriodicReader: cm: {0}", reading);
-                #endregion
                 if (! Instance.webClient.WiFiIsWorking)
                 {
                     _wisedomeshutter._state = ShutterState.shutterError;
                     _wisedomeshutter._stateReason = "PeriodicReader: WiFi is not working";
                     _prevState = ShutterState.shutterError;
-                    
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugShutter,
+                        $"PeriodicReader: " +
+                        $"state: {_wisedomeshutter._state.ToString()} " +
+                        $"reason: {_wisedomeshutter._stateReason.Replace("PeriodicReader: ", "")}");
+                    #endregion
+
                     if (DateTime.Now.Subtract(Instance.webClient._startOfShutterMotion).TotalSeconds > maxTravelTimeSeconds)
                     {
                         _wisedomeshutter.Stop(string.Format("{0} seconds passed from startOfMotion", maxTravelTimeSeconds));
@@ -169,7 +172,7 @@ namespace ASCOM.Wise40
                 {
                     _wisedomeshutter._state = ShutterState.shutterClosed;
                     _wisedomeshutter._stateReason =
-                        string.Format("PeriodicReader: Shutter at {0} (close enough to lowest value {1}) and not moving", reading, _wisedomeshutter._lowestValue);
+                        $"PeriodicReader: Shutter at {reading} (close enough to lowest value {_wisedomeshutter._lowestValue}) and not moving";
                     if (_prevState != ShutterState.shutterClosed)
                         _wisedomeshutter.Stop("Shutter closed");
                 }
@@ -178,7 +181,7 @@ namespace ASCOM.Wise40
                 {
                     _wisedomeshutter._state = ShutterState.shutterOpen;
                     _wisedomeshutter._stateReason =
-                        string.Format("PeriodicReader: Shutter at {0} (close enough to highest value {1}) and not moving", reading, _wisedomeshutter._highestValue);
+                        $"PeriodicReader: Shutter at {reading} (close enough to highest value {_wisedomeshutter._highestValue}) and not moving";
                     if (_prevState != ShutterState.shutterOpen)
                         _wisedomeshutter.Stop("Shutter opened");
                 }
@@ -206,6 +209,13 @@ namespace ASCOM.Wise40
                     }
                 }
 
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugShutter, 
+                    $"PeriodicReader: at {reading}, " +
+                    $"prevReading: {_prevReading} " +
+                    $"state: {_wisedomeshutter._state.ToString()} "+
+                    $"reason: {_wisedomeshutter._stateReason.Replace("PeriodicReader: ", "")}");
+                #endregion
                 _prevReading = _lastReading;
                 _prevState = _wisedomeshutter._state;
                 _periodicWebReadTimer.Change(_timeoutMillis, 0);
@@ -343,8 +353,6 @@ namespace ASCOM.Wise40
                     "Stop: was moving (openPin: {0}, closePin: {1})",
                     openPinWasOn.ToString(), closePinWasOn.ToString());
                 #endregion
-
-                //activityMonitor.Event(new Event.ShutterEvent(closePinWasOn));
             }
             else
             {
