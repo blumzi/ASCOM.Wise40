@@ -35,6 +35,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
         static DriverAccess.SafetyMonitor wisesafetooperate = null;
         Version version = new Version(0, 2);
         static DateTime _nextCheck = DateTime.Now + TimeSpan.FromSeconds(10);
+        static bool _checking = false;
         static public TimeSpan _intervalBetweenChecks;
         static public int _minutesToIdle;
         static TimeSpan _intervalBetweenLogs = _simulated ? TimeSpan.FromSeconds(10) : TimeSpan.FromSeconds(20);
@@ -357,11 +358,11 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
             if (telescopeDigest != null && !telescopeDigest.ShuttingDown)
                 buttonManualIntervention.Enabled = true;
-
             updateManualInterventionControls();
 
-            if (now >= _nextCheck)
+            if (now >= _nextCheck && !_checking)
             {
+                _checking = true;
                 CheckConnections();
                 if (connected)
                 {
@@ -370,6 +371,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 }
 
                 _nextCheck = DateTime.Now + _intervalBetweenChecks;
+                _checking = false;
             }
         }
 
@@ -514,7 +516,9 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 }
                 catch (Exception ex)
                 {
-                    Log(string.Format("{0}:Exception: {1}", "ObservatoryIsPhysicallyParked", ex.InnerException != null ? ex.InnerException.Message : ex.Message));
+                    Exception e = ex ?? ex;
+
+                    Log($"ObservatoryIsPhysicallyParked: Caught: {e.Message} at\n{ex.StackTrace}", debugOnly: true);
                     return false;
                 }
             }
@@ -529,7 +533,9 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                     return wisetelescope.AtPark && wisedome.AtPark && (wisedome.ShutterStatus == ShutterState.shutterClosed);
                 } catch (Exception ex)
                 {
-                    Log(string.Format("{0}:Exception: {1}", "ObservatoryIsLogicallyParked", ex.InnerException != null ? ex.InnerException.Message : ex.Message));
+                    Exception e = ex.InnerException ?? ex;
+
+                    Log($"ObservatoryIsLogicallyParked: Caught: {e.Message} at\n{e.StackTrace}", debugOnly: true);
                     return false;
                 }
             }
