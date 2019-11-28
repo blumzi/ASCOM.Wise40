@@ -79,7 +79,7 @@ namespace ASCOM.Wise40SafeToOperate
                         {
                             string s = m.Result("${station}");
 
-                            stations[s]._dateUtc = Convert.ToDateTime(m.Result("${dateUtc}"));
+                            stations[s]._dateUtc = Convert.ToDateTime(m.Result("${dateUtc}" + " Z"));
                             stations[s]._sensorData["temperature"] = Convert.ToDouble(m.Result("${temperature}"));
                             stations[s]._sensorData["humidity"] = Convert.ToDouble(m.Result("${humidity}"));
                             stations[s]._sensorData["windSpeed"] = Convert.ToDouble(m.Result("${windSpeed}"));
