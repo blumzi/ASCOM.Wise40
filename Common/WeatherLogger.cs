@@ -12,12 +12,13 @@ using ASCOM.Wise40.Common;
 
 namespace ASCOM.Wise40.Common
 {
-    public class WeatherLogger
+    public class WeatherLogger: IDisposable
     {
         private string _stationName;
         private static Debugger debugger = Debugger.Instance;
         private DateTime _lastLoggedTime = DateTime.MinValue;
         private object _lock = new object();
+        private static MySqlConnection _sqlConn;
 
         public WeatherLogger(string stationName)
         {
@@ -27,10 +28,12 @@ namespace ASCOM.Wise40.Common
 
             try
             {
-                using (var sqlConn = new MySqlConnection(Const.MySql.DatabaseConnectionString.Wise_weather))
-                {
-                    sqlConn.Open();
-                    using (var sqlCmd = new MySqlCommand(sql, sqlConn))
+                //return;
+
+                //using (var sqlConn = new MySqlConnection(Const.MySql.DatabaseConnectionString.Wise_weather))
+                //{
+                //    sqlConn.Open();
+                    using (var sqlCmd = new MySqlCommand(sql, _sqlConn))
                     {
                         using (var cursor = sqlCmd.ExecuteReader())
                         {
@@ -38,48 +41,69 @@ namespace ASCOM.Wise40.Common
 
                             _lastLoggedTime = Convert.ToDateTime(cursor["time"]);
                         }
-                    }
+                    //}
                 }
             }
             catch
             {
                 _lastLoggedTime = DateTime.MinValue;
             }
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"WeatherLogger({stationName}): _lastLoggedTime: {_lastLoggedTime}");
+            #endregion
         }
 
-        static WeatherLogger() { }
+        static WeatherLogger() {
+            try
+            {
+                _sqlConn = new MySqlConnection(Const.MySql.DatabaseConnectionString.Wise_weather);
+                _sqlConn.Open();
+            } catch (Exception ex)
+            {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"static WeatherLogger: Caught {ex.Message} at\n{ex.StackTrace}");
+                #endregion
+            }
+        }
 
-        public void Log(Dictionary<string, string> dict, DateTime date)
+        public void Dispose() {
+            _sqlConn.Close();
+            _sqlConn.Dispose();
+        }
+
+        public void Log(Dictionary<string, string> dict, DateTime time)
         {
-            if (! (WiseSite.CurrentProcessIs(Const.Application.RESTServer) ||
+            //return;
+
+            if (!(WiseSite.CurrentProcessIs(Const.Application.RESTServer) ||
                     WiseSite.CurrentProcessIs(Const.Application.OCH)))
+                return;
+
+            if (time.CompareTo(_lastLoggedTime) <= 0)
                 return;
 
             lock (_lock)
             {
-                if (date.CompareTo(_lastLoggedTime) <= 0)
-                    return;
-
-                string sql = $"insert into weather.weather (Time, Station, {string.Join(", ", dict.Keys)})" +
-                    $" values('{date.ToMySqlDateTime()}', '{_stationName}', {string.Join(", ", dict.Values)})";
+                string sql = $"insert into weather.weather (time, Station, {string.Join(", ", dict.Keys)})" +
+                    $" values(TIMESTAMP('{time.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss")}'), '{_stationName}', {string.Join(", ", dict.Values)})";
+                //$" values(TIMESTAMP(CONVERT_TZ('{time}', '+00:00', @@global.time_zone)), '{_stationName}', {string.Join(", ", dict.Values)})";
 
                 try
                 {
-                    using (var sqlConn = new MySqlConnection(Const.MySql.DatabaseConnectionString.Wise_weather))
+                    using (var sqlCmd = new MySqlCommand(sql, _sqlConn))
                     {
-                        sqlConn.Open();
-                        using (var sqlCmd = new MySqlCommand(sql, sqlConn))
-                        {
-                            sqlCmd.ExecuteNonQuery();
-                            _lastLoggedTime = date;
-                        }
+                        sqlCmd.ExecuteNonQuery();
+                        _lastLoggedTime = time;
+                        #region debug
+                        debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"WeatherLogger.Log({_stationName}): _lastLoggedTime: {_lastLoggedTime}");
+                        #endregion
                     }
                 }
                 catch (Exception ex)
                 {
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
-                        $"EnvironmentLogger.log: \nsql: {sql}\n Caught: {ex.Message} at\n{ex.StackTrace}");
+                        $"WeatherLogger.log: \nsql: {sql}\n Caught: {ex.Message} at\n{ex.StackTrace}");
                     #endregion
                 }
             }
