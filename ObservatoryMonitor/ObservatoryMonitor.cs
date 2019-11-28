@@ -285,7 +285,8 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 }
                 else if (ObservatoryIsLogicallyParked && ObservatoryIsPhysicallyParked)
                 {
-                    Log("Wise40 already parked.");
+                    if (! shuttingDown)
+                        Log("Wise40 already parked.");
                 }
                 else
                 {
@@ -695,7 +696,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 if (ex.Message == "Shutdown aborted")
                     Log("Shutdown aborted by operator");
                 else
-                    Log(string.Format("ShutdownObservatory:Exception occurred:\n{0}, aborting shutdown!", ex.Message));
+                    Log($"ShutdownObservatory:Exception occurred:\n{ex.Message}, aborting shutdown!");
 
                 wisetelescope.Action("abort-shutdown", "");
             }
@@ -719,8 +720,10 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                     }
                     catch (Exception ex)
                     {
-                        Log(string.Format("DomeAzimuth:Exception: Waiting for dome Azimuth ({0}) ...",
-                            ex.InnerException != null ? ex.InnerException.Message : ex.Message));
+                        Log("DomeAzimuth: ASCOM communication timed out ...");
+
+                        string msg = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+                        Log($"DomeAzimuth:Exception: Waiting for dome Azimuth: Caught: {msg}");
                         SleepWhileProcessingEvents();
                     }
                 }
