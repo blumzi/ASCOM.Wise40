@@ -15,9 +15,9 @@ namespace ASCOM.Wise40.Common
             string s;
 
             if (ts.Days != 0)
-                ret += string.Format($"{ts.Days}d");
+                ret += $"{ts.Days}d";
 
-            s = string.Format($@"{ts.Hours:d2}h");
+            s = $@"{ts.Hours:d2}h";
             if (ts.Hours == 0)
             {
                 if (ret != null)
@@ -26,7 +26,7 @@ namespace ASCOM.Wise40.Common
             else
                 ret += s;
 
-            s = string.Format($@"{ts.Minutes:d2}m");
+            s = $@"{ts.Minutes:d2}m";
             if (ts.Minutes == 0)
             {
                 if (ret != null)
@@ -38,21 +38,23 @@ namespace ASCOM.Wise40.Common
             if (ts.Seconds == 0 && ts.Milliseconds != 0)
             {
                 if (ret == null)
-                    ret = string.Format($@"0.{ts.Milliseconds:d3}s");
+                    ret = $@"0.{ts.Milliseconds:d3}s";
                 else
-                    ret += string.Format($@"00.{ts.Milliseconds:d3}s");
-            } else if (ts.Seconds != 0 && ts.Milliseconds == 0)
+                    ret += $@"00.{ts.Milliseconds:d3}s";
+            }
+            else if (ts.Seconds != 0 && ts.Milliseconds == 0)
             {
                 if (ret == null)
-                    ret = string.Format($@"{ts.Seconds}s");
+                    ret = $@"{ts.Seconds}s";
                 else
-                    ret += string.Format($@"{ts.Seconds:d2}s");
-            } else if (ts.Seconds != 0 && ts.Milliseconds != 0)
+                    ret += $@"{ts.Seconds:d2}s";
+            }
+            else if (ts.Seconds != 0 && ts.Milliseconds != 0)
             {
                 if (ret == null)
-                    ret = string.Format($@"{ts.Seconds}.{ts.Milliseconds:d3}s");
+                    ret = $@"{ts.Seconds}.{ts.Milliseconds:d3}s";
                 else
-                    ret += string.Format($@"{ts.Seconds:d2}.{ts.Milliseconds:d3}s");
+                    ret += $@"{ts.Seconds:d2}.{ts.Milliseconds:d3}s";
             }
 
             return ret.StartsWith("0.") ? ret : ret.TrimStart(new char[] { '0' });
@@ -68,9 +70,9 @@ namespace ASCOM.Wise40.Common
             return string.Join(",", dict.Keys);
         }
 
-        public static string ToMySqlDateTime(this DateTime dateTime)
+        public static string ToMySqlDateTime(this DateTime dateTimeUTC)
         {
-            return dateTime.ToString(@"yyyy-MM-dd HH:mm:ss.fff");
+            return dateTimeUTC.ToString(@"yyyy-MM-dd HH:mm:ss.fff");
         }
     }
 }
