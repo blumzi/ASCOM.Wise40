@@ -323,7 +323,7 @@ namespace ASCOM.Wise40SafeToOperate
             {
                 _bypassed = Convert.ToBoolean(_profile.GetValue(driverID, Const.ProfileName.SafeToOperate_Bypassed, string.Empty, false.ToString()));
 
-                return JsonConvert.SerializeObject(new SafeToOperateDigest()
+                return JsonConvert.SerializeObject(new SafeToOperateDigest
                 {
                     Bypassed = _bypassed,
                     Ready = isReady(toBeIgnored: Sensor.Attribute.None),
@@ -346,7 +346,8 @@ namespace ASCOM.Wise40SafeToOperate
                     WindDirection = Sensor.SensorDigest.FromOCHProperty("WindDirection"),
                     DewPoint = Sensor.SensorDigest.FromOCHProperty("DewPoint"),
                     SkyTemperature = Sensor.SensorDigest.FromOCHProperty("SkyTemperature"),
-                });
+                }
+                );
             }
         }
 
