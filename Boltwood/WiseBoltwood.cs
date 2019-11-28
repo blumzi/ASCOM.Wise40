@@ -58,7 +58,8 @@ namespace ASCOM.Wise40.Boltwood
 
                 try
                 {
-                    stations[i].GetSensorData();
+                    if (stations[i].Enabled)
+                        stations[i].GetSensorData();
                 }
                 catch (Exception ex){
                     #region debug
@@ -143,7 +144,8 @@ namespace ASCOM.Wise40.Boltwood
                 List<BoltwoodStation.RawData> ret = new List<BoltwoodStation.RawData>();
 
                 foreach (var station in WiseBoltwood.stations)
-                    ret.Add(station.GetRawData());
+                    if (station.Enabled)
+                        ret.Add(station.GetRawData());
 
                 return JsonConvert.SerializeObject(ret);
             }
@@ -704,7 +706,9 @@ namespace ASCOM.Wise40.Boltwood
         {
             Id = id;
             ReadProfile();
-            _weatherLogger = new WeatherLogger(stationName: Name);
+
+            if (Enabled)
+                _weatherLogger = new WeatherLogger(stationName: Name);
         }
 
         public override WeatherStationVendor Vendor
@@ -755,6 +759,9 @@ namespace ASCOM.Wise40.Boltwood
 
         public void GetSensorData()
         {
+            if (!Enabled)
+                return;
+
             switch (InputMethod)
             {
                 case WeatherStationInputMethod.ClarityII:
@@ -870,6 +877,9 @@ namespace ASCOM.Wise40.Boltwood
 
         public RawData GetRawData()
         {
+            if (!Enabled)
+                return null;
+
             try
             {
                 GetSensorData();
