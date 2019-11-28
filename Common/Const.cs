@@ -193,8 +193,8 @@ namespace ASCOM.Wise40.Common
             public class DatabaseConnectionString
             {
                 public static string LCO_hibernate = "server=pubsubdb.tlv.lco.gtn;user=hibernate;database=hibernate;port=3306;password=hibernate";
-                public static string Wise_weather = "server=localhost;user=root;database=weather;port=3306;password=@!ab4131!@";
-                public static string Wise_activities = "server=localhost;user=root;database=activities;port=3306;password=@!ab4131!@";
+                public static string Wise_weather = "server=localhost;user=root;database=wise;port=3306;password=@!ab4131!@";
+                public static string Wise40_activities = "server=localhost;user=root;database=wise40;port=3306;password=@!ab4131!@";
             }
         }
     }
