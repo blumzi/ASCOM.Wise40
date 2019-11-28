@@ -89,7 +89,7 @@ namespace ASCOM.Wise40
                 _client.DefaultRequestHeaders.Accept.Add(
                     new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/html"));
                 _client.DefaultRequestHeaders.ConnectionClose = false;
-                _uri = String.Format("http://{0}/range", address);
+                _uri = $"http://{address}/range";
 
                 _periodicWebReadTimer = new System.Threading.Timer(new TimerCallback(PeriodicReader));
 
@@ -118,8 +118,8 @@ namespace ASCOM.Wise40
                     _pacing = pacing;
                     _timeoutMillis = PacingToMillis[_pacing] - 50;
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugDome, "SetPacing: Changed  pacing to {0} ({1} millis)",
-                        _pacing, _timeoutMillis);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugDome,
+                        $"SetPacing: Changed  pacing to {_pacing} ({_timeoutMillis} millis)");
                     #endregion
                     _periodicWebReadTimer.Change(_timeoutMillis, 0);
                 }
@@ -132,7 +132,7 @@ namespace ASCOM.Wise40
                     if (DateTime.Now.Subtract(_lastReadingTime) <= _maxAge)
                     {
                         #region debug
-                        debugger.WriteLine(Debugger.DebugLevel.DebugDome, "ShutterRange: returning: {0}", _lastReading);
+                        debugger.WriteLine(Debugger.DebugLevel.DebugDome, $"ShutterRange: returning: {_lastReading}");
                         #endregion
                         return _lastReading;
                     }
@@ -159,7 +159,7 @@ namespace ASCOM.Wise40
 
                     if (DateTime.Now.Subtract(Instance.webClient._startOfShutterMotion).TotalSeconds > maxTravelTimeSeconds)
                     {
-                        _wisedomeshutter.Stop(string.Format("{0} seconds passed from startOfMotion", maxTravelTimeSeconds));
+                        _wisedomeshutter.Stop($"{maxTravelTimeSeconds} seconds passed from startOfMotion");
                     }
                     _periodicWebReadTimer.Change(WebClient._timeoutMillis, 0);
                     return;
@@ -243,6 +243,11 @@ namespace ASCOM.Wise40
                 HttpResponseMessage response = null;
                 for (tryNo = 0; tryNo < maxTries; tryNo++)
                 {
+                    string preamble = "GetShutterPosition: " +
+                        $"attempt: {attempt.Id}, " +
+                        $"try#: {tryNo}, " +
+                        $"Azimuth: {WiseDome.Instance.Azimuth.ToNiceString()} ";
+
                     try
                     {
                         response = await _client.GetAsync(_uri);
@@ -254,8 +259,16 @@ namespace ASCOM.Wise40
                         duration = DateTime.Now.Subtract(start);
                         #region debug
                         debugger.WriteLine(Debugger.DebugLevel.DebugShutter,
-                            "GetShutterPosition: attempt: {0}, try#: {1}, Azimuth: {2}, HttpRequestException = {3}, duration: {4}",
-                            attempt.Id, tryNo, WiseDome.Instance.Azimuth.ToNiceString(), ex.Message, duration);
+                            preamble + $"HttpRequestException = {ex.Message}, duration: {duration}");
+                        #endregion
+                        continue;
+                    }
+                    catch(TaskCanceledException ex)
+                    {
+                        duration = DateTime.Now.Subtract(start);
+                        #region debug
+                        debugger.WriteLine(Debugger.DebugLevel.DebugShutter,
+                            preamble + $"Timedout, duration: {duration}");
                         #endregion
                         continue;
                     }
@@ -264,8 +277,7 @@ namespace ASCOM.Wise40
                         duration = DateTime.Now.Subtract(start);
                         #region debug
                         debugger.WriteLine(Debugger.DebugLevel.DebugShutter,
-                            "GetShutterPosition: attempt: {0}, try#: {1}, Azimuth: {2}, Exception = {3}, duration: {4}",
-                            attempt.Id, tryNo, WiseDome.Instance.Azimuth.ToNiceString(), ex.Message, duration);
+                            preamble + $"Exception = {ex.Message}, duration: {duration}");
                         #endregion
                         continue;
                     }
@@ -290,8 +302,11 @@ namespace ASCOM.Wise40
                             content = content.Remove(content.IndexOf(suffix[0]));
                             ret = Convert.ToInt32(content);
                             #region debug
-                            debugger.WriteLine(Debugger.DebugLevel.DebugShutter,
-                                "GetShutterPosition: attempt: {0}, try#: {1}, Success = {2}, duration: {3}", attempt.Id, tryNo, ret, duration);
+                            debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "GetShutterPosition: " + 
+                                $"attempt: {attempt.Id}, " +
+                                $"try#: {tryNo}, " +
+                                $"Success = {ret}, " +
+                                $"duration: {duration}");
                             #endregion
                         }
                     }
@@ -300,9 +315,12 @@ namespace ASCOM.Wise40
                         _failedCommunicationAttempts++;
                         _lastFailedAttempt = attempt;
                         #region debug
-                        debugger.WriteLine(Debugger.DebugLevel.DebugShutter,
-                            "GetShutterPosition: attempt: {0}, try#: {1}, Azimuth: {2}, HTTP failure: StatusCode: {3}, ReasonPhrase: {4} duration: {5}",
-                            attempt.Id, tryNo, WiseDome.Instance.Azimuth.ToNiceString(), response.StatusCode, response.ReasonPhrase, duration);
+                        debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "GetShutterPosition: " +
+                            $"attempt: {attempt.Id}, " +
+                            $"try#: {tryNo}, " +
+                            $"Azimuth: {WiseDome.Instance.Azimuth.ToNiceString()}, " +
+                            $"HTTP failure: StatusCode: {response.StatusCode}, ReasonPhrase: {response.ReasonPhrase} " +
+                            $"duration: {duration}");
                         #endregion
                     }
                 }
@@ -350,15 +368,13 @@ namespace ASCOM.Wise40
                 webClient.SetPacing(WebClient.Pacing.Slow);
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugShutter,
-                    "Stop: was moving (openPin: {0}, closePin: {1})",
-                    openPinWasOn.ToString(), closePinWasOn.ToString());
+                    $"Stop: was moving (openPin: {openPinWasOn}, closePin: {closePinWasOn})");
                 #endregion
             }
             else
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugShutter,
-                    "Stop: was NOT moving.");
+                debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "Stop: was NOT moving.");
                 #endregion
             }
         }
@@ -506,22 +522,22 @@ namespace ASCOM.Wise40
                     else if (CloseEnough(rangeCm, _lowestValue))
                     {
                         ret = ShutterState.shutterClosed;
-                        _stateReason = string.Format($"range: {rangeCm}cm is close enough to lower limit: {_lowestValue}cm");
+                        _stateReason = $"range: {rangeCm}cm is close enough to lower limit: {_lowestValue}cm";
                     }
                     else if (CloseEnough(rangeCm, _highestValue))
                     {
                         ret = ShutterState.shutterOpen;
-                        _stateReason = string.Format($"range: {rangeCm}cm is close enough to highest limit: {_highestValue}cm");
+                        _stateReason = $"range: {rangeCm}cm is close enough to highest limit: {_highestValue}cm";
                     } else
                     {
                         ret = ShutterState.shutterOpen;
-                        _stateReason = string.Format($"range: {rangeCm}cm is between lowest: {_lowestValue}cm and {_highestValue}cm");
+                        _stateReason = $"range: {rangeCm}cm is between lowest: {_lowestValue}cm and highest: {_highestValue}cm";
                     }
                 }
 
                 _state = ret;
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "State: {0} (reason: {1})", _state.ToString(), _stateReason);
+                debugger.WriteLine(Debugger.DebugLevel.DebugShutter, $"State: {_state} (reason: {_stateReason})");
                 #endregion
                 return _state;
             }
@@ -550,7 +566,9 @@ namespace ASCOM.Wise40
             }
             catch (Exception ex)
             {
-                debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "WiseDomeShutter.init: Exception: {0}.", ex.Message);
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugShutter, $"WiseDomeShutter.init: Caught: {ex.Message} at\n{ex.StackTrace}");
+                #endregion
             }
 
             try
@@ -636,7 +654,7 @@ namespace ASCOM.Wise40
 
                 var ret = openPin.isOn || closePin.isOn;
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "IsMoving: {0}", ret.ToString());
+                debugger.WriteLine(Debugger.DebugLevel.DebugShutter, $"IsMoving: {ret}");
                 #endregion
                 return ret;
             }

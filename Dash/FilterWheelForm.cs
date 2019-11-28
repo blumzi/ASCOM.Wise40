@@ -49,7 +49,7 @@ namespace Dash
 
             for (int i = 0; i < nFilters; i++)
             {
-                Label label = (Label)table.Controls.Find(string.Format("label{0}Filter{1}", _currentWheel.Name, i), true)[0];
+                Label label = (Label)table.Controls.Find($"label{_currentWheel.Name}Filter{i}", true)[0];
                 label.Text = FilterName(_currentWheel.Filters[i].Name);
                 label.ForeColor = (i == position) ? Color.DarkOrange : Color.FromArgb(176, 161, 142);
             }
@@ -84,12 +84,12 @@ namespace Dash
 
             if (targetPosition < 1 || targetPosition > _currentWheel.Npositions)
             {
-                _filterWheelStatus.Show(string.Format("Invalid position: {0}", targetPosition), 1000, Statuser.Severity.Error);
+                _filterWheelStatus.Show($"Invalid position: {targetPosition}", 1000, Statuser.Severity.Error);
                 return;
             }
 
             string filterName = FilterName(_currentWheel.Filters[targetPosition - 1].Name);
-            _filterWheelStatus.Show(string.Format("Moving to position {0} ({1})", targetPosition, filterName));
+            _filterWheelStatus.Show($"Moving to position {targetPosition} ({filterName})");
             _wiseFilterWheel.Position = (short) (targetPosition - 1);
         }
 
@@ -99,7 +99,7 @@ namespace Dash
             short targetPosition = (short) ((currentPosition == 0) ? _currentWheel.Npositions - 1 : currentPosition - 1);
 
             string filterName = FilterName(_currentWheel.Filters[targetPosition].Name);
-            _filterWheelStatus.Show(string.Format("Moving to position {0} ({1})", targetPosition + 1, filterName));
+            _filterWheelStatus.Show($"Moving to position {targetPosition + 1} ({filterName})");
             _wiseFilterWheel.Position = targetPosition;
         }
 
@@ -109,7 +109,7 @@ namespace Dash
             short targetPosition = (short)((currentPosition == _currentWheel.Npositions - 1) ? 0 : currentPosition + 1);
 
             string filterName = FilterName(_currentWheel.Filters[targetPosition].Name);
-            _filterWheelStatus.Show(string.Format("Moving to position {0} ({1})", targetPosition + 1, filterName));
+            _filterWheelStatus.Show($"Moving to position {targetPosition + 1} ({filterName})");
             _wiseFilterWheel.Position = targetPosition;
         }
 
