@@ -255,3 +255,7 @@ CurrentCommit.txt
 /TestLog4Net
 /TestMySql
 /TestRegex
+/Common/Files/activities.sql
+/Common/Files/weather.sql
+/Common/activities.sql
+/Common/weather.sql
