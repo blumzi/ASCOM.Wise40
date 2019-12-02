@@ -77,24 +77,24 @@ namespace ASCOM.Wise40SafeToOperate
                         Match m = r.Match(content);
                         if (m.Success)
                         {
-                            string s = m.Result("${station}");
+                            Station station = stations[m.Result("${station}")];
 
-                            stations[s]._dateUtc = Convert.ToDateTime(m.Result("${dateUtc}" + " Z"));
-                            stations[s]._sensorData["temperature"] = Convert.ToDouble(m.Result("${temperature}"));
-                            stations[s]._sensorData["humidity"] = Convert.ToDouble(m.Result("${humidity}"));
-                            stations[s]._sensorData["windSpeed"] = Convert.ToDouble(m.Result("${windSpeed}"));
-                            stations[s]._sensorData["windDir"] = Convert.ToDouble(m.Result("${windDir}"));
+                            station._dateUtc = Convert.ToDateTime(m.Result("${dateUtc}" + " Z"));
+                            station._sensorData["temperature"] = Convert.ToDouble(m.Result("${temperature}"));
+                            station._sensorData["humidity"] = Convert.ToDouble(m.Result("${humidity}"));
+                            station._sensorData["windSpeed"] = Convert.ToDouble(m.Result("${windSpeed}"));
+                            station._sensorData["windDir"] = Convert.ToDouble(m.Result("${windDir}"));
 
-                            if (stations[s]._weatherLogger != null)
+                            if (station._weatherLogger != null)
                             {
-                                stations[s]._weatherLogger.Log(new Dictionary<string, string>()
+                                station._weatherLogger.Log(new Dictionary<string, string>()
                                 {
-                                    ["Temperature"] = stations[s]._sensorData["temperature"].ToString(),
-                                    ["Humidity"] = stations[s]._sensorData["humidity"].ToString(),
-                                    ["WindSpeed"] = stations[s]._sensorData["windSpeed"].ToString(),
-                                    ["WindDir"] = stations[s]._sensorData["windDir"].ToString(),
+                                    ["Temperature"] = station._sensorData["temperature"].ToString(),
+                                    ["Humidity"] = station._sensorData["humidity"].ToString(),
+                                    ["WindSpeed"] = station._sensorData["windSpeed"].ToString(),
+                                    ["WindDir"] = station._sensorData["windDir"].ToString(),
 
-                                }, stations[s]._dateUtc);
+                                }, station._dateUtc);
                             }
 
                             #region debug
@@ -158,7 +158,7 @@ namespace ASCOM.Wise40SafeToOperate
                         Match m = r.Match(content);
                         if (m.Success)
                         {
-                            DateTime dateUtc = Convert.ToDateTime(m.Result("${dateUtc}"));
+                            DateTime time = Convert.ToDateTime(m.Result("${dateUtc}") + " Z");
                             Station station;
 
                             foreach (string i in new List<string> { "1", "2", "3" }) {
@@ -170,7 +170,7 @@ namespace ASCOM.Wise40SafeToOperate
                                 {
                                     ["WindSpeed"] = station._sensorData["windSpeed"].ToString(),
                                     ["WindDir"] = station._sensorData["windDir"].ToString(),
-                                }, dateUtc);
+                                }, time);
                             }
 
                             foreach (string i in new List<string> { "4", "5", "6", "7", "8" })
@@ -183,7 +183,7 @@ namespace ASCOM.Wise40SafeToOperate
                                 {
                                     ["Temperature"] = station._sensorData["temperature"].ToString(),
                                     ["Humidity"] = station._sensorData["humidity"].ToString(),
-                                }, dateUtc);
+                                }, time);
                             }
 
                             foreach (string i in new List<string> { "10", "11", "12" })
@@ -194,7 +194,7 @@ namespace ASCOM.Wise40SafeToOperate
                                 station._weatherLogger.Log(new Dictionary<string, string>
                                 {
                                     ["SkyAmbientTemp"] = station._sensorData["skyAmbientTemp"].ToString(),
-                                }, dateUtc);
+                                }, time);
                             }
 
                             #region debug
