@@ -34,7 +34,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
         static DriverAccess.Dome wisedome = null;
         static DriverAccess.SafetyMonitor wisesafetooperate = null;
         Version version = new Version(0, 2);
-        static DateTime _nextCheck = DateTime.Now + TimeSpan.FromSeconds(10);
+        static DateTime _nextCheck = DateTime.Now + TimeSpan.FromSeconds(20);
         static bool _checking = false;
         static public TimeSpan _intervalBetweenChecks;
         static public int _minutesToIdle;
