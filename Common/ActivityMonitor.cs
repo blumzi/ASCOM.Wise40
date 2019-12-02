@@ -217,7 +217,8 @@ namespace ASCOM.Wise40
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"inProgressDict already contains {activity._type}");
                 #endregion
-                throw new InvalidDataException($"inProgressDict already contains {activity._type}");
+                return null;
+                //throw new InvalidDataException($"inProgressDict already contains {activity._type}");
             }
 
             inProgressDict[activity._type] = activity;
@@ -451,21 +452,24 @@ namespace ASCOM.Wise40
 
             _annotation = _startDetails;
             string sql = 
-                "insert into activities(timestamp, line, code, text, tags) " + 
+                "insert into activities(time, line, code, text, tags) " + 
                 $"values('{_startTime.ToMySqlDateTime()}', '{_line}', '{_code}', '{_annotation}', '{_tags.ToCSV()}')";
 
             try
-            {                
-                    using (var sqlCmd = new MySqlCommand(sql, ActivityMonitor._sqlConn))
-                    {
-                        sqlCmd.ExecuteNonQuery();
-                        _activityId = sqlCmd.LastInsertedId;
-                    }
+            {
+                //using (var sqlCmd = new MySqlCommand(sql, ActivityMonitor._sqlConn))
+                //{
+                //    sqlCmd.ExecuteNonQuery();
+                //    _activityId = sqlCmd.LastInsertedId;
+                //}
+                var sqlCmd = new MySqlCommand(sql, ActivityMonitor._sqlConn);
+                sqlCmd.ExecuteNonQuery();
+                _activityId = sqlCmd.LastInsertedId;
             }
             catch (Exception ex)
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"Activity.EmitStart: \nsql: {sql}\n failed at:\n{ex.StackTrace}");
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"Activity.EmitStart: \nsql: {sql}\n Caught {ex.Message} at:\n{ex.StackTrace}");
                 #endregion
             }
         }
@@ -503,15 +507,17 @@ namespace ASCOM.Wise40
                 code = (int) ActivityMonitor.Tracer.Shutter.Code.Open;
 
             string sql = $@"update activities set text='{_annotation}', tags='{_tags.ToCSV()}' where id={_activityId};";
-            sql += $"insert into activities(timestamp, code, text, line, tags) " + 
+            sql += $"insert into activities(time, code, text, line, tags) " + 
                 $"values('{_endTime.ToMySqlDateTime()}', '{code}', '{_annotation}', '{_line}', '{_tags.ToCSV()}');";
 
             try
             {
-                    using (var sqlCmd = new MySqlCommand(sql, ActivityMonitor._sqlConn))
-                    {
-                        sqlCmd.ExecuteNonQuery();
-                    }
+                //using (var sqlCmd = new MySqlCommand(sql, ActivityMonitor._sqlConn))
+                //{
+                //    sqlCmd.ExecuteNonQuery();
+                //}
+                var sqlCmd = new MySqlCommand(sql, ActivityMonitor._sqlConn);
+                sqlCmd.ExecuteNonQuery();
             }
             catch (Exception ex)
             {
@@ -1311,15 +1317,17 @@ namespace ASCOM.Wise40
 
             try
             {
-                    using (var sqlCmd = new MySqlCommand(sql, ActivityMonitor._sqlConn))
-                    {
-                        sqlCmd.ExecuteNonQuery();
-                    }
+                //    using (var sqlCmd = new MySqlCommand(sql, ActivityMonitor._sqlConn))
+                //    {
+                //        sqlCmd.ExecuteNonQuery();
+                //    }
+                var sqlCmd = new MySqlCommand(sql, ActivityMonitor._sqlConn);
+                sqlCmd.ExecuteNonQuery();
             }
             catch (Exception ex)
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Activity.EmitStart: \nsql: {0}\n failed: {1}", sql, ex.StackTrace);
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"Activity.EmitStart: \nsql: {sql}\n Caught: {ex.Message} at\n{ex.StackTrace}");
                 #endregion
             }
         }
