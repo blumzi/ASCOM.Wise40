@@ -39,7 +39,7 @@ namespace ASCOM.Wise40.VantagePro
 
         private Dictionary<string, string> sensorData = null;
         private DateTime _lastDataRead = DateTime.MinValue;
-        public DateTime updatedAtUT;
+        public DateTime stationTime;
 
         private static readonly Lazy<WiseVantagePro> lazy = new Lazy<WiseVantagePro>(() => new WiseVantagePro()); // Singleton
 
@@ -104,7 +104,7 @@ namespace ASCOM.Wise40.VantagePro
                                     continue;
                                 sensorData[words[0]] = words[1];
                             }
-                            updatedAtUT = Convert.ToDateTime(sensorData["utcDate"] + " " + sensorData["utcTime"] + "m Z");
+                            stationTime = Convert.ToDateTime(sensorData["stationDate"] + " " + sensorData["stationTime"] + "m");
 
                             if (_weatherLogger != null)
                             {
@@ -119,7 +119,7 @@ namespace ASCOM.Wise40.VantagePro
                                     ["DewPoint"] = util.ConvertUnits(Convert.ToDouble(sensorData["outsideDewPt"]),
                                                         Units.degreesFarenheit, Units.degreesCelsius).ToString(),
 
-                                }, updatedAtUT);
+                                }, stationTime);
                             }
 
                             _lastDataRead = DateTime.Now;
@@ -344,7 +344,7 @@ namespace ASCOM.Wise40.VantagePro
                     Name = WiseName,
                     Vendor = Vendor.ToString(),
                     Model = Model.ToString(),
-                    UpdateAtUT = updatedAtUT,
+                    UpdateAtUT = stationTime,
                     AgeInSeconds = TimeSinceLastUpdate("Temperature"),
                     SensorData = sensorData,
                     SkyQuality = quality,
@@ -680,7 +680,7 @@ namespace ASCOM.Wise40.VantagePro
             double seconds = 0.0;
             if (_opMode == OpMode.File)
             {
-                seconds = (DateTime.UtcNow - updatedAtUT).TotalSeconds;
+                seconds = (DateTime.UtcNow - stationTime).TotalSeconds;
             }
 
             return seconds;
