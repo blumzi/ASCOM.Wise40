@@ -24,15 +24,25 @@ namespace ASCOM.Wise40.Common
         {
             _stationName = stationName;
 
+            if (_sqlConn == null)
+            {
+                try
+                {
+                    _sqlConn = new MySqlConnection(Const.MySql.DatabaseConnectionString.Wise_weather);
+                    _sqlConn.Open();
+                }
+                catch (Exception ex)
+                {
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"static WeatherLogger: Caught {ex.Message} at\n{ex.StackTrace}");
+                    #endregion
+                }
+            }
+
             string sql = $"SELECT time FROM weather WHERE station = '{stationName}' ORDER BY time DESC LIMIT 0 , 1; ";
 
             try
             {
-                //return;
-
-                //using (var sqlConn = new MySqlConnection(Const.MySql.DatabaseConnectionString.Wise_weather))
-                //{
-                //    sqlConn.Open();
                     using (var sqlCmd = new MySqlCommand(sql, _sqlConn))
                     {
                         using (var cursor = sqlCmd.ExecuteReader())
@@ -41,7 +51,6 @@ namespace ASCOM.Wise40.Common
 
                             _lastLoggedTime = Convert.ToDateTime(cursor["time"]);
                         }
-                    //}
                 }
             }
             catch
@@ -84,20 +93,18 @@ namespace ASCOM.Wise40.Common
 
             lock (_lock)
             {
-                string sql = $"insert into weather.weather (time, Station, {string.Join(", ", dict.Keys)})" +
-                    $" values(TIMESTAMP('{time.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss")}'), '{_stationName}', {string.Join(", ", dict.Values)})";
-                //$" values(TIMESTAMP(CONVERT_TZ('{time}', '+00:00', @@global.time_zone)), '{_stationName}', {string.Join(", ", dict.Values)})";
+                string sql = $"insert into weather (time, Station, {string.Join(", ", dict.Keys)})" +
+                    $" values(TIMESTAMP('{time.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss.fff")}'), '{_stationName}', {string.Join(", ", dict.Values)})";
 
                 try
                 {
-                    using (var sqlCmd = new MySqlCommand(sql, _sqlConn))
-                    {
-                        sqlCmd.ExecuteNonQuery();
-                        _lastLoggedTime = time;
-                        #region debug
-                        debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"WeatherLogger.Log({_stationName}): _lastLoggedTime: {_lastLoggedTime}");
-                        #endregion
-                    }
+                    var sqlCmd = new MySqlCommand(sql, _sqlConn);
+                    sqlCmd.ExecuteNonQuery();
+                    _lastLoggedTime = time;
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                        $"WeatherLogger.Log({_stationName}): _lastLoggedTime: {_lastLoggedTime}");
+                    #endregion
                 }
                 catch (Exception ex)
                 {
