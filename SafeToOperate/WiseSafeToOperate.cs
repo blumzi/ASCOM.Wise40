@@ -57,6 +57,7 @@ namespace ASCOM.Wise40SafeToOperate
         public static PlatformSensor platformSensor;
 
         public static List<Sensor> _cumulativeSensors, _prioritizedSensors;
+        public static Dictionary<string, Sensor> _sensorHandlers = new Dictionary<string, Sensor>();
         private enum SafetyScope { Wise40, WiseWide };
         private static SafetyScope safetyScope = SafetyScope.Wise40;
 
@@ -170,8 +171,11 @@ namespace ASCOM.Wise40SafeToOperate
 
             _cumulativeSensors = new List<Sensor>();
             foreach (Sensor s in _prioritizedSensors)
+            {
+                _sensorHandlers[s.WiseName.ToLower()] = s;
                 if (!s.HasAttribute(Sensor.Attribute.SingleReading))
                     _cumulativeSensors.Add(s);
+            }
 
             _connected = false;
 
@@ -219,12 +223,14 @@ namespace ASCOM.Wise40SafeToOperate
             "start-bypass",
             "end-bypass",
             "status",
+            "unsafereasons",
+            "list-sensors",
             "sensor-is-safe",
-            "weather-digest",
+            "raw-weather-data",
+            "wise-list-sensors",
+            "wise-sensor-is-safe",
             "wise-issafe",
             "wise-unsafereasons",
-            "unsafereasons",
-            "raw-weather-data",
         };
 
         public ArrayList SupportedActions
@@ -238,36 +244,38 @@ namespace ASCOM.Wise40SafeToOperate
         public string Action(string actionName, string actionParameters)
         {
             string ret = string.Empty;
+            List<string> sensors = new List<string>();
+            string sensorName;
 
             switch (actionName.ToLower())
             {
+                case "list-sensors":
+                    foreach (Sensor s in _prioritizedSensors)
+                        if (! s.HasAttribute(Sensor.Attribute.ForInfoOnly))
+                            sensors.Add(s.WiseName);
+                    ret = JsonConvert.SerializeObject(sensors);
+                    break;
+
+                case "wise-list-sensors":
+                    foreach (Sensor s in _prioritizedSensors)
+                        if (! s.HasAttribute(Sensor.Attribute.Wise40Specific) && !s.HasAttribute(Sensor.Attribute.ForInfoOnly))
+                            sensors.Add(s.WiseName);
+                    ret = JsonConvert.SerializeObject(sensors);
+                    break;
+
                 case "sensor-is-safe":
-                    switch (actionParameters)
-                    {
-                        case "HumanIntervention":
-                            ret = humanInterventionSensor.isSafe.ToString();
-                            break;
+                    sensorName = actionParameters.ToLower();
+                    if (_sensorHandlers.ContainsKey(sensorName))
+                        ret = JsonConvert.SerializeObject(_sensorHandlers[sensorName].isSafe);
+                    else
+                        throw new ASCOM.InvalidValueException($"Unknown sensor \"{sensorName}\"!");
+                    break;
 
-                        case "Sun":
-                            ret = sunSensor.isSafe.ToString();
-                            break;
-
-                        case "Wind":
-                            ret = windSensor.isSafe.ToString();
-                            break;
-
-                        case "Rain":
-                            ret = rainSensor.isSafe.ToString();
-                            break;
-
-                        case "Humidity":
-                            ret = humiditySensor.isSafe.ToString();
-                            break;
-
-                        case "Clouds":
-                            ret = cloudsSensor.isSafe.ToString();
-                            break;
-                    }
+                case "wise-sensor-is-safe":
+                    sensorName = actionParameters.ToLower();
+                    if (!_sensorHandlers.ContainsKey(sensorName) || _sensorHandlers[sensorName].HasAttribute(Sensor.Attribute.Wise40Specific))
+                        throw new ASCOM.InvalidValueException($"Unknown Wise-wide sensor \"{sensorName}\"!");
+                    ret = JsonConvert.SerializeObject(_sensorHandlers[sensorName].isSafe);
                     break;
 
                 case "start-bypass":
