@@ -9,27 +9,30 @@ using MySql.Data.MySqlClient;
 
 namespace ASCOM.Wise40.VantagePro
 {
-
     public class Seeing
     {
-        private static WeatherLogger _logger;
-        private double _fwhm;
+        private static WeatherLogger _weatherLogger;
+        private double _fwhm = Double.NaN;
         private DateTime _timeUTC = DateTime.MinValue;
+        private DateTime _lastQueryTime = DateTime.MinValue;
+        private TimeSpan _interval = new TimeSpan(0, 1, 0);
 
         public Seeing() { }
 
         public static void init()
         {
-            _logger = new WeatherLogger(stationName: "LCO");
+            _weatherLogger = new WeatherLogger(stationName: "LCO");
         }
 
         public void Refresh()
         {
+            if (_lastQueryTime != DateTime.MinValue && DateTime.Now.Subtract(_lastQueryTime) < _interval)
+                return;
             //
             //  mysql -uhibernate -phibernate -hpubsubdb.tlv.lco.gtn hibernate 
-            //      -e "select from_unixtime(TIMESTAMP_/1000), VALUE_ from LIVEVALUE  where  IDENTIFIER=5743146590416427613"
+            //    -e 'select from_unixtime(L.TIMESTAMP_/1000), L.VALUE_ from LIVEVALUE as L, PROPERTY as P where L.IDENTIFIER=P.IDENTIFIER and P.ADDRESS_DATUM="Reduction Latest FWHM Median" and P.ADDRESS_DATUMINSTANCE=(select L.VALUE_ from LIVEVALUE as L, PROPERTY as P where P.IDENTIFIER=L.IDENTIFIER and P.ADDRESS_DATUM="Guide Selected Autoguider Name" and P.ADDRESS_OBSERVATORY="doma")'
             //
-            string sql = "select from_unixtime(TIMESTAMP_/1000) as time, VALUE_ from LIVEVALUE  where  IDENTIFIER=5743146590416427613";
+            string sql = "select from_unixtime(L.TIMESTAMP_/1000), L.VALUE_ from LIVEVALUE as L, PROPERTY as P where L.IDENTIFIER=P.IDENTIFIER and P.ADDRESS_DATUM=\"Reduction Latest FWHM Median\" and P.ADDRESS_DATUMINSTANCE=(select L.VALUE_ from LIVEVALUE as L, PROPERTY as P where P.IDENTIFIER=L.IDENTIFIER and P.ADDRESS_DATUM=\"Guide Selected Autoguider Name\" and P.ADDRESS_OBSERVATORY=\"doma\")";
             try
             {
                 using (var sqlConn = new MySqlConnection(Const.MySql.DatabaseConnectionString.LCO_hibernate))
@@ -42,7 +45,6 @@ namespace ASCOM.Wise40.VantagePro
                             cursor.Read();
 
                             _timeUTC = Convert.ToDateTime(cursor["time"]);
-                            _fwhm = Convert.ToDouble(cursor["VALUE_"]);
 
                             if ((string)cursor["VALUE_"] == "NaN")
                             {
@@ -51,7 +53,7 @@ namespace ASCOM.Wise40.VantagePro
                             else
                             {
                                 _fwhm = Convert.ToDouble(cursor["VALUE_"]);
-                                _logger.Log(new Dictionary<string, string>()
+                                _weatherLogger.Log(new Dictionary<string, string>()
                                 {
                                     ["StarFWHM"] = _fwhm.ToString(),
                                 }, _timeUTC);
@@ -63,9 +65,12 @@ namespace ASCOM.Wise40.VantagePro
             catch (Exception ex)
             {
                 #region debug
-                WiseVantagePro.debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"RefreshSeeing:\nsql: {sql}\nCaught: {ex.Message} at\n{ex.StackTrace}");
+                WiseVantagePro.debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                    $"RefreshSeeing:\nsql: {sql}\nCaught: {ex.Message} at\n{ex.StackTrace}");
                 #endregion
             }
+
+            _lastQueryTime = DateTime.Now;
         }
 
         public TimeSpan TimeSinceLastUpdate
