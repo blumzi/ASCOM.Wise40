@@ -13,12 +13,12 @@ namespace Wise40Watcher
 {
     public partial class Wise40Watcher : ServiceBase
     {
-        Watcher ascomWatcher;
-        Watcher dashWatcher;
-        Watcher obsmonWatcher;
-        Watcher weatherLinkWatcher;
-        bool watchWeatherLink = false;
-        private static string serviceName = "Wise40Watcher";
+        readonly Watcher ascomWatcher;
+        readonly Watcher dashWatcher;
+        readonly Watcher obsmonWatcher;
+        readonly Watcher weatherLinkWatcher;
+        readonly bool weatherLinkNeedsWatching = false;
+        private static readonly string serviceName = "Wise40Watcher";
         string _logFile;
 
         public Wise40Watcher()
@@ -30,12 +30,12 @@ namespace Wise40Watcher
                 WiseVantagePro.OpMode mode;
 
                 Enum.TryParse<WiseVantagePro.OpMode>(driverProfile.GetValue(Const.WiseDriverID.VantagePro, Const.ProfileName.VantagePro_OpMode, string.Empty, WiseVantagePro.OpMode.File.ToString()), out mode);
-                watchWeatherLink = (mode == WiseVantagePro.OpMode.File);
+                weatherLinkNeedsWatching = (mode == WiseVantagePro.OpMode.File);
             }
             ascomWatcher = new Watcher("ascom");
             dashWatcher = new Watcher("dash");
             obsmonWatcher = new Watcher("obsmon");
-            if (watchWeatherLink)
+            if (weatherLinkNeedsWatching)
             {
                 weatherLinkWatcher = new Watcher("weatherlink");
             }
@@ -58,10 +58,33 @@ namespace Wise40Watcher
         protected override void OnStart(string[] args)
         {
             log("=========== Start ===========");
-            if (watchWeatherLink)
+            if (weatherLinkNeedsWatching)
             {
                 weatherLinkWatcher.Start(args, waitForResponse: true);
             }
+
+            string mySQL = "MySQL80";
+            ServiceController sc = new ServiceController(mySQL);
+            ServiceControllerStatus status = sc.Status;
+            switch (status) {
+                case ServiceControllerStatus.StartPending:
+                case ServiceControllerStatus.Running:
+                    log($" {mySQL} status is {status}");
+                    break;
+
+                default:
+                    log($" {mySQL} status is {status}. Starting {mySQL} ...");
+                    sc.Start();
+                    while ((status = sc.Status) != ServiceControllerStatus.Running)
+                    {
+                        log($" {mySQL} status is {status}. Waiting for {mySQL} ...");
+                        Thread.Sleep(1000);
+                    }
+                    log($" {mySQL} status is {status}");
+                    break;
+            }
+            sc.Dispose();
+
             ascomWatcher.Start(args, waitForResponse: true);
             dashWatcher.Start(args);
             obsmonWatcher.Start(args);
@@ -75,7 +98,7 @@ namespace Wise40Watcher
             dashWatcher.Stop();
             obsmonWatcher.Stop();
             ascomWatcher.Stop();
-            if (watchWeatherLink)
+            if (weatherLinkNeedsWatching)
                 weatherLinkWatcher.Stop();
             log("=========== Stop done ===========");
         }
