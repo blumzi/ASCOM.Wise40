@@ -280,19 +280,18 @@ namespace ASCOM.Wise40
         /// <returns></returns>
         private bool arriving(Angle there)
         {
-            string message = string.Format("WiseDome:arriving: at {0} target {1}: ", Azimuth, there);
-
             if (!DomeIsMoving)
                 return false;
 
-            Angle az = Azimuth;
+            string message = string.Format("WiseDome:arriving: at {0} target {1}: ", Azimuth, there);
+
             ShortestDistanceResult shortest = Azimuth.ShortestDistance(there);
             Angle inertial = inertiaAngle(there);
 
             if (StateIsOn(DomeState.MovingCW) && (shortest.direction == Const.AxisDirection.Decreasing))
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugDome, message + "direction changed CW to CCW => true", az, there);
+                debugger.WriteLine(Debugger.DebugLevel.DebugDome, message + "direction changed CW to CCW => true");
                 #endregion
                 return true;
             }
@@ -307,7 +306,7 @@ namespace ASCOM.Wise40
             {
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugDome, message +
-                    string.Format("shortest.Angle {0} <= inertiaAngle({1}) => true", shortest.angle, inertial));
+                    $"shortest.Angle {shortest.angle} <= inertiaAngle({inertial}) => true");
                 #endregion
                 return true;
             }
@@ -327,7 +326,7 @@ namespace ASCOM.Wise40
                 var ret = StateIsOn(DomeState.MovingCCW) | StateIsOn(DomeState.MovingCW);
 
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugDome, "DomeIsMoving: {0}", ret);
+                debugger.WriteLine(Debugger.DebugLevel.DebugDome, $"DomeIsMoving: {ret}");
                 #endregion
                 return ret;
             }
@@ -349,9 +348,9 @@ namespace ASCOM.Wise40
                     _calibrating = false;
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugDome,
-                        "WiseDome: Setting _foundCalibration[{0}] == {1} ...", calibrationPoints.IndexOf(cp), cp.az.ToNiceString());
+                        $"WiseDome: Setting _foundCalibration[{calibrationPoints.IndexOf(cp)}] == {cp.az.ToNiceString()} ...");
                     #endregion
-                    Stop(string.Format("Arrived at calibration point {0}", cp.az.ToNiceString()));
+                    Stop($"Arrived at calibration point {cp.az.ToNiceString()}");
                     Thread.Sleep(2000);     // settle down
                     _foundCalibration.Set();
                 }
@@ -377,7 +376,7 @@ namespace ASCOM.Wise40
                 {
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugDome,
-                        "WiseDome: Setting arrivedAtAzEvent (#{0})", e.GetHashCode());
+                        $"WiseDome: Setting arrivedAtAzEvent (#{e.GetHashCode()})");
                     #endregion
                     e.Set();
                 }
@@ -463,6 +462,7 @@ namespace ASCOM.Wise40
             forwardPin = StateIsOn(DomeState.MovingCCW) ? leftPin : rightPin;
             backwardPin = StateIsOn(DomeState.MovingCCW) ? rightPin : leftPin;
 
+            string pre = $"WiseDome: stuck: {Azimuth}, ";
             switch (_stuckPhase) {
                 case StuckPhase.NotStuck:              // Stop, let the wheels cool down
                     forwardPin.SetOff();
@@ -470,7 +470,7 @@ namespace ASCOM.Wise40
                     _stuckPhase = StuckPhase.FirstStop;
                     nextStuckEvent = rightNow.AddMilliseconds(10000);
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome: stuck: {0}, phase1: stopped moving, letting wheels cool for 10 seconds", Azimuth);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugDome, pre + "phase1: stopped moving, letting wheels cool for 10 seconds");
                     #endregion
 
                     break;
@@ -480,7 +480,7 @@ namespace ASCOM.Wise40
                     _stuckPhase = StuckPhase.GoBackward;
                     nextStuckEvent = rightNow.AddMilliseconds(2000);
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome: stuck: {0}, phase2: going backwards for 2 seconds", Azimuth);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugDome, pre + "phase2: going backwards for 2 seconds");
                     #endregion
                     break;
 
@@ -489,7 +489,7 @@ namespace ASCOM.Wise40
                     _stuckPhase = StuckPhase.SecondStop;
                     nextStuckEvent = rightNow.AddMilliseconds(2000);
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome: stuck: {0}, phase3: stopping for 2 seconds", Azimuth);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugDome, pre + "phase3: stopping for 2 seconds");
                     #endregion
                     break;
 
@@ -500,7 +500,7 @@ namespace ASCOM.Wise40
                     _stuckTimer.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
                     nextStuckEvent = rightNow.AddYears(100);
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome: stuck: {0}, phase4: resumed original motion", Azimuth);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugDome, pre + "phase4: resumed original motion");
                     #endregion
                     break;
             }
@@ -553,9 +553,9 @@ namespace ASCOM.Wise40
             int tries;
 
             #region debug
-            string dbg = string.Format("WiseDome:Stop({0}) Starting to stop (encoder: {1}) ", reason, domeEncoder.Value);
+            string dbg = $"WiseDome:Stop({reason}) Starting to stop (encoder: {domeEncoder.Value}) ";
             if (Calibrated)
-                dbg += string.Format(", az: {0}", Azimuth);
+                dbg += $", az: {Azimuth}";
             else
                 dbg += ", not calibrated";
             debugger.WriteLine(Debugger.DebugLevel.DebugDome, dbg);
@@ -578,12 +578,11 @@ namespace ASCOM.Wise40
             if (Calibrated)
                 SaveCalibrationData();
             #region debug
+            dbg = $"WiseDome:Stop({reason}) Fully stopped ";
             if (Calibrated)
-                debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome:Stop({0}) Fully stopped at az: {1} (encoder: {2}) after {3} tries",
-                    reason, Azimuth, domeEncoder.Value, tries + 1);
+                debugger.WriteLine(Debugger.DebugLevel.DebugDome, dbg + $"at az: {Azimuth} (encoder: {domeEncoder.Value}) after {tries + 1} tries");
             else
-                debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome:Stop({0}) Fully stopped (not calibrated) (encoder: {1}) after {2} tries",
-                    reason, domeEncoder.Value, tries + 1);
+                debugger.WriteLine(Debugger.DebugLevel.DebugDome, dbg + $"(not calibrated) (encoder: {domeEncoder.Value}) after {tries + 1} tries");
             #endregion
 
             if (_adjustingForTracking)
@@ -636,7 +635,7 @@ namespace ASCOM.Wise40
 
                 ret = domeEncoder.Azimuth;
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome: Azimuth: get => {0}", ret.ToNiceString());
+                debugger.WriteLine(Debugger.DebugLevel.DebugDome, $"WiseDome: Azimuth: get => {ret.ToNiceString()}");
                 #endregion
                 return ret;
             }
@@ -644,7 +643,7 @@ namespace ASCOM.Wise40
             set
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome: Azimuth: set({0})", value);
+                debugger.WriteLine(Debugger.DebugLevel.DebugDome, $"WiseDome: Azimuth: set({value})");
                 #endregion
                 domeEncoder.Calibrate(value);
                 SaveCalibrationData();
@@ -752,7 +751,7 @@ namespace ASCOM.Wise40
             activityMonitor.EndActivity(ActivityMonitor.ActivityType.DomeSlew, new Activity.DomeSlew.EndParams()
             {
                 endState = Activity.State.Succeeded,
-                endReason = string.Format("Found calibration point at {0}", Azimuth.ToNiceString()),
+                endReason = $"Found calibration point at {Azimuth.ToNiceString()}",
                 endAz = Azimuth.Degrees,
             });
             #region debug
@@ -766,7 +765,7 @@ namespace ASCOM.Wise40
                 throw new InvalidOperationException("Cannot SlewToAzimuth, dome is Slaved");
 
             if (degrees < 0 || degrees >= 360)
-                throw new InvalidValueException(string.Format("Invalid azimuth: {0}, must be >= 0 and < 360", degrees));
+                throw new InvalidValueException($"Invalid azimuth: {degrees}, must be >= 0 and < 360");
 
             if (ShutterIsMoving)
                 throw new ASCOM.InvalidOperationException("Cannot move, shutter is active!");
@@ -781,7 +780,7 @@ namespace ASCOM.Wise40
                 if (_autoCalibrate)
                 {
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome: SlewToAzimuth: {0}, not calibrated, _autoCalibrate == true, calling FindHomePoint", toAng);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugDome, $"WiseDome: SlewToAzimuth: {toAng}, not calibrated, _autoCalibrate == true, calling FindHomePoint");
                     #endregion
                     StartFindingHome();
                 } else
@@ -837,7 +836,7 @@ namespace ASCOM.Wise40
 
                 domeEncoder.SimulateStuckAt(stuckAtAz);
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "WiseDome: Dome encoder will simulate stuck at {0}", stuckAtAz);
+                debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, $"WiseDome: Dome encoder will simulate stuck at {stuckAtAz}");
                 #endregion
             }
         }
@@ -915,7 +914,7 @@ namespace ASCOM.Wise40
                     ret = "Moving CCW";
 
                 if (_targetAz != null)
-                    ret += string.Format(" to {0}", _targetAz.ToNiceString());
+                    ret += $" to {_targetAz.ToNiceString()}";
 
                 if (StateIsOn(DomeState.Calibrating))
                     ret += " (calibrating)";
@@ -1105,7 +1104,7 @@ namespace ASCOM.Wise40
             Angle ang = new Angle(degrees, Angle.Type.Az);
 
             if (degrees < 0.0 || degrees >= 360.0)
-                throw new InvalidValueException(string.Format("Cannot SyncToAzimuth({0}), must be >= 0 and < 360", ang));
+                throw new InvalidValueException($"Cannot SyncToAzimuth({ang}), must be >= 0 and < 360");
             Azimuth = ang;
         }
 
@@ -1146,7 +1145,7 @@ namespace ASCOM.Wise40
                     int percent = wisedomeshutter.PercentOpen;
 
                     if (percent != -1)
-                        ret += string.Format(" ({0}% open)", percent);
+                        ret += $" ({percent}% open)";
                 } else
                     ret += " (error:No WiFi connection!)";
 
@@ -1193,7 +1192,7 @@ namespace ASCOM.Wise40
 
                 case "halt":
                 case "stop":
-                    Stop(string.Format("Action: \"{0}\"", actionName));
+                    Stop($"Action: \"{actionName}\"");
                     return "ok";
 
                 case "unpark":
@@ -1217,7 +1216,7 @@ namespace ASCOM.Wise40
                             StartMovingCCW();
                             break;
                         default:
-                            ret = string.Format("Bad parameter \"{0}\" for \"start-moving\".  Can be either \"cw\" or \"ccw\"", param);
+                            ret = $"Bad parameter \"{param}\" for \"start-moving\".  Can be either \"cw\" or \"ccw\"";
                             break;
                     }
                     return ret;
@@ -1226,7 +1225,7 @@ namespace ASCOM.Wise40
                     switch(param)
                     {
                         case "halt":
-                            wisedomeshutter.Stop(string.Format("Action \"{0}\".", actionName));
+                            wisedomeshutter.Stop($"Action \"{actionName}\".");
                             break;
                     }
                     return ret;
@@ -1246,7 +1245,7 @@ namespace ASCOM.Wise40
                                 SyncVentWithShutter = onOff;
                             }
                             else
-                                ret = string.Format("Bad parameter \"{0}\" to \"sync-vent-with-shutter\"", param);
+                                ret = $"Bad parameter \"{param}\" to \"sync-vent-with-shutter\"";
                             break;
                     }
                     return ret;
@@ -1266,7 +1265,7 @@ namespace ASCOM.Wise40
                                 _autoCalibrate = calibrate;
                             }
                             else
-                                ret = string.Format("Bad parameter \"{0}\" to \"auto-calibrate\"", param);
+                                ret = $"Bad parameter \"{param}\" to \"auto-calibrate\"";
                             break;
                     }
                     return ret;
@@ -1363,13 +1362,13 @@ namespace ASCOM.Wise40
             List<string> lines = new List<string>();
             DateTime now = DateTime.Now;
 
-            lines.Add("#");
-            lines.Add(string.Format("# WiseDome calibration data, generated automatically, please don't change!"));
-            lines.Add("#");
-            lines.Add(string.Format("# Saved: {0}", now.ToLocalTime()));
-            lines.Add("#");
-            lines.Add(string.Format("Encoder: {0}", domeEncoder.Value));
-            lines.Add(string.Format("Azimuth: {0}", Azimuth.Degrees.ToString()));
+            lines.Add($"#");
+            lines.Add($"# WiseDome calibration data, generated automatically, please don't change!");
+            lines.Add($"#");
+            lines.Add($"# Saved: {now.ToLocalTime()}");
+            lines.Add($"#");
+            lines.Add($"Encoder: {domeEncoder.Value}");
+            lines.Add($"Azimuth: {Azimuth.Degrees.ToString()}");
 
             System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(calibrationDataFilePath));
 
