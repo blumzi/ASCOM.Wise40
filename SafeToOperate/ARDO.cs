@@ -185,9 +185,9 @@ namespace ASCOM.Wise40SafeToOperate
 
         public class ARDORawData
         {
-            public static string Name = "ARDO";
-            public static string Vendor = "Lunatico Astronomia";
-            public static string Model = "AAG Cloudwatcher";
+            public string Name = "ARDO";
+            public string Vendor = "Lunatico Astronomia";
+            public string Model = "AAG Cloudwatcher";
             public DateTime UpdatedAtUT;
             public double AgeInSeconds;
             public Dictionary<string, string> SensorData;
