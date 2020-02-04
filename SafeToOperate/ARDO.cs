@@ -170,16 +170,16 @@ namespace ASCOM.Wise40SafeToOperate
             _initialized = true;
         }
 
-        public string Digest
+        public ARDORawData Digest
         {
             get
             {
-                return JsonConvert.SerializeObject(new ARDORawData()
+                return new ARDORawData()
                 {
                     UpdatedAtUT = Instance.updatedAtUT,
-                    AgeInSeconds = DateTime.UtcNow.Subtract(updatedAtUT).TotalSeconds,
+                    AgeInSeconds = DateTime.Now.Subtract(updatedAtUT).TotalSeconds,
                     SensorData = Instance.sensorData,
-                });
+                };
             }
         }
 

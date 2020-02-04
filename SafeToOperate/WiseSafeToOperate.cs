@@ -919,6 +919,7 @@ namespace ASCOM.Wise40SafeToOperate
                     VantagePro2 = JsonConvert.DeserializeObject<WiseVantagePro.VantagePro2StationRawData>(WiseSite.och.Action("//Wise40.VantagePro2:raw-data", "")),
                     TessW = JsonConvert.DeserializeObject<WiseTessW.TessWStationRawData>(tessw.Action("raw-data", "")),
                     OWL = WiseSafeToOperate.owlRefresher.Digest() as OWLRefresher.OWLDigest,
+                    ARDO = ARDO.Instance.Digest,
                 };
 
                 return JsonConvert.SerializeObject(ret);
@@ -973,5 +974,6 @@ namespace ASCOM.Wise40SafeToOperate
         public WiseVantagePro.VantagePro2StationRawData VantagePro2;
         public WiseTessW.TessWStationRawData TessW;
         public OWLRefresher.OWLDigest OWL;
+        public ARDO.ARDORawData ARDO;
     }
 }
