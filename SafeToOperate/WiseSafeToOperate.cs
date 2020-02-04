@@ -51,6 +51,7 @@ namespace ASCOM.Wise40SafeToOperate
 
         public static TessWRefresher tessWRefresher;
         public static OWLRefresher owlRefresher;
+        public static ARDORefresher ardoRefresher;
 
         public static DoorLockSensor doorLockSensor;
         public static ComputerControlSensor computerControlSensor;
@@ -140,6 +141,7 @@ namespace ASCOM.Wise40SafeToOperate
 
             tessWRefresher = new TessWRefresher(this);
             owlRefresher = new OWLRefresher(this);
+            ardoRefresher = new ARDORefresher(this);
 
             //
             // The sensors in priotity order.  The first one that:
@@ -167,6 +169,7 @@ namespace ASCOM.Wise40SafeToOperate
 
                 tessWRefresher,             // Refreshers
                 owlRefresher,
+                ardoRefresher,
             };
 
             _cumulativeSensors = new List<Sensor>();

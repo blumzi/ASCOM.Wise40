@@ -127,10 +127,12 @@
     </Reference>
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Net.Http" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ARDO.cs" />
     <Compile Include="CloudsSensor.cs" />
     <Compile Include="ComputerControlSensor.cs" />
     <Compile Include="DoorLockSensor.cs" />
