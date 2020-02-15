@@ -297,12 +297,13 @@ namespace ASCOM.Wise40SafeToOperate
                 foreach (var s in new List<string> { "1", "2", "3" }) {
                     name = "WDS_" + s;
                     station = stations[name];
-                    WDS.Add(new WDSDigest
-                    {
-                        Name = name,
-                        WindSpeed = station._sensorData["windSpeed"],
-                        WindDir = station._sensorData["windDir"],
-                    });
+                    if (station._sensorData.ContainsKey("windSpeed") && station._sensorData.ContainsKey("windDir"))
+                        WDS.Add(new WDSDigest
+                        {
+                            Name = name,
+                            WindSpeed = station._sensorData["windSpeed"],
+                            WindDir = station._sensorData["windDir"],
+                        });
                 }
 
                 THS = new List<THSDigest>();
@@ -310,12 +311,13 @@ namespace ASCOM.Wise40SafeToOperate
                 {
                     name = "THS_" + s;
                     station = stations[name];
-                    THS.Add(new THSDigest
-                    {
-                        Name = name,
-                        Temperature = station._sensorData["temperature"],
-                        Humidity = station._sensorData["humidity"],
-                    });
+                    if (station._sensorData.ContainsKey("temperature") && station._sensorData.ContainsKey("humidity"))
+                        THS.Add(new THSDigest
+                        {
+                            Name = name,
+                            Temperature = station._sensorData["temperature"],
+                            Humidity = station._sensorData["humidity"],
+                        });
                 }
 
                 CLS = new List<CLSDigest>();
@@ -323,22 +325,25 @@ namespace ASCOM.Wise40SafeToOperate
                 {
                     name = "CLS_" + s;
                     station = stations[name];
-                    CLS.Add(new CLSDigest
-                    {
-                        Name = name,
-                        SkyAmbientTemp = station._sensorData["skyAmbientTemp"],
-                    });
+                    if (station._sensorData.ContainsKey("skyAmbientTemp"))
+                        CLS.Add(new CLSDigest
+                        {
+                            Name = name,
+                            SkyAmbientTemp = station._sensorData["skyAmbientTemp"],
+                        });
                 }
 
                 name = "AWS_22";
                 station = stations[name];
-                AWS = new AWSDigest {
-                    Name = name,
-                    Temperature = station._sensorData["temperature"],
-                    Humidity = station._sensorData["humidity"],
-                    WindSpeed = station._sensorData["windSpeed"],
-                    WindDir = station._sensorData["windDir"],
-                };
+                if (station._sensorData.ContainsKey("temperature") && station._sensorData.ContainsKey("humidity") &&
+                    station._sensorData.ContainsKey("windSpeed") && station._sensorData.ContainsKey("windDir"))
+                        AWS = new AWSDigest {
+                            Name = name,
+                            Temperature = station._sensorData["temperature"],
+                            Humidity = station._sensorData["humidity"],
+                            WindSpeed = station._sensorData["windSpeed"],
+                            WindDir = station._sensorData["windDir"],
+                        };
             }
         };
     }
