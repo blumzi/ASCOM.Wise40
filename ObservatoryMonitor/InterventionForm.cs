@@ -38,7 +38,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
         private void cmdOK_Click(object sender, EventArgs e)
         {
             _operator = textBoxOperator.Text;
-            HumanIntervention.Create(_operator, textBoxReason.Text);
+            HumanIntervention.Create(_operator, textBoxReason.Text, checkBoxGlobal.Checked);
             Close();
         }
     }

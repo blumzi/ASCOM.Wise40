@@ -415,6 +415,16 @@ namespace ASCOM.Wise40SafeToOperate
             return (_attributes & attr) != 0;
         }
 
+        public void SetAttributes(Attribute attrs)
+        {
+            _attributes |= attrs;
+        }
+
+        public void UnsetAttributes(Attribute attrs)
+        {
+            _attributes &= ~(attrs);
+        }
+
         public bool DoesNotHaveAttribute(Attribute attr)
         {
             return !HasAttribute(attr);

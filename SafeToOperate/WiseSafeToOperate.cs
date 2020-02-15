@@ -227,6 +227,7 @@ namespace ASCOM.Wise40SafeToOperate
             "end-bypass",
             "status",
             "unsafereasons",
+            "unsafereasons-json",
             "list-sensors",
             "sensor-is-safe",
             "raw-weather-data",
@@ -311,12 +312,16 @@ namespace ASCOM.Wise40SafeToOperate
                     ret = string.Join(Const.recordSeparator, UnsafeReasonsList());
                     break;
 
+                case "unsafereasons-json":
+                    ret = JsonConvert.SerializeObject(UnsafeReasonsList());
+                    break;
+
                 case "wise-issafe":
                     ret = Convert.ToString(WiseIsSafe);
                     break;
 
                 case "wise-unsafereasons":
-                    ret = string.Join(Const.recordSeparator, UnsafeReasonsList(toBeIgnored: Sensor.Attribute.Wise40Specific));
+                    ret = JsonConvert.SerializeObject(UnsafeReasonsList(toBeIgnored: Sensor.Attribute.Wise40Specific));
                     break;
 
                 case "raw-weather-data":
@@ -523,7 +528,7 @@ namespace ASCOM.Wise40SafeToOperate
             if (_bypassed && s.HasAttribute(Sensor.Attribute.CanBeBypassed))
                 return null;   // bypassed
 
-            string reason = string.Format("{0} - ", s.WiseName);
+            string reason = $"{s.WiseName} - ";
 
             if (!s.isSafe)
             {
@@ -541,24 +546,28 @@ namespace ASCOM.Wise40SafeToOperate
                             time += ((int)ts.TotalMinutes).ToString() + "m";
                         time += ts.Seconds.ToString() + "s";
 
-                        reason += String.Format("stabilizing in {0}", time);
+                        reason += $"stabilizing in {time}";
                     }
                     else if (!s.StateIsSet(Sensor.State.EnoughReadings))
                     {
                         // cummulative and not ready
-                        reason += String.Format("not ready (only {0} of {1} readings)",
-                            s._nreadings, s._repeats);
+                        reason += $"not ready (only {s._nreadings} of {s._repeats} readings)";
                     }
                 }
 
                 if (s.HasAttribute(Sensor.Attribute.CanBeStale) && s.StateIsSet(Sensor.State.Stale))
                     // cummulative and stale
-                    reason += String.Format(" ({0} stale readings)", s._nstale);
+                    reason += $" ({s._nstale} stale readings)";
             }
 
             return reason;
         }
 
+        /// <summary>
+        /// Returns a list of reasons as to why it is not currently safe to operate
+        /// </summary>
+        /// <param name="scope">The scope of the question</param>
+        /// <returns></returns>
         public List<string> UnsafeReasonsList(Sensor.Attribute toBeIgnored = Sensor.Attribute.None)
         {
             List<string> reasons = new List<string>();

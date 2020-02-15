@@ -11,15 +11,14 @@ namespace ASCOM.Wise40SafeToOperate
     public class HumanInterventionSensor : Sensor
     {
         private bool _wasSafe = false;
-        private string _status;
+        private HumanIntervention.HumanInterventionDetails details;
 
         public HumanInterventionSensor(WiseSafeToOperate instance) :
             base("HumanIntervention",
                 Attribute.SingleReading |
                 Attribute.Periodic |
                 Attribute.AlwaysEnabled |
-                Attribute.ForcesDecision |
-                Attribute.Wise40Specific,
+                Attribute.ForcesDecision,
                 "", "", "", "",
                 instance) { }
 
@@ -38,12 +37,22 @@ namespace ASCOM.Wise40SafeToOperate
             };
 
             r.value = r.Safe ? 1 : 0;
-            _status = string.Format("{0}", r.Safe ? "Not set" : HumanIntervention.Info);
+            if (r.Safe)
+                details = null;
+            else
+            {
+                details = HumanIntervention.Details;
+                if (details.CampusGlobal)
+                    UnsetAttributes(Attribute.Wise40Specific);
+                else
+                    SetAttributes(Attribute.Wise40Specific);
+            }
+
             if (r.Safe != _wasSafe)
             {
                 activityMonitor.Event(new Event.SafetyEvent(
                     sensor: WiseName,
-                    details: _status,
+                    details: r.Safe ? null : details.ToString(),
                     before: Event.SafetyEvent.ToSensorSafety(_wasSafe),
                     after: Event.SafetyEvent.ToSensorSafety(r.Safe)));
             }
@@ -55,7 +64,7 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
-                return _status;
+                return details == null ? "Not set" : details.ToString();
             }
         }
 
@@ -65,12 +74,13 @@ namespace ASCOM.Wise40SafeToOperate
             {
                 Name = WiseName,
                 IsSafe = isSafe,
+                Details = details,
             };
         }
 
         public override string reason()
         {
-            return Wise40.HumanIntervention.Info;
+            return (details != null) ? $";Operator: {details.Operator};Reason: {details.Reason};Created: {details.Created} (LT)" : "";
         }
 
         public override string MaxAsString
@@ -85,5 +95,6 @@ namespace ASCOM.Wise40SafeToOperate
     {
         public string Name;
         public bool IsSafe;
+        public HumanIntervention.HumanInterventionDetails Details;
     }
 }

@@ -38,6 +38,7 @@
             this.label3 = new System.Windows.Forms.Label();
             this.textBoxReason = new System.Windows.Forms.TextBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.checkBoxGlobal = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).BeginInit();
             this.SuspendLayout();
             // 
@@ -57,7 +58,7 @@
             this.cmdCancel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.cmdCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.cmdCancel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.cmdCancel.Location = new System.Drawing.Point(400, 145);
+            this.cmdCancel.Location = new System.Drawing.Point(400, 172);
             this.cmdCancel.Name = "cmdCancel";
             this.cmdCancel.Size = new System.Drawing.Size(59, 25);
             this.cmdCancel.TabIndex = 43;
@@ -71,7 +72,7 @@
             this.cmdOK.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.cmdOK.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.cmdOK.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.cmdOK.Location = new System.Drawing.Point(400, 112);
+            this.cmdOK.Location = new System.Drawing.Point(400, 139);
             this.cmdOK.Name = "cmdOK";
             this.cmdOK.Size = new System.Drawing.Size(59, 24);
             this.cmdOK.TabIndex = 42;
@@ -114,7 +115,7 @@
             // 
             this.label3.AutoSize = true;
             this.label3.ForeColor = System.Drawing.Color.DarkOrange;
-            this.label3.Location = new System.Drawing.Point(32, 152);
+            this.label3.Location = new System.Drawing.Point(32, 147);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(43, 17);
             this.label3.TabIndex = 48;
@@ -123,11 +124,28 @@
             // 
             // textBoxReason
             // 
-            this.textBoxReason.Location = new System.Drawing.Point(112, 150);
+            this.textBoxReason.Location = new System.Drawing.Point(112, 143);
             this.textBoxReason.Name = "textBoxReason";
             this.textBoxReason.Size = new System.Drawing.Size(256, 20);
             this.textBoxReason.TabIndex = 49;
             this.toolTip1.SetToolTip(this.textBoxReason, "Short explanation for this intervention");
+            // 
+            // checkBoxGlobal
+            // 
+            this.checkBoxGlobal.AutoSize = true;
+            this.checkBoxGlobal.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.checkBoxGlobal.Checked = true;
+            this.checkBoxGlobal.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkBoxGlobal.ForeColor = System.Drawing.Color.DarkOrange;
+            this.checkBoxGlobal.Location = new System.Drawing.Point(32, 182);
+            this.checkBoxGlobal.Name = "checkBoxGlobal";
+            this.checkBoxGlobal.Size = new System.Drawing.Size(95, 17);
+            this.checkBoxGlobal.TabIndex = 50;
+            this.checkBoxGlobal.Text = "Campus global";
+            this.toolTip1.SetToolTip(this.checkBoxGlobal, "Checked - The intervention is for all the observatories\r\n                     in " +
+        "the campus\r\nUnchecked - The intervention is ONLY for the Wise40\r\n               " +
+        "         observatory");
+            this.checkBoxGlobal.UseVisualStyleBackColor = true;
             // 
             // InterventionForm
             // 
@@ -136,8 +154,9 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.CancelButton = this.cmdCancel;
-            this.ClientSize = new System.Drawing.Size(505, 197);
+            this.ClientSize = new System.Drawing.Size(505, 224);
             this.ControlBox = false;
+            this.Controls.Add(this.checkBoxGlobal);
             this.Controls.Add(this.textBoxReason);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label2);
@@ -148,6 +167,9 @@
             this.Controls.Add(this.cmdOK);
             this.Name = "InterventionForm";
             this.Text = "Operator Intervention";
+            this.toolTip1.SetToolTip(this, "Checked - The interventions is for ALL the \r\n                    observatories in" +
+        " the campus\r\nUnchecked - The intervention is ONLY for the \r\n                    " +
+        "    Wise40 observatory");
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -164,5 +186,6 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.TextBox textBoxReason;
         private System.Windows.Forms.ToolTip toolTip1;
+        private System.Windows.Forms.CheckBox checkBoxGlobal;
     }
 }

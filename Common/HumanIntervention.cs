@@ -2,25 +2,38 @@
 using System.IO;
 
 using ASCOM.Wise40.Common;
+using Newtonsoft.Json;
 
 namespace ASCOM.Wise40
 {
-
     public static class HumanIntervention
     {
         static DateTime _lastInfoRead = DateTime.MinValue;
-        static string _info = null;
+        //static string _info = null;
+        static HumanInterventionDetails details;
+
+        public class HumanInterventionDetails
+        {
+            public DateTime Created;
+            public string Operator;
+            public bool CampusGlobal;
+            public string Reason;
+        }
 
         static HumanIntervention() { }
 
-        public static void Create(string oper, string reason)
+        public static void Create(string oper, string reason, bool global = true)
         {
             Directory.CreateDirectory(Path.GetDirectoryName(Const.humanInterventionFilePath));
             using (StreamWriter sw = new StreamWriter(Const.humanInterventionFilePath))
             {
-                sw.WriteLine("Operator: \"" + oper + "\"");
-                sw.WriteLine("Reason: \"" + reason + "\"");
-                sw.WriteLine("Created: " + DateTime.Now.ToString("MMM dd yyyy, hh:mm:ss tt") + " (local time)");
+                sw.WriteLine(JsonConvert.SerializeObject(new HumanInterventionDetails()
+                {
+                    Operator = oper,
+                    Reason = reason,
+                    CampusGlobal = global,
+                    Created = DateTime.Now,
+                }, Formatting.Indented));
             }
 
             while (!File.Exists(Const.humanInterventionFilePath))
@@ -54,33 +67,25 @@ namespace ASCOM.Wise40
             return System.IO.File.Exists(Const.humanInterventionFilePath);
         }
 
-        public static string Info
+        public static HumanInterventionDetails Details
         {
             get
             {
-                string info = string.Empty;
 
                 if (!IsSet())
-                    return string.Empty;
+                    return null;
 
                 if (File.GetLastWriteTime(Const.humanInterventionFilePath) > _lastInfoRead)
                 {
-
-                    StreamReader sr = new StreamReader(Const.humanInterventionFilePath);
-                    string line = string.Empty;
-
-                    while ((line = sr.ReadLine()) != null)
+                    using (StreamReader file = File.OpenText(Const.humanInterventionFilePath))
                     {
-                        if (line.StartsWith("Operator:") || line.StartsWith("Created:") || line.StartsWith("Reason:"))
-                            info += line + "; ";
+                        JsonSerializer ser = new JsonSerializer();
+                        details = (HumanInterventionDetails)ser.Deserialize(file, typeof(HumanInterventionDetails));
                     }
-
-                    info = "Human Intervention; " + ((info == string.Empty) ? string.Format("File \"{0}\" exists.",
-                        Const.humanInterventionFilePath) : info);
-                    _info = info.TrimEnd(';', ' '); ;
+                    
                     _lastInfoRead = DateTime.Now;
                 }
-                return _info;
+                return details;
             }
         }
     }
