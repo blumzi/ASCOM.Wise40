@@ -81,7 +81,7 @@ namespace ASCOM.Wise40SafeToOperate
             double currentElevation = wisesafetooperate.SunElevation;
             double max = DateTime.Now.Hour < 12 ? _maxAtDawn : _maxAtDusk;
 
-            return currentElevation <= max ? "" : string.Format("The Sun elevation ({0}) is higher than {1}.",
+            return currentElevation <= max ? "" : string.Format("The Sun elevation ({0}) is higher than {1}",
                 FormatVerbal(currentElevation), FormatVerbal(max));
         }
 
