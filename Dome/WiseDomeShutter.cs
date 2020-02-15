@@ -268,7 +268,7 @@ namespace ASCOM.Wise40
                         duration = DateTime.Now.Subtract(start);
                         #region debug
                         debugger.WriteLine(Debugger.DebugLevel.DebugShutter,
-                            preamble + $"Timedout, duration: {duration}");
+                            preamble + $"Timedout ({ex.Message}), duration: {duration}");
                         #endregion
                         continue;
                     }
