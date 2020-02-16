@@ -61,12 +61,22 @@ namespace Dash.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to d62307f
+        ///   Looks up a localized string similar to b7c19803615c1594988347f1afab543277be58a7
         ///.
         /// </summary>
-        internal static string CurrentCommit {
+        internal static string CurrentCommitLong {
             get {
-                return ResourceManager.GetString("CurrentCommit", resourceCulture);
+                return ResourceManager.GetString("CurrentCommitLong", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to b7c1980
+        ///.
+        /// </summary>
+        internal static string CurrentCommitShort {
+            get {
+                return ResourceManager.GetString("CurrentCommitShort", resourceCulture);
             }
         }
         
@@ -87,6 +97,25 @@ namespace Dash.Properties {
             get {
                 object obj = ResourceManager.GetObject("Leomarc_stop_sign", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to v1.5.2.
+        /// </summary>
+        internal static string RemoteTag {
+            get {
+                return ResourceManager.GetString("RemoteTag", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to https://github.com/blumzi/ASCOM.Wise40.git
+        ///.
+        /// </summary>
+        internal static string RemoteUrl {
+            get {
+                return ResourceManager.GetString("RemoteUrl", resourceCulture);
             }
         }
         

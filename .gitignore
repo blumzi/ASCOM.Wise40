@@ -259,3 +259,8 @@ CurrentCommit.txt
 /Common/Files/weather.sql
 /Common/activities.sql
 /Common/weather.sql
+/Dash/CurrentCommitLong.txt
+/Dash/CurrentCommitShort.txt
+/Dash/Resources/RemoteTag.txt
+/Dash/RemoteTag.txt
+/Dash/RemoteUrl.txt

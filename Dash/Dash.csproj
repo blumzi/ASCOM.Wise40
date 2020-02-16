@@ -262,6 +262,8 @@
   <ItemGroup>
     <None Include="Icons\Leomarc_stop_sign.png" />
     <None Include="CurrentCommit.txt" />
+    <None Include="CurrentCommitShort.txt" />
+    <None Include="CurrentCommitLong.txt" />
     <Content Include="Icons\optica-filters%282%29.jpg" />
     <Content Include="Icons\optica_filters_2__x5l_icon.ico" />
     <None Include="Icons\stop-sign-smaller.jpg" />
@@ -269,6 +271,8 @@
     <None Include="Icons\stop-sign-236x236.jpg" />
     <Content Include="Installer\ReadMe.html" />
     <Content Include="Installer\Wise40Dash.iss" />
+    <None Include="RemoteUrl.txt" />
+    <None Include="Resources\RemoteTag.txt" />
     <Content Include="WiseObs.ico" />
   </ItemGroup>
   <ItemGroup>
@@ -292,7 +296,10 @@
 </PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PreBuildEvent>rem git rev-parse --short HEAD &gt; C:\Users/Blumzi/Documents/Visual Studio 2015/Projects/Wise40/Dash\CurrentCommit.txt</PreBuildEvent>
+    <PreBuildEvent>git rev-parse --short HEAD &gt; $(SolutionDir)/Dash/CurrentCommitShort.txt
+git rev-parse HEAD &gt; $(SolutionDir)/Dash/CurrentCommitLong.txt
+git ls-remote --get-url &gt; $(SolutionDir)/Dash/RemoteUrl.txt
+git describe --abbrev=0 --tags &gt; $(SolutionDir)/Dash/RemoteTag.txt</PreBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

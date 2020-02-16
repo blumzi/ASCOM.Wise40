@@ -9,6 +9,7 @@ namespace Dash
     {
         FormDash _dash;
         Version version = new Version(0, 2);
+        string urlCommit, urlRelease;
 
         public AboutForm(FormDash dashForm)
         {
@@ -40,12 +41,25 @@ namespace Dash
             labelVantageProVersion.Text = ASCOM.Wise40.VantagePro.WiseVantagePro.DriverVersion;
             labelFilterWheelVersion.Text = _dash.wiseFilterWheel.DriverVersion;
 
-            labelCurrentCommit.Text = Dash.Properties.Resources.CurrentCommit;
+            linkLabelLatestCommit.Text = $"{Properties.Resources.CurrentCommitShort}";
+            linkLabelRelease.Text = $"{Properties.Resources.RemoteTag}";
+            urlCommit = $"{Properties.Resources.RemoteUrl.Replace(".git", "")}/commit/{Properties.Resources.CurrentCommitLong}";
+            urlRelease = $"{Properties.Resources.RemoteUrl.Replace(".git", "")}/releases/tag/{Properties.Resources.RemoteTag}";
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
             this.Close();
+        }
+
+        private void linkLabelVersion_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            System.Diagnostics.Process.Start(urlRelease);
+        }
+
+        private void linkLabelLatestCommit_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            System.Diagnostics.Process.Start(urlCommit);
         }
     }
 }

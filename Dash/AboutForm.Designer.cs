@@ -48,8 +48,10 @@
             this.labelSafeToOperateVersion = new System.Windows.Forms.Label();
             this.labelBoltwoodVersion = new System.Windows.Forms.Label();
             this.labelVantageProVersion = new System.Windows.Forms.Label();
-            this.labelCurrentCommit = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
+            this.linkLabelLatestCommit = new System.Windows.Forms.LinkLabel();
+            this.label8 = new System.Windows.Forms.Label();
+            this.linkLabelRelease = new System.Windows.Forms.LinkLabel();
             this.tableLayoutPanel1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -57,7 +59,7 @@
             // 
             this.buttonOK.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.buttonOK.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonOK.Location = new System.Drawing.Point(219, 451);
+            this.buttonOK.Location = new System.Drawing.Point(219, 476);
             this.buttonOK.Name = "buttonOK";
             this.buttonOK.Size = new System.Drawing.Size(75, 23);
             this.buttonOK.TabIndex = 0;
@@ -100,7 +102,7 @@
             this.tableLayoutPanel1.Controls.Add(this.labelBoltwoodVersion, 3, 3);
             this.tableLayoutPanel1.Controls.Add(this.labelVantageProVersion, 3, 4);
             this.tableLayoutPanel1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.tableLayoutPanel1.Location = new System.Drawing.Point(48, 309);
+            this.tableLayoutPanel1.Location = new System.Drawing.Point(48, 334);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
             this.tableLayoutPanel1.RowCount = 5;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
@@ -367,21 +369,6 @@
             this.labelVantageProVersion.Text = "M.m";
             this.labelVantageProVersion.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
-            // labelCurrentCommit
-            // 
-            this.labelCurrentCommit.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.labelCurrentCommit.AutoSize = true;
-            this.labelCurrentCommit.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
-            this.labelCurrentCommit.ForeColor = System.Drawing.Color.DarkOrange;
-            this.labelCurrentCommit.Location = new System.Drawing.Point(268, 289);
-            this.labelCurrentCommit.Name = "labelCurrentCommit";
-            this.labelCurrentCommit.Size = new System.Drawing.Size(74, 17);
-            this.labelCurrentCommit.TabIndex = 6;
-            this.labelCurrentCommit.Text = "Git commit";
-            this.labelCurrentCommit.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
             // label7
             // 
             this.label7.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -390,12 +377,55 @@
             this.label7.AutoSize = true;
             this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
             this.label7.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.label7.Location = new System.Drawing.Point(193, 289);
+            this.label7.Location = new System.Drawing.Point(136, 312);
             this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(74, 17);
+            this.label7.Size = new System.Drawing.Size(95, 17);
             this.label7.TabIndex = 8;
-            this.label7.Text = "Git commit";
+            this.label7.Text = "Latest commit";
             this.label7.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // linkLabelLatestCommit
+            // 
+            this.linkLabelLatestCommit.AutoSize = true;
+            this.linkLabelLatestCommit.ForeColor = System.Drawing.Color.DarkOrange;
+            this.linkLabelLatestCommit.LinkColor = System.Drawing.Color.DarkOrange;
+            this.linkLabelLatestCommit.Location = new System.Drawing.Point(239, 314);
+            this.linkLabelLatestCommit.Name = "linkLabelLatestCommit";
+            this.linkLabelLatestCommit.Size = new System.Drawing.Size(57, 13);
+            this.linkLabelLatestCommit.TabIndex = 9;
+            this.linkLabelLatestCommit.TabStop = true;
+            this.linkLabelLatestCommit.Text = "linkCommit";
+            this.linkLabelLatestCommit.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.linkLabelLatestCommit.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabelLatestCommit_LinkClicked);
+            // 
+            // label8
+            // 
+            this.label8.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.label8.AutoSize = true;
+            this.label8.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
+            this.label8.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.label8.Location = new System.Drawing.Point(136, 295);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(98, 17);
+            this.label8.TabIndex = 10;
+            this.label8.Text = "Latest release";
+            this.label8.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // linkLabelRelease
+            // 
+            this.linkLabelRelease.AutoSize = true;
+            this.linkLabelRelease.ForeColor = System.Drawing.Color.DarkOrange;
+            this.linkLabelRelease.LinkColor = System.Drawing.Color.DarkOrange;
+            this.linkLabelRelease.Location = new System.Drawing.Point(239, 297);
+            this.linkLabelRelease.Name = "linkLabelRelease";
+            this.linkLabelRelease.Size = new System.Drawing.Size(62, 13);
+            this.linkLabelRelease.TabIndex = 11;
+            this.linkLabelRelease.TabStop = true;
+            this.linkLabelRelease.Text = "linkRelease";
+            this.linkLabelRelease.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.linkLabelRelease.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabelVersion_LinkClicked);
             // 
             // AboutForm
             // 
@@ -403,9 +433,11 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.ClientSize = new System.Drawing.Size(507, 509);
+            this.ClientSize = new System.Drawing.Size(507, 538);
+            this.Controls.Add(this.linkLabelRelease);
+            this.Controls.Add(this.label8);
+            this.Controls.Add(this.linkLabelLatestCommit);
             this.Controls.Add(this.label7);
-            this.Controls.Add(this.labelCurrentCommit);
             this.Controls.Add(this.tableLayoutPanel1);
             this.Controls.Add(this.labelAbout);
             this.Controls.Add(this.buttonOK);
@@ -442,7 +474,9 @@
         private System.Windows.Forms.Label labelSafeToOperateVersion;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Label labelFilterWheelVersion;
-        private System.Windows.Forms.Label labelCurrentCommit;
         private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.LinkLabel linkLabelLatestCommit;
+        private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.LinkLabel linkLabelRelease;
     }
 }
