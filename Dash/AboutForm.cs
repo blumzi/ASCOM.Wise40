@@ -43,8 +43,10 @@ namespace Dash
 
             linkLabelLatestCommit.Text = $"{Properties.Resources.CurrentCommitShort}";
             linkLabelRelease.Text = $"{Properties.Resources.RemoteTag}";
-            urlCommit = $"{Properties.Resources.RemoteUrl.Replace(".git", "")}/commit/{Properties.Resources.CurrentCommitLong}";
-            urlRelease = $"{Properties.Resources.RemoteUrl.Replace(".git", "")}/releases/tag/{Properties.Resources.RemoteTag}";
+
+            string repo = $"{Properties.Resources.RemoteUrl.Replace(".git", "")}";
+            urlCommit = $"{repo}/commit/{Properties.Resources.CurrentCommitLong}";
+            urlRelease = $"{repo}/releases/tag/{Properties.Resources.RemoteTag}";
         }
 
         private void button1_Click(object sender, EventArgs e)

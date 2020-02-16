@@ -273,6 +273,7 @@
     <Content Include="Installer\Wise40Dash.iss" />
     <None Include="RemoteUrl.txt" />
     <None Include="Resources\RemoteTag.txt" />
+    <None Include="RemoteTag.txt" />
     <Content Include="WiseObs.ico" />
   </ItemGroup>
   <ItemGroup>

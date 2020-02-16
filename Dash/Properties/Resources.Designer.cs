@@ -61,7 +61,7 @@ namespace Dash.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to b7c19803615c1594988347f1afab543277be58a7
+        ///   Looks up a localized string similar to fea5f76bcf5658463423ac4858a8714a34157744
         ///.
         /// </summary>
         internal static string CurrentCommitLong {
@@ -71,7 +71,7 @@ namespace Dash.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to b7c1980
+        ///   Looks up a localized string similar to fea5f76
         ///.
         /// </summary>
         internal static string CurrentCommitShort {
@@ -101,7 +101,8 @@ namespace Dash.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to v1.5.2.
+        ///   Looks up a localized string similar to v1.5.3
+        ///.
         /// </summary>
         internal static string RemoteTag {
             get {

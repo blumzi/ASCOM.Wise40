@@ -140,7 +140,7 @@
     <value>..\CurrentCommitShort.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;windows-1255</value>
   </data>
   <data name="RemoteTag" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\RemoteTag.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;windows-1255</value>
+    <value>..\RemoteTag.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;windows-1255</value>
   </data>
   <data name="RemoteUrl" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\RemoteUrl.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;windows-1255</value>
