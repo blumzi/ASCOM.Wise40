@@ -519,7 +519,7 @@ namespace Dash
                     annunciatorSafeToOperate.ForeColor = unsafeColor;
                     annunciatorSafeToOperate.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
                     severity = Statuser.Severity.Error;
-                    tip = String.Join("\n", safetooperateDigest.UnsafeReasons).Replace(Const.recordSeparator, "\n");
+                    tip = String.Join("\n", safetooperateDigest.UnsafeReasons).Replace(Const.recordSeparator, "\n  ");
                 }
                 else if (safetooperateDigest.Bypassed)
                 {

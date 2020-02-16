@@ -746,7 +746,8 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 toolTip.SetToolTip(labelHumanInterventionStatus, 
                     JsonConvert.SerializeObject(HumanIntervention.Details, Formatting.Indented)
                     .Replace("{", "Human Intervention")
-                    .Replace("}", ""));
+                    .Replace("}", "")
+                    .Replace("\"", ""));
             } else
             {
                 labelHumanInterventionStatus.Text = "Inactive";

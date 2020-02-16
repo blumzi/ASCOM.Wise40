@@ -9,7 +9,6 @@ namespace ASCOM.Wise40
     public static class HumanIntervention
     {
         static DateTime _lastInfoRead = DateTime.MinValue;
-        //static string _info = null;
         static HumanInterventionDetails details;
 
         public class HumanInterventionDetails
