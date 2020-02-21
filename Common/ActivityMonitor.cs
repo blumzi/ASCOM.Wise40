@@ -356,33 +356,6 @@ namespace ASCOM.Wise40
                 public enum Code { GoingIdle = 130, Idle =  180 };
             }
             public static Idler idler = new Idler();
-
-            //public static void Reset(Tracer t, string reason)
-            //{
-            //    string sql = string.Format("insert into activities(time, line, code, text, tags) values('{0}', '{1}', '{2}', '{3}', '{4}'); ",
-            //            DateTime.UtcNow.ToMySqlDateTime(),
-            //            t.Line,
-            //            Tracer.resetValue,
-            //            t.Name + " " + reason,
-            //            t.Name + "," + reason);
-            //    try
-            //    {
-            //        using (var sqlConn = new MySqlConnection(MySqlActivitiesConnectionString))
-            //        {
-            //            sqlConn.Open();
-            //            using (var sqlCmd = new MySqlCommand(sql, sqlConn))
-            //            {
-            //                sqlCmd.ExecuteNonQuery();
-            //            }
-            //        }
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        #region debug
-            //        debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Tracking.ResetTracer: \nsql: {0}\n failed: {1}", sql, ex.StackTrace);
-            //        #endregion
-            //    }
-            //}
         }
     }
 
@@ -471,11 +444,6 @@ namespace ASCOM.Wise40
 
             try
             {
-                //using (var sqlCmd = new MySqlCommand(sql, ActivityMonitor._sqlConn))
-                //{
-                //    sqlCmd.ExecuteNonQuery();
-                //    _activityId = sqlCmd.LastInsertedId;
-                //}
                 ActivityMonitor.CheckSqlConnection();
                 var sqlCmd = new MySqlCommand(sql, ActivityMonitor._sqlConn);
                 sqlCmd.ExecuteNonQuery();
@@ -491,8 +459,6 @@ namespace ASCOM.Wise40
 
         public void EmitEnd()
         {
-            //return;
-
             string endState = _endState.ToString();
 
             if (_tags[0] == "Idler" && _tags[1] == "GoingIdle" && endState == "Aborted")
@@ -527,10 +493,6 @@ namespace ASCOM.Wise40
 
             try
             {
-                //using (var sqlCmd = new MySqlCommand(sql, ActivityMonitor._sqlConn))
-                //{
-                //    sqlCmd.ExecuteNonQuery();
-                //}
                 ActivityMonitor.CheckSqlConnection();
                 var sqlCmd = new MySqlCommand(sql, ActivityMonitor._sqlConn);
                 sqlCmd.ExecuteNonQuery();
@@ -1185,7 +1147,6 @@ namespace ASCOM.Wise40
 
         public void init()
         {
-            //StartGoingIdle(new StartParams() { reason = "Initial GoingIdle" });
             _idlerState = IdlerState.Idle;
         }
 
@@ -1326,17 +1287,11 @@ namespace ASCOM.Wise40
 
         public void EmitEvent()
         {
-            //return;
-
             string sql = "insert into activities(time, text, tags, code, line) " +
              $"values('{_time.ToMySqlDateTime()}', '{_annotation + "\n"}', '{_tags.ToCSV()}', {_code}, '{_line}');";
 
             try
             {
-                //    using (var sqlCmd = new MySqlCommand(sql, ActivityMonitor._sqlConn))
-                //    {
-                //        sqlCmd.ExecuteNonQuery();
-                //    }
                 ActivityMonitor.CheckSqlConnection();
                 var sqlCmd = new MySqlCommand(sql, ActivityMonitor._sqlConn);
                 sqlCmd.ExecuteNonQuery();
