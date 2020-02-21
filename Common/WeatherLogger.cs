@@ -26,31 +26,22 @@ namespace ASCOM.Wise40.Common
 
             if (_sqlConn == null)
             {
-                try
-                {
-                    _sqlConn = new MySqlConnection(Const.MySql.DatabaseConnectionString.Wise_weather);
-                    _sqlConn.Open();
-                }
-                catch (Exception ex)
-                {
-                    #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"static WeatherLogger: Caught {ex.Message} at\n{ex.StackTrace}");
-                    #endregion
-                }
+                OpenSqlConnection();
             }
 
             string sql = $"SELECT time FROM weather WHERE station = '{stationName}' ORDER BY time DESC LIMIT 0 , 1; ";
 
             try
             {
-                    using (var sqlCmd = new MySqlCommand(sql, _sqlConn))
+                CheckSqlConnection();
+                using (var sqlCmd = new MySqlCommand(sql, _sqlConn))
+                {
+                    using (var cursor = sqlCmd.ExecuteReader())
                     {
-                        using (var cursor = sqlCmd.ExecuteReader())
-                        {
-                            cursor.Read();
+                        cursor.Read();
 
-                            _lastLoggedTime = Convert.ToDateTime(cursor["time"]);
-                        }
+                        _lastLoggedTime = Convert.ToDateTime(cursor["time"]);
+                    }
                 }
             }
             catch
@@ -63,16 +54,7 @@ namespace ASCOM.Wise40.Common
         }
 
         static WeatherLogger() {
-            try
-            {
-                _sqlConn = new MySqlConnection(Const.MySql.DatabaseConnectionString.Wise_weather);
-                _sqlConn.Open();
-            } catch (Exception ex)
-            {
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"static WeatherLogger: Caught {ex.Message} at\n{ex.StackTrace}");
-                #endregion
-            }
+            OpenSqlConnection();
         }
 
         public void Dispose() {
@@ -82,8 +64,6 @@ namespace ASCOM.Wise40.Common
 
         public void Log(Dictionary<string, string> dict, DateTime time)
         {
-            //return;
-
             if (!(WiseSite.CurrentProcessIs(Const.Application.RESTServer) ||
                     WiseSite.CurrentProcessIs(Const.Application.OCH)))
                 return;
@@ -98,6 +78,8 @@ namespace ASCOM.Wise40.Common
 
                 try
                 {
+                    CheckSqlConnection();
+
                     var sqlCmd = new MySqlCommand(sql, _sqlConn);
                     sqlCmd.ExecuteNonQuery();
                     _lastLoggedTime = time;
@@ -113,6 +95,33 @@ namespace ASCOM.Wise40.Common
                         $"WeatherLogger.log: \nsql: {sql}\n Caught: {ex.Message} at\n{ex.StackTrace}");
                     #endregion
                 }
+            }
+        }
+
+        static void OpenSqlConnection()
+        {
+            try
+            {
+                _sqlConn = new MySqlConnection(Const.MySql.DatabaseConnectionString.Wise_weather);
+                _sqlConn.Open();
+            }
+            catch (Exception ex)
+            {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"static OpenSqlConnection: Caught {ex.Message} at\n{ex.StackTrace}");
+                #endregion
+            }
+        }
+
+        /// <summary>
+        /// Check thats the current connection works, otherwise it gets closed and re-opened.
+        /// </summary>
+        static void CheckSqlConnection()
+        {
+            if (! _sqlConn.Ping())
+            {
+                _sqlConn.Close();
+                OpenSqlConnection();
             }
         }
     }

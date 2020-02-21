@@ -43,6 +43,12 @@ namespace ASCOM.Wise40
 
         private ActivityMonitor() { }
         static ActivityMonitor() {
+            OpenSqlConnection();
+        }
+        // end Singleton
+
+        public static void OpenSqlConnection()
+        {
             try
             {
                 _sqlConn = new MySqlConnection(Const.MySql.DatabaseConnectionString.Wise40_activities);
@@ -51,11 +57,19 @@ namespace ASCOM.Wise40
             catch (Exception ex)
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"ActivityMonitor.ctor: Caught {ex.Message} at\n{ex.StackTrace}");
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"ActivityMonitor.OpenSqlConn: Caught {ex.Message} at\n{ex.StackTrace}");
                 #endregion
             }
         }
-        // end Singleton
+
+        public static void CheckSqlConnection()
+        {
+            if (!_sqlConn.Ping())
+            {
+                _sqlConn.Close();
+                OpenSqlConnection();
+            }
+        }
 
         public static int defaultRealMillisToInactivity = (int)TimeSpan.FromMinutes(15).TotalMilliseconds;
         public static int realMillisToInactivity;
@@ -462,6 +476,7 @@ namespace ASCOM.Wise40
                 //    sqlCmd.ExecuteNonQuery();
                 //    _activityId = sqlCmd.LastInsertedId;
                 //}
+                ActivityMonitor.CheckSqlConnection();
                 var sqlCmd = new MySqlCommand(sql, ActivityMonitor._sqlConn);
                 sqlCmd.ExecuteNonQuery();
                 _activityId = sqlCmd.LastInsertedId;
@@ -516,6 +531,7 @@ namespace ASCOM.Wise40
                 //{
                 //    sqlCmd.ExecuteNonQuery();
                 //}
+                ActivityMonitor.CheckSqlConnection();
                 var sqlCmd = new MySqlCommand(sql, ActivityMonitor._sqlConn);
                 sqlCmd.ExecuteNonQuery();
             }
@@ -1321,6 +1337,7 @@ namespace ASCOM.Wise40
                 //    {
                 //        sqlCmd.ExecuteNonQuery();
                 //    }
+                ActivityMonitor.CheckSqlConnection();
                 var sqlCmd = new MySqlCommand(sql, ActivityMonitor._sqlConn);
                 sqlCmd.ExecuteNonQuery();
             }
