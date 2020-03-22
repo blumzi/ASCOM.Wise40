@@ -9,10 +9,17 @@ namespace ASCOM.Wise40.Common
 {
     public static class Extensions
     {
-        public static string ToMinimalString(this TimeSpan ts)
+        public static string ToMinimalString(this TimeSpan ts, bool showMillis = true)
         {
             string ret = null;
             string s;
+
+            if (ts == TimeSpan.Zero) {
+                if (showMillis)
+                    return "0.000s";
+                else
+                    return "0s";
+             }
 
             if (ts.Days != 0)
                 ret += $"{ts.Days}d";
@@ -35,12 +42,19 @@ namespace ASCOM.Wise40.Common
             else
                 ret += s;
 
-            if (ts.Seconds == 0 && ts.Milliseconds != 0)
+            if (ts.Seconds == 0 && ts.Milliseconds > 0)
             {
-                if (ret == null)
-                    ret = $@"0.{ts.Milliseconds:d3}s";
+                if (showMillis)
+                {
+                    ret = ret == null ? "0s" : "00s";
+                }
                 else
-                    ret += $@"00.{ts.Milliseconds:d3}s";
+                {
+                    if (ret == null)
+                        ret = $@"0.{ts.Milliseconds:d3}s";
+                    else
+                        ret += $@"00.{ts.Milliseconds:d3}s";
+                }
             }
             else if (ts.Seconds != 0 && ts.Milliseconds == 0)
             {
@@ -52,10 +66,16 @@ namespace ASCOM.Wise40.Common
             else if (ts.Seconds != 0 && ts.Milliseconds != 0)
             {
                 if (ret == null)
-                    ret = $@"{ts.Seconds}.{ts.Milliseconds:d3}s";
+                    ret = $@"{ts.Seconds}";
                 else
-                    ret += $@"{ts.Seconds:d2}.{ts.Milliseconds:d3}s";
+                    ret += $@"{ts.Seconds:d2}";
+                if (showMillis)
+                    ret += $".{ts.Milliseconds:d3}";
+                ret += "s";
             }
+
+            if (ret == null)
+                ret = "";
 
             return ret.StartsWith("0.") ? ret : ret.TrimStart(new char[] { '0' });
         }
