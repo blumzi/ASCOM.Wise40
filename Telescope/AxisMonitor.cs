@@ -343,10 +343,9 @@ namespace ASCOM.Wise40
                 bool ret = max > epsilon;
 
                 #region debug
-                string deb = string.Format("{0}:IsMoving: max: {1:F15}, epsilon: {2:F15}, ret: {3}, active: {4}",
-                    WiseName, max, epsilon, ret, ActiveMotors(_axis)) + "[";
+                string deb = $"{WiseName}:IsMoving: max: {max:F15}, epsilon: {epsilon:F15}, ret: {ret}, active: {ActiveMotors(_axis)}" + "[";
                 foreach (double d in arr)
-                    deb += " " + d.ToString("F10");
+                    deb += $" {d:F10}";
                 debugger.WriteLine(Debugger.DebugLevel.DebugAxes, deb + " ]");
                 #endregion
                 return ret;

@@ -149,8 +149,7 @@ namespace ASCOM.Wise40
                         "Caught exception: {0}, aborting pulse guiding", ex.Message);
                     #endregion
                     Abort();
-                    Deactivate(pulserTask, Activity.State.Aborted,
-                        string.Format($"Caught exception: {ex.Message}\n at {ex.StackTrace}\n"));
+                    Deactivate(pulserTask, Activity.State.Aborted, $"Caught exception: {ex.Message}\n at {ex.StackTrace}\n");
                 }
             }, pulseGuideCT).ContinueWith((t) =>
             {
@@ -158,7 +157,7 @@ namespace ASCOM.Wise40
                 debugger.WriteLine(Common.Debugger.DebugLevel.DebugLogic,
                     $"pulser on {pulserTask._axis} completed with status: {t.Status}");
                 #endregion
-                Deactivate(pulserTask, Activity.State.Succeeded, string.Format($"pulsing on {pulserTask._axis} completed"));
+                Deactivate(pulserTask, Activity.State.Succeeded, $"pulsing on {pulserTask._axis} completed");
             }, TaskContinuationOptions.ExecuteSynchronously);
         }
 

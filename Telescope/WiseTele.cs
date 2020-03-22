@@ -58,7 +58,7 @@ namespace ASCOM.Wise40
         /// <summary>
         /// Driver description that displays in the ASCOM Chooser.
         /// </summary>
-        public static string driverDescription = string.Format("Wise40 Telescope v{0}", version.ToString());
+        public static string driverDescription = $"Wise40 Telescope v{version}";
 
         private static NOVAS31 novas31;
         private static Util ascomutils;
@@ -99,14 +99,14 @@ namespace ASCOM.Wise40
             {
                 long current = Interlocked.Increment(ref _axisMovers);
                 #region debug
-                string dbg = string.Format("TrackingRestorer:AddMover:  current: {0}", current);
+                string dbg = $"TrackingRestorer:AddMover:  current: {current}";
                 #endregion
                 if (current == 1)
                 {
                     _wasTracking = Instance.Tracking;
                     _savedTrackingState = true;
                     #region debug
-                    dbg += string.Format(" remembering _wasTracking: {0}", _wasTracking);
+                    dbg += $" remembering _wasTracking: {_wasTracking}";
                     #endregion
                 }
                 #region debug
@@ -118,7 +118,7 @@ namespace ASCOM.Wise40
             {
                 long current = Interlocked.Read(ref _axisMovers);
                 #region debug
-                string dbg = string.Format("TrackingRestorer:RemoveMover:  current: {0}", current);
+                string dbg = $"TrackingRestorer:RemoveMover:  current: {current}";
                 #endregion
                 if (current > 0)
                 {
@@ -127,7 +127,7 @@ namespace ASCOM.Wise40
                     {
                         Instance.Tracking = _wasTracking;
                         #region debug
-                        dbg += string.Format(" restored Tracking to {0}", _wasTracking);
+                        dbg += $" restored Tracking to {_wasTracking}";
                         #endregion
                     }
                 }
@@ -286,12 +286,10 @@ namespace ASCOM.Wise40
         public void CheckCoordinateSanity(Angle.Type type, double value)
         {
             if (type == Angle.Type.Dec && (value < -90.0 || value > 90.0))
-                throw new InvalidValueException(string.Format("Invalid Declination {0}. Must be between -90 and 90",
-                    Angle.FromDegrees(value).ToNiceString()));
+                throw new InvalidValueException($"Invalid Declination {Angle.FromDegrees(value).ToNiceString()}. Must be between -90 and 90");
 
             if (type == Angle.Type.RA && (value < 0.0 || value > 24.0))
-                throw new ASCOM.InvalidValueException(string.Format("Invalid RightAscension {0}. Must be between 0 to 24",
-                    Angle.FromHours(value).ToNiceString()));
+                throw new ASCOM.InvalidValueException($"Invalid RightAscension {Angle.FromHours(value).ToNiceString()}. Must be between 0 to 24");
         }
 
         public double TargetDeclination
@@ -302,7 +300,7 @@ namespace ASCOM.Wise40
                     throw new ValueNotSetException("TargetDeclination not set");
                 #region debug
                 debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM,
-                    string.Format("TargetDeclination Get - {0} ({1})", _targetDeclination, _targetDeclination.Degrees));
+                    $"TargetDeclination Get - {_targetDeclination} ({_targetDeclination.Degrees})");
                 #endregion debug
                 return _targetDeclination.Degrees;
             }
@@ -315,7 +313,7 @@ namespace ASCOM.Wise40
                 _targetDeclination = Angle.FromDegrees(value, Angle.Type.Dec);
                 #region debug
                 debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM,
-                    string.Format("TargetDeclination Set - {0} ({1})", _targetDeclination, _targetDeclination.Degrees));
+                    $"TargetDeclination Set - {_targetDeclination} ({_targetDeclination.Degrees})");
                 #endregion debug
             }
         }
@@ -329,8 +327,7 @@ namespace ASCOM.Wise40
 
                 Angle ret = _targetRightAscension;
                 #region debug
-                debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM,
-                    string.Format("TargetRightAscension Get - {0} ({1})", ret, ret.Hours));
+                debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, $"TargetRightAscension Get - {ret} ({ret.Hours})");
                 #endregion debug
                 return _targetRightAscension.Hours;
             }
@@ -342,9 +339,7 @@ namespace ASCOM.Wise40
                 _targetRightAscension = Angle.FromHours(value, Angle.Type.RA);
                 #region debug
                 debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM,
-                    string.Format("TargetRightAscension Set - {0} ({1})",
-                    _targetRightAscension,
-                    _targetRightAscension.Hours));
+                    $"TargetRightAscension Set - {_targetRightAscension} ({_targetRightAscension.Hours})");
                 #endregion debug
             }
         }
@@ -742,7 +737,7 @@ namespace ASCOM.Wise40
             {
                 var ret = primaryAxisMonitor.RightAscension;
                 #region debug
-                debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, string.Format("RightAscension Get - {0} ({1})", ret, ret.Hours));
+                debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, $"RightAscension Get - {ret} ({ret.Hours})");
                 #endregion debug
                 return ret.Hours;
             }
@@ -764,7 +759,7 @@ namespace ASCOM.Wise40
                 var ret = secondaryAxisMonitor.Declination;
 
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugASCOM, string.Format("Declination Get - {0} ({1})", ret, ret.Degrees));
+                debugger.WriteLine(Debugger.DebugLevel.DebugASCOM, $"Declination Get - {ret} ({ret.Degrees})");
                 #endregion debug
                 return ret.Degrees;
             }
@@ -869,7 +864,7 @@ namespace ASCOM.Wise40
                 bool ret = TrackingMotor.isOn;
 
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugASCOM, string.Format("Tracking Get - {0}", ret));
+                debugger.WriteLine(Debugger.DebugLevel.DebugASCOM, $"Tracking Get - {ret}");
                 #endregion
                 return ret;
             }
@@ -877,7 +872,7 @@ namespace ASCOM.Wise40
             set
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugASCOM, string.Format("Tracking Set - {0}", value));
+                debugger.WriteLine(Debugger.DebugLevel.DebugASCOM, $"Tracking Set - {value}");
                 #endregion
 
                 if (value)
@@ -1078,7 +1073,7 @@ namespace ASCOM.Wise40
                     _movingToSafety;                // triggered by SafeAtCoordinates()
 
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugASCOM, string.Format("Slewing Get - {0}", ret));
+                debugger.WriteLine(Debugger.DebugLevel.DebugASCOM, $"Slewing Get - {ret}");
                 #endregion debug
                 return ret;
             }
@@ -1100,7 +1095,7 @@ namespace ASCOM.Wise40
         public void HandpadMoveAxis(TelescopeAxes Axis, double Rate)
         {
             #region debug
-            debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, string.Format("HandpadMoveAxis({0}, {1})", Axis, Rate));
+            debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, $"HandpadMoveAxis({Axis}, {Rate})");
             #endregion debug
 
             Const.AxisDirection direction = (Rate == Const.rateStopped) ? Const.AxisDirection.None :
@@ -1121,7 +1116,7 @@ namespace ASCOM.Wise40
                 activityMonitor.EndActivity(ActivityMonitor.ActivityType.Handpad, new Activity.Handpad.EndParams()
                 {
                     endState = Activity.State.Aborted,
-                    endReason = string.Format("Exception: {0}", ex.Message),
+                    endReason = $"Exception: {ex.Message}",
                     end = (Axis == TelescopeAxes.axisPrimary) ?
                         WiseTele.Instance.RightAscension :
                         WiseTele.Instance.Declination,
@@ -1162,7 +1157,7 @@ namespace ASCOM.Wise40
         public void MoveAxis(TelescopeAxes Axis, double Rate)
         {
             #region debug
-            debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, string.Format("MoveAxis({0}, {1})", Axis, Rate));
+            debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, $"MoveAxis({Axis}, {Rate})");
             #endregion debug
 
             if (!wisesafetooperate.IsSafeWithoutCheckingForShutdown() && !ShuttingDown && !BypassCoordinatesSafety)
@@ -1255,7 +1250,7 @@ namespace ASCOM.Wise40
 
             double absRate = Math.Abs(Rate);
             if (!((absRate == Const.rateSlew) || (absRate == Const.rateSet) || (absRate == Const.rateGuide)))
-                throw new InvalidValueException(string.Format("_moveAxis({0}, {1}): Invalid rate.", thisAxis, absRate));
+                throw new InvalidValueException($"_moveAxis({thisAxis}, {absRate}): Invalid rate.");
 
             if (!readyToSlewFlags.AxisCanMoveAtRate(thisAxis, absRate))
             {
@@ -1339,7 +1334,7 @@ namespace ASCOM.Wise40
             Angle dec = Angle.FromDegrees(TargetDeclination, Angle.Type.Dec);
 
             #region debug
-            debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, string.Format("SlewToTargetAsync({0}, {1})", ra, dec));
+            debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, $"SlewToTargetAsync({ra}, {dec})");
             #endregion debug
 
             if (AtPark)
@@ -1437,21 +1432,20 @@ namespace ASCOM.Wise40
 
             Angle alt = Angle.FromDegrees(90.0 - zd, Angle.Type.Alt);
             if (alt < altLimit)
-                reasons.Add(string.Format("Altitude too low: {0} < {1}", alt.ToString(), altLimit.ToString()));
+                reasons.Add($"Altitude too low: {alt} < {altLimit}");
 
             if (dec > upper_decLimit)
-                reasons.Add(string.Format("Declination too high: {0} > {1}", dec.ToString(), upper_decLimit.ToString()));
+                reasons.Add($"Declination too high: {dec} > {upper_decLimit}");
             if (dec < lower_decLimit)
-                reasons.Add(string.Format("Declination too low: {0} < {1}", dec.ToString(), lower_decLimit.ToString()));
+                reasons.Add($"Declination too low: {dec} < {lower_decLimit}");
             
             double ha = HourAngle;
             if (Math.Abs(ha) > haLimit.Hours)
-                reasons.Add(string.Format("HourAngle too high: Abs({0}) > {1}", ha, haLimit.ToString()));
+                reasons.Add($"HourAngle too high: Abs({ha}) > {haLimit}");
 
             if (reasons.Count > 0)
             {
-                string msg = string.Format("SafeAtCoordinates(ra: {0}, dec: {1}) - ",
-                    ra.ToString(), dec.ToString()) + String.Join(", ", reasons.ToArray());
+                string msg = $"SafeAtCoordinates(ra: {ra}, dec: {dec}) - " + String.Join(", ", reasons.ToArray());
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, msg);
                 #endregion
@@ -1547,7 +1541,7 @@ namespace ASCOM.Wise40
             {
                 bool ret = _atPark;
                 #region debug
-                debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, string.Format("AtPark Get - {0}", ret));
+                debugger.WriteLine(Common.Debugger.DebugLevel.DebugLogic, $"AtPark Get - {ret}");
                 #endregion debug
                 return ret;
             }
@@ -1556,7 +1550,7 @@ namespace ASCOM.Wise40
             {
                 _atPark = value;
                 #region debug
-                debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, string.Format("AtPark Set - {0}", _atPark.ToString()));
+                debugger.WriteLine(Common.Debugger.DebugLevel.DebugLogic, $"AtPark Set - {_atPark}");
                 #endregion debug
             }
         }
@@ -1772,7 +1766,7 @@ namespace ASCOM.Wise40
                 activityMonitor.EndActivity(ActivityMonitor.ActivityType.Parking, new Activity.Park.EndParams()
                 {
                     endState = Activity.State.Failed,
-                    endReason = string.Format("Exception: \"{0}\".", ex.ToString()),
+                    endReason = $"Exception: \"{ex}\".",
                     end = new Activity.TelescopeSlew.Coords
                     {
                         ra = RightAscension,
@@ -1791,7 +1785,7 @@ namespace ASCOM.Wise40
                 activityMonitor.EndActivity(ActivityMonitor.ActivityType.Parking, new Activity.Park.EndParams()
                 {
                     endState = Activity.State.Failed,
-                    endReason = string.Format("Parking failed due to Exception: {0}", ex.ToString()),
+                    endReason = $"Parking failed due to Exception: {ex} at {ex.StackTrace}",
                     end = new Activity.TelescopeSlew.Coords
                     {
                         ra = RightAscension,
@@ -2023,7 +2017,7 @@ namespace ASCOM.Wise40
                                 #endregion debug
                                 #region plot
                                 if (slewPlotter != null)
-                                    slewPlotter.Record(currentPosition.Degrees, string.Format("at {0}", RateName(rate)));
+                                    slewPlotter.Record(currentPosition.Degrees, $"at {RateName(rate)}");
                                 #endregion
                                 telescopeCT.ThrowIfCancellationRequested();
                                 Thread.Sleep(10);
@@ -2036,7 +2030,7 @@ namespace ASCOM.Wise40
                         {
                             #region plot
                             if (slewPlotter != null)
-                                slewPlotter.Record(currentPosition.Degrees, string.Format("at {0} - before stopping", RateName(rate)));
+                                slewPlotter.Record(currentPosition.Degrees, $"at {RateName(rate)} - before stopping");
                             #endregion
                             StopAxisAndWaitForHalt(thisAxis, slewerName, rate);
                             #region plot
@@ -2044,7 +2038,7 @@ namespace ASCOM.Wise40
                             Angle.FromHours(RightAscension, Angle.Type.RA) :
                                 Angle.FromDegrees(Declination, Angle.Type.Dec);
                             if (slewPlotter != null)
-                                slewPlotter.Record(angleAfterStopping.Degrees, string.Format("at {0} - after stopping", RateName(rate)));
+                                slewPlotter.Record(angleAfterStopping.Degrees, $"at {RateName(rate)} - after stopping");
                             #endregion
                         }
                     }
@@ -2105,7 +2099,7 @@ namespace ASCOM.Wise40
         {
             string msg = string.Empty;
             if (slewerName != null && rate != Const.rateStopped)
-                msg = string.Format("{0} at {1}: ", slewerName, RateName(rate));
+                msg = $"{slewerName} at {RateName(rate)}: ";
             
             StopAxis(axis);
 
@@ -2284,8 +2278,7 @@ namespace ASCOM.Wise40
                             slewers.Delete(slewerType);
 
                             if (slewerTask.Status == TaskStatus.Canceled)
-                                throw new OperationCanceledException(string.Format("Slewer \"{0}\" Canceled",
-                                    slewer.type.ToString()));
+                                throw new OperationCanceledException($"Slewer \"{slewer.type}\" Canceled");
 
                         }, TaskContinuationOptions.ExecuteSynchronously);
                     }
@@ -2330,7 +2323,7 @@ namespace ASCOM.Wise40
             Angle dec = Angle.FromDegrees(TargetDeclination, Angle.Type.Dec);
 
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugASCOM, string.Format("SlewToCoordinates - {0}, {1}", ra, dec));
+            debugger.WriteLine(Debugger.DebugLevel.DebugASCOM, $"SlewToCoordinates - {ra}, {dec}");
             #endregion debug
 
             if (AtPark)
@@ -2489,12 +2482,12 @@ namespace ASCOM.Wise40
             if (!wisesafetooperate.IsSafe && !ShuttingDown)
                 throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList()));
 
+            #region debug
+            debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, "Unpark");
+            #endregion debug
+
             if (AtPark)
                 AtPark = false;
-
-            #region debug
-            debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, "Unpark: done.");
-            #endregion debug
         }
 
         public DateTime UTCDate
@@ -2595,7 +2588,7 @@ namespace ASCOM.Wise40
             Angle dec = Angle.FromDegrees(TargetDeclination, Angle.Type.Dec);
 
             #region debug
-            debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, string.Format("SlewToTarget - {0}, {1}", ra, dec));
+            debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, $"SlewToTarget - {ra}, {dec}");
             #endregion debug
 
             if (AtPark)
@@ -2890,8 +2883,7 @@ namespace ASCOM.Wise40
                 throw new InvalidOperationException("Cannot PulseGuide while Slewing");
 
             if (!wisesafetooperate.IsSafe && !ShuttingDown)
-                throw new InvalidOperationException(
-                    string.Format($"Not safe to operate ({wisesafetooperate.UnsafeReasons})"));
+                throw new InvalidOperationException($"Not safe to operate ({wisesafetooperate.UnsafeReasons})");
 
             if (pulsing == null)
                 pulsing = Pulsing.Instance;
@@ -2900,8 +2892,7 @@ namespace ASCOM.Wise40
             TelescopeAxes axis = Pulsing.guideDirection2Axis[Direction];
             if (pulsing.Active(axis))
             {
-                throw new InvalidOperationException(string.Format(
-                    $"Already PulseGuiding on {axis}"));
+                throw new InvalidOperationException($"Already PulseGuiding on {axis}");
             }
 
             try
@@ -2932,8 +2923,7 @@ namespace ASCOM.Wise40
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException(
-                    string.Format($"PulseGuide: Cannot Start({Direction}, {Duration}): Caught {ex.Message} at {ex.StackTrace}"));
+                throw new InvalidOperationException($"PulseGuide: Cannot Start({Direction}, {Duration}): Caught {ex.Message} at {ex.StackTrace}");
             }
         }
 
@@ -2965,7 +2955,7 @@ namespace ASCOM.Wise40
                     if (parameter != string.Empty)
                     {
                         bool x = Convert.ToBoolean(parameter);
-                        activityMonitor.StayActive(string.Format("action active={0}", x.ToString()));
+                        activityMonitor.StayActive($"action active={x}");
                     }
                     return activityMonitor.ObservatoryIsActive().ToString();
 
@@ -3051,7 +3041,7 @@ namespace ASCOM.Wise40
                             return MoveToKnownHaDec(new Angle("11h55m00.0s"), new Angle("88:00:00.0"));
 
                         default:
-                            return string.Format("Bad parameter \"{0}\" to \"move-to-preset\"", parameter);
+                            return $"move-to-preset: Bad parameter \"{parameter}\"";
                     }
 
                 case "hardware-meta-digest":
@@ -3124,7 +3114,7 @@ namespace ASCOM.Wise40
         public void CommandBlind(string command, bool raw)
         {
             CheckConnected("CommandBlind");
-            throw new ASCOM.MethodNotImplementedException(string.Format("CommandBlind: {0}", command));
+            throw new ASCOM.MethodNotImplementedException($"CommandBlind: {command}");
         }
 
         public bool CommandBool(string command, bool raw)
@@ -3133,7 +3123,7 @@ namespace ASCOM.Wise40
             if (command == "active")
                 return Convert.ToBoolean(Action("active", string.Empty));
             else
-                throw new ASCOM.MethodNotImplementedException(string.Format("CommandBool {0}", command));
+                throw new ASCOM.MethodNotImplementedException($"CommandBool {command}");
         }
 
         public string CommandString(string command, bool raw)
@@ -3150,7 +3140,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return string.Format("ASCOM Wise40.Telescope v{0}", version.ToString());
+                return $"ASCOM Wise40.Telescope v{version}";
             }
         }
 

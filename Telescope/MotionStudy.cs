@@ -34,7 +34,7 @@ namespace ASCOM.Wise40 //.Telescope
 
             public override string ToString()
             {
-                return string.Format("{0}, {1}", millis, value.ToString());
+                return $"{millis}, {value}";
             }
         };
         private List<DataPoint> dataPoints;
@@ -110,7 +110,7 @@ namespace ASCOM.Wise40 //.Telescope
                 {
                     DataPoint dpPrev = dataPoints[i - 1];
                     double v = Math.Abs(dp.value - dpPrev.value) / (dp.millis - dpPrev.millis);
-                    velocities.WriteLine(string.Format("{0} {1}", dp.millis, v.ToString("F10")));
+                    velocities.WriteLine($"{dp.millis} {v:F10}");
                 }
             }
             radians.Close();
@@ -120,8 +120,8 @@ namespace ASCOM.Wise40 //.Telescope
             System.IO.StreamWriter gnuPlot = new System.IO.StreamWriter(gnuplotFile);
 
             gnuPlot.WriteLine("");
-            gnuPlot.WriteLine(string.Format("plot '{0}' with lines title \"radians\"", radiansFile));
-            gnuPlot.WriteLine(string.Format("plot '{0}' with lines title \"velocity\"", velocitiesFile));
+            gnuPlot.WriteLine($"plot '{radiansFile}' with lines title \"radians\"");
+            gnuPlot.WriteLine($"plot '{velocitiesFile}' with lines title \"velocity\"");
             gnuPlot.Close();
         }
     }

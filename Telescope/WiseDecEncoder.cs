@@ -129,11 +129,10 @@ namespace ASCOM.Wise40
                         _daqsValue = ((axis * 600 + worm) & 0xfff000) - worm;
                     }
                     #region debug
-                    string dbg = string.Format("{0}: value: {1}, axis: {2} (0x{2:x}), worm: {3} (0x{3:x})",
-                        WiseName, _daqsValue, axis, worm);
+                    string dbg = $"{WiseName}: value: {_daqsValue}, axis: {axis} (0x{axis:x}), worm: {worm} (0x{worm:x})";
                     if (prev_worm != int.MinValue)
                     {
-                        dbg += string.Format(" prev_axis: {0} (0x{0:x}), prev_worm: {1} (0x{1:x})", prev_axis, prev_worm);
+                        dbg += $" prev_axis: {prev_axis} (0x{prev_axis:x}), prev_worm: {prev_worm} (0x{prev_worm:x})";
                         dbg += string.Format(" change_axis: {0}, change_worm: {1}",
                             Convert.ToString(axis ^ prev_axis, 2).PadLeft(16, '0'),
                             Convert.ToString(worm ^ prev_worm).PadLeft(12, '0'));
