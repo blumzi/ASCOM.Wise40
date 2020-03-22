@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using ASCOM.Wise40;
+using ASCOM.Wise40.Common;
 
 namespace ASCOM.Wise40SafeToOperate
 {
@@ -80,7 +81,11 @@ namespace ASCOM.Wise40SafeToOperate
 
         public override string reason()
         {
-            return (details != null) ? $";Operator: {details.Operator};Reason: {details.Reason};Created: {details.Created} (LT)" : "";
+            return (details != null) ?
+                $"{Const.recordSeparator}Operator: {details.Operator}" +
+                $"{Const.recordSeparator}Reason:   {details.Reason}" +
+                $"{Const.recordSeparator}Created:  {details.Created:dd MMM yyyy @ HH:mm:ss (zzz)}" :
+                "";
         }
 
         public override string MaxAsString
