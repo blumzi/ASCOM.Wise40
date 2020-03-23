@@ -500,6 +500,7 @@
             // 
             // labelTitle
             // 
+            this.labelTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
             this.labelTitle.ForeColor = System.Drawing.Color.DarkOrange;
             this.labelTitle.Location = new System.Drawing.Point(63, 40);
             this.labelTitle.Name = "labelTitle";
@@ -510,10 +511,11 @@
             // 
             // labelDate
             // 
+            this.labelDate.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
             this.labelDate.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelDate.Location = new System.Drawing.Point(154, 74);
+            this.labelDate.Location = new System.Drawing.Point(142, 74);
             this.labelDate.Name = "labelDate";
-            this.labelDate.Size = new System.Drawing.Size(98, 55);
+            this.labelDate.Size = new System.Drawing.Size(124, 55);
             this.labelDate.TabIndex = 43;
             this.labelDate.Text = "date";
             this.labelDate.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -532,9 +534,12 @@
             this.Controls.Add(this.groupBoxWeather);
             this.Controls.Add(this.menuStrip);
             this.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(26)))), ((int)(((byte)(26)))));
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip;
+            this.MaximizeBox = false;
             this.Name = "RemoteSafetyDashboard";
+            this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.Text = "Wise Remote Safety Dashboard";
             this.groupBoxWeather.ResumeLayout(false);
             this.tableLayoutPanelWeather.ResumeLayout(false);
