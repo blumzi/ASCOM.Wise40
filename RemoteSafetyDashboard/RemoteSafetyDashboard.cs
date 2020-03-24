@@ -99,7 +99,7 @@ namespace RemoteSafetyDashboard
         {
             label.Text = digest.Symbolic;
             label.ForeColor = SensorDigestColor(digest);
-            toolTip.SetToolTip(label, digest.AffectsSafety ? digest.ToolTip : "Does not affect safety");
+            toolTip.SetToolTip(label, digest.ToolTip);
         }
 
         public void UpdateDisplay()

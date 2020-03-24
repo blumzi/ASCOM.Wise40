@@ -727,10 +727,7 @@ namespace Dash
                 tip = digest.ToolTip;
             else
                 tip = $"latest reading {DateTime.Now.Subtract(digest.LatestReading.timeOfLastUpdate).TotalSeconds:f1} seconds ago";
-
-            if (!digest.AffectsSafety)
-                tip += tip != string.Empty ? " (does not affect safety)" : "Does not affect safety";
-
+            
             if (digest.Stale && !tip.Contains("stale"))
                 tip += tip != string.Empty ? " (stale)" : "Stale";
 

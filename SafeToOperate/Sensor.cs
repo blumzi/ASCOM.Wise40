@@ -131,11 +131,6 @@ namespace ASCOM.Wise40SafeToOperate
             public State State;
             public Reading LatestReading;
             public string ToolTip;
-            private string _symbolic;
-            private string _verbal;
-            private bool _safe;
-            private bool _stale;
-            private bool _affectsSafety;
             public string Name;
 
             public SensorDigest() { }
@@ -161,7 +156,7 @@ namespace ASCOM.Wise40SafeToOperate
             public static SensorDigest FromOCHProperty(string property)
             {
                 SensorDigest digest = new SensorDigest();
-                double v = 0, s = 0;
+                double v, s;
 
                 digest.Safe = true;
                 digest.Name = property;
@@ -169,36 +164,30 @@ namespace ASCOM.Wise40SafeToOperate
                 {
                     case "WindDirection":
                         v = WiseSite.och.WindDirection;
-                        s = WiseSite.och.TimeSinceLastUpdate(property);
                         digest.Symbolic = string.Format("{0}°", v);
                         digest.Verbal = string.Format("{0} deg", v);
-                        digest.AffectsSafety = false;
-                        digest.Stale = TooOld(s);
                         break;
 
                     case "DewPoint":
                         v = WiseSite.och.DewPoint;
-                        s = WiseSite.och.TimeSinceLastUpdate(property);
                         digest.Symbolic = string.Format("{0}°C", v);
                         digest.Verbal = string.Format("{0} deg", v);
-                        digest.AffectsSafety = false;
-                        digest.Stale = TooOld(s);
                         break;
 
                     case "SkyTemperature":
                         v = WiseSite.och.SkyTemperature;
-                        s = WiseSite.och.TimeSinceLastUpdate(property);
                         digest.Symbolic = string.Format("{0}°C", v);
                         digest.Verbal = string.Format("{0} deg", v);
-                        digest.AffectsSafety = false;
-                        digest.Stale = TooOld(s);
                         break;
 
                     default:
                         return null;
                 }
 
-                digest.ToolTip = "";
+                s = WiseSite.och.TimeSinceLastUpdate(property);
+                digest.Stale = TooOld(s);
+                digest.AffectsSafety = false;
+                digest.ToolTip = "Does not affect safety";
 
                 digest.LatestReading = new Reading
                 {
@@ -212,57 +201,13 @@ namespace ASCOM.Wise40SafeToOperate
                 return digest;
             }
 
-            public bool AffectsSafety
-            {
-                get
-                {
-                    return _affectsSafety;
-                }
+            public bool AffectsSafety { get; set; }
 
-                set
-                {
-                    _affectsSafety = value;
-                }
-            }
+            public string Symbolic { get; set; }
 
-            public string Symbolic
-            {
-                get
-                {
-                    return _symbolic;
-                }
+            public string Verbal { get; set; }
 
-                set
-                {
-                    _symbolic = value;
-                }
-            }
-
-            public string Verbal
-            {
-                get
-                {
-                    return _verbal;
-                }
-
-                set
-                {
-                    _verbal = value;
-                }
-            }
-
-            public bool Stale
-            {
-                get
-                {
-                    return _stale;
-                }
-
-                set
-                {
-                    _stale = value;
-                }
-            }
+            public bool Stale { get; set; }
 
             public System.Drawing.Color Color
             {
@@ -282,25 +227,24 @@ namespace ASCOM.Wise40SafeToOperate
                 }
             }
 
-            public bool Safe
-            {
-                get
-                {
-                    return _safe;
-                }
-
-                set
-                {
-                    _safe = value;
-                }
-            }
+            public bool Safe { get; set; }
         }
 
         public string ToolTip
         {
             get
             {
-                return isSafe ? "" : WiseSafeToOperate.GenericUnsafeReason(this);
+                if (isSafe)
+                {
+                    return "";
+                }
+                else
+                {
+                    if (HasAttribute(Attribute.ForInfoOnly))
+                        return "Does not affect safety";
+                    else
+                        return WiseSafeToOperate.GenericUnsafeReason(this);
+                }
             }
         }
 
