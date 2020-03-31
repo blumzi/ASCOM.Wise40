@@ -389,8 +389,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             {
                 text = "Intervention";
                 color = unsafeColor;
-                //tip = HumanIntervention.Info.ToString().Replace(Const.recordSeparator, "\n  ");
-                tip = JsonConvert.SerializeObject(HumanIntervention.Details, Formatting.Indented);
+                tip = SimplifiedHumanIntervention(HumanIntervention.Details);
             }
             else if (safetooperateDigest.Bypassed)
             {
@@ -737,17 +736,21 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             new ObservatoryMonitorAboutForm(version).Show();
         }
 
+        private string SimplifiedHumanIntervention(HumanIntervention.HumanInterventionDetails details)
+        {
+            return JsonConvert.SerializeObject(HumanIntervention.Details, Formatting.Indented)
+                    .Replace("{", "Human Intervention")
+                    .Replace("}", "")
+                    .Replace("\"", "");
+        }
+
         private void updateManualInterventionControls()
         {
             if (HumanIntervention.IsSet()) {
                 labelHumanInterventionStatus.Text = "Active";
                 labelHumanInterventionStatus.ForeColor = unsafeColor;
                 buttonManualIntervention.Text = "Deactivate";
-                toolTip.SetToolTip(labelHumanInterventionStatus, 
-                    JsonConvert.SerializeObject(HumanIntervention.Details, Formatting.Indented)
-                    .Replace("{", "Human Intervention")
-                    .Replace("}", "")
-                    .Replace("\"", ""));
+                toolTip.SetToolTip(labelHumanInterventionStatus, SimplifiedHumanIntervention(HumanIntervention.Details));
             } else
             {
                 labelHumanInterventionStatus.Text = "Inactive";
