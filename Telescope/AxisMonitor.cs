@@ -361,7 +361,7 @@ namespace ASCOM.Wise40
                 return double.NaN;
 
             double deltaRadians = Math.Abs(samples[last].radians - samples[last - 1].radians);
-            Angle a = Angle.FromRadians(deltaRadians / deltaT, Angle.Type.RA);
+            Angle a = Angle.FromRadians(deltaRadians / deltaT, Angle.AngleType.RA);
 
             return  a.Hours;
         }
@@ -402,7 +402,7 @@ namespace ASCOM.Wise40
 
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}:Predicted: r: {1}, p: {2}, r - p: {3}, (r - p)Angle: {4}",
-                WiseName, reading,  pred, reading - pred, Angle.FromHours(reading - pred, Angle.Type.RA).ToNiceString());
+                WiseName, reading,  pred, reading - pred, Angle.FromHours(reading - pred, Angle.AngleType.RA).ToNiceString());
             #endregion
 
             return reading; // pred;
@@ -526,7 +526,7 @@ namespace ASCOM.Wise40
                 return double.NaN;
 
             double deltaRadians = Math.Abs(samples[last].radians - samples[last - 1].radians);
-            Angle a = Angle.FromRadians(deltaRadians / deltaT, Angle.Type.Dec);
+            Angle a = Angle.FromRadians(deltaRadians / deltaT, Angle.AngleType.Dec);
 
             return a.Degrees;
         }
@@ -557,7 +557,7 @@ namespace ASCOM.Wise40
 
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}:Predicted: r: {1}, p: {2}, r - p: {3}, (r - p)Angle: {4}",
-                WiseName, reading, pred, reading - pred, Angle.FromDegrees(reading - pred, Angle.Type.Dec).ToNiceString());
+                WiseName, reading, pred, reading - pred, Angle.FromDegrees(reading - pred, Angle.AngleType.Dec).ToNiceString());
             #endregion
 
             return reading; // pred;

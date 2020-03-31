@@ -324,9 +324,9 @@ namespace Dash
             {
                 labelSiderealValue.Text = Angle.FromHours(telescopeDigest.LocalSiderealTime).ToNiceString();
 
-                telescopeRa = Angle.FromHours(telescopeDigest.Current.RightAscension, Angle.Type.RA);
-                telescopeDec = Angle.FromDegrees(telescopeDigest.Current.Declination, Angle.Type.Dec);
-                telescopeHa = Angle.FromHours(telescopeDigest.HourAngle, Angle.Type.HA);
+                telescopeRa = Angle.FromHours(telescopeDigest.Current.RightAscension, Angle.AngleType.RA);
+                telescopeDec = Angle.FromDegrees(telescopeDigest.Current.Declination, Angle.AngleType.Dec);
+                telescopeHa = Angle.FromHours(telescopeDigest.HourAngle, Angle.AngleType.HA);
 
                 string safetyError = telescopeDigest.SafeAtCurrentCoordinates;
 
@@ -358,7 +358,7 @@ namespace Dash
                     }
                     else
                     {
-                        textBoxRA.Text = Angle.FromHours(telescopeDigest.Target.RightAscension, Angle.Type.RA).ToNiceString();
+                        textBoxRA.Text = Angle.FromHours(telescopeDigest.Target.RightAscension, Angle.AngleType.RA).ToNiceString();
                         toolTip.SetToolTip(textBoxRA, "Current target RightAscension");
                     }
 
@@ -369,7 +369,7 @@ namespace Dash
                     }
                     else
                     {
-                        textBoxDec.Text = Angle.FromDegrees(telescopeDigest.Target.Declination, Angle.Type.Dec).ToNiceString();
+                        textBoxDec.Text = Angle.FromDegrees(telescopeDigest.Target.Declination, Angle.AngleType.Dec).ToNiceString();
                         toolTip.SetToolTip(textBoxDec, "Current target Declination");
                     }
                 }
@@ -593,7 +593,7 @@ namespace Dash
             #region RefreshDome
             if (domeDigest != null)
             {
-                labelDomeAzimuthValue.Text = Angle.FromDegrees(domeDigest.Azimuth, Angle.Type.Az).ToNiceString();
+                labelDomeAzimuthValue.Text = Angle.FromDegrees(domeDigest.Azimuth, Angle.AngleType.Az).ToNiceString();
                 domeStatus.Show(domeDigest.Status);
                 buttonDomePark.Text = domeDigest.AtPark ? "Unpark" : "Park";
                 buttonVent.Text = domeDigest.Vent ? "Close Vent" : "Open Vent";
@@ -970,7 +970,7 @@ namespace Dash
                     text = Angle.FromHours(telescopeDigest.Current.RightAscension).ToString();
                     break;
                 case GoToMode.Ha:
-                    text = Angle.FromHours(telescopeDigest.HourAngle, Angle.Type.HA).ToString();
+                    text = Angle.FromHours(telescopeDigest.HourAngle, Angle.AngleType.HA).ToString();
                     break;
                 case GoToMode.DeltaRa:
                 case GoToMode.DeltaHa:

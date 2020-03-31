@@ -118,7 +118,7 @@ namespace Dash
             {
                 move[TelescopeAxes.axisPrimary].coord_after = wisetele.RightAscension;
                 move[TelescopeAxes.axisPrimary].enc_after = wisetele.HAEncoder.EncoderValue;
-                labelRaDeltaDeg.Text = (new Angle(Math.Abs(move[TelescopeAxes.axisPrimary].coord_after - move[TelescopeAxes.axisPrimary].coord_before), Angle.Type.RA)).ToString();
+                labelRaDeltaDeg.Text = (new Angle(Math.Abs(move[TelescopeAxes.axisPrimary].coord_after - move[TelescopeAxes.axisPrimary].coord_before), Angle.AngleType.RA)).ToString();
                 labelRaDeltaEnc.Text = (Math.Abs(move[TelescopeAxes.axisPrimary].enc_after - move[TelescopeAxes.axisPrimary].enc_before)).ToString("F0");
             }
             
@@ -126,7 +126,7 @@ namespace Dash
             {
                 move[TelescopeAxes.axisSecondary].coord_after = wisetele.Declination;
                 move[TelescopeAxes.axisSecondary].enc_after = wisetele.DecEncoder.EncoderValue;
-                labelDecDeltaDeg.Text = (new Angle(Math.Abs(move[TelescopeAxes.axisSecondary].coord_after - move[TelescopeAxes.axisSecondary].coord_before), Angle.Type.Dec)).ToString();
+                labelDecDeltaDeg.Text = (new Angle(Math.Abs(move[TelescopeAxes.axisSecondary].coord_after - move[TelescopeAxes.axisSecondary].coord_before), Angle.AngleType.Dec)).ToString();
                 labelDecDeltaEnc.Text = (Math.Abs(move[TelescopeAxes.axisSecondary].enc_after - move[TelescopeAxes.axisSecondary].enc_before)).ToString("F0");
             }
         }

@@ -88,7 +88,7 @@ namespace ASCOM.Wise40
         {
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                $"DomeSlaveDriver: Asking dome to SlewToAzimuth({new Angle(az, Angle.Type.Az)}, {reason})");
+                $"DomeSlaveDriver: Asking dome to SlewToAzimuth({new Angle(az, Angle.AngleType.Az)}, {reason})");
             #endregion
             try
             {
@@ -109,7 +109,7 @@ namespace ASCOM.Wise40
                 debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
                     "DomeSlaveDriver:SlewToAz got \"{0}\" while slewing to {1}, Aborting slew!",
                     ex.Message,
-                    new Angle(az, Angle.Type.Az));
+                    new Angle(az, Angle.AngleType.Az));
                 #endregion
                 wisedome.AbortSlew();
                 throw ex;

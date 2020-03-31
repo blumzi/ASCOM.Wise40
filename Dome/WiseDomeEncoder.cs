@@ -21,7 +21,7 @@ namespace ASCOM.Wise40 //.Dome
         private const int _simulatedEncoderTicksPerSecond = 6;
 
         private uint _caliTicks;
-        private Angle _caliAz = new Angle(254.6, Angle.Type.Az);
+        private Angle _caliAz = new Angle(254.6, Angle.AngleType.Az);
         private WiseDome.Direction _movingDirection;
         private const int _hwTicks = 1024;
         private bool _initialized = false;
@@ -166,11 +166,11 @@ namespace ASCOM.Wise40 //.Dome
                 }
                 else if (currTicks > _caliTicks)
                 {
-                    az = _caliAz - new Angle((currTicks - _caliTicks) * WiseDome.DegreesPerTick, Angle.Type.Az);
+                    az = _caliAz - new Angle((currTicks - _caliTicks) * WiseDome.DegreesPerTick, Angle.AngleType.Az);
                 }
                 else
                 {
-                    az = _caliAz + new Angle((_caliTicks - currTicks) * WiseDome.DegreesPerTick, Angle.Type.Az);
+                    az = _caliAz + new Angle((_caliTicks - currTicks) * WiseDome.DegreesPerTick, Angle.AngleType.Az);
                 }
 
                 #region debug

@@ -561,8 +561,8 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
                     Log(string.Format("    Parking telescope at {0} {1} and dome at {2} ...",
                         wisesite.LocalSiderealTime,
-                        (new Angle(66, Angle.Type.Dec)).ToString(),
-                        (new Angle(90, Angle.Type.Az).ToNiceString())));
+                        (new Angle(66, Angle.AngleType.Dec)).ToString(),
+                        (new Angle(90, Angle.AngleType.Az).ToNiceString())));
 
                     #region Initiate shutdown
                     Task telescopeShutdownTask = Task.Run(() =>
@@ -623,9 +623,9 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                             else
                             {
                                 Angle ra, dec, az;
-                                ra = Angle.FromHours(telescopeDigest.Current.RightAscension, Angle.Type.RA);
-                                dec = Angle.FromDegrees(telescopeDigest.Current.Declination, Angle.Type.Dec);
-                                az = Angle.FromDegrees(domeDigest.Azimuth, Angle.Type.Az);
+                                ra = Angle.FromHours(telescopeDigest.Current.RightAscension, Angle.AngleType.RA);
+                                dec = Angle.FromDegrees(telescopeDigest.Current.Declination, Angle.AngleType.Dec);
+                                az = Angle.FromDegrees(domeDigest.Azimuth, Angle.AngleType.Az);
                                 shutterState = domeDigest.Shutter.State;
                                 activities = telescopeDigest.Activities;
 
@@ -728,7 +728,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                         SleepWhileProcessingEvents();
                     }
                 }
-                return Angle.FromDegrees(degrees, Angle.Type.Az);
+                return Angle.FromDegrees(degrees, Angle.AngleType.Az);
             }
         }
 

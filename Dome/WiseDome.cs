@@ -33,7 +33,7 @@ namespace ASCOM.Wise40
         private bool _connected = false;
         private bool _calibrating = false;
         public bool _autoCalibrate = false;
-        private Angle _minimalMove = Angle.FromDegrees(2.0, Angle.Type.Az);
+        private Angle _minimalMove = Angle.FromDegrees(2.0, Angle.AngleType.Az);
         private bool _isStuck;
         private static Object _caliWriteLock = new object();
 
@@ -141,9 +141,9 @@ namespace ASCOM.Wise40
                 caliPins[1] = new WisePin(Const.notsign + "DomeCali1", hw.domeboard, DigitalPortType.FirstPortCL, 1, DigitalPortDirection.DigitalIn);
                 caliPins[2] = new WisePin(Const.notsign + "DomeCali2", hw.domeboard, DigitalPortType.FirstPortCL, 2, DigitalPortDirection.DigitalIn);
 
-                calibrationPoints.Add(new CalibrationPoint(caliPins[0], new Angle(254.6, Angle.Type.Az), 10 + 2 * caliPointsSpacing));
-                calibrationPoints.Add(new CalibrationPoint(caliPins[1], new Angle(133.0, Angle.Type.Az), 10 + 1 * caliPointsSpacing));
-                calibrationPoints.Add(new CalibrationPoint(caliPins[2], new Angle(18.0, Angle.Type.Az), 10 + 0 * caliPointsSpacing));
+                calibrationPoints.Add(new CalibrationPoint(caliPins[0], new Angle(254.6, Angle.AngleType.Az), 10 + 2 * caliPointsSpacing));
+                calibrationPoints.Add(new CalibrationPoint(caliPins[1], new Angle(133.0, Angle.AngleType.Az), 10 + 1 * caliPointsSpacing));
+                calibrationPoints.Add(new CalibrationPoint(caliPins[2], new Angle(18.0, Angle.AngleType.Az), 10 + 0 * caliPointsSpacing));
 
                 ventPin = new WisePin("DomeVent", hw.domeboard, DigitalPortType.FirstPortA, 5, DigitalPortDirection.DigitalOut);
                 projectorPin = new WisePin("DomeProjector", hw.domeboard, DigitalPortType.FirstPortA, 4, DigitalPortDirection.DigitalOut);
@@ -630,7 +630,7 @@ namespace ASCOM.Wise40
                     if (_autoCalibrate)
                         StartFindingHome();
                     else
-                        return Angle.FromDegrees(double.NaN, Angle.Type.Az);
+                        return Angle.FromDegrees(double.NaN, Angle.AngleType.Az);
                 }
 
                 ret = domeEncoder.Azimuth;
@@ -726,7 +726,7 @@ namespace ASCOM.Wise40
                 foreach (var cp in calibrationPoints)
                     distanceToCaliPoints.Add(Azimuth.ShortestDistance(cp.az));
 
-                ShortestDistanceResult closest = new ShortestDistanceResult(new Angle(360.0, Angle.Type.Az), Const.AxisDirection.None);
+                ShortestDistanceResult closest = new ShortestDistanceResult(new Angle(360.0, Angle.AngleType.Az), Const.AxisDirection.None);
                 foreach (var res in distanceToCaliPoints)
                     if (res.angle < closest.angle)
                         closest = res;
@@ -773,7 +773,7 @@ namespace ASCOM.Wise40
             if ((!StateIsOn(DomeState.Parking)) && !wiseSafeToOperate.IsSafeWithoutCheckingForShutdown())
                 throw new ASCOM.InvalidOperationException("Unsafe: " + wiseSafeToOperate.Action("unsafereasons", ""));
 
-            Angle toAng = new Angle(degrees, Angle.Type.Az);
+            Angle toAng = new Angle(degrees, Angle.AngleType.Az);
 
             if (!Calibrated)
             {
@@ -1101,7 +1101,7 @@ namespace ASCOM.Wise40
 
         public void SyncToAzimuth(double degrees)
         {
-            Angle ang = new Angle(degrees, Angle.Type.Az);
+            Angle ang = new Angle(degrees, Angle.AngleType.Az);
 
             if (degrees < 0.0 || degrees >= 360.0)
                 throw new InvalidValueException($"Cannot SyncToAzimuth({ang}), must be >= 0 and < 360");
@@ -1406,11 +1406,11 @@ namespace ASCOM.Wise40
                 if (Simulated)
                 {
                     domeEncoder.Value = savedEncoderValue;
-                    domeEncoder.Calibrate(Angle.FromDegrees(savedAzimuth, Angle.Type.Az));
+                    domeEncoder.Calibrate(Angle.FromDegrees(savedAzimuth, Angle.AngleType.Az));
                 }
                 else if (savedEncoderValue == domeEncoder.Value)
                 {
-                    domeEncoder.Calibrate(Angle.FromDegrees(savedAzimuth, Angle.Type.Az));
+                    domeEncoder.Calibrate(Angle.FromDegrees(savedAzimuth, Angle.AngleType.Az));
                 }
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugDome, "Restored calibration data from \"{0}\", Azimuth: {1}",
@@ -1475,7 +1475,7 @@ namespace ASCOM.Wise40
                     Const.WiseDriverID.Dome, Const.ProfileName.Dome_AutoCalibrate, string.Empty, true.ToString()));
 
                 _minimalMove = Angle.FromDegrees(Convert.ToDouble(driverProfile.GetValue(
-                    Const.WiseDriverID.Dome, Const.ProfileName.Dome_MinimalMovement, string.Empty, "2.0")), Angle.Type.Az);
+                    Const.WiseDriverID.Dome, Const.ProfileName.Dome_MinimalMovement, string.Empty, "2.0")), Angle.AngleType.Az);
             }
 
             wisedomeshutter.ReadProfile();

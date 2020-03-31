@@ -221,7 +221,7 @@ namespace ASCOM.Wise40 //.Telescope
         {
             get
             {
-                Angle ret = wisesite.LocalSiderealTime - Angle.FromHours(Hours, Angle.Type.RA);
+                Angle ret = wisesite.LocalSiderealTime - Angle.FromHours(Hours, Angle.AngleType.RA);
                 #region Delphi
                 //   if dec_Corrected > pi / 2.0 then  // Has the telescope gone North of dec=90deg?
                 //      begin // Adjust the dec and HA values accordingly.

@@ -14,7 +14,7 @@ namespace ASCOM.Wise40 //.Telescope
     {
         public SlewPlotter(TelescopeAxes axis,  double start, double target)
         {
-            Angle.Type angleType = axis == TelescopeAxes.axisPrimary ? Angle.Type.RA : Angle.Type.Dec;
+            Angle.AngleType angleType = axis == TelescopeAxes.axisPrimary ? Angle.AngleType.RA : Angle.AngleType.Dec;
             DateTime utcNow = DateTime.UtcNow;
             string folder = Wise40.Common.Debugger.LogDirectory() + 
                 string.Format("/slew-started-at-{0:D2}h{1:D2}m{2:D2}s_UTC", utcNow.Hour, utcNow.Minute, utcNow.Second);

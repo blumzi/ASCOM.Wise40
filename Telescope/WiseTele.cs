@@ -283,12 +283,12 @@ namespace ASCOM.Wise40
             return rate.ToString();
         }
 
-        public void CheckCoordinateSanity(Angle.Type type, double value)
+        public void CheckCoordinateSanity(Angle.AngleType type, double value)
         {
-            if (type == Angle.Type.Dec && (value < -90.0 || value > 90.0))
+            if (type == Angle.AngleType.Dec && (value < -90.0 || value > 90.0))
                 throw new InvalidValueException($"Invalid Declination {Angle.FromDegrees(value).ToNiceString()}. Must be between -90 and 90");
 
-            if (type == Angle.Type.RA && (value < 0.0 || value > 24.0))
+            if (type == Angle.AngleType.RA && (value < 0.0 || value > 24.0))
                 throw new ASCOM.InvalidValueException($"Invalid RightAscension {Angle.FromHours(value).ToNiceString()}. Must be between 0 to 24");
         }
 
@@ -308,9 +308,9 @@ namespace ASCOM.Wise40
             set
             {
                 activityMonitor.StayActive("TargetDeclination was set");
-                CheckCoordinateSanity(Angle.Type.Dec, value);
+                CheckCoordinateSanity(Angle.AngleType.Dec, value);
 
-                _targetDeclination = Angle.FromDegrees(value, Angle.Type.Dec);
+                _targetDeclination = Angle.FromDegrees(value, Angle.AngleType.Dec);
                 #region debug
                 debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM,
                     $"TargetDeclination Set - {_targetDeclination} ({_targetDeclination.Degrees})");
@@ -335,8 +335,8 @@ namespace ASCOM.Wise40
             set
             {
                 activityMonitor.StayActive("TargetRightAscension was set");
-                CheckCoordinateSanity(Angle.Type.RA, value);
-                _targetRightAscension = Angle.FromHours(value, Angle.Type.RA);
+                CheckCoordinateSanity(Angle.AngleType.RA, value);
+                _targetRightAscension = Angle.FromHours(value, Angle.AngleType.RA);
                 #region debug
                 debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM,
                     $"TargetRightAscension Set - {_targetRightAscension} ({_targetRightAscension.Hours})");
@@ -460,7 +460,7 @@ namespace ASCOM.Wise40
             ascomutils = new Util();
             astroutils = new Astrometry.AstroUtils.AstroUtils();
 
-            parkingDeclination = Angle.FromDegrees(66.0, Angle.Type.Dec);
+            parkingDeclination = Angle.FromDegrees(66.0, Angle.AngleType.Dec);
 
             _trackingRestorer = new TrackingRestorer();
 
@@ -1288,8 +1288,8 @@ namespace ASCOM.Wise40
 
             #region debug
             Angle currPosition = (thisAxis == TelescopeAxes.axisPrimary) ?
-                Angle.FromHours(RightAscension, Angle.Type.RA) :
-                Angle.FromDegrees(Declination, Angle.Type.Dec);
+                Angle.FromHours(RightAscension, Angle.AngleType.RA) :
+                Angle.FromDegrees(Declination, Angle.AngleType.Dec);
 
             List<string> startedMotors = new List<string>();
             #endregion
@@ -1330,8 +1330,8 @@ namespace ASCOM.Wise40
             if (_targetDeclination == null)
                 throw new ValueNotSetException("Target Dec not set");
 
-            Angle ra = Angle.FromHours(TargetRightAscension, Angle.Type.RA);
-            Angle dec = Angle.FromDegrees(TargetDeclination, Angle.Type.Dec);
+            Angle ra = Angle.FromHours(TargetRightAscension, Angle.AngleType.RA);
+            Angle dec = Angle.FromDegrees(TargetDeclination, Angle.AngleType.Dec);
 
             #region debug
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, $"SlewToTargetAsync({ra}, {dec})");
@@ -1381,7 +1381,7 @@ namespace ASCOM.Wise40
                         break;
                 }
             }
-            return SaferAtCoordinates(Angle.FromDegrees(ra, Angle.Type.RA), Angle.FromDegrees(dec, Angle.Type.Dec));
+            return SaferAtCoordinates(Angle.FromDegrees(ra, Angle.AngleType.RA), Angle.FromDegrees(dec, Angle.AngleType.Dec));
         }
 
         public bool SaferAtCoordinates(Angle ra, Angle dec)
@@ -1413,10 +1413,10 @@ namespace ASCOM.Wise40
             if (BypassCoordinatesSafety)
                 return string.Empty;
 
-            Angle altLimit = new Angle(16.0, Angle.Type.Alt);
-            Angle haLimit = Angle.FromHours(7.0, Angle.Type.HA);
-            Angle lower_decLimit = Angle.FromDegrees(-35.0, Angle.Type.Dec);
-            Angle upper_decLimit = Angle.FromDegrees(89.9, Angle.Type.Dec);
+            Angle altLimit = new Angle(16.0, Angle.AngleType.Alt);
+            Angle haLimit = Angle.FromHours(7.0, Angle.AngleType.HA);
+            Angle lower_decLimit = Angle.FromDegrees(-35.0, Angle.AngleType.Dec);
+            Angle upper_decLimit = Angle.FromDegrees(89.9, Angle.AngleType.Dec);
 
             double rar = 0, decr = 0, az = 0, zd = 0; 
             List<string> reasons = new List<string>();
@@ -1430,7 +1430,7 @@ namespace ASCOM.Wise40
                 WiseSite.refractionOption,
                 ref zd, ref az, ref rar, ref decr);
 
-            Angle alt = Angle.FromDegrees(90.0 - zd, Angle.Type.Alt);
+            Angle alt = Angle.FromDegrees(90.0 - zd, Angle.AngleType.Alt);
             if (alt < altLimit)
                 reasons.Add($"Altitude too low: {alt} < {altLimit}");
 
@@ -1869,11 +1869,25 @@ namespace ASCOM.Wise40
 
         private enum ScopeSlewerStatus { Undefined, CloseEnough, ChangedDirection, Canceled };
 
+        private Angle CurrentPosition(Angle.AngleType angleType)
+        {
+            switch (angleType)
+            {
+                case Angle.AngleType.RA:
+                    return Angle.FromHours(RightAscension);
+                case Angle.AngleType.HA:
+                    return Angle.FromHours(HourAngle);
+                case Angle.AngleType.Dec:
+                    return Angle.FromDegrees(Declination);
+                default:
+                    throw new Exception($"Invalid angle type {angleType}");
+            }
+        }
+
         private void ScopeAxisSlewer(TelescopeAxes thisAxis, Angle targetPosition)
         {
-            Angle currentPosition = (thisAxis == TelescopeAxes.axisPrimary) ?
-                            Angle.FromHours(RightAscension, Angle.Type.RA) :
-                            Angle.FromDegrees(Declination, Angle.Type.Dec);
+            Angle.AngleType coordType = targetPosition.Type;
+            Angle currentPosition = CurrentPosition(coordType);
 
             string slewerName = thisAxis.ToString() + "Slewer";
             DateTime start = DateTime.Now;
@@ -1903,9 +1917,7 @@ namespace ASCOM.Wise40
                         r = rate;
                         telescopeCT.ThrowIfCancellationRequested();
 
-                        currentPosition = (thisAxis == TelescopeAxes.axisPrimary) ?
-                            Angle.FromHours(RightAscension, Angle.Type.RA) :
-                            Angle.FromDegrees(Declination, Angle.Type.Dec);
+                        currentPosition = CurrentPosition(coordType);
 
                         // let the other axis know we're ready to move at this rate
                         readyToSlewFlags.AxisBecomesReadyToMoveAtRate(thisAxis, rate);
@@ -1926,9 +1938,7 @@ namespace ASCOM.Wise40
                         // enough distance to move, let's wait for the other axis
                         while (!readyToSlewFlags.AxisCanMoveAtRate(thisAxis, rate))
                         {
-                            currentPosition = (thisAxis == TelescopeAxes.axisPrimary) ?
-                                Angle.FromHours(RightAscension, Angle.Type.RA) :
-                                Angle.FromDegrees(Declination, Angle.Type.Dec);
+                            currentPosition = CurrentPosition(coordType);
                             #region debug
                             debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0} at {1}: current: {2} waiting for the other axis ...",
                                 slewerName, RateName(rate), currentPosition);
@@ -1937,9 +1947,7 @@ namespace ASCOM.Wise40
                             Thread.Sleep(50);
                         }
 
-                        currentPosition = (thisAxis == TelescopeAxes.axisPrimary) ?
-                            Angle.FromHours(RightAscension, Angle.Type.RA) :
-                            Angle.FromDegrees(Declination, Angle.Type.Dec);
+                        currentPosition = CurrentPosition(coordType);
                         distanceToTarget = currentPosition.ShortestDistance(targetPosition);
 
                         // Wait for _moveAxis to start moving thisAxis
@@ -1947,9 +1955,7 @@ namespace ASCOM.Wise40
                         {
                             const int waitForAxisToStartMovingMillis = 500;
 
-                            currentPosition = (thisAxis == TelescopeAxes.axisPrimary) ?
-                                Angle.FromHours(RightAscension, Angle.Type.RA) :
-                                Angle.FromDegrees(Declination, Angle.Type.Dec);
+                            currentPosition = CurrentPosition(coordType);
                             #region debug
                             debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
                                 "{0}: at {1} waiting {2} millis to start _moveAxis({3}, {4}, {5}) ...",
@@ -1963,9 +1969,7 @@ namespace ASCOM.Wise40
                         ShortestDistanceResult currentDistance = null;
                         MovementParameters mp = movementParameters[thisAxis][rate];
 
-                        Angle startingPosition = (thisAxis == TelescopeAxes.axisPrimary) ?
-                            Angle.FromHours(RightAscension, Angle.Type.RA) :
-                            Angle.FromDegrees(Declination, Angle.Type.Dec);
+                        Angle startingPosition = CurrentPosition(coordType);
                         ShortestDistanceResult startingDistance = startingPosition.ShortestDistance(targetPosition);
 
                         // The axis was set in motion, wait for it to either arrive close enough or overshoot
@@ -1973,9 +1977,7 @@ namespace ASCOM.Wise40
                         {
                             telescopeCT.ThrowIfCancellationRequested();
 
-                            currentPosition = (thisAxis == TelescopeAxes.axisPrimary) ?
-                                Angle.FromHours(RightAscension, Angle.Type.RA) :
-                                Angle.FromDegrees(Declination, Angle.Type.Dec);
+                            currentPosition = CurrentPosition(coordType);
 
                             currentDistance = currentPosition.ShortestDistance(targetPosition);
 
@@ -2034,9 +2036,10 @@ namespace ASCOM.Wise40
                             #endregion
                             StopAxisAndWaitForHalt(thisAxis, slewerName, rate);
                             #region plot
-                            Angle angleAfterStopping = (thisAxis == TelescopeAxes.axisPrimary) ?
-                            Angle.FromHours(RightAscension, Angle.Type.RA) :
-                                Angle.FromDegrees(Declination, Angle.Type.Dec);
+                            //Angle angleAfterStopping = (thisAxis == TelescopeAxes.axisPrimary) ?
+                            //Angle.FromHours(RightAscension, Angle.Type.RA) :
+                            //    Angle.FromDegrees(Declination, Angle.Type.Dec);
+                            Angle angleAfterStopping = CurrentPosition(coordType);
                             if (slewPlotter != null)
                                 slewPlotter.Record(angleAfterStopping.Degrees, $"at {RateName(rate)} - after stopping");
                             #endregion
@@ -2105,8 +2108,8 @@ namespace ASCOM.Wise40
 
             #region debug
             Angle a = (axis == TelescopeAxes.axisPrimary) ?
-                Angle.FromHours(RightAscension, Angle.Type.RA) :
-                Angle.FromDegrees(Declination, Angle.Type.Dec);
+                Angle.FromHours(RightAscension, Angle.AngleType.RA) :
+                Angle.FromDegrees(Declination, Angle.AngleType.Dec);
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes, msg + "at {0} waiting for {1} to stop moving ...", a, axis);
             #endregion debug
             while (AxisIsMoving(axis))
@@ -2115,8 +2118,8 @@ namespace ASCOM.Wise40
             }
             #region debug
             Angle b = (axis == TelescopeAxes.axisPrimary) ?
-                Angle.FromHours(RightAscension, Angle.Type.RA) :
-                Angle.FromDegrees(Declination, Angle.Type.Dec);
+                Angle.FromHours(RightAscension, Angle.AngleType.RA) :
+                Angle.FromDegrees(Declination, Angle.AngleType.Dec);
             Angle stoppingDistance = b.ShortestDistance(a).angle;
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes, msg + "at {0} {1} has stopped moving (stopping distance: {2})",
                 b, axis, stoppingDistance.ToNiceString());
@@ -2197,8 +2200,8 @@ namespace ASCOM.Wise40
                       
         private void _doSlewToCoordinatesAsync(Angle targetRightAscension, Angle targetDeclination)
         {
-            CheckCoordinateSanity(Angle.Type.RA, targetRightAscension.Hours);
-            CheckCoordinateSanity(Angle.Type.Dec, targetDeclination.Degrees);
+            CheckCoordinateSanity(Angle.AngleType.RA, targetRightAscension.Hours);
+            CheckCoordinateSanity(Angle.AngleType.Dec, targetDeclination.Degrees);
             // Check coordinates safety ???
 
             slewers.Clear();
@@ -2319,8 +2322,8 @@ namespace ASCOM.Wise40
             TargetRightAscension = RightAscension;
             TargetDeclination = Declination;
 
-            Angle ra = Angle.FromHours(TargetRightAscension, Angle.Type.RA);
-            Angle dec = Angle.FromDegrees(TargetDeclination, Angle.Type.Dec);
+            Angle ra = Angle.FromHours(TargetRightAscension, Angle.AngleType.RA);
+            Angle dec = Angle.FromDegrees(TargetDeclination, Angle.AngleType.Dec);
 
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugASCOM, $"SlewToCoordinates - {ra}, {dec}");
@@ -2359,14 +2362,14 @@ namespace ASCOM.Wise40
         public void SlewToCoordinatesAsync(double RightAscension, double Declination, bool doChecks = true)
         {
 
-            CheckCoordinateSanity(Angle.Type.RA, RightAscension);
-            CheckCoordinateSanity(Angle.Type.Dec, Declination);
+            CheckCoordinateSanity(Angle.AngleType.RA, RightAscension);
+            CheckCoordinateSanity(Angle.AngleType.Dec, Declination);
 
             TargetRightAscension = RightAscension;
             TargetDeclination = Declination;
 
-            Angle ra = Angle.FromHours(TargetRightAscension, Angle.Type.RA);
-            Angle dec = Angle.FromDegrees(TargetDeclination, Angle.Type.Dec);
+            Angle ra = Angle.FromHours(TargetRightAscension, Angle.AngleType.RA);
+            Angle dec = Angle.FromDegrees(TargetDeclination, Angle.AngleType.Dec);
 
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "SlewToCoordinatesAsync({0}, {1})", ra, dec);
@@ -2584,8 +2587,8 @@ namespace ASCOM.Wise40
 
         public void SlewToTarget()
         {
-            Angle ra = Angle.FromHours(TargetRightAscension, Angle.Type.RA);
-            Angle dec = Angle.FromDegrees(TargetDeclination, Angle.Type.Dec);
+            Angle ra = Angle.FromHours(TargetRightAscension, Angle.AngleType.RA);
+            Angle dec = Angle.FromDegrees(TargetDeclination, Angle.AngleType.Dec);
 
             #region debug
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, $"SlewToTarget - {ra}, {dec}");
@@ -2829,14 +2832,50 @@ namespace ASCOM.Wise40
             }
         }
 
+        private void AltAzToHaDec(double alt, double az, ref double ha, ref double dec)
+        {
+            DateTime ut = DateTime.UtcNow;
+            double d1 = 0.0, d2 = 0.0;
+            int ret;
+            WiseSite site = WiseSite.Instance;
+            DriverAccess.ObservingConditions och = WiseSite.och;
+            double raRadians = 0.0, decRadians = 0.0;
+
+            ASCOM.Astrometry.SOFA.SOFA sofa = new ASCOM.Astrometry.SOFA.SOFA();
+            ret = sofa.Dtf2d("UTC", ut.Year, ut.Month, ut.Day, ut.Hour, ut.Minute, ut.Second, ref d1, ref d2);
+            if (ret != 0)
+                throw new Exception($"AltAzToHaDec: sofa.Dtf2d returned: {ret}");
+
+            ret = sofa.ObservedToCelestial(type: "A", ob1: az, ob2: 90.0 - alt, utc1: d1, utc2: d2, dut1: 0.0,
+                elong: site.Longitude.Radians, phi: site.Latitude.Radians, hm: site.Elevation,
+                xp: 0, yp: 0,
+                phpa: och.Pressure, tc: och.Temperature, rh: och.Humidity, wl: 0.55,
+                rc: ref raRadians, dc: ref decRadians);
+            if (ret != 0)
+                throw new Exception($"AltAzToHaDec: sofa.ObservedToCelestial returned: {ret}");
+
+            ha = (site.LocalSiderealTime - Angle.FromRadians(raRadians, Angle.AngleType.RA)).Hours;
+            if (ha < 0)
+                ha += 24;
+            if (ha > 24)
+                ha -= 24;
+            dec = Angle.FromRadians(decRadians, Angle.AngleType.Dec).Degrees;
+        }
+
         public void SlewToAltAz(double Azimuth, double Altitude)
         {
-            throw new ASCOM.MethodNotImplementedException("SlewToAltAz");
+            double ha = Double.MinValue, dec = Double.MinValue;
+
+            AltAzToHaDec(Altitude, Azimuth, ref ha, ref dec);
+            //throw new ASCOM.MethodNotImplementedException("SlewToAltAz");
         }
 
         public void SlewToAltAzAsync(double Azimuth, double Altitude)
         {
-            throw new ASCOM.MethodNotImplementedException("SlewToAltAzAsync");
+            double ha = Double.MinValue, dec = Double.MinValue;
+
+            AltAzToHaDec(Altitude, Azimuth, ref ha, ref dec);
+            //throw new ASCOM.MethodNotImplementedException("SlewToAltAzAsync");
         }
 
         public double RightAscensionRate
@@ -3210,14 +3249,14 @@ namespace ASCOM.Wise40
                     Angle ra = null, dec = null;
                     try
                     {
-                        ra = Angle.FromHours(TargetRightAscension, Angle.Type.RA);
+                        ra = Angle.FromHours(TargetRightAscension, Angle.AngleType.RA);
                         to += " RA " + ra.ToNiceString();
                     }
                     catch { }
 
                     try
                     {
-                        dec = Angle.FromDegrees(TargetDeclination, Angle.Type.Dec);
+                        dec = Angle.FromDegrees(TargetDeclination, Angle.AngleType.Dec);
                         to += " DEC " + dec.ToNiceString();
                     }
                     catch { }

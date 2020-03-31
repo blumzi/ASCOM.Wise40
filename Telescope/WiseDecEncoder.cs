@@ -19,7 +19,7 @@ namespace ASCOM.Wise40
 
         private bool _connected = false;
 
-        public Angle _angle = new Angle(0.0, Angle.Type.Dec);
+        public Angle _angle = new Angle(0.0, Angle.AngleType.Dec);
 
         const double DecMultiplier = Const.twoPI / 600 / 4096;
         const double DecCorrection = 0.35613322;                //20081231 SK: ActualDec-Encoder Dec [rad]
@@ -56,8 +56,8 @@ namespace ASCOM.Wise40
             WiseName = name;
 
             Angle = Simulated ?
-                Angle.FromDegrees(85, Angle.Type.Dec) :
-                Angle.FromRadians(Radians, Angle.Type.Dec);
+                Angle.FromDegrees(85, Angle.AngleType.Dec) :
+                Angle.FromRadians(Radians, Angle.AngleType.Dec);
         }
 
         public double Declination

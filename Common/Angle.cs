@@ -12,7 +12,7 @@ namespace ASCOM.Wise40.Common
     {
         internal static Astrometry.AstroUtils.AstroUtils astroutils = new Astrometry.AstroUtils.AstroUtils();
         internal static ASCOM.Utilities.Util ascomutils = new ASCOM.Utilities.Util();
-        public enum Type {  Deg, RA, Dec, HA, Az, Alt, None };
+        public enum AngleType {  Deg, RA, Dec, HA, Az, Alt, None };
 
         //private double _degrees;
         private double _radians;
@@ -21,12 +21,12 @@ namespace ASCOM.Wise40.Common
         private double _lowest;
         private bool _highestIncluded;
         private bool _lowestIncluded;
-        private Type _type;
+        private AngleType _type;
         private bool _isHMS;
         private readonly static double pi = Math.PI;
 
         public Angle(double val = double.NaN,
-            Type type = Type.Deg,
+            AngleType type = AngleType.Deg,
             double highest = double.PositiveInfinity,
             bool highestIncluded = false,
             double lowest = double.NegativeInfinity,
@@ -35,7 +35,7 @@ namespace ASCOM.Wise40.Common
             this._type = type;
             switch (this._type)
             {
-                case Type.Deg:
+                case AngleType.Deg:
                     _periodic = true;
                     _highest = highest;
                     _lowest = lowest;
@@ -44,7 +44,7 @@ namespace ASCOM.Wise40.Common
                     _isHMS = false;
                     break;
 
-                case Type.RA:
+                case AngleType.RA:
                     _periodic = true;
                     _lowest = 0.0;
                     _lowestIncluded = true;
@@ -53,8 +53,8 @@ namespace ASCOM.Wise40.Common
                     _isHMS = true;
                     break;
 
-                case Type.Dec:
-                case Type.Alt:
+                case AngleType.Dec:
+                case AngleType.Alt:
                     _periodic = false;
                     _lowest = -(pi/2);
                     _lowestIncluded = true;
@@ -63,7 +63,7 @@ namespace ASCOM.Wise40.Common
                     _isHMS = false;
                     break;
 
-                case Type.HA:
+                case AngleType.HA:
                     _periodic = false;
                     _lowest = -12.0;
                     _lowestIncluded = true;
@@ -72,7 +72,7 @@ namespace ASCOM.Wise40.Common
                     _isHMS = true;
                     break;
 
-                case Type.Az:
+                case AngleType.Az:
                     _periodic = true;
                     _lowest = 0;
                     _lowestIncluded = true;
@@ -114,7 +114,7 @@ namespace ASCOM.Wise40.Common
                 char[] delimiters = { ':', 'd', 'm', 's' };
                 double deg = 0.0, min = 0.0, sec = 0.0;
 
-                this._type = Type.Deg;
+                this._type = AngleType.Deg;
                 this._isHMS = false;
                 this._periodic = false;
                 this._highest = double.PositiveInfinity;
@@ -150,7 +150,7 @@ namespace ASCOM.Wise40.Common
                 char[] delimiters = { 'h', 'm', 's' };
                 double hr = 0.0, min = 0.0, sec = 0.0;
 
-                this._type = Type.RA;
+                this._type = AngleType.RA;
                 this._isHMS = true;
                 this._periodic = true;
                 this._highest = 24.0;
@@ -190,6 +190,14 @@ namespace ASCOM.Wise40.Common
         //    }
         //}
 
+        public AngleType Type
+        {
+            get
+            {
+                return _type;
+            }
+        }
+
         public static double Deg2Rad(double deg)
         {
             return (deg * pi) / 180.0;
@@ -210,17 +218,17 @@ namespace ASCOM.Wise40.Common
             return hours * 2.0 * pi / 24.0;
         }
 
-        public static Angle FromRadians(double rad, Type type = Type.Deg)
+        public static Angle FromRadians(double rad, AngleType type = AngleType.Deg)
         {
             return new Angle(rad * 180.0 / Math.PI, type);
         }
 
-        public static Angle FromDegrees(double deg, Type type = Type.Deg)
+        public static Angle FromDegrees(double deg, AngleType type = AngleType.Deg)
         {
             return new Angle(deg, type);
         }
 
-        public static Angle FromHours(double hours, Type type = Type.RA)
+        public static Angle FromHours(double hours, AngleType type = AngleType.RA)
         {
             return new Angle(hours, type);
         }        
@@ -235,7 +243,7 @@ namespace ASCOM.Wise40.Common
 
                 d = (sign < 0) ? a._highest - abs : a._lowest + abs;
             }
-            else if (Math.Abs(d) > a._highest && (a._type == Type.Dec || a._type == Type.Alt))
+            else if (Math.Abs(d) > a._highest && (a._type == AngleType.Dec || a._type == AngleType.Alt))
             {
                 double abs = Math.Abs(d);
                 int sign = Math.Sign(d);
@@ -314,7 +322,7 @@ namespace ASCOM.Wise40.Common
                 return "Invalid";
             if (_isHMS)
                 return ascomutils.DegreesToHMS(Degrees, "h", "m", "s", 1);
-            else if (_type == Type.Az || _type == Type.Alt)
+            else if (_type == AngleType.Az || _type == AngleType.Alt)
                 return Degrees.ToString("0.0°");
             else
                 return ascomutils.DegreesToDMS(Degrees, "°", "'", "\"", 1);
@@ -520,7 +528,7 @@ namespace ASCOM.Wise40.Common
 
         public static readonly Angle zero = new Angle(0.0);
         public static readonly Angle invalid = new Angle(double.NaN);
-        public static readonly Angle invalidAz = new Angle(double.NaN, Type.Az);
+        public static readonly Angle invalidAz = new Angle(double.NaN, AngleType.Az);
         public static double epsilonRad = Deg2Rad((1.0 / 3600.0) / 1000000.0);    // 1 micro-second
     }
 }

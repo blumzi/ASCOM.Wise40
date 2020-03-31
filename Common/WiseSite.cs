@@ -173,7 +173,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return Angle.FromDegrees(_onSurface.Latitude, Angle.Type.Dec);
+                return Angle.FromDegrees(_onSurface.Latitude, Angle.AngleType.Dec);
             }
         }
 
