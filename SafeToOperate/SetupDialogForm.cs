@@ -79,7 +79,7 @@ namespace ASCOM.Wise40SafeToOperate
             }
 
             double deg = Convert.ToDouble(textBoxSunElevationAtDawn.Text);
-            if (deg > 0 || deg < -20)
+            if (deg > WiseSafeToOperate.sunSensor.MaxSettableElevation || deg < WiseSafeToOperate.sunSensor.MinSettableElevation)
             {
                 textBoxSunElevationAtDawn.ForeColor = errorColor;
                 valid = false;
@@ -88,7 +88,7 @@ namespace ASCOM.Wise40SafeToOperate
                 WiseSafeToOperate.sunSensor.MaxAtDawnAsString = deg.ToString();
 
             deg = Convert.ToDouble(textBoxSunElevationAtDusk.Text);
-            if (deg > 0 || deg < -20)
+            if (deg > WiseSafeToOperate.sunSensor.MaxSettableElevation || deg < WiseSafeToOperate.sunSensor.MinSettableElevation)
             {
                 textBoxSunElevationAtDusk.ForeColor = errorColor;
                 valid = false;
@@ -187,10 +187,13 @@ namespace ASCOM.Wise40SafeToOperate
 
             toolTip1.SetToolTip(textBoxHumidity, "0 to 100 (%)");
             toolTip1.SetToolTip(textBoxAge, "0 to use data of any age (sec)");
-            toolTip1.SetToolTip(textBoxHumidity, "between 0 and 100 (%)");
-            toolTip1.SetToolTip(textBoxWind, "greater than 0 (mps)");
-            toolTip1.SetToolTip(textBoxSunElevationAtDawn, "between -20 and 0 (deg)");
-            toolTip1.SetToolTip(textBoxSunElevationAtDusk, "between -20 and 0 (deg)");
+            toolTip1.SetToolTip(textBoxHumidity, "Between 0 and 100 (%)");
+            toolTip1.SetToolTip(textBoxWind, "Greater than 0 (mps)");
+
+            string tip = $"Between {WiseSafeToOperate.sunSensor.MinSettableElevation} and {WiseSafeToOperate.sunSensor.MaxSettableElevation} (deg)";
+            toolTip1.SetToolTip(textBoxSunElevationAtDawn, tip);
+            toolTip1.SetToolTip(textBoxSunElevationAtDusk, tip);
+
         }
 
         private void textBoxWind_Validating(object sender, CancelEventArgs e)

@@ -13,6 +13,10 @@ namespace ASCOM.Wise40SafeToOperate
         private double _maxAtDawn, _maxAtDusk;
         private const double defaultMaxAtDawn = -10.0;
         private const double defaultMaxAtDusk = -4.0;
+        public double MinSettableElevation { get; set; }
+        public double MaxSettableElevation { get; set; }
+        private const double DefaultMinSettableElevation = -20;
+        private const double DefaultMaxSettableElevation = 5;
         private bool _wasSafe = false;
         private string _status;
 
@@ -38,12 +42,16 @@ namespace ASCOM.Wise40SafeToOperate
         {
             MaxAtDawnAsString = wisesafetooperate._profile.GetValue(Const.WiseDriverID.SafeToOperate, WiseName, "MaxAtDawn", defaultMaxAtDawn.ToString());
             MaxAtDuskAsString = wisesafetooperate._profile.GetValue(Const.WiseDriverID.SafeToOperate, WiseName, "MaxAtDusk", defaultMaxAtDusk.ToString());
+            MaxSettableElevation = Convert.ToDouble(wisesafetooperate._profile.GetValue(Const.WiseDriverID.SafeToOperate, WiseName, "MaxSettableElevation", DefaultMaxSettableElevation.ToString()));
+            MinSettableElevation = Convert.ToDouble(wisesafetooperate._profile.GetValue(Const.WiseDriverID.SafeToOperate, WiseName, "MinSettableElevation", DefaultMinSettableElevation.ToString()));
         }
 
         public override void writeSensorProfile()
         {
             wisesafetooperate._profile.WriteValue(Const.WiseDriverID.SafeToOperate, WiseName, MaxAtDawnAsString, "MaxAtDawn");
             wisesafetooperate._profile.WriteValue(Const.WiseDriverID.SafeToOperate, WiseName, MaxAtDuskAsString, "MaxAtDusk");
+            wisesafetooperate._profile.WriteValue(Const.WiseDriverID.SafeToOperate, WiseName, MaxSettableElevation.ToString(), "MaxSettableElevation");
+            wisesafetooperate._profile.WriteValue(Const.WiseDriverID.SafeToOperate, WiseName, MinSettableElevation.ToString(), "MinSettableElevation");
         }
 
         public override Reading getReading()
