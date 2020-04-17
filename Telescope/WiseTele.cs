@@ -901,18 +901,7 @@ namespace ASCOM.Wise40
             }
         }
 
-        public static bool EnslavesDome
-        {
-            get
-            {
-                return _enslavesDome;
-            }
-
-            set
-            {
-                _enslavesDome = value;
-            }
-        }
+        public static bool EnslavesDome { get; set; }
 
         public static bool CalculatesRefraction
         {
@@ -1054,8 +1043,7 @@ namespace ASCOM.Wise40
             get
             {
                 foreach (WiseVirtualMotor m in directionMotors)
-                    if (m.isOn)
-                        return true;
+                    if (m.isOn) return true;
                 return false;
             }
         }
@@ -1070,7 +1058,8 @@ namespace ASCOM.Wise40
             {
                 bool ret = (slewers != null && slewers.Count > 0) ||
                     (!IsPulseGuiding && DirectionMotorsAreActive) ||
-                    _movingToSafety;                // triggered by SafeAtCoordinates()
+                    _movingToSafety ||                                  // triggered by SafeAtCoordinates()
+                    (EnslavesDome && domeSlaveDriver.ShutterIsMoving);
 
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugASCOM, $"Slewing Get - {ret}");
@@ -1345,6 +1334,9 @@ namespace ASCOM.Wise40
 
             if (!wisesafetooperate.IsSafe && !ShuttingDown)
                 throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList()));
+
+            if (EnslavesDome && domeSlaveDriver.ShutterIsMoving)
+                throw new InvalidOperationException("Cannot SlewToTargetAsync while the dome shutter is moving");
 
             string notSafe = SafeAtCoordinates(ra, dec);
             if (notSafe != string.Empty)
@@ -2338,6 +2330,9 @@ namespace ASCOM.Wise40
             if (!wisesafetooperate.IsSafe && !ShuttingDown)
                 throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList()));
 
+            if (EnslavesDome && domeSlaveDriver.ShutterIsMoving)
+                throw new InvalidOperationException("Cannot SlewToAltAz while the dome shutter is moving");
+
             if (!noSafetyCheck)
             {
                 string notSafe = SafeAtCoordinates(ra, dec);
@@ -2387,6 +2382,9 @@ namespace ASCOM.Wise40
                 if (notSafe != string.Empty)
                     throw new InvalidOperationException(notSafe);
             }
+
+            if (EnslavesDome && domeSlaveDriver.ShutterIsMoving)
+                throw new InvalidOperationException("Cannot SlewToAltAz while the dome shutter is moving");
 
             if (!ShuttingDown && !wisesafetooperate.IsSafe)
                 throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList()));
@@ -2599,6 +2597,9 @@ namespace ASCOM.Wise40
 
             if (!Tracking)
                 throw new InvalidOperationException("Cannot SlewToCoordinates while NOT Tracking");
+
+            if (EnslavesDome && domeSlaveDriver.ShutterIsMoving)
+                throw new InvalidOperationException("Cannot SlewToAltAz while the dome shutter is moving");
 
             if (!wisesafetooperate.IsSafe && !ShuttingDown)
                 throw new InvalidOperationException(string.Join(", ", wisesafetooperate.UnsafeReasonsList()));
@@ -2864,6 +2865,9 @@ namespace ASCOM.Wise40
 
         public void SlewToAltAz(double Azimuth, double Altitude)
         {
+            if (EnslavesDome && domeSlaveDriver.ShutterIsMoving)
+                throw new InvalidOperationException("Cannot SlewToAltAz while the dome shutter is moving");
+
             double ha = Double.MinValue, dec = Double.MinValue;
 
             AltAzToHaDec(Altitude, Azimuth, ref ha, ref dec);
@@ -2872,6 +2876,9 @@ namespace ASCOM.Wise40
 
         public void SlewToAltAzAsync(double Azimuth, double Altitude)
         {
+            if (EnslavesDome && domeSlaveDriver.ShutterIsMoving)
+                throw new InvalidOperationException("Cannot SlewToAltAz while the dome shutter is moving");
+
             double ha = Double.MinValue, dec = Double.MinValue;
 
             AltAzToHaDec(Altitude, Azimuth, ref ha, ref dec);

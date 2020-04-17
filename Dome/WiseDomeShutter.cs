@@ -173,7 +173,7 @@ namespace ASCOM.Wise40
                     _wisedomeshutter._state = ShutterState.shutterClosed;
                     _wisedomeshutter._stateReason =
                         $"PeriodicReader: Shutter at {reading} (close enough to lowest value {_wisedomeshutter._lowestValue}) and not moving";
-                    if (_prevState != ShutterState.shutterClosed)
+                    if (_wisedomeshutter.IsMoving)
                         _wisedomeshutter.Stop("Shutter closed");
                 }
 
@@ -182,7 +182,7 @@ namespace ASCOM.Wise40
                     _wisedomeshutter._state = ShutterState.shutterOpen;
                     _wisedomeshutter._stateReason =
                         $"PeriodicReader: Shutter at {reading} (close enough to highest value {_wisedomeshutter._highestValue}) and not moving";
-                    if (_prevState != ShutterState.shutterOpen)
+                    if (_wisedomeshutter.IsMoving)
                         _wisedomeshutter.Stop("Shutter opened");
                 }
                 else if (_prevReading == Int32.MinValue)
@@ -367,8 +367,7 @@ namespace ASCOM.Wise40
                     });
                 webClient.SetPacing(WebClient.Pacing.Slow);
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugShutter,
-                    $"Stop: was moving (openPin: {openPinWasOn}, closePin: {closePinWasOn})");
+                debugger.WriteLine(Debugger.DebugLevel.DebugShutter, $"Stop: stopped {(openPinWasOn ? "opening" : "closing")}");
                 #endregion
             }
             else

@@ -325,5 +325,13 @@ namespace ASCOM.Wise40
 
             return Angle.FromRadians(DomeAz);
         }
+
+        public bool ShutterIsMoving
+        {
+            get
+            {
+                return wisedome.wisedomeshutter.IsMoving;
+            }
+        }
     }
 }
