@@ -11,12 +11,12 @@ namespace ASCOM.Wise40
 {
     public class Slewers
     {
-        private Debugger debugger = Debugger.Instance;
+        private readonly Debugger debugger = Debugger.Instance;
         public enum Type { Dome, Ra, Dec };
         private static volatile Slewers _instance;
-        private static object syncObject = new object();
-        private static ConcurrentDictionary<Type, WiseTele.SlewerTask> _active = new ConcurrentDictionary<Type, WiseTele.SlewerTask>();
-        private static ActivityMonitor activityMonitor = ActivityMonitor.Instance;
+        private readonly static object syncObject = new object();
+        private readonly static ConcurrentDictionary<Type, WiseTele.SlewerTask> _active = new ConcurrentDictionary<Type, WiseTele.SlewerTask>();
+        private readonly static ActivityMonitor activityMonitor = ActivityMonitor.Instance;
 
         public Slewers() { }
         static Slewers() { }
@@ -43,7 +43,7 @@ namespace ASCOM.Wise40
             if (!_active.TryAdd(slewer.type, slewer))
             {
                 #region debug
-                debugger.WriteLine(Common.Debugger.DebugLevel.DebugAxes, $"ActiveSlewers: {slewer} already active [{before}]");
+                debugger.WriteLine(Common.Debugger.DebugLevel.DebugAxes, $"ActiveSlewers: {slewer.type} already active [{before}]");
                 #endregion
             }
 
@@ -55,7 +55,7 @@ namespace ASCOM.Wise40
         public bool Delete(Slewers.Type type)
         {
             string before = _active.ToCSV();
-            if (!_active.TryRemove(type, out WiseTele.SlewerTask slewer))
+            if (!_active.TryRemove(type, out _))
             {
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"ActiveSlewers: ignored removal of {type}, [{before}]");
@@ -111,7 +111,7 @@ namespace ASCOM.Wise40
             return _active.ContainsKey(type);
         }
 
-        public void Clear()
+        public static void Clear()
         {
             _active.Clear();
         }

@@ -86,6 +86,8 @@ namespace ASCOM.Wise40
 
         public void SlewToAz(double az, string reason)
         {
+            Angle azAngle = new Angle(az, Angle.AngleType.Az);
+
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
                 $"DomeSlaveDriver: Asking dome to SlewToAzimuth({new Angle(az, Angle.AngleType.Az)}, {reason})");
@@ -107,12 +109,10 @@ namespace ASCOM.Wise40
             {
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                    "DomeSlaveDriver:SlewToAz got \"{0}\" while slewing to {1}, Aborting slew!",
-                    ex.Message,
-                    new Angle(az, Angle.AngleType.Az));
+                    $"DomeSlaveDriver:SlewToAz got \"{ex.Message}\"\nat {ex.StackTrace}\nwhile slewing to {azAngle}, Aborting slew!");
                 #endregion
-                wisedome.AbortSlew();
-                throw ex;
+                wisedome.AbortSlew($"from DomeSlaveDriver:SlewToAz({azAngle})");
+                //throw ex;
             }
         }
 
@@ -136,8 +136,8 @@ namespace ASCOM.Wise40
                 debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
                     $"DomeSlaveDriver:  while waiting for dome to park at {Angle.FromDegrees(wisedome.ParkAzimuth)}nCaught {ex.Message} at\n{ex.StackTrace}");
                 #endregion
-                wisedome.AbortSlew();
-                throw ex;
+                wisedome.AbortSlew("from Park");
+                //throw ex;
             }
 
             #region debug
@@ -159,8 +159,8 @@ namespace ASCOM.Wise40
             }
             catch (Exception ex)
             {
-                wisedome.AbortSlew();
-                throw ex;
+                wisedome.AbortSlew("from FindHome()");
+                //throw ex;
             }
 
             #region debug
@@ -193,7 +193,7 @@ namespace ASCOM.Wise40
 
         public void AbortSlew()
         {
-            wisedome.AbortSlew();
+            wisedome.AbortSlew("from DomeSlaveDriver.AbortSlew()");
             WiseTele.Instance.slewers.Delete(Slewers.Type.Dome);
         }
 

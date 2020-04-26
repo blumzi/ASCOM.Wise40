@@ -61,7 +61,7 @@ namespace ASCOM.Wise40 //.Telescope
                 case ActionWhenNotSafe.None:
                     return;
                 case ActionWhenNotSafe.StopMotors:
-                    wisetele.Stop();
+                    wisetele.Stop($"SafetyChecker: ({reason})");
                     break;
                 case ActionWhenNotSafe.Backoff:
                     wisetele.Backoff();

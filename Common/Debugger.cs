@@ -76,8 +76,12 @@ namespace ASCOM.Wise40.Common
                 _currentLevel = level;
 
             _appName = Path.GetFileNameWithoutExtension(Application.ExecutablePath);
-            Trace.AutoFlush = true;
+            Debug.AutoFlush = true;
             _initialized = true;
+
+            WriteLine(DebugLevel.DebugLogic, $"##");
+            WriteLine(DebugLevel.DebugLogic, $"## ============= {_appName} started ====================");
+            WriteLine(DebugLevel.DebugLogic, $"##");
         }
 
         public void SetWindow(ListBox list, bool append = false)

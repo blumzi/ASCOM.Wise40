@@ -12,7 +12,7 @@ namespace ASCOM.Wise40SafeToOperate
     public class HumanInterventionSensor : Sensor
     {
         private bool _wasSafe = false;
-        private HumanIntervention.HumanInterventionDetails details;
+        private HumanInterventionDetails details;
 
         public HumanInterventionSensor(WiseSafeToOperate instance) :
             base("HumanIntervention",
@@ -100,6 +100,6 @@ namespace ASCOM.Wise40SafeToOperate
     {
         public string Name;
         public bool IsSafe;
-        public HumanIntervention.HumanInterventionDetails Details;
+        public HumanInterventionDetails Details;
     }
 }

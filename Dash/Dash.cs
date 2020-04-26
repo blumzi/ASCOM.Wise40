@@ -95,9 +95,25 @@ namespace Dash
 
             filterWheelForm = new FilterWheelForm(wiseFilterWheel);
 
-            focuserMaxStep = wiseFocuser.MaxStep;
-            focuserLowerLimit = Convert.ToInt32(wiseFocuser.Action("limit", "lower"));
-            focuserUpperLimit = Convert.ToInt32(wiseFocuser.Action("limit", "upper"));
+            dashStatus = new Statuser(labelDashStatus);
+            telescopeStatus = new Statuser(labelTelescopeStatus);
+            domeStatus = new Statuser(labelDomeStatus);
+            shutterStatus = new Statuser(labelDomeShutterStatus, toolTip);
+            focuserStatus = new Statuser(labelFocuserStatus);
+            safetooperateStatus = new Statuser(labelWeatherStatus, toolTip);
+            filterWheelStatus = new Statuser(labelFilterWheelStatus);
+            filterWheelArduinoStatus = new Statuser(labelFWArduinoStatus);
+
+            try
+            {
+                focuserMaxStep = wiseFocuser.MaxStep;
+                focuserLowerLimit = Convert.ToInt32(wiseFocuser.Action("limit", "lower"));
+                focuserUpperLimit = Convert.ToInt32(wiseFocuser.Action("limit", "upper"));
+            }
+            catch (Exception ex)
+            {
+                focuserStatus.Show("Cannot connect to ASCOM server", severity: Statuser.Severity.Error, silent: true);
+            }
 
             readonlyControls = new List<Control>() {
                     textBoxRA, textBoxDec,
@@ -157,15 +173,6 @@ namespace Dash
                 debugShutterToolStripMenuItem,
                 debugDAQsToolStripMenuItem,
             };
-
-            dashStatus = new Statuser(labelDashStatus);
-            telescopeStatus = new Statuser(labelTelescopeStatus);
-            domeStatus = new Statuser(labelDomeStatus);
-            shutterStatus = new Statuser(labelDomeShutterStatus, toolTip);
-            focuserStatus = new Statuser(labelFocuserStatus);
-            safetooperateStatus = new Statuser(labelWeatherStatus, toolTip);
-            filterWheelStatus = new Statuser(labelFilterWheelStatus);
-            filterWheelArduinoStatus = new Statuser(labelFWArduinoStatus);
 
             menuStrip.RenderMode = ToolStripRenderMode.ManagerRenderMode;
             ToolStripManager.Renderer = new ASCOM.Wise40.Common.Wise40ToolstripRenderer();
@@ -237,7 +244,7 @@ namespace Dash
             bool refreshFocus = focusPacer.ShouldRefresh(now);
             bool refreshFilterWheel = WiseSite.OperationalMode != WiseSite.OpMode.LCO && filterWheelPacer.ShouldRefresh(now);
             bool refreshForecast = forecastPacer.ShouldRefresh(now);
-            string tip = null;
+            string tip;
 
             #region GetStatuses
             if (refreshTelescope)

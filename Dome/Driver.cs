@@ -234,7 +234,7 @@ namespace ASCOM.Wise40 //.Dome
 
         public void AbortSlew()
         {
-            wisedome.AbortSlew();
+            wisedome.AbortSlew("from Dome.AbortSlew()");
         }
 
         public double Altitude

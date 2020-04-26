@@ -66,7 +66,9 @@ namespace ASCOM.Wise40.Common
         {
             if (!(WiseSite.CurrentProcessIs(Const.Application.RESTServer) ||
                     WiseSite.CurrentProcessIs(Const.Application.OCH)))
+            {
                 return;
+            }
 
             if (time.CompareTo(_lastLoggedTime) <= 0)
                 return;
@@ -74,7 +76,7 @@ namespace ASCOM.Wise40.Common
             lock (_lock)
             {
                 string sql = $"insert into weather (time, Station, {string.Join(", ", dict.Keys)})" +
-                    $" values(TIMESTAMP('{time.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss.fff")}'), '{_stationName}', {string.Join(", ", dict.Values)})";
+                    $" values(TIMESTAMP('{time.ToUniversalTime():yyyy-MM-dd HH:mm:ss.fff}'), '{_stationName}', {string.Join(", ", dict.Values)})";
 
                 try
                 {
@@ -118,7 +120,7 @@ namespace ASCOM.Wise40.Common
         /// </summary>
         static void CheckSqlConnection()
         {
-            if (! _sqlConn.Ping())
+            if (/*!_sqlConn.Ping()*/ _sqlConn.State == System.Data.ConnectionState.Broken || _sqlConn.State == System.Data.ConnectionState.Closed)
             {
                 _sqlConn.Close();
                 OpenSqlConnection();

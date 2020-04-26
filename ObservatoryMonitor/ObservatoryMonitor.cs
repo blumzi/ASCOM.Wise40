@@ -1,67 +1,58 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Windows.Forms;
 
 using ASCOM.Utilities;
-using ASCOM;
-using ASCOM.DriverAccess;
 using ASCOM.DeviceInterface;
 using ASCOM.Wise40SafeToOperate;
 using ASCOM.Wise40.Common;
 using Newtonsoft.Json;
 
 using System.Net;
-using System.Net.Http;
-using System.IO;
 using System.Diagnostics;
-
 
 namespace ASCOM.Wise40.ObservatoryMonitor
 {
     public partial class ObsMainForm : Form
     {
-        static bool _simulated = WiseObject.Simulated;
+        private static bool _simulated = WiseObject.Simulated;
         public const int _maxLogItems = 100000;
-        static DriverAccess.Telescope wisetelescope = null;
-        static WiseSite wisesite = WiseSite.Instance;
-        static DriverAccess.Dome wisedome = null;
-        static DriverAccess.SafetyMonitor wisesafetooperate = null;
-        Version version = new Version(0, 2);
-        static DateTime _nextCheck = DateTime.Now + TimeSpan.FromSeconds(20);
-        static bool _checking = false;
+        private static DriverAccess.Telescope wisetelescope = null;
+        private static readonly WiseSite wisesite = WiseSite.Instance;
+        private static DriverAccess.Dome wisedome = null;
+        private static DriverAccess.SafetyMonitor wisesafetooperate = null;
+        private readonly Version version = new Version(0, 2);
+        private static DateTime _nextCheck = DateTime.Now + TimeSpan.FromSeconds(20);
+        private static bool _checking = false;
         static public TimeSpan _intervalBetweenChecks;
-        static public int _minutesToIdle;
-        static TimeSpan _intervalBetweenLogs = _simulated ? TimeSpan.FromSeconds(10) : TimeSpan.FromSeconds(20);
-        static DateTime _lastLog = DateTime.MinValue;
-        static readonly string deltaFromUT = "(UT+" + DateTime.Now.Subtract(DateTime.UtcNow).Hours.ToString() + ")";
+        static public int MinutesToIdle { get; set; }
+        private static TimeSpan _intervalBetweenLogs = _simulated ? TimeSpan.FromSeconds(10) : TimeSpan.FromSeconds(20);
+        private static DateTime _lastLog = DateTime.MinValue;
+        private static readonly string deltaFromUT = "(UT+" + DateTime.Now.Subtract(DateTime.UtcNow).Hours.ToString() + ")";
 
-        static Color normalColor = Statuser.colors[Statuser.Severity.Normal];
-        static Color unsafeColor = Statuser.colors[Statuser.Severity.Error];
-        static Color safeColor = Statuser.colors[Statuser.Severity.Good];
-        static Color warningColor = Statuser.colors[Statuser.Severity.Warning];
+        private static readonly Color normalColor = Statuser.colors[Statuser.Severity.Normal];
+        private static readonly Color unsafeColor = Statuser.colors[Statuser.Severity.Error];
+        private static readonly Color safeColor = Statuser.colors[Statuser.Severity.Good];
+        private static readonly Color warningColor = Statuser.colors[Statuser.Severity.Warning];
 
-        static CancellationTokenSource CTS = new CancellationTokenSource();
-        static CancellationToken CT;
-        static TimeZoneInfo tz = TimeZoneInfo.Local;
+        private static readonly CancellationTokenSource CTS = new CancellationTokenSource();
+        private static CancellationToken CT;
 
-        TelescopeDigest telescopeDigest;
-        DomeDigest domeDigest;
-        SafeToOperateDigest safetooperateDigest;
+        private TelescopeDigest telescopeDigest;
+        private DomeDigest domeDigest;
+        private SafeToOperateDigest safetooperateDigest;
 
-        private static Common.Debugger debugger = Common.Debugger.Instance;
+        private static readonly Common.Debugger debugger = Common.Debugger.Instance;
 
         public static bool connected = false;
 
         public static bool shuttingDown = false;
 
-        public void CloseConnections()
+        public static void CloseConnections()
         {
             if (wisetelescope != null)
             {
@@ -112,9 +103,10 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                         Application.DoEvents();
                     }
                     connected = true;
-                } catch (Exception ex)
+                }
+                catch (Exception ex)
                 {
-                    Log(string.Format("CheckConnections:Server:Exception: {0}", ex.InnerException == null ? ex.Message : ex.InnerException.Message));
+                    Log($"CheckConnections:Server:Exception: {(ex.InnerException ?? ex).Message}");
                     connected = false;
                     return;
                 }
@@ -167,7 +159,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             }
             catch (Exception ex)
             {
-                Log(string.Format("CheckConnections:Exception: {0}", ex.InnerException == null ? ex.Message : ex.InnerException.Message));
+                Log($"CheckConnections:Exception: {(ex.InnerException ?? ex).Message}");
                 connected = false;
             }
             #endregion
@@ -185,7 +177,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
             updateManualInterventionControls();
             UpdateOpModeControls();
-            
+
             conditionsBypassToolStripMenuItem.Text = "";
             conditionsBypassToolStripMenuItem.Enabled = false;
         }
@@ -213,7 +205,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             } catch (Exception ex)
             {
                 UpdateCheckingStatus("");
-                Log(string.Format("CheckSituation:Exception: {0}", ex.InnerException == null ? ex.Message : ex.InnerException.Message));
+                Log($"CheckSituation:Exception: {(ex.InnerException ?? ex).Message}");
                 return;
             }
             #endregion
@@ -330,7 +322,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
         delegate void UpdateCheckingStatus_delegate(string text);
 
-        void UpdateCheckingStatus(string s)
+        private void UpdateCheckingStatus(string s)
         {
             if (labelNextCheck.InvokeRequired)
             {
@@ -343,21 +335,21 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             }
         }
 
-        void RefreshDisplay()
+        private void RefreshDisplay()
         {
             DateTime localTime = DateTime.Now.ToLocalTime();
-            labelDate.Text = localTime.ToString("ddd, dd MMM yyyy");
-            labelTime.Text = localTime.ToString("hh:mm:ss tt " + deltaFromUT);
+            labelDate.Text = $"{localTime:ddd, dd MMM yyyy}";
+            labelTime.Text = $"{localTime:hh:mm:ss tt} " + deltaFromUT;
             DateTime now = DateTime.Now;
 
             string s = string.Empty;
             TimeSpan remaining = _nextCheck.Subtract(now);
             if (remaining.Minutes > 0)
-                s += string.Format("{0:D2}m", remaining.Minutes);
-            s += string.Format("{0:D2}s", remaining.Seconds);
+                s += $"{remaining.Minutes:D2}m";
+            s += $"{remaining.Seconds:D2}s";
             labelNextCheck.Text = "in " + s;
 
-            if (telescopeDigest != null && !telescopeDigest.ShuttingDown)
+            if (telescopeDigest?.ShuttingDown == false)
                 buttonManualIntervention.Enabled = true;
             updateManualInterventionControls();
 
@@ -381,15 +373,15 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             if (wisesafetooperate == null || safetooperateDigest == null)
                 return;
 
-            string text = string.Empty, tip = string.Empty;
+            string text, tip = "";
             string reasons = string.Join(",", safetooperateDigest.UnsafeReasons);
-            Color color = normalColor;
+            Color color;
             
             if (!safetooperateDigest.HumanIntervention.Safe)
             {
                 text = "Intervention";
                 color = unsafeColor;
-                tip = SimplifiedHumanIntervention(HumanIntervention.Details);
+                tip = String.Join("\n", safetooperateDigest.UnsafeReasons).Replace(Const.recordSeparator, "\n  ");
             }
             else if (safetooperateDigest.Bypassed)
             {
@@ -442,7 +434,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             Application.Exit();
         }
 
-        delegate void LogDelegate(string text);
+        private delegate void LogDelegate(string text);
 
         private void Log(string msg, int afterSecs = 0, bool debugOnly = false)
         {
@@ -452,7 +444,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugLogic, msg);
             if (!debugOnly)
             {
-                logToGUI(string.Format("{0} - {1}", DateTime.UtcNow.ToString("H:mm:ss UT"), msg));
+                logToGUI($"{DateTime.UtcNow:H:mm:ss UT} - {msg}");
                 _lastLog = DateTime.UtcNow;
             }
         }
@@ -481,7 +473,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
         {
             if (ObservatoryIsLogicallyParked && ObservatoryIsPhysicallyParked)
             {
-                Log(string.Format($"Observatory is logically and physically parked. Ignoring \"{reason}\"."));
+                Log($"Observatory is logically and physically parked. Ignoring \"{reason}\".");
                 return;
             }
 
@@ -495,7 +487,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 }
                 catch (Exception ex)
                 {
-                    Log(string.Format("DoShutdownObservatory:Exception: {0}", ex.InnerException == null ? ex.Message : ex.InnerException.Message));
+                    Log($"DoShutdownObservatory:Exception: {(ex.InnerException ?? ex).Message}");
                 }
             }, CT);
         }
@@ -556,12 +548,9 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                     if (CT.IsCancellationRequested) throw new Exception("Shutdown aborted");
 
                     shuttingDown = true;
-                    Log(string.Format("   Starting Wise40 park (reason: {0}) ...", reason));
+                    Log($"   Starting Wise40 park (reason: {reason}) ...");
 
-                    Log(string.Format("    Parking telescope at {0} {1} and dome at {2} ...",
-                        wisesite.LocalSiderealTime,
-                        (new Angle(66, Angle.AngleType.Dec)).ToString(),
-                        (new Angle(90, Angle.AngleType.Az).ToNiceString())));
+                    Log($"    Parking telescope at {wisesite.LocalSiderealTime} {new Angle(66, Angle.AngleType.Dec)} and dome at {new Angle(90, Angle.AngleType.Az).ToNiceString()} ...");
 
                     #region Initiate shutdown
                     Task telescopeShutdownTask = Task.Run(() =>
@@ -576,7 +565,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                         }
                         catch (Exception ex)
                         {
-                            Log(string.Format("ShutdownObservatory:Exception: {0}", ex.InnerException == null ? ex.Message : ex.InnerException.Message));
+                            Log($"ShutdownObservatory:Exception: {(ex.InnerException ?? ex).Message}");
                         }
                     }, CT);
                     #endregion
@@ -666,7 +655,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                             }
                             SleepWhileProcessingEvents();
                             Angle az = DomeAzimuth;
-                            Log(string.Format("  Dome at {0} ...", az.ToNiceString()), 10);
+                            Log($"  Dome at {az.ToNiceString()} ...", 10);
                         } while (!wisedome.AtPark);
                         Log("    Dome is parked");
                     }
@@ -730,18 +719,9 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 return Angle.FromDegrees(degrees, Angle.AngleType.Az);
             }
         }
-
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
             new ObservatoryMonitorAboutForm(version).Show();
-        }
-
-        private string SimplifiedHumanIntervention(HumanIntervention.HumanInterventionDetails details)
-        {
-            return JsonConvert.SerializeObject(HumanIntervention.Details, Formatting.Indented)
-                    .Replace("{", "Human Intervention")
-                    .Replace("}", "")
-                    .Replace("\"", "");
         }
 
         private void updateManualInterventionControls()
@@ -750,7 +730,8 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 labelHumanInterventionStatus.Text = "Active";
                 labelHumanInterventionStatus.ForeColor = unsafeColor;
                 buttonManualIntervention.Text = "Deactivate";
-                toolTip.SetToolTip(labelHumanInterventionStatus, SimplifiedHumanIntervention(HumanIntervention.Details));
+                toolTip.SetToolTip(labelHumanInterventionStatus,
+                    String.Join("\n", HumanIntervention.Details).Replace(Const.recordSeparator, "\n  "));
             } else
             {
                 labelHumanInterventionStatus.Text = "Inactive";
@@ -849,14 +830,13 @@ namespace ASCOM.Wise40.ObservatoryMonitor
         }
 
         public void ReadProfile()
-        {            
+        {
             using (Profile driverProfile = new Profile() { DeviceType = "SafetyMonitor" })
             {
                 driverProfile.Register(Const.WiseDriverID.ObservatoryMonitor, "Wise40 ObservatoryMonitor");
 
                 int minutes = Convert.ToInt32(driverProfile.GetValue(Const.WiseDriverID.ObservatoryMonitor,
                     "MinutesBetweenChecks", string.Empty, "5"));
-
 
                 _intervalBetweenChecks = new TimeSpan(0, minutes, 0);
             }
@@ -896,19 +876,6 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             }
         }
 
-        public int MinutesToIdle
-        {
-            get
-            {
-                return _minutesToIdle;
-            }
-
-            set
-            {
-                _minutesToIdle = value;
-            }
-        }
-
         private void conditionsBypassToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (wisesafetooperate == null)
@@ -924,9 +891,10 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
                 status = Convert.ToBoolean(wisedome.Action("projector", (!status).ToString()));
                 buttonProjector.Text = "Projector " + ((status == true) ? "Off" : "On");
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
-                Log(string.Format("buttonProjector_Click:Exception: {0}", ex.InnerException == null ? ex.Message : ex.InnerException.Message));
+                Log($"buttonProjector_Click:Exception: {(ex.InnerException ?? ex).Message}");
             }
         }
 
@@ -939,11 +907,11 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             {
                 bool status = JsonConvert.DeserializeObject<bool>(wisedome.Action("projector", ""));
 
-                buttonProjector.Text = "Projector " + ((status == true) ? "Off" : "On");
+                buttonProjector.Text = "Projector " + ((status) ? "Off" : "On");
             }
             catch (Exception ex)
             {
-                Log(string.Format("UpdateProjectorControls:Exception: {0}", ex.InnerException == null ? ex.Message : ex.InnerException.Message));
+                Log($"UpdateProjectorControls:Exception: {(ex.InnerException ?? ex).Message}");
             }
         }
     }

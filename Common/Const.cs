@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ASCOM.Wise40.Common
 {
-    public class Const
+    public static class Const
     {
         // public const double SiderealRate = 0.9972695664; //0.9972695677 (orig) 1⁄1,002737909350795
 
@@ -41,7 +41,7 @@ namespace ASCOM.Wise40.Common
         public const string topWise40Directory = "c:/Wise40/";
         public const string humanInterventionFilePath = Const.topWise40Directory + "Observatory/HumanIntervention.txt";
 
-        public class WiseDriverID
+        public static class WiseDriverID
         {
             public const string Telescope = "ASCOM.Wise40.Telescope";
             public const string Dome = "ASCOM.Wise40.Dome";
@@ -63,7 +63,7 @@ namespace ASCOM.Wise40.Common
 
         public const double noTarget = -500.0;  // An impossible angle (RightAscension, HourAngle or Declination)
 
-        public class ProfileName
+        public static class ProfileName
         {
             public static string Telescope_AstrometricAccuracy = "AstrometricAccuracy";
             public static string Telescope_Tracing = "Tracing";
@@ -100,7 +100,7 @@ namespace ASCOM.Wise40.Common
             public static string Site_DebugLevel = "SiteDebugLevel";
         }
 
-        public class RESTServer
+        public static class RESTServer
         {
             public static string top = "http://132.66.65.9:11111/server/v1/";
         }
@@ -183,14 +183,14 @@ namespace ASCOM.Wise40.Common
                 },
             };
 
-        public class UnsafeReasons
+        public static class UnsafeReasons
         {
             public static string ShuttingDown = "Wise40 is shutting down";
         }
 
-        public class MySql
+        public static class MySql
         {
-            public class DatabaseConnectionString
+            public static class DatabaseConnectionString
             {
                 public static string LCO_hibernate = "server=pubsubdb.tlv.lco.gtn;user=hibernate;database=hibernate;port=3306;password=hibernate";
                 public static string Wise_weather = "server=localhost;user=root;database=wise;port=3306;password=@!ab4131!@";

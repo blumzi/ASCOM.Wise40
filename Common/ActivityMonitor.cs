@@ -64,7 +64,7 @@ namespace ASCOM.Wise40
 
         public static void CheckSqlConnection()
         {
-            if (!_sqlConn.Ping())
+            if (/*!_sqlConn.Ping()*/ _sqlConn.State == System.Data.ConnectionState.Broken || _sqlConn.State == System.Data.ConnectionState.Closed)
             {
                 _sqlConn.Close();
                 OpenSqlConnection();
@@ -127,7 +127,6 @@ namespace ASCOM.Wise40
 
             initialized = true;
         }
-
         
         public void EndActivity(ActivityType type, Activity.GenericEndParams par)
         {
@@ -487,7 +486,7 @@ namespace ASCOM.Wise40
             if (_tags[0] == "Shutter" && _tags[1] == "Opening" && _tags[2] == "Succeeded")
                 code = (int) ActivityMonitor.Tracer.Shutter.Code.Open;
 
-            string sql = $@"update activities set text='{_annotation}', tags='{_tags.ToCSV()}' where id={_activityId};";
+            string sql = $"update activities set text='{_annotation}', tags='{_tags.ToCSV()}' where id={_activityId};";
             sql += $"insert into activities(time, code, text, line, tags) " + 
                 $"values('{_endTime.ToMySqlDateTime()}', '{code}', '{_annotation}', '{_line}', '{_tags.ToCSV()}');";
 

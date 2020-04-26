@@ -11,13 +11,6 @@ namespace ASCOM.Wise40
         static DateTime _lastInfoRead = DateTime.MinValue;
         static HumanInterventionDetails details;
 
-        public class HumanInterventionDetails
-        {
-            public DateTime Created;
-            public string Operator;
-            public bool CampusGlobal;
-            public string Reason;
-        }
 
         static HumanIntervention() { }
 
@@ -86,6 +79,19 @@ namespace ASCOM.Wise40
                 }
                 return details;
             }
+        }
+    }
+
+    public class HumanInterventionDetails
+    {
+        public DateTime Created;
+        public string Operator;
+        public bool CampusGlobal;
+        public string Reason;
+
+        public override string ToString()
+        {
+            return $"Operator: {Operator}{Const.recordSeparator}Reason: {Reason}{Const.recordSeparator}Created: {Created:dd MMM yyyy @ HH:mm:ss (zzz)}";
         }
     }
 }
