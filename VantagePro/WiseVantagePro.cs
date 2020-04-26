@@ -119,7 +119,7 @@ namespace ASCOM.Wise40.VantagePro
                                     ["DewPoint"] = util.ConvertUnits(Convert.ToDouble(sensorData["outsideDewPt"]),
                                                         Units.degreesFarenheit, Units.degreesCelsius).ToString(),
 
-                                }, utcTime);
+                                }, utcTime.ToLocalTime());
                             }
 
                             _lastDataRead = DateTime.Now;
