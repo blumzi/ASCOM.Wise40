@@ -71,7 +71,6 @@ namespace Dash
         private int focuserUpperLimit = 0;
 
         static List<Control> readonlyControls;
-
         private static bool Readonly
         {
             get
@@ -232,11 +231,12 @@ namespace Dash
         #region Refresh
         public void RefreshDisplay(object sender, EventArgs e)
         {
+            timerRefreshDisplay.Enabled = false;
+
             DateTime now = DateTime.Now;
             DateTime utcTime = now.ToUniversalTime();
             DateTime localTime = now.ToLocalTime();
-            ASCOM.Utilities.Util u = new ASCOM.Utilities.Util();
-            Statuser.Severity severity = Statuser.Severity.Normal;
+            Statuser.Severity severity;
 
             bool refreshDome = domePacer.ShouldRefresh(now);
             bool refreshSafeToOperate = safettoperatePacer.ShouldRefresh(now);
@@ -248,56 +248,64 @@ namespace Dash
 
             #region GetStatuses
             if (refreshTelescope)
+            {
                 try
                 {
                     telescopeDigest = JsonConvert.DeserializeObject<TelescopeDigest>(wiseTelescope.Action("status", ""));
                 }
                 catch (Exception ex)
                 {
-                    telescopeStatus.Show("ASCOM communication error", 2000, Statuser.Severity.Error);
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"RefreshDisplay: Caught: {ex.Message} at\n{ex.StackTrace}");
                     #endregion
+                    telescopeStatus.Show("ASCOM communication error", 2000, Statuser.Severity.Error);
                 }
+            }
 
             if (refreshDome)
+            {
                 try
                 {
                     domeDigest = JsonConvert.DeserializeObject<DomeDigest>(wiseDome.Action("status", ""));
                 }
                 catch (Exception ex)
                 {
-                    domeStatus.Show("ASCOM communication error", 2000, Statuser.Severity.Error);
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"RefreshDisplay: Caught: {ex.Message} at\n{ex.StackTrace}");
                     #endregion
+                    domeStatus.Show("ASCOM communication error", 2000, Statuser.Severity.Error);
                 }
+            }
 
             if (refreshSafeToOperate)
+            {
                 try
                 {
                     safetooperateDigest = JsonConvert.DeserializeObject<SafeToOperateDigest>(wiseSafeToOperate.Action("status", ""));
                 }
                 catch (Exception ex)
                 {
-                    safetooperateStatus.Show("ASCOM communication error", 2000, Statuser.Severity.Error);
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"RefreshDisplay: Caught: {ex.Message} at\n{ex.StackTrace}");
                     #endregion
+                    safetooperateStatus.Show("ASCOM communication error", 2000, Statuser.Severity.Error);
                 }
+            }
 
             if (refreshFocus)
+            {
                 try
                 {
                     focuserDigest = JsonConvert.DeserializeObject<FocuserDigest>(wiseFocuser.Action("status", ""));
                 }
                 catch (Exception ex)
                 {
-                    focuserStatus.Show("ASCOM communication error", 2000, Statuser.Severity.Error);
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"RefreshDisplay: Caught: {ex.Message} at\n{ex.StackTrace}");
                     #endregion
+                    focuserStatus.Show("ASCOM communication error", 2000, Statuser.Severity.Error);
                 }
+            }
 
             if (refreshForecast)
             {
@@ -305,17 +313,19 @@ namespace Dash
             }
 
             if (refreshFilterWheel)
+            {
                 try
                 {
                     filterWheelDigest = JsonConvert.DeserializeObject<WiseFilterWheelDigest>(wiseFilterWheel.Action("status", ""));
                 }
                 catch (Exception ex)
                 {
-                    filterWheelStatus.Show("ASCOM communication error", 2000, Statuser.Severity.Error);
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"RefreshDisplay: Caught: {ex.Message} at\n{ex.StackTrace}");
                     #endregion
+                    filterWheelStatus.Show("ASCOM communication error", 2000, Statuser.Severity.Error);
                 }
+            }
             #endregion
 
             #region RefreshTelescope
@@ -722,6 +732,8 @@ namespace Dash
             if (forecast != null)
                 dashStatus.Show("Forecast: " + forecast);
             #endregion
+
+            timerRefreshDisplay.Enabled = true;
         }
 
         void RefreshInConditionsformation(Label label, Sensor.SensorDigest digest)
@@ -1419,6 +1431,7 @@ namespace Dash
 
         private void buttonZenith_Click(object sender, EventArgs e)
         {
+            telescopeStatus.Show("Moving to Zenith", 2000, Statuser.Severity.Good);
             wiseTelescope.Action("move-to-preset", "zenith");
         }
 
@@ -1430,7 +1443,7 @@ namespace Dash
 
         private void buttonFlat_Click(object sender, EventArgs e)
         {
-            telescopeStatus.Show("Moving to Zenith", 2000, Statuser.Severity.Good);
+            telescopeStatus.Show("Moving to Flat", 2000, Statuser.Severity.Good);
             wiseTelescope.Action("move-to-preset", "flat");
         }
 
