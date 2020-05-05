@@ -12,57 +12,50 @@ using ASCOM.Wise40.Common;
 
 namespace ASCOM.Wise40.Common
 {
-    public class WeatherLogger: IDisposable
+    public class WeatherLogger
     {
-        private string _stationName;
-        private static Debugger debugger = Debugger.Instance;
-        private DateTime _lastLoggedTime = DateTime.MinValue;
-        private object _lock = new object();
-        private static MySqlConnection _sqlConn;
+        private readonly string _stationName;
+        private static readonly Debugger debugger = Debugger.Instance;
+        private DateTime prevLocalLoggedTime = DateTime.MinValue;           // local time
+        private readonly object _lock = new object();
 
         public WeatherLogger(string stationName)
         {
             _stationName = stationName;
 
-            if (_sqlConn == null)
-            {
-                OpenSqlConnection();
-            }
-
             string sql = $"SELECT time FROM weather WHERE station = '{stationName}' ORDER BY time DESC LIMIT 0 , 1; ";
 
             try
             {
-                CheckSqlConnection();
-                using (var sqlCmd = new MySqlCommand(sql, _sqlConn))
+                using (var _sqlConn = new MySqlConnection(Const.MySql.DatabaseConnectionString.Wise_weather))
                 {
-                    using (var cursor = sqlCmd.ExecuteReader())
+                    _sqlConn.Open();
+                    #pragma warning disable CA2100
+                    using (var sqlCmd = new MySqlCommand(sql, _sqlConn))
+                    #pragma warning restore CA2100
                     {
-                        cursor.Read();
+                        using (var cursor = sqlCmd.ExecuteReader())
+                        {
+                            cursor.Read();
 
-                        _lastLoggedTime = Convert.ToDateTime(cursor["time"]);
+                            prevLocalLoggedTime = Convert.ToDateTime(cursor["time"]).ToLocalTime();
+                        }
                     }
                 }
             }
             catch
             {
-                _lastLoggedTime = DateTime.MinValue;
+                prevLocalLoggedTime = DateTime.MinValue;
             }
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"WeatherLogger({stationName}): _lastLoggedTime: {_lastLoggedTime}");
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                $"WeatherLogger({stationName}): .const:prevLoggedLocalTime: {prevLocalLoggedTime:yyyy-MM-dd HH:mm:ss.fff}");
             #endregion
         }
 
-        static WeatherLogger() {
-            OpenSqlConnection();
-        }
+        static WeatherLogger() { }
 
-        public void Dispose() {
-            _sqlConn.Close();
-            _sqlConn.Dispose();
-        }
-
-        public void Log(Dictionary<string, string> dict, DateTime time)
+        public void Log(Dictionary<string, string> dict, DateTime currentLocalLoggedTime)
         {
             if (!(WiseSite.CurrentProcessIs(Const.Application.RESTServer) ||
                     WiseSite.CurrentProcessIs(Const.Application.OCH)))
@@ -70,25 +63,34 @@ namespace ASCOM.Wise40.Common
                 return;
             }
 
-            if (time.CompareTo(_lastLoggedTime) <= 0)
+            if (currentLocalLoggedTime.CompareTo(prevLocalLoggedTime) <= 0)
                 return;
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{_stationName}: curr: {currentLocalLoggedTime} > prev: {prevLocalLoggedTime}");
+            #endregion
 
             lock (_lock)
             {
                 string sql = $"insert into weather (time, Station, {string.Join(", ", dict.Keys)})" +
-                    $" values(TIMESTAMP('{time.ToUniversalTime():yyyy-MM-dd HH:mm:ss.fff}'), '{_stationName}', {string.Join(", ", dict.Values)})";
+                    $" values(TIMESTAMP('{currentLocalLoggedTime.ToUniversalTime():yyyy-MM-dd HH:mm:ss.fff}'), '{_stationName}', {string.Join(", ", dict.Values)})";
 
                 try
                 {
-                    CheckSqlConnection();
-
-                    var sqlCmd = new MySqlCommand(sql, _sqlConn);
-                    sqlCmd.ExecuteNonQuery();
-                    _lastLoggedTime = time;
-                    #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
-                        $"WeatherLogger.Log({_stationName}): _lastLoggedTime: {_lastLoggedTime}");
-                    #endregion
+                    using (var _sqlConn = new MySqlConnection(Const.MySql.DatabaseConnectionString.Wise_weather))
+                    {
+                        _sqlConn.Open();
+#pragma warning disable CA2100
+                        using (var sqlCmd = new MySqlCommand(sql, _sqlConn))
+#pragma warning restore CA2100
+                        {
+                            sqlCmd.ExecuteNonQuery();
+                        }
+                        prevLocalLoggedTime = currentLocalLoggedTime;
+                        #region debug
+                        debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                            $"WeatherLogger.Log({_stationName}): prevLoggedTime: {prevLocalLoggedTime:yyyy-MM-dd HH:mm:ss.fff}");
+                        #endregion
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -97,33 +99,6 @@ namespace ASCOM.Wise40.Common
                         $"WeatherLogger.log: \nsql: {sql}\n Caught: {ex.Message} at\n{ex.StackTrace}");
                     #endregion
                 }
-            }
-        }
-
-        static void OpenSqlConnection()
-        {
-            try
-            {
-                _sqlConn = new MySqlConnection(Const.MySql.DatabaseConnectionString.Wise_weather);
-                _sqlConn.Open();
-            }
-            catch (Exception ex)
-            {
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"static OpenSqlConnection: Caught {ex.Message} at\n{ex.StackTrace}");
-                #endregion
-            }
-        }
-
-        /// <summary>
-        /// Check thats the current connection works, otherwise it gets closed and re-opened.
-        /// </summary>
-        static void CheckSqlConnection()
-        {
-            if (/*!_sqlConn.Ping()*/ _sqlConn.State == System.Data.ConnectionState.Broken || _sqlConn.State == System.Data.ConnectionState.Closed)
-            {
-                _sqlConn.Close();
-                OpenSqlConnection();
             }
         }
     }

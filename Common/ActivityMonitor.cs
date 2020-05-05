@@ -17,9 +17,8 @@ using ASCOM.DeviceInterface;
 
 namespace ASCOM.Wise40
 {
-    public class ActivityMonitor : WiseObject, IDisposable
+    public class ActivityMonitor : WiseObject
     {
-        public static MySqlConnection _sqlConn;
         // start Singleton
         private static readonly Lazy<ActivityMonitor> lazy = new Lazy<ActivityMonitor>(() => new ActivityMonitor()); // Singleton
 
@@ -35,48 +34,16 @@ namespace ASCOM.Wise40
             }
         }
 
-        public void Dispose()
-        {
-            _sqlConn.Close();
-            _sqlConn.Dispose();
-        }
-
         private ActivityMonitor() { }
-        static ActivityMonitor() {
-            OpenSqlConnection();
-        }
+        static ActivityMonitor() { }
         // end Singleton
-
-        public static void OpenSqlConnection()
-        {
-            try
-            {
-                _sqlConn = new MySqlConnection(Const.MySql.DatabaseConnectionString.Wise40_activities);
-                _sqlConn.Open();
-            }
-            catch (Exception ex)
-            {
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"ActivityMonitor.OpenSqlConn: Caught {ex.Message} at\n{ex.StackTrace}");
-                #endregion
-            }
-        }
-
-        public static void CheckSqlConnection()
-        {
-            if (/*!_sqlConn.Ping()*/ _sqlConn.State == System.Data.ConnectionState.Broken || _sqlConn.State == System.Data.ConnectionState.Closed)
-            {
-                _sqlConn.Close();
-                OpenSqlConnection();
-            }
-        }
 
         public static int defaultRealMillisToInactivity = (int)TimeSpan.FromMinutes(15).TotalMilliseconds;
         public static int realMillisToInactivity;
         public static readonly int simulatedlMillisToInactivity = (int)TimeSpan.FromMinutes(3).TotalMilliseconds;
         public static Debugger debugger = Debugger.Instance;
         private DateTime _due = DateTime.MinValue;                  // not set
-        private WiseSite wisesite = WiseSite.Instance;
+        private readonly WiseSite wisesite = WiseSite.Instance;
         private static bool initialized = false;
         public static int millisToInactivity;
 
@@ -443,10 +410,17 @@ namespace ASCOM.Wise40
 
             try
             {
-                ActivityMonitor.CheckSqlConnection();
-                var sqlCmd = new MySqlCommand(sql, ActivityMonitor._sqlConn);
-                sqlCmd.ExecuteNonQuery();
-                _activityId = sqlCmd.LastInsertedId;
+                using (var _sqlConn = new MySqlConnection(Const.MySql.DatabaseConnectionString.Wise40_activities))
+                {
+                    _sqlConn.Open();
+#pragma warning disable CA2100
+                    using (var sqlCmd = new MySqlCommand(sql, _sqlConn))
+#pragma warning restore CA2100
+                    {
+                        sqlCmd.ExecuteNonQuery();
+                        _activityId = sqlCmd.LastInsertedId;
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -492,9 +466,16 @@ namespace ASCOM.Wise40
 
             try
             {
-                ActivityMonitor.CheckSqlConnection();
-                var sqlCmd = new MySqlCommand(sql, ActivityMonitor._sqlConn);
-                sqlCmd.ExecuteNonQuery();
+                using (var _sqlConn = new MySqlConnection(Const.MySql.DatabaseConnectionString.Wise40_activities))
+                {
+                    _sqlConn.Open();
+#pragma warning disable CA2100
+                    using (var sqlCmd = new MySqlCommand(sql, _sqlConn))
+#pragma warning restore CA2100
+                    {
+                        sqlCmd.ExecuteNonQuery();
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -1291,9 +1272,16 @@ namespace ASCOM.Wise40
 
             try
             {
-                ActivityMonitor.CheckSqlConnection();
-                var sqlCmd = new MySqlCommand(sql, ActivityMonitor._sqlConn);
-                sqlCmd.ExecuteNonQuery();
+                using (var _sqlConn = new MySqlConnection(Const.MySql.DatabaseConnectionString.Wise40_activities))
+                {
+                    _sqlConn.Open();
+#pragma warning disable CA2100
+                    using (var sqlCmd = new MySqlCommand(sql, _sqlConn))
+#pragma warning restore CA2100
+                    {
+                        sqlCmd.ExecuteNonQuery();
+                    }
+                }
             }
             catch (Exception ex)
             {
