@@ -762,9 +762,18 @@ namespace ASCOM.Wise40SafeToOperate
             get
             {
                 if (activityMonitor.ShuttingDown)
+                {
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "IsSafe: false # shutting down");
+                    #endregion
                     return false;
+                }
 
-                return IsSafeWithoutCheckingForShutdown();
+                bool ret = IsSafeWithoutCheckingForShutdown();
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, $"IsSafe: {ret}");
+                #endregion
+                return ret;
             }
         }
 
@@ -773,9 +782,18 @@ namespace ASCOM.Wise40SafeToOperate
             get
             {
                 if (activityMonitor.ShuttingDown)
+                {
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "WiseIsSafe: false # shutting down");
+                    #endregion
                     return false;
+                }
 
-                return IsSafeWithoutCheckingForShutdown(toBeIgnored: Sensor.Attribute.Wise40Specific);
+                bool ret = IsSafeWithoutCheckingForShutdown(toBeIgnored: Sensor.Attribute.Wise40Specific);
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, $"WiseIsSafe: {ret}");
+                #endregion
+                return ret;
             }
         }
 
@@ -825,12 +843,15 @@ namespace ASCOM.Wise40SafeToOperate
             }
 
         Out:
-            Event.SafetyEvent.SafetyState currentSafetyState = (ret == true) ?
+            Event.SafetyEvent.SafetyState currentSafetyState = (ret) ?
                 Event.SafetyEvent.SafetyState.Safe :
                 Event.SafetyEvent.SafetyState.Unsafe;
 
             if (currentSafetyState != _safetyState)
             {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, $"changed from {_safetyState} to {currentSafetyState}");
+                #endregion
                 _safetyState = currentSafetyState;
                 ActivityMonitor.Instance.Event(new Event.SafetyEvent(_safetyState,
                     currentSafetyState == Event.SafetyEvent.SafetyState.Unsafe ? UnsafeReasons.Replace(Const.recordSeparator, "\n") : ""));
