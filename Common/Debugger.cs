@@ -76,7 +76,7 @@ namespace ASCOM.Wise40.Common
                 _currentLevel = level;
 
             _appName = Path.GetFileNameWithoutExtension(Application.ExecutablePath);
-            Debug.AutoFlush = true;
+            Trace.AutoFlush = true;
             _initialized = true;
 
             WriteLine(DebugLevel.DebugLogic, $"##");
@@ -94,12 +94,12 @@ namespace ASCOM.Wise40.Common
         {
             get
             {
-                return System.Diagnostics.Debug.AutoFlush;
+                return System.Diagnostics.Trace.AutoFlush;
             }
 
             set
             {
-                System.Diagnostics.Debug.AutoFlush = value;
+                System.Diagnostics.Trace.AutoFlush = value;
             }
         }
 
@@ -155,16 +155,20 @@ namespace ASCOM.Wise40.Common
                     {
                         traceListener.Flush();
                         traceListener.Close();
-                        Debug.Listeners.Remove(traceListener);
+                        Trace.Listeners.Remove(traceListener);
                     }
                     catch { }
                 }
                 _logFile = currentLogPath;
                 traceListener = new TextWriterTraceListener(_logFile);
-                Debug.Listeners.Add(traceListener);
+                Trace.Listeners.Add(traceListener);
+                Trace.WriteLine("##");
+                Trace.WriteLine($"## {DateTime.Now:yyyy-MMM-dd HH:mm:ss.fff}");
+                Trace.WriteLine("##\n");
             }
 
-            System.Diagnostics.Debug.WriteLine(line);
+            Trace.WriteLine(line);
+
             if (listBox != null && _appendToWindow)
             {
                 if (listBox.InvokeRequired)
@@ -211,7 +215,7 @@ namespace ASCOM.Wise40.Common
             }
         }
 
-        public void ReadProfile()
+        public static void ReadProfile()
         {
             using (ASCOM.Utilities.Profile p = new Utilities.Profile() { DeviceType = "Telescope" })
             {
