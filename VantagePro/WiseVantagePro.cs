@@ -334,7 +334,7 @@ namespace ASCOM.Wise40.VantagePro
                     quality = new VantagePro2StationRawData.Quality
                     {
                         StarFWHM = _seeing.FWHM,
-                        UpdatedAtUT = _seeing.TimeUTC,
+                        UpdatedAtUT = _seeing.TimeLocal,
                         AgeInSeconds = _seeing.TimeSinceLastUpdate.TotalSeconds,
                     };
                 }

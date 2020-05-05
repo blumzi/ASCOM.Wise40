@@ -11,12 +11,11 @@ namespace ASCOM.Wise40SafeToOperate
 {
     public class OWLRefresher : Sensor
     {
-        private static string OWLDir = Const.topWise40Directory + "/Weather/OWL/";
-        private static string AWSFile = OWLDir + "AWS.txt";
-        private static string STWMFile = OWLDir + "STWM.txt";
+        private const string OWLDir = Const.topWise40Directory + "/Weather/OWL/";
+        private const string AWSFile = OWLDir + "AWS.txt";
+        private const string STWMFile = OWLDir + "STWM.txt";
         private static DateTime lastAWSReadTime = DateTime.MinValue;
         private static DateTime lastSTWMReadTime = DateTime.MinValue;
-        private static TimeSpan _interval = new TimeSpan(0, 1, 0);
 
         public class Station
         {
@@ -31,7 +30,7 @@ namespace ASCOM.Wise40SafeToOperate
             { "WDS_1", new Station() }, { "WDS_2", new Station() }, { "WDS_3", new Station() },
             { "CLS_10", new Station() }, { "CLS_11", new Station() }, { "CLS_12", new Station() },
             { "THS_4", new Station() }, { "THS_5", new Station() }, { "THS_6", new Station() }, { "THS_7", new Station() }, { "THS_8", new Station() },
-        };        
+        };
 
         public OWLRefresher(WiseSafeToOperate instance) :
             base("OWLRefresher",
@@ -55,7 +54,7 @@ namespace ASCOM.Wise40SafeToOperate
             return string.Empty;
         }
 
-        private void parseAWS()
+        private void ParseAWS()
         {
             DateTime lastWriteTime = System.IO.File.GetLastWriteTime(AWSFile);
 
@@ -94,7 +93,7 @@ namespace ASCOM.Wise40SafeToOperate
                                     ["WindSpeed"] = station._sensorData["windSpeed"].ToString(),
                                     ["WindDir"] = station._sensorData["windDir"].ToString(),
 
-                                }, station._dateUtc);
+                                }, station._dateUtc.ToLocalTime());
                             }
 
                             #region debug
@@ -116,7 +115,7 @@ namespace ASCOM.Wise40SafeToOperate
             }
         }
 
-        private void parseSTWM()
+        private void ParseSTWM()
         {
             DateTime lastWriteTime = System.IO.File.GetLastWriteTime(STWMFile);
 
@@ -158,7 +157,7 @@ namespace ASCOM.Wise40SafeToOperate
                         Match m = r.Match(content);
                         if (m.Success)
                         {
-                            DateTime time = Convert.ToDateTime(m.Result("${dateUtc}") + " Z");
+                            DateTime time = Convert.ToDateTime(m.Result("${dateUtc}") + " Z").ToLocalTime();
                             Station station;
 
                             foreach (string i in new List<string> { "1", "2", "3" }) {
@@ -217,8 +216,8 @@ namespace ASCOM.Wise40SafeToOperate
         }
         public override Reading getReading()
         {
-            parseAWS();
-            parseSTWM();
+            ParseAWS();
+            ParseSTWM();
             return null;
         }
 
@@ -298,12 +297,14 @@ namespace ASCOM.Wise40SafeToOperate
                     name = "WDS_" + s;
                     station = stations[name];
                     if (station._sensorData.ContainsKey("windSpeed") && station._sensorData.ContainsKey("windDir"))
+                    {
                         WDS.Add(new WDSDigest
                         {
                             Name = name,
                             WindSpeed = station._sensorData["windSpeed"],
                             WindDir = station._sensorData["windDir"],
                         });
+                    }
                 }
 
                 THS = new List<THSDigest>();
@@ -312,12 +313,14 @@ namespace ASCOM.Wise40SafeToOperate
                     name = "THS_" + s;
                     station = stations[name];
                     if (station._sensorData.ContainsKey("temperature") && station._sensorData.ContainsKey("humidity"))
+                    {
                         THS.Add(new THSDigest
                         {
                             Name = name,
                             Temperature = station._sensorData["temperature"],
                             Humidity = station._sensorData["humidity"],
                         });
+                    }
                 }
 
                 CLS = new List<CLSDigest>();
@@ -326,24 +329,29 @@ namespace ASCOM.Wise40SafeToOperate
                     name = "CLS_" + s;
                     station = stations[name];
                     if (station._sensorData.ContainsKey("skyAmbientTemp"))
+                    {
                         CLS.Add(new CLSDigest
                         {
                             Name = name,
                             SkyAmbientTemp = station._sensorData["skyAmbientTemp"],
                         });
+                    }
                 }
 
                 name = "AWS_22";
                 station = stations[name];
                 if (station._sensorData.ContainsKey("temperature") && station._sensorData.ContainsKey("humidity") &&
                     station._sensorData.ContainsKey("windSpeed") && station._sensorData.ContainsKey("windDir"))
-                        AWS = new AWSDigest {
-                            Name = name,
-                            Temperature = station._sensorData["temperature"],
-                            Humidity = station._sensorData["humidity"],
-                            WindSpeed = station._sensorData["windSpeed"],
-                            WindDir = station._sensorData["windDir"],
-                        };
+                {
+                    AWS = new AWSDigest
+                    {
+                        Name = name,
+                        Temperature = station._sensorData["temperature"],
+                        Humidity = station._sensorData["humidity"],
+                        WindSpeed = station._sensorData["windSpeed"],
+                        WindDir = station._sensorData["windDir"],
+                    };
+                }
             }
         };
     }

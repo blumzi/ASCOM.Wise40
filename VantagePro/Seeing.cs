@@ -12,8 +12,6 @@ namespace ASCOM.Wise40.VantagePro
     public class Seeing
     {
         private static WeatherLogger _weatherLogger;
-        private double _fwhm = Double.NaN;
-        private DateTime _timeUTC = DateTime.MinValue;
         private DateTime _lastQueryTime = DateTime.MinValue;
         private TimeSpan _interval = new TimeSpan(0, 1, 0);
 
@@ -44,19 +42,19 @@ namespace ASCOM.Wise40.VantagePro
                         {
                             cursor.Read();
 
-                            _timeUTC = Convert.ToDateTime(cursor["time"]);
+                            TimeLocal = Convert.ToDateTime(cursor["time"]);
 
                             if ((string)cursor["VALUE_"] == "NaN")
                             {
-                                _fwhm = Double.NaN;
+                                FWHM = Double.NaN;
                             }
                             else
                             {
-                                _fwhm = Convert.ToDouble(cursor["VALUE_"]);
+                                FWHM = Convert.ToDouble(cursor["VALUE_"]);
                                 _weatherLogger.Log(new Dictionary<string, string>()
                                 {
-                                    ["StarFWHM"] = _fwhm.ToString(),
-                                }, _timeUTC);
+                                    ["StarFWHM"] = FWHM.ToString(),
+                                }, TimeLocal);
                             }
                         }
                     }
@@ -77,34 +75,21 @@ namespace ASCOM.Wise40.VantagePro
         {
             get
             {
-                return DateTime.UtcNow.Subtract(TimeUTC);
+                return DateTime.Now.Subtract(TimeLocal);
             }
         }
 
-        public DateTime TimeUTC
-        {
-            get
-            {
-                return _timeUTC;
-            }
+        public DateTime TimeLocal { get; set; } = DateTime.MinValue;
 
-            set
-            {
-                _timeUTC = value;
-            }
-        }
+        public double FWHM { get; set; } = Double.MinValue;
 
-        public double FWHM
-        {
-            get
-            {
-                return _fwhm;
-            }
-
-            set
-            {
-                _fwhm = value;
-            }
-        }
+        //public static DateTime UnixTimeStampToDateTime(DateTime unixTimeStamp)
+        //{
+        //    // Unix timestamp is seconds past epoch
+        //    DateTime unixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
+        //    //return (dtDateTime + (unixTimeStamp)).ToLocalTime();
+        //    return DateTimeOffset.FromUnixTimeSeconds(unixTimeStamp) + 
+        //    //return unixTimeStamp.Add(TimeSpan.FromSeconds(unixEpoch.TotalSeconds));
+        //}
     }
 }

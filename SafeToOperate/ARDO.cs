@@ -124,7 +124,7 @@ namespace ASCOM.Wise40SafeToOperate
                             ["DewPoint"] = Instance.sensorData["dewp"],
                             ["WindSpeed"] = Instance.sensorData["wind"],
 
-                        }, Instance.updatedAtUT);
+                        }, Instance.updatedAtUT.ToLocalTime());
                     }
                     #region debug
                     Instance.debugger.WriteLine(Debugger.DebugLevel.DebugSafety,

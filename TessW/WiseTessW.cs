@@ -105,6 +105,15 @@ namespace ASCOM.Wise40.TessW
                     #endregion
                     continue;
                 }
+                catch (TaskCanceledException)
+                {
+                    duration = DateTime.Now.Subtract(start);
+                    #region debug
+                    Instance.debugger.WriteLine(Debugger.DebugLevel.DebugSafety,
+                        $"GetTessWInfo: try#: {tryNo}, timedout.");
+                    #endregion
+                    continue;
+                }
                 catch (Exception ex)
                 {
                     duration = DateTime.Now.Subtract(start);
