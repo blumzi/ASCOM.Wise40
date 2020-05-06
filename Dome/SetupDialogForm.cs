@@ -24,9 +24,9 @@ namespace ASCOM.Wise40 //.Dome
             wisedome.ReadProfile();
             checkBoxAutoCalibrate.Checked = wisedome._autoCalibrate;
             checkBoxSyncVent.Checked = wisedome.SyncVentWithShutter;
-            textBoxShutterIpAddress.Text = wisedome.wisedomeshutter._ipAddress;
-            textBoxShutterHighestValue.Text = wisedome.wisedomeshutter._highestValue.ToString();
-            textBoxShutterLowestValue.Text = wisedome.wisedomeshutter._lowestValue.ToString();
+            textBoxShutterIpAddress.Text = wisedome.wisedomeshutter.IpAddress;
+            textBoxShutterHighestValue.Text = wisedome.wisedomeshutter.highestRange.ToString();
+            textBoxShutterLowestValue.Text = wisedome.wisedomeshutter.lowestRange.ToString();
             checkBoxShutterUseWebClient.Checked = wisedome.wisedomeshutter.ShutterWebClientEnabled;
 
             using (ASCOM.Utilities.Profile driverProfile = new ASCOM.Utilities.Profile())
@@ -41,9 +41,9 @@ namespace ASCOM.Wise40 //.Dome
         private void cmdOK_Click(object sender, EventArgs e) // OK button event handler
         {
             wisedome.wisedomeshutter.ShutterWebClientEnabled = checkBoxShutterUseWebClient.Checked;
-            wisedome.wisedomeshutter._ipAddress = textBoxShutterIpAddress.Text.Trim();
-            wisedome.wisedomeshutter._highestValue = Convert.ToInt32(textBoxShutterHighestValue.Text);
-            wisedome.wisedomeshutter._lowestValue = Convert.ToInt32(textBoxShutterLowestValue.Text);
+            wisedome.wisedomeshutter.IpAddress = textBoxShutterIpAddress.Text.Trim();
+            wisedome.wisedomeshutter.highestRange = Convert.ToInt32(textBoxShutterHighestValue.Text);
+            wisedome.wisedomeshutter.lowestRange = Convert.ToInt32(textBoxShutterLowestValue.Text);
             wisedome._autoCalibrate = checkBoxAutoCalibrate.Checked;
             wisedome.SyncVentWithShutter = checkBoxSyncVent.Checked;
 

@@ -625,13 +625,12 @@ namespace Dash
                 if (status.Contains("error:") || domeDigest.Shutter.State == ShutterState.shutterError)
                 {
                     severity = Statuser.Severity.Error;
-                    msg = "Shutter error: " + status.Replace("error:", "").Replace("error ", "");
                 }
                 else
                 {
                     severity = Statuser.Severity.Normal;
-                    msg = "Shutter is " + status;
                 }
+                msg = "Shutter is " + status;
                 shutterStatus.Show(msg, 0, severity);
                 shutterStatus.SetToolTip(domeDigest.Shutter.Reason);
 

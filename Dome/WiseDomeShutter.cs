@@ -18,34 +18,37 @@ namespace ASCOM.Wise40
     {
         private static bool _initialized = false;
         public static WisePin openPin, closePin;
-        private static Hardware.Hardware hw = Hardware.Hardware.Instance;
-        private Debugger debugger = Debugger.Instance;
+        private static readonly Hardware.Hardware hw = Hardware.Hardware.Instance;
+        private readonly Debugger debugger = Debugger.Instance;
 
-        public string _ipAddress;
-        public int _lowestValue, _highestValue;
+        public string IpAddress;
+        public int lowestRange, highestRange;
         public bool ShutterWebClientEnabled = false;
-        public bool _syncVentWithShutter = false;
+        public bool syncVentWithShutter = false;
 
-        public static System.Threading.Timer _sim_Timer = new System.Threading.Timer(_sim_OnTimer);
-        public static TimeSpan _sim_FullTravelTimeSpan = new TimeSpan(0, 0, 5);
-        public static ShutterState _sim_State = ShutterState.shutterClosed;
-        public static DateTime _sim_StartOfMovement;
-        public static double _sim_Precent;
-        public static int _sim_Range;
-        public static bool _sim_IsMoving = false;
+        public static System.Threading.Timer Simulation_Timer = new System.Threading.Timer(Simulation_OnTimer);
+        public static TimeSpan Simulation_FullTravelTimeSpan = new TimeSpan(0, 0, 5);
+        public static ShutterState Simulation_State = ShutterState.shutterClosed;
+        public static DateTime Simulation_StartOfMovement;
+        public static double Simulation_Precent;
+        public static int Simulation_Range;
+        public static bool Simulation_IsMoving = false;
+        private static ShutterState prevState;
 
         private ShutterState _state = ShutterState.shutterError;
         private string _stateReason;
 
-        List<WisePin> shutterPins;
+        private List<WisePin> shutterPins;
 
         public WebClient webClient = null;
 
-        private static ActivityMonitor activityMonitor = ActivityMonitor.Instance;
+        private static readonly ActivityMonitor activityMonitor = ActivityMonitor.Instance;
+        public static System.Threading.Timer shutterMotionTimer = new System.Threading.Timer(OnShutterMotionTimer);
+        private readonly TimeSpan shutterMotionTravelTime = TimeSpan.FromSeconds(22);
+        private ShutterState shutterMotionEndState;     // the shutter state after 22 seconds, when we have no WiFi
 
         public class WebClient
         {
-
             public class CommunicationAttempt
             {
                 public int Id;
@@ -66,17 +69,13 @@ namespace ASCOM.Wise40
             private static DateTime _lastReadingTime = DateTime.MinValue;
             private static HttpClient _client;
             private static int _lastReading, _prevReading = Int32.MinValue;
-            private static Debugger debugger = Debugger.Instance;
+            private static readonly Debugger debugger = Debugger.Instance;
             private static TimeSpan _maxAge = new TimeSpan(0, 0, 30);
-            private static object _lock = new object();
             private static WiseDomeShutter _wisedomeshutter;
-            private static ShutterState _prevState = ShutterState.shutterError;
-            private bool _wifiIsWorking;
-            public DateTime _startOfShutterMotion = DateTime.MinValue;
 
             public enum Pacing { None, Slow, Fast };
             private Pacing _pacing = Pacing.None;
-            private Dictionary<Pacing, int> PacingToMillis = new Dictionary<Pacing, int>()
+            private readonly Dictionary<Pacing, int> PacingToMillis = new Dictionary<Pacing, int>()
             {
                 { Pacing.Slow, 15 * 1000 },
                 { Pacing.Fast,  3 * 1000 },
@@ -98,18 +97,7 @@ namespace ASCOM.Wise40
                 _wisedomeshutter = wisedomeshutter;
             }
 
-            public bool WiFiIsWorking
-            {
-                get
-                {
-                    return _wifiIsWorking;
-                }
-
-                set
-                {
-                    _wifiIsWorking = value;
-                }
-            }
+            public bool WiFiIsWorking { get; set; }
 
             public void SetPacing(Pacing pacing)
             {
@@ -143,24 +131,18 @@ namespace ASCOM.Wise40
             private static void PeriodicReader(object state)
             {
                 int reading = GetWebShutterPosition().GetAwaiter().GetResult();
-                const int maxTravelTimeSeconds = 22;
 
                 if (! Instance.webClient.WiFiIsWorking)
                 {
                     _wisedomeshutter._state = ShutterState.shutterError;
                     _wisedomeshutter._stateReason = "PeriodicReader: WiFi is not working";
-                    _prevState = ShutterState.shutterError;
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugShutter,
                         $"PeriodicReader: " +
-                        $"state: {_wisedomeshutter._state.ToString()} " +
+                        $"state: {_wisedomeshutter._state} " +
                         $"reason: {_wisedomeshutter._stateReason.Replace("PeriodicReader: ", "")}");
                     #endregion
 
-                    if (DateTime.Now.Subtract(Instance.webClient._startOfShutterMotion).TotalSeconds > maxTravelTimeSeconds)
-                    {
-                        _wisedomeshutter.Stop($"{maxTravelTimeSeconds} seconds passed from startOfMotion");
-                    }
                     _periodicWebReadTimer.Change(WebClient._timeoutMillis, 0);
                     return;
                 }
@@ -168,20 +150,19 @@ namespace ASCOM.Wise40
                 _lastReadingTime = DateTime.Now;
                 _lastReading = reading;
 
-                if (_wisedomeshutter.CloseEnough(reading, _wisedomeshutter._lowestValue) && reading == _prevReading)
+                if (CloseEnough(reading, _wisedomeshutter.lowestRange) && reading == _prevReading)
                 {
                     _wisedomeshutter._state = ShutterState.shutterClosed;
                     _wisedomeshutter._stateReason =
-                        $"PeriodicReader: Shutter at {reading} (close enough to lowest value {_wisedomeshutter._lowestValue}) and not moving";
+                        $"PeriodicReader: Shutter at {reading} (close enough to lowest value {_wisedomeshutter.lowestRange}) and not moving";
                     if (_wisedomeshutter.IsMoving)
                         _wisedomeshutter.Stop("Shutter closed");
                 }
-
-                else if (_wisedomeshutter.CloseEnough(reading, _wisedomeshutter._highestValue) && reading == _prevReading)
+                else if (CloseEnough(reading, _wisedomeshutter.highestRange) && reading == _prevReading)
                 {
                     _wisedomeshutter._state = ShutterState.shutterOpen;
                     _wisedomeshutter._stateReason =
-                        $"PeriodicReader: Shutter at {reading} (close enough to highest value {_wisedomeshutter._highestValue}) and not moving";
+                        $"PeriodicReader: Shutter at {reading} (close enough to highest value {_wisedomeshutter.highestRange}) and not moving";
                     if (_wisedomeshutter.IsMoving)
                         _wisedomeshutter.Stop("Shutter opened");
                 }
@@ -210,14 +191,13 @@ namespace ASCOM.Wise40
                 }
 
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugShutter, 
+                debugger.WriteLine(Debugger.DebugLevel.DebugShutter,
                     $"PeriodicReader: at {reading}, " +
                     $"prevReading: {_prevReading} " +
-                    $"state: {_wisedomeshutter._state.ToString()} "+
+                    $"state: {_wisedomeshutter._state} "+
                     $"reason: {_wisedomeshutter._stateReason.Replace("PeriodicReader: ", "")}");
                 #endregion
                 _prevReading = _lastReading;
-                _prevState = _wisedomeshutter._state;
                 _periodicWebReadTimer.Change(_timeoutMillis, 0);
             }
 
@@ -285,13 +265,12 @@ namespace ASCOM.Wise40
 
                 if (response != null)
                 {
-
                     Instance.webClient.WiFiIsWorking = true;
 
                     if (response.IsSuccessStatusCode)
                     {
-                        string prefix = "<!DOCTYPE HTML>\r\n<html>";
-                        string suffix = "</html>\r\n";
+                        const string prefix = "<!DOCTYPE HTML>\r\n<html>";
+                        const string suffix = "</html>\r\n";
 
                         _lastSuccessfullAttempt = attempt;
                         string content = await response.Content.ReadAsStringAsync();
@@ -302,7 +281,7 @@ namespace ASCOM.Wise40
                             content = content.Remove(content.IndexOf(suffix[0]));
                             ret = Convert.ToInt32(content);
                             #region debug
-                            debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "GetShutterPosition: " + 
+                            debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "GetShutterPosition: " +
                                 $"attempt: {attempt.Id}, " +
                                 $"try#: {tryNo}, " +
                                 $"Success = {ret}, " +
@@ -347,38 +326,46 @@ namespace ASCOM.Wise40
             if (Simulated)
             {
                 if (IsMoving)
-                    _sim_stopTimer();
+                    Simulation_StopTimer();
                 return;
             }
 
-            ShutterState prev = State;
-            bool openPinWasOn = openPin.isOn;
-            bool closePinWasOn = closePin.isOn;
+            if (! (openPin.isOn || closePin.isOn))
+            {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugShutter, $"Stop({reason}): both openPin and closePin were OFF.");
+                #endregion
+                return;
+            }
 
-            if (openPinWasOn || closePinWasOn)
+            if (openPin.isOn)
             {
                 openPin.SetOff();
-                closePin.SetOff();
-                activityMonitor.EndActivity(ActivityMonitor.ActivityType.Shutter, new Activity.Shutter.EndParams()
-                    {
-                        endState = Activity.State.Succeeded,
-                        endReason = reason,
-                        percentOpen = PercentOpen,
-                    });
-                webClient.SetPacing(WebClient.Pacing.Slow);
+                shutterMotionEndState = ShutterState.shutterOpen;
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugShutter, $"Stop: stopped {(openPinWasOn ? "opening" : "closing")}");
+                debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "Stop: stopped opening");
                 #endregion
             }
-            else
+
+            if (closePin.isOn)
             {
+                closePin.SetOff();
+                shutterMotionEndState = ShutterState.shutterClosed;
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "Stop: was NOT moving.");
+                debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "Stop: stopped closing");
                 #endregion
             }
+
+            activityMonitor.EndActivity(ActivityMonitor.ActivityType.Shutter, new Activity.Shutter.EndParams()
+            {
+                endState = Activity.State.Succeeded,
+                endReason = reason,
+                percentOpen = PercentOpen,
+            });
+            webClient.SetPacing(WebClient.Pacing.Slow);
         }
 
-        public bool CloseEnough(int value, int limit)
+        public static bool CloseEnough(int value, int limit)
         {
             return Math.Abs(value - limit) < 10;
         }
@@ -387,9 +374,9 @@ namespace ASCOM.Wise40
         {
             if (Simulated)
             {
-                _sim_State = ShutterState.shutterClosing;
-                _sim_StartOfMovement = DateTime.Now;
-                _sim_Timer.Change(Convert.ToInt32(_sim_FullTravelTimeSpan.TotalMilliseconds), Timeout.Infinite);
+                Simulation_State = ShutterState.shutterClosing;
+                Simulation_StartOfMovement = DateTime.Now;
+                Simulation_Timer.Change(Convert.ToInt32(Simulation_FullTravelTimeSpan.TotalMilliseconds), Timeout.Infinite);
                 return;
             }
 
@@ -404,7 +391,7 @@ namespace ASCOM.Wise40
             if (webClient.WiFiIsWorking)
             {
                 int rangeCm = RangeCm;
-                if (rangeCm != -1 && CloseEnough(rangeCm, _lowestValue))
+                if (rangeCm != -1 && CloseEnough(rangeCm, lowestRange))
                 {
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "StartClosing: ignored (close enough to closed)");
@@ -424,8 +411,8 @@ namespace ASCOM.Wise40
                     start = PercentOpen,
                     target = 0,
                 }));
-                webClient._startOfShutterMotion = DateTime.Now;
                 closePin.SetOn();
+                shutterMotionTimer.Change((int) shutterMotionTravelTime.TotalMilliseconds, Timeout.Infinite);
                 webClient.SetPacing(WebClient.Pacing.Fast);
             }
         }
@@ -434,9 +421,9 @@ namespace ASCOM.Wise40
         {
             if (Simulated)
             {
-                _sim_State = ShutterState.shutterOpening;
-                _sim_StartOfMovement = DateTime.Now;
-                _sim_Timer.Change(Convert.ToInt32(_sim_FullTravelTimeSpan.TotalMilliseconds), Timeout.Infinite);
+                Simulation_State = ShutterState.shutterOpening;
+                Simulation_StartOfMovement = DateTime.Now;
+                Simulation_Timer.Change(Convert.ToInt32(Simulation_FullTravelTimeSpan.TotalMilliseconds), Timeout.Infinite);
                 return;
             }
 
@@ -451,10 +438,11 @@ namespace ASCOM.Wise40
             if (webClient.WiFiIsWorking)
             {
                 int rangeCm = RangeCm;
-                if (rangeCm != -1 && CloseEnough(rangeCm, _highestValue))
+                if (rangeCm != -1 && CloseEnough(rangeCm, highestRange))
                 {
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "StartOpening: ignored (close enough to open)");
+                    debugger.WriteLine(Debugger.DebugLevel.DebugShutter,
+                        $"StartOpening: ignored ({rangeCm} is close enough to {highestRange})");
                     #endregion debug
                     return;
                 }
@@ -471,8 +459,8 @@ namespace ASCOM.Wise40
                     start = PercentOpen,
                     target = 100,
                 }));
-                webClient._startOfShutterMotion = DateTime.Now;
                 openPin.SetOn();
+                shutterMotionTimer.Change((int)shutterMotionTravelTime.TotalMilliseconds, Timeout.Infinite);
                 webClient.SetPacing(WebClient.Pacing.Fast);
             }
         }
@@ -490,7 +478,7 @@ namespace ASCOM.Wise40
             get
             {
                 if (Simulated)
-                    return _sim_State;
+                    return Simulation_State;
 
                 ShutterState ret = ShutterState.shutterError;
 
@@ -509,35 +497,42 @@ namespace ASCOM.Wise40
                     ret = ShutterState.shutterClosing;
                     _stateReason = "closePin is ON";
                 }
-                else
+                else if (Instance.webClient.WiFiIsWorking)
                 {
                     int rangeCm = RangeCm;
 
                     if (rangeCm == -1)
                     {
                         ret = ShutterState.shutterError;
-                        _stateReason = Instance.webClient.WiFiIsWorking ? "rangeCM == -1 (unknown problem)" : "WiFi problem";
+                        _stateReason = "WiFiIsWorking but rangeCM == -1 (unknown problem)";
                     }
-                    else if (CloseEnough(rangeCm, _lowestValue))
+                    else if (CloseEnough(rangeCm, lowestRange))
                     {
                         ret = ShutterState.shutterClosed;
-                        _stateReason = $"range: {rangeCm}cm is close enough to lower limit: {_lowestValue}cm";
+                        _stateReason = $"range: {rangeCm}cm is close enough to lower limit: {lowestRange}cm";
                     }
-                    else if (CloseEnough(rangeCm, _highestValue))
+                    else if (CloseEnough(rangeCm, highestRange))
                     {
                         ret = ShutterState.shutterOpen;
-                        _stateReason = $"range: {rangeCm}cm is close enough to highest limit: {_highestValue}cm";
-                    } else
+                        _stateReason = $"range: {rangeCm}cm is close enough to highest limit: {highestRange}cm";
+                    }
+                    else
                     {
                         ret = ShutterState.shutterOpen;
-                        _stateReason = $"range: {rangeCm}cm is between lowest: {_lowestValue}cm and highest: {_highestValue}cm";
+                        _stateReason = $"range: {rangeCm}cm is between lowest: {lowestRange}cm and highest: {highestRange}cm";
                     }
+                }
+                else
+                {
+                    ret = shutterMotionEndState;
+                    _stateReason = "motion timer has expired";
                 }
 
                 _state = ret;
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugShutter, $"State: {_state} (reason: {_stateReason})");
                 #endregion
+                prevState = ret;
                 return _state;
             }
 
@@ -578,8 +573,8 @@ namespace ASCOM.Wise40
             catch (Hardware.Hardware.MaintenanceModeException) { }
 
             ReadProfile();
-            if (ShutterWebClientEnabled && _ipAddress != string.Empty)
-                webClient = new WebClient(_ipAddress, this);
+            if (ShutterWebClientEnabled && ! string.IsNullOrEmpty(IpAddress))
+                webClient = new WebClient(IpAddress, this);
             shutterPins = new List<WisePin> { openPin, closePin };
 
             _state = ShutterState.shutterError;
@@ -611,22 +606,22 @@ namespace ASCOM.Wise40
             }
         }
 
-        public List<WisePin> pins()
+        public List<WisePin> Pins()
         {
             return shutterPins;
         }
 
         public void ReadProfile()
         {
-            bool defaultSyncVentWithShutter = (WiseSite.OperationalMode == WiseSite.OpMode.WISE) ? false : true;
+            bool defaultSyncVentWithShutter = WiseSite.OperationalMode == WiseSite.OpMode.WISE;
 
             using (Profile driverProfile = new Profile() { DeviceType = "Dome" })
             {
                 ShutterWebClientEnabled = Convert.ToBoolean(driverProfile.GetValue(Const.WiseDriverID.Dome, Const.ProfileName.DomeShutter_UseWebClient, string.Empty, false.ToString()));
-                _ipAddress = driverProfile.GetValue(Const.WiseDriverID.Dome, Const.ProfileName.DomeShutter_IPAddress, string.Empty, "").Trim();
-                _highestValue = Convert.ToInt32(driverProfile.GetValue(Const.WiseDriverID.Dome, Const.ProfileName.DomeShutter_HighestValue, string.Empty, "-1"));
-                _lowestValue = Convert.ToInt32(driverProfile.GetValue(Const.WiseDriverID.Dome, Const.ProfileName.DomeShutter_LowestValue, string.Empty, "-1"));
-                _syncVentWithShutter = Convert.ToBoolean(driverProfile.GetValue(Const.WiseDriverID.Dome, Const.ProfileName.Dome_SyncVentWithShutter, string.Empty, defaultSyncVentWithShutter.ToString()));
+                IpAddress = driverProfile.GetValue(Const.WiseDriverID.Dome, Const.ProfileName.DomeShutter_IPAddress, string.Empty, "").Trim();
+                highestRange = Convert.ToInt32(driverProfile.GetValue(Const.WiseDriverID.Dome, Const.ProfileName.DomeShutter_HighestValue, string.Empty, "-1"));
+                lowestRange = Convert.ToInt32(driverProfile.GetValue(Const.WiseDriverID.Dome, Const.ProfileName.DomeShutter_LowestValue, string.Empty, "-1"));
+                syncVentWithShutter = Convert.ToBoolean(driverProfile.GetValue(Const.WiseDriverID.Dome, Const.ProfileName.Dome_SyncVentWithShutter, string.Empty, defaultSyncVentWithShutter.ToString()));
             }
         }
 
@@ -635,10 +630,10 @@ namespace ASCOM.Wise40
             using (Profile driverProfile = new Profile() { DeviceType = "Dome" })
             {
                 driverProfile.WriteValue(Const.WiseDriverID.Dome, Const.ProfileName.DomeShutter_UseWebClient, ShutterWebClientEnabled.ToString());
-                driverProfile.WriteValue(Const.WiseDriverID.Dome, Const.ProfileName.DomeShutter_IPAddress, _ipAddress.ToString());
-                driverProfile.WriteValue(Const.WiseDriverID.Dome, Const.ProfileName.DomeShutter_HighestValue, _highestValue.ToString());
-                driverProfile.WriteValue(Const.WiseDriverID.Dome, Const.ProfileName.DomeShutter_LowestValue, _lowestValue.ToString());
-                driverProfile.WriteValue(Const.WiseDriverID.Dome, Const.ProfileName.Dome_SyncVentWithShutter, _syncVentWithShutter.ToString());
+                driverProfile.WriteValue(Const.WiseDriverID.Dome, Const.ProfileName.DomeShutter_IPAddress, IpAddress);
+                driverProfile.WriteValue(Const.WiseDriverID.Dome, Const.ProfileName.DomeShutter_HighestValue, highestRange.ToString());
+                driverProfile.WriteValue(Const.WiseDriverID.Dome, Const.ProfileName.DomeShutter_LowestValue, lowestRange.ToString());
+                driverProfile.WriteValue(Const.WiseDriverID.Dome, Const.ProfileName.Dome_SyncVentWithShutter, syncVentWithShutter.ToString());
             }
         }
 
@@ -648,7 +643,7 @@ namespace ASCOM.Wise40
             {
                 if (Simulated)
                 {
-                    return _sim_State == ShutterState.shutterOpening || _sim_State == ShutterState.shutterClosing;
+                    return Simulation_State == ShutterState.shutterOpening || Simulation_State == ShutterState.shutterClosing;
                 }
 
                 var ret = openPin.isOn || closePin.isOn;
@@ -664,7 +659,7 @@ namespace ASCOM.Wise40
             get
             {
                 if (Simulated)
-                    return _sim_Range;
+                    return Simulation_Range;
 
                 return webClient.ShutterRange;
             }
@@ -679,45 +674,51 @@ namespace ASCOM.Wise40
                 if (currentRange == -1)
                     return -1;
 
-                return (int)((currentRange - _lowestValue) * 100.0) / ((_highestValue - _lowestValue));
+                return (int)((currentRange - lowestRange) * 100.0) / (highestRange - lowestRange);
             }
         }
 
-        public static void _sim_startTimer()
+        public static void Simulation_StartTimer()
         {
-            _sim_Timer.Change(Convert.ToInt32(_sim_FullTravelTimeSpan.TotalMilliseconds), Timeout.Infinite);
-            _sim_IsMoving = true;
-            _sim_StartOfMovement = DateTime.Now;
+            Simulation_Timer.Change(Convert.ToInt32(Simulation_FullTravelTimeSpan.TotalMilliseconds), Timeout.Infinite);
+            Simulation_IsMoving = true;
+            Simulation_StartOfMovement = DateTime.Now;
         }
 
-        public static void _sim_CalculatePosition()
+        public static void Simulation_CalculatePosition()
         {
-            _sim_Precent = (DateTime.Now.Subtract(_sim_StartOfMovement).TotalMilliseconds / _sim_FullTravelTimeSpan.TotalMilliseconds) * 100;
-            _sim_Range = Instance._lowestValue + (int) ((Instance._highestValue - Instance._lowestValue) * (1 + _sim_Precent / 100));
+            Simulation_Precent = (DateTime.Now.Subtract(Simulation_StartOfMovement).TotalMilliseconds / Simulation_FullTravelTimeSpan.TotalMilliseconds) * 100;
+            Simulation_Range = Instance.lowestRange + (int) ((Instance.highestRange - Instance.lowestRange) * ((1 + Simulation_Precent) / 100));
         }
 
-        public static void _sim_stopTimer()
+        public static void Simulation_StopTimer()
         {
-            _sim_Timer.Change(Timeout.Infinite, Timeout.Infinite);
-            _sim_IsMoving = false;
-            _sim_CalculatePosition();
+            Simulation_Timer.Change(Timeout.Infinite, Timeout.Infinite);
+            Simulation_IsMoving = false;
+            Simulation_CalculatePosition();
         }
 
-        public static void _sim_OnTimer(object state)
+        public static void OnShutterMotionTimer(object state)
+        {
+            shutterMotionTimer.Change(Timeout.Infinite, Timeout.Infinite);
+            Instance.Stop($"Motion period ({Instance.shutterMotionTravelTime}) has ended");
+        }
+
+        public static void Simulation_OnTimer(object state)
         {
             if (!Simulated)
                 return;
 
-            _sim_stopTimer(); ;
+            Simulation_StopTimer();
 
-            switch(_sim_State)
+            switch(Simulation_State)
             {
                 case ShutterState.shutterClosing:
-                    _sim_State = ShutterState.shutterClosed;
+                    Simulation_State = ShutterState.shutterClosed;
                     break;
 
                 case ShutterState.shutterOpening:
-                    _sim_State = ShutterState.shutterOpen;
+                    Simulation_State = ShutterState.shutterOpen;
                     break;
             }
         }

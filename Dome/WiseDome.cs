@@ -147,7 +147,7 @@ namespace ASCOM.Wise40
 
                 List<WisePin> domePins = new List<WisePin> { leftPin, rightPin, ventPin, projectorPin };
                 domePins.AddRange(caliPins);
-                domePins.AddRange(wisedomeshutter.pins());
+                domePins.AddRange(wisedomeshutter.Pins());
 
                 connectables.AddRange(domePins);
                 disposables.AddRange(domePins);
@@ -983,10 +983,15 @@ namespace ASCOM.Wise40
             if (percentOpen != -1 && percentOpen > 98)
                 return;
 
-            if (wisedomeshutter.IsMoving && wisedomeshutter.State != ShutterState.shutterOpening)
-                wisedomeshutter.Stop("Stopped before StartOpening");
+            if (wisedomeshutter.State == ShutterState.shutterOpening)
+            {
+                debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "OpenShutter: Shutter already opening");
+                return;
+            }
+            
+            wisedomeshutter.Stop("OpenShutter: Stopped before StartOpening");
             wisedomeshutter.StartOpening();
-            if (wisedomeshutter._syncVentWithShutter)
+            if (wisedomeshutter.syncVentWithShutter)
                 Vent = true;
         }
 
@@ -999,10 +1004,15 @@ namespace ASCOM.Wise40
             if (percentOpen != -1 && percentOpen < 1)
                 return;
 
-            if (wisedomeshutter.IsMoving && wisedomeshutter.State != ShutterState.shutterClosing)
-                wisedomeshutter.Stop("Stopped before StartClosing");
+            if (wisedomeshutter.State == ShutterState.shutterClosing)
+            {
+                debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "CloseShutter: Shutter is already closing");
+                return;
+            }
+
+            wisedomeshutter.Stop("CloseShutter: Stopped before StartClosing");
             wisedomeshutter.StartClosing();
-            if (wisedomeshutter._syncVentWithShutter)
+            if (wisedomeshutter.syncVentWithShutter)
                 Vent = false;
         }
 
@@ -1432,12 +1442,12 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return wisedomeshutter._syncVentWithShutter;
+                return wisedomeshutter.syncVentWithShutter;
             }
 
             set
             {
-                wisedomeshutter._syncVentWithShutter = value;
+                wisedomeshutter.syncVentWithShutter = value;
             }
         }
 
