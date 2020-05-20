@@ -22,33 +22,32 @@ namespace Dash
     public partial class FormDash : Form
     {
         public WiseSite wisesite = WiseSite.Instance;
-        private ASCOM.Utilities.Util ascomutil = new Util();
-        enum GoToMode { Ra, Ha, DeltaRa, DeltaHa };
+        private readonly ASCOM.Utilities.Util ascomutil = new Util();
+        public enum GoToMode { Ra, Ha, DeltaRa, DeltaHa };
         private GoToMode goToMode = GoToMode.Ra;
 
-        DebuggingForm debuggingForm = new DebuggingForm();
-        Debugger debugger = Debugger.Instance;
-        FilterWheelForm filterWheelForm;
+        private DebuggingForm debuggingForm = new DebuggingForm();
+        private readonly Debugger debugger = Debugger.Instance;
+        private readonly FilterWheelForm filterWheelForm;
 
-        Statuser dashStatus, telescopeStatus, domeStatus, shutterStatus, focuserStatus, safetooperateStatus, filterWheelStatus, filterWheelArduinoStatus;
+        private readonly Statuser dashStatus, telescopeStatus, domeStatus, shutterStatus, focuserStatus, safetooperateStatus, filterWheelStatus, filterWheelArduinoStatus;
 
         private double handpadRate = Const.rateSlew;
-        private bool _saveFocusUpperLimit = false, _saveFocusLowerLimit = false;
+        private readonly bool _saveFocusUpperLimit = false, _saveFocusLowerLimit = false;
 
-        RefreshPacer domePacer = new RefreshPacer(TimeSpan.FromSeconds(1));
-        RefreshPacer safettoperatePacer = new RefreshPacer(TimeSpan.FromSeconds(20));
-        RefreshPacer weatherPacer = new RefreshPacer(TimeSpan.FromSeconds(20));
-        RefreshPacer focusPacer = new RefreshPacer(TimeSpan.FromSeconds(5));
-        RefreshPacer filterWheelPacer = new RefreshPacer(TimeSpan.FromSeconds(5));
-        RefreshPacer telescopePacer = new RefreshPacer(TimeSpan.FromMilliseconds(200));
-        RefreshPacer forecastPacer = new RefreshPacer(TimeSpan.FromMinutes(2));
+        private readonly RefreshPacer domePacer = new RefreshPacer(TimeSpan.FromSeconds(1));
+        private readonly RefreshPacer safettoperatePacer = new RefreshPacer(TimeSpan.FromSeconds(20));
+        private readonly RefreshPacer focusPacer = new RefreshPacer(TimeSpan.FromSeconds(5));
+        private readonly RefreshPacer filterWheelPacer = new RefreshPacer(TimeSpan.FromSeconds(5));
+        private readonly RefreshPacer telescopePacer = new RefreshPacer(TimeSpan.FromMilliseconds(200));
+        private readonly RefreshPacer forecastPacer = new RefreshPacer(TimeSpan.FromMinutes(2));
 
-        SafeToOperateDigest safetooperateDigest = null;
-        DomeDigest domeDigest = null;
-        TelescopeDigest telescopeDigest = null;
-        FocuserDigest focuserDigest = null;
-        WiseFilterWheelDigest filterWheelDigest = null;
-        string forecast;
+        private SafeToOperateDigest safetooperateDigest = null;
+        private DomeDigest domeDigest = null;
+        private TelescopeDigest telescopeDigest = null;
+        private FocuserDigest focuserDigest = null;
+        private WiseFilterWheelDigest filterWheelDigest = null;
+        private string forecast;
 
         private List<ToolStripMenuItem> debugMenuItems;
         private Dictionary<object, string> alteredItems = new Dictionary<object, string>();
@@ -58,7 +57,7 @@ namespace Dash
         public Color warningColor = Statuser.colors[Statuser.Severity.Warning];
         public Color goodColor = Statuser.colors[Statuser.Severity.Good];
 
-        private Moon moon = Moon.Instance;
+        private readonly Moon moon = Moon.Instance;
         public ASCOM.DriverAccess.Telescope wiseTelescope;
         public ASCOM.DriverAccess.Dome wiseDome;
         public ASCOM.DriverAccess.Focuser wiseFocuser;
@@ -216,16 +215,6 @@ namespace Dash
             {
                 filterWheelStatus.Show("Disabled (see Settings->FilterWheel->Settings)");
             }
-        }
-
-        public double MPS(double kmh)
-        {
-            return kmh * (1000.0 / 3600.0);
-        }
-
-        public double KMH(double mps)
-        {
-            return mps * 3.6;
         }
 
         #region Refresh
@@ -622,14 +611,9 @@ namespace Dash
 
                 #region Shutter
                 string status = domeDigest.Shutter.Status, msg;
+                severity = Statuser.Severity.Normal;
                 if (status.Contains("error:") || domeDigest.Shutter.State == ShutterState.shutterError)
-                {
                     severity = Statuser.Severity.Error;
-                }
-                else
-                {
-                    severity = Statuser.Severity.Normal;
-                }
                 msg = "Shutter is " + status;
                 shutterStatus.Show(msg, 0, severity);
                 shutterStatus.SetToolTip(domeDigest.Shutter.Reason);
@@ -659,7 +643,7 @@ namespace Dash
             #region RefreshWeather
             if (safetooperateDigest == null)
             {
-                string nc = "???";
+                const string nc = "???";
 
                 List<Label> labels = new List<Label>() {
                     labelCloudCoverValue,
@@ -718,12 +702,16 @@ namespace Dash
             #endregion
 
             #region RefreshFilterWheel
-            if (filterWheelDigest != null &&
-                filterWheelDigest.Enabled &&
-                (filterWheelDigest.Arduino.Status == ArduinoInterface.ArduinoStatus.Communicating || filterWheelDigest.Arduino.Status == ArduinoInterface.ArduinoStatus.Moving))
+            if (filterWheelDigest?.Enabled == true &&
+                    (filterWheelDigest.Arduino.Status == ArduinoInterface.ArduinoStatus.Communicating ||
+                    filterWheelDigest.Arduino.Status == ArduinoInterface.ArduinoStatus.Moving))
+            {
                 annunciatorFilterWheel.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+            }
             else
+            {
                 annunciatorFilterWheel.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            }
             LoadFilterWheelInformation();
             #endregion
 
@@ -735,7 +723,7 @@ namespace Dash
             timerRefreshDisplay.Enabled = true;
         }
 
-        void RefreshInConditionsformation(Label label, Sensor.SensorDigest digest)
+        private void RefreshInConditionsformation(Label label, Sensor.SensorDigest digest)
         {
             label.Text = digest.Symbolic;
             label.ForeColor = digest.Color;
@@ -791,7 +779,7 @@ namespace Dash
 
         private bool SafeAtCurrentCoords()
         {
-            return telescopeDigest.SafeAtCurrentCoordinates == string.Empty;
+            return string.IsNullOrEmpty(telescopeDigest.SafeAtCurrentCoordinates);
         }
 
         #region TelescopeControl
@@ -1402,7 +1390,7 @@ namespace Dash
         #region Settings
         private void debugAllToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            debugger.StartDebugging(Debugger.DebugLevel.DebugAll);
+            Debugger.StartDebugging(Debugger.DebugLevel.DebugAll);
 
             foreach (var item in debugMenuItems)
                 UpdateCheckmark(item, true);
@@ -1455,7 +1443,7 @@ namespace Dash
 
         private void debugNoneToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            debugger.StopDebugging(Debugger.DebugLevel.DebugAll);
+            Debugger.StopDebugging(Debugger.DebugLevel.DebugAll);
 
             foreach (var item in debugMenuItems)
                 UpdateCheckmark(item, false);
@@ -1498,9 +1486,9 @@ namespace Dash
                 return;
 
             if (debugger.Debugging(selectedLevel))
-                debugger.StopDebugging(selectedLevel);
+                Debugger.StopDebugging(selectedLevel);
             else
-                debugger.StartDebugging(selectedLevel);
+                Debugger.StartDebugging(selectedLevel);
             UpdateCheckmark(item, debugger.Debugging(selectedLevel));
             UpdateAlteredItems(item, "Debugging");
 
