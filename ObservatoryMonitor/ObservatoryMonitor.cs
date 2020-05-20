@@ -19,7 +19,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 {
     public partial class ObsMainForm : Form
     {
-        private static bool _simulated = WiseObject.Simulated;
+        private static readonly bool _simulated = WiseObject.Simulated;
         public const int _maxLogItems = 100000;
         private static DriverAccess.Telescope wisetelescope = null;
         private static readonly WiseSite wisesite = WiseSite.Instance;
@@ -34,7 +34,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
         private static DateTime _lastLog = DateTime.MinValue;
         private static readonly string deltaFromUT = "(UT+" + DateTime.Now.Subtract(DateTime.UtcNow).Hours.ToString() + ")";
 
-        private static readonly Color normalColor = Statuser.colors[Statuser.Severity.Normal];
+        //private static readonly Color normalColor = Statuser.colors[Statuser.Severity.Normal];
         private static readonly Color unsafeColor = Statuser.colors[Statuser.Severity.Error];
         private static readonly Color safeColor = Statuser.colors[Statuser.Severity.Good];
         private static readonly Color warningColor = Statuser.colors[Statuser.Severity.Warning];
@@ -121,7 +121,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 if (!wisetelescope.Connected)
                 {
                     wisetelescope.Connected = true;
-                    while (wisetelescope.Connected == false)
+                    while (!wisetelescope.Connected)
                     {
                         Log("Waiting for the \"Telescope\" client to connect ...", 5);
                         Application.DoEvents();
@@ -259,7 +259,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             #region Decide if shutdown is needed
             List<string> reasonsList = new List<string>();
 
-            if (!safetooperateDigest.Safe)
+            if (!safetooperateDigest.Safe && !safetooperateDigest.UnsafeBecauseNotReady)
                 reasonsList.Add(string.Join(Const.recordSeparator, safetooperateDigest.UnsafeReasons));
 
             // Comment this out to ignore telescope being idle
@@ -292,7 +292,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             else
             {
                 #region NoNeedToShutdown
-                string safetyMessage = "", activityMessage = "";
+                string safetyMessage, activityMessage;
 
                 if (safetooperateDigest.Safe)
                 {
@@ -309,10 +309,9 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                         safetyMessage += " (intervention)";
                 }
 
-                if (telescopeDigest.Active)
-                    activityMessage = "active (" + string.Join(", ", telescopeDigest.Activities) + ")";
-                else
-                    activityMessage = "idle";
+                activityMessage = (telescopeDigest.Active) ?
+                    $"active ({string.Join(", ", telescopeDigest.Activities)})" :
+                    "idle";
                 
                 Log(safetyMessage + " and " + activityMessage);
                 #endregion
@@ -320,7 +319,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             #endregion
         }
 
-        delegate void UpdateCheckingStatus_delegate(string text);
+        private delegate void UpdateCheckingStatus_delegate(string text);
 
         private void UpdateCheckingStatus(string s)
         {
@@ -444,19 +443,19 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugLogic, msg);
             if (!debugOnly)
             {
-                logToGUI($"{DateTime.UtcNow:H:mm:ss UT} - {msg}");
+                LogToGUI($"{DateTime.UtcNow:H:mm:ss UT} - {msg}");
                 _lastLog = DateTime.UtcNow;
             }
         }
 
-        public void logToGUI(string line)
+        public void LogToGUI(string line)
         {
             // InvokeRequired required compares the thread ID of the  
             // calling thread to the thread ID of the creating thread.  
             // If these threads are different, it returns true.  
             if (listBoxLog.InvokeRequired)
             {
-                this.Invoke(new LogDelegate(logToGUI), new object[] { line });
+                this.Invoke(new LogDelegate(LogToGUI), new object[] { line });
             }
             else
             {
@@ -741,7 +740,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             }
         }
 
-        private void removeHumanInterventionFile(object sender, DoWorkEventArgs e)
+        private void RemoveHumanInterventionFile(object sender, DoWorkEventArgs e)
         {
             HumanIntervention.Remove();
         }
@@ -756,7 +755,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             if (HumanIntervention.IsSet())
             {
                 BackgroundWorker bw = new BackgroundWorker();
-                bw.DoWork += new DoWorkEventHandler(removeHumanInterventionFile);
+                bw.DoWork += new DoWorkEventHandler(RemoveHumanInterventionFile);
                 bw.RunWorkerCompleted += new RunWorkerCompletedEventHandler(afterRemoveHumanInterventionFile);
                 bw.RunWorkerAsync();
             }
@@ -809,8 +808,12 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             };
 
             foreach (var item in items)
+            {
                 if (item.Text.EndsWith(Const.checkmark))
+                {
                     item.Text = item.Text.Substring(0, item.Text.Length - Const.checkmark.Length);
+                }
+            }
 
             ToolStripMenuItem selected = null;
             switch (currentMode)
