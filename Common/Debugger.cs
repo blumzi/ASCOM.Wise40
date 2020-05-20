@@ -18,6 +18,7 @@ namespace ASCOM.Wise40.Common
         private static string _appName = string.Empty;
         private static string _logFile = string.Empty;
         private static TextWriterTraceListener traceListener;
+        private static readonly object _lock = new object();
 
         static Debugger()
         {
@@ -79,9 +80,12 @@ namespace ASCOM.Wise40.Common
             Trace.AutoFlush = true;
             _initialized = true;
 
-            WriteLine(DebugLevel.DebugLogic, $"##");
-            WriteLine(DebugLevel.DebugLogic, $"## ============= {_appName} started ====================");
-            WriteLine(DebugLevel.DebugLogic, $"##");
+            lock (_lock)
+            {
+                WriteLine(DebugLevel.DebugLogic, $"##");
+                WriteLine(DebugLevel.DebugLogic, $"## ============= {_appName} started ====================");
+                WriteLine(DebugLevel.DebugLogic, $"##");
+            }
         }
 
         public void SetWindow(ListBox list, bool append = false)
@@ -129,7 +133,7 @@ namespace ASCOM.Wise40.Common
 
         public void WriteLine(DebugLevel level, string fmt, params object[] o)
         {
-            if (! _initialized || !Debugging(level))
+            if (!_initialized || !Debugging(level))
                 return;
 
             DateTime utcNow = DateTime.UtcNow;
@@ -146,28 +150,31 @@ namespace ASCOM.Wise40.Common
                 level.ToString(),
                 msg);
             string currentLogPath = LogDirectory() + string.Format("/{0}.txt", _appName);
-            if (currentLogPath != _logFile)
+            lock (_lock)
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(currentLogPath));
-                if (traceListener != null)
+                if (currentLogPath != _logFile)
                 {
-                    try
+                    Directory.CreateDirectory(Path.GetDirectoryName(currentLogPath));
+                    if (traceListener != null)
                     {
-                        traceListener.Flush();
-                        traceListener.Close();
-                        Trace.Listeners.Remove(traceListener);
+                        try
+                        {
+                            traceListener.Flush();
+                            traceListener.Close();
+                            Trace.Listeners.Remove(traceListener);
+                        }
+                        catch { }
                     }
-                    catch { }
+                    _logFile = currentLogPath;
+                    traceListener = new TextWriterTraceListener(_logFile);
+                    Trace.Listeners.Add(traceListener);
+                    Trace.WriteLine("##");
+                    Trace.WriteLine($"## {DateTime.Now:yyyy-MMM-dd HH:mm:ss.fff}");
+                    Trace.WriteLine("##\n");
                 }
-                _logFile = currentLogPath;
-                traceListener = new TextWriterTraceListener(_logFile);
-                Trace.Listeners.Add(traceListener);
-                Trace.WriteLine("##");
-                Trace.WriteLine($"## {DateTime.Now:yyyy-MMM-dd HH:mm:ss.fff}");
-                Trace.WriteLine("##\n");
-            }
 
-            Trace.WriteLine(line);
+                Trace.WriteLine(line);
+            }
 
             if (listBox != null && _appendToWindow)
             {
@@ -195,12 +202,12 @@ namespace ASCOM.Wise40.Common
             }
         }
 
-        public void StartDebugging(DebugLevel levels)
+        public static void StartDebugging(DebugLevel levels)
         {
             _currentLevel |= levels;
         }
 
-        public void StopDebugging(DebugLevel levels)
+        public static void StopDebugging(DebugLevel levels)
         {
             _currentLevel &= ~levels;
         }
