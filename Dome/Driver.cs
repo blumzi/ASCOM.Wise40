@@ -20,7 +20,6 @@
 // --------------------------------------------------------------------------------
 //
 
-
 // This is used to define code in the template that is specific to one class implementation
 // unused code canbe deleted and this definition removed.
 #define Dome
@@ -68,11 +67,11 @@ namespace ASCOM.Wise40 //.Dome
         /// </summary>
         internal static string driverID = Const.WiseDriverID.Dome;
 
-        private static Version version = new Version("0.2");
+        private static readonly Version version = new Version("0.2");
         /// <summary>
         /// Dome driver for the Wise 40" telescope.
         /// </summary>
-        private static string driverDescription = string.Format("Wise40 Dome v{0}", version.ToString());
+        private static readonly string driverDescription = string.Format("Wise40 Dome v{0}", version.ToString());
 
         public Common.Debugger debugger = Common.Debugger.Instance;
 
@@ -96,11 +95,9 @@ namespace ASCOM.Wise40 //.Dome
         /// </summary>
         public Dome()
         {
-            if (wisedome == null)
-                wisedome = WiseDome.Instance;
 
-            wisedome.ReadProfile(); // Read device configuration from the ASCOM Profile store
-            
+            (wisedome ?? (wisedome = WiseDome.Instance)).ReadProfile(); // Read device configuration from the ASCOM Profile store
+
             utilities = new Util();
             astroUtilities = new AstroUtils();
 
@@ -336,7 +333,7 @@ namespace ASCOM.Wise40 //.Dome
         public void CloseShutter()
         {
             if (WiseDome.activityMonitor.ShuttingDown)
-                throw new InvalidOperationException("Observatory is shutting down!");
+                Exceptor.Throw<InvalidOperationException>("CloseShutter", "Observatory is shutting down!");
 
             #region debug
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, "CloseShutter");
@@ -352,7 +349,7 @@ namespace ASCOM.Wise40 //.Dome
         public void OpenShutter()
         {
             if (WiseDome.activityMonitor.ShuttingDown)
-                throw new InvalidOperationException("Observatory is shutting down!");
+                Exceptor.Throw<InvalidOperationException>("OpenShutter", "Observatory is shutting down!");
 
             #region debug
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, "OpenShutter");
@@ -367,7 +364,7 @@ namespace ASCOM.Wise40 //.Dome
 
         public void SetPark()
         {
-            wisedome.SetPark();
+            WiseDome.SetPark();
         }
 
         public ShutterState ShutterStatus
@@ -397,7 +394,7 @@ namespace ASCOM.Wise40 //.Dome
 
         public void SlewToAltitude(double Altitude)
         {
-            wisedome.SlewToAltitude(Altitude);
+            WiseDome.SlewToAltitude(Altitude);
         }
 
         public void SlewToAzimuth(double Azimuth)

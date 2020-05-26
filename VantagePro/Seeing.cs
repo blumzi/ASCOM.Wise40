@@ -11,16 +11,11 @@ namespace ASCOM.Wise40.VantagePro
 {
     public class Seeing
     {
-        private static WeatherLogger _weatherLogger;
+        private static readonly WeatherLogger _weatherLogger = new WeatherLogger(stationName: "LCO");
         private DateTime _lastQueryTime = DateTime.MinValue;
         private TimeSpan _interval = new TimeSpan(0, 1, 0);
 
         public Seeing() { }
-
-        public static void init()
-        {
-            _weatherLogger = new WeatherLogger(stationName: "LCO");
-        }
 
         public void Refresh()
         {
@@ -30,7 +25,7 @@ namespace ASCOM.Wise40.VantagePro
             //  mysql -uhibernate -phibernate -hpubsubdb.tlv.lco.gtn hibernate 
             //    -e 'select from_unixtime(L.TIMESTAMP_/1000), L.VALUE_ from LIVEVALUE as L, PROPERTY as P where L.IDENTIFIER=P.IDENTIFIER and P.ADDRESS_DATUM="Reduction Latest FWHM Median" and P.ADDRESS_DATUMINSTANCE=(select L.VALUE_ from LIVEVALUE as L, PROPERTY as P where P.IDENTIFIER=L.IDENTIFIER and P.ADDRESS_DATUM="Guide Selected Autoguider Name" and P.ADDRESS_OBSERVATORY="doma")'
             //
-            string sql = "select from_unixtime(L.TIMESTAMP_/1000) as time, L.VALUE_ from LIVEVALUE as L, PROPERTY as P where L.IDENTIFIER=P.IDENTIFIER and P.ADDRESS_DATUM=\"Reduction Latest FWHM Median\" and P.ADDRESS_DATUMINSTANCE=(select L.VALUE_ from LIVEVALUE as L, PROPERTY as P where P.IDENTIFIER=L.IDENTIFIER and P.ADDRESS_DATUM=\"Guide Selected Autoguider Name\" and P.ADDRESS_OBSERVATORY=\"doma\")";
+            const string sql = "select from_unixtime(L.TIMESTAMP_/1000) as time, L.VALUE_ from LIVEVALUE as L, PROPERTY as P where L.IDENTIFIER=P.IDENTIFIER and P.ADDRESS_DATUM=\"Reduction Latest FWHM Median\" and P.ADDRESS_DATUMINSTANCE=(select L.VALUE_ from LIVEVALUE as L, PROPERTY as P where P.IDENTIFIER=L.IDENTIFIER and P.ADDRESS_DATUM=\"Guide Selected Autoguider Name\" and P.ADDRESS_OBSERVATORY=\"doma\")";
             try
             {
                 using (var sqlConn = new MySqlConnection(Const.MySql.DatabaseConnectionString.LCO_hibernate))

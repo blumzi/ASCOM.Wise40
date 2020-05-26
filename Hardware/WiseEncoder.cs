@@ -47,7 +47,7 @@ namespace ASCOM.Wise40.Hardware
             double timeoutMillis = Const.defaultReadTimeoutMillis,
             int retries = Const.defaultReadRetries)
         {
-            init(name, hwTicks, specs, isGray, timeoutMillis, retries);
+            Init(name, hwTicks, specs, isGray, timeoutMillis, retries);
         }
 
         /// <summary>
@@ -59,14 +59,14 @@ namespace ASCOM.Wise40.Hardware
         /// <param name="isGray"></param>
         /// <param name="timeoutMillis"></param>
         /// <param name="retries"></param>
-        public void init(string name,
+        public void Init(string name,
             int hwTicks,
             List<WiseEncSpec> specs,
             bool isGray = false,
             double timeoutMillis = Const.defaultReadTimeoutMillis,
             int retries = Const.defaultReadRetries)
         {
-            int nSpecs = specs.Count();
+            int nSpecs = specs.Count;
             _daqs = new List<WiseDaq>(nSpecs);
             _masks = new List<byte>(nSpecs);
             _isGray = isGray;
@@ -81,16 +81,16 @@ namespace ASCOM.Wise40.Hardware
                 byte mask;
 
                 if ((daq = spec.brd.daqs.Find(x => x.porttype == spec.port)) == null)
-                    throw new WiseException(name + ": Cannot find Daq for " + spec.port + " on " + spec.brd.WiseName);
+                    Exceptor.Throw<WiseException>("Init", $"{name}: Cannot find Daq for {spec.port} on {spec.brd.WiseName}");
 
                 mask = (byte)((spec.mask == 0) ? ~(1 << daq.nbits) : spec.mask);
-                daq.setDir(MccDaq.DigitalPortDirection.DigitalIn);
+                daq.SetDir(MccDaq.DigitalPortDirection.DigitalIn);
                 for (int bit = 0; bit < daq.nbits; bit++)
                 {
                     if ((mask & (1 << bit)) != 0)
                     {
                         _nbits++;
-                        daq.setOwner(name + "[" + encBit++ + "]", bit);
+                        daq.SetOwner($"{name}[{encBit++}]", bit);
                     }
                 }
                 _daqs.Add(daq);
@@ -111,7 +111,7 @@ namespace ASCOM.Wise40.Hardware
                 if (_isGray)
                     ret = GrayCode[ret];
                 #region debug
-                debugger.WriteLine(Common.Debugger.DebugLevel.DebugDAQs, "{0}: value: {1}", WiseName, ret);
+                debugger.WriteLine(Common.Debugger.DebugLevel.DebugDAQs, $"{WiseName}: value: {ret}");
                 #endregion
 
                 return ret;
@@ -250,14 +250,20 @@ namespace ASCOM.Wise40.Hardware
         public void Connect(bool connected)
         {
             int encBit = _nbits - 1;
-            
+
             foreach (var daq in _daqs)
+            {
                 for (int daqBit = daq.nbits - 1; daqBit >= 0; daqBit--)
+                {
                     if ((_masks[_daqs.IndexOf(daq)] & (1 << daqBit)) != 0)
+                    {
                         if (connected)
-                            daq.setOwner(WiseName + "[" + encBit-- + "]", daqBit);
+                            daq.SetOwner(WiseName + "[" + encBit-- + "]", daqBit);
                         else
-                            daq.unsetOwner(daqBit);
+                            daq.UnsetOwner(daqBit);
+                    }
+                }
+            }
 
             _connected = connected;
         }
@@ -272,10 +278,14 @@ namespace ASCOM.Wise40.Hardware
 
         public void Dispose()
         {
-            for (int daqno = 0; daqno < _daqs.Count(); daqno++)
+            for (int daqno = 0; daqno < _daqs.Count; daqno++)
+            {
                 for (int bit = 0; bit < _daqs[daqno].nbits; bit++)
+                {
                     if ((_masks[daqno] & (1 << bit)) != 0)
-                        _daqs[daqno].unsetOwner(bit);
+                        _daqs[daqno].UnsetOwner(bit);
+                }
+            }
         }
     }
 }

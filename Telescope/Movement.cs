@@ -71,7 +71,7 @@ namespace ASCOM.Wise40
 
         public void Dispose()
         {
-            throw new System.NotImplementedException();
+            Exceptor.Throw<System.NotImplementedException>("Dispose", "Not implemented");
         }
     }
 

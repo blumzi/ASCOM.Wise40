@@ -241,7 +241,7 @@ namespace ASCOM.Wise40.Boltwood
             }
             catch (Exception e)
             {
-                throw new InvalidValueException(string.Format("Could not parse sensor data, caught: {0}", e.Message));
+                Exceptor.Throw<InvalidValueException>("SensorData", $"Could not parse sensor data, caught: {e.Message}");
             }
         }
     }

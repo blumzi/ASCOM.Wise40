@@ -71,7 +71,7 @@ namespace ASCOM.Wise40 //.FilterWheel
         /// </summary>
         public FilterWheel()
         {
-            wisefilterwheel.init();
+            wisefilterwheel.Init();
         }
 
         //

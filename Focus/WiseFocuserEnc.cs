@@ -117,7 +117,7 @@ namespace ASCOM.Wise40 //.Focuser
             {
                 _maxValue = turnsBits.MaxValue * positionBits.MaxValue;
                 pinLatch = new WisePin("FocusLatch", hardware.miscboard, DigitalPortType.FirstPortCH, 3, DigitalPortDirection.DigitalOut);
-                base.init("FocusEnc",
+                base.Init("FocusEnc",
                     (int)_maxValue,
                     new List<WiseEncSpec>() {
                         new WiseEncSpec() { brd = hardware.miscboard, port = DigitalPortType.FirstPortCL,  mask = 0x01 },
@@ -130,7 +130,7 @@ namespace ASCOM.Wise40 //.Focuser
             }
             else
             {
-                base.init("FocusEnc",
+                base.Init("FocusEnc",
                     1 << 7,
                     new List<WiseEncSpec>() {
                         new WiseEncSpec() { brd = hardware.miscboard, port = DigitalPortType.FirstPortB,  mask = 0x7f },

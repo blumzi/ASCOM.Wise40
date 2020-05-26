@@ -18,10 +18,10 @@ namespace ASCOM.Wise40
 {
     public class WiseFocuser : WiseObject, IDisposable, IConnectable
     {
-        private static Version version = new Version(0, 2);
+        private static readonly Version version = new Version(0, 2);
         private static bool _initialized = false;
         private static bool _connected = false;
-        private static readonly int _upwardCompensation = 100;
+        private const int _upwardCompensation = 100;
 
         public class State
         {
@@ -39,13 +39,6 @@ namespace ASCOM.Wise40
             };
             public Flags _flags;
 
-            private const Flags motionFlags = 
-                Flags.MovingUp | 
-                Flags.MovingDown | 
-                Flags.MovingToTarget | 
-                Flags.MovingToIntermediateTarget |
-                Flags.Stopping;
-
             public bool IsSet(Flags f)
             {
                 return (_flags & f) != 0;
@@ -61,7 +54,7 @@ namespace ASCOM.Wise40
                 _flags &= ~f;
             }
 
-            public void BecomeIdle()
+            public static void BecomeIdle()
             {
                 activityMonitor.EndActivity(ActivityMonitor.ActivityType.Focuser, new Activity.Focuser.EndParams()
                     {
@@ -73,7 +66,7 @@ namespace ASCOM.Wise40
 
             public bool Equals(Flags f)
             {
-                return (_flags == f);
+                return _flags == f;
             }
 
             public override string ToString()
@@ -82,7 +75,7 @@ namespace ASCOM.Wise40
             }
         }
 
-        private static State _state = new State();
+        private static readonly State _state = new State();
 
         private static bool _encoderIsChanging = false;
         public Debugger debugger = Debugger.Instance;
@@ -90,8 +83,8 @@ namespace ASCOM.Wise40
         private WisePin pinUp, pinDown;
         private WiseFocuserEnc encoder;
 
-        private static WiseSafeToOperate safetooperate = WiseSafeToOperate.Instance;
-        private static ActivityMonitor activityMonitor = ActivityMonitor.Instance;
+        private static readonly WiseSafeToOperate safetooperate = WiseSafeToOperate.Instance;
+        private static readonly ActivityMonitor activityMonitor = ActivityMonitor.Instance;
 
         public enum Direction { Up, Down, AllUp, AllDown };
         public class MotionParameter
@@ -99,26 +92,25 @@ namespace ASCOM.Wise40
             public int stoppingDistance;   // number of encoder ticks to stop
         };
 
-        Dictionary<Direction, MotionParameter> motionParameters;
+        private Dictionary<Direction, MotionParameter> motionParameters;
 
         private static int _targetPosition, _intermediatePosition;
         private static int _mostRecentPosition;
 
         private const int nRecentPositions = 5;
-        private FixedSizedQueue<uint> recentPositions = new FixedSizedQueue<uint>(nRecentPositions);
+        private readonly FixedSizedQueue<uint> recentPositions = new FixedSizedQueue<uint>(nRecentPositions);
 
         private static System.Threading.Timer movementMonitoringTimer;
-        private static int movementMonitoringMillis = 50;
+        private const int movementMonitoringMillis = 50;
 
-        List<IConnectable> connectables = new List<IConnectable>();
-        List<IDisposable> disposables = new List<IDisposable>();
+        private readonly List<IConnectable> connectables = new List<IConnectable>();
+        private readonly List<IDisposable> disposables = new List<IDisposable>();
 
-        private Hardware.Hardware hardware = Hardware.Hardware.Instance;
-        private WiseSite wisesite = WiseSite.Instance;
+        private readonly Hardware.Hardware hardware = Hardware.Hardware.Instance;
 
         public static string driverID = Const.WiseDriverID.Focus;
 
-        private static string driverDescription = string.Format("{0} v{1}", driverID, version.ToString());
+        private static readonly string driverDescription = $"{driverID} v{version}";
 
         public WiseFocuser() { }
         static WiseFocuser() { }
@@ -135,12 +127,12 @@ namespace ASCOM.Wise40
                 if (lazy.IsValueCreated)
                     return lazy.Value;
 
-                lazy.Value.init();
+                lazy.Value.Init();
                 return lazy.Value;
             }
         }
 
-        public void init()
+        public void Init()
         {
             if (_initialized)
                 return;
@@ -156,8 +148,8 @@ namespace ASCOM.Wise40
 
             connectables.AddRange(new List<IConnectable> { pinUp, pinDown, encoder });
             disposables.AddRange(new List<IDisposable> { pinUp, pinDown, encoder });
-            
-            movementMonitoringTimer = new System.Threading.Timer(new TimerCallback(onTimer));
+
+            movementMonitoringTimer = new System.Threading.Timer(new TimerCallback(OnTimer));
             movementMonitoringTimer.Change(movementMonitoringMillis, movementMonitoringMillis);
 
             motionParameters = new Dictionary<Direction, MotionParameter>
@@ -216,7 +208,7 @@ namespace ASCOM.Wise40
         /// <summary>
         /// Write the device configuration to the  ASCOM  Profile store
         /// </summary>
-        public void WriteProfile()
+        public static void WriteProfile()
         {
             using (Profile driverProfile = new Profile() { DeviceType = "Focuser" })
             {}
@@ -229,7 +221,8 @@ namespace ASCOM.Wise40
                 #region trace
                 //tl.LogMessage("Temperature Get", "Not implemented");
                 #endregion
-                throw new ASCOM.PropertyNotImplementedException("Temperature", false);
+                Exceptor.Throw<PropertyNotImplementedException>("Temperature", "Not implemented");
+                return Double.NaN;
             }
         }
 
@@ -237,11 +230,10 @@ namespace ASCOM.Wise40
         {
             get
             {
-                bool ret = false;
                 #region trace
-                //tl.LogMessage("TempCompAvailable Get", ret.ToString());
+                //tl.LogMessage("TempCompAvailable Get", false.ToString());
                 #endregion
-                return ret; // Temperature compensation is not available in this driver
+                return false; // Temperature compensation is not available in this driver
             }
         }
 
@@ -259,7 +251,7 @@ namespace ASCOM.Wise40
                 #region trace
                 //tl.LogMessage("TempComp Set", "Not implemented");
                 #endregion
-                throw new ASCOM.PropertyNotImplementedException("TempComp", false);
+                Exceptor.Throw<PropertyNotImplementedException>("TempComp", "Not implemented", true);
             }
         }
 
@@ -278,7 +270,7 @@ namespace ASCOM.Wise40
             }
         }
 
-        public uint position
+        public uint MostRecentPosition
         {
             get
             {
@@ -296,9 +288,9 @@ namespace ASCOM.Wise40
             get
             {
                 if (!Connected)
-                    throw new NotConnectedException("");
+                    Exceptor.Throw<NotConnectedException>("Position", "Not connected");
 
-                return position;
+                return MostRecentPosition;
             }
         }
 
@@ -323,7 +315,7 @@ namespace ASCOM.Wise40
             #endregion
             if (Simulated)
                 encoder.stopMoving();
-            
+
             pinUp.SetOff();
             pinDown.SetOff();
             Thread.Sleep(50);
@@ -332,7 +324,7 @@ namespace ASCOM.Wise40
         public void Halt(string reason = "Halt")
         {
             if (!Connected)
-                throw new NotConnectedException("");
+                Exceptor.Throw<NotConnectedException>("Halt", "Not connected");
 
             StartStopping(reason);
         }
@@ -342,7 +334,7 @@ namespace ASCOM.Wise40
             get
             {
                 if (!Connected)
-                    throw new NotConnectedException("");
+                    Exceptor.Throw<NotConnectedException>("IsMoving", "Not connected");
 
                 bool ret = _state.IsSet(State.Flags.AnyMoving) || pinUp.isOn || pinDown.isOn;
                 #region debug
@@ -383,7 +375,7 @@ namespace ASCOM.Wise40
         public void Move(Direction dir)
         {
             if (!safetooperate.IsSafeWithoutCheckingForShutdown())
-                throw new InvalidOperationException(string.Join(", ", safetooperate.UnsafeReasonsList()));
+                Exceptor.Throw<InvalidOperationException>("Move", string.Join(", ", safetooperate.UnsafeReasonsList()));
 
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, "Starting Move({0}) at {1}",
@@ -421,19 +413,19 @@ namespace ASCOM.Wise40
         public void Move(uint targetPos)
         {
             if (!Connected)
-                throw new NotConnectedException("Not connected!");
+                Exceptor.Throw<NotConnectedException>("Move", "Not connected!");
 
             if (IsMoving)
-                throw new InvalidOperationException("Cannot Move while IsMoving == true");
+                Exceptor.Throw<InvalidOperationException>("Move", "Cannot move while IsMoving");
 
             if (!safetooperate.IsSafe)
-                throw new InvalidOperationException(string.Join(", ", safetooperate.UnsafeReasonsList()));
+                Exceptor.Throw<InvalidOperationException>("Move", string.Join(", ", safetooperate.UnsafeReasonsList()));
 
             if (TempComp)
-                throw new InvalidOperationException("Cannot Move while TempComp == true");
+                Exceptor.Throw<InvalidOperationException>("Move", "Cannot Move while TempComp == true");
 
             if (targetPos > UpperLimit || targetPos < LowerLimit)
-                throw new DriverException(string.Format("Can only move between {0} and {1}!", LowerLimit, UpperLimit));
+                Exceptor.Throw <DriverException>("Move", $"Can only move between {LowerLimit} and {UpperLimit}!");
 
             uint currentPosition = Position;
 
@@ -446,12 +438,10 @@ namespace ASCOM.Wise40
             }
 
             if (targetPos > currentPosition && ((targetPos - currentPosition) < motionParameters[Direction.Up].stoppingDistance))
-                throw new InvalidOperationException(string.Format("Too short. Move at least {0} positions up!",
-                    motionParameters[Direction.Up].stoppingDistance));
+                Exceptor.Throw<InvalidOperationException>("Move", $"Too short. Move at least {motionParameters[Direction.Up].stoppingDistance} positions up!");
 
             if (targetPos < currentPosition && ((currentPosition - targetPos) < motionParameters[Direction.Down].stoppingDistance))
-                throw new InvalidOperationException(string.Format("Too short. Move at least {0} positions down!",
-                    motionParameters[Direction.Down].stoppingDistance));
+                Exceptor.Throw<InvalidOperationException>("Move", $"Too short. Move at least {motionParameters[Direction.Down].stoppingDistance} positions down!");
 
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, "Move: at {0}, targetPos: {1}",
@@ -527,24 +517,14 @@ namespace ASCOM.Wise40
         private void CheckConnected(string message)
         {
             if (!Connected)
-            {
-                throw new ASCOM.NotConnectedException(message);
-            }
+                Exceptor.Throw<NotConnectedException>("CheckConnected", message);
         }
 
-        private ArrayList supportedActions = new ArrayList() {
+        public ArrayList SupportedActions { get; } = new ArrayList() {
             "status",
             "start-testing",
             "end-testing",
         };
-
-        public ArrayList SupportedActions
-        {
-            get
-            {
-                return supportedActions;
-            }
-        }
 
         public string Action(string action, string parameter)
         {
@@ -552,7 +532,9 @@ namespace ASCOM.Wise40
             parameter = parameter.ToLower();
 
             if (action == "status")
+            {
                 return Digest;
+            }
             else if (action == "debug")
             {
                 _debugging = Convert.ToBoolean(parameter);
@@ -579,12 +561,12 @@ namespace ASCOM.Wise40
                         break;
 
                     default:
-                        uint target = 0;
+                        uint target;
 
                         if (UInt32.TryParse(parameter, out target))
                             Move(target);
                         else
-                            return string.Format("Bad parameter \"{0}\" to Action(\"move\")", parameter);
+                            return $"Bad parameter \"{parameter}\" to Action(\"move\")";
                         break;
                 }
                 return "ok";
@@ -606,26 +588,30 @@ namespace ASCOM.Wise40
                 return "ok";
             }
             else
-                throw new ASCOM.ActionNotImplementedException("Action " + action +
-                    " is not implemented by this driver");
+            {
+                Exceptor.Throw<ActionNotImplementedException>($"Action({action})", "Not implemented by this driver");
+                return string.Empty;
+            }
         }
 
         public void CommandBlind(string command, bool raw)
         {
             CheckConnected("CommandBlind");
-            throw new ASCOM.MethodNotImplementedException("CommandBlind");
+            Exceptor.Throw<MethodNotImplementedException>($"CommandBlind({command}, {raw}", "Not implemented");
         }
 
         public bool CommandBool(string command, bool raw)
         {
             CheckConnected("CommandBool");
-            throw new ASCOM.MethodNotImplementedException("CommandBool");
+            Exceptor.Throw<MethodNotImplementedException>($"CommandBool({command}, {raw}", "Not implemented");
+            return false;
         }
 
         public string CommandString(string command, bool raw)
         {
             CheckConnected("CommandString");
-            throw new ASCOM.MethodNotImplementedException("CommandString");
+            Exceptor.Throw<MethodNotImplementedException>($"CommandString({command}, {raw}", "Not implemented");
+            return string.Empty;
         }
 
         public static string DriverId
@@ -667,13 +653,11 @@ namespace ASCOM.Wise40
         {
             get
             {
-                short ret = 2;
-
-                return ret;
+                return 2;
             }
         }
 
-        private void onTimer(object StateObject)
+        private void OnTimer(object StateObject)
         {
             //movementMonitoringTimer.Change(Timeout.Infinite, Timeout.Infinite);
 
@@ -698,15 +682,17 @@ namespace ASCOM.Wise40
 
             #region debug
             if (_debugging)
+            {
                 debugger.WriteLine(Debugger.DebugLevel.DebugFocuser,
-                    "onTimer: reading: {0}, _mostRecentPosition: {1}, delta: {2}, millis: {3}",
+                    "OnTimer: reading: {0}, _mostRecentPosition: {1}, delta: {2}, millis: {3}",
                     reading, _mostRecentPosition, delta, millis);
+            }
             #endregion
 
             if (_mostRecentPosition != 0 &&  delta != 0 && delta > maxDelta) {
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugFocuser,
-                    "onTimer: suspect reading: {0} _mostRecentPosition: {1}, (delta: {2} > maxDelta: {3})",
+                    "OnTimer: suspect reading: {0} _mostRecentPosition: {1}, (delta: {2} > maxDelta: {3})",
                     reading, _mostRecentPosition, delta, maxDelta);
                 #endregion
             }
@@ -718,17 +704,21 @@ namespace ASCOM.Wise40
             uint[] arr = recentPositions.ToArray();
 
             bool changing = false;
-            if (arr.Count() < nRecentPositions)
+            if (arr.Length < nRecentPositions)
+            {
                 changing = true;      // not enough readings yet
+            }
             else
             {
                 uint max = arr.Max();
                 foreach (uint pos in arr)
+                {
                     if (pos != max)
                     {
                         changing = true;
                         break;
                     }
+                }
             }
             #endregion
             _encoderIsChanging = changing;
@@ -740,7 +730,7 @@ namespace ASCOM.Wise40
                         CloseEnough(_mostRecentPosition, (int) LowerLimit, Direction.Down))
                )
             {
-                StartStopping(string.Format("onTimer: at {0} Limit stop (state: {1})",
+                StartStopping(string.Format("OnTimer: at {0} Limit stop (state: {1})",
                     _mostRecentPosition, oldState));
                 return;
             }
@@ -763,46 +753,49 @@ namespace ASCOM.Wise40
                         StartMoving(Direction.Up);
                     }
                     else
-                        _state.BecomeIdle();
+                    {
+                        State.BecomeIdle();
+                    }
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugFocuser,
-                        "onTimer: stopped moving: at {0} (target: {1}, intermediateTarget: {2}, old state: {3}, new state: {4})",
+                        "OnTimer: stopped moving: at {0} (target: {1}, intermediateTarget: {2}, old state: {3}, new state: {4})",
                         _mostRecentPosition, _targetPosition, _intermediatePosition, oldState, _state);
                     #endregion
                 }
             }
 
-            if (_state.IsSet(State.Flags.MovingToTarget) && 
+            if (_state.IsSet(State.Flags.MovingToTarget) &&
                         CloseEnough(_mostRecentPosition, _targetPosition, Direction.Up))
             {
                 if (!_state.IsSet(State.Flags.Stopping))
-                    StartStopping(string.Format("onTimer: close to target: at {0} (_state: {1})", _mostRecentPosition, _state));
+                    StartStopping(string.Format("OnTimer: close to target: at {0} (_state: {1})", _mostRecentPosition, _state));
             }
 
             if (_state.IsSet(State.Flags.MovingToIntermediateTarget) &&
                         CloseEnough(_mostRecentPosition, _intermediatePosition, Direction.Down))
             {
                 if (!_state.IsSet(State.Flags.Stopping))
-                    StartStopping(string.Format("onTimer: close to intermediate target: at {0} (_state: {1})", _mostRecentPosition, _state));
+                    StartStopping(string.Format("OnTimer: close to intermediate target: at {0} (_state: {1})", _mostRecentPosition, _state));
             }
 
             if (!_state.IsSet(State.Flags.AnyMoving) && _encoderIsChanging)
-                StartStopping("onTimer: Runaway");
+                StartStopping("OnTimer: Runaway");
         }
 
         private bool CloseEnough(int current, int target, Direction dir)
         {
-            bool ret = false;
-
             if (dir == Direction.Up)
-                ret = ((target - current) <= motionParameters[Direction.Up].stoppingDistance) ||
+            {
+                return ((target - current) <= motionParameters[Direction.Up].stoppingDistance) ||
                     (current >= target);
-
+            }
             else if (dir == Direction.Down)
-                ret = ((current - target) <= motionParameters[Direction.Down].stoppingDistance) ||
-                    (current <= target);
+            {
+                return ((current - target) <= motionParameters[Direction.Down].stoppingDistance) ||
+                   (current <= target);
+            }
 
-            return ret;
+            return false;
         }
 
         public string Digest

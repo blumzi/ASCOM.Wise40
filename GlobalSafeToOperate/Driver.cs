@@ -21,7 +21,6 @@
 // --------------------------------------------------------------------------------
 //
 
-
 // This is used to define code in the template that is specific to one class implementation
 // unused code canbe deleted and this definition removed.
 #define SafetyMonitor
@@ -72,11 +71,9 @@ namespace ASCOM.Wise
         /// <summary>
         /// Driver description that displays in the ASCOM Chooser.
         /// </summary>
-        private static string driverDescription = "ASCOM SafetyMonitor Driver for Wise.SafeToOperate.";
-        
-        private static Wise40.Common.Debugger debugger = Wise40.Common.Debugger.Instance;
+        private const string driverDescription = "ASCOM SafetyMonitor Driver for Wise.SafeToOperate.";
 
-        static DriverAccess.SafetyMonitor  wisesafetooperate = null;
+        private static DriverAccess.SafetyMonitor  wisesafetooperate = null;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Wise.SafeToOperate"/> class.
@@ -119,44 +116,33 @@ namespace ASCOM.Wise
         public string Action(string actionName, string actionParameters)
         {
             if (actionName == "isSafe")
+            {
                 return wisesafetooperate.Action("global-safetooperate", "");
+            }
             else {
-                string msg = "Action " + actionName + " is not implemented by this driver";
-                #region debug
-                debugger.WriteLine(Wise40.Common.Debugger.DebugLevel.DebugLogic, msg);
-                #endregion
-                throw new ASCOM.ActionNotImplementedException(msg);
+                Exceptor.Throw<ActionNotImplementedException>("Action", $"Action {actionName} not implemented");
+                return string.Empty;
             }
         }
 
         public void CommandBlind(string command, bool raw)
         {
             CheckConnected("CommandBlind");
-            // Call CommandString and return as soon as it finishes
-            this.CommandString(command, raw);
-            // or
-            throw new ASCOM.MethodNotImplementedException("CommandBlind");
-            // DO NOT have both these sections!  One or the other
+            Exceptor.Throw<ASCOM.MethodNotImplementedException>($"CommandBlind({command}, {raw})", "Not implemented");
         }
 
         public bool CommandBool(string command, bool raw)
         {
             CheckConnected("CommandBool");
-            string ret = CommandString(command, raw);
-            // TODO decode the return string and return true or false
-            // or
-            throw new ASCOM.MethodNotImplementedException("CommandBool");
-            // DO NOT have both these sections!  One or the other
+            Exceptor.Throw<ASCOM.MethodNotImplementedException>($"CommandBool({command}, {raw})", "Not implemented");
+            return false;
         }
 
         public string CommandString(string command, bool raw)
         {
             CheckConnected("CommandString");
-            // it's a good idea to put all the low level communication with the device here,
-            // then all communication calls this function
-            // you need something to ensure that only one command is in progress at a time
-
-            throw new ASCOM.MethodNotImplementedException("CommandString");
+            Exceptor.Throw<ASCOM.MethodNotImplementedException>($"CommandString({command}, {raw})", "Not implemented");
+            return string.Empty;
         }
 
         public void Dispose()
@@ -330,7 +316,7 @@ namespace ASCOM.Wise
         {
             if (!IsConnected)
             {
-                throw new ASCOM.NotConnectedException(message);
+                Exceptor.Throw<ASCOM.NotConnectedException>("CheckConnected", message);
             }
         }
         #endregion

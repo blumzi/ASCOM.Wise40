@@ -198,7 +198,6 @@ namespace ASCOM.Wise40
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"inProgressDict already contains {activity._type}");
                 #endregion
                 return null;
-                //throw new InvalidDataException($"inProgressDict already contains {activity._type}");
             }
 
             inProgressDict[activity._type] = activity;
@@ -488,9 +487,9 @@ namespace ASCOM.Wise40
         public void EndActivity(GenericEndParams par)
         {
             if (par.endState == State.NotSet)
-                throw new InvalidValueException($"Activity:EndActivity: Activity {_type}: endState NOT set");
-            if (par.endReason == string.Empty)
-                throw new InvalidValueException($"Activity:EndActivity: Activity {_type}: endReason NOT set");
+                Exceptor.Throw<InvalidValueException>("Activity:EndActivity:", $"Activity {_type}: endState NOT set");
+            if (string.IsNullOrEmpty(par.endReason))
+                Exceptor.Throw<InvalidValueException>("Activity:EndActivity:", $"Activity {_type}: endReason NOT set");
 
             _endTime = par.endTime == DateTime.MinValue ? DateTime.UtcNow : par.endTime;
             _endState = par.endState;
@@ -499,18 +498,13 @@ namespace ASCOM.Wise40
             EmitEnd();
 
             if (monitor.inProgressDict.ContainsKey(_type) && !monitor.inProgressDict.TryRemove(_type, out Activity ret))
-            {
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"!!! ActivityMonitor:EndActivity: Could not remove {_type} from inProgressDict");
-                #endregion
-                throw new InvalidOperationException($"Could not remove {_type} from inProgressDict");
-            }
+                Exceptor.Throw <InvalidOperationException>("Activity:EndActivity:", $"Could not remove {_type} from inProgressDict");
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
                 $"ActivityMonitor:EndActivity: removed {_type} from inProgressDict => [{monitor.inProgressDict.ToCSV()}]");
             #endregion
 
-            if (monitor.inProgressDict.Count() == 0 && effectOnGoingIdle_AtEnd == EffectOnGoingIdle.Renew)
+            if (monitor.inProgressDict.Count == 0 && effectOnGoingIdle_AtEnd == EffectOnGoingIdle.Renew)
                 ActivityMonitor.idler.StartGoingIdle(new Idler.StartParams() { reason = "no activities in progress" });
         }
 
@@ -1310,12 +1304,12 @@ namespace ASCOM.Wise40
 
             public SafetyEvent(string sensor, string details, SensorState before, SensorState after) : base(EventType.Safety)
             {
-                if (sensor == string.Empty)
-                    throw new InvalidValueException("SensorSafetyEvent:ctor: empty \"sensor\"");
-                if (details == string.Empty)
-                    throw new InvalidValueException($"SensorSafetyEvent:ctor: empty \"details\" for {sensor}");
+                if (string.IsNullOrEmpty(sensor))
+                    Exceptor.Throw<InvalidValueException>("SafetyEvent:ctor", "empty \"sensor\"");
+                if (string.IsNullOrEmpty(details))
+                    Exceptor.Throw <InvalidValueException>("SafetyEvent:ctor", $"empty \"details\" for {sensor}");
                 if (after == SensorState.NotSet)
-                    throw new InvalidValueException($"SensorSafetyEvent:ctor: \"after\" NotSet for {sensor}");
+                    Exceptor.Throw<InvalidValueException>("SafetyEvent:ctor", $"\"after\" NotSet for {sensor}");
 
                 _sensor = sensor;
                 _before = before;
@@ -1346,8 +1340,8 @@ namespace ASCOM.Wise40
         {
             public GlobalEvent(string details) : base(EventType.Generic)
             {
-                if (details == string.Empty)
-                    throw new InvalidValueException("GlobalEvent:ctor: bad args");
+                if (string.IsNullOrEmpty(details))
+                    Exceptor.Throw<InvalidValueException>("GlobalEvent:ctor", "empty arg details");
 
                 _annotation = details;
             }
@@ -1357,8 +1351,8 @@ namespace ASCOM.Wise40
         {
             public IdlerEvent(string details, int code = ActivityMonitor.Tracer.resetValue) : base(EventType.Generic)
             {
-                if (details == string.Empty)
-                    throw new InvalidValueException("IdlerEvent:ctor: bad args");
+                if (string.IsNullOrEmpty(details))
+                    Exceptor.Throw<InvalidValueException>("IdlerEvent:ctor", "empty arg details");
 
                 _annotation = details;
                 _line = ActivityMonitor.Tracer.idler.Line;
@@ -1410,8 +1404,8 @@ namespace ASCOM.Wise40
         {
             public DriverConnectEvent(string driverName, bool connected, string line = "") : base(EventType.Generic)
             {
-                if (driverName == string.Empty || line == "" || driverName == "")
-                    throw new InvalidValueException("DriverConnectEvent:ctor: bad args");
+                if (string.IsNullOrEmpty(driverName) || string.IsNullOrEmpty(line) || string.IsNullOrEmpty(driverName))
+                    Exceptor.Throw<InvalidValueException>("DriverConnectEvent:ctor", "bad args");
 
                 string con = connected ? "Connected" : "Disconnected";
                 _annotation = $"{driverName} {con}\n";

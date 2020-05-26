@@ -24,37 +24,26 @@ namespace ASCOM.Wise40
     [ComVisible(true)]
     public class Rate : ASCOM.DeviceInterface.IRate
     {
-        private double maximum = 0;
-        private double minimum = 0;
-
         //
         // Default constructor - Internal prevents public creation
         // of instances. These are values for AxisRates.
         //
         internal Rate(double minimum, double maximum)
         {
-            this.maximum = maximum;
-            this.minimum = minimum;
+            this.Maximum = maximum;
+            this.Minimum = minimum;
         }
 
         #region Implementation of IRate
 
         public void Dispose()
         {
-            throw new System.NotImplementedException();
+            Exceptor.Throw<System.NotImplementedException>("Dispose", "Not implemented");
         }
 
-        public double Maximum
-        {
-            get { return this.maximum; }
-            set { this.maximum = value; }
-        }
+        public double Maximum { get; set; } = 0;
 
-        public double Minimum
-        {
-            get { return this.minimum; }
-            set { this.minimum = value; }
-        }
+        public double Minimum { get; set; } = 0;
 
         #endregion
     }
@@ -75,7 +64,6 @@ namespace ASCOM.Wise40
     [ComVisible(true)]
     public class AxisRates : IAxisRates, IEnumerable
     {
-        private TelescopeAxes axis;
         private readonly Rate[] rates;
 
         //
@@ -84,7 +72,6 @@ namespace ASCOM.Wise40
         //
         internal AxisRates(TelescopeAxes axis)
         {
-            this.axis = axis;
             //
             // This collection must hold zero or more Rate objects describing the 
             // rates of motion ranges for the Telescope.MoveAxis() method
@@ -106,6 +93,7 @@ namespace ASCOM.Wise40
                         new Rate(Const.rateSlew, Const.rateSlew),
                     };
                     break;
+
                 case TelescopeAxes.axisSecondary:
                     // TODO Initialize this array with any Secondary axis rates that your driver may provide
                     this.rates = new Rate[] {
@@ -114,9 +102,9 @@ namespace ASCOM.Wise40
                         new Rate(Const.rateSlew, Const.rateSlew),
                      };
                     break;
+
                 case TelescopeAxes.axisTertiary:
-                    // TODO Initialize this array with any Tertiary axis rates that your driver may provide
-                    this.rates = new Rate[0];
+                    this.rates = Array.Empty<Rate>();
                     break;
             }
         }
@@ -195,7 +183,7 @@ namespace ASCOM.Wise40
 
         public void Dispose()
         {
-            throw new System.NotImplementedException();
+            Exceptor.Throw<System.NotImplementedException>("Dispose", "Not implemented");
         }
 
         public DriveRates this[int index]
@@ -213,7 +201,7 @@ namespace ASCOM.Wise40
             {
                 if (pos < 0 || pos >= trackingRates.Length)
                 {
-                    throw new System.InvalidOperationException();
+                    Exceptor.Throw<System.NotImplementedException>("Current", $"pos must be >= 0 and <= {trackingRates.Length}");
                 }
                 return trackingRates[pos];
             }
@@ -221,11 +209,7 @@ namespace ASCOM.Wise40
 
         public bool MoveNext()
         {
-            if (++pos >= trackingRates.Length)
-            {
-                return false;
-            }
-            return true;
+            return ++pos < trackingRates.Length;
         }
 
         public void Reset()

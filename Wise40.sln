@@ -28,10 +28,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Deliveries", "Deliveries", 
 	ProjectSection(SolutionItems) = preProject
 		..\..\..\ASCOM\Logs 2016-08-28\ASCOM.Wise40.Telescope.Validation.txt = ..\..\..\ASCOM\Logs 2016-08-28\ASCOM.Wise40.Telescope.Validation.txt
 		Deliveries\parse-server-log.awk = Deliveries\parse-server-log.awk
+		..\..\..\..\..\Wise40\Logs\process-nightly-activities = ..\..\..\..\..\Wise40\Logs\process-nightly-activities
+		..\..\..\..\..\Wise40\Logs\process-nightly-activities.bat = ..\..\..\..\..\Wise40\Logs\process-nightly-activities.bat
 		registerHomeDlls.bat = registerHomeDlls.bat
 		registerWiseDlls.bat = registerWiseDlls.bat
-		Deliveries\rotate-logs = Deliveries\rotate-logs
-		Deliveries\rotate-logs.bat = Deliveries\rotate-logs.bat
+		..\..\..\..\..\Wise40\Logs\rotate-logs = ..\..\..\..\..\Wise40\Logs\rotate-logs
+		..\..\..\..\..\Wise40\Logs\rotate-logs.bat = ..\..\..\..\..\Wise40\Logs\rotate-logs.bat
 		Deliveries\Wise40 Setup.exe = Deliveries\Wise40 Setup.exe
 	EndProjectSection
 EndProject

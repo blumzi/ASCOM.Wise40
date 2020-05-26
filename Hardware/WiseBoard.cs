@@ -46,7 +46,7 @@ namespace ASCOM.Wise40.Hardware
             string ret = WiseName + '\n';
 
             foreach (WiseDaq daq in daqs)
-                ret += daq.ownersToString() + '\n';
+                ret += daq.OwnersToString() + '\n';
             return ret;
         }
     }

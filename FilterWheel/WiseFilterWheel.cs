@@ -26,7 +26,6 @@ namespace ASCOM.Wise40 //.FilterWheel
         public WiseFilterWheel() { }
         static WiseFilterWheel() { }
         internal static string driverID = Const.WiseDriverID.FilterWheel;
-        private static string driverDescription = string.Format("{0} v{1}", driverID, version.ToString());
         public ArduinoInterface arduino = ArduinoInterface.Instance;
         public static ActivityMonitor activityMonitor = ActivityMonitor.Instance;
 
@@ -39,8 +38,8 @@ namespace ASCOM.Wise40 //.FilterWheel
         public Wheel currentWheel;
         public static List<Wheel> wheels = new List<Wheel>() { wheel8, wheel4 };
 
-        private string _savedFile = "c://Wise40/FilterWheel/Config.txt";
-        private static System.Threading.Timer _updateTimer = new System.Threading.Timer(new TimerCallback(Updater));
+        private readonly string _savedFile = "c://Wise40/FilterWheel/Config.txt";
+        private static readonly System.Threading.Timer _updateTimer = new System.Threading.Timer(new TimerCallback(Updater));
         public static DateTime _lastDataReceived;
 
         public struct FWPosition
@@ -127,14 +126,14 @@ namespace ASCOM.Wise40 //.FilterWheel
                     for (int i = 0; i < _positions.Length; i++)
                     {
                         string filterName = _positions[i].filterName;
-                        Filter filter = (filterName == string.Empty) ? null : _filterInventory.Find((x) => x.Name == filterName);
+                        Filter filter = (string.IsNullOrEmpty(filterName)) ? null : _filterInventory.Find((x) => x.Name == filterName);
 
                         positions.Add(new PositionDigest
                         {
                             Position = i,
                             Name = filterName,
                             Description = filter == null ? "" : filter.Description,
-                            Offset = filter == null ? 0 : filter.Offset,
+                            Offset = filter?.Offset ?? 0,
                             RFIDTag = _positions[i].tag,
                         });
                     }
@@ -167,7 +166,7 @@ namespace ASCOM.Wise40 //.FilterWheel
             {
                 if (_filterInventory == null)
                     _filterInventory = new List<Filter>();
-                
+
                 if (!System.IO.File.Exists(_filterCSVFile))
                     return;
 
@@ -214,7 +213,7 @@ namespace ASCOM.Wise40 //.FilterWheel
 
         }
 
-        public static Wheel lookupWheel(string tag)
+        public static Wheel LookupWheel(string tag)
         {
             Wheel ret = null;
 
@@ -272,16 +271,16 @@ namespace ASCOM.Wise40 //.FilterWheel
                 if (lazy.IsValueCreated)
                     return lazy.Value;
 
-                lazy.Value.init();
+                lazy.Value.Init();
                 return lazy.Value;
             }
         }
 
-        public void init()
+        public void Init()
         {
             if (_initialized)
                 return;
-            
+
             ReadProfile();
             if (!Enabled)
                 return;
@@ -293,14 +292,14 @@ namespace ASCOM.Wise40 //.FilterWheel
 
             if (!Simulated)
             {
-                arduino.init();
+                arduino.Init();
                 //arduino.communicationCompleteHandler += onCommunicationComplete;
             }
 
             _initialized = true;
         }
 
-        private static String[] defaultWheel8RFIDs = {
+        private static readonly String[] defaultWheel8RFIDs = {
             "7F0007F75E",   // 1
             "7F000817F7",   // 2
             "7F000AEFC5",   // 3
@@ -311,7 +310,7 @@ namespace ASCOM.Wise40 //.FilterWheel
             "7F0007BC0E",   // 8
         };
 
-        private static String[] defaultWheel4RFIDs = {
+        private static readonly String[] defaultWheel4RFIDs = {
             "7F001B4C16",   // A
             "7C0055F4EB",   // B
             "7F001B0573",   // C
@@ -336,7 +335,7 @@ namespace ASCOM.Wise40 //.FilterWheel
                         w._positions[pos].tag = driverProfile.GetValue(driverID, "RFID", subKey, defaultRFID);
                     }
                 }
-           
+
                 Enabled = WiseSite.OperationalMode == WiseSite.OpMode.LCO ?
                     false :
                     Convert.ToBoolean(driverProfile.GetValue(driverID, "Enabled", string.Empty, "false"));
@@ -358,7 +357,7 @@ namespace ASCOM.Wise40 //.FilterWheel
                 driverProfile.WriteValue(driverID, "Enabled", Enabled.ToString());
                 foreach (Wheel w in wheels)
                 {
-                    string name = w.WiseName.ToString();
+                    string name = w.WiseName;
                     for (int pos = 0; pos < w._nPositions; pos++)
                     {
                         subKey = string.Format("{0}/Position{1}", name, pos + 1);
@@ -426,13 +425,7 @@ namespace ASCOM.Wise40 //.FilterWheel
             }
         }
 
-        public static string Description
-        {
-            get
-            {
-                return driverDescription;
-            }
-        }
+        public static string Description { get; } = $"{driverID} v{version}";
 
         public string DriverInfo
         {
@@ -463,8 +456,10 @@ namespace ASCOM.Wise40 //.FilterWheel
             switch (action.ToLower())
             {
                 case "enabled":
-                    if (parameters == "")
+                    if (string.IsNullOrEmpty(parameters))
+                    {
                         return Enabled.ToString();
+                    }
                     else
                     {
                         Enabled = Convert.ToBoolean(parameters);
@@ -489,12 +484,14 @@ namespace ASCOM.Wise40 //.FilterWheel
                             Speed = arduino.SerialPortSpeed.ToString(),
                             IsOpen = arduino.PortIsOpen,
                         },
-                        Wheel = currentWheel == null ? null : currentWheel.Digest,
+                        Wheel = currentWheel?.Digest,
                     });
 
                 case "current-wheel":
-                    if (parameters == "")
-                        return JsonConvert.SerializeObject(currentWheel == null ? null : currentWheel.Digest);
+                    if (string.IsNullOrEmpty(parameters))
+                    {
+                        return JsonConvert.SerializeObject(currentWheel?.Digest);
+                    }
                     else
                     {
                         CurrentWheelDigest = JsonConvert.DeserializeObject<Wheel.WheelDigest>(parameters);
@@ -513,14 +510,15 @@ namespace ASCOM.Wise40 //.FilterWheel
                     return "ok";
 
                 case "position":
-                    if (parameters == "")
+                    if (string.IsNullOrEmpty(parameters))
                         return Position.ToString();
 
                     Position = Convert.ToInt16(parameters);
                     return "ok";
 
                 default:
-                    throw new ASCOM.ActionNotImplementedException("Action " + action + " is not implemented by this driver");
+                    Exceptor.Throw<ASCOM.ActionNotImplementedException>($"Action(\"{action}\")", "Not implemented by this driver");
+                    return string.Empty;
             }
         }
 
@@ -547,12 +545,14 @@ namespace ASCOM.Wise40 //.FilterWheel
                 List<Filter> inventory = wheel._filterInventory;
 
                 foreach (var filter in inventory)
+                {
                     Filters.Add(new FilterDigest
                     {
                         Name = filter.Name,
                         Description = filter.Description,
                         Offset = filter.Offset,
                     });
+                }
             }
         }
 
@@ -585,7 +585,7 @@ namespace ASCOM.Wise40 //.FilterWheel
             public Filter[] Filters;
         }
 
-        public void SetFilterInventory(SetFilterInventoryParam par)
+        public static void SetFilterInventory(SetFilterInventoryParam par)
         {
             Wheel wheel = par.FilterSize == FilterSize.TwoInch ? wheel8 : wheel4;
 
@@ -610,19 +610,21 @@ namespace ASCOM.Wise40 //.FilterWheel
         public void CommandBlind(string command, bool raw)
         {
             CheckConnected("CommandBlind");
-            throw new ASCOM.MethodNotImplementedException("CommandBlind");
+            Exceptor.Throw<MethodNotImplementedException>($"CommandBlind({command}, {raw})", "Not implemented");
         }
 
         public bool CommandBool(string command, bool raw)
         {
             CheckConnected("CommandBool");
-            throw new ASCOM.MethodNotImplementedException("CommandBool");
+            Exceptor.Throw<MethodNotImplementedException>($"CommandBool({command}, {raw})", "Not implemented");
+            return false;
         }
 
         public string CommandString(string command, bool raw)
         {
             CheckConnected("CommandString");
-            throw new ASCOM.MethodNotImplementedException("CommandString");
+            Exceptor.Throw<MethodNotImplementedException>($"CommandString({command}, {raw})", "Not implemented");
+            return string.Empty;
         }
 
         /// <summary>
@@ -633,7 +635,7 @@ namespace ASCOM.Wise40 //.FilterWheel
         {
             if (Connected)
             {
-                throw new ASCOM.NotConnectedException(message);
+                Exceptor.Throw<NotConnectedException>("CheckConnected", message);
             }
         }
 
@@ -684,18 +686,20 @@ namespace ASCOM.Wise40 //.FilterWheel
 
         #region IFilerWheel Implementation
 
+#pragma warning disable CA1819 // Properties should not return arrays
         public int[] FocusOffsets
+#pragma warning restore CA1819 // Properties should not return arrays
         {
             get
             {
                 if (currentWheel == null)
-                    throw new FilterWheelNotDetectedException();
+                    Exceptor.Throw<FilterWheelNotDetectedException>("FocusOffsets", "No filter wheel detected");
 
                 List<int> focusOffsets = new List<int>();
 
                 foreach (FWPosition position in currentWheel._positions) // Write filter offsets to the log
                 {
-                    int offset = (position.filterName == string.Empty) ? 0 :
+                    int offset = (string.IsNullOrEmpty(position.filterName)) ? 0 :
                                     currentWheel._filterInventory.Find((x) => x.Name == position.filterName).Offset;
                     focusOffsets.Add(offset);
                 }
@@ -703,12 +707,14 @@ namespace ASCOM.Wise40 //.FilterWheel
             }
         }
 
+#pragma warning disable CA1819 // Properties should not return arrays
         public string[] Names
+#pragma warning restore CA1819 // Properties should not return arrays
         {
             get
             {
                 if (currentWheel == null)
-                    throw new FilterWheelNotDetectedException();
+                    Exceptor.Throw<FilterWheelNotDetectedException>("Names", "No filter wheel detected");
 
                 List<string> names = new List<string>();
                 if (currentWheel._positions == null)
@@ -727,10 +733,10 @@ namespace ASCOM.Wise40 //.FilterWheel
             get
             {
                 if (!Connected)
-                    throw new NotConnectedException("Not connected");
+                    Exceptor.Throw<NotConnectedException>("Position", "Not connected");
 
                 if (currentWheel == null)
-                    throw new FilterWheelNotDetectedException();
+                    Exceptor.Throw<FilterWheelNotDetectedException>("Position", "No filter wheel detected");
 
                 short ret = currentWheel._position;
                 #region debug
@@ -742,10 +748,10 @@ namespace ASCOM.Wise40 //.FilterWheel
             set
             {
                 if (!Connected)
-                    throw (new NotConnectedException("Not connected"));
+                    Exceptor.Throw<NotConnectedException>("Position", "Not connected");
 
                 if (currentWheel == null)
-                    throw new FilterWheelNotDetectedException();
+                    Exceptor.Throw<FilterWheelNotDetectedException>("Position", "No filter wheel detected");
 
                 int nPositions = currentWheel._nPositions;
                 short targetPosition = value;
@@ -753,8 +759,8 @@ namespace ASCOM.Wise40 //.FilterWheel
                 if (targetPosition == currentWheel._position)
                     return;
 
-                if ((targetPosition < 0) | (targetPosition >= nPositions))
-                    throw new InvalidValueException("Position", targetPosition.ToString(), "0 to " + (nPositions - 1).ToString());
+                if ((targetPosition < 0) || (targetPosition >= nPositions))
+                    Exceptor.Throw<InvalidValueException>("Position.set", $"Bad position ({targetPosition}): allowed: 0 to {nPositions - 1}");
 
                 int cw, ccw;    // # of positions to move
                 if (targetPosition > currentWheel._position)
@@ -803,26 +809,25 @@ namespace ASCOM.Wise40 //.FilterWheel
             get
             {
                 if (currentWheel == null)
-                    throw new FilterWheelNotDetectedException();
-                
+                    Exceptor.Throw<FilterWheelNotDetectedException>("Positions", "No filter wheel detected");
+
                 return currentWheel._nPositions;
             }
         }
-        
-        public event EventHandler wheelOrPositionChanged;
+
+        public event EventHandler WheelOrPositionChanged;
 
         public void RaiseWheelOrPositionChanged()
         {
-            EventHandler handler = wheelOrPositionChanged;
+            EventHandler handler = WheelOrPositionChanged;
 
-            if (null != handler)
+            if (handler != null)
             {
                 foreach (EventHandler singleCast in handler.GetInvocationList())
                 {
-                    ISynchronizeInvoke syncInvoke = singleCast.Target as ISynchronizeInvoke;
                     try
                     {
-                        if ((null != syncInvoke) && (syncInvoke.InvokeRequired))
+                        if ((singleCast.Target is ISynchronizeInvoke syncInvoke) && (syncInvoke.InvokeRequired))
                             syncInvoke.Invoke(singleCast, new object[] { this, EventArgs.Empty });
                         else
                             singleCast(this, EventArgs.Empty);
@@ -989,7 +994,11 @@ namespace ASCOM.Wise40 //.FilterWheel
             }));
         }
 
+#pragma warning disable RCS1163 // Unused parameter.
+#pragma warning disable IDE0060 // Remove unused parameter
         public static void EndActivity(Activity.FilterWheel.Operation op, string endWheel, int endPos, string endTag, Activity.State endState, string endReason)
+#pragma warning restore IDE0060 // Remove unused parameter
+#pragma warning restore RCS1163 // Unused parameter.
         {
             activityMonitor.EndActivity(ActivityMonitor.ActivityType.FilterWheel, new Activity.FilterWheel.EndParams()
             {

@@ -12,14 +12,14 @@ namespace ASCOM.Wise40.Hardware
 {
     public class WisePin : WiseObject, IConnectable, IDisposable, IOnOff
     {
-        private int bit;
-        private WiseDaq daq;
-        private DigitalPortDirection dir;
-        private bool inverse;
+        private readonly int bit;
+        private readonly WiseDaq daq;
+        private readonly DigitalPortDirection dir;
+        private readonly bool inverse;
         private bool _connected = false;
-        private bool _controlled;
-        private Const.Direction _direction = Const.Direction.None;  // Generally speaking - does it increase or decrease an encoder value
-        private Debugger debugger = Debugger.Instance;
+        private readonly bool _controlled;
+        private readonly Const.Direction _direction = Const.Direction.None;  // Generally speaking - does it increase or decrease an encoder value
+        private readonly Debugger debugger = Debugger.Instance;
 
         public WisePin(string name,
             WiseBoard brd,
@@ -30,22 +30,19 @@ namespace ASCOM.Wise40.Hardware
             Const.Direction direction = Const.Direction.None,
             bool controlled = false)
         {
-            this.WiseName = name +
-                "@Board" +
-                (brd.type == WiseBoard.BoardType.Hard ? brd.mccBoard.BoardNum : brd.boardNum) +
-                port.ToString() +
-                "[" + bit.ToString() + "]";
+            int boardNumber = (brd.type == WiseBoard.BoardType.Hard) ? brd.mccBoard.BoardNum : brd.boardNum;
+            WiseName = $"{name}@Board{boardNumber}{port}[{bit}]";
 
             if ((daq = brd.daqs.Find(x => x.porttype == port)) == null)
-                throw new WiseException(this.WiseName + ": Invalid Daq spec, no " + port + " on this board");
+                Exceptor.Throw<WiseException>("WisePin", $"{WiseName}: Invalid Daq spec, no {port} on this board");
             this.dir = dir;
             this.bit = bit;
             this.inverse = inverse;
             this._direction = direction;
             this._controlled = controlled;
-            daq.setDir(dir);
+            daq.SetDir(dir);
             if (daq.owners != null && daq.owners[bit].owner == null)
-                daq.setOwner(name, bit);
+                daq.SetOwner(name, bit);
         }
 
         public void SetOn()
@@ -55,7 +52,7 @@ namespace ASCOM.Wise40.Hardware
 
             if (!Simulated && _controlled && Hardware.computerControlPin.isOff)
             {
-                //throw new Hardware.MaintenanceModeException(Const.computerControlAtMaintenance);
+                //Exceptor.Throw<Hardware.MaintenanceModeException>("SetOn", Const.computerControlAtMaintenance);
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WisePin:SetOff: Cannot set OFF - MAINTENANCE mode");
                 #endregion
@@ -65,8 +62,7 @@ namespace ASCOM.Wise40.Hardware
             int i, maxTries = 10;
             lock (daq._lock)
             {
-                ushort v, v1;
-                daq.wiseBoard.mccBoard.DIn(daq.porttype, out v);
+                daq.wiseBoard.mccBoard.DIn(daq.porttype, out ushort v);
                 v |= (ushort)(1 << bit);
 
                 if (WiseName.StartsWith("Focus"))
@@ -85,14 +81,12 @@ namespace ASCOM.Wise40.Hardware
                     daq.wiseBoard.mccBoard.DOut(daq.porttype, v);
 
                     Thread.Sleep(100);
-                    daq.wiseBoard.mccBoard.DIn(daq.porttype, out v1);
+                    daq.wiseBoard.mccBoard.DIn(daq.porttype, out ushort v1);
                     if (v1 == v)
                     {
                         if (i > 0)
                             #region debug
-                            debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
-                                    string.Format("SetOn: pin {0} got On after {1} tries!",
-                                    WiseName, i + 1));
+                            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"SetOn: pin {WiseName} got On after {i + 1} tries!");
                             #endregion
                         return;
                     }
@@ -101,9 +95,7 @@ namespace ASCOM.Wise40.Hardware
             }
 
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
-                    string.Format("SetOn: pin {0} does not get On after {1} tries!",
-                    WiseName, maxTries));
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"SetOn: pin {WiseName} does not get On after {maxTries} tries!");
             #endregion
         }
 
@@ -114,7 +106,7 @@ namespace ASCOM.Wise40.Hardware
 
             if (!Simulated && _controlled && Hardware.computerControlPin.isOff)
             {
-                //throw new Hardware.MaintenanceModeException(Const.computerControlAtMaintenance);
+                //Exceptor.Throw<Hardware.MaintenanceModeException>("SetOff", Const.computerControlAtMaintenance);
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WisePin:SetOff: Cannot set OFF - MAINTENANCE mode");
                 #endregion
@@ -124,8 +116,7 @@ namespace ASCOM.Wise40.Hardware
             int i, maxTries = 10;
             lock (daq._lock)
             {
-                ushort v, v1;
-                daq.wiseBoard.mccBoard.DIn(daq.porttype, out v);
+                daq.wiseBoard.mccBoard.DIn(daq.porttype, out ushort v);
 
                 v &= (ushort)~(1 << bit);
 
@@ -144,14 +135,13 @@ namespace ASCOM.Wise40.Hardware
                 {
                     daq.wiseBoard.mccBoard.DOut(daq.porttype, v);
                     Thread.Sleep(100);
-                    daq.wiseBoard.mccBoard.DIn(daq.porttype, out v1);
+                    daq.wiseBoard.mccBoard.DIn(daq.porttype, out ushort v1);
                     if (v == v1)
                     {
                         if (i > 0)
                             #region debug
                             debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
-                                    string.Format("SetOff: pin {0} got Off after {1} tries!",
-                                    WiseName, i + 1));
+                                    $"SetOff: pin {WiseName} got Off after {i + 1} tries!");
                             #endregion
                         return;
                     }
@@ -161,8 +151,7 @@ namespace ASCOM.Wise40.Hardware
 
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
-                string.Format("SetOff: pin {0} does not get Off after {1} tries!",
-                    WiseName, maxTries));
+                $"SetOff: pin {WiseName} does not get Off after {maxTries} tries!");
             #endregion
         }
 
@@ -187,9 +176,9 @@ namespace ASCOM.Wise40.Hardware
         public void Connect(bool connected)
         {
             if (connected)
-                daq.setOwner(WiseName, bit);
+                daq.SetOwner(WiseName, bit);
             else
-                daq.unsetOwner(bit);
+                daq.UnsetOwner(bit);
             _connected = connected;
         }
 
@@ -204,7 +193,7 @@ namespace ASCOM.Wise40.Hardware
         public void Dispose()
         {
             SetOff();
-            daq.unsetOwner(bit);
+            daq.UnsetOwner(bit);
         }
 
         public Const.Direction Direction

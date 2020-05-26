@@ -13,14 +13,14 @@ namespace ASCOM.Wise40
 {
     public class DomeSlaveDriver : IConnectable
     {
-        private static WiseDome wisedome = WiseDome.Instance;
+        private static readonly WiseDome wisedome = WiseDome.Instance;
         private bool _connected = false;
         private ASCOM.Astrometry.NOVAS.NOVAS31 novas31 = new Astrometry.NOVAS.NOVAS31();
         private AstroUtils astroutils = new AstroUtils();
         public AutoResetEvent _arrivedAtAz;
         private Debugger debugger;
 
-        private static WiseSite wisesite = WiseSite.Instance;
+        private static readonly WiseSite wisesite = WiseSite.Instance;
 
         private bool _initialized = false;
 
@@ -38,12 +38,12 @@ namespace ASCOM.Wise40
                 if (lazy.IsValueCreated)
                     return lazy.Value;
 
-                lazy.Value.init();
+                lazy.Value.Init();
                 return lazy.Value;
             }
         }
 
-        public void init()
+        public void Init()
         {
             if (_initialized)
                 return;
@@ -79,7 +79,7 @@ namespace ASCOM.Wise40
 
         public void Connect(bool value)
         {
-            init();
+            Init();
             wisedome.Connect(value);
             _connected = value;
         }
@@ -111,7 +111,7 @@ namespace ASCOM.Wise40
                 debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
                     $"DomeSlaveDriver:SlewToAz got \"{ex.Message}\"\nat {ex.StackTrace}\nwhile slewing to {azAngle}, Aborting slew!");
                 #endregion
-                wisedome.AbortSlew($"from DomeSlaveDriver:SlewToAz({azAngle})");
+                wisedome.AbortSlew($"from DomeSlaveDriver:SlewToAz({azAngle}, {reason})");
                 //throw ex;
             }
         }
@@ -191,7 +191,7 @@ namespace ASCOM.Wise40
             }
         }
 
-        public void AbortSlew()
+        public static void AbortSlew()
         {
             wisedome.AbortSlew("from DomeSlaveDriver.AbortSlew()");
             WiseTele.Instance.slewers.Delete(Slewers.Type.Dome);
@@ -221,17 +221,17 @@ namespace ASCOM.Wise40
             }
         }
 
-        public void OpenShutter(bool bypassSafety = false)
+        public static void OpenShutter(bool bypassSafety = false)
         {
             wisedome.OpenShutter(bypassSafety);
         }
 
-        public void CloseShutter()
+        public static void CloseShutter()
         {
             wisedome.CloseShutter();
         }
 
-        public void StopShutter(string reason)
+        public static void StopShutter(string reason)
         {
             wisedome.wisedomeshutter.Stop(reason);
         }
@@ -250,7 +250,7 @@ namespace ASCOM.Wise40
             {
                 if (!Connected)
                     return "Not connected";
-                
+
                 return wisedome.ShutterStatusString;
             }
         }
@@ -263,7 +263,7 @@ namespace ASCOM.Wise40
             }
         }
 
-        public void Unpark()
+        public static void Unpark()
         {
             wisedome.Unpark();
         }
@@ -286,8 +286,8 @@ namespace ASCOM.Wise40
 
             double Lx, Ly, Lz, Px, Py, Pz, PL, QA, QB, QC, A1, Rx1, Ry1, DomeAz;
             double rar = 0, decr = 0, targetHA, targetAlt, targetAz = 0, zd = 0;
-            
-            wisesite.prepareRefractionData();
+
+            wisesite.PrepareRefractionData();
             novas31.Equ2Hor(astroutils.JulianDateUT1(0), 0,
                 WiseSite.astrometricAccuracy,
                 0, 0,
@@ -300,30 +300,30 @@ namespace ASCOM.Wise40
             targetAz = Angle.FromDegrees(targetAz).Radians;
             targetAlt = Angle.FromDegrees(90.0 - zd).Radians;
 
-            Lx = X0 - Math.Sin(SiteNorthLat) * Math.Sin(-targetHA) * L;
-            Ly = Y0 + Math.Cos(-targetHA) * L;
-            Lz = Z0 + Math.Cos(SiteNorthLat) * Math.Sin(-targetHA) * L;
+            Lx = X0 - (Math.Sin(SiteNorthLat) * Math.Sin(-targetHA) * L);
+            Ly = Y0 + (Math.Cos(-targetHA) * L);
+            Lz = Z0 + (Math.Cos(SiteNorthLat) * Math.Sin(-targetHA) * L);
 
             Px = Math.Cos(-targetAz) * Math.Cos(targetAlt);
             Py = Math.Sin(-targetAz) * Math.Cos(targetAlt);
             Pz = Math.Sin(targetAlt);
 
-            PL = Px * Lx + Py * Ly + Pz * Lz;
+            PL = (Px * Lx) + (Py * Ly) + (Pz * Lz);
 
             QA = 1;
             QB = 2 * PL;
-            QC = L * L - R * R;
-            A1 = (-QB + Math.Sqrt(QB * QB - 4 * QA * QC)) / (2 * QA);
+            QC = (L * L) - (R * R);
+            A1 = (-QB + Math.Sqrt((QB * QB) - (4 * QA * QC))) / (2 * QA);
 
-            Rx1 = A1 * Px - Lx;
-            Ry1 = A1 * Py - Ly;
-            
+            Rx1 = (A1 * Px) - Lx;
+            Ry1 = (A1 * Py) - Ly;
+
             DomeAz = -Math.Atan2(Ry1, Rx1);
 
             if (DomeAz < 0)
                DomeAz  += 2 * Math.PI;
 
-            return Angle.FromRadians(DomeAz);
+            return Angle.FromRadians(DomeAz, Angle.AngleType.Az);
         }
 
         public bool ShutterIsMoving

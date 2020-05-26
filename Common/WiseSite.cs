@@ -20,9 +20,9 @@ namespace ASCOM.Wise40
     public class WiseSite : IDisposable
     {
         private static bool _initialized = false;
-        private static Astrometry.NOVAS.NOVAS31 novas31 = new NOVAS31();
-        private static AstroUtils astroutils = new AstroUtils();
-        private static ASCOM.Utilities.Util ascomutils = new Util();
+        private static readonly Astrometry.NOVAS.NOVAS31 novas31 = new NOVAS31();
+        private static readonly AstroUtils astroutils = new AstroUtils();
+        private static readonly ASCOM.Utilities.Util ascomutils = new Util();
         public Astrometry.OnSurface _onSurface;
         public Observer _observer;
         public static Astrometry.Accuracy astrometricAccuracy;
@@ -31,12 +31,12 @@ namespace ASCOM.Wise40
         public static ObservingConditions och;
         private static DateTime lastOCFetch;
         private static bool _och_initialized = false;
-        private static Debugger debugger = Debugger.Instance;
+        private static readonly Debugger debugger = Debugger.Instance;
         private static OperationalProfile _operationalProfile;
-        private static ASCOM.Astrometry.Transform.Transform _transform = new Astrometry.Transform.Transform();
-        private static TempFetcher _tempFetcher = new TempFetcher(10);
+        private static readonly ASCOM.Astrometry.Transform.Transform _transform = new Astrometry.Transform.Transform();
+        private static readonly TempFetcher _tempFetcher = new TempFetcher(10);
         private static string _processName;
- 
+
         public enum OpMode { LCO, ACP, WISE, NONE };
 
         //
@@ -57,12 +57,12 @@ namespace ASCOM.Wise40
                 if (lazy.IsValueCreated)
                     return lazy.Value;
 
-                lazy.Value.init();
+                lazy.Value.Init();
                 return lazy.Value;
             }
         }
 
-        public void init()
+        public void Init()
         {
             if (_initialized)
                 return;
@@ -132,7 +132,7 @@ namespace ASCOM.Wise40
             }
         }
 
-        public static void initOCH()
+        public static void InitOCH()
         {
             if (_och_initialized)
                 return;
@@ -200,21 +200,21 @@ namespace ASCOM.Wise40
                     ref gstNow);
 
                 if (res != 0)
-                    throw new InvalidValueException("Error getting Greenwich Apparent Sidereal time");
+                    Exceptor.Throw<InvalidValueException>("LocalSiderealTime", $"Error getting novas31.SiderealTime, res: {res}");
 
                 return Angle.FromHours(gstNow) + Longitude;
             }
         }
 
-        /// <summary> 
-        // If we haven't checked in a long enough time (10 minutes ?!?)
+        /// <summary>
+        /// // If we haven't checked in a long enough time (10 minutes ?!?)
         //  get temperature and pressure.
         /// </summary>
-        public void prepareRefractionData()
+        public void PrepareRefractionData()
         {
             const int freqOCFetchMinutes = 10;
 
-            initOCH();
+            InitOCH();
 
             if (!OperationalProfile.CalculatesRefractionForHorizCoords)
             {
@@ -245,7 +245,7 @@ namespace ASCOM.Wise40
                 catch { }
             }
         }
-        
+
         public static bool FilterWheelInUse
         {
             get
@@ -260,9 +260,7 @@ namespace ASCOM.Wise40
             {
                 using (Profile driverProfile = new Profile() { DeviceType = "Telescope" })
                 {
-                    OpMode mode;
-
-                    if (Enum.TryParse<OpMode>(driverProfile.GetValue(Const.WiseDriverID.Telescope, "SiteOperationMode", null, "WISE").ToUpper(), out mode))
+                    if (Enum.TryParse<OpMode>(driverProfile.GetValue(Const.WiseDriverID.Telescope, "SiteOperationMode", null, "WISE").ToUpper(), out OpMode mode))
                         OperationalProfile.OpMode = mode;
                 }
                 return OperationalProfile.OpMode;
@@ -285,7 +283,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return (OperationalProfile.OpMode == OpMode.LCO || OperationalProfile.OpMode == OpMode.ACP);
+                return OperationalProfile.OpMode == OpMode.LCO || OperationalProfile.OpMode == OpMode.ACP;
             }
         }
 
@@ -311,7 +309,7 @@ namespace ASCOM.Wise40
         /// </summary>
         /// <param name="alt">Altitude in radians</param>
         /// <returns></returns>
-        public double AirMass(double alt)
+        public static double AirMass(double alt)
         {
             const double halfPI = Math.PI / 2;
 
@@ -320,7 +318,7 @@ namespace ASCOM.Wise40
 
             double secz1 = (1 / Math.Cos(halfPI - alt)) - 1;   // Secant(x) = 1 / Cos(x)
 
-            return secz1 + 1 - 0.0018167 * secz1 - 0.002875 * Math.Pow(secz1, 2) - 0.0008083 * Math.Pow(secz1, 3);
+            return secz1 + 1 - (0.0018167 * secz1) - (0.002875 * Math.Pow(secz1, 2)) - (0.0008083 * Math.Pow(secz1, 3));
         }
 
         public static bool CurrentProcessIs(Const.Application app)

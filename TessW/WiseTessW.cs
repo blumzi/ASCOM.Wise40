@@ -17,11 +17,10 @@ namespace ASCOM.Wise40.TessW
 {
     public class WiseTessW : WeatherStation
     {
-        private static Version version = new Version("0.2");
+        private static readonly Version version = new Version("0.2");
         public static string driverDescription = string.Format($"ASCOM Wise40.TessW v{version}");
-        private Util util = new Util();
 
-        readonly Debugger debugger = Debugger.Instance;
+        private readonly Debugger debugger = Debugger.Instance;
         private bool _connected = false;
         private bool _initialized = false;
         private int _reading = 0;
@@ -31,8 +30,7 @@ namespace ASCOM.Wise40.TessW
         static WiseTessW() { }
 
         private DateTime _lastDataRead = DateTime.MinValue;
-        private Dictionary<string, string> sensorData = new Dictionary<string, string>();
-        private string _ipAddress;
+        private readonly Dictionary<string, string> sensorData = new Dictionary<string, string>();
         public HttpClient _client;
         public System.Threading.Timer _periodicWebReadTimer;
         public string _uri;
@@ -47,7 +45,7 @@ namespace ASCOM.Wise40.TessW
                 if (lazy.IsValueCreated)
                     return lazy.Value;
 
-                lazy.Value.init();
+                lazy.Value.Init();
                 return lazy.Value;
             }
         }
@@ -92,7 +90,7 @@ namespace ASCOM.Wise40.TessW
             {
                 try
                 {
-                    response = await Instance._client.GetAsync(Instance._uri);
+                    response = await Instance._client.GetAsync(Instance._uri).ConfigureAwait(false);
                     duration = DateTime.Now.Subtract(start);
                     break;
                 }
@@ -160,16 +158,12 @@ namespace ASCOM.Wise40.TessW
 
                         Instance.updatedAtUT = DateTime.UtcNow;
 
-                        if (Instance._weatherLogger != null)
-                        {
-                            Instance._weatherLogger.Log(new Dictionary<string, string>()
+                        Instance._weatherLogger?.Log(new Dictionary<string, string>()
                             {
                                 ["Temperature"] = Instance.sensorData["tempAmb"],
                                 ["SkyAmbientTemp"] = Instance.sensorData["tempSky"],
                                 ["CloudCover"] = Instance.sensorData["cloudCover"],
-
                             }, Instance.updatedAtUT);
-                        }
 
                         succeeded = true;
                         #region debug
@@ -196,7 +190,7 @@ namespace ASCOM.Wise40.TessW
             return succeeded;
         }
 
-        public void init()
+        public void Init()
         {
             if (_initialized)
                 return;
@@ -211,7 +205,7 @@ namespace ASCOM.Wise40.TessW
             //_client.DefaultRequestHeaders.ConnectionClose = false;
             _client.Timeout = TimeSpan.FromSeconds(10);
 
-            _uri = String.Format("http://{0}", _ipAddress);
+            _uri = String.Format("http://{0}", IpAddress);
 
             _periodicWebReadTimer = new System.Threading.Timer(new TimerCallback(PeriodicReader));
 
@@ -252,7 +246,7 @@ namespace ASCOM.Wise40.TessW
             }
         }
 
-        private static ArrayList supportedActions = new ArrayList() {
+        private readonly static ArrayList supportedActions = new ArrayList() {
             "OCHTag",
             "raw-data",
         };
@@ -267,22 +261,18 @@ namespace ASCOM.Wise40.TessW
 
         public string Action(string action, string parameter)
         {
-            string ret = "";
-
             switch (action)
             {
                 case "OCHTag":
-                    ret = "Wise40.TessW";
-                    break;
+                    return "Wise40.TessW";
 
                 case "raw-data":
-                    ret = RawData;
-                    break;
+                    return RawData;
 
                 default:
-                    throw new ASCOM.ActionNotImplementedException("Action " + action + " is not implemented by this driver");
+                    Exceptor.Throw<ActionNotImplementedException>("Action", $"Action \"{action}\" is not implemented by this driver");
+                    return string.Empty;
             }
-            return ret;
         }
 
         public string RawData
@@ -351,18 +341,7 @@ namespace ASCOM.Wise40.TessW
             }
         }
 
-        public string IpAddress
-        {
-            get
-            {
-                return _ipAddress;
-            }
-
-            set
-            {
-                _ipAddress = value;
-            }
-        }
+        public string IpAddress { get; set; }
 
         #region IObservingConditions Implementation
 
@@ -385,7 +364,7 @@ namespace ASCOM.Wise40.TessW
             set
             {
                 if (value != 0)
-                    throw new InvalidValueException("Only 0.0 accepted");
+                    Exceptor.Throw<InvalidValueException>("AveragePeriod", "Only 0.0 accepted");
             }
         }
 
@@ -412,7 +391,8 @@ namespace ASCOM.Wise40.TessW
         {
             get
             {
-                throw new PropertyNotImplementedException("DewPoint", false);
+                Exceptor.Throw<PropertyNotImplementedException>("DewPoint", "Not implemented");
+                return Double.NaN;
             }
         }
 
@@ -420,14 +400,15 @@ namespace ASCOM.Wise40.TessW
         /// Atmospheric relative humidity at the observatory in percent
         /// </summary>
         /// <remarks>
-        /// Normally optional but mandatory if <see cref="ASCOM.DeviceInterface.IObservingConditions.DewPoint"/> 
+        /// Normally optional but mandatory if <see cref="ASCOM.DeviceInterface.IObservingConditions.DewPoint"/>
         /// Is provided
         /// </remarks>
         public double Humidity
         {
             get
             {
-                throw new PropertyNotImplementedException("Humidity", false);
+                Exceptor.Throw<PropertyNotImplementedException>("Humidity", "Not implemented");
+                return Double.NaN;
             }
         }
 
@@ -443,7 +424,8 @@ namespace ASCOM.Wise40.TessW
         {
             get
             {
-                throw new PropertyNotImplementedException("Pressure", false);
+                Exceptor.Throw<PropertyNotImplementedException>("Pressure", "Not implemented");
+                return Double.NaN;
             }
         }
 
@@ -458,10 +440,10 @@ namespace ASCOM.Wise40.TessW
         {
             get
             {
-                throw new PropertyNotImplementedException("RainRate", false);
+                Exceptor.Throw<PropertyNotImplementedException>("RainRate", "Not implemented");
+                return Double.NaN;
             }
         }
-
 
         /// <summary>
         /// Provides a description of the sensor providing the requested property
@@ -469,10 +451,10 @@ namespace ASCOM.Wise40.TessW
         /// <param name="PropertyName">Name of the property whose sensor description is required</param>
         /// <returns>The sensor description string</returns>
         /// <remarks>
-        /// PropertyName must be one of the sensor properties, 
+        /// PropertyName must be one of the sensor properties,
         /// properties that are not implemented must throw the MethodNotImplementedException
         /// </remarks>
-        public string SensorDescription(string PropertyName)
+        public static string SensorDescription(string PropertyName)
         {
             switch (PropertyName)
             {
@@ -494,9 +476,11 @@ namespace ASCOM.Wise40.TessW
                 case "WindDirection":
                 case "WindSpeed":
                 case "RainRate":
-                    throw new MethodNotImplementedException("SensorDescription(" + PropertyName + ")");
+                    Exceptor.Throw<MethodNotImplementedException>($"SensorDescription({PropertyName})", "Not implemented");
+                    return string.Empty;
                 default:
-                    throw new ASCOM.InvalidValueException("SensorDescription(" + PropertyName + ")");
+                    Exceptor.Throw<InvalidValueException>($"SensorDescription({PropertyName})", "Not implemented");
+                    return string.Empty;
             }
         }
 
@@ -507,7 +491,8 @@ namespace ASCOM.Wise40.TessW
         {
             get
             {
-                throw new PropertyNotImplementedException("SkyBrightness", false);
+                Exceptor.Throw<PropertyNotImplementedException>("SkyBrightness", "Not implemented");
+                return Double.NaN;
             }
         }
 
@@ -518,7 +503,8 @@ namespace ASCOM.Wise40.TessW
         {
             get
             {
-                throw new PropertyNotImplementedException("SkyQuality", false);
+                Exceptor.Throw<PropertyNotImplementedException>("SkyQuality", "Not implemented");
+                return Double.NaN;
             }
         }
 
@@ -529,7 +515,8 @@ namespace ASCOM.Wise40.TessW
         {
             get
             {
-                throw new PropertyNotImplementedException("StarFWHM", false);
+                Exceptor.Throw<PropertyNotImplementedException>("StarFWHM", "Not implemented");
+                return Double.NaN;
             }
         }
 
@@ -591,7 +578,8 @@ namespace ASCOM.Wise40.TessW
                 case "WindDirection":
                 case "WindSpeed":
                 case "RainRate":
-                    throw new MethodNotImplementedException("SensorDescription(" + PropertyName + ")");
+                    Exceptor.Throw<MethodNotImplementedException>($"TimeSinceLastUpdate({PropertyName})", "Not implemented");
+                    return Double.NaN;
             }
 
             Refresh();
@@ -610,7 +598,8 @@ namespace ASCOM.Wise40.TessW
         {
             get
             {
-                throw new PropertyNotImplementedException("WindDirection", false);
+                Exceptor.Throw<PropertyNotImplementedException>("WindDirection", "Not implemented");
+                return Double.NaN;
             }
         }
 
@@ -621,14 +610,16 @@ namespace ASCOM.Wise40.TessW
         {
             get
             {
-                throw new PropertyNotImplementedException("WindGust", false);
+                Exceptor.Throw<PropertyNotImplementedException>("WindGust", "Not implemented");
+                return Double.NaN;
             }
         }
         public double WindSpeed
         {
             get
             {
-                throw new PropertyNotImplementedException("WindSpeed", false);
+                Exceptor.Throw<PropertyNotImplementedException>("WindSpeed", "Not implemented");
+                return Double.NaN;
             }
         }
 

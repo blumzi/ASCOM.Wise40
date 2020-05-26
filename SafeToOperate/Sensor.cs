@@ -12,11 +12,11 @@ namespace ASCOM.Wise40SafeToOperate
 {
     public abstract class Sensor : WiseObject
     {
-        private System.Threading.Timer _timer;  // for this specific sensor instance
+        private readonly System.Threading.Timer _timer;  // for this specific sensor instance
         private DateTime _endOfStabilization;
-        private object _lock = new object();
+        private readonly object _lock = new object();
         protected static ActivityMonitor activityMonitor = ActivityMonitor.Instance;
-        private string _propertyName;
+        private readonly string _propertyName;
 
         [Flags]
         public enum Attribute
@@ -88,7 +88,7 @@ namespace ASCOM.Wise40SafeToOperate
         public int _nreadings;
         public Units _units;
         public string _formatValue;
-        Event.SafetyEvent.SensorState sensorState = Event.SafetyEvent.SensorState.NotSet;
+        private Event.SafetyEvent.SensorState sensorState = Event.SafetyEvent.SensorState.NotSet;
 
         [FlagsAttribute] public enum Usability
         {
@@ -106,22 +106,22 @@ namespace ASCOM.Wise40SafeToOperate
 
         public string FormatSymbolic(double value)
         {
-            if (_formatValue == string.Empty)
+            if (string.IsNullOrEmpty(_formatValue))
                 return string.Empty;
 
             string ret = LatestReading.value.ToString(_formatValue);
-            if (_units.symbolic != string.Empty)
+            if (!string.IsNullOrEmpty(_units.symbolic))
                 ret += _units.symbolic;
             return ret;
         }
 
         public string FormatVerbal(double value)
         {
-            if (_formatValue == string.Empty)
+            if (string.IsNullOrEmpty(_formatValue))
                 return string.Empty;
 
             string ret = value.ToString(_formatValue);
-            if (_units.verbal != string.Empty)
+            if (!string.IsNullOrEmpty(_units.verbal))
                 ret += _units.verbal;
             return ret;
         }
@@ -138,17 +138,18 @@ namespace ASCOM.Wise40SafeToOperate
 
             public static SensorDigest FromSensor(Sensor sensor)
             {
-                SensorDigest digest = new SensorDigest();
-
-                digest.Name = sensor.WiseName;
-                digest.State = sensor._state;
-                digest.LatestReading = sensor.LatestReading;
-                digest.ToolTip = sensor.ToolTip;
-                digest.Safe = sensor.isSafe;
-                digest.Stale = sensor.IsStale;
-                digest.Symbolic = sensor.FormatSymbolic(sensor.LatestReading.value);
-                digest.Verbal = sensor.FormatVerbal(sensor.LatestReading.value);
-                digest.AffectsSafety = !sensor.HasAttribute(Attribute.ForInfoOnly);
+                SensorDigest digest = new SensorDigest
+                {
+                    Name = sensor.WiseName,
+                    State = sensor._state,
+                    LatestReading = sensor.LatestReading,
+                    ToolTip = sensor.ToolTip,
+                    Safe = sensor.isSafe,
+                    Stale = sensor.IsStale,
+                    Symbolic = sensor.FormatSymbolic(sensor.LatestReading.value),
+                    Verbal = sensor.FormatVerbal(sensor.LatestReading.value),
+                    AffectsSafety = !sensor.HasAttribute(Attribute.ForInfoOnly)
+                };
 
                 return digest;
             }
@@ -213,9 +214,12 @@ namespace ASCOM.Wise40SafeToOperate
             {
                 get
                 {
-                    Const.TriStateStatus triState = Const.TriStateStatus.Normal;
+                    Const.TriStateStatus triState;
+
                     if (Stale)
+                    {
                         triState = Const.TriStateStatus.Warning;
+                    }
                     else
                     {
                         if (AffectsSafety)
@@ -379,16 +383,16 @@ namespace ASCOM.Wise40SafeToOperate
             get
             {
                 if (HasAttribute(Attribute.SingleReading))
-                    return getReading();
+                    return GetReading();
 
                 if (_readings == null)
                     return new Reading();
 
                 var arr = _readings.ToArray();
-                if (arr.Count() == 0)
+                if (arr.Length == 0)
                     return new Reading();
 
-                return arr[arr.Count() - 1];
+                return arr[arr.Length - 1];
             }
         }
 
@@ -422,19 +426,18 @@ namespace ASCOM.Wise40SafeToOperate
                     _intervalMillis = 1000 * fromProfile;
             }
 
-            if (HasAttribute(Attribute.SingleReading))
-                _repeats = 1;
-            else
-                _repeats = Convert.ToInt32(wisesafetooperate._profile.GetValue(
+            _repeats = HasAttribute(Attribute.SingleReading)
+                ? 1
+                : Convert.ToInt32(wisesafetooperate._profile.GetValue(
                     Const.WiseDriverID.SafeToOperate, WiseName, "Repeats", defaultRepeats.ToString()));
 
             if (DoesNotHaveAttribute(Attribute.AlwaysEnabled))
                 Enabled = Convert.ToBoolean(wisesafetooperate._profile.GetValue(Const.WiseDriverID.SafeToOperate, WiseName, "Enabled", true.ToString()));
 
-            readSensorProfile();
+            ReadSensorProfile();
         }
 
-        public void writeProfile()
+        public void WriteProfile()
         {
             wisesafetooperate._profile.WriteValue(Const.WiseDriverID.SafeToOperate, WiseName, (_intervalMillis / 1000).ToString(), "Interval");
 
@@ -444,14 +447,14 @@ namespace ASCOM.Wise40SafeToOperate
             if (DoesNotHaveAttribute(Attribute.AlwaysEnabled))
                 wisesafetooperate._profile.WriteValue(Const.WiseDriverID.SafeToOperate, WiseName, Enabled.ToString(), "Enabled");
 
-            writeSensorProfile();
+            WriteSensorProfile();
         }
         #endregion
 
-        public abstract string reason();
-        public abstract void readSensorProfile();
-        public abstract void writeSensorProfile();
-        public abstract Reading getReading();
+        public abstract string UnsafeReason();
+        public abstract void ReadSensorProfile();
+        public abstract void WriteSensorProfile();
+        public abstract Reading GetReading();
         public abstract string MaxAsString { get; set; }
         public abstract object Digest();
         public abstract string Status { get; }
@@ -522,12 +525,12 @@ namespace ASCOM.Wise40SafeToOperate
             if (!Enabled || !Connected)
                 return;
 
-            Reading currentReading = null;
+            Reading currentReading;
 
             DateTime now = DateTime.Now;
             try
             {
-                currentReading = getReading();
+                currentReading = GetReading();
             } catch (Exception ex)
             {
                 debugger.WriteLine(Debugger.DebugLevel.DebugSafety, $"Sensor:onTimer: Caught {ex.Message} at\n{ex.StackTrace}");
@@ -550,7 +553,7 @@ namespace ASCOM.Wise40SafeToOperate
                 if (r.Stale)
                     nstale++;
             }
-            State savedState = _state;
+
             bool wassafe = StateIsSet(State.Safe);
             bool wasready = StateIsSet(State.EnoughReadings);
 
@@ -590,9 +593,11 @@ namespace ASCOM.Wise40SafeToOperate
                     return;     // Remain unsafe - at least one stale reading
                 }
                 else
+                {
                     UnsetState(State.Stale);
+                }
 
-                if (_readings.ToArray().Count() != _repeats)
+                if (_readings.ToArray().Length != _repeats)
                 {
                     UnsetState(State.EnoughReadings);
                     return;     // Remain unsafe - not enough readings
@@ -615,11 +620,13 @@ namespace ASCOM.Wise40SafeToOperate
                 {
                     ExtendUnsafety("All readings are unsafe");
                     if (wasready && wassafe)
+                    {
                         activityMonitor.Event(new Event.SafetyEvent(
                             sensor: WiseName,
                             details: "Became unsafe",
                             before: sensorState,
                             after: Event.SafetyEvent.SensorState.NotSafe));
+                    }
                     sensorState = Event.SafetyEvent.SensorState.NotSafe;
                     return;     // Remain unsafe - all readings are unsafe
                 }
@@ -633,8 +640,11 @@ namespace ASCOM.Wise40SafeToOperate
                     }
 
                     if (now.CompareTo(_endOfStabilization) <= 0)
+                    {
                         return;
-                    else {
+                    }
+                    else
+                    {
                         UnsetState(State.Stabilizing);
                         prolong = false;    // don't prolong if just ended stabilization
                     }
@@ -649,11 +659,14 @@ namespace ASCOM.Wise40SafeToOperate
 
                 SetState(State.Safe);
                 if (wasready && !wassafe)
+                {
                     activityMonitor.Event(new Event.SafetyEvent(
                         sensor: WiseName,
                         details: "Became safe",
                         before: sensorState,
                         after: Event.SafetyEvent.SensorState.Safe));
+                }
+
                 sensorState = Event.SafetyEvent.SensorState.Safe;
             }
         }
@@ -702,7 +715,7 @@ namespace ASCOM.Wise40SafeToOperate
 
                 if (HasAttribute(Attribute.SingleReading))
                 {
-                    ret = getReading().Safe;
+                    ret = GetReading().Safe;
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugSafety,
                         "Sensor ({0}), (immediate) isSafe: {1}",
@@ -711,7 +724,6 @@ namespace ASCOM.Wise40SafeToOperate
                 }
                 else
                 {
-
                     ret = StateIsSet(State.Safe);
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugSafety,

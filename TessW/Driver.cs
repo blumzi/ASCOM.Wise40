@@ -21,7 +21,6 @@
 // --------------------------------------------------------------------------------
 //
 
-
 // This is used to define code in the template that is specific to one class implementation
 // unused code canbe deleted and this definition removed.
 #define ObservingConditions
@@ -39,6 +38,8 @@ using ASCOM.Utilities;
 using ASCOM.DeviceInterface;
 using System.Globalization;
 using System.Collections;
+
+using ASCOM.Wise40.Common;
 
 namespace ASCOM.Wise40.TessW
 {
@@ -69,9 +70,9 @@ namespace ASCOM.Wise40.TessW
         /// <summary>
         /// Driver description that displays in the ASCOM Chooser.
         /// </summary>
-        private static string driverDescription = "ASCOM Wise40.TessW v" + WiseTessW.DriverVersion;
+        private static readonly string driverDescription = "ASCOM Wise40.TessW v" + WiseTessW.DriverVersion;
 
-        private WiseTessW tessw = WiseTessW.Instance;
+        private readonly WiseTessW tessw = WiseTessW.Instance;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Wise40.TessW"/> class.
@@ -79,9 +80,8 @@ namespace ASCOM.Wise40.TessW
         /// </summary>
         public ObservingConditions()
         {
-            tessw.init();
+            tessw.Init();
         }
-
 
         //
         // PUBLIC COM INTERFACE IObservingConditions IMPLEMENTATION
@@ -128,31 +128,21 @@ namespace ASCOM.Wise40.TessW
         public void CommandBlind(string command, bool raw)
         {
             CheckConnected("CommandBlind");
-            // Call CommandString and return as soon as it finishes
-            this.CommandString(command, raw);
-            // or
-            throw new ASCOM.MethodNotImplementedException("CommandBlind");
-            // DO NOT have both these sections!  One or the other
+            Exceptor.Throw<MethodNotImplementedException>($"CommandBlind({command}, {raw})", "Not implemented");
         }
 
         public bool CommandBool(string command, bool raw)
         {
             CheckConnected("CommandBool");
-            string ret = CommandString(command, raw);
-            // TODO decode the return string and return true or false
-            // or
-            throw new ASCOM.MethodNotImplementedException("CommandBool");
-            // DO NOT have both these sections!  One or the other
+            Exceptor.Throw<MethodNotImplementedException>($"CommandBool({command}, {raw})", "Not implemented");
+            return false;
         }
 
         public string CommandString(string command, bool raw)
         {
             CheckConnected("CommandString");
-            // it's a good idea to put all the low level communication with the device here,
-            // then all communication calls this function
-            // you need something to ensure that only one command is in progress at a time
-
-            throw new ASCOM.MethodNotImplementedException("CommandString");
+            Exceptor.Throw<MethodNotImplementedException>($"CommandString({command}, {raw})", "Not implemented");
+            return string.Empty;
         }
 
         public void Dispose()
@@ -271,7 +261,7 @@ namespace ASCOM.Wise40.TessW
         /// Atmospheric relative humidity at the observatory in percent
         /// </summary>
         /// <remarks>
-        /// Normally optional but mandatory if <see cref="ASCOM.DeviceInterface.IObservingConditions.DewPoint"/> 
+        /// Normally optional but mandatory if <see cref="ASCOM.DeviceInterface.IObservingConditions.DewPoint"/>
         /// Is provided
         /// </remarks>
         public double Humidity
@@ -328,12 +318,12 @@ namespace ASCOM.Wise40.TessW
         /// <param name="PropertyName">Name of the property whose sensor description is required</param>
         /// <returns>The sensor description string</returns>
         /// <remarks>
-        /// PropertyName must be one of the sensor properties, 
+        /// PropertyName must be one of the sensor properties,
         /// properties that are not implemented must throw the MethodNotImplementedException
         /// </remarks>
         public string SensorDescription(string PropertyName)
         {
-            return tessw.SensorDescription(PropertyName);
+            return WiseTessW.SensorDescription(PropertyName);
         }
 
         /// <summary>
@@ -445,7 +435,6 @@ namespace ASCOM.Wise40.TessW
 
         #endregion
 
-
         #region Private properties and methods
         // here are some useful properties and methods that can be used as required
         // to help with driver development
@@ -543,9 +532,7 @@ namespace ASCOM.Wise40.TessW
         private void CheckConnected(string message)
         {
             if (!IsConnected)
-            {
-                throw new ASCOM.NotConnectedException(message);
-            }
+                Exceptor.Throw<ASCOM.NotConnectedException>("CheckConnected", message);
         }
 
         #endregion

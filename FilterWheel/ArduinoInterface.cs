@@ -12,21 +12,21 @@ namespace ASCOM.Wise40
 {
     public class ArduinoInterface
     {
-        private static Debugger debugger = Debugger.Instance;
+        private static readonly Debugger debugger = Debugger.Instance;
 
         private bool _initialized = false;
         private string _serialPortName;
-        private int _serialPortSpeed = 57600;   // Fixed
-        private static object _serialLock = new Object();
+        private const int _serialPortSpeed = 57600;   // Fixed
+        private static readonly object _serialLock = new Object();
 
         private SerialPort _serialPort;
-        private const char stx = (char)2;
-        private const char etx = (char)3;
+        //private const char stx = (char)2;
+        //private const char etx = (char)3;
         private const char cr = (char)13;
         private const char nl = (char)10;
-        private static char[] crnls = { cr, nl };
-        private string Stx = stx.ToString();
-        private string Etx = etx.ToString();
+        private static readonly char[] crnls = { cr, nl };
+        //private string Stx = stx.ToString();
+        //private string Etx = etx.ToString();
 
         private static CancellationTokenSource CTS = new CancellationTokenSource();
         private static CancellationToken CT;
@@ -42,35 +42,27 @@ namespace ASCOM.Wise40
                 if (lazy.IsValueCreated)
                     return lazy.Value;
 
-                lazy.Value.init();
+                lazy.Value.Init();
                 return lazy.Value;
             }
         }
 
-        public static string hexdump(string s)
+        public static string Hexdump(string s)
         {
-            if (s == null || s == string.Empty)
+            if (string.IsNullOrEmpty(s))
                 return s;
 
-            string res = "hexdump: ";
+            string res = "Hexdump: ";
 
-            foreach (char b in s.ToCharArray())
+            foreach (char b in s)
                 res += Char.IsControl(b) ? string.Format("x{0:X2} ", (byte) b) : string.Format("{0} ", b);
 
             return res.TrimEnd(' ');
         }
 
-
-        static Dictionary<int, string> connectorName = new Dictionary<int, string>
-        {
-            [2] = "CD2",
-            [3] = "CD3",
-            [4] = "CD4",
-        };
-
         private static void DataReceivedHandler(object sender, SerialDataReceivedEventArgs e)
         {
-            string data = (sender as SerialPort).ReadLine().TrimEnd(crnls);
+            string data = (sender as SerialPort)?.ReadLine().TrimEnd(crnls);
             WiseFilterWheel.Wheel wheel = null;
             Activity.FilterWheel.Operation op = ArduinoInterface._lastCommandSent == "get-tag" ?
                         Activity.FilterWheel.Operation.Detect :
@@ -84,7 +76,7 @@ namespace ASCOM.Wise40
             if (data.StartsWith("tag:"))
             {
                 _tag = data.Substring("tag:".Length);
-                WiseFilterWheel.Instance.currentWheel = wheel = WiseFilterWheel.lookupWheel(_tag);
+                WiseFilterWheel.Instance.currentWheel = wheel = WiseFilterWheel.LookupWheel(_tag);
 
                 if (op == Activity.FilterWheel.Operation.Move)
                 {
@@ -126,6 +118,7 @@ namespace ASCOM.Wise40
                 }
 
                 if (op == Activity.FilterWheel.Operation.Move)
+                {
                     WiseFilterWheel.EndActivity(
                         op: op,
                         endWheel: null,
@@ -133,13 +126,14 @@ namespace ASCOM.Wise40
                         endTag: _tag,
                         endState: Activity.State.Failed,
                         endReason: _error);
+                }
             }
         }
 
-        static Task communicatorTask;
-        static Timer communicationTimer = new Timer(communicationTimedOut);
+        private static Task communicatorTask;
+        private static Timer communicationTimer = new Timer(CommunicationTimedOut);
         private static string _command;
-        static int _timeoutMillis;
+        private static int _timeoutMillis;
         private static string _tag;
 
         public enum StepperDirection { CW, CCW };
@@ -147,11 +141,17 @@ namespace ASCOM.Wise40
         private static ArduinoStatus _status = ArduinoStatus.Idle;
         public static string _lastCommandSent;
 
+        [Serializable]
         public class ArduinoCommunicationException : Exception
         {
             public ArduinoCommunicationException(string message) : base(message) { }
             public ArduinoCommunicationException() { }
             public ArduinoCommunicationException(string message, Exception inner) : base(message, inner) { }
+
+            protected ArduinoCommunicationException(System.Runtime.Serialization.SerializationInfo serializationInfo, System.Runtime.Serialization.StreamingContext streamingContext)
+            {
+                Exceptor.Throw<System.NotImplementedException>("ArduinoCommunicationException", "Not implemented");
+            }
         }
 
         public bool Connected
@@ -172,13 +172,15 @@ namespace ASCOM.Wise40
                 {
                     try
                     {
-                        _serialPort = new SerialPort(_serialPortName, _serialPortSpeed);
-                        _serialPort.Handshake = Handshake.None;
-                        _serialPort.DtrEnable = true;
-                        _serialPort.RtsEnable = true;
-                        _serialPort.ReadTimeout = 60 * 1000;
-                        _serialPort.ReceivedBytesThreshold = 1;
-                        _serialPort.DataReceived += new SerialDataReceivedEventHandler(DataReceivedHandler);
+                        _serialPort = new SerialPort(_serialPortName, _serialPortSpeed)
+                        {
+                            Handshake = Handshake.None,
+                            DtrEnable = true,
+                            RtsEnable = true,
+                            ReadTimeout = 60 * 1000,
+                            ReceivedBytesThreshold = 1
+                        };
+                        _serialPort.DataReceived += DataReceivedHandler;
 
                         _status = ArduinoStatus.Connecting;
                         _serialPort.Open();
@@ -196,7 +198,7 @@ namespace ASCOM.Wise40
                     }
                     catch (Exception ex)
                     {
-                        throw new InvalidOperationException(ex.StackTrace);
+                        Exceptor.Throw<InvalidOperationException>($"Connected.set({value})", ex.StackTrace);
                     }
                 }
                 else
@@ -232,12 +234,12 @@ namespace ASCOM.Wise40
             }
         }
 
-        private string mkPacket(string payload)
+        private string MakePacket(string payload)
         {
             return payload + cr;
         }
 
-        private string getPacket()
+        private string GetPacket()
         {
             if (!_serialPort.IsOpen)
                 return string.Empty;
@@ -262,7 +264,7 @@ namespace ASCOM.Wise40
         {
         }
 
-        public void init()
+        public void Init()
         {
             if (_initialized)
                 return;
@@ -279,16 +281,15 @@ namespace ASCOM.Wise40
             _initialized = true;
         }
 
-        private static void communicationTimedOut(Object state)
+        private static void CommunicationTimedOut(Object state)
         {
             _status = ArduinoStatus.Idle;
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugFilterWheel, "ArduinoInterface: communicationTimedOut(\"{0}\") ==> Timedout (after {1} millis)",
                 _command, _timeoutMillis);
             #endregion
-            throw new ArduinoCommunicationException(string.Format("Timedout after {0} millis.", _timeoutMillis));
+            Exceptor.Throw<ArduinoCommunicationException>("CommunicationTimedOut", $"After {_timeoutMillis} millis.");
         }
-
 
         private void SendCommand(string command,
             bool waitForReply = true,
@@ -311,11 +312,13 @@ namespace ASCOM.Wise40
             if (timeoutMillis != 0)
             {
                 _timeoutMillis = timeoutMillis;
-                communicationTimer = new Timer(communicationTimedOut);
+                communicationTimer = new Timer(CommunicationTimedOut);
                 communicationTimer.Change(_timeoutMillis, Timeout.Infinite);
             }
             else
+            {
                 _timeoutMillis = 0;
+            }
 
             _command = command;
             _status = interimStatus;
@@ -335,7 +338,7 @@ namespace ASCOM.Wise40
                 communicatorTask = Task.Run(() =>
                 {
                     _lastCommandSent = command;
-                    string packet = mkPacket(command);
+                    string packet = MakePacket(command);
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugFilterWheel, "ArduinoInterface:SendCommand: Sending \"{0}\" ...",
                         packet.TrimEnd(crnls));
@@ -370,7 +373,7 @@ namespace ASCOM.Wise40
             SendCommand(command, waitForReply: true, interimStatus: ArduinoStatus.Moving);
         }
 
-        public bool isActive
+        public bool IsActive
         {
             get
             {
@@ -390,9 +393,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                if (Error != null)
-                    return Error;
-                return _status.ToString();
+                return Error ?? _status.ToString();
             }
         }
 
@@ -416,7 +417,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return (_error == null || _error == String.Empty) ? null : _error;
+                return (string.IsNullOrEmpty(_error)) ? null : _error;
             }
         }
 

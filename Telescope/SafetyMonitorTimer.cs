@@ -97,7 +97,7 @@ namespace ASCOM.Wise40 //.Telescope
 
         public void EnableIfNeeded(ActionWhenNotSafe action)
         {
-            if ((wisetele.DirectionMotorsAreActive || wisetele.TrackingMotor.isOn) && !Enabled)
+            if ((wisetele.DirectionMotorsAreActive || wisetele.TrackingMotor.IsOn) && !Enabled)
             {
                 WhenNotSafe = action;
                 Enabled = true;
@@ -106,7 +106,7 @@ namespace ASCOM.Wise40 //.Telescope
 
         public void DisableIfNotNeeded()
         {
-            if (Enabled && !(wisetele.DirectionMotorsAreActive || wisetele.TrackingMotor.isOn))
+            if (Enabled && !(wisetele.DirectionMotorsAreActive || wisetele.TrackingMotor.IsOn))
             {
                 Enabled = false;
                 WhenNotSafe = ActionWhenNotSafe.None;

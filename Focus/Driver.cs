@@ -382,9 +382,9 @@ namespace ASCOM.Wise40 //.Focuser
         /// <summary>
         /// Write the device configuration to the  ASCOM  Profile store
         /// </summary>
-        internal void WriteProfile()
+        public static void WriteProfile()
         {
-            wisefocuser.WriteProfile();
+            WiseFocuser.WriteProfile();
         }
 
         #endregion

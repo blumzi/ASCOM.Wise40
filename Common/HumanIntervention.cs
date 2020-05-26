@@ -8,9 +8,8 @@ namespace ASCOM.Wise40
 {
     public static class HumanIntervention
     {
-        static DateTime _lastInfoRead = DateTime.MinValue;
-        static HumanInterventionDetails details;
-
+        private static DateTime _lastInfoRead = DateTime.MinValue;
+        private static HumanInterventionDetails details;
 
         static HumanIntervention() { }
 
@@ -48,9 +47,7 @@ namespace ASCOM.Wise40
                     deleted = true;
                 }
                 catch /*(System.IO.IOException ex) */
-                {
-                    ;
-                }
+                {}
             }
         }
 
@@ -63,7 +60,6 @@ namespace ASCOM.Wise40
         {
             get
             {
-
                 if (!IsSet())
                     return null;
 
@@ -74,7 +70,7 @@ namespace ASCOM.Wise40
                         JsonSerializer ser = new JsonSerializer();
                         details = (HumanInterventionDetails)ser.Deserialize(file, typeof(HumanInterventionDetails));
                     }
-                    
+
                     _lastInfoRead = DateTime.Now;
                 }
                 return details;

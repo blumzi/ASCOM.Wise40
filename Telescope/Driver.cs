@@ -20,7 +20,6 @@
 // --------------------------------------------------------------------------------
 //
 
-
 // This is used to define code in the template that is specific to one class implementation
 // unused code canbe deleted and this definition removed.
 #define Telescope
@@ -83,12 +82,7 @@ namespace ASCOM.Wise40 //.Telescope
         /// </summary>
         private AstroUtils astroUtils;
 
-        private Astrometry.NOVAS.NOVAS31 novas31 = new Astrometry.NOVAS.NOVAS31();
-
-        private Common.Debugger debugger = Common.Debugger.Instance;
-
-        private static WiseTele wisetele = WiseTele.Instance;
-        private static WiseSite wisesite = WiseSite.Instance;
+        private static readonly WiseTele wisetele = WiseTele.Instance;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Wise40"/> class.
@@ -102,7 +96,7 @@ namespace ASCOM.Wise40 //.Telescope
             util = new Util(); //Initialise util object
             astroUtils = new AstroUtils(); // Initialise astro utilities object
 
-            wisetele.init();
+            wisetele.Init();
         }
 
         //
@@ -283,7 +277,7 @@ namespace ASCOM.Wise40 //.Telescope
 
         public IAxisRates AxisRates(TelescopeAxes Axis)
         {
-            return wisetele.AxisRates(Axis);
+            return WiseTele.AxisRates(Axis);
         }
 
         public double Azimuth
@@ -304,7 +298,7 @@ namespace ASCOM.Wise40 //.Telescope
 
         public bool CanMoveAxis(TelescopeAxes Axis)
         {
-            return wisetele.CanMoveAxis(Axis);
+            return WiseTele.CanMoveAxis(Axis);
         }
 
         public bool CanPark
@@ -450,19 +444,19 @@ namespace ASCOM.Wise40 //.Telescope
 
         public PierSide DestinationSideOfPier(double RightAscension, double Declination)
         {
-            return wisetele.DestinationSideOfPier(RightAscension, Declination);
+            return WiseTele.DestinationSideOfPier(RightAscension, Declination);
         }
 
         public bool DoesRefraction
         {
             get
             {
-                return wisetele.doesRefraction;
+                return wisetele.DoesRefraction;
             }
 
             set
             {
-                wisetele.doesRefraction = value;
+                wisetele.DoesRefraction = value;
             }
         }
 
@@ -476,7 +470,7 @@ namespace ASCOM.Wise40 //.Telescope
 
         public void FindHome()
         {
-            wisetele.FindHome();
+            WiseTele.FindHome();
         }
 
         public double FocalLength
@@ -545,7 +539,7 @@ namespace ASCOM.Wise40 //.Telescope
         public void Park()
         {
             if (wisetele.ShuttingDown)
-                throw new InvalidOperationException("Wise40 is shutting down");
+                Exceptor.Throw<InvalidOperationException>("Park", "Wise40 is shutting down");
 
             wisetele.Park();
         }
@@ -553,7 +547,7 @@ namespace ASCOM.Wise40 //.Telescope
         public void PulseGuide(GuideDirections Direction, int Duration)
         {
             if (wisetele.ShuttingDown)
-                throw new InvalidOperationException("Wise40 is shutting down");
+                Exceptor.Throw<InvalidOperationException>($"PulseGuide({Direction}, {Duration})", "Wise40 is shutting down");
 
             wisetele.PulseGuide(Direction, Duration);
         }
@@ -581,7 +575,7 @@ namespace ASCOM.Wise40 //.Telescope
 
         public void SetPark()
         {
-            wisetele.SetPark();
+            WiseTele.SetPark();
         }
 
         public PierSide SideOfPier
@@ -658,7 +652,7 @@ namespace ASCOM.Wise40 //.Telescope
         public void SlewToAltAz(double Azimuth, double Altitude)
         {
             if (wisetele.ShuttingDown)
-                throw new InvalidOperationException("Wise40 is shutting down");
+                Exceptor.Throw<InvalidOperationException>($"SlewToAltAz({Azimuth}, {Altitude})", "Wise40 is shutting down");
 
             try
             {
@@ -672,10 +666,12 @@ namespace ASCOM.Wise40 //.Telescope
             _driverInitiatedSlew = false;
         }
 
+#pragma warning disable RCS1047 // Non-asynchronous method name should not end with 'Async'.
         public void SlewToAltAzAsync(double Azimuth, double Altitude)
+#pragma warning restore RCS1047 // Non-asynchronous method name should not end with 'Async'.
         {
             if (wisetele.ShuttingDown)
-                throw new InvalidOperationException("Wise40 is shutting down");
+                Exceptor.Throw<InvalidOperationException>($"SlewToAltAzAsync({Azimuth}, {Altitude})", "Wise40 is shutting down");
 
             try
             {
@@ -693,7 +689,7 @@ namespace ASCOM.Wise40 //.Telescope
         public void SlewToCoordinates(double RightAscension, double Declination)
         {
             if (wisetele.ShuttingDown)
-                throw new InvalidOperationException("Wise40 is shutting down");
+                Exceptor.Throw<InvalidOperationException>($"SlewToCoordinates({RightAscension}, {Declination})", "Wise40 is shutting down");
 
             try
             {
@@ -708,10 +704,12 @@ namespace ASCOM.Wise40 //.Telescope
             _driverInitiatedSlew = false;
         }
 
+#pragma warning disable RCS1047 // Non-asynchronous method name should not end with 'Async'.
         public void SlewToCoordinatesAsync(double RightAscension, double Declination)
+#pragma warning restore RCS1047 // Non-asynchronous method name should not end with 'Async'.
         {
             if (wisetele.ShuttingDown)
-                throw new InvalidOperationException("Wise40 is shutting down");
+                Exceptor.Throw<InvalidOperationException>($"SlewToCoordinatesAsync({RightAscension}, {Declination})", "Wise40 is shutting down");
 
             try
             {
@@ -729,7 +727,7 @@ namespace ASCOM.Wise40 //.Telescope
         public void SlewToTarget()
         {
             if (wisetele.ShuttingDown)
-                throw new InvalidOperationException("Wise40 is shutting down");
+                Exceptor.Throw<InvalidOperationException>("SlewToTarget", "Wise40 is shutting down");
 
             try
             {
@@ -744,10 +742,12 @@ namespace ASCOM.Wise40 //.Telescope
             _driverInitiatedSlew = false;
         }
 
+#pragma warning disable RCS1047 // Non-asynchronous method name should not end with 'Async'.
         public void SlewToTargetAsync()
+#pragma warning restore RCS1047 // Non-asynchronous method name should not end with 'Async'.
         {
             if (wisetele.ShuttingDown)
-                throw new InvalidOperationException("Wise40 is shutting down");
+                Exceptor.Throw<InvalidOperationException>("SlewToTargetAsync", "Wise40 is shutting down");
 
             try
             {
@@ -772,17 +772,17 @@ namespace ASCOM.Wise40 //.Telescope
 
         public void SyncToAltAz(double Azimuth, double Altitude)
         {
-            wisetele.SyncToAltAz(Azimuth, Altitude);
+            WiseTele.SyncToAltAz(Azimuth, Altitude);
         }
 
         public void SyncToCoordinates(double RightAscension, double Declination)
         {
-            wisetele.SyncToCoordinates(RightAscension, Declination);
+            WiseTele.SyncToCoordinates(RightAscension, Declination);
         }
 
         public void SyncToTarget()
         {
-            wisetele.SyncToTarget();
+            WiseTele.SyncToTarget();
         }
 
         public double TargetDeclination
@@ -795,7 +795,7 @@ namespace ASCOM.Wise40 //.Telescope
             set
             {
                 if (wisetele.ShuttingDown)
-                    throw new InvalidOperationException("Wise40 is shutting down");
+                    Exceptor.Throw<InvalidOperationException>("TargetDeclination.set", "Wise40 is shutting down");
 
                 wisetele.TargetDeclination = value;
             }
@@ -811,7 +811,7 @@ namespace ASCOM.Wise40 //.Telescope
             set
             {
                 if (wisetele.ShuttingDown)
-                    throw new InvalidOperationException("Wise40 is shutting down");
+                    Exceptor.Throw<InvalidOperationException>("TargetRightAscension.set", "Wise40 is shutting down");
 
                 wisetele.TargetRightAscension = value;
             }
@@ -827,7 +827,7 @@ namespace ASCOM.Wise40 //.Telescope
             set
             {
                 if (wisetele.ShuttingDown)
-                    throw new InvalidOperationException("Wise40 is shutting down");
+                    Exceptor.Throw<InvalidOperationException>("Tracking.set", "Wise40 is shutting down");
 
                 wisetele.Tracking = value;
             }
@@ -870,7 +870,7 @@ namespace ASCOM.Wise40 //.Telescope
         public void Unpark()
         {
             if (wisetele.ShuttingDown)
-                throw new InvalidOperationException("Wise40 is shutting down");
+                Exceptor.Throw<InvalidOperationException>("Unpark", "Wise40 is shutting down");
 
             wisetele.Unpark();
         }
@@ -956,25 +956,13 @@ namespace ASCOM.Wise40 //.Telescope
         #endregion
 
         /// <summary>
-        /// Use this function to throw an exception if we aren't connected to the hardware
-        /// </summary>
-        /// <param name="message"></param>
-        private void CheckConnected(string message)
-        {
-            if (!_connected)
-            {
-                throw new ASCOM.NotConnectedException(message);
-            }
-        }
-
-        /// <summary>
         /// Read the device configuration from the ASCOM Profile store
         /// </summary>
         internal void ReadProfile()
         {
             using (Profile driverProfile = new Profile() { DeviceType = "Telescope" })
             {
-                WiseSite.astrometricAccuracy = 
+                WiseSite.astrometricAccuracy =
                     driverProfile.GetValue(Const.WiseDriverID.Telescope, Const.ProfileName.Telescope_AstrometricAccuracy, string.Empty, "Full") == "Full" ?
                         Accuracy.Full :
                         Accuracy.Reduced;

@@ -13,22 +13,20 @@ using ASCOM.Utilities;
 
 using Newtonsoft.Json;
 
-
 namespace ASCOM.Wise40.VantagePro
 {
     public class WiseVantagePro: WeatherStation
     {
-        private string _dataFile;
-        private static Version version = new Version("0.2");
-        public static string driverDescription = string.Format("ASCOM Wise40.VantagePro v{0}", version.ToString());
-        private Util util = new Util();
+        private static readonly Version version = new Version("0.2");
+        public static string driverDescription = $"ASCOM Wise40.VantagePro v{version}";
+        private readonly Util util = new Util();
 
         public enum OpMode { File, Serial };
         public OpMode _opMode = WiseVantagePro.OpMode.File;
 
         public string _portName = null;
         public int _portSpeed = 19200;
-        System.IO.Ports.SerialPort _port = new System.IO.Ports.SerialPort();
+        private System.IO.Ports.SerialPort _port = new System.IO.Ports.SerialPort();
 
         public static Common.Debugger debugger = Debugger.Instance;
         private bool _connected = false;
@@ -43,7 +41,7 @@ namespace ASCOM.Wise40.VantagePro
 
         private static readonly Lazy<WiseVantagePro> lazy = new Lazy<WiseVantagePro>(() => new WiseVantagePro()); // Singleton
 
-        private Seeing _seeing = new Seeing();
+        private readonly Seeing _seeing = new Seeing();
 
         public static WiseVantagePro Instance
         {
@@ -52,7 +50,7 @@ namespace ASCOM.Wise40.VantagePro
                 if (lazy.IsValueCreated)
                     return lazy.Value;
 
-                lazy.Value.init();
+                lazy.Value.Init();
                 return lazy.Value;
             }
         }
@@ -72,15 +70,15 @@ namespace ASCOM.Wise40.VantagePro
 
         public void RefreshFromDatafile()
         {
-            if (_dataFile == null || _dataFile == string.Empty)
+            if (string.IsNullOrEmpty(DataFile))
             {
                 if (_connected)
-                    throw new InvalidValueException("Null or empty dataFile name");
+                    Exceptor.Throw<InvalidValueException>("RefreshFromDatafile", "Null or empty dataFile name");
                 else
                     return;
             }
 
-            if (_lastDataRead == DateTime.MinValue || File.GetLastWriteTime(_dataFile).CompareTo(_lastDataRead) > 0)
+            if (_lastDataRead == DateTime.MinValue || File.GetLastWriteTime(DataFile).CompareTo(_lastDataRead) > 0)
             {
                 if (sensorData == null)
                     sensorData = new Dictionary<string, string>();
@@ -89,13 +87,13 @@ namespace ASCOM.Wise40.VantagePro
                 {
                     try
                     {
-                        using (StreamReader sr = new StreamReader(_dataFile))
+                        using (StreamReader sr = new StreamReader(DataFile))
                         {
                             string[] words;
                             string line;
 
                             if (sr == null)
-                                throw new InvalidValueException(string.Format("Refresh: cannot open \"{0}\" for read.", _dataFile));
+                                Exceptor.Throw<InvalidValueException>("RefreshFromDatafile", $"Cannot open \"{DataFile}\" for read.");
 
                             while ((line = sr.ReadLine()) != null)
                             {
@@ -106,9 +104,7 @@ namespace ASCOM.Wise40.VantagePro
                             }
                             utcTime = Convert.ToDateTime(sensorData["utcDate"] + " " + sensorData["utcTime"] + "m");
 
-                            if (_weatherLogger != null)
-                            {
-                                _weatherLogger.Log(new Dictionary<string, string>()
+                            _weatherLogger?.Log(new Dictionary<string, string>()
                                 {
                                     ["Temperature"] = sensorData["outsideTemp"],
                                     ["Pressure"] = sensorData["barometer"],
@@ -118,9 +114,7 @@ namespace ASCOM.Wise40.VantagePro
                                     ["RainRate"] = sensorData["rainRate"],
                                     ["DewPoint"] = util.ConvertUnits(Convert.ToDouble(sensorData["outsideDewPt"]),
                                                         Units.degreesFarenheit, Units.degreesCelsius).ToString(),
-
                                 }, utcTime.ToLocalTime());
-                            }
 
                             _lastDataRead = DateTime.Now;
                         }
@@ -187,7 +181,7 @@ namespace ASCOM.Wise40.VantagePro
         /// <param name="bytes">The stream of bytes in the reply block</param>
         /// <param name="o">The starting offset</param>
         /// <returns></returns>
-        public ushort getTwoBytes(byte[] bytes, int o)
+        public static ushort GetTwoBytes(byte[] bytes, int o)
         {
             return (ushort) ((bytes[o + 1] << 8) | bytes[o]);
         }
@@ -225,19 +219,19 @@ namespace ASCOM.Wise40.VantagePro
 
             ASCOM.Utilities.Util util = new Util();
 
-            double F = getTwoBytes(buf, 12) / 10.0;
+            double F = GetTwoBytes(buf, 12) / 10.0;
             sensorData["outsideTemp"] = util.ConvertUnits(F, Units.degreesFarenheit, Units.degreesCelsius).ToString();
             sensorData["windSpeed"] = util.ConvertUnits(buf[14], Units.milesPerHour, Units.metresPerSecond).ToString();
-            sensorData["windDir"] = getTwoBytes(buf, 16).ToString();
+            sensorData["windDir"] = GetTwoBytes(buf, 16).ToString();
             sensorData["outsideHumidity"] = buf[33].ToString();
-            sensorData["barometer"] = getTwoBytes(buf, 7).ToString();
-            F = getTwoBytes(buf, 30);
+            sensorData["barometer"] = GetTwoBytes(buf, 7).ToString();
+            F = GetTwoBytes(buf, 30);
             sensorData["outsideDewPt"] = util.ConvertUnits(F, Units.degreesFarenheit, Units.degreesCelsius).ToString();
-            sensorData["rainRate"] = getTwoBytes(buf, 41).ToString();
+            sensorData["rainRate"] = GetTwoBytes(buf, 41).ToString();
             sensorData["ForecastStr"] = "No forecast";
         }
 
-        public void init()
+        public void Init()
         {
             if (_initialized)
                 return;
@@ -246,7 +240,6 @@ namespace ASCOM.Wise40.VantagePro
             sensorData = new Dictionary<string, string>();
             ReadProfile();
             _weatherLogger = new WeatherLogger(WiseName);
-            Seeing.init();
             Refresh();
 
             _initialized = true;
@@ -266,13 +259,16 @@ namespace ASCOM.Wise40.VantagePro
 
                 if (Simulated || _opMode == OpMode.Serial)
                 {
-                    if (value == true)
+                    if (value)
                         TryOpenPort();
                     else
                         _port.Close();
                     _connected = _port.IsOpen;
-                } else
+                }
+                else
+                {
                     _connected = value;
+                }
 
                 ActivityMonitor.Instance.Event(new Event.DriverConnectEvent(Const.WiseDriverID.VantagePro, value, line: ActivityMonitor.Tracer.safety.Line));
             }
@@ -286,7 +282,7 @@ namespace ASCOM.Wise40.VantagePro
             }
         }
 
-        private static ArrayList supportedActions = new ArrayList() {
+        private static readonly ArrayList supportedActions = new ArrayList() {
             "raw-data",
             "OCHTag",
             "forecast",
@@ -302,7 +298,7 @@ namespace ASCOM.Wise40.VantagePro
 
         public string Action(string action, string parameter)
         {
-            string ret = "";
+            string ret;
 
             switch (action)
             {
@@ -318,7 +314,8 @@ namespace ASCOM.Wise40.VantagePro
                     return Forecast;
 
                 default:
-                    throw new ASCOM.ActionNotImplementedException("Action " + action + " is not implemented by this driver");
+                    Exceptor.Throw<ActionNotImplementedException>("Action", $"Action \"{action}\" is not implemented by this driver");
+                    return string.Empty;
             }
             return ret;
         }
@@ -386,14 +383,12 @@ namespace ASCOM.Wise40.VantagePro
             string defaultReportFile = Simulated ?
                     "c:/temp/Weather_Wise40_Vantage_Pro.htm" :
                     "c:/Wise40/Weather/Davis VantagePro/Weather_Wise40_Vantage_Pro.htm";
-                ;
+
             using (Profile driverProfile = new Profile() { DeviceType = "ObservingConditions" })
             {
-                OpMode mode;
-
-                Enum.TryParse<OpMode>(driverProfile.GetValue(Const.WiseDriverID.VantagePro, Const.ProfileName.VantagePro_OpMode, string.Empty, OpMode.File.ToString()), out mode);
+                Enum.TryParse<OpMode>(driverProfile.GetValue(Const.WiseDriverID.VantagePro, Const.ProfileName.VantagePro_OpMode, string.Empty, nameof(OpMode.File)), out OpMode mode);
                 _opMode = mode;
-                _dataFile = driverProfile.GetValue(Const.WiseDriverID.VantagePro, Const.ProfileName.VantagePro_DataFile, string.Empty, defaultReportFile);
+                DataFile = driverProfile.GetValue(Const.WiseDriverID.VantagePro, Const.ProfileName.VantagePro_DataFile, string.Empty, defaultReportFile);
                 _portName = driverProfile.GetValue(Const.WiseDriverID.VantagePro, Const.ProfileName.VantagePro_SerialPort, string.Empty, "");
             }
         }
@@ -406,23 +401,12 @@ namespace ASCOM.Wise40.VantagePro
             using (Profile driverProfile = new Profile() { DeviceType = "ObservingConditions" })
             {
                 driverProfile.WriteValue(Const.WiseDriverID.VantagePro, Const.ProfileName.VantagePro_OpMode, _opMode.ToString());
-                driverProfile.WriteValue(Const.WiseDriverID.VantagePro, Const.ProfileName.VantagePro_DataFile, _dataFile);
+                driverProfile.WriteValue(Const.WiseDriverID.VantagePro, Const.ProfileName.VantagePro_DataFile, DataFile);
                 driverProfile.WriteValue(Const.WiseDriverID.VantagePro, Const.ProfileName.VantagePro_SerialPort, _portName);
             }
         }
 
-        public string DataFile
-        {
-            get
-            {
-                return _dataFile;
-            }
-
-            set
-            {
-                _dataFile = value;
-            }
-        }
+        public string DataFile { get; set; }
 
         #region IObservingConditions Implementation
 
@@ -445,7 +429,7 @@ namespace ASCOM.Wise40.VantagePro
             set
             {
                 if (value != 0)
-                    throw new InvalidValueException("Only 0.0 accepted");
+                    Exceptor.Throw<InvalidValueException>("AveragePeriod", "Only 0.0 accepted");
             }
         }
 
@@ -457,7 +441,8 @@ namespace ASCOM.Wise40.VantagePro
         {
             get
             {
-                throw new PropertyNotImplementedException("CloudCover", false);
+                Exceptor.Throw<PropertyNotImplementedException>("CloudCover", "Not implemented");
+                return Double.NaN;
             }
         }
 
@@ -486,7 +471,7 @@ namespace ASCOM.Wise40.VantagePro
         /// Atmospheric relative humidity at the observatory in percent
         /// </summary>
         /// <remarks>
-        /// Normally optional but mandatory if <see cref="ASCOM.DeviceInterface.IObservingConditions.DewPoint"/> 
+        /// Normally optional but mandatory if <see cref="ASCOM.DeviceInterface.IObservingConditions.DewPoint"/>
         /// Is provided
         /// </remarks>
         public double Humidity
@@ -540,12 +525,11 @@ namespace ASCOM.Wise40.VantagePro
                 var rainRate = Convert.ToDouble(sensorData["rainRate"]);
 
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, string.Format("VantagePro: RainRate - get => {0}", rainRate.ToString()));
+                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, $"VantagePro: RainRate - get => {rainRate}");
                 #endregion
                 return rainRate;
             }
         }
-        
 
         /// <summary>
         /// Provides a description of the sensor providing the requested property
@@ -553,10 +537,10 @@ namespace ASCOM.Wise40.VantagePro
         /// <param name="PropertyName">Name of the property whose sensor description is required</param>
         /// <returns>The sensor description string</returns>
         /// <remarks>
-        /// PropertyName must be one of the sensor properties, 
+        /// PropertyName must be one of the sensor properties,
         /// properties that are not implemented must throw the MethodNotImplementedException
         /// </remarks>
-        public string SensorDescription(string PropertyName)
+        public static string SensorDescription(string PropertyName)
         {
             switch (PropertyName)
             {
@@ -578,9 +562,11 @@ namespace ASCOM.Wise40.VantagePro
                 case "SkyTemperature":
                 case "WindGust":
                 case "CloudCover":
-                    throw new MethodNotImplementedException("SensorDescription(" + PropertyName + ")");
+                    Exceptor.Throw<MethodNotImplementedException>($"SensorDescription({PropertyName})", "Not implemented");
+                    return string.Empty;
                 default:
-                    throw new ASCOM.InvalidValueException("SensorDescription(" + PropertyName + ")");
+                    Exceptor.Throw<InvalidValueException>($"SensorDescription({PropertyName})", "Not implemented");
+                    return string.Empty;
             }
         }
 
@@ -591,7 +577,8 @@ namespace ASCOM.Wise40.VantagePro
         {
             get
             {
-                throw new PropertyNotImplementedException("SkyBrightness", false);
+                Exceptor.Throw<PropertyNotImplementedException>("SkyBrightness", "Not implemented");
+                return double.NaN;
             }
         }
 
@@ -602,7 +589,8 @@ namespace ASCOM.Wise40.VantagePro
         {
             get
             {
-                throw new PropertyNotImplementedException("SkyQuality", false);
+                Exceptor.Throw<PropertyNotImplementedException>("SkyQuality", "Not implemented");
+                return double.NaN;
             }
         }
 
@@ -614,7 +602,10 @@ namespace ASCOM.Wise40.VantagePro
             get
             {
                 if (_seeing == null)
-                    throw new PropertyNotImplementedException("StarFWHM", false);
+                {
+                    Exceptor.Throw<PropertyNotImplementedException>("StarFWHM", "Not implemented");
+                    return double.NaN;
+                }
                 return _seeing.FWHM;
             }
         }
@@ -626,7 +617,8 @@ namespace ASCOM.Wise40.VantagePro
         {
             get
             {
-                throw new PropertyNotImplementedException("SkyTemperature", false);
+                Exceptor.Throw<PropertyNotImplementedException>("SkyTemperature", "Not implemented");
+                return double.NaN;
             }
         }
 
@@ -666,7 +658,8 @@ namespace ASCOM.Wise40.VantagePro
                 case "SkyTemperature":
                 case "WindGust":
                 case "CloudCover":
-                    throw new MethodNotImplementedException("SensorDescription(" + PropertyName + ")");
+                    Exceptor.Throw<MethodNotImplementedException>($"TimeSinceLastUpdate({PropertyName})", "Not implemented");
+                    return double.NaN;
             }
             Refresh();
 
@@ -709,16 +702,17 @@ namespace ASCOM.Wise40.VantagePro
         {
             get
             {
-                throw new PropertyNotImplementedException("WindGust", false);
+                Exceptor.Throw<PropertyNotImplementedException>("WindGust", "Not implemented");
+                return double.NaN;
             }
         }
 
-        public double MPS(double kmh)
+        public static double MPS(double kmh)
         {
             return kmh * (1000.0 / 3600.0);
         }
 
-        public double KMH(double mps)
+        public static double KMH(double mps)
         {
             return mps * 3.6;
         }

@@ -13,26 +13,27 @@ using ASCOM.Wise40SafeToOperate;
 using ASCOM.Wise40.Hardware;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using System.Runtime.InteropServices.WindowsRuntime;
 
 namespace ASCOM.Wise40
 {
     public class WiseDome : WiseObject, IConnectable, IDisposable {
 
-        private Version version = new Version(0, 2);
+        private static readonly Version version = new Version(0, 2);
 
-        private static WiseSafeToOperate wiseSafeToOperate = WiseSafeToOperate.Instance;
+        private static readonly WiseSafeToOperate wiseSafeToOperate = WiseSafeToOperate.Instance;
         private static bool _initialized = false;
 
         private WisePin leftPin, rightPin, ventPin, projectorPin;
-        private static WiseDomeEncoder domeEncoder = WiseDomeEncoder.Instance;
+        private static readonly WiseDomeEncoder domeEncoder = WiseDomeEncoder.Instance;
         private List<IConnectable> connectables;
         private List<IDisposable> disposables;
         private bool _connected = false;
         private Angle _minimalMove = Angle.FromDegrees(2.0, Angle.AngleType.Az);
         private bool _isStuck;
 
-        private static Object _caliWriteLock = new object();
-        private WisePin[] caliPins = new WisePin[3];
+        private static readonly Object _caliWriteLock = new object();
+        private readonly WisePin[] caliPins = new WisePin[3];
         private bool Calibrating { get; set; } = false;
         public bool _autoCalibrate = false;
 
@@ -70,12 +71,11 @@ namespace ASCOM.Wise40
                 simulatedEncoderValue = _simEnc;
             }
         };
-        private List<CalibrationPoint> calibrationPoints = new List<CalibrationPoint>();
+        private readonly List<CalibrationPoint> calibrationPoints = new List<CalibrationPoint>();
         public const int TicksPerDomeRevolution = 1018;
 
         public const double DegreesPerTick = 360.0 / TicksPerDomeRevolution;
         public const double ticksPerDegree = TicksPerDomeRevolution / 360;
-        private const int simulatedEncoderTicksPerSecond = 6;   // As per Yftach's measurement
 
         public const double _parkAzimuth = 90.0;
         private readonly Angle _simulatedStuckAz = new Angle(333.0);      // If targeted to this Az, we simulate dome-stuck (must be a valid az)
@@ -111,12 +111,12 @@ namespace ASCOM.Wise40
                 if (lazy.IsValueCreated)
                     return lazy.Value;
 
-                lazy.Value.init();
+                lazy.Value.Init();
                 return lazy.Value;
             }
         }
 
-        public void init()
+        public void Init()
         {
             if (_initialized)
                 return;
@@ -167,12 +167,12 @@ namespace ASCOM.Wise40
             Calibrating = false;
             _state = DomeState.Idle;
 
-            _domeTimer = new System.Threading.Timer(new TimerCallback(onDomeTimer));
+            _domeTimer = new System.Threading.Timer(new TimerCallback(OnDomeTimer));
             _domeTimer.Change(_domeTimeout, _domeTimeout);
 
-            _movementTimer = new System.Threading.Timer(new TimerCallback(onMovementTimer));
+            _movementTimer = new System.Threading.Timer(new TimerCallback(OnMovementTimer));
 
-            _stuckTimer = new System.Threading.Timer(new TimerCallback(onStuckTimer));
+            _stuckTimer = new System.Threading.Timer(new TimerCallback(OnStuckTimer));
 
             _initialized = true;
 
@@ -235,7 +235,7 @@ namespace ASCOM.Wise40
 
             set
             {
-                if (value == true)
+                if (value)
                 {
                     RestoreCalibrationData();
 
@@ -265,7 +265,7 @@ namespace ASCOM.Wise40
         /// </summary>
         /// <param name="az"></param>
         /// <returns></returns>
-        private Angle inertiaAngle(Angle az)
+        private Angle InertiaAngle(Angle az)
         {
             return new Angle(2 * (360.0 / TicksPerDomeRevolution));
         }
@@ -275,7 +275,7 @@ namespace ASCOM.Wise40
         /// </summary>
         /// <param name="there"></param>
         /// <returns></returns>
-        private bool arriving(Angle there)
+        private bool Arriving(Angle there)
         {
             if (!DomeIsMoving)
                 return false;
@@ -283,7 +283,7 @@ namespace ASCOM.Wise40
             string message = string.Format("WiseDome:arriving: at {0} target {1}: ", Azimuth, there);
 
             ShortestDistanceResult shortest = Azimuth.ShortestDistance(there);
-            Angle inertial = inertiaAngle(there);
+            Angle inertial = InertiaAngle(there);
 
             if (StateIsOn(DomeState.MovingCW) && (shortest.direction == Const.AxisDirection.Decreasing))
             {
@@ -320,7 +320,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                var ret = StateIsOn(DomeState.MovingCCW) | StateIsOn(DomeState.MovingCW);
+                var ret = StateIsOn(DomeState.MovingCCW) || StateIsOn(DomeState.MovingCW);
 
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugDome, $"DomeIsMoving: {ret}");
@@ -333,7 +333,7 @@ namespace ASCOM.Wise40
         /// The dome timer is always enabled, at 100 millisec intervals.
         /// </summary>
         /// <param name="state"></param>
-        private void onDomeTimer(object state)
+        private void OnDomeTimer(object state)
         {
             CalibrationPoint cp;
 
@@ -353,7 +353,7 @@ namespace ASCOM.Wise40
                 }
             }
 
-            if (_targetAz != null && arriving(_targetAz) && !StateIsOn(DomeState.Stopping))
+            if (_targetAz != null && Arriving(_targetAz) && !StateIsOn(DomeState.Stopping))
             {
                 SetDomeState(DomeState.Stopping);   // prevent onTimer from re-stopping
                 Stop("Reached target");
@@ -380,13 +380,14 @@ namespace ASCOM.Wise40
         }
 
         /// <summary>
-        /// The movement timer is activated when the dome starts moving either CW or CCW, and 
+        /// <para>
+        /// The movement timer is activated when the dome starts moving either CW or CCW, and
         ///   gets disabled by Stop().
-        ///   
-        /// The handler decides whether the dome encoder has changed, or the dome seems to be stuck.
+        /// </para>
+        /// <para>The handler decides whether the dome encoder has changed, or the dome seems to be stuck.</para>
         /// </summary>
         /// <param name="state"></param>
-        private void onMovementTimer(object state)
+        private void OnMovementTimer(object state)
         {
             uint currTicks, deltaTicks;
             const int leastExpectedTicks = 2;  // least number of Ticks expected to change in two seconds
@@ -397,11 +398,11 @@ namespace ASCOM.Wise40
             if (_isStuck || !DomeIsMoving)
                 return;
 
-            deltaTicks = 0;
             currTicks = domeEncoder.Value;
-
             if (currTicks == _prevTicks)
+            {
                 _isStuck = true;
+            }
             else
             {
                 if (StateIsOn(DomeState.MovingCW))
@@ -436,8 +437,7 @@ namespace ASCOM.Wise40
             _prevTicks = currTicks;
         }
 
-
-        private void onStuckTimer(object state)
+        private void OnStuckTimer(object state)
         {
             DateTime rightNow;
             WisePin backwardPin, forwardPin;
@@ -493,7 +493,6 @@ namespace ASCOM.Wise40
                     break;
             }
         }
-
 
         public void StartMovingCW()
         {
@@ -578,15 +577,17 @@ namespace ASCOM.Wise40
             #endregion
 
             if (_adjustingForTracking)
+            {
                 _adjustingForTracking = false;
+            }
             else
             {
                 activityMonitor.EndActivity(ActivityMonitor.ActivityType.DomeSlew, new Activity.DomeSlew.EndParams()
-                    {
-                        endState = Activity.State.Succeeded,
-                        endReason = reason,
-                        endAz = Azimuth.Degrees,
-                    });
+                {
+                    endState = Activity.State.Succeeded,
+                    endReason = reason,
+                    endAz = Azimuth.Degrees,
+                });
             }
 
             Stopping = false;
@@ -694,12 +695,10 @@ namespace ASCOM.Wise40
                 //  an Azimuth reading
                 //
                 if (ShutterIsMoving)
-                {
-                    throw new ASCOM.InvalidOperationException("Cannot move, shutter is active!");
-                }
+                    Exceptor.Throw<InvalidOperationException>("StartFindingHome", "Cannot move, shutter is active!");
 
                 if (!wiseSafeToOperate.IsSafeWithoutCheckingForShutdown())
-                        throw new ASCOM.InvalidOperationException(wiseSafeToOperate.Action("unsafereasons", ""));
+                    Exceptor.Throw<InvalidOperationException>("StartFindingHome", wiseSafeToOperate.Action("unsafereasons", ""));
             }
 
             AtPark = false;
@@ -722,8 +721,12 @@ namespace ASCOM.Wise40
 
                 ShortestDistanceResult closest = new ShortestDistanceResult(new Angle(360.0, Angle.AngleType.Az), Const.AxisDirection.None);
                 foreach (var res in distanceToCaliPoints)
+                {
                     if (res.angle < closest.angle)
+                    {
                         closest = res;
+                    }
+                }
 
                 switch (closest.direction)
                 {
@@ -770,34 +773,37 @@ namespace ASCOM.Wise40
 
         public void SlewToAzimuth(double degrees, string reason)
         {
+            string op = $"SlewToAzimuth({degrees}, {reason})";
+
             if (Slaved)
-                throw new InvalidOperationException("Cannot SlewToAzimuth, dome is Slaved");
+                Exceptor.Throw<InvalidOperationException>(op, "Dome is Slaved");
 
             if (degrees < 0 || degrees >= 360)
-                throw new InvalidValueException($"Invalid azimuth: {degrees}, must be >= 0 and < 360");
+                Exceptor.Throw<InvalidOperationException>(op, $"Invalid azimuth: {degrees}, must be >= 0 and < 360");
 
             if (ShutterIsMoving)
-                throw new ASCOM.InvalidOperationException("Cannot move, shutter is active!");
+                Exceptor.Throw<InvalidOperationException>(op, "Cannot move, shutter is active!");
 
             if ((!StateIsOn(DomeState.Parking)) && !wiseSafeToOperate.IsSafeWithoutCheckingForShutdown())
-                throw new ASCOM.InvalidOperationException("Unsafe: " + wiseSafeToOperate.Action("unsafereasons", ""));
+                Exceptor.Throw<InvalidOperationException>(op, wiseSafeToOperate.Action("unsafereasons", ""));
 
             Angle toAng = new Angle(degrees, Angle.AngleType.Az);
+            op = $"SlewToAzimuth({toAng.ToNiceString()})";
 
             if (!Calibrated)
             {
                 if (_autoCalibrate)
                 {
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugDome, $"WiseDome: SlewToAzimuth: {toAng}, not calibrated, _autoCalibrate == true, calling FindHomePoint");
+                    debugger.WriteLine(Debugger.DebugLevel.DebugDome, $"WiseDome: {op}, not calibrated, _autoCalibrate == true, calling FindHomePoint");
                     #endregion
                     StartFindingHome();
                 } else
                 {
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugDome, $"WiseDome: SlewToAzimuth({toAng.ToNiceString()}), not calibrated, _autoCalibrate == false, throwing InvalidOperationException");
+                    debugger.WriteLine(Debugger.DebugLevel.DebugDome, $"WiseDome: {op}, not calibrated, _autoCalibrate == false, throwing InvalidOperationException");
                     #endregion
-                    throw new ASCOM.InvalidOperationException("Not calibrated!");
+                    Exceptor.Throw<InvalidOperationException>(op, "Not calibrated!");
                 }
             }
 
@@ -840,7 +846,7 @@ namespace ASCOM.Wise40
                     break;
             }
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugDome, $"WiseDome: SlewToAzimuth({toAng}) => at: {Azimuth}, dist: {shortest.angle}), moving {shortest.direction}");
+            debugger.WriteLine(Debugger.DebugLevel.DebugDome, $"WiseDome: {op} => at: {Azimuth}, dist: {shortest.angle}), moving {shortest.direction}");
             #endregion
 
             if (Simulated && _targetAz == _simulatedStuckAz)
@@ -906,15 +912,15 @@ namespace ASCOM.Wise40
         {
             get
             {
-                string ret = string.Empty;
-
                 if (!DomeIsMoving)
-                    return ret;
+                    return string.Empty;
+
+                string ret = "Moving ";
 
                 if (StateIsOn(DomeState.MovingCW))
-                    ret = "Moving CW";
+                    ret += "CW";
                 else if (StateIsOn(DomeState.MovingCCW))
-                    ret = "Moving CCW";
+                    ret += "CCW";
 
                 if (_targetAz != null)
                     ret += $" to {_targetAz.ToNiceString()}";
@@ -942,7 +948,7 @@ namespace ASCOM.Wise40
             get
             {
                 if (Slaved)
-                    throw new InvalidOperationException("Cannot get Slewing while dome is Slaved");
+                    Exceptor.Throw<InvalidOperationException>("Slewing", "Dome is Slaved");
 
                 return DomeIsMoving || ShutterIsMoving;
             }
@@ -952,32 +958,32 @@ namespace ASCOM.Wise40
 
         public void Park()
         {
+            const string op = "Park";
+
             if (Slaved)
-                throw new InvalidOperationException("Cannot Park, dome is Slaved");
+                Exceptor.Throw<InvalidOperationException>(op, "Dome is Slaved");
 
             if (ShutterIsMoving)
-            {
-                throw new ASCOM.InvalidOperationException("Cannot Park, shutter is active!");
-            }
+                Exceptor.Throw<InvalidOperationException>(op, "Shutter is active!");
 
             if (!Calibrated && !_autoCalibrate)
-            {
-                throw new ASCOM.InvalidOperationException("Cannot Park, not calibrated!");
-            }
+                Exceptor.Throw<InvalidOperationException>(op, "Not calibrated!");
 
             SetDomeState(DomeState.Parking);
 
             AtPark = false;
-            SlewToAzimuth(_parkAzimuth, "Park");
+            SlewToAzimuth(_parkAzimuth, op);
         }
 
         public void OpenShutter(bool bypassSafety = false)
         {
+            const string op = "OpenShutter";
+
             if (DirectionMotorsAreActive)
-                throw new InvalidOperationException("Cannot open shutter while dome is slewing!");
+                Exceptor.Throw<InvalidOperationException>(op, "Dome is slewing!");
 
             if (!bypassSafety && !wiseSafeToOperate.IsSafeWithoutCheckingForShutdown())
-                throw new InvalidOperationException(wiseSafeToOperate.CommandString("unsafeReasons", false));
+                Exceptor.Throw<InvalidOperationException>(op, wiseSafeToOperate.CommandString("unsafeReasons", false));
 
             int percentOpen = wisedomeshutter.PercentOpen;
             if (percentOpen != -1 && percentOpen > 98)
@@ -985,10 +991,10 @@ namespace ASCOM.Wise40
 
             if (wisedomeshutter.State == ShutterState.shutterOpening)
             {
-                debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "OpenShutter: Shutter already opening");
+                debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "Already opening");
                 return;
             }
-            
+
             wisedomeshutter.Stop("OpenShutter: Stopped before StartOpening");
             wisedomeshutter.StartOpening();
             if (wisedomeshutter.syncVentWithShutter)
@@ -998,7 +1004,7 @@ namespace ASCOM.Wise40
         public void CloseShutter()
         {
             if (DirectionMotorsAreActive)
-                throw new InvalidOperationException("Cannot close shutter while dome is slewing!");
+                Exceptor.Throw<InvalidOperationException>("CloseShutter", "Cannot close shutter while dome is slewing!");
 
             int percentOpen = wisedomeshutter.PercentOpen;
             if (percentOpen != -1 && percentOpen < 1)
@@ -1025,7 +1031,8 @@ namespace ASCOM.Wise40
         {
             get
             {
-                throw new ASCOM.PropertyNotImplementedException("Altitude", false);
+                Exceptor.Throw<PropertyNotImplementedException>("Altitude", "Not Implemented");
+                return Double.NaN;
             }
         }
 
@@ -1106,18 +1113,18 @@ namespace ASCOM.Wise40
             Angle ang = new Angle(degrees, Angle.AngleType.Az);
 
             if (degrees < 0.0 || degrees >= 360.0)
-                throw new InvalidValueException($"Cannot SyncToAzimuth({ang}), must be >= 0 and < 360");
+                Exceptor.Throw <InvalidValueException>($"SyncToAzimuth({ang})", "Angle must be >= 0 and < 360");
             Azimuth = ang;
         }
 
-        public void SlewToAltitude(double Altitude)
+        public static void SlewToAltitude(double Altitude)
         {
-            throw new ASCOM.MethodNotImplementedException("SlewToAltitude");
+            Exceptor.Throw<MethodNotImplementedException>($"SlewToAltitude({Altitude})", "Not implemented");
         }
 
-        public void SetPark()
+        public static void SetPark()
         {
-            throw new ASCOM.MethodNotImplementedException("SetPark");
+            Exceptor.Throw<MethodNotImplementedException>("SetPark", "Not implemented");
         }
 
         public ShutterState ShutterState
@@ -1148,15 +1155,17 @@ namespace ASCOM.Wise40
 
                     if (percent != -1)
                         ret += $" ({percent}% open)";
-                } else
+                }
+                else
+                {
                     ret += " (error:No WiFi connection!)";
+                }
 
                 return ret;
             }
         }
 
-
-        private static ArrayList supportedActions = new ArrayList() {
+        private readonly static ArrayList supportedActions = new ArrayList() {
             "projector",
             "vent",
             "digest",
@@ -1178,13 +1187,13 @@ namespace ASCOM.Wise40
             switch (actionName)
             {
                 case "projector":
-                    if (param != string.Empty)
+                    if (!string.IsNullOrEmpty(param))
                         Projector = Convert.ToBoolean(param);
 
                     return JsonConvert.SerializeObject(Projector);
 
                 case "vent":
-                    if (param != string.Empty)
+                    if (!string.IsNullOrEmpty(param))
                         Vent = Convert.ToBoolean(param);
 
                     return JsonConvert.SerializeObject(Vent);
@@ -1207,7 +1216,7 @@ namespace ASCOM.Wise40
 
                 case "start-moving":
                     if (!wiseSafeToOperate.IsSafeWithoutCheckingForShutdown() && !activityMonitor.ShuttingDown)
-                        throw new ASCOM.InvalidOperationException(wiseSafeToOperate.Action("unsafereasons", ""));
+                        Exceptor.Throw<InvalidOperationException>("Action(\"start-moving\")", wiseSafeToOperate.Action("unsafereasons", ""));
 
                     switch (param)
                     {
@@ -1247,7 +1256,9 @@ namespace ASCOM.Wise40
                                 SyncVentWithShutter = onOff;
                             }
                             else
+                            {
                                 ret = $"Bad parameter \"{param}\" to \"sync-vent-with-shutter\"";
+                            }
                             break;
                     }
                     return ret;
@@ -1267,7 +1278,9 @@ namespace ASCOM.Wise40
                                 _autoCalibrate = calibrate;
                             }
                             else
+                            {
                                 ret = $"Bad parameter \"{param}\" to \"auto-calibrate\"";
+                            }
                             break;
                     }
                     return ret;
@@ -1278,47 +1291,37 @@ namespace ASCOM.Wise40
                     return ret;
 
                 default:
-                    throw new ASCOM.ActionNotImplementedException(
-                        "Action " + actionName + " is not implemented by this driver");
+                    Exceptor.Throw<ActionNotImplementedException>($"Action(\"{actionName}\")",
+                        "Not implemented by this driver");
+                    return string.Empty;
             }
         }
 
         public void CommandBlind(string command, bool raw)
         {
             CheckConnected("CommandBlind");
-            // Call CommandString and return as soon as it finishes
-            this.CommandString(command, raw);
-            // or
-            throw new ASCOM.MethodNotImplementedException("CommandBlind");
+            Exceptor.Throw<MethodNotImplementedException>($"CommandBlind({command}, {raw})", "Not implemented");
         }
 
         public bool CommandBool(string command, bool raw)
         {
             CheckConnected("CommandBool");
-            string ret = CommandString(command, raw);
-            // TODO decode the return string and return true or false
-            // or
-            throw new ASCOM.MethodNotImplementedException("CommandBool");
+            Exceptor.Throw<MethodNotImplementedException>($"CommandBool({command}, {raw})", "Not implemented");
+            return false;
         }
 
         public string CommandString(string command, bool raw)
         {
             CheckConnected("CommandString");
-            // it's a good idea to put all the low level communication with the device here,
-            // then all communication calls this function
-            // you need something to ensure that only one command is in progress at a time
-
-            throw new ASCOM.MethodNotImplementedException("CommandString");
+            Exceptor.Throw<MethodNotImplementedException>($"CommandString({command}, {raw})", "Not implemented");
+            return string.Empty;
         }
 
         private void CheckConnected(string message)
         {
             if (!Connected)
-            {
-                throw new ASCOM.NotConnectedException(message);
-            }
+                Exceptor.Throw<NotConnectedException>("CheckConnected", message);
         }
-
 
         public string Description
         {
@@ -1370,7 +1373,7 @@ namespace ASCOM.Wise40
             lines.Add($"# Saved: {now.ToLocalTime()}");
             lines.Add($"#");
             lines.Add($"Encoder: {domeEncoder.Value}");
-            lines.Add($"Azimuth: {Azimuth.Degrees.ToString()}");
+            lines.Add($"Azimuth: {Azimuth.Degrees}");
 
             System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(calibrationDataFilePath));
 
@@ -1384,7 +1387,7 @@ namespace ASCOM.Wise40
         {
             uint savedEncoderValue = uint.MaxValue;
             double savedAzimuth = double.NaN;
-            
+
             if (!System.IO.File.Exists(calibrationDataFilePath))
                 return;
 
@@ -1454,12 +1457,14 @@ namespace ASCOM.Wise40
         public bool FarEnoughToMove(Angle targetAz)
         {
             Angle currentAz = Azimuth;
-            bool ret = currentAz.ShortestDistance(targetAz).angle > _minimalMove;
+            Angle distance = currentAz.ShortestDistance(targetAz).angle;
+            bool ret = distance > _minimalMove;
 
             if (!ret)
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugDome,
-                    $"Not far enough: current: {currentAz}, target: {targetAz}, minimal: {_minimalMove}");
+                    $"Not far enough: current: {currentAz.ToNiceString()}, target: {targetAz.ToNiceString()}," +
+                    $" distance: {distance.ToNiceString()} < minimal: {_minimalMove.ToNiceString()}");
                 #endregion
             return ret;
         }
@@ -1513,14 +1518,13 @@ namespace ASCOM.Wise40
 
             set
             {
-                _state = value == true ? ConnectionState.Working : ConnectionState.Dead;
+                _state = value ? ConnectionState.Working : ConnectionState.Dead;
             }
         }
     }
 
     public class ShutterDigest
     {
-
         public ShutterState State;
         public string Reason;
         public string Status;

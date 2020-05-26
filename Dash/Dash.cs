@@ -479,7 +479,7 @@ namespace Dash
             if (telescopeDigest != null)
             {
                 Angle alt = Angle.FromDegrees(telescopeDigest.Altitude);
-                labelAirMass.Text = wisesite.AirMass(alt.Radians).ToString("g4");
+                labelAirMass.Text = WiseSite.AirMass(alt.Radians).ToString("g4");
                 #endregion
 
                 telescopeStatus.Show(telescopeDigest.Status);
@@ -1641,7 +1641,7 @@ namespace Dash
             WiseDome.Instance.WriteProfile();
             WiseTele.WriteProfile();
             if (_saveFocusUpperLimit || _saveFocusLowerLimit)
-                WiseFocuser.Instance.WriteProfile();
+                WiseFocuser.WriteProfile();
             saveToProfileToolStripMenuItem.Text = "Save To Profile";
         }
 

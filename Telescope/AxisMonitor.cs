@@ -113,7 +113,7 @@ namespace ASCOM.Wise40
             if (axis == TelescopeAxes.axisPrimary)
                 motors.Add(wisetele.TrackingMotor);
             foreach (var m in motors)
-                if (m.isOn)
+                if (m.IsOn)
                 {
                     ret += m.WiseName + " (" + WiseTele.RateName(m.currentRate) + ") ";
                 }

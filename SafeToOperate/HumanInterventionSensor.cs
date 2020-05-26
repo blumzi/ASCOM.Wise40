@@ -23,10 +23,10 @@ namespace ASCOM.Wise40SafeToOperate
                 "", "", "", "",
                 instance) { }
 
-        public override void readSensorProfile() { }
-        public override void writeSensorProfile() { }
+        public override void ReadSensorProfile() { }
+        public override void WriteSensorProfile() { }
 
-        public override Reading getReading()
+        public override Reading GetReading()
         {
             Reading r = new Reading
             {
@@ -39,7 +39,9 @@ namespace ASCOM.Wise40SafeToOperate
 
             r.value = r.Safe ? 1 : 0;
             if (r.Safe)
+            {
                 details = null;
+            }
             else
             {
                 details = HumanIntervention.Details;
@@ -53,7 +55,7 @@ namespace ASCOM.Wise40SafeToOperate
             {
                 activityMonitor.Event(new Event.SafetyEvent(
                     sensor: WiseName,
-                    details: r.Safe ? null : details.ToString(),
+                    details: r.Safe ? "Safe" : details.ToString(),
                     before: Event.SafetyEvent.ToSensorSafety(_wasSafe),
                     after: Event.SafetyEvent.ToSensorSafety(r.Safe)));
             }
@@ -79,7 +81,7 @@ namespace ASCOM.Wise40SafeToOperate
             };
         }
 
-        public override string reason()
+        public override string UnsafeReason()
         {
             return (details != null) ?
                 $"{Const.recordSeparator}Operator: {details.Operator}" +

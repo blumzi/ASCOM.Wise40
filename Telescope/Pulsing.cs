@@ -19,12 +19,11 @@ namespace ASCOM.Wise40
     /// </summary>
     public class PulserTask
     {
-
         public TelescopeAxes _axis;
         public int _duration;
         public WiseVirtualMotor _motor;
         public Task task;
-        private Common.Debugger debugger;
+        private readonly Common.Debugger debugger;
 
         public PulserTask()
         {
@@ -61,11 +60,10 @@ namespace ASCOM.Wise40
 
     public class Pulsing
     {
-
         public Common.Debugger debugger;
         private static volatile Pulsing _instance;
-        private static object syncObject = new object();
-        private static ConcurrentDictionary<TelescopeAxes, PulserTask> _active = new ConcurrentDictionary<TelescopeAxes, PulserTask>();
+        private static readonly object syncObject = new object();
+        private static readonly ConcurrentDictionary<TelescopeAxes, PulserTask> _active = new ConcurrentDictionary<TelescopeAxes, PulserTask>();
         private static WiseTele wisetele;
         private static readonly ActivityMonitor activityMonitor = ActivityMonitor.Instance;
 
@@ -79,7 +77,7 @@ namespace ASCOM.Wise40
 
         private static Dictionary<GuideDirections, WiseVirtualMotor> guideDirection2Motor;
 
-        public void init()
+        public void Init()
         {
             debugger = Common.Debugger.Instance;
             wisetele = WiseTele.Instance;
@@ -125,9 +123,7 @@ namespace ASCOM.Wise40
 
         public void Start(GuideDirections direction, int duration)
         {
-            PulserTask pulserTask;
-
-            pulserTask = new PulserTask() {
+            PulserTask pulserTask = new PulserTask() {
                 _axis = guideDirection2Axis[direction],
                 _duration = duration,
                 _motor = guideDirection2Motor[direction],
@@ -223,12 +219,12 @@ namespace ASCOM.Wise40
             return _active.ToCSV();
         }
 
-        public bool Active(TelescopeAxes axis)
+        public static bool Active(TelescopeAxes axis)
         {
             return _active.ContainsKey(axis);
         }
 
-        public bool Active(GuideDirections direction)
+        public static bool Active(GuideDirections direction)
         {
             return _active.ContainsKey(guideDirection2Axis[direction]);
         }

@@ -12,30 +12,31 @@ using ASCOM.DeviceInterface;
 namespace ASCOM.Wise40.Hardware
 {
     /// <summary>
+    /// <para>
     /// A WiseVirtualMotor implements the three moving rates available for each axis at the Wise40 telescope
     ///  by turning on (and off) the relevant hardware pins, as follows:
     ///   - rateSlew:  motorPin + slewPin
     ///   - rateSet:   motorPin
     ///   - rateGuide: guidePin
-    ///   
-    /// When simulated the WiseVirtualMotor will also increase/decrease the value of the relevant (simulated) encoder.
+    /// </para>
+    /// <para>When simulated the WiseVirtualMotor will also increase/decrease the value of the relevant (simulated) encoder.</para>
     /// </summary>
     public class WiseVirtualMotor : WiseObject, IConnectable, IDisposable //, ISimulated
     {
-        private WisePin motorPin, guideMotorPin, slewPin;
-        private List<object> encoders;
-        private System.Threading.Timer simulationTimer;
+        private readonly WisePin motorPin, guideMotorPin, slewPin;
+        private readonly List<object> encoders;
+        private readonly System.Threading.Timer simulationTimer;
         public double currentRate;
-        private int simulationTimerFrequency;
+        private readonly int simulationTimerFrequency;
         private int timer_counts;
         private DateTime prevTick;
-        private TelescopeAxes _axis, _otherAxis;
-        private Const.AxisDirection _direction;   // There are separate WiseMotor instances for North, South, East, West
+        private readonly TelescopeAxes _axis, _otherAxis;
+        private readonly Const.AxisDirection _direction;   // There are separate WiseMotor instances for North, South, East, West
         private bool _connected = false;
-        private Debugger debugger = Debugger.Instance;
-        private WiseTele wisetele = WiseTele.Instance;
-        private WiseSite wisesite = WiseSite.Instance;
-        private List<WisePin> allPins;
+        private readonly Debugger debugger = Debugger.Instance;
+        private readonly WiseTele wisetele = WiseTele.Instance;
+        private readonly WiseSite wisesite = WiseSite.Instance;
+        private readonly List<WisePin> allPins;
 
         public WiseVirtualMotor(
             string name,
@@ -59,15 +60,15 @@ namespace ASCOM.Wise40.Hardware
                 TelescopeAxes.axisSecondary : TelescopeAxes.axisPrimary;
             this._direction = direction;
 
-            if (Simulated && (encoders == null || encoders.Count() == 0))
-                throw new WiseException(WiseName + ": A simulated WiseVirtualMotor must have at least one encoder reference");
+            if (Simulated && (encoders == null || encoders.Count == 0))
+                Exceptor.Throw<WiseException>("WiseVirtualMotor", $"{WiseName}: A simulated WiseVirtualMotor must have at least one encoder reference");
 
             if (Simulated)
             {
                 simulationTimerFrequency = 30; // 15;
-                TimerCallback TimerCallback = new TimerCallback(bumpEncoders);
+                TimerCallback TimerCallback = new TimerCallback(BumpEncoders);
                 simulationTimer = new System.Threading.Timer(TimerCallback, null, Timeout.Infinite, Timeout.Infinite);
-            } 
+            }
         }
 
         public string ActiveMortorPins()
@@ -78,6 +79,7 @@ namespace ASCOM.Wise40.Hardware
             List<string> active = new List<string>();
 
             foreach (WiseVirtualMotor m in wisetele.allMotors)
+            {
                 foreach (WisePin pin in m.allPins)
                 {
                     if (pin == null)
@@ -88,6 +90,7 @@ namespace ASCOM.Wise40.Hardware
                     if (pin.isOn && !active.Contains(shortName))
                         active.Add(shortName);
                 }
+            }
 
             return String.Join(", ", active);
         }
@@ -97,20 +100,22 @@ namespace ASCOM.Wise40.Hardware
             rate = Math.Abs(rate);
             string activeBefore = ActiveMortorPins();
 
-            if (motorPin != null && motorPin.isOn)
+            if (motorPin?.isOn == true)
                 motorPin.SetOff();
-            if (guideMotorPin != null && guideMotorPin.isOn)
+            if (guideMotorPin?.isOn == true)
                 guideMotorPin.SetOff();
-            if (slewPin != null && slewPin.isOn)
+            if (slewPin?.isOn == true)
             {
-
                 bool inUseByOtherAxis = false;
                 foreach (WiseVirtualMotor m in wisetele.axisMotors[_otherAxis])
+                {
                     if (m.currentRate == Const.rateSlew)
                     {
                         inUseByOtherAxis = true;
                         break;
                     }
+                }
+
                 if (!inUseByOtherAxis)
                     slewPin.SetOff();
             }
@@ -154,20 +159,21 @@ namespace ASCOM.Wise40.Hardware
             if (guideMotorPin != null && guideMotorPin.isOn)
                 guideMotorPin.SetOff();
 
-            if (motorPin != null && motorPin.isOn)
+            if (motorPin?.isOn == true)
                 motorPin.SetOff();
 
             currentRate = Const.rateStopped;
-            if (slewPin != null && slewPin.isOn)
+            if (slewPin?.isOn == true)
             {
-
                 bool inUseByOtherAxis = false;
                 foreach (WiseVirtualMotor m in wisetele.axisMotors[_otherAxis])
+                {
                     if (m.currentRate == Const.rateSlew)
                     {
                         inUseByOtherAxis = true;
                         break;
                     }
+                }
                 if (!inUseByOtherAxis)
                     slewPin.SetOff();
             }
@@ -176,41 +182,42 @@ namespace ASCOM.Wise40.Hardware
                 WiseName, activeBefore, ActiveMortorPins());
         }
 
-        public bool isOn
+        public bool IsOn
         {
             get
             {
-                if (motorPin != null && motorPin.isOn)
+                if (motorPin?.isOn == true)
                     return true;
-                if (guideMotorPin != null && guideMotorPin.isOn)
+                if (guideMotorPin?.isOn == true)
                     return true;
                 return false;
             }
         }
 
-        public bool isOff
+        public bool IsOff
         {
             get
             {
-                return !isOn;
+                return !IsOn;
             }
         }
 
         /// <summary>
+        /// <para>
         /// This is used only by simulated motors.
         /// It is called at a timer interval (simulationTimerFrequency) and increases/decreases
         ///  the attached encoder(s) according to the motor's currentRate.
-        ///  
-        /// The TrackMotor is a special case.
+        /// </para>
+        /// <para>The TrackMotor is a special case.</para>
         /// </summary>
         /// <param name="StateObject"></param>
-        private void bumpEncoders(object StateObject)
+        private void BumpEncoders(object StateObject)
         {
             if (!Simulated)
                 return;
-            
-            bool primary = (_axis == TelescopeAxes.axisPrimary) ? true : false;
-            Angle delta = Angle.zero;
+
+            bool primary = _axis == TelescopeAxes.axisPrimary;
+            Angle delta;
 
             //
             // Calculate the delta to be added/subtracted from the attached encoder(s)
@@ -274,8 +281,8 @@ namespace ASCOM.Wise40.Hardware
                         }
                     }
 
-                    after = primary ? 
-                        Angle.FromHours(wisetele.HourAngle, Angle.AngleType.HA) : 
+                    after = primary ?
+                        Angle.FromHours(wisetele.HourAngle, Angle.AngleType.HA) :
                         Angle.FromDegrees(wisetele.Declination, Angle.AngleType.Dec);
                 }
 
@@ -302,9 +309,11 @@ namespace ASCOM.Wise40.Hardware
         public void Connect(bool connected)
         {
             foreach (WisePin pin in new List<WisePin>() { motorPin, guideMotorPin })
-                if (pin != null)
-                    pin.Connect(connected);
-            if (connected && slewPin != null && !slewPin.Connected)
+            {
+                pin?.Connect(connected);
+            }
+
+            if (connected && slewPin?.Connected == false)
                 slewPin.Connect(connected);
             _connected = connected;
         }
@@ -320,8 +329,9 @@ namespace ASCOM.Wise40.Hardware
         public void Dispose()
         {
             foreach (WisePin pin in new List<WisePin>() { motorPin, guideMotorPin })
-                if (pin != null)
-                    pin.Dispose();
+            {
+                pin?.Dispose();
+            }
         }
 
         public override string ToString()

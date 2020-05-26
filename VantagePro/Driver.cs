@@ -21,7 +21,6 @@
 // --------------------------------------------------------------------------------
 //
 
-
 // This is used to define code in the template that is specific to one class implementation
 // unused code canbe deleted and this definition removed.
 #define ObservingConditions
@@ -37,7 +36,6 @@ using ASCOM.DeviceInterface;
 using System.Collections;
 
 using ASCOM.Wise40.Common;
-
 
 namespace ASCOM.Wise40.VantagePro
 {
@@ -60,8 +58,7 @@ namespace ASCOM.Wise40.VantagePro
     [ComVisible(true)]
     public class ObservingConditions : IObservingConditions
     {
-        private Common.Debugger debugger = Common.Debugger.Instance;
-        private WiseVantagePro vantagePro = WiseVantagePro.Instance;
+        private readonly WiseVantagePro vantagePro = WiseVantagePro.Instance;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Wise40.VantagePro"/> class.
@@ -69,9 +66,8 @@ namespace ASCOM.Wise40.VantagePro
         /// </summary>
         public ObservingConditions()
         {
-            vantagePro.init();
+            vantagePro.Init();
         }
-
 
         //
         // PUBLIC COM INTERFACE IObservingConditions IMPLEMENTATION
@@ -118,19 +114,21 @@ namespace ASCOM.Wise40.VantagePro
         public void CommandBlind(string command, bool raw)
         {
             CheckConnected("CommandBlind");
-            throw new ASCOM.MethodNotImplementedException("CommandBlind");
+            Exceptor.Throw<MethodNotImplementedException>($"CommandBlind({command}, {raw})", "Not implemented");
         }
 
         public bool CommandBool(string command, bool raw)
         {
             CheckConnected("CommandBool");
-            throw new ASCOM.MethodNotImplementedException("CommandBool");
+            Exceptor.Throw<MethodNotImplementedException>($"CommandBool({command}, {raw})", "Not implemented");
+            return false;
         }
 
         public string CommandString(string command, bool raw)
         {
             CheckConnected("CommandString");
-            throw new ASCOM.MethodNotImplementedException("CommandString");
+            Exceptor.Throw<MethodNotImplementedException>($"CommandString({command}, {raw})", "Not implemented");
+            return string.Empty;
         }
 
         public void Dispose()
@@ -311,7 +309,7 @@ namespace ASCOM.Wise40.VantagePro
         /// </remarks>
         public string SensorDescription(string PropertyName)
         {
-            return vantagePro.SensorDescription(PropertyName);
+            return WiseVantagePro.SensorDescription(PropertyName);
         }
 
         /// <summary>
@@ -459,9 +457,8 @@ namespace ASCOM.Wise40.VantagePro
         // here are some useful properties and methods that can be used as required
         // to help with driver development
 
-
         public static string driverID = Const.WiseDriverID.VantagePro;
-        private static Version version = new Version("0.2");
+        private readonly static Version version = new Version("0.2");
         public static string driverDescription = string.Format("ASCOM Wise40.VantagePro v{0}", version.ToString());
         #region ASCOM Registration
 
@@ -546,9 +543,7 @@ namespace ASCOM.Wise40.VantagePro
         private void CheckConnected(string message)
         {
             if (!vantagePro.Connected)
-            {
-                throw new ASCOM.NotConnectedException(message);
-            }
+                Exceptor.Throw<NotConnectedException>("CheckConnected", message);
         }
 
         #endregion

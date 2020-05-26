@@ -36,7 +36,7 @@ namespace ASCOM.Wise40SafeToOperate
             };
         }
 
-        public override string reason()
+        public override string UnsafeReason()
         {
             return Const.computerControlAtMaintenance;
         }
@@ -56,7 +56,7 @@ namespace ASCOM.Wise40SafeToOperate
             get { return 0.ToString(); }
         }
 
-        public override Reading getReading()
+        public override Reading GetReading()
         {
             if (Hardware.computerControlPin == null)
                 return null;
@@ -88,8 +88,8 @@ namespace ASCOM.Wise40SafeToOperate
             return r;
         }
 
-        public override void readSensorProfile() { }
-        public override void writeSensorProfile() { }
+        public override void ReadSensorProfile() { }
+        public override void WriteSensorProfile() { }
     }
 
     public class ComputerControlDigest

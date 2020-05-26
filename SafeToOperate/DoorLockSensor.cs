@@ -57,11 +57,11 @@ namespace ASCOM.Wise40SafeToOperate
                 BypassPin = BypassPin.isOn ? 1 : 0,
                 BypassIsSafe = BypassIsSafe,
                 BypassCounter = _bypassCounter,
-                UnsafeReason = reason(),
+                UnsafeReason = UnsafeReason(),
             };
         }
 
-        public override string reason()
+        public override string UnsafeReason()
         {
             return "Door unlocked and not bypassed";
         }
@@ -77,7 +77,7 @@ namespace ASCOM.Wise40SafeToOperate
             }
         }
 
-        public override Reading getReading()
+        public override Reading GetReading()
         {
             if (DoorLockPin == null || BypassPin == null)
                 return null;
@@ -115,11 +115,11 @@ namespace ASCOM.Wise40SafeToOperate
             }
         }
 
-        public override void readSensorProfile() {
+        public override void ReadSensorProfile() {
             _doorLockDelaySeconds = Convert.ToInt32(wisesafetooperate._profile.GetValue(Const.WiseDriverID.SafeToOperate, Const.ProfileName.SafeToOperate_DoorLockDelay, string.Empty, _defaultDoorLockDelaySeconds.ToString()));
         }
 
-        public override void writeSensorProfile() {
+        public override void WriteSensorProfile() {
             wisesafetooperate._profile.WriteValue(Const.WiseDriverID.SafeToOperate, Const.ProfileName.SafeToOperate_DoorLockDelay, _doorLockDelaySeconds.ToString());
         }
 

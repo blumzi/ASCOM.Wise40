@@ -14,7 +14,7 @@ namespace ASCOM.Wise40.Boltwood
     [ComVisible(false)]					// Form not registered for COM!
     public partial class SetupDialogForm : Form
     {
-        private WiseBoltwood boltwood = WiseBoltwood.Instance;
+        private readonly WiseBoltwood boltwood = WiseBoltwood.Instance;
 
         public SetupDialogForm()
         {
@@ -28,18 +28,16 @@ namespace ASCOM.Wise40.Boltwood
 
             for (int id = 0; id < WiseBoltwood.nStations; id++)
             {
-                WeatherStation.WeatherStationInputMethod method;
-
                 controls = Controls.Find("checkBox" + id.ToString(), true);
-                WiseBoltwood.stations[id].Enabled = (controls[0] as CheckBox).Checked;
-                WiseBoltwood.stations[id].Name = (controls[0] as CheckBox).Text;
+                WiseBoltwood.stations[id].Enabled = (controls[0] as CheckBox)?.Checked ?? false;
+                WiseBoltwood.stations[id].Name = (controls[0] as CheckBox)?.Text;
                 controls = Controls.Find("comboBoxMethod" + id.ToString(), true);
-                if (Enum.TryParse<WeatherStation.WeatherStationInputMethod>((controls[0] as ComboBox).Text, out method))
+                if (Enum.TryParse<WeatherStation.WeatherStationInputMethod>((controls[0] as ComboBox)?.Text, out WeatherStation.WeatherStationInputMethod method))
                     WiseBoltwood.stations[id].InputMethod = method;
                 if (method == WeatherStation.WeatherStationInputMethod.ClarityII)
                 {
                     controls = Controls.Find("labelPath" + id.ToString(), true);
-                    WiseBoltwood.stations[id].FilePath = (controls[0] as Label).Text;
+                    WiseBoltwood.stations[id].FilePath = (controls[0] as Label)?.Text;
                 }
                 WiseBoltwood.stations[id].WriteProfile();
             }
@@ -93,41 +91,36 @@ namespace ASCOM.Wise40.Boltwood
 
         private void openFileDialog1_FileOk(object sender, CancelEventArgs e)
         {
-            Control[] controls;
+            Control[] controls = Controls.Find("labelPath1", true);
 
-            controls = Controls.Find("labelPath1", true);
             (controls[0] as Label).Text = ((OpenFileDialog)sender).FileName;
         }
 
         private void openFileDialog2_FileOk(object sender, CancelEventArgs e)
         {
-            Control[] controls;
+            Control[] controls = Controls.Find("labelPath2", true);
 
-            controls = Controls.Find("labelPath2", true);
             (controls[0] as Label).Text = ((OpenFileDialog)sender).FileName;
         }
 
         private void openFileDialog3_FileOk(object sender, CancelEventArgs e)
         {
-            Control[] controls;
+            Control[] controls = Controls.Find("labelPath3", true);
 
-            controls = Controls.Find("labelPath3", true);
             (controls[0] as Label).Text = ((OpenFileDialog)sender).FileName;
         }
 
         private void openFileDialog4_FileOk(object sender, CancelEventArgs e)
         {
-            Control[] controls;
+            Control[] controls = Controls.Find("labelPath4", true);
 
-            controls = Controls.Find("labelPath4", true);
             (controls[0] as Label).Text = ((OpenFileDialog)sender).FileName;
         }
 
         private void openFileDialog5_FileOk(object sender, CancelEventArgs e)
         {
-            Control[] controls;
+            Control[] controls = Controls.Find("labelPath5", true);
 
-            controls = Controls.Find("labelPath5", true);
             (controls[0] as Label).Text = ((OpenFileDialog)sender).FileName;
         }
 

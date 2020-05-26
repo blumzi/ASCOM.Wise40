@@ -37,7 +37,7 @@ namespace ASCOM.Wise40.Common
                 if (lazy.IsValueCreated)
                     return lazy.Value;
 
-                lazy.Value.init();
+                lazy.Value.Init();
                 return lazy.Value;
             }
         }
@@ -45,6 +45,7 @@ namespace ASCOM.Wise40.Common
         [FlagsAttribute]
         public enum DebugLevel : int
         {
+            DebugNone = 0,
             DebugASCOM = (1 << 0),
             DebugDevice = (1 << 1),
             DebugLogic = (1 << 2),
@@ -55,19 +56,16 @@ namespace ASCOM.Wise40.Common
             DebugSafety = (1 << 7),
             DebugDome = (1 << 8),
             DebugShutter = (1 << 9),
+            DebugDefault = DebugAxes | DebugExceptions | DebugASCOM | DebugLogic | DebugShutter,
             DebugDAQs = (1 << 10),
             DebugFocuser = (1 << 11),
             DebugFilterWheel = (1 << 12),
-
-            DebugDefault = DebugAxes | DebugExceptions | DebugASCOM | DebugLogic | DebugShutter,
-
-            DebugAll = DebugASCOM|DebugDevice|DebugLogic|DebugExceptions|DebugAxes|DebugMotors|DebugEncoders|DebugSafety|DebugDome|DebugShutter|DebugDAQs|DebugFocuser|DebugFilterWheel,
-            DebugNone = 0,
+            DebugAll = DebugASCOM | DebugDevice | DebugLogic | DebugExceptions | DebugAxes | DebugMotors | DebugEncoders | DebugSafety | DebugDome | DebugShutter | DebugDAQs | DebugFocuser | DebugFilterWheel,
         };
 
         private static DebugLevel _currentLevel;
 
-        public void init(DebugLevel level = 0)
+        public void Init(DebugLevel level = 0)
         {
             if (_initialized)
                 return;
@@ -138,9 +136,7 @@ namespace ASCOM.Wise40.Common
 
             DateTime utcNow = DateTime.UtcNow;
             string msg = string.Format(fmt, o);
-            string taskInfo = (Task.CurrentId == null) ?
-                "-1" :
-                (Task.CurrentId.HasValue ? Task.CurrentId.Value : -1).ToString();
+            string taskInfo = (Task.CurrentId == null) ? "-1" : (Task.CurrentId ?? -1).ToString();
 
             string line = string.Format("{0} UT {1,-18} {2,-16} {3}",
                 utcNow.ToString(@"HH\:mm\:ss\.fff"),
@@ -228,9 +224,7 @@ namespace ASCOM.Wise40.Common
             {
                 if (p.IsRegistered(Const.WiseDriverID.Telescope))
                 {
-                    DebugLevel d;
-                    
-                    if (Enum.TryParse<DebugLevel>(p.GetValue(Const.WiseDriverID.Telescope, Const.ProfileName.Site_DebugLevel, string.Empty, DebugLevel.DebugDefault.ToString()), out d))
+                    if (Enum.TryParse<DebugLevel>(p.GetValue(Const.WiseDriverID.Telescope, Const.ProfileName.Site_DebugLevel, string.Empty, DebugLevel.DebugDefault.ToString()), out DebugLevel d))
                         _currentLevel = d;
                 }
             }

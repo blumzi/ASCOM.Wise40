@@ -54,7 +54,7 @@ namespace ASCOM.Wise40 //.Dome
                 return;
 
             WiseName = "DomeEnc";
-            base.init("DomeEnc",
+            base.Init("DomeEnc",
                 _hwTicks,
                 new List<WiseEncSpec>() {
                     new WiseEncSpec() { brd = hw.domeboard, port = DigitalPortType.FirstPortCH, mask = 0x03 },

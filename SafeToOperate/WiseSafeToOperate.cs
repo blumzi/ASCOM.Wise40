@@ -18,13 +18,13 @@ using ASCOM.DriverAccess;
 using Newtonsoft.Json;
 using ASCOM.Wise40.Boltwood;
 using ASCOM.Wise40.VantagePro;
-using ASCOM.Wise40.TessW;    
+using ASCOM.Wise40.TessW;
 
 namespace ASCOM.Wise40SafeToOperate
 {
     public class WiseSafeToOperate
     {
-        private static Version version = new Version(0, 2);
+        private readonly static Version version = new Version(0, 2);
 
         /// <summary>
         /// ASCOM DeviceID (COM ProgID) for this driver.
@@ -60,7 +60,7 @@ namespace ASCOM.Wise40SafeToOperate
         public static List<Sensor> _cumulativeSensors, _prioritizedSensors;
         public static Dictionary<string, Sensor> _sensorHandlers = new Dictionary<string, Sensor>();
         private enum SafetyScope { Wise40, WiseWide };
-        private static SafetyScope safetyScope = SafetyScope.Wise40;
+        private const SafetyScope safetyScope = SafetyScope.Wise40;
 
         private static bool _bypassed = false;
         public static int ageMaxSeconds;
@@ -69,27 +69,26 @@ namespace ASCOM.Wise40SafeToOperate
         public static ActivityMonitor activityMonitor = ActivityMonitor.Instance;
         public static bool _unsafeBecauseNotReady = false;
 
-        private static ASCOM.DriverAccess.ObservingConditions tessw = new ASCOM.DriverAccess.ObservingConditions("ASCOM.Wise40.TessW.ObservingConditions");
+        private static readonly ASCOM.DriverAccess.ObservingConditions tessw = new ASCOM.DriverAccess.ObservingConditions("ASCOM.Wise40.TessW.ObservingConditions");
 
         /// <summary>
         /// Private variable to hold the connected state
         /// </summary>
         private static bool _connected = false;
 
-        private Wise40.Common.Debugger debugger = Debugger.Instance;
+        private readonly Wise40.Common.Debugger debugger = Debugger.Instance;
 
         public static WiseSite wisesite = WiseSite.Instance;
 
         private static bool initialized = false;
 
         public static TimeSpan _stabilizationPeriod;
-        private static int _defaultStabilizationPeriodMinutes = 15;
+        private const int _defaultStabilizationPeriodMinutes = 15;
 
         private Astrometry.NOVAS.NOVAS31 novas31;
         private static AstroUtils astroutils;
-        private static ASCOM.Utilities.Util ascomutils;
         public Astrometry.Accuracy astrometricAccuracy;
-        Object3 Sun = new Object3();
+        private Object3 Sun = new Object3();
 
         static WiseSafeToOperate() { }
         public WiseSafeToOperate() { }
@@ -106,12 +105,12 @@ namespace ASCOM.Wise40SafeToOperate
                 if (lazy.IsValueCreated)
                     return lazy.Value;
 
-                lazy.Value.init();
+                lazy.Value.Init();
                 return lazy.Value;
             }
         }
 
-        public void init()
+        public void Init()
         {
             if (initialized)
                 return;
@@ -124,7 +123,7 @@ namespace ASCOM.Wise40SafeToOperate
                 _profile = new Profile() { DeviceType = "SafetyMonitor" };
             }
 
-            WiseSite.initOCH();
+            WiseSite.InitOCH();
             WiseSite.och.Connected = true;
 
             humiditySensor = new HumiditySensor(this);
@@ -184,7 +183,6 @@ namespace ASCOM.Wise40SafeToOperate
 
             novas31 = new NOVAS31();
             astroutils = new AstroUtils();
-            ascomutils = new Util();
 
             novas31.MakeObject(0, Convert.ToInt16(Body.Sun), "Sun", new CatEntry3(), ref Sun);
 
@@ -222,7 +220,7 @@ namespace ASCOM.Wise40SafeToOperate
             }
         }
 
-        private readonly ArrayList supportedActions = new ArrayList() {
+        public ArrayList SupportedActions { get; } = new ArrayList() {
             "start-bypass",
             "end-bypass",
             "status",
@@ -237,17 +235,9 @@ namespace ASCOM.Wise40SafeToOperate
             "wise-unsafereasons",
         };
 
-        public ArrayList SupportedActions
-        {
-            get
-            {
-                return supportedActions;
-            }
-        }
-
         public string Action(string actionName, string actionParameters)
         {
-            string ret = string.Empty;
+            string ret;
             List<string> sensors = new List<string>();
             string sensorName;
 
@@ -255,55 +245,66 @@ namespace ASCOM.Wise40SafeToOperate
             {
                 case "list-sensors":
                     foreach (Sensor s in _prioritizedSensors)
+                    {
                         if (! s.HasAttribute(Sensor.Attribute.ForInfoOnly))
                             sensors.Add(s.WiseName);
+                    }
+
                     ret = JsonConvert.SerializeObject(sensors);
                     break;
 
                 case "wise-list-sensors":
                     foreach (Sensor s in _prioritizedSensors)
+                    {
                         if (! s.HasAttribute(Sensor.Attribute.Wise40Specific) && !s.HasAttribute(Sensor.Attribute.ForInfoOnly))
                             sensors.Add(s.WiseName);
+                    }
+
                     ret = JsonConvert.SerializeObject(sensors);
                     break;
 
                 case "sensor-is-safe":
                     sensorName = actionParameters.ToLower();
                     if (_sensorHandlers.ContainsKey(sensorName))
+                    {
                         ret = JsonConvert.SerializeObject(_sensorHandlers[sensorName].isSafe);
+                    }
                     else
-                        throw new ASCOM.InvalidValueException($"Unknown sensor \"{sensorName}\"!");
+                    {
+                        Exceptor.Throw<InvalidValueException>("Action(sensor-is-safe)", $"Unknown sensor \"{sensorName}\"!");
+                        ret = string.Empty;
+                    }
                     break;
 
                 case "wise-sensor-is-safe":
                     sensorName = actionParameters.ToLower();
                     if (!_sensorHandlers.ContainsKey(sensorName) || _sensorHandlers[sensorName].HasAttribute(Sensor.Attribute.Wise40Specific))
-                        throw new ASCOM.InvalidValueException($"Unknown Wise-wide sensor \"{sensorName}\"!");
+                        Exceptor.Throw<InvalidValueException>("Action(wise-sensor-is-safe)", $"Unknown Wise-wide sensor \"{sensorName}\"!");
                     ret = JsonConvert.SerializeObject(_sensorHandlers[sensorName].isSafe);
                     break;
 
                 case "start-bypass":
                     _bypassed = true;
-                    if (actionParameters.ToLower() != "temporary")
+                    if (!string.Equals(actionParameters, "temporary", StringComparison.OrdinalIgnoreCase))
                         _profile.WriteValue(driverID, Const.ProfileName.SafeToOperate_Bypassed, _bypassed.ToString());
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Started bypass (parameter: {0})", actionParameters);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, $"Started bypass (parameter: {actionParameters})");
                     #endregion
                     ret = "ok";
                     break;
 
                 case "end-bypass":
                     _bypassed = false;
-                    if (actionParameters.ToLower() != "temporary")
+                    if (!string.Equals(actionParameters, "temporary", StringComparison.OrdinalIgnoreCase))
                         _profile.WriteValue(driverID, Const.ProfileName.SafeToOperate_Bypassed, _bypassed.ToString());
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Ended bypass (parameter: {0})", actionParameters);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, $"Ended bypass (parameter: {actionParameters})");
                     #endregion
                     ret = "ok";
                     break;
 
                 case "status":
-                    if (actionParameters == string.Empty)
+                    if (string.IsNullOrEmpty(actionParameters))
                         return Digest;
                     else
                         return DigestSensors(actionParameters);
@@ -328,7 +329,8 @@ namespace ASCOM.Wise40SafeToOperate
                     return RawWeatherData;
 
                 default:
-                    throw new ASCOM.ActionNotImplementedException("Action " + actionName + " is not implemented by this driver");
+                    Exceptor.Throw<ActionNotImplementedException>("Action", $"Action {actionName} is not implemented by this driver");
+                    return string.Empty;
             }
             return ret;
         }
@@ -342,7 +344,7 @@ namespace ASCOM.Wise40SafeToOperate
                 return JsonConvert.SerializeObject(new SafeToOperateDigest
                 {
                     Bypassed = _bypassed,
-                    Ready = isReady(toBeIgnored: Sensor.Attribute.None),
+                    Ready = IsReady(toBeIgnored: Sensor.Attribute.None),
                     Safe = IsSafe,
                     UnsafeReasons = UnsafeReasonsList(),
                     UnsafeBecauseNotReady = _unsafeBecauseNotReady,
@@ -367,14 +369,16 @@ namespace ASCOM.Wise40SafeToOperate
             }
         }
 
-        public string DigestSensors(string sensorName)
+        public static string DigestSensors(string sensorName)
         {
             if (sensorName == "all")
                 return JsonConvert.SerializeObject(_prioritizedSensors);
 
             foreach (var sensor in _prioritizedSensors)
                 if (!sensor.HasAttribute(Sensor.Attribute.ForInfoOnly) && sensor.WiseName == sensorName)
+                {
                     return JsonConvert.SerializeObject(sensor);
+                }
 
             return string.Format("unknown sensor \"{0}\"!", sensorName);
         }
@@ -382,32 +386,31 @@ namespace ASCOM.Wise40SafeToOperate
         public void CommandBlind(string command, bool raw)
         {
             CheckConnected("CommandBlind");
-            throw new ASCOM.MethodNotImplementedException("CommandBlind");
+            Exceptor.Throw<MethodNotImplementedException>($"CommandBlind({command}, {raw})", "Not implemented");
         }
 
         public bool CommandBool(string command, bool raw)
         {
             CheckConnected("CommandBool");
 
-            if (command.ToLower() == "ready")
-                return isReady(toBeIgnored: Sensor.Attribute.None);
+            if (string.Equals(command, "ready", StringComparison.OrdinalIgnoreCase))
+            {
+                return IsReady(toBeIgnored: Sensor.Attribute.None);
+            }
             else
-                throw new ASCOM.MethodNotImplementedException("CommandBool");
+            {
+                Exceptor.Throw<MethodNotImplementedException>($"CommandBool({command}, {raw})", "Not implemented");
+                return false;
+            }
         }
 
         public string CommandString(string command, bool raw)
         {
             CheckConnected("CommandString");
-            // it's a good idea to put all the low level communication with the device here,
-            // then all communication calls this function
-            // you need something to ensure that only one command is in progress at a time
 
-            if (command.ToLower() == "unsafereasons")
-            {
-                return Action("unsafereasons", string.Empty);
-            }
-            else
-                return stringSafetyCommand(command);
+            return string.Equals(command, "unsafereasons", StringComparison.OrdinalIgnoreCase)
+                ? Action("unsafereasons", string.Empty)
+                : SafetyCommandAsString(command);
         }
 
         public void Dispose()
@@ -428,15 +431,15 @@ namespace ASCOM.Wise40SafeToOperate
 
                 _connected = WiseSite.och.Connected;
                 if (_connected)
-                    startSensors();
+                    StartSensors();
                 else
-                    stopSensors();
+                    StopSensors();
 
                 ActivityMonitor.Instance.Event(new Event.DriverConnectEvent(Const.WiseDriverID.WiseSafeToOperate, _connected, line: ActivityMonitor.Tracer.safety.Line));
             }
         }
 
-        public void stopSensors()
+        public static void StopSensors()
         {
             foreach (Sensor s in _prioritizedSensors)
             {
@@ -445,7 +448,7 @@ namespace ASCOM.Wise40SafeToOperate
             }
         }
 
-        public void startSensors()
+        public static void StartSensors()
         {
             if (_prioritizedSensors == null)
                 return;
@@ -533,7 +536,9 @@ namespace ASCOM.Wise40SafeToOperate
             if (!s.isSafe)
             {
                 if (s.HasAttribute(Sensor.Attribute.SingleReading))
-                    reason += s.reason();
+                {
+                    reason += s.UnsafeReason();
+                }
                 else
                 {
                     if (s.StateIsSet(Sensor.State.Stabilizing))
@@ -556,8 +561,10 @@ namespace ASCOM.Wise40SafeToOperate
                 }
 
                 if (s.HasAttribute(Sensor.Attribute.CanBeStale) && s.StateIsSet(Sensor.State.Stale))
+                {
                     // cummulative and stale
                     reason += $" ({s._nstale} stale readings)";
+                }
             }
 
             return reason;
@@ -622,20 +629,19 @@ namespace ASCOM.Wise40SafeToOperate
         #region Individual Property Implementations
         #region Boolean Properties (for ASCOM)
 
-        private string stringSafetyCommand(string command)
+        private string SafetyCommandAsString(string command)
         {
-            Const.TriStateStatus status = Const.TriStateStatus.Good;
-            string ret = "unknown";
+            Const.TriStateStatus status;
             string msg = string.Empty;
 
             {
                 switch (command.ToLower())
                 {
-                    case "humidity": status = isSafeHumidity; break;
-                    case "wind": status = isSafeWindSpeed; break;
-                    case "sun": status = isSafeSunElevation; break;
-                    case "clouds": status = isSafeCloudCover; break;
-                    case "rain": status = isSafeRain; break;
+                    case "humidity": status = IsSafeHumidity; break;
+                    case "wind": status = IsSafeWindSpeed; break;
+                    case "sun": status = IsSafeSunElevation; break;
+                    case "clouds": status = IsSafeCloudCover; break;
+                    case "rain": status = IsSafeRain; break;
                     default:
                         status = Const.TriStateStatus.Error;
                         msg = string.Format("invalid command \"{0}\"", command);
@@ -654,13 +660,13 @@ namespace ASCOM.Wise40SafeToOperate
                     return "warning: " + msg;
             }
 
-            return ret;
+            return "unknown";
         }
 
         #endregion
 
         #region TriState Properties (for object)
-        public Const.TriStateStatus isSafeCloudCover
+        public Const.TriStateStatus IsSafeCloudCover
         {
             get
             {
@@ -670,7 +676,7 @@ namespace ASCOM.Wise40SafeToOperate
             }
         }
 
-        public Const.TriStateStatus isSafeWindSpeed
+        public Const.TriStateStatus IsSafeWindSpeed
         {
             get
             {
@@ -680,7 +686,7 @@ namespace ASCOM.Wise40SafeToOperate
             }
         }
 
-        public Const.TriStateStatus isSafeHumidity
+        public Const.TriStateStatus IsSafeHumidity
         {
             get
             {
@@ -690,7 +696,7 @@ namespace ASCOM.Wise40SafeToOperate
             }
         }
 
-        public Const.TriStateStatus isSafeRain
+        public Const.TriStateStatus IsSafeRain
         {
             get
             {
@@ -700,7 +706,7 @@ namespace ASCOM.Wise40SafeToOperate
             }
         }
 
-        public Const.TriStateStatus isSafeSunElevation
+        public Const.TriStateStatus IsSafeSunElevation
         {
             get
             {
@@ -721,9 +727,7 @@ namespace ASCOM.Wise40SafeToOperate
 
                 double ra = 0, dec = 0, dis = 0;
                 double jdt = astroutils.JulianDateUT1(0);
-                short res;
-
-                res = novas31.LocalPlanet(
+                short res = novas31.LocalPlanet(
                     astroutils.JulianDateUT1(0),
                     Sun,
                     astroutils.DeltaT(),
@@ -733,7 +737,9 @@ namespace ASCOM.Wise40SafeToOperate
 
                 if (res != 0)
                 {
-                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Failed to get LocalPlanet for the Sun (res: {0})", res);
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, $"Failed to get LocalPlanet for the Sun (res: {res})");
+                    #endregion
                     return 0.0;
                 }
 
@@ -797,21 +803,12 @@ namespace ASCOM.Wise40SafeToOperate
             }
         }
 
-        private List<string> WiseUnsafeReasonsList
-        {
-            get
-            {
-                return new List<string>();
-            }
-        }
-
-
         public bool IsSafeWithoutCheckingForShutdown(Sensor.Attribute toBeIgnored = Sensor.Attribute.None)
         {
             bool ret = true;
             _unsafeBecauseNotReady = false;
 
-            init();
+            Init();
 
             if (!_connected)
             {
@@ -865,7 +862,7 @@ namespace ASCOM.Wise40SafeToOperate
 
         #endregion
 
-        public bool isReady(Sensor.Attribute toBeIgnored = Sensor.Attribute.None)
+        public static bool IsReady(Sensor.Attribute toBeIgnored = Sensor.Attribute.None)
         {
             foreach (Sensor s in _cumulativeSensors)
             {
@@ -896,9 +893,7 @@ namespace ASCOM.Wise40SafeToOperate
         private void CheckConnected(string message)
         {
             if (!_connected)
-            {
-                throw new ASCOM.NotConnectedException(message);
-            }
+                Exceptor.Throw<ASCOM.NotConnectedException>("CheckConnected", message);
         }
 
         /// <summary>
@@ -917,7 +912,7 @@ namespace ASCOM.Wise40SafeToOperate
 
             using (Profile driverProfile = new Profile())
             {
-                string telescopeDriverId = Const.WiseDriverID.Telescope;
+                const string telescopeDriverId = Const.WiseDriverID.Telescope;
 
                 driverProfile.DeviceType = "Telescope";
                 astrometricAccuracy =
@@ -935,7 +930,7 @@ namespace ASCOM.Wise40SafeToOperate
             _profile.WriteValue(driverID, Const.ProfileName.SafeToOperate_AgeMaxSeconds, ageMaxSeconds.ToString());
             _profile.WriteValue(driverID, Const.ProfileName.SafeToOperate_StableAfterMin, _stabilizationPeriod.Minutes.ToString());
             foreach (Sensor s in _prioritizedSensors)
-                s.writeProfile();
+                s.WriteProfile();
         }
         #endregion
 

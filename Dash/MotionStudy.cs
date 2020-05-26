@@ -43,11 +43,10 @@ namespace Dash
                 return string.Format("{0}, {1}", millis, value.ToString());
             }
         };
-        private List<DataPoint> dataPoints;
-        private DataPoint motorStopPoint, axisStopPoint;
+        private readonly List<DataPoint> dataPoints;
+        private DataPoint motorStopPoint;
 
-
-        private void sampleMotion(object StateObject)
+        private void SampleMotion(object StateObject)
         {
             double value = (axis == TelescopeAxes.axisPrimary) ?
                 wisetele.HAEncoder.Angle.Hours :
@@ -63,7 +62,7 @@ namespace Dash
             samplingIntervalMillis = intervalMillis;
             start = DateTime.Now;
             dataPoints = new List<DataPoint>();
-            TimerCallback TimerCallback = new TimerCallback(sampleMotion);
+            TimerCallback TimerCallback = new TimerCallback(SampleMotion);
             timer = new Timer(TimerCallback, null, 0, samplingIntervalMillis);
             count++;
         }
@@ -71,36 +70,35 @@ namespace Dash
         public void Dispose()
         {
             DateTime motorStop = DateTime.Now;
-            DateTime axisStop;
-            double startValue, motorStopValue, axisStopValue;
+            //DateTime axisStop;
+            double motorStopValue; //, axisStopValue;
             DataPoint[] arr = dataPoints.ToArray();
 
-            startValue = arr[0].value;
             motorStopValue = arr[arr.Length - 1].value;
 
             timer.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
             //dataPoints.Add(new DataPoint(motorStop.Subtract(start).TotalMilliseconds, 0.0));
             motorStopPoint = new DataPoint(motorStop.Subtract(start).TotalMilliseconds, motorStopValue);
-            while (wisetele.AxisIsMoving(axis))
+            while (WiseTele.AxisIsMoving(axis))
             {
                 Thread.Sleep(samplingIntervalMillis);
-                sampleMotion(null);
+                SampleMotion(null);
             }
-            axisStop = DateTime.Now;
-            axisStopValue = arr[arr.Length - 1].value;
+            //axisStop = DateTime.Now;
+            //axisStopValue = arr[arr.Length - 1].value;
             //dataPoints.Add(new DataPoint(axisStop.Subtract(start).TotalMilliseconds, 0.0));
-            axisStopPoint = new DataPoint(axisStop.Subtract(start).TotalMilliseconds, axisStopValue);
+            //axisStopPoint = new DataPoint(axisStop.Subtract(start).TotalMilliseconds, axisStopValue);
 
-            generateDataFiles();
+            GenerateDataFiles();
         }
 
-        public void generateDataFiles()
+        public void GenerateDataFiles()
         {
             string directory = string.Format("c:/temp/MotionStudy/{0}/{1}/{2}.dat",
                 motorStopPoint.millis.ToString("yyyy-MMM-dd_HH-mm"),
                 axis.ToString().Substring(4),
                 WiseTele.RateName(Math.Abs(rate)));
-            
+
             System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(directory));
 
             string rateName = WiseTele.RateName(Math.Abs(rate));

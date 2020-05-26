@@ -14,13 +14,12 @@ namespace ASCOM.Wise40SafeToOperate
     [ComVisible(false)]					// Form not registered for COM!
     public partial class SafeToOperateSetupDialogForm : Form
     {
-        WiseSafeToOperate wisesafetooperate = WiseSafeToOperate.Instance;
+        private readonly WiseSafeToOperate wisesafetooperate = WiseSafeToOperate.Instance;
 
         public SafeToOperateSetupDialogForm()
         {
             InitializeComponent();
-            // Initialise current values of user settings from the ASCOM Profile
-            
+            // Initialise current values of user settings from the ASCOM Profile            
             InitUI();
         }
 
@@ -122,7 +121,7 @@ namespace ASCOM.Wise40SafeToOperate
             WiseSafeToOperate.rainSensor.Enabled = checkBoxRain.Checked;
 
             WiseSafeToOperate.doorLockSensor.MaxAsString = textBoxDoorLockDelay.Text;
-            
+
             wisesafetooperate.WriteProfile();
 
             foreach (Sensor s in WiseSafeToOperate._cumulativeSensors)
@@ -193,7 +192,6 @@ namespace ASCOM.Wise40SafeToOperate
             string tip = $"Between {WiseSafeToOperate.sunSensor.MinSettableElevation} and {WiseSafeToOperate.sunSensor.MaxSettableElevation} (deg)";
             toolTip1.SetToolTip(textBoxSunElevationAtDawn, tip);
             toolTip1.SetToolTip(textBoxSunElevationAtDusk, tip);
-
         }
 
         private void textBoxWind_Validating(object sender, CancelEventArgs e)

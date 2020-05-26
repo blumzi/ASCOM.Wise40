@@ -52,7 +52,7 @@ namespace ASCOM.Wise40.TessW
 
         private void InitUI()
         {
-            WiseTessW.Instance.init();
+            WiseTessW.Instance.Init();
             textBoxTessWIPAddress.Text = WiseTessW.Instance.IpAddress;
             checkBoxEnabled.Checked = WiseTessW.Instance.Enabled;
         }

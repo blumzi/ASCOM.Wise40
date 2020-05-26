@@ -209,12 +209,12 @@ namespace ASCOM.Wise40SafeToOperate
         {
         }
 
-        public override string reason()
+        public override string UnsafeReason()
         {
             return string.Empty;
         }
 
-        public override Reading getReading()
+        public override Reading GetReading()
         {
             ardo.Refresh();
             return null;
@@ -231,8 +231,8 @@ namespace ASCOM.Wise40SafeToOperate
             set { }
         }
 
-        public override void writeSensorProfile() { }
-        public override void readSensorProfile() { }
+        public override void WriteSensorProfile() { }
+        public override void ReadSensorProfile() { }
 
         public override string Status
         {

@@ -11,7 +11,7 @@ namespace ASCOM.Wise40SafeToOperate
 {
     public class WindSensor : Sensor
     {
-        double _max;
+        private double _max;
         private string _status = "";
 
         public WindSensor(WiseSafeToOperate instance) :
@@ -31,18 +31,18 @@ namespace ASCOM.Wise40SafeToOperate
             };
         }
 
-        public override void readSensorProfile()
+        public override void ReadSensorProfile()
         {
             const double defaultMax = 40;
             MaxAsString = wisesafetooperate._profile.GetValue(Const.WiseDriverID.SafeToOperate, WiseName, "Max", defaultMax.ToString());
         }
 
-        public override void writeSensorProfile()
+        public override void WriteSensorProfile()
         {
             wisesafetooperate._profile.WriteValue(Const.WiseDriverID.SafeToOperate, WiseName, MaxAsString, "Max");
         }
 
-        public override Reading getReading()
+        public override Reading GetReading()
         {
             if (WiseSite.och == null)
                 return null;
@@ -55,7 +55,6 @@ namespace ASCOM.Wise40SafeToOperate
                 secondsSinceLastUpdate = seconds,
                 timeOfLastUpdate = DateTime.Now.Subtract(TimeSpan.FromSeconds(seconds)),
             };
-
 
             if (r.Stale)
             {
@@ -80,7 +79,7 @@ namespace ASCOM.Wise40SafeToOperate
             }
         }
 
-        public override string reason()
+        public override string UnsafeReason()
         {
             return string.Format("{0} out of {1} recent wind speed readings were higher than {2}.", _nbad, _repeats, FormatVerbal(_max));
         }

@@ -31,9 +31,9 @@ namespace ASCOM.Wise40.Hardware
             }
         }
 
-        private int _nbits;
-        private int _lsb;
-        private uint _mask;
+        private readonly int _nbits;
+        private readonly int _lsb;
+        private readonly uint _mask;
     }
 
     public class WiseDaq : WiseObject
@@ -45,16 +45,16 @@ namespace ASCOM.Wise40.Hardware
         public WiseBitOwner[] owners;
 
         private ushort _value;
-        private ushort _mask;
+        private readonly ushort _mask;
         public object _lock = new object();
 
-        private Debugger debugger = Debugger.Instance;
+        private readonly Debugger debugger = Debugger.Instance;
 
         /// <summary>
         /// The Daq's direction
         /// </summary>
         /// <param name="dir">Either DigitalIn or DigitalOut</param>
-        public void setDir(DigitalPortDirection dir)
+        public void SetDir(DigitalPortDirection dir)
         {
             if (wiseBoard.type == WiseBoard.BoardType.Hard)
             {
@@ -68,7 +68,7 @@ namespace ASCOM.Wise40.Hardware
                         }
                     } catch (Exception err)
                     {
-                        throw new WiseException(WiseName + ": UL DConfigPort(" + porttype.ToString() + ", " + dir.ToString() + ") failed with " + err.Message);
+                        Exceptor.Throw<WiseException>("SetDir", $"{WiseName}: UL DConfigPort({porttype}, {dir}) failed with {err.Message}");
                     }
                 }
                 else
@@ -80,7 +80,7 @@ namespace ASCOM.Wise40.Hardware
                         err = wiseBoard.mccBoard.DConfigPort(porttype, dir);
                     }
                     if (err.Value != 0)
-                        throw new WiseException(WiseName + ": UL DConfigPort(" + porttype.ToString() + ", " + dir.ToString() + ") failed with " + err.Message);
+                        Exceptor.Throw<WiseException>("SetDir", $"{WiseName}: UL DConfigPort({porttype}, {dir}) failed with {err.Message}");
                 }
 
             }
@@ -95,7 +95,7 @@ namespace ASCOM.Wise40.Hardware
             if (wiseBoard.type == WiseBoard.BoardType.Soft)
             {
                 porttype = (int) DigitalPortType.FirstPortA + devno;
-                WiseName = "Board" + wiseBoard.boardNum.ToString() + "." + ((DigitalPortType)porttype).ToString();
+                WiseName = $"Board{wiseBoard.boardNum}.{(DigitalPortType)porttype}";
                 _value = 0;
                 switch(devno % 4)
                 {
@@ -107,11 +107,9 @@ namespace ASCOM.Wise40.Hardware
             }
             else
             {
-                MccDaq.ErrorInfo err;
-
-                err = wiseBoard.mccBoard.DioConfig.GetDevType(devno, out porttype);
-                err = wiseBoard.mccBoard.DioConfig.GetNumBits(devno, out nbits);
-                WiseName = "Board" + wiseBoard.mccBoard.BoardNum.ToString() + "." + ((DigitalPortType)porttype).ToString();
+                wiseBoard.mccBoard.DioConfig.GetDevType(devno, out porttype);
+                wiseBoard.mccBoard.DioConfig.GetNumBits(devno, out nbits);
+                WiseName = $"Board{wiseBoard.mccBoard.BoardNum}.{(DigitalPortType)porttype}";
             }
 
             this.porttype = (DigitalPortType) porttype;
@@ -135,11 +133,10 @@ namespace ASCOM.Wise40.Hardware
         public ushort Value
         {
            get {
-                ushort v;
+                ushort v = ushort.MinValue;
 
                 if (wiseBoard.type == WiseBoard.BoardType.Hard)
                 {
-
                     if (Hardware.Instance.mccRevNum == 5)
                     {
                         try
@@ -151,7 +148,7 @@ namespace ASCOM.Wise40.Hardware
                         }
                         catch (Exception err)
                         {
-                            throw new WiseException(WiseName + ": UL DIn(" + porttype.ToString() + ") failed with " + err.Message);
+                            Exceptor.Throw<WiseException>("Value", $"{WiseName}: UL DIn({porttype}) failed with {err.Message}");
                         }
                     }
                     else
@@ -162,11 +159,13 @@ namespace ASCOM.Wise40.Hardware
                             err = wiseBoard.mccBoard.DIn(porttype, out v);
                         }
                         if (err.Value != ErrorInfo.ErrorCode.NoErrors)
-                            throw new WiseException(WiseName + ": UL DIn(" + porttype.ToString() + ") failed with " + err.Message);
+                            Exceptor.Throw<WiseException>("Value", $"{WiseName}: UL DIn({porttype}) failed with {err.Message}");
                     }
                 }
                 else
+                {
                     v = _value;
+                }
 
                 return (ushort)(v & _mask);
             }
@@ -176,12 +175,10 @@ namespace ASCOM.Wise40.Hardware
 
                 if (wiseBoard.type == WiseBoard.BoardType.Hard)
                 {
+                    #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugDAQs,
-                        "daq.Value.set: board: {0}, port: {1}, value: 0x{2:x} => 0x{3:x}",
-                        this.wiseBoard.WiseName,
-                        this.porttype.ToString(),
-                        before,
-                        value);
+                        $"daq.Value.set: board: {wiseBoard.WiseName}, port: {porttype}, value: 0x{before:x} => 0x{value:x}");
+                    #endregion
                     if (portdir == DigitalPortDirection.DigitalOut)
                     {
                         if (Hardware.Instance.mccRevNum == 5)
@@ -195,7 +192,7 @@ namespace ASCOM.Wise40.Hardware
                             }
                             catch (Exception err)
                             {
-                                throw new WiseException(WiseName + ": UL DOut(" + porttype.ToString() + ", " + value.ToString() + ") failed with :\"" + err.Message + "\"");
+                                Exceptor.Throw<WiseException>("Value.set", $"{WiseName}: UL DOut({porttype}, 0x{value:x}) failed with :\"{err.Message}\"");
                             }
                         }
                         else
@@ -206,7 +203,7 @@ namespace ASCOM.Wise40.Hardware
                                 err = wiseBoard.mccBoard.DOut(porttype, value);
                             }
                             if (err.Value != ErrorInfo.ErrorCode.NoErrors)
-                                throw new WiseException(WiseName + ": UL DOut(" + porttype.ToString() + ", " + value.ToString() + ") failed with :\"" + err.Message + "\"");
+                                Exceptor.Throw<WiseException>("Value.set", $"{WiseName}: UL DOut({porttype}, 0x{value:x}) failed with :\"{err.Message}\"");
                         }
 
                         _value = value;
@@ -220,29 +217,29 @@ namespace ASCOM.Wise40.Hardware
         /// <summary>
         ///  Remembers who owns the various bits of the Daq
         /// </summary>
-       public void setOwner(string owner, int bit)
+       public void SetOwner(string owner, int bit)
         {
             owners[bit].owner = owner;
         }
 
-        public void unsetOwner(int bit)
+        public void UnsetOwner(int bit)
         {
             owners[bit].owner = null;
         }
 
-        public void unsetOwners()
+        public void UnsetOwners()
         {
             for (int i = 0; i < nbits; i++)
-                unsetOwner(i);
+                UnsetOwner(i);
         }
 
-        public void setOwners(string owner)
+        public void SetOwners(string owner)
         {
             for (int bit = 0; bit < nbits; bit++)
-                setOwner(owner, bit);
+                SetOwner(owner, bit);
         }
 
-        public string ownersToString()
+        public string OwnersToString()
         {
             string ret = null;
 
@@ -283,9 +280,10 @@ namespace ASCOM.Wise40.Hardware
 
         public static DaqDigest FromHardware(WiseDaq daq)
         {
-            DaqDigest ret = new DaqDigest();
-
-            ret.Value = daq.Value;
+            DaqDigest ret = new DaqDigest
+            {
+                Value = daq.Value
+            };
 
             return ret;
         }

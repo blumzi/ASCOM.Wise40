@@ -13,16 +13,13 @@ namespace ASCOM.Wise40.Hardware
     {
         public const double DefaultTimeoutMillis = 2000.0;
         public static readonly int DefaultMaxTries = 20;
-        private double _timeoutMillis;    // milliseconds between Daq reads
-        private int _maxTries;
-        private Stopwatch stopwatch;
-        List<WiseDaq> daqs;
-        object _lock = new object();
+        private readonly double _timeoutMillis;    // milliseconds between Daq reads
+        private readonly int _maxTries;
+        private readonly Stopwatch stopwatch;
+        private readonly List<WiseDaq> daqs;
+        private readonly object _lock = new object();
 
-        DateTime lastRead;
-        List<uint> lastResults;
-
-        Common.Debugger debugger = Common.Debugger.Instance;
+        private readonly Common.Debugger debugger = Common.Debugger.Instance;
 
         public AtomicReader(string name, List<WiseDaq> daqs,
             double timeoutMillis = Const.defaultReadTimeoutMillis,
@@ -48,7 +45,7 @@ namespace ASCOM.Wise40.Hardware
                 {
                     lock (_lock)
                     {
-                        results = new List<uint>(daqs.Count());
+                        results = new List<uint>(daqs.Count);
                         foreach (var daq in daqs)
                         {
                             uint v;
@@ -72,29 +69,26 @@ namespace ASCOM.Wise40.Hardware
                         }
                     }
 
-                    if (results.Count() == daqs.Count())
+                    if (results.Count == daqs.Count)
                     {
                         #region debug
-                        string s = "[" + this.GetHashCode().ToString() + "] AtomicReader " + WiseName + " :Values: ";
+                        string s = $"[{GetHashCode()}] AtomicReader {WiseName}:Values: ";
                         foreach (var res in results)
-                            s += res.ToString() + " ";
+                            s += $"{res} ";
                         s += "inter daqs (";
                         foreach (WiseDaq daq in daqs)
-                            s += daq.WiseName + " ";
-                        s += ") " + elapsedMillis.Count + " read times: ";
+                            s += $"{daq.WiseName} ";
+                        s += ") {elapsedMillis.Count} read times: ";
                         foreach (double m in elapsedMillis)
-                            s += m.ToString() + " ";
+                            s += $"{m} ";
 
                         s += ", ticks: ";
                         foreach (long t in elapsedTicks)
-                            s += t.ToString() + " ";
+                            s += $"{t} ";
                         debugger.WriteLine(Common.Debugger.DebugLevel.DebugDAQs, s);
                         #endregion
-                        lastRead = DateTime.Now;
-                        lastResults = results;
                         return results;
                     }
-                    
                 } while (--tries > 0);
 
                 #region debug
@@ -110,7 +104,8 @@ namespace ASCOM.Wise40.Hardware
 
                 debugger.WriteLine(Common.Debugger.DebugLevel.DebugDAQs, err);
                 #endregion
-                throw new WiseException(err);
+                Exceptor.Throw<WiseException>("Values", err);
+                return new List<uint>();
             }
         }
     }

@@ -21,7 +21,6 @@
 // --------------------------------------------------------------------------------
 //
 
-
 // This is used to define code in the template that is specific to one class implementation
 // unused code canbe deleted and this definition removed.
 #define ObservingConditions
@@ -57,7 +56,7 @@ namespace ASCOM.Wise40.Boltwood
     [ComVisible(true)]
     public class ObservingConditions : IObservingConditions
     {
-        private static WiseBoltwood boltwood = WiseBoltwood.Instance;
+        private static readonly WiseBoltwood boltwood = WiseBoltwood.Instance;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Wise40.Boltwood"/> class.
@@ -67,7 +66,6 @@ namespace ASCOM.Wise40.Boltwood
         {
             ReadProfile(); // Read device configuration from the ASCOM Profile store 
         }
-
 
         //
         // PUBLIC COM INTERFACE IObservingConditions IMPLEMENTATION
@@ -102,24 +100,21 @@ namespace ASCOM.Wise40.Boltwood
         public void CommandBlind(string command, bool raw)
         {
             CheckConnected("CommandBlind");
-            throw new ASCOM.MethodNotImplementedException("CommandBlind");
+            Exceptor.Throw<MethodNotImplementedException>("CommandBlind", "Not implemented");
         }
 
         public bool CommandBool(string command, bool raw)
         {
             CheckConnected("CommandBool");
-            string ret = CommandString(command, raw);
-            throw new ASCOM.MethodNotImplementedException("CommandBool");
+            Exceptor.Throw<MethodNotImplementedException>("CommandBool", "Not implemented");
+            return false;
         }
 
         public string CommandString(string command, bool raw)
         {
             CheckConnected("CommandString");
-            // it's a good idea to put all the low level communication with the device here,
-            // then all communication calls this function
-            // you need something to ensure that only one command is in progress at a time
-
-            throw new ASCOM.MethodNotImplementedException("CommandString");
+            Exceptor.Throw<MethodNotImplementedException>("CommandString", "Not implemented");
+            return string.Empty;
         }
 
         public void Dispose()
@@ -236,7 +231,7 @@ namespace ASCOM.Wise40.Boltwood
         /// Atmospheric relative humidity at the observatory in percent
         /// </summary>
         /// <remarks>
-        /// Normally optional but mandatory if <see cref="ASCOM.DeviceInterface.IObservingConditions.DewPoint"/> 
+        /// Normally optional but mandatory if <see cref="ASCOM.DeviceInterface.IObservingConditions.DewPoint"/>
         /// Is provided
         /// </remarks>
         public double Humidity
@@ -293,12 +288,12 @@ namespace ASCOM.Wise40.Boltwood
         /// <param name="PropertyName">Name of the property whose sensor description is required</param>
         /// <returns>The sensor description string</returns>
         /// <remarks>
-        /// PropertyName must be one of the sensor properties, 
+        /// PropertyName must be one of the sensor properties,
         /// properties that are not implemented must throw the MethodNotImplementedException
         /// </remarks>
         public string SensorDescription(string PropertyName)
         {
-            return boltwood.SensorDescription(PropertyName);
+            return WiseBoltwood.SensorDescription(PropertyName);
         }
 
         /// <summary>
@@ -490,7 +485,11 @@ namespace ASCOM.Wise40.Boltwood
         /// This technique should mean that it is never necessary to manually register a driver with ASCOM.
         /// </remarks>
         [ComRegisterFunction]
+#pragma warning disable RCS1163 // Unused parameter.
+#pragma warning disable IDE0060 // Remove unused parameter
         public static void RegisterASCOM(Type t)
+#pragma warning restore IDE0060 // Remove unused parameter
+#pragma warning restore RCS1163 // Unused parameter.
         {
             RegUnregASCOM(true);
         }
@@ -513,7 +512,11 @@ namespace ASCOM.Wise40.Boltwood
         /// This technique should mean that it is never necessary to manually unregister a driver from ASCOM.
         /// </remarks>
         [ComUnregisterFunction]
+#pragma warning disable RCS1163 // Unused parameter.
+#pragma warning disable IDE0060 // Remove unused parameter
         public static void UnregisterASCOM(Type t)
+#pragma warning restore IDE0060 // Remove unused parameter
+#pragma warning restore RCS1163 // Unused parameter.
         {
             RegUnregASCOM(false);
         }
@@ -539,9 +542,7 @@ namespace ASCOM.Wise40.Boltwood
         private void CheckConnected(string message)
         {
             if (!IsConnected)
-            {
-                throw new ASCOM.NotConnectedException(message);
-            }
+                Exceptor.Throw<NotConnectedException>("CheckConnected", message);
         }
 
         /// <summary>

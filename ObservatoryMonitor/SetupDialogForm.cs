@@ -55,7 +55,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
         private void InitUI()
         {
-            _mainForm.ReadProfile();
+            ObsMainForm.ReadProfile();
             textBoxMonitoringFrequency.Text = _mainForm.MinutesBetweenChecks.ToString();
             textBoxIdleAfterMinutes.Text = ObsMainForm.MinutesToIdle.ToString();
         }

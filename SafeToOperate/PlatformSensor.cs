@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-
 using ASCOM.Wise40;
 using ASCOM.Wise40.Common;
 using ASCOM.Wise40.Hardware;
@@ -14,7 +13,7 @@ namespace ASCOM.Wise40SafeToOperate
 {
     public class PlatformSensor : Sensor
     {
-        private WisePin domePlatformIsDownPin;
+        private readonly WisePin domePlatformIsDownPin;
         private bool _wasSafe = false;
         private string _status;
 
@@ -41,7 +40,7 @@ namespace ASCOM.Wise40SafeToOperate
             };
         }
 
-        public override string reason()
+        public override string UnsafeReason()
         {
             return "Platform is RAISED";
         }
@@ -61,7 +60,7 @@ namespace ASCOM.Wise40SafeToOperate
             get { return 0.ToString(); }
         }
 
-        public override Reading getReading()
+        public override Reading GetReading()
         {
             if (domePlatformIsDownPin == null)
                 return null;
@@ -83,7 +82,6 @@ namespace ASCOM.Wise40SafeToOperate
             _status = string.Format("Platform is {0}", r.Safe ? "lowered" : "raised");
             if (r.Safe != _wasSafe)
             {
-
                 activityMonitor.Event(new Event.SafetyEvent(
                     sensor: WiseName,
                     details: _status,
@@ -94,8 +92,8 @@ namespace ASCOM.Wise40SafeToOperate
             return r;
         }
 
-        public override void readSensorProfile() { }
-        public override void writeSensorProfile() { }
+        public override void ReadSensorProfile() { }
+        public override void WriteSensorProfile() { }
     }
 
     public class PlatformDigest

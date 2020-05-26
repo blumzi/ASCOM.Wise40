@@ -15,13 +15,14 @@ namespace ASCOM.Wise40SafeToOperate
         private string _status;
 
         public RainSensor(WiseSafeToOperate instance) :
-            base("Rain", 
+            base("Rain",
                 Attribute.Periodic |
                 Attribute.CanBeStale |
                 Attribute.CanBeBypassed,
                 "", "", "f0", "RainRate",
-                instance) { }
-        
+                instance)
+        { }
+
         public override object Digest()
         {
             return new RainDigest()
@@ -31,18 +32,18 @@ namespace ASCOM.Wise40SafeToOperate
             };
         }
 
-        public override void readSensorProfile()
+        public override void ReadSensorProfile()
         {
             const double defaultMax = 0.0;
             MaxAsString = wisesafetooperate._profile.GetValue(Const.WiseDriverID.SafeToOperate, WiseName, "Max", defaultMax.ToString());
         }
 
-        public override void writeSensorProfile()
+        public override void WriteSensorProfile()
         {
             wisesafetooperate._profile.WriteValue(Const.WiseDriverID.SafeToOperate, WiseName, MaxAsString, "Max");
         }
 
-        public override Reading getReading()
+        public override Reading GetReading()
         {
             if (WiseSite.och == null)
                 return null;
@@ -71,7 +72,7 @@ namespace ASCOM.Wise40SafeToOperate
             return r;
         }
 
-        public override string reason()
+        public override string UnsafeReason()
         {
             return string.Format("{0} out of {1} recent rain rate readings were higher than {2}", _nbad, _repeats, FormatVerbal(_max));
         }

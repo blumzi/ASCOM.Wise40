@@ -8,7 +8,7 @@ namespace ASCOM.Wise40SafeToOperate
 {
     public class TessWRefresher: Sensor
     {
-        private ASCOM.DriverAccess.ObservingConditions tessw =
+        private readonly DriverAccess.ObservingConditions tessw =
             new DriverAccess.ObservingConditions("ASCOM.Wise40.TessW.ObservingConditions");
 
         public TessWRefresher(WiseSafeToOperate instance) :
@@ -23,12 +23,12 @@ namespace ASCOM.Wise40SafeToOperate
             tessw.Connected = true;
         }
 
-        public override string reason()
+        public override string UnsafeReason()
         {
             return string.Empty;
         }
 
-        public override Reading getReading()
+        public override Reading GetReading()
         {
             tessw.Refresh();
             return null;
@@ -45,8 +45,8 @@ namespace ASCOM.Wise40SafeToOperate
             set { }
         }
 
-        public override void writeSensorProfile() { }
-        public override void readSensorProfile() { }
+        public override void WriteSensorProfile() { }
+        public override void ReadSensorProfile() { }
 
         public override string Status
         {

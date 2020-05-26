@@ -18,7 +18,7 @@ namespace ASCOM.Wise40.Boltwood
     {
         private bool _initialized = false;
         private bool _connected = false;
-        private static Version version = new Version("0.2");
+        private static readonly Version version = new Version("0.2");
         public static string driverDescription = string.Format("ASCOM Wise40.Boltwood v{0}", version.ToString());
         private readonly Util utilities = new Util();
 
@@ -38,12 +38,12 @@ namespace ASCOM.Wise40.Boltwood
                 if (lazy.IsValueCreated)
                     return lazy.Value;
 
-                lazy.Value.init();
+                lazy.Value.Init();
                 return lazy.Value;
             }
         }
 
-        public void init()
+        public void Init()
         {
             if (_initialized)
                 return;
@@ -72,7 +72,7 @@ namespace ASCOM.Wise40.Boltwood
             _initialized = true;
         }
 
-        private Common.Debugger debugger = Debugger.Instance;
+        private readonly Debugger debugger = Debugger.Instance;
 
         //
         // PUBLIC COM INTERFACE IObservingConditions IMPLEMENTATION
@@ -103,8 +103,7 @@ namespace ASCOM.Wise40.Boltwood
             }
         }
 
-
-        private static ArrayList supportedActions = new ArrayList() {
+        private static readonly ArrayList supportedActions = new ArrayList() {
             "raw-data",
             "OCHTag",
         };
@@ -119,22 +118,18 @@ namespace ASCOM.Wise40.Boltwood
 
         public string Action(string action, string parameter)
         {
-            string ret = "";
-
             switch (action)
             {
                 case "OCHTag":
-                    ret = "Wise40.Boltwood";
-                    break;
+                    return "Wise40.Boltwood";
 
                 case "raw-data":
-                    ret = AllStationsRawData;
-                    break;
+                    return AllStationsRawData;
 
                 default:
-                    throw new ASCOM.ActionNotImplementedException("Action " + action + " is not implemented by this driver");
+                    Exceptor.Throw<ActionNotImplementedException>("Action", $"Action \"{action}\" is not implemented by this driver");
+                    return "Failed";
             }
-            return ret;
         }
 
         public string AllStationsRawData
@@ -144,8 +139,7 @@ namespace ASCOM.Wise40.Boltwood
                 List<BoltwoodStation.RawData> ret = new List<BoltwoodStation.RawData>();
 
                 foreach (var station in WiseBoltwood.stations)
-                    if (station.Enabled)
-                        ret.Add(station.GetRawData());
+                    if (station.Enabled) ret.Add(station.GetRawData());
 
                 return JsonConvert.SerializeObject(ret);
             }
@@ -159,31 +153,28 @@ namespace ASCOM.Wise40.Boltwood
         {
             if (!_connected)
             {
-                throw new ASCOM.NotConnectedException(message);
+                Exceptor.Throw<NotConnectedException>("CheckConnected", message);
             }
         }
 
         public void CommandBlind(string command, bool raw)
         {
             CheckConnected("CommandBlind");
-            throw new ASCOM.MethodNotImplementedException("CommandBlind");
+            Exceptor.Throw<MethodNotImplementedException>("CommandBlind", "Not implemented");
         }
 
         public bool CommandBool(string command, bool raw)
         {
             CheckConnected("CommandBool");
-            string ret = CommandString(command, raw);
-            throw new ASCOM.MethodNotImplementedException("CommandBool");
+            Exceptor.Throw<MethodNotImplementedException>("CommandBool", "Not implemented");
+            return false;
         }
 
         public string CommandString(string command, bool raw)
         {
             CheckConnected("CommandString");
-            // it's a good idea to put all the low level communication with the device here,
-            // then all communication calls this function
-            // you need something to ensure that only one command is in progress at a time
-
-            throw new ASCOM.MethodNotImplementedException("CommandString");
+            Exceptor.Throw<MethodNotImplementedException>("CommandString", "Not implemented");
+            return string.Empty;
         }
 
         public void Dispose()
@@ -229,15 +220,7 @@ namespace ASCOM.Wise40.Boltwood
         {
             get
             {
-                return "Information about the driver itself. Version: " + String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
-            }
-        }
-
-        public static string driverVersion
-        {
-            get
-            {
-                return DriverVersion;
+                return "Version: " + String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
             }
         }
 
@@ -289,28 +272,24 @@ namespace ASCOM.Wise40.Boltwood
             set
             {
                 if (value != 0)
-                    throw new InvalidValueException("Only 0.0 accepted");
+                    Exceptor.Throw<InvalidValueException>("AveragePeriod", "Only 0.0 accepted");
             }
         }
 
         private double CloudConditionToNumeric(SensorData.CloudCondition condition)
         {
-            double ret = 0.0;
 
             switch (condition)
             {
                 case SensorData.CloudCondition.cloudClear:
                 case SensorData.CloudCondition.cloudUnknown:
-                    ret = 0.0;
-                    break;
+                    return 0.0;
                 case SensorData.CloudCondition.cloudCloudy:
-                    ret = 50.0;
-                    break;
+                    return 50.0;
                 case SensorData.CloudCondition.cloudVeryCloudy:
-                    ret = 90.0;
-                    break;
+                    return 90.0;
             }
-            return ret;
+            return 0.0;
         }
 
         /// <summary>
@@ -348,8 +327,10 @@ namespace ASCOM.Wise40.Boltwood
         private void GetAllStationsSensorData()
         {
             foreach (var station in stations)
+            {
                 if (station.Enabled)
                     station.GetSensorData();
+            }
         }
 
         public SensorData.CloudCondition CloudCover_condition
@@ -395,7 +376,7 @@ namespace ASCOM.Wise40.Boltwood
         /// Atmospheric relative humidity at the observatory in percent
         /// </summary>
         /// <remarks>
-        /// Normally optional but mandatory if <see cref="ASCOM.DeviceInterface.IObservingConditions.DewPoint"/> 
+        /// Normally optional but mandatory if <see cref="ASCOM.DeviceInterface.IObservingConditions.DewPoint"/>
         /// Is provided
         /// </remarks>
         public double Humidity
@@ -426,7 +407,8 @@ namespace ASCOM.Wise40.Boltwood
         {
             get
             {
-                throw new PropertyNotImplementedException("Pressure", false);
+                Exceptor.Throw<PropertyNotImplementedException>("Pressure", "Not implemented");
+                return Double.NaN;
             }
         }
 
@@ -441,7 +423,8 @@ namespace ASCOM.Wise40.Boltwood
         {
             get
             {
-                throw new PropertyNotImplementedException("RainRate", false);
+                Exceptor.Throw<PropertyNotImplementedException>("RainRate", "Not implemented");
+                return Double.NaN;
             }
         }
 
@@ -464,10 +447,10 @@ namespace ASCOM.Wise40.Boltwood
         /// <param name="PropertyName">Name of the property whose sensor description is required</param>
         /// <returns>The sensor description string</returns>
         /// <remarks>
-        /// PropertyName must be one of the sensor properties, 
+        /// PropertyName must be one of the sensor properties,
         /// properties that are not implemented must throw the MethodNotImplementedException
         /// </remarks>
-        public string SensorDescription(string PropertyName)
+        public static string SensorDescription(string PropertyName)
         {
             switch (PropertyName)
             {
@@ -487,9 +470,11 @@ namespace ASCOM.Wise40.Boltwood
                 case "StarFWHM":
                 case "WindDirection":
                 case "WindGust":
-                    throw new MethodNotImplementedException("SensorDescription(" + PropertyName + ")");
+                    Exceptor.Throw<MethodNotImplementedException>("SensorDescription(" + PropertyName + ")", "Not implemented");
+                    return string.Empty;
                 default:
-                    throw new ASCOM.InvalidValueException("SensorDescription(" + PropertyName + ")");
+                    Exceptor.Throw<InvalidValueException>("SensorDescription(" + PropertyName + ")", $"Invalid value \"{PropertyName}\"");
+                    return string.Empty;
             }
         }
 
@@ -500,7 +485,8 @@ namespace ASCOM.Wise40.Boltwood
         {
             get
             {
-                throw new PropertyNotImplementedException("SkyBrightness", false);
+                Exceptor.Throw<PropertyNotImplementedException>("SkyBrightness", "Not implemented");
+                return Double.NaN;
             }
         }
 
@@ -511,7 +497,8 @@ namespace ASCOM.Wise40.Boltwood
         {
             get
             {
-                throw new PropertyNotImplementedException("SkyQuality", false);
+                Exceptor.Throw<PropertyNotImplementedException>("SkyQuality", "Not implemented");
+                return Double.NaN;
             }
         }
 
@@ -522,7 +509,8 @@ namespace ASCOM.Wise40.Boltwood
         {
             get
             {
-                throw new PropertyNotImplementedException("StarFWHM", false);
+                Exceptor.Throw<PropertyNotImplementedException>("StarFWHM", "Not implemented");
+                return Double.NaN;
             }
         }
 
@@ -601,7 +589,8 @@ namespace ASCOM.Wise40.Boltwood
                 case "Pressure":
                 case "RainRate":
                 case "WindDirection":
-                    throw new MethodNotImplementedException("SensorDescription(" + PropertyName + ")");
+                    Exceptor.Throw<MethodNotImplementedException>("TimeSinceLastUpdate(" + PropertyName + ")", "Not implemented");
+                    return Double.NaN;
             }
 
             return C18Station.SensorData.age;
@@ -618,7 +607,8 @@ namespace ASCOM.Wise40.Boltwood
         {
             get
             {
-                throw new PropertyNotImplementedException("WindDirection", false);
+                Exceptor.Throw<PropertyNotImplementedException>("WindDirection", "Not implemented");
+                return double.NaN;
             }
         }
 
@@ -629,7 +619,8 @@ namespace ASCOM.Wise40.Boltwood
         {
             get
             {
-                throw new PropertyNotImplementedException("WindGust", false);
+                Exceptor.Throw<PropertyNotImplementedException>("WindGust", "Not implemented");
+                return double.NaN;
             }
         }
 
@@ -692,13 +683,7 @@ namespace ASCOM.Wise40.Boltwood
 
     public class BoltwoodStation : WeatherStation
     {
-        private int _id;
-        private bool _enabled;
-        private string _name;
-        private string _file;
-        private WeatherStationVendor _vendor = WeatherStationVendor.Boltwood;
         public WeatherStationModel _model = WeatherStationModel.CloudSensorII;
-        private WeatherStationInputMethod _method;
         private DateTime _lastDataRead = DateTime.MinValue;
         private SensorData _sensorData = null;
 
@@ -711,13 +696,7 @@ namespace ASCOM.Wise40.Boltwood
                 _weatherLogger = new WeatherLogger(stationName: Name);
         }
 
-        public override WeatherStationVendor Vendor
-        {
-            get
-            {
-                return _vendor;
-            }
-        }
+        public override WeatherStationVendor Vendor { get; } = WeatherStationVendor.Boltwood;
 
         public override WeatherStationModel Model
         {
@@ -737,9 +716,7 @@ namespace ASCOM.Wise40.Boltwood
                 Enabled = Convert.ToBoolean(driverProfile.GetValue(Const.WiseDriverID.Boltwood, Const.ProfileName.Boltwood_Enabled, subKey, "false"));
                 FilePath = driverProfile.GetValue(Const.WiseDriverID.Boltwood, Const.ProfileName.Boltwood_DataFile, subKey, string.Empty);
 
-                WeatherStationInputMethod method;
-
-                if (Enum.TryParse<WeatherStationInputMethod>(driverProfile.GetValue(Const.WiseDriverID.Boltwood, Const.ProfileName.Boltwood_InputMethod, null, "ClarityII"), out method))
+                if (Enum.TryParse<WeatherStationInputMethod>(driverProfile.GetValue(Const.WiseDriverID.Boltwood, Const.ProfileName.Boltwood_InputMethod, null, "ClarityII"), out WeatherStationInputMethod method))
                     InputMethod = method;
             }
         }
@@ -772,16 +749,18 @@ namespace ASCOM.Wise40.Boltwood
                     break;
             }
         }
+
         private void GetWeizmannSensorData() { }
+
         private void GetClarityIISensorData()
         {
-            string str;
+            string str = "";
 
-            if (FilePath == null || FilePath == string.Empty)
-                throw new InvalidOperationException("GetSensorData: _dataFile name is either null or empty!");
+            if (string.IsNullOrEmpty(FilePath))
+                Exceptor.Throw<InvalidOperationException>("GetSensorData", "_dataFile name is either null or empty!");
 
             if (!System.IO.File.Exists(FilePath))
-                throw new InvalidOperationException(string.Format("GetSensorData: _dataFile \"{0}\" DOES NOT exist!", FilePath));
+                Exceptor.Throw<InvalidOperationException>("GetSensorData", $"_dataFile \"{FilePath}\" DOES NOT exist!");
 
             if (_lastDataRead == DateTime.MinValue || System.IO.File.GetLastWriteTime(FilePath).CompareTo(_lastDataRead) > 0)
             {
@@ -794,7 +773,7 @@ namespace ASCOM.Wise40.Boltwood
                 }
                 catch (Exception e)
                 {
-                    throw new InvalidOperationException(string.Format("GetSensorData: Cannot read \"{0}\", caught {1}", FilePath, e.Message));
+                    Exceptor.Throw<InvalidOperationException>("GetSensorData", $"Cannot read \"{FilePath}\", caught {e.Message}");
                 }
 
                 _sensorData = new SensorData(str, this);
@@ -810,70 +789,15 @@ namespace ASCOM.Wise40.Boltwood
             }
         }
 
-        public string Name
-        {
-            get
-            {
-                return _name;
-            }
+        public string Name { get; set; }
 
-            set
-            {
-                _name = value;
-            }
-        }
+        public int Id { get; set; }
 
-        public int Id
-        {
-            get
-            {
-                return _id;
-            }
+        public override bool Enabled { get; set; }
 
-            set
-            {
-                _id = value;
-            }
-        }
+        public override WeatherStationInputMethod InputMethod { get; set; }
 
-        public override bool Enabled
-        {
-            get
-            {
-                return _enabled;
-            }
-
-            set
-            {
-                _enabled = value;
-            }
-        }
-
-        public override WeatherStationInputMethod InputMethod
-        {
-            get
-            {
-                return _method;
-            }
-
-            set
-            {
-                _method = value;
-            }
-        }
-
-        public string FilePath
-        {
-            get
-            {
-                return _file;
-            }
-
-            set
-            {
-                _file = value;
-            }
-        }
+        public string FilePath { get; set; }
 
         public RawData GetRawData()
         {

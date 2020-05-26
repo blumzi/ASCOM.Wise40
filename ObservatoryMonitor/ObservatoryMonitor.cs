@@ -375,7 +375,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             string text, tip = "";
             string reasons = string.Join(",", safetooperateDigest.UnsafeReasons);
             Color color;
-            
+
             if (!safetooperateDigest.HumanIntervention.Safe)
             {
                 text = "Intervention";
@@ -423,7 +423,9 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             UpdateConditionsBypassToolStripMenuItem(safetooperateDigest.Bypassed);
         }
 
+#pragma warning disable IDE1006 // Naming Styles
         private void timerDisplayRefresh_Tick(object sender, EventArgs e)
+#pragma warning restore IDE1006 // Naming Styles
         {
             RefreshDisplay();
         }
@@ -544,7 +546,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
                 if (!wisetelescope.AtPark || !ObservatoryIsPhysicallyParked)
                 {
-                    if (CT.IsCancellationRequested) throw new Exception("Shutdown aborted");
+                    if (CT.IsCancellationRequested) Exceptor.Throw<Exception>($"ShutdownObservatory({reason})", "Shutdown aborted");
 
                     shuttingDown = true;
                     Log($"   Starting Wise40 park (reason: {reason}) ...");
@@ -557,7 +559,11 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                         try
                         {
                             if (wisetelescope.Action("shutdown", reason) != "ok")
-                                throw new OperationCanceledException("Action(\"telescope:shutdown\") did not reply with \"ok\"");
+                            {
+                                Exceptor.Throw<OperationCanceledException>($"ShutdownObservatory({reason})",
+                                    "Action(\"telescope:shutdown\") did not reply with \"ok\"");
+                            }
+
                             labelActivity.Text = "ShuttingDown";
                             labelActivity.ForeColor = warningColor;
                             toolTip.SetToolTip(labelActivity, "Wise40 is shutting down");
@@ -579,13 +585,13 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                         if (CT.IsCancellationRequested)
                         {
                             telescopeShutdownTask.Dispose();
-                            throw new Exception("Shutdown aborted");
+                            Exceptor.Throw<Exception>($"ShutdownObservatory({reason})", "Shutdown aborted");
                         }
                         SleepWhileProcessingEvents();
                         if (CT.IsCancellationRequested)
                         {
                             telescopeShutdownTask.Dispose();
-                            throw new Exception("Shutdown aborted");
+                            Exceptor.Throw<Exception>($"ShutdownObservatory({reason})", "Shutdown aborted");
                         }
 
                         try
@@ -650,7 +656,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                             if (CT.IsCancellationRequested)
                             {
                                 wisedome.AbortSlew();
-                                throw new Exception("Shutdown aborted");
+                                Exceptor.Throw<Exception>($"ShutdownObservatory({reason})", "Shutdown aborted");
                             }
                             SleepWhileProcessingEvents();
                             Angle az = DomeAzimuth;
@@ -665,7 +671,9 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                         wisedome.CloseShutter();
                         do
                         {
-                            if (CT.IsCancellationRequested) throw new Exception("Shutdown aborted");
+                            if (CT.IsCancellationRequested)
+                                Exceptor.Throw<Exception>($"ShutdownObservatory({reason})", "Shutdown aborted");
+
                             SleepWhileProcessingEvents();
                             Log("    Shutter is closing ...", 10);
                         } while (wisedome.ShutterStatus != ShutterState.shutterClosed);
@@ -755,7 +763,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             if (HumanIntervention.IsSet())
             {
                 BackgroundWorker bw = new BackgroundWorker();
-                bw.DoWork += new DoWorkEventHandler(RemoveHumanInterventionFile);
+                bw.DoWork += RemoveHumanInterventionFile;
                 bw.RunWorkerCompleted += new RunWorkerCompletedEventHandler(afterRemoveHumanInterventionFile);
                 bw.RunWorkerAsync();
             }
@@ -769,13 +777,13 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             updateManualInterventionControls();
             CheckSituation();
         }
-        
+
         private void SelectOpMode(object sender, EventArgs e)
         {
             ToolStripMenuItem selectedItem = sender as ToolStripMenuItem;
             WiseSite.OpMode mode = (selectedItem == wISEToolStripMenuItem) ? WiseSite.OpMode.WISE :
                 (selectedItem == lCOToolStripMenuItem) ? WiseSite.OpMode.LCO : WiseSite.OpMode.ACP;
-            
+
             WiseSite.OperationalMode = mode;
 
             UpdateOpModeControls();
@@ -832,7 +840,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             new ObservatoryMonitorSetupDialogForm(this).Show();
         }
 
-        public void ReadProfile()
+        public static void ReadProfile()
         {
             using (Profile driverProfile = new Profile() { DeviceType = "SafetyMonitor" })
             {

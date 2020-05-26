@@ -71,7 +71,7 @@ namespace ASCOM.Wise40 //.Telescope
 
             timer.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
             motorStopPoint = new DataPoint(motorStop.Subtract(start).TotalMilliseconds, motorStopValue);
-            while (wisetele.AxisIsMoving(axis))
+            while (WiseTele.AxisIsMoving(axis))
             {
                 Thread.Sleep(samplingIntervalMillis);
                 sampleMotion(null);
