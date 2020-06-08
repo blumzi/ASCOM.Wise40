@@ -15,12 +15,12 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 {
     public partial class InterventionForm : Form
     {
-        static string _operator = string.Empty;
+        private static string _operator = string.Empty;
 
         public InterventionForm()
         {
             InitializeComponent();
-            if (_operator != string.Empty)
+            if (!string.IsNullOrEmpty(_operator))
                 textBoxOperator.Text = _operator;
 
             cmdOK.DialogResult = DialogResult.OK;

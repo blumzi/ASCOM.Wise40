@@ -17,12 +17,8 @@ namespace Dash
 {
     public partial class PulseGuideForm : Form
     {
-        private static WiseTele wisetele = WiseTele.Instance;
-        //private double[] ra = new double[2];
-        //private double[] dec = new double[2];
-        //private double[] raEnc = new double[2];
-        //private double[] decEnc = new double[2];
-        private Statuser statuser;
+        private static readonly WiseTele wisetele = WiseTele.Instance;
+        private readonly Statuser statuser;
 
         private enum RaTrackBar { West, None, East };
         private enum DecTrackBar { South, None, North };
@@ -36,16 +32,16 @@ namespace Dash
             public double enc_before, enc_after;
         };
 
-        Movement primaryMovement = new Movement() { moving = false };
-        Movement secondaryMovement = new Movement() { moving = false };
+        private readonly Movement primaryMovement = new Movement() { moving = false };
+        private readonly Movement secondaryMovement = new Movement() { moving = false };
 
-        private Dictionary<TelescopeAxes, Movement> move = new Dictionary<TelescopeAxes, Movement>();
+        private readonly Dictionary<TelescopeAxes, Movement> CurrentMove = new Dictionary<TelescopeAxes, Movement>();
 
         public PulseGuideForm()
         {
             InitializeComponent();
-            move.Add(TelescopeAxes.axisPrimary, primaryMovement);
-            move.Add(TelescopeAxes.axisSecondary, secondaryMovement);
+            CurrentMove.Add(TelescopeAxes.axisPrimary, primaryMovement);
+            CurrentMove.Add(TelescopeAxes.axisSecondary, secondaryMovement);
             statuser = new Statuser(labelStatus);
             statuser.Show("");
         }
@@ -58,50 +54,50 @@ namespace Dash
         private void buttonGo_Click(object sender, EventArgs e)
         {
             labelRaDeltaDeg.Text = labelDecDeltaDeg.Text = labelRaDeltaEnc.Text = labelDecDeltaEnc.Text = string.Empty;
-            move[TelescopeAxes.axisPrimary].moving = move[TelescopeAxes.axisSecondary].moving = false;
-            
+            CurrentMove[TelescopeAxes.axisPrimary].moving = CurrentMove[TelescopeAxes.axisSecondary].moving = false;
+
             if (radioButtonEast.Checked || radioButtonWest.Checked)
             {
-                move[TelescopeAxes.axisPrimary].moving = true;
-                move[TelescopeAxes.axisPrimary].millis = Convert.ToInt32(textBoxRaMillis.Text);
-                move[TelescopeAxes.axisPrimary].coord_before = wisetele.RightAscension;
-                move[TelescopeAxes.axisPrimary].enc_before = wisetele.HAEncoder.EncoderValue;
-                move[TelescopeAxes.axisPrimary].dir = radioButtonWest.Checked ? 
+                CurrentMove[TelescopeAxes.axisPrimary].moving = true;
+                CurrentMove[TelescopeAxes.axisPrimary].millis = Convert.ToInt32(textBoxRaMillis.Text);
+                CurrentMove[TelescopeAxes.axisPrimary].coord_before = wisetele.RightAscension;
+                CurrentMove[TelescopeAxes.axisPrimary].enc_before = wisetele.HAEncoder.EncoderValue;
+                CurrentMove[TelescopeAxes.axisPrimary].dir = radioButtonWest.Checked ?
                     GuideDirections.guideWest : GuideDirections.guideEast;
             }
-            
+
             if (radioButtonNorth.Checked || radioButtonSouth.Checked)
             {
-                move[TelescopeAxes.axisSecondary].moving = true;
-                move[TelescopeAxes.axisSecondary].millis = Convert.ToInt32(textBoxDecMillis.Text);
-                move[TelescopeAxes.axisSecondary].coord_before = wisetele.Declination;
-                move[TelescopeAxes.axisSecondary].enc_before = wisetele.DecEncoder.EncoderValue;
-                move[TelescopeAxes.axisSecondary].dir = radioButtonNorth.Checked ?
+                CurrentMove[TelescopeAxes.axisSecondary].moving = true;
+                CurrentMove[TelescopeAxes.axisSecondary].millis = Convert.ToInt32(textBoxDecMillis.Text);
+                CurrentMove[TelescopeAxes.axisSecondary].coord_before = wisetele.Declination;
+                CurrentMove[TelescopeAxes.axisSecondary].enc_before = wisetele.DecEncoder.EncoderValue;
+                CurrentMove[TelescopeAxes.axisSecondary].dir = radioButtonNorth.Checked ?
                     GuideDirections.guideNorth : GuideDirections.guideSouth;
             }
 
-            if (!move[TelescopeAxes.axisPrimary].moving && !move[TelescopeAxes.axisSecondary].moving)
+            if (!CurrentMove[TelescopeAxes.axisPrimary].moving && !CurrentMove[TelescopeAxes.axisSecondary].moving)
                 return;
 
             statuser.Show("Guiding ...");
-            
-            if (move[TelescopeAxes.axisPrimary].moving)
+
+            if (CurrentMove[TelescopeAxes.axisPrimary].moving)
             {
                 try
                 {
-                    wisetele.PulseGuide(move[TelescopeAxes.axisPrimary].dir, move[TelescopeAxes.axisPrimary].millis);
+                    wisetele.PulseGuide(CurrentMove[TelescopeAxes.axisPrimary].dir, CurrentMove[TelescopeAxes.axisPrimary].millis);
                 }
                 catch (Exception ex)
                 {
                     statuser.Show(ex.Message, 5000, Statuser.Severity.Error);
                 }
             }
-            
-            if (move[TelescopeAxes.axisSecondary].moving)
+
+            if (CurrentMove[TelescopeAxes.axisSecondary].moving)
             {
                 try
                 {
-                    wisetele.PulseGuide(move[TelescopeAxes.axisSecondary].dir, move[TelescopeAxes.axisSecondary].millis);
+                    wisetele.PulseGuide(CurrentMove[TelescopeAxes.axisSecondary].dir, CurrentMove[TelescopeAxes.axisSecondary].millis);
                 }
                 catch (Exception ex)
                 {
@@ -113,32 +109,27 @@ namespace Dash
                 Application.DoEvents();
 
             statuser.Show("Done.", 2000);
-            
-            if (move[TelescopeAxes.axisPrimary].moving)
+
+            if (CurrentMove[TelescopeAxes.axisPrimary].moving)
             {
-                move[TelescopeAxes.axisPrimary].coord_after = wisetele.RightAscension;
-                move[TelescopeAxes.axisPrimary].enc_after = wisetele.HAEncoder.EncoderValue;
-                labelRaDeltaDeg.Text = (new Angle(Math.Abs(move[TelescopeAxes.axisPrimary].coord_after - move[TelescopeAxes.axisPrimary].coord_before), Angle.AngleType.RA)).ToString();
-                labelRaDeltaEnc.Text = (Math.Abs(move[TelescopeAxes.axisPrimary].enc_after - move[TelescopeAxes.axisPrimary].enc_before)).ToString("F0");
+                CurrentMove[TelescopeAxes.axisPrimary].coord_after = wisetele.RightAscension;
+                CurrentMove[TelescopeAxes.axisPrimary].enc_after = wisetele.HAEncoder.EncoderValue;
+                labelRaDeltaDeg.Text = (new Angle(Math.Abs(CurrentMove[TelescopeAxes.axisPrimary].coord_after - CurrentMove[TelescopeAxes.axisPrimary].coord_before), Angle.AngleType.RA)).ToString();
+                labelRaDeltaEnc.Text = (Math.Abs(CurrentMove[TelescopeAxes.axisPrimary].enc_after - CurrentMove[TelescopeAxes.axisPrimary].enc_before)).ToString("F0");
             }
-            
-            if (move[TelescopeAxes.axisSecondary].moving)
+
+            if (CurrentMove[TelescopeAxes.axisSecondary].moving)
             {
-                move[TelescopeAxes.axisSecondary].coord_after = wisetele.Declination;
-                move[TelescopeAxes.axisSecondary].enc_after = wisetele.DecEncoder.EncoderValue;
-                labelDecDeltaDeg.Text = (new Angle(Math.Abs(move[TelescopeAxes.axisSecondary].coord_after - move[TelescopeAxes.axisSecondary].coord_before), Angle.AngleType.Dec)).ToString();
-                labelDecDeltaEnc.Text = (Math.Abs(move[TelescopeAxes.axisSecondary].enc_after - move[TelescopeAxes.axisSecondary].enc_before)).ToString("F0");
+                CurrentMove[TelescopeAxes.axisSecondary].coord_after = wisetele.Declination;
+                CurrentMove[TelescopeAxes.axisSecondary].enc_after = wisetele.DecEncoder.EncoderValue;
+                labelDecDeltaDeg.Text = (new Angle(Math.Abs(CurrentMove[TelescopeAxes.axisSecondary].coord_after - CurrentMove[TelescopeAxes.axisSecondary].coord_before), Angle.AngleType.Dec)).ToString();
+                labelDecDeltaEnc.Text = (Math.Abs(CurrentMove[TelescopeAxes.axisSecondary].enc_after - CurrentMove[TelescopeAxes.axisSecondary].enc_before)).ToString("F0");
             }
         }
 
         private void buttonStop_Click(object sender, EventArgs e)
         {
             wisetele.pulsing.Abort();
-        }
-
-        private void label4_Click(object sender, EventArgs e)
-        {
-
         }
     }
 }

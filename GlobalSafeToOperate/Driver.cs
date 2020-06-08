@@ -84,7 +84,6 @@ namespace ASCOM.Wise
             wisesafetooperate = new DriverAccess.SafetyMonitor("ASCOM.Remote1.SafetyMonitor");
         }
 
-
         //
         // PUBLIC COM INTERFACE ISafetyMonitor IMPLEMENTATION
         //

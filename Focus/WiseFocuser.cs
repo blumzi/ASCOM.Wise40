@@ -412,40 +412,40 @@ namespace ASCOM.Wise40
 
         public void Move(uint targetPos)
         {
+            uint currentPosition = Position;
+            string op = $"Move({targetPos}) from: {currentPosition}";
+
             if (!Connected)
-                Exceptor.Throw<NotConnectedException>("Move", "Not connected!");
+                Exceptor.Throw<NotConnectedException>(op, "Not connected!");
 
             if (IsMoving)
-                Exceptor.Throw<InvalidOperationException>("Move", "Cannot move while IsMoving");
+                Exceptor.Throw<InvalidOperationException>(op, "Cannot move, already moving");
 
             if (!safetooperate.IsSafe)
-                Exceptor.Throw<InvalidOperationException>("Move", string.Join(", ", safetooperate.UnsafeReasonsList()));
+                Exceptor.Throw<InvalidOperationException>(op, string.Join(", ", safetooperate.UnsafeReasonsList()));
 
             if (TempComp)
-                Exceptor.Throw<InvalidOperationException>("Move", "Cannot Move while TempComp == true");
+                Exceptor.Throw<InvalidOperationException>(op, "Cannot Move while TempComp == true");
 
             if (targetPos > UpperLimit || targetPos < LowerLimit)
-                Exceptor.Throw <DriverException>("Move", $"Can only move between {LowerLimit} and {UpperLimit}!");
-
-            uint currentPosition = Position;
+                Exceptor.Throw <DriverException>(op, $"Can only move between {LowerLimit} and {UpperLimit}!");
 
             if (currentPosition == targetPos)
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, "Move({0}) - target same as current, not moving", targetPos);
+                debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, $"{op} - target same as current, not moving");
                 #endregion
                 return;
             }
 
             if (targetPos > currentPosition && ((targetPos - currentPosition) < motionParameters[Direction.Up].stoppingDistance))
-                Exceptor.Throw<InvalidOperationException>("Move", $"Too short. Move at least {motionParameters[Direction.Up].stoppingDistance} positions up!");
+                Exceptor.Throw<InvalidOperationException>(op, $"Too short. Move at least {motionParameters[Direction.Up].stoppingDistance} positions up!");
 
             if (targetPos < currentPosition && ((currentPosition - targetPos) < motionParameters[Direction.Down].stoppingDistance))
-                Exceptor.Throw<InvalidOperationException>("Move", $"Too short. Move at least {motionParameters[Direction.Down].stoppingDistance} positions down!");
+                Exceptor.Throw<InvalidOperationException>(op, $"Too short. Move at least {motionParameters[Direction.Down].stoppingDistance} positions down!");
 
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, "Move: at {0}, targetPos: {1}",
-                currentPosition, targetPos);
+            debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, op);
             #endregion
             _targetPosition = (int) targetPos;
             StartMovingToTarget();

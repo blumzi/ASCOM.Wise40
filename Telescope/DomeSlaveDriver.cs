@@ -97,21 +97,20 @@ namespace ASCOM.Wise40
                 wisedome.SlewToAzimuth(az, reason);
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                    $"DomeSlaveDriver:SlewToAz Waiting for dome to arrive to target {Angle.FromDegrees(az)}");
+                    $"DomeSlaveDriver:SlewToAz Waiting for dome to arrive to target {Angle.FromDegrees(az).ToNiceString()}");
                 #endregion
                 _arrivedAtAz.WaitOne();
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver:SlewToAz Dome arrived to target {0}",
-                    Angle.FromDegrees(az).ToString());
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, $"DomeSlaveDriver:SlewToAz Dome arrived to target {Angle.FromDegrees(az).ToNiceString()}");
                 #endregion
             }
             catch (Exception ex)
             {
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                    $"DomeSlaveDriver:SlewToAz got \"{ex.Message}\"\nat {ex.StackTrace}\nwhile slewing to {azAngle}, Aborting slew!");
+                    $"DomeSlaveDriver:SlewToAz got \"{ex.Message}\"\nat {ex.StackTrace}\nwhile slewing to {azAngle.ToNiceString()}, Aborting slew!");
                 #endregion
-                wisedome.AbortSlew($"from DomeSlaveDriver:SlewToAz({azAngle}, {reason})");
+                wisedome.AbortSlew($"from DomeSlaveDriver:SlewToAz({azAngle.ToNiceString()}, {reason})");
                 //throw ex;
             }
         }
@@ -157,10 +156,9 @@ namespace ASCOM.Wise40
                 debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver: Waiting for dome to findHome");
                 #endregion
             }
-            catch (Exception ex)
+            catch
             {
-                wisedome.AbortSlew("from FindHome()");
-                //throw ex;
+                wisedome.AbortSlew("(FindHome)");
             }
 
             #region debug

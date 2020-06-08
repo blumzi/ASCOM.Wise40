@@ -156,7 +156,7 @@ namespace ASCOM.Wise40.Hardware
                 simulationTimer.Change(Timeout.Infinite, Timeout.Infinite);
 
             string activeBefore = ActiveMortorPins();
-            if (guideMotorPin != null && guideMotorPin.isOn)
+            if (guideMotorPin?.isOn == true)
                 guideMotorPin.SetOff();
 
             if (motorPin?.isOn == true)

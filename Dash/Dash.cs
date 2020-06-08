@@ -108,7 +108,7 @@ namespace Dash
                 focuserLowerLimit = Convert.ToInt32(wiseFocuser.Action("limit", "lower"));
                 focuserUpperLimit = Convert.ToInt32(wiseFocuser.Action("limit", "upper"));
             }
-            catch (Exception ex)
+            catch
             {
                 focuserStatus.Show("Cannot connect to ASCOM server", severity: Statuser.Severity.Error, silent: true);
             }

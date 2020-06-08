@@ -17,8 +17,8 @@ namespace Dash
 {
     public partial class FilterWheelForm : Form
     {
-        private ASCOM.DriverAccess.FilterWheel _wiseFilterWheel;
-        private Statuser _filterWheelStatus;
+        private readonly ASCOM.DriverAccess.FilterWheel _wiseFilterWheel;
+        private readonly Statuser _filterWheelStatus;
         private WiseFilterWheel.Wheel.WheelDigest _currentWheel;
 
         private string FilterName(string s)
@@ -65,13 +65,12 @@ namespace Dash
         }
 
         private void buttonIdentify_Click(object sender, EventArgs e)
-        {
-
-        }
+        {}
 
         private void buttonGoTo_Click(object sender, EventArgs e)
         {
-            short targetPosition = -1;
+            short targetPosition;
+
             try
             {
                 targetPosition = (short)Convert.ToInt32(textBoxPositionValue);
@@ -120,7 +119,7 @@ namespace Dash
 
         private void FilterWheelForm_VisibleChanged(object sender, EventArgs e)
         {
-            timerRefresh.Enabled = Visible ? true : false;
+            timerRefresh.Enabled = Visible;
         }
     }
 }

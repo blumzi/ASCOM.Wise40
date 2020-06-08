@@ -14,7 +14,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
     [ComVisible(false)]					// Form not registered for COM!
     public partial class ObservatoryMonitorSetupDialogForm : Form
     {
-        private ObsMainForm _mainForm;
+        private readonly ObsMainForm _mainForm;
 
         public ObservatoryMonitorSetupDialogForm(ObsMainForm mainForm)
         {

@@ -13,12 +13,12 @@ namespace Wise40Watcher
 {
     public partial class Wise40Watcher : ServiceBase
     {
-        readonly Watcher ascomWatcher;
-        readonly Watcher dashWatcher;
-        readonly Watcher obsmonWatcher;
-        readonly Watcher weatherLinkWatcher;
-        readonly bool weatherLinkNeedsWatching = false;
-        private static readonly string serviceName = "Wise40Watcher";
+        private readonly Watcher ascomWatcher;
+        private readonly Watcher dashWatcher;
+        private readonly Watcher obsmonWatcher;
+        private readonly Watcher weatherLinkWatcher;
+        private readonly bool weatherLinkNeedsWatching = false;
+        private const string serviceName = "Wise40Watcher";
         string _logFile;
 
         public Wise40Watcher()
@@ -27,9 +27,9 @@ namespace Wise40Watcher
 
             using (Profile driverProfile = new Profile() { DeviceType = "ObservingConditions" })
             {
-                WiseVantagePro.OpMode mode;
-
-                Enum.TryParse<WiseVantagePro.OpMode>(driverProfile.GetValue(Const.WiseDriverID.VantagePro, Const.ProfileName.VantagePro_OpMode, string.Empty, WiseVantagePro.OpMode.File.ToString()), out mode);
+                Enum.TryParse<WiseVantagePro.OpMode>(driverProfile.GetValue(Const.WiseDriverID.VantagePro,
+                    Const.ProfileName.VantagePro_OpMode, string.Empty,
+                    nameof(WiseVantagePro.OpMode.File)), out WiseVantagePro.OpMode mode);
                 weatherLinkNeedsWatching = (mode == WiseVantagePro.OpMode.File);
             }
             ascomWatcher = new Watcher("ascom");
@@ -41,7 +41,7 @@ namespace Wise40Watcher
             }
         }
 
-        public void log(string fmt, params object[] o)
+        public void Log(string fmt, params object[] o)
         {
             string logDir = ASCOM.Wise40.Common.Debugger.LogDirectory();
             _logFile = logDir + "/" + serviceName + ".txt";
@@ -57,50 +57,52 @@ namespace Wise40Watcher
 
         protected override void OnStart(string[] args)
         {
-            log("=========== Start ===========");
+            Log("=========== Start ===========");
             if (weatherLinkNeedsWatching)
             {
                 weatherLinkWatcher.Start(args, waitForResponse: true);
             }
 
-            string mySQL = "MySQL80";
-            ServiceController sc = new ServiceController(mySQL);
-            ServiceControllerStatus status = sc.Status;
-            switch (status) {
-                case ServiceControllerStatus.StartPending:
-                case ServiceControllerStatus.Running:
-                    log($" {mySQL} status is {status}");
-                    break;
+            const string mySQL = "MySQL80";
+            using (ServiceController sc = new ServiceController(mySQL))
+            {
+                ServiceControllerStatus status = sc.Status;
+                switch (status)
+                {
+                    case ServiceControllerStatus.StartPending:
+                    case ServiceControllerStatus.Running:
+                        Log($" {mySQL} status is {status}");
+                        break;
 
-                default:
-                    log($" {mySQL} status is {status}. Starting {mySQL} ...");
-                    sc.Start();
-                    while ((status = sc.Status) != ServiceControllerStatus.Running)
-                    {
-                        log($" {mySQL} status is {status}. Waiting for {mySQL} ...");
-                        Thread.Sleep(1000);
-                    }
-                    log($" {mySQL} status is {status}");
-                    break;
+                    default:
+                        Log($" {mySQL} status is {status}. Starting {mySQL} ...");
+                        sc.Start();
+                        while ((status = sc.Status) != ServiceControllerStatus.Running)
+                        {
+                            Log($" {mySQL} status is {status}. Waiting for {mySQL} ...");
+                            Thread.Sleep(1000);
+                        }
+                        Log($" {mySQL} status is {status}");
+                        break;
+                }
             }
-            sc.Dispose();
 
             ascomWatcher.Start(args, waitForResponse: true);
             dashWatcher.Start(args);
             obsmonWatcher.Start(args);
             Thread.Sleep(2000);
-            log("=========== Start done ===========");
+            Log("=========== Start done ===========");
         }
 
         protected override void OnStop()
         {
-            log("=========== Stop ===========");
+            Log("=========== Stop ===========");
             dashWatcher.Stop();
             obsmonWatcher.Stop();
             ascomWatcher.Stop();
             if (weatherLinkNeedsWatching)
                 weatherLinkWatcher.Stop();
-            log("=========== Stop done ===========");
+            Log("=========== Stop done ===========");
         }
     }
 }

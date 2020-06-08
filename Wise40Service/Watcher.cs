@@ -9,20 +9,19 @@ using ASCOM.Wise40.Common;
 using ASCOM.Wise40;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.CompilerServices;
 
 namespace Wise40Watcher
 {
     public class Watcher : WiseObject
     {
-        //private string _applicationPath;
-        //private string _applicationName;
-        Const.App _application;
+        private Const.App _application;
         private static string _logFile;
-        Process _process = null;
-        bool _stopping = false;
-        private static string serviceName = "Wise40Watcher";
+        private Process _process = null;
+        private bool _stopping = false;
+        private const string serviceName = "Wise40Watcher";
 
-        private void init(string name)
+        private void Init(string name)
         {
             WiseName = name;
             switch (WiseName)
@@ -51,7 +50,7 @@ namespace Wise40Watcher
             Directory.CreateDirectory(logDir);
             _logFile = logDir + "/" + serviceName + ".txt";
 
-            init(name);
+            Init(name);
         }
 
         public bool Responding
@@ -64,17 +63,15 @@ namespace Wise40Watcher
             }
         }
 
-        public void watcher()
+        public void Worker()
         {
-            int pid;
-
             while (!_stopping)
             {
-                CreateProcessAsUserWrapper.LaunchChildProcess(_application.Path, out pid);
+                CreateProcessAsUserWrapper.LaunchChildProcess(_application.Path, out int pid);
                 if (pid != 0)
                 {
                     _process = Process.GetProcessById(pid);
-                    log("Start: watching for pid {0} ({1}) ...", pid, _application.Path);
+                    Log($"Start: watching for pid {pid} ({_application.Path}) ...");
                     _process.WaitForExit();
 
                     // TBD: Get the exit code
@@ -96,12 +93,12 @@ namespace Wise40Watcher
             {
                 var processes = Process.GetProcessesByName(appName);
 
-                if (processes.Count() == 0)
+                if (processes.Length == 0)
                     return;
 
                 foreach (var p in processes)
                 {
-                    log("KillAllProcesses: Killing pid: {0} ({1}) ...", p.Id, p.ProcessName);
+                    Log($"KillAllProcesses: Killing pid: {p.Id} ({p.ProcessName}) ...");
                     p.Kill();
                     Thread.Sleep(1000);
                 }
@@ -110,7 +107,6 @@ namespace Wise40Watcher
 
         private void KillAll()
         {
-
             KillAllProcesses(_application.appName);
 
             if (WiseName == "ascom")
@@ -123,30 +119,30 @@ namespace Wise40Watcher
         public void Start(string[] args, bool waitForResponse = false)
         {
             KillAll();
-            int waitMillis = 1000;
+            const int waitMillis = 1000;
 
             try
             {
-                Thread thread = new Thread(watcher);
+                Thread thread = new Thread(Worker);
                 thread.Start();
                 if (waitForResponse)
                 {
                     do
                     {
-                        log("Start: Waiting {0} for the process to be created ...", waitMillis);
+                        Log($"Start: Waiting {waitMillis} for the process to be created ...");
                         Thread.Sleep(waitMillis);
                     } while (_process == null);
 
                     do
                     {
-                        log("Start: Waiting {0} millis for process {1} to Respond ...", waitMillis, _process.Id);
+                        Log($"Start: Waiting {waitMillis} millis for process {_process.Id} to Respond ...");
                         Thread.Sleep(waitMillis);
                     } while (!_process.Responding);
                 }
             }
             catch (Exception ex)
             {
-                log("Start: Exception: {0}", ex.Message);
+                Log($"Start: Exception: {ex.Message} at {ex.StackTrace}");
                 return;
             }
         }
@@ -154,14 +150,14 @@ namespace Wise40Watcher
         public void Stop()
         {
             _stopping = true;
-            log("Stop: The {0} service was Stopped, killing process {1} ({2})...", serviceName, _process.Id, _process.ProcessName);
+            Log($"Stop: The {serviceName} service was Stopped, killing process {_process.Id} ({_process.ProcessName})...");
             _process.Kill();
             Thread.Sleep(1000);
 
             KillAll();
         }
 
-        public void log(string fmt, params object[] o)
+        public void Log(string fmt, params object[] o)
         {
             string pre = string.Format("{0,-12} ", WiseName);
             string msg = string.Format(pre + fmt, o);

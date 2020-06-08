@@ -38,11 +38,11 @@ namespace RemoteSafetyDashboard
     public class Communicator
     {
         public enum Type { ASCOM, Fake };
-        private Type _type;
-        private FakeSafeToOperateAccess fakeSafeToOperate;
-        private ASCOM.DriverAccess.SafetyMonitor safeToOperate = null;
+        private readonly Type _type;
+        private readonly FakeSafeToOperateAccess fakeSafeToOperate;
+        private readonly ASCOM.DriverAccess.SafetyMonitor safeToOperate = null;
         public Transaction transaction;
-        private string remoteAddress;
+        private readonly string remoteAddress;
 
         public Communicator(Type type = Type.ASCOM, string address = "132.66.65.9")
         {
@@ -109,12 +109,9 @@ namespace RemoteSafetyDashboard
                 Busy = true,
             };
 
-            string response;
-            if (_type == Type.ASCOM)
-                response = safeToOperate.Action(transaction.location, transaction.parameters);
-            else
-                response = fakeSafeToOperate.Action(transaction.location, transaction.parameters);
-
+            string response = _type == Type.ASCOM
+                ? safeToOperate.Action(transaction.location, transaction.parameters)
+                : fakeSafeToOperate.Action(transaction.location, transaction.parameters);
             return response;
         }
 

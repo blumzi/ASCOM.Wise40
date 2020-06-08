@@ -5,27 +5,23 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
 
-
 using ASCOM.DeviceInterface;
 using ASCOM.DriverAccess;
 using ASCOM.Wise40;
 using ASCOM.Wise40.Common;
 using ASCOM.Wise40.Hardware;
-//using ASCOM.Wise40.SafeToOperate;
-//using ASCOM.Wise40.Telescope;
 
 namespace Dash
 {
     public class MotionStudy
     {
-        TelescopeAxes axis;
-        double rate;
+        private readonly TelescopeAxes axis;
+        private readonly double rate;
 
-        System.Threading.Timer timer;
-        private static WiseTele wisetele = WiseTele.Instance;
-        private int samplingIntervalMillis;
-        private static int count = 0;
-        DateTime start;
+        private readonly System.Threading.Timer timer;
+        private static readonly WiseTele wisetele = WiseTele.Instance;
+        private readonly int samplingIntervalMillis;
+        private readonly DateTime start;
 
         private struct DataPoint
         {
@@ -64,7 +60,6 @@ namespace Dash
             dataPoints = new List<DataPoint>();
             TimerCallback TimerCallback = new TimerCallback(SampleMotion);
             timer = new Timer(TimerCallback, null, 0, samplingIntervalMillis);
-            count++;
         }
 
         public void Dispose()

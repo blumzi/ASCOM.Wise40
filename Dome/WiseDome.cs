@@ -546,7 +546,7 @@ namespace ASCOM.Wise40
             #region debug
             string dbg = $"WiseDome:Stop({reason}) Starting to stop (encoder: {domeEncoder.Value}) ";
             if (Calibrated)
-                dbg += $", az: {Azimuth}";
+                dbg += $", az: {Azimuth.ToNiceString()}";
             else
                 dbg += ", not calibrated";
             debugger.WriteLine(Debugger.DebugLevel.DebugDome, dbg);
@@ -571,7 +571,7 @@ namespace ASCOM.Wise40
             #region debug
             dbg = $"WiseDome:Stop({reason}) Fully stopped ";
             if (Calibrated)
-                debugger.WriteLine(Debugger.DebugLevel.DebugDome, dbg + $"at az: {Azimuth} (encoder: {domeEncoder.Value}) after {tries + 1} tries");
+                debugger.WriteLine(Debugger.DebugLevel.DebugDome, dbg + $"at az: {Azimuth.ToNiceString()} (encoder: {domeEncoder.Value}) after {tries + 1} tries");
             else
                 debugger.WriteLine(Debugger.DebugLevel.DebugDome, dbg + $"(not calibrated) (encoder: {domeEncoder.Value}) after {tries + 1} tries");
             #endregion
@@ -773,22 +773,20 @@ namespace ASCOM.Wise40
 
         public void SlewToAzimuth(double degrees, string reason)
         {
-            string op = $"SlewToAzimuth({degrees}, {reason})";
+            Angle targetAng = new Angle(degrees, Angle.AngleType.Az);
+            string op = $"SlewToAzimuth({targetAng.ToNiceString()}, reason: {reason})";
 
             if (Slaved)
                 Exceptor.Throw<InvalidOperationException>(op, "Dome is Slaved");
 
             if (degrees < 0 || degrees >= 360)
-                Exceptor.Throw<InvalidOperationException>(op, $"Invalid azimuth: {degrees}, must be >= 0 and < 360");
+                Exceptor.Throw<InvalidOperationException>(op, $"Invalid azimuth: {targetAng.ToNiceString()}, must be >= 0 and < 360");
 
             if (ShutterIsMoving)
                 Exceptor.Throw<InvalidOperationException>(op, "Cannot move, shutter is active!");
 
             if ((!StateIsOn(DomeState.Parking)) && !wiseSafeToOperate.IsSafeWithoutCheckingForShutdown())
                 Exceptor.Throw<InvalidOperationException>(op, wiseSafeToOperate.Action("unsafereasons", ""));
-
-            Angle toAng = new Angle(degrees, Angle.AngleType.Az);
-            op = $"SlewToAzimuth({toAng.ToNiceString()})";
 
             if (!Calibrated)
             {
@@ -807,7 +805,7 @@ namespace ASCOM.Wise40
                 }
             }
 
-            if (!FarEnoughToMove(toAng))
+            if (!FarEnoughToMove(targetAng))
             {
                 if (StateIsOn(DomeState.Parking))
                 {
@@ -832,7 +830,7 @@ namespace ASCOM.Wise40
                 }));
             }
 
-            _targetAz = toAng;
+            _targetAz = targetAng;
             AtPark = false;
 
             ShortestDistanceResult shortest = domeEncoder.Azimuth.ShortestDistance(_targetAz);
@@ -1024,7 +1022,7 @@ namespace ASCOM.Wise40
 
         public void AbortSlew(string reason)
         {
-            Stop($"from WiseDome.AbortSlew({reason})");
+            Stop($"From WiseDome.AbortSlew({reason})");
         }
 
         public double Altitude
@@ -1463,8 +1461,7 @@ namespace ASCOM.Wise40
             if (!ret)
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugDome,
-                    $"Not far enough: current: {currentAz.ToNiceString()}, target: {targetAz.ToNiceString()}," +
-                    $" distance: {distance.ToNiceString()} < minimal: {_minimalMove.ToNiceString()}");
+                    $"Too short: distance: {distance.ToNiceString()} < minimal: {_minimalMove.ToNiceString()}");
                 #endregion
             return ret;
         }

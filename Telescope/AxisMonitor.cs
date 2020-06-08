@@ -15,17 +15,16 @@ namespace ASCOM.Wise40
     public abstract class AxisMonitor : WiseObject, IConnectable
     {
         /// <summary>
-        /// An AxisMonitor supplies the following functionality:
-        /// 
-        ///   1. Can tell whether its axis is moving or stationary.
-        ///   
+        /// <para>An AxisMonitor supplies the following functionality:</para>
+        /// <para>  1. Can tell whether its axis is moving or stationary.</para>
+        /// <para>
         ///   2. Rejects spurious encoder readings.  We get this quite a lot, specially on the Dec axis.
         ///      The encoders have parallel outputs (i.e. one wire per bit).  The longer the cables are and
-        ///      the more motors are in their vecinity, the more flipped bits occur.  The cables from the Dec 
+        ///      the more motors are in their vecinity, the more flipped bits occur.  The cables from the Dec
         ///      encoders are longer and pass near more motors within the telescopes body.
-        ///      
-        ///   3. Provides the last-known-as-good coordinate(s) for its axis
-        ///   
+        /// </para>
+        /// <para>  3. Provides the last-known-as-good coordinate(s) for its axis</para>
+        ///
         /// </summary>
         public struct AxisPosition
         {
@@ -63,7 +62,7 @@ namespace ASCOM.Wise40
 
         public System.Threading.Timer movementCheckerTimer;
 
-        public AxisMonitor(TelescopeAxes axis)
+        protected AxisMonitor(TelescopeAxes axis)
         {
             _axis = axis;
             WiseName = _axis.ToString() + "Monitor";
@@ -93,12 +92,12 @@ namespace ASCOM.Wise40
         public double Acceleration()
         {
             AxisPosition[] arr = _samples.ToArray();
-            int last = arr.Count() - 1;
+            int last = arr.Length - 1;
 
-            if (arr.Count() < 3)
+            if (arr.Length < 3)
                 return double.NaN;
 
-            double dT = (1000 / _samplingFrequency);
+            const double dT = (1000 / _samplingFrequency);
             double dVLast = Math.Abs(arr[last].radians - arr[last - 1].radians) / dT;
             double dVPrev = Math.Abs(arr[last - 1].radians - arr[last - 2].radians) / dT;
 
@@ -113,23 +112,26 @@ namespace ASCOM.Wise40
             if (axis == TelescopeAxes.axisPrimary)
                 motors.Add(wisetele.TrackingMotor);
             foreach (var m in motors)
+            {
                 if (m.IsOn)
-                {
                     ret += m.WiseName + " (" + WiseTele.RateName(m.currentRate) + ") ";
-                }
+            }
             return ret;
         }
 
         protected abstract void SampleAxisMovement(object StateObject);
 
         /// <summary>
-        /// Tests whether an encoder reading (transformed into radians) is acceptable.  This allows 
+        /// <para>
+        /// Tests whether an encoder reading (transformed into radians) is acceptable.  This allows
         /// rejecting spurious encoder readings.
-        /// 
+        /// </para>
+        /// <para>
         /// It should be a  multi-tiered process:
         ///  1. Is it between the highest and lowest reading the respective axis can produce
         ///  2. Is it reasonably close to the previous reading (if one is available)
         ///     - must be less than the max delta at the current speed (or at least at Slew speed)
+        /// </para>
         /// </summary>
         /// <param name="rad"></param>
         /// <returns></returns>
@@ -151,10 +153,7 @@ namespace ASCOM.Wise40
 
             try
             {
-                movementCheckerTask = Task.Run(() =>
-                {
-                    AxisMovementChecker();
-                }, movementCheckerCancellationToken);
+                movementCheckerTask = Task.Run(() => AxisMovementChecker(), movementCheckerCancellationToken);
             }
             catch (OperationCanceledException)
             {
@@ -164,11 +163,8 @@ namespace ASCOM.Wise40
 
         public void StopMovementChecker()
         {
-            if (movementCheckerCancellationTokenSource != null)
-                movementCheckerCancellationTokenSource.Cancel();
-
-            if (movementCheckerTimer != null)
-                movementCheckerTimer.Change(Timeout.Infinite, Timeout.Infinite);
+            movementCheckerCancellationTokenSource?.Cancel();
+            movementCheckerTimer?.Change(Timeout.Infinite, Timeout.Infinite);
         }
 
         public void Connect(bool value)
@@ -216,13 +212,13 @@ namespace ASCOM.Wise40
         private double _rightAscension = double.NaN, _hourAngle = double.NaN;
         private double _prevRightAscension = double.NaN, _prevHourAngle = double.NaN;
 
-        private double[] x = new double[3] { 0.0, 0.0, 0.0 };
-        private double[] dx = new double[2] { 0.0, 0.0 };
+        private readonly double[] x = new double[3] { 0.0, 0.0, 0.0 };
+        private readonly double[] dx = new double[2] { 0.0, 0.0 };
         private double ddx = 0.0;
 
         public PrimaryAxisMonitor() : base(TelescopeAxes.axisPrimary) { }
 
-        private WiseHAEncoder _encoder = WiseTele.Instance.HAEncoder;
+        private readonly WiseHAEncoder _encoder = WiseTele.Instance.HAEncoder;
 
         public void ResetRASamples()
         {
@@ -308,16 +304,16 @@ namespace ASCOM.Wise40
                 double max = double.MinValue;
                 bool tracking = wisetele.Tracking;
                 double[] arr = (tracking) ? _raDeltas.ToArray() : _haDeltas.ToArray();
-                double epsilon = double.NaN;
+                double epsilon;
 
                 if (tracking)
                 {
                     arr = _raDeltas.ToArray();
-                    if (arr.Count() < _raDeltas.MaxSize)
+                    if (arr.Length < _raDeltas.MaxSize)
                     {
                         #region debug
                         debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}:IsMoving: Not enough samples {1} < {2} = true",
-                            WiseName, arr.Count(), _raDeltas.MaxSize);
+                            WiseName, arr.Length, _raDeltas.MaxSize);
                         #endregion
                         return false;    // not enough samples
                     }
@@ -325,11 +321,11 @@ namespace ASCOM.Wise40
                 } else
                 {
                     arr = _haDeltas.ToArray();
-                    if (arr.Count() < _haDeltas.MaxSize)
+                    if (arr.Length < _haDeltas.MaxSize)
                     {
                         #region debug
                         debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}:IsMoving: Not enough samples {1} < {2} = true",
-                            WiseName, arr.Count(), _haDeltas.MaxSize);
+                            WiseName, arr.Length, _haDeltas.MaxSize);
                         #endregion
                         return false;    // not enough samples
                     }
@@ -337,9 +333,11 @@ namespace ASCOM.Wise40
                 }
 
                 foreach (double d in arr)
+                {
                     if (d > max)
                         max = d;
-                
+                }
+
                 bool ret = max > epsilon;
 
                 #region debug
@@ -355,9 +353,9 @@ namespace ASCOM.Wise40
         public override double Velocity()
         {
             AxisPosition[] samples = _samples.ToArray();
-            int last = samples.Count() - 1;
+            int last = samples.Length - 1;
 
-            if (samples.Count() < 2)
+            if (samples.Length < 2)
                 return double.NaN;
 
             double deltaRadians = Math.Abs(samples[last].radians - samples[last - 1].radians);
@@ -385,8 +383,8 @@ namespace ASCOM.Wise40
         }
 
         /// <summary>
-        /// Predicted position (radians)
-        /// 
+        /// <para>Predicted position (radians)</para>
+        /// <para>
         /// The SampleAxisMovement function maintains:
         ///  . The last three acceptable positions are kept in x[0..2]
         ///  . The first differences are kept in dx[0..1]:
@@ -394,7 +392,8 @@ namespace ASCOM.Wise40
         ///   . dx[1] = x[2] - x[1]
         ///  . The second difference is kept in ddx:
         ///   . ddx = dx[1] - dx[0]
-        ///   
+        /// </para>
+        ///
         /// </summary>
         protected override double Predicted(double reading)
         {
@@ -418,11 +417,11 @@ namespace ASCOM.Wise40
 
         public SecondaryAxisMonitor() : base(TelescopeAxes.axisSecondary) { }
 
-        private WiseDecEncoder _encoder = WiseTele.Instance.DecEncoder;
+        private readonly WiseDecEncoder _encoder = WiseTele.Instance.DecEncoder;
 
-        private double[] x = new double[3] { 0.0, 0.0, 0.0 };   // last three positions
-        private double[] dx = new double[2] { 0.0, 0.0 };       // first differences between last positions
-        private double ddx = 0.0;                               // second difference between first differences
+        private readonly double[] x = new double[3] { 0.0, 0.0, 0.0 };   // last three positions
+        private readonly double[] dx = new double[2] { 0.0, 0.0 };       // first differences between last positions
+        private double ddx = 0.0;                                        // second difference between first differences
 
         protected override void SampleAxisMovement(object StateObject)
         {
@@ -482,11 +481,11 @@ namespace ASCOM.Wise40
             {
                 double[] arr = _decDeltas.ToArray();
 
-                if (arr.Count() < _samples.MaxSize)
+                if (arr.Length < _samples.MaxSize)
                 {
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}:IsMoving: Not enough samples: arr.Count() {1} < _samples.MaxSize: {2}",
-                        WiseName, arr.Count(), _samples.MaxSize);
+                        WiseName, arr.Length, _samples.MaxSize);
                     #endregion
                     return false;    // not enough samples
                 }
@@ -520,9 +519,9 @@ namespace ASCOM.Wise40
         public override double Velocity()
         {
             AxisPosition[] samples = _samples.ToArray();
-            int last = samples.Count() - 1;
+            int last = samples.Length - 1;
 
-            if (samples.Count() < 2)
+            if (samples.Length < 2)
                 return double.NaN;
 
             double deltaRadians = Math.Abs(samples[last].radians - samples[last - 1].radians);
@@ -535,7 +534,6 @@ namespace ASCOM.Wise40
         {
             if (Double.IsNaN(_prevPosition.radians))
                 return true;
-
 
             double delta = Math.Abs(rad - _prevPosition.radians);
             if (delta > _maxDeltaRadiansAtSlewRate)

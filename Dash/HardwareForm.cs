@@ -15,7 +15,7 @@ namespace ASCOM.Wise40
 {
     public partial class HardwareForm : Form
     {
-        private List<BoardControl> BoardControls;
+        private readonly List<BoardControl> BoardControls;
         public DriverAccess.Telescope _tele;
 
         public HardwareForm(DriverAccess.Telescope tele)
@@ -43,8 +43,10 @@ namespace ASCOM.Wise40
                     ushort val = hw.Boards[b].Daqs[d].Value;
 
                     for (int bit = 0; bit < BoardControls[b].DaqControls[d].nbits; bit++)
+                    {
                         if (BoardControls[b].DaqControls[d].cbs[bit] != null)
-                            BoardControls[b].DaqControls[d].cbs[bit].Checked = ((val & (1 << bit)) == 0) ? false : true;
+                            BoardControls[b].DaqControls[d].cbs[bit].Checked = (val & (1 << bit)) != 0;
+                    }
                 }
             }
         }
@@ -56,7 +58,6 @@ namespace ASCOM.Wise40
             timerHardwareRefresh.Enabled = form.Visible;
         }
     }
-
 
     public class DaqControl
     {
@@ -76,7 +77,7 @@ namespace ASCOM.Wise40
 
             Control[] found = form.Controls.Find(controlName, true);
 
-            if (found.Count() != 1)
+            if (found.Length != 1)
                 return;
 
             gb = (GroupBox)found[0];
@@ -92,7 +93,7 @@ namespace ASCOM.Wise40
                     "bit" + bit.ToString();
 
                 found = form.Controls.Find(controlName, true);
-                if (found.Count() != 1)
+                if (found.Length != 1)
                     continue;
 
                 cbs[bit] = (CheckBox)found[0];
@@ -115,7 +116,7 @@ namespace ASCOM.Wise40
         public BoardControl(BoardMetaDigest mb, Form form)
         {
             Control[] controls = form.Controls.Find("gbBoard" + mb.Number, true);
-            if (controls.Count() == 1)
+            if (controls.Length == 1)
             {
                 gb = (GroupBox)controls[0];
                 if (mb.Type == WiseBoard.BoardType.Soft)
