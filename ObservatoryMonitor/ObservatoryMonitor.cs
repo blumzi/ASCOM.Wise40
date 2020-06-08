@@ -29,6 +29,8 @@ namespace ASCOM.Wise40.ObservatoryMonitor
         private static DateTime _nextCheck = DateTime.Now + TimeSpan.FromSeconds(20);
         private static bool _checking = false;
         static public TimeSpan _intervalBetweenChecks;
+        private DateTime LatestSuccessfulServerConnection = DateTime.MinValue;
+        private TimeSpan TimeToRestartServer = TimeSpan.FromSeconds(30);
         static public int MinutesToIdle { get; set; }
         private static TimeSpan _intervalBetweenLogs = _simulated ? TimeSpan.FromSeconds(10) : TimeSpan.FromSeconds(20);
         private static DateTime _lastLog = DateTime.MinValue;
@@ -98,11 +100,21 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                             client.CancelAsync();
                             Log("Connecting ASCOM server timed out");
                             connected = false;
+                            if (DateTime.Now.Subtract(LatestSuccessfulServerConnection) > TimeToRestartServer)
+                            {
+                                Log($"ASCOM server did not answer for {TimeToRestartServer.TotalSeconds} seconds");
+                                foreach (var proc in Process.GetProcessesByName("ASCOM.RemoteServer"))
+                                {
+                                    Log($"Killed ASCOM Server process {proc.Id}.");
+                                    proc.Kill();
+                                }
+                            }
                             return;
                         }
                         Application.DoEvents();
                     }
                     connected = true;
+                    LatestSuccessfulServerConnection = DateTime.Now;
                 }
                 catch (Exception ex)
                 {
@@ -312,7 +324,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 activityMessage = (telescopeDigest.Active) ?
                     $"active ({string.Join(", ", telescopeDigest.Activities)})" :
                     "idle";
-                
+
                 Log(safetyMessage + " and " + activityMessage);
                 #endregion
             }
@@ -764,7 +776,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             {
                 BackgroundWorker bw = new BackgroundWorker();
                 bw.DoWork += RemoveHumanInterventionFile;
-                bw.RunWorkerCompleted += new RunWorkerCompletedEventHandler(afterRemoveHumanInterventionFile);
+                bw.RunWorkerCompleted += afterRemoveHumanInterventionFile;
                 bw.RunWorkerAsync();
             }
             else
@@ -901,7 +913,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 bool status = JsonConvert.DeserializeObject<bool>(wisedome.Action("projector", ""));
 
                 status = Convert.ToBoolean(wisedome.Action("projector", (!status).ToString()));
-                buttonProjector.Text = "Projector " + ((status == true) ? "Off" : "On");
+                buttonProjector.Text = "Projector " + (status ? "Off" : "On");
             }
             catch (Exception ex)
             {
