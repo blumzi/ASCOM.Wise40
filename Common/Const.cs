@@ -102,7 +102,7 @@ namespace ASCOM.Wise40.Common
 
         public static class RESTServer
         {
-            public static string top = "http://132.66.65.9:11111/server/v1/";
+            public static string top = "http://127.0.0.1:11111/server/v1/";
         }
 
         public class App
