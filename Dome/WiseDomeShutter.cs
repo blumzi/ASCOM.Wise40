@@ -370,7 +370,7 @@ namespace ASCOM.Wise40
             return Math.Abs(value - limit) < 10;
         }
 
-        public void StartClosing()
+        public void StartClosing(string reason)
         {
             if (Simulated)
             {
@@ -383,7 +383,7 @@ namespace ASCOM.Wise40
             if (openPin.isOn)
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "StartClosing: ignored (openPin is ON)");
+                debugger.WriteLine(Debugger.DebugLevel.DebugShutter, $"StartClosing(reason: {reason}): ignored (openPin is ON)");
                 #endregion debug
                 return;
             }
@@ -394,7 +394,7 @@ namespace ASCOM.Wise40
                 if (rangeCm != -1 && CloseEnough(rangeCm, lowestRange))
                 {
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "StartClosing: ignored (close enough to closed)");
+                    debugger.WriteLine(Debugger.DebugLevel.DebugShutter, $"StartClosing(reason: {reason}): ignored (close enough to closed)");
                     #endregion debug
                     return;
                 }
@@ -403,7 +403,7 @@ namespace ASCOM.Wise40
             if (!closePin.isOn)
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "StartClosing: started closing the shutter");
+                debugger.WriteLine(Debugger.DebugLevel.DebugShutter, $"StartClosing(reason: {reason}): started closing the shutter");
                 #endregion debug
                 activityMonitor.NewActivity(new Activity.Shutter(new Activity.Shutter.StartParams
                 {
@@ -417,7 +417,7 @@ namespace ASCOM.Wise40
             }
         }
 
-        public void StartOpening()
+        public void StartOpening(string reason)
         {
             if (Simulated)
             {
@@ -430,7 +430,7 @@ namespace ASCOM.Wise40
             if (closePin.isOn)
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "StartOpening: ignored (closePin is ON)");
+                debugger.WriteLine(Debugger.DebugLevel.DebugShutter, $"StartOpening(reason: {reason}): ignored (closePin is ON)");
                 #endregion debug
                 return;
             }
@@ -442,7 +442,7 @@ namespace ASCOM.Wise40
                 {
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugShutter,
-                        $"StartOpening: ignored ({rangeCm} is close enough to {highestRange})");
+                        $"StartOpening(reason: {reason}): ignored ({rangeCm} is close enough to {highestRange})");
                     #endregion debug
                     return;
                 }
@@ -451,7 +451,7 @@ namespace ASCOM.Wise40
             if (!openPin.isOn)
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "StartOpening: started opening the shutter");
+                debugger.WriteLine(Debugger.DebugLevel.DebugShutter, $"StartOpening(reason: {reason}): started opening the shutter");
                 #endregion debug
                 activityMonitor.NewActivity(new Activity.Shutter(new Activity.Shutter.StartParams
                 {

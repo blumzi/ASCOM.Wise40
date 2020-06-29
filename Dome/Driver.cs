@@ -95,7 +95,6 @@ namespace ASCOM.Wise40 //.Dome
         /// </summary>
         public Dome()
         {
-
             (wisedome ?? (wisedome = WiseDome.Instance)).ReadProfile(); // Read device configuration from the ASCOM Profile store
 
             utilities = new Util();
@@ -338,7 +337,7 @@ namespace ASCOM.Wise40 //.Dome
             #region debug
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, "CloseShutter");
             #endregion
-            wisedome.CloseShutter();
+            wisedome.CloseShutter("Dome.CloseShutter");
         }
 
         public void FindHome()
@@ -354,7 +353,7 @@ namespace ASCOM.Wise40 //.Dome
             #region debug
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, "OpenShutter");
             #endregion
-            wisedome.OpenShutter();
+            wisedome.OpenShutter("Dome.OpenShutter");
         }
 
         public void Park()

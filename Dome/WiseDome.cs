@@ -571,9 +571,9 @@ namespace ASCOM.Wise40
             #region debug
             dbg = $"WiseDome:Stop({reason}) Fully stopped ";
             if (Calibrated)
-                debugger.WriteLine(Debugger.DebugLevel.DebugDome, dbg + $"at az: {Azimuth.ToNiceString()} (encoder: {domeEncoder.Value}) after {tries + 1} tries");
+                debugger.WriteLine(Debugger.DebugLevel.DebugDome, dbg + $"at az: {Azimuth.ToNiceString()}, target: {_targetAz.ToNiceString()} encoder: {domeEncoder.Value},  after {tries + 1} tries");
             else
-                debugger.WriteLine(Debugger.DebugLevel.DebugDome, dbg + $"(not calibrated) (encoder: {domeEncoder.Value}) after {tries + 1} tries");
+                debugger.WriteLine(Debugger.DebugLevel.DebugDome, dbg + $"(not calibrated), encoder: {domeEncoder.Value}, after {tries + 1} tries");
             #endregion
 
             if (_adjustingForTracking)
@@ -844,7 +844,7 @@ namespace ASCOM.Wise40
                     break;
             }
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugDome, $"WiseDome: {op} => at: {Azimuth}, dist: {shortest.angle}), moving {shortest.direction}");
+            debugger.WriteLine(Debugger.DebugLevel.DebugDome, $"WiseDome: {op} => at: {Azimuth.ToNiceString()}, dist: {shortest.angle.ToNiceString()}), moving {shortest.direction}");
             #endregion
 
             if (Simulated && _targetAz == _simulatedStuckAz)
@@ -973,9 +973,9 @@ namespace ASCOM.Wise40
             SlewToAzimuth(_parkAzimuth, op);
         }
 
-        public void OpenShutter(bool bypassSafety = false)
+        public void OpenShutter(string reason, bool bypassSafety = false)
         {
-            const string op = "OpenShutter";
+            string op = $"WiseDome.OpenShutter(reason: {reason})";
 
             if (DirectionMotorsAreActive)
                 Exceptor.Throw<InvalidOperationException>(op, "Dome is slewing!");
@@ -989,20 +989,20 @@ namespace ASCOM.Wise40
 
             if (wisedomeshutter.State == ShutterState.shutterOpening)
             {
-                debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "Already opening");
+                debugger.WriteLine(Debugger.DebugLevel.DebugShutter, $"{op}: Already opening");
                 return;
             }
 
-            wisedomeshutter.Stop("OpenShutter: Stopped before StartOpening");
-            wisedomeshutter.StartOpening();
+            wisedomeshutter.Stop($"{op}: Stopped before StartOpening");
+            wisedomeshutter.StartOpening(op);
             if (wisedomeshutter.syncVentWithShutter)
                 Vent = true;
         }
 
-        public void CloseShutter()
+        public void CloseShutter(string reason)
         {
             if (DirectionMotorsAreActive)
-                Exceptor.Throw<InvalidOperationException>("CloseShutter", "Cannot close shutter while dome is slewing!");
+                Exceptor.Throw<InvalidOperationException>($"CloseShutter(reason: {reason})", "Cannot close shutter while dome is slewing!");
 
             int percentOpen = wisedomeshutter.PercentOpen;
             if (percentOpen != -1 && percentOpen < 1)
@@ -1010,12 +1010,12 @@ namespace ASCOM.Wise40
 
             if (wisedomeshutter.State == ShutterState.shutterClosing)
             {
-                debugger.WriteLine(Debugger.DebugLevel.DebugShutter, "CloseShutter: Shutter is already closing");
+                debugger.WriteLine(Debugger.DebugLevel.DebugShutter, $"CloseShutter(reason: {reason}): Shutter is already closing");
                 return;
             }
 
-            wisedomeshutter.Stop("CloseShutter: Stopped before StartClosing");
-            wisedomeshutter.StartClosing();
+            wisedomeshutter.Stop($"CloseShutter(reason: {reason}): Stopped before StartClosing");
+            wisedomeshutter.StartClosing($"CloseShutter(reason: {reason})");
             if (wisedomeshutter.syncVentWithShutter)
                 Vent = false;
         }
