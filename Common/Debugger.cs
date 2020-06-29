@@ -164,8 +164,8 @@ namespace ASCOM.Wise40.Common
                     _logFile = currentLogPath;
                     traceListener = new TextWriterTraceListener(_logFile);
                     Trace.Listeners.Add(traceListener);
-                    Trace.WriteLine("##");
-                    Trace.WriteLine($"## {DateTime.Now:yyyy-MMM-dd HH:mm:ss.fff}");
+                    Trace.WriteLine("\n##");
+                    Trace.WriteLine($"## {DateTime.UtcNow:yyyy-MMM-dd HH:mm:ss.fff}");
                     Trace.WriteLine("##\n");
                 }
 
