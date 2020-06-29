@@ -208,7 +208,7 @@ namespace ASCOM.Wise40.VantagePro
         {
             get
             {
-                return vantagePro.AveragePeriod;;
+                return vantagePro.AveragePeriod;
             }
             set
             {
@@ -247,7 +247,7 @@ namespace ASCOM.Wise40.VantagePro
         /// Atmospheric relative humidity at the observatory in percent
         /// </summary>
         /// <remarks>
-        /// Normally optional but mandatory if <see cref="ASCOM.DeviceInterface.IObservingConditions.DewPoint"/> 
+        /// Normally optional but mandatory if <see cref="ASCOM.DeviceInterface.IObservingConditions.DewPoint"/>
         /// Is provided
         /// </remarks>
         public double Humidity
@@ -304,7 +304,7 @@ namespace ASCOM.Wise40.VantagePro
         /// <param name="PropertyName">Name of the property whose sensor description is required</param>
         /// <returns>The sensor description string</returns>
         /// <remarks>
-        /// PropertyName must be one of the sensor properties, 
+        /// PropertyName must be one of the sensor properties,
         /// properties that are not implemented must throw the MethodNotImplementedException
         /// </remarks>
         public string SensorDescription(string PropertyName)

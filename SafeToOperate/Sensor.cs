@@ -144,7 +144,7 @@ namespace ASCOM.Wise40SafeToOperate
                     State = sensor._state,
                     LatestReading = sensor.LatestReading,
                     ToolTip = sensor.ToolTip,
-                    Safe = sensor.isSafe,
+                    Safe = sensor.IsSafe,
                     Stale = sensor.IsStale,
                     Symbolic = sensor.FormatSymbolic(sensor.LatestReading.value),
                     Verbal = sensor.FormatVerbal(sensor.LatestReading.value),
@@ -238,7 +238,7 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
-                if (isSafe)
+                if (IsSafe)
                 {
                     return "";
                 }
@@ -338,7 +338,7 @@ namespace ASCOM.Wise40SafeToOperate
             _attributes = attributes;
 
             if (HasAttribute(Attribute.Periodic))
-                _timer = new System.Threading.Timer(new TimerCallback(onTimer));
+                _timer = new System.Threading.Timer(new TimerCallback(OnTimer));
 
             if (HasAttribute(Attribute.AlwaysEnabled))
                 Enabled = true;
@@ -397,7 +397,7 @@ namespace ASCOM.Wise40SafeToOperate
         }
 
         #region ASCOM Profile
-        public void readProfile()
+        public void ReadProfile()
         {
             int defaultInterval = 60, defaultRepeats = -1;
 
@@ -500,7 +500,7 @@ namespace ASCOM.Wise40SafeToOperate
             _nreadings = 0;
             _nstale = 0;
 
-            readProfile();
+            ReadProfile();
             if (Enabled)
             {
                 if (_repeats > 1)
@@ -520,7 +520,7 @@ namespace ASCOM.Wise40SafeToOperate
         //
         // The timer is enabled ONLY on non-Immediate sensors
         //
-        private void onTimer(object StateObject)
+        private void OnTimer(object StateObject)
         {
             if (!Enabled || !Connected)
                 return;
@@ -698,7 +698,7 @@ namespace ASCOM.Wise40SafeToOperate
         /// <summary>
         /// Safe unless last _repeats were unsafe
         /// </summary>
-        public bool isSafe
+        public bool IsSafe
         {
             get
             {

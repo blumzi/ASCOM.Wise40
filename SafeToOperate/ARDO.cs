@@ -13,19 +13,19 @@ namespace ASCOM.Wise40SafeToOperate
 {
     public class ARDO : WiseObject
     {
-        private static readonly string _address = "2.55.90.188";
-        private static readonly string _port = "10500";
-        private static readonly string _uri = "cgi-bin/cgiLastData";
+        private const string _address = "2.55.90.188";
+        private const string _port = "10500";
+        private const string _uri = "cgi-bin/cgiLastData";
 
         private readonly string URL = $"http://{_address}:{_port}/{_uri}";
         private DateTime _lastDataRead = DateTime.MinValue;
-        private Dictionary<string, string> sensorData = new Dictionary<string, string>();
+        private readonly Dictionary<string, string> sensorData = new Dictionary<string, string>();
         public HttpClient _client;
         public System.Threading.Timer _periodicWebReadTimer;
         public TimeSpan _interval = TimeSpan.FromMinutes(1);
         private bool _initialized = false;
         private int _reading = 0;
-        readonly Debugger debugger = Debugger.Instance;
+        private readonly Debugger debugger = Debugger.Instance;
         public DateTime updatedAtUT;
         public WeatherLogger _weatherLogger;
 
@@ -196,7 +196,7 @@ namespace ASCOM.Wise40SafeToOperate
 
     public class ARDORefresher : Sensor
     {
-        private ARDO ardo = ARDO.Instance;
+        private readonly ARDO ardo = ARDO.Instance;
 
         public ARDORefresher(WiseSafeToOperate instance) :
             base("ARDORefresher",

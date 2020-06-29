@@ -73,10 +73,7 @@ namespace ASCOM.Wise40
 
         private static readonly ActivityMonitor activityMonitor = ActivityMonitor.Instance;
 
-        private SlewPlotter slewPlotter = null;
-
         private const int waitForOtherAxisMillis = 500;           // half a second between checks setting an axis rate
-        //private const int waitForOtherAxisTotalSeconds = 600;     // 10 minutes total wait for setting an axis rate
 
         #region TrackingRestoration
         /// <summary>
@@ -1214,7 +1211,7 @@ namespace ASCOM.Wise40
             bool stopTracking = false)
         {
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "InternalMoveAxis({0}, {1}): called", thisAxis, RateName(Rate));
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, $"InternalMoveAxis({thisAxis}, {RateName(Rate)}): called");
             #endregion debug
 
             if (thisAxis == TelescopeAxes.axisTertiary)
@@ -1228,16 +1225,13 @@ namespace ASCOM.Wise40
             if (Rate != Const.rateStopped && !wisesafetooperate.IsSafe && !ShuttingDown)
                 Exceptor.Throw<InvalidValueException>($"InternalMoveAxis({thisAxis})", string.Join(", ", wisesafetooperate.UnsafeReasonsList()));
 
-            TelescopeAxes _otherAxis = otherAxis[thisAxis];
-
             if (Rate == Const.rateStopped)
             {
                 StopAxisAndWaitForHalt(thisAxis);
                 safetyMonitorTimer.DisableIfNotNeeded();
                 _trackingRestorer.RemoveMover();
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "InternalMoveAxis({0}, {1}): done.",
-                    thisAxis, RateName(Rate));
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, $"InternalMoveAxis({thisAxis}, {RateName(Rate)}): done.");
                 #endregion
                 return true;
             }
@@ -1249,7 +1243,7 @@ namespace ASCOM.Wise40
             if (!readyToSlewFlags.AxisCanMoveAtRate(thisAxis, absRate))
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, " InternalMoveAxis({0}, {1}) not BOTH axes are ready to move", thisAxis, RateName(absRate));
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, $"InternalMoveAxis({thisAxis}, {RateName(absRate)}) not BOTH axes are ready to move");
                 #endregion
                 return false;
             }
@@ -1270,8 +1264,8 @@ namespace ASCOM.Wise40
             }
 
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "InternalMoveAxis({0}, {1}): direction: {2}, stopTracking: {3}",
-                thisAxis, RateName(Rate), axisDirectionName[thisAxis][direction], stopTracking);
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                $"InternalMoveAxis({thisAxis}, {RateName(Rate)}): direction: {axisDirectionName[thisAxis][direction]}, stopTracking: {stopTracking}");
             #endregion debug
 
             if (stopTracking)
@@ -1296,7 +1290,7 @@ namespace ASCOM.Wise40
             }
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                "InternalMoveAxis({0}, {1}): currPosition: {2}, started motors: {3}", thisAxis, RateName(absRate), currPosition, string.Join(", ", startedMotors));
+                $"InternalMoveAxis({thisAxis}, {RateName(absRate)}): currPosition: {currPosition}, started motors: {string.Join(", ", startedMotors)}");
             #endregion debug
 
             if (! BypassCoordinatesSafety)
@@ -1356,37 +1350,44 @@ namespace ASCOM.Wise40
         /// <summary>
         /// Check whether it's safe at .5 degrees in the specified direction
         /// </summary>
-        /// <param name="direction"></param>
+        /// <param name="directions">
+        ///   Comma or space delimited list of cardinal direction
+        /// </param>
         /// <returns>Safe or not-safe.</returns>
-        public bool SafeToMove(List<Const.CardinalDirection> directions)
+        public bool SafeToMove(string direction)
         {
             double ra = RightAscension;
             double dec = Declination;
             const double delta = 0.5;
+            bool safer;
 
-            foreach (var dir in directions) {
-                switch (dir)
-                {
-                    case Const.CardinalDirection.North:
-                        dec += delta;
-                        break;
-                    case Const.CardinalDirection.South:
-                        dec -= delta;
-                        break;
-                    case Const.CardinalDirection.East:
-                        ra += Angle.Deg2Hours(delta);
-                        break;
-                    case Const.CardinalDirection.West:
-                        ra -= Angle.Deg2Hours(delta);
-                        break;
-                }
+            switch (direction.ToLower())
+            {
+                case "north":
+                    dec += delta;
+                    break;
+                case "south":
+                    dec -= delta;
+                    break;
+                case "east":
+                    ra += Angle.Deg2Hours(delta);
+                    break;
+                case "west":
+                    ra -= Angle.Deg2Hours(delta);
+                    break;
             }
-            return SaferAtCoordinates(Angle.FromDegrees(ra, Angle.AngleType.RA), Angle.FromDegrees(dec, Angle.AngleType.Dec));
+            safer = SaferAtCoordinates(direction, Angle.FromDegrees(ra, Angle.AngleType.RA), Angle.FromDegrees(dec, Angle.AngleType.Dec));
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"SafeToMove({direction}: {safer}");
+            #endregion
+            return safer;
         }
 
-        public bool SaferAtCoordinates(Angle ra, Angle dec)
+        public bool SaferAtCoordinates(string dir, Angle ra, Angle dec)
         {
             double rar = 0, decr = 0, az = 0, zd = 0;
+            double dist0, dist1;
+            bool ret;
 
             wisesite.PrepareRefractionData();
             novas31.Equ2Hor(astroutils.JulianDateUT1(0), 0,
@@ -1397,8 +1398,21 @@ namespace ASCOM.Wise40
                 WiseSite.refractionOption,
                 ref zd, ref az, ref rar, ref decr);
 
-            return Math.Abs(Math.Cos(Angle.Deg2Rad(90.0 - zd))) < Math.Abs(Math.Cos(Angle.Deg2Rad(Altitude)));
+            dist0 = Math.Abs(Math.Cos(Angle.Deg2Rad(90.0 - zd)));
+            dist1 = Math.Abs(Math.Cos(Angle.Deg2Rad(Altitude)));
+            ret = dist0 < dist1;
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                $"SaferAtCoordinates({dir}, {ra.ToNiceString()}, {dec.ToNiceString()}): new: {dist0:f12} < curr: {dist1:f12} => {ret}");
+            #endregion
+            return ret;
         }
+
+        public readonly Angle altLimit = new Angle(16.0, Angle.AngleType.Alt);
+        public readonly Angle eastern_haLimit = Angle.FromHours(-7.0, Angle.AngleType.HA);
+        public readonly Angle western_haLimit = Angle.FromHours(7.0, Angle.AngleType.HA);
+        public readonly Angle lower_decLimit = Angle.FromDegrees(-35.0, Angle.AngleType.Dec);
+        public readonly Angle upper_decLimit = Angle.FromDegrees(89.9, Angle.AngleType.Dec);
 
         /// <summary>
         /// Checks if we're safe at a given position:  Used:
@@ -1411,11 +1425,6 @@ namespace ASCOM.Wise40
         {
             if (BypassCoordinatesSafety)
                 return string.Empty;
-
-            Angle altLimit = new Angle(16.0, Angle.AngleType.Alt);
-            Angle haLimit = Angle.FromHours(7.0, Angle.AngleType.HA);
-            Angle lower_decLimit = Angle.FromDegrees(-35.0, Angle.AngleType.Dec);
-            Angle upper_decLimit = Angle.FromDegrees(89.9, Angle.AngleType.Dec);
 
             double rar = 0, decr = 0, az = 0, zd = 0;
             List<string> reasons = new List<string>();
@@ -1439,8 +1448,10 @@ namespace ASCOM.Wise40
                 reasons.Add($"Declination too low: {dec} < {lower_decLimit}");
 
             double ha = HourAngle;
-            if (Math.Abs(ha) > haLimit.Hours)
-                reasons.Add($"HourAngle too high: Abs({ha}) > {haLimit}");
+            if (ha < eastern_haLimit.Hours)
+                reasons.Add($"HourAngle too low: {Angle.FromHours(ha, Angle.AngleType.HA)} < {eastern_haLimit}");
+            else if (ha > western_haLimit.Hours)
+                reasons.Add($"HourAngle too high: {Angle.FromHours(ha, Angle.AngleType.HA)} > {western_haLimit}");
 
             if (reasons.Count > 0)
             {
@@ -1453,79 +1464,56 @@ namespace ASCOM.Wise40
             else
                 return string.Empty;
         }
+        private struct BackoffAction
+        {
+            public TelescopeAxes Axis;
+            public string Direction;
+            public double Rate;
+        };
 
         /// <summary>
         /// Checks what motors are on and moves the scope away from danger.
         /// </summary>
-        public void Backoff()
+        public void Backoff(string reason)
         {
+            string op = $"Backoff(reason: {reason})";
+            const int backoffMillis = 3000;
+            Angle ha = Angle.FromHours(HourAngle, Angle.AngleType.HA);
+            Angle dec = Angle.FromDegrees(Declination, Angle.AngleType.Dec);
+
             if (_movingToSafety)    // timer callback while being disabled
                 return;
 
+            _movingToSafety = true;
             safetyMonitorTimer.Enabled = false;
 
-            List<WiseVirtualMotor> wereActive = new List<WiseVirtualMotor>();
-
-            // Remember which motors were active when we became unsafe
-            foreach (var m in directionMotors)
-            {
-                if (m.IsOn)
-                {
-                    wereActive.Add(m);
-                    m.SetOff();
-                }
-            }
-
-            if (TrackingMotor.IsOn)
-            {
+            if (Tracking)
                 Tracking = false;
-                if (wereActive.Find((x) => x.WiseName == "EastMotor") == null)
-                    wereActive.Add(TrackingMotor);
-            }
-            Stop("Backoff");
+            Stop(op);
 
-            _movingToSafety = true;
-            foreach (var m in wereActive)
+            List<BackoffAction> backoffs = new List<BackoffAction>();
+            if (SafeToMove("east"))
+                backoffs.Add(new BackoffAction { Axis = TelescopeAxes.axisPrimary, Direction = "East", Rate = -Const.rateSlew });
+            else if (SafeToMove("west"))
+                backoffs.Add(new BackoffAction { Axis = TelescopeAxes.axisPrimary, Direction = "West", Rate = Const.rateSlew });
+
+            if (SafeToMove("south"))
+                backoffs.Add(new BackoffAction { Axis = TelescopeAxes.axisSecondary, Direction = "South", Rate = Const.rateSlew });
+            else if (SafeToMove("north"))
+                backoffs.Add(new BackoffAction { Axis = TelescopeAxes.axisSecondary, Direction = "North", Rate = -Const.rateSlew });
+
+            foreach (var b in backoffs)
             {
-                TelescopeAxes axis = TelescopeAxes.axisPrimary;
-                double rate = -1;
-
-                switch (m.WiseName)
-                {
-                    case "WestMotor":
-                    case "TrackMotor":
-                        axis = TelescopeAxes.axisPrimary;
-                        rate = Const.rateSlew;
-                        break;
-                    case "EastMotor":
-                        axis = TelescopeAxes.axisPrimary;
-                        rate = -Const.rateSlew;
-                        break;
-                    case "NorthMotor":
-                        axis = TelescopeAxes.axisSecondary;
-                        rate = -Const.rateSlew;
-                        break;
-                    case "SouthMotor":
-                        axis = TelescopeAxes.axisSecondary;
-                        rate = Const.rateSlew;
-                        break;
-                }
-
-                if (rate != -1)
-                {
-                    const int millis = 1000;
-
-                    #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Backoff: {0} was active: calling MoveAxis({1}, {2}) for {3} millis ...",
-                        m.WiseName, axis.ToString(), RateName(rate), millis);
-                    #endregion
-                    MoveAxis(axis, rate);
-                    Thread.Sleep(millis);
-                    #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Backoff: stopping {0}",axis.ToString());
-                    #endregion
-                    MoveAxis(axis, Const.rateStopped);
-                }
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                    $"{op}: {b.Direction}: calling MoveAxis({b.Axis}, {b.Direction}, {RateName(b.Rate)}) for {backoffMillis} millis ...");
+                #endregion
+                MoveAxis(b.Axis, b.Rate);
+                Thread.Sleep(backoffMillis);
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: stopping {b.Axis}");
+                #endregion
+                MoveAxis(b.Axis, Const.rateStopped);
             }
 
             #region debug
@@ -1648,7 +1636,7 @@ namespace ASCOM.Wise40
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "doShutdown: calling domeSlaveDriver.CloseShutter() ...");
                 #endregion
-                DomeSlaveDriver.CloseShutter();
+                DomeSlaveDriver.CloseShutter($"reason: DoShutdown(reason: {reason})");
                 while (domeSlaveDriver.ShutterState != ShutterState.shutterClosed)
                 {
                     #region debug
@@ -1898,15 +1886,6 @@ namespace ASCOM.Wise40
             string slewerName = thisAxis.ToString() + "Slewer";
             DateTime start = DateTime.Now;
 
-            #region plot
-            if (PlotSlews)
-            {
-                slewPlotter = new SlewPlotter(thisAxis,
-                    thisAxis == TelescopeAxes.axisPrimary ? RightAscension : Declination,
-                    targetPosition.Degrees);
-            }
-            #endregion
-
             ScopeSlewerStatus status = ScopeSlewerStatus.Undefined;
             ShortestDistanceResult distanceToTarget = currentPosition.ShortestDistance(targetPosition);
             double r = Const.rateStopped;
@@ -2024,21 +2003,14 @@ namespace ASCOM.Wise40
                             }
                             else if (prevDistance != 0.0) {
                                 #region Distance to Target is NOT decreasing
-                                if (currentDistance.angle.Radians >= prevDistance)   // the distance to target is increasing
+                                if (currentDistance.angle.Radians > prevDistance)   // the distance to target is increasing
                                 {
-                                    if (++distanceFailures > maxDistanceFailures)
-                                    {
-                                        #region debug
-                                        debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
-                                            $"SUSPECT: distance to target is NOT decreasing ({maxDistanceFailures} consequtive times)");
-                                        #endregion
-                                        //status = ScopeSlewerStatus.Failed;
-                                        //break;
-                                    }
-                                    else
-                                    {
-                                        distanceFailures = 0;
-                                    }
+                                    #region debug
+                                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                                        $"SUSPECT: distance to target is INCREASING");
+                                    #endregion
+                                    //status = ScopeSlewerStatus.Failed;
+                                    //break;
                                 }
                                 #endregion
                             }
@@ -2139,9 +2111,6 @@ namespace ASCOM.Wise40
                                 }
                                 count++;
                                 #endregion debug
-                                #region plot
-                                slewPlotter?.Record(currentPosition.Degrees, $"at {RateName(rate)}");
-                                #endregion
                                 telescopeCT.ThrowIfCancellationRequested();
                                 Thread.Sleep(mp.pollingFreqMillis);
                                 telescopeCT.ThrowIfCancellationRequested();
@@ -2154,17 +2123,7 @@ namespace ASCOM.Wise40
                             status == ScopeSlewerStatus.CloseEnough ||
                             status == ScopeSlewerStatus.ChangedDirection)
                         {
-                            #region plot
-                            slewPlotter?.Record(currentPosition.Degrees, $"at {RateName(rate)} - before stopping");
-                            #endregion
                             StopAxisAndWaitForHalt(thisAxis, slewerName, rate);
-                            #region plot
-                            //Angle angleAfterStopping = (thisAxis == TelescopeAxes.axisPrimary) ?
-                            //Angle.FromHours(RightAscension, Angle.Type.RA) :
-                            //    Angle.FromDegrees(Declination, Angle.Type.Dec);
-                            Angle angleAfterStopping = CurrentPosition(coordType);
-                            slewPlotter?.Record(angleAfterStopping.Degrees, $"at {RateName(rate)} - after stopping");
-                            #endregion
                             #region Velocity
                             debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
                                 $"mp[{motors}].lowestRad: {lowestRad:f10}, highestRad: {highestRad:f10}, rate: {RateName(rate)}");
@@ -3228,8 +3187,7 @@ namespace ASCOM.Wise40
                     return "ok";
 
                 case "safe-to-move":
-                    List<Const.CardinalDirection> directions = JsonConvert.DeserializeObject<List<Const.CardinalDirection>>(parameter);
-                    return JsonConvert.SerializeObject(SafeToMove(directions));
+                    return JsonConvert.SerializeObject(SafeToMove(parameter));
 
                 case "park":
                     Task.Run(() => Park());
@@ -3387,8 +3345,7 @@ namespace ASCOM.Wise40
                     WiseSite.astrometricAccuracy = acc;
                 else
                     WiseSite.astrometricAccuracy = Accuracy.Full;
-                BypassCoordinatesSafety = Convert.ToBoolean(driverProfile.GetValue(driverID, Const.ProfileName.Telescope_BypassCoordinatesSafety, string.Empty, false.ToString()));
-                PlotSlews = Convert.ToBoolean(driverProfile.GetValue(driverID, Const.ProfileName.Telescope_PlotSlews, string.Empty, false.ToString()));
+                BypassCoordinatesSafety = Convert.ToBoolean(driverProfile.GetValue(driverID, Const.ProfileName.Telescope_BypassCoordinatesSafety, string.Empty, false.ToString())); 
             }
         }
 
@@ -3401,7 +3358,6 @@ namespace ASCOM.Wise40
             {
                 driverProfile.WriteValue(driverID, Const.ProfileName.Telescope_AstrometricAccuracy, WiseSite.astrometricAccuracy.ToString());
                 driverProfile.WriteValue(driverID, Const.ProfileName.Telescope_BypassCoordinatesSafety, BypassCoordinatesSafety.ToString());
-                driverProfile.WriteValue(driverID, Const.ProfileName.Telescope_PlotSlews, PlotSlews.ToString());
             }
         }
 
@@ -3510,8 +3466,6 @@ namespace ASCOM.Wise40
         }
 
         public static bool BypassCoordinatesSafety { get; set; } = false;
-
-        public static bool PlotSlews { get; set; } = false;
 
         public bool Parking { get; set; } = false;
 

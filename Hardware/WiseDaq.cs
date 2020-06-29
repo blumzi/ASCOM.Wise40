@@ -82,7 +82,6 @@ namespace ASCOM.Wise40.Hardware
                     if (err.Value != 0)
                         Exceptor.Throw<WiseException>("SetDir", $"{WiseName}: UL DConfigPort({porttype}, {dir}) failed with {err.Message}");
                 }
-
             }
             portdir = dir;
         }
@@ -244,8 +243,13 @@ namespace ASCOM.Wise40.Hardware
             string ret = null;
 
             for (int bit = 0; bit < nbits; bit++)
+            {
                 if (owners[bit].owner != null)
-                    ret += WiseName + "[" + bit.ToString() + "]: " + owners[bit].owner + '\n';
+                {
+                    ret += $"{WiseName}[{bit}]: {owners[bit].owner}\n";
+                }
+            }
+
             return ret;
         }
     }

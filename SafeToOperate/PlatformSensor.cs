@@ -36,7 +36,7 @@ namespace ASCOM.Wise40SafeToOperate
             return new PlatformDigest()
             {
                 Name = WiseName,
-                IsSafe = isSafe,
+                IsSafe = IsSafe,
             };
         }
 

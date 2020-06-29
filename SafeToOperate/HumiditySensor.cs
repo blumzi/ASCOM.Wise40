@@ -27,7 +27,7 @@ namespace ASCOM.Wise40SafeToOperate
             return new HumidityDigest()
             {
                 Name = WiseName,
-                IsSafe = isSafe,
+                IsSafe = IsSafe,
             };
         }
 

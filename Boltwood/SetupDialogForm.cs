@@ -70,58 +70,68 @@ namespace ASCOM.Wise40.Boltwood
         private void InitUI()
         {
             Control[] controls;
+            CheckBox cb;
 
             for (int i = 0; i < WiseBoltwood.nStations; i++)
             {
                 controls = Controls.Find("checkBox" + i.ToString(), true);
-                (controls[0] as CheckBox).Text = WiseBoltwood.stations[i].Name;
-                (controls[0] as CheckBox).Checked = WiseBoltwood.stations[i].Enabled;
+                cb = controls[0] as CheckBox;
+
+                cb.Text = WiseBoltwood.stations[i].Name;
+                cb.Checked = WiseBoltwood.stations[i].Enabled;
+
                 controls = Controls.Find("labelPath" + i.ToString(), true);
-                (controls[0] as Label).Text = WiseBoltwood.stations[i].FilePath;
+                cb = controls[0] as CheckBox;
+                cb.Text = WiseBoltwood.stations[i].FilePath;
             }
         }
 
         private void openFileDialog0_FileOk(object sender, CancelEventArgs e)
         {
-            Control[] controls;
+            Control[] controls = Controls.Find("labelPath0", true);
+            Label label = controls[0] as Label;
 
-            controls = Controls.Find("labelPath0", true);
-            (controls[0] as Label).Text = ((OpenFileDialog)sender).FileName;
+            label.Text = ((OpenFileDialog)sender).FileName;
         }
 
         private void openFileDialog1_FileOk(object sender, CancelEventArgs e)
         {
             Control[] controls = Controls.Find("labelPath1", true);
+            Label label = controls[0] as Label;
 
-            (controls[0] as Label).Text = ((OpenFileDialog)sender).FileName;
+            label.Text = ((OpenFileDialog)sender).FileName;
         }
 
         private void openFileDialog2_FileOk(object sender, CancelEventArgs e)
         {
             Control[] controls = Controls.Find("labelPath2", true);
+            Label label = controls[0] as Label;
 
-            (controls[0] as Label).Text = ((OpenFileDialog)sender).FileName;
+            label.Text = ((OpenFileDialog)sender).FileName;
         }
 
         private void openFileDialog3_FileOk(object sender, CancelEventArgs e)
         {
             Control[] controls = Controls.Find("labelPath3", true);
+            Label label = controls[0] as Label;
 
-            (controls[0] as Label).Text = ((OpenFileDialog)sender).FileName;
+            label.Text = ((OpenFileDialog)sender).FileName;
         }
 
         private void openFileDialog4_FileOk(object sender, CancelEventArgs e)
         {
             Control[] controls = Controls.Find("labelPath4", true);
+            Label label = controls[0] as Label;
 
-            (controls[0] as Label).Text = ((OpenFileDialog)sender).FileName;
+            label.Text = ((OpenFileDialog)sender).FileName;
         }
 
         private void openFileDialog5_FileOk(object sender, CancelEventArgs e)
         {
             Control[] controls = Controls.Find("labelPath5", true);
+            Label label = controls[0] as Label;
 
-            (controls[0] as Label).Text = ((OpenFileDialog)sender).FileName;
+            label.Text = ((OpenFileDialog)sender).FileName;
         }
 
         private void buttonChooseDataFile0_Click(object sender, EventArgs e)

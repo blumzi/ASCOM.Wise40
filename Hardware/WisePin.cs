@@ -18,7 +18,6 @@ namespace ASCOM.Wise40.Hardware
         private readonly bool inverse;
         private bool _connected = false;
         private readonly bool _controlled;
-        private readonly Const.Direction _direction = Const.Direction.None;  // Generally speaking - does it increase or decrease an encoder value
         private readonly Debugger debugger = Debugger.Instance;
 
         public WisePin(string name,
@@ -38,7 +37,7 @@ namespace ASCOM.Wise40.Hardware
             this.dir = dir;
             this.bit = bit;
             this.inverse = inverse;
-            this._direction = direction;
+            this.Direction = direction;
             this._controlled = controlled;
             daq.SetDir(dir);
             if (daq.owners != null && daq.owners[bit].owner == null)
@@ -196,12 +195,6 @@ namespace ASCOM.Wise40.Hardware
             daq.UnsetOwner(bit);
         }
 
-        public Const.Direction Direction
-        {
-            get
-            {
-                return _direction;
-            }
-        }
+        public Const.Direction Direction { get; } = Const.Direction.None;
     }
 }

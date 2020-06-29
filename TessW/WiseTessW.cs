@@ -127,7 +127,7 @@ namespace ASCOM.Wise40.TessW
             {
                 if (response.IsSuccessStatusCode)
                 {
-                    string content = await response.Content.ReadAsStringAsync();
+                    string content = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
                     /// <!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,user-scalable=0">
                     /// <title>STA mode</title></head>
@@ -153,7 +153,7 @@ namespace ASCOM.Wise40.TessW
                         double tAmb = Convert.ToDouble(Instance.sensorData["tempAmb"]);
                         double tSky = Convert.ToDouble(Instance.sensorData["tempSky"]);
 
-                        double percent = 100 - 3 * (tAmb - tSky);
+                        double percent = 100 - (3 * (tAmb - tSky));
                         Instance.sensorData["cloudCover"] = (Math.Max(percent, 0.0)).ToString();
 
                         Instance.updatedAtUT = DateTime.UtcNow;
@@ -270,7 +270,7 @@ namespace ASCOM.Wise40.TessW
                     return RawData;
 
                 default:
-                    Exceptor.Throw<ActionNotImplementedException>("Action", $"Action \"{action}\" is not implemented by this driver");
+                    Exceptor.Throw<ActionNotImplementedException>($"Action({action}, {parameter})", "Not implemented by this driver");
                     return string.Empty;
             }
         }

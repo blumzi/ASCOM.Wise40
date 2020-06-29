@@ -39,7 +39,6 @@ namespace ASCOM.Wise40 //.Telescope
             this.acuracyLabel = new System.Windows.Forms.Label();
             this.checkBoxBypassSafety = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.checkBoxPlotSlews = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).BeginInit();
             this.SuspendLayout();
             // 
@@ -103,7 +102,7 @@ namespace ASCOM.Wise40 //.Telescope
             this.accuracyBox.Items.AddRange(new object[] {
             "Full",
             "Reduced"});
-            this.accuracyBox.Location = new System.Drawing.Point(209, 85);
+            this.accuracyBox.Location = new System.Drawing.Point(209, 101);
             this.accuracyBox.Name = "accuracyBox";
             this.accuracyBox.Size = new System.Drawing.Size(69, 21);
             this.accuracyBox.TabIndex = 8;
@@ -113,7 +112,7 @@ namespace ASCOM.Wise40 //.Telescope
             // 
             this.acuracyLabel.AutoSize = true;
             this.acuracyLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
-            this.acuracyLabel.Location = new System.Drawing.Point(62, 87);
+            this.acuracyLabel.Location = new System.Drawing.Point(62, 103);
             this.acuracyLabel.Name = "acuracyLabel";
             this.acuracyLabel.Size = new System.Drawing.Size(141, 17);
             this.acuracyLabel.TabIndex = 10;
@@ -124,7 +123,7 @@ namespace ASCOM.Wise40 //.Telescope
             this.checkBoxBypassSafety.AutoSize = true;
             this.checkBoxBypassSafety.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.checkBoxBypassSafety.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
-            this.checkBoxBypassSafety.Location = new System.Drawing.Point(24, 113);
+            this.checkBoxBypassSafety.Location = new System.Drawing.Point(24, 129);
             this.checkBoxBypassSafety.Name = "checkBoxBypassSafety";
             this.checkBoxBypassSafety.Size = new System.Drawing.Size(197, 21);
             this.checkBoxBypassSafety.TabIndex = 16;
@@ -132,27 +131,12 @@ namespace ASCOM.Wise40 //.Telescope
             this.toolTip1.SetToolTip(this.checkBoxBypassSafety, "Dangerous!!!  Telescope will not perform safety checks!");
             this.checkBoxBypassSafety.UseVisualStyleBackColor = true;
             // 
-            // checkBoxPlotSlews
-            // 
-            this.checkBoxPlotSlews.AutoSize = true;
-            this.checkBoxPlotSlews.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.checkBoxPlotSlews.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
-            this.checkBoxPlotSlews.Location = new System.Drawing.Point(76, 143);
-            this.checkBoxPlotSlews.Name = "checkBoxPlotSlews";
-            this.checkBoxPlotSlews.Size = new System.Drawing.Size(145, 21);
-            this.checkBoxPlotSlews.TabIndex = 17;
-            this.checkBoxPlotSlews.Text = "Produce slew plots";
-            this.toolTip1.SetToolTip(this.checkBoxPlotSlews, "Dangerous!!!  Telescope will not perform safety checks!");
-            this.checkBoxPlotSlews.UseVisualStyleBackColor = true;
-            this.checkBoxPlotSlews.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
-            // 
             // TelescopeSetupDialogForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.ClientSize = new System.Drawing.Size(395, 184);
-            this.Controls.Add(this.checkBoxPlotSlews);
             this.Controls.Add(this.checkBoxBypassSafety);
             this.Controls.Add(this.acuracyLabel);
             this.Controls.Add(this.accuracyBox);
@@ -184,6 +168,5 @@ namespace ASCOM.Wise40 //.Telescope
         private System.Windows.Forms.Label acuracyLabel;
         private System.Windows.Forms.CheckBox checkBoxBypassSafety;
         private System.Windows.Forms.ToolTip toolTip1;
-        private System.Windows.Forms.CheckBox checkBoxPlotSlews;
     }
 }

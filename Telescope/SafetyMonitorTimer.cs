@@ -9,33 +9,19 @@ using ASCOM.Wise40.Common;
 
 namespace ASCOM.Wise40 //.Telescope
 {
-
     /// <summary>
-    /// A timer that should be on whenever any of the directional or tracking motors 
+    /// A timer that should be on whenever any of the directional or tracking motors
     ///  are on.  The callback checks if the telescope is safe at the current coordinates.
     /// </summary>
     public class SafetyMonitorTimer
     {
-        private static WiseTele wisetele = WiseTele.Instance;
-        private Timer _timer;
-        private int _dueTime, _period;
+        private static readonly WiseTele wisetele = WiseTele.Instance;
+        private readonly Timer _timer;
+        private readonly int _dueTime, _period;
         private bool _enabled;
         public enum ActionWhenNotSafe {  None, StopMotors, Backoff };
-        private ActionWhenNotSafe _action = ActionWhenNotSafe.None;
 
-        public ActionWhenNotSafe WhenNotSafe
-        {
-            get
-            {
-                return _action;
-            }
-
-            set
-            {
-                _action = value;
-            }
-        }
-
+        public ActionWhenNotSafe WhenNotSafe { get; set; } = ActionWhenNotSafe.None;
 
         private void SafetyChecker(object StateObject)
         {
@@ -45,15 +31,14 @@ namespace ASCOM.Wise40 //.Telescope
                 Angle.FromHours(wisetele.RightAscension, Angle.AngleType.RA),
                 Angle.FromDegrees(wisetele.Declination, Angle.AngleType.Dec));
 
-            if (reason == string.Empty)
+            if (string.IsNullOrEmpty(reason))
             {
                 wisetele.safetyMonitorTimer.Enabled = true;
                 return;
             }
 
             #region debug
-            WiseTele.debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "SafetyChecker: activated (action: {0}, reason: {1})",
-                WhenNotSafe.ToString(), reason);
+            WiseTele.debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"SafetyChecker: activated (action: {WhenNotSafe}, reason: {reason})");
             #endregion
 
             switch (WhenNotSafe)
@@ -64,7 +49,7 @@ namespace ASCOM.Wise40 //.Telescope
                     wisetele.Stop($"SafetyChecker: ({reason})");
                     break;
                 case ActionWhenNotSafe.Backoff:
-                    wisetele.Backoff();
+                    wisetele.Backoff(reason);
                     break;
             }
             wisetele.safetyMonitorTimer.Enabled = true;

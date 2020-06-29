@@ -267,7 +267,7 @@ namespace ASCOM.Wise40SafeToOperate
                     sensorName = actionParameters.ToLower();
                     if (_sensorHandlers.ContainsKey(sensorName))
                     {
-                        ret = JsonConvert.SerializeObject(_sensorHandlers[sensorName].isSafe);
+                        ret = JsonConvert.SerializeObject(_sensorHandlers[sensorName].IsSafe);
                     }
                     else
                     {
@@ -280,7 +280,7 @@ namespace ASCOM.Wise40SafeToOperate
                     sensorName = actionParameters.ToLower();
                     if (!_sensorHandlers.ContainsKey(sensorName) || _sensorHandlers[sensorName].HasAttribute(Sensor.Attribute.Wise40Specific))
                         Exceptor.Throw<InvalidValueException>("Action(wise-sensor-is-safe)", $"Unknown Wise-wide sensor \"{sensorName}\"!");
-                    ret = JsonConvert.SerializeObject(_sensorHandlers[sensorName].isSafe);
+                    ret = JsonConvert.SerializeObject(_sensorHandlers[sensorName].IsSafe);
                     break;
 
                 case "start-bypass":
@@ -341,31 +341,30 @@ namespace ASCOM.Wise40SafeToOperate
             {
                 _bypassed = Convert.ToBoolean(_profile.GetValue(driverID, Const.ProfileName.SafeToOperate_Bypassed, string.Empty, false.ToString()));
 
-                return JsonConvert.SerializeObject(new SafeToOperateDigest
-                {
-                    Bypassed = _bypassed,
-                    Ready = IsReady(toBeIgnored: Sensor.Attribute.None),
-                    Safe = IsSafe,
-                    UnsafeReasons = UnsafeReasonsList(),
-                    UnsafeBecauseNotReady = _unsafeBecauseNotReady,
-                    ShuttingDown = activityMonitor.ShuttingDown,
-                    ComputerControl = Sensor.SensorDigest.FromSensor(computerControlSensor),
-                    SunElevation = Sensor.SensorDigest.FromSensor(sunSensor),
-                    HumanIntervention = Sensor.SensorDigest.FromSensor(humanInterventionSensor),
-                    Platform = Sensor.SensorDigest.FromSensor(platformSensor),
+                SafeToOperateDigest digest = new SafeToOperateDigest();
+                digest.Bypassed = _bypassed;
+                digest.Ready = IsReady();
+                digest.Safe = IsSafe;
+                digest.UnsafeReasons = UnsafeReasonsList();
+                digest.UnsafeBecauseNotReady = _unsafeBecauseNotReady;
+                digest.ShuttingDown = activityMonitor.ShuttingDown;
+                digest.ComputerControl = Sensor.SensorDigest.FromSensor(computerControlSensor);
+                digest.SunElevation = Sensor.SensorDigest.FromSensor(sunSensor);
+                digest.HumanIntervention = Sensor.SensorDigest.FromSensor(humanInterventionSensor);
+                digest.Platform = Sensor.SensorDigest.FromSensor(platformSensor);
 
-                    Temperature = Sensor.SensorDigest.FromSensor(temperatureSensor),
-                    Pressure = Sensor.SensorDigest.FromSensor(pressureSensor),
-                    Humidity = Sensor.SensorDigest.FromSensor(humiditySensor),
-                    RainRate = Sensor.SensorDigest.FromSensor(rainSensor),
-                    WindSpeed = Sensor.SensorDigest.FromSensor(windSensor),
-                    CloudCover = Sensor.SensorDigest.FromSensor(cloudsSensor),
+                digest.Temperature = Sensor.SensorDigest.FromSensor(temperatureSensor);
+                digest.Pressure = Sensor.SensorDigest.FromSensor(pressureSensor);
+                digest.Humidity = Sensor.SensorDigest.FromSensor(humiditySensor);
+                digest.RainRate = Sensor.SensorDigest.FromSensor(rainSensor);
+                digest.WindSpeed = Sensor.SensorDigest.FromSensor(windSensor);
+                digest.CloudCover = Sensor.SensorDigest.FromSensor(cloudsSensor);
 
-                    WindDirection = Sensor.SensorDigest.FromOCHProperty("WindDirection"),
-                    DewPoint = Sensor.SensorDigest.FromOCHProperty("DewPoint"),
-                    SkyTemperature = Sensor.SensorDigest.FromOCHProperty("SkyTemperature"),
-                }
-                );
+                digest.WindDirection = Sensor.SensorDigest.FromOCHProperty("WindDirection");
+                digest.DewPoint = Sensor.SensorDigest.FromOCHProperty("DewPoint");
+                digest.SkyTemperature = Sensor.SensorDigest.FromOCHProperty("SkyTemperature");
+
+                return JsonConvert.SerializeObject(digest);
             }
         }
 
@@ -375,10 +374,12 @@ namespace ASCOM.Wise40SafeToOperate
                 return JsonConvert.SerializeObject(_prioritizedSensors);
 
             foreach (var sensor in _prioritizedSensors)
+            {
                 if (!sensor.HasAttribute(Sensor.Attribute.ForInfoOnly) && sensor.WiseName == sensorName)
                 {
                     return JsonConvert.SerializeObject(sensor);
                 }
+            }
 
             return string.Format("unknown sensor \"{0}\"!", sensorName);
         }
@@ -533,7 +534,7 @@ namespace ASCOM.Wise40SafeToOperate
 
             string reason = $"{s.WiseName} - ";
 
-            if (!s.isSafe)
+            if (!s.IsSafe)
             {
                 if (s.HasAttribute(Sensor.Attribute.SingleReading))
                 {
@@ -605,7 +606,7 @@ namespace ASCOM.Wise40SafeToOperate
                 if (_bypassed && s.HasAttribute(Sensor.Attribute.CanBeBypassed))
                     continue;   // bypassed
 
-                if (!s.isSafe)
+                if (!s.IsSafe)
                 {
                     string reason = GenericUnsafeReason(s);
 
@@ -672,7 +673,7 @@ namespace ASCOM.Wise40SafeToOperate
             {
                 if (!cloudsSensor.StateIsSet(Sensor.State.EnoughReadings))
                     return Const.TriStateStatus.Warning;
-                return cloudsSensor.isSafe ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
+                return cloudsSensor.IsSafe ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
             }
         }
 
@@ -682,7 +683,7 @@ namespace ASCOM.Wise40SafeToOperate
             {
                 if (!windSensor.StateIsSet(Sensor.State.EnoughReadings))
                     return Const.TriStateStatus.Warning;
-                return windSensor.isSafe ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
+                return windSensor.IsSafe ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
             }
         }
 
@@ -692,7 +693,7 @@ namespace ASCOM.Wise40SafeToOperate
             {
                 if (!humiditySensor.StateIsSet(Sensor.State.EnoughReadings))
                     return Const.TriStateStatus.Warning;
-                return humiditySensor.isSafe ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
+                return humiditySensor.IsSafe ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
             }
         }
 
@@ -702,7 +703,7 @@ namespace ASCOM.Wise40SafeToOperate
             {
                 if (!rainSensor.StateIsSet(Sensor.State.EnoughReadings))
                     return Const.TriStateStatus.Warning;
-                return rainSensor.isSafe ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
+                return rainSensor.IsSafe ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
             }
         }
 
@@ -830,7 +831,7 @@ namespace ASCOM.Wise40SafeToOperate
                 if (toBeIgnored != Sensor.Attribute.None && s.HasAttribute(toBeIgnored))
                     continue;
 
-                if (!s.isSafe)
+                if (!s.IsSafe)
                 {
                     ret = false;    // The first non-safe sensor forces NOT SAFE
                     if (!s.HasAttribute(Sensor.Attribute.SingleReading))
@@ -908,7 +909,7 @@ namespace ASCOM.Wise40SafeToOperate
             _stabilizationPeriod = new TimeSpan(0, minutes, 0);
 
             foreach (Sensor s in _prioritizedSensors)
-                s.readProfile();
+                s.ReadProfile();
 
             using (Profile driverProfile = new Profile())
             {
@@ -991,7 +992,6 @@ namespace ASCOM.Wise40SafeToOperate
         public Sensor.SensorDigest DewPoint;
         public Sensor.SensorDigest SkyTemperature;
     }
-
 
     public class RawWeatherData
     {

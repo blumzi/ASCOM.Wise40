@@ -27,7 +27,7 @@ namespace ASCOM.Wise40SafeToOperate
             return new WindDigest()
             {
                 Name = WiseName,
-                IsSafe = isSafe,
+                IsSafe = IsSafe,
             };
         }
 

@@ -31,7 +31,7 @@ namespace ASCOM.Wise40SafeToOperate
             return new PressureDigest()
             {
                 Name = WiseName,
-                IsSafe = isSafe,
+                IsSafe = IsSafe,
             };
         }
 

@@ -31,7 +31,7 @@ namespace ASCOM.Wise40SafeToOperate
             return new TemperatureDigest()
             {
                 Name = WiseName,
-                IsSafe = isSafe,
+                IsSafe = IsSafe,
             };
         }
 

@@ -21,7 +21,6 @@
 // --------------------------------------------------------------------------------
 //
 
-
 // This is used to define code in the template that is specific to one class implementation
 // unused code canbe deleted and this definition removed.
 #define SafetyMonitor
@@ -67,7 +66,7 @@ namespace ASCOM.Wise40SafeToOperate
     public class SafetyMonitor : ISafetyMonitor
     {
         public static WiseSafeToOperate wisesafetooperate;
-        private static string driverID = Const.WiseDriverID.SafeToOperate;
+        private const string driverID = Const.WiseDriverID.SafeToOperate;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Wise40.SafeToOperate"/> class.

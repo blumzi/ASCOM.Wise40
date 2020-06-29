@@ -27,11 +27,10 @@ namespace ASCOM.Wise40SafeToOperate
         {
             bool valid = true;
             Color errorColor = Color.Red;
-            int i;
+            int i = Convert.ToInt32(textBoxAge.Text);
 
             // Place any validation constraint checks here
             // Update the state variables with results from the dialogue
-            i = Convert.ToInt32(textBoxAge.Text);
             if (i < 0)
             {
                 textBoxAge.ForeColor = errorColor;
@@ -84,7 +83,9 @@ namespace ASCOM.Wise40SafeToOperate
                 valid = false;
             }
             else
+            {
                 WiseSafeToOperate.sunSensor.MaxAtDawnAsString = deg.ToString();
+            }
 
             deg = Convert.ToDouble(textBoxSunElevationAtDusk.Text);
             if (deg > WiseSafeToOperate.sunSensor.MaxSettableElevation || deg < WiseSafeToOperate.sunSensor.MinSettableElevation)
@@ -93,7 +94,9 @@ namespace ASCOM.Wise40SafeToOperate
                 valid = false;
             }
             else
+            {
                 WiseSafeToOperate.sunSensor.MaxAtDuskAsString = deg.ToString();
+            }
 
             if (!valid)
                 return;

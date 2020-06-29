@@ -29,7 +29,7 @@ namespace ASCOM.Wise40
                 if (lazy.IsValueCreated)
                     return lazy.Value;
 
-                lazy.Value.init();
+                lazy.Value.Init();
                 return lazy.Value;
             }
         }
@@ -42,8 +42,6 @@ namespace ASCOM.Wise40
         public static int realMillisToInactivity;
         public static readonly int simulatedlMillisToInactivity = (int)TimeSpan.FromMinutes(3).TotalMilliseconds;
         public static Debugger debugger = Debugger.Instance;
-        private readonly DateTime _due = DateTime.MinValue;                  // not set
-        private readonly WiseSite wisesite = WiseSite.Instance;
         private static bool initialized = false;
         public static int millisToInactivity;
 
@@ -70,7 +68,7 @@ namespace ASCOM.Wise40
             RealActivities = TelescopeSlew | PulsingRa | PulsingDec | DomeSlew | Handpad | Parking | Shutter | Focuser | FilterWheel | ShuttingDown,
         };
 
-        public void init()
+        public void Init()
         {
             if (!Simulated && !WiseSite.CurrentProcessIs(Const.Application.RESTServer))
                 return;
@@ -82,10 +80,12 @@ namespace ASCOM.Wise40
             int minutesToIdle;
 
             using (Profile p = new Profile() { DeviceType = "Telescope" })
+            {
                 minutesToIdle = Convert.ToInt32(p.GetValue(Const.WiseDriverID.Telescope,
                     Const.ProfileName.Telescope_MinutesToIdle,
                     string.Empty,
                     defaultMinutesToIdle.ToString()));
+            }
 
             realMillisToInactivity = (int) TimeSpan.FromMinutes(minutesToIdle).TotalMilliseconds;
             millisToInactivity = WiseObject.Simulated ?
@@ -110,7 +110,7 @@ namespace ASCOM.Wise40
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"ActivityMonitor:EndActivity: Calling {type}.End()");
             #endregion
-            inProgress._endTime = par.endTime == null ? DateTime.UtcNow : par.endTime;
+            inProgress._endTime = par.endTime == default ? DateTime.UtcNow : par.endTime;
             inProgress.End(par);
         }
 
@@ -217,7 +217,6 @@ namespace ASCOM.Wise40
 
         public class Tracer
         {
-
             public const int resetValue = 0;
 
             public Tracer(string line, string name)
@@ -262,7 +261,7 @@ namespace ASCOM.Wise40
             public class Dome : Tracer
             {
                 public Dome() : base("dome", "Dome") { }
-                public enum Code { Idle = 0, FindingHome = 160, Slewing = 50, Tracking = 60 };
+                public enum Code { Idle = 0, Slewing = 50, Tracking = 60, FindingHome = 160 };
             }
             public static Dome dome = new Dome();
 
@@ -361,8 +360,7 @@ namespace ASCOM.Wise40
             if (obj == null)
                 return false;
 
-            Activity objAsActivity = obj as Activity;
-            if (objAsActivity == null)
+            if (!(obj is Activity objAsActivity))
                 return false;
             else
                 return Equals(objAsActivity);
@@ -377,7 +375,7 @@ namespace ASCOM.Wise40
         {
             if (other == null)
                 return false;
-            return (_type.Equals(other._type));
+            return _type.Equals(other._type);
         }
 
         public void EmitStart()
@@ -481,8 +479,7 @@ namespace ASCOM.Wise40
             _endReason = par.endReason;
 
             EmitEnd();
-
-            if (monitor.inProgressDict.ContainsKey(_type) && !monitor.inProgressDict.TryRemove(_type, out Activity ret))
+            if (monitor.inProgressDict.ContainsKey(_type) && !monitor.inProgressDict.TryRemove(_type, out _))
                 Exceptor.Throw <InvalidOperationException>("Activity:EndActivity:", $"Could not remove {_type} from inProgressDict");
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
@@ -876,7 +873,7 @@ namespace ASCOM.Wise40
                 _tags = new List<string>() { "FilterWheel", par.operation.ToString(), "InProgress" };
                 _startDetails = $"Start: {par.operation}\n";
                 _startDetails +=
-                    $" Wheel: {((par.startWheel == null) ? "none" : par.startWheel)}\n"  +
+                    $" Wheel: {par.startWheel ?? "none"}\n"  +
                     $" Position: {((par.startPosition == FilterWheel.UnknownPosition) ? "none" : par.startPosition.ToString())}\n" ;
                 if (par.operation == Operation.Move)
                     _startDetails += $" Target: {par.targetPosition}\n";
@@ -1028,7 +1025,7 @@ namespace ASCOM.Wise40
                         Angle.FromDegrees(_start, Angle.AngleType.Dec);
 
                 _startDetails = $"Axis: {_axis.ToString().Remove(0, "rate".Length)}\n" +
-                    $"Start: {a.ToString()}\n" +
+                    $"Start: {a}\n" +
                     $"Rate: {RateName(_rate)}\n";
 
                 EmitStart();
@@ -1069,7 +1066,7 @@ namespace ASCOM.Wise40
     public sealed class Idler : Activity
     {
         public DateTime _due;
-        private readonly System.Threading.Timer _timer = new System.Threading.Timer(onTimer);
+        private readonly System.Threading.Timer _timer = new System.Threading.Timer(OnTimer);
         public string startReason, endReason;
         public enum IdlerState { GoingIdle, Idle, ActivitiesInProgress }
         private IdlerState _idlerState;
@@ -1084,7 +1081,7 @@ namespace ASCOM.Wise40
                 if (lazy.IsValueCreated)
                     return lazy.Value;
 
-                lazy.Value.init();
+                lazy.Value.Init();
                 return lazy.Value;
             }
         }
@@ -1104,7 +1101,7 @@ namespace ASCOM.Wise40
 
         public override void End(GenericEndParams endParams) { }
 
-        public void init()
+        public void Init()
         {
             _idlerState = IdlerState.Idle;
         }
@@ -1121,11 +1118,13 @@ namespace ASCOM.Wise40
             _idlerState = ActivityMonitor.ObservatoryActivities.Count == 0 ? IdlerState.Idle : IdlerState.ActivitiesInProgress;
 
             if (prevState == IdlerState.GoingIdle)
+            {
                 EndActivity(new EndParams
                     {
                         endReason = par.endReason,
                         endState = Activity.State.Aborted,
                     });
+            }
         }
 
         public void StayActive(StartParams par)
@@ -1157,13 +1156,13 @@ namespace ASCOM.Wise40
 
             _idlerState = IdlerState.GoingIdle;
             if (ActivityMonitor.millisToInactivity == 0)
-                ActivityMonitor.Instance.init();
+                ActivityMonitor.Instance.Init();
             _due = DateTime.Now.AddMilliseconds(ActivityMonitor.millisToInactivity);
             _timer.Change(Timeout.Infinite, Timeout.Infinite);
             _timer.Change(ActivityMonitor.millisToInactivity, Timeout.Infinite);
         }
 
-        private static void onTimer(object state)
+        private static void OnTimer(object state)
         {
             BecomeIdle($"No activity for {ActivityMonitor.millisToInactivity / 1000} seconds");
         }
@@ -1315,7 +1314,7 @@ namespace ASCOM.Wise40
                     (int) ActivityMonitor.Tracer.Safety.Code.NotSafe;
                 _line = ActivityMonitor.Tracer.safety.Line;
                 _annotation = $"New state: {_safetyState}\n";
-                if (reason != "")
+                if (!string.IsNullOrEmpty(reason))
                     _annotation += $"Reason: {reason}\n";
                 _tags = new List<string>() { "Safety", _safetyState.ToString() };
             }

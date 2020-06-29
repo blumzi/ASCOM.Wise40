@@ -34,7 +34,7 @@ namespace ASCOM.Wise40SafeToOperate
             return new SunDigest()
             {
                 Name = WiseName,
-                IsSafe = isSafe,
+                IsSafe = IsSafe,
             };
         }
 

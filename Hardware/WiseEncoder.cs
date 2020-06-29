@@ -74,7 +74,7 @@ namespace ASCOM.Wise40.Hardware
             WiseName = name;
 
             int encBit = 0;
-            
+
             foreach (WiseEncSpec spec in specs)
             {
                 WiseDaq daq;

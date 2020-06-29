@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Diagnostics;
 
-
 using ASCOM.Wise40;
 using ASCOM.Wise40.Common;
 using ASCOM.Wise40.Hardware;
@@ -19,8 +18,8 @@ namespace ASCOM.Wise40SafeToOperate
         private static WisePin DoorLockPin;
         private static WisePin BypassPin;
         public static int _doorLockDelaySeconds, _defaultDoorLockDelaySeconds = 30;
-        private Hardware hardware = Hardware.Instance;
-        private static Timer _timer = new Timer(new System.Threading.TimerCallback(Check));
+        private readonly Hardware hardware = Hardware.Instance;
+        private static readonly Timer _timer = new Timer(new System.Threading.TimerCallback(Check));
         private static bool _doorLockWasSafe = false, _bypassWasSafe = false;
         private static bool _isSafe = true;
         private static bool _debugging = false;
@@ -50,7 +49,7 @@ namespace ASCOM.Wise40SafeToOperate
             return new DoorLockDigest
             {
                 Name = WiseName,
-                IsSafe = isSafe,
+                IsSafe = IsSafe,
                 DoorLockPin = DoorLockPin.isOn ? 1 : 0,
                 DoorLockIsSafe = DoorLockIsSafe,
                 DoorLockCounter = _doorLockCounter,

@@ -127,7 +127,7 @@ namespace ASCOM.Wise40.Boltwood
                     return AllStationsRawData;
 
                 default:
-                    Exceptor.Throw<ActionNotImplementedException>("Action", $"Action \"{action}\" is not implemented by this driver");
+                    Exceptor.Throw<ActionNotImplementedException>($"Action({action}, {parameter})", "Not implemented by this driver");
                     return "Failed";
             }
         }
@@ -160,20 +160,20 @@ namespace ASCOM.Wise40.Boltwood
         public void CommandBlind(string command, bool raw)
         {
             CheckConnected("CommandBlind");
-            Exceptor.Throw<MethodNotImplementedException>("CommandBlind", "Not implemented");
+            Exceptor.Throw<MethodNotImplementedException>($"CommandBlind({command}, {raw})", "Not implemented");
         }
 
         public bool CommandBool(string command, bool raw)
         {
             CheckConnected("CommandBool");
-            Exceptor.Throw<MethodNotImplementedException>("CommandBool", "Not implemented");
+            Exceptor.Throw<MethodNotImplementedException>($"CommandBool({command}, {raw})", "Not implemented");
             return false;
         }
 
         public string CommandString(string command, bool raw)
         {
             CheckConnected("CommandString");
-            Exceptor.Throw<MethodNotImplementedException>("CommandString", "Not implemented");
+            Exceptor.Throw<MethodNotImplementedException>($"CommandString({command}, {raw})", "Not implemented");
             return string.Empty;
         }
 
@@ -278,7 +278,6 @@ namespace ASCOM.Wise40.Boltwood
 
         private double CloudConditionToNumeric(SensorData.CloudCondition condition)
         {
-
             switch (condition)
             {
                 case SensorData.CloudCondition.cloudClear:
@@ -750,7 +749,7 @@ namespace ASCOM.Wise40.Boltwood
             }
         }
 
-        private void GetWeizmannSensorData() { }
+        //private void GetWeizmannSensorData() { }
 
         private void GetClarityIISensorData()
         {

@@ -76,7 +76,7 @@ namespace ASCOM.Wise40SafeToOperate
             return new HumanInterventionDigest()
             {
                 Name = WiseName,
-                IsSafe = isSafe,
+                IsSafe = IsSafe,
                 Details = details,
             };
         }

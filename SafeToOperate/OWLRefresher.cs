@@ -92,7 +92,6 @@ namespace ASCOM.Wise40SafeToOperate
                                     ["Humidity"] = station._sensorData["humidity"].ToString(),
                                     ["WindSpeed"] = station._sensorData["windSpeed"].ToString(),
                                     ["WindDir"] = station._sensorData["windDir"].ToString(),
-
                                 }, station._dateUtc.ToLocalTime());
                             }
 
@@ -248,7 +247,6 @@ namespace ASCOM.Wise40SafeToOperate
             public string Name;
             public double WindSpeed;
             public double WindDir;
-
         }
 
         public class THSDigest
