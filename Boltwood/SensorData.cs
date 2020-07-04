@@ -7,7 +7,6 @@ using ASCOM.Wise40.Common;
 
 namespace ASCOM.Wise40.Boltwood
 {
-
     //    
     //    Excerpt from the ClarityII manual
     //            
@@ -75,21 +74,21 @@ namespace ASCOM.Wise40.Boltwood
         public double skyAmbientTemp;  // 999 for saturated hot, -999 for saturated cold, -998 for wet
         public enum SpecialTempValue
         {
-            specialTempSaturatedHot = 999,
             specialTempSaturatedLow = -999,
             specialTempWet = -998,
+            specialTempSaturatedHot = 999,
         }
         public double ambientTemp;  // tempUnits
         public double sensorTemp;   // tempUnits
         public double windSpeed;    // windUnits
         public enum SpecialWindSpeedValue
         {
-            windHeatingUp = -1,
-            windWet = -2,
-            windBadProbe = -3,
-            windProbeNotHeating = -4,
-            windProbeShorted = -5,
             windProbeFailure = -6,
+            windProbeShorted = -5,
+            windProbeNotHeating = -4,
+            windBadProbe = -3,
+            windWet = -2,
+            windHeatingUp = -1,
         }
         public int humidity;        // %
         public double dewPoint;     // degrees
@@ -108,7 +107,7 @@ namespace ASCOM.Wise40.Boltwood
             cloudWet = 4,
         }
         public CloudCondition cloudCondition;
-        private static Dictionary<CloudCondition, double> cloudCondition2CloudCover = new Dictionary<CloudCondition, double>() {
+        private static readonly Dictionary<CloudCondition, double> cloudCondition2CloudCover = new Dictionary<CloudCondition, double>() {
                     { CloudCondition.cloudUnknown, 0.0 },
                     { CloudCondition.cloudClear, 0.0 },
                     { CloudCondition.cloudCloudy, 50.0 },
@@ -155,8 +154,8 @@ namespace ASCOM.Wise40.Boltwood
         public DayCondition dayCondition;
         public bool roofCloseRequested;
         public bool alerting;
-        private ASCOM.Utilities.Util util = new Utilities.Util();
-        private BoltwoodStation _station;
+        private readonly ASCOM.Utilities.Util util = new Utilities.Util();
+        private readonly BoltwoodStation _station;
 
         public SensorData(string data, BoltwoodStation station)
         {
@@ -214,7 +213,7 @@ namespace ASCOM.Wise40.Boltwood
                 rainCondition = (RainCondition)Convert.ToInt32(data.Substring(97, 1));
                 dayCondition = (DayCondition)Convert.ToInt32(data.Substring(99, 1));
                 var x = Convert.ToInt32(data.Substring(101, 1));
-                roofCloseRequested = (x == 1) ? true : false;
+                roofCloseRequested = x == 1;
 
                 switch (windUnits)
                 {
@@ -241,7 +240,7 @@ namespace ASCOM.Wise40.Boltwood
             }
             catch (Exception e)
             {
-                Exceptor.Throw<InvalidValueException>("SensorData", $"Could not parse sensor data, caught: {e.Message}");
+                Exceptor.Throw<InvalidValueException>("SensorData", $"Could not parse sensor data, caught: {e.Message} at\n{e.StackTrace}");
             }
         }
     }

@@ -999,6 +999,6 @@ namespace ASCOM.Wise40SafeToOperate
         public WiseVantagePro.VantagePro2StationRawData VantagePro2;
         public WiseTessW.TessWStationRawData TessW;
         public OWLRefresher.OWLDigest OWL;
-        public ARDO.ARDORawData ARDO;
+        public ARDORawData ARDO;
     }
 }

@@ -76,7 +76,7 @@ namespace ASCOM.Wise40SafeToOperate
             {
                 try
                 {
-                    response = await Instance._client.GetAsync(Instance.URL);
+                    response = await Instance._client.GetAsync(Instance.URL).ConfigureAwait(false);
                     duration = DateTime.Now.Subtract(start);
                     break;
                 }
@@ -104,7 +104,7 @@ namespace ASCOM.Wise40SafeToOperate
             {
                 if (response.IsSuccessStatusCode)
                 {
-                    string content = await response.Content.ReadAsStringAsync();
+                    string content = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
                     foreach (string line in content.Split('\n').ToList())
                     {
@@ -114,18 +114,14 @@ namespace ASCOM.Wise40SafeToOperate
                     }
                     DateTime.TryParse(Instance.sensorData["dataGMTTime"] + "Z", out Instance.updatedAtUT);
 
-                    if (Instance._weatherLogger != null)
-                    {
-                        Instance._weatherLogger.Log(new Dictionary<string, string>()
+                    Instance._weatherLogger?.Log(new Dictionary<string, string>()
                         {
                             ["Temperature"] = Instance.sensorData["temp"],
                             ["SkyAmbientTemp"] = Instance.sensorData["clouds"],
                             ["Humidity"] = Instance.sensorData["hum"],
                             ["DewPoint"] = Instance.sensorData["dewp"],
                             ["WindSpeed"] = Instance.sensorData["wind"],
-
                         }, Instance.updatedAtUT.ToLocalTime());
-                    }
                     #region debug
                     Instance.debugger.WriteLine(Debugger.DebugLevel.DebugSafety,
                         $"GetARDOInfo: try#: {tryNo}, Success, content: [{content}], duration: {duration}");
@@ -182,16 +178,16 @@ namespace ASCOM.Wise40SafeToOperate
                 };
             }
         }
+    }
 
-        public class ARDORawData
-        {
-            public string Name = "ARDO";
-            public string Vendor = "Lunatico Astronomia";
-            public string Model = "AAG Cloudwatcher";
-            public DateTime UpdatedAtUT;
-            public double AgeInSeconds;
-            public Dictionary<string, string> SensorData;
-        }
+    public class ARDORawData
+    {
+        public string Name = "ARDO";
+        public string Vendor = "Lunatico Astronomia";
+        public string Model = "AAG Cloudwatcher";
+        public DateTime UpdatedAtUT;
+        public double AgeInSeconds;
+        public Dictionary<string, string> SensorData;
     }
 
     public class ARDORefresher : Sensor
