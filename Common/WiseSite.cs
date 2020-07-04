@@ -323,6 +323,8 @@ namespace ASCOM.Wise40
 
         public static bool CurrentProcessIs(Const.Application app)
         {
+            if (_processName == null)
+                _processName = System.Diagnostics.Process.GetCurrentProcess().ProcessName;
             return _processName == Const.Apps[app].appName;
         }
     }
