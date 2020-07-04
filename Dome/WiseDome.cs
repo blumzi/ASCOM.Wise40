@@ -569,11 +569,24 @@ namespace ASCOM.Wise40
             if (Calibrated)
                 SaveCalibrationData();
             #region debug
-            dbg = $"WiseDome:Stop({reason}) Fully stopped ";
-            if (Calibrated)
-                debugger.WriteLine(Debugger.DebugLevel.DebugDome, dbg + $"at az: {Azimuth.ToNiceString()}, target: {_targetAz.ToNiceString()} encoder: {domeEncoder.Value},  after {tries + 1} tries");
-            else
-                debugger.WriteLine(Debugger.DebugLevel.DebugDome, dbg + $"(not calibrated), encoder: {domeEncoder.Value}, after {tries + 1} tries");
+            try
+            {
+                dbg = $"WiseDome:Stop({reason}) Fully stopped ";
+                if (Calibrated)
+                {
+                    debugger.WriteLine(Debugger.DebugLevel.DebugDome, dbg +
+                        $"at az: {Azimuth.ToNiceString()}, " +
+                        $"target: {_targetAz.ToNiceString()} ",
+                        $"encoder: {domeEncoder.Value}, " +
+                        $"after {tries + 1} tries");
+                }
+                else
+                {
+                    debugger.WriteLine(Debugger.DebugLevel.DebugDome, dbg + $"(not calibrated), encoder: {domeEncoder.Value}, after {tries + 1} tries");
+                }
+            } catch(Exception ex) {
+                debugger.WriteLine(Debugger.DebugLevel.DebugDome, $"Caught \"{ex.Message}\" at\n{ex.StackTrace}");
+            }
             #endregion
 
             if (_adjustingForTracking)
