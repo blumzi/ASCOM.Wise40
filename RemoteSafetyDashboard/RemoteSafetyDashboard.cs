@@ -19,20 +19,20 @@ namespace RemoteSafetyDashboard
     public partial class RemoteSafetyDashboard : Form
     {
         static public Communicator communicator;
-        Version version = new Version(0, 2);
         static public TimeSpan _intervalBetweenChecks = TimeSpan.FromSeconds(20);
-        static DateTime _nextCheck = DateTime.Now + TimeSpan.FromSeconds(5);
-        static bool _checking = false;
-        static bool _connected = false;
-        SafeToOperateDigest safetooperateDigest;
-        static Statuser safetooperateStatus;
+        static private DateTime _nextCheck = DateTime.Now + TimeSpan.FromSeconds(5);
+        static private bool _checking = false;
+        static private bool _connected = false;
+        static private SafeToOperateDigest safetooperateDigest;
+        static private Statuser safetooperateStatus;
 
-        static Color normalColor = Statuser.colors[Statuser.Severity.Normal];
-        static Color unsafeColor = Statuser.colors[Statuser.Severity.Error];
-        static Color safeColor = Statuser.colors[Statuser.Severity.Good];
-        static Color warningColor = Statuser.colors[Statuser.Severity.Warning];
+        private static readonly Color normalColor = Statuser.colors[Statuser.Severity.Normal];
+        private static readonly Color unsafeColor = Statuser.colors[Statuser.Severity.Error];
+        private static readonly Color safeColor = Statuser.colors[Statuser.Severity.Good];
+        private static readonly Color warningColor = Statuser.colors[Statuser.Severity.Warning];
 
         static public string remoteHost = "132.66.65.9";
+        private static readonly Debugger debugger = Debugger.Instance;
 
         public RemoteSafetyDashboard()
         {
@@ -54,14 +54,14 @@ namespace RemoteSafetyDashboard
             if (_checking)
             {
                 if (communicator != null)
-                    safetooperateStatus.Show(communicator.Status, 0, communicator.Severity);
+                    safetooperateStatus.Show(communicator.Status, 2000, communicator.Severity, silent: true);
                 return;
             }
 
             TimeSpan ts = _nextCheck - now;
             labelNextCheck.Text = ts.ToMinimalString(showMillis: false);
 
-            if (ts <= TimeSpan.FromSeconds(0))
+            if (ts <= TimeSpan.FromMilliseconds(0))
             {
                 _checking = true;
                 CheckConnections();
@@ -74,11 +74,11 @@ namespace RemoteSafetyDashboard
             }
         }
 
-        public Color SensorDigestColor(Sensor.SensorDigest sensorDigest)
+        public static Color SensorDigestColor(Sensor.SensorDigest sensorDigest)
         {
             Color ret;
 
-            if (! sensorDigest.AffectsSafety)
+            if (!sensorDigest.AffectsSafety)
             {
                 ret = normalColor;
             }
@@ -102,14 +102,9 @@ namespace RemoteSafetyDashboard
             toolTip.SetToolTip(label, digest.ToolTip);
         }
 
-        public void UpdateDisplay()
+        private void ClearLabels(string s)
         {
-            try
-            {
-                safetooperateDigest = JsonConvert.DeserializeObject<SafeToOperateDigest>(communicator.Action("status", ""));
-            } catch (Exception ex)
-            {
-                foreach (Label l in new List<Label> {
+            foreach (Label l in new List<Label> {
                     labelHumidityValue,
                     labelCloudCoverValue,
                     labelDewPointValue,
@@ -121,9 +116,55 @@ namespace RemoteSafetyDashboard
                     labelSunElevationValue,
                     labelTempValue,
                 })
+            {
+                l.Text = s;
+            }
+        }
+
+        public void UpdateDisplay()
+        {
+            string response = "";
+
+            try
+            {
+                response = communicator.Action("status", "");
+                if (response == null)
                 {
-                    l.Text = "";
+                    ClearLabels("NULL");
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Get \"status\": null response");
+                    #endregion
+                    return;
                 }
+                //#region debug
+                //debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"Get \"status\": response: \"{response}\"");
+                //#endregion
+            }
+            catch (Exception ex)
+            {
+                safetooperateStatus.Show($"Get \"status\": {ex.Message}", 3000, Statuser.Severity.Error, true);
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"Get \"status\": caught {ex.Message} at\n{ex.StackTrace}");
+                #endregion
+                return;
+            }
+
+            try
+            {
+                safetooperateDigest = JsonConvert.DeserializeObject<SafeToOperateDigest>(response);
+            } catch (Exception ex)
+            {
+                ClearLabels("JSON");
+                safetooperateStatus.Show($"deserialize caught: {ex.Message}", 3000, Statuser.Severity.Error, true);
+                return;
+            }
+
+            if (safetooperateDigest == null)
+            {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"Get \"status\": response: {response} => safetooperateDigest == null");
+                #endregion
+                safetooperateStatus.Show("NULL digest", 3000, Statuser.Severity.Error, true);
                 return;
             }
 
@@ -138,44 +179,66 @@ namespace RemoteSafetyDashboard
             RefreshSensor(labelSunElevationValue, safetooperateDigest.SunElevation);
             RefreshSensor(labelTempValue, safetooperateDigest.Temperature);
 
-            string tip = null;
-            string text = "";
-            Statuser.Severity severity = Statuser.Severity.Normal;
-
             if (!safetooperateDigest.HumanIntervention.Safe)
             {
-                text = "Human Intervention";
-                severity = Statuser.Severity.Error;
-                tip = String.Join("\n", safetooperateDigest.UnsafeReasons).Replace(Const.recordSeparator, "\n  ");
+                toolTip.SetToolTip(safetooperateStatus.Label,
+                    String.Join("\n", safetooperateDigest.UnsafeReasons).Replace(Const.recordSeparator, "\n  "));
+                safetooperateStatus.Show("Human Intervention", 0, Statuser.Severity.Error, true);
             }
             else if (safetooperateDigest.Bypassed)
             {
-                text = "Safety bypassed";
-                severity = Statuser.Severity.Warning;
-                tip = "Safety checks are bypassed!";
-            }
-            else if (safetooperateDigest.Safe)
-            {
-                text = "Safe to operate";
-                severity = Statuser.Severity.Good;
-                tip = "Conditions are safe to operate.";
+                toolTip.SetToolTip(safetooperateStatus.Label, "Safety checks are bypassed!");
+                safetooperateStatus.Show("Safety bypassed", 0, Statuser.Severity.Warning, true);
             }
             else
             {
-                text = "Not safe to operate";
-                severity = Statuser.Severity.Error;
-                tip = string.Join("\n", safetooperateDigest.UnsafeReasons).Replace(Const.recordSeparator, "\n");
+                bool wise_issafe;
+
+                try
+                {
+                    wise_issafe = JsonConvert.DeserializeObject<bool>(communicator.Action("wise-issafe", ""));
+                }
+                catch (Exception ex)
+                {
+                    safetooperateStatus.Show($"Get wise-issafe caught {ex.Message}", 2000, Statuser.Severity.Error, true);
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"Get wise-safe caught {ex.Message} at\n{ex.StackTrace}");
+                    #endregion
+                    return;
+                }
+
+                if (wise_issafe)
+                {
+                    toolTip.SetToolTip(safetooperateStatus.Label, "Conditions are safe to operate.");
+                    safetooperateStatus.Show("Safe to operate", 0, Statuser.Severity.Good, true);
+                }
+                else
+                {
+                    List<string> wise_unsafereasons = new List<string>();
+
+                    try
+                    {
+                        wise_unsafereasons = JsonConvert.DeserializeObject<List<string>>(communicator.Action("wise-unsafereasons", ""));
+                    }
+                    catch (Exception ex)
+                    {
+                        safetooperateStatus.Show($"Get wise-unsafereasons caught {ex.Message}", 2000, Statuser.Severity.Error, true);
+                        #region debug
+                        debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"Get wise-unsafereasons caught {ex.Message} at\n{ex.StackTrace}");
+                        #endregion
+                    }
+
+                    toolTip.SetToolTip(safetooperateStatus.Label, string.Join("\n", wise_unsafereasons).Replace(Const.recordSeparator, "\n"));
+                    safetooperateStatus.Show("Not safe to operate", 0, Statuser.Severity.Error, true);
+                }
             }
-            safetooperateStatus.Label.Text = text;
-            toolTip.SetToolTip(safetooperateStatus.Label, tip);
-            safetooperateStatus.Show(text, 0, severity, true);
         }
 
-        public void CheckConnections()
+        public static void CheckConnections()
         {
             if (communicator == null)
                 communicator = new Communicator(Communicator.Type.Fake, remoteHost);
-                //communicator = new Communicator(Communicator.Type.ASCOM, remoteHost);
+                //communicator = new Communicator(Communicator.Type.ASCOM, remoteHost); // Till we can use ASCOM.RemoteClient
 
             if (communicator.Connected)
             {
@@ -198,6 +261,9 @@ namespace RemoteSafetyDashboard
                 {
                     _connected = false;
                     safetooperateStatus.Show($"No connection to ASCOM.Server on {remoteHost}", 0, Statuser.Severity.Error, true);
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"CheckConnections: No connection to {remoteHost}");
+                    #endregion
                     return;
                 }
             }

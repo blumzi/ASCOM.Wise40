@@ -43,6 +43,7 @@ namespace RemoteSafetyDashboard
         private readonly ASCOM.DriverAccess.SafetyMonitor safeToOperate = null;
         public Transaction transaction;
         private readonly string remoteAddress;
+        private static readonly Debugger debugger = Debugger.Instance;
 
         public Communicator(Type type = Type.ASCOM, string address = "132.66.65.9")
         {
@@ -111,7 +112,11 @@ namespace RemoteSafetyDashboard
 
             string response = _type == Type.ASCOM
                 ? safeToOperate.Action(transaction.location, transaction.parameters)
-                : fakeSafeToOperate.Action(transaction.location, transaction.parameters);
+                : fakeSafeToOperate.Action(/* transaction.location, transaction.parameters */);
+            //#region debug
+            //debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+            //    $"Action(action: {action}, parameters: {parameters}) => response: {response}");
+            //#endregion
             return response;
         }
 

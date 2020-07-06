@@ -9,6 +9,8 @@ using System.Net;
 using ASCOM.Wise40.Common;
 using Newtonsoft.Json;
 using System.Threading;
+using System.ComponentModel.Design;
+using System.Windows.Forms;
 
 namespace RemoteSafetyDashboard
 {
@@ -42,8 +44,9 @@ namespace RemoteSafetyDashboard
     public class FakeSafeToOperateAccess
     {
         private static string _rootUri;
-        private HttpClient _client;
-        Communicator _communicator;
+        private readonly HttpClient _client;
+        private readonly Communicator _communicator;
+        private static readonly Debugger debugger = Debugger.Instance;
 
         public FakeSafeToOperateAccess(Communicator communicator, string serverAddress)
         {
@@ -61,7 +64,7 @@ namespace RemoteSafetyDashboard
         {
             get
             {
-                Task.Run(() => Communicate()).ContinueWith((t) => _communicator.Busy = false);
+                Task.Run(() => Communicate()).ContinueWith((_) => _communicator.Busy = false);
 
                 while (_communicator.Busy)
                     Thread.Sleep(100);
@@ -79,7 +82,7 @@ namespace RemoteSafetyDashboard
             }
         }
 
-        public string Action(string action, string parameters)
+        public string Action(/* string action, string parameters */)
         {
             Task.Run(() => Communicate()).ContinueWith((t) => _communicator.Busy = false);
 
@@ -91,47 +94,85 @@ namespace RemoteSafetyDashboard
 
         private async void Communicate()
         {
+            string uri = _rootUri + _communicator.transaction.location;
+            #region debug
+            string here = 
+                $"Communicate(verb: {_communicator.transaction.verb}, " +
+                $"uri: {uri}";
+            #endregion
+
             try
             {
                 string httpResponseBody;
-                string uri = _rootUri + _communicator.transaction.location;
                 HttpResponseMessage httpResponse;
 
                 if (_communicator.transaction.verb == "GET")
                 {
-                    httpResponse = await _client.GetAsync(uri);
+                    here += ") ";
+                    httpResponse = await _client.GetAsync(uri).ConfigureAwait(false);
                 }
                 else
                 {
-                    httpResponse = await _client.PutAsync(uri, new StringContent(_communicator.transaction.parameters, Encoding.UTF8, "application/x-www-form-urlencoded"));
+                    here += _communicator.transaction.parameters == null ?
+                        ") " :
+                        $", parameters: {_communicator.transaction.parameters}) ";
+                    httpResponse = await _client.PutAsync(uri,
+                        new StringContent(_communicator.transaction.parameters, Encoding.UTF8, "application/x-www-form-urlencoded")).ConfigureAwait(false);
                 }
-                httpResponse.EnsureSuccessStatusCode();
+
+                if (! httpResponse.IsSuccessStatusCode)
+                {
+                    _communicator.Status = $"Communicate: HTTP code {httpResponse.StatusCode}";
+                    _communicator.Severity = Statuser.Severity.Error;
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{here}: HTTP status code: {httpResponse.StatusCode}");
+                    #endregion
+                    return;
+                }
                 httpResponseBody = await httpResponse.Content.ReadAsStringAsync();
 
+                //#region debug
+                //debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{here}: httpResponseBody: \"{httpResponseBody}\"");
+                //#endregion
                 ASCOMResponse ascomResponse = JsonConvert.DeserializeObject<ASCOMResponse>(httpResponseBody);
 
                 if (ascomResponse.ErrorNumber != 0)
-                    throw new Exception($"{ascomResponse.ErrorMessage}");
+                    Exceptor.Throw<Exception>($"{here}", $"{ascomResponse.ErrorMessage}");
                 else if (ascomResponse.DriverException != null)
-                    throw new Exception($"{ascomResponse.DriverException}");
+                    Exceptor.Throw<Exception>($"{here}", $"{ascomResponse.DriverException}");
 
                 _communicator.transaction.response = ascomResponse.Value;
                 _communicator.Status = "";
+                #region debug
+                if (_communicator.transaction.response == null)
+                {
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{here}: null Value");
+                }
+                #endregion
             }
             catch (HttpRequestException ex)
             {
-                _communicator.Status = $"{ex.Message}";
+                _communicator.Status = $"Communicate: {ex.Message}";
                 _communicator.Severity = Statuser.Severity.Error;
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{here}: Caught {ex.Message} at\n{ex.StackTrace}");
+                #endregion
             }
             catch (TaskCanceledException ex)
             {
-                _communicator.Status = "Timedout";
+                _communicator.Status = "Communicate: Timedout";
                 _communicator.Severity = Statuser.Severity.Error;
+                #region debug
+                Debugger.Instance.WriteLine(Debugger.DebugLevel.DebugLogic, $"{here}: Caught {ex.Message} (timeout) at\n{ex.StackTrace}");
+                #endregion
             }
             catch (Exception ex)
             {
-                _communicator.Status = $"{ex.Message}";
+                _communicator.Status = $"Communicate: {ex.Message}";
                 _communicator.Severity = Statuser.Severity.Error;
+                #region debug
+                Debugger.Instance.WriteLine(Debugger.DebugLevel.DebugLogic, $"{here}: Caught {ex.Message} at\n{ex.StackTrace}");
+                #endregion
             }
         }
     }
