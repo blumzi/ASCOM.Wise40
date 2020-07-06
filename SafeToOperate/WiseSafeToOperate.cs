@@ -318,7 +318,7 @@ namespace ASCOM.Wise40SafeToOperate
                     break;
 
                 case "wise-issafe":
-                    ret = Convert.ToString(WiseIsSafe);
+                    ret = JsonConvert.SerializeObject(WiseIsSafe);
                     break;
 
                 case "wise-unsafereasons":
