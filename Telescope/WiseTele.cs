@@ -233,6 +233,7 @@ namespace ASCOM.Wise40
             public double minRadChangePerPollingInterval;
             public double maxRadChangePerPollingInterval;
             public int pollingFreqMillis;
+            public TimeSpan maxTime;
 
             public MovementParameters()
             {
@@ -541,6 +542,7 @@ namespace ASCOM.Wise40
                         stopMovement = new Angle("00h12m00.0s"),
                         minRadChangePerPollingInterval = 0.052,
                         maxRadChangePerPollingInterval = 1.5724276374,
+                        maxTime = TimeSpan.FromMinutes(5),
                     },
 
                     [Const.rateSet] = new MovementParameters()
@@ -549,6 +551,7 @@ namespace ASCOM.Wise40
                         stopMovement = new Angle("00h00m02.0s"),
                         minRadChangePerPollingInterval = 0.000146,
                         maxRadChangePerPollingInterval = 0.0436017917,
+                        maxTime = TimeSpan.FromMinutes(5),
                     },
 
                     [Const.rateGuide] = new MovementParameters()
@@ -557,6 +560,7 @@ namespace ASCOM.Wise40
                         stopMovement = new Angle("00h00m00.1s"),
                         minRadChangePerPollingInterval = 0.0000072,
                         maxRadChangePerPollingInterval = 0.0014668186,
+                        maxTime = TimeSpan.FromMinutes(5),
                     }
                 },
 
@@ -568,6 +572,7 @@ namespace ASCOM.Wise40
                         stopMovement = new Angle("04:30:00.0"),
                         minRadChangePerPollingInterval = 0.0785,
                         maxRadChangePerPollingInterval = 1.6946717173,
+                        maxTime = TimeSpan.FromMinutes(5),
                     },
 
                     [Const.rateSet] = new MovementParameters()
@@ -576,6 +581,7 @@ namespace ASCOM.Wise40
                         stopMovement = new Angle("00:00:03.0"),
                         minRadChangePerPollingInterval = 0.000014,
                         maxRadChangePerPollingInterval = 0.0469464707,
+                        maxTime = TimeSpan.FromMinutes(5),
                     },
 
                     [Const.rateGuide] = new MovementParameters()
@@ -584,6 +590,7 @@ namespace ASCOM.Wise40
                         stopMovement = new Angle("00:00:00.1"),
                         minRadChangePerPollingInterval = 0.00000049,
                         maxRadChangePerPollingInterval = 0.0001234182,
+                        maxTime = TimeSpan.FromMinutes(5),
                     }
                 }
             };
@@ -1860,7 +1867,7 @@ namespace ASCOM.Wise40
             #endregion
         }
 
-        private enum ScopeSlewerStatus { Undefined, CloseEnough, ChangedDirection, Canceled, Failed };
+        private enum ScopeSlewerStatus { Undefined, CloseEnough, ChangedDirection, Canceled, Failed, Timedout };
 
         private Angle CurrentPosition(Angle.AngleType angleType)
         {
@@ -1959,6 +1966,7 @@ namespace ASCOM.Wise40
                         MovementParameters mp = movementParameters[thisAxis][rate];
 
                         Angle startingPosition = CurrentPosition(coordType);
+                        DateTime startingTime = DateTime.Now;
                         ShortestDistanceResult startingDistance = startingPosition.ShortestDistance(targetPosition);
                         const double lowestRad = Double.MaxValue, highestRad = Double.MinValue;
                         //int lowFailures, highFailures, zeroFailures = 0;
@@ -1966,6 +1974,7 @@ namespace ASCOM.Wise40
                         const int maxDistanceFailures = 3;
                         //const int maxLowFailures = 3, maxHighFailures = 3, maxZeroFailures = 3;
                         double prevDistance = 0.0;
+                        TimeSpan elapsed;
 
                         //lowFailures = 0;
                         //highFailures = 0;
@@ -1988,6 +1997,18 @@ namespace ASCOM.Wise40
 
                             currentDistance = currentPosition.ShortestDistance(targetPosition);
 
+                            elapsed = DateTime.Now.Subtract(startingTime);
+                            if (elapsed >= mp.maxTime) {
+                                #region Timeout
+                                //status = ScopeSlewerStatus.Timedout;
+                                #region debug
+                                debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                                        $"SUSPECT: {slewerName} at {RateName(rate)}: at {currentPosition}, Timedout ==> target: {targetPosition}, elapsed: {elapsed} >= mp.maxTime: {mp.maxTime}");
+                                //break;
+                                #endregion
+                                #endregion
+                            }
+                            
                             if (startingDistance.direction != currentDistance.direction)
                             {
                                 #region Direction has changed
@@ -2121,6 +2142,7 @@ namespace ASCOM.Wise40
 
                         if (status == ScopeSlewerStatus.Failed ||
                             status == ScopeSlewerStatus.CloseEnough ||
+                            status == ScopeSlewerStatus.Timedout ||
                             status == ScopeSlewerStatus.ChangedDirection)
                         {
                             StopAxisAndWaitForHalt(thisAxis, slewerName, rate);
