@@ -125,7 +125,7 @@ namespace RemoteSafetyDashboard
                     _communicator.Status = $"Communicate: HTTP code {httpResponse.StatusCode}";
                     _communicator.Severity = Statuser.Severity.Error;
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{here}: HTTP status code: {httpResponse.StatusCode}");
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{here}: Bad HTTP status code: {httpResponse.StatusCode}");
                     #endregion
                     return;
                 }
