@@ -102,7 +102,7 @@ namespace RemoteSafetyDashboard
             toolTip.SetToolTip(label, digest.ToolTip);
         }
 
-        private void ClearLabels(string s)
+        private void ClearLabels(string s, Color color)
         {
             foreach (Label l in new List<Label> {
                     labelHumidityValue,
@@ -118,27 +118,26 @@ namespace RemoteSafetyDashboard
                 })
             {
                 l.Text = s;
+                l.ForeColor = color;
             }
         }
 
         public void UpdateDisplay()
         {
-            string response = "";
+            string response;
 
             try
             {
                 response = communicator.Action("status", "");
                 if (response == null)
                 {
-                    ClearLabels("NULL");
+                    ClearLabels("NULL", warningColor);
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Get \"status\": null response");
                     #endregion
+                    safetooperateStatus.Show("Empty response", 3000, Statuser.Severity.Error, true);
                     return;
                 }
-                //#region debug
-                //debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"Get \"status\": response: \"{response}\"");
-                //#endregion
             }
             catch (Exception ex)
             {
@@ -154,7 +153,7 @@ namespace RemoteSafetyDashboard
                 safetooperateDigest = JsonConvert.DeserializeObject<SafeToOperateDigest>(response);
             } catch (Exception ex)
             {
-                ClearLabels("JSON");
+                ClearLabels("JSON", warningColor);
                 safetooperateStatus.Show($"deserialize caught: {ex.Message}", 3000, Statuser.Severity.Error, true);
                 return;
             }
