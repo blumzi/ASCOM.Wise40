@@ -521,7 +521,7 @@ namespace ASCOM.Wise40SafeToOperate
             }
         }
 
-        public static string GenericUnsafeReason(Sensor s)
+        public static string GenericUnsafeReason(Sensor s, Sensor.Attribute toBeIgnored = Sensor.Attribute.None)
         {
             if (s.HasAttribute(Sensor.Attribute.ForInfoOnly))
                 return null;
@@ -534,7 +534,7 @@ namespace ASCOM.Wise40SafeToOperate
 
             string reason = $"{s.WiseName} - ";
 
-            if (!s.IsSafe)
+            if (!s.IsSafe && (toBeIgnored != Sensor.Attribute.None && !s.HasAttribute(toBeIgnored)))
             {
                 if (s.HasAttribute(Sensor.Attribute.SingleReading))
                 {
@@ -608,7 +608,7 @@ namespace ASCOM.Wise40SafeToOperate
 
                 if (!s.IsSafe)
                 {
-                    string reason = GenericUnsafeReason(s);
+                    string reason = GenericUnsafeReason(s, toBeIgnored);
 
                     if (reason != null)
                     {
@@ -833,9 +833,18 @@ namespace ASCOM.Wise40SafeToOperate
 
                 if (!s.IsSafe)
                 {
-                    ret = false;    // The first non-safe sensor forces NOT SAFE
+
                     if (!s.HasAttribute(Sensor.Attribute.SingleReading))
-                        _unsafeBecauseNotReady = true;
+                    {
+                        if (s.StateIsNotSet(Sensor.State.EnoughReadings))
+                            _unsafeBecauseNotReady = true;
+                        if (toBeIgnored == Sensor.Attribute.Wise40Specific && s.HasAttribute(Sensor.Attribute.Wise40Specific))
+                        {
+                            continue;
+                        }
+                    }
+
+                    ret = false;    // The first non-safe cumulative sensor forces NOT SAFE
                     goto Out;
                 }
             }
