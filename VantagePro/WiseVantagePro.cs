@@ -314,7 +314,7 @@ namespace ASCOM.Wise40.VantagePro
                     return Forecast;
 
                 default:
-                    Exceptor.Throw<ActionNotImplementedException>("Action", $"Action \"{action}\" is not implemented by this driver");
+                    Exceptor.Throw<ActionNotImplementedException>("Action", $"Action(\"{action}\", \"{parameter}\") is not implemented by this driver");
                     return string.Empty;
             }
             return ret;
@@ -336,6 +336,8 @@ namespace ASCOM.Wise40.VantagePro
                     };
                 }
 
+                Dictionary<string, string> sensorDataCopy = new Dictionary<string, string>(sensorData);
+
                 VantagePro2StationRawData raw = new VantagePro2StationRawData()
                 {
                     Name = WiseName,
@@ -343,7 +345,7 @@ namespace ASCOM.Wise40.VantagePro
                     Model = Model.ToString(),
                     UpdateAtUT = utcTime,
                     AgeInSeconds = TimeSinceLastUpdate("Temperature"),
-                    SensorData = sensorData,
+                    SensorData = sensorDataCopy,
                     SkyQuality = quality,
                 };
 
