@@ -101,7 +101,7 @@ namespace ASCOM.Wise40
                 #endregion
                 _arrivedAtAz.WaitOne();
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, $"DomeSlaveDriver:SlewToAz Dome arrived to target {Angle.FromDegrees(az).ToNiceString()}");
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, $"DomeSlaveDriver:SlewToAz Dome arrived to target {azAngle.ToNiceString()}");
                 #endregion
             }
             catch (Exception ex)
