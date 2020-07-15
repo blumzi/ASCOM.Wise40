@@ -76,6 +76,8 @@ namespace ASCOM.Wise40
         }
 
         private static readonly State _state = new State();
+        private int _startStoppingPosition;
+        private const int _runawayPositions = 500;
 
         private static bool _encoderIsChanging = false;
         public Debugger debugger = Debugger.Instance;
@@ -157,6 +159,11 @@ namespace ASCOM.Wise40
                 [Direction.Up] = new MotionParameter() { stoppingDistance = 10 },
                 [Direction.Down] = new MotionParameter() { stoppingDistance = 10 }
             };
+
+            _mostRecentPosition = (int)encoder.Value;
+            _lastRead = DateTime.Now;
+            recentPositions.Enqueue((uint)_mostRecentPosition);
+
             _initialized = true;
         }
 
@@ -264,7 +271,7 @@ namespace ASCOM.Wise40
             {
                 double ret = 50000.0 / (UpperLimit - LowerLimit);
                 #region trace
-                //tl.LogMessage("StepSize Get", string.Format("Get - {0}", ret));
+                //tl.LogMessage($"StepSize Get", "Get - {ret}");
                 #endregion
                 return ret;
             }
@@ -277,7 +284,7 @@ namespace ASCOM.Wise40
                 int pos = _mostRecentPosition;
 
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, "position: {0}", pos);
+                debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, $"position: {pos}");
                 #endregion
                 return (uint) pos;
             }
@@ -310,14 +317,14 @@ namespace ASCOM.Wise40
             _state.Set(State.Flags.Stopping);
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugFocuser,
-                "StartStopping: Started stopping at {0} (new _state: {1}, reason: {2}) ...",
-                    Position, _state, reason);
+                $"StartStopping: Started stopping at {Position} (new _state: {_state}, reason: {reason}) ...");
             #endregion
             if (Simulated)
                 encoder.stopMoving();
 
             pinUp.SetOff();
             pinDown.SetOff();
+            _startStoppingPosition = (int) Position;
             Thread.Sleep(50);
         }
 
@@ -338,7 +345,7 @@ namespace ASCOM.Wise40
 
                 bool ret = _state.IsSet(State.Flags.AnyMoving) || pinUp.isOn || pinDown.isOn;
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, "IsMoving: {0}", ret);
+                debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, $"IsMoving: {ret}");
                 #endregion
                 return ret;
             }
@@ -378,8 +385,7 @@ namespace ASCOM.Wise40
                 Exceptor.Throw<InvalidOperationException>("Move", string.Join(", ", safetooperate.UnsafeReasonsList()));
 
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, "Starting Move({0}) at {1}",
-                dir.ToString(), Position);
+            debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, $"Starting Move({dir}) at {Position}");
             #endregion
             activityMonitor.NewActivity(new Activity.Focuser(new Activity.Focuser.StartParams
             {
@@ -469,7 +475,7 @@ namespace ASCOM.Wise40
             }
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugFocuser,
-                "StartMoving: _move({0}) - at {1} started moving {2} ", dir.ToString(), Position, dir.ToString());
+                $"StartMoving: _move({dir}) - at {Position} started moving {dir} ");
             #endregion
         }
 
@@ -505,8 +511,7 @@ namespace ASCOM.Wise40
 
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugFocuser,
-                "StartMovingToTarget: at {0}, _target: {1}, _intermediateTarget: {2}, _state: {3}",
-                currentPos, _targetPosition, _intermediatePosition, _state);
+                $"StartMovingToTarget: at {currentPos}, _target: {_targetPosition}, _intermediateTarget: {_intermediatePosition}, _state: {_state}");
             #endregion
         }
 
@@ -684,16 +689,14 @@ namespace ASCOM.Wise40
             if (_debugging)
             {
                 debugger.WriteLine(Debugger.DebugLevel.DebugFocuser,
-                    "OnTimer: reading: {0}, _mostRecentPosition: {1}, delta: {2}, millis: {3}",
-                    reading, _mostRecentPosition, delta, millis);
+                    $"OnTimer: reading: {reading}, _mostRecentPosition: {_mostRecentPosition}, delta: {delta}, millis: {millis}");
             }
             #endregion
 
             if (_mostRecentPosition != 0 &&  delta != 0 && delta > maxDelta) {
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugFocuser,
-                    "OnTimer: suspect reading: {0} _mostRecentPosition: {1}, (delta: {2} > maxDelta: {3})",
-                    reading, _mostRecentPosition, delta, maxDelta);
+                    $"OnTimer: suspect reading: {reading} _mostRecentPosition: {_mostRecentPosition}, (delta: {delta} > maxDelta: {maxDelta})");
                 #endregion
             }
             _mostRecentPosition = reading;
@@ -730,8 +733,13 @@ namespace ASCOM.Wise40
                         CloseEnough(_mostRecentPosition, (int) LowerLimit, Direction.Down))
                )
             {
-                StartStopping(string.Format("OnTimer: at {0} Limit stop (state: {1})",
-                    _mostRecentPosition, oldState));
+                StartStopping($"OnTimer: at {_mostRecentPosition} Limit stop (state: {oldState})");
+                return;
+            }
+
+            if (_state.IsSet(State.Flags.Stopping) && Math.Abs(_mostRecentPosition - _startStoppingPosition) > _runawayPositions)
+            {
+                StartStopping($"OnTimer: runaway: Started stopping at {_startStoppingPosition} now at {_mostRecentPosition}");
                 return;
             }
 
@@ -758,8 +766,7 @@ namespace ASCOM.Wise40
                     }
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugFocuser,
-                        "OnTimer: stopped moving: at {0} (target: {1}, intermediateTarget: {2}, old state: {3}, new state: {4})",
-                        _mostRecentPosition, _targetPosition, _intermediatePosition, oldState, _state);
+                        $"OnTimer: stopped moving: at {_mostRecentPosition} (target: {_targetPosition}, intermediateTarget: {_intermediatePosition}, old state: {oldState}, new state: {_state})");
                     #endregion
                 }
             }
@@ -768,14 +775,14 @@ namespace ASCOM.Wise40
                         CloseEnough(_mostRecentPosition, _targetPosition, Direction.Up))
             {
                 if (!_state.IsSet(State.Flags.Stopping))
-                    StartStopping(string.Format("OnTimer: close to target: at {0} (_state: {1})", _mostRecentPosition, _state));
+                    StartStopping($"OnTimer: close to target: at {_mostRecentPosition} (_state: {_state})");
             }
 
             if (_state.IsSet(State.Flags.MovingToIntermediateTarget) &&
                         CloseEnough(_mostRecentPosition, _intermediatePosition, Direction.Down))
             {
                 if (!_state.IsSet(State.Flags.Stopping))
-                    StartStopping(string.Format("OnTimer: close to intermediate target: at {0} (_state: {1})", _mostRecentPosition, _state));
+                    StartStopping($"OnTimer: close to intermediate target: at {_mostRecentPosition} (_state: {_state})");
             }
 
             if (!_state.IsSet(State.Flags.AnyMoving) && _encoderIsChanging)
@@ -829,12 +836,12 @@ namespace ASCOM.Wise40
 
                 if (_state.IsSet(State.Flags.MovingToTarget))
                 {
-                    ret.Add(string.Format("moving-to-{0}", _targetPosition));
+                    ret.Add($"moving-to-{_targetPosition}");
                 }
 
                 if (_state.IsSet(State.Flags.MovingToIntermediateTarget))
                 {
-                    ret.Add(string.Format("moving-to-{0}-via-{1}", _targetPosition, _intermediatePosition));
+                    ret.Add($"moving-to-{_targetPosition}-via-{_intermediatePosition}");
                 }
 
                 if (_state.IsSet(State.Flags.Stopping))
@@ -843,7 +850,7 @@ namespace ASCOM.Wise40
                 string s = string.Join(",", ret);
 
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, "Status: {0}", s);
+                debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, $"Status: {s}");
                 #endregion
                 return s;
             }
