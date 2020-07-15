@@ -551,7 +551,7 @@ namespace ASCOM.Wise40
                         stopMovement = new Angle("00h00m02.0s"),
                         minRadChangePerPollingInterval = 0.000146,
                         maxRadChangePerPollingInterval = 0.0436017917,
-                        maxTime = TimeSpan.FromMinutes(5),
+                        maxTime = TimeSpan.FromMinutes(6),
                     },
 
                     [Const.rateGuide] = new MovementParameters()
@@ -2000,15 +2000,15 @@ namespace ASCOM.Wise40
                             elapsed = DateTime.Now.Subtract(startingTime);
                             if (elapsed >= mp.maxTime) {
                                 #region Timeout
-                                //status = ScopeSlewerStatus.Timedout;
+                                status = ScopeSlewerStatus.Timedout;
                                 #region debug
                                 debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
                                         $"SUSPECT: {slewerName} at {RateName(rate)}: at {currentPosition}, Timedout ==> target: {targetPosition}, elapsed: {elapsed} >= mp.maxTime: {mp.maxTime}");
-                                //break;
+                                break;
                                 #endregion
                                 #endregion
                             }
-                            
+
                             if (startingDistance.direction != currentDistance.direction)
                             {
                                 #region Direction has changed
@@ -2028,7 +2028,7 @@ namespace ASCOM.Wise40
                                 {
                                     #region debug
                                     debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
-                                        $"SUSPECT: distance to target is INCREASING");
+                                        "SUSPECT: distance to target is INCREASING");
                                     #endregion
                                     //status = ScopeSlewerStatus.Failed;
                                     //break;
@@ -2151,6 +2151,9 @@ namespace ASCOM.Wise40
                                 $"mp[{motors}].lowestRad: {lowestRad:f10}, highestRad: {highestRad:f10}, rate: {RateName(rate)}");
                             #endregion
                         }
+
+                        if (status == ScopeSlewerStatus.Timedout)
+                            AbortSlew($"target: {targetPosition.ToNiceString()}: Timedout at rate {RateName(rate)} after {elapsed.ToMinimalString()}");
                     }
                 }
 
