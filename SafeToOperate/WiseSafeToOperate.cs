@@ -527,14 +527,17 @@ namespace ASCOM.Wise40SafeToOperate
                 return null;
 
             if (!s.HasAttribute(Sensor.Attribute.AlwaysEnabled) && !s.StateIsSet(Sensor.State.Enabled))
-                return null;   // not enabled
+                return null;    // not enabled
 
             if (_bypassed && s.HasAttribute(Sensor.Attribute.CanBeBypassed))
-                return null;   // bypassed
+                return null;    // bypassed
+
+            if ((toBeIgnored == Sensor.Attribute.Wise40Specific) && s.HasAttribute(toBeIgnored) && s.StateIsNotSet(Sensor.State.EnoughReadings))
+                return null;    // the sensor is to be ignored from the unsafereasons
 
             string reason = $"{s.WiseName} - ";
 
-            if (!s.IsSafe && (toBeIgnored != Sensor.Attribute.None && !s.HasAttribute(toBeIgnored)))
+            if (!s.IsSafe)
             {
                 if (s.HasAttribute(Sensor.Attribute.SingleReading))
                 {
@@ -596,6 +599,13 @@ namespace ASCOM.Wise40SafeToOperate
             {
                 if (s.HasAttribute(Sensor.Attribute.ForInfoOnly))
                     continue;
+
+                if (s.DoesNotHaveAttribute(Sensor.Attribute.SingleReading) &&
+                    s.StateIsNotSet(Sensor.State.EnoughReadings) &&
+                    ((toBeIgnored & Sensor.Attribute.Wise40Specific) != 0))
+                {
+                    continue;   // this is a wise-wise query and this sensor is not ready, ignore it
+                }
 
                 if (toBeIgnored != Sensor.Attribute.None && s.HasAttribute(toBeIgnored))
                     continue;
@@ -788,14 +798,6 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
-                if (activityMonitor.ShuttingDown)
-                {
-                    #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "WiseIsSafe: false # shutting down");
-                    #endregion
-                    return false;
-                }
-
                 bool ret = IsSafeWithoutCheckingForShutdown(toBeIgnored: Sensor.Attribute.Wise40Specific);
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugSafety, $"WiseIsSafe: {ret}");
