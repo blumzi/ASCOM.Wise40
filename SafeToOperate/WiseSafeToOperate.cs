@@ -341,28 +341,30 @@ namespace ASCOM.Wise40SafeToOperate
             {
                 _bypassed = Convert.ToBoolean(_profile.GetValue(driverID, Const.ProfileName.SafeToOperate_Bypassed, string.Empty, false.ToString()));
 
-                SafeToOperateDigest digest = new SafeToOperateDigest();
-                digest.Bypassed = _bypassed;
-                digest.Ready = IsReady();
-                digest.Safe = IsSafe;
-                digest.UnsafeReasons = UnsafeReasonsList();
-                digest.UnsafeBecauseNotReady = _unsafeBecauseNotReady;
-                digest.ShuttingDown = activityMonitor.ShuttingDown;
-                digest.ComputerControl = Sensor.SensorDigest.FromSensor(computerControlSensor);
-                digest.SunElevation = Sensor.SensorDigest.FromSensor(sunSensor);
-                digest.HumanIntervention = Sensor.SensorDigest.FromSensor(humanInterventionSensor);
-                digest.Platform = Sensor.SensorDigest.FromSensor(platformSensor);
+                SafeToOperateDigest digest = new SafeToOperateDigest()
+                {
+                    Bypassed = _bypassed,
+                    Ready = IsReady(),
+                    Safe = IsSafe,
+                    UnsafeReasons = UnsafeReasonsList(),
+                    UnsafeBecauseNotReady = _unsafeBecauseNotReady,
+                    ShuttingDown = activityMonitor.ShuttingDown,
+                    ComputerControl = Sensor.SensorDigest.FromSensor(computerControlSensor),
+                    SunElevation = Sensor.SensorDigest.FromSensor(sunSensor),
+                    HumanIntervention = Sensor.SensorDigest.FromSensor(humanInterventionSensor),
+                    Platform = Sensor.SensorDigest.FromSensor(platformSensor),
 
-                digest.Temperature = Sensor.SensorDigest.FromSensor(temperatureSensor);
-                digest.Pressure = Sensor.SensorDigest.FromSensor(pressureSensor);
-                digest.Humidity = Sensor.SensorDigest.FromSensor(humiditySensor);
-                digest.RainRate = Sensor.SensorDigest.FromSensor(rainSensor);
-                digest.WindSpeed = Sensor.SensorDigest.FromSensor(windSensor);
-                digest.CloudCover = Sensor.SensorDigest.FromSensor(cloudsSensor);
+                    Temperature = Sensor.SensorDigest.FromSensor(temperatureSensor),
+                    Pressure = Sensor.SensorDigest.FromSensor(pressureSensor),
+                    Humidity = Sensor.SensorDigest.FromSensor(humiditySensor),
+                    RainRate = Sensor.SensorDigest.FromSensor(rainSensor),
+                    WindSpeed = Sensor.SensorDigest.FromSensor(windSensor),
+                    CloudCover = Sensor.SensorDigest.FromSensor(cloudsSensor),
 
-                digest.WindDirection = Sensor.SensorDigest.FromOCHProperty("WindDirection");
-                digest.DewPoint = Sensor.SensorDigest.FromOCHProperty("DewPoint");
-                digest.SkyTemperature = Sensor.SensorDigest.FromOCHProperty("SkyTemperature");
+                    WindDirection = Sensor.SensorDigest.FromOCHProperty("WindDirection"),
+                    DewPoint = Sensor.SensorDigest.FromOCHProperty("DewPoint"),
+                    SkyTemperature = Sensor.SensorDigest.FromOCHProperty("SkyTemperature"),
+                };
 
                 return JsonConvert.SerializeObject(digest);
             }
@@ -411,7 +413,7 @@ namespace ASCOM.Wise40SafeToOperate
 
             return string.Equals(command, "unsafereasons", StringComparison.OrdinalIgnoreCase)
                 ? Action("unsafereasons", string.Empty)
-                : SafetyCommandAsString(command);
+                : SafetyCommandAsString(command, raw);
         }
 
         public void Dispose()
@@ -640,24 +642,22 @@ namespace ASCOM.Wise40SafeToOperate
         #region Individual Property Implementations
         #region Boolean Properties (for ASCOM)
 
-        private string SafetyCommandAsString(string command)
+        private string SafetyCommandAsString(string command, bool raw)
         {
             Const.TriStateStatus status;
             string msg = string.Empty;
 
+            switch (command.ToLower())
             {
-                switch (command.ToLower())
-                {
-                    case "humidity": status = IsSafeHumidity; break;
-                    case "wind": status = IsSafeWindSpeed; break;
-                    case "sun": status = IsSafeSunElevation; break;
-                    case "clouds": status = IsSafeCloudCover; break;
-                    case "rain": status = IsSafeRain; break;
-                    default:
-                        status = Const.TriStateStatus.Error;
-                        msg = string.Format("invalid command \"{0}\"", command);
-                        break;
-                }
+                case "humidity": status = IsSafeHumidity; break;
+                case "wind": status = IsSafeWindSpeed; break;
+                case "sun": status = IsSafeSunElevation; break;
+                case "clouds": status = IsSafeCloudCover; break;
+                case "rain": status = IsSafeRain; break;
+                default:
+                    status = Const.TriStateStatus.Error;
+                    msg = $"invalid command(\"{command}\", {raw})";
+                    break;
             }
 
             switch (status)
@@ -835,7 +835,6 @@ namespace ASCOM.Wise40SafeToOperate
 
                 if (!s.IsSafe)
                 {
-
                     if (!s.HasAttribute(Sensor.Attribute.SingleReading))
                     {
                         if (s.StateIsNotSet(Sensor.State.EnoughReadings))
