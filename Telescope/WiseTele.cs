@@ -278,13 +278,25 @@ namespace ASCOM.Wise40
             return rate.ToString();
         }
 
-        public static void CheckCoordinateSanity(Angle.AngleType type, double value)
+        public static void CheckCoordinateSanity(Angle.AngleType type, double value, string reason)
         {
-            if (type == Angle.AngleType.Dec && (value < -90.0 || value > 90.0))
-                Exceptor.Throw<InvalidValueException>("CheckCoordinateSanity", $"Invalid Declination {Angle.FromDegrees(value).ToNiceString()}. Must be between -90 and 90");
+            switch (type) {
+                case Angle.AngleType.Dec:
+                    if (value < -90.0 || value > 90.0)
+                    {
+                        Exceptor.Throw<InvalidValueException>("CheckCoordinateSanity",
+                            $"Invalid Declination (value: {value}, reason: {reason}), angle: {Angle.FromDegrees(value).ToNiceString()}). Must be between -90 and 90");
+                    }
+                    break;
 
-            if (type == Angle.AngleType.RA && (value < 0.0 || value > 24.0))
-                Exceptor.Throw<InvalidValueException>("CheckCoordinateSanity", $"Invalid RightAscension {Angle.FromHours(value).ToNiceString()}. Must be between 0 to 24");
+                case Angle.AngleType.RA:
+                    if (value < 0.0 || value > 24.0)
+                    {
+                        Exceptor.Throw<InvalidValueException>("CheckCoordinateSanity",
+                            $"Invalid RightAscension (value: {value}, reason: {reason}, angle: {Angle.FromHours(value).ToNiceString()}). Must be between 0 to 24");
+                    }
+                    break;
+            }
         }
 
         public double TargetDeclination
@@ -302,10 +314,9 @@ namespace ASCOM.Wise40
 
             set
             {
-                activityMonitor.StayActive("TargetDeclination was set");
-                CheckCoordinateSanity(Angle.AngleType.Dec, value);
-
+                CheckCoordinateSanity(Angle.AngleType.Dec, value, $"TargetDeclination Set - {value}");
                 _targetDeclination = Angle.FromDegrees(value, Angle.AngleType.Dec);
+                activityMonitor.StayActive("TargetDeclination was set");
                 #region debug
                 debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM,
                     $"TargetDeclination Set - {_targetDeclination} ({_targetDeclination.Degrees})");
@@ -329,9 +340,9 @@ namespace ASCOM.Wise40
 
             set
             {
-                activityMonitor.StayActive("TargetRightAscension was set");
-                CheckCoordinateSanity(Angle.AngleType.RA, value);
+                CheckCoordinateSanity(Angle.AngleType.RA, value, $"TargetRightAscension Set - {value}");
                 _targetRightAscension = Angle.FromHours(value, Angle.AngleType.RA);
+                activityMonitor.StayActive("TargetRightAscension was set");
                 #region debug
                 debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM,
                     $"TargetRightAscension Set - {_targetRightAscension} ({_targetRightAscension.Hours})");
@@ -1069,7 +1080,7 @@ namespace ASCOM.Wise40
                     return true;
                 }
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugASCOM, $"Slewing Get - False");
+                debugger.WriteLine(Debugger.DebugLevel.DebugASCOM, "Slewing Get - False");
                 #endregion debug
                 return false;
             }
@@ -1351,7 +1362,7 @@ namespace ASCOM.Wise40
             if (!string.IsNullOrEmpty(notSafe))
                 Exceptor.Throw<InvalidOperationException>(op, notSafe);
 
-            DoSlewToCoordinatesAsync(_targetRightAscension, _targetDeclination);
+            DoSlewToCoordinatesAsync(_targetRightAscension, _targetDeclination, op);
         }
 
         /// <summary>
@@ -1485,8 +1496,6 @@ namespace ASCOM.Wise40
         {
             string op = $"Backoff(reason: {reason})";
             const int backoffMillis = 3000;
-            Angle ha = Angle.FromHours(HourAngle, Angle.AngleType.HA);
-            Angle dec = Angle.FromDegrees(Declination, Angle.AngleType.Dec);
 
             if (_movingToSafety)    // timer callback while being disabled
                 return;
@@ -1553,6 +1562,24 @@ namespace ASCOM.Wise40
 
         private void DoShutdown(string reason)
         {
+            if (activityMonitor.ShuttingDown)
+            {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                    $"doShutdown({reason}): already shutting down (activityMonitor.ShuttingDown == true) => skipping shutdown");
+                #endregion
+                return;
+            }
+
+            if (AtPark && domeSlaveDriver.AtPark && domeSlaveDriver.ShutterState == ShutterState.shutterClosed)
+            {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                    $"doShutdown({reason}): already shutdown (AtPark and dome.AtPark and shutterClosed) => skipping shutdown");
+                #endregion
+                return;
+            }
+
             SafeToOperateDigest safetooperateDigest = JsonConvert.DeserializeObject<SafeToOperateDigest>(wisesafetooperate.Digest);
 
             bool rememberToCancelSafetyBypass = false;
@@ -1836,8 +1863,10 @@ namespace ASCOM.Wise40
 
         private void InternalSlewToCoordinatesSync(Angle RightAscension, Angle Declination)
         {
+            string op = $"InternalSlewToCoordinatesSync: ({0}, {1})";
+
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "_slewToCoordinatesSync: ({0}, {1}), called.", RightAscension, Declination);
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op} called");
             #endregion debug
             try
             {
@@ -1845,7 +1874,7 @@ namespace ASCOM.Wise40
                 debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "_slewToCoordinatesSync: telescopeCT: #{0}", telescopeCT.GetHashCode());
                 #endregion
 
-                Task.Run(() => DoSlewToCoordinatesAsync(RightAscension, Declination), telescopeCT);
+                Task.Run(() => DoSlewToCoordinatesAsync(RightAscension, Declination, op), telescopeCT);
             }
             catch (AggregateException ae)
             {
@@ -1970,8 +1999,8 @@ namespace ASCOM.Wise40
                         ShortestDistanceResult startingDistance = startingPosition.ShortestDistance(targetPosition);
                         const double lowestRad = Double.MaxValue, highestRad = Double.MinValue;
                         //int lowFailures, highFailures, zeroFailures = 0;
-                        int distanceFailures = 0;
-                        const int maxDistanceFailures = 3;
+                        //int distanceFailures = 0;
+                        //const int maxDistanceFailures = 3;
                         //const int maxLowFailures = 3, maxHighFailures = 3, maxZeroFailures = 3;
                         double prevDistance = 0.0;
                         TimeSpan elapsed;
@@ -2321,11 +2350,11 @@ namespace ASCOM.Wise40
         }
 
 #pragma warning disable RCS1047 // Non-asynchronous method name should not end with 'Async'.
-        private void DoSlewToCoordinatesAsync(Angle targetRightAscension, Angle targetDeclination)
+        private void DoSlewToCoordinatesAsync(Angle targetRightAscension, Angle targetDeclination, string reason)
 #pragma warning restore RCS1047 // Non-asynchronous method name should not end with 'Async'.
         {
-            CheckCoordinateSanity(Angle.AngleType.RA, targetRightAscension.Hours);
-            CheckCoordinateSanity(Angle.AngleType.Dec, targetDeclination.Degrees);
+            CheckCoordinateSanity(Angle.AngleType.RA, targetRightAscension.Hours, reason);
+            CheckCoordinateSanity(Angle.AngleType.Dec, targetDeclination.Degrees, reason);
             // Check coordinates safety ???
 
             Slewers.Clear();
@@ -2488,8 +2517,8 @@ namespace ASCOM.Wise40
         public void SlewToCoordinatesAsync(double RightAscension, double Declination, bool doChecks = true)
 #pragma warning restore RCS1047 // Non-asynchronous method name should not end with 'Async'.
         {
-            CheckCoordinateSanity(Angle.AngleType.RA, RightAscension);
-            CheckCoordinateSanity(Angle.AngleType.Dec, Declination);
+            CheckCoordinateSanity(Angle.AngleType.RA, RightAscension, "SlewToCoordinatesAsync");
+            CheckCoordinateSanity(Angle.AngleType.Dec, Declination, "SlewToCoordinatesAsync");
 
             TargetRightAscension = RightAscension;
             TargetDeclination = Declination;
@@ -2524,7 +2553,7 @@ namespace ASCOM.Wise40
 
             try
             {
-                DoSlewToCoordinatesAsync(ra, dec);
+                DoSlewToCoordinatesAsync(ra, dec, op);
             }
             catch (Exception e)
             {
@@ -2541,6 +2570,8 @@ namespace ASCOM.Wise40
 #pragma warning restore RCS1047 // Non-asynchronous method name should not end with 'Async'.
 #pragma warning restore IDE1006 // Naming Styles
         {
+            string op = $"_slewToCoordinatesAsync({RightAscension.ToNiceString()}, {Declination.ToNiceString()})";
+
             //if (DecOver90Degrees)
             //{
             //    telescopeCT = telescopeCTS.Token;
@@ -2557,7 +2588,7 @@ namespace ASCOM.Wise40
             //    }, TaskContinuationOptions.ExecuteSynchronously);
             //}
             //else
-                DoSlewToCoordinatesAsync(RightAscension, Declination);
+                DoSlewToCoordinatesAsync(RightAscension, Declination, op);
         }
 
         //public void ScootSouth()
@@ -3370,7 +3401,7 @@ namespace ASCOM.Wise40
                     WiseSite.astrometricAccuracy = acc;
                 else
                     WiseSite.astrometricAccuracy = Accuracy.Full;
-                BypassCoordinatesSafety = Convert.ToBoolean(driverProfile.GetValue(driverID, Const.ProfileName.Telescope_BypassCoordinatesSafety, string.Empty, false.ToString())); 
+                BypassCoordinatesSafety = Convert.ToBoolean(driverProfile.GetValue(driverID, Const.ProfileName.Telescope_BypassCoordinatesSafety, string.Empty, false.ToString()));
             }
         }
 
