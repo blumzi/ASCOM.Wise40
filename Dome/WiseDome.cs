@@ -990,6 +990,9 @@ namespace ASCOM.Wise40
         {
             string op = $"WiseDome.OpenShutter(reason: {reason})";
 
+            if (activityMonitor.ShuttingDown)
+                Exceptor.Throw<InvalidOperationException>(op, "Observatory is shutting down");
+
             if (DirectionMotorsAreActive)
                 Exceptor.Throw<InvalidOperationException>(op, "Dome is slewing!");
 
