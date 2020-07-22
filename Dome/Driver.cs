@@ -337,7 +337,7 @@ namespace ASCOM.Wise40 //.Dome
             #region debug
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, "CloseShutter");
             #endregion
-            wisedome.CloseShutter("Dome.CloseShutter");
+            wisedome.CloseShutter("ASCOM.Wise40.Dome:CloseShutter");
         }
 
         public void FindHome()
@@ -353,7 +353,7 @@ namespace ASCOM.Wise40 //.Dome
             #region debug
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, "OpenShutter");
             #endregion
-            wisedome.OpenShutter("Dome.OpenShutter");
+            wisedome.OpenShutter("ASCOM.Wise40.Dome:OpenShutter");
         }
 
         public void Park()
