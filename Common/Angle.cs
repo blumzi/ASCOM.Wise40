@@ -112,8 +112,8 @@ namespace ASCOM.Wise40.Common
 
             if (sexagesimal.IndexOfAny(hoursSeparators) == -1)
             {
-                char[] delimiters = { ':', 'd', 'm', 's' };
-                double deg, min, sec;
+                //char[] delimiters = { ':', 'd', 'm', 's' };
+                //double deg, min, sec;
 
                 this._type = AngleType.Deg;
                 this._isHMS = false;
@@ -125,29 +125,29 @@ namespace ASCOM.Wise40.Common
 
                 if (sexagesimal.EndsWith("s"))
                     sexagesimal = sexagesimal.TrimEnd(new char[] { 's' });
-                string[] words = sexagesimal.Split(delimiters);
-                switch (words.Length)
-                {
-                    case 1:
-                        sec = Convert.ToDouble(words[0]);
-                        break;
-                    case 2:
-                        min = Convert.ToDouble(words[0]);
-                        sec = Convert.ToDouble(words[1]);
-                        break;
-                    case 3:
-                        deg = Convert.ToDouble(words[0]);
-                        min = Convert.ToDouble(words[1]);
-                        sec = Convert.ToDouble(words[2]);
-                        break;
-                }
+                //string[] words = sexagesimal.Split(delimiters);
+                //switch (words.Length)
+                //{
+                //    case 1:
+                //        sec = Convert.ToDouble(words[0]);
+                //        break;
+                //    case 2:
+                //        min = Convert.ToDouble(words[0]);
+                //        sec = Convert.ToDouble(words[1]);
+                //        break;
+                //    case 3:
+                //        deg = Convert.ToDouble(words[0]);
+                //        min = Convert.ToDouble(words[1]);
+                //        sec = Convert.ToDouble(words[2]);
+                //        break;
+                //}
 
                 this.Radians = Deg2Rad(ascomutils.DMSToDegrees(sexagesimal));
             }
             else
             {
-                char[] delimiters = { 'h', 'm', 's' };
-                double hr, min, sec;
+                //char[] delimiters = { 'h', 'm', 's' };
+                //double hr, min, sec;
 
                 this._type = AngleType.RA;
                 this._isHMS = true;
@@ -159,22 +159,22 @@ namespace ASCOM.Wise40.Common
 
                 if (sexagesimal.EndsWith("s"))
                     sexagesimal = sexagesimal.TrimEnd(new char[] {'s'});
-                string[] words = sexagesimal.Split(delimiters);
-                switch (words.Length)
-                {
-                    case 1:
-                        sec = Convert.ToDouble(words[0]);
-                        break;
-                    case 2:
-                        min = Convert.ToDouble(words[0]);
-                        sec = Convert.ToDouble(words[1]);
-                        break;
-                    case 3:
-                        hr = Convert.ToDouble(words[0]);
-                        min = Convert.ToDouble(words[1]);
-                        sec = Convert.ToDouble(words[2]);
-                        break;
-                }
+                //string[] words = sexagesimal.Split(delimiters);
+                //switch (words.Length)
+                //{
+                //    case 1:
+                //        sec = Convert.ToDouble(words[0]);
+                //        break;
+                //    case 2:
+                //        min = Convert.ToDouble(words[0]);
+                //        sec = Convert.ToDouble(words[1]);
+                //        break;
+                //    case 3:
+                //        hr = Convert.ToDouble(words[0]);
+                //        min = Convert.ToDouble(words[1]);
+                //        sec = Convert.ToDouble(words[2]);
+                //        break;
+                //}
                 this.Radians = Deg2Rad(ascomutils.HMSToDegrees(sexagesimal));
             }
         }
@@ -316,14 +316,14 @@ namespace ASCOM.Wise40.Common
                 return ascomutils.DegreesToDMS(Degrees, "°", "'", "\"", 1);
         }
 
-        private static double NormalizeAltAndDec(Angle a, double d)
-        {
-            if (d > a._highest)
-                return a._highest - Math.Abs(a._highest - d);
-            else if (d < a._lowest)
-                return a._lowest - Math.Abs(a._lowest - d);
-            else return d;
-        }
+        //private static double NormalizeAltAndDec(Angle a, double d)
+        //{
+        //    if (d > a._highest)
+        //        return a._highest - Math.Abs(a._highest - d);
+        //    else if (d < a._lowest)
+        //        return a._lowest - Math.Abs(a._lowest - d);
+        //    else return d;
+        //}
 
         public static Angle operator +(Angle a1, Angle a2)
         {
@@ -369,7 +369,7 @@ namespace ASCOM.Wise40.Common
 
         public static bool operator >(Angle a1, Angle a2)
         {
-            return a1.Radians > a2.Radians ? true : false;
+            return a1.Radians > a2.Radians;
         }
 
         public static bool operator <(Angle a1, Angle a2)
@@ -432,14 +432,9 @@ namespace ASCOM.Wise40.Common
 
         public bool Equals(Angle a)
         {
-            if ((object)a == null)
+            if (a is null)
                 return false;
             return Math.Abs(a.Radians - Radians) <= epsilonRad;
-        }
-
-        public override int GetHashCode()
-        {
-            return base.GetHashCode();
         }
 
         public ShortestDistanceResult ShortestDistance(Angle other)
