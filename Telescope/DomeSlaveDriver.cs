@@ -221,12 +221,12 @@ namespace ASCOM.Wise40
 
         public static void OpenShutter(bool bypassSafety = false)
         {
-            wisedome.OpenShutter("Dome.SlaveDriver", bypassSafety);
+            wisedome.OpenShutter("ASCOM.Wise40.Telescope:SlaveDriver", bypassSafety);
         }
 
         public static void CloseShutter(string reason)
         {
-            wisedome.CloseShutter(reason);
+            wisedome.CloseShutter($"ASCOM.Wise40.Telescope:DomeSlaveDriver (reason: {reason})");
         }
 
         public static void StopShutter(string reason)
