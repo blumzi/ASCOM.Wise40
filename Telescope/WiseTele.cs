@@ -1566,7 +1566,7 @@ namespace ASCOM.Wise40
             {
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
-                    $"doShutdown({reason}): already shutting down (activityMonitor.ShuttingDown == true) => skipping shutdown");
+                    $"doShutdown(reason: {reason}): shutdown already in progress (activityMonitor.ShuttingDown == true) => skipping shutdown");
                 #endregion
                 return;
             }
@@ -1575,7 +1575,7 @@ namespace ASCOM.Wise40
             {
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
-                    $"doShutdown({reason}): already shutdown (AtPark and dome.AtPark and shutterClosed) => skipping shutdown");
+                    $"doShutdown(reason: {reason}): Wise40 is already shut down (AtPark and dome.AtPark and shutterClosed) => skipping shutdown");
                 #endregion
                 return;
             }
@@ -1585,14 +1585,14 @@ namespace ASCOM.Wise40
             bool rememberToCancelSafetyBypass = false;
 
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "doShutdown: starting activity ShuttingDown ...");
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"doShutdown(reason: {reason}): starting activity ShuttingDown ...");
             #endregion
             activityMonitor.NewActivity(new Activity.Shutdown(new Activity.Shutdown.StartParams() { reason = reason }));
 
             if (!safetooperateDigest.Bypassed)
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "doShutdown: starting safetooperate bypass ...");
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"doShutdown(reason: {reason}): starting safetooperate bypass ...");
                 #endregion
                 rememberToCancelSafetyBypass = true;
                 wisesafetooperate.Action("start-bypass", "temporary");
@@ -1609,7 +1609,7 @@ namespace ASCOM.Wise40
             if (domeSlaveDriver.AtPark)
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "doShutdown: calling domeSlaveDriver.Unpark() ...");
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"doShutdown(reason: {reason}): calling domeSlaveDriver.Unpark() ...");
                 #endregion
                 DomeSlaveDriver.Unpark();
             }
@@ -1617,7 +1617,7 @@ namespace ASCOM.Wise40
             if (Slewing)
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "doShutdown: calling AbortSlew() ...");
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"doShutdown(reason: {reason}): calling AbortSlew() ...");
                 #endregion
                 AbortSlew("WiseTele:Shutdown():doShutdown()");
                 do
@@ -1632,7 +1632,7 @@ namespace ASCOM.Wise40
             if (IsPulseGuiding)
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "doShutdown: calling AbortPulseGuiding() ...");
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"doShutdown(reason: {reason}): calling AbortPulseGuiding() ...");
                 #endregion
                 AbortPulseGuiding();
                 do
@@ -1647,7 +1647,7 @@ namespace ASCOM.Wise40
             if (domeSlaveDriver.Slewing)
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "doShutdown: calling domeSlaveDriver.AbortSlew() ...");
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"doShutdown(reason: {reason}): calling domeSlaveDriver.AbortSlew() ...");
                 #endregion
                 DomeSlaveDriver.AbortSlew();
                 do
@@ -1660,7 +1660,7 @@ namespace ASCOM.Wise40
             }
 
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "doShutdown: setting Tracking to false ...");
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"doShutdown(reason: {reason}): setting Tracking to false ...");
             #endregion
             Tracking = false;
 
@@ -1668,7 +1668,7 @@ namespace ASCOM.Wise40
             {
                 // Wait for shutter to close before continuing
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "doShutdown: calling domeSlaveDriver.CloseShutter() ...");
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"doShutdown(reason: {reason}): calling domeSlaveDriver.CloseShutter() ...");
                 #endregion
                 DomeSlaveDriver.CloseShutter($"reason: DoShutdown(reason: {reason})");
                 while (domeSlaveDriver.ShutterState != ShutterState.shutterClosed)
@@ -1681,7 +1681,7 @@ namespace ASCOM.Wise40
             }
 
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "doShutdown: calling Park() ...");
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"doShutdown(reason: {reason}): calling Park() ...");
             #endregion
             try
             {
@@ -1689,17 +1689,17 @@ namespace ASCOM.Wise40
             } catch (Exception ex)
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "doShutdown: exception during Park(): {0}", ex.ToString());
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"doShutdown(reason: {reason}): exception during Park(): {0}", ex.ToString());
                 #endregion
             }
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "doShutdown: after Park() ...");
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"doShutdown(reason: {reason}): after Park() ...");
             #endregion
 
             if (rememberToCancelSafetyBypass)
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "doShutdown: ending safetooperate bypass ...");
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"doShutdown(reason: {reason}): ending safetooperate bypass ...");
                 #endregion
                 wisesafetooperate.Action("end-bypass", "temporary");
             }
