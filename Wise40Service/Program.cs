@@ -12,13 +12,9 @@ namespace Wise40Watcher
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
-        static void Main()
+        public static void Main()
         {
-            ServiceBase[] ServicesToRun;
-            ServicesToRun = new ServiceBase[]
-            {
-                new Wise40Watcher()
-            };
+            ServiceBase[] ServicesToRun = new ServiceBase[] { new Wise40Watcher() };
             ServiceBase.Run(ServicesToRun);
         }
     }
