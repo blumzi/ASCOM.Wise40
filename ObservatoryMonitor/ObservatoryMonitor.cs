@@ -196,8 +196,15 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
         private void UpdateConditionsBypassToolStripMenuItem(bool bypassed)
         {
-            if (!conditionsBypassToolStripMenuItem.Enabled)
+            if (telescopeDigest.ShuttingDown)
+            {
+                conditionsBypassToolStripMenuItem.Enabled = false;
+                conditionsBypassToolStripMenuItem.ToolTipText = "Wise40 is shutting down";
+            }
+            else
+            {
                 conditionsBypassToolStripMenuItem.Enabled = true;
+            }
 
             conditionsBypassToolStripMenuItem.Text = "Bypass safety";
             if (bypassed)
@@ -239,6 +246,16 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 toolTip.SetToolTip(labelComputerControl, "Computer Control is OFF");
             }
             #endregion
+
+            if (telescopeDigest.ShuttingDown)
+            {
+                buttonManualIntervention.Enabled = false;
+                toolTip.SetToolTip(buttonManualIntervention, "Wise40 is shutting down");
+            } else
+            {
+                buttonManualIntervention.Enabled = true;
+                toolTip.SetToolTip(buttonManualIntervention, "");
+            }
 
             #region ActivityLabel
             if (telescopeDigest == null)
