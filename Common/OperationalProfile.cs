@@ -4,35 +4,28 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using ASCOM.Utilities;
+
 namespace ASCOM.Wise40.Common
 {
     public class OperationalProfile
     {
-        private WiseSite.OpMode _opMode;
-
-        public OperationalProfile(WiseSite.OpMode opMode)
+        public OperationalProfile()
         {
-            _opMode = opMode;
-        }
-
-        public WiseSite.OpMode OpMode
-        {
-            get
+            using (Profile driverProfile = new Profile() { DeviceType = "Telescope" })
             {
-                return _opMode;
-            }
-
-            set
-            {
-                _opMode = value;
+                if (Enum.TryParse<WiseSite.OpMode>(driverProfile.GetValue(Const.WiseDriverID.Telescope,"SiteOperationMode", null, "WISE").ToUpper(), out WiseSite.OpMode mode))
+                    OpMode = mode;
             }
         }
+
+        public WiseSite.OpMode OpMode { get; set; }
 
         public bool EnslavesDome
         {
             get
             {
-                return _opMode == WiseSite.OpMode.ACP ? false : true;
+                return OpMode != WiseSite.OpMode.ACP;
             }
         }
 
@@ -48,7 +41,7 @@ namespace ASCOM.Wise40.Common
         {
             get
             {
-                return _opMode == WiseSite.OpMode.LCO;
+                return OpMode == WiseSite.OpMode.LCO;
             }
         }
 
@@ -56,7 +49,7 @@ namespace ASCOM.Wise40.Common
         {
             get
             {
-                switch (_opMode)
+                switch (OpMode)
                 {
                     case WiseSite.OpMode.ACP:
                         return DeviceInterface.EquatorialCoordinateType.equTopocentric;

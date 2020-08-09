@@ -32,7 +32,7 @@ namespace ASCOM.Wise40
         private static DateTime lastOCFetch;
         private static bool _och_initialized = false;
         private static readonly Debugger debugger = Debugger.Instance;
-        private static OperationalProfile _operationalProfile;
+        private static readonly OperationalProfile _operationalProfile = new OperationalProfile();
         private static readonly ASCOM.Astrometry.Transform.Transform _transform = new Astrometry.Transform.Transform();
         private static readonly TempFetcher _tempFetcher = new TempFetcher(10);
         private static string _processName;
@@ -71,7 +71,6 @@ namespace ASCOM.Wise40
             siteLongitude = ascomutils.DMSToDegrees("34:45:43.86");
             siteElevation = 882.9;
             novas31.MakeOnSurface(siteLatitude, siteLongitude, siteElevation, 0.0, 0.0, ref _onSurface);
-            _operationalProfile = new OperationalProfile(OpMode.WISE);
             refractionOption = Astrometry.RefractionOption.LocationRefraction;
 
             _transform.SiteElevation = siteElevation;
@@ -263,6 +262,7 @@ namespace ASCOM.Wise40
                     if (Enum.TryParse<OpMode>(driverProfile.GetValue(Const.WiseDriverID.Telescope, "SiteOperationMode", null, "WISE").ToUpper(), out OpMode mode))
                         OperationalProfile.OpMode = mode;
                 }
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"WiseSite.OperationalMode: {OperationalProfile.OpMode}");
                 return OperationalProfile.OpMode;
             }
 
