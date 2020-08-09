@@ -40,6 +40,8 @@ namespace ASCOM.Wise40
         public WiseDomeShutter wisedomeshutter = WiseDomeShutter.Instance;
         public static ActivityMonitor activityMonitor = ActivityMonitor.Instance;
 
+        private static readonly WiseSite wisesite = WiseSite.Instance;
+
         [Flags] public enum DomeState {
             Idle = 0,
             MovingCW = (1 << 0),
@@ -991,13 +993,40 @@ namespace ASCOM.Wise40
             string op = $"WiseDome.OpenShutter(reason: {reason})";
 
             if (activityMonitor.ShuttingDown)
-                Exceptor.Throw<InvalidOperationException>(op, "Observatory is shutting down");
+            {
+                if (WiseSite.OperationalMode == WiseSite.OpMode.ACP)
+                {
+                    return;
+                }
+                else
+                {
+                    Exceptor.Throw<DriverException>(op, "Observatory is shutting down");
+                }
+            }
 
             if (DirectionMotorsAreActive)
-                Exceptor.Throw<InvalidOperationException>(op, "Dome is slewing!");
+            {
+                if (WiseSite.OperationalMode == WiseSite.OpMode.ACP)
+                {
+                    return;
+                }
+                else
+                {
+                    Exceptor.Throw<DriverException>(op, "Dome is slewing!");
+                }
+            }
 
             if (!bypassSafety && !wiseSafeToOperate.IsSafeWithoutCheckingForShutdown())
-                Exceptor.Throw<InvalidOperationException>(op, wiseSafeToOperate.CommandString("unsafeReasons", false));
+            {
+                if (WiseSite.OperationalMode == WiseSite.OpMode.ACP)
+                {
+                    return;
+                }
+                else
+                {
+                    Exceptor.Throw<DriverException>(op, wiseSafeToOperate.CommandString("unsafeReasons", false));
+                }
+            }
 
             int percentOpen = wisedomeshutter.PercentOpen;
             if (percentOpen != -1 && percentOpen > 98)
@@ -1018,7 +1047,16 @@ namespace ASCOM.Wise40
         public void CloseShutter(string reason)
         {
             if (DirectionMotorsAreActive)
-                Exceptor.Throw<InvalidOperationException>($"CloseShutter(reason: {reason})", "Cannot close shutter while dome is slewing!");
+            {
+                if (WiseSite.OperationalMode == WiseSite.OpMode.ACP)
+                {
+                    return;
+                }
+                else
+                {
+                    Exceptor.Throw<InvalidOperationException>($"CloseShutter(reason: {reason})", "Cannot close shutter while dome is slewing!");
+                }
+            }
 
             int percentOpen = wisedomeshutter.PercentOpen;
             if (percentOpen != -1 && percentOpen < 1)
