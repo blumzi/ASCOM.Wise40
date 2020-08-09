@@ -80,9 +80,9 @@ namespace ASCOM.Wise40.Common
 
             lock (_lock)
             {
-                WriteLine(DebugLevel.DebugLogic, $"##");
+                WriteLine(DebugLevel.DebugLogic, "##");
                 WriteLine(DebugLevel.DebugLogic, $"## ============= {_appName} started ====================");
-                WriteLine(DebugLevel.DebugLogic, $"##");
+                WriteLine(DebugLevel.DebugLogic, "##");
             }
         }
 
