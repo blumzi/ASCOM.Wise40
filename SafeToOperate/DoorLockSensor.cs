@@ -91,9 +91,7 @@ namespace ASCOM.Wise40SafeToOperate
             };
 
             r.value = r.Safe ? 1 : 0;
-            _status = string.Format("Lock is {0}, bypass is {1}",
-                                            DoorLockIsSafe ? "closed" : "open",
-                                            BypassIsSafe ? "OFF" : "ON");
+            _status = $"Lock is {(DoorLockIsSafe ? "closed" : "open")}, bypass is {(BypassIsSafe ? "OFF" : "ON")}";
             if (r.Safe != _wasSafe)
             {
                 activityMonitor.Event(new Event.SafetyEvent(

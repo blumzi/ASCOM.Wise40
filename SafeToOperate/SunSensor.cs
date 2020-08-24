@@ -71,7 +71,7 @@ namespace ASCOM.Wise40SafeToOperate
                 secondsSinceLastUpdate = 0,
             };
 
-            _status = string.Format("Sun elevation is {0} (max: {1})", FormatVerbal(wisesafetooperate.SunElevation), FormatVerbal(max));
+            _status = $"Sun elevation is {FormatVerbal(wisesafetooperate.SunElevation)} (max: {FormatVerbal(max)})";
             if (r.Safe != _wasSafe)
             {
                 activityMonitor.Event(new Event.SafetyEvent(
@@ -89,8 +89,7 @@ namespace ASCOM.Wise40SafeToOperate
             double currentElevation = wisesafetooperate.SunElevation;
             double max = DateTime.Now.Hour < 12 ? _maxAtDawn : _maxAtDusk;
 
-            return currentElevation <= max ? "" : string.Format("The Sun elevation ({0}) is higher than {1}",
-                FormatVerbal(currentElevation), FormatVerbal(max));
+            return currentElevation <= max ? "" : $"The Sun elevation ({FormatVerbal(currentElevation)}) is higher than {FormatVerbal(max)}";
         }
 
         public override string Status

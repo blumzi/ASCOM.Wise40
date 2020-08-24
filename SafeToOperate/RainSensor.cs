@@ -68,13 +68,13 @@ namespace ASCOM.Wise40SafeToOperate
                 r.Usable = true;
             }
 
-            _status = string.Format("RainRate is {0} (max: {1})", FormatVerbal(r.value), FormatVerbal(_max));
+            _status = $"RainRate is {FormatVerbal(r.value)} (max: {FormatVerbal(_max)})";
             return r;
         }
 
         public override string UnsafeReason()
         {
-            return string.Format("{0} out of {1} recent rain rate readings were higher than {2}", _nbad, _repeats, FormatVerbal(_max));
+            return $"{_nbad} out of {_repeats} recent rain rate readings were higher than {FormatVerbal(_max)}";
         }
 
         public override string Status

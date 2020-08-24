@@ -71,7 +71,7 @@ namespace ASCOM.Wise40SafeToOperate
                 r.Usable = true;
             }
 
-            _status = string.Format("Pressure is {0} (max: {1})", FormatVerbal(r.value), FormatVerbal(_max));
+            _status = $"Pressure is {FormatVerbal(r.value)} (max: {FormatVerbal(_max)})";
             return r;
         }
 
@@ -85,7 +85,7 @@ namespace ASCOM.Wise40SafeToOperate
 
         public override string UnsafeReason()
         {
-            return string.Format("{0} out of {1} recent pressure readings were higher than {2}.", _nbad, _repeats, FormatVerbal(_max));
+            return $"{_nbad} out of {_repeats} recent pressure readings were higher than {FormatVerbal(_max)}.";
         }
 
         public override string MaxAsString
@@ -99,7 +99,7 @@ namespace ASCOM.Wise40SafeToOperate
             {
                 _max = Convert.ToDouble(value);
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}) Max: {1}", WiseName, MaxAsString);
+                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, $"Sensor ({WiseName}) Max: {MaxAsString}");
                 #endregion
             }
         }

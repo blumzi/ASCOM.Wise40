@@ -76,10 +76,10 @@ namespace ASCOM.Wise40SafeToOperate
 
             r.value = r.Safe ? 1 : 0;
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "{0}: getIsSafe: {1}", WiseName, r.Safe);
+            debugger.WriteLine(Debugger.DebugLevel.DebugSafety, $"{WiseName}: getIsSafe: {r.Safe}");
             #endregion
 
-            _status = string.Format("Platform is {0}", r.Safe ? "lowered" : "raised");
+            _status = $"Platform is {(r.Safe ? "lowered" : "raised")}";
             if (r.Safe != _wasSafe)
             {
                 activityMonitor.Event(new Event.SafetyEvent(

@@ -116,7 +116,7 @@ namespace ASCOM.Wise40SafeToOperate
                 return;
 
             name = "Wise40 SafeToOperate";
-            driverDescription = string.Format("{0} v{1}", driverID, version.ToString());
+            driverDescription = $"{driverID} v{version}";
 
             if (_profile == null)
             {
@@ -383,7 +383,7 @@ namespace ASCOM.Wise40SafeToOperate
                 }
             }
 
-            return string.Format("unknown sensor \"{0}\"!", sensorName);
+            return $"unknown sensor \"{sensorName}\"!";
         }
 
         public void CommandBlind(string command, bool raw)
@@ -493,7 +493,7 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
-                return String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
+                return String.Format(CultureInfo.InvariantCulture, $"{version.Major}.{version.Minor}");
             }
         }
 

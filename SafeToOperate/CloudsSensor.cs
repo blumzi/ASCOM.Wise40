@@ -69,7 +69,7 @@ namespace ASCOM.Wise40SafeToOperate
                 else
                     r.Safe = r.value <= _max;
                 r.Usable = true;
-                _status = string.Format("Cloud cover {0} (max: {1})", FormatVerbal(r.value), FormatVerbal(_max));
+                _status = $"Cloud cover {FormatVerbal(r.value)} (max: {FormatVerbal(_max)})";
             }
 
             return r;
@@ -77,7 +77,7 @@ namespace ASCOM.Wise40SafeToOperate
 
         public override string UnsafeReason()
         {
-            return string.Format("{0} out of {1} recent cloud cover readings were higher than {2}", _nbad, _repeats, FormatVerbal(_max));
+            return $"{_nbad} out of {_repeats} recent cloud cover readings were higher than {FormatVerbal(_max)}";
         }
 
         public override string Status
