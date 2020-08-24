@@ -262,7 +262,7 @@ namespace ASCOM.Wise40
                     if (Enum.TryParse<OpMode>(driverProfile.GetValue(Const.WiseDriverID.Telescope, "SiteOperationMode", null, "WISE").ToUpper(), out OpMode mode))
                         OperationalProfile.OpMode = mode;
                 }
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"WiseSite.OperationalMode: {OperationalProfile.OpMode}");
+                //debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"WiseSite.OperationalMode: {OperationalProfile.OpMode}");
                 return OperationalProfile.OpMode;
             }
 
