@@ -1274,9 +1274,8 @@ namespace ASCOM.Wise40
             catch (Exception e)
             {
                 #region debug
-                string msg = string.Format("Don't know how to InternalMoveAxis({0}, {1}) (no mover) ({2}) [{3}]",
-                    thisAxis, RateName(absRate), axisDirectionName[thisAxis][direction], e.Message);
-                debugger.WriteLine(Debugger.DebugLevel.DebugExceptions, msg);
+                debugger.WriteLine(Debugger.DebugLevel.DebugExceptions,
+                    $"Don't know how to InternalMoveAxis({thisAxis}, {RateName(absRate)}) (no mover) ({axisDirectionName[thisAxis][direction]}) [{e.Message}]");
                 #endregion debug
                 return false;
             }
@@ -1770,11 +1769,11 @@ namespace ASCOM.Wise40
 
                 EnslavesDome = false;
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: starting _slewToCoordinatesSync ...");
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: starting InternalSlewToCoordinatesSync ...");
                 #endregion
                 InternalSlewToCoordinatesSync(targetRa, targetDec);
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: after _slewToCoordinatesSync ...");
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: after InternalSlewToCoordinatesSync ...");
                 #endregion
 
                 do
@@ -1863,7 +1862,7 @@ namespace ASCOM.Wise40
 
         private void InternalSlewToCoordinatesSync(Angle RightAscension, Angle Declination)
         {
-            string op = $"InternalSlewToCoordinatesSync: ({0}, {1})";
+            string op = $"InternalSlewToCoordinatesSync: ({RightAscension.ToNiceString()}, {Declination.ToNiceString()})";
 
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op} called");
@@ -1871,7 +1870,7 @@ namespace ASCOM.Wise40
             try
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "_slewToCoordinatesSync: telescopeCT: #{0}", telescopeCT.GetHashCode());
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, $"InternalSlewToCoordinatesSync: telescopeCT: #{telescopeCT.GetHashCode()}");
                 #endregion
 
                 Task.Run(() => DoSlewToCoordinatesAsync(RightAscension, Declination, op), telescopeCT);
@@ -1882,7 +1881,7 @@ namespace ASCOM.Wise40
                 {
                     #region debug
                     debugger.WriteLine((Debugger.DebugLevel)Debugger.DebugLevel.DebugExceptions,
-                        "_slewToCoordinatesSync: Caught \"{0}\"", ex.Message);
+                        $"InternalSlewToCoordinatesSync: Caught \"{ex.Message}\" at\n{ex.StackTrace}");
                     #endregion
                     return false;
                 }));
@@ -1954,8 +1953,8 @@ namespace ASCOM.Wise40
                             // there's not enough distance to move at this rate
                             closeEnoughRates++;
                             #region debug
-                            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}: distance {1} too short for {2} (closeEnoughRates: {3})",
-                                slewerName, distanceToTarget.angle, RateName(rate), closeEnoughRates);
+                            debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                                $"{slewerName}: distance {distanceToTarget.angle.ToNiceString()} too short for {RateName(rate)} (closeEnoughRates: {closeEnoughRates})");
                             #endregion
                             continue;
                         }
@@ -1965,8 +1964,8 @@ namespace ASCOM.Wise40
                         {
                             currentPosition = CurrentPosition(coordType);
                             #region debug
-                            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0} at {1}: current: {2} waiting for the other axis ...",
-                                slewerName, RateName(rate), currentPosition);
+                            debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                                $"{slewerName} at {RateName(rate)}: current: {currentPosition} waiting for the other axis ...");
                             #endregion
                             telescopeCT.ThrowIfCancellationRequested();
                             Thread.Sleep(50);
@@ -1982,9 +1981,8 @@ namespace ASCOM.Wise40
 
                             currentPosition = CurrentPosition(coordType);
                             #region debug
-                            debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                                "{0}: at {1} waiting {2} millis to start InternalMoveAxis({3}, {4}, {5}) ...",
-                                slewerName, currentPosition, waitForAxisToStartMovingMillis, thisAxis.ToString(), RateName(rate), distanceToTarget.direction);
+                            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, $"{slewerName}: at {currentPosition} waiting {waitForAxisToStartMovingMillis} " +
+                                $"millis to start InternalMoveAxis({thisAxis}, {RateName(rate)}, {distanceToTarget.direction}) ...");
                             #endregion
                             telescopeCT.ThrowIfCancellationRequested();
                             Thread.Sleep(waitForAxisToStartMovingMillis);
@@ -2187,8 +2185,8 @@ namespace ASCOM.Wise40
                 }
 
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0} Done at {1} target: {2}, distance-to-target: {3}, status: {4}, total-duration: {5}",
-                    slewerName, currentPosition, targetPosition, distanceToTarget.angle, status.ToString(), DateTime.Now.Subtract(start));
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, $"{slewerName} Done at {currentPosition} target: {targetPosition}, " +
+                    $"distance-to-target: {distanceToTarget.angle.ToNiceString()}, status: {status}, total-duration: {DateTime.Now.Subtract(start)}");
                 #endregion
             }
             catch (OperationCanceledException)
@@ -2508,7 +2506,7 @@ namespace ASCOM.Wise40
             {
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugExceptions,
-                    $"SlewToCoordinates: _slewToCoordinatesSync({ra}, {dec}) threw exception: {e.Message} at\n{e.StackTrace}");
+                    $"SlewToCoordinates: InternalSlewToCoordinatesSync({ra}, {dec}) threw exception: {e.Message} at\n{e.StackTrace}");
                 #endregion
             }
         }
