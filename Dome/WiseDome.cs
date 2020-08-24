@@ -18,7 +18,6 @@ using System.Runtime.InteropServices.WindowsRuntime;
 namespace ASCOM.Wise40
 {
     public class WiseDome : WiseObject, IConnectable, IDisposable {
-
         private static readonly Version version = new Version(0, 2);
 
         private static readonly WiseSafeToOperate wiseSafeToOperate = WiseSafeToOperate.Instance;
@@ -39,8 +38,6 @@ namespace ASCOM.Wise40
 
         public WiseDomeShutter wisedomeshutter = WiseDomeShutter.Instance;
         public static ActivityMonitor activityMonitor = ActivityMonitor.Instance;
-
-        private static readonly WiseSite wisesite = WiseSite.Instance;
 
         [Flags] public enum DomeState {
             Idle = 0,
@@ -282,7 +279,7 @@ namespace ASCOM.Wise40
             if (!DomeIsMoving)
                 return false;
 
-            string message = string.Format("WiseDome:arriving: at {0} target {1}: ", Azimuth, there);
+            string message = $"WiseDome:arriving: at {Azimuth.ToNiceString()} target {there.ToNiceString()}: ";
 
             ShortestDistanceResult shortest = Azimuth.ShortestDistance(there);
             Angle inertial = InertiaAngle(there);
@@ -1395,7 +1392,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
+                return $"{version.Major}.{version.Minor}";
             }
         }
 
@@ -1419,11 +1416,11 @@ namespace ASCOM.Wise40
             List<string> lines = new List<string>();
             DateTime now = DateTime.Now;
 
-            lines.Add($"#");
-            lines.Add($"# WiseDome calibration data, generated automatically, please don't change!");
-            lines.Add($"#");
+            lines.Add("#");
+            lines.Add("# WiseDome calibration data, generated automatically, please don't change!");
+            lines.Add("#");
             lines.Add($"# Saved: {now.ToLocalTime()}");
-            lines.Add($"#");
+            lines.Add("#");
             lines.Add($"Encoder: {domeEncoder.Value}");
             lines.Add($"Azimuth: {Azimuth.Degrees}");
 

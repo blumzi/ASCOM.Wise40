@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 using ASCOM.Wise40;
 using ASCOM.Wise40.Common;
+using Newtonsoft.Json;
 
 namespace ASCOM.Wise40SafeToOperate
 {
@@ -17,6 +20,7 @@ namespace ASCOM.Wise40SafeToOperate
         private readonly object _lock = new object();
         protected static ActivityMonitor activityMonitor = ActivityMonitor.Instance;
         private readonly string _propertyName;
+        private bool _firstTime = true;
 
         [Flags]
         public enum Attribute
@@ -79,7 +83,7 @@ namespace ASCOM.Wise40SafeToOperate
 
         public Attribute _attributes;
         public State _state;
-        public int _intervalMillis;
+        public TimeSpan _interval = TimeSpan.Zero;
         public int _repeats;
         public int _nbad;
         public int _nstale;
@@ -165,20 +169,20 @@ namespace ASCOM.Wise40SafeToOperate
                 {
                     case "WindDirection":
                         v = WiseSite.och.WindDirection;
-                        digest.Symbolic = string.Format("{0}°", v);
-                        digest.Verbal = string.Format("{0} deg", v);
+                        digest.Symbolic = $"{v}°";
+                        digest.Verbal = $"{v} deg";
                         break;
 
                     case "DewPoint":
                         v = WiseSite.och.DewPoint;
-                        digest.Symbolic = string.Format("{0}°C", v);
-                        digest.Verbal = string.Format("{0} deg", v);
+                        digest.Symbolic = $"{v}°C";
+                        digest.Verbal = $"{v} deg";
                         break;
 
                     case "SkyTemperature":
                         v = WiseSite.och.SkyTemperature;
-                        digest.Symbolic = string.Format("{0}°C", v);
-                        digest.Verbal = string.Format("{0} deg", v);
+                        digest.Symbolic = $"{v}°C";
+                        digest.Verbal = $"{v} deg";
                         break;
 
                     default:
@@ -420,10 +424,8 @@ namespace ASCOM.Wise40SafeToOperate
             {
                 int fromProfile = Convert.ToInt32(wisesafetooperate._profile.GetValue(
                     Const.WiseDriverID.SafeToOperate, WiseName, "Interval", defaultInterval.ToString()));
-                if (_intervalMillis == -1)
-                    _intervalMillis = 1000;
-                else
-                    _intervalMillis = 1000 * fromProfile;
+
+                _interval = TimeSpan.FromSeconds(fromProfile);
             }
 
             _repeats = HasAttribute(Attribute.SingleReading)
@@ -439,7 +441,7 @@ namespace ASCOM.Wise40SafeToOperate
 
         public void WriteProfile()
         {
-            wisesafetooperate._profile.WriteValue(Const.WiseDriverID.SafeToOperate, WiseName, (_intervalMillis / 1000).ToString(), "Interval");
+            wisesafetooperate._profile.WriteValue(Const.WiseDriverID.SafeToOperate, WiseName, $"{_interval.TotalSeconds}", "Interval");
 
             if (DoesNotHaveAttribute(Attribute.SingleReading))
                 wisesafetooperate._profile.WriteValue(Const.WiseDriverID.SafeToOperate, WiseName, _repeats.ToString(), "Repeats");
@@ -504,10 +506,12 @@ namespace ASCOM.Wise40SafeToOperate
             if (Enabled)
             {
                 if (_repeats > 1)
+                {
                     _readings = new FixedSizedQueue<Reading>(_repeats);
+                }
 
                 if (HasAttribute(Attribute.Periodic))
-                    _timer.Change(dueMillis, _intervalMillis);
+                    _timer.Change(dueMillis, (int) _interval.TotalMilliseconds);
                 else
                     _timer.Change(Timeout.Infinite, Timeout.Infinite);
             }
@@ -525,15 +529,23 @@ namespace ASCOM.Wise40SafeToOperate
             if (!Enabled || !Connected)
                 return;
 
+            if (_firstTime)
+            {
+                Restore();
+                _firstTime = false;
+            }
+
+            string op = $"Sensor({WiseName})[{this.GetHashCode()}]:onTimer: ";
             Reading currentReading;
 
             DateTime now = DateTime.Now;
             try
             {
                 currentReading = GetReading();
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
-                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, $"Sensor:onTimer: Caught {ex.Message} at\n{ex.StackTrace}");
+                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, op + $"Caught {ex.Message} at\n{ex.StackTrace}");
                 return;
             }
             if (currentReading == null)
@@ -546,13 +558,14 @@ namespace ASCOM.Wise40SafeToOperate
             int nbad = 0, nstale = 0, nreadings = 0;
             foreach (Reading r in arr)      // before current reading
             {
-                values.Add(r.ToString());
+                values.Add($"{r}");
                 nreadings++;
                 if (!r.Safe)
                     nbad++;
                 if (r.Stale)
                     nstale++;
             }
+            debugger.WriteLine(Debugger.DebugLevel.DebugSafety, op + $"readings(before): [{String.Join(",", values)}]");
 
             bool wassafe = StateIsSet(State.Safe);
             bool wasready = StateIsSet(State.EnoughReadings);
@@ -574,9 +587,7 @@ namespace ASCOM.Wise40SafeToOperate
                     nstale++;
             }
 
-            debugger.WriteLine(Debugger.DebugLevel.DebugSafety,
-                "onTimer: Sensor ({0}) readings: [{1}]",
-                WiseName, String.Join(",", values));
+            debugger.WriteLine(Debugger.DebugLevel.DebugSafety, op + $"readings(after): [{String.Join(",", values)}]");
 
             _nreadings = nreadings;
             _nbad = nbad;
@@ -588,8 +599,9 @@ namespace ASCOM.Wise40SafeToOperate
 
                 if (HasAttribute(Attribute.CanBeStale) && (_nstale > 0))
                 {
-                    ExtendUnsafety(string.Format("{0} stale reading{1}", _nstale, _nstale > 1 ? "s" : ""));
+                    ExtendUnsafety($"{_nstale} stale reading{(_nstale > 1 ? "s" : "")}");
                     SetState(State.Stale);
+                    Save();
                     return;     // Remain unsafe - at least one stale reading
                 }
                 else
@@ -600,6 +612,7 @@ namespace ASCOM.Wise40SafeToOperate
                 if (_readings.ToArray().Length != _repeats)
                 {
                     UnsetState(State.EnoughReadings);
+                    Save();
                     return;     // Remain unsafe - not enough readings
                 }
                 else
@@ -628,6 +641,7 @@ namespace ASCOM.Wise40SafeToOperate
                             after: Event.SafetyEvent.SensorState.NotSafe));
                     }
                     sensorState = Event.SafetyEvent.SensorState.NotSafe;
+                    Save();
                     return;     // Remain unsafe - all readings are unsafe
                 }
 
@@ -654,6 +668,7 @@ namespace ASCOM.Wise40SafeToOperate
                 if (wasready && StateIsSet(State.EnoughReadings) && !wassafe && prolong)
                 {
                     ExtendUnsafety("Readings just turned safe");
+                    Save();
                     return;     // Remain unsafe - just begun stabilizing
                 }
 
@@ -669,6 +684,8 @@ namespace ASCOM.Wise40SafeToOperate
 
                 sensorState = Event.SafetyEvent.SensorState.Safe;
             }
+
+            Save();
         }
 
         private void ExtendUnsafety(string reason)
@@ -772,7 +789,7 @@ namespace ASCOM.Wise40SafeToOperate
                 if (_enabled)
                 {
                     SetState(State.Enabled);
-                    _timer.Change(0, _intervalMillis);
+                    _timer.Change(0, (int) _interval.TotalMilliseconds);
                 }
                 else
                 {
@@ -781,5 +798,102 @@ namespace ASCOM.Wise40SafeToOperate
                 }
             }
         }
+
+        public void Save()
+        {
+            if (HasAttribute(Attribute.SingleReading))
+                return;
+
+            SavedSensorState saved = new SavedSensorState()
+            {
+                TimeOfSave = DateTime.Now,
+                State = this._state,
+                Readings = _readings.ToArray(),
+                EndOfStabilization = _endOfStabilization,
+            };
+
+            if (!Directory.Exists(SavedSensorStateDir))
+                Directory.CreateDirectory(SavedSensorStateDir);
+
+            using (StreamWriter sw = File.CreateText(SavedSensorStateFile)) {
+                JsonSerializer js = new JsonSerializer();
+                js.Serialize(sw, saved);
+            }
+        }
+
+        private void Restore()
+        {
+            if (HasAttribute(Attribute.SingleReading))
+                return;
+
+            SavedSensorState saved = null;
+            string file = SavedSensorStateFile;
+            string op = $"Restore({WiseName})[{this.GetHashCode()}] from \"{file}\": ";
+
+            if (!File.Exists(file))
+                return;
+
+            using (StreamReader sr = new StreamReader(file))
+            {
+                JsonSerializer js = new JsonSerializer();
+                try
+                {
+                    saved = (SavedSensorState)js.Deserialize(sr, typeof(SavedSensorState));
+                }
+                catch (Exception ex)
+                {
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, op + $"Caught {ex.Message} at\n{ex.StackTrace}");
+                }
+            }
+
+            TimeSpan age = DateTime.Now.Subtract(saved.TimeOfSave);
+            DateTime now = DateTime.Now;
+            if (age <= TimeSpan.FromMinutes(5))
+            {
+                _state = saved.State;
+                _endOfStabilization = saved.EndOfStabilization;
+                foreach (Reading r in saved.Readings.ToArray())
+                {
+                    r.timeOfLastUpdate += age;
+                    r.secondsSinceLastUpdate = now.Subtract(r.timeOfLastUpdate).TotalSeconds;
+                    _readings.Enqueue(r);
+                    _nreadings++;
+                    if (!r.Safe)
+                        _nbad++;
+                    if (r.Stale)
+                        _nstale++;
+                }
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, op +
+                    $"OK (_state: {_state}, _nreadings: {_nreadings}, _nbad: {_nbad}, _nstale: {_nstale}, safe: {IsSafe}, stale: {IsStale}, unsafeReason: {UnsafeReason()})");
+            }
+            else
+            {
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, op + $"data older than {_interval.TotalSeconds} seconds, ignored");
+            }
+            File.Delete(file);
+        }
+
+        private string SavedSensorStateFile
+        {
+            get
+            {
+                return SavedSensorStateDir + "/" + WiseName + ".json";
+            }
+        }
+
+        private string SavedSensorStateDir {
+            get
+            {
+                return Const.topWise40Directory + "/Sensors";
+            }
+        }
+    }
+
+    public class SavedSensorState
+    {
+        public DateTime TimeOfSave;
+        public Sensor.State State;
+        public Sensor.Reading[] Readings;
+        public DateTime EndOfStabilization;
     }
 }
