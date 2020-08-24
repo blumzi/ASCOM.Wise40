@@ -137,6 +137,7 @@
     <Compile Include="ComputerControlSensor.cs" />
     <Compile Include="DoorLockSensor.cs" />
     <Compile Include="Driver.cs" />
+    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="HumanInterventionSensor.cs" />
     <Compile Include="HumiditySensor.cs" />
     <Compile Include="OWLRefresher.cs" />

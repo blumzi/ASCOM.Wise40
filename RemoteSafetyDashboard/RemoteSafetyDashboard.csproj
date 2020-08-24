@@ -95,6 +95,7 @@
     </Compile>
     <Compile Include="Communicator.cs" />
     <Compile Include="FakeSafeToOperateAccess.cs" />
+    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="RemoteSafetyDashboard.cs">
       <SubType>Form</SubType>
     </Compile>

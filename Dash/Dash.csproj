@@ -160,6 +160,7 @@
     <Compile Include="FilterWheelForm.Designer.cs">
       <DependentUpon>FilterWheelForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="HardwareForm.cs">
       <SubType>Form</SubType>
     </Compile>

@@ -102,6 +102,7 @@
     <Compile Include="AboutForm.Designer.cs">
       <DependentUpon>AboutForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="InterventionForm.cs">
       <SubType>Form</SubType>
     </Compile>

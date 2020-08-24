@@ -116,6 +116,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AtomicReader.cs" />
+    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="IConnectable.cs" />
     <Compile Include="IDegrees.cs" />
     <Compile Include="IEncoder.cs" />
