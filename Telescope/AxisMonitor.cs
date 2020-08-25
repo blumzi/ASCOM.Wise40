@@ -71,7 +71,9 @@ namespace ASCOM.Wise40
 
         public abstract bool IsMoving { get; }
 
-        public double deltaT
+        public abstract bool IsReady { get;  }
+
+        public double DeltaT
         {
             get
             {
@@ -297,13 +299,24 @@ namespace ASCOM.Wise40
             }
         }
 
+        public override bool IsReady
+        {
+            get
+            {
+                bool tracking = wisetele.Tracking;
+                double[] arr = (tracking) ? _raDeltas.ToArray() : _haDeltas.ToArray();
+
+                return arr.Length == ((tracking) ? _raDeltas.MaxSize : _haDeltas.MaxSize);
+            }
+        }
+
         public override bool IsMoving
         {
             get
             {
                 double max = double.MinValue;
                 bool tracking = wisetele.Tracking;
-                double[] arr = (tracking) ? _raDeltas.ToArray() : _haDeltas.ToArray();
+                double[] arr;
                 double epsilon;
 
                 if (tracking)
@@ -312,20 +325,21 @@ namespace ASCOM.Wise40
                     if (arr.Length < _raDeltas.MaxSize)
                     {
                         #region debug
-                        debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}:IsMoving: Not enough samples {1} < {2} = true",
-                            WiseName, arr.Length, _raDeltas.MaxSize);
+                        debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                            $"{WiseName}:IsMoving: Not enough samples ({arr.Length} < {_raDeltas.MaxSize})");
                         #endregion
                         return false;    // not enough samples
                     }
                     epsilon = raEpsilon;
-                } else
+                }
+                else
                 {
                     arr = _haDeltas.ToArray();
                     if (arr.Length < _haDeltas.MaxSize)
                     {
                         #region debug
-                        debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}:IsMoving: Not enough samples {1} < {2} = true",
-                            WiseName, arr.Length, _haDeltas.MaxSize);
+                        debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                            $"{WiseName}:IsMoving: Not enough samples ({arr.Length} < {_haDeltas.MaxSize})");
                         #endregion
                         return false;    // not enough samples
                     }
@@ -359,7 +373,7 @@ namespace ASCOM.Wise40
                 return double.NaN;
 
             double deltaRadians = Math.Abs(samples[last].radians - samples[last - 1].radians);
-            Angle a = Angle.FromRadians(deltaRadians / deltaT, Angle.AngleType.RA);
+            Angle a = Angle.FromRadians(deltaRadians / DeltaT, Angle.AngleType.RA);
 
             return  a.Hours;
         }
@@ -475,17 +489,28 @@ namespace ASCOM.Wise40
             _prevDeclination = _declination;
         }
 
-        public override bool IsMoving
+        public override bool IsReady
         {
             get
             {
                 double[] arr = _decDeltas.ToArray();
 
-                if (arr.Length < _samples.MaxSize)
+                return arr.Length == _samples.MaxSize;
+            }
+        }
+
+        public override bool IsMoving
+        {
+            get
+            {
+
+                double[] arr = _decDeltas.ToArray();
+
+                if (! IsReady)
                 {
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}:IsMoving: Not enough samples: arr.Count() {1} < _samples.MaxSize: {2}",
-                        WiseName, arr.Length, _samples.MaxSize);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                        $"{WiseName}:IsMoving: Not enough samples: ({arr.Length} < {_samples.MaxSize})");
                     #endregion
                     return false;    // not enough samples
                 }
@@ -525,7 +550,7 @@ namespace ASCOM.Wise40
                 return double.NaN;
 
             double deltaRadians = Math.Abs(samples[last].radians - samples[last - 1].radians);
-            Angle a = Angle.FromRadians(deltaRadians / deltaT, Angle.AngleType.Dec);
+            Angle a = Angle.FromRadians(deltaRadians / DeltaT, Angle.AngleType.Dec);
 
             return a.Degrees;
         }

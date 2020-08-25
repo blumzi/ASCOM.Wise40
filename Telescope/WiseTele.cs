@@ -1768,6 +1768,13 @@ namespace ASCOM.Wise40
                 Tracking = true;
 
                 EnslavesDome = false;
+                while (!primaryAxisMonitor.IsReady || !secondaryAxisMonitor.IsReady)
+                {
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: waiting for axis monitors to be ready ...");
+                    #endregion
+                    Thread.Sleep(500);
+                }
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: starting InternalSlewToCoordinatesSync ...");
                 #endregion
