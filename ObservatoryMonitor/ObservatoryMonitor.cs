@@ -57,6 +57,8 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
         private static readonly HttpClient serverCheckerClient = new System.Net.Http.HttpClient();
 
+        private const string parkedMessage = "Wise40 is parked and closed";
+
         public static void CloseConnections()
         {
             if (wisetelescope != null)
@@ -306,7 +308,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 else if (ObservatoryIsLogicallyParked && ObservatoryIsPhysicallyParked)
                 {
                     if (!shuttingDown)
-                        Log("Wise40 already parked.");
+                        Log(parkedMessage);
                 }
                 else
                 {
@@ -571,7 +573,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
             if (ObservatoryIsLogicallyParked || ObservatoryIsPhysicallyParked)
             {
-                Log("Wise40 already parked.");
+                Log(parkedMessage);
                 return;
             }
 
@@ -714,7 +716,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 }
 
                 if (telescopeDigest.AtPark && domeDigest.AtPark && domeDigest.Shutter.State == ShutterState.shutterClosed)
-                    Log("Wise40 is parked and closed");
+                    Log(parkedMessage);
             }
             catch (Exception ex)
             {
