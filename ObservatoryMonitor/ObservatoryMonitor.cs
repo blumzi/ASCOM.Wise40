@@ -14,6 +14,7 @@ using Newtonsoft.Json;
 
 using System.Net;
 using System.Diagnostics;
+using System.Net.Http;
 
 namespace ASCOM.Wise40.ObservatoryMonitor
 {
@@ -54,6 +55,8 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
         public static bool shuttingDown = false;
 
+        private static readonly HttpClient serverCheckerClient = new System.Net.Http.HttpClient();
+
         public static void CloseConnections()
         {
             if (wisetelescope != null)
@@ -85,43 +88,34 @@ namespace ASCOM.Wise40.ObservatoryMonitor
         public void CheckConnections()
         {
             #region Check connectivity to RemoteServer
-            using (var client = new WebClient())
+            try
             {
-                try
-                {
-                    UpdateCheckingStatus("connecting ASCOM server");
-                    DateTime start = DateTime.Now;
+                UpdateCheckingStatus("connecting ASCOM server");
 
-                    client.DownloadDataAsync(new Uri(Const.RESTServer.top + "concurrency")); // GET to http://www.xxx.yyy.zzz/server/v1/concurrency
-                    while (client.IsBusy)
-                    {
-                        if (DateTime.Now.Subtract(start).TotalMilliseconds > 500)
-                        {
-                            client.CancelAsync();
-                            Log("Connecting ASCOM server timed out");
-                            connected = false;
-                            if (DateTime.Now.Subtract(LatestSuccessfulServerConnection) > TimeToRestartServer)
-                            {
-                                Log($"ASCOM server did not answer for {TimeToRestartServer.TotalSeconds} seconds");
-                                foreach (var proc in Process.GetProcessesByName("ASCOM.RemoteServer"))
-                                {
-                                    Log($"Killed ASCOM Server process {proc.Id}.");
-                                    proc.Kill();
-                                }
-                            }
-                            return;
-                        }
-                        Application.DoEvents();
-                    }
-                    connected = true;
-                    LatestSuccessfulServerConnection = DateTime.Now;
-                }
-                catch (Exception ex)
+                Task serverCheckerTask = serverCheckerClient.GetAsync(Const.RESTServer.top + "concurrency",
+                    HttpCompletionOption.ResponseHeadersRead);
+
+                while (!serverCheckerTask.IsCompleted)
+                    Application.DoEvents();
+
+                connected = true;
+                LatestSuccessfulServerConnection = DateTime.Now;
+            }
+            catch (HttpRequestException ex)
+            {
+                Log($"CheckConnections:Server:Exception: {(ex.InnerException ?? ex).Message}");
+                connected = false;
+
+                if (DateTime.Now.Subtract(LatestSuccessfulServerConnection) > TimeToRestartServer)
                 {
-                    Log($"CheckConnections:Server:Exception: {(ex.InnerException ?? ex).Message}");
-                    connected = false;
-                    return;
+                    Log($"ASCOM server did not answer for {TimeToRestartServer.TotalSeconds} seconds");
+                    foreach (var proc in Process.GetProcessesByName("ASCOM.RemoteServer"))
+                    {
+                        Log($"Killed ASCOM Server process {proc.Id}.");
+                        proc.Kill();
+                    }
                 }
+                return;
             }
             #endregion
 
@@ -192,6 +186,8 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
             conditionsBypassToolStripMenuItem.Text = "";
             conditionsBypassToolStripMenuItem.Enabled = false;
+
+            serverCheckerClient.Timeout = TimeSpan.FromSeconds(5);
         }
 
         private void UpdateConditionsBypassToolStripMenuItem(bool bypassed)
