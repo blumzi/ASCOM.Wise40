@@ -364,9 +364,8 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             DateTime localTime = DateTime.Now.ToLocalTime();
             labelDate.Text = $"{localTime:ddd, dd MMM yyyy}";
             labelTime.Text = $"{localTime:hh:mm:ss tt} " + deltaFromUT;
-            DateTime now = DateTime.Now;
 
-            if (now >= _nextCheck && !_checking)
+            if (DateTime.Now >= _nextCheck && !_checking)
             {
                 _checking = true;
                 if (CanConnect())
@@ -381,7 +380,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 _checking = false;
             }
 
-            labelNextCheck.Text = $"in {_nextCheck.Subtract(now).ToMinimalString(showMillis: false)}";
+            labelNextCheck.Text = $"in {_nextCheck.Subtract(DateTime.Now).ToMinimalString(showMillis: false)}";
         }
 
         private void UpdateConditionsControls()
