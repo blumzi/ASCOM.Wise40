@@ -446,7 +446,9 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             RefreshDisplay();
         }
 
+#pragma warning disable IDE1006 // Naming Styles
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
+#pragma warning restore IDE1006 // Naming Styles
         {
             Application.Exit();
         }
@@ -515,13 +517,6 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             }, CT);
         }
 
-        private static void SleepWhileProcessingEvents()
-        {
-            DateTime start = DateTime.Now;
-            while (DateTime.Now.Subtract(start).TotalMilliseconds < _intervalBetweenLogs.TotalMilliseconds)
-                Application.DoEvents();
-        }
-
         private bool ObservatoryIsPhysicallyParked
         {
             get
@@ -574,6 +569,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 Log($" Parking telescope at {wisesite.LocalSiderealTime} {new Angle(66, Angle.AngleType.Dec)}" +
                     $" and dome at {new Angle(90, Angle.AngleType.Az).ToNiceString()} ...");
                 weInitiatedShutdown = true;
+                _nextCheck = DateTime.Now + _intervalBetweenChecksWhileShuttingDown;
                 return;
             }
             else
