@@ -29,7 +29,8 @@ namespace ASCOM.Wise40.ObservatoryMonitor
         private readonly Version version = new Version(0, 2);
         private static DateTime _nextCheck = DateTime.Now + TimeSpan.FromSeconds(20);
         private static bool _checking = false;
-        static public TimeSpan _intervalBetweenChecks;
+        public static TimeSpan _intervalBetweenRegularChecks;
+        public static TimeSpan _intervalBetweenChecksWhileShuttingDown = TimeSpan.FromSeconds(20);
         private DateTime LatestSuccessfulServerConnection = DateTime.MinValue;
         private TimeSpan TimeToRestartServer = TimeSpan.FromSeconds(30);
         static public int MinutesToIdle { get; set; }
@@ -37,7 +38,6 @@ namespace ASCOM.Wise40.ObservatoryMonitor
         private static DateTime _lastLog = DateTime.MinValue;
         private static readonly string deltaFromUT = "(UT+" + DateTime.Now.Subtract(DateTime.UtcNow).Hours.ToString() + ")";
 
-        //private static readonly Color normalColor = Statuser.colors[Statuser.Severity.Normal];
         private static readonly Color unsafeColor = Statuser.colors[Statuser.Severity.Error];
         private static readonly Color safeColor = Statuser.colors[Statuser.Severity.Good];
         private static readonly Color warningColor = Statuser.colors[Statuser.Severity.Warning];
@@ -51,11 +51,9 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
         private static readonly Common.Debugger debugger = Common.Debugger.Instance;
 
-        public static bool connected = false;
+        public static bool weInitiatedShutdown = false;
 
-        public static bool shuttingDown = false;
-
-        private static readonly HttpClient serverCheckerClient = new System.Net.Http.HttpClient();
+        private static readonly HttpClient serverCheckerHttpClient = new HttpClient();
 
         private const string parkedMessage = "Wise40 is parked and closed";
 
@@ -84,29 +82,26 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 wisesafetooperate.Dispose();
                 wisesafetooperate = null;
             }
-            connected = false;
         }
 
-        public void CheckConnections()
+        public bool CanConnect()
         {
             #region Check connectivity to RemoteServer
             try
             {
                 UpdateCheckingStatus("connecting ASCOM server");
 
-                Task serverCheckerTask = serverCheckerClient.GetAsync(Const.RESTServer.top + "concurrency",
+                Task serverCheckerTask = serverCheckerHttpClient.GetAsync(Const.RESTServer.top + "concurrency",
                     HttpCompletionOption.ResponseHeadersRead);
 
                 while (!serverCheckerTask.IsCompleted)
                     Application.DoEvents();
 
-                connected = true;
                 LatestSuccessfulServerConnection = DateTime.Now;
             }
             catch (HttpRequestException ex)
             {
                 Log($"CheckConnections:Server:Exception: {(ex.InnerException ?? ex).Message}");
-                connected = false;
 
                 if (DateTime.Now.Subtract(LatestSuccessfulServerConnection) > TimeToRestartServer)
                 {
@@ -117,7 +112,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                         proc.Kill();
                     }
                 }
-                return;
+                return false;
             }
             #endregion
 
@@ -163,12 +158,12 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 if (!buttonProjector.Enabled)
                     buttonProjector.Enabled = true;
 
-                connected = true;
+                return true;
             }
             catch (Exception ex)
             {
                 Log($"CheckConnections:Exception: {(ex.InnerException ?? ex).Message}");
-                connected = false;
+                return false;
             }
             #endregion
         }
@@ -183,13 +178,13 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             menuStrip.RenderMode = ToolStripRenderMode.ManagerRenderMode;
             ToolStripManager.Renderer = new Wise40ToolstripRenderer();
 
-            updateManualInterventionControls();
+            UpdateManualInterventionControls();
             UpdateOpModeControls();
 
             conditionsBypassToolStripMenuItem.Text = "";
             conditionsBypassToolStripMenuItem.Enabled = false;
 
-            serverCheckerClient.Timeout = TimeSpan.FromSeconds(5);
+            serverCheckerHttpClient.Timeout = TimeSpan.FromSeconds(5);
         }
 
         private void UpdateConditionsBypassToolStripMenuItem(bool bypassed)
@@ -219,6 +214,9 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
                 UpdateCheckingStatus("safetooperate status");
                 safetooperateDigest = JsonConvert.DeserializeObject<SafeToOperateDigest>(wisesafetooperate.Action("status", ""));
+
+                UpdateCheckingStatus("dome status");
+                domeDigest = JsonConvert.DeserializeObject<DomeDigest>(wisedome.Action("status", ""));
             }
             catch (Exception ex)
             {
@@ -247,6 +245,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             }
             #endregion
 
+            #region Human Intervention
             if (telescopeDigest.ShuttingDown)
             {
                 buttonManualIntervention.Enabled = false;
@@ -257,6 +256,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 buttonManualIntervention.Enabled = true;
                 toolTip.SetToolTip(buttonManualIntervention, "");
             }
+            #endregion
 
             #region ActivityLabel
             if (telescopeDigest == null)
@@ -286,67 +286,62 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             UpdateProjectorControls();
             #endregion
 
-            #region Decide if shutdown is needed
-            List<string> reasonsList = new List<string>();
+            if (weInitiatedShutdown)
+            {
+                if (!telescopeDigest.ShuttingDown)
+                {
+                    weInitiatedShutdown = false;
+                    Log("Done Wise40 shutdown");
+                    return;
+                }
+
+                if (!safetooperateDigest.ComputerControl.Safe)
+                {
+                    weInitiatedShutdown = false;
+                    Log("Wise40 is in MAINTENANCE mode, shutdown aborted");
+                    return;
+                }
+            }
+
+            if (telescopeDigest.ShuttingDown)
+            {
+                // Wise40 is shutting down
+                Angle ra = Angle.FromHours(telescopeDigest.Current.RightAscension, Angle.AngleType.RA);
+                Angle dec = Angle.FromDegrees(telescopeDigest.Current.Declination, Angle.AngleType.Dec);
+                Angle az = Angle.FromDegrees(domeDigest.Azimuth, Angle.AngleType.Az);
+                ShutterState shutterState = domeDigest.Shutter.State;
+
+                Log("    " +
+                    $"Telescope at {ra.ToNiceString()} {dec.ToNiceString()}, " +
+                    $"dome at {az.ToNiceString()}, " +
+                    $"shutter {shutterState.ToString().ToLower().Remove(0, "shutter".Length)} ...",
+                    _simulated ? 1 : 10);
+                return;
+            }
+
+            if (ObservatoryIsLogicallyParked)
+            {
+                Log(parkedMessage);
+                return;
+            }
+
+            if (safetooperateDigest.Safe && telescopeDigest.Active)
+            {
+                Log($"Safe and active ({String.Join(", ", telescopeDigest.Activities.ToArray())})");
+                return;
+            }
 
             if (!safetooperateDigest.Safe && !safetooperateDigest.UnsafeBecauseNotReady)
-                reasonsList.Add(string.Join(Const.recordSeparator, safetooperateDigest.UnsafeReasons));
+            {
+                DoShutdownObservatory(string.Join(Const.recordSeparator, safetooperateDigest.UnsafeReasons));
+                return;
+            }
 
-            // Comment this out to ignore telescope being idle
             if (!telescopeDigest.Active)
-                reasonsList.Add("Telescope is Idle");
-
-            if (reasonsList.Count != 0)
             {
-                #region ShouldShutdown
-                string shutdownReason = String.Join(" and ", reasonsList);
-
-                if (telescopeDigest.ShuttingDown)
-                {
-                    //Log("Wise40 is shutting down.");
-                }
-                else if (ObservatoryIsLogicallyParked && ObservatoryIsPhysicallyParked)
-                {
-                    if (!shuttingDown)
-                        Log(parkedMessage);
-                }
-                else
-                {
-                    if (!safetooperateDigest.ComputerControl.Safe)
-                        Log("No ComputerControl, shutdown skipped.");
-                    else
-                        DoShutdownObservatory(shutdownReason);
-                }
-                #endregion
+                DoShutdownObservatory("Wise40 is idle");
+                return;
             }
-            else
-            {
-                #region NoNeedToShutdown
-                string safetyMessage, activityMessage;
-
-                if (safetooperateDigest.Safe)
-                {
-                    safetyMessage = "Safe";
-                    if (safetooperateDigest.Bypassed)
-                        safetyMessage += " (due to safety bypass)";
-                }
-                else
-                {
-                    safetyMessage = "Not safe";
-                    if (safetooperateDigest.UnsafeBecauseNotReady)
-                        safetyMessage += " (inconclusive safety info)";
-                    else if (!safetooperateDigest.HumanIntervention.Safe)
-                        safetyMessage += " (intervention)";
-                }
-
-                activityMessage = (telescopeDigest.Active) ?
-                    $"active ({string.Join(", ", telescopeDigest.Activities)})" :
-                    "idle";
-
-                Log(safetyMessage + " and " + activityMessage);
-                #endregion
-            }
-            #endregion
         }
 
         private delegate void UpdateCheckingStatus_delegate(string text);
@@ -371,30 +366,22 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             labelTime.Text = $"{localTime:hh:mm:ss tt} " + deltaFromUT;
             DateTime now = DateTime.Now;
 
-            string s = string.Empty;
-            TimeSpan remaining = _nextCheck.Subtract(now);
-            if (remaining.Minutes > 0)
-                s += $"{remaining.Minutes:D2}m";
-            s += $"{remaining.Seconds:D2}s";
-            labelNextCheck.Text = "in " + s;
-
-            if (telescopeDigest?.ShuttingDown == false)
-                buttonManualIntervention.Enabled = true;
-            updateManualInterventionControls();
-
             if (now >= _nextCheck && !_checking)
             {
                 _checking = true;
-                CheckConnections();
-                if (connected)
+                if (CanConnect())
                 {
                     CheckSituation();
+                    UpdateManualInterventionControls();
                     UpdateConditionsControls();
                 }
-
-                _nextCheck = DateTime.Now + _intervalBetweenChecks;
+                _nextCheck = DateTime.Now + ((weInitiatedShutdown || (telescopeDigest?.ShuttingDown == true)) ?
+                    _intervalBetweenChecksWhileShuttingDown :
+                    _intervalBetweenRegularChecks);
                 _checking = false;
             }
+
+            labelNextCheck.Text = $"in {_nextCheck.Subtract(now).ToMinimalString(showMillis: false)}";
         }
 
         private void UpdateConditionsControls()
@@ -502,9 +489,15 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
         private void DoShutdownObservatory(string reason)
         {
+            if (!safetooperateDigest.ComputerControl.Safe)
+            {
+                Log("Wise40 is in MAINTENANCE mode, shutdown skipped");
+                return;
+            }
+
             if (ObservatoryIsLogicallyParked && ObservatoryIsPhysicallyParked)
             {
-                Log($"Observatory is logically and physically parked. Ignoring \"{reason}\".");
+                Log($"Wise40 is logically and physically parked. Ignoring \"{reason}\".");
                 return;
             }
 
@@ -568,205 +561,43 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
         private void ShutdownObservatory(string reason)
         {
-            if (shuttingDown)
+            if (weInitiatedShutdown)    // already initiated a shutdown
                 return;
 
-            if (ObservatoryIsLogicallyParked || ObservatoryIsPhysicallyParked)
+            #region Initiate shutdown
+            if (wisetelescope.Action("shutdown", reason) == "ok")
             {
-                Log(parkedMessage);
+                labelActivity.Text = "ShuttingDown";
+                labelActivity.ForeColor = warningColor;
+                toolTip.SetToolTip(labelActivity, "Wise40 is shutting down");
+
+                Log($"Initiating Wise40 shutdown (reason: {reason}) ...");
+                Log($" Parking telescope at {wisesite.LocalSiderealTime} {new Angle(66, Angle.AngleType.Dec)}" +
+                    $" and dome at {new Angle(90, Angle.AngleType.Az).ToNiceString()} ...");
+                weInitiatedShutdown = true;
                 return;
             }
-
-            try
+            else
             {
-                Angle domeAz = DomeAzimuth; // Possibly force dome calibration
-
-                if (CT.IsCancellationRequested) Exceptor.Throw<Exception>($"ShutdownObservatory({reason})", "Shutdown aborted");
-
-                shuttingDown = true;
-                Log($"   Starting Wise40 park (reason: {reason}) ...");
-
-                Log($"    Parking telescope at {wisesite.LocalSiderealTime} {new Angle(66, Angle.AngleType.Dec)} and dome at {new Angle(90, Angle.AngleType.Az).ToNiceString()} ...");
-
-                #region Initiate shutdown
-                Task telescopeShutdownTask = Task.Run(() =>
-                {
-                    try
-                    {
-                        if (wisetelescope.Action("shutdown", reason) != "ok")
-                        {
-                            Exceptor.Throw<OperationCanceledException>($"ShutdownObservatory({reason})",
-                                "Action(\"telescope:shutdown\") did not reply with \"ok\"");
-                        }
-
-                        labelActivity.Text = "ShuttingDown";
-                        labelActivity.ForeColor = warningColor;
-                        toolTip.SetToolTip(labelActivity, "Wise40 is shutting down");
-                    }
-                    catch (Exception ex)
-                    {
-                        Log($"ShutdownObservatory:Exception: {(ex.InnerException ?? ex).Message}");
-                    }
-                }, CT);
-                #endregion
-
-                ShutterState shutterState;
-                List<string> activities;
-                bool done = false;
-
-                #region Wait for shutdown completion
-                do
-                {
-                    if (CT.IsCancellationRequested)
-                    {
-                        telescopeShutdownTask.Dispose();
-                        Exceptor.Throw<Exception>($"ShutdownObservatory({reason})", "Shutdown aborted");
-                    }
-                    SleepWhileProcessingEvents();
-                    if (CT.IsCancellationRequested)
-                    {
-                        telescopeShutdownTask.Dispose();
-                        Exceptor.Throw<Exception>($"ShutdownObservatory({reason})", "Shutdown aborted");
-                    }
-
-                    try
-                    {
-                        #region Fetch various statuses
-                        UpdateCheckingStatus("telescope status");
-                        telescopeDigest = JsonConvert.DeserializeObject<TelescopeDigest>(wisetelescope.Action("status", ""));
-
-                        UpdateCheckingStatus("dome status");
-                        domeDigest = JsonConvert.DeserializeObject<DomeDigest>(wisedome.Action("status", ""));
-
-                        UpdateCheckingStatus("safetooperate status");
-                        safetooperateDigest = JsonConvert.DeserializeObject<SafeToOperateDigest>(wisesafetooperate.Action("status", ""));
-                        UpdateCheckingStatus("");
-                        #endregion
-
-                        if (!safetooperateDigest.ComputerControl.Safe)
-                        {
-                            Log("  Computer control switched to MAINTENANCE, shutdown aborted!", 10);
-                            done = true;
-                        }
-                        else
-                        {
-                            Angle ra, dec, az;
-                            ra = Angle.FromHours(telescopeDigest.Current.RightAscension, Angle.AngleType.RA);
-                            dec = Angle.FromDegrees(telescopeDigest.Current.Declination, Angle.AngleType.Dec);
-                            az = Angle.FromDegrees(domeDigest.Azimuth, Angle.AngleType.Az);
-                            shutterState = domeDigest.Shutter.State;
-                            activities = telescopeDigest.Activities;
-
-                            done = telescopeDigest.AtPark && domeDigest.AtPark && shutterState == ShutterState.shutterClosed;
-
-                            Log("    " +
-                                $"Telescope at {ra.ToNiceString()} {dec.ToNiceString()}, " +
-                                $"dome at {az.ToNiceString()}, " +
-                                $"shutter {shutterState.ToString().ToLower().Remove(0, "shutter".Length)} ...",
-                                _simulated ? 1 : 10);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Log($"    Exception: {ex.Message}");
-                        Log($"Caught: {ex.Message} at\n{ex.StackTrace}", debugOnly: true);
-                        done = true;
-                    }
-                } while (!done);
-                #endregion
-
-                Log("   Done parking Wise40.");
-                labelActivity.Text = telescopeDigest.Active ? "Active" : "Idle";
-                shuttingDown = false;
-
-                if (!telescopeDigest.EnslavesDome)
-                {
-                    if (!wisedome.AtPark)
-                    {
-                        Log("    Starting dome park ...");
-                        wisedome.Park();
-                        do
-                        {
-                            if (CT.IsCancellationRequested)
-                            {
-                                wisedome.AbortSlew();
-                                Exceptor.Throw<Exception>($"ShutdownObservatory({reason})", "Shutdown aborted");
-                            }
-                            SleepWhileProcessingEvents();
-                            Angle az = DomeAzimuth;
-                            Log($"  Dome at {az.ToNiceString()} ...", 10);
-                        } while (!wisedome.AtPark);
-                        Log("    Dome is parked");
-                    }
-
-                    if (wisedome.ShutterStatus != ShutterState.shutterClosed && wisedome.ShutterStatus != ShutterState.shutterClosing)
-                    {
-                        Log("    Starting shutter close ...");
-                        wisedome.CloseShutter();
-                        do
-                        {
-                            if (CT.IsCancellationRequested)
-                                Exceptor.Throw<Exception>($"ShutdownObservatory({reason})", "Shutdown aborted");
-
-                            SleepWhileProcessingEvents();
-                            Log("    Shutter is closing ...", 10);
-                        } while (wisedome.ShutterStatus != ShutterState.shutterClosed);
-                        Log("    Shutter is closed.");
-                    }
-                }
-
-                if (telescopeDigest.AtPark && domeDigest.AtPark && domeDigest.Shutter.State == ShutterState.shutterClosed)
-                    Log(parkedMessage);
+                Log("   Failed to initiate Wise40 shutdown.");
+                Exceptor.Throw<OperationCanceledException>($"ShutdownObservatory({reason})",
+                        "Action(\"telescope:shutdown\") did not reply with \"ok\"");
+                weInitiatedShutdown = false;
+                return;
             }
-            catch (Exception ex)
-            {
-                if (ex.InnerException != null)
-                    ex = ex.InnerException;
-
-                if (ex.Message == "Shutdown aborted")
-                    Log("Shutdown aborted by operator");
-                else
-                    Log($"ShutdownObservatory:Exception occurred:\n{ex.Message}, aborting shutdown!");
-
-                wisetelescope.Action("abort-shutdown", "");
-            }
+            #endregion
         }
 
-        /// <summary>
-        /// If the dome is not calibrated the http transaction may timeout.
-        /// Wait till the dome calibrates and returns its Azimuth.
-        /// </summary>
-        private Angle DomeAzimuth
-        {
-            get
-            {
-                double degrees = Double.NaN;
-
-                while (Double.IsNaN(degrees))
-                {
-                    try
-                    {
-                        degrees = wisedome.Azimuth;
-                    }
-                    catch (Exception ex)
-                    {
-                        Log("DomeAzimuth: ASCOM communication timed out ...");
-
-                        string msg = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
-                        Log($"DomeAzimuth:Exception: Waiting for dome Azimuth: Caught: {msg}");
-                        SleepWhileProcessingEvents();
-                    }
-                }
-                return Angle.FromDegrees(degrees, Angle.AngleType.Az);
-            }
-        }
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
             new ObservatoryMonitorAboutForm(version).Show();
         }
 
-        private void updateManualInterventionControls()
+        private void UpdateManualInterventionControls()
         {
+            if (telescopeDigest != null)
+                buttonManualIntervention.Enabled = !telescopeDigest.ShuttingDown;
+
             if (HumanIntervention.IsSet())
             {
                 labelHumanInterventionStatus.Text = "Active";
@@ -810,7 +641,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                     Log("Created operator intervention");
             }
 
-            updateManualInterventionControls();
+            UpdateManualInterventionControls();
             CheckSituation();
         }
 
@@ -887,7 +718,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 int minutes = Convert.ToInt32(driverProfile.GetValue(Const.WiseDriverID.ObservatoryMonitor,
                     "MinutesBetweenChecks", string.Empty, "5"));
 
-                _intervalBetweenChecks = new TimeSpan(0, minutes, 0);
+                _intervalBetweenRegularChecks = TimeSpan.FromMinutes(minutes);
             }
 
             using (Profile driverProfile = new Profile() { DeviceType = "Telescope" })
@@ -916,12 +747,12 @@ namespace ASCOM.Wise40.ObservatoryMonitor
         {
             get
             {
-                return _intervalBetweenChecks.Minutes;
+                return (int) _intervalBetweenRegularChecks.TotalMinutes;
             }
 
             set
             {
-                _intervalBetweenChecks = new TimeSpan(0, value, 0);
+                _intervalBetweenRegularChecks = TimeSpan.FromMinutes(value);
             }
         }
 
@@ -950,9 +781,6 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
         private void UpdateProjectorControls()
         {
-            if (!connected)
-                return;
-
             try
             {
                 bool status = JsonConvert.DeserializeObject<bool>(wisedome.Action("projector", ""));
