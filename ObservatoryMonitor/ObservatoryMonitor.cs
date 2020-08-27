@@ -101,7 +101,8 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             }
             catch (HttpRequestException ex)
             {
-                Log($"CheckConnections:Server:Exception: {(ex.InnerException ?? ex).Message}");
+                Log("Cannot connect to ASCOM Server");
+                Log($"ASCOM server connect exception: {(ex.InnerException ?? ex).Message}", debugOnly: true);
 
                 if (DateTime.Now.Subtract(LatestSuccessfulServerConnection) > TimeToRestartServer)
                 {
@@ -515,6 +516,10 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                     Log($"DoShutdownObservatory:Exception: {(ex.InnerException ?? ex).Message}");
                 }
             }, CT);
+
+            labelActivity.Text = "ShuttingDown";
+            labelActivity.ForeColor = warningColor;
+            toolTip.SetToolTip(labelActivity, "Wise40 is shutting down");
         }
 
         private bool ObservatoryIsPhysicallyParked
@@ -561,10 +566,6 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             #region Initiate shutdown
             if (wisetelescope.Action("shutdown", reason) == "ok")
             {
-                labelActivity.Text = "ShuttingDown";
-                labelActivity.ForeColor = warningColor;
-                toolTip.SetToolTip(labelActivity, "Wise40 is shutting down");
-
                 Log($"Initiating Wise40 shutdown (reason: {reason}) ...");
                 Log($" Parking telescope at {wisesite.LocalSiderealTime} {new Angle(66, Angle.AngleType.Dec)}" +
                     $" and dome at {new Angle(90, Angle.AngleType.Az).ToNiceString()} ...");
