@@ -304,6 +304,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 if (!telescopeDigest.ShuttingDown)
                 {
                     weInitiatedShutdown = false;
+                    LogCurrentPosition();
                     Log(" Done parking Wise40.");
                     Log("Done Wise40 shutdown");
                     return;
