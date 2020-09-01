@@ -15,6 +15,7 @@ using Newtonsoft.Json;
 using System.Net;
 using System.Diagnostics;
 using System.Net.Http;
+using System.Linq;
 
 namespace ASCOM.Wise40.ObservatoryMonitor
 {
@@ -117,9 +118,11 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             }
             #endregion
 
+            string remoteDriver = null;
             #region Connect to remote ASCOM Drivers
             try
             {
+                remoteDriver = "Telescope";
                 if (wisetelescope == null)
                     wisetelescope = new DriverAccess.Telescope("ASCOM.Remote1.Telescope");
                 if (!wisetelescope.Connected)
@@ -127,11 +130,12 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                     wisetelescope.Connected = true;
                     while (!wisetelescope.Connected)
                     {
-                        Log("Waiting for the \"Telescope\" client to connect ...", 5);
+                        Log($"Waiting for the \"{remoteDriver}\" client to connect ...", 5);
                         Application.DoEvents();
                     }
                 }
 
+                remoteDriver = "SafeToOperate";
                 if (wisesafetooperate == null)
                     wisesafetooperate = new DriverAccess.SafetyMonitor("ASCOM.Remote1.SafetyMonitor");      // Must match ASCOM Remote Server Setup
                 if (!wisesafetooperate.Connected)
@@ -139,11 +143,12 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                     wisesafetooperate.Connected = true;
                     while (!wisesafetooperate.Connected)
                     {
-                        Log("Waiting for the \"SafeToOperate\" client to connect ...", 5);
+                        Log($"Waiting for the \"{remoteDriver}\" client to connect ...", 5);
                         Application.DoEvents();
                     }
                 }
 
+                remoteDriver = "Dome";
                 if (wisedome == null)
                     wisedome = new DriverAccess.Dome("ASCOM.Remote1.Dome");
                 if (!wisedome.Connected)
@@ -151,7 +156,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                     wisedome.Connected = true;
                     while (!wisedome.Connected)
                     {
-                        Log("Waiting for the \"Dome\" client to connect", 5);
+                        Log($"Waiting for the \"{remoteDriver}\" client to connect", 5);
                         Application.DoEvents();
                     }
                 }
@@ -163,7 +168,8 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             }
             catch (Exception ex)
             {
-                Log($"CheckConnections:Exception: {(ex.InnerException ?? ex).Message}");
+                Log($"Cannot connect the remote {remoteDriver} client");
+                Log($"CheckConnections:Exception: {(ex.InnerException ?? ex).Message} at\n{ex.StackTrace}", debugOnly: true);
                 return false;
             }
             #endregion
@@ -207,22 +213,28 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
         private void CheckSituation()
         {
+            string op = "";
+
             #region GetStatus
             try
             {
-                UpdateCheckingStatus("telescope status");
+                op = "telescope status";
+                UpdateCheckingStatus(op);
                 telescopeDigest = JsonConvert.DeserializeObject<TelescopeDigest>(wisetelescope.Action("status", ""));
 
-                UpdateCheckingStatus("safetooperate status");
+                op = "safetooperate status";
+                UpdateCheckingStatus(op);
                 safetooperateDigest = JsonConvert.DeserializeObject<SafeToOperateDigest>(wisesafetooperate.Action("status", ""));
 
-                UpdateCheckingStatus("dome status");
+                op = "dome status";
+                UpdateCheckingStatus(op);
                 domeDigest = JsonConvert.DeserializeObject<DomeDigest>(wisedome.Action("status", ""));
             }
             catch (Exception ex)
             {
                 UpdateCheckingStatus("");
-                Log($"CheckSituation:Exception: {(ex.InnerException ?? ex).Message}");
+                Log($"Failed to get {op}");
+                Log($"CheckSituation:Exception: {(ex.InnerException ?? ex).Message} at\n{ex.StackTrace}", debugOnly: true);
                 return;
             }
             #endregion
@@ -292,6 +304,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 if (!telescopeDigest.ShuttingDown)
                 {
                     weInitiatedShutdown = false;
+                    Log(" Done parking Wise40.");
                     Log("Done Wise40 shutdown");
                     return;
                 }
@@ -307,16 +320,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             if (telescopeDigest.ShuttingDown)
             {
                 // Wise40 is shutting down
-                Angle ra = Angle.FromHours(telescopeDigest.Current.RightAscension, Angle.AngleType.RA);
-                Angle dec = Angle.FromDegrees(telescopeDigest.Current.Declination, Angle.AngleType.Dec);
-                Angle az = Angle.FromDegrees(domeDigest.Azimuth, Angle.AngleType.Az);
-                ShutterState shutterState = domeDigest.Shutter.State;
-
-                Log("    " +
-                    $"Telescope at {ra.ToNiceString()} {dec.ToNiceString()}, " +
-                    $"dome at {az.ToNiceString()}, " +
-                    $"shutter {shutterState.ToString().ToLower().Remove(0, "shutter".Length)} ...",
-                    _simulated ? 1 : 10);
+                LogCurrentPosition();
                 return;
             }
 
@@ -343,6 +347,20 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 DoShutdownObservatory("Wise40 is idle");
                 return;
             }
+        }
+
+        private void LogCurrentPosition()
+        {
+            Angle ra = Angle.FromHours(telescopeDigest.Current.RightAscension, Angle.AngleType.RA);
+            Angle dec = Angle.FromDegrees(telescopeDigest.Current.Declination, Angle.AngleType.Dec);
+            Angle az = Angle.FromDegrees(domeDigest.Azimuth, Angle.AngleType.Az);
+            ShutterState shutterState = domeDigest.Shutter.State;
+
+            Log("    " +
+                $"Telescope at {ra.ToNiceString()} {dec.ToNiceString()}, " +
+                $"dome at {az.ToNiceString()}, " +
+                $"shutter {shutterState.ToString().ToLower().Remove(0, "shutter".Length)} ...",
+                _simulated ? 1 : 10);
         }
 
         private delegate void UpdateCheckingStatus_delegate(string text);
@@ -566,9 +584,17 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             #region Initiate shutdown
             if (wisetelescope.Action("shutdown", reason) == "ok")
             {
-                Log($"Initiating Wise40 shutdown (reason: {reason}) ...");
-                Log($" Parking telescope at {wisesite.LocalSiderealTime} {new Angle(66, Angle.AngleType.Dec)}" +
-                    $" and dome at {new Angle(90, Angle.AngleType.Az).ToNiceString()} ...");
+                Log("Initiating Wise40 shutdown. Reason(s):");
+                foreach(string r in reason.Split(Const.recordSeparator[0]).ToList<string>())
+                {
+                    Log($"    {r}");
+                }
+                Angle ra = wisesite.LocalSiderealTime;
+                Angle dec = new Angle(66, Angle.AngleType.Dec);
+                Angle az = new Angle(90, Angle.AngleType.Az);
+
+                Log($" Parking telescope at {ra} {dec} and dome at {az.ToNiceString()} ...");
+                LogCurrentPosition();
                 weInitiatedShutdown = true;
                 _nextCheck = DateTime.Now + _intervalBetweenChecksWhileShuttingDown;
                 return;
