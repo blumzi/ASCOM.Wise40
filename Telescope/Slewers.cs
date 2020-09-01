@@ -65,6 +65,14 @@ namespace ASCOM.Wise40
 
             if (_active.Count == 0)
             {
+                if (WiseTele.endOfAsyncSlewEvent != null)
+                {
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Slewers.Delete: generating endOfAsyncSlewEvent");
+                    #endregion
+                    WiseTele.endOfAsyncSlewEvent.Set();
+                }
+
                 activityMonitor.EndActivity(ActivityMonitor.ActivityType.TelescopeSlew, new Activity.TelescopeSlew.EndParams()
                 {
                     endState = Activity.State.Succeeded,

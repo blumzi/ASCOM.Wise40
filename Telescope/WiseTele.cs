@@ -75,6 +75,8 @@ namespace ASCOM.Wise40
 
         private const int waitForOtherAxisMillis = 500;           // half a second between checks setting an axis rate
 
+        public static ManualResetEvent endOfAsyncSlewEvent = null;
+
         #region TrackingRestoration
         /// <summary>
         /// Remembers the Tracking state when MoveAxis instance(s) are activated.
@@ -745,6 +747,15 @@ namespace ASCOM.Wise40
             #region debug
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, $"AbortSlew: ({reason}) done.");
             #endregion debug
+        }
+
+        //
+        // This is an APPROXIMATION of an HourAngle at a given RightAscension
+        //  since the exact sidereal time is not known.
+        //
+        public static Angle RAtoHA(Angle ra)
+        {
+            return Angle.FromHours((wisesite.LocalSiderealTime - ra).Hours, Angle.AngleType.HA);
         }
 
         public double RightAscension
@@ -1561,11 +1572,13 @@ namespace ASCOM.Wise40
 
         private void DoShutdown(string reason)
         {
+            string op = $"DoShutdown(reason: {reason})";
+
             if (activityMonitor.ShuttingDown)
             {
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
-                    $"doShutdown(reason: {reason}): shutdown already in progress (activityMonitor.ShuttingDown == true) => skipping shutdown");
+                    $"{op}: shutdown already in progress (activityMonitor.ShuttingDown == true) => skipping shutdown");
                 #endregion
                 return;
             }
@@ -1574,7 +1587,7 @@ namespace ASCOM.Wise40
             {
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
-                    $"doShutdown(reason: {reason}): Wise40 is already shut down (AtPark and dome.AtPark and shutterClosed) => skipping shutdown");
+                    $"{op}: Wise40 is already shut down (AtPark and dome.AtPark and shutterClosed) => skipping shutdown");
                 #endregion
                 return;
             }
@@ -1584,14 +1597,14 @@ namespace ASCOM.Wise40
             bool rememberToCancelSafetyBypass = false;
 
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"doShutdown(reason: {reason}): starting activity ShuttingDown ...");
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: starting activity ShuttingDown ...");
             #endregion
             activityMonitor.NewActivity(new Activity.Shutdown(new Activity.Shutdown.StartParams() { reason = reason }));
 
             if (!safetooperateDigest.Bypassed)
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"doShutdown(reason: {reason}): starting safetooperate bypass ...");
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: starting safetooperate bypass ...");
                 #endregion
                 rememberToCancelSafetyBypass = true;
                 wisesafetooperate.Action("start-bypass", "temporary");
@@ -1608,7 +1621,7 @@ namespace ASCOM.Wise40
             if (domeSlaveDriver.AtPark)
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"doShutdown(reason: {reason}): calling domeSlaveDriver.Unpark() ...");
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: calling domeSlaveDriver.Unpark() ...");
                 #endregion
                 DomeSlaveDriver.Unpark();
             }
@@ -1616,9 +1629,9 @@ namespace ASCOM.Wise40
             if (Slewing)
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"doShutdown(reason: {reason}): calling AbortSlew() ...");
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: calling AbortSlew() ...");
                 #endregion
-                AbortSlew("WiseTele:Shutdown():doShutdown()");
+                AbortSlew($"{op}");
                 do
                 {
                     #region debug
@@ -1631,13 +1644,13 @@ namespace ASCOM.Wise40
             if (IsPulseGuiding)
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"doShutdown(reason: {reason}): calling AbortPulseGuiding() ...");
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: calling AbortPulseGuiding() ...");
                 #endregion
                 AbortPulseGuiding();
                 do
                 {
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "doShutdown: waiting for !IsPulseGuiding ...");
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: waiting for !IsPulseGuiding ...");
                     #endregion
                     Thread.Sleep(1000);
                 } while (IsPulseGuiding);
@@ -1646,20 +1659,20 @@ namespace ASCOM.Wise40
             if (domeSlaveDriver.Slewing)
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"doShutdown(reason: {reason}): calling domeSlaveDriver.AbortSlew() ...");
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: calling domeSlaveDriver.AbortSlew() ...");
                 #endregion
                 DomeSlaveDriver.AbortSlew();
                 do
                 {
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "doShutdown: waiting for !domeSlaveDriver.Slewing ...");
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: waiting for !domeSlaveDriver.Slewing ...");
                     #endregion
                     Thread.Sleep(1000);
                 } while (domeSlaveDriver.Slewing);
             }
 
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"doShutdown(reason: {reason}): setting Tracking to false ...");
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: setting Tracking to false ...");
             #endregion
             Tracking = false;
 
@@ -1667,20 +1680,20 @@ namespace ASCOM.Wise40
             {
                 // Wait for shutter to close before continuing
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"doShutdown(reason: {reason}): calling domeSlaveDriver.CloseShutter() ...");
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: calling domeSlaveDriver.CloseShutter() ...");
                 #endregion
-                DomeSlaveDriver.CloseShutter($"reason: DoShutdown(reason: {reason})");
+                DomeSlaveDriver.CloseShutter($"{op}");
                 while (domeSlaveDriver.ShutterState != ShutterState.shutterClosed)
                 {
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "doShutdown: waiting for domeSlaveDriver.ShutterState == ShutterState.shutterClosed ...");
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: waiting for domeSlaveDriver.ShutterState == ShutterState.shutterClosed ...");
                     #endregion
                     Thread.Sleep(1000);
                 }
             }
 
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"doShutdown(reason: {reason}): calling Park() ...");
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: calling Park() ...");
             #endregion
             try
             {
@@ -1688,17 +1701,17 @@ namespace ASCOM.Wise40
             } catch (Exception ex)
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"doShutdown(reason: {reason}): exception during Park(): {0}", ex.ToString());
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: exception during Park(): {0}", ex.ToString());
                 #endregion
             }
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"doShutdown(reason: {reason}): after Park() ...");
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: after Park() ...");
             #endregion
 
             if (rememberToCancelSafetyBypass)
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"doShutdown(reason: {reason}): ending safetooperate bypass ...");
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: ending safetooperate bypass ...");
                 #endregion
                 wisesafetooperate.Action("end-bypass", "temporary");
             }
@@ -1732,9 +1745,8 @@ namespace ASCOM.Wise40
 
             Angle targetRa = wisesite.LocalSiderealTime;
             Angle targetDec = parkingDeclination;
-
             bool wasEnslavingDome = EnslavesDome;
-            bool wasTracking = Tracking;
+
             try
             {
                 Parking = true;
@@ -1762,10 +1774,6 @@ namespace ASCOM.Wise40
                 }
                 TargetRightAscension = targetRa.Hours;
                 TargetDeclination = targetDec.Degrees;
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: setting Tracking = true ...");
-                #endregion
-                Tracking = true;
 
                 EnslavesDome = false;
                 while (!primaryAxisMonitor.IsReady || !secondaryAxisMonitor.IsReady)
@@ -1776,30 +1784,26 @@ namespace ASCOM.Wise40
                     Thread.Sleep(500);
                 }
                 #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: setting Tracking = true ...");
+                #endregion
+                Tracking = true;
+                #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: starting InternalSlewToCoordinatesSync ...");
                 #endregion
                 InternalSlewToCoordinatesSync(targetRa, targetDec);
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: after InternalSlewToCoordinatesSync ...");
                 #endregion
-
-                do
-                {
-                    #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: waiting for Telescope to stop Slewing ...");
-                    #endregion
-                    Thread.Sleep(1000);
-                } while (activityMonitor.InProgress(ActivityMonitor.ActivityType.TelescopeSlew));
             }
             catch(Exception ex)
             {
                 Parking = false;
+                Tracking = false;
                 EnslavesDome = wasEnslavingDome;
-                Tracking = wasTracking;
                 activityMonitor.EndActivity(ActivityMonitor.ActivityType.Parking, new Activity.Park.EndParams()
                 {
                     endState = Activity.State.Failed,
-                    endReason = $"Exception: \"{ex}\".",
+                    endReason = $"Parking failed due to exception: \"{ex}\".",
                     end = new Activity.TelescopeSlew.Coords
                     {
                         ra = RightAscension,
@@ -1813,21 +1817,6 @@ namespace ASCOM.Wise40
                 #endregion
                 if (ShuttingDown)
                     throw;
-                Parking = false;
-                Tracking = false;
-                activityMonitor.EndActivity(ActivityMonitor.ActivityType.Parking, new Activity.Park.EndParams()
-                {
-                    endState = Activity.State.Failed,
-                    endReason = $"Parking failed due to Exception: {ex} at {ex.StackTrace}",
-                    end = new Activity.TelescopeSlew.Coords
-                    {
-                        ra = RightAscension,
-                        dec = Declination,
-                    },
-                    domeAz = WiseDome.Instance.Azimuth.Degrees,
-                    shutterPercent = WiseDome.Instance.wisedomeshutter.PercentOpen,
-                });
-                EnslavesDome = wasEnslavingDome;
                 return;
             }
             #region debug
@@ -1836,6 +1825,7 @@ namespace ASCOM.Wise40
             AtPark = true;
             Parking = false;
             Tracking = false;
+            EnslavesDome = wasEnslavingDome;
             activityMonitor.EndActivity(ActivityMonitor.ActivityType.Parking, new Activity.Park.EndParams()
             {
                 endState = Activity.State.Succeeded,
@@ -1848,7 +1838,6 @@ namespace ASCOM.Wise40
                 domeAz = WiseDome.Instance.Azimuth.Degrees,
                 shutterPercent = WiseDome.Instance.wisedomeshutter.PercentOpen,
             });
-            EnslavesDome = wasEnslavingDome;
         }
 
         public void ParkFromGui(bool parkDome)
@@ -1869,18 +1858,21 @@ namespace ASCOM.Wise40
 
         private void InternalSlewToCoordinatesSync(Angle RightAscension, Angle Declination)
         {
-            string op = $"InternalSlewToCoordinatesSync: ({RightAscension.ToNiceString()}, {Declination.ToNiceString()})";
+            Angle ha = RAtoHA(RightAscension);
+            string op = $"InternalSlewToCoordinatesSync: ({RightAscension.ToNiceString()} [{ha.ToNiceString()}], {Declination.ToNiceString()})";
 
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op} called");
             #endregion debug
             try
             {
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, $"InternalSlewToCoordinatesSync: telescopeCT: #{telescopeCT.GetHashCode()}");
-                #endregion
+                endOfAsyncSlewEvent = new ManualResetEvent(false);
 
-                Task.Run(() => DoSlewToCoordinatesAsync(RightAscension, Declination, op), telescopeCT);
+                Task.Run(() =>
+                {
+                    DoSlewToCoordinatesAsync(RightAscension, Declination, op);
+                    Thread.Sleep(500);
+                }, telescopeCT);
             }
             catch (AggregateException ae)
             {
@@ -1888,18 +1880,22 @@ namespace ASCOM.Wise40
                 {
                     #region debug
                     debugger.WriteLine((Debugger.DebugLevel)Debugger.DebugLevel.DebugExceptions,
-                        $"InternalSlewToCoordinatesSync: Caught \"{ex.Message}\" at\n{ex.StackTrace}");
+                        $"{op}: Caught \"{ex.Message}\" at\n{ex.StackTrace}");
                     #endregion
                     return false;
                 }));
             }
 
-            Thread.Sleep(200);
-            while (slewers.Count > 0)
-                Thread.Sleep(200);
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "all slewers done");
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: waiting for endOfAsyncSlewEvent");
             #endregion
+            endOfAsyncSlewEvent.WaitOne();
+
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: received endOfAsyncSlewEvent");
+            #endregion
+            endOfAsyncSlewEvent.Dispose();
+            endOfAsyncSlewEvent = null;
         }
 
         private enum ScopeSlewerStatus { Undefined, CloseEnough, ChangedDirection, Canceled, Failed, Timedout };
@@ -2358,9 +2354,17 @@ namespace ASCOM.Wise40
         private void DoSlewToCoordinatesAsync(Angle targetRightAscension, Angle targetDeclination, string reason)
 #pragma warning restore RCS1047 // Non-asynchronous method name should not end with 'Async'.
         {
+            string op = $"DoSlewToCoordinatesAsync({targetRightAscension.ToNiceString()}, {targetDeclination.ToNiceString()}, \"{reason}\")";
+
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: Before CheckCoordinateSanity.");
+            #endregion
             CheckCoordinateSanity(Angle.AngleType.RA, targetRightAscension.Hours, reason);
             CheckCoordinateSanity(Angle.AngleType.Dec, targetDeclination.Degrees, reason);
             // Check coordinates safety ???
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: After CheckCoordinateSanity.");
+            #endregion
 
             Slewers.Clear();
             readyToSlewFlags.Reset();
@@ -2384,6 +2388,9 @@ namespace ASCOM.Wise40
             if (! EnoughDistanceToMove(TelescopeAxes.axisPrimary, raDistance.angle, Const.rateGuide) &&
                 ! EnoughDistanceToMove(TelescopeAxes.axisSecondary, decDistance.angle, Const.rateGuide))
             {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: Too short.");
+                #endregion
                 activityMonitor.EndActivity(ActivityMonitor.ActivityType.TelescopeSlew, new Activity.TelescopeSlew.EndParams
                     {
                         endState = Activity.State.Ignored,
@@ -2394,6 +2401,14 @@ namespace ASCOM.Wise40
                             dec = Declination,
                         },
                     });
+
+                if (WiseTele.endOfAsyncSlewEvent != null)
+                {
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: Too short, generating endOfAsyncSlewEvent.");
+                    #endregion
+                    endOfAsyncSlewEvent.Set();
+                }
                 return;
             }
 
@@ -2416,26 +2431,32 @@ namespace ASCOM.Wise40
                         Angle angle;
                         if (slewerType == Slewers.Type.Ra)
                         {
-                            axis = TelescopeAxes.axisPrimary; angle = targetRightAscension;
+                            axis = TelescopeAxes.axisPrimary;
+                            angle = targetRightAscension;
                         }
                         else
                         {
-                            axis = TelescopeAxes.axisSecondary; angle = targetDeclination;
+                            axis = TelescopeAxes.axisSecondary;
+                            angle = targetDeclination;
                         }
 
                         slewers.Add(slewer);
-                        slewer.task = Task.Run(() => ScopeAxisSlewer(axis, angle), telescopeCT).ContinueWith((slewerTask) =>
+                        #region debug
+                        debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: Running slewer \"{slewer.type}\" ...");
+                        #endregion
+                        slewer.task = Task.Run(() => ScopeAxisSlewer(axis, angle), telescopeCT).
+                            ContinueWith((slewerTask) =>
                         {
                             #region debug
                             debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
-                                $"_doSlewToCoordinatesAsync: Slewer \"{slewer.type}\" completed with status: {slewerTask.Status}");
+                                $"{op}: Slewer \"{slewer.type}\" completed with status: {slewerTask.Status}");
                             #endregion
                             slewers.Delete(slewerType);
 
                             if (slewerTask.Status == TaskStatus.Canceled)
                             {
                                 Exceptor.Throw<OperationCanceledException>(
-                                    $"DoSlewToCoordinatesAsync({targetRightAscension}, {targetDeclination})",
+                                    $"{op}",
                                     $"Slewer \"{slewer.type}\" Canceled");
                             }
                         }, TaskContinuationOptions.ExecuteSynchronously);
@@ -2444,7 +2465,7 @@ namespace ASCOM.Wise40
                     {
                         #region debug
                         debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
-                            $"_doSlewToCoordinatesAsync: Slewer \"{slewer.type}\": Caught: {(ex.InnerException ?? ex).Message}" +
+                            $"{op}: Slewer \"{slewer.type}\": Caught: {(ex.InnerException ?? ex).Message}" +
                             $"at\n{(ex.InnerException ?? ex).StackTrace}");
                         #endregion
                         if (ShuttingDown)
@@ -2453,7 +2474,7 @@ namespace ASCOM.Wise40
                     catch (Exception ex)
                     {
                         #region debug
-                        debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"_doSlewToCoordinatesAsync: Failed to run slewer {slewerType}: {ex.Message} at\n{ex.StackTrace}");
+                        debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: Failed to run slewer {slewerType}: {ex.Message} at\n{ex.StackTrace}");
                         #endregion
                         slewers.Delete(slewerType);
                     }
@@ -2464,8 +2485,7 @@ namespace ASCOM.Wise40
                 ae.Handle((Func<Exception, bool>)((ex) =>
                 {
                     #region debug
-                    debugger.WriteLine((Debugger.DebugLevel)Debugger.DebugLevel.DebugExceptions,
-                        $"_doSlewToCoordinatesAsync: Caught {ex.Message} at\n{ex.StackTrace}");
+                    debugger.WriteLine(Debugger.DebugLevel.DebugExceptions, $"{op}: Caught {ex.Message} at\n{ex.StackTrace}");
                     #endregion
                     return false;
                 }));
@@ -2589,11 +2609,11 @@ namespace ASCOM.Wise40
             //        debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
             //            "southScooter completed with status: {0}", scooter.Status.ToString());
             //        #endregion
-            //        _doSlewToCoordinatesAsync(RightAscension, Declination);
+            //        DoSlewToCoordinatesAsync(RightAscension, Declination);
             //    }, TaskContinuationOptions.ExecuteSynchronously);
             //}
             //else
-                DoSlewToCoordinatesAsync(RightAscension, Declination, op);
+            DoSlewToCoordinatesAsync(RightAscension, Declination, op);
         }
 
         //public void ScootSouth()
