@@ -1043,6 +1043,8 @@ namespace ASCOM.Wise40
 
         public void CloseShutter(string reason)
         {
+            string op = $"CloseShutter(reason: {reason})";
+
             if (DirectionMotorsAreActive)
             {
                 if (WiseSite.OperationalMode == WiseSite.OpMode.ACP)
@@ -1051,7 +1053,7 @@ namespace ASCOM.Wise40
                 }
                 else
                 {
-                    Exceptor.Throw<InvalidOperationException>($"CloseShutter(reason: {reason})", "Cannot close shutter while dome is slewing!");
+                    Exceptor.Throw<InvalidOperationException>($"{op}", "Cannot close shutter while dome is slewing!");
                 }
             }
 
@@ -1061,12 +1063,12 @@ namespace ASCOM.Wise40
 
             if (wisedomeshutter.State == ShutterState.shutterClosing)
             {
-                debugger.WriteLine(Debugger.DebugLevel.DebugShutter, $"CloseShutter(reason: {reason}): Shutter is already closing");
+                debugger.WriteLine(Debugger.DebugLevel.DebugShutter, $"{op}: Shutter is already closing");
                 return;
             }
 
-            wisedomeshutter.Stop($"CloseShutter(reason: {reason}): Stopped before StartClosing");
-            wisedomeshutter.StartClosing($"CloseShutter(reason: {reason})");
+            wisedomeshutter.Stop($"{op}: Stopped before StartClosing");
+            wisedomeshutter.StartClosing($"{op}");
             if (wisedomeshutter.syncVentWithShutter)
                 Vent = false;
         }
