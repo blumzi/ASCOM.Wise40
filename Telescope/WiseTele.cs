@@ -1613,7 +1613,7 @@ namespace ASCOM.Wise40
             if (AtPark)
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "doShutdown: setting AtPark to false ...");
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: setting AtPark to false ...");
                 #endregion
                 AtPark = false; // Don't call Unpark(), it throws exception if while ShuttingDown
             }
@@ -1635,7 +1635,7 @@ namespace ASCOM.Wise40
                 do
                 {
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "doShutdown: waiting for !Slewing ...");
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: waiting for !Slewing ...");
                     #endregion
                     Thread.Sleep(1000);
                 } while (Slewing);
@@ -1717,7 +1717,7 @@ namespace ASCOM.Wise40
             }
 
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "doShutdown: ending activity ShuttingDown ...");
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: ending activity ShuttingDown ...");
             #endregion
             activityMonitor.EndActivity(ActivityMonitor.ActivityType.ShuttingDown,
             new Activity.Shutdown.GenericEndParams()
