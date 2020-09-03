@@ -660,6 +660,7 @@ namespace ASCOM.Wise40SafeToOperate
                     else
                     {
                         UnsetState(State.Stabilizing);
+                        _endOfStabilization = DateTime.MinValue;
                         prolong = false;    // don't prolong if just ended stabilization
                     }
                 }
@@ -694,8 +695,7 @@ namespace ASCOM.Wise40SafeToOperate
             _endOfStabilization = DateTime.Now.AddMilliseconds((int)WiseSafeToOperate._stabilizationPeriod.TotalMilliseconds);
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugSafety,
-                "ExtendUnsafety: Sensor ({0}) will stabilize at {1} (reason: {2})",
-                WiseName, _endOfStabilization.ToUniversalTime().ToShortTimeString(), reason);
+                $"ExtendUnsafety: Sensor ({WiseName}) will stabilize at {_endOfStabilization.ToUniversalTime().ToShortTimeString()} (reason: {reason})");
             #endregion
         }
 
@@ -725,7 +725,7 @@ namespace ASCOM.Wise40SafeToOperate
                 {
                     ret = true;
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Sensor ({0}), isSafe: {1} (not enabled)", WiseName, ret);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, $"Sensor ({WiseName}), isSafe: {ret} (not enabled)");
                     #endregion
                     return ret;
                 }
@@ -734,9 +734,7 @@ namespace ASCOM.Wise40SafeToOperate
                 {
                     ret = GetReading().Safe;
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety,
-                        "Sensor ({0}), (immediate) isSafe: {1}",
-                        WiseName, ret);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, $"Sensor ({WiseName}), (immediate) isSafe: {ret}");
                     #endregion
                 }
                 else
@@ -744,8 +742,7 @@ namespace ASCOM.Wise40SafeToOperate
                     ret = StateIsSet(State.Safe);
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugSafety,
-                        "Sensor ({0}), (cumulative) isSafe: {1} (state: {2})",
-                        WiseName, ret, _state.ToString());
+                        $"Sensor ({WiseName}), (cumulative) isSafe: {ret} (state: {_state})");
                     #endregion
                 }
                 return ret;
@@ -846,8 +843,8 @@ namespace ASCOM.Wise40SafeToOperate
                 }
             }
 
-            TimeSpan age = DateTime.Now.Subtract(saved.TimeOfSave);
             DateTime now = DateTime.Now;
+            TimeSpan age = now.Subtract(saved.TimeOfSave);
             if (age <= TimeSpan.FromMinutes(5))
             {
                 _state = saved.State;
