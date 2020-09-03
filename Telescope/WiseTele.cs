@@ -912,7 +912,7 @@ namespace ASCOM.Wise40
                     if (TrackingMotor.IsOff)
                         TrackingMotor.SetOn(Const.rateTrack);
 
-                    primaryAxisMonitor.ResetRASamples();
+                    PrimaryAxisMonitor.ResetRASamples();
                 }
                 else
                 {
@@ -1776,7 +1776,7 @@ namespace ASCOM.Wise40
                 TargetDeclination = targetDec.Degrees;
 
                 EnslavesDome = false;
-                while (!primaryAxisMonitor.IsReady || !secondaryAxisMonitor.IsReady)
+                while (! (primaryAxisMonitor.IsReady && secondaryAxisMonitor.IsReady))
                 {
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: waiting for axis monitors to be ready ...");

@@ -48,6 +48,7 @@ namespace ASCOM.Wise40
         public const int nSamples = 500 / _samplingFrequency;  // a half second's worth of samples
 
         public FixedSizedQueue<AxisPosition> _samples = new FixedSizedQueue<AxisPosition>(nSamples);
+        protected bool _ready = false;
 
         protected static double _maxDeltaRadiansAtSlewRate = 0.0021; // approx. Angle("5d00m00s").Radians / nSamples;
 
@@ -71,7 +72,7 @@ namespace ASCOM.Wise40
 
         public abstract bool IsMoving { get; }
 
-        public abstract bool IsReady { get;  }
+        public abstract bool IsReady { get; set; }
 
         public double DeltaT
         {
@@ -222,7 +223,7 @@ namespace ASCOM.Wise40
 
         private readonly WiseHAEncoder _encoder = WiseTele.Instance.HAEncoder;
 
-        public void ResetRASamples()
+        public static void ResetRASamples()
         {
             _raDeltas = new FixedSizedQueue<double>(nSamples);
         }
@@ -264,6 +265,14 @@ namespace ASCOM.Wise40
             _rightAscension = wisesite.LocalSiderealTime.Hours - _hourAngle;
             _samples.Enqueue(_currPosition);
 
+            if (! IsReady && (_samples.ToArray().Length == _samples.MaxSize))
+            {
+                #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, $"{WiseName}: became ready.");
+                #endregion
+                IsReady = true;
+            }
+
             double raDelta = Math.Abs(_rightAscension - _prevRightAscension);
             double haDelta = Math.Abs(_hourAngle - _prevHourAngle);
             _raDeltas.Enqueue(raDelta);
@@ -271,11 +280,9 @@ namespace ASCOM.Wise40
 
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                "{0}:SampleAxisMovement: _currPosition: {1} ({2}), _prevPosition: {3} ({4}), raDelta: {5}, haDelta: {6}, active motors: {7}",
-                WiseName,
-                _currPosition.radians, _currPosition.predicted ? "PREDICTED" : "REAL",
-                _prevPosition.radians, _prevPosition.predicted ? "PREDICTED" : "REAL",
-                raDelta, haDelta, ActiveMotors(_axis));
+                $"{WiseName}:SampleAxisMovement: _currPosition: {_currPosition.radians} ({(_currPosition.predicted ? "PREDICTED" : "REAL")}), " +
+                $"_prevPosition: {_prevPosition.radians} ({(_prevPosition.predicted ? "PREDICTED" : "REAL")})," +
+                $"raDelta: {raDelta}, haDelta: {haDelta}, active motors: {ActiveMotors(_axis)}");
             #endregion
 
             _prevPosition.radians = _currPosition.radians;
@@ -303,10 +310,12 @@ namespace ASCOM.Wise40
         {
             get
             {
-                bool tracking = wisetele.Tracking;
-                double[] arr = (tracking) ? _raDeltas.ToArray() : _haDeltas.ToArray();
+                return _ready;
+            }
 
-                return arr.Length == ((tracking) ? _raDeltas.MaxSize : _haDeltas.MaxSize);
+            set
+            {
+                _ready = value;
             }
         }
 
@@ -314,6 +323,14 @@ namespace ASCOM.Wise40
         {
             get
             {
+                if (!IsReady)
+                {
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, $"{WiseName}:IsMoving: No ready.)");
+                    #endregion
+                    return false;
+                }
+
                 double max = double.MinValue;
                 bool tracking = wisetele.Tracking;
                 double[] arr;
@@ -322,27 +339,11 @@ namespace ASCOM.Wise40
                 if (tracking)
                 {
                     arr = _raDeltas.ToArray();
-                    if (arr.Length < _raDeltas.MaxSize)
-                    {
-                        #region debug
-                        debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                            $"{WiseName}:IsMoving: Not enough samples ({arr.Length} < {_raDeltas.MaxSize})");
-                        #endregion
-                        return false;    // not enough samples
-                    }
                     epsilon = raEpsilon;
                 }
                 else
                 {
                     arr = _haDeltas.ToArray();
-                    if (arr.Length < _haDeltas.MaxSize)
-                    {
-                        #region debug
-                        debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                            $"{WiseName}:IsMoving: Not enough samples ({arr.Length} < {_haDeltas.MaxSize})");
-                        #endregion
-                        return false;    // not enough samples
-                    }
                     epsilon = haEpsilon;
                 }
 
@@ -477,6 +478,14 @@ namespace ASCOM.Wise40
             _declination = Angle.FromRadians(rads).Degrees;
             _samples.Enqueue(_currPosition);
 
+            if (!IsReady && (_samples.ToArray().Length == _samples.MaxSize))
+            {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, $"{WiseName}: became ready.");
+                #endregion
+                IsReady = true;
+            }
+
             double delta = Math.Abs(_declination - _prevDeclination);
             _decDeltas.Enqueue(delta);
 
@@ -493,9 +502,12 @@ namespace ASCOM.Wise40
         {
             get
             {
-                double[] arr = _decDeltas.ToArray();
+                return _ready;
+            }
 
-                return arr.Length == _samples.MaxSize;
+            set
+            {
+                _ready = value;
             }
         }
 
@@ -503,17 +515,15 @@ namespace ASCOM.Wise40
         {
             get
             {
-
-                double[] arr = _decDeltas.ToArray();
-
                 if (! IsReady)
                 {
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                        $"{WiseName}:IsMoving: Not enough samples: ({arr.Length} < {_samples.MaxSize})");
+                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, $"{WiseName}:IsMoving: Not ready.");
                     #endregion
                     return false;    // not enough samples
                 }
+
+                double[] arr = _decDeltas.ToArray();
 
                 foreach (double d in arr)
                     if (d != 0.0)

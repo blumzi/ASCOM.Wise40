@@ -9,10 +9,18 @@ namespace ASCOM.Wise40.Common
 {
     public class FixedSizedQueue<T>
     {
-        private object _lock = new object();
-        ConcurrentQueue<T> queue;
+        private readonly object _lock = new object();
+        private ConcurrentQueue<T> queue;
 
         public int MaxSize { get; set; }
+
+        public bool IsEmpty
+        {
+            get
+            {
+                return queue == null || queue.IsEmpty;
+            }
+        }
 
         public FixedSizedQueue(int maxSize, IEnumerable<T> items = null)
         {
@@ -40,15 +48,13 @@ namespace ASCOM.Wise40.Common
             {
                 lock (_lock)
                 {
-                    T overflow;
                     while (queue.Count > MaxSize)
                     {
-                        queue.TryDequeue(out overflow);
+                        queue.TryDequeue(out T _);
                     }
                 }
             }
         }
-
 
         /// <summary>
         /// returns the current snapshot of the queue
