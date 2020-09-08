@@ -1665,11 +1665,14 @@ namespace ASCOM.Wise40
                 do
                 {
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: waiting for !domeSlaveDriver.Slewing ...");
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: waiting for Slewing to end ...");
                     #endregion
                     Thread.Sleep(1000);
                 } while (domeSlaveDriver.Slewing);
             }
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: Not Slewing.");
+            #endregion
 
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: setting Tracking to false ...");
@@ -1691,6 +1694,9 @@ namespace ASCOM.Wise40
                     Thread.Sleep(1000);
                 }
             }
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: Shutter is closed.");
+            #endregion
 
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: calling Park() ...");
@@ -1729,7 +1735,7 @@ namespace ASCOM.Wise40
 
         public void Shutdown(string reason)
         {
-            Task.Run(() => DoShutdown(reason));
+            Task.Run(() => DoShutdown(reason), telescopeCT);
         }
 
         //
@@ -1819,7 +1825,18 @@ namespace ASCOM.Wise40
                     throw;
                 return;
             }
+
+            while (Slewing)
+            {
+                // The dome (not enslaved at this time) may be still moving
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: Waiting for Slewing to end ...");
+                #endregion
+                Thread.Sleep(5000);
+            }
+
             #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: Not Slewing.");
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: all done, setting AtPark == true");
             #endregion
             AtPark = true;
@@ -1868,19 +1885,22 @@ namespace ASCOM.Wise40
             {
                 endOfAsyncSlewEvent = new ManualResetEvent(false);
 
-                Task.Run(() =>
+                Task t = Task.Run(() =>
                 {
                     DoSlewToCoordinatesAsync(RightAscension, Declination, op);
                     Thread.Sleep(500);
                 }, telescopeCT);
+                #region debug
+                Thread.Sleep(100);
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: slewing task status: {t.Status}");
+                #endregion
             }
             catch (AggregateException ae)
             {
                 ae.Handle((Func<Exception, bool>)((ex) =>
                 {
                     #region debug
-                    debugger.WriteLine((Debugger.DebugLevel)Debugger.DebugLevel.DebugExceptions,
-                        $"{op}: Caught \"{ex.Message}\" at\n{ex.StackTrace}");
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: Caught \"{ex.Message}\" at\n{ex.StackTrace}");
                     #endregion
                     return false;
                 }));
@@ -2354,7 +2374,7 @@ namespace ASCOM.Wise40
         private void DoSlewToCoordinatesAsync(Angle targetRightAscension, Angle targetDeclination, string reason)
 #pragma warning restore RCS1047 // Non-asynchronous method name should not end with 'Async'.
         {
-            string op = $"DoSlewToCoordinatesAsync({targetRightAscension.ToNiceString()}, {targetDeclination.ToNiceString()}, \"{reason}\")";
+            string op = $"DoSlewToCoordinatesAsync({targetRightAscension.ToNiceString()}, {targetDeclination.ToNiceString()}, reason: {reason})";
 
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: Before CheckCoordinateSanity.");
