@@ -483,7 +483,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugLogic, msg);
             if (!debugOnly)
             {
-                LogToGUI($"{DateTime.UtcNow:H:mm:ss UT} - {msg}");
+                LogToGUI($"{DateTime.UtcNow:HH:mm:ss UT} - {msg}");
                 _lastLog = DateTime.UtcNow;
             }
         }
