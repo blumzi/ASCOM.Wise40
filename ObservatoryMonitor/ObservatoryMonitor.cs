@@ -585,10 +585,14 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             #region Initiate shutdown
             if (wisetelescope.Action("shutdown", reason) == "ok")
             {
+                string indent = "";
+
                 Log("Initiating Wise40 shutdown. Reason(s):");
                 foreach(string r in reason.Split(Const.recordSeparator[0]).ToList<string>())
                 {
-                    Log($"    {r}");
+                    Log($"    {indent}{r}");
+                    if (r.StartsWith("HumanIntervention"))
+                        indent = " ";
                 }
                 Angle ra = wisesite.LocalSiderealTime;
                 Angle dec = new Angle(66, Angle.AngleType.Dec);
