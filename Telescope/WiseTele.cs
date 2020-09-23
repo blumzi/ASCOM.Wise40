@@ -720,15 +720,17 @@ namespace ASCOM.Wise40
 
         public void AbortSlew(string reason)
         {
+            string op = $"AbortSlew(reason: {reason})";
+
             #region debug
-            debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, $"AbortSlew: ({reason}) started.");
+            debugger.WriteLine(Common.Debugger.DebugLevel.DebugLogic, $"{op}: started.");
             #endregion debug
 
-            activityMonitor.StayActive("AbortSlew");
+            activityMonitor.StayActive(op);
             if (AtPark)
-                Exceptor.Throw<InvalidOperationException>("AbortSlew", "Cannot AbortSlew while AtPark");
+                Exceptor.Throw<InvalidOperationException>(op, "Cannot AbortSlew while AtPark");
 
-            Stop($"AbortSlew: ({reason})");
+            Stop(op);
 
             try
             {
@@ -744,8 +746,19 @@ namespace ASCOM.Wise40
                     });
             }
             catch { }
+
+            if (!telescopeCT.IsCancellationRequested)
+            {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                    $"{op} - Canceling telescopeCTS: #{telescopeCTS.GetHashCode()}");
+                #endregion
+                telescopeCTS.Cancel();
+                telescopeCTS.Dispose();
+            }
+
             #region debug
-            debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, $"AbortSlew: ({reason}) done.");
+            debugger.WriteLine(Common.Debugger.DebugLevel.DebugLogic, $"{op}: done.");
             #endregion debug
         }
 
@@ -949,38 +962,19 @@ namespace ASCOM.Wise40
         /// </summary>
         public void Stop(string reason)
         {
+            string op = $"WiseTele:Stop (reason: {reason})";
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"WiseTele:Stop ({reason}) - started");
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: started");
             #endregion
 
             if (Slewing)
             {
-                try
-                {
-                    #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseTele:Stop - Canceling telescopeCT: #{0}", telescopeCT.GetHashCode());
-                    #endregion
-                    telescopeCTS.Cancel();
-                    telescopeCTS = new CancellationTokenSource();
-                }
-                catch (AggregateException ax)
-                {
-                    ax.Handle((Func<Exception, bool>)((ex) =>
-                    {
-                        #region debug
-                        debugger.WriteLine((Debugger.DebugLevel)Debugger.DebugLevel.DebugExceptions,
-                            "Stop: telescope slewing cancellation got {0}", ex.Message);
-                        #endregion debug
-                        return ex is ObjectDisposedException;
-                    }));
-                }
-
                 if (EnslavesDome)
                 {
                     try
                     {
                         #region debug
-                        debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseTele:Stop - Calling DomeStopper");
+                        debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: Calling DomeStopper");
                         #endregion
                         DomeStopper();
                     }
@@ -990,7 +984,7 @@ namespace ASCOM.Wise40
                         {
                             #region debug
                             debugger.WriteLine((Debugger.DebugLevel)Debugger.DebugLevel.DebugExceptions,
-                                "Stop: dome slewing cancellation got {0}", ex.Message);
+                                $"{op}: dome slewing cancellation caught \"{ex.Message}\" at\n{ex.StackTrace}");
                             #endregion debug
                             return ex is ObjectDisposedException;
                         }));
@@ -1002,12 +996,15 @@ namespace ASCOM.Wise40
                 if (motor.IsOn)
                 {
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseTele:Stop - Stopping {0}", motor.WiseName);
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: Stopping {motor.WiseName}");
                     #endregion
                     motor.SetOff();
                 }
 
             safetyMonitorTimer.DisableIfNotNeeded();
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: done.");
+            #endregion
         }
 
         public void AbortPulseGuiding()
@@ -1017,7 +1014,9 @@ namespace ASCOM.Wise40
 
         public void FullStop()
         {
-            Stop("Action(\"full-stop\")");
+            if (Slewing)
+                AbortSlew(reason: "Action(\"full-stop\")");
+
             if (IsPulseGuiding)
                 AbortPulseGuiding();
             Tracking = false;
@@ -1106,14 +1105,16 @@ namespace ASCOM.Wise40
 
             set
             {
-                Exceptor.Throw<PropertyNotImplementedException>("DeclinationRate", $"value: {value}", true);
+                Exceptor.Throw<PropertyNotImplementedException>("DeclinationRate", $"value: {value}", accessorIsSet: true);
             }
         }
 
         public void HandpadMoveAxis(TelescopeAxes Axis, double Rate)
         {
+            string op = $"HandpadMoveAxis({Axis}, {RateName(Rate)})";
+
             #region debug
-            debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, $"HandpadMoveAxis({Axis}, {Rate})");
+            debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, $"{op}: started");
             #endregion debug
 
             Const.AxisDirection direction = (Rate == Const.rateStopped) ? Const.AxisDirection.None :
@@ -1174,14 +1175,15 @@ namespace ASCOM.Wise40
 
         public void MoveAxis(TelescopeAxes Axis, double Rate)
         {
+            string op = $"MoveAxis({Axis}, {RateName(Rate)})";
+
             #region debug
-            debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, $"MoveAxis({Axis}, {Rate})");
+            debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, $"{op}: started");
             #endregion debug
 
             if (!wisesafetooperate.IsSafeWithoutCheckingForShutdown() && !ShuttingDown && !BypassCoordinatesSafety)
             {
-                Exceptor.Throw<InvalidOperationException>($"MoveAxis({Axis}, {RateName(Rate)})",
-                    string.Join(", ", wisesafetooperate.UnsafeReasonsList()));
+                Exceptor.Throw<InvalidOperationException>(op, string.Join(", ", wisesafetooperate.UnsafeReasonsList()));
             }
 
             Const.AxisDirection direction = (Rate == Const.rateStopped) ? Const.AxisDirection.None :
@@ -1202,7 +1204,7 @@ namespace ASCOM.Wise40
                 {
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                        "StopAxis({0}):  {1} was on, stopping it.", axis, m.WiseName);
+                        $"StopAxis({axis}):  {m.WiseName} was on, stopping it.");
                     #endregion debug
                     m.SetOff();
                 }
@@ -1239,20 +1241,22 @@ namespace ASCOM.Wise40
             Const.AxisDirection direction = Const.AxisDirection.None,
             bool stopTracking = false)
         {
+            string sign = Rate < 0 ? "-" : "";
+            string op = $"InternalMoveAxis({thisAxis}, {sign}{RateName(Math.Abs(Rate))}, {direction})";
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, $"InternalMoveAxis({thisAxis}, {RateName(Rate)}): called");
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, $"{op}: started");
             #endregion debug
 
             if (thisAxis == TelescopeAxes.axisTertiary)
-                Exceptor.Throw<InvalidValueException>($"InternalMoveAxis({thisAxis})", "This telescope cannot move in axisTertiary");
+                Exceptor.Throw<InvalidValueException>(op, "This telescope cannot move in axisTertiary");
 
             if (AtPark)
             {
-                Exceptor.Throw<InvalidValueException>($"InternalMoveAxis({thisAxis})", "Cannot MoveAxis while AtPark");
+                Exceptor.Throw<InvalidValueException>(op, "Cannot MoveAxis while AtPark");
             }
 
             if (Rate != Const.rateStopped && !wisesafetooperate.IsSafe && !ShuttingDown)
-                Exceptor.Throw<InvalidValueException>($"InternalMoveAxis({thisAxis})", string.Join(", ", wisesafetooperate.UnsafeReasonsList()));
+                Exceptor.Throw<InvalidValueException>(op, string.Join(", ", wisesafetooperate.UnsafeReasonsList()));
 
             if (Rate == Const.rateStopped)
             {
@@ -1260,7 +1264,7 @@ namespace ASCOM.Wise40
                 safetyMonitorTimer.DisableIfNotNeeded();
                 _trackingRestorer.RemoveMover();
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, $"InternalMoveAxis({thisAxis}, {RateName(Rate)}): done.");
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, $"{op}: done.");
                 #endregion
                 return true;
             }
@@ -1272,7 +1276,7 @@ namespace ASCOM.Wise40
             if (!readyToSlewFlags.AxisCanMoveAtRate(thisAxis, absRate))
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, $"InternalMoveAxis({thisAxis}, {RateName(absRate)}) not BOTH axes are ready to move");
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, $"{op}: not BOTH axes are ready to move");
                 #endregion
                 return false;
             }
@@ -1286,7 +1290,7 @@ namespace ASCOM.Wise40
             {
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugExceptions,
-                    $"Don't know how to InternalMoveAxis({thisAxis}, {RateName(absRate)}) (no mover) ({axisDirectionName[thisAxis][direction]}) [{e.Message}]");
+                    $"Don't know how to {op}: (no mover) ({axisDirectionName[thisAxis][direction]}) [{e.Message}]");
                 #endregion debug
                 return false;
             }
@@ -1318,7 +1322,7 @@ namespace ASCOM.Wise40
             }
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                $"InternalMoveAxis({thisAxis}, {RateName(absRate)}): currPosition: {currPosition}, started motors: {string.Join(", ", startedMotors)}");
+                $"{op}: currPosition: {currPosition}, started motors: {string.Join(", ", startedMotors)}");
             #endregion debug
 
             if (! BypassCoordinatesSafety)
@@ -1333,7 +1337,7 @@ namespace ASCOM.Wise40
             {
                 bool ret = Pulsing.Instance.IsPulseGuiding;
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "IsPulseGuiding: {0}", ret);
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"IsPulseGuiding: {ret}");
                 #endregion
                 return ret;
             }
@@ -1631,7 +1635,7 @@ namespace ASCOM.Wise40
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: calling AbortSlew() ...");
                 #endregion
-                AbortSlew($"{op}");
+                AbortSlew(op);
                 do
                 {
                     #region debug
@@ -1884,6 +1888,16 @@ namespace ASCOM.Wise40
             try
             {
                 endOfAsyncSlewEvent = new ManualResetEvent(false);
+
+                if (telescopeCT.IsCancellationRequested)
+                {
+                    telescopeCTS = new CancellationTokenSource();
+                    telescopeCT = telescopeCTS.Token;
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                        $"{op}: New telescopeCTS (#{telescopeCTS.GetHashCode()}), telescopeCT: (#{telescopeCT.GetHashCode()})");
+                    #endregion
+                }
 
                 Task t = Task.Run(() =>
                 {
@@ -2439,8 +2453,15 @@ namespace ASCOM.Wise40
                     DomeSlewer(targetRightAscension, targetDeclination, "Follow telescope to new target");
                 }
 
-                if (!ShuttingDown)
+                //if (telescopeCT.IsCancellationRequested)
+                //{
+                    telescopeCTS = new CancellationTokenSource();
                     telescopeCT = telescopeCTS.Token;
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                        $"{op}: New telescopeCTS (#{telescopeCTS.GetHashCode()}), telescopeCT: (#{telescopeCT.GetHashCode()})");
+                    #endregion
+                //}
 
                 foreach (Slewers.Type slewerType in new List<Slewers.Type>() { Slewers.Type.Ra, Slewers.Type.Dec })
                 {
@@ -3235,15 +3256,29 @@ namespace ASCOM.Wise40
                     return JsonConvert.SerializeObject(ActivityMonitor.ObservatoryActivities);
 
                 case "shutdown":
+                    telescopeCTS?.Dispose();
+                    telescopeCTS = new CancellationTokenSource();
                     telescopeCT = telescopeCTS.Token;
-                    Task.Run(() => Shutdown(parameter), telescopeCT);
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                        $"Action(\"shutdown\"): New telescopeCTS: {telescopeCTS.GetHashCode()}, telescopeCT: {telescopeCT.GetHashCode()}");
+                    #endregion
+                    try
+                    {
+                        Task.Run(() => Shutdown(parameter), telescopeCT);
+                    }
+                    catch (Exception ex)
+                    {
+                        debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                            $"Action(\"shutdown\"): Caught {ex.Message} at\n{ex.StackTrace}");
+                    }
                     return "ok";
 
                 case "abort-shutdown":
-                    AbortSlew("Action(\"abort-shutdown\"");
+                    AbortSlew("Action(\"abort-shutdown\")");
                     activityMonitor.EndActivity(ActivityMonitor.ActivityType.ShuttingDown, new Activity.GenericEndParams
                     {
-                        endReason = "Action(\"abort-shutdown\"",
+                        endReason = "Action(\"abort-shutdown\")",
                         endState = Activity.State.Aborted,
                     });
                     return "ok";
