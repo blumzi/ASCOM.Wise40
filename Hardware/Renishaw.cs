@@ -14,10 +14,12 @@ namespace ASCOM.Wise40.Hardware
         private static readonly Lazy<Renishaw> lazy = new Lazy<Renishaw>(() => new Renishaw()); // Singleton
         private bool _initialized = false;
         private static readonly Common.Debugger debugger = Common.Debugger.Instance;
-        private PCIe1711 Board;
+        private static PCIe1711 Board;
         private const int BoardNumber = 0;
-        private const int HourAngleModule = 0;
-        private const int DeclinationModule = 1;
+        private const byte CRCPolynom = ((1 << 6) | (1 << 1) | (1 << 0));
+        private enum ChannelMode { BISS = 0, SSI = 1};
+        private enum BissMode { B = 0, C = 1 };
+        private enum EncoderType { HA, Dec };
 
         public static Renishaw Instance
         {
@@ -45,7 +47,6 @@ namespace ASCOM.Wise40.Hardware
                 return;
             }
 
-            int ret = 0;
             Board = PCIe1711.OpenBoard(BoardNumber);
             if (Board == null)
             {
@@ -55,42 +56,73 @@ namespace ASCOM.Wise40.Hardware
                 #endregion
                 return;
             }
-
-            //ret = Board.BissMasterInitSingleCycle(HourAngleModule);
-            if (ret != 0)
-            {
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
-                    $"Renishaw.Init(): Could not initialize HourAngleModule ({HourAngleModule}) as Biss Master: ret = {ret}");
-                #endregion
-                return;
-            }
-
-            //ret = Board.BissMasterInitSingleCycle(DeclinationModule);
-            if (ret != 0)
-            {
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
-                    $"Renishaw.Init(): Could not initialize DeclinationModule ({DeclinationModule}) as Biss Master: ret = {ret}");
-                #endregion
-                return;
-            }
-
             _initialized = true;
         }
 
-        public static ulong HourAngle
+        public static uint HourAngle
         {
             get
             {
-                return 0;
+                return Read(EncoderType.HA);
             }
         }
+
         public static ulong Declination
         {
             get
             {
-                return 0;
+                return Read(EncoderType.Dec);
+            }
+        }
+
+        private static uint Read(EncoderType enc)
+        {
+            {
+                int ret;
+                const int nEncoders = 1;
+                const int nBits = 26;
+
+                byte[] channels = { 0 };
+                byte[] dataLengths = { nBits };
+                byte[] options = { 0 };
+                byte[] polynoms = { CRCPolynom };
+                byte[] inverts = { 1 };
+                byte moduleNumber = (byte)(enc == EncoderType.HA ? 0 : 1);
+
+                ret = Board.BissMasterInitSingleCycle(moduleNbr: moduleNumber,
+                    sensorDataFreqDivisor: 0,
+                    registerDataFreqDivisor: 0,
+                    channel0BISSSSIMode: (byte)ChannelMode.BISS,
+                    channel0BISSMode: (byte)BissMode.C,
+                    channel1BISSSSIMode: 0,
+                    channel1BISSMode: 0,
+                    nbrOfSlave: nEncoders,
+                    channel: channels,
+                    dataLength: dataLengths,
+                    option: options,
+                    CRCPolynom: polynoms,
+                    CRCInvert: inverts);
+
+                if (ret != 0)
+                {
+                    Exceptor.Throw<Hardware.BissMasterException>("BissMasterInitSingleCycle",
+                        $"Cannot initialize BISS for the {enc} encoder (ret: {ret})");
+                }
+
+                ret = Board.BissMasterSingleCycleDataRead(moduleNbr: moduleNumber, slaveIndex: 0, out uint value, out _);
+                if (ret != 0)
+                {
+                    Exceptor.Throw<Hardware.BissMasterException>("BissMasterSingleCycleDataRead",
+                        $"Cannot read BISS from the {enc} encoder (ret: {ret})");
+                }
+
+                ret = Board.BissMasterReleaseSingleCycle(moduleNbr: moduleNumber);
+                {
+                    Exceptor.Throw<Hardware.BissMasterException>("BissMasterReleaseSingleCycle",
+                        $"Cannot release BISS for the {enc} encoder (ret: {ret})");
+                }
+
+                return (uint)(value & ~(1 << nBits));
             }
         }
     }

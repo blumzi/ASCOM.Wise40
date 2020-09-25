@@ -112,6 +112,23 @@ namespace ASCOM.Wise40.Hardware
             {
             }
         }
+
+        public class BissMasterException : Exception
+        {
+            public BissMasterException()
+            {
+            }
+
+            public BissMasterException(string message)
+                : base(message)
+            {
+            }
+
+            public BissMasterException(string message, Exception inner)
+                : base(message, inner)
+            {
+            }
+        }
     }
 
     public class HardwareMetaDigest
