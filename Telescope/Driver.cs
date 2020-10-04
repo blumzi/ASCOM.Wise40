@@ -539,7 +539,7 @@ namespace ASCOM.Wise40 //.Telescope
         public void Park()
         {
             if (wisetele.ShuttingDown)
-                Exceptor.Throw<InvalidOperationException>("Park", "Wise40 is shutting down");
+                Exceptor.Throw<InvalidOperationException>("Park", Const.UnsafeReasons.ShuttingDown);
 
             wisetele.Park();
         }
@@ -547,7 +547,7 @@ namespace ASCOM.Wise40 //.Telescope
         public void PulseGuide(GuideDirections Direction, int Duration)
         {
             if (wisetele.ShuttingDown)
-                Exceptor.Throw<InvalidOperationException>($"PulseGuide({Direction}, {Duration})", "Wise40 is shutting down");
+                Exceptor.Throw<InvalidOperationException>($"PulseGuide({Direction}, {Duration})", Const.UnsafeReasons.ShuttingDown);
 
             wisetele.PulseGuide(Direction, Duration);
         }
@@ -652,7 +652,7 @@ namespace ASCOM.Wise40 //.Telescope
         public void SlewToAltAz(double Azimuth, double Altitude)
         {
             if (wisetele.ShuttingDown)
-                Exceptor.Throw<InvalidOperationException>($"SlewToAltAz({Azimuth}, {Altitude})", "Wise40 is shutting down");
+                Exceptor.Throw<InvalidOperationException>($"SlewToAltAz({Azimuth}, {Altitude})", Const.UnsafeReasons.ShuttingDown);
 
             try
             {
@@ -671,12 +671,12 @@ namespace ASCOM.Wise40 //.Telescope
 #pragma warning restore RCS1047 // Non-asynchronous method name should not end with 'Async'.
         {
             if (wisetele.ShuttingDown)
-                Exceptor.Throw<InvalidOperationException>($"SlewToAltAzAsync({Azimuth}, {Altitude})", "Wise40 is shutting down");
+                Exceptor.Throw<InvalidOperationException>($"SlewToAltAzAsync({Azimuth}, {Altitude})", Const.UnsafeReasons.ShuttingDown);
 
             try
             {
                 _driverInitiatedSlew = true;
-                wisetele.SlewToAltAzAsync(Azimuth, Altitude);
+                wisetele.SlewToAltAzAsync(Azimuth, Altitude, "ASCOM.SlewToAltAzAsync");
             }
             catch
             {
@@ -689,7 +689,7 @@ namespace ASCOM.Wise40 //.Telescope
         public void SlewToCoordinates(double RightAscension, double Declination)
         {
             if (wisetele.ShuttingDown)
-                Exceptor.Throw<InvalidOperationException>($"SlewToCoordinates({RightAscension}, {Declination})", "Wise40 is shutting down");
+                Exceptor.Throw<InvalidOperationException>($"SlewToCoordinates({RightAscension}, {Declination})", Const.UnsafeReasons.ShuttingDown);
 
             try
             {
@@ -708,13 +708,18 @@ namespace ASCOM.Wise40 //.Telescope
         public void SlewToCoordinatesAsync(double RightAscension, double Declination)
 #pragma warning restore RCS1047 // Non-asynchronous method name should not end with 'Async'.
         {
+            string op = "SlewToCoordinatesAsync(" +
+                $"ra: {Angle.RaFromHours(RightAscension).ToNiceString()}, " +
+                $"dec: {Angle.DecFromDegrees(Declination).ToNiceString()}" +
+                ")";
+
             if (wisetele.ShuttingDown)
-                Exceptor.Throw<InvalidOperationException>($"SlewToCoordinatesAsync({RightAscension}, {Declination})", "Wise40 is shutting down");
+                Exceptor.Throw<InvalidOperationException>(op, Const.UnsafeReasons.ShuttingDown);
 
             try
             {
                 _driverInitiatedSlew = true;
-                wisetele.SlewToCoordinatesAsync(RightAscension, Declination);
+                wisetele.SlewToCoordinatesAsync(RightAscension, Declination, op);
             }
             catch
             {
@@ -727,7 +732,7 @@ namespace ASCOM.Wise40 //.Telescope
         public void SlewToTarget()
         {
             if (wisetele.ShuttingDown)
-                Exceptor.Throw<InvalidOperationException>("SlewToTarget", "Wise40 is shutting down");
+                Exceptor.Throw<InvalidOperationException>("SlewToTarget", Const.UnsafeReasons.ShuttingDown);
 
             try
             {
@@ -747,7 +752,7 @@ namespace ASCOM.Wise40 //.Telescope
 #pragma warning restore RCS1047 // Non-asynchronous method name should not end with 'Async'.
         {
             if (wisetele.ShuttingDown)
-                Exceptor.Throw<InvalidOperationException>("SlewToTargetAsync", "Wise40 is shutting down");
+                Exceptor.Throw<InvalidOperationException>("SlewToTargetAsync", Const.UnsafeReasons.ShuttingDown);
 
             try
             {
@@ -782,7 +787,7 @@ namespace ASCOM.Wise40 //.Telescope
 
         public void SyncToTarget()
         {
-            WiseTele.SyncToTarget();
+            wisetele.SyncToTarget();
         }
 
         public double TargetDeclination
@@ -795,7 +800,7 @@ namespace ASCOM.Wise40 //.Telescope
             set
             {
                 if (wisetele.ShuttingDown)
-                    Exceptor.Throw<InvalidOperationException>("TargetDeclination.set", "Wise40 is shutting down");
+                    Exceptor.Throw<InvalidOperationException>("TargetDeclination.set", Const.UnsafeReasons.ShuttingDown);
 
                 wisetele.TargetDeclination = value;
             }
@@ -811,7 +816,7 @@ namespace ASCOM.Wise40 //.Telescope
             set
             {
                 if (wisetele.ShuttingDown)
-                    Exceptor.Throw<InvalidOperationException>("TargetRightAscension.set", "Wise40 is shutting down");
+                    Exceptor.Throw<InvalidOperationException>("TargetRightAscension.set", Const.UnsafeReasons.ShuttingDown);
 
                 wisetele.TargetRightAscension = value;
             }
@@ -827,7 +832,7 @@ namespace ASCOM.Wise40 //.Telescope
             set
             {
                 if (wisetele.ShuttingDown)
-                    Exceptor.Throw<InvalidOperationException>("Tracking.set", "Wise40 is shutting down");
+                    Exceptor.Throw<InvalidOperationException>("Tracking.set", Const.UnsafeReasons.ShuttingDown);
 
                 wisetele.Tracking = value;
             }
@@ -870,7 +875,7 @@ namespace ASCOM.Wise40 //.Telescope
         public void Unpark()
         {
             if (wisetele.ShuttingDown)
-                Exceptor.Throw<InvalidOperationException>("Unpark", "Wise40 is shutting down");
+                Exceptor.Throw<InvalidOperationException>("Unpark", Const.UnsafeReasons.ShuttingDown);
 
             wisetele.Unpark();
         }

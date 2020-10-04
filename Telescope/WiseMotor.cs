@@ -233,14 +233,14 @@ namespace ASCOM.Wise40.Hardware
                 //  Tracking is enabled.
                 //
                 double lstHoursNow = wisesite.LocalSiderealTime.Hours;
-                delta = Angle.FromHours(lstHoursNow - wisetele._lastTrackingLST);
+                delta = Angle.HaFromHours(lstHoursNow - wisetele._lastTrackingLST);
                 wisetele._lastTrackingLST = lstHoursNow;
             }
             else
             {
                 double degrees = currentRate / simulationTimerFrequency;
                 double hours = Angle.Deg2Hours(currentRate) / simulationTimerFrequency;
-                delta = primary ? Angle.FromHours(hours, Angle.AngleType.HA) : Angle.FromDegrees(degrees, Angle.AngleType.Dec);
+                delta = primary ? Angle.RaFromHours(hours) : Angle.DecFromDegrees(degrees);
             }
 
             foreach (IEncoder encoder in encoders)
@@ -251,8 +251,8 @@ namespace ASCOM.Wise40.Hardware
                 lock (primary ? wisetele._primaryEncoderLock : wisetele._secondaryEncoderLock)
                 {
                     before = primary ?
-                        Angle.FromHours(wisetele.HourAngle, Angle.AngleType.HA) :
-                        Angle.FromDegrees(wisetele.Declination, Angle.AngleType.Dec);
+                        Angle.HaFromHours(wisetele.HourAngle) :
+                        Angle.DecFromDegrees(wisetele.Declination);
 
                     if (_direction == Const.AxisDirection.Increasing)
                     {
@@ -282,8 +282,8 @@ namespace ASCOM.Wise40.Hardware
                     }
 
                     after = primary ?
-                        Angle.FromHours(wisetele.HourAngle, Angle.AngleType.HA) :
-                        Angle.FromDegrees(wisetele.Declination, Angle.AngleType.Dec);
+                        Angle.HaFromHours(wisetele.HourAngle) :
+                        Angle.DecFromDegrees(wisetele.Declination);
                 }
 
                 debugger.WriteLine(Debugger.DebugLevel.DebugMotors,

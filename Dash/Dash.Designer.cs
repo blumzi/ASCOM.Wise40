@@ -67,9 +67,6 @@
             this.labelDomeStatus = new System.Windows.Forms.Label();
             this.label17 = new System.Windows.Forms.Label();
             this.groupBoxTelescope = new System.Windows.Forms.GroupBox();
-            this.textBoxRA = new System.Windows.Forms.TextBox();
-            this.textBoxDec = new System.Windows.Forms.TextBox();
-            this.comboBoxGoToMode = new System.Windows.Forms.ComboBox();
             this.buttonTrack = new System.Windows.Forms.Button();
             this.panel1 = new System.Windows.Forms.Panel();
             this.buttonTelescopePark = new System.Windows.Forms.Button();
@@ -111,9 +108,24 @@
             this.labelAzimuthValue = new System.Windows.Forms.Label();
             this.labelDeclination = new System.Windows.Forms.Label();
             this.buttonGoCoord = new System.Windows.Forms.Button();
-            this.labelRA = new System.Windows.Forms.Label();
-            this.labelDec = new System.Windows.Forms.Label();
             this.groupBoxTarget = new System.Windows.Forms.GroupBox();
+            this.tabControlGoTo = new System.Windows.Forms.TabControl();
+            this.tabPageRaDec = new System.Windows.Forms.TabPage();
+            this.label23 = new System.Windows.Forms.Label();
+            this.label24 = new System.Windows.Forms.Label();
+            this.textBoxRaDecRa = new System.Windows.Forms.TextBox();
+            this.textBoxRaDecDec = new System.Windows.Forms.TextBox();
+            this.label10 = new System.Windows.Forms.Label();
+            this.tabPageHaDec = new System.Windows.Forms.TabPage();
+            this.label26 = new System.Windows.Forms.Label();
+            this.label25 = new System.Windows.Forms.Label();
+            this.textBoxHaDecHa = new System.Windows.Forms.TextBox();
+            this.textBoxHaDecDec = new System.Windows.Forms.TextBox();
+            this.tabPageAltAz = new System.Windows.Forms.TabPage();
+            this.label28 = new System.Windows.Forms.Label();
+            this.label27 = new System.Windows.Forms.Label();
+            this.textBoxAltAzAlt = new System.Windows.Forms.TextBox();
+            this.textBoxAltAzAz = new System.Windows.Forms.TextBox();
             this.menuStrip = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -240,6 +252,11 @@
             this.panelDirectionButtons.SuspendLayout();
             this.groupBoxSpeed.SuspendLayout();
             this.tableLayoutPanelCoordinates.SuspendLayout();
+            this.groupBoxTarget.SuspendLayout();
+            this.tabControlGoTo.SuspendLayout();
+            this.tabPageRaDec.SuspendLayout();
+            this.tabPageHaDec.SuspendLayout();
+            this.tabPageAltAz.SuspendLayout();
             this.menuStrip.SuspendLayout();
             this.flowLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxWise)).BeginInit();
@@ -277,7 +294,7 @@
             this.tableLayoutMain.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutMain.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutMain.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutMain.Size = new System.Drawing.Size(942, 757);
+            this.tableLayoutMain.Size = new System.Drawing.Size(942, 787);
             this.tableLayoutMain.TabIndex = 0;
             // 
             // groupBoxFocuser
@@ -299,7 +316,7 @@
             this.groupBoxFocuser.ForeColor = System.Drawing.Color.DarkOrange;
             this.groupBoxFocuser.Location = new System.Drawing.Point(611, 272);
             this.groupBoxFocuser.Name = "groupBoxFocuser";
-            this.groupBoxFocuser.Size = new System.Drawing.Size(328, 192);
+            this.groupBoxFocuser.Size = new System.Drawing.Size(328, 219);
             this.groupBoxFocuser.TabIndex = 32;
             this.groupBoxFocuser.TabStop = false;
             this.groupBoxFocuser.Text = " Focuser ";
@@ -315,7 +332,7 @@
             "  100",
             "  150",
             "  200"});
-            this.comboBoxFocusStep.Location = new System.Drawing.Point(48, 118);
+            this.comboBoxFocusStep.Location = new System.Drawing.Point(48, 133);
             this.comboBoxFocusStep.Margin = new System.Windows.Forms.Padding(0);
             this.comboBoxFocusStep.Name = "comboBoxFocusStep";
             this.comboBoxFocusStep.Size = new System.Drawing.Size(72, 21);
@@ -331,7 +348,7 @@
             this.buttonFocusIncrease.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonFocusIncrease.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonFocusIncrease.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonFocusIncrease.Location = new System.Drawing.Point(126, 117);
+            this.buttonFocusIncrease.Location = new System.Drawing.Point(126, 131);
             this.buttonFocusIncrease.Name = "buttonFocusIncrease";
             this.buttonFocusIncrease.Size = new System.Drawing.Size(24, 23);
             this.buttonFocusIncrease.TabIndex = 32;
@@ -348,7 +365,7 @@
             this.buttonFocusDecrease.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonFocusDecrease.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonFocusDecrease.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonFocusDecrease.Location = new System.Drawing.Point(22, 117);
+            this.buttonFocusDecrease.Location = new System.Drawing.Point(22, 131);
             this.buttonFocusDecrease.Name = "buttonFocusDecrease";
             this.buttonFocusDecrease.Size = new System.Drawing.Size(21, 23);
             this.buttonFocusDecrease.TabIndex = 31;
@@ -362,10 +379,11 @@
             this.labelFocuserStatus.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.labelFocuserStatus.Font = new System.Drawing.Font("Lucida Sans Unicode", 9F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelFocuserStatus.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelFocuserStatus.Location = new System.Drawing.Point(8, 160);
+            this.labelFocuserStatus.Location = new System.Drawing.Point(8, 188);
             this.labelFocuserStatus.Name = "labelFocuserStatus";
             this.labelFocuserStatus.Size = new System.Drawing.Size(312, 20);
             this.labelFocuserStatus.TabIndex = 30;
+            this.labelFocuserStatus.Text = "Focuser status";
             this.labelFocuserStatus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.toolTip.SetToolTip(this.labelFocuserStatus, "Focuser  status");
             // 
@@ -376,7 +394,7 @@
             this.buttonFocusGoto.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonFocusGoto.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonFocusGoto.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonFocusGoto.Location = new System.Drawing.Point(22, 87);
+            this.buttonFocusGoto.Location = new System.Drawing.Point(22, 101);
             this.buttonFocusGoto.Name = "buttonFocusGoto";
             this.buttonFocusGoto.Size = new System.Drawing.Size(50, 23);
             this.buttonFocusGoto.TabIndex = 21;
@@ -390,7 +408,7 @@
             this.label11.AutoSize = true;
             this.label11.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))));
             this.label11.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label11.Location = new System.Drawing.Point(8, 36);
+            this.label11.Location = new System.Drawing.Point(8, 50);
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(81, 18);
             this.label11.TabIndex = 19;
@@ -403,7 +421,7 @@
             this.textBoxFocusGotoPosition.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.textBoxFocusGotoPosition.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.textBoxFocusGotoPosition.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxFocusGotoPosition.Location = new System.Drawing.Point(78, 88);
+            this.textBoxFocusGotoPosition.Location = new System.Drawing.Point(78, 102);
             this.textBoxFocusGotoPosition.Name = "textBoxFocusGotoPosition";
             this.textBoxFocusGotoPosition.Size = new System.Drawing.Size(69, 21);
             this.textBoxFocusGotoPosition.TabIndex = 22;
@@ -417,7 +435,7 @@
             this.buttonFocusDown.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonFocusDown.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonFocusDown.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonFocusDown.Location = new System.Drawing.Point(182, 117);
+            this.buttonFocusDown.Location = new System.Drawing.Point(182, 131);
             this.buttonFocusDown.Name = "buttonFocusDown";
             this.buttonFocusDown.Size = new System.Drawing.Size(50, 23);
             this.buttonFocusDown.TabIndex = 25;
@@ -431,7 +449,7 @@
             this.labelFocusCurrentValue.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.labelFocusCurrentValue.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F);
             this.labelFocusCurrentValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelFocusCurrentValue.Location = new System.Drawing.Point(176, 36);
+            this.labelFocusCurrentValue.Location = new System.Drawing.Point(176, 50);
             this.labelFocusCurrentValue.Name = "labelFocusCurrentValue";
             this.labelFocusCurrentValue.Size = new System.Drawing.Size(54, 18);
             this.labelFocusCurrentValue.TabIndex = 20;
@@ -445,7 +463,7 @@
             this.buttonFocuserStop.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonFocuserStop.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonFocuserStop.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonFocuserStop.Location = new System.Drawing.Point(245, 87);
+            this.buttonFocuserStop.Location = new System.Drawing.Point(245, 101);
             this.buttonFocuserStop.Name = "buttonFocuserStop";
             this.buttonFocuserStop.Size = new System.Drawing.Size(57, 52);
             this.buttonFocuserStop.TabIndex = 28;
@@ -460,7 +478,7 @@
             this.buttonFocusAllDown.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonFocusAllDown.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonFocusAllDown.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonFocusAllDown.Location = new System.Drawing.Point(99, 33);
+            this.buttonFocusAllDown.Location = new System.Drawing.Point(99, 47);
             this.buttonFocusAllDown.Name = "buttonFocusAllDown";
             this.buttonFocusAllDown.Size = new System.Drawing.Size(67, 24);
             this.buttonFocusAllDown.TabIndex = 24;
@@ -475,7 +493,7 @@
             this.buttonFocusUp.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonFocusUp.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonFocusUp.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonFocusUp.Location = new System.Drawing.Point(182, 87);
+            this.buttonFocusUp.Location = new System.Drawing.Point(182, 101);
             this.buttonFocusUp.Name = "buttonFocusUp";
             this.buttonFocusUp.Size = new System.Drawing.Size(50, 23);
             this.buttonFocusUp.TabIndex = 26;
@@ -491,7 +509,7 @@
             this.buttonFocusAllUp.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonFocusAllUp.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonFocusAllUp.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonFocusAllUp.Location = new System.Drawing.Point(240, 33);
+            this.buttonFocusAllUp.Location = new System.Drawing.Point(240, 47);
             this.buttonFocusAllUp.Name = "buttonFocusAllUp";
             this.buttonFocusAllUp.Size = new System.Drawing.Size(62, 24);
             this.buttonFocusAllUp.TabIndex = 23;
@@ -689,10 +707,11 @@
             this.labelDomeShutterStatus.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.labelDomeShutterStatus.Font = new System.Drawing.Font("Lucida Sans Unicode", 9F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelDomeShutterStatus.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelDomeShutterStatus.Location = new System.Drawing.Point(8, 56);
+            this.labelDomeShutterStatus.Location = new System.Drawing.Point(8, 59);
             this.labelDomeShutterStatus.Name = "labelDomeShutterStatus";
             this.labelDomeShutterStatus.Size = new System.Drawing.Size(296, 28);
             this.labelDomeShutterStatus.TabIndex = 19;
+            this.labelDomeShutterStatus.Text = "Shutter status";
             this.labelDomeShutterStatus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.toolTip.SetToolTip(this.labelDomeShutterStatus, resources.GetString("labelDomeShutterStatus.ToolTip"));
             // 
@@ -787,6 +806,7 @@
             this.labelDomeStatus.Name = "labelDomeStatus";
             this.labelDomeStatus.Size = new System.Drawing.Size(312, 20);
             this.labelDomeStatus.TabIndex = 19;
+            this.labelDomeStatus.Text = "Dome status";
             this.labelDomeStatus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.toolTip.SetToolTip(this.labelDomeStatus, "Dome status");
             // 
@@ -804,9 +824,6 @@
             // 
             // groupBoxTelescope
             // 
-            this.groupBoxTelescope.Controls.Add(this.textBoxRA);
-            this.groupBoxTelescope.Controls.Add(this.textBoxDec);
-            this.groupBoxTelescope.Controls.Add(this.comboBoxGoToMode);
             this.groupBoxTelescope.Controls.Add(this.buttonTrack);
             this.groupBoxTelescope.Controls.Add(this.panel1);
             this.groupBoxTelescope.Controls.Add(this.labelTelescopeStatus);
@@ -815,8 +832,6 @@
             this.groupBoxTelescope.Controls.Add(this.groupBoxSpeed);
             this.groupBoxTelescope.Controls.Add(this.tableLayoutPanelCoordinates);
             this.groupBoxTelescope.Controls.Add(this.buttonGoCoord);
-            this.groupBoxTelescope.Controls.Add(this.labelRA);
-            this.groupBoxTelescope.Controls.Add(this.labelDec);
             this.groupBoxTelescope.Controls.Add(this.groupBoxTarget);
             this.groupBoxTelescope.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.groupBoxTelescope.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
@@ -824,54 +839,10 @@
             this.groupBoxTelescope.Location = new System.Drawing.Point(204, 27);
             this.groupBoxTelescope.Name = "groupBoxTelescope";
             this.tableLayoutMain.SetRowSpan(this.groupBoxTelescope, 2);
-            this.groupBoxTelescope.Size = new System.Drawing.Size(401, 437);
+            this.groupBoxTelescope.Size = new System.Drawing.Size(401, 464);
             this.groupBoxTelescope.TabIndex = 30;
             this.groupBoxTelescope.TabStop = false;
             this.groupBoxTelescope.Text = " Telescope ";
-            // 
-            // textBoxRA
-            // 
-            this.textBoxRA.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.textBoxRA.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.textBoxRA.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxRA.Location = new System.Drawing.Point(101, 172);
-            this.textBoxRA.Margin = new System.Windows.Forms.Padding(7, 3, 3, 3);
-            this.textBoxRA.Name = "textBoxRA";
-            this.textBoxRA.Size = new System.Drawing.Size(93, 23);
-            this.textBoxRA.TabIndex = 23;
-            this.textBoxRA.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.textBoxRA.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.textBoxRA_MouseDoubleClick);
-            // 
-            // textBoxDec
-            // 
-            this.textBoxDec.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.textBoxDec.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.textBoxDec.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxDec.Location = new System.Drawing.Point(227, 172);
-            this.textBoxDec.Margin = new System.Windows.Forms.Padding(7, 3, 3, 3);
-            this.textBoxDec.Name = "textBoxDec";
-            this.textBoxDec.Size = new System.Drawing.Size(81, 23);
-            this.textBoxDec.TabIndex = 24;
-            this.textBoxDec.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.textBoxDec.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.textBoxDec_MouseDoubleClick);
-            // 
-            // comboBoxGoToMode
-            // 
-            this.comboBoxGoToMode.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.comboBoxGoToMode.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
-            this.comboBoxGoToMode.FormattingEnabled = true;
-            this.comboBoxGoToMode.Items.AddRange(new object[] {
-            "RA",
-            "HA",
-            "dRA",
-            "dHA"});
-            this.comboBoxGoToMode.Location = new System.Drawing.Point(18, 173);
-            this.comboBoxGoToMode.Name = "comboBoxGoToMode";
-            this.comboBoxGoToMode.Size = new System.Drawing.Size(48, 21);
-            this.comboBoxGoToMode.TabIndex = 40;
-            this.comboBoxGoToMode.TabStop = false;
-            this.comboBoxGoToMode.Text = "RA";
-            this.comboBoxGoToMode.SelectedIndexChanged += new System.EventHandler(this.comboBoxGoToMode_SelectedIndexChanged);
             // 
             // buttonTrack
             // 
@@ -882,7 +853,7 @@
             this.buttonTrack.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonTrack.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonTrack.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonTrack.Location = new System.Drawing.Point(296, 308);
+            this.buttonTrack.Location = new System.Drawing.Point(296, 338);
             this.buttonTrack.Name = "buttonTrack";
             this.buttonTrack.Size = new System.Drawing.Size(58, 40);
             this.buttonTrack.TabIndex = 39;
@@ -897,7 +868,7 @@
             this.panel1.Controls.Add(this.buttonHandleCover);
             this.panel1.Controls.Add(this.label3);
             this.panel1.Controls.Add(this.buttonZenith);
-            this.panel1.Location = new System.Drawing.Point(8, 352);
+            this.panel1.Location = new System.Drawing.Point(8, 387);
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(368, 48);
             this.panel1.TabIndex = 37;
@@ -984,10 +955,11 @@
             this.labelTelescopeStatus.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.labelTelescopeStatus.Font = new System.Drawing.Font("Lucida Sans Unicode", 9F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelTelescopeStatus.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelTelescopeStatus.Location = new System.Drawing.Point(16, 408);
+            this.labelTelescopeStatus.Location = new System.Drawing.Point(11, 438);
             this.labelTelescopeStatus.Name = "labelTelescopeStatus";
             this.labelTelescopeStatus.Size = new System.Drawing.Size(370, 20);
             this.labelTelescopeStatus.TabIndex = 28;
+            this.labelTelescopeStatus.Text = "Telescope status";
             this.labelTelescopeStatus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.toolTip.SetToolTip(this.labelTelescopeStatus, "Telescope status");
             // 
@@ -999,7 +971,7 @@
             this.buttonMainStop.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonMainStop.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonMainStop.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonMainStop.Location = new System.Drawing.Point(296, 224);
+            this.buttonMainStop.Location = new System.Drawing.Point(296, 258);
             this.buttonMainStop.Name = "buttonMainStop";
             this.buttonMainStop.Size = new System.Drawing.Size(58, 69);
             this.buttonMainStop.TabIndex = 26;
@@ -1018,7 +990,7 @@
             this.panelDirectionButtons.Controls.Add(this.buttonSouth);
             this.panelDirectionButtons.Controls.Add(this.buttonEast);
             this.panelDirectionButtons.Controls.Add(this.buttonWest);
-            this.panelDirectionButtons.Location = new System.Drawing.Point(120, 216);
+            this.panelDirectionButtons.Location = new System.Drawing.Point(120, 251);
             this.panelDirectionButtons.Name = "panelDirectionButtons";
             this.panelDirectionButtons.Size = new System.Drawing.Size(160, 136);
             this.panelDirectionButtons.TabIndex = 11;
@@ -1178,7 +1150,7 @@
             this.groupBoxSpeed.Controls.Add(this.radioButtonGuide);
             this.groupBoxSpeed.Controls.Add(this.radioButtonSet);
             this.groupBoxSpeed.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBoxSpeed.Location = new System.Drawing.Point(48, 248);
+            this.groupBoxSpeed.Location = new System.Drawing.Point(48, 280);
             this.groupBoxSpeed.Name = "groupBoxSpeed";
             this.groupBoxSpeed.Size = new System.Drawing.Size(64, 77);
             this.groupBoxSpeed.TabIndex = 12;
@@ -1505,7 +1477,7 @@
             this.buttonGoCoord.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonGoCoord.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonGoCoord.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonGoCoord.Location = new System.Drawing.Point(314, 167);
+            this.buttonGoCoord.Location = new System.Drawing.Point(302, 198);
             this.buttonGoCoord.Name = "buttonGoCoord";
             this.buttonGoCoord.Size = new System.Drawing.Size(58, 32);
             this.buttonGoCoord.TabIndex = 25;
@@ -1513,33 +1485,222 @@
             this.buttonGoCoord.UseVisualStyleBackColor = false;
             this.buttonGoCoord.Click += new System.EventHandler(this.buttonGoCoord_Click);
             // 
-            // labelRA
-            // 
-            this.labelRA.AutoSize = true;
-            this.labelRA.Location = new System.Drawing.Point(72, 177);
-            this.labelRA.Name = "labelRA";
-            this.labelRA.Size = new System.Drawing.Size(24, 13);
-            this.labelRA.TabIndex = 21;
-            this.labelRA.Text = "RA:";
-            // 
-            // labelDec
-            // 
-            this.labelDec.AutoSize = true;
-            this.labelDec.Location = new System.Drawing.Point(194, 177);
-            this.labelDec.Name = "labelDec";
-            this.labelDec.Size = new System.Drawing.Size(29, 13);
-            this.labelDec.TabIndex = 22;
-            this.labelDec.Text = "Dec:";
-            // 
             // groupBoxTarget
             // 
+            this.groupBoxTarget.BackColor = System.Drawing.Color.Transparent;
+            this.groupBoxTarget.Controls.Add(this.tabControlGoTo);
             this.groupBoxTarget.ForeColor = System.Drawing.Color.DarkOrange;
             this.groupBoxTarget.Location = new System.Drawing.Point(8, 156);
             this.groupBoxTarget.Name = "groupBoxTarget";
-            this.groupBoxTarget.Size = new System.Drawing.Size(376, 48);
+            this.groupBoxTarget.Size = new System.Drawing.Size(376, 92);
             this.groupBoxTarget.TabIndex = 41;
             this.groupBoxTarget.TabStop = false;
             this.groupBoxTarget.Text = " Target ";
+            this.toolTip.SetToolTip(this.groupBoxTarget, "Enter the target coordinates and press Go");
+            // 
+            // tabControlGoTo
+            // 
+            this.tabControlGoTo.Controls.Add(this.tabPageRaDec);
+            this.tabControlGoTo.Controls.Add(this.tabPageHaDec);
+            this.tabControlGoTo.Controls.Add(this.tabPageAltAz);
+            this.tabControlGoTo.Location = new System.Drawing.Point(11, 17);
+            this.tabControlGoTo.Margin = new System.Windows.Forms.Padding(0);
+            this.tabControlGoTo.Name = "tabControlGoTo";
+            this.tabControlGoTo.SelectedIndex = 0;
+            this.tabControlGoTo.Size = new System.Drawing.Size(272, 62);
+            this.tabControlGoTo.TabIndex = 0;
+            // 
+            // tabPageRaDec
+            // 
+            this.tabPageRaDec.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
+            this.tabPageRaDec.Controls.Add(this.label23);
+            this.tabPageRaDec.Controls.Add(this.label24);
+            this.tabPageRaDec.Controls.Add(this.textBoxRaDecRa);
+            this.tabPageRaDec.Controls.Add(this.textBoxRaDecDec);
+            this.tabPageRaDec.Controls.Add(this.label10);
+            this.tabPageRaDec.Location = new System.Drawing.Point(4, 21);
+            this.tabPageRaDec.Name = "tabPageRaDec";
+            this.tabPageRaDec.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPageRaDec.Size = new System.Drawing.Size(264, 37);
+            this.tabPageRaDec.TabIndex = 0;
+            this.tabPageRaDec.Text = "Ra/Dec";
+            // 
+            // label23
+            // 
+            this.label23.AutoSize = true;
+            this.label23.Location = new System.Drawing.Point(127, 11);
+            this.label23.Name = "label23";
+            this.label23.Size = new System.Drawing.Size(29, 13);
+            this.label23.TabIndex = 26;
+            this.label23.Text = "Dec:";
+            this.label23.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // label24
+            // 
+            this.label24.AutoSize = true;
+            this.label24.Location = new System.Drawing.Point(7, 11);
+            this.label24.Name = "label24";
+            this.label24.Size = new System.Drawing.Size(23, 13);
+            this.label24.TabIndex = 29;
+            this.label24.Text = "Ra:";
+            this.label24.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // textBoxRaDecRa
+            // 
+            this.textBoxRaDecRa.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.textBoxRaDecRa.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.textBoxRaDecRa.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.textBoxRaDecRa.Location = new System.Drawing.Point(30, 6);
+            this.textBoxRaDecRa.Margin = new System.Windows.Forms.Padding(7, 3, 3, 3);
+            this.textBoxRaDecRa.Name = "textBoxRaDecRa";
+            this.textBoxRaDecRa.Size = new System.Drawing.Size(93, 23);
+            this.textBoxRaDecRa.TabIndex = 27;
+            this.textBoxRaDecRa.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.toolTip.SetToolTip(this.textBoxRaDecRa, "Double click for current RightAscension");
+            this.textBoxRaDecRa.DoubleClick += new System.EventHandler(this.coordBox_MouseDoubleClick);
+            // 
+            // textBoxRaDecDec
+            // 
+            this.textBoxRaDecDec.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.textBoxRaDecDec.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.textBoxRaDecDec.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.textBoxRaDecDec.Location = new System.Drawing.Point(156, 6);
+            this.textBoxRaDecDec.Margin = new System.Windows.Forms.Padding(7, 3, 3, 3);
+            this.textBoxRaDecDec.Name = "textBoxRaDecDec";
+            this.textBoxRaDecDec.Size = new System.Drawing.Size(93, 23);
+            this.textBoxRaDecDec.TabIndex = 28;
+            this.textBoxRaDecDec.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.toolTip.SetToolTip(this.textBoxRaDecDec, "Double click for current Declination");
+            this.textBoxRaDecDec.DoubleClick += new System.EventHandler(this.coordBox_MouseDoubleClick);
+            // 
+            // label10
+            // 
+            this.label10.AutoSize = true;
+            this.label10.Location = new System.Drawing.Point(-22, 31);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(24, 13);
+            this.label10.TabIndex = 25;
+            this.label10.Text = "RA:";
+            // 
+            // tabPageHaDec
+            // 
+            this.tabPageHaDec.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
+            this.tabPageHaDec.Controls.Add(this.label26);
+            this.tabPageHaDec.Controls.Add(this.label25);
+            this.tabPageHaDec.Controls.Add(this.textBoxHaDecHa);
+            this.tabPageHaDec.Controls.Add(this.textBoxHaDecDec);
+            this.tabPageHaDec.Location = new System.Drawing.Point(4, 21);
+            this.tabPageHaDec.Name = "tabPageHaDec";
+            this.tabPageHaDec.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPageHaDec.Size = new System.Drawing.Size(264, 37);
+            this.tabPageHaDec.TabIndex = 1;
+            this.tabPageHaDec.Text = "Ha/Dec";
+            // 
+            // label26
+            // 
+            this.label26.AutoSize = true;
+            this.label26.Location = new System.Drawing.Point(127, 11);
+            this.label26.Name = "label26";
+            this.label26.Size = new System.Drawing.Size(29, 13);
+            this.label26.TabIndex = 30;
+            this.label26.Text = "Dec:";
+            // 
+            // label25
+            // 
+            this.label25.AutoSize = true;
+            this.label25.Location = new System.Drawing.Point(7, 11);
+            this.label25.Name = "label25";
+            this.label25.Size = new System.Drawing.Size(23, 13);
+            this.label25.TabIndex = 33;
+            this.label25.Text = "Ha:";
+            // 
+            // textBoxHaDecHa
+            // 
+            this.textBoxHaDecHa.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.textBoxHaDecHa.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.textBoxHaDecHa.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.textBoxHaDecHa.Location = new System.Drawing.Point(30, 6);
+            this.textBoxHaDecHa.Margin = new System.Windows.Forms.Padding(7, 3, 3, 3);
+            this.textBoxHaDecHa.Name = "textBoxHaDecHa";
+            this.textBoxHaDecHa.Size = new System.Drawing.Size(93, 23);
+            this.textBoxHaDecHa.TabIndex = 31;
+            this.textBoxHaDecHa.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.toolTip.SetToolTip(this.textBoxHaDecHa, "Double click for current HourAngle");
+            this.textBoxHaDecHa.DoubleClick += new System.EventHandler(this.coordBox_MouseDoubleClick);
+            // 
+            // textBoxHaDecDec
+            // 
+            this.textBoxHaDecDec.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.textBoxHaDecDec.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.textBoxHaDecDec.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.textBoxHaDecDec.Location = new System.Drawing.Point(156, 6);
+            this.textBoxHaDecDec.Margin = new System.Windows.Forms.Padding(7, 3, 3, 3);
+            this.textBoxHaDecDec.Name = "textBoxHaDecDec";
+            this.textBoxHaDecDec.Size = new System.Drawing.Size(93, 23);
+            this.textBoxHaDecDec.TabIndex = 32;
+            this.textBoxHaDecDec.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.toolTip.SetToolTip(this.textBoxHaDecDec, "Double click for current Declination");
+            this.textBoxHaDecDec.DoubleClick += new System.EventHandler(this.coordBox_MouseDoubleClick);
+            // 
+            // tabPageAltAz
+            // 
+            this.tabPageAltAz.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
+            this.tabPageAltAz.Controls.Add(this.label28);
+            this.tabPageAltAz.Controls.Add(this.label27);
+            this.tabPageAltAz.Controls.Add(this.textBoxAltAzAlt);
+            this.tabPageAltAz.Controls.Add(this.textBoxAltAzAz);
+            this.tabPageAltAz.Location = new System.Drawing.Point(4, 21);
+            this.tabPageAltAz.Name = "tabPageAltAz";
+            this.tabPageAltAz.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPageAltAz.Size = new System.Drawing.Size(264, 37);
+            this.tabPageAltAz.TabIndex = 2;
+            this.tabPageAltAz.Text = "Alt/Az";
+            // 
+            // label28
+            // 
+            this.label28.AutoSize = true;
+            this.label28.Location = new System.Drawing.Point(127, 11);
+            this.label28.Name = "label28";
+            this.label28.Size = new System.Drawing.Size(22, 13);
+            this.label28.TabIndex = 34;
+            this.label28.Text = "Az:";
+            // 
+            // label27
+            // 
+            this.label27.AutoSize = true;
+            this.label27.Location = new System.Drawing.Point(7, 11);
+            this.label27.Name = "label27";
+            this.label27.Size = new System.Drawing.Size(22, 13);
+            this.label27.TabIndex = 37;
+            this.label27.Text = "Alt:";
+            // 
+            // textBoxAltAzAlt
+            // 
+            this.textBoxAltAzAlt.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.textBoxAltAzAlt.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.textBoxAltAzAlt.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.textBoxAltAzAlt.Location = new System.Drawing.Point(30, 6);
+            this.textBoxAltAzAlt.Margin = new System.Windows.Forms.Padding(7, 3, 3, 3);
+            this.textBoxAltAzAlt.Name = "textBoxAltAzAlt";
+            this.textBoxAltAzAlt.Size = new System.Drawing.Size(93, 23);
+            this.textBoxAltAzAlt.TabIndex = 35;
+            this.textBoxAltAzAlt.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.toolTip.SetToolTip(this.textBoxAltAzAlt, "Double click for current Altitude");
+            this.textBoxAltAzAlt.DoubleClick += new System.EventHandler(this.coordBox_MouseDoubleClick);
+            // 
+            // textBoxAltAzAz
+            // 
+            this.textBoxAltAzAz.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.textBoxAltAzAz.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.textBoxAltAzAz.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.textBoxAltAzAz.Location = new System.Drawing.Point(156, 6);
+            this.textBoxAltAzAz.Margin = new System.Windows.Forms.Padding(7, 3, 3, 3);
+            this.textBoxAltAzAz.Name = "textBoxAltAzAz";
+            this.textBoxAltAzAz.Size = new System.Drawing.Size(93, 23);
+            this.textBoxAltAzAz.TabIndex = 36;
+            this.textBoxAltAzAz.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.toolTip.SetToolTip(this.textBoxAltAzAz, "Double click for current Azimuth");
+            this.textBoxAltAzAz.DoubleClick += new System.EventHandler(this.coordBox_MouseDoubleClick);
             // 
             // menuStrip
             // 
@@ -2387,7 +2548,7 @@
             this.labelDashStatus.AutoEllipsis = true;
             this.tableLayoutMain.SetColumnSpan(this.labelDashStatus, 2);
             this.labelDashStatus.Font = new System.Drawing.Font("Lucida Sans Unicode", 9F, System.Drawing.FontStyle.Italic);
-            this.labelDashStatus.Location = new System.Drawing.Point(204, 731);
+            this.labelDashStatus.Location = new System.Drawing.Point(204, 758);
             this.labelDashStatus.Name = "labelDashStatus";
             this.labelDashStatus.Size = new System.Drawing.Size(731, 23);
             this.labelDashStatus.TabIndex = 34;
@@ -2409,7 +2570,7 @@
             this.groupBoxFilterWheel.Controls.Add(this.buttonFilterWheelGo);
             this.groupBoxFilterWheel.Controls.Add(this.labelFilterWheelStatus);
             this.groupBoxFilterWheel.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBoxFilterWheel.Location = new System.Drawing.Point(611, 470);
+            this.groupBoxFilterWheel.Location = new System.Drawing.Point(611, 497);
             this.groupBoxFilterWheel.Name = "groupBoxFilterWheel";
             this.groupBoxFilterWheel.Size = new System.Drawing.Size(328, 258);
             this.groupBoxFilterWheel.TabIndex = 35;
@@ -2567,11 +2728,11 @@
             this.labelFilterWheelStatus.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.labelFilterWheelStatus.Font = new System.Drawing.Font("Lucida Sans Unicode", 9F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelFilterWheelStatus.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelFilterWheelStatus.Location = new System.Drawing.Point(8, 231);
+            this.labelFilterWheelStatus.Location = new System.Drawing.Point(8, 229);
             this.labelFilterWheelStatus.Name = "labelFilterWheelStatus";
             this.labelFilterWheelStatus.Size = new System.Drawing.Size(312, 20);
             this.labelFilterWheelStatus.TabIndex = 33;
-            this.labelFilterWheelStatus.Text = "status";
+            this.labelFilterWheelStatus.Text = "FW status";
             this.labelFilterWheelStatus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.toolTip.SetToolTip(this.labelFilterWheelStatus, "Filter wheel status");
             // 
@@ -2583,7 +2744,7 @@
             this.groupBoxWeather.Controls.Add(this.labelWeatherStatus);
             this.groupBoxWeather.Controls.Add(this.tableLayoutPanelWeather);
             this.groupBoxWeather.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBoxWeather.Location = new System.Drawing.Point(204, 470);
+            this.groupBoxWeather.Location = new System.Drawing.Point(204, 497);
             this.groupBoxWeather.Name = "groupBoxWeather";
             this.groupBoxWeather.Size = new System.Drawing.Size(401, 258);
             this.groupBoxWeather.TabIndex = 33;
@@ -2600,6 +2761,7 @@
             this.labelWeatherStatus.Name = "labelWeatherStatus";
             this.labelWeatherStatus.Size = new System.Drawing.Size(384, 20);
             this.labelWeatherStatus.TabIndex = 32;
+            this.labelWeatherStatus.Text = "SafeToOperate status";
             this.labelWeatherStatus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.toolTip.SetToolTip(this.labelWeatherStatus, "Weather status");
             // 
@@ -3045,7 +3207,7 @@
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.ClientSize = new System.Drawing.Size(942, 757);
+            this.ClientSize = new System.Drawing.Size(942, 787);
             this.Controls.Add(this.tableLayoutMain);
             this.DoubleBuffered = true;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -3065,7 +3227,6 @@
             this.groupBox7.ResumeLayout(false);
             this.groupBox7.PerformLayout();
             this.groupBoxTelescope.ResumeLayout(false);
-            this.groupBoxTelescope.PerformLayout();
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
             this.panelDirectionButtons.ResumeLayout(false);
@@ -3073,6 +3234,14 @@
             this.groupBoxSpeed.PerformLayout();
             this.tableLayoutPanelCoordinates.ResumeLayout(false);
             this.tableLayoutPanelCoordinates.PerformLayout();
+            this.groupBoxTarget.ResumeLayout(false);
+            this.tabControlGoTo.ResumeLayout(false);
+            this.tabPageRaDec.ResumeLayout(false);
+            this.tabPageRaDec.PerformLayout();
+            this.tabPageHaDec.ResumeLayout(false);
+            this.tabPageHaDec.PerformLayout();
+            this.tabPageAltAz.ResumeLayout(false);
+            this.tabPageAltAz.PerformLayout();
             this.menuStrip.ResumeLayout(false);
             this.menuStrip.PerformLayout();
             this.flowLayoutPanel1.ResumeLayout(false);
@@ -3143,10 +3312,6 @@
         private System.Windows.Forms.Label labelAzimuthValue;
         private System.Windows.Forms.Label labelDeclination;
         private System.Windows.Forms.Button buttonGoCoord;
-        private System.Windows.Forms.TextBox textBoxRA;
-        private System.Windows.Forms.TextBox textBoxDec;
-        private System.Windows.Forms.Label labelRA;
-        private System.Windows.Forms.Label labelDec;
         private System.Windows.Forms.ToolTip toolTip;
         private System.Windows.Forms.GroupBox groupBoxDomeGroup;
         private System.Windows.Forms.GroupBox groupBox7;
@@ -3276,7 +3441,6 @@
         private System.Windows.Forms.ToolStripMenuItem debugDomeToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem debugDAQsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem debugShutterToolStripMenuItem;
-        private System.Windows.Forms.ComboBox comboBoxGoToMode;
         private System.Windows.Forms.ToolStripMenuItem boltwoodToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem davisVantagePro2ToolStripMenuItem;
         private System.Windows.Forms.Label label2;
@@ -3296,6 +3460,23 @@
         private System.Windows.Forms.Label labelFWArduinoStatus;
         private System.Windows.Forms.Label labelFWFilterSize;
         private System.Windows.Forms.Label label15;
+        private System.Windows.Forms.TabControl tabControlGoTo;
+        private System.Windows.Forms.TabPage tabPageRaDec;
+        private System.Windows.Forms.Label label24;
+        private System.Windows.Forms.TextBox textBoxRaDecRa;
+        private System.Windows.Forms.TextBox textBoxRaDecDec;
+        private System.Windows.Forms.Label label10;
+        private System.Windows.Forms.Label label23;
+        private System.Windows.Forms.TabPage tabPageHaDec;
+        private System.Windows.Forms.Label label25;
+        private System.Windows.Forms.TextBox textBoxHaDecHa;
+        private System.Windows.Forms.TextBox textBoxHaDecDec;
+        private System.Windows.Forms.Label label26;
+        private System.Windows.Forms.TabPage tabPageAltAz;
+        private System.Windows.Forms.Label label27;
+        private System.Windows.Forms.TextBox textBoxAltAzAlt;
+        private System.Windows.Forms.TextBox textBoxAltAzAz;
+        private System.Windows.Forms.Label label28;
     }
 }
 

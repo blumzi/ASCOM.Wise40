@@ -553,7 +553,7 @@ namespace ASCOM.Wise40
                     ra = par.end.ra,
                     dec = par.end.dec,
                 };
-                _endDetails = $"End: {Angle.FromHours(_end.ra, Angle.AngleType.RA)}, {Angle.FromDegrees(_end.dec, Angle.AngleType.Dec)}\n";
+                _endDetails = $"End: {Angle.RaFromHours(_end.ra)}, {Angle.DecFromDegrees(_end.dec)}\n";
                 EndActivity(par);
             }
 
@@ -572,8 +572,8 @@ namespace ASCOM.Wise40
                 _line = ActivityMonitor.Tracer.Telescope.telescope.Line;
                 _tags = new List<string>() { "Telescope", "Slew", "InProgress" };
                 _startDetails =
-                    $"Start: {Angle.FromHours(_start.ra, Angle.AngleType.RA)}, {Angle.FromDegrees(_start.dec, Angle.AngleType.Dec)}\n" +
-                    $"Target: {Angle.FromHours(_target.ra, Angle.AngleType.RA)}, {Angle.FromDegrees(_target.dec, Angle.AngleType.Dec)}\n";
+                    $"Start: {Angle.RaFromHours(_start.ra)}, {Angle.DecFromDegrees(_start.dec)}\n" +
+                    $"Target: {Angle.RaFromHours(_target.ra)}, {Angle.DecFromDegrees(_target.dec)}\n";
 
                 EmitStart();
             }
@@ -625,8 +625,8 @@ namespace ASCOM.Wise40
                     _tags.Add("InProgress");
 
                     _startDetails =
-                        $"Start: {Angle.FromDegrees(_startAz, Angle.AngleType.Az).ToNiceString()}\n" +
-                        $"Target: {Angle.FromDegrees(_targetAz, Angle.AngleType.Az).ToNiceString()}\n" +
+                        $"Start: {Angle.AzFromDegrees(_startAz).ToNiceString()}\n" +
+                        $"Target: {Angle.AzFromDegrees(_targetAz).ToNiceString()}\n" +
                         $"Reason: {_reason}\n";
                 }
 
@@ -638,7 +638,7 @@ namespace ASCOM.Wise40
                 DomeSlew.EndParams par = p as DomeSlew.EndParams;
 
                 _endAz = par.endAz;
-                _endDetails = $"End: {Angle.FromDegrees(_endAz, Angle.AngleType.Az).ToNiceString()}\n";
+                _endDetails = $"End: {Angle.AzFromDegrees(_endAz).ToNiceString()}\n";
                 EndActivity(par);
             }
         }
@@ -774,7 +774,7 @@ namespace ASCOM.Wise40
                 };
 
                 _startDetails =
-                    $"Start: {Angle.FromHours(_start.ra, Angle.AngleType.RA)}, {Angle.FromDegrees(_start.dec, Angle.AngleType.Dec)}\n" +
+                    $"Start: {Angle.RaFromHours(_start.ra)}, {Angle.DecFromDegrees(_start.dec)}\n" +
                     $"Axis: Ra\n" +
                     $"Direction: {_direction.ToString().Remove(0, "guide".Length)}\n" +
                     $"Millis: {_millis}\n";
@@ -791,7 +791,7 @@ namespace ASCOM.Wise40
                     ra = par._end.ra,
                     dec = par._end.dec,
                 };
-                _endDetails = $"End: {Angle.FromHours(_end.ra, Angle.AngleType.RA)}, {Angle.FromDegrees(_end.dec, Angle.AngleType.Dec)}\n";
+                _endDetails = $"End: {Angle.RaFromHours(_end.ra)}, {Angle.DecFromDegrees(_end.dec)}\n";
 
                 EndActivity(par);
             }
@@ -824,7 +824,7 @@ namespace ASCOM.Wise40
                 };
 
                 _startDetails =
-                    $"Start: {Angle.FromHours(_start.ra, Angle.AngleType.RA)}, {Angle.FromDegrees(_start.dec, Angle.AngleType.Dec)}\n" +
+                    $"Start: {Angle.RaFromHours(_start.ra)}, {Angle.DecFromDegrees(_start.dec)}\n" +
                     $"Axis: Dec\n" +
                     $"Direction: {_direction.ToString().Remove(0, "guide".Length)}\n" +
                     $"Millis: {_millis}\n";
@@ -841,7 +841,7 @@ namespace ASCOM.Wise40
                     ra = par._end.ra,
                     dec = par._end.dec,
                 };
-                _endDetails = $"End: {Angle.FromHours(_end.ra, Angle.AngleType.RA)}, {Angle.FromDegrees(_end.dec, Angle.AngleType.Dec)}\n";
+                _endDetails = $"End: {Angle.RaFromHours(_end.ra)}, {Angle.DecFromDegrees(_end.dec)}\n";
 
                 EndActivity(par);
             }
@@ -935,12 +935,12 @@ namespace ASCOM.Wise40
                 _tags = new List<string>() { "Parking", "InProgress" };
 
                 _startDetails = "Start:\n" +
-                    $" Telescope: {Angle.FromHours(_start.ra, Angle.AngleType.RA)}, {Angle.FromDegrees(_start.dec, Angle.AngleType.Dec)}\n" +
-                    $" Dome: {Angle.FromDegrees(_startAz, Angle.AngleType.Az)}\n" +
+                    $" Telescope: {Angle.RaFromHours(_start.ra)}, {Angle.DecFromDegrees(_start.dec)}\n" +
+                    $" Dome: {Angle.AzFromDegrees(_startAz)}\n" +
                     $" Shutter: {_shutterPercentStart}%\n" +
                     "Target:\n" +
-                    $" Telescope: {Angle.FromHours(_target.ra, Angle.AngleType.RA)}, {Angle.FromDegrees(_target.dec, Angle.AngleType.Dec)}\n" +
-                    $" Dome: {Angle.FromDegrees(_targetAz, Angle.AngleType.Az)}\n" +
+                    $" Telescope: {Angle.RaFromHours(_target.ra)}, {Angle.DecFromDegrees(_target.dec)}\n" +
+                    $" Dome: {Angle.AzFromDegrees(_targetAz)}\n" +
                     $" Shutter: 100%\n";
 
                 EmitStart();
@@ -959,8 +959,8 @@ namespace ASCOM.Wise40
                 _shutterPercentEnd = par.shutterPercent;
 
                 _endDetails = "End:\n" +
-                    $" Telescope: {Angle.FromHours(_end.ra, Angle.AngleType.RA)}, {Angle.FromDegrees(_end.dec, Angle.AngleType.Dec)}\n" +
-                    $" Dome: {Angle.FromDegrees(_endAz, Angle.AngleType.Az)}\n" +
+                    $" Telescope: {Angle.RaFromHours(_end.ra)}, {Angle.DecFromDegrees(_end.dec)}\n" +
+                    $" Dome: {Angle.AzFromDegrees(_endAz)}\n" +
                     $" Shutter: {_shutterPercentEnd}%\n";
 
                 EndActivity(par);
@@ -1021,8 +1021,8 @@ namespace ASCOM.Wise40
                 _axis = par.axis;
                 _rate = par.rate;
                 Angle a = (_axis == DeviceInterface.TelescopeAxes.axisPrimary) ?
-                        Angle.FromHours(_start, Angle.AngleType.RA) :
-                        Angle.FromDegrees(_start, Angle.AngleType.Dec);
+                        Angle.RaFromHours(_start) :
+                        Angle.DecFromDegrees(_start);
 
                 _startDetails = $"Axis: {_axis.ToString().Remove(0, "rate".Length)}\n" +
                     $"Start: {a}\n" +
@@ -1037,8 +1037,8 @@ namespace ASCOM.Wise40
 
                 _end = par.end;
                 Angle a = (_axis == DeviceInterface.TelescopeAxes.axisPrimary) ?
-                        Angle.FromHours(_end, Angle.AngleType.RA) :
-                        Angle.FromDegrees(_end, Angle.AngleType.Dec);
+                        Angle.RaFromHours(_end) :
+                        Angle.DecFromDegrees(_end);
 
                 _endDetails = $"End: {a}";
             }

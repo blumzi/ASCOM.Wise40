@@ -56,8 +56,8 @@ namespace ASCOM.Wise40
             WiseName = name;
 
             Angle = Simulated ?
-                Angle.FromDegrees(85, Angle.AngleType.Dec) :
-                Angle.FromRadians(Radians, Angle.AngleType.Dec);
+                Angle.DecFromDegrees(85) :
+                Angle.DecFromRadians(Radians);
         }
 
         public double Declination
@@ -160,7 +160,7 @@ namespace ASCOM.Wise40
                 {
                     double radians = Radians;
                     if (_angle == null)
-                        _angle = Angle.FromRadians(radians);
+                        _angle = Angle.DecFromRadians(radians);
                     else
                         _angle.Radians = radians;
                 }

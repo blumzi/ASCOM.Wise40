@@ -19,7 +19,7 @@ namespace ASCOM.Wise40.Hardware
         private const byte CRCPolynom = ((1 << 6) | (1 << 1) | (1 << 0));
         private enum ChannelMode { BISS = 0, SSI = 1};
         private enum BissMode { B = 0, C = 1 };
-        private enum EncoderType { HA, Dec };
+        public enum EncoderType { HA, Dec };
 
         public static Renishaw Instance
         {
@@ -75,7 +75,7 @@ namespace ASCOM.Wise40.Hardware
             }
         }
 
-        private static uint Read(EncoderType enc)
+        public static uint Read(EncoderType enc)
         {
             {
                 int ret;

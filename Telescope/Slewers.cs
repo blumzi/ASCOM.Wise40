@@ -12,7 +12,7 @@ namespace ASCOM.Wise40
     public class Slewers
     {
         private readonly Debugger debugger = Debugger.Instance;
-        public enum Type { Dome, Ra, Dec };
+        public enum Type { Dome, Ra, Dec, Ha };
         private static volatile Slewers _instance;
         private readonly static object syncObject = new object();
         private readonly static ConcurrentDictionary<Type, WiseTele.SlewerTask> _active = new ConcurrentDictionary<Type, WiseTele.SlewerTask>();

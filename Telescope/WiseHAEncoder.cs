@@ -11,32 +11,27 @@ namespace ASCOM.Wise40 //.Telescope
     {
         private bool _connected = false;
         private double _daqsValue;
-        private const uint _realValueAtFiducialMark = 1432779; // Arie - 02 July 2016
-        
-        private WiseEncoder axisEncoder, wormEncoder;
-        private WiseDecEncoder _decEncoder;
+        //private const uint _realValueAtFiducialMark = 1432779; // Arie - 02 July 2016
 
-        private Astrometry.NOVAS.NOVAS31 Novas31;
-        private Astrometry.AstroUtils.AstroUtils astroutils;
+        private readonly WiseEncoder axisEncoder, wormEncoder;
+        private readonly WiseDecEncoder _decEncoder;
 
         public Angle _angle;
 
-        const double HaMultiplier = Const.twoPI / 720 / 4096;
-        const double HaCorrection = -3.063571542;                   // 20081231: Shai Kaspi
-        const uint _simulatedValueAtFiducialMark = _realValueAtFiducialMark;
+        private const double HaMultiplier = Const.twoPI / 720 / 4096;
+        private const double HaCorrection = -3.063571542;                   // 20081231: Shai Kaspi
+        //private const uint _simulatedValueAtFiducialMark = _realValueAtFiducialMark;
 
-        private Common.Debugger debugger = Common.Debugger.Instance;
-        private Hardware.Hardware hw = Hardware.Hardware.Instance;
-        private static WiseSite wisesite = WiseSite.Instance;
+        private readonly Debugger debugger = Debugger.Instance;
+        private readonly Hardware.Hardware hw = Hardware.Hardware.Instance;
+        private static readonly WiseSite wisesite = WiseSite.Instance;
         private int prev_worm = int.MinValue, prev_axis = int.MinValue;
 
-        private Object _lock = new object();
+        private readonly Object _lock = new object();
 
         public WiseHAEncoder(string name, WiseDecEncoder decEncoder)
         {
             WiseName = "HAEncoder";
-            Novas31 = new Astrometry.NOVAS.NOVAS31();
-            astroutils = new Astrometry.AstroUtils.AstroUtils();
             _decEncoder = decEncoder;
 
             axisEncoder = new WiseEncoder("HAAxis",
@@ -95,7 +90,7 @@ namespace ASCOM.Wise40 //.Telescope
                         worm = ((wormValues[0] & 0x0f) * 0x100) + wormValues[1];
                         axis = ((axisValues[1] & 0xff) / 0x10) + (axisValues[0] * 0x10);
 
-                        _daqsValue = ((axis * 720 - worm) & 0xfff000) + worm;
+                        _daqsValue = (((axis * 720) - worm) & 0xfff000) + worm;
                     }
                     #region debug
                     string dbg = $"{WiseName}: value: {_daqsValue}, axis: {axis} (0x{axis:x}), worm: {worm} (0x{worm:x})";
@@ -126,12 +121,7 @@ namespace ASCOM.Wise40 //.Telescope
         {
             get
             {
-                if (Simulated)
-                    return 0;
-                else
-                {
-                    return axisEncoder.Value;
-                }
+                return Simulated ? 0 : axisEncoder.Value;
             }
         }
 
@@ -139,12 +129,7 @@ namespace ASCOM.Wise40 //.Telescope
         {
             get
             {
-                if (Simulated)
-                    return 0;
-                else
-                {
-                    return wormEncoder.Value;
-                }
+                return Simulated ? 0 : wormEncoder.Value;
             }
         }
 
@@ -266,6 +251,6 @@ namespace ASCOM.Wise40 //.Telescope
         {
             axisEncoder.Dispose();
             wormEncoder.Dispose();
-        }        
+        }
     }
 }

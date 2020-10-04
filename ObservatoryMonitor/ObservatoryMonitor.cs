@@ -199,7 +199,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             if (telescopeDigest.ShuttingDown)
             {
                 conditionsBypassToolStripMenuItem.Enabled = false;
-                conditionsBypassToolStripMenuItem.ToolTipText = "Wise40 is shutting down";
+                conditionsBypassToolStripMenuItem.ToolTipText = Const.UnsafeReasons.ShuttingDown;
             }
             else
             {
@@ -262,7 +262,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             if (telescopeDigest.ShuttingDown)
             {
                 buttonManualIntervention.Enabled = false;
-                toolTip.SetToolTip(buttonManualIntervention, "Wise40 is shutting down");
+                toolTip.SetToolTip(buttonManualIntervention, Const.UnsafeReasons.ShuttingDown);
             }
             else
             {
@@ -280,7 +280,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             {
                 labelActivity.Text = "ShuttingDown";
                 labelActivity.ForeColor = warningColor;
-                toolTip.SetToolTip(labelActivity, "Wise40 is shutting down");
+                toolTip.SetToolTip(labelActivity, Const.UnsafeReasons.ShuttingDown);
             }
             else if (telescopeDigest.Active)
             {
@@ -352,9 +352,9 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
         private void LogCurrentPosition()
         {
-            Angle ra = Angle.FromHours(telescopeDigest.Current.RightAscension, Angle.AngleType.RA);
-            Angle dec = Angle.FromDegrees(telescopeDigest.Current.Declination, Angle.AngleType.Dec);
-            Angle az = Angle.FromDegrees(domeDigest.Azimuth, Angle.AngleType.Az);
+            Angle ra = Angle.RaFromHours(telescopeDigest.Current.RightAscension);
+            Angle dec = Angle.DecFromDegrees(telescopeDigest.Current.Declination);
+            Angle az = Angle.AzFromDegrees(domeDigest.Azimuth);
             ShutterState shutterState = domeDigest.Shutter.State;
 
             Log("    " +
@@ -538,7 +538,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
             labelActivity.Text = "ShuttingDown";
             labelActivity.ForeColor = warningColor;
-            toolTip.SetToolTip(labelActivity, "Wise40 is shutting down");
+            toolTip.SetToolTip(labelActivity, Const.UnsafeReasons.ShuttingDown);
         }
 
         private bool ObservatoryIsPhysicallyParked

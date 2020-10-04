@@ -97,7 +97,7 @@ namespace ASCOM.Wise40
                 wisedome.SlewToAzimuth(az, reason);
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                    $"DomeSlaveDriver:SlewToAz Waiting for dome to arrive to target {Angle.FromDegrees(az).ToNiceString()}");
+                    $"DomeSlaveDriver:SlewToAz Waiting for dome to arrive to target {Angle.AzFromDegrees(az).ToNiceString()}");
                 #endregion
                 _arrivedAtAz.WaitOne();
                 #region debug
@@ -125,7 +125,7 @@ namespace ASCOM.Wise40
                 wisedome.Park();
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                    $"DomeSlaveDriver: Waiting for dome to park at {Angle.FromDegrees(wisedome.ParkAzimuth)}");
+                    $"DomeSlaveDriver: Waiting for dome to park at {Angle.AzFromDegrees(wisedome.ParkAzimuth).ToNiceString()}");
                 #endregion
                 _arrivedAtAz.WaitOne();
             }
@@ -133,7 +133,7 @@ namespace ASCOM.Wise40
             {
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                    $"DomeSlaveDriver:  while waiting for dome to park at {Angle.FromDegrees(wisedome.ParkAzimuth)}nCaught {ex.Message} at\n{ex.StackTrace}");
+                    $"DomeSlaveDriver:  while waiting for dome to park at {Angle.AzFromDegrees(wisedome.ParkAzimuth).ToNiceString()} Caught {ex.Message} at\n{ex.StackTrace}");
                 #endregion
                 wisedome.AbortSlew("from Park");
                 //throw ex;
@@ -166,17 +166,19 @@ namespace ASCOM.Wise40
             #endregion
         }
 
-        public void SlewToAz(Angle ra, Angle dec, string reason)
+        public void SlewToAz(Angle primaryAngle, Angle dec, string reason)
         {
-            Angle newDomeAz = CalculateDomeAzimuth(ra, dec);
+            if (primaryAngle.Type == Angle.AngleType.HA)
+                primaryAngle = wisesite.LocalSiderealTime - primaryAngle;   // HA => RA
+
+            Angle newDomeAz = CalculateDomeAzimuth(primaryAngle, dec);
 
             if (! wisedome.FarEnoughToMove(newDomeAz))  // Silently ignore slew request
                 return;
 
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                "DomeSlaveDriver:SlewToAz (tracking): ra: {0}, dec: {1} => {2}",
-                ra.ToString(), dec.ToString(), newDomeAz.ToNiceString());
+                $"DomeSlaveDriver:SlewToAz (for {reason}): ra: {primaryAngle}, dec: {dec} => {newDomeAz}");
             #endregion
             SlewToAz(newDomeAz.Degrees, reason);
         }
@@ -295,8 +297,8 @@ namespace ASCOM.Wise40
                 ref zd, ref targetAz, ref rar, ref decr);
 
             targetHA = (wisesite.LocalSiderealTime - ra).Radians;
-            targetAz = Angle.FromDegrees(targetAz).Radians;
-            targetAlt = Angle.FromDegrees(90.0 - zd).Radians;
+            targetAz = Angle.AzFromDegrees(targetAz).Radians;
+            targetAlt = Angle.AltFromDegrees(90.0 - zd).Radians;
 
             Lx = X0 - (Math.Sin(SiteNorthLat) * Math.Sin(-targetHA) * L);
             Ly = Y0 + (Math.Cos(-targetHA) * L);
@@ -321,7 +323,7 @@ namespace ASCOM.Wise40
             if (DomeAz < 0)
                DomeAz  += 2 * Math.PI;
 
-            return Angle.FromRadians(DomeAz, Angle.AngleType.Az);
+            return Angle.AzFromRadians(DomeAz);
         }
 
         public bool ShutterIsMoving

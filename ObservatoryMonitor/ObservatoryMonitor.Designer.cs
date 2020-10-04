@@ -165,7 +165,7 @@
             this.listBoxLog.FormattingEnabled = true;
             this.listBoxLog.HorizontalScrollbar = true;
             this.listBoxLog.ItemHeight = 15;
-            this.listBoxLog.Location = new System.Drawing.Point(0, 258);
+            this.listBoxLog.Location = new System.Drawing.Point(0, 288);
             this.listBoxLog.Margin = new System.Windows.Forms.Padding(8, 3, 3, 3);
             this.listBoxLog.Name = "listBoxLog";
             this.listBoxLog.ScrollAlwaysVisible = true;
@@ -284,7 +284,7 @@
             this.buttonProjector.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonProjector.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonProjector.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonProjector.Location = new System.Drawing.Point(456, 156);
+            this.buttonProjector.Location = new System.Drawing.Point(456, 171);
             this.buttonProjector.Name = "buttonProjector";
             this.buttonProjector.Size = new System.Drawing.Size(100, 40);
             this.buttonProjector.TabIndex = 67;
@@ -421,7 +421,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.ClientSize = new System.Drawing.Size(600, 757);
+            this.ClientSize = new System.Drawing.Size(600, 787);
             this.Controls.Add(this.buttonProjector);
             this.Controls.Add(this.labelTime);
             this.Controls.Add(this.groupBox2);

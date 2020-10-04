@@ -23,8 +23,8 @@ namespace Dash
     {
         public WiseSite wisesite = WiseSite.Instance;
         private readonly ASCOM.Utilities.Util ascomutil = new Util();
-        public enum GoToMode { Ra, Ha, DeltaRa, DeltaHa };
-        private GoToMode goToMode = GoToMode.Ra;
+        public enum GoToMode { RaDec, HaDec, AltAz /*, DeltaRa, DeltaHa */};
+        private GoToMode goToMode = GoToMode.RaDec;
 
         private DebuggingForm debuggingForm = new DebuggingForm();
         private readonly Debugger debugger = Debugger.Instance;
@@ -49,8 +49,8 @@ namespace Dash
         private WiseFilterWheelDigest filterWheelDigest = null;
         private string forecast;
 
-        private List<ToolStripMenuItem> debugMenuItems;
-        private Dictionary<object, string> alteredItems = new Dictionary<object, string>();
+        private readonly List<ToolStripMenuItem> debugMenuItems;
+        private readonly Dictionary<object, string> alteredItems = new Dictionary<object, string>();
 
         public Color safeColor = Statuser.colors[Statuser.Severity.Normal];
         public Color unsafeColor = Statuser.colors[Statuser.Severity.Error];
@@ -65,11 +65,11 @@ namespace Dash
         public ASCOM.DriverAccess.SafetyMonitor wiseSafeToOperate;
         public ASCOM.DriverAccess.ObservingConditions wiseVantagePro, wiseBoltwood;
 
-        private int focuserMaxStep = 0;
-        private int focuserLowerLimit = 0;
-        private int focuserUpperLimit = 0;
+        private readonly int focuserMaxStep = 0;
+        private readonly int focuserLowerLimit = 0;
+        private readonly int focuserUpperLimit = 0;
 
-        static List<Control> readonlyControls;
+        private static List<Control> readonlyControls;
         private static bool Readonly
         {
             get
@@ -114,7 +114,9 @@ namespace Dash
             }
 
             readonlyControls = new List<Control>() {
-                    textBoxRA, textBoxDec,
+                    textBoxRaDecRa, textBoxRaDecDec,
+                    textBoxHaDecHa, textBoxHaDecDec,
+                    textBoxAltAzAlt, textBoxAltAzAz,
                     buttonGoCoord,
                     buttonNorth, buttonSouth, buttonEast, buttonWest,
                     buttonNW, buttonNE, buttonSE, buttonSW,
@@ -192,7 +194,39 @@ namespace Dash
             UpdateCheckmark(debugDAQsToolStripMenuItem, debugger.Debugging(Debugger.DebugLevel.DebugDAQs));
 
             UpdateFilterWheelControls();
+            //tabControlGoTo.DrawMode = TabDrawMode.OwnerDrawFixed;
+            //tabControlGoTo.DrawItem += tabControlDrawItem;
+            tabControlGoTo.SelectedTab = tabPageRaDec;
         }
+
+        //private void tabControlDrawItem(object sender, DrawItemEventArgs e)
+        //{
+        //    TabControl tc = (TabControl)sender;
+
+        //    Graphics g = e.Graphics;
+        //    TabPage tp = tc.TabPages[e.Index];
+
+        //    StringFormat sf = new StringFormat
+        //    {
+        //        Alignment = StringAlignment.Center  //optional
+        //    };
+
+        //    // This is the rectangle to draw "over" the tabpage title
+        //    RectangleF headerRect = new RectangleF(e.Bounds.X, e.Bounds.Y + 2, e.Bounds.Width, e.Bounds.Height - 2);
+
+        //    // This is the default colour to use for the non-selected tabs
+        //    SolidBrush sb = new SolidBrush(Color.FromArgb(64, 64, 64));
+
+        //    // This changes the colour if we're trying to draw the selected tabpage
+        //    //if (tc.SelectedIndex == e.Index)
+        //    //    sb.Color =  Color.Aqua;
+
+        //    // Colour the header of the current tabpage based on what we did above
+        //    g.FillRectangle(sb, e.Bounds);
+
+        //    //Remember to redraw the text - I'm always using black for title text
+        //    g.DrawString(tp.Text, tc.Font, new SolidBrush(Color.DarkOrange), headerRect, sf);
+        //}
         #endregion
 
         public void UpdateFilterWheelControls()
@@ -328,11 +362,11 @@ namespace Dash
 
             if (telescopeDigest != null)
             {
-                labelSiderealValue.Text = Angle.FromHours(telescopeDigest.LocalSiderealTime).ToNiceString();
+                labelSiderealValue.Text = Angle.RaFromHours(telescopeDigest.LocalSiderealTime).ToNiceString();
 
-                telescopeRa = Angle.FromHours(telescopeDigest.Current.RightAscension, Angle.AngleType.RA);
-                telescopeDec = Angle.FromDegrees(telescopeDigest.Current.Declination, Angle.AngleType.Dec);
-                telescopeHa = Angle.FromHours(telescopeDigest.HourAngle, Angle.AngleType.HA);
+                telescopeRa = Angle.RaFromHours(telescopeDigest.Current.RightAscension);
+                telescopeDec = Angle.DecFromDegrees(telescopeDigest.Current.Declination);
+                telescopeHa = Angle.HaFromHours(telescopeDigest.Current.HourAngle);
 
                 string safetyError = telescopeDigest.SafeAtCurrentCoordinates;
 
@@ -340,52 +374,97 @@ namespace Dash
                 labelDeclinationValue.Text = telescopeDec.ToNiceString();
 
                 if (safetyError.Contains("Declination"))
+                {
                     labelDeclinationValue.ForeColor = telescopeDigest.BypassCoordinatesSafety ?
                         warningColor :
                         unsafeColor;
+                }
                 else
+                {
                     labelDeclinationValue.ForeColor = safeColor;
+                }
 
                 labelHourAngleValue.Text = telescopeHa.ToNiceString();
                 labelHourAngleValue.ForeColor = safetyError.Contains("HourAngle") ? unsafeColor : safeColor;
 
-                labelAltitudeValue.Text = Angle.FromDegrees(telescopeDigest.Altitude).ToNiceString();
+                labelAltitudeValue.Text = Angle.FromDegrees(telescopeDigest.Current.Altitude, Angle.AngleType.Deg).ToNiceString();
                 labelAltitudeValue.ForeColor = safetyError.Contains("Altitude") ? unsafeColor : safeColor;
 
-                labelAzimuthValue.Text = Angle.FromDegrees(telescopeDigest.Azimuth).ToNiceString();
+                labelAzimuthValue.Text = Angle.FromDegrees(telescopeDigest.Current.Azimuth, Angle.AngleType.Deg).ToNiceString();
 
                 #region Telescope Target
                 if (telescopeDigest.Slewing)
                 {
                     if (telescopeDigest.Target.RightAscension == Const.noTarget)
                     {
-                        textBoxRA.Text = "";
-                        toolTip.SetToolTip(textBoxRA, "Target RightAscension either not set or already reached");
+                        textBoxRaDecRa.Text = "";
+                        toolTip.SetToolTip(textBoxRaDecRa, "Target RightAscension either not set or already reached");
                     }
                     else
                     {
-                        textBoxRA.Text = Angle.FromHours(telescopeDigest.Target.RightAscension, Angle.AngleType.RA).ToNiceString();
-                        toolTip.SetToolTip(textBoxRA, "Current target RightAscension");
+                        textBoxRaDecRa.Text = Angle.RaFromHours(telescopeDigest.Target.RightAscension).ToNiceString();
+                        toolTip.SetToolTip(textBoxRaDecRa, "Current target RightAscension");
                     }
 
                     if (telescopeDigest.Target.Declination == Const.noTarget)
                     {
-                        textBoxDec.Text = "";
-                        toolTip.SetToolTip(textBoxDec, "Target Declination either not set or already reached");
+                        textBoxRaDecDec.Text = "";
+                        toolTip.SetToolTip(textBoxRaDecDec, "Target Declination either not set or already reached");
+                        textBoxHaDecHa.Text = "";
+                        toolTip.SetToolTip(textBoxHaDecDec, "Target Declination either not set or already reached");
                     }
                     else
                     {
-                        textBoxDec.Text = Angle.FromDegrees(telescopeDigest.Target.Declination, Angle.AngleType.Dec).ToNiceString();
-                        toolTip.SetToolTip(textBoxDec, "Current target Declination");
+                        textBoxRaDecDec.Text = Angle.DecFromDegrees(telescopeDigest.Target.Declination).ToNiceString();
+                        toolTip.SetToolTip(textBoxRaDecDec, "Current target Declination");
+                        textBoxHaDecDec.Text = Angle.DecFromDegrees(telescopeDigest.Target.Declination).ToNiceString();
+                        toolTip.SetToolTip(textBoxHaDecDec, "Current target Declination");
+                    }
+
+                    if (telescopeDigest.Target.HourAngle == Const.noTarget)
+                    {
+                        textBoxHaDecHa.Text = "";
+                        toolTip.SetToolTip(textBoxHaDecHa, "Target HourAngle either not set or already reached");
+                    }
+                    else
+                    {
+                        textBoxHaDecHa.Text = Angle.FromHours(telescopeDigest.Target.HourAngle).ToNiceString();
+                        toolTip.SetToolTip(textBoxHaDecHa, "Current target HourAngle");
+                    }
+
+                    if (telescopeDigest.Target.Altitude == Const.noTarget)
+                    {
+                        textBoxAltAzAlt.Text = "";
+                        toolTip.SetToolTip(textBoxAltAzAlt, "Target Altiude either not set or already reached");
+                    }
+                    else
+                    {
+                        textBoxAltAzAlt.Text = Angle.AltFromDegrees(telescopeDigest.Target.Altitude).ToNiceString();
+                        toolTip.SetToolTip(textBoxAltAzAlt, "Current target Altitude");
+                    }
+
+                    if (telescopeDigest.Target.Azimuth == Const.noTarget)
+                    {
+                        textBoxAltAzAz.Text = "";
+                        toolTip.SetToolTip(textBoxAltAzAz, "Target Azimuth either not set or already reached");
+                    }
+                    else
+                    {
+                        textBoxAltAzAz.Text = Angle.FromDegrees(telescopeDigest.Target.Azimuth).ToNiceString();
+                        toolTip.SetToolTip(textBoxAltAzAz, "Current target Azimuth");
                     }
                 }
                 else
                 {
-                    textBoxRA.Text = "";
-                    textBoxDec.Text = "";
+                    textBoxRaDecRa.Text = "";
+                    textBoxRaDecDec.Text = "";
+                    textBoxHaDecHa.Text = "";
+                    textBoxHaDecDec.Text = "";
+                    textBoxAltAzAlt.Text = "";
+                    textBoxAltAzAz.Text = "";
                 }
+                #endregion
             }
-            #endregion
 
             #endregion
 
@@ -405,16 +484,12 @@ namespace Dash
                 if (telescopeDigest.PrimaryPins.GuidePin)
                     primaryRate = Const.rateGuide;
                 else if (telescopeDigest.PrimaryPins.SetPin)
-                {
                     primaryRate = telescopeDigest.SlewPin ? Const.rateSlew : Const.rateSet;
-                }
 
                 if (telescopeDigest.SecondaryPins.GuidePin)
                     secondaryRate = Const.rateGuide;
                 else if (telescopeDigest.SecondaryPins.SetPin)
-                {
                     secondaryRate = telescopeDigest.SlewPin ? Const.rateSlew : Const.rateSet;
-                }
 
                 annunciatorRARateSlew.Cadence = annunciatorRARateSet.Cadence = annunciatorRARateGuide.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
                 if (primaryRate == Const.rateSlew)
@@ -440,7 +515,7 @@ namespace Dash
             {
                 if (telescopeDigest.Active)
                 {
-                    if (telescopeDigest.Activities.Count() == 1 && telescopeDigest.Activities[0].StartsWith("GoingIdle"))
+                    if (telescopeDigest.Activities.Count == 1 && telescopeDigest.Activities[0].StartsWith("GoingIdle"))
                     {
                         TimeSpan ts = TimeSpan.FromSeconds(telescopeDigest.SecondsTillIdle);
 
@@ -471,14 +546,14 @@ namespace Dash
             if (telescopeDigest != null)
             {
                 labelMoonIllum.Text = (moon.Illumination * 100).ToString("F0") + "%";
-                labelMoonDist.Text = moon.Distance(telescopeRa.Radians, telescopeDec.Radians).ToNiceString();
+                labelMoonDist.Text = moon.Distance(telescopeRa.Radians, telescopeDec.Radians).ToShortNiceString();
             }
             #endregion
 
             #region Air Mass
             if (telescopeDigest != null)
             {
-                Angle alt = Angle.FromDegrees(telescopeDigest.Altitude);
+                Angle alt = Angle.AltFromDegrees(telescopeDigest.Current.Altitude);
                 labelAirMass.Text = WiseSite.AirMass(alt.Radians).ToString("g4");
                 #endregion
 
@@ -599,7 +674,7 @@ namespace Dash
             #region RefreshDome
             if (domeDigest != null)
             {
-                labelDomeAzimuthValue.Text = Angle.FromDegrees(domeDigest.Azimuth, Angle.AngleType.Az).ToNiceString();
+                labelDomeAzimuthValue.Text = Angle.AzFromDegrees(domeDigest.Azimuth).ToShortNiceString();
                 domeStatus.Show(domeDigest.Status);
                 buttonDomePark.Text = domeDigest.AtPark ? "Unpark" : "Park";
                 buttonVent.Text = domeDigest.Vent ? "Close Vent" : "Open Vent";
@@ -905,13 +980,26 @@ namespace Dash
 
         private void buttonGoCoord_Click(object sender, EventArgs e)
         {
-            if ((goToMode == GoToMode.Ra || goToMode == GoToMode.DeltaRa) && !telescopeDigest.Tracking)
+            switch (tabControlGoTo.SelectedTab.Name)
+            {
+                case "tabPageRaDec":
+                    goToMode = GoToMode.RaDec;
+                    break;
+                case "tabPageHaDec":
+                    goToMode = GoToMode.HaDec;
+                    break;
+                case "tabPageAltAz":
+                    goToMode = GoToMode.AltAz;
+                    break;
+            }
+
+            if (goToMode == GoToMode.RaDec && !telescopeDigest.Tracking)
             {
                 telescopeStatus.Show("Telescope is NOT tracking!", 1000, Statuser.Severity.Error);
                 return;
             }
 
-            if ((goToMode == GoToMode.Ha || goToMode == GoToMode.DeltaHa) && telescopeDigest.Tracking)
+            if ((goToMode == GoToMode.HaDec || goToMode == GoToMode.AltAz) && telescopeDigest.Tracking)
             {
                 telescopeStatus.Show("Telescope is TRACKING!", 1000, Statuser.Severity.Error);
                 return;
@@ -919,40 +1007,40 @@ namespace Dash
 
             try
             {
-                double ra = ascomutil.HMSToHours(textBoxRA.Text);
-                double dec = ascomutil.DMSToDegrees(textBoxDec.Text);
-                Angle ang;
+                double ra, ha, dec, alt, az;
 
                 switch (goToMode)
                 {
-                    case GoToMode.Ra:
-                        ra = ascomutil.HMSToHours(textBoxRA.Text);
-                        dec = ascomutil.DMSToDegrees(textBoxDec.Text);
+                    case GoToMode.RaDec:
+                        ra = ascomutil.HMSToHours(textBoxRaDecRa.Text);
+                        dec = ascomutil.DMSToDegrees(textBoxRaDecDec.Text);
+                        telescopeStatus.Show("Slewing to " +
+                                $"ra: {Angle.RaFromHours(ra).ToNiceString()} " +
+                                $"dec: {Angle.DecFromDegrees(dec).ToNiceString()}",
+                            0, Statuser.Severity.Good);
+                        wiseTelescope.SlewToCoordinatesAsync(ra, dec);
                         break;
 
-                    case GoToMode.Ha:
-                        ang = wisesite.LocalSiderealTime - Angle.FromHours(ascomutil.HMSToHours(textBoxRA.Text));
-                        ra = ang.Hours;
-                        dec = ascomutil.DMSToDegrees(textBoxDec.Text);
+                    case GoToMode.HaDec:
+                        ha = ascomutil.HMSToHours(textBoxHaDecHa.Text);
+                        dec = ascomutil.DMSToDegrees(textBoxHaDecDec.Text);
+                        telescopeStatus.Show("Slewing to " +
+                                $"ha: {Angle.HaFromHours(ha).ToNiceString()} " +
+                                $"dec: {Angle.DecFromDegrees(dec).ToNiceString()}",
+                            0, Statuser.Severity.Good);
+                        wiseTelescope.Action("slew-to-ha-dec", $"HourAngle={ha},Declination={dec}");
                         break;
 
-                    case GoToMode.DeltaRa:
-                        ra = telescopeDigest.Current.RightAscension + ascomutil.HMSToHours(textBoxRA.Text);
-                        dec = telescopeDigest.Current.Declination + ascomutil.DMSToDegrees(textBoxDec.Text);
+                    case GoToMode.AltAz:
+                        alt = ascomutil.DMSToDegrees(textBoxAltAzAlt.Text);
+                        az = ascomutil.DMSToDegrees(textBoxAltAzAz.Text);
+                        telescopeStatus.Show("Slewing to " +
+                                $"alt: {Angle.AltFromDegrees(alt).ToNiceString()} " +
+                                $"az: {Angle.AzFromDegrees(az).ToNiceString()}",
+                            0, Statuser.Severity.Good);
+                        wiseTelescope.SlewToAltAzAsync(az, alt);
                         break;
-
-                    case GoToMode.DeltaHa:
-                        double ha = telescopeDigest.HourAngle + ascomutil.HMSToHours(textBoxRA.Text);
-                        ang = Angle.FromHours(ha);
-                        ra = (wisesite.LocalSiderealTime - ang).Hours;
-                        dec = telescopeDigest.Current.Declination + ascomutil.DMSToDegrees(textBoxDec.Text);
-                        break;
-
                 }
-
-                telescopeStatus.Show($"Slewing to ra: {Angle.FromHours(ra).ToNiceString()} dec: {Angle.FromDegrees(dec).ToNiceString()}",
-                    0, Statuser.Severity.Good);
-                wiseTelescope.SlewToCoordinatesAsync(ra, dec);
             }
             catch (Exception ex)
             {
@@ -966,43 +1054,41 @@ namespace Dash
             telescopeStatus.Show("Stopped", 1000, Statuser.Severity.Good);
         }
 
-        private void textBoxRA_MouseDoubleClick(object sender, MouseEventArgs e)
+        public void coordBox_MouseDoubleClick(object sender, EventArgs e)
         {
-            string text = "";
+            TextBox tb;
 
-            switch (goToMode)
+            switch (((TextBox) sender).Name)
             {
-                case GoToMode.Ra:
-                    text = Angle.FromHours(telescopeDigest.Current.RightAscension).ToString();
-                    break;
-                case GoToMode.Ha:
-                    text = Angle.FromHours(telescopeDigest.HourAngle, Angle.AngleType.HA).ToString();
-                    break;
-                case GoToMode.DeltaRa:
-                case GoToMode.DeltaHa:
-                    text = new Angle("00h00m00.0s").ToString();
+                case "textBoxRaDecRa":
+                case "textBoxRaDecDec":
+                    tb = Controls.Find("textBoxRaDecRa", true)[0] as TextBox;
+                    tb.Text = Angle.RaFromHours(telescopeDigest.Current.RightAscension).ToString().
+                        Replace('h', ':').Replace('m', ':').Replace('s', ' ');
+
+                    tb = Controls.Find("textBoxRaDecDec", true)[0] as TextBox;
+                    tb.Text = Angle.DecFromDegrees(telescopeDigest.Current.Declination).ToString();
                     break;
 
+                case "textBoxHaDecHa":
+                case "textBoxHaDecDec":
+                    Angle ha = wisesite.LocalSiderealTime - Angle.HaFromHours(telescopeDigest.Current.RightAscension);
+                    tb = Controls.Find("textBoxHaDecHa", true)[0] as TextBox;
+                    tb.Text = ha.ToString().Replace('h', ':').Replace('m', ':').Replace('s', ' ');
+
+                    tb = Controls.Find("textBoxHaDecDec", true)[0] as TextBox;
+                    tb.Text = Angle.DecFromDegrees(telescopeDigest.Current.Declination).ToString();
+                    break;
+
+                case "textBoxAltAzAlt":
+                case "textBoxAltAzAz":
+                    tb = Controls.Find("textBoxAltAzAlt", true)[0] as TextBox;
+                    tb.Text = Angle.AltFromDegrees(telescopeDigest.Current.Altitude).ToString();
+
+                    tb = Controls.Find("textBoxAltAzAz", true)[0] as TextBox;
+                    tb.Text = Angle.AzFromDegrees(telescopeDigest.Current.Azimuth).ToString();
+                    break;
             }
-            textBoxRA.Text = text.Replace('h', ':').Replace('m', ':').Replace('s', ' ');
-        }
-
-        private void textBoxDec_MouseDoubleClick(object sender, MouseEventArgs e)
-        {
-            string text = "";
-
-            switch (goToMode)
-            {
-                case GoToMode.Ra:
-                case GoToMode.Ha:
-                    text = Angle.FromDegrees(telescopeDigest.Current.Declination).ToString();
-                    break;
-                case GoToMode.DeltaRa:
-                case GoToMode.DeltaHa:
-                    text = new Angle("00:00:00.0").ToString();
-                    break;
-            }
-            textBoxDec.Text = text;
         }
 
         private void radioButtonSlew_Click(object sender, EventArgs e)
@@ -1135,7 +1221,7 @@ namespace Dash
         }
         private void buttonDomeAzSet_Click(object sender, EventArgs e)
         {
-            if (textBoxDomeAzValue.Text == string.Empty)
+            if (string.IsNullOrEmpty(textBoxDomeAzValue.Text))
                 return;
 
             double az = Convert.ToDouble(textBoxDomeAzValue.Text);
@@ -1150,7 +1236,7 @@ namespace Dash
 
         private void buttonDomeAzGo_Click(object sender, EventArgs e)
         {
-            if (textBoxDomeAzValue.Text == string.Empty)
+            if (string.IsNullOrEmpty(textBoxDomeAzValue.Text))
                 return;
 
             double az = Convert.ToDouble(textBoxDomeAzValue.Text);
@@ -1164,7 +1250,7 @@ namespace Dash
             try
             {
                 wiseDome.SlewToAzimuth(az);
-                domeStatus.Show($"Slewing to {Angle.FromDegrees(az).ToNiceString()}", 0, Statuser.Severity.Normal);
+                domeStatus.Show($"Slewing to {Angle.AzFromDegrees(az).ToNiceString()}", 0, Statuser.Severity.Normal);
             }
             catch (Exception ex)
             {
@@ -1375,7 +1461,6 @@ namespace Dash
         {
             try
             {
-
                 if (wiseFocuser.Position > focuserLowerLimit)
                     wiseFocuser.Action("move", "all-down");
             }
@@ -1765,64 +1850,9 @@ namespace Dash
             }
         }
 
-        private void UpdateGoToControls()
-        {
-            string modeTip = "", raTip = "", decTip = "";
-            string raText = "", decText = "";
-
-            switch (goToMode)
-            {
-                case GoToMode.Ra:
-                    raText = "RA";
-                    decText = "Dec";
-                    modeTip = "Enter RA and Dec coordinates and pres Go";
-                    raTip = "Double click for current Right Ascension";
-                    decTip = "Double click for current Declination";
-                    break;
-                case GoToMode.Ha:
-                    raText = "HA";
-                    decText = "Dec";
-                    modeTip = "Enter HA and Dec coordinates and pres Go";
-                    raTip = "Double click for current Hour Angle";
-                    decTip = "Double click for current Declination";
-                    break;
-                case GoToMode.DeltaRa:
-                    raText = "dRA";
-                    decText = "dDec";
-                    modeTip = "Enter RA and Dec distances and pres Go";
-                    raTip = "Double click for default RA distance";
-                    decTip = "Double click for default Dec distance";
-                    break;
-                case GoToMode.DeltaHa:
-                    raText = "dHA";
-                    decText = "dDec";
-                    modeTip = "Enter HA and Dec distances and pres Go";
-                    raTip = "Double click for default HA distance";
-                    decTip = "Double click for default Dec distance";
-                    break;
-            }
-
-            labelRA.Text = raText + ":";
-            labelDec.Text = decText + ":";
-            textBoxRA.Text = "";
-            textBoxDec.Text = "";
-            toolTip.SetToolTip(comboBoxGoToMode, modeTip);
-            toolTip.SetToolTip(textBoxRA, raTip);
-            toolTip.SetToolTip(textBoxDec, decTip);
-        }
-
         private void groupBoxFilterWheel_Enter(object sender, EventArgs e)
         {
 
-        }
-
-        private void comboBoxGoToMode_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            ComboBox cb = sender as ComboBox;
-
-            goToMode = (GoToMode)cb.SelectedIndex;
-            UpdateGoToControls();
-            textBoxRA.Focus();
         }
 
         private void davisVantagePro2ToolStripMenuItem_Click(object sender, EventArgs e)

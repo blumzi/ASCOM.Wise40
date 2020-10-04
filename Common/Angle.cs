@@ -212,14 +212,58 @@ namespace ASCOM.Wise40.Common
             return new Angle(rad * 180.0 / Math.PI, type);
         }
 
+        public static Angle RaFromRadians(double rad)
+        {
+            return new Angle(rad * 180.0 / Math.PI, AngleType.RA);
+        }
+
+        public static Angle AzFromRadians(double rad)
+        {
+            return new Angle(rad * 180.0 / Math.PI, AngleType.Az);
+        }
+
         public static Angle FromDegrees(double deg, AngleType type = AngleType.Deg)
         {
             return new Angle(deg, type);
         }
 
+        public static Angle DecFromRadians(double rad)
+        {
+            return new Angle(rad * 180.0 / Math.PI, AngleType.Dec);
+        }
+
+        public static Angle HaFromRadians(double rad)
+        {
+            return new Angle(rad * 180.0 / Math.PI, AngleType.HA);
+        }
+
         public static Angle FromHours(double hours, AngleType type = AngleType.RA)
         {
             return new Angle(hours, type);
+        }
+
+        public static Angle RaFromHours(double hours)
+        {
+            return FromHours(hours, AngleType.RA);
+        }
+        public static Angle HaFromHours(double hours)
+        {
+            return FromHours(hours, AngleType.HA);
+        }
+
+        public static Angle DecFromDegrees(double degrees)
+        {
+            return FromDegrees(degrees, AngleType.Dec);
+        }
+
+        public static Angle AltFromDegrees(double degrees)
+        {
+            return FromDegrees(degrees, AngleType.Alt);
+        }
+
+        public static Angle AzFromDegrees(double degrees)
+        {
+            return FromDegrees(degrees, AngleType.Az);
         }
 
         public static double Normalize(Angle a, double d)
@@ -308,12 +352,20 @@ namespace ASCOM.Wise40.Common
         {
             if (Double.IsNaN(Radians))
                 return "Invalid";
-            if (_isHMS)
-                return ascomutils.DegreesToHMS(Degrees, "h", "m", "s", 1);
-            else if (_type == AngleType.Az || _type == AngleType.Alt)
-                return Degrees.ToString("0.0°");
-            else
-                return ascomutils.DegreesToDMS(Degrees, "°", "'", "\"", 1);
+
+            return _isHMS ?
+                ascomutils.DegreesToHMS(Degrees, "h", "m", "s", 1) :
+                ascomutils.DegreesToDMS(Degrees, "°", "'", "\"", 1);
+        }
+
+        public string ToShortNiceString()
+        {
+            if (Double.IsNaN(Radians))
+                return "Invalid";
+
+            return (_type == AngleType.Az || _type == AngleType.Alt) ?
+                Degrees.ToString("0.0°") :
+                ToNiceString();
         }
 
         //private static double NormalizeAltAndDec(Angle a, double d)
@@ -427,14 +479,14 @@ namespace ASCOM.Wise40.Common
                 return false;
 
             Angle b = obj as Angle;
-            return Math.Abs(b.Radians - Radians) <= epsilonRad;
+            return Math.Abs(b.Radians - Radians) <= EpsilonRad;
         }
 
         public bool Equals(Angle a)
         {
             if (a is null)
                 return false;
-            return Math.Abs(a.Radians - Radians) <= epsilonRad;
+            return Math.Abs(a.Radians - Radians) <= EpsilonRad;
         }
 
         public ShortestDistanceResult ShortestDistance(Angle other)
@@ -506,9 +558,9 @@ namespace ASCOM.Wise40.Common
             return hours * 15.0;
         }
 
-        public static readonly Angle zero = new Angle(0.0);
-        public static readonly Angle invalid = new Angle(double.NaN);
-        public static readonly Angle invalidAz = new Angle(double.NaN, AngleType.Az);
-        public static double epsilonRad = Deg2Rad(1.0 / 3600.0 / 1000000.0);    // 1 micro-second
+        public static readonly Angle Zero = new Angle(0.0);
+        public static readonly Angle Invalid = new Angle(double.NaN);
+        public static readonly Angle InvalidAz = new Angle(double.NaN, AngleType.Az);
+        public static double EpsilonRad = Deg2Rad(1.0 / 3600.0 / 1000000.0);    // 1 micro-second
     }
 }

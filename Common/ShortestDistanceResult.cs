@@ -22,7 +22,7 @@ namespace ASCOM.Wise40.Common
 
         public ShortestDistanceResult()
         {
-            angle = Angle.invalid;
+            angle = Angle.Invalid;
             direction = Const.AxisDirection.None;
         }
     }

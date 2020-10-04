@@ -113,7 +113,7 @@ namespace ASCOM.Wise40
             }
 
             double rad = SphereDist(telescopeRA, telescopeDec, moonPos.RA, moonPos.Dec);
-            return Angle.FromRadians(rad, Angle.AngleType.Az);
+            return Angle.AzFromRadians(rad);
         }
     }
 }

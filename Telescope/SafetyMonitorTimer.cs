@@ -28,8 +28,8 @@ namespace ASCOM.Wise40 //.Telescope
             wisetele.safetyMonitorTimer.Enabled = false;
 
             string reason = wisetele.SafeAtCoordinates(
-                Angle.FromHours(wisetele.RightAscension, Angle.AngleType.RA),
-                Angle.FromDegrees(wisetele.Declination, Angle.AngleType.Dec));
+                Angle.RaFromHours(wisetele.RightAscension),
+                Angle.DecFromDegrees(wisetele.Declination));
 
             if (string.IsNullOrEmpty(reason))
             {

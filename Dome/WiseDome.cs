@@ -28,7 +28,7 @@ namespace ASCOM.Wise40
         private List<IConnectable> connectables;
         private List<IDisposable> disposables;
         private bool _connected = false;
-        private Angle _minimalMove = Angle.FromDegrees(2.0, Angle.AngleType.Az);
+        private Angle _minimalMove = Angle.AzFromDegrees(2.0);
         private bool _isStuck;
 
         private static readonly Object _caliWriteLock = new object();
@@ -279,7 +279,7 @@ namespace ASCOM.Wise40
             if (!DomeIsMoving)
                 return false;
 
-            string message = $"WiseDome:arriving: at {Azimuth.ToNiceString()} target {there.ToNiceString()}: ";
+            string message = $"WiseDome:arriving: at {Azimuth.ToShortNiceString()} target {there.ToShortNiceString()}: ";
 
             ShortestDistanceResult shortest = Azimuth.ShortestDistance(there);
             Angle inertial = InertiaAngle(there);
@@ -344,9 +344,9 @@ namespace ASCOM.Wise40
                     Calibrating = false;
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugDome,
-                        $"WiseDome: Setting _foundCalibration[{calibrationPoints.IndexOf(cp)}] == {cp.az.ToNiceString()} ...");
+                        $"WiseDome: Setting _foundCalibration[{calibrationPoints.IndexOf(cp)}] == {cp.az.ToShortNiceString()} ...");
                     #endregion
-                    Stop($"Arrived at calibration point {cp.az.ToNiceString()}");
+                    Stop($"Arrived at calibration point {cp.az.ToShortNiceString()}");
                     Thread.Sleep(2000);     // settle down
                     _foundCalibration.Set();
                 }
@@ -545,7 +545,7 @@ namespace ASCOM.Wise40
             #region debug
             string dbg = $"WiseDome:Stop({reason}) Starting to stop (encoder: {domeEncoder.Value}) ";
             if (Calibrated)
-                dbg += $", az: {Azimuth.ToNiceString()}";
+                dbg += $", az: {Azimuth.ToShortNiceString()}";
             else
                 dbg += ", not calibrated";
             debugger.WriteLine(Debugger.DebugLevel.DebugDome, dbg);
@@ -574,8 +574,8 @@ namespace ASCOM.Wise40
                 if (Calibrated)
                 {
                     debugger.WriteLine(Debugger.DebugLevel.DebugDome, dbg +
-                        $"at az: {Azimuth.ToNiceString()}, " +
-                        $"target: {_targetAz.ToNiceString()} ",
+                        $"at az: {Azimuth.ToShortNiceString()}, " +
+                        $"target: {_targetAz.ToShortNiceString()} ",
                         $"encoder: {domeEncoder.Value}, " +
                         $"after {tries + 1} tries");
                 }
@@ -637,12 +637,12 @@ namespace ASCOM.Wise40
                     if (_autoCalibrate)
                         StartFindingHome();
                     else
-                        return Angle.FromDegrees(double.NaN, Angle.AngleType.Az);
+                        return Angle.AzFromDegrees(double.NaN);
                 }
 
                 ret = domeEncoder.Azimuth;
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugDome, $"WiseDome: Azimuth: get => {ret.ToNiceString()}");
+                debugger.WriteLine(Debugger.DebugLevel.DebugDome, $"WiseDome: Azimuth: get => {ret.ToShortNiceString()}");
                 #endregion
                 return ret;
             }
@@ -760,7 +760,7 @@ namespace ASCOM.Wise40
             activityMonitor.EndActivity(ActivityMonitor.ActivityType.DomeSlew, new Activity.DomeSlew.EndParams()
             {
                 endState = Activity.State.Succeeded,
-                endReason = $"Found calibration point at {Azimuth.ToNiceString()}",
+                endReason = $"Found calibration point at {Azimuth.ToShortNiceString()}",
                 endAz = Azimuth.Degrees,
             });
             #region debug
@@ -786,7 +786,7 @@ namespace ASCOM.Wise40
         public void SlewToAzimuth(double degrees, string reason)
         {
             Angle targetAng = new Angle(degrees, Angle.AngleType.Az);
-            string op = $"SlewToAzimuth({targetAng.ToNiceString()}, reason: {reason})";
+            string op = $"SlewToAzimuth({targetAng.ToShortNiceString()}, reason: {reason})";
 
             if (Slaved)
                 Exceptor.Throw<InvalidOperationException>(op, "Dome is Slaved");
@@ -856,7 +856,7 @@ namespace ASCOM.Wise40
                     break;
             }
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugDome, $"WiseDome: {op} => at: {Azimuth.ToNiceString()}, dist: {shortest.angle.ToNiceString()}), moving {shortest.direction}");
+            debugger.WriteLine(Debugger.DebugLevel.DebugDome, $"WiseDome: {op} => at: {Azimuth.ToShortNiceString()}, dist: {shortest.angle.ToShortNiceString()}), moving {shortest.direction}");
             #endregion
 
             if (Simulated && _targetAz == _simulatedStuckAz)
@@ -933,7 +933,7 @@ namespace ASCOM.Wise40
                     ret += "CCW";
 
                 if (_targetAz != null)
-                    ret += $" to {_targetAz.ToNiceString()}";
+                    ret += $" to {_targetAz.ToShortNiceString()}";
 
                 if (StateIsOn(DomeState.Calibrating))
                     ret += " (calibrating)";
@@ -997,7 +997,7 @@ namespace ASCOM.Wise40
                 }
                 else
                 {
-                    Exceptor.Throw<DriverException>(op, "Observatory is shutting down");
+                    Exceptor.Throw<DriverException>(op, Const.UnsafeReasons.ShuttingDown);
                 }
             }
 
@@ -1262,7 +1262,7 @@ namespace ASCOM.Wise40
                     return "ok";
 
                 case "set-zimuth":
-                    Azimuth = Angle.FromDegrees(Convert.ToDouble(actionParameters));
+                    Azimuth = Angle.AzFromDegrees(Convert.ToDouble(actionParameters));
                     return "ok";
 
                 case "start-moving":
@@ -1462,11 +1462,11 @@ namespace ASCOM.Wise40
                 if (Simulated)
                 {
                     domeEncoder.Value = savedEncoderValue;
-                    domeEncoder.Calibrate(Angle.FromDegrees(savedAzimuth, Angle.AngleType.Az));
+                    domeEncoder.Calibrate(Angle.AzFromDegrees(savedAzimuth));
                 }
                 else if (savedEncoderValue == domeEncoder.Value)
                 {
-                    domeEncoder.Calibrate(Angle.FromDegrees(savedAzimuth, Angle.AngleType.Az));
+                    domeEncoder.Calibrate(Angle.AzFromDegrees(savedAzimuth));
                 }
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugDome, "Restored calibration data from \"{0}\", Azimuth: {1}",
@@ -1514,7 +1514,7 @@ namespace ASCOM.Wise40
             if (!ret)
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugDome,
-                    $"Too short: distance: {distance.ToNiceString()} < minimal: {_minimalMove.ToNiceString()}");
+                    $"Too short: distance: {distance.ToShortNiceString()} < minimal: {_minimalMove.ToShortNiceString()}");
                 #endregion
             return ret;
         }
@@ -1531,8 +1531,8 @@ namespace ASCOM.Wise40
                 _autoCalibrate = Convert.ToBoolean(driverProfile.GetValue(
                     Const.WiseDriverID.Dome, Const.ProfileName.Dome_AutoCalibrate, string.Empty, true.ToString()));
 
-                _minimalMove = Angle.FromDegrees(Convert.ToDouble(driverProfile.GetValue(
-                    Const.WiseDriverID.Dome, Const.ProfileName.Dome_MinimalMovement, string.Empty, "2.0")), Angle.AngleType.Az);
+                _minimalMove = Angle.AzFromDegrees(Convert.ToDouble(driverProfile.GetValue(
+                    Const.WiseDriverID.Dome, Const.ProfileName.Dome_MinimalMovement, string.Empty, "2.0")));
             }
 
             wisedomeshutter.ReadProfile();

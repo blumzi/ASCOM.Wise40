@@ -262,6 +262,7 @@ namespace ASCOM.Wise40
             }
 
             _hourAngle = Angle.FromRadians(_currPosition.radians).Hours;
+            //_hourAngle = Angle.HaFromRadians(_currPosition.radians).Hours;
             _rightAscension = wisesite.LocalSiderealTime.Hours - _hourAngle;
             _samples.Enqueue(_currPosition);
 
@@ -294,7 +295,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return Angle.FromHours(astroutils.ConditionRA(_rightAscension));
+                return Angle.RaFromHours(astroutils.ConditionRA(_rightAscension));
             }
         }
 
@@ -302,7 +303,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return Angle.FromHours(astroutils.ConditionHA(_hourAngle));
+                return Angle.HaFromHours(astroutils.ConditionHA(_hourAngle));
             }
         }
 
@@ -374,7 +375,7 @@ namespace ASCOM.Wise40
                 return double.NaN;
 
             double deltaRadians = Math.Abs(samples[last].radians - samples[last - 1].radians);
-            Angle a = Angle.FromRadians(deltaRadians / DeltaT, Angle.AngleType.RA);
+            Angle a = Angle.RaFromRadians(deltaRadians / DeltaT);
 
             return  a.Hours;
         }
@@ -416,7 +417,7 @@ namespace ASCOM.Wise40
 
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}:Predicted: r: {1}, p: {2}, r - p: {3}, (r - p)Angle: {4}",
-                WiseName, reading,  pred, reading - pred, Angle.FromHours(reading - pred, Angle.AngleType.RA).ToNiceString());
+                WiseName, reading,  pred, reading - pred, Angle.RaFromHours(reading - pred).ToNiceString());
             #endregion
 
             return reading; // pred;
@@ -466,7 +467,7 @@ namespace ASCOM.Wise40
             {
                 // We don't still have a _prevPosition to check against
                 _prevPosition.radians = _currPosition.radians;
-                _prevDeclination = Angle.FromRadians(_currPosition.radians).Degrees;
+                _prevDeclination = Angle.DecFromRadians(_currPosition.radians).Degrees;
                 return;
             }
 
@@ -475,7 +476,7 @@ namespace ASCOM.Wise40
             if (rads > Const.onePI)
                 rads -= Const.twoPI;
 
-            _declination = Angle.FromRadians(rads).Degrees;
+            _declination = Angle.DecFromRadians(rads).Degrees;
             _samples.Enqueue(_currPosition);
 
             if (!IsReady && (_samples.ToArray().Length == _samples.MaxSize))
@@ -547,7 +548,7 @@ namespace ASCOM.Wise40
             {
                 double dec = _declination;
 
-                return Angle.FromDegrees(dec);
+                return Angle.DecFromDegrees(dec);
             }
         }
 
@@ -560,7 +561,7 @@ namespace ASCOM.Wise40
                 return double.NaN;
 
             double deltaRadians = Math.Abs(samples[last].radians - samples[last - 1].radians);
-            Angle a = Angle.FromRadians(deltaRadians / DeltaT, Angle.AngleType.Dec);
+            Angle a = Angle.FromRadians(deltaRadians / DeltaT);
 
             return a.Degrees;
         }
@@ -590,7 +591,7 @@ namespace ASCOM.Wise40
 
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}:Predicted: r: {1}, p: {2}, r - p: {3}, (r - p)Angle: {4}",
-                WiseName, reading, pred, reading - pred, Angle.FromDegrees(reading - pred, Angle.AngleType.Dec).ToNiceString());
+                WiseName, reading, pred, reading - pred, Angle.DecFromDegrees(reading - pred).ToNiceString());
             #endregion
 
             return reading; // pred;
