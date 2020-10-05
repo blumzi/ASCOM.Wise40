@@ -2237,7 +2237,7 @@ namespace ASCOM.Wise40
                     $"{op}: at {RateName(r)}: Slew cancelled at {currentAngle}");
                 #endregion debug
                 StopAxisAndWaitForHalt(thisAxis, slewerName, r);
-                status = ScopeSlewerStatus.Canceled;
+                //status = ScopeSlewerStatus.Canceled;
                 throw;
             }
         }
@@ -2581,7 +2581,6 @@ namespace ASCOM.Wise40
             }
         }
 
-        
 #pragma warning disable RCS1047 // Non-asynchronous method name should not end with 'Async'.
         public void SlewToHaDecAsync(double ha, double dec, string whatfor)
 #pragma warning restore RCS1047 // Non-asynchronous method name should not end with 'Async'.
@@ -2594,7 +2593,7 @@ namespace ASCOM.Wise40
             CheckCoordinateSanity(Angle.AngleType.HA, ha, op);
             CheckCoordinateSanity(Angle.AngleType.Dec, dec, op);
 
-            double alt = Double.NaN, az = Double.NaN;
+            double alt, az;
 
             Astrometry.Transform.Transform transform = new Astrometry.Transform.Transform()
             {
@@ -2792,12 +2791,12 @@ namespace ASCOM.Wise40
 
         public void SyncToTarget()
         {
-            //#region debug
+            //region debug
             //debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
             //    $"SyncToTarget: ra: {TargetRightAscension}, dec: {TargetDeclination}" +
             //    $"renishaw ha: {Renishaw.Read(Renishaw.EncoderType.HA)}, dec: {Renishaw.Read(Renishaw.EncoderType.Dec)}");
             //#endregion
-            //Exceptor.Throw<MethodNotImplementedException>("SyncToTarget", "SyncToTarget not implemented");
+            Exceptor.Throw<MethodNotImplementedException>("SyncToTarget", "SyncToTarget not implemented");
         }
 
         public string Description
@@ -2902,7 +2901,7 @@ namespace ASCOM.Wise40
             //    $"SyncToAltAz(az: {Azimuth}, alt: {Altitude}), " +
             //    $"renishaw ha: {Renishaw.Read(Renishaw.EncoderType.HA)}, dec: {Renishaw.Read(Renishaw.EncoderType.Dec)}");
             //#endregion
-            //Exceptor.Throw<MethodNotImplementedException>($"SyncToAltAz({Azimuth}, {Altitude})", "SyncToAltAz not implemented");
+            Exceptor.Throw<MethodNotImplementedException>($"SyncToAltAz({Azimuth}, {Altitude})", "SyncToAltAz not implemented");
         }
 
         public static void SyncToCoordinates(double RightAscension, double Declination)
@@ -2912,7 +2911,7 @@ namespace ASCOM.Wise40
             //    $"SyncToCoordinates(ra: {RightAscension}, dec: {Declination})" +
             //    $"renishaw ha: {Renishaw.Read(Renishaw.EncoderType.HA)}, dec: {Renishaw.Read(Renishaw.EncoderType.Dec)}");
             //#endregion
-            //Exceptor.Throw<MethodNotImplementedException>($"SyncToCoordinates({RightAscension}, {Declination})", "SyncToCoordinates not implemented");
+            Exceptor.Throw<MethodNotImplementedException>($"SyncToCoordinates({RightAscension}, {Declination})", "SyncToCoordinates not implemented");
         }
 
         public static bool CanMoveAxis(TelescopeAxes Axis)
