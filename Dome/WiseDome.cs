@@ -183,11 +183,6 @@ namespace ASCOM.Wise40
             return (_state & flag) != 0;
         }
 
-        private bool StateIsOff(DomeState flag)
-        {
-            return !StateIsOn(flag);
-        }
-
         private void SetDomeState(DomeState flags)
         {
             _state |= flags;
@@ -264,7 +259,7 @@ namespace ASCOM.Wise40
         /// </summary>
         /// <param name="az"></param>
         /// <returns></returns>
-        private Angle InertiaAngle(Angle az)
+        private Angle InertiaAngle()
         {
             return new Angle(2 * (360.0 / TicksPerDomeRevolution));
         }
@@ -282,7 +277,7 @@ namespace ASCOM.Wise40
             string message = $"WiseDome:arriving: at {Azimuth.ToShortNiceString()} target {there.ToShortNiceString()}: ";
 
             ShortestDistanceResult shortest = Azimuth.ShortestDistance(there);
-            Angle inertial = InertiaAngle(there);
+            Angle inertial = InertiaAngle();
 
             if (StateIsOn(DomeState.MovingCW) && (shortest.direction == Const.AxisDirection.Decreasing))
             {
@@ -575,7 +570,7 @@ namespace ASCOM.Wise40
                 {
                     debugger.WriteLine(Debugger.DebugLevel.DebugDome, dbg +
                         $"at az: {Azimuth.ToShortNiceString()}, " +
-                        $"target: {_targetAz.ToShortNiceString()} ",
+                        $"target: {((_targetAz == null) ? "none" : _targetAz.ToShortNiceString())} ",
                         $"encoder: {domeEncoder.Value}, " +
                         $"after {tries + 1} tries");
                 }
