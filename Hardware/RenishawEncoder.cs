@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 
 namespace ASCOM.Wise40.Hardware
 {
-    public class Renishaw
+    public class RenishawEncoder
     {
-        private static readonly Lazy<Renishaw> lazy = new Lazy<Renishaw>(() => new Renishaw()); // Singleton
+        private static readonly Lazy<RenishawEncoder> lazy = new Lazy<RenishawEncoder>(() => new RenishawEncoder()); // Singleton
         private bool _initialized = false;
         private static readonly Common.Debugger debugger = Common.Debugger.Instance;
         private static PCIe1711 Board;
@@ -21,7 +21,7 @@ namespace ASCOM.Wise40.Hardware
         private enum BissMode { B = 0, C = 1 };
         public enum EncoderType { HA, Dec };
 
-        public static Renishaw Instance
+        public static RenishawEncoder Instance
         {
             get
             {
