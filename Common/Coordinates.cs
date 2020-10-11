@@ -10,110 +10,44 @@ namespace ASCOM.Wise40.Common
 {
     public class AltAz
     {
-        private double alt, az;
-
         public AltAz(double alt, double az)
         {
-            this.alt = alt;
-            this.az = az;
+            this.Alt = alt;
+            this.Az = az;
         }
 
-        public double Alt
-        {
-            get
-            {
-                return this.alt;
-            }
-            set
-            {
-                this.alt = value;
-            }
-        }
+        public double Alt { get; set; }
 
-        public double Az
-        {
-            get
-            {
-                return this.az;
-            }
-            set
-            {
-                this.az = value;
-            }
-        }
+        public double Az { get; set; }
     }
 
     public class RaDec
     {
-        private double ra, dec;
-
         public RaDec(double ra, double dec)
         {
-            this.ra = ra;
-            this.dec = dec;
+            this.Ra = ra;
+            this.Dec = dec;
         }
 
-        public double Ra
-        {
-            get
-            {
-                return this.ra;
-            }
-            set
-            {
-                this.ra = value;
-            }
-        }
+        public double Ra { get; set; }
 
-        public double Dec
-        {
-            get
-            {
-                return this.dec;
-            }
-            set
-            {
-                this.dec = value;
-            }
-        }
+        public double Dec { get; set; }
     }
 
     public class LatLon
     {
-        private double lat, lon;
-
         public LatLon(double lat, double lon)
         {
-            this.lat = lat;
-            this.lon = lon;
+            this.Lat = lat;
+            this.Lon = lon;
         }
 
-        public double Lat
-        {
-            get
-            {
-                return this.lat;
-            }
-            set
-            {
-                this.lat = value;
-            }
-        }
+        public double Lat { get; set; }
 
-        public double Lon
-        {
-            get
-            {
-                return this.lon;
-            }
-            set
-            {
-                this.lon = value;
-            }
-        }
+        public double Lon { get; set; }
     }
 
-    public class Coordinates
+    public static class Coordinates
     {
         static public RaDec AltAz2RaDec(AltAz altAzm, LatLon location, DateTime time, double elevation)
         {
@@ -121,12 +55,14 @@ namespace ASCOM.Wise40.Common
             var MJDdate = utils.CalendarToMJD(time.Day, time.Month, time.Year);
             MJDdate += time.TimeOfDay.TotalDays;
 
-            var tfm = new ASCOM.Astrometry.Transform.Transform();
-            tfm.JulianDateTT = MJDdate;
-            tfm.SiteElevation = elevation * 1000;
-            tfm.SiteLatitude = location.Lat;
-            tfm.SiteLongitude = location.Lon;
-            tfm.SiteTemperature = 0;
+            var tfm = new ASCOM.Astrometry.Transform.Transform
+            {
+                JulianDateTT = MJDdate,
+                SiteElevation = elevation * 1000,
+                SiteLatitude = location.Lat,
+                SiteLongitude = location.Lon,
+                SiteTemperature = 0
+            };
             tfm.SetAzimuthElevation(altAzm.Az, altAzm.Alt);
             tfm.Refresh();
             var res = new RaDec(tfm.RAJ2000, tfm.DecJ2000);
@@ -139,12 +75,14 @@ namespace ASCOM.Wise40.Common
             var MJDdate = utils.CalendarToMJD(time.Day, time.Month, time.Year);
             MJDdate += time.TimeOfDay.TotalDays;
 
-            var tfm = new ASCOM.Astrometry.Transform.Transform();
-            tfm.JulianDateTT = MJDdate;
-            tfm.SiteElevation = elevation * 1000;
-            tfm.SiteLatitude = location.Lat;
-            tfm.SiteLongitude = location.Lon;
-            tfm.SiteTemperature = 0;
+            var tfm = new ASCOM.Astrometry.Transform.Transform
+            {
+                JulianDateTT = MJDdate,
+                SiteElevation = elevation * 1000,
+                SiteLatitude = location.Lat,
+                SiteLongitude = location.Lon,
+                SiteTemperature = 0
+            };
             tfm.SetJ2000(coord.Ra, coord.Dec);
             tfm.Refresh();
 
