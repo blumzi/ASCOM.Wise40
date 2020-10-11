@@ -3678,57 +3678,73 @@ namespace ASCOM.Wise40
                     targetHa = wisesite.LocalSiderealTime.Hours - targetRa;
                 }
 
-                TelescopeDigest digest = new TelescopeDigest()
+                try
                 {
-                    Current = new TelescopePosition
+                    TelescopeDigest digest = new TelescopeDigest()
                     {
-                        RightAscension = RightAscension,
-                        Declination = Declination,
-                        HourAngle = HourAngle,
-                        Altitude = Altitude,
-                        Azimuth = Azimuth,
-                    },
+                        Current = new TelescopePosition
+                        {
+                            RightAscension = RightAscension,
+                            Declination = Declination,
+                            HourAngle = HourAngle,
+                            Altitude = Altitude,
+                            Azimuth = Azimuth,
+                        },
 
-                    Target = new TelescopePosition
-                    {
-                        RightAscension = targetRa,
-                        Declination = targetDec,
-                        HourAngle = targetHa,
-                        Altitude = targetAlt,
-                        Azimuth = targetAz,
-                    },
+                        Target = new TelescopePosition
+                        {
+                            RightAscension = targetRa,
+                            Declination = targetDec,
+                            HourAngle = targetHa,
+                            Altitude = targetAlt,
+                            Azimuth = targetAz,
+                        },
 
-                    LocalSiderealTime = wisesite.LocalSiderealTime.Hours,
-                    Slewing = Slewing,
-                    Tracking = Tracking,
-                    PulseGuiding = IsPulseGuiding,
-                    AtPark = AtPark,
-                    SecondsTillIdle = secondsTillIdle,
-                    EnslavesDome = EnslavesDome,
-                    Active = activityMonitor.ObservatoryIsActive(),
-                    Activities = ActivityMonitor.ObservatoryActivities,
-                    SlewPin = SlewPin.isOn,
-                    PrimaryPins = new AxisPins
-                    {
-                        SetPin = WestPin.isOn || EastPin.isOn,
-                        GuidePin = WestGuidePin.isOn || EastGuidePin.isOn,
-                    },
-                    SecondaryPins = new AxisPins
-                    {
-                        SetPin = NorthPin.isOn || SouthGuidePin.isOn,
-                        GuidePin = NorthGuidePin.isOn || SouthGuidePin.isOn,
-                    },
-                    SafeAtCurrentCoordinates = SafeAtCoordinates(
-                        Angle.RaFromHours(RightAscension),
-                        Angle.DecFromDegrees(Declination)),
-                    BypassCoordinatesSafety = BypassCoordinatesSafety,
-                    Status = Status,
-                    PrimaryIsMoving = AxisIsMoving(TelescopeAxes.axisPrimary),
-                    SecondaryIsMoving = AxisIsMoving(TelescopeAxes.axisSecondary),
-                    ShuttingDown = activityMonitor.ShuttingDown,
-                };
+                        LocalSiderealTime = wisesite.LocalSiderealTime.Hours,
+                        Slewing = Slewing,
+                        Tracking = Tracking,
+                        PulseGuiding = IsPulseGuiding,
+                        AtPark = AtPark,
+                        SecondsTillIdle = secondsTillIdle,
+                        EnslavesDome = EnslavesDome,
+                        Active = activityMonitor.ObservatoryIsActive(),
+                        Activities = ActivityMonitor.ObservatoryActivities,
+                        SlewPin = SlewPin.isOn,
+                        PrimaryPins = new AxisPins
+                        {
+                            SetPin = WestPin.isOn || EastPin.isOn,
+                            GuidePin = WestGuidePin.isOn || EastGuidePin.isOn,
+                        },
+                        SecondaryPins = new AxisPins
+                        {
+                            SetPin = NorthPin.isOn || SouthGuidePin.isOn,
+                            GuidePin = NorthGuidePin.isOn || SouthGuidePin.isOn,
+                        },
+                        SafeAtCurrentCoordinates = SafeAtCoordinates(
+                            Angle.RaFromHours(RightAscension),
+                            Angle.DecFromDegrees(Declination)),
+                        BypassCoordinatesSafety = BypassCoordinatesSafety,
+                        Status = Status,
+                        PrimaryIsMoving = AxisIsMoving(TelescopeAxes.axisPrimary),
+                        SecondaryIsMoving = AxisIsMoving(TelescopeAxes.axisSecondary),
+                        ShuttingDown = activityMonitor.ShuttingDown,
+                    };
 
-                return JsonConvert.SerializeObject(digest);
+                    string response = JsonConvert.SerializeObject(digest);
+                    if (string.IsNullOrEmpty(response))
+                    {
+                        #region debug
+                        debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseTelecope:Digest: Empty response");
+                        #endregion
+                    }
+                    return JsonConvert.SerializeObject(digest);
+                } catch (Exception ex)
+                {
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"WiseTelecope:Digest: Caught {ex.Message} at\n{ex.StackTrace}");
+                    #endregion
+                    return JsonConvert.SerializeObject("");
+                }
             }
         }
 
