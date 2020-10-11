@@ -22,6 +22,7 @@ namespace Wise40Watcher
         private const string serviceName = "Wise40Watcher";
         private static readonly WiseSite.OpMode opMode = WiseSite.OperationalMode;
         private static object _lock = new object();
+        private static readonly int pid = Process.GetCurrentProcess().Id;
 
         public Wise40Watcher()
         {
@@ -54,7 +55,7 @@ namespace Wise40Watcher
         public static void Log(string fmt, params object[] o)
         {
             string logDir = ASCOM.Wise40.Common.Debugger.LogDirectory();
-            string _logFile = logDir + "/" + serviceName + ".txt";
+            string _logFile = $"{logDir}/{serviceName}.{pid}.txt";
             Directory.CreateDirectory(logDir);
 
             string pre = string.Format("{0,-12} ", serviceName);
@@ -68,7 +69,9 @@ namespace Wise40Watcher
                         sw.WriteLine(DateTime.UtcNow.ToString("HH:mm:ss.fff UT ") + msg);
                     }
                 }
-                catch { }
+                catch (Exception ex) {
+                    ;
+                }
             }
         }
 

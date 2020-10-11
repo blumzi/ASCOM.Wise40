@@ -15,8 +15,7 @@ namespace Wise40Watcher
 {
     public class Watcher : WiseObject
     {
-        private Const.App _application;
-        private static string _logFile;
+        private Const.App _app;
         private Process _process = null;
         private bool _stopping = false;
         private const string serviceName = "Wise40Watcher";
@@ -27,19 +26,19 @@ namespace Wise40Watcher
             switch (WiseName)
             {
                 case "ascom":
-                    _application = Const.Apps[Const.Application.RESTServer];
+                    _app = Const.Apps[Const.Application.RESTServer];
                     break;
 
                 case "weatherlink":
-                    _application = Const.Apps[Const.Application.WeatherLink];
+                    _app = Const.Apps[Const.Application.WeatherLink];
                     break;
 
                 case "dash":
-                    _application = Const.Apps[Const.Application.Dash];
+                    _app = Const.Apps[Const.Application.Dash];
                     break;
 
                 case "obsmon":
-                    _application = Const.Apps[Const.Application.ObservatoryMonitor];
+                    _app = Const.Apps[Const.Application.ObservatoryMonitor];
                     break;
             }
         }
@@ -48,7 +47,6 @@ namespace Wise40Watcher
         {
             string logDir = ASCOM.Wise40.Common.Debugger.LogDirectory();
             Directory.CreateDirectory(logDir);
-            _logFile = logDir + "/" + serviceName + ".txt";
 
             Init(name);
         }
@@ -63,26 +61,24 @@ namespace Wise40Watcher
             }
         }
 
+        private static void OnExit(object sender, System.EventArgs e)
+        {
+            Process p = sender as Process;
+
+            Wise40Watcher.Log($"Process {p.Id} on session {p.SessionId} has exited with {p.ExitCode} at {p.ExitTime}");
+        }
+
         public void Worker()
         {
             while (!_stopping)
             {
-                CreateProcessAsUserWrapper.LaunchChildProcess(_application.Path, out int pid);
+                CreateProcessAsUserWrapper.LaunchChildProcess(_app.Path, out int pid);
                 if (pid != 0)
                 {
                     _process = Process.GetProcessById(pid);
-                    Wise40Watcher.Log($"Start: watching for pid {pid} ({_application.Path}) ...");
+                    Wise40Watcher.Log($"Start: watching for pid {pid} ({_app.Path}) ...");
+                    _process.Exited += OnExit;
                     _process.WaitForExit();
-
-                    // TBD: Get the exit code
-
-                    //while (!_process.HasExited)
-                    //{
-                    //    Thread.Sleep(10);
-                    //    _process.Refresh();
-                    //}
-                    //log("Start: process {0} exited with code: {1}", pid, _process.ExitCode);
-                    //_process.Close();
                 }
             }
         }
@@ -107,7 +103,7 @@ namespace Wise40Watcher
 
         private void KillAll()
         {
-            KillAllProcesses(_application.appName);
+            KillAllProcesses(_app.appName);
 
             if (WiseName == "ascom")
             {

@@ -33,7 +33,6 @@ namespace Wise40Watcher
             string workingDir = Path.GetDirectoryName(ChildProcName);
 
             pid = 0;
-            
             if (Kernel32.WTSEnumerateSessions(
                 (IntPtr)Kernel32.WTS_CURRENT_SERVER_HANDLE,  // Current RD Session Host Server handle would be zero. 
                 0,                                  // This reserved parameter must be zero. 
@@ -47,20 +46,20 @@ namespace Wise40Watcher
                     // Extract each session info and check if it is the  
                     // "Active Session" of the current logged-on user. 
                     Kernel32.WTS_SESSION_INFO tSessionInfo = (Kernel32.WTS_SESSION_INFO)Marshal.PtrToStructure(
-                        ppSessionInfo + nCount * Marshal.SizeOf(typeof(Kernel32.WTS_SESSION_INFO)),
+                        ppSessionInfo + (nCount * Marshal.SizeOf(typeof(Kernel32.WTS_SESSION_INFO))),
                         typeof(Kernel32.WTS_SESSION_INFO)
                         );
 
                     if (Kernel32.WTS_CONNECTSTATE_CLASS.WTSActive == tSessionInfo.State)
                     {
-                        IntPtr hToken = IntPtr.Zero;
-                        if (Kernel32.WTSQueryUserToken(tSessionInfo.SessionID, out hToken))
+                        if (Kernel32.WTSQueryUserToken(tSessionInfo.SessionID, out IntPtr hToken))
                         {
                             // Launch the child process interactively  
                             // with the token of the logged-on user. 
-                            Kernel32.PROCESS_INFORMATION tProcessInfo;
-                            Kernel32.STARTUPINFO tStartUpInfo = new Kernel32.STARTUPINFO();
-                            tStartUpInfo.cb = Marshal.SizeOf(typeof(Kernel32.STARTUPINFO));
+                            Kernel32.STARTUPINFO tStartUpInfo = new Kernel32.STARTUPINFO
+                            {
+                                cb = Marshal.SizeOf(typeof(Kernel32.STARTUPINFO))
+                            };
 
                             bool ChildProcStarted = Kernel32.CreateProcessAsUser(
                                 hToken,             // Token of the logged-on user. 
@@ -73,7 +72,7 @@ namespace Wise40Watcher
                                 null,               // Default environment path. 
                                 workingDir,         // Working directory. 
                                 ref tStartUpInfo,   // Process Startup Info.  
-                                out tProcessInfo    // Process information to be returned. 
+                                out Kernel32.PROCESS_INFORMATION tProcessInfo    // Process information to be returned. 
                                 );
 
                             if (ChildProcStarted)
@@ -87,11 +86,12 @@ namespace Wise40Watcher
                                 // to prevent the handle leak. 
                                 Kernel32.CloseHandle(tProcessInfo.hThread);
                                 Kernel32.CloseHandle(tProcessInfo.hProcess);
+                                Log($"LaunchChildProcess: session: {tSessionInfo.SessionID}, pid: {pid} created for {ChildProcName}");
                             }
                             else
                             {
                                 // CreateProcessAsUser failed! 
-                                log("LaunchChildProcess: CreateProcessAsUser: {0} failed", ChildProcName);
+                                Log($"LaunchChildProcess: proc: \"{ChildProcName}\": CreateProcessAsUser failed");
                             }
 
                             // Whether child process was created or not, close the token handle  
@@ -102,13 +102,13 @@ namespace Wise40Watcher
                         else
                         {
                             // WTSQueryUserToken failed! 
-                            log("LaunchChildProcess: {0} WTSQueryUserToken failed", ChildProcName);
+                            Log($"LaunchChildProcess: proc: \"{ChildProcName}\": WTSQueryUserToken failed");
                         }
                     }
                     else
                     {
                         // This Session is not active! 
-                        log("LaunchChildProcess: {0} Session not active", ChildProcName);
+                        //Log($"LaunchChildProcess: proc: \"{ChildProcName}\": Session not active");
                     }
                 }
 
@@ -118,11 +118,11 @@ namespace Wise40Watcher
             else
             {
                 // WTSEnumerateSessions failed! 
-                log("LaunchChildProcess: {0} Session not active", ChildProcName);
+                Log($"LaunchChildProcess:Kernel32.WTSEnumerateSessions: : proc: \"{ChildProcName}\": returned false");
             }
         }
 
-        private static void log(string fmt, params object[] o)
+        private static void Log(string fmt, params object[] o)
         {
             string msg = string.Format(fmt, o);
             string dir = ASCOM.Wise40.Common.Debugger.LogDirectory();
