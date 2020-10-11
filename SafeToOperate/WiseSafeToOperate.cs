@@ -88,6 +88,7 @@ namespace ASCOM.Wise40SafeToOperate
         private Astrometry.NOVAS.NOVAS31 novas31;
         private static AstroUtils astroutils;
         public Astrometry.Accuracy astrometricAccuracy;
+        private static CatEntry3 dummy_star;
         private Object3 Sun = new Object3();
 
         static WiseSafeToOperate() { }
@@ -184,7 +185,17 @@ namespace ASCOM.Wise40SafeToOperate
             novas31 = new NOVAS31();
             astroutils = new AstroUtils();
 
-            novas31.MakeObject(0, Convert.ToInt16(Body.Sun), "Sun", new CatEntry3(), ref Sun);
+            novas31.MakeCatEntry("DUMMY", "xxx", 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, ref dummy_star);
+            int ret = novas31.MakeObject(0, Convert.ToInt16(Body.Sun), "Sun", dummy_star, ref Sun);
+            if (ret != 0)
+            {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                    $"WiseSafeToOperate.Init: Cannot make Sun (novas31.MakeObject: ret == {ret})");
+                #endregion
+            }
+            Sun.Star.StarName = "Sun";
+            Sun.Star.Catalog = "Dummy";
 
             ReadProfile(); // Read device configuration from the ASCOM Profile store
             _safetyState = Event.SafetyEvent.SafetyState.Unknown;
@@ -729,6 +740,8 @@ namespace ASCOM.Wise40SafeToOperate
         #endregion
         #endregion
 
+        private static Double ra = 0, dec = 0, dis = 0;
+
         public double SunElevation
         {
             get
@@ -736,36 +749,45 @@ namespace ASCOM.Wise40SafeToOperate
                 if (astroutils == null)
                     return 0.0;
 
-                double ra = 0, dec = 0, dis = 0;
-                double jdt = astroutils.JulianDateUT1(0);
-                short res = novas31.LocalPlanet(
-                    astroutils.JulianDateUT1(0),
-                    Sun,
-                    astroutils.DeltaT(),
-                    WiseSite.Instance._onSurface,
-                    astrometricAccuracy,
-                    ref ra, ref dec, ref dis);
+                return 50.0;
 
-                if (res != 0)
+                double jdt;
+
+                jdt = astroutils.JulianDateUT1(0);
+                try
+                {
+                    short res = novas31.LocalPlanet(
+                        jdt,
+                        Sun,
+                        astroutils.DeltaT(),
+                        WiseSite.Instance._onSurface,
+                        astrometricAccuracy,
+                        ref ra, ref dec, ref dis);
+                } catch (Exception ex)
                 {
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, $"Failed to get LocalPlanet for the Sun (res: {res})");
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                        $"SunElevation:novas31.LocalPlanet: Failed to get Sun position: caught {ex.Message} at {ex.StackTrace}");
                     #endregion
                     return 0.0;
                 }
 
-                double rar = 0, decr = 0, zd = 0, az = 0;
-                novas31.Equ2Hor(jdt, 0,
-                    astrometricAccuracy,
-                    0, 0,
-                    WiseSite.Instance._onSurface,
-                    ra, dec,
-                    WiseSite.refractionOption,
-                    ref zd, ref az, ref rar, ref decr);
-
-                if (res != 0)
+                Double rar = 0, decr = 0, zd = 0, az = 0;
+                try
                 {
-                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "Failed to convert equ2hor (res: {0})", res);
+                    novas31.Equ2Hor(jdt, 0,
+                        astrometricAccuracy,
+                        0, 0,
+                        WiseSite.Instance._onSurface,
+                        ra, dec,
+                        WiseSite.refractionOption,
+                        ref zd, ref az, ref rar, ref decr);
+                } catch (Exception ex)
+                {
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                        $"SunElevation:novas31.Equ2Hor caught {ex.Message} at {ex.StackTrace}");
+                    #endregion
                     return 0.0;
                 }
 
