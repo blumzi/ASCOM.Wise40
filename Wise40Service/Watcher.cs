@@ -114,7 +114,7 @@ namespace Wise40Watcher
 
         public void Start(string[] args, bool waitForResponse = false)
         {
-            string op = $"Start({args.ToList()}):";
+            string op = args.Length != 0 ? $"Start({args.ToList()}):" : "Start:";
 
             KillAll();
             const int waitMillis = 1000;
