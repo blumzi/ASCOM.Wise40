@@ -136,16 +136,15 @@ namespace ASCOM.Wise40.Common
 
             DateTime utcNow = DateTime.UtcNow;
             string msg = string.Format(fmt, o);
-            string taskInfo = (Task.CurrentId == null) ? "-1" : (Task.CurrentId ?? -1).ToString();
+            string taskID = (Task.CurrentId == null) ? "-1" : (Task.CurrentId ?? -1).ToString();
 
             string line = string.Format("{0} UT {1,-18} {2,-16} {3}",
                 utcNow.ToString(@"HH\:mm\:ss\.fff"),
-                string.Format("{0},{1},{2}", Process.GetCurrentProcess().Id,
-                    Thread.CurrentThread.ManagedThreadId.ToString(),
-                    taskInfo),
+                $"{Process.GetCurrentProcess().Id},{Thread.CurrentThread.ManagedThreadId},{taskID}",
                 level.ToString(),
                 msg);
-            string currentLogPath = LogDirectory() + string.Format("/{0}.txt", _appName);
+            string currentLogPath = $"{LogDirectory()}/{_appName}.txt";
+
             lock (_lock)
             {
                 if (currentLogPath != _logFile)
