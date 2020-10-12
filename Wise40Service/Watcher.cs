@@ -114,7 +114,7 @@ namespace Wise40Watcher
 
         public void Start(string[] args, bool waitForResponse = false)
         {
-            string op = args.Length != 0 ? $"Start({args.ToList()}):" : "Start:";
+            string op = args.Length != 0 ? $"Start({args.ToList()})" : "Start" + $" ({_app}): ";
 
             KillAll();
             const int waitMillis = 1000;
@@ -127,13 +127,13 @@ namespace Wise40Watcher
                 {
                     do
                     {
-                        Wise40Watcher.Log($"{op} Waiting {waitMillis} for the process to be created ...");
+                        Wise40Watcher.Log($"{op} Waiting {waitMillis} millis for process to be created ...");
                         Thread.Sleep(waitMillis);
                     } while (_process == null);
 
                     do
                     {
-                        Wise40Watcher.Log($"{op} Waiting {waitMillis} millis for process {_process.Id} to Respond ...");
+                        Wise40Watcher.Log($"{op} Waiting {waitMillis} millis for the process to Respond ...");
                         Thread.Sleep(waitMillis);
                     } while (!_process.Responding);
                 }
