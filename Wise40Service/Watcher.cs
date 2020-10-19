@@ -65,7 +65,7 @@ namespace Wise40Watcher
         {
             Process p = sender as Process;
 
-            Wise40Watcher.Log($"Process {p.Id} on session {p.SessionId} has exited with {p.ExitCode} at {p.ExitTime}");
+            Wise40Watcher.Log($"Exit: Process {p.Id} on session {p.SessionId} has exited with {p.ExitCode} at {p.ExitTime}");
         }
 
         public void Worker()
@@ -76,7 +76,7 @@ namespace Wise40Watcher
                 if (pid != 0)
                 {
                     _process = Process.GetProcessById(pid);
-                    Wise40Watcher.Log($"Start: watching for pid {pid} ({_app.Path}) ...");
+                    Wise40Watcher.Log($"Worker ({WiseName}): watching over pid {pid} ({_app.Path}) ...");
                     _process.Exited += OnExit;
                     _process.WaitForExit();
                 }
@@ -114,7 +114,7 @@ namespace Wise40Watcher
 
         public void Start(string[] args, bool waitForResponse = false)
         {
-            string op = args.Length != 0 ? $"Start({args.ToList()})" : "Start" + $" ({_app}): ";
+            string op = args.Length != 0 ? $"Start({args.ToList()})" : "Start" + $" ({WiseName})";
 
             KillAll();
             const int waitMillis = 1000;
@@ -127,13 +127,13 @@ namespace Wise40Watcher
                 {
                     do
                     {
-                        Wise40Watcher.Log($"{op} Waiting {waitMillis} millis for process to be created ...");
+                        Wise40Watcher.Log($"{op}: waiting {waitMillis} millis for process to be created ...");
                         Thread.Sleep(waitMillis);
                     } while (_process == null);
 
                     do
                     {
-                        Wise40Watcher.Log($"{op} Waiting {waitMillis} millis for the process to Respond ...");
+                        Wise40Watcher.Log($"{op}: waiting {waitMillis} millis for the process to Respond ...");
                         Thread.Sleep(waitMillis);
                     } while (!_process.Responding);
                 }
@@ -148,7 +148,7 @@ namespace Wise40Watcher
         public void Stop()
         {
             _stopping = true;
-            Wise40Watcher.Log($"Stop: The {serviceName} service was Stopped, killing process {_process.Id} ({_process.ProcessName})...");
+            Wise40Watcher.Log($"Stop ({WiseName}): The service was Stopped, killing process {_process.Id} ({_process.ProcessName})...");
             _process.Kill();
             Thread.Sleep(1000);
 
