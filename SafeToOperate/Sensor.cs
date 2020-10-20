@@ -91,7 +91,7 @@ namespace ASCOM.Wise40SafeToOperate
         public bool _connected;
         public int _nreadings;
         public Units _units;
-        public string _formatValue;
+        public string _valueFormatterString;
         private Event.SafetyEvent.SensorState sensorState = Event.SafetyEvent.SensorState.NotSet;
 
         [FlagsAttribute] public enum Usability
@@ -110,10 +110,13 @@ namespace ASCOM.Wise40SafeToOperate
 
         public string FormatSymbolic(double value)
         {
-            if (string.IsNullOrEmpty(_formatValue))
+            if (Double.IsNaN(value))
+                return Const.noValue;
+
+            if (string.IsNullOrEmpty(_valueFormatterString))
                 return string.Empty;
 
-            string ret = LatestReading.value.ToString(_formatValue);
+            string ret = value.ToString(_valueFormatterString);
             if (!string.IsNullOrEmpty(_units.symbolic))
                 ret += _units.symbolic;
             return ret;
@@ -121,10 +124,13 @@ namespace ASCOM.Wise40SafeToOperate
 
         public string FormatVerbal(double value)
         {
-            if (string.IsNullOrEmpty(_formatValue))
+            if (Double.IsNaN(value))
+                return Const.noValue;
+
+            if (string.IsNullOrEmpty(_valueFormatterString))
                 return string.Empty;
 
-            string ret = value.ToString(_formatValue);
+            string ret = value.ToString(_valueFormatterString);
             if (!string.IsNullOrEmpty(_units.verbal))
                 ret += _units.verbal;
             return ret;
@@ -142,16 +148,17 @@ namespace ASCOM.Wise40SafeToOperate
 
             public static SensorDigest FromSensor(Sensor sensor)
             {
+                Reading latestReading = sensor.LatestReading;
                 SensorDigest digest = new SensorDigest
                 {
                     Name = sensor.WiseName,
                     State = sensor._state,
-                    LatestReading = sensor.LatestReading,
+                    LatestReading = latestReading,
                     ToolTip = sensor.ToolTip,
                     Safe = sensor.IsSafe,
                     Stale = sensor.IsStale,
-                    Symbolic = sensor.FormatSymbolic(sensor.LatestReading.value),
-                    Verbal = sensor.FormatVerbal(sensor.LatestReading.value),
+                    Symbolic = sensor.FormatSymbolic(latestReading.value),
+                    Verbal = sensor.FormatVerbal(latestReading.value),
                     AffectsSafety = !sensor.HasAttribute(Attribute.ForInfoOnly)
                 };
 
@@ -349,7 +356,7 @@ namespace ASCOM.Wise40SafeToOperate
 
             _state = State.None;
             _units = new Units { symbolic = symbolicUnits, verbal = verbalUnits };
-            _formatValue = formatValue;
+            _valueFormatterString = formatValue;
             _propertyName = propertyName;
 
             Restart();
