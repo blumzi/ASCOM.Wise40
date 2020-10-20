@@ -38,7 +38,7 @@ namespace ASCOM.Wise40SafeToOperate
                 if (lazy.IsValueCreated)
                     return lazy.Value;
 
-                lazy.Value.init();
+                lazy.Value.Init();
                 return lazy.Value;
             }
         }
@@ -65,7 +65,6 @@ namespace ASCOM.Wise40SafeToOperate
 
         public static async Task<bool> GetARDOInfo()
         {
-            bool succeeded = false;
             int maxTries = 10, tryNo;
 
             DateTime start = DateTime.Now;
@@ -126,6 +125,7 @@ namespace ASCOM.Wise40SafeToOperate
                     Instance.debugger.WriteLine(Debugger.DebugLevel.DebugSafety,
                         $"GetARDOInfo: try#: {tryNo}, Success, content: [{content}], duration: {duration}");
                     #endregion
+                    return true;
                 }
                 else
                 {
@@ -142,10 +142,10 @@ namespace ASCOM.Wise40SafeToOperate
                     $"GetARDOInfo: try#: {tryNo}, HTTP response == null, duration: {DateTime.Now.Subtract(start)}");
                 #endregion
             }
-            return succeeded;
+            return false;
         }
 
-        public void init()
+        public void Init()
         {
             if (_initialized)
                 return;
