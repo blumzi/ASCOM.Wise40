@@ -561,14 +561,7 @@ namespace ASCOM.Wise40SafeToOperate
                     if (s.StateIsSet(Sensor.State.Stabilizing))
                     {
                         // cummulative and stabilizing
-                        string time = string.Empty;
-                        TimeSpan ts = s.TimeToStable;
-
-                        if (ts.TotalMinutes > 0)
-                            time += ((int)ts.TotalMinutes).ToString() + "m";
-                        time += ts.Seconds.ToString() + "s";
-
-                        reason += $"stabilizing in {time}";
+                        reason += $"({s.FormatSymbolic(s.LatestReading.value)}) stabilizing in {s.TimeToStable.ToMinimalString(showMillis: false)}";
                     }
                     else if (!s.StateIsSet(Sensor.State.EnoughReadings))
                     {
@@ -734,66 +727,18 @@ namespace ASCOM.Wise40SafeToOperate
             {
                 double max = DateTime.Now.Hour < 12 ? Convert.ToDouble(sunSensor.MaxAtDawnAsString) : Convert.ToDouble(sunSensor.MaxAtDuskAsString);
 
-                return SunElevation <= max ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
+                if (sunSensor.IsStale)
+                    return Const.TriStateStatus.Warning;
+
+                double elevation = sunSensor.SunElevation;
+                if (Double.IsNaN(elevation))
+                    return Const.TriStateStatus.Warning;
+
+                return elevation <= max ? Const.TriStateStatus.Good : Const.TriStateStatus.Error;
             }
         }
         #endregion
         #endregion
-
-        private static Double ra = 0, dec = 0, dis = 0;
-
-        public double SunElevation
-        {
-            get
-            {
-                if (astroutils == null)
-                    return 0.0;
-
-                return 50.0;
-
-                double jdt;
-
-                jdt = astroutils.JulianDateUT1(0);
-                try
-                {
-                    short res = novas31.LocalPlanet(
-                        jdt,
-                        Sun,
-                        astroutils.DeltaT(),
-                        WiseSite.Instance._onSurface,
-                        astrometricAccuracy,
-                        ref ra, ref dec, ref dis);
-                } catch (Exception ex)
-                {
-                    #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
-                        $"SunElevation:novas31.LocalPlanet: Failed to get Sun position: caught {ex.Message} at {ex.StackTrace}");
-                    #endregion
-                    return 0.0;
-                }
-
-                Double rar = 0, decr = 0, zd = 0, az = 0;
-                try
-                {
-                    novas31.Equ2Hor(jdt, 0,
-                        astrometricAccuracy,
-                        0, 0,
-                        WiseSite.Instance._onSurface,
-                        ra, dec,
-                        WiseSite.refractionOption,
-                        ref zd, ref az, ref rar, ref decr);
-                } catch (Exception ex)
-                {
-                    #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
-                        $"SunElevation:novas31.Equ2Hor caught {ex.Message} at {ex.StackTrace}");
-                    #endregion
-                    return 0.0;
-                }
-
-                return 90.0 - zd;
-            }
-        }
 
         #region ISafetyMonitor Implementation
         public bool IsSafe
