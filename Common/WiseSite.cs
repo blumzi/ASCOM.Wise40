@@ -189,19 +189,31 @@ namespace ASCOM.Wise40
             get
             {
                 double gstNow = 0;
+                short res = -1;
 
-                var res = novas31.SiderealTime(
-                    astroutils.JulianDateUT1(0), 0d,
-                    astroutils.DeltaT(),
-                    GstType.GreenwichApparentSiderealTime,
-                    Method.EquinoxBased,
-                    astrometricAccuracy,
-                    ref gstNow);
+                try
+                {
+                    res = novas31.SiderealTime(
+                        astroutils.JulianDateUT1(0), 0d,
+                        astroutils.DeltaT(),
+                        GstType.GreenwichApparentSiderealTime,
+                        Method.EquinoxBased,
+                        astrometricAccuracy,
+                        ref gstNow);
+                } catch (Exception ex)
+                {
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                        $"LocalSiderealTime: caught {ex.Message} at\n{ex.StackTrace}");
+                    #endregion
+                }
 
-                if (res != 0)
+                if (res == 0)
+                    return Angle.FromHours(gstNow) + Longitude;
+                else
                     Exceptor.Throw<InvalidValueException>("LocalSiderealTime", $"Error getting novas31.SiderealTime, res: {res}");
 
-                return Angle.FromHours(gstNow) + Longitude;
+                return Angle.FromHours(0.0, Angle.AngleType.RA);
             }
         }
 
