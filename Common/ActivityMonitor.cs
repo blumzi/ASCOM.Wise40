@@ -625,8 +625,8 @@ namespace ASCOM.Wise40
                     _tags.Add("InProgress");
 
                     _startDetails =
-                        $"Start: {Angle.AzFromDegrees(_startAz).ToNiceString()}\n" +
-                        $"Target: {Angle.AzFromDegrees(_targetAz).ToNiceString()}\n" +
+                        $"Start: {Angle.AzFromDegrees(_startAz).ToShortNiceString()}\n" +
+                        $"Target: {Angle.AzFromDegrees(_targetAz).ToShortNiceString()}\n" +
                         $"Reason: {_reason}\n";
                 }
 
@@ -638,7 +638,7 @@ namespace ASCOM.Wise40
                 DomeSlew.EndParams par = p as DomeSlew.EndParams;
 
                 _endAz = par.endAz;
-                _endDetails = $"End: {Angle.AzFromDegrees(_endAz).ToNiceString()}\n";
+                _endDetails = $"End: {Angle.AzFromDegrees(_endAz).ToShortNiceString()}\n";
                 EndActivity(par);
             }
         }
