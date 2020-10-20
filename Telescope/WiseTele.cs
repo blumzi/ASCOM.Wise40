@@ -3643,7 +3643,7 @@ namespace ASCOM.Wise40
                 TimeSpan ts = activityMonitor.RemainingTime;
                 double secondsTillIdle = (ts == TimeSpan.MaxValue) ? -1 : ts.TotalSeconds;
                 double targetRa, targetDec;
-                double targetHa, targetAlt, targetAz;
+                double targetHa, targetAlt, targetAz, temp;
 
                 targetRa = (_targetRightAscension == null) ? Const.noTarget : _targetRightAscension.Hours;
                 targetHa = (_targetHourAngle == null) ? Const.noTarget : _targetHourAngle.Hours;
@@ -3651,32 +3651,80 @@ namespace ASCOM.Wise40
                 targetAlt = (_targetAltitude == null) ? Const.noTarget : _targetAltitude.Degrees;
                 targetAz = (_targetAzimuth == null) ? Const.noTarget : _targetAzimuth.Degrees;
 
+                try
+                {
+                    temp = WiseSite.och.Temperature;
+                }
+                catch (Exception ex)
+                {
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                        $"WiseTele.Digest: Cannot get WiseSite.och.temperature: caught {ex.Message} at\n{ex.StackTrace}");
+                    #endregion
+                    temp = 21.0;
+                }
+
                 Astrometry.Transform.Transform t = new Astrometry.Transform.Transform()
                 {
                     SiteElevation = wisesite.siteElevation,
                     SiteLatitude = wisesite.siteLatitude,
                     SiteLongitude = wisesite.siteLongitude,
-                    SiteTemperature = WiseSite.och.Temperature,
+                    SiteTemperature = temp,
                 };
 
                 if (_targetRightAscension != null && _targetDeclination != null &&
                     (_targetAzimuth == null || _targetAltitude == null))
                 {
-                    t.SetApparent(_targetRightAscension.Hours, _targetDeclination.Degrees);
-                    targetAlt = t.ElevationTopocentric;
-                    targetAz = t.AzimuthTopocentric;
-                    _targetAltitude = Angle.AltFromDegrees(targetAlt);
-                    _targetAzimuth = Angle.AzFromDegrees(targetAz);
+                    try
+                    {
+                        t.SetApparent(_targetRightAscension.Hours, _targetDeclination.Degrees);
+                        targetAlt = t.ElevationTopocentric;
+                        targetAz = t.AzimuthTopocentric;
+                        _targetAltitude = Angle.AltFromDegrees(targetAlt);
+                        _targetAzimuth = Angle.AzFromDegrees(targetAz);
+                    }
+                    catch (Exception ex)
+                    {
+                        #region debug
+                        debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                            $"WiseTele.Digest: Could not transform apparent to topocentric, caught {ex.Message}");
+                        #endregion
+                        throw;
+                    }
+                }
+
+                double lst = Double.NaN;
+                try
+                {
+                    lst = wisesite.LocalSiderealTime.Hours;
+                }
+                catch (Exception ex)
+                {
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                        $"WiseTele.Digest: Failed to get LST: caught {ex.Message} at\n{ex.StackTrace}");
+                    #endregion
                 }
 
                 if (_targetAltitude != null && _targetAzimuth != null &&
                     (_targetRightAscension == null || _targetDeclination == null))
                 {
-                    t.SetAzimuthElevation(_targetAzimuth.Degrees, _targetAltitude.Degrees);
-                    targetRa = t.RAApparent;
-                    targetDec = t.DECApparent;
-                    targetHa = wisesite.LocalSiderealTime.Hours - targetRa;
+                    try
+                    {
+                        t.SetAzimuthElevation(_targetAzimuth.Degrees, _targetAltitude.Degrees);
+                        targetRa = t.RAApparent;
+                        targetDec = t.DECApparent;
+                        targetHa = lst - targetRa;
+                    }
+                    catch (Exception ex)
+                    {
+                        #region debug
+                        debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                            $"WiseTele.Digest: Could not transform topocentric to apparent, caught {ex.Message}");
+                        #endregion
+                    }
                 }
+                t.Dispose();
 
                 try
                 {
@@ -3700,7 +3748,7 @@ namespace ASCOM.Wise40
                             Azimuth = targetAz,
                         },
 
-                        LocalSiderealTime = wisesite.LocalSiderealTime.Hours,
+                        LocalSiderealTime = lst,
                         Slewing = Slewing,
                         Tracking = Tracking,
                         PulseGuiding = IsPulseGuiding,
@@ -3738,12 +3786,13 @@ namespace ASCOM.Wise40
                         #endregion
                     }
                     return JsonConvert.SerializeObject(digest);
-                } catch (Exception ex)
+                }
+                catch (Exception ex)
                 {
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"WiseTelecope:Digest: Caught {ex.Message} at\n{ex.StackTrace}");
                     #endregion
-                    return JsonConvert.SerializeObject("");
+                    return JsonConvert.SerializeObject(null);
                 }
             }
         }
