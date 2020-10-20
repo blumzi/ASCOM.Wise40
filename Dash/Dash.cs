@@ -547,6 +547,12 @@ namespace Dash
             {
                 labelMoonIllum.Text = (moon.Illumination * 100).ToString("F0") + "%";
                 labelMoonDist.Text = moon.Distance(telescopeRa.Radians, telescopeDec.Radians).ToShortNiceString();
+                labelMoonIllum.ForeColor = labelMoonDist.ForeColor = safeColor;
+            }
+            else
+            {
+                labelMoonIllum.Text = labelMoonDist.Text = Const.noValue;
+                labelMoonIllum.ForeColor = labelMoonDist.ForeColor = warningColor;
             }
             #endregion
 
@@ -555,9 +561,15 @@ namespace Dash
             {
                 Angle alt = Angle.AltFromDegrees(telescopeDigest.Current.Altitude);
                 labelAirMass.Text = WiseSite.AirMass(alt.Radians).ToString("g4");
+                labelAirMass.ForeColor = safeColor;
                 #endregion
 
                 telescopeStatus.Show(telescopeDigest.Status);
+            }
+            else
+            {
+                labelAirMass.Text = Const.noValue;
+                labelAirMass.ForeColor = warningColor;
             }
 
             #endregion
@@ -718,8 +730,6 @@ namespace Dash
             #region RefreshWeather
             if (safetooperateDigest == null)
             {
-                const string nc = "???";
-
                 List<Label> labels = new List<Label>() {
                     labelCloudCoverValue,
                     labelDewPointValue,
@@ -735,7 +745,7 @@ namespace Dash
 
                 foreach (var label in labels)
                 {
-                    label.Text = nc;
+                    label.Text = Const.noValue;
                     label.ForeColor = warningColor;
                 }
             }
@@ -1584,10 +1594,10 @@ namespace Dash
 
         private void DashOutFilterWheelControls()
         {
-            labelFWWheel.Text = "--";
-            labelFWFilterSize.Text = "--";
-            labelFWPosition.Text = "--";
-            labelFWFilter.Text = "";
+            foreach (Label l in new List<Label> { labelFWWheel, labelFWFilterSize, labelFWPosition, labelFWFilter}){
+                l.Text = Const.noValue;
+                l.ForeColor = warningColor;
+            }
         }
 
         private void LoadFilterWheelInformation()
