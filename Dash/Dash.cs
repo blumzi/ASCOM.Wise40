@@ -1860,6 +1860,11 @@ namespace Dash
             }
         }
 
+        private void groupBoxDomeGroup_Enter(object sender, EventArgs e)
+        {
+
+        }
+
         private void groupBoxFilterWheel_Enter(object sender, EventArgs e)
         {
 
