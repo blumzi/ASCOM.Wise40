@@ -221,7 +221,7 @@ namespace ASCOM.Wise40SafeToOperate
 
                     try
                     {
-                        info = JsonConvert.DeserializeObject<IpGeolocationInfo>(content);
+                        info = JsonConvert.DeserializeObject<IpGeolocationInfo>(content.Replace("\"-:-\"", "\"00:00\""));
                         _elevation = info.sun_altitude;
                         _lastDataRead = DateTime.Now;
                         #region debug
