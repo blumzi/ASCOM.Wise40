@@ -819,10 +819,15 @@ namespace ASCOM.Wise40SafeToOperate
             if (!Directory.Exists(SavedSensorStateDir))
                 Directory.CreateDirectory(SavedSensorStateDir);
 
-            using (StreamWriter sw = File.CreateText(SavedSensorStateFile)) {
-                JsonSerializer js = new JsonSerializer();
-                js.Serialize(sw, saved);
+            try
+            {
+                using (StreamWriter sw = File.CreateText(SavedSensorStateFile))
+                {
+                    JsonSerializer js = new JsonSerializer();
+                    js.Serialize(sw, saved);
+                }
             }
+            catch { }
         }
 
         private void Restore()
