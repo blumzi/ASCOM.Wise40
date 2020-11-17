@@ -79,6 +79,22 @@ namespace ASCOM.Wise40.Hardware
         public Hardware() { }
         static Hardware() { }
 
+        public static bool ComputerHasControl
+        {
+            get
+            {
+                return computerControlPin.isOn;
+            }
+        }
+
+        public static bool MaintenanceMode
+        {
+            get
+            {
+                return !ComputerHasControl;
+            }
+        }
+
         public class MaintenanceModeException : Exception
         {
             public MaintenanceModeException()

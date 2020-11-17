@@ -1511,6 +1511,14 @@ namespace ASCOM.Wise40
             string op = $"Backoff(reason: {reason})";
             const int backoffMillis = 3000;
 
+            if (!Hardware.Hardware.ComputerHasControl)
+            {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseTele.Backoff: No computer control!");
+                #endregion
+                return;
+            }
+
             if (_movingToSafety)    // timer callback while being disabled
                 return;
 

@@ -63,11 +63,11 @@ namespace ASCOM.Wise40SafeToOperate
             Reading r = new Reading
             {
                 Stale = false,
-                Safe = Hardware.computerControlPin.isOn,
+                Safe = Hardware.ComputerHasControl,
                 Usable = true,
                 secondsSinceLastUpdate = 0,
                 timeOfLastUpdate = DateTime.Now,
-                value = Hardware.computerControlPin.isOn ? 1 : 0,
+                value = Hardware.ComputerHasControl ? 1 : 0,
             };
 
             #region debug

@@ -49,7 +49,7 @@ namespace ASCOM.Wise40.Hardware
             if (dir != DigitalPortDirection.DigitalOut)
                 return;
 
-            if (!Simulated && _controlled && Hardware.computerControlPin.isOff)
+            if (!Simulated && _controlled && Hardware.MaintenanceMode)
             {
                 //Exceptor.Throw<Hardware.MaintenanceModeException>("SetOn", Const.computerControlAtMaintenance);
                 #region debug
@@ -103,7 +103,7 @@ namespace ASCOM.Wise40.Hardware
             if (dir != DigitalPortDirection.DigitalOut)
                 return;
 
-            if (!Simulated && _controlled && Hardware.computerControlPin.isOff)
+            if (!Simulated && _controlled && Hardware.MaintenanceMode)
             {
                 //Exceptor.Throw<Hardware.MaintenanceModeException>("SetOff", Const.computerControlAtMaintenance);
                 #region debug
