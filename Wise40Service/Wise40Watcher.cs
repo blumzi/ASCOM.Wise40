@@ -14,10 +14,10 @@ namespace Wise40Watcher
 {
     public partial class Wise40Watcher : ServiceBase
     {
-        private readonly Watcher ascomWatcher;
-        private readonly Watcher dashWatcher;
-        private readonly Watcher obsmonWatcher;
-        private readonly Watcher weatherLinkWatcher;
+        private Watcher ascomWatcher;
+        private Watcher dashWatcher;
+        private Watcher obsmonWatcher;
+        private Watcher weatherLinkWatcher;
         private readonly bool weatherLinkNeedsWatching = false;
         private const string serviceName = "Wise40Watcher";
         private static readonly WiseSite.OpMode opMode = WiseSite.OperationalMode;
@@ -36,19 +36,6 @@ namespace Wise40Watcher
                     Const.ProfileName.VantagePro_OpMode, string.Empty,
                     nameof(WiseVantagePro.OpMode.File)), out WiseVantagePro.OpMode mode);
                 weatherLinkNeedsWatching = (mode == WiseVantagePro.OpMode.File);
-
-                if (weatherLinkNeedsWatching)
-                    weatherLinkWatcher = new Watcher("weatherlink");
-            }
-            ascomWatcher = new Watcher("ascom");
-            switch (opMode)
-            {
-                case WiseSite.OpMode.ACP:
-                case WiseSite.OpMode.LCO:
-                case WiseSite.OpMode.WISE:
-                    dashWatcher = new Watcher("dash");
-                    obsmonWatcher = new Watcher("obsmon");
-                    break;
             }
         }
 
@@ -79,6 +66,20 @@ namespace Wise40Watcher
         {
             //System.Diagnostics.Debugger.Launch();
             Log($"=========== Start (opMode: {opMode}) ===========");
+
+            if (weatherLinkNeedsWatching)
+                weatherLinkWatcher = new Watcher("weatherlink");
+            ascomWatcher = new Watcher("ascom");
+            switch (opMode)
+            {
+                case WiseSite.OpMode.ACP:
+                case WiseSite.OpMode.LCO:
+                case WiseSite.OpMode.WISE:
+                    dashWatcher = new Watcher("dash");
+                    obsmonWatcher = new Watcher("obsmon");
+                    break;
+            }
+
             if (weatherLinkNeedsWatching)
                 weatherLinkWatcher.Start(args, waitForResponse: true);
 
@@ -122,20 +123,28 @@ namespace Wise40Watcher
 
         protected override void OnStop()
         {
-            Log("=========== Stop ===========");
-            switch (opMode)
+            try
             {
-                case WiseSite.OpMode.WISE:
-                case WiseSite.OpMode.LCO:
-                case WiseSite.OpMode.ACP:
-                    dashWatcher.Stop();
-                    obsmonWatcher.Stop();
-                    break;
+                Log("=========== Stop ===========");
+
+                switch (opMode)
+                {
+                    case WiseSite.OpMode.WISE:
+                    case WiseSite.OpMode.LCO:
+                    case WiseSite.OpMode.ACP:
+                        dashWatcher.Stop();
+                        obsmonWatcher.Stop();
+                        break;
+                }
+                ascomWatcher.Stop();
+                if (weatherLinkNeedsWatching)
+                    weatherLinkWatcher.Stop();
+
+                Log("=========== Stop done ===========");
+            } catch (Exception ex)
+            {
+                Log($"OnStop(): caught {ex.Message} at {ex.StackTrace}");
             }
-            ascomWatcher.Stop();
-            if (weatherLinkNeedsWatching)
-                weatherLinkWatcher.Stop();
-            Log("=========== Stop done ===========");
         }
     }
 }
