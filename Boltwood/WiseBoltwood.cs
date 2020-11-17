@@ -683,7 +683,7 @@ namespace ASCOM.Wise40.Boltwood
     public class BoltwoodStation : WeatherStation
     {
         public WeatherStationModel _model = WeatherStationModel.CloudSensorII;
-        private DateTime _lastDataRead = DateTime.MinValue;
+        private DateTime _lastTimeWeReadTheFile = DateTime.MinValue;
         private SensorData _sensorData = null;
 
         public BoltwoodStation(int id)
@@ -755,13 +755,24 @@ namespace ASCOM.Wise40.Boltwood
         {
             string str = "";
 
+            #region debug
+            Debugger.Instance.WriteLine(Debugger.DebugLevel.DebugLogic,
+                $"GetClarityIISensorData: Name: {Name}, Id: {Id}, Enabled: {Enabled}, FilePath: \"{FilePath}\"");
+            #endregion
+
             if (string.IsNullOrEmpty(FilePath))
-                Exceptor.Throw<InvalidOperationException>("GetSensorData", "_dataFile name is either null or empty!");
+                Exceptor.Throw<InvalidOperationException>("GetSensorData", "FilePath is either null or empty!");
 
             if (!System.IO.File.Exists(FilePath))
-                Exceptor.Throw<InvalidOperationException>("GetSensorData", $"_dataFile \"{FilePath}\" DOES NOT exist!");
+                Exceptor.Throw<InvalidOperationException>("GetSensorData", $"FilePath \"{FilePath}\" DOES NOT exist!");
 
-            if (_lastDataRead == DateTime.MinValue || System.IO.File.GetLastWriteTime(FilePath).CompareTo(_lastDataRead) > 0)
+            DateTime lastTimeFileWasUpdated = System.IO.File.GetLastWriteTime(FilePath);
+            #region debug
+            Debugger.Instance.WriteLine(Debugger.DebugLevel.DebugLogic,
+                $"GetClarityIISensorData: Name: {Name}, _lastTimeWeReadTheFile: {_lastTimeWeReadTheFile}, lastTimeFileWasUpdated: {lastTimeFileWasUpdated}");
+            #endregion
+
+            if (_lastTimeWeReadTheFile == DateTime.MinValue || lastTimeFileWasUpdated.CompareTo(_lastTimeWeReadTheFile) > 0)
             {
                 try
                 {
@@ -776,7 +787,14 @@ namespace ASCOM.Wise40.Boltwood
                 }
 
                 _sensorData = new SensorData(str, this);
-                _lastDataRead = DateTime.Now;
+                _lastTimeWeReadTheFile = DateTime.Now;
+            }
+            else
+            {
+                #region debug
+                Debugger.Instance.WriteLine(Debugger.DebugLevel.DebugLogic,
+                    $"GetClarityIISensorData: Name: {Name}, Too soon.  lastTimeFileWasUpdated: {_lastTimeWeReadTheFile}, lastTimeFileWasUpdated {lastTimeFileWasUpdated}");
+                #endregion
             }
         }
 
