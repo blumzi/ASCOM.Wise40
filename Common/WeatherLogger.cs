@@ -23,7 +23,7 @@ namespace ASCOM.Wise40.Common
         {
             _stationName = stationName;
 
-            string sql = $"SELECT time FROM weather WHERE station = '{stationName}' ORDER BY time DESC LIMIT 0 , 1; ";
+            string sql = $"SELECT time FROM weather WHERE station = '{_stationName}' ORDER BY time DESC LIMIT 0 , 1; ";
 
             try
             {
@@ -37,7 +37,6 @@ namespace ASCOM.Wise40.Common
                         using (var cursor = sqlCmd.ExecuteReader())
                         {
                             cursor.Read();
-
                             prevLocalLoggedTime = Convert.ToDateTime(cursor["time"]).ToLocalTime();
                         }
                     }
@@ -49,7 +48,7 @@ namespace ASCOM.Wise40.Common
             }
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
-                $"WeatherLogger({stationName}): .const:prevLoggedLocalTime: {prevLocalLoggedTime:yyyy-MM-dd HH:mm:ss.fff}");
+                $"WeatherLogger({_stationName}): .const:prevLoggedLocalTime: {prevLocalLoggedTime:yyyy-MM-dd HH:mm:ss.fff}");
             #endregion
         }
 
