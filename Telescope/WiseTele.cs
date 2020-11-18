@@ -334,11 +334,11 @@ namespace ASCOM.Wise40
                 if (_targetRightAscension == null)
                     Exceptor.Throw<ValueNotSetException>("TargetRightAscension.get", "TargetRightAscension not set");
 
-                Angle ret = _targetRightAscension;
+                double hours = _targetRightAscension.Hours;
                 #region debug
-                debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, $"TargetRightAscension Get - {ret} ({ret.Hours})");
+                debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, $"TargetRightAscension Get - {_targetRightAscension} ({hours})");
                 #endregion debug
-                return _targetRightAscension.Hours;
+                return hours;
             }
 
             set
