@@ -1103,7 +1103,7 @@ namespace ASCOM.Wise40
 
         public void Init()
         {
-            _idlerState = IdlerState.Idle;
+            StartGoingIdle(new Idler.StartParams() { reason = "Init" });
         }
 
         public void AbortGoingIdle(EndParams par)
