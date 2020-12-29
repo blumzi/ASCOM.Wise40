@@ -283,7 +283,8 @@ namespace ASCOM.Wise40
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
                 $"{WiseName}:SampleAxisMovement: _currPosition: {_currPosition.radians} ({(_currPosition.predicted ? "PREDICTED" : "REAL")}), " +
                 $"_prevPosition: {_prevPosition.radians} ({(_prevPosition.predicted ? "PREDICTED" : "REAL")})," +
-                $"raDelta: {raDelta}, haDelta: {haDelta}, active motors: {ActiveMotors(_axis)}");
+                $"raDelta: {raDelta}, haDelta: {haDelta}, active motors: {ActiveMotors(_axis)}"); // +
+                //$"enc: {_encoder.AxisValue}, renishaw: {wisetele.RenishawHaEncoder.Position}");
             #endregion
 
             _prevPosition.radians = _currPosition.radians;
@@ -491,8 +492,10 @@ namespace ASCOM.Wise40
             _decDeltas.Enqueue(delta);
 
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}:SampleAxisMovement: _currPosition: {1}, _prevPosition: {2}, delta: {3}, active motors: {4}",
-                WiseName, _currPosition.radians, _prevPosition.radians, delta, ActiveMotors(_axis));
+            debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                $"{WiseName}:SampleAxisMovement: _currPosition: {_currPosition.radians}, _prevPosition: {_prevPosition.radians}, " +
+                $"delta: {delta}, active motors: {ActiveMotors(_axis)}"); // +
+                //$"enc: {_encoder.EncoderValue}, renishaw: {wisetele.RenishawDecEncoder.Position}");
             #endregion
 
             _prevPosition.radians = _currPosition.radians;

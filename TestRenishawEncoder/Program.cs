@@ -3,34 +3,42 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ASCOM.Wise40.Hardware;
 
 namespace TestRenishawEncoder
 {
     public static class Program
     {
-        public static void Main(string[] argv)
+        public static void Main()
         {
-            Hardware.RenishawEncoder encoder = null;
-            int encNumber = 1;
-
-            if (argv.Length != 0)
-                encNumber = Convert.ToInt32(argv[0]);
+            RenishawEncoder DecEncoder = null, HaEncoder = null;
 
             try
             {
-                encoder = new Hardware.RenishawEncoder(encNumber);
+                HaEncoder = new RenishawEncoder(RenishawEncoder.Module.Ha);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to create RenishawEncoder({encNumber}): caught {ex.Message}");
+                Console.WriteLine($"Failed to create RenishawEncoder({RenishawEncoder.Module.Ha}): caught {ex.Message}");
                 Environment.Exit(1);
             }
 
-            for (; ; )
+
+            try
+            {
+                DecEncoder = new RenishawEncoder(RenishawEncoder.Module.Dec);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to create RenishawEncoder({RenishawEncoder.Module.Dec}): caught {ex.Message}");
+                Environment.Exit(1);
+            }
+
+            for (;;)
             {
                 try
                 {
-                    Console.WriteLine($"{encoder.Position}");
+                    Console.WriteLine($"Ha: {HaEncoder.Position}, Dec: {DecEncoder.Position}");
                     System.Threading.Thread.Sleep(500);
                 }
                 catch (Exception ex)

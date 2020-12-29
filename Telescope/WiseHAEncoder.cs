@@ -29,6 +29,8 @@ namespace ASCOM.Wise40 //.Telescope
 
         private readonly Object _lock = new object();
 
+        //private readonly RenishawEncoder RenishawHaEncoder;
+
         public WiseHAEncoder(string name, WiseDecEncoder decEncoder)
         {
             WiseName = "HAEncoder";
@@ -51,6 +53,7 @@ namespace ASCOM.Wise40 //.Telescope
             );
 
             WiseName = name;
+            //RenishawHaEncoder = new RenishawEncoder(RenishawEncoder.Module.Ha);
 
             if (Simulated)
                 _angle = new Angle("00h00m00.0s");
@@ -102,6 +105,8 @@ namespace ASCOM.Wise40 //.Telescope
                             Convert.ToString(axis ^ prev_axis, 2).PadLeft(16, '0'),
                             Convert.ToString(worm ^ prev_worm, 2).PadLeft(12, '0'));
                     }
+
+                    //dbg += $"Renishaw: {RenishawHaEncoder.Position}";
                     debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, dbg);
                     prev_worm = worm;
                     prev_axis = axis;

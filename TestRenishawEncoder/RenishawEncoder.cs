@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 using PCIe1711_NET;
 
-namespace Hardware
+namespace TestRenishawEncoder
 {
     /// <summary>
     /// <para>
@@ -26,8 +26,10 @@ namespace Hardware
         private const byte CRCPolynom = ((1 << 6) | (1 << 1) | (1 << 0));
         private enum BissMode { B = 0, C = 1 };
         private static readonly PCIe1711 Board = PCIe1711.OpenBoard(0);
+        public enum Module { Ha = 0, Dec = 1 };
         private readonly byte _moduleNumber;
-        public RenishawEncoder(int encoderNumber)
+
+        public RenishawEncoder(Module module)
         {
             int ret;
 
@@ -36,7 +38,8 @@ namespace Hardware
             byte[] polynoms = { CRCPolynom };
             byte[] inverts = { 1 };
             byte[] dataLengths = { 35 };
-            _moduleNumber = (byte)encoderNumber;
+
+            _moduleNumber = (byte)module;
 
             ret = Board.BissMasterInitSingleCycle(moduleNbr: _moduleNumber,
                 sensorDataFreqDivisor: 17,
@@ -56,7 +59,8 @@ namespace Hardware
             if (ret != 0)
                 throw new Exception($"BissMasterInitSingleCycle(moduleNumber: {_moduleNumber}) returned {ret}");
         }
-        public UInt32 Position
+
+        public UInt64 Position
         {
             get
             {
@@ -70,10 +74,10 @@ namespace Hardware
                 if (ret != 0)
                     throw new Exception($"{op}: BissMasterSingleCycleDataRead returned {ret}");
 
-                UInt64 reading = (high << 32) | low;
+                UInt64 reading = ((UInt64)high << 32) | (UInt64)low;
                 bool warning = (reading & (1 << 0)) == 0;
                 bool error = (reading & (1 << 1)) == 0;
-                UInt32 position = (UInt32) ((reading >> 2) & 0xffffffff);
+                UInt32 position = (UInt32)((reading >> 2) & 0xffffffff);
 
                 if (warning)
                     throw new Exception($"{op}: encoder or scale need cleaning");
@@ -83,6 +87,7 @@ namespace Hardware
                 return position;
             }
         }
+
         ~RenishawEncoder()
         {
             Board.BissMasterReleaseSingleCycle(moduleNbr: _moduleNumber);

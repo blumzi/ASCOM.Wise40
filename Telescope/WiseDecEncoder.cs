@@ -30,6 +30,7 @@ namespace ASCOM.Wise40
         private int prev_worm, prev_axis;
 
         private Object _lock = new Object();
+        //private readonly RenishawEncoder RenishawDecEncoder = new RenishawEncoder(RenishawEncoder.Module.Dec);
 
         public WiseDecEncoder(string name)
         {
@@ -54,6 +55,7 @@ namespace ASCOM.Wise40
             );
 
             WiseName = name;
+            //RenishawDecEncoder = new RenishawEncoder(RenishawEncoder.Module.Dec);
 
             Angle = Simulated ?
                 Angle.DecFromDegrees(85) :
@@ -137,6 +139,7 @@ namespace ASCOM.Wise40
                             Convert.ToString(axis ^ prev_axis, 2).PadLeft(16, '0'),
                             Convert.ToString(worm ^ prev_worm).PadLeft(12, '0'));
                     }
+                    //dbg += $"RenishawDec: {RenishawDecEncoder.Position}";
                     debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, dbg);
                     prev_axis = axis;
                     prev_worm = worm;

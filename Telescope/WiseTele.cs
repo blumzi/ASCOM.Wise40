@@ -143,6 +143,8 @@ namespace ASCOM.Wise40
         public WiseHAEncoder HAEncoder;
         public WiseDecEncoder DecEncoder;
 
+        //public RenishawEncoder RenishawHaEncoder, RenishawDecEncoder;
+
         public WisePin TrackPin;
         private WisePin SlewPin;
         private WisePin NorthGuidePin, SouthGuidePin, EastGuidePin, WestGuidePin;   // Guide motor activation pins
@@ -497,6 +499,9 @@ namespace ASCOM.Wise40
 
                 DecEncoder = new WiseDecEncoder("TeleDecEncoder");
                 HAEncoder = new WiseHAEncoder("TeleHAEncoder", DecEncoder);
+
+                //RenishawHaEncoder = new RenishawEncoder(RenishawEncoder.Module.Ha);
+                //RenishawDecEncoder = new RenishawEncoder(RenishawEncoder.Module.Dec);
             }
             catch (WiseException e)
             {
