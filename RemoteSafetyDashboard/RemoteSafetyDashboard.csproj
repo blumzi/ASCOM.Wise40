@@ -66,11 +66,6 @@
     <ApplicationIcon>WiseObs.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ASCOM.DeviceInterfaces, Version=6.0.0.0, Culture=neutral, PublicKeyToken=565de7938946fba7, processorArchitecture=MSIL" />
-    <Reference Include="ASCOM.DriverAccess, Version=6.0.0.0, Culture=neutral, PublicKeyToken=565de7938946fba7, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\ASCOM\Platform 6 Developer Components\Components\Platform6\ASCOM.DriverAccess.dll</HintPath>
-    </Reference>
     <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Newtonsoft.Json.12.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
@@ -148,10 +143,6 @@
     <ProjectReference Include="..\Common\Common.csproj">
       <Project>{b76546e7-9832-4d28-b412-b34ca1c6177c}</Project>
       <Name>Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ObservatoryMonitor\Observatory Monitor.csproj">
-      <Project>{ce5e9e5e-ff3b-4451-9254-881d7cc67c1a}</Project>
-      <Name>Observatory Monitor</Name>
     </ProjectReference>
     <ProjectReference Include="..\SafeToOperate\SafeToOperate.csproj">
       <Project>{7fa766d4-8f97-4d9f-8f62-f25c84c01ff2}</Project>

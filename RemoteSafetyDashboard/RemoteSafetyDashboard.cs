@@ -11,9 +11,7 @@ using System.Windows.Forms;
 using ASCOM.Wise40;
 using ASCOM.Wise40.Common;
 using ASCOM.Wise40SafeToOperate;
-using ASCOM.DriverAccess;
 using Newtonsoft.Json;
-using System.Threading;
 
 namespace RemoteSafetyDashboard
 {
