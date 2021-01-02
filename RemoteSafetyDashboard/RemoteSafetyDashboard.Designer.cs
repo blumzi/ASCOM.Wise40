@@ -69,6 +69,10 @@
             this.labelDate = new System.Windows.Forms.Label();
             this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
             this.panelCommon = new System.Windows.Forms.Panel();
+            this.label5 = new System.Windows.Forms.Label();
+            this.label3 = new System.Windows.Forms.Label();
+            this.labelHost = new System.Windows.Forms.Label();
+            this.labelObservatory = new System.Windows.Forms.Label();
             this.panelWise40 = new System.Windows.Forms.Panel();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.label1 = new System.Windows.Forms.Label();
@@ -77,10 +81,6 @@
             this.label4 = new System.Windows.Forms.Label();
             this.buttonManualIntervention = new System.Windows.Forms.Button();
             this.panelStatus = new System.Windows.Forms.Panel();
-            this.labelObservatory = new System.Windows.Forms.Label();
-            this.labelHost = new System.Windows.Forms.Label();
-            this.label3 = new System.Windows.Forms.Label();
-            this.label5 = new System.Windows.Forms.Label();
             this.groupBoxWeather.SuspendLayout();
             this.tableLayoutPanelWeather.SuspendLayout();
             this.menuStrip.SuspendLayout();
@@ -496,8 +496,9 @@
             this.labelNextCheck.Location = new System.Drawing.Point(222, 111);
             this.labelNextCheck.Margin = new System.Windows.Forms.Padding(0, 0, 3, 0);
             this.labelNextCheck.Name = "labelNextCheck";
-            this.labelNextCheck.Size = new System.Drawing.Size(86, 30);
+            this.labelNextCheck.Size = new System.Drawing.Size(86, 14);
             this.labelNextCheck.TabIndex = 40;
+            this.labelNextCheck.Text = "xxx";
             this.labelNextCheck.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // timerRefresh
@@ -594,6 +595,51 @@
             this.panelCommon.Name = "panelCommon";
             this.panelCommon.Size = new System.Drawing.Size(401, 337);
             this.panelCommon.TabIndex = 0;
+            // 
+            // label5
+            // 
+            this.label5.AutoEllipsis = true;
+            this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
+            this.label5.ForeColor = System.Drawing.Color.DarkOrange;
+            this.label5.Location = new System.Drawing.Point(169, 39);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(41, 25);
+            this.label5.TabIndex = 47;
+            this.label5.Text = "Host:";
+            this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // label3
+            // 
+            this.label3.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
+            this.label3.ForeColor = System.Drawing.Color.DarkOrange;
+            this.label3.Location = new System.Drawing.Point(122, 21);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(88, 25);
+            this.label3.TabIndex = 46;
+            this.label3.Text = "Observatory:";
+            this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // labelHost
+            // 
+            this.labelHost.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
+            this.labelHost.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.labelHost.Location = new System.Drawing.Point(209, 39);
+            this.labelHost.Name = "labelHost";
+            this.labelHost.Size = new System.Drawing.Size(75, 25);
+            this.labelHost.TabIndex = 45;
+            this.labelHost.Text = "host";
+            this.labelHost.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // labelObservatory
+            // 
+            this.labelObservatory.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
+            this.labelObservatory.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.labelObservatory.Location = new System.Drawing.Point(209, 21);
+            this.labelObservatory.Name = "labelObservatory";
+            this.labelObservatory.Size = new System.Drawing.Size(88, 25);
+            this.labelObservatory.TabIndex = 44;
+            this.labelObservatory.Text = "obs";
+            this.labelObservatory.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // panelWise40
             // 
@@ -692,51 +738,6 @@
             this.panelStatus.Name = "panelStatus";
             this.panelStatus.Size = new System.Drawing.Size(401, 34);
             this.panelStatus.TabIndex = 2;
-            // 
-            // labelObservatory
-            // 
-            this.labelObservatory.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
-            this.labelObservatory.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelObservatory.Location = new System.Drawing.Point(209, 21);
-            this.labelObservatory.Name = "labelObservatory";
-            this.labelObservatory.Size = new System.Drawing.Size(88, 25);
-            this.labelObservatory.TabIndex = 44;
-            this.labelObservatory.Text = "obs";
-            this.labelObservatory.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // labelHost
-            // 
-            this.labelHost.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
-            this.labelHost.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelHost.Location = new System.Drawing.Point(209, 39);
-            this.labelHost.Name = "labelHost";
-            this.labelHost.Size = new System.Drawing.Size(75, 25);
-            this.labelHost.TabIndex = 45;
-            this.labelHost.Text = "host";
-            this.labelHost.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // label3
-            // 
-            this.label3.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
-            this.label3.ForeColor = System.Drawing.Color.DarkOrange;
-            this.label3.Location = new System.Drawing.Point(122, 21);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(88, 25);
-            this.label3.TabIndex = 46;
-            this.label3.Text = "Observatory:";
-            this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // label5
-            // 
-            this.label5.AutoEllipsis = true;
-            this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
-            this.label5.ForeColor = System.Drawing.Color.DarkOrange;
-            this.label5.Location = new System.Drawing.Point(169, 39);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(41, 25);
-            this.label5.TabIndex = 47;
-            this.label5.Text = "Host:";
-            this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // RemoteSafetyDashboard
             // 
