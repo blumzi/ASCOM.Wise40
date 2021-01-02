@@ -5,6 +5,6 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-[assembly: SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>", Scope = "member", Target = "~M:RemoteSafetyDashboard.FakeSafeToOperateAccess.Communicate")]
+[assembly: SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>", Scope = "member", Target = "~M:RemoteSafetyDashboard.HTTPCommunicator.Communicate")]
 [assembly: SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>", Scope = "member", Target = "~M:RemoteSafetyDashboard.RemoteSafetyDashboard.CheckConnections")]
 [assembly: SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>", Scope = "member", Target = "~M:RemoteSafetyDashboard.RemoteSafetyDashboard.UpdateDisplay")]

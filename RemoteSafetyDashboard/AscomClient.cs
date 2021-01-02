@@ -35,31 +35,28 @@ namespace RemoteSafetyDashboard
         public Statuser.Severity Severity { get; set; }
     }
 
-    public class Communicator
+    public class AscomClient
     {
-        public enum Type { ASCOM, Fake };
-        private readonly Type _type;
-        private readonly FakeSafeToOperateAccess fakeSafeToOperate;
-        private readonly ASCOM.DriverAccess.SafetyMonitor safeToOperate = null;
+        private readonly HTTPCommunicator httpCommunicator;
         public Transaction transaction;
-        private readonly string remoteAddress;
-        private static readonly Debugger debugger = Debugger.Instance;
+        private bool connected = false;
 
-        public Communicator(Type type = Type.ASCOM, string address = "132.66.65.9")
+        public AscomClient(string uri, string shortName)
         {
-            _type = type;
-            remoteAddress = address;
-            if (type == Type.ASCOM)
-                safeToOperate = new ASCOM.DriverAccess.SafetyMonitor("ASCOM.Remote1.SafetyMonitor");
-            else
-                fakeSafeToOperate = new FakeSafeToOperateAccess(this, address);
+            Uri = uri;
+            Name = shortName;
+            httpCommunicator = new HTTPCommunicator(this);
         }
+
+        public string Uri { get; }
+
+        public string Name { get; }
 
         private string Communicating
         {
             get
             {
-                return $"Communicating with {remoteAddress} ...";
+                return $"Communicating with {Name} ...";
             }
         }
 
@@ -67,6 +64,9 @@ namespace RemoteSafetyDashboard
         {
             get
             {
+                if (Busy)
+                    return connected;
+
                 transaction = new Transaction
                 {
                     verb = "GET",
@@ -76,7 +76,8 @@ namespace RemoteSafetyDashboard
                     Busy = true,
                 };
 
-                return (_type == Type.ASCOM) ? safeToOperate.Connected : fakeSafeToOperate.Connected;
+                connected = httpCommunicator.Connected;
+                return connected;
             }
 
             set
@@ -91,10 +92,8 @@ namespace RemoteSafetyDashboard
                     Busy = true,
                 };
 
-                if (_type == Type.ASCOM)
-                    safeToOperate.Connected = value;
-                else
-                    fakeSafeToOperate.Connected = value;
+                connected = value;
+                httpCommunicator.Connected = connected;
             }
         }
 
@@ -110,14 +109,7 @@ namespace RemoteSafetyDashboard
                 Busy = true,
             };
 
-            string response = _type == Type.ASCOM
-                ? safeToOperate.Action(transaction.location, transaction.parameters)
-                : fakeSafeToOperate.Action(/* transaction.location, transaction.parameters */);
-            //#region debug
-            //debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
-            //    $"Action(action: {action}, parameters: {parameters}) => response: {response}");
-            //#endregion
-            return response;
+            return httpCommunicator.Action(action, parameters);
         }
 
         public string Status

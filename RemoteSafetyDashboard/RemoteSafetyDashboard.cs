@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
+using ASCOM.Wise40;
 using ASCOM.Wise40.Common;
 using ASCOM.Wise40SafeToOperate;
 using ASCOM.DriverAccess;
@@ -18,13 +19,15 @@ namespace RemoteSafetyDashboard
 {
     public partial class RemoteSafetyDashboard : Form
     {
-        static public Communicator communicator;
-        static public TimeSpan _intervalBetweenChecks = TimeSpan.FromSeconds(20);
+        static public AscomClient ascomClientSafeToOperate, ascomClientTelescope, ascomClientDome;
+        static public TimeSpan _intervalBetweenChecks = TimeSpan.FromSeconds(30);
         static private DateTime _nextCheck = DateTime.Now + TimeSpan.FromSeconds(5);
         static private bool _checking = false;
         static private bool _connected = false;
         static private SafeToOperateDigest safetooperateDigest;
-        static private Statuser safetooperateStatus;
+        static private TelescopeDigest telescopeDigest;
+        static private Statuser statuser;
+        public static string observatoryName = WiseSite.ObservatoryName;
 
         private static readonly Color normalColor = Statuser.colors[Statuser.Severity.Normal];
         private static readonly Color unsafeColor = Statuser.colors[Statuser.Severity.Error];
@@ -41,9 +44,12 @@ namespace RemoteSafetyDashboard
             menuStrip.RenderMode = ToolStripRenderMode.ManagerRenderMode;
             ToolStripManager.Renderer = new Wise40ToolstripRenderer();
 
-            labelTitle.Text = $"Remote Safety Dashboard running on {Environment.MachineName.ToLower()}";
+            labelObservatory.Text = observatoryName;
+            labelHost.Text = Environment.MachineName.ToLower();
 
-            safetooperateStatus = new Statuser(labelWeatherStatus, toolTip);
+            statuser = new Statuser(labelWeatherStatus, toolTip);
+
+            panelWise40.Visible = observatoryName == "wise40";
         }
 
         private void timerRefresh_Tick(object sender, EventArgs e)
@@ -52,26 +58,25 @@ namespace RemoteSafetyDashboard
             labelDate.Text = $"{now:dd MMM yyyy HH:mm:ss (zzz)}";
 
             if (_checking)
-            {
-                if (communicator != null)
-                    safetooperateStatus.Show(communicator.Status, 2000, communicator.Severity, silent: true);
                 return;
-            }
 
             TimeSpan ts = _nextCheck - now;
+            labelNextCheckLabel.Text = "Next check in:";
             labelNextCheck.Text = ts.ToMinimalString(showMillis: false);
 
-            if (ts <= TimeSpan.FromMilliseconds(0))
-            {
-                _checking = true;
-                CheckConnections();
-                if (_connected)
-                    UpdateDisplay();
-                else
-                    safetooperateStatus.Show($"No connection to ASCOM.Server on {remoteHost}", 0, Statuser.Severity.Error, true);
-                _nextCheck = DateTime.Now + _intervalBetweenChecks;
-                _checking = false;
-            }
+            if (_nextCheck > now)
+                return;
+
+            _checking = true;
+            labelNextCheckLabel.Text = "Checking:";
+            labelNextCheck.Text = "connections";
+            CheckConnections();
+            if (_connected)
+                UpdateDisplay();
+            else
+                statuser.Show($"No connection to ASCOM.Server on {remoteHost}", 0, Statuser.Severity.Error, true);
+            _nextCheck = DateTime.Now + _intervalBetweenChecks;
+            _checking = false;
         }
 
         public static Color SensorDigestColor(Sensor.SensorDigest sensorDigest)
@@ -124,46 +129,48 @@ namespace RemoteSafetyDashboard
 
         public void UpdateDisplay()
         {
-            string response;
+            string safetyResponse, telescopeResponse;
 
+            labelNextCheck.Text = "safety";
+            #region Global Safety
             try
             {
-                response = communicator.Action("status", "");
-                if (response == null)
+                safetyResponse = ascomClientSafeToOperate.Action("status", "");
+                if (safetyResponse == null)
                 {
-                    ClearLabels("NULL", warningColor);
+                    ClearLabels("***", warningColor);
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Get \"status\": null response");
                     #endregion
-                    safetooperateStatus.Show("Empty response", 3000, Statuser.Severity.Error, true);
+                    statuser.Show("Empty safety response", 3000, Statuser.Severity.Error, true);
                     return;
                 }
             }
             catch (Exception ex)
             {
-                safetooperateStatus.Show($"Get \"status\": {ex.Message}", 3000, Statuser.Severity.Error, true);
+                statuser.Show($"Get safety \"status\": {ex.Message}", 3000, Statuser.Severity.Error, true);
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"Get \"status\": caught {ex.Message} at\n{ex.StackTrace}");
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"Get safey \"status\": caught {ex.Message} at\n{ex.StackTrace}");
                 #endregion
                 return;
             }
 
             try
             {
-                safetooperateDigest = JsonConvert.DeserializeObject<SafeToOperateDigest>(response);
+                safetooperateDigest = JsonConvert.DeserializeObject<SafeToOperateDigest>(safetyResponse);
             } catch (Exception ex)
             {
-                ClearLabels("JSON", warningColor);
-                safetooperateStatus.Show($"deserialize caught: {ex.Message}", 3000, Statuser.Severity.Error, true);
+                ClearLabels("***", warningColor);
+                statuser.Show($"deserialize caught: {ex.Message}", 3000, Statuser.Severity.Error, true);
                 return;
             }
 
             if (safetooperateDigest == null)
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"Get \"status\": response: {response} => safetooperateDigest == null");
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"Get safety \"status\": response: {safetyResponse} => safetooperateDigest == null");
                 #endregion
-                safetooperateStatus.Show("NULL digest", 3000, Statuser.Severity.Error, true);
+                statuser.Show("NULL digest", 3000, Statuser.Severity.Error, true);
                 return;
             }
 
@@ -180,91 +187,231 @@ namespace RemoteSafetyDashboard
 
             if (!safetooperateDigest.HumanIntervention.Safe)
             {
-                toolTip.SetToolTip(safetooperateStatus.Label,
+                toolTip.SetToolTip(statuser.Label,
                     String.Join("\n", safetooperateDigest.UnsafeReasons).Replace(Const.recordSeparator, "\n  "));
-                safetooperateStatus.Show("Human Intervention", 0, Statuser.Severity.Error, true);
+                statuser.Show("Human Intervention", 0, Statuser.Severity.Error, true);
             }
             else if (safetooperateDigest.Bypassed)
             {
-                toolTip.SetToolTip(safetooperateStatus.Label, "Safety checks are bypassed!");
-                safetooperateStatus.Show("Safety bypassed", 0, Statuser.Severity.Warning, true);
+                toolTip.SetToolTip(statuser.Label, "Safety checks are bypassed!");
+                statuser.Show("Safety bypassed", 0, Statuser.Severity.Warning, true);
             }
             else
             {
-                bool wise_issafe;
+                bool isSafe;
+                string action = observatoryName == "wise40" ? "issafe" : "wise-issafe";
 
                 try
                 {
-                    wise_issafe = JsonConvert.DeserializeObject<bool>(communicator.Action("wise-issafe", ""));
+                    isSafe = JsonConvert.DeserializeObject<bool>(ascomClientSafeToOperate.Action(action, ""));
                 }
                 catch (Exception ex)
                 {
-                    safetooperateStatus.Show($"Get wise-issafe caught {ex.Message}", 2000, Statuser.Severity.Error, true);
+                    statuser.Show($"Get {action} caught {ex.Message}", 2000, Statuser.Severity.Error, true);
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"Get wise-safe caught {ex.Message} at\n{ex.StackTrace}");
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"Get {action} caught {ex.Message} at\n{ex.StackTrace}");
                     #endregion
                     return;
                 }
 
-                if (wise_issafe)
+                if (isSafe)
                 {
-                    toolTip.SetToolTip(safetooperateStatus.Label, "Conditions are safe to operate.");
-                    safetooperateStatus.Show("Safe to operate", 0, Statuser.Severity.Good, true);
+                    toolTip.SetToolTip(statuser.Label, "Conditions are safe to operate.");
+                    statuser.Show("Safe to operate", 0, Statuser.Severity.Good, true);
                 }
                 else
                 {
-                    List<string> wise_unsafereasons = new List<string>();
+                    action = observatoryName == "wise40" ? "unsafereasons-json" : "wise-unsafereasons";
+                    List<string> unsafereasons = new List<string>();
 
                     try
                     {
-                        wise_unsafereasons = JsonConvert.DeserializeObject<List<string>>(communicator.Action("wise-unsafereasons", ""));
+                        unsafereasons = JsonConvert.DeserializeObject<List<string>>(ascomClientSafeToOperate.Action(action, ""));
                     }
                     catch (Exception ex)
                     {
-                        safetooperateStatus.Show($"Get wise-unsafereasons caught {ex.Message}", 2000, Statuser.Severity.Error, true);
+                        statuser.Show($"Get {action} caught {ex.Message}", 2000, Statuser.Severity.Error, true);
                         #region debug
-                        debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"Get wise-unsafereasons caught {ex.Message} at\n{ex.StackTrace}");
+                        debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"Get {action} caught {ex.Message} at\n{ex.StackTrace}");
                         #endregion
                     }
 
-                    toolTip.SetToolTip(safetooperateStatus.Label, string.Join("\n", wise_unsafereasons).Replace(Const.recordSeparator, "\n"));
-                    safetooperateStatus.Show("Not safe to operate", 0, Statuser.Severity.Error, true);
+                    toolTip.SetToolTip(statuser.Label, string.Join("\n", unsafereasons).Replace(Const.recordSeparator, "\n"));
+                    statuser.Show("Not safe to operate", 0, Statuser.Severity.Error, true);
                 }
             }
+            #endregion
+
+            if (observatoryName != "wise40")
+                return;
+
+            #region Wise40 Specific
+            labelNextCheck.Text = "telescope";
+            try
+            {
+                telescopeResponse = ascomClientTelescope.Action("status", "");
+                if (telescopeResponse == null)
+                {
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Get telescope \"status\": null response");
+                    #endregion
+                    statuser.Show("Empty telescope response", 3000, Statuser.Severity.Error, true);
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                statuser.Show($"Get telescope \"status\": {ex.Message}", 3000, Statuser.Severity.Error, true);
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"Get telescope \"status\": caught {ex.Message} at\n{ex.StackTrace}");
+                #endregion
+                return;
+            }
+
+            try
+            {
+                telescopeDigest = JsonConvert.DeserializeObject<TelescopeDigest>(telescopeResponse);
+            }
+            catch (Exception ex)
+            {
+                statuser.Show($"deserialize caught: {ex.Message}", 3000, Statuser.Severity.Error, true);
+                return;
+            }
+
+            if (telescopeDigest == null)
+            {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"Get telescope \"status\": response: {telescopeResponse} => telescopeDigest == null");
+                #endregion
+                statuser.Show("Empty telescope digest", 3000, Statuser.Severity.Error, true);
+                return;
+            }
+
+            #region Telescope Status
+            if (telescopeDigest.Active)
+            {
+                labelTelescopeStatus.Text = "Active";
+                toolTip.SetToolTip(labelTelescopeStatus, String.Join(",", telescopeDigest.Activities));
+            }
+            else
+            {
+                labelTelescopeStatus.Text = "Idle";
+                toolTip.SetToolTip(labelTelescopeStatus, "Wis40 is idle");
+            }
+            #endregion
+
+            #region HumanIntervention
+            if (HumanIntervention.IsSet())
+            {
+                labelHumanInterventionStatus.Text = "Active";
+                buttonManualIntervention.Text = "Deactivate";
+                toolTip.SetToolTip(labelHumanInterventionStatus, HumanIntervention.Details.ToString().Replace(Const.recordSeparator, "\n"));
+            }
+            else
+            {
+                labelHumanInterventionStatus.Text = "Inactive";
+                buttonManualIntervention.Text = "Activate";
+                toolTip.SetToolTip(labelHumanInterventionStatus, string.Empty);
+            }
+            #endregion
+
+            #region Projector
+            bool status = JsonConvert.DeserializeObject<bool>(ascomClientDome.Action("projector", ""));
+            buttonProjector.Text = "Projector " + (status ? "Off" : "On");
+            #endregion
+
+            labelNextCheckLabel.Text = "Next check in:";
+
+            #endregion
         }
 
         public static void CheckConnections()
         {
-            if (communicator == null)
-                communicator = new Communicator(Communicator.Type.Fake, remoteHost);
-                //communicator = new Communicator(Communicator.Type.ASCOM, remoteHost); // Till we can use ASCOM.RemoteClient
+            int connections = 0;
 
-            if (communicator.Connected)
-            {
-                _connected = true;
-                return;
-            }
+            _connected = false;
+
+            if (ascomClientSafeToOperate == null)
+                ascomClientSafeToOperate = new AscomClient($"http://{remoteHost}:11111/api/v1/safetymonitor/0/", "safety");
+
+            if (ascomClientSafeToOperate.Connected)
+                connections++;
             else
             {
                 try
                 {
-                    communicator.Connected = true;
+                    ascomClientSafeToOperate.Connected = true;
 
-                    while (!communicator.Connected)
+                    while (!ascomClientSafeToOperate.Connected)
                     {
                         Application.DoEvents();
                     }
-                    _connected = true;
+                    connections++;
                 }
                 catch
                 {
-                    _connected = false;
-                    safetooperateStatus.Show($"No connection to ASCOM.Server on {remoteHost}", 0, Statuser.Severity.Error, true);
+                    statuser.Show($"No connection to ASCOM.Server on {remoteHost}", 0, Statuser.Severity.Error, true);
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"CheckConnections: No connection to {remoteHost}");
                     #endregion
-                    return;
                 }
+                _connected = connections == 1;
+            }
+
+            if (observatoryName == "wise40")
+            {
+                if (ascomClientTelescope == null)
+                    ascomClientTelescope = new AscomClient($"http://{remoteHost}:11111/api/v1/telescope/0/", "telescope");
+
+                if (ascomClientTelescope.Connected)
+                    connections++;
+                else
+                {
+                    try
+                    {
+                        ascomClientTelescope.Connected = true;
+
+                        while (!ascomClientTelescope.Connected)
+                        {
+                            Application.DoEvents();
+                        }
+                        connections++;
+                    }
+                    catch
+                    {
+                        statuser.Show($"No connection to ASCOM.Server on {remoteHost}", 0, Statuser.Severity.Error, true);
+                        #region debug
+                        debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"CheckConnections: No connection to {remoteHost}");
+                        #endregion
+                    }
+                }
+
+                if (ascomClientDome == null)
+                    ascomClientDome = new AscomClient($"http://{remoteHost}:11111/api/v1/dome/0/", "dome");
+
+                if (ascomClientDome.Connected)
+                    connections++;
+                else
+                {
+                    try
+                    {
+                        ascomClientDome.Connected = true;
+
+                        while (!ascomClientDome.Connected)
+                        {
+                            Application.DoEvents();
+                        }
+                        connections++;
+                    }
+                    catch
+                    {
+                        statuser.Show($"No connection to ASCOM.Server on {remoteHost}", 0, Statuser.Severity.Error, true);
+                        #region debug
+                        debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"CheckConnections: No connection to {remoteHost}");
+                        #endregion
+                    }
+                }
+                _connected = connections == 3;
             }
         }
 
@@ -276,6 +423,70 @@ namespace RemoteSafetyDashboard
         private void safetyOnTheWIse40WikiToolStripMenuItem_Click(object sender, EventArgs e)
         {
             System.Diagnostics.Process.Start("https://github.com/blumzi/ASCOM.Wise40/wiki/safetooperate");
+        }
+
+        public void RemoveHumanInterventionFile(object sender, DoWorkEventArgs e)
+        {
+            HumanIntervention.Remove();
+        }
+
+        public void AfterRemoveHumanInterventionFile(object sender, RunWorkerCompletedEventArgs e)
+        {
+        }
+
+        private void UpdateManualInterventionControls()
+        {
+            if (HumanIntervention.IsSet())
+            {
+                labelHumanInterventionStatus.Text = "Active";
+                labelHumanInterventionStatus.ForeColor = unsafeColor;
+                buttonManualIntervention.Text = "Deactivate";
+                toolTip.SetToolTip(labelHumanInterventionStatus,
+                    String.Join("\n", HumanIntervention.Details).Replace(Const.recordSeparator, "\n  "));
+            }
+            else
+            {
+                labelHumanInterventionStatus.Text = "Inactive";
+                buttonManualIntervention.Text = "Activate";
+                labelHumanInterventionStatus.ForeColor = safeColor;
+                toolTip.SetToolTip(labelHumanInterventionStatus, "");
+            }
+        }
+
+        private void buttonManualIntervention_Click(object sender, EventArgs e)
+        {
+            if (HumanIntervention.IsSet())
+            {
+                BackgroundWorker bw = new BackgroundWorker();
+                bw.DoWork += RemoveHumanInterventionFile;
+                bw.RunWorkerCompleted += AfterRemoveHumanInterventionFile;
+                bw.RunWorkerAsync();
+            }
+            else
+            {
+                DialogResult result = new InterventionForm().ShowDialog();
+            }
+
+            UpdateManualInterventionControls();
+        }
+
+        private void buttonProjector_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string status = ascomClientDome.Action("projector", "");
+
+                if (!String.IsNullOrEmpty(status))
+                {
+                    bool on = JsonConvert.DeserializeObject<bool>(status);
+
+                    on = Convert.ToBoolean(ascomClientDome.Action("projector", (!on).ToString()));
+                    buttonProjector.Text = "Projector " + (on ? "Off" : "On");
+                }
+            }
+            catch
+            {
+            }
         }
 
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)

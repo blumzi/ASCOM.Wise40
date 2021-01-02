@@ -94,9 +94,15 @@
     <Compile Include="About.Designer.cs">
       <DependentUpon>About.cs</DependentUpon>
     </Compile>
-    <Compile Include="Communicator.cs" />
-    <Compile Include="FakeSafeToOperateAccess.cs" />
+    <Compile Include="AscomClient.cs" />
+    <Compile Include="HTTPCommunicator.cs" />
     <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="InterventionForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="InterventionForm.Designer.cs">
+      <DependentUpon>InterventionForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="RemoteSafetyDashboard.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -107,6 +113,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="About.resx">
       <DependentUpon>About.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="InterventionForm.resx">
+      <DependentUpon>InterventionForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="RemoteSafetyDashboard.resx">
       <DependentUpon>RemoteSafetyDashboard.cs</DependentUpon>
@@ -140,9 +149,17 @@
       <Project>{b76546e7-9832-4d28-b412-b34ca1c6177c}</Project>
       <Name>Common</Name>
     </ProjectReference>
+    <ProjectReference Include="..\ObservatoryMonitor\Observatory Monitor.csproj">
+      <Project>{ce5e9e5e-ff3b-4451-9254-881d7cc67c1a}</Project>
+      <Name>Observatory Monitor</Name>
+    </ProjectReference>
     <ProjectReference Include="..\SafeToOperate\SafeToOperate.csproj">
       <Project>{7fa766d4-8f97-4d9f-8f62-f25c84c01ff2}</Project>
       <Name>SafeToOperate</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Telescope\Telescope.csproj">
+      <Project>{e27802fc-efb5-4deb-bd4d-013f44a0813c}</Project>
+      <Name>Telescope</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -158,6 +175,8 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\ASCOM.bmp" />
+    <None Include="Resources\ASCOM.png" />
     <Content Include="WiseObs.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

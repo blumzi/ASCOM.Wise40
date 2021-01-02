@@ -339,6 +339,21 @@ namespace ASCOM.Wise40
                 _processName = System.Diagnostics.Process.GetCurrentProcess().ProcessName;
             return _processName == Const.Apps[app].appName;
         }
+
+        public static string ObservatoryName
+        {
+            get
+            {
+                Dictionary<string, string> Host2Obs = new Dictionary<string, string>
+                {
+                    { "c18-pc", "c18" },
+                    { "c28-pc", "c28" },
+                    { "dome-pc", "wise40" },
+                };
+
+                return Host2Obs[Environment.MachineName.ToLower()];
+            }
+        }
     }
 
     public class TempFetcher

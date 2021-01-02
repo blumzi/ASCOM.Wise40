@@ -242,6 +242,7 @@ namespace ASCOM.Wise40SafeToOperate
             "raw-weather-data",
             "wise-list-sensors",
             "wise-sensor-is-safe",
+            "issafe",
             "wise-issafe",
             "wise-unsafereasons",
         };
@@ -330,6 +331,10 @@ namespace ASCOM.Wise40SafeToOperate
 
                 case "wise-issafe":
                     ret = JsonConvert.SerializeObject(WiseIsSafe);
+                    break;
+
+                case "issafe":
+                    ret = JsonConvert.SerializeObject(IsSafe);
                     break;
 
                 case "wise-unsafereasons":

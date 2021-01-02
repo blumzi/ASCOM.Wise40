@@ -62,12 +62,34 @@
             this.labelNextCheck = new System.Windows.Forms.Label();
             this.timerRefresh = new System.Windows.Forms.Timer(this.components);
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
-            this.label5 = new System.Windows.Forms.Label();
+            this.labelHumanInterventionStatus = new System.Windows.Forms.Label();
+            this.labelTelescopeStatus = new System.Windows.Forms.Label();
+            this.labelNextCheckLabel = new System.Windows.Forms.Label();
             this.labelTitle = new System.Windows.Forms.Label();
             this.labelDate = new System.Windows.Forms.Label();
+            this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
+            this.panelCommon = new System.Windows.Forms.Panel();
+            this.panelWise40 = new System.Windows.Forms.Panel();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.buttonProjector = new System.Windows.Forms.Button();
+            this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.label4 = new System.Windows.Forms.Label();
+            this.buttonManualIntervention = new System.Windows.Forms.Button();
+            this.panelStatus = new System.Windows.Forms.Panel();
+            this.labelObservatory = new System.Windows.Forms.Label();
+            this.labelHost = new System.Windows.Forms.Label();
+            this.label3 = new System.Windows.Forms.Label();
+            this.label5 = new System.Windows.Forms.Label();
             this.groupBoxWeather.SuspendLayout();
             this.tableLayoutPanelWeather.SuspendLayout();
             this.menuStrip.SuspendLayout();
+            this.flowLayoutPanel1.SuspendLayout();
+            this.panelCommon.SuspendLayout();
+            this.panelWise40.SuspendLayout();
+            this.groupBox1.SuspendLayout();
+            this.groupBox2.SuspendLayout();
+            this.panelStatus.SuspendLayout();
             this.SuspendLayout();
             // 
             // groupBoxWeather
@@ -75,12 +97,12 @@
             this.groupBoxWeather.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.groupBoxWeather.Controls.Add(this.tableLayoutPanelWeather);
             this.groupBoxWeather.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBoxWeather.Location = new System.Drawing.Point(13, 168);
+            this.groupBoxWeather.Location = new System.Drawing.Point(9, 138);
             this.groupBoxWeather.Name = "groupBoxWeather";
             this.groupBoxWeather.Size = new System.Drawing.Size(383, 182);
             this.groupBoxWeather.TabIndex = 34;
             this.groupBoxWeather.TabStop = false;
-            this.groupBoxWeather.Text = "Safe To Operate (latest readings) ";
+            this.groupBoxWeather.Text = "Safe To Operate ( latest readings)  ";
             // 
             // tableLayoutPanelWeather
             // 
@@ -409,7 +431,7 @@
             this.labelWeatherStatus.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.labelWeatherStatus.Font = new System.Drawing.Font("Lucida Sans Unicode", 9F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelWeatherStatus.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelWeatherStatus.Location = new System.Drawing.Point(19, 360);
+            this.labelWeatherStatus.Location = new System.Drawing.Point(13, 4);
             this.labelWeatherStatus.Name = "labelWeatherStatus";
             this.labelWeatherStatus.Size = new System.Drawing.Size(377, 20);
             this.labelWeatherStatus.TabIndex = 32;
@@ -422,7 +444,7 @@
             this.helpToolStripMenuItem});
             this.menuStrip.Location = new System.Drawing.Point(0, 0);
             this.menuStrip.Name = "menuStrip";
-            this.menuStrip.Size = new System.Drawing.Size(408, 24);
+            this.menuStrip.Size = new System.Drawing.Size(436, 24);
             this.menuStrip.TabIndex = 35;
             this.menuStrip.Text = "menuStrip";
             // 
@@ -437,7 +459,7 @@
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(92, 22);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(93, 22);
             this.exitToolStripMenuItem.Text = "Exit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
             // 
@@ -471,10 +493,10 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.labelNextCheck.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.labelNextCheck.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.labelNextCheck.Location = new System.Drawing.Point(208, 138);
+            this.labelNextCheck.Location = new System.Drawing.Point(222, 111);
             this.labelNextCheck.Margin = new System.Windows.Forms.Padding(0, 0, 3, 0);
             this.labelNextCheck.Name = "labelNextCheck";
-            this.labelNextCheck.Size = new System.Drawing.Size(70, 13);
+            this.labelNextCheck.Size = new System.Drawing.Size(86, 30);
             this.labelNextCheck.TabIndex = 40;
             this.labelNextCheck.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -484,54 +506,247 @@
             this.timerRefresh.Interval = 1000;
             this.timerRefresh.Tick += new System.EventHandler(this.timerRefresh_Tick);
             // 
-            // label5
+            // labelHumanInterventionStatus
             // 
-            this.label5.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.labelHumanInterventionStatus.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
+            this.labelHumanInterventionStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelHumanInterventionStatus.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.labelHumanInterventionStatus.Location = new System.Drawing.Point(64, 16);
+            this.labelHumanInterventionStatus.Name = "labelHumanInterventionStatus";
+            this.labelHumanInterventionStatus.Size = new System.Drawing.Size(56, 24);
+            this.labelHumanInterventionStatus.TabIndex = 64;
+            this.labelHumanInterventionStatus.Text = "Inactive";
+            this.labelHumanInterventionStatus.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // labelTelescopeStatus
+            // 
+            this.labelTelescopeStatus.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
+            this.labelTelescopeStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelTelescopeStatus.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.labelTelescopeStatus.Location = new System.Drawing.Point(230, 130);
+            this.labelTelescopeStatus.Name = "labelTelescopeStatus";
+            this.labelTelescopeStatus.Size = new System.Drawing.Size(56, 24);
+            this.labelTelescopeStatus.TabIndex = 70;
+            this.labelTelescopeStatus.Text = "***";
+            this.labelTelescopeStatus.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // labelNextCheckLabel
+            // 
+            this.labelNextCheckLabel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.label5.AutoSize = true;
-            this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label5.ForeColor = System.Drawing.Color.DarkOrange;
-            this.label5.Location = new System.Drawing.Point(112, 138);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(90, 13);
-            this.label5.TabIndex = 41;
-            this.label5.Text = "Next check in:";
-            this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.labelNextCheckLabel.AutoSize = true;
+            this.labelNextCheckLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelNextCheckLabel.ForeColor = System.Drawing.Color.DarkOrange;
+            this.labelNextCheckLabel.Location = new System.Drawing.Point(129, 112);
+            this.labelNextCheckLabel.Name = "labelNextCheckLabel";
+            this.labelNextCheckLabel.Size = new System.Drawing.Size(90, 13);
+            this.labelNextCheckLabel.TabIndex = 41;
+            this.labelNextCheckLabel.Text = "Next check in:";
+            this.labelNextCheckLabel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // labelTitle
             // 
-            this.labelTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
+            this.labelTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
             this.labelTitle.ForeColor = System.Drawing.Color.DarkOrange;
-            this.labelTitle.Location = new System.Drawing.Point(63, 40);
+            this.labelTitle.Location = new System.Drawing.Point(60, -1);
             this.labelTitle.Name = "labelTitle";
-            this.labelTitle.Size = new System.Drawing.Size(280, 42);
+            this.labelTitle.Size = new System.Drawing.Size(280, 25);
             this.labelTitle.TabIndex = 42;
-            this.labelTitle.Text = "title";
+            this.labelTitle.Text = "Remote Safety Dashboard";
             this.labelTitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // labelDate
             // 
             this.labelDate.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
             this.labelDate.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelDate.Location = new System.Drawing.Point(142, 74);
+            this.labelDate.Location = new System.Drawing.Point(138, 60);
             this.labelDate.Name = "labelDate";
-            this.labelDate.Size = new System.Drawing.Size(124, 55);
+            this.labelDate.Size = new System.Drawing.Size(124, 52);
             this.labelDate.TabIndex = 43;
             this.labelDate.Text = "date";
             this.labelDate.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // flowLayoutPanel1
+            // 
+            this.flowLayoutPanel1.AutoSize = true;
+            this.flowLayoutPanel1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.flowLayoutPanel1.Controls.Add(this.panelCommon);
+            this.flowLayoutPanel1.Controls.Add(this.panelWise40);
+            this.flowLayoutPanel1.Controls.Add(this.panelStatus);
+            this.flowLayoutPanel1.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
+            this.flowLayoutPanel1.Location = new System.Drawing.Point(12, 40);
+            this.flowLayoutPanel1.Name = "flowLayoutPanel1";
+            this.flowLayoutPanel1.Size = new System.Drawing.Size(407, 573);
+            this.flowLayoutPanel1.TabIndex = 44;
+            // 
+            // panelCommon
+            // 
+            this.panelCommon.Controls.Add(this.label5);
+            this.panelCommon.Controls.Add(this.label3);
+            this.panelCommon.Controls.Add(this.labelHost);
+            this.panelCommon.Controls.Add(this.labelObservatory);
+            this.panelCommon.Controls.Add(this.groupBoxWeather);
+            this.panelCommon.Controls.Add(this.labelNextCheck);
+            this.panelCommon.Controls.Add(this.labelDate);
+            this.panelCommon.Controls.Add(this.labelNextCheckLabel);
+            this.panelCommon.Controls.Add(this.labelTitle);
+            this.panelCommon.Location = new System.Drawing.Point(3, 3);
+            this.panelCommon.Name = "panelCommon";
+            this.panelCommon.Size = new System.Drawing.Size(401, 337);
+            this.panelCommon.TabIndex = 0;
+            // 
+            // panelWise40
+            // 
+            this.panelWise40.Controls.Add(this.groupBox1);
+            this.panelWise40.Location = new System.Drawing.Point(3, 346);
+            this.panelWise40.Name = "panelWise40";
+            this.panelWise40.Size = new System.Drawing.Size(401, 184);
+            this.panelWise40.TabIndex = 1;
+            this.panelWise40.Visible = false;
+            // 
+            // groupBox1
+            // 
+            this.groupBox1.Controls.Add(this.label1);
+            this.groupBox1.Controls.Add(this.labelTelescopeStatus);
+            this.groupBox1.Controls.Add(this.buttonProjector);
+            this.groupBox1.Controls.Add(this.groupBox2);
+            this.groupBox1.ForeColor = System.Drawing.Color.DarkOrange;
+            this.groupBox1.Location = new System.Drawing.Point(9, 5);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(381, 170);
+            this.groupBox1.TabIndex = 0;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = " Wise40 ";
+            // 
+            // label1
+            // 
+            this.label1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
+            this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label1.ForeColor = System.Drawing.Color.DarkOrange;
+            this.label1.Location = new System.Drawing.Point(94, 130);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(115, 24);
+            this.label1.TabIndex = 69;
+            this.label1.Text = "Telescope Status:";
+            this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // buttonProjector
+            // 
+            this.buttonProjector.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonProjector.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonProjector.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.buttonProjector.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.buttonProjector.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.buttonProjector.Location = new System.Drawing.Point(216, 54);
+            this.buttonProjector.Name = "buttonProjector";
+            this.buttonProjector.Size = new System.Drawing.Size(98, 40);
+            this.buttonProjector.TabIndex = 68;
+            this.buttonProjector.Text = "Projector?";
+            this.buttonProjector.UseVisualStyleBackColor = false;
+            this.buttonProjector.Click += new System.EventHandler(this.buttonProjector_Click);
+            // 
+            // groupBox2
+            // 
+            this.groupBox2.Controls.Add(this.label4);
+            this.groupBox2.Controls.Add(this.labelHumanInterventionStatus);
+            this.groupBox2.Controls.Add(this.buttonManualIntervention);
+            this.groupBox2.ForeColor = System.Drawing.Color.DarkOrange;
+            this.groupBox2.Location = new System.Drawing.Point(67, 26);
+            this.groupBox2.Name = "groupBox2";
+            this.groupBox2.Size = new System.Drawing.Size(128, 96);
+            this.groupBox2.TabIndex = 66;
+            this.groupBox2.TabStop = false;
+            this.groupBox2.Text = " Human Intervention ";
+            // 
+            // label4
+            // 
+            this.label4.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
+            this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label4.ForeColor = System.Drawing.Color.DarkOrange;
+            this.label4.Location = new System.Drawing.Point(16, 16);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(48, 24);
+            this.label4.TabIndex = 63;
+            this.label4.Text = "Status:";
+            this.label4.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // buttonManualIntervention
+            // 
+            this.buttonManualIntervention.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonManualIntervention.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonManualIntervention.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.buttonManualIntervention.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.buttonManualIntervention.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.buttonManualIntervention.Location = new System.Drawing.Point(16, 46);
+            this.buttonManualIntervention.Name = "buttonManualIntervention";
+            this.buttonManualIntervention.Size = new System.Drawing.Size(96, 40);
+            this.buttonManualIntervention.TabIndex = 55;
+            this.buttonManualIntervention.Text = "Activate";
+            this.buttonManualIntervention.UseVisualStyleBackColor = false;
+            this.buttonManualIntervention.Click += new System.EventHandler(this.buttonManualIntervention_Click);
+            // 
+            // panelStatus
+            // 
+            this.panelStatus.Controls.Add(this.labelWeatherStatus);
+            this.panelStatus.Location = new System.Drawing.Point(3, 536);
+            this.panelStatus.Name = "panelStatus";
+            this.panelStatus.Size = new System.Drawing.Size(401, 34);
+            this.panelStatus.TabIndex = 2;
+            // 
+            // labelObservatory
+            // 
+            this.labelObservatory.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
+            this.labelObservatory.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.labelObservatory.Location = new System.Drawing.Point(209, 21);
+            this.labelObservatory.Name = "labelObservatory";
+            this.labelObservatory.Size = new System.Drawing.Size(88, 25);
+            this.labelObservatory.TabIndex = 44;
+            this.labelObservatory.Text = "obs";
+            this.labelObservatory.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // labelHost
+            // 
+            this.labelHost.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
+            this.labelHost.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.labelHost.Location = new System.Drawing.Point(209, 39);
+            this.labelHost.Name = "labelHost";
+            this.labelHost.Size = new System.Drawing.Size(75, 25);
+            this.labelHost.TabIndex = 45;
+            this.labelHost.Text = "host";
+            this.labelHost.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label3
+            // 
+            this.label3.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
+            this.label3.ForeColor = System.Drawing.Color.DarkOrange;
+            this.label3.Location = new System.Drawing.Point(122, 21);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(88, 25);
+            this.label3.TabIndex = 46;
+            this.label3.Text = "Observatory:";
+            this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // label5
+            // 
+            this.label5.AutoEllipsis = true;
+            this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
+            this.label5.ForeColor = System.Drawing.Color.DarkOrange;
+            this.label5.Location = new System.Drawing.Point(169, 39);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(41, 25);
+            this.label5.TabIndex = 47;
+            this.label5.Text = "Host:";
+            this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // RemoteSafetyDashboard
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.AutoSize = true;
+            this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.ClientSize = new System.Drawing.Size(408, 395);
-            this.Controls.Add(this.labelDate);
-            this.Controls.Add(this.labelTitle);
-            this.Controls.Add(this.labelNextCheck);
-            this.Controls.Add(this.labelWeatherStatus);
-            this.Controls.Add(this.label5);
-            this.Controls.Add(this.groupBoxWeather);
+            this.ClientSize = new System.Drawing.Size(436, 615);
+            this.Controls.Add(this.flowLayoutPanel1);
             this.Controls.Add(this.menuStrip);
             this.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(26)))), ((int)(((byte)(26)))));
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;
@@ -540,12 +755,19 @@
             this.MaximizeBox = false;
             this.Name = "RemoteSafetyDashboard";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
-            this.Text = "Wise Remote Safety Dashboard";
+            this.Text = "Wise Dashboard";
             this.groupBoxWeather.ResumeLayout(false);
             this.tableLayoutPanelWeather.ResumeLayout(false);
             this.tableLayoutPanelWeather.PerformLayout();
             this.menuStrip.ResumeLayout(false);
             this.menuStrip.PerformLayout();
+            this.flowLayoutPanel1.ResumeLayout(false);
+            this.panelCommon.ResumeLayout(false);
+            this.panelCommon.PerformLayout();
+            this.panelWise40.ResumeLayout(false);
+            this.groupBox1.ResumeLayout(false);
+            this.groupBox2.ResumeLayout(false);
+            this.panelStatus.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -584,10 +806,26 @@
         private System.Windows.Forms.Label labelNextCheck;
         private System.Windows.Forms.Timer timerRefresh;
         private System.Windows.Forms.ToolTip toolTip;
-        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Label labelNextCheckLabel;
         private System.Windows.Forms.ToolStripMenuItem safetyOnTheWIse40WikiToolStripMenuItem;
         private System.Windows.Forms.Label labelTitle;
         private System.Windows.Forms.Label labelDate;
+        private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
+        private System.Windows.Forms.Panel panelCommon;
+        private System.Windows.Forms.Panel panelWise40;
+        private System.Windows.Forms.Panel panelStatus;
+        private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.GroupBox groupBox2;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Label labelHumanInterventionStatus;
+        private System.Windows.Forms.Button buttonManualIntervention;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label labelTelescopeStatus;
+        private System.Windows.Forms.Button buttonProjector;
+        private System.Windows.Forms.Label labelObservatory;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Label labelHost;
     }
 }
 
