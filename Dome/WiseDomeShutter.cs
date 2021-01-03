@@ -138,7 +138,7 @@ namespace ASCOM.Wise40
                     _wisedomeshutter._stateReason = "PeriodicReader: WiFi is not working";
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugShutter,
-                        $"PeriodicReader: " +
+                         "PeriodicReader: " +
                         $"state: {_wisedomeshutter._state} " +
                         $"reason: {_wisedomeshutter._stateReason.Replace("PeriodicReader: ", "")}");
                     #endregion
@@ -230,7 +230,7 @@ namespace ASCOM.Wise40
 
                     try
                     {
-                        response = await _client.GetAsync(_uri);
+                        response = await _client.GetAsync(_uri).ConfigureAwait(false);
                         duration = DateTime.Now.Subtract(start);
                         break;
                     }
@@ -263,8 +263,17 @@ namespace ASCOM.Wise40
                     }
                 }
 
-                if (response != null)
+                if (response is object)
                 {
+                    try
+                    {
+                        response.EnsureSuccessStatusCode();
+                    }
+                    catch (HttpRequestException)
+                    {
+                        return -1;
+                    }
+
                     Instance.webClient.WiFiIsWorking = true;
 
                     if (response.IsSuccessStatusCode)
@@ -273,10 +282,9 @@ namespace ASCOM.Wise40
                         const string suffix = "</html>\r\n";
 
                         _lastSuccessfullAttempt = attempt;
-                        string content = await response.Content.ReadAsStringAsync();
+                        string content = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                         if (content.StartsWith(prefix) && content.EndsWith(suffix))
                         {
-
                             content = content.Remove(0, prefix.Length);
                             content = content.Remove(content.IndexOf(suffix[0]));
                             ret = Convert.ToInt32(content);
@@ -480,7 +488,7 @@ namespace ASCOM.Wise40
                 if (Simulated)
                     return Simulation_State;
 
-                ShutterState ret = ShutterState.shutterError;
+                ShutterState ret;
 
                 if (openPin.isOn && closePin.isOn)
                 {
@@ -542,7 +550,7 @@ namespace ASCOM.Wise40
             }
         }
 
-        public void init()
+        public void Init()
         {
             if (_initialized)
                 return;
@@ -601,7 +609,7 @@ namespace ASCOM.Wise40
                 if (lazy.IsValueCreated)
                     return lazy.Value;
 
-                lazy.Value.init();
+                lazy.Value.Init();
                 return lazy.Value;
             }
         }
