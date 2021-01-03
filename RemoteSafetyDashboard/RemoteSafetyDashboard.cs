@@ -47,7 +47,18 @@ namespace RemoteSafetyDashboard
 
             statuser = new Statuser(labelWeatherStatus, toolTip);
 
-            panelWise40.Visible = observatoryName == "wise40";
+            if (observatoryName == "wise40")
+            {
+                panelWise40.Visible = true;
+                Text = "Wise Safety Dashboard";
+                labelTitle.Text = "Safety Dashboard";
+            }
+            else
+            {
+                panelWise40.Visible = false;
+                Text = "Wise Remote Safety Dashboard";
+                labelTitle.Text = "Remote Safety Dashboard";
+            }
         }
 
         private void timerRefresh_Tick(object sender, EventArgs e)
@@ -323,12 +334,14 @@ namespace RemoteSafetyDashboard
             #endregion
         }
 
-        public static void CheckConnections()
+        public void CheckConnections()
         {
             int connections = 0;
 
             _connected = false;
 
+            #region SafetToOperate
+            labelNextCheck.Text = "safettooperate";
             if (ascomClientSafeToOperate == null)
                 ascomClientSafeToOperate = new AscomClient($"http://{remoteHost}:11111/api/v1/safetymonitor/0/", "safety");
 
@@ -355,9 +368,11 @@ namespace RemoteSafetyDashboard
                 }
                 _connected = connections == 1;
             }
+            #endregion
 
             if (observatoryName == "wise40")
             {
+                labelNextCheck.Text = "telescope";
                 if (ascomClientTelescope == null)
                     ascomClientTelescope = new AscomClient($"http://{remoteHost}:11111/api/v1/telescope/0/", "telescope");
 
@@ -384,6 +399,7 @@ namespace RemoteSafetyDashboard
                     }
                 }
 
+                labelNextCheck.Text = "dome";
                 if (ascomClientDome == null)
                     ascomClientDome = new AscomClient($"http://{remoteHost}:11111/api/v1/dome/0/", "dome");
 

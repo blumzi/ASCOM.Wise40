@@ -65,6 +65,9 @@
   <PropertyGroup>
     <ApplicationIcon>WiseObs.ico</ApplicationIcon>
   </PropertyGroup>
+  <PropertyGroup>
+    <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -168,7 +171,11 @@
   <ItemGroup>
     <None Include="Resources\ASCOM.bmp" />
     <None Include="Resources\ASCOM.png" />
+    <Content Include="RemoteSafetyDashboard.iss" />
     <Content Include="WiseObs.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>"C:\Program Files (x86)\Inno Setup 6\Compil32.exe" /cc $(ProjectDir)RemoteSafetyDashboard.iss</PostBuildEvent>
+  </PropertyGroup>
 </Project>
