@@ -18,7 +18,6 @@ namespace Wise40Watcher
         private Const.App _app;
         private Process _process = null;
         private bool _stopping = false;
-        private const string serviceName = "Wise40Watcher";
 
         private void Init(string name)
         {
@@ -39,6 +38,10 @@ namespace Wise40Watcher
 
                 case "obsmon":
                     _app = Const.Apps[Const.Application.ObservatoryMonitor];
+                    break;
+
+                case "safetydash":
+                    _app = Const.Apps[Const.Application.SafetyDash];
                     break;
             }
         }

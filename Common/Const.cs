@@ -129,7 +129,7 @@ namespace ASCOM.Wise40.Common
             }
         }
 
-        public enum Application { RESTServer, Dash, WeatherLink, ObservatoryMonitor, OCH, RemoteClientLocalServer }
+        public enum Application { RESTServer, Dash, WeatherLink, ObservatoryMonitor, OCH, RemoteClientLocalServer, SafetyDash }
 
         public static Dictionary<Application, App> Apps = new Dictionary<Application, App>()
             {
@@ -146,6 +146,13 @@ namespace ASCOM.Wise40.Common
                         locallyDeveloped = true,
                         appName = "Dash",
                         path = "Dash/bin/x86/Debug/Dash.exe",
+                    }
+                },
+                {
+                    Application.SafetyDash, new App {
+                        locallyDeveloped = false,
+                        appName = "SafetyDash",
+                        path = "c:/Program Files (x86)/Wise/Wise Remote Safety Dashboard/RemoteSafetyDashboard.exe",
                     }
                 },
 

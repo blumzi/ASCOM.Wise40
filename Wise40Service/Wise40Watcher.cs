@@ -73,8 +73,10 @@ namespace Wise40Watcher
             switch (opMode)
             {
                 case WiseSite.OpMode.ACP:
-                case WiseSite.OpMode.LCO:
                 case WiseSite.OpMode.WISE:
+                    dashWatcher = new Watcher("safetydash");
+                    break;
+                case WiseSite.OpMode.LCO:
                     dashWatcher = new Watcher("dash");
                     obsmonWatcher = new Watcher("obsmon");
                     break;
@@ -111,8 +113,10 @@ namespace Wise40Watcher
             switch (opMode)
             {
                 case WiseSite.OpMode.WISE:
-                case WiseSite.OpMode.LCO:
                 case WiseSite.OpMode.ACP:
+                    dashWatcher.Start(args);
+                    break;
+                case WiseSite.OpMode.LCO:
                     dashWatcher.Start(args);
                     obsmonWatcher.Start(args);
                     break;
@@ -130,8 +134,10 @@ namespace Wise40Watcher
                 switch (opMode)
                 {
                     case WiseSite.OpMode.WISE:
-                    case WiseSite.OpMode.LCO:
                     case WiseSite.OpMode.ACP:
+                        dashWatcher.Stop();
+                        break;
+                    case WiseSite.OpMode.LCO:
                         dashWatcher.Stop();
                         obsmonWatcher.Stop();
                         break;
