@@ -20,6 +20,7 @@ namespace RemoteSafetyDashboard
         static public AscomClient ascomClientSafeToOperate, ascomClientTelescope, ascomClientDome;
         static public TimeSpan _intervalBetweenChecks = TimeSpan.FromSeconds(30);
         static private DateTime _nextCheck = DateTime.Now + TimeSpan.FromSeconds(5);
+        static private DateTime _lastSuccessfullCheck = DateTime.MinValue;
         static private bool _checking = false;
         static private bool _connected = false;
         static private SafeToOperateDigest safetooperateDigest;
@@ -32,7 +33,7 @@ namespace RemoteSafetyDashboard
         private static readonly Color safeColor = Statuser.colors[Statuser.Severity.Good];
         private static readonly Color warningColor = Statuser.colors[Statuser.Severity.Warning];
 
-        static public string remoteHost = "132.66.65.9";
+        static public string remoteHost;
         private static readonly Debugger debugger = Debugger.Instance;
 
         public RemoteSafetyDashboard()
@@ -52,12 +53,14 @@ namespace RemoteSafetyDashboard
                 panelWise40.Visible = true;
                 Text = "Wise Safety Dashboard";
                 labelTitle.Text = "Safety Dashboard";
+                remoteHost = "127.0.0.1";
             }
             else
             {
                 panelWise40.Visible = false;
                 Text = "Wise Remote Safety Dashboard";
                 labelTitle.Text = "Remote Safety Dashboard";
+                remoteHost = "132.66.65.9";
             }
         }
 
@@ -73,6 +76,10 @@ namespace RemoteSafetyDashboard
             labelNextCheckLabel.Text = "Next check in:";
             labelNextCheck.Text = ts.ToMinimalString(showMillis: false);
 
+            labelInformationAge.Text = (_lastSuccessfullCheck == DateTime.MinValue) ?
+                    "***" :
+                    (now - _lastSuccessfullCheck).ToMinimalString(showMillis: false);
+
             if (_nextCheck > now)
                 return;
 
@@ -83,7 +90,7 @@ namespace RemoteSafetyDashboard
             if (_connected)
                 UpdateDisplay();
             else
-                statuser.Show($"No connection to ASCOM.Server on {remoteHost}", 0, Statuser.Severity.Error, true);
+                statuser.Show($"No connection to ASCOM.Server on {remoteHost}", millis: 5000, Statuser.Severity.Error, true);
             _nextCheck = DateTime.Now + _intervalBetweenChecks;
             _checking = false;
         }
@@ -212,7 +219,11 @@ namespace RemoteSafetyDashboard
 
                 try
                 {
-                    isSafe = JsonConvert.DeserializeObject<bool>(ascomClientSafeToOperate.Action(action, ""));
+                    string json = ascomClientSafeToOperate.Action(action, "");
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $">>> safetooperate(action: {action}): trying to deserialize: {json}");
+                    #endregion
+                    isSafe = JsonConvert.DeserializeObject<bool>(json);
                 }
                 catch (Exception ex)
                 {
@@ -249,6 +260,7 @@ namespace RemoteSafetyDashboard
                     statuser.Show("Not safe to operate", 0, Statuser.Severity.Error, true);
                 }
             }
+            _lastSuccessfullCheck = DateTime.Now;
             #endregion
 
             if (observatoryName != "wise40")
@@ -283,6 +295,9 @@ namespace RemoteSafetyDashboard
             }
             catch (Exception ex)
             {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"Get telescope \"status\": response: {telescopeResponse} => failed to deserialize JSON");
+                #endregion
                 statuser.Show($"deserialize caught: {ex.Message}", 3000, Statuser.Severity.Error, true);
                 return;
             }
@@ -330,6 +345,7 @@ namespace RemoteSafetyDashboard
             #endregion
 
             labelNextCheckLabel.Text = "Next check in:";
+            _lastSuccessfullCheck = DateTime.Now;
 
             #endregion
         }
@@ -502,7 +518,6 @@ namespace RemoteSafetyDashboard
             {
             }
         }
-
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
             About form = new About();
