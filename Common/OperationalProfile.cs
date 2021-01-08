@@ -12,6 +12,9 @@ namespace ASCOM.Wise40.Common
     {
         public OperationalProfile()
         {
+            if (WiseSite.ObservatoryName != "wise40")
+                return;
+
             using (Profile driverProfile = new Profile() { DeviceType = "Telescope" })
             {
                 if (Enum.TryParse<WiseSite.OpMode>(driverProfile.GetValue(Const.WiseDriverID.Telescope,"SiteOperationMode", null, "WISE").ToUpper(), out WiseSite.OpMode mode))
@@ -19,13 +22,13 @@ namespace ASCOM.Wise40.Common
             }
         }
 
-        public WiseSite.OpMode OpMode { get; set; }
+        public WiseSite.OpMode OpMode { get; set; } = WiseSite.OpMode.NONE;
 
         public bool EnslavesDome
         {
             get
             {
-                return OpMode != WiseSite.OpMode.ACP;
+                return OpMode == WiseSite.OpMode.LCO || OpMode == WiseSite.OpMode.WISE;
             }
         }
 

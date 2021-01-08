@@ -40,6 +40,7 @@ namespace ASCOM.Wise40.Common
         public const string recordSeparator = ";";
 
         public const string topWise40Directory = "c:/Wise40/";
+        public const string topWiseDirectory = "c:/Wise/";
         public const string humanInterventionFilePath = Const.topWise40Directory + "Observatory/HumanIntervention.txt";
 
         public static class WiseDriverID

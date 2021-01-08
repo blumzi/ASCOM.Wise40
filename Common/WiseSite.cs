@@ -36,6 +36,7 @@ namespace ASCOM.Wise40
         private static readonly ASCOM.Astrometry.Transform.Transform _transform = new Astrometry.Transform.Transform();
         private static readonly TempFetcher _tempFetcher = new TempFetcher(10);
         private static string _processName;
+        public static string _machine = Environment.MachineName.ToLower();
 
         public enum OpMode { LCO, ACP, WISE, NONE };
 

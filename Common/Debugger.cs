@@ -61,6 +61,7 @@ namespace ASCOM.Wise40.Common
             DebugFocuser = (1 << 11),
             DebugFilterWheel = (1 << 12),
             DebugAll = DebugASCOM | DebugDevice | DebugLogic | DebugExceptions | DebugAxes | DebugMotors | DebugEncoders | DebugSafety | DebugDome | DebugShutter | DebugDAQs | DebugFocuser | DebugFilterWheel,
+            DebugNonWise40 = DebugLogic,
         };
 
         private static DebugLevel _currentLevel;
@@ -70,7 +71,11 @@ namespace ASCOM.Wise40.Common
             if (_initialized)
                 return;
 
-            ReadProfile();
+            if (WiseSite.ObservatoryName == "wise40")
+                ReadProfile();
+            else
+                _currentLevel = DebugLevel.DebugNonWise40;
+
             if (level != 0)
                 _currentLevel = level;
 
@@ -125,8 +130,12 @@ namespace ASCOM.Wise40.Common
             DateTime now = DateTime.UtcNow;
             if (now.Hour < 12)
                 now = now.AddDays(-1);
-            return string.Format(Const.topWise40Directory + "Logs/{0}-{1:D2}-{2:D2}",
-                    now.Year, now.Month, now.Day);
+
+            string top = WiseSite.ObservatoryName == "wise40" ?
+                Const.topWise40Directory :
+                Const.topWiseDirectory;
+
+            return string.Format($"{top}/Logs/{0}-{1:D2}-{2:D2}", now.Year, now.Month, now.Day);
         }
 
         public void WriteLine(DebugLevel level, string fmt, params object[] o)
