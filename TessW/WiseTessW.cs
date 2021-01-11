@@ -37,6 +37,7 @@ namespace ASCOM.Wise40.TessW
         public TimeSpan _interval = TimeSpan.FromMinutes(1);
 
         private static readonly Lazy<WiseTessW> lazy = new Lazy<WiseTessW>(() => new WiseTessW()); // Singleton
+        private static readonly string defaultIPAddress = "192.168.1.100";
 
         public static WiseTessW Instance
         {
@@ -144,9 +145,9 @@ namespace ASCOM.Wise40.TessW
                 Regex r = new Regex(@"Mag.V :\s+(?<mag>[\d.]+).*" +
                                     @"Frec.[\s:]+(?<frec>[\d.-]+).*" +
                                     @"T. IR[\s:]+(?<tempSky>[\d.-]+).*" +
-                                    @"T. Sens[\s:]+(?<tempAmb>[\d.-]+).*" +
+                                    @"T. Sens[\s:]+(?<tempAmb>[\d.-]+).*" /* +
                                     @"Wifi[\s:]+(?<wifi>[\d.-]+).*" +
-                                    @"mqtt sec.[\s:]+(?<mqtt>\d+).*");
+                                    @"mqtt sec.[\s:]+(?<mqtt>\d+).*" */);
                 Match m = r.Match(content);
                 if (m.Success)
                 {
@@ -154,8 +155,8 @@ namespace ASCOM.Wise40.TessW
                     Instance.sensorData["frec"] = m.Result("${frec}");
                     Instance.sensorData["tempSky"] = m.Result("${tempSky}");
                     Instance.sensorData["tempAmb"] = m.Result("${tempAmb}");
-                    Instance.sensorData["wifi"] = m.Result("${wifi}");
-                    Instance.sensorData["mqtt"] = m.Result("${mqtt}");
+                    //Instance.sensorData["wifi"] = m.Result("${wifi}");
+                    //Instance.sensorData["mqtt"] = m.Result("${mqtt}");
 
                     double tAmb = Convert.ToDouble(Instance.sensorData["tempAmb"]);
                     double tSky = Convert.ToDouble(Instance.sensorData["tempSky"]);
@@ -175,7 +176,7 @@ namespace ASCOM.Wise40.TessW
                     succeeded = true;
                     #region debug
                     Instance.debugger.WriteLine(Debugger.DebugLevel.DebugSafety,
-                        $"GetTessWInfo: try#: {tryNo}, Success, content: [{content}], duration: {duration}, Wifi: {Instance.sensorData["wifi"]}");
+                        $"GetTessWInfo: try#: {tryNo}, Success, content: [{content}], duration: {duration}");
                     #endregion
                 }
             }
@@ -323,7 +324,7 @@ namespace ASCOM.Wise40.TessW
         {
             using (Profile driverProfile = new Profile() { DeviceType = "ObservingConditions" })
             {
-                IpAddress = driverProfile.GetValue(Const.WiseDriverID.TessW, Const.ProfileName.TessW_IpAddress, string.Empty, "192.168.1.5");
+                IpAddress = driverProfile.GetValue(Const.WiseDriverID.TessW, Const.ProfileName.TessW_IpAddress, string.Empty, defaultIPAddress);
                 Enabled = Convert.ToBoolean(driverProfile.GetValue(Const.WiseDriverID.TessW, Const.ProfileName.TessW_Enabled, string.Empty, "true"));
             }
         }
