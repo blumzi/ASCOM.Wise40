@@ -388,7 +388,7 @@ namespace ASCOM.Wise40SafeToOperate
 
         public static string DigestSensors(string sensorName)
         {
-            if (sensorName == "all")
+            if (string.IsNullOrEmpty(sensorName) || sensorName == "all" || sensorName == "\"\"" || sensorName == "''")
                 return JsonConvert.SerializeObject(_prioritizedSensors);
 
             foreach (var sensor in _prioritizedSensors)
