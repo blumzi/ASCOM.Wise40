@@ -61,7 +61,7 @@ namespace ASCOM.Wise40.Common
             DebugFocuser = (1 << 11),
             DebugFilterWheel = (1 << 12),
             DebugAll = DebugASCOM | DebugDevice | DebugLogic | DebugExceptions | DebugAxes | DebugMotors | DebugEncoders | DebugSafety | DebugDome | DebugShutter | DebugDAQs | DebugFocuser | DebugFilterWheel,
-            DebugNonWise40 = DebugLogic,
+            DebugWise = DebugLogic,
         };
 
         private static DebugLevel _currentLevel;
@@ -74,7 +74,7 @@ namespace ASCOM.Wise40.Common
             if (WiseSite.ObservatoryName == "wise40")
                 ReadProfile();
             else
-                _currentLevel = DebugLevel.DebugNonWise40;
+                _currentLevel = DebugLevel.DebugWise;
 
             if (level != 0)
                 _currentLevel = level;
@@ -135,7 +135,7 @@ namespace ASCOM.Wise40.Common
                 Const.topWise40Directory :
                 Const.topWiseDirectory;
 
-            return string.Format($"{top}/Logs/{0}-{1:D2}-{2:D2}", now.Year, now.Month, now.Day);
+            return string.Format($"{top}/Logs/{now.Year}-{now.Month:D2}-{now.Day:D2}");
         }
 
         public void WriteLine(DebugLevel level, string fmt, params object[] o)
@@ -152,13 +152,13 @@ namespace ASCOM.Wise40.Common
                 $"{Process.GetCurrentProcess().Id},{Thread.CurrentThread.ManagedThreadId},{taskID}",
                 level.ToString(),
                 msg);
-            string currentLogPath = $"{LogDirectory()}/{_appName}.txt";
+            string currentLogFile = $"{LogDirectory()}/{_appName}.txt";
 
             lock (_lock)
             {
-                if (currentLogPath != _logFile)
+                if (currentLogFile != _logFile)
                 {
-                    Directory.CreateDirectory(Path.GetDirectoryName(currentLogPath));
+                    Directory.CreateDirectory(Path.GetDirectoryName(currentLogFile));
                     if (traceListener != null)
                     {
                         try
@@ -169,7 +169,7 @@ namespace ASCOM.Wise40.Common
                         }
                         catch { }
                     }
-                    _logFile = currentLogPath;
+                    _logFile = currentLogFile;
                     traceListener = new TextWriterTraceListener(_logFile);
                     Trace.Listeners.Add(traceListener);
                     Trace.WriteLine("\n##");
