@@ -25,8 +25,12 @@ namespace RemoteSafetyDashboard
             _ascomClient = ascomClient;
 
             _client = new HttpClient();
-            _client.DefaultRequestHeaders.Accept.Add(
-                new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/html"));
+            _client.DefaultRequestHeaders
+                .Accept
+                .Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/html"));
+            _client.DefaultRequestHeaders
+                .Accept
+                .Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
             _client.DefaultRequestHeaders.ConnectionClose = false;
             _client.Timeout = TimeSpan.FromSeconds(30);
         }
