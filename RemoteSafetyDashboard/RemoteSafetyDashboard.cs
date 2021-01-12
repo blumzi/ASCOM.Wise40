@@ -46,7 +46,7 @@ namespace RemoteSafetyDashboard
             labelObservatory.Text = observatoryName;
             labelHost.Text = Environment.MachineName.ToLower();
 
-            statuser = new Statuser(labelWeatherStatus, toolTip);
+            statuser = new Statuser(labelStatus, toolTip);
 
             if (observatoryName == "wise40")
             {
@@ -84,8 +84,6 @@ namespace RemoteSafetyDashboard
                 return;
 
             _checking = true;
-            labelNextCheckLabel.Text = "Checking:";
-            labelNextCheck.Text = "connections";
             CheckConnections();
             if (_connected)
                 UpdateDisplay();
@@ -147,7 +145,6 @@ namespace RemoteSafetyDashboard
         {
             string safetyResponse, telescopeResponse;
 
-            labelNextCheck.Text = "safety";
             #region Global Safety
             try
             {
@@ -203,13 +200,12 @@ namespace RemoteSafetyDashboard
 
             if (!safetooperateDigest.HumanIntervention.Safe)
             {
-                toolTip.SetToolTip(statuser.Label,
-                    String.Join("\n", safetooperateDigest.UnsafeReasons).Replace(Const.recordSeparator, "\n  "));
+                statuser.SetToolTip(String.Join("\n", safetooperateDigest.UnsafeReasons).Replace(Const.recordSeparator, "\n  "));
                 statuser.Show("Human Intervention", 0, Statuser.Severity.Error, true);
             }
             else if (safetooperateDigest.Bypassed)
             {
-                toolTip.SetToolTip(statuser.Label, "Safety checks are bypassed!");
+                statuser.SetToolTip("Safety checks are bypassed!");
                 statuser.Show("Safety bypassed", 0, Statuser.Severity.Warning, true);
             }
             else
@@ -220,9 +216,6 @@ namespace RemoteSafetyDashboard
                 try
                 {
                     string json = ascomClientSafeToOperate.Action(action, "");
-                    #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $">>> safetooperate(action: {action}): trying to deserialize: {json}");
-                    #endregion
                     isSafe = JsonConvert.DeserializeObject<bool>(json);
                 }
                 catch (Exception ex)
@@ -236,12 +229,12 @@ namespace RemoteSafetyDashboard
 
                 if (isSafe)
                 {
-                    toolTip.SetToolTip(statuser.Label, "Conditions are safe to operate.");
+                    statuser.SetToolTip("Conditions are safe to operate.");
                     statuser.Show("Safe to operate", 0, Statuser.Severity.Good, true);
                 }
                 else
                 {
-                    action = observatoryName == "wise40" ? "unsafereasons-json" : "wise-unsafereasons";
+                    action = (observatoryName == "wise40") ? "unsafereasons-json" : "wise-unsafereasons";
                     List<string> unsafereasons = new List<string>();
 
                     try
@@ -256,7 +249,7 @@ namespace RemoteSafetyDashboard
                         #endregion
                     }
 
-                    toolTip.SetToolTip(statuser.Label, string.Join("\n", unsafereasons).Replace(Const.recordSeparator, "\n"));
+                    statuser.SetToolTip(string.Join("\n", unsafereasons).Replace(Const.recordSeparator, "\n"));
                     statuser.Show("Not safe to operate", 0, Statuser.Severity.Error, true);
                 }
             }
@@ -267,7 +260,6 @@ namespace RemoteSafetyDashboard
                 return;
 
             #region Wise40 Specific
-            labelNextCheck.Text = "telescope";
             try
             {
                 telescopeResponse = ascomClientTelescope.Action("status", "");
@@ -357,9 +349,8 @@ namespace RemoteSafetyDashboard
             _connected = false;
 
             #region SafetToOperate
-            labelNextCheck.Text = "safettooperate";
             if (ascomClientSafeToOperate == null)
-                ascomClientSafeToOperate = new AscomClient($"http://{remoteHost}:11111/api/v1/safetymonitor/0/", "safety");
+                ascomClientSafeToOperate = new AscomClient($"http://{remoteHost}:11111/api/v1/safetymonitor/0/");
 
             if (ascomClientSafeToOperate.Connected)
                 connections++;
@@ -388,9 +379,8 @@ namespace RemoteSafetyDashboard
 
             if (observatoryName == "wise40")
             {
-                labelNextCheck.Text = "telescope";
                 if (ascomClientTelescope == null)
-                    ascomClientTelescope = new AscomClient($"http://{remoteHost}:11111/api/v1/telescope/0/", "telescope");
+                    ascomClientTelescope = new AscomClient($"http://{remoteHost}:11111/api/v1/telescope/0/");
 
                 if (ascomClientTelescope.Connected)
                     connections++;
@@ -415,9 +405,8 @@ namespace RemoteSafetyDashboard
                     }
                 }
 
-                labelNextCheck.Text = "dome";
                 if (ascomClientDome == null)
-                    ascomClientDome = new AscomClient($"http://{remoteHost}:11111/api/v1/dome/0/", "dome");
+                    ascomClientDome = new AscomClient($"http://{remoteHost}:11111/api/v1/dome/0/");
 
                 if (ascomClientDome.Connected)
                     connections++;

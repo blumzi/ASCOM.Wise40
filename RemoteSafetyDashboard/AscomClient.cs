@@ -41,10 +41,11 @@ namespace RemoteSafetyDashboard
         public Transaction transaction;
         private bool connected = false;
 
-        public AscomClient(string uri, string shortName)
+        public AscomClient(string uri)
         {
             Uri = uri;
-            Name = shortName;
+            Name = uri.Remove(uri.Length - 3);
+            Name = Name.Remove(0, Name.LastIndexOf('/'));
             httpCommunicator = new HTTPCommunicator(this);
         }
 

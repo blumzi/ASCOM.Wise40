@@ -52,7 +52,6 @@
             this.label2 = new System.Windows.Forms.Label();
             this.label22 = new System.Windows.Forms.Label();
             this.labelWindSpeedValue = new System.Windows.Forms.Label();
-            this.labelWeatherStatus = new System.Windows.Forms.Label();
             this.menuStrip = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -62,6 +61,7 @@
             this.labelNextCheck = new System.Windows.Forms.Label();
             this.timerRefresh = new System.Windows.Forms.Timer(this.components);
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
+            this.labelInformationAge = new System.Windows.Forms.Label();
             this.labelHumanInterventionStatus = new System.Windows.Forms.Label();
             this.labelTelescopeStatus = new System.Windows.Forms.Label();
             this.labelNextCheckLabel = new System.Windows.Forms.Label();
@@ -69,6 +69,7 @@
             this.labelDate = new System.Windows.Forms.Label();
             this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
             this.panelCommon = new System.Windows.Forms.Panel();
+            this.label7 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.labelHost = new System.Windows.Forms.Label();
@@ -80,9 +81,7 @@
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.label4 = new System.Windows.Forms.Label();
             this.buttonManualIntervention = new System.Windows.Forms.Button();
-            this.panelStatus = new System.Windows.Forms.Panel();
-            this.labelInformationAge = new System.Windows.Forms.Label();
-            this.label7 = new System.Windows.Forms.Label();
+            this.labelStatus = new System.Windows.Forms.Label();
             this.groupBoxWeather.SuspendLayout();
             this.tableLayoutPanelWeather.SuspendLayout();
             this.menuStrip.SuspendLayout();
@@ -91,7 +90,6 @@
             this.panelWise40.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
-            this.panelStatus.SuspendLayout();
             this.SuspendLayout();
             // 
             // groupBoxWeather
@@ -99,7 +97,7 @@
             this.groupBoxWeather.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.groupBoxWeather.Controls.Add(this.tableLayoutPanelWeather);
             this.groupBoxWeather.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBoxWeather.Location = new System.Drawing.Point(9, 130);
+            this.groupBoxWeather.Location = new System.Drawing.Point(9, 121);
             this.groupBoxWeather.Name = "groupBoxWeather";
             this.groupBoxWeather.Size = new System.Drawing.Size(383, 182);
             this.groupBoxWeather.TabIndex = 34;
@@ -427,18 +425,6 @@
             this.labelWindSpeedValue.TabIndex = 19;
             this.labelWindSpeedValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
-            // labelWeatherStatus
-            // 
-            this.labelWeatherStatus.AutoEllipsis = true;
-            this.labelWeatherStatus.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.labelWeatherStatus.Font = new System.Drawing.Font("Lucida Sans Unicode", 9F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelWeatherStatus.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelWeatherStatus.Location = new System.Drawing.Point(3, 573);
-            this.labelWeatherStatus.Name = "labelWeatherStatus";
-            this.labelWeatherStatus.Size = new System.Drawing.Size(377, 20);
-            this.labelWeatherStatus.TabIndex = 32;
-            this.labelWeatherStatus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
             // menuStrip
             // 
             this.menuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -496,19 +482,37 @@
             this.labelNextCheck.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
             this.labelNextCheck.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.labelNextCheck.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.labelNextCheck.Location = new System.Drawing.Point(302, 86);
+            this.labelNextCheck.Location = new System.Drawing.Point(302, 77);
             this.labelNextCheck.Margin = new System.Windows.Forms.Padding(0, 0, 3, 0);
             this.labelNextCheck.Name = "labelNextCheck";
-            this.labelNextCheck.Size = new System.Drawing.Size(86, 13);
+            this.labelNextCheck.Size = new System.Drawing.Size(86, 19);
             this.labelNextCheck.TabIndex = 40;
             this.labelNextCheck.Text = "xxx";
             this.labelNextCheck.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.toolTip.SetToolTip(this.labelNextCheck, "Time till next check");
             // 
             // timerRefresh
             // 
             this.timerRefresh.Enabled = true;
             this.timerRefresh.Interval = 1000;
             this.timerRefresh.Tick += new System.EventHandler(this.timerRefresh_Tick);
+            // 
+            // labelInformationAge
+            // 
+            this.labelInformationAge.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.labelInformationAge.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
+            this.labelInformationAge.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.labelInformationAge.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.labelInformationAge.Location = new System.Drawing.Point(302, 94);
+            this.labelInformationAge.Margin = new System.Windows.Forms.Padding(0, 0, 3, 0);
+            this.labelInformationAge.Name = "labelInformationAge";
+            this.labelInformationAge.Size = new System.Drawing.Size(86, 19);
+            this.labelInformationAge.TabIndex = 48;
+            this.labelInformationAge.Text = "xxx";
+            this.labelInformationAge.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.toolTip.SetToolTip(this.labelInformationAge, "Time since last successful check");
             // 
             // labelHumanInterventionStatus
             // 
@@ -538,12 +542,11 @@
             // 
             this.labelNextCheckLabel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.labelNextCheckLabel.AutoSize = true;
             this.labelNextCheckLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
             this.labelNextCheckLabel.ForeColor = System.Drawing.Color.DarkOrange;
-            this.labelNextCheckLabel.Location = new System.Drawing.Point(206, 86);
+            this.labelNextCheckLabel.Location = new System.Drawing.Point(206, 76);
             this.labelNextCheckLabel.Name = "labelNextCheckLabel";
-            this.labelNextCheckLabel.Size = new System.Drawing.Size(97, 15);
+            this.labelNextCheckLabel.Size = new System.Drawing.Size(97, 20);
             this.labelNextCheckLabel.TabIndex = 41;
             this.labelNextCheckLabel.Text = "Next check in:";
             this.labelNextCheckLabel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -563,9 +566,9 @@
             // 
             this.labelDate.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
             this.labelDate.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelDate.Location = new System.Drawing.Point(140, 24);
+            this.labelDate.Location = new System.Drawing.Point(140, 31);
             this.labelDate.Name = "labelDate";
-            this.labelDate.Size = new System.Drawing.Size(124, 52);
+            this.labelDate.Size = new System.Drawing.Size(124, 40);
             this.labelDate.TabIndex = 43;
             this.labelDate.Text = "date";
             this.labelDate.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -576,16 +579,15 @@
             this.flowLayoutPanel1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.flowLayoutPanel1.Controls.Add(this.panelCommon);
             this.flowLayoutPanel1.Controls.Add(this.panelWise40);
-            this.flowLayoutPanel1.Controls.Add(this.panelStatus);
+            this.flowLayoutPanel1.Controls.Add(this.labelStatus);
             this.flowLayoutPanel1.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
             this.flowLayoutPanel1.Location = new System.Drawing.Point(17, 27);
             this.flowLayoutPanel1.Name = "flowLayoutPanel1";
-            this.flowLayoutPanel1.Size = new System.Drawing.Size(407, 583);
+            this.flowLayoutPanel1.Size = new System.Drawing.Size(407, 518);
             this.flowLayoutPanel1.TabIndex = 44;
             // 
             // panelCommon
             // 
-            this.panelCommon.AutoSize = true;
             this.panelCommon.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.panelCommon.Controls.Add(this.labelInformationAge);
             this.panelCommon.Controls.Add(this.label7);
@@ -600,15 +602,29 @@
             this.panelCommon.Controls.Add(this.labelTitle);
             this.panelCommon.Location = new System.Drawing.Point(3, 3);
             this.panelCommon.Name = "panelCommon";
-            this.panelCommon.Size = new System.Drawing.Size(401, 351);
+            this.panelCommon.Size = new System.Drawing.Size(401, 304);
             this.panelCommon.TabIndex = 0;
+            // 
+            // label7
+            // 
+            this.label7.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.label7.FlatStyle = System.Windows.Forms.FlatStyle.System;
+            this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
+            this.label7.ForeColor = System.Drawing.Color.DarkOrange;
+            this.label7.Location = new System.Drawing.Point(264, 96);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(35, 15);
+            this.label7.TabIndex = 49;
+            this.label7.Text = "Age:";
+            this.label7.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // label5
             // 
             this.label5.AutoEllipsis = true;
             this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
             this.label5.ForeColor = System.Drawing.Color.DarkOrange;
-            this.label5.Location = new System.Drawing.Point(63, 98);
+            this.label5.Location = new System.Drawing.Point(74, 91);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(55, 25);
             this.label5.TabIndex = 47;
@@ -619,7 +635,7 @@
             // 
             this.label3.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
             this.label3.ForeColor = System.Drawing.Color.DarkOrange;
-            this.label3.Location = new System.Drawing.Point(17, 80);
+            this.label3.Location = new System.Drawing.Point(28, 71);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(101, 25);
             this.label3.TabIndex = 46;
@@ -630,9 +646,9 @@
             // 
             this.labelHost.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
             this.labelHost.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelHost.Location = new System.Drawing.Point(117, 98);
+            this.labelHost.Location = new System.Drawing.Point(128, 91);
             this.labelHost.Name = "labelHost";
-            this.labelHost.Size = new System.Drawing.Size(75, 25);
+            this.labelHost.Size = new System.Drawing.Size(76, 25);
             this.labelHost.TabIndex = 45;
             this.labelHost.Text = "host";
             this.labelHost.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -641,9 +657,9 @@
             // 
             this.labelObservatory.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
             this.labelObservatory.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelObservatory.Location = new System.Drawing.Point(117, 80);
+            this.labelObservatory.Location = new System.Drawing.Point(128, 71);
             this.labelObservatory.Name = "labelObservatory";
-            this.labelObservatory.Size = new System.Drawing.Size(88, 25);
+            this.labelObservatory.Size = new System.Drawing.Size(76, 25);
             this.labelObservatory.TabIndex = 44;
             this.labelObservatory.Text = "obs";
             this.labelObservatory.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -651,9 +667,9 @@
             // panelWise40
             // 
             this.panelWise40.Controls.Add(this.groupBox1);
-            this.panelWise40.Location = new System.Drawing.Point(3, 360);
+            this.panelWise40.Location = new System.Drawing.Point(3, 313);
             this.panelWise40.Name = "panelWise40";
-            this.panelWise40.Size = new System.Drawing.Size(401, 184);
+            this.panelWise40.Size = new System.Drawing.Size(401, 174);
             this.panelWise40.TabIndex = 1;
             this.panelWise40.Visible = false;
             // 
@@ -738,44 +754,15 @@
             this.buttonManualIntervention.UseVisualStyleBackColor = false;
             this.buttonManualIntervention.Click += new System.EventHandler(this.buttonManualIntervention_Click);
             // 
-            // panelStatus
+            // labelStatus
             // 
-            this.panelStatus.Controls.Add(this.labelWeatherStatus);
-            this.panelStatus.Location = new System.Drawing.Point(3, 550);
-            this.panelStatus.Name = "panelStatus";
-            this.panelStatus.Size = new System.Drawing.Size(401, 30);
-            this.panelStatus.TabIndex = 2;
-            // 
-            // labelInformationAge
-            // 
-            this.labelInformationAge.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.labelInformationAge.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
-            this.labelInformationAge.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelInformationAge.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.labelInformationAge.Location = new System.Drawing.Point(302, 103);
-            this.labelInformationAge.Margin = new System.Windows.Forms.Padding(0, 0, 3, 0);
-            this.labelInformationAge.Name = "labelInformationAge";
-            this.labelInformationAge.Size = new System.Drawing.Size(86, 20);
-            this.labelInformationAge.TabIndex = 48;
-            this.labelInformationAge.Text = "xxx";
-            this.labelInformationAge.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // label7
-            // 
-            this.label7.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.label7.AutoSize = true;
-            this.label7.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
-            this.label7.ForeColor = System.Drawing.Color.DarkOrange;
-            this.label7.Location = new System.Drawing.Point(187, 107);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(112, 15);
-            this.label7.TabIndex = 49;
-            this.label7.Text = "Information age:";
-            this.label7.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.labelStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
+            this.labelStatus.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.labelStatus.Location = new System.Drawing.Point(3, 490);
+            this.labelStatus.Name = "labelStatus";
+            this.labelStatus.Size = new System.Drawing.Size(395, 28);
+            this.labelStatus.TabIndex = 33;
+            this.labelStatus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // RemoteSafetyDashboard
             // 
@@ -784,7 +771,7 @@
             this.AutoSize = true;
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.ClientSize = new System.Drawing.Size(436, 616);
+            this.ClientSize = new System.Drawing.Size(436, 548);
             this.Controls.Add(this.flowLayoutPanel1);
             this.Controls.Add(this.menuStrip);
             this.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(26)))), ((int)(((byte)(26)))));
@@ -801,13 +788,10 @@
             this.menuStrip.ResumeLayout(false);
             this.menuStrip.PerformLayout();
             this.flowLayoutPanel1.ResumeLayout(false);
-            this.flowLayoutPanel1.PerformLayout();
             this.panelCommon.ResumeLayout(false);
-            this.panelCommon.PerformLayout();
             this.panelWise40.ResumeLayout(false);
             this.groupBox1.ResumeLayout(false);
             this.groupBox2.ResumeLayout(false);
-            this.panelStatus.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -816,7 +800,6 @@
         #endregion
 
         private System.Windows.Forms.GroupBox groupBoxWeather;
-        private System.Windows.Forms.Label labelWeatherStatus;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanelWeather;
         private System.Windows.Forms.Label label12;
         private System.Windows.Forms.Label labelCloudCoverValue;
@@ -853,7 +836,6 @@
         private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
         private System.Windows.Forms.Panel panelCommon;
         private System.Windows.Forms.Panel panelWise40;
-        private System.Windows.Forms.Panel panelStatus;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.Label label4;
@@ -868,6 +850,7 @@
         private System.Windows.Forms.Label labelHost;
         private System.Windows.Forms.Label labelInformationAge;
         private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.Label labelStatus;
     }
 }
 

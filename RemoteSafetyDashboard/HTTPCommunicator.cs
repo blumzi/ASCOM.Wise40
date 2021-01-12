@@ -73,37 +73,64 @@ namespace RemoteSafetyDashboard
             string here = $"Communicate(verb: {_ascomClient.transaction.verb}, uri: {uri}";
             #endregion
 
-            HttpResponseMessage httpResponse = null;
-            string httpResponseBody;
+            HttpResponseMessage httpResponse;
+
+            here += (_ascomClient.transaction.verb == "GET") ?
+                ") " :
+                _ascomClient.transaction.parameters == null ?
+                    ") " :
+                    $", parameters: {_ascomClient.transaction.parameters}) ";
 
             try
             {
                 if (_ascomClient.transaction.verb == "GET")
                 {
-                    here += ") ";
                     httpResponse = await _client.GetAsync(uri).ConfigureAwait(false);
                 }
                 else
                 {
-                    here += _ascomClient.transaction.parameters == null ?
-                        ") " :
-                        $", parameters: {_ascomClient.transaction.parameters}) ";
                     httpResponse = await _client.PutAsync(uri,
-                        new StringContent(_ascomClient.transaction.parameters, Encoding.UTF8, "application/x-www-form-urlencoded")).ConfigureAwait(false);
+                        new StringContent(_ascomClient.transaction.parameters, Encoding.UTF8, "application/x-www-form-urlencoded"))
+                        .ConfigureAwait(false);
                 }
+            }
+            catch (Exception ex)
+            {
+                _ascomClient.Status = $"Communicate: {ex.Message}";
+                _ascomClient.Severity = Statuser.Severity.Error;
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugWise, $"Communicate: Caught {ex.Message} at\n{ex.StackTrace}");
+                #endregion
+                return;
+            }
 
-                httpResponse.EnsureSuccessStatusCode();
+            _ascomClient.Severity = Statuser.Severity.Error;
+            try {
+                if (httpResponse?.IsSuccessStatusCode == true) {
+                    //httpResponseBody = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+                    //if (httpResponseBody == null)
+                    //{
+                    //    #region debug
+                    //    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "httpResponseBody: NULL");
+                    //    #endregion
+                    //    return;
+                    //}        
+                    var contentStream = await httpResponse.Content.ReadAsStreamAsync();
 
-                if (httpResponse.Content is object) {
-                    httpResponseBody = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-                    //#region debug
-                    //debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"httpResponseBody: {httpResponseBody}");
-                    //#endregion
-                    ASCOMResponse ascomResponse = JsonConvert.DeserializeObject<ASCOMResponse>(httpResponseBody,
-                        new JsonSerializerSettings {
-                            NullValueHandling = NullValueHandling.Ignore,
-                            MissingMemberHandling = MissingMemberHandling.Ignore,
-                        });
+                    var streamReader = new System.IO.StreamReader(contentStream);
+                    var jsonReader = new JsonTextReader(streamReader);
+
+                    JsonSerializer serializer = new JsonSerializer();
+
+                    ASCOMResponse ascomResponse = null;
+                    try
+                    {
+                        ascomResponse = serializer.Deserialize<ASCOMResponse>(jsonReader);
+                    }
+                    catch (JsonReaderException ex)
+                    {
+                        Exceptor.Throw<Exception>($"{here}", $"{ex.Message}");
+                    }
 
                     if (ascomResponse.ErrorNumber != 0)
                         Exceptor.Throw<Exception>($"{here}", $"{ascomResponse.ErrorMessage}");
@@ -112,18 +139,12 @@ namespace RemoteSafetyDashboard
 
                     _ascomClient.transaction.response = ascomResponse.Value;
                     _ascomClient.Status = "";
-                    #region debug
-                    if (_ascomClient.transaction.response == null)
-                    {
-                        debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{here}: null Value");
-                    }
-                    #endregion
-                    }
+                    _ascomClient.Severity = Statuser.Severity.Good;
                 }
+            }
             catch (HttpRequestException ex)
             {
                 _ascomClient.Status = $"Communicate: {ex.Message}";
-                _ascomClient.Severity = Statuser.Severity.Error;
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{here}: Caught {ex.Message} at\n{ex.StackTrace}");
                 #endregion
@@ -131,15 +152,16 @@ namespace RemoteSafetyDashboard
             catch (TaskCanceledException ex)
             {
                 _ascomClient.Status = "Communicate: Timedout";
-                _ascomClient.Severity = Statuser.Severity.Error;
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{here}: Caught {ex.Message} (timeout) at\n{ex.StackTrace}");
                 #endregion
             }
             catch (Exception ex)
             {
+                if (ex.InnerException != null)
+                    ex = ex.InnerException;
+
                 _ascomClient.Status = $"Communicate: {ex.Message}";
-                _ascomClient.Severity = Statuser.Severity.Error;
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{here}: Caught {ex.Message} at\n{ex.StackTrace}");
                 #endregion
