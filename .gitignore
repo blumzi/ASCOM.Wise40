@@ -268,3 +268,5 @@ CurrentCommit.txt
 /TestTransform
 /TestAltAz
 /TestTransformAltAz
+/TestRenishawEncoder/get-deltas
+/TestRenishawEncoder/max-deltas
