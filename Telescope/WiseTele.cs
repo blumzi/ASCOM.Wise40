@@ -143,7 +143,8 @@ namespace ASCOM.Wise40
         public WiseHAEncoder HAEncoder;
         public WiseDecEncoder DecEncoder;
 
-        //public RenishawEncoder RenishawHaEncoder, RenishawDecEncoder;
+        public static readonly RenishawEncoder renishawHaEncoder = new RenishawEncoder(RenishawEncoder.Module.Ha);
+        public static readonly RenishawEncoder renishawDecEncoder = new RenishawEncoder(RenishawEncoder.Module.Dec);
 
         public WisePin TrackPin;
         private WisePin SlewPin;
@@ -438,8 +439,6 @@ namespace ASCOM.Wise40
 
         private static bool _initialized = false;
 
-        //private static readonly Renishaw renishaw = Renishaw.Instance;
-
         static WiseTele() { }
         public WiseTele() { }
 
@@ -715,8 +714,6 @@ namespace ASCOM.Wise40
             }
             catch (Hardware.Hardware.MaintenanceModeException) {
             }
-
-            //renishaw.Init();
 
             _initialized = true;
             #region debug
@@ -2919,12 +2916,17 @@ namespace ASCOM.Wise40
 
         public static void SyncToCoordinates(double RightAscension, double Declination)
         {
-            //#region debug
-            //debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
-            //    $"SyncToCoordinates(ra: {RightAscension}, dec: {Declination})" +
-            //    $"renishaw ha: {Renishaw.Read(Renishaw.EncoderType.HA)}, dec: {Renishaw.Read(Renishaw.EncoderType.Dec)}");
-            //#endregion
-            Exceptor.Throw<MethodNotImplementedException>($"SyncToCoordinates({RightAscension}, {Declination})", "SyncToCoordinates not implemented");
+            if (! WiseTele.Instance.Tracking)
+                Exceptor.Throw<InvalidOperationException>($"SyncToCoordinates({RightAscension}, {Declination})", "Invalid while NOT Tracking");
+
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                $"SyncToCoordinates(ra: {RightAscension}, dec: {Declination}): " +
+                $"Old HA: {WiseTele.Instance.HourAngle}, DEC: {WiseTele.Instance.Declination}, " +
+                $"Synced HA: {RightAscension - wisesite.LocalSiderealTime.Hours}" +
+                $"renishaw ha.Position: {renishawHaEncoder.Position}, dec.Position: {renishawDecEncoder.Position}");
+            #endregion
+            //Exceptor.Throw<MethodNotImplementedException>($"SyncToCoordinates({RightAscension}, {Declination})", "SyncToCoordinates not implemented");
         }
 
         public static bool CanMoveAxis(TelescopeAxes Axis)
