@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using PCIe1711_NET;
+using ASCOM.Wise40.Common;
 
 namespace ASCOM.Wise40.Hardware
 {
@@ -24,10 +25,18 @@ namespace ASCOM.Wise40.Hardware
     {
         private enum ChannelMode { BISS = 0, SSI = 1 };
         private const byte CRCPolynom = ((1 << 6) | (1 << 1) | (1 << 0));
+
+        private const double haConstant = 0.002547126296947 / 19482030;
+        private const double decConstant = haConstant;  // TBD
         private enum BissMode { B = 0, C = 1 };
         private static readonly PCIe1711 Board = PCIe1711.OpenBoard(0);
         public enum Module { Ha = 0, Dec = 1 };
         private readonly byte _moduleNumber;
+        private readonly Module _module;
+
+        private const int jitterBits = 6;       // number of LSBs to discard
+
+        private static Debugger debugger = Debugger.Instance;
 
         public RenishawEncoder(Module module)
         {
@@ -40,6 +49,7 @@ namespace ASCOM.Wise40.Hardware
             byte[] dataLengths = { 35 };
 
             _moduleNumber = (byte)module;
+            _module = module;
 
             ret = Board.BissMasterInitSingleCycle(moduleNbr: _moduleNumber,
                 sensorDataFreqDivisor: 17,
@@ -64,15 +74,35 @@ namespace ASCOM.Wise40.Hardware
         {
             get
             {
-                string op = $"Renishaw({_moduleNumber}).Position";
-                int ret = Board.BissMasterSingleCycleDataRead(
-                    moduleNbr: _moduleNumber,
-                    slaveIndex: 0,
-                    out UInt32 low,
-                    out UInt32 high);
+                string op = $"Renishaw({_module}).Position";
+                int tries, maxTries = 5;
+                UInt32 high = 0, low = 0;
 
-                if (ret != 0)
-                    throw new Exception($"{op}: BissMasterSingleCycleDataRead returned {ret}");
+                for (tries = 0; tries < maxTries; tries++)
+                {
+                    int ret = Board.BissMasterSingleCycleDataRead(
+                        moduleNbr: _moduleNumber,
+                        slaveIndex: 0,
+                        out low,
+                        out high);
+
+                    if (ret == 0)
+                        break;
+                    else
+                    {
+                        #region debug
+                        debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: BissMasterSingleCycleDataRead returned {ret}");
+                        #endregion
+                        System.Threading.Thread.Sleep(50);
+                    }
+                }
+                if (tries >= maxTries)
+                {
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: Cannot read Renishaw encoder {_module} after {tries} tries, returning 0");
+                    #endregion
+                    return 0;
+                }
 
                 UInt64 reading = ((UInt64)high << 32) | (UInt64)low;
                 bool warning = (reading & (1 << 0)) == 0;
@@ -80,11 +110,57 @@ namespace ASCOM.Wise40.Hardware
                 UInt32 position = (UInt32)((reading >> 2) & 0xffffffff);
 
                 if (warning)
-                    throw new Exception($"{op}: encoder or scale need cleaning");
-                if (error)
-                    throw new Exception($"{op}: encoder read error");
+                {
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: encoder or scale need cleaning");
+                    #endregion
+                }
 
-                return position;
+                if (error)
+                {
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: encoder read error, returning 0");
+                    #endregion
+                    return 0;
+                }
+                else
+                {
+                    if (tries > 0)
+                    {
+                        #region debug
+                        debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: needed {tries} tries to read encoder");
+                        #endregion
+                    }
+                    return position >> jitterBits;
+                }
+            }
+        }
+
+        public double Radians
+        {
+            get
+            {
+                return Position * ((_module == Module.Ha) ? haConstant : decConstant);
+            }
+        }
+        public double HourAngle
+        {
+            get
+            {
+                if (_module != Module.Ha)
+                    Exceptor.Throw<InvalidOperationException>("HourAngle", $"Cannot get HourAngle from a {_module} type encoder");
+
+                return Position * haConstant;
+            }
+        }
+        public double Declination
+        {
+            get
+            {
+                if (_module != Module.Dec)
+                    Exceptor.Throw<InvalidOperationException>("Declination", $"Cannot get Declination from a {_module} type encoder");
+
+                return Position * decConstant;
             }
         }
 

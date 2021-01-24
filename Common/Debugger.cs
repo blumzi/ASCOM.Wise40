@@ -56,12 +56,13 @@ namespace ASCOM.Wise40.Common
             DebugSafety = (1 << 7),
             DebugDome = (1 << 8),
             DebugShutter = (1 << 9),
-            DebugDefault = DebugAxes | DebugExceptions | DebugASCOM | DebugLogic | DebugShutter,
             DebugDAQs = (1 << 10),
             DebugFocuser = (1 << 11),
             DebugFilterWheel = (1 << 12),
-            DebugAll = DebugASCOM | DebugDevice | DebugLogic | DebugExceptions | DebugAxes | DebugMotors | DebugEncoders | DebugSafety | DebugDome | DebugShutter | DebugDAQs | DebugFocuser | DebugFilterWheel,
-            DebugWise = DebugLogic,
+            DebugWise = (1 << 13),
+
+            DebugDefault = DebugAxes | DebugExceptions | DebugASCOM | DebugLogic | DebugShutter | DebugWise,
+            DebugAll = DebugASCOM | DebugDevice | DebugLogic | DebugExceptions | DebugAxes | DebugMotors | DebugEncoders | DebugSafety | DebugDome | DebugShutter | DebugDAQs | DebugFocuser | DebugFilterWheel | DebugWise,
         };
 
         private static DebugLevel _currentLevel;

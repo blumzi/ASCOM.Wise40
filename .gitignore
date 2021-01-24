@@ -268,4 +268,6 @@ CurrentCommit.txt
 /TestTransform
 /TestAltAz
 /TestTransformAltAz
+/TestRenishawEncoder/get-deltas
+/TestRenishawEncoder/max-deltas
 /RemoteSafetyDashboard/RemoteSafetyDashboard v1.0.exe
