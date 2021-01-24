@@ -9,57 +9,47 @@ using System.Threading;
 
 namespace RemoteSafetyDashboard
 {
-    public class Transaction
+    public class AscomTransaction
     {
-        private long busy;
+        public enum State { Init, Pending, Failed, Succeeded };
+
+        public State state;
         public string verb;
+        public string uri;
         public string location;
         public string parameters;
-        public string response;
+        public ASCOMResponse response;
 
-        public bool Busy
-        {
-            get
-            {
-                return Interlocked.Read(ref busy) == 1;
-            }
+        public string Error { get; set; }
+    }
 
-            set
-            {
-                Interlocked.Exchange(ref busy, value ? 1 : 0);
-            }
-        }
-
-        public string Status { get; set; }
-
-        public Statuser.Severity Severity { get; set; }
+    public class ASCOMResponse
+    {
+        public string Value;
+        public int ClientTransactionID;
+        public int ServerTransactionID;
+        public int ErrorNumber;
+        public string ErrorMessage;
+        public string DriverException;
     }
 
     public class AscomClient
     {
         private readonly HTTPCommunicator httpCommunicator;
-        public Transaction transaction;
         private bool connected = false;
+        private AscomTransaction t;
 
         public AscomClient(string uri)
         {
             Uri = uri;
             Name = uri.Remove(uri.Length - 3);
             Name = Name.Remove(0, Name.LastIndexOf('/'));
-            httpCommunicator = new HTTPCommunicator(this);
+            httpCommunicator = new HTTPCommunicator();
         }
 
         public string Uri { get; }
 
         public string Name { get; }
-
-        private string Communicating
-        {
-            get
-            {
-                return $"Communicating with {Name} ...";
-            }
-        }
 
         public bool Connected
         {
@@ -67,90 +57,101 @@ namespace RemoteSafetyDashboard
             {
                 if (Busy)
                     return connected;
-
-                transaction = new Transaction
+                else
                 {
-                    verb = "GET",
-                    location = "connected",
-                    Status = Communicating,
-                    Severity = Statuser.Severity.Normal,
-                    Busy = true,
-                };
+                    t = new AscomTransaction {
+                        state = AscomTransaction.State.Init,
+                        verb = "GET",
+                        uri = Uri,
+                        location = "connected",
+                    };
 
-                connected = httpCommunicator.Connected;
-                return connected;
+                    httpCommunicator.SendSync(t);
+                    connected = Convert.ToBoolean(PostProcess(t));
+                    t = null;
+
+                    return connected;
+                }
             }
 
             set
             {
-                transaction = new Transaction
+                if (Busy)
+                    return;
+                else
                 {
-                    verb = "PUT",
-                    location = "connected",
-                    parameters = $"Connected={value}",
-                    Status = Communicating,
-                    Severity = Statuser.Severity.Normal,
-                    Busy = true,
-                };
+                    t = new AscomTransaction {
+                        verb = "PUT",
+                        uri = Uri,
+                        location = "connected",
+                        parameters = $"{value}",
+                    };
 
-                connected = value;
-                httpCommunicator.Connected = connected;
+                    httpCommunicator.SendSync(t);
+                    PostProcess(t);
+                    t = null;
+                }
             }
         }
 
         public string Action(string action, string parameters)
         {
-            transaction = new Transaction
-            {
-                verb = "PUT",
-                location = "action",
-                parameters = $"Action={action}&Parameters={parameters}",
-                Status = Communicating,
-                Severity = Statuser.Severity.Normal,
-                Busy = true,
-            };
+            string ret;
 
-            return httpCommunicator.Action(action, parameters);
+            if (Busy)
+                return null;
+            else
+            {
+                t = new AscomTransaction
+                {
+                    verb = "PUT",
+                    uri = Uri,
+                    location = "action",
+                    parameters = $"Action={action}&Parameters={parameters}",
+                };
+
+                httpCommunicator.SendSync(t);
+                ret = PostProcess(t);
+                t = null;
+            }
+            return ret;
         }
 
-        public string Status
+        public string PostProcess(AscomTransaction t)
         {
-            get
+            string op = "PostProcess";
+
+            if (t == null)
             {
-                return transaction?.Status ?? "";
+                Exceptor.Throw<Exception>(op, "NULL transaction");
+                return null;
             }
 
-            set
+            if (t.state == AscomTransaction.State.Succeeded)
             {
-                if (transaction != null)
-                    transaction.Status = value;
+                return t.response.Value;
             }
+
+            op += $" verb: {t.verb}, url: {t.uri + t.location}, parameters: {t.parameters}";
+
+            if (t.Error != null)
+                Exceptor.Throw<Exception>(op, $"Error: {t.Error}");
+
+            if (t.response == null)
+                Exceptor.Throw<Exception>(op, "Empty response");
+
+            if (t.response.ErrorNumber != 0)
+                Exceptor.Throw<Exception>(op, $"ErrorMessage: {t.response.ErrorMessage}");
+
+            if (!String.IsNullOrEmpty(t.response.DriverException))
+                Exceptor.Throw<Exception>(op, $"DriverException: {t.response.DriverException}");
+
+            return null;
         }
 
-        public Statuser.Severity Severity {
-            get
-            {
-                return transaction?.Severity ?? Statuser.Severity.Normal;
-            }
-
-            set
-            {
-                if (transaction != null)
-                    transaction.Severity = value;
-            }
-        }
-
-        public bool Busy
-        {
-            get
-            {
-                return transaction?.Busy ?? false;
-            }
-
-            set
-            {
-                if (transaction != null)
-                    transaction.Busy = value;
+        public bool Busy {
+            get {
+                return t != null && (t.state == AscomTransaction.State.Init || t.state == AscomTransaction.State.Pending);
             }
         }
     }

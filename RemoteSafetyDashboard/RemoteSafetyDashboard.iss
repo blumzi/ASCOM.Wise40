@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Wise Remote Safety Dashboard"
-#define MyAppVersion "1.0"
+#define MyAppVersion "1.1"
 #define MyAppPublisher "Wise Observatory Software"
 #define MyAppExeName "RemoteSafetyDashboard.exe"
 
@@ -22,7 +22,7 @@ DisableProgramGroupPage=yes
 ;PrivilegesRequired=lowest
 ;OutputDir=C:\Users\mizpe\source\repos\ASCOM.Wise40\RemoteSafetyDashboard
 OutputDir=C:\Deploy
-OutputBaseFilename=RemoteSafetyDashboard
+OutputBaseFilename="RemoteSafetyDashboard v{#MyAppVersion}"
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
@@ -34,7 +34,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "C:\Users\mizpe\source\repos\ASCOM.Wise40\RemoteSafetyDashboard\bin\Debug\*"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\mizpe\source\repos\blumzi\ASCOM.Wise40\RemoteSafetyDashboard\bin\Debug\*"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
@@ -42,5 +42,4 @@ Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 [Run]
-Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
-
+Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent 
