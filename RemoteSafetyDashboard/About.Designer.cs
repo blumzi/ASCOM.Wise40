@@ -28,21 +28,21 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.label1 = new System.Windows.Forms.Label();
+            this.labelAbout = new System.Windows.Forms.Label();
             this.buttonOK = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
-            // label1
+            // labelAbout
             // 
-            this.label1.ForeColor = System.Drawing.Color.DarkOrange;
-            this.label1.Location = new System.Drawing.Point(12, 9);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(318, 136);
-            this.label1.TabIndex = 0;
-            this.label1.Text = "This dashboard shows the current weather and safety\r\nconditions at the Wise compo" +
+            this.labelAbout.ForeColor = System.Drawing.Color.DarkOrange;
+            this.labelAbout.Location = new System.Drawing.Point(12, 9);
+            this.labelAbout.Name = "labelAbout";
+            this.labelAbout.Size = new System.Drawing.Size(318, 136);
+            this.labelAbout.TabIndex = 0;
+            this.labelAbout.Text = "This dashboard shows the current weather and safety\r\nconditions at the Wise compo" +
     "und.\r\n\r\nIt does this by periodically contacting the\r\ncentral computer (dome-pc)\r" +
     "\n";
-            this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.labelAbout.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // buttonOK
             // 
@@ -63,7 +63,7 @@
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(26)))), ((int)(((byte)(26)))));
             this.ClientSize = new System.Drawing.Size(336, 186);
             this.Controls.Add(this.buttonOK);
-            this.Controls.Add(this.label1);
+            this.Controls.Add(this.labelAbout);
             this.ForeColor = System.Drawing.Color.Chocolate;
             this.Name = "About";
             this.Text = "About RemoteSafetyDashboard";
@@ -73,7 +73,7 @@
 
         #endregion
 
-        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label labelAbout;
         private System.Windows.Forms.Button buttonOK;
     }
 }

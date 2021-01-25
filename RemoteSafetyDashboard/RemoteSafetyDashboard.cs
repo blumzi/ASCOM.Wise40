@@ -32,8 +32,10 @@ namespace RemoteSafetyDashboard
         private static readonly Color safeColor = Statuser.colors[Statuser.Severity.Good];
         private static readonly Color warningColor = Statuser.colors[Statuser.Severity.Warning];
 
-        static public string remoteHostIp;
+        public static string remoteHostIp;
         private static readonly Debugger debugger = Debugger.Instance;
+
+        public static Version version = new Version(1, 1);
 
         public RemoteSafetyDashboard()
         {
@@ -50,14 +52,14 @@ namespace RemoteSafetyDashboard
             if (OnWise40)
             {
                 panelWise40.Visible = true;
-                Text = "Wise Safety Dashboard";
+                Text = $"Wise Safety Dashboard v{version}";
                 labelTitle.Text = "Safety Dashboard";
                 remoteHostIp = "127.0.0.1";
             }
             else
             {
                 panelWise40.Visible = false;
-                Text = "Wise Remote Safety Dashboard";
+                Text = $"Wise Remote Safety Dashboard v{version}";
                 labelTitle.Text = "Remote Safety Dashboard";
                 remoteHostIp = "132.66.65.9";
             }
@@ -414,7 +416,7 @@ namespace RemoteSafetyDashboard
                 }
                 catch
                 {
-                    statuser.Show($"No connection to ASCOM.Server on {remoteHostIp}", 0, Statuser.Severity.Error, true);
+                    statuser.Show($"No connection to ASCOM Server on {remoteHostIp}", 0, Statuser.Severity.Error, true);
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"CheckConnections: No connection to {remoteHostIp}");
                     #endregion
@@ -499,8 +501,10 @@ namespace RemoteSafetyDashboard
         }
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            About form = new About();
-            form.Visible = true;
+            About form = new About
+            {
+                Visible = true
+            };
         }
     }
 }
