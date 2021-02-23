@@ -90,27 +90,27 @@ namespace ASCOM.Wise40
 
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                $"DomeSlaveDriver: Asking dome to SlewToAzimuth({new Angle(az, Angle.AngleType.Az)}, {reason})");
+                $"DomeSlaveDriver: Asking dome to SlewToAzimuth({azAngle.ToShortNiceString()}, reason: {reason})");
             #endregion
             try
             {
                 wisedome.SlewToAzimuth(az, reason);
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                    $"DomeSlaveDriver:SlewToAz Waiting for dome to arrive to target {Angle.AzFromDegrees(az).ToNiceString()}");
+                    $"DomeSlaveDriver:SlewToAz Waiting for dome to arrive to target {Angle.AzFromDegrees(az).ToShortNiceString()}");
                 #endregion
                 _arrivedAtAz.WaitOne();
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, $"DomeSlaveDriver:SlewToAz Dome arrived to target {azAngle.ToNiceString()}");
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, $"DomeSlaveDriver:SlewToAz Dome arrived to target {azAngle.ToShortNiceString()}");
                 #endregion
             }
             catch (Exception ex)
             {
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                    $"DomeSlaveDriver:SlewToAz got \"{ex.Message}\"\nat {ex.StackTrace}\nwhile slewing to {azAngle.ToNiceString()}, Aborting slew!");
+                    $"DomeSlaveDriver:SlewToAz got \"{ex.Message}\"\nat {ex.StackTrace}\nwhile slewing to {azAngle.ToShortNiceString()}, Aborting slew!");
                 #endregion
-                wisedome.AbortSlew($"from DomeSlaveDriver:SlewToAz({azAngle.ToNiceString()}, {reason})");
+                wisedome.AbortSlew($"from DomeSlaveDriver:SlewToAz({azAngle.ToShortNiceString()}, {reason})");
                 //throw ex;
             }
         }
@@ -125,7 +125,7 @@ namespace ASCOM.Wise40
                 wisedome.Park();
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                    $"DomeSlaveDriver: Waiting for dome to park at {Angle.AzFromDegrees(wisedome.ParkAzimuth).ToNiceString()}");
+                    $"DomeSlaveDriver: Waiting for dome to park at {Angle.AzFromDegrees(wisedome.ParkAzimuth).ToShortNiceString()}");
                 #endregion
                 _arrivedAtAz.WaitOne();
             }
@@ -133,7 +133,7 @@ namespace ASCOM.Wise40
             {
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                    $"DomeSlaveDriver:  while waiting for dome to park at {Angle.AzFromDegrees(wisedome.ParkAzimuth).ToNiceString()} Caught {ex.Message} at\n{ex.StackTrace}");
+                    $"DomeSlaveDriver:  while waiting for dome to park at {Angle.AzFromDegrees(wisedome.ParkAzimuth).ToShortNiceString()} Caught {ex.Message} at\n{ex.StackTrace}");
                 #endregion
                 wisedome.AbortSlew("from Park");
                 //throw ex;
@@ -178,7 +178,7 @@ namespace ASCOM.Wise40
 
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
-                $"DomeSlaveDriver:SlewToAz (for {reason}): ra: {primaryAngle}, dec: {dec} => {newDomeAz}");
+                $"DomeSlaveDriver:SlewToAz (for {reason}): ra: {primaryAngle}, dec: {dec} => {newDomeAz.ToShortNiceString()}");
             #endregion
             SlewToAz(newDomeAz.Degrees, reason);
         }
@@ -206,7 +206,7 @@ namespace ASCOM.Wise40
                 if (!wisedome.Calibrated)
                     return "Not calibrated";
 
-                return wisedome.Azimuth.ToNiceString();
+                return wisedome.Azimuth.ToShortNiceString();
             }
         }
 
@@ -223,7 +223,7 @@ namespace ASCOM.Wise40
 
         public static void OpenShutter(bool bypassSafety = false)
         {
-            wisedome.OpenShutter("ASCOM.Wise40.Telescope:SlaveDriver", bypassSafety);
+            wisedome.OpenShutter("ASCOM.Wise40.Telescope:DomeSlaveDriver", bypassSafety);
         }
 
         public static void CloseShutter(string reason)
