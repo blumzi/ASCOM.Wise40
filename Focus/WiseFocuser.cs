@@ -79,7 +79,6 @@ namespace ASCOM.Wise40
         private int _startStoppingPosition;
         private const int _runawayPositions = 500;
 
-        private static bool _encoderIsChanging = false;
         public Debugger debugger = Debugger.Instance;
 
         private WisePin pinUp, pinDown;
@@ -111,8 +110,6 @@ namespace ASCOM.Wise40
         private readonly Hardware.Hardware hardware = Hardware.Hardware.Instance;
 
         public static string driverID = Const.WiseDriverID.Focus;
-
-        private static readonly string driverDescription = $"{driverID} v{version}";
 
         public WiseFocuser() { }
         static WiseFocuser() { }
@@ -196,7 +193,7 @@ namespace ASCOM.Wise40
 
                 _connected = value;
 
-                ActivityMonitor.Instance.Event(new Event.DriverConnectEvent(Const.WiseDriverID.Focus, _connected, line: ActivityMonitor.Tracer.focuser.Line));
+                ActivityMonitor.Event(new Event.DriverConnectEvent(Const.WiseDriverID.Focus, _connected, line: ActivityMonitor.Tracer.focuser.Line));
             }
         }
 
@@ -345,7 +342,12 @@ namespace ASCOM.Wise40
 
                 bool ret = _state.IsSet(State.Flags.AnyMoving) || pinUp.isOn || pinDown.isOn;
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, $"IsMoving: {ret}");
+                string dbg = $"IsMoving: ret: {ret}, state: {_state}";
+                if (pinUp.isOn)
+                    dbg += ", pinUp: ON";
+                if (pinDown.isOn)
+                    dbg += ", pinDown: ON";
+                debugger.WriteLine(Debugger.DebugLevel.DebugFocuser,dbg);
                 #endregion
                 return ret;
             }
@@ -355,11 +357,11 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return this.Connected; // Direct function to the connected method, the Link method is just here for backwards compatibility
+                return Connected; // Direct function to the connected method, the Link method is just here for backwards compatibility
             }
             set
             {
-                this.Connected = value; // Direct function to the connected method, the Link method is just here for backwards compatibility
+                Connected = value; // Direct function to the connected method, the Link method is just here for backwards compatibility
             }
         }
 
@@ -627,13 +629,7 @@ namespace ASCOM.Wise40
             }
         }
 
-        public static string Description
-        {
-            get
-            {
-                return driverDescription;
-            }
-        }
+        public static string Description { get; } = $"{driverID} v{version}";
 
         public string DriverInfo
         {
@@ -679,24 +675,32 @@ namespace ASCOM.Wise40
             State oldState = _state;
             int reading = (int) encoder.Value;
             DateTime now = DateTime.Now;
-            double millis = now.Subtract(_lastRead).TotalMilliseconds;
+            double deltaMillis = now.Subtract(_lastRead).TotalMilliseconds;
             _lastRead = now;
 
-            int delta = Math.Abs(reading - _mostRecentPosition);
-            double maxDelta = maxEncoderChangeRatePerMilli * millis;
+            int deltaPosition = Math.Abs(reading - _mostRecentPosition);
+            double maxDeltaPosition = maxEncoderChangeRatePerMilli * deltaMillis;
 
             #region debug
             if (_debugging)
             {
                 debugger.WriteLine(Debugger.DebugLevel.DebugFocuser,
-                    $"OnTimer: reading: {reading}, _mostRecentPosition: {_mostRecentPosition}, delta: {delta}, millis: {millis}");
+                    $"OnTimer: reading: {reading}, _mostRecentPosition: {_mostRecentPosition}, delta: {deltaPosition}, deltaMillis: {deltaMillis}");
             }
             #endregion
 
-            if (_mostRecentPosition != 0 &&  delta != 0 && delta > maxDelta) {
+            if (_state.IsSet(State.Flags.MovingUp|State.Flags.MovingDown) && deltaPosition <= 10 && deltaMillis >= 1000)
+            {
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugFocuser,
-                    $"OnTimer: suspect reading: {reading} _mostRecentPosition: {_mostRecentPosition}, (delta: {delta} > maxDelta: {maxDelta})");
+                    $"OnTimer: suspect stuck: state: {_state}, deltaPosition: {deltaPosition} in deltaMillis: {deltaMillis}");
+                #endregion
+            }
+
+            if (_mostRecentPosition != 0 &&  deltaPosition != 0 && deltaPosition > maxDeltaPosition) {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugFocuser,
+                    $"OnTimer: suspect reading: {reading} _mostRecentPosition: {_mostRecentPosition}, (delta: {deltaPosition} > maxDelta: {maxDeltaPosition})");
                 #endregion
             }
             _mostRecentPosition = reading;
@@ -706,25 +710,19 @@ namespace ASCOM.Wise40
             #region Check if encoder is changing
             uint[] arr = recentPositions.ToArray();
 
-            bool changing = false;
-            if (arr.Length < nRecentPositions)
+            bool _encoderIsChanging = false;
+            if (arr.Length > 1)
             {
-                changing = true;      // not enough readings yet
-            }
-            else
-            {
-                uint max = arr.Max();
-                foreach (uint pos in arr)
+                for (int i = 1; i < arr.Length; i++)
                 {
-                    if (pos != max)
+                    if (arr[i] != arr[0])
                     {
-                        changing = true;
+                        _encoderIsChanging = true;
                         break;
                     }
                 }
             }
             #endregion
-            _encoderIsChanging = changing;
 
             if (
                 ((pinUp.isOn || _state.IsSet(State.Flags.MovingUp)) &&
@@ -786,7 +784,13 @@ namespace ASCOM.Wise40
             }
 
             if (!_state.IsSet(State.Flags.AnyMoving) && _encoderIsChanging)
-                StartStopping("OnTimer: Runaway");
+            {
+                string reason = $"OnTimer: Runaway: state: {_state}, _encoderIsChanging: {_encoderIsChanging}, readings: [ ";
+                foreach (uint pos in arr)
+                    reason += $"{pos} ";
+                reason += "]";
+                StartStopping(reason);
+            }
         }
 
         private bool CloseEnough(int current, int target, Direction dir)
