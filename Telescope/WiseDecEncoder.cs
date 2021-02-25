@@ -216,15 +216,13 @@ namespace ASCOM.Wise40
         {
             get
             {
-                Angle ret = _angle;
-
                 double radians = Radians;
 
                 if (radians > Const.onePI)
                     radians -= Const.twoPI;
                 _angle.Radians = radians;
 
-                ret = _angle;
+                Angle ret = _angle;
                 if (DecOver90Degrees)
                 {
                     #region debug

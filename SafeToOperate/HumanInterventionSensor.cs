@@ -53,7 +53,7 @@ namespace ASCOM.Wise40SafeToOperate
 
             if (r.Safe != _wasSafe)
             {
-                activityMonitor.Event(new Event.SafetyEvent(
+                ActivityMonitor.Event(new Event.SafetyEvent(
                     sensor: WiseName,
                     details: r.Safe ? "Safe" : details.ToString(),
                     before: Event.SafetyEvent.ToSensorSafety(_wasSafe),

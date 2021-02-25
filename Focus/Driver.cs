@@ -17,7 +17,6 @@
 // --------------------------------------------------------------------------------
 //
 
-
 // This is used to define code in the template that is specific to one class implementation
 // unused code canbe deleted and this definition removed.
 #define Focuser
@@ -188,7 +187,6 @@ namespace ASCOM.Wise40 //.Focuser
         #endregion
 
         #region IFocuser Implementation
-
 
         public bool Absolute
         {
@@ -369,7 +367,6 @@ namespace ASCOM.Wise40 //.Focuser
         }
 
         #endregion
-
 
         /// <summary>
         /// Read the device configuration from the ASCOM Profile store

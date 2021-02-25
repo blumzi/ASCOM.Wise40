@@ -29,7 +29,7 @@ namespace ASCOM.Wise40
                 if (lazy.IsValueCreated)
                     return lazy.Value;
 
-                lazy.Value.Init();
+                ActivityMonitor.Init();
                 return lazy.Value;
             }
         }
@@ -68,7 +68,7 @@ namespace ASCOM.Wise40
             RealActivities = TelescopeSlew | PulsingRa | PulsingDec | DomeSlew | Handpad | Parking | Shutter | Focuser | FilterWheel | ShuttingDown,
         };
 
-        public void Init()
+        public static void Init()
         {
             if (!Simulated && !WiseSite.CurrentProcessIs(Const.Application.RESTServer))
                 return;
@@ -131,7 +131,7 @@ namespace ASCOM.Wise40
         /// Called by activities that reset the idle-time counter (e.g. AbortSlew or setting the target)
         /// </summary>
         /// <param name="reason"></param>
-        public void StayActive(string reason)
+        public static void StayActive(string reason)
         {
             idler.StayActive(new Idler.StartParams() { reason = reason });
         }
@@ -144,7 +144,7 @@ namespace ASCOM.Wise40
             }
         }
 
-        public bool ObservatoryIsActive()
+        public static bool ObservatoryIsActive()
         {
             bool ret = !idler.Idle;
             #region debug
@@ -210,7 +210,7 @@ namespace ASCOM.Wise40
             return activity;
         }
 
-        public void Event(Event e)
+        public static void Event(Event e)
         {
             e.EmitEvent();
         }
@@ -443,7 +443,7 @@ namespace ASCOM.Wise40
                 code = (int) ActivityMonitor.Tracer.Shutter.Code.Open;
 
             string sql = $"update activities set text='{_annotation}', tags='{_tags.ToCSV()}' where id={_activityId};";
-            sql += $"insert into activities(time, code, text, line, tags) " +
+            sql += "insert into activities(time, code, text, line, tags) " +
                 $"values('{_endTime.ToMySqlDateTime()}', '{code}', '{_annotation}', '{_line}', '{_tags.ToCSV()}');";
 
             try
@@ -775,7 +775,7 @@ namespace ASCOM.Wise40
 
                 _startDetails =
                     $"Start: {Angle.RaFromHours(_start.ra)}, {Angle.DecFromDegrees(_start.dec)}\n" +
-                    $"Axis: Ra\n" +
+                     "Axis: Ra\n" +
                     $"Direction: {_direction.ToString().Remove(0, "guide".Length)}\n" +
                     $"Millis: {_millis}\n";
 
@@ -825,7 +825,7 @@ namespace ASCOM.Wise40
 
                 _startDetails =
                     $"Start: {Angle.RaFromHours(_start.ra)}, {Angle.DecFromDegrees(_start.dec)}\n" +
-                    $"Axis: Dec\n" +
+                     "Axis: Dec\n" +
                     $"Direction: {_direction.ToString().Remove(0, "guide".Length)}\n" +
                     $"Millis: {_millis}\n";
 
@@ -938,10 +938,10 @@ namespace ASCOM.Wise40
                     $" Telescope: {Angle.RaFromHours(_start.ra)}, {Angle.DecFromDegrees(_start.dec)}\n" +
                     $" Dome: {Angle.AzFromDegrees(_startAz)}\n" +
                     $" Shutter: {_shutterPercentStart}%\n" +
-                    "Target:\n" +
+                     "Target:\n" +
                     $" Telescope: {Angle.RaFromHours(_target.ra)}, {Angle.DecFromDegrees(_target.dec)}\n" +
                     $" Dome: {Angle.AzFromDegrees(_targetAz)}\n" +
-                    $" Shutter: 100%\n";
+                     " Shutter: 100%\n";
 
                 EmitStart();
             }
@@ -1156,7 +1156,7 @@ namespace ASCOM.Wise40
 
             _idlerState = IdlerState.GoingIdle;
             if (ActivityMonitor.millisToInactivity == 0)
-                ActivityMonitor.Instance.Init();
+                ActivityMonitor.Init();
             _due = DateTime.Now.AddMilliseconds(ActivityMonitor.millisToInactivity);
             _timer.Change(Timeout.Infinite, Timeout.Infinite);
             _timer.Change(ActivityMonitor.millisToInactivity, Timeout.Infinite);
@@ -1175,7 +1175,7 @@ namespace ASCOM.Wise40
                 endReason = reason,
             });
 
-            ActivityMonitor.Instance.Event(
+            ActivityMonitor.Event(
                 new Event.IdlerEvent("Wise40 is idle", (int) ActivityMonitor.Tracer.Idler.Code.Idle));
 
             Instance._idlerState = IdlerState.Idle;

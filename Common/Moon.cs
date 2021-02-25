@@ -9,12 +9,12 @@ namespace ASCOM.Wise40
 {
     public class Moon
     {
-        private static AstroUtils astroutils = new AstroUtils();
-        private static NOVAS31 novas31 = new NOVAS31();
+        private static readonly AstroUtils astroutils = new AstroUtils();
+        private static readonly NOVAS31 novas31 = new NOVAS31();
         private static Object3 moon;
         private static CatEntry3 dummy_star;
         private static Observer observer;
-        private static Debugger debugger = Debugger.Instance;
+        private static readonly Debugger debugger = Debugger.Instance;
 
         // start Singleton
         private static readonly Lazy<Moon> lazy =
@@ -24,7 +24,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                lazy.Value.init();
+                lazy.Value.Init();
                 return lazy.Value;
             }
         }
@@ -32,7 +32,7 @@ namespace ASCOM.Wise40
         private Moon() { }
         // end Singleton
 
-        private void init()
+        private void Init()
         {
             double[] ScPos = { 0, 0, 0 };
             double[] ScVel = { 0, 0, 0 };
@@ -44,7 +44,7 @@ namespace ASCOM.Wise40
             novas31.MakeObject(ObjectType.MajorPlanetSunOrMoon, 11, "Moon", dummy_star, ref moon);
         }
 
-        public double Illumination
+        public static double Illumination
         {
             get
             {
@@ -71,7 +71,6 @@ namespace ASCOM.Wise40
         //    ref double Dis
         //)
 
-
         ////8-----------------------------------------------------------------------------
         //function SphereDist(Long1:extended; Lat1:extended; Long2:extended; Lat2:extended): extended;
         ////------------------------------------------------------------------------------
@@ -88,15 +87,13 @@ namespace ASCOM.Wise40
 
         public static double SphereDist(double long1, double lat1, double long2, double lat2)
         {
-            return Math.Acos(Math.Sin(lat1) * Math.Sin(lat2) + Math.Cos(lat1) * Math.Cos(lat2) * Math.Cos(long1 - long2));
+            return Math.Acos((Math.Sin(lat1) * Math.Sin(lat2)) + (Math.Cos(lat1) * Math.Cos(lat2) * Math.Cos(long1 - long2)));
         }
 
-        public Angle Distance(double telescopeRA, double telescopeDec)
+        public static Angle Distance(double telescopeRA, double telescopeDec)
         {
             SkyPos moonPos = new SkyPos();
-            short ret;
-
-            ret = novas31.Place(astroutils.JulianDateUT1(0),
+            short ret = novas31.Place(astroutils.JulianDateUT1(0),
                 moon,
                 observer,
                 0.0,

@@ -215,9 +215,9 @@ namespace ASCOM.Wise40
             }
             _connected = connected;
 
-            ActivityMonitor.Instance.Event(new Event.DriverConnectEvent(Const.WiseDriverID.Dome, _connected, line: ActivityMonitor.Tracer.dome.Line));
-            ActivityMonitor.Instance.Event(new Event.DriverConnectEvent(Const.WiseDriverID.Dome, _connected, line: ActivityMonitor.Tracer.shutter.Line));
-            ActivityMonitor.Instance.Event(new Event.ProjectorEvent(Projector));
+            ActivityMonitor.Event(new Event.DriverConnectEvent(Const.WiseDriverID.Dome, _connected, line: ActivityMonitor.Tracer.dome.Line));
+            ActivityMonitor.Event(new Event.DriverConnectEvent(Const.WiseDriverID.Dome, _connected, line: ActivityMonitor.Tracer.shutter.Line));
+            ActivityMonitor.Event(new Event.ProjectorEvent(Projector));
         }
 
         public bool Connected
@@ -683,12 +683,12 @@ namespace ASCOM.Wise40
                 if (value)
                 {
                     projectorPin.SetOn();
-                    activityMonitor.Event(new Event.ProjectorEvent(true));
+                    ActivityMonitor.Event(new Event.ProjectorEvent(true));
                 }
                 else
                 {
                     projectorPin.SetOff();
-                    activityMonitor.Event(new Event.ProjectorEvent(false));
+                    ActivityMonitor.Event(new Event.ProjectorEvent(false));
                 }
             }
         }

@@ -14,8 +14,6 @@ namespace ASCOM.Wise40.Boltwood
     [ComVisible(false)]					// Form not registered for COM!
     public partial class SetupDialogForm : Form
     {
-        private readonly WiseBoltwood boltwood = WiseBoltwood.Instance;
-
         public SetupDialogForm()
         {
             InitializeComponent();

@@ -14,8 +14,7 @@ namespace ASCOM.Wise40 //.Dome
     [ComVisible(false)]					// Form not registered for COM!
     public partial class DomeSetupDialogForm : Form
     {
-        private WiseDome wisedome = WiseDome.Instance;
-        double minimalStep;
+        private readonly WiseDome wisedome = WiseDome.Instance;
 
         public DomeSetupDialogForm()
         {
@@ -32,7 +31,7 @@ namespace ASCOM.Wise40 //.Dome
             using (ASCOM.Utilities.Profile driverProfile = new ASCOM.Utilities.Profile())
             {
                 driverProfile.DeviceType = "Telescope";
-                minimalStep = Convert.ToDouble(driverProfile.GetValue(Const.WiseDriverID.Telescope, 
+                double minimalStep = Convert.ToDouble(driverProfile.GetValue(Const.WiseDriverID.Telescope,
                     Const.ProfileName.Dome_MinimalMovement, string.Empty, "2.0"));
                 textBoxMinimalStep.Text = minimalStep.ToString();
             }
@@ -82,17 +81,15 @@ namespace ASCOM.Wise40 //.Dome
 
         private void checkBoxAutoCalibrate_CheckedChanged(object sender, EventArgs e)
         {
-            wisedome._autoCalibrate = (sender as CheckBox).Checked;
+            wisedome._autoCalibrate = (sender as CheckBox)?.Checked ?? false;
         }
 
         private void label2_Click(object sender, EventArgs e)
         {
-
         }
 
         private void DomeSetupDialogForm_Load(object sender, EventArgs e)
         {
-
         }
     }
 }

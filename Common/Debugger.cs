@@ -121,7 +121,7 @@ namespace ASCOM.Wise40.Common
         /// </summary>
         /// <param name="l"></param>
         /// <returns></returns>
-        public bool Debugging(DebugLevel l)
+        public static bool Debugging(DebugLevel l)
         {
             return (_currentLevel & l) != 0;
         }

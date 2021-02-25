@@ -18,3 +18,4 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>", Scope = "member", Target = "~P:ASCOM.Wise40.Boltwood.WiseBoltwood.SkyTemperature")]
 [assembly: SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>", Scope = "member", Target = "~P:ASCOM.Wise40.Boltwood.WiseBoltwood.Temperature")]
 [assembly: SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>", Scope = "member", Target = "~P:ASCOM.Wise40.Boltwood.WiseBoltwood.WindSpeed")]
+[assembly: SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "<Pending>", Scope = "member", Target = "~M:ASCOM.Wise40.Boltwood.SetupDialogForm.cmdOK_Click(System.Object,System.EventArgs)")]

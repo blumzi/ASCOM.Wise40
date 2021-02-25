@@ -37,7 +37,7 @@ namespace ASCOM.Wise40.TessW
         public TimeSpan _interval = TimeSpan.FromMinutes(1);
 
         private static readonly Lazy<WiseTessW> lazy = new Lazy<WiseTessW>(() => new WiseTessW()); // Singleton
-        private static readonly string defaultIPAddress = "192.168.1.100";
+        private const string defaultIPAddress = "192.168.1.100";
 
         public static WiseTessW Instance
         {
@@ -229,7 +229,7 @@ namespace ASCOM.Wise40.TessW
 
                 _connected = value;
 
-                ActivityMonitor.Instance.Event(new Event.DriverConnectEvent(Const.WiseDriverID.TessW, value, line: ActivityMonitor.Tracer.safety.Line));
+                ActivityMonitor.Event(new Event.DriverConnectEvent(Const.WiseDriverID.TessW, value, line: ActivityMonitor.Tracer.safety.Line));
 
                 if (Enabled)
                     _periodicWebReadTimer.Change(0, (int)_interval.TotalMilliseconds);

@@ -10,7 +10,7 @@ namespace ASCOM.Wise40.Common
     public class FixedSizedQueue<T>
     {
         private readonly object _lock = new object();
-        private ConcurrentQueue<T> queue;
+        private readonly ConcurrentQueue<T> queue;
 
         public int MaxSize { get; set; }
 
@@ -18,13 +18,13 @@ namespace ASCOM.Wise40.Common
         {
             get
             {
-                return queue == null || queue.IsEmpty;
+                return queue?.IsEmpty != false;
             }
         }
 
         public FixedSizedQueue(int maxSize, IEnumerable<T> items = null)
         {
-            this.MaxSize = maxSize;
+            MaxSize = maxSize;
             if (items == null)
             {
                 queue = new ConcurrentQueue<T>();

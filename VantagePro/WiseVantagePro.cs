@@ -108,7 +108,7 @@ namespace ASCOM.Wise40.VantagePro
                                 {
                                     ["Temperature"] = sensorData["outsideTemp"],
                                     ["Pressure"] = sensorData["barometer"],
-                                    ["WindSpeed"] = sensorData["windSpeed"].ToString(),
+                                    ["WindSpeed"] = sensorData["windSpeed"],
                                     ["WindDir"] = sensorData["windDir"],
                                     ["Humidity"] = sensorData["outsideHumidity"],
                                     ["RainRate"] = sensorData["rainRate"],
@@ -270,7 +270,7 @@ namespace ASCOM.Wise40.VantagePro
                     _connected = value;
                 }
 
-                ActivityMonitor.Instance.Event(new Event.DriverConnectEvent(Const.WiseDriverID.VantagePro, value, line: ActivityMonitor.Tracer.safety.Line));
+                ActivityMonitor.Event(new Event.DriverConnectEvent(Const.WiseDriverID.VantagePro, value, line: ActivityMonitor.Tracer.safety.Line));
             }
         }
 

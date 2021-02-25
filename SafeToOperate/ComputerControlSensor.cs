@@ -77,7 +77,7 @@ namespace ASCOM.Wise40SafeToOperate
             _status = r.Safe ? "Operational" : "Maintenance";
             if (r.Safe != _wasSafe)
             {
-                activityMonitor.Event(new Event.SafetyEvent(
+                ActivityMonitor.Event(new Event.SafetyEvent(
                     sensor: WiseName,
                     details: _status,
                     before: Event.SafetyEvent.ToSensorSafety(_wasSafe),

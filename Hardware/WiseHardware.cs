@@ -26,17 +26,17 @@ namespace ASCOM.Wise40.Hardware
                 if (lazy.IsValueCreated)
                     return lazy.Value;
 
-                lazy.Value.init();
+                lazy.Value.Init();
                 return lazy.Value;
             }
         }
 
-        public void init()
+        public void Init()
         {
             if (_initialized)
                 return;
 
-            int wantedBoards = 3;        // We always have three boards, either real or simulated
+            const int wantedBoards = 3;        // We always have three boards, either real or simulated
             int maxMccBoards;
 
             if (!Simulated)
@@ -48,10 +48,8 @@ namespace ASCOM.Wise40.Hardware
                 // get the real Mcc boards
                 for (int i = 0; i < maxMccBoards; i++)
                 {
-                    int type;
-
-                    MccDaq.MccBoard board = new MccDaq.MccBoard(i);
-                    board.BoardConfig.GetBoardType(out type);
+                    MccBoard board = new MccBoard(i);
+                    board.BoardConfig.GetBoardType(out int type);
                     if (type != 0)
                         WiseBoards.Add(new WiseBoard(board));
                 }
@@ -95,6 +93,7 @@ namespace ASCOM.Wise40.Hardware
             }
         }
 
+        [Serializable]
         public class MaintenanceModeException : Exception
         {
             public MaintenanceModeException()
@@ -112,6 +111,7 @@ namespace ASCOM.Wise40.Hardware
             }
         }
 
+        [Serializable]
         public class DaqsException : Exception
         {
             public DaqsException()
@@ -129,6 +129,7 @@ namespace ASCOM.Wise40.Hardware
             }
         }
 
+        [Serializable]
         public class BissMasterException : Exception
         {
             public BissMasterException()

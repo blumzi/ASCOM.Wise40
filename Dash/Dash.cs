@@ -181,17 +181,17 @@ namespace Dash
             focuserStatus.Show("");
             safetooperateStatus.Show("");
 
-            UpdateCheckmark(debugASCOMToolStripMenuItem, debugger.Debugging(Debugger.DebugLevel.DebugASCOM));
-            UpdateCheckmark(debugDeviceToolStripMenuItem, debugger.Debugging(Debugger.DebugLevel.DebugDevice));
-            UpdateCheckmark(debugAxesToolStripMenuItem, debugger.Debugging(Debugger.DebugLevel.DebugAxes));
-            UpdateCheckmark(debugLogicToolStripMenuItem, debugger.Debugging(Debugger.DebugLevel.DebugAxes));
-            UpdateCheckmark(debugEncodersToolStripMenuItem, debugger.Debugging(Debugger.DebugLevel.DebugAxes));
-            UpdateCheckmark(debugMotorsToolStripMenuItem, debugger.Debugging(Debugger.DebugLevel.DebugAxes));
-            UpdateCheckmark(debugExceptionsToolStripMenuItem, debugger.Debugging(Debugger.DebugLevel.DebugExceptions));
-            UpdateCheckmark(debugSafetyToolStripMenuItem, debugger.Debugging(Debugger.DebugLevel.DebugSafety));
-            UpdateCheckmark(debugDomeToolStripMenuItem, debugger.Debugging(Debugger.DebugLevel.DebugDome));
-            UpdateCheckmark(debugShutterToolStripMenuItem, debugger.Debugging(Debugger.DebugLevel.DebugShutter));
-            UpdateCheckmark(debugDAQsToolStripMenuItem, debugger.Debugging(Debugger.DebugLevel.DebugDAQs));
+            UpdateCheckmark(debugASCOMToolStripMenuItem, Debugger.Debugging(Debugger.DebugLevel.DebugASCOM));
+            UpdateCheckmark(debugDeviceToolStripMenuItem, Debugger.Debugging(Debugger.DebugLevel.DebugDevice));
+            UpdateCheckmark(debugAxesToolStripMenuItem, Debugger.Debugging(Debugger.DebugLevel.DebugAxes));
+            UpdateCheckmark(debugLogicToolStripMenuItem, Debugger.Debugging(Debugger.DebugLevel.DebugAxes));
+            UpdateCheckmark(debugEncodersToolStripMenuItem, Debugger.Debugging(Debugger.DebugLevel.DebugAxes));
+            UpdateCheckmark(debugMotorsToolStripMenuItem, Debugger.Debugging(Debugger.DebugLevel.DebugAxes));
+            UpdateCheckmark(debugExceptionsToolStripMenuItem, Debugger.Debugging(Debugger.DebugLevel.DebugExceptions));
+            UpdateCheckmark(debugSafetyToolStripMenuItem, Debugger.Debugging(Debugger.DebugLevel.DebugSafety));
+            UpdateCheckmark(debugDomeToolStripMenuItem, Debugger.Debugging(Debugger.DebugLevel.DebugDome));
+            UpdateCheckmark(debugShutterToolStripMenuItem, Debugger.Debugging(Debugger.DebugLevel.DebugShutter));
+            UpdateCheckmark(debugDAQsToolStripMenuItem, Debugger.Debugging(Debugger.DebugLevel.DebugDAQs));
 
             UpdateFilterWheelControls();
             //tabControlGoTo.DrawMode = TabDrawMode.OwnerDrawFixed;
@@ -545,8 +545,8 @@ namespace Dash
             #region Moon
             if (telescopeDigest != null)
             {
-                labelMoonIllum.Text = (moon.Illumination * 100).ToString("F0") + "%";
-                labelMoonDist.Text = moon.Distance(telescopeRa.Radians, telescopeDec.Radians).ToShortNiceString();
+                labelMoonIllum.Text = (Moon.Illumination * 100).ToString("F0") + "%";
+                labelMoonDist.Text = Moon.Distance(telescopeRa.Radians, telescopeDec.Radians).ToShortNiceString();
                 labelMoonIllum.ForeColor = labelMoonDist.ForeColor = safeColor;
             }
             else
@@ -1580,11 +1580,11 @@ namespace Dash
             if (selectedLevel == Debugger.DebugLevel.DebugNone)
                 return;
 
-            if (debugger.Debugging(selectedLevel))
+            if (Debugger.Debugging(selectedLevel))
                 Debugger.StopDebugging(selectedLevel);
             else
                 Debugger.StartDebugging(selectedLevel);
-            UpdateCheckmark(item, debugger.Debugging(selectedLevel));
+            UpdateCheckmark(item, Debugger.Debugging(selectedLevel));
             UpdateAlteredItems(item, "Debugging");
 
             #region debug

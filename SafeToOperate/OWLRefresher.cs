@@ -84,16 +84,13 @@ namespace ASCOM.Wise40SafeToOperate
                             station._sensorData["windSpeed"] = Convert.ToDouble(m.Result("${windSpeed}"));
                             station._sensorData["windDir"] = Convert.ToDouble(m.Result("${windDir}"));
 
-                            if (station._weatherLogger != null)
-                            {
-                                station._weatherLogger.Log(new Dictionary<string, string>()
+                            station._weatherLogger?.Log(new Dictionary<string, string>()
                                 {
                                     ["Temperature"] = station._sensorData["temperature"].ToString(),
                                     ["Humidity"] = station._sensorData["humidity"].ToString(),
                                     ["WindSpeed"] = station._sensorData["windSpeed"].ToString(),
                                     ["WindDir"] = station._sensorData["windDir"].ToString(),
                                 }, station._dateUtc.ToLocalTime());
-                            }
 
                             #region debug
                             debugger.WriteLine(Debugger.DebugLevel.DebugSafety,
@@ -137,7 +134,6 @@ namespace ASCOM.Wise40SafeToOperate
                         // CLS_12 - Cloud: -38.29
                         // THS_7 - Temp.: 17.8, Hum.: 62.7
                         // THS_8 - Temp.: 18.2, Hum.: 61.7
-
 
                         string content = sr.ReadToEnd().Replace("\0", string.Empty);
                         Regex r = new Regex(@"(?<dateUtc>[\d\-]+\s[\d:]+).*" +

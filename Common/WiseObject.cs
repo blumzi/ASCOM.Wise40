@@ -6,28 +6,8 @@ namespace ASCOM.Wise40.Common
 {
     public class WiseObject
     {
-        private string _name;
-        private static bool _simulated = Environment.MachineName.ToLower() != "dome-pc";
+        public string WiseName { get; set; }
 
-        public string WiseName
-        {
-            get
-            {
-                return _name;
-            }
-
-            set
-            {
-                _name = value;
-            }
-        }
-
-        public static bool Simulated
-        {
-            get
-            {
-                return _simulated;
-            }
-        }
+        public static bool Simulated { get; } = !string.Equals(Environment.MachineName, "dome-pc", StringComparison.OrdinalIgnoreCase);
     }
 }

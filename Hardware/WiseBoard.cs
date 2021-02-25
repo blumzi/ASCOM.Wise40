@@ -32,7 +32,7 @@ namespace ASCOM.Wise40.Hardware
                 type = BoardType.Hard;
                 this.mccBoard = mccBoard;
                 this.boardNum = this.mccBoard.BoardNum;
-                WiseName = "Board" + this.mccBoard.BoardNum.ToString();               
+                WiseName = "Board" + this.mccBoard.BoardNum.ToString();
                 this.mccBoard.BoardConfig.GetDiNumDevs(out ndaqs);
             }
 
@@ -41,7 +41,7 @@ namespace ASCOM.Wise40.Hardware
                 daqs.Add(new WiseDaq(this, devno));
         }
 
-        public string ownersToString()
+        public string OwnersToString()
         {
             string ret = WiseName + '\n';
 
@@ -62,7 +62,6 @@ namespace ASCOM.Wise40.Hardware
         {
             BoardMetaDigest ret = new BoardMetaDigest()
             {
-
                 Number = board.boardNum,
                 Type = board.type,
                 Name = board.WiseName,

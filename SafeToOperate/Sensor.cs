@@ -361,7 +361,7 @@ namespace ASCOM.Wise40SafeToOperate
 
             Restart();
 
-            activityMonitor.Event(new Event.SafetyEvent(
+            ActivityMonitor.Event(new Event.SafetyEvent(
                 sensor: WiseName,
                 details: "Created",
                 before: sensorState,
@@ -626,7 +626,7 @@ namespace ASCOM.Wise40SafeToOperate
                 {
                     if (!StateIsSet(State.EnoughReadings))
                     {
-                        activityMonitor.Event(new Event.SafetyEvent(
+                        ActivityMonitor.Event(new Event.SafetyEvent(
                             sensor: WiseName,
                             details: "Became ready",
                             before: sensorState,
@@ -641,7 +641,7 @@ namespace ASCOM.Wise40SafeToOperate
                     ExtendUnsafety("All readings are unsafe");
                     if (wasready && wassafe)
                     {
-                        activityMonitor.Event(new Event.SafetyEvent(
+                        ActivityMonitor.Event(new Event.SafetyEvent(
                             sensor: WiseName,
                             details: "Became unsafe",
                             before: sensorState,
@@ -683,7 +683,7 @@ namespace ASCOM.Wise40SafeToOperate
                 SetState(State.Safe);
                 if (wasready && !wassafe)
                 {
-                    activityMonitor.Event(new Event.SafetyEvent(
+                    ActivityMonitor.Event(new Event.SafetyEvent(
                         sensor: WiseName,
                         details: "Became safe",
                         before: sensorState,

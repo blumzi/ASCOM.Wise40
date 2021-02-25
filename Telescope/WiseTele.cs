@@ -322,7 +322,7 @@ namespace ASCOM.Wise40
             {
                 CheckCoordinateSanity(Angle.AngleType.Dec, value, $"TargetDeclination Set - {value}");
                 _targetDeclination = Angle.DecFromDegrees(value);
-                activityMonitor.StayActive("TargetDeclination was set");
+                ActivityMonitor.StayActive("TargetDeclination was set");
                 #region debug
                 debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM,
                     $"TargetDeclination Set - {_targetDeclination} ({_targetDeclination.Degrees})");
@@ -349,7 +349,7 @@ namespace ASCOM.Wise40
                 CheckCoordinateSanity(Angle.AngleType.RA, value, $"TargetRightAscension Set - {value}");
                 _targetRightAscension = Angle.RaFromHours(value);
                 _targetHourAngle = wisesite.LocalSiderealTime - _targetRightAscension;
-                activityMonitor.StayActive("TargetRightAscension was set");
+                ActivityMonitor.StayActive("TargetRightAscension was set");
                 #region debug
                 debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM,
                     $"TargetRightAscension Set - {_targetRightAscension} ({_targetRightAscension.Hours})");
@@ -429,11 +429,11 @@ namespace ASCOM.Wise40
                 }
                 _connected = value;
 
-                activityMonitor.Event(new Event.DriverConnectEvent(driverID, value, ActivityMonitor.Tracer.telescope.Line));
-                activityMonitor.Event(new Event.DriverConnectEvent(driverID, value, ActivityMonitor.Tracer.tracking.Line));
-                activityMonitor.Event(new Event.DriverConnectEvent(driverID, value, ActivityMonitor.Tracer.parking.Line));
-                activityMonitor.Event(new Event.DriverConnectEvent(driverID, value, ActivityMonitor.Tracer.shutdown.Line));
-                activityMonitor.Event(new Event.DriverConnectEvent(driverID, value, ActivityMonitor.Tracer.idler.Line));
+                ActivityMonitor.Event(new Event.DriverConnectEvent(driverID, value, ActivityMonitor.Tracer.telescope.Line));
+                ActivityMonitor.Event(new Event.DriverConnectEvent(driverID, value, ActivityMonitor.Tracer.tracking.Line));
+                ActivityMonitor.Event(new Event.DriverConnectEvent(driverID, value, ActivityMonitor.Tracer.parking.Line));
+                ActivityMonitor.Event(new Event.DriverConnectEvent(driverID, value, ActivityMonitor.Tracer.shutdown.Line));
+                ActivityMonitor.Event(new Event.DriverConnectEvent(driverID, value, ActivityMonitor.Tracer.idler.Line));
             }
         }
 
@@ -737,7 +737,7 @@ namespace ASCOM.Wise40
             debugger.WriteLine(Common.Debugger.DebugLevel.DebugLogic, $"{op}: started.");
             #endregion debug
 
-            activityMonitor.StayActive(op);
+            ActivityMonitor.StayActive(op);
             if (AtPark)
                 Exceptor.Throw<InvalidOperationException>(op, "Cannot AbortSlew while AtPark");
 
@@ -937,7 +937,7 @@ namespace ASCOM.Wise40
                 safetyMonitorTimer.EnableIfNeeded(SafetyMonitorTimer.ActionWhenNotSafe.Backoff);
 
                 SyncDomePosition = value;
-                ActivityMonitor.Instance.Event(new Event.TrackingEvent(value));
+                ActivityMonitor.Event(new Event.TrackingEvent(value));
             }
         }
 
@@ -3326,17 +3326,14 @@ namespace ASCOM.Wise40
         public string Action(string action, string parameter)
         {
             action = action.ToLower();
-            parameter = parameter.ToLower();
 
             switch (action)
             {
                 case "active":
                     if (!string.IsNullOrEmpty(parameter))
-                    {
-                        bool x = Convert.ToBoolean(parameter);
-                        activityMonitor.StayActive($"action active={x}");
-                    }
-                    return activityMonitor.ObservatoryIsActive().ToString();
+                        ActivityMonitor.StayActive($"action active={Convert.ToBoolean(parameter)}");
+
+                    return ActivityMonitor.ObservatoryIsActive().ToString();
 
                 case "activities":
                     return JsonConvert.SerializeObject(ActivityMonitor.ObservatoryActivities);
@@ -3409,14 +3406,14 @@ namespace ASCOM.Wise40
                     return "ok";
 
                 case "safe-to-move":
-                    return JsonConvert.SerializeObject(SafeToMove(parameter));
+                    return JsonConvert.SerializeObject(SafeToMove(parameter.ToLower()));
 
                 case "park":
                     Task.Run(() => Park());
                     return "ok";
 
                 case "move-to-preset":
-                    switch(parameter)
+                    switch(parameter.ToLower())
                     {
                         case "zenith":
                             return MoveToKnownHaDec(new Angle("0h0m0s"), Angle.DecFromDegrees(wisesite.Latitude.Degrees));
@@ -3431,11 +3428,11 @@ namespace ASCOM.Wise40
                             return MoveToKnownHaDec(new Angle("11h55m00.0s"), new Angle("88:00:00.0"));
 
                         default:
-                            return $"move-to-preset: Bad parameter \"{parameter}\"";
+                            return $"move-to-preset: Bad parameter \"{parameter.ToLower()}\"";
                     }
 
                 case "hardware-meta-digest":
-                    Hardware.Hardware.Instance.init();
+                    Hardware.Hardware.Instance.Init();
                     WiseTele.Instance.Init();
                     WiseDome.Instance.Init();
                     WiseFocuser.Instance.Init();
@@ -3446,7 +3443,7 @@ namespace ASCOM.Wise40
                     return JsonConvert.SerializeObject(HardwareDigest.FromHardware());
 
                 case "slew-to-ha-dec":
-                    List<string> par = parameter.Split(',').ToList();
+                    List<string> par = parameter.ToLower().Split(',').ToList();
                     if (par.Count != 2)
                         return "Two parameters needed";
 
@@ -3770,7 +3767,7 @@ namespace ASCOM.Wise40
                         AtPark = AtPark,
                         SecondsTillIdle = secondsTillIdle,
                         EnslavesDome = EnslavesDome,
-                        Active = activityMonitor.ObservatoryIsActive(),
+                        Active = ActivityMonitor.ObservatoryIsActive(),
                         Activities = ActivityMonitor.ObservatoryActivities,
                         SlewPin = SlewPin.isOn,
                         PrimaryPins = new AxisPins

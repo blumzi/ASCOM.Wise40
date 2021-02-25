@@ -21,7 +21,6 @@
 // --------------------------------------------------------------------------------
 //
 
-
 // This is used to define code in the template that is specific to one class implementation
 // unused code canbe deleted and this definition removed.
 #define FilterWheel
@@ -62,8 +61,7 @@ namespace ASCOM.Wise40 //.FilterWheel
         /// <summary>
         /// Driver description that displays in the ASCOM Chooser.
         /// </summary>
-
-        private WiseFilterWheel wisefilterwheel = WiseFilterWheel.Instance;
+        private readonly WiseFilterWheel wisefilterwheel = WiseFilterWheel.Instance;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Wise40"/> class.
@@ -180,13 +178,7 @@ namespace ASCOM.Wise40 //.FilterWheel
 
         #region IFilerWheel Implementation
 
-        public int[] FocusOffsets
-        {
-            get
-            {
-                return wisefilterwheel.FocusOffsets;
-            }
-        }
+        public int[] FocusOffsets => wisefilterwheel.FocusOffsets;
 
         public string[] Names
         {

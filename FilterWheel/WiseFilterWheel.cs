@@ -16,9 +16,9 @@ namespace ASCOM.Wise40 //.FilterWheel
 {
     public class WiseFilterWheel : WiseObject, IDisposable
     {
-        private static Version version = new Version(0, 2);
+        private static readonly Version version = new Version(0, 2);
 
-        public Debugger debugger = Debugger.Instance;        
+        public Debugger debugger = Debugger.Instance;
 
         private static bool _initialized = false;
         private static bool _enabled = false;
@@ -162,7 +162,7 @@ namespace ASCOM.Wise40 //.FilterWheel
             // There are two filter inventory files (for two and three inch filters respectively)
             // These are ';' separated CSV files
             //
-            void ReadFiltersFromCsvFile()
+            private void ReadFiltersFromCsvFile()
             {
                 if (_filterInventory == null)
                     _filterInventory = new List<Filter>();
@@ -210,7 +210,6 @@ namespace ASCOM.Wise40 //.FilterWheel
                     return _filterInventory;
                 }
             }
-
         }
 
         public static Wheel LookupWheel(string tag)
@@ -400,7 +399,7 @@ namespace ASCOM.Wise40 //.FilterWheel
                     throw;
                 }
 
-                ActivityMonitor.Instance.Event(new Event.DriverConnectEvent(Const.WiseDriverID.FilterWheel, value, line: ActivityMonitor.Tracer.filterwheel.Line));
+                ActivityMonitor.Event(new Event.DriverConnectEvent(Const.WiseDriverID.FilterWheel, value, line: ActivityMonitor.Tracer.filterwheel.Line));
 
                 if (value)
                     _updateTimer.Change(2000, 30000);
@@ -658,7 +657,6 @@ namespace ASCOM.Wise40 //.FilterWheel
 
         public void Dispose()
         {
-
         }
 
         /// <summary>

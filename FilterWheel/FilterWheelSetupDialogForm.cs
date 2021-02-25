@@ -14,7 +14,7 @@ namespace ASCOM.Wise40 //.FilterWheel
     [ComVisible(false)]					// Form not registered for COM!
     public partial class FilterWheelSetupDialogForm : Form
     {
-        WiseFilterWheel wisefilterwheel = WiseFilterWheel.Instance;
+        private readonly WiseFilterWheel wisefilterwheel = WiseFilterWheel.Instance;
 
         public FilterWheelSetupDialogForm()
         {
@@ -34,10 +34,8 @@ namespace ASCOM.Wise40 //.FilterWheel
                 for (int i = 0; i < w._nPositions; i++)
                 {
                     TextBox tb;
-                    ComboBox cb;
-
-                    cb = (ComboBox)F.Controls.Find(string.Format("comboBox{0}{1}", w._nPositions, i), true)[0];
-                    if (cb.Text != string.Empty)
+                    ComboBox cb = (ComboBox)F.Controls.Find(string.Format("comboBox{0}{1}", w._nPositions, i), true)[0];
+                    if (!string.IsNullOrEmpty(cb.Text))
                         w._positions[i].filterName = cb.Text.Remove(cb.Text.IndexOf(':'));
                     else
                         w._positions[i].filterName = string.Empty;

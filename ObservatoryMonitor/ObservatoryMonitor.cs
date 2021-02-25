@@ -339,15 +339,21 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
             if (!safetooperateDigest.Safe && !safetooperateDigest.UnsafeBecauseNotReady)
             {
-                DoShutdownObservatory(string.Join(Const.recordSeparator, safetooperateDigest.UnsafeReasons));
+                DoShutdownObservatory("ObservatoryMonitor: " + string.Join(Const.recordSeparator, safetooperateDigest.UnsafeReasons));
                 return;
             }
 
-            if (!telescopeDigest.Active)
+            // Get a fresh status from the telescope before deciding it is Idle
+            try
             {
-                DoShutdownObservatory("Wise40 is idle");
-                return;
+                telescopeDigest = JsonConvert.DeserializeObject<TelescopeDigest>(wisetelescope.Action("status", ""));
+                if (!telescopeDigest.Active)
+                {
+                    DoShutdownObservatory("ObservatoryMonitor: " + "Wise40 is idle");
+                    return;
+                }
             }
+            catch { }
         }
 
         private void LogCurrentPosition()

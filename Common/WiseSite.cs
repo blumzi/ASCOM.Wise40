@@ -32,7 +32,6 @@ namespace ASCOM.Wise40
         private static DateTime lastOCFetch;
         private static bool _och_initialized = false;
         private static readonly Debugger debugger = Debugger.Instance;
-        private static readonly OperationalProfile _operationalProfile = new OperationalProfile();
         private static readonly ASCOM.Astrometry.Transform.Transform _transform = new Astrometry.Transform.Transform();
         private static readonly TempFetcher _tempFetcher = new TempFetcher(10);
         private static string _processName;
@@ -84,7 +83,7 @@ namespace ASCOM.Wise40
             _initialized = true;
         }
 
-        public bool TransformApparentToJ2000(double apparentRA, double apparentDEC, ref double j2000RA, ref double j2000DEC)
+        public static bool TransformApparentToJ2000(double apparentRA, double apparentDEC, ref double j2000RA, ref double j2000DEC)
         {
             _transform.SiteTemperature = _tempFetcher.Temperature;
             _transform.SetApparent(apparentRA, apparentDEC);
@@ -104,7 +103,7 @@ namespace ASCOM.Wise40
             }
         }
 
-        public bool TransformJ2000ToApparent(double j2000RA, double j2000DEC , ref double apparentRA, ref double apparentDEC)
+        public static bool TransformJ2000ToApparent(double j2000RA, double j2000DEC , ref double apparentRA, ref double apparentDEC)
         {
             _transform.SiteTemperature = _tempFetcher.Temperature;
             _transform.SetJ2000(j2000RA, j2000DEC);
@@ -124,13 +123,7 @@ namespace ASCOM.Wise40
             }
         }
 
-        public static OperationalProfile OperationalProfile
-        {
-            get
-            {
-                return _operationalProfile;
-            }
-        }
+        public static OperationalProfile OperationalProfile { get; } = new OperationalProfile();
 
         public static void InitOCH()
         {
@@ -139,8 +132,10 @@ namespace ASCOM.Wise40
 
             try
             {
-                och = new ObservingConditions("ASCOM.OCH.ObservingConditions");
-                och.Connected = true;
+                och = new ObservingConditions("ASCOM.OCH.ObservingConditions")
+                {
+                    Connected = true
+                };
                 lastOCFetch = DateTime.Now;
             }
             catch (Exception ex)

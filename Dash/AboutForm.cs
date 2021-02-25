@@ -15,7 +15,7 @@ namespace Dash
         {
             _dash = dashForm;
             InitializeComponent();
-            
+
             string appVersion = String.Format(System.Globalization.CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
 
             labelAbout.Text = "This dashboard controls the Wise 40 inch Observatory at" + Const.crnl +
