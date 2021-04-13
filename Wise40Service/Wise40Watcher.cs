@@ -55,10 +55,7 @@ namespace Wise40Watcher
                     {
                         sw.WriteLine(DateTime.UtcNow.ToString("HH:mm:ss.fff UT ") + msg);
                     }
-                }
-                catch (Exception ex) {
-                    ;
-                }
+                } catch { }
             }
         }
 
