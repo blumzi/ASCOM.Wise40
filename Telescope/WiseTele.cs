@@ -883,7 +883,7 @@ namespace ASCOM.Wise40
             if (ShuttingDown)
                 return;
 
-            if (EnslavesDome && !slewers.Active(Slewers.Type.Dome) && wisesafetooperate.IsSafeWithoutCheckingForShutdown())
+            if (EnslavesDome && !Slewers.Active(Slewers.Type.Dome) && wisesafetooperate.IsSafeWithoutCheckingForShutdown())
             {
                 WiseDome._adjustingForTracking = true;
                 DomeSlewer(Angle.RaFromHours(RightAscension), Angle.DecFromDegrees(Declination), "tracking");
@@ -3617,7 +3617,7 @@ namespace ASCOM.Wise40
 
                 (pulsing ?? (pulsing = Pulsing.Instance)).Init();
 
-                if (slewers.Active(Slewers.Type.Dec) || slewers.Active(Slewers.Type.Ra))
+                if (Slewers.Active(Slewers.Type.Dec) || Slewers.Active(Slewers.Type.Ra))
                 {
                     string to = null;
 
