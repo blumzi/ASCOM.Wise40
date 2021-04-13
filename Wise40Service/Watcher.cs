@@ -97,9 +97,20 @@ namespace Wise40Watcher
 
                 foreach (var p in processes)
                 {
-                    Wise40Watcher.Log($"KillAllProcesses: Killing pid: {p.Id} ({p.ProcessName}) ...");
-                    p.Kill();
-                    Thread.Sleep(1000);
+                    try
+                    {
+                        p.Kill();
+                        Wise40Watcher.Log($"KillAllProcesses: Killed pid: {p.Id} ({p.ProcessName}) ...");
+                        Thread.Sleep(1000);
+                    }
+                    catch (Exception ex) when (
+                        ex is InvalidOperationException ||
+                        ex is NotSupportedException ||
+                        ex is System.ComponentModel.Win32Exception
+                    )
+                    {
+                        Wise40Watcher.Log($"KillAllProcesses: Pid: {p.Id} ({p.ProcessName}): Caught {ex.Message} at\n{ex.StackTrace}");
+                    }
                 }
             }
         }
