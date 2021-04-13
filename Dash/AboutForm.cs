@@ -7,9 +7,9 @@ namespace Dash
 {
     public partial class AboutForm : Form
     {
-        FormDash _dash;
-        Version version = new Version(0, 2);
-        string urlCommit, urlRelease;
+        private readonly FormDash _dash;
+        private readonly Version version = new Version(0, 2);
+        private readonly string urlCommit, urlRelease;
 
         public AboutForm(FormDash dashForm)
         {

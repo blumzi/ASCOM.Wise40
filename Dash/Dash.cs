@@ -28,7 +28,7 @@ namespace Dash
 
         private DebuggingForm debuggingForm = new DebuggingForm();
         private readonly Debugger debugger = Debugger.Instance;
-        private readonly FilterWheelForm filterWheelForm;
+        //private readonly FilterWheelForm filterWheelForm;
 
         private readonly Statuser dashStatus, telescopeStatus, domeStatus, shutterStatus, focuserStatus, safetooperateStatus, filterWheelStatus, filterWheelArduinoStatus;
 
@@ -52,12 +52,11 @@ namespace Dash
         private readonly List<ToolStripMenuItem> debugMenuItems;
         private readonly Dictionary<object, string> alteredItems = new Dictionary<object, string>();
 
-        public Color safeColor = Statuser.colors[Statuser.Severity.Normal];
-        public Color unsafeColor = Statuser.colors[Statuser.Severity.Error];
-        public Color warningColor = Statuser.colors[Statuser.Severity.Warning];
-        public Color goodColor = Statuser.colors[Statuser.Severity.Good];
+        public readonly Color safeColor = Statuser.colors[Statuser.Severity.Normal];
+        public readonly Color unsafeColor = Statuser.colors[Statuser.Severity.Error];
+        public readonly Color warningColor = Statuser.colors[Statuser.Severity.Warning];
+        public readonly Color goodColor = Statuser.colors[Statuser.Severity.Good];
 
-        private readonly Moon moon = Moon.Instance;
         public ASCOM.DriverAccess.Telescope wiseTelescope;
         public ASCOM.DriverAccess.Dome wiseDome;
         public ASCOM.DriverAccess.Focuser wiseFocuser;
@@ -91,7 +90,7 @@ namespace Dash
             wiseVantagePro = new ASCOM.DriverAccess.ObservingConditions(Const.WiseDriverID.VantagePro);
             wiseBoltwood = new ASCOM.DriverAccess.ObservingConditions(Const.WiseDriverID.Boltwood);
 
-            filterWheelForm = new FilterWheelForm(wiseFilterWheel);
+            //filterWheelForm = new FilterWheelForm(wiseFilterWheel);
 
             dashStatus = new Statuser(labelDashStatus);
             telescopeStatus = new Statuser(labelTelescopeStatus);
@@ -353,7 +352,7 @@ namespace Dash
 
             #region RefreshTelescope
 
-            Angle telescopeRa = null, telescopeDec = null, telescopeHa = null;
+            Angle telescopeRa = null, telescopeDec = null, telescopeHa;
 
             #region Coordinates Info
             labelDate.Text = localTime.ToString("ddd, dd MMM yyyy\n hh:mm:ss tt");
@@ -586,8 +585,12 @@ namespace Dash
                     tip = "The computer control switch is ON";
 
                     if (WiseSite.OperationalMode == WiseSite.OpMode.WISE)
+                    {
                         foreach (Control c in readonlyControls)
+                        {
                             c.Enabled = true;
+                        }
+                    }
                 }
                 else
                 {
@@ -1665,27 +1668,26 @@ namespace Dash
 
             for (int pos = 0; pos < filterWheelDigest.Wheel.Filters.Count(); pos++)
             {
-                if (filterWheelDigest.Wheel.Filters[pos].Name != string.Empty)
+                if (!string.IsNullOrEmpty(filterWheelDigest.Wheel.Filters[pos].Name))
+                {
                     comboBoxFilterWheelPositions.Items[pos] =
-                        $"{pos + 1} - " +
-                        $"{filterWheelDigest.Wheel.Filters[pos].Name}: " +
-                        $"{filterWheelDigest.Wheel.Filters[pos].Description}";
-
+                        $"{pos + 1} - {filterWheelDigest.Wheel.Filters[pos].Name}: {filterWheelDigest.Wheel.Filters[pos].Description}";
+                }
             }
 
             filterWheelStatus.Show((filterWheelDigest.Status != null && filterWheelDigest.Status != "Idle") ? filterWheelDigest.Status : "");
             if (filterWheelDigest.Arduino.Status == ArduinoInterface.ArduinoStatus.Idle)
                 filterWheelArduinoStatus.Show("");
 
-            if (filterWheelDigest.Arduino.Error != null && filterWheelDigest.Arduino.Error != string.Empty)
+            if (!string.IsNullOrEmpty(filterWheelDigest.Arduino.Error))
                 filterWheelArduinoStatus.Show(filterWheelDigest.Arduino.Error, 5000, Statuser.Severity.Error);
-            else if (filterWheelDigest.Arduino.StatusString != string.Empty)
+            else if (!string.IsNullOrEmpty(filterWheelDigest.Arduino.StatusString))
                 filterWheelArduinoStatus.Show(filterWheelDigest.Arduino.StatusString);
 
             string tip = "Arduino:\r\n";
             TimeSpan ts = DateTime.Now.Subtract(Convert.ToDateTime(filterWheelDigest.LastDataReceived));
-            tip += $"  Age:  {ts.ToString(@"s\.ff")} seconds\r\n";
-            string err = filterWheelDigest.Arduino.Error != null && filterWheelDigest.Arduino.Error != string.Empty ?
+            tip += $"  Age:  {ts:s\\.ff} seconds\r\n";
+            string err = !string.IsNullOrEmpty(filterWheelDigest.Arduino.Error) ?
                 filterWheelDigest.Arduino.Error : "none";
             tip += $"  Status:  {filterWheelDigest.Arduino.StatusString}\r\n";
             if (filterWheelDigest.Arduino.LastCommand != null)
@@ -1714,11 +1716,14 @@ namespace Dash
                     mark = "+";
                 }
                 else
+                {
                     mark = "-";
+                }
+
                 alterations += $"  {alteredItems[key] + ":",-20} {mark} {text}" + Const.crnl;
             }
 
-            if (alterations != string.Empty)
+            if (!string.IsNullOrEmpty(alterations))
             {
                 saveToProfileToolStripMenuItem.ToolTipText = "To be saved to profile:" + Const.crnl + Const.crnl + alterations;
                 saveToProfileToolStripMenuItem.Text = "** Save To Profile **";
@@ -1758,7 +1763,6 @@ namespace Dash
         private void syncVentWithShutterToolStripMenuItem_Click(object sender, EventArgs e)
         {
             ToolStripMenuItem item = sender as ToolStripMenuItem;
-            string text = item.Text;
 
             bool sync = Convert.ToBoolean(wiseDome.Action("sync-vent-with-shutter", ""));
 
@@ -1861,14 +1865,10 @@ namespace Dash
         }
 
         private void groupBoxDomeGroup_Enter(object sender, EventArgs e)
-        {
-
-        }
+        {}
 
         private void groupBoxFilterWheel_Enter(object sender, EventArgs e)
-        {
-
-        }
+        {}
 
         private void davisVantagePro2ToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -1880,7 +1880,7 @@ namespace Dash
             new ASCOM.Wise40.Boltwood.SetupDialogForm().Show();
         }
 
-        public void UpdateCheckmark(ToolStripMenuItem item, bool state)
+        public static void UpdateCheckmark(ToolStripMenuItem item, bool state)
         {
             if (state && !item.Text.EndsWith(Const.checkmark))
                 item.Text += Const.checkmark;
@@ -1890,7 +1890,7 @@ namespace Dash
             item.Invalidate();
         }
 
-        public bool IsCheckmarked(ToolStripMenuItem item)
+        public static bool IsCheckmarked(ToolStripMenuItem item)
         {
             return item.Text.EndsWith(Const.checkmark);
         }
@@ -1958,5 +1958,4 @@ namespace Dash
             return false;
         }
     }
-
 }
