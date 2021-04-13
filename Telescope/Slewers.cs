@@ -109,12 +109,12 @@ namespace ASCOM.Wise40
             return _active.ToCSV();
         }
 
-        public bool Active(WiseTele.SlewerTask slewer)
+        public static bool Active(WiseTele.SlewerTask slewer)
         {
             return _active.ContainsKey(slewer.type);
         }
 
-        public bool Active(Slewers.Type type)
+        public static bool Active(Slewers.Type type)
         {
             return _active.ContainsKey(type);
         }

@@ -12,8 +12,8 @@ namespace ASCOM.Wise40
 {
     public class ReadyToSlewFlags
     {
-        private Debugger debugger = Debugger.Instance;
-        Object _lock = new object();
+        private readonly Debugger debugger = Debugger.Instance;
+        private readonly Object _lock = new object();
 
         private long primaryReadyForSlew = 0;
         private long primaryReadyForSet = 0;
@@ -23,7 +23,7 @@ namespace ASCOM.Wise40
         private long secondaryReadyForGuide = 0;
 
         private static volatile ReadyToSlewFlags _instance; // Singleton
-        private static object syncObject = new object();
+        private static readonly object syncObject = new object();
         private static bool _initialized = false;
 
         // Explicit static constructor to tell C# compiler
@@ -100,13 +100,13 @@ namespace ASCOM.Wise40
                 axis.ToString(), WiseTele.RateName(rate), newValue);
             #endregion
         }
-        
+
         public bool AxisCanMoveAtRate(TelescopeAxes axis, double rate)
         {
             bool ret = false;
             Slewers.Type otherSlewer = (axis == TelescopeAxes.axisPrimary) ? Slewers.Type.Dec : Slewers.Type.Ra;
 
-            if (! WiseTele.Instance.slewers.Active(otherSlewer))
+            if (! Slewers.Active(otherSlewer))
                 return true;        // the other axis has finished its slew, this axis can use any rate
 
             if (rate == Const.rateSlew)

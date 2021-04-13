@@ -12,31 +12,24 @@ namespace ASCOM.Wise40
     {
         private double _daqsValue;
 
-        private WiseEncoder axisEncoder, wormEncoder;
-
-        private Astrometry.NOVAS.NOVAS31 Novas31;
-        private Astrometry.AstroUtils.AstroUtils astroutils;
+        private readonly WiseEncoder axisEncoder, wormEncoder;
 
         private bool _connected = false;
 
         public Angle _angle = new Angle(0.0, Angle.AngleType.Dec);
 
-        const double DecMultiplier = Const.twoPI / 600 / 4096;
-        const double DecCorrection = 0.35613322;                //20081231 SK: ActualDec-Encoder Dec [rad]
+        private const double DecMultiplier = Const.twoPI / 600 / 4096;
+        private const double DecCorrection = 0.35613322;                //20081231 SK: ActualDec-Encoder Dec [rad]
 
-        private Common.Debugger debugger = Debugger.Instance;
-        private Hardware.Hardware hw = Hardware.Hardware.Instance;
-        private static WiseSite wisesite = WiseSite.Instance;
+        private readonly Debugger debugger = Debugger.Instance;
+        private readonly Hardware.Hardware hw = Hardware.Hardware.Instance;
         private int prev_worm, prev_axis;
 
-        private Object _lock = new Object();
-        //private readonly RenishawEncoder RenishawDecEncoder = new RenishawEncoder(RenishawEncoder.Module.Dec);
+        private readonly Object _lock = new Object();
 
         public WiseDecEncoder(string name)
         {
             WiseName = "DecEncoder";
-            Novas31 = new Astrometry.NOVAS.NOVAS31();
-            astroutils = new Astrometry.AstroUtils.AstroUtils();
 
             axisEncoder = new WiseEncoder("DecAxis",
                 1 << 16,
@@ -128,7 +121,7 @@ namespace ASCOM.Wise40
                         worm = ((wormValues[0] & 0x0f) * 0x100) + (wormValues[1] & 0xff);
                         axis = ((axisValues[1] & 0xff) / 0x10) + (axisValues[0] * 0x10);
 
-                        _daqsValue = ((axis * 600 + worm) & 0xfff000) - worm;
+                        _daqsValue = (((axis * 600) + worm) & 0xfff000) - worm;
                     }
                     #region debug
                     string dbg = $"{WiseName}: value: {_daqsValue}, axis: {axis} (0x{axis:x}), worm: {worm} (0x{worm:x})";

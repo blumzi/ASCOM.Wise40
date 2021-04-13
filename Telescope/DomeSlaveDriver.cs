@@ -187,7 +187,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return WiseTele.Instance.slewers.Active(Slewers.Type.Dome);
+                return Slewers.Active(Slewers.Type.Dome);
             }
         }
 

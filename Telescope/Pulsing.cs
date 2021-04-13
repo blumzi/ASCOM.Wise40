@@ -178,7 +178,7 @@ namespace ASCOM.Wise40
         {
             string before = ToString();
 
-            if (! _active.TryRemove(t._axis, out PulserTask o))
+            if (! _active.TryRemove(t._axis, out PulserTask _))
             {
                 #region debug
                 debugger.WriteLine(Common.Debugger.DebugLevel.DebugAxes, $"ActivePulsers:Deactivate {t._axis} not active [{before}]");
@@ -208,9 +208,9 @@ namespace ASCOM.Wise40
                 };
 
                 if (activityType == ActivityMonitor.ActivityType.PulsingRa)
-                    (activity as Activity.PulsingRa).EndActivity(endParams);
+                    (activity as Activity.PulsingRa)?.EndActivity(endParams);
                 else
-                    (activity as Activity.PulsingDec).EndActivity(endParams);
+                    (activity as Activity.PulsingDec)?.EndActivity(endParams);
             }
         }
 

@@ -13,13 +13,14 @@ namespace ASCOM.Wise40 //.Telescope
 {
     public class MotionStudy
     {
-        TelescopeAxes axis;
-        double rate;
+        private readonly TelescopeAxes axis;
+        private readonly double rate;
 
-        System.Threading.Timer timer;
-        private static WiseTele wisetele = WiseTele.Instance;
-        private int samplingIntervalMillis;
-        DateTime start, motorStop, axisStop;
+        private readonly Timer timer;
+        private static readonly WiseTele wisetele = WiseTele.Instance;
+        private readonly int samplingIntervalMillis;
+        private readonly DateTime start;
+        private DateTime motorStop;
 
         private struct DataPoint
         {
@@ -37,10 +38,9 @@ namespace ASCOM.Wise40 //.Telescope
                 return $"{millis}, {value}";
             }
         };
-        private List<DataPoint> dataPoints;
-        private DataPoint motorStopPoint, axisStopPoint;
+        private readonly List<DataPoint> dataPoints;
 
-        private void sampleMotion(object StateObject)
+        private void SampleMotion(object StateObject)
         {
             double value = (axis == TelescopeAxes.axisPrimary) ?
                 wisetele.HAEncoder.Angle.Radians :
@@ -56,40 +56,32 @@ namespace ASCOM.Wise40 //.Telescope
             samplingIntervalMillis = intervalMillis;
             start = DateTime.Now;
             dataPoints = new List<DataPoint>();
-            TimerCallback TimerCallback = new TimerCallback(sampleMotion);
+            TimerCallback TimerCallback = new TimerCallback(SampleMotion);
             timer = new Timer(TimerCallback, null, 0, samplingIntervalMillis);
         }
 
         public void Dispose()
         {
             motorStop = DateTime.Now;
-            double startValue, motorStopValue, axisStopValue;
-            DataPoint[] arr = dataPoints.ToArray();
-
-            startValue = arr[0].value;
-            motorStopValue = arr[arr.Length - 1].value;
 
             timer.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
-            motorStopPoint = new DataPoint(motorStop.Subtract(start).TotalMilliseconds, motorStopValue);
             while (WiseTele.AxisIsMoving(axis))
             {
                 Thread.Sleep(samplingIntervalMillis);
-                sampleMotion(null);
+                SampleMotion(null);
             }
-            axisStop = DateTime.Now;
-            axisStopValue = arr[arr.Length - 1].value;
-            axisStopPoint = new DataPoint(axisStop.Subtract(start).TotalMilliseconds, axisStopValue);
+            //axisStop = DateTime.Now;
 
-            generateDataFiles();
+            GenerateDataFiles();
         }
 
-        public void generateDataFiles()
+        public void GenerateDataFiles()
         {
             string rateName = WiseTele.RateName(Math.Abs(rate));
             string directory = string.Format(Const.topWise40Directory +  "Telescope/MotionStudy/{0}/{1}/{2}",
                 motorStop.ToString("yyyy-MMM-dd_HH-mm"),
                 axis.ToString().Substring(4), rateName);
-            
+
             System.IO.Directory.CreateDirectory(directory);
 
             string radiansFile = System.IO.Path.Combine(directory, "radians.dat");

@@ -2,20 +2,15 @@ using System;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
-
 using ASCOM.Astrometry;
 using ASCOM.Wise40.Common;
 using ASCOM.DeviceInterface;
-
 
 namespace ASCOM.Wise40
 {
     [ComVisible(false)]					// Form not registered for COM!
     public partial class TelescopeSetupDialogForm : Form
     {
-        private static WiseSite wisesite = WiseSite.Instance;
-        private static Debugger debugger = Debugger.Instance;
-
         public TelescopeSetupDialogForm()
         {
             InitializeComponent();
@@ -56,8 +51,6 @@ namespace ASCOM.Wise40
         }
 
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
-        {
-
-        }
+        {}
     }
 }

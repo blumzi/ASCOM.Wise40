@@ -9,7 +9,6 @@ using ASCOM.DeviceInterface;
 using ASCOM.Wise40.Common;
 using ASCOM.Wise40.Hardware;
 
-
 namespace ASCOM.Wise40
 {
     public class MovementSpecifier: IEquatable<Tuple<TelescopeAxes, double, Const.AxisDirection>>
@@ -27,8 +26,6 @@ namespace ASCOM.Wise40
 
         public override bool Equals(object other)
         {
-            bool ret = false;
-
             if (other == null)
                 return false;
 
@@ -36,8 +33,7 @@ namespace ASCOM.Wise40
                 return false;
 
             var o = (MovementSpecifier) other;
-            ret = o.axis == axis && o.direction == direction;
-            return ret;
+            return o.axis == axis && o.direction == direction;
         }
 
         public static implicit operator Tuple<TelescopeAxes, Const.AxisDirection> (MovementSpecifier m)
@@ -66,7 +62,7 @@ namespace ASCOM.Wise40
 
         public override string ToString()
         {
-            return "( " + axis.ToString() + ", " + ", " + direction.ToString() + " )";
+            return $"( {axis}, {direction} )";
         }
 
         public void Dispose()
@@ -107,7 +103,7 @@ namespace ASCOM.Wise40
 
     public class MovementDictionary : IDictionary<MovementSpecifier, MovementWorker>
     {
-        private Dictionary<MovementSpecifier, MovementWorker> dict;
+        private readonly Dictionary<MovementSpecifier, MovementWorker> dict;
 
         public MovementDictionary()
         {
@@ -222,10 +218,10 @@ namespace ASCOM.Wise40
             {
                 MovementWorker worker = dict[spec];
 
-                s += "  dict[" + spec.axis.ToString() + ", " + ", " + spec.direction.ToString() + " ] = { [ ";
+                s += $"  dict[{spec}, {spec.direction} ] = [ ";
                 foreach (WiseVirtualMotor m in worker.motors)
-                    s += m.ToString() + " ";
-                s += "], " + worker.slew.ToString() + "} " + spec.GetHashCode() + "\n";
+                    s += $"{m} ";
+                s += $"], {worker.slew} {spec.GetHashCode()}\n";
             }
             return s;
         }
