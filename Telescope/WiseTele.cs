@@ -63,6 +63,7 @@ namespace ASCOM.Wise40
 
         private static NOVAS31 novas31;
         private static Astrometry.AstroUtils.AstroUtils astroutils;
+        private static readonly object eq2horLock = new object();
 
         private List<IConnectable> connectables;
         private List<IDisposable> disposables;
@@ -1464,13 +1465,16 @@ namespace ASCOM.Wise40
             List<string> reasons = new List<string>();
 
             wisesite.PrepareRefractionData();
-            novas31.Equ2Hor(astroutils.JulianDateUT1(0), 0,
-                WiseSite.astrometricAccuracy,
-                0, 0,
-                wisesite._onSurface,
-                ra.Hours, dec.Degrees,
-                WiseSite.refractionOption,
-                ref zd, ref az, ref rar, ref decr);
+            lock (eq2horLock)
+            {
+                novas31.Equ2Hor(astroutils.JulianDateUT1(0), 0,
+                    WiseSite.astrometricAccuracy,
+                    0, 0,
+                    wisesite._onSurface,
+                    ra.Hours, dec.Degrees,
+                    WiseSite.refractionOption,
+                    ref zd, ref az, ref rar, ref decr);
+            }
 
             Angle alt = Angle.AltFromDegrees(90.0 - zd);
             if (alt < altLimit)

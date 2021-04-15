@@ -36,6 +36,7 @@ namespace ASCOM.Wise40
         private static readonly TempFetcher _tempFetcher = new TempFetcher(10);
         private static string _processName;
         public static string _machine = Environment.MachineName.ToLower();
+        public static readonly object siderealTimeLock = new object();
 
         public enum OpMode { LCO, ACP, WISE, NONE };
 
@@ -189,13 +190,16 @@ namespace ASCOM.Wise40
 
                 try
                 {
-                    res = novas31.SiderealTime(
-                        astroutils.JulianDateUT1(0), 0d,
-                        astroutils.DeltaT(),
-                        GstType.GreenwichApparentSiderealTime,
-                        Method.EquinoxBased,
-                        astrometricAccuracy,
-                        ref gstNow);
+                    lock (siderealTimeLock)
+                    {
+                        res = novas31.SiderealTime(
+                            astroutils.JulianDateUT1(0), 0d,
+                            astroutils.DeltaT(),
+                            GstType.GreenwichApparentSiderealTime,
+                            Method.EquinoxBased,
+                            astrometricAccuracy,
+                            ref gstNow);
+                    }
                 } catch (Exception ex)
                 {
                     #region debug
