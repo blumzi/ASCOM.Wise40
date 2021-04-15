@@ -545,8 +545,19 @@ namespace Dash
             if (telescopeDigest != null)
             {
                 labelMoonIllum.Text = (Moon.Illumination * 100).ToString("F0") + "%";
-                labelMoonDist.Text = Moon.Distance(telescopeRa.Radians, telescopeDec.Radians).ToShortNiceString();
-                labelMoonIllum.ForeColor = labelMoonDist.ForeColor = safeColor;
+                labelMoonIllum.ForeColor = safeColor;
+
+                Angle distance = Moon.Distance(telescopeRa.Radians, telescopeDec.Radians);
+                if (distance == Angle.Invalid)
+                {
+                    labelMoonDist.Text = "unknown";
+                    toolTip.SetToolTip(labelMoonDist, "Moon distance could not be calculated!");
+                }
+                else
+                {
+                    labelMoonDist.Text = distance.ToShortNiceString();
+                    toolTip.SetToolTip(labelMoonDist, "Calculated angular distance between the telescope and the Moon");
+                }
             }
             else
             {

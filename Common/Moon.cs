@@ -106,7 +106,7 @@ namespace ASCOM.Wise40
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Moon.Distance: Cannot calculate Moon position (ret: {0})", ret);
                 #endregion
-                return Angle.FromDegrees(0);
+                return Angle.Invalid;
             }
 
             double rad = SphereDist(telescopeRA, telescopeDec, moonPos.RA, moonPos.Dec);
