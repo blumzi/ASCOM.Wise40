@@ -262,7 +262,6 @@ namespace ASCOM.Wise40
             }
 
             _hourAngle = Angle.FromRadians(_currPosition.radians).Hours;
-            //_hourAngle = Angle.HaFromRadians(_currPosition.radians).Hours;
             _rightAscension = wisesite.LocalSiderealTime.Hours - _hourAngle;
             _samples.Enqueue(_currPosition);
 
@@ -279,12 +278,15 @@ namespace ASCOM.Wise40
             _raDeltas.Enqueue(raDelta);
             _haDeltas.Enqueue(haDelta);
 
+            double renishawHa = Angle.FromRadians(_renishawEncoder.HourAngle).Hours;
+            double renishawRa = wisesite.LocalSiderealTime.Hours - renishawHa;
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
                 $"{WiseName}:SampleAxisMovement: _currPosition(rad): {_currPosition.radians:F15} ({(_currPosition.predicted ? "PREDICTED" : "REAL")}), " +
                 $"_prevPosition(rad): {_prevPosition.radians:F15} ({(_prevPosition.predicted ? "PREDICTED" : "REAL")})," +
                 $"raDelta: {raDelta:F15}, haDelta: {haDelta:F15}, active motors: {ActiveMotors(_axis)}" +
-                $"enc: {_encoder.AxisValue}, renishaw: {_renishawEncoder.Position}, renishaw.Radians: {_renishawEncoder.Radians:F15}"
+                $"enc: {_encoder.AxisValue}, renishaw: {_renishawEncoder.Position}, renishaw.Radians: {_renishawEncoder.Radians:F15}, " +
+                $"Ha: {_hourAngle}, renishawHa: {renishawHa}, Ra: {_rightAscension}, renishawRa: {renishawRa}"
                 );
             #endregion
 
@@ -493,11 +495,13 @@ namespace ASCOM.Wise40
             double delta = Math.Abs(_declination - _prevDeclination);
             _decDeltas.Enqueue(delta);
 
+            double renishawDec = _renishawEncoder.Declination;
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
                 $"{WiseName}:SampleAxisMovement: _currPosition(rad): {_currPosition.radians:F15}, _prevPosition(rad): {_prevPosition.radians:F15}, " +
                 $"delta: {delta:F15}, active motors: {ActiveMotors(_axis)}" +
-                $"enc: {_encoder.EncoderValue}, renishaw: {_renishawEncoder.Position}, renishaw.Radians: {_renishawEncoder.Radians:F15}"
+                $"enc: {_encoder.EncoderValue}, renishaw: {_renishawEncoder.Position}, renishaw.Radians: {_renishawEncoder.Radians:F15}, " +
+                $"dec: {_declination}, renishawDec: {renishawDec}"
                 );
             #endregion
 

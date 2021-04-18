@@ -26,8 +26,9 @@ namespace ASCOM.Wise40.Hardware
         private enum ChannelMode { BISS = 0, SSI = 1 };
         private const byte CRCPolynom = ((1 << 6) | (1 << 1) | (1 << 0));
 
-        private const double haConstant = 0.002547126296947 / 19482030;
-        private const double decConstant = haConstant;  // TBD
+        private const double haConstant = 0.604916 / 19237927;
+        private const double decConstant = 36.007347 / 16047243;
+
         private enum BissMode { B = 0, C = 1 };
         private static readonly PCIe1711 Board = PCIe1711.OpenBoard(0);
         public enum Module { Ha = 0, Dec = 1 };
@@ -140,9 +141,12 @@ namespace ASCOM.Wise40.Hardware
         {
             get
             {
-                return Position * ((_module == Module.Ha) ? haConstant : decConstant);
+                return (_module == Module.Ha) ?
+                    Angle.Hours2Rad(HourAngle) :
+                    Angle.Deg2Rad(Declination);
             }
         }
+
         public double HourAngle
         {
             get
@@ -153,6 +157,7 @@ namespace ASCOM.Wise40.Hardware
                 return Position * haConstant;
             }
         }
+
         public double Declination
         {
             get
