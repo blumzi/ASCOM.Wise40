@@ -53,7 +53,7 @@ namespace ASCOM.Wise40SafeToOperate
 
         private void PeriodicReader(object state)
         {
-            if (Interlocked.CompareExchange(ref _reading, 1, 0) == 0)
+            if (Interlocked.CompareExchange(ref _reading, 1, 0) == 1)
                 return;
 
             bool succeeded = GetARDOInfo().GetAwaiter().GetResult();

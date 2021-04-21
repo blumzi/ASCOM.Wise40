@@ -68,7 +68,7 @@ namespace ASCOM.Wise40.TessW
             if (!Connected || !Enabled)
                 return;
 
-            if (Interlocked.CompareExchange(ref _reading, 1, 0) != 0)
+            if (Interlocked.CompareExchange(ref _reading, 1, 0) == 1)
                 return;
 
             bool succeeded = GetTessWInfo().GetAwaiter().GetResult();

@@ -72,6 +72,7 @@ namespace ASCOM.Wise40
             private static readonly Debugger debugger = Debugger.Instance;
             private static TimeSpan _maxAge = new TimeSpan(0, 0, 30);
             private static WiseDomeShutter _wisedomeshutter;
+            private static long _active = 0;
 
             public enum Pacing { None, Slow, Fast };
             private Pacing _pacing = Pacing.None;
@@ -130,6 +131,9 @@ namespace ASCOM.Wise40
 
             private static void PeriodicReader(object state)
             {
+                if (Interlocked.CompareExchange(ref _active, 1, 0) == 1)
+                    return;
+
                 int reading = GetWebShutterPosition().GetAwaiter().GetResult();
 
                 if (! Instance.webClient.WiFiIsWorking)
@@ -144,6 +148,7 @@ namespace ASCOM.Wise40
                     #endregion
 
                     _periodicWebReadTimer.Change(WebClient._timeoutMillis, 0);
+                    Interlocked.Exchange(ref _active, 0);
                     return;
                 }
 
@@ -199,6 +204,8 @@ namespace ASCOM.Wise40
                 #endregion
                 _prevReading = _lastReading;
                 _periodicWebReadTimer.Change(_timeoutMillis, 0);
+
+                Interlocked.Exchange(ref _active, 0);
             }
 
             public TimeSpan TimeSinceLastReading
