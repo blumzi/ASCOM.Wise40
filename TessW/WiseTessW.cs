@@ -662,15 +662,15 @@ namespace ASCOM.Wise40.TessW
                 return WeatherStationModel.TessW;
             }
         }
+    }
 
-        public class TessWStationRawData
-        {
-            public string Name;
-            public string Vendor;
-            public string Model;
-            public DateTime UpdatedAtUT;
-            public double AgeInSeconds;
-            public Dictionary<string, string> SensorData;
-        }
+    public class TessWStationRawData
+    {
+        public string Name;
+        public string Vendor;
+        public string Model;
+        public DateTime UpdatedAtUT;
+        public double AgeInSeconds;
+        public Dictionary<string, string> SensorData;
     }
 }

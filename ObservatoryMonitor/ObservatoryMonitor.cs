@@ -124,7 +124,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             {
                 remoteDriver = "Telescope";
                 if (wisetelescope == null)
-                    wisetelescope = new DriverAccess.Telescope("ASCOM.Remote1.Telescope");
+                    wisetelescope = new DriverAccess.Telescope("ASCOM.AlpacaDynamic1.Telescope");
                 if (!wisetelescope.Connected)
                 {
                     wisetelescope.Connected = true;
@@ -137,7 +137,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
                 remoteDriver = "SafeToOperate";
                 if (wisesafetooperate == null)
-                    wisesafetooperate = new DriverAccess.SafetyMonitor("ASCOM.Remote1.SafetyMonitor");      // Must match ASCOM Remote Server Setup
+                    wisesafetooperate = new DriverAccess.SafetyMonitor("ASCOM.AlpacaDynamic1.SafetyMonitor");      // Must match ASCOM Remote Server Setup
                 if (!wisesafetooperate.Connected)
                 {
                     wisesafetooperate.Connected = true;
@@ -150,7 +150,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
                 remoteDriver = "Dome";
                 if (wisedome == null)
-                    wisedome = new DriverAccess.Dome("ASCOM.Remote1.Dome");
+                    wisedome = new DriverAccess.Dome("ASCOM.AlpacaDynamic1.Dome");
                 if (!wisedome.Connected)
                 {
                     wisedome.Connected = true;
@@ -169,7 +169,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             catch (Exception ex)
             {
                 Log($"Cannot connect the remote {remoteDriver} client");
-                Log($"CheckConnections:Exception: {(ex.InnerException ?? ex).Message} at\n{ex.StackTrace}", debugOnly: true);
+                Log($"CheckConnections:Exception: {ex.Message} at\n{ex.StackTrace}", debugOnly: true);
                 return false;
             }
             #endregion

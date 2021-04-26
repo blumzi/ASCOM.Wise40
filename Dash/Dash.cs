@@ -82,11 +82,11 @@ namespace Dash
         {
             InitializeComponent();
 
-            wiseTelescope = new ASCOM.DriverAccess.Telescope("ASCOM.Remote1.Telescope");
-            wiseDome = new ASCOM.DriverAccess.Dome("ASCOM.Remote1.Dome");
-            wiseFocuser = new ASCOM.DriverAccess.Focuser("ASCOM.Remote1.Focuser");
-            wiseFilterWheel = new ASCOM.DriverAccess.FilterWheel("ASCOM.Remote1.FilterWheel");
-            wiseSafeToOperate = new ASCOM.DriverAccess.SafetyMonitor("ASCOM.Remote1.SafetyMonitor");
+            wiseTelescope = new ASCOM.DriverAccess.Telescope("ASCOM.AlpacaDynamic1.Telescope");
+            wiseDome = new ASCOM.DriverAccess.Dome("ASCOM.AlpacaDynamic1.Dome");
+            wiseFocuser = new ASCOM.DriverAccess.Focuser("ASCOM.AlpacaDynamic1.Focuser");
+            wiseFilterWheel = new ASCOM.DriverAccess.FilterWheel("ASCOM.AlpacaDynamic1.FilterWheel");
+            wiseSafeToOperate = new ASCOM.DriverAccess.SafetyMonitor("ASCOM.AlpacaDynamic1.SafetyMonitor");
             wiseVantagePro = new ASCOM.DriverAccess.ObservingConditions(Const.WiseDriverID.VantagePro);
             wiseBoltwood = new ASCOM.DriverAccess.ObservingConditions(Const.WiseDriverID.Boltwood);
 

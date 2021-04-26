@@ -924,8 +924,8 @@ namespace ASCOM.Wise40SafeToOperate
                 RawWeatherData ret = new RawWeatherData
                 {
                     Boltwood = JsonConvert.DeserializeObject<List<BoltwoodStation.RawData>>(WiseSite.och.Action("//Wise40.Boltwood:raw-data", "")),
-                    VantagePro2 = JsonConvert.DeserializeObject<WiseVantagePro.VantagePro2StationRawData>(WiseSite.och.Action("//Wise40.VantagePro2:raw-data", "")),
-                    TessW = JsonConvert.DeserializeObject<WiseTessW.TessWStationRawData>(tessw.Action("raw-data", "")),
+                    VantagePro2 = JsonConvert.DeserializeObject<VantagePro2StationRawData>(WiseSite.och.Action("//Wise40.VantagePro2:raw-data", "")),
+                    TessW = JsonConvert.DeserializeObject<TessWStationRawData>(tessw.Action("raw-data", "")),
                     OWL = WiseSafeToOperate.owlRefresher.Digest() as OWLRefresher.OWLDigest,
                     ARDO = ardoSensor.Digest() as ARDORawData,
                 };
@@ -978,8 +978,8 @@ namespace ASCOM.Wise40SafeToOperate
     public class RawWeatherData
     {
         public List<BoltwoodStation.RawData> Boltwood;
-        public WiseVantagePro.VantagePro2StationRawData VantagePro2;
-        public WiseTessW.TessWStationRawData TessW;
+        public VantagePro2StationRawData VantagePro2;
+        public TessWStationRawData TessW;
         public OWLRefresher.OWLDigest OWL;
         public ARDORawData ARDO;
     }

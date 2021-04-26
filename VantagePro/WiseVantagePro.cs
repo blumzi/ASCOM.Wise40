@@ -113,7 +113,7 @@ namespace ASCOM.Wise40.VantagePro
                                     ["Humidity"] = sensorData["outsideHumidity"],
                                     ["RainRate"] = sensorData["rainRate"],
                                     ["DewPoint"] = util.ConvertUnits(Convert.ToDouble(sensorData["outsideDewPt"]),
-                                                        Units.degreesFarenheit, Units.degreesCelsius).ToString(),
+                                                        Units.degreesFahrenheit, Units.degreesCelsius).ToString(),
                                 }, utcTime.ToLocalTime());
 
                             _lastDataRead = DateTime.Now;
@@ -220,13 +220,13 @@ namespace ASCOM.Wise40.VantagePro
             ASCOM.Utilities.Util util = new Util();
 
             double F = GetTwoBytes(buf, 12) / 10.0;
-            sensorData["outsideTemp"] = util.ConvertUnits(F, Units.degreesFarenheit, Units.degreesCelsius).ToString();
+            sensorData["outsideTemp"] = util.ConvertUnits(F, Units.degreesFahrenheit, Units.degreesCelsius).ToString();
             sensorData["windSpeed"] = util.ConvertUnits(buf[14], Units.milesPerHour, Units.metresPerSecond).ToString();
             sensorData["windDir"] = GetTwoBytes(buf, 16).ToString();
             sensorData["outsideHumidity"] = buf[33].ToString();
             sensorData["barometer"] = GetTwoBytes(buf, 7).ToString();
             F = GetTwoBytes(buf, 30);
-            sensorData["outsideDewPt"] = util.ConvertUnits(F, Units.degreesFarenheit, Units.degreesCelsius).ToString();
+            sensorData["outsideDewPt"] = util.ConvertUnits(F, Units.degreesFahrenheit, Units.degreesCelsius).ToString();
             sensorData["rainRate"] = GetTwoBytes(buf, 41).ToString();
             sensorData["ForecastStr"] = "No forecast";
         }
@@ -324,11 +324,11 @@ namespace ASCOM.Wise40.VantagePro
         {
             get
             {
-                VantagePro2StationRawData.Quality quality = null;
+                Quality quality = null;
 
                 if (_seeing != null)
                 {
-                    quality = new VantagePro2StationRawData.Quality
+                    quality = new Quality
                     {
                         StarFWHM = _seeing.FWHM,
                         UpdatedAtUT = _seeing.TimeLocal,
@@ -785,23 +785,23 @@ namespace ASCOM.Wise40.VantagePro
                 return WeatherStationModel.VantagePro2;
             }
         }
+    }
 
-        public class VantagePro2StationRawData
-        {
-            public class Quality
-            {
-                public DateTime UpdatedAtUT;
-                public double AgeInSeconds;
-                public double StarFWHM;
-            };
+    public class Quality
+    {
+        public DateTime UpdatedAtUT;
+        public double AgeInSeconds;
+        public double StarFWHM;
+    };
 
-            public string Name;
-            public string Vendor;
-            public string Model;
-            public DateTime UpdateAtUT;
-            public double AgeInSeconds;
-            public Dictionary<string, string> SensorData;
-            public Quality SkyQuality;
-        }
+    public class VantagePro2StationRawData
+    {
+        public string Name;
+        public string Vendor;
+        public string Model;
+        public DateTime UpdateAtUT;
+        public double AgeInSeconds;
+        public Dictionary<string, string> SensorData;
+        public Quality SkyQuality;
     }
 }

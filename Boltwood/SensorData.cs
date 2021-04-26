@@ -184,9 +184,9 @@ namespace ASCOM.Wise40.Boltwood
                 sensorTemp = Convert.ToDouble(data.Substring(40, 6));
                 if (tempUnits != TempUnits.tempCelsius)
                 {
-                    skyAmbientTemp = util.ConvertUnits(skyAmbientTemp, Utilities.Units.degreesFarenheit, Utilities.Units.degreesCelsius);
-                    ambientTemp = util.ConvertUnits(ambientTemp, Utilities.Units.degreesFarenheit, Utilities.Units.degreesCelsius);
-                    sensorTemp = util.ConvertUnits(sensorTemp, Utilities.Units.degreesFarenheit, Utilities.Units.degreesCelsius);
+                    skyAmbientTemp = util.ConvertUnits(skyAmbientTemp, Utilities.Units.degreesFahrenheit, Utilities.Units.degreesCelsius);
+                    ambientTemp = util.ConvertUnits(ambientTemp, Utilities.Units.degreesFahrenheit, Utilities.Units.degreesCelsius);
+                    sensorTemp = util.ConvertUnits(sensorTemp, Utilities.Units.degreesFahrenheit, Utilities.Units.degreesCelsius);
                 }
                 windSpeed = Convert.ToDouble(data.Substring(48, 6));
                 switch (data.Substring(25, 1))

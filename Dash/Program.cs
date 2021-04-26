@@ -25,7 +25,7 @@ namespace Dash
             {
                 if (args[0] == "--dio-monitor")
                 {
-                    Application.Run(new ASCOM.Wise40.HardwareForm(new ASCOM.DriverAccess.Telescope("ASCOM.Remote1.Telescope")));
+                    Application.Run(new ASCOM.Wise40.HardwareForm(new ASCOM.DriverAccess.Telescope("ASCOM.AlpacaDynamic1.Telescope")));
                 }
                 else if (args[0].StartsWith("--mode="))
                 {

@@ -81,7 +81,7 @@ namespace ASCOM.Wise
         /// </summary>
         public SafetyMonitor()
         {
-            wisesafetooperate = new DriverAccess.SafetyMonitor("ASCOM.Remote1.SafetyMonitor");
+            wisesafetooperate = new DriverAccess.SafetyMonitor("ASCOM.AlpacaDynamic1.SafetyMonitor");
         }
 
         //
