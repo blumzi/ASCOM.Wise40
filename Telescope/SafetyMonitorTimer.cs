@@ -23,6 +23,8 @@ namespace ASCOM.Wise40 //.Telescope
 
         public ActionWhenNotSafe WhenNotSafe { get; set; } = ActionWhenNotSafe.None;
 
+        private static long _active = 0;
+
         private void SafetyChecker(object StateObject)
         {
             wisetele.safetyMonitorTimer.Enabled = false;
@@ -31,9 +33,20 @@ namespace ASCOM.Wise40 //.Telescope
                 Angle.RaFromHours(wisetele.RightAscension),
                 Angle.DecFromDegrees(wisetele.Declination));
 
-            if (string.IsNullOrEmpty(reason))
+            if (string.IsNullOrEmpty(reason) && !wisetele.safetyMonitorTimer.Enabled)
             {
                 wisetele.safetyMonitorTimer.Enabled = true;
+                return;
+            }
+
+            if (WhenNotSafe == ActionWhenNotSafe.None)
+                return;
+
+            if (Interlocked.CompareExchange(ref _active, 1, 0) == 1)
+            {
+                #region debug
+                WiseTele.debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"SafetyChecker: already active (action: {WhenNotSafe}, reason: {reason})");
+                #endregion
                 return;
             }
 
@@ -41,18 +54,21 @@ namespace ASCOM.Wise40 //.Telescope
             WiseTele.debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"SafetyChecker: activated (action: {WhenNotSafe}, reason: {reason})");
             #endregion
 
-            switch (WhenNotSafe)
-            {
-                case ActionWhenNotSafe.None:
-                    return;
-                case ActionWhenNotSafe.StopMotors:
-                    wisetele.Stop($"SafetyChecker: ({reason})");
-                    break;
-                case ActionWhenNotSafe.Backoff:
-                    wisetele.Backoff(reason);
-                    break;
-            }
+            wisetele.AbortSlew($"SafetyChecker: ({reason})");
+            if (WhenNotSafe == ActionWhenNotSafe.Backoff)
+                wisetele.Backoff(reason);
+
+            Interlocked.Exchange(ref _active, 0);
+
             wisetele.safetyMonitorTimer.Enabled = true;
+        }
+
+        public bool Active
+        {
+            get
+            {
+                return Interlocked.Read(ref _active) == 1;
+            }
         }
 
         public SafetyMonitorTimer(int dueTime = 1000, int period = 1000)

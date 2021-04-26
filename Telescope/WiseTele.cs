@@ -914,13 +914,17 @@ namespace ASCOM.Wise40
             set
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugASCOM, $"Tracking Set - {value}");
+                System.Diagnostics.StackFrame sf = new System.Diagnostics.StackTrace(true).GetFrame(1);
+                debugger.WriteLine(Debugger.DebugLevel.DebugASCOM, $"Tracking Set - {value} (from: {sf.GetMethod().Name}@{sf.GetFileName()}:{sf.GetFileLineNumber()})");
                 #endregion
 
                 if (value)
                 {
                     if (!wisesafetooperate.IsSafeWithoutCheckingForShutdown() && !ShuttingDown && !BypassCoordinatesSafety)
-                            Exceptor.Throw<InvalidOperationException>("Tracking.set", string.Join(", ", wisesafetooperate.UnsafeReasonsList()));
+                        Exceptor.Throw<InvalidOperationException>("Tracking.set", string.Join(", ", wisesafetooperate.UnsafeReasonsList()));
+
+                    if (safetyMonitorTimer.Active)
+                        Exceptor.Throw<InvalidOperationException>("Tracking.set", "Safety recovery is active");
 
                     if (Simulated)
                         _lastTrackingLST = wisesite.LocalSiderealTime.Hours;

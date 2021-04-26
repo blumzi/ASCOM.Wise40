@@ -1,0 +1,217 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+using System.Net.Http;
+using System.Threading;
+
+namespace ASCOM.Wise40.Common
+{
+    public class PeriodicHttpFetcher
+    {
+        private readonly HttpClient _client;
+        private static readonly Debugger debugger = Debugger.Instance;
+        private readonly string _url;
+        private readonly HttpMethod _method;
+        private readonly HttpContent _content;
+        private readonly Timer _timer;
+        private readonly TimeSpan _period;
+        private string _result;
+        private readonly int _tries;
+        private bool _oneshot = false;
+
+        public PeriodicHttpFetcher(string name,
+            string url,
+            TimeSpan period,
+            bool oneshot = false,
+            int tries = 1,
+            int maxAgeMillis = 0,
+            int dueMillis = 0,
+            string method = "GET",
+            string content = null)
+        {
+            _client = new HttpClient();
+            _client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/html"));
+            _client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+            _client.DefaultRequestHeaders.ConnectionClose = false;
+            _client.Timeout = TimeSpan.FromMilliseconds(period.TotalMilliseconds * 0.8);    // 80% of period
+            _period = period;
+            _tries = tries;
+            _oneshot = oneshot;
+            MaxAge = (maxAgeMillis == 0) ?
+                TimeSpan.FromMilliseconds(period.TotalMilliseconds * 1.2) : // 120% of period
+                TimeSpan.FromMilliseconds(maxAgeMillis);
+
+            switch (method)
+            {
+                case "GET":
+                    _method = HttpMethod.Get;
+                    break;
+                case "PUT":
+                    _method = HttpMethod.Put;
+                    break;
+            }
+            if (_method == HttpMethod.Put)
+                _content = new StringContent(content);
+            _url = url;
+            _timer = new Timer(OnTimer, this, dueMillis, Timeout.Infinite);
+            Name = $"PeriodicHttpFetcher(\"{name}\")";
+        }
+
+        private static void OnTimer(object state)
+        {
+            (state as PeriodicHttpFetcher)?.Fetch();
+        }
+
+        public string Name { get; set; }
+
+        // Did the last fetch succeed?
+        public bool Alive { get; set; } = false;
+
+        public string Result
+        {
+            get
+            {
+                TimeSpan age = Age;
+                string op = Name + ".Response.get";
+
+                if (LastFetch == DateTime.MinValue)
+                    Exceptor.Throw<InvalidValueException>(op, "Value never fetched!");
+                else if (Stale)
+                    Exceptor.Throw<InvalidValueException>(op, $"Value is stale: {age.ToMinimalString()}");
+
+                return _result;
+            }
+
+            set
+            {
+                _result = value;
+            }
+        }
+
+        public DateTime LastFetch { get; set; } = DateTime.MinValue;
+
+        public TimeSpan Age
+        {
+            get
+            {
+                return DateTime.Now.Subtract(LastFetch);
+            }
+        }
+
+        public bool Stale {
+            get {
+                return Age > MaxAge;
+            }
+        }
+
+        public TimeSpan MaxAge { get; set; } = TimeSpan.Zero;
+
+        public void Fetch()
+        {
+            #region debug
+            string op = $"{Name}.Fetch() ";
+            #endregion
+
+            Alive = false;
+            CauseOfDeath = null;
+
+            for (Tries = 0; Tries < _tries; Tries++)
+            {
+                DateTime start = DateTime.Now;
+                Duration = TimeSpan.Zero;
+                try
+                {
+                    using (HttpRequestMessage httpRequest = new HttpRequestMessage
+                    {
+                        RequestUri = new Uri(_url),
+                        Method = _method,
+                    })
+                    {
+                        if (_method == HttpMethod.Put || _method == HttpMethod.Post)
+                            httpRequest.Content = _content;
+
+                        using (HttpResponseMessage response = _client.SendAsync(httpRequest, HttpCompletionOption.ResponseContentRead).Result)
+                        {
+                            using (HttpContent content = response.Content)
+                            {
+                                Result = content.ReadAsStringAsync().Result;
+                                LastFetch = DateTime.Now;
+                                Alive = true;
+                                Successes++;
+                                Duration = DateTime.Now.Subtract(start);
+                                #region debug
+                                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: Succeeded after {Tries+1} tries, duration: {Duration.ToMinimalString()}.");
+                                #endregion
+                                break;      // tries loop
+                            }
+                        }
+                    }
+                }
+                catch (TaskCanceledException ex)
+                {
+                    if (ex.InnerException?.InnerException is TaskCanceledException)
+                    {
+                        #region debug
+                        debugger.WriteLine(Debugger.DebugLevel.DebugWise, $"{op}: Timedout: {ex.Message} at\n{ex.StackTrace}");
+                        #endregion
+                        CauseOfDeath = "Timeout";
+                    }
+                    Failures++;
+                }
+                catch (HttpRequestException ex)
+                {
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugWise, $"{op}: Network error: {ex.Message} at\n{ex.StackTrace}");
+                    #endregion
+                    CauseOfDeath = $"HTTP error ({ex.Message})";
+                    Failures++;
+                }
+                catch (Exception ex)
+                {
+                    if (ex.InnerException != null)
+                        ex = ex.InnerException;
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugWise, $"{op}: Caught: {ex.Message} at\n{ex.StackTrace}");
+                    #endregion
+                    CauseOfDeath = $"Error ({ex.Message})";
+                    Failures++;
+                }
+                finally
+                {
+                    if (Duration == TimeSpan.Zero)      // last transaction threw an exception
+                        Duration = DateTime.Now.Subtract(start);
+                    try
+                    {
+                        _timer.Change(_oneshot ?
+                            Timeout.Infinite :
+                            (int)_period.TotalMilliseconds, Timeout.Infinite);
+                    }
+                    catch (ObjectDisposedException) { }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Time span of the latest transaction (either successful or failed)
+        /// </summary>
+        public TimeSpan Duration { get; set; } = TimeSpan.MaxValue;
+        /// <summary>
+        /// Number of successful transactions
+        /// </summary>
+        public int Successes { get; set; } = 0;
+        /// <summary>
+        /// Number of failed transactions
+        /// </summary>
+        public int Failures { get; set; } = 0;
+
+        /// <summary>
+        /// How many tries did it take to succeed (last transaction)
+        /// </summary>
+        public int Tries { get; set; } = 0;
+
+        public string CauseOfDeath { get; set; } = null;
+    }
+}

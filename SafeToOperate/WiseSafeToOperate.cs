@@ -51,7 +51,7 @@ namespace ASCOM.Wise40SafeToOperate
 
         public static TessWRefresher tessWRefresher;
         public static OWLRefresher owlRefresher;
-        public static ARDORefresher ardoRefresher;
+        public static ARDOSensor ardoSensor;
 
         public static DoorLockSensor doorLockSensor;
         public static ComputerControlSensor computerControlSensor;
@@ -141,7 +141,7 @@ namespace ASCOM.Wise40SafeToOperate
 
             tessWRefresher = new TessWRefresher(this);
             owlRefresher = new OWLRefresher(this);
-            ardoRefresher = new ARDORefresher(this);
+            ardoSensor = new ARDOSensor(this);
 
             //
             // The sensors in priotity order.  The first one that:
@@ -169,7 +169,7 @@ namespace ASCOM.Wise40SafeToOperate
 
                 tessWRefresher,             // Refreshers
                 owlRefresher,
-                ardoRefresher,
+                ardoSensor,
             };
 
             _cumulativeSensors = new List<Sensor>();
@@ -927,7 +927,7 @@ namespace ASCOM.Wise40SafeToOperate
                     VantagePro2 = JsonConvert.DeserializeObject<WiseVantagePro.VantagePro2StationRawData>(WiseSite.och.Action("//Wise40.VantagePro2:raw-data", "")),
                     TessW = JsonConvert.DeserializeObject<WiseTessW.TessWStationRawData>(tessw.Action("raw-data", "")),
                     OWL = WiseSafeToOperate.owlRefresher.Digest() as OWLRefresher.OWLDigest,
-                    ARDO = ARDO.Instance.Digest,
+                    ARDO = ardoSensor.Digest() as ARDORawData,
                 };
 
                 return JsonConvert.SerializeObject(ret);

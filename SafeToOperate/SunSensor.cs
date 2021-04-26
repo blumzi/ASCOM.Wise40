@@ -1,15 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using ASCOM.Wise40;
 using ASCOM.Wise40.Common;
-using System.Threading;
-using System.Net.Http;
 using Newtonsoft.Json;
-using System.Runtime.InteropServices;
-using System.Net;
 
 namespace ASCOM.Wise40SafeToOperate
 {
@@ -69,24 +61,23 @@ namespace ASCOM.Wise40SafeToOperate
                 return null;
 
             double max = DateTime.Now.Hour < 12 ? _maxAtDawn : _maxAtDusk;
-            TimeSpan ts = DateTime.Now.Subtract(_lastDataRead);
-            bool stale = ts > _maxTimeBetweenIpGeolocationReads;
+            bool stale = periodicHttpFetcher.Stale;
             double elevation = SunElevation;
 
             Reading r = new Reading
             {
                 Stale = stale,
-                Usable = !Double.IsNaN(_elevation) && !stale,
+                Usable = !Double.IsNaN(elevation) && !stale,
                 Safe = !Double.IsNaN(elevation) && elevation <= max,
                 value = elevation,
-                timeOfLastUpdate = _lastDataRead,
-                secondsSinceLastUpdate = ts.TotalSeconds,
+                timeOfLastUpdate = periodicHttpFetcher.LastFetch,
+                secondsSinceLastUpdate = periodicHttpFetcher.Age.TotalSeconds,
             };
 
             if (Double.IsNaN(elevation))
                 _status = "Sun elevation is not available yet";
             else if (r.Stale)
-                _status = $"Sun elevation is stale (older than {_maxTimeBetweenIpGeolocationReads.ToMinimalString()})";
+                _status = $"Sun elevation is stale (older than {periodicHttpFetcher.MaxAge.ToMinimalString()})";
             else
                 _status = $"Sun elevation is {FormatVerbal(SunElevation)} (max: {FormatVerbal(max)})";
 
@@ -109,8 +100,8 @@ namespace ASCOM.Wise40SafeToOperate
 
             if (Double.IsNaN(currentElevation))
                 return "Sun elevation is not available yet";
-            else if (DateTime.Now.Subtract(_lastDataRead) > _maxTimeBetweenIpGeolocationReads)
-                return $"Sun elevation is stale (older than {_maxTimeBetweenIpGeolocationReads.ToMinimalString()})";
+            else if (periodicHttpFetcher.Stale)
+                return $"Sun elevation is stale (older than {periodicHttpFetcher.MaxAge.ToMinimalString()})";
 
             return currentElevation <= max ? "" : $"The Sun elevation ({FormatVerbal(currentElevation)}) is higher than {FormatVerbal(max)}";
         }
@@ -155,125 +146,32 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
-                return _elevation;
-            }
-        }
+                if (!periodicHttpFetcher.Alive)
+                    return Double.NaN;
 
-        private void PeriodicReader(object state)
-        {
-            if (Interlocked.CompareExchange(ref _readingInterlock, 1, 0) == 0)
-                return;
-            GetIpGeolocationInfo().GetAwaiter().GetResult();
-            Interlocked.Exchange(ref _readingInterlock, 0);
-        }
-
-        public async Task GetIpGeolocationInfo()
-        {
-            int maxTries = 10, tryNo;
-
-            DateTime start = DateTime.Now;
-            TimeSpan duration = TimeSpan.Zero;
-
-            HttpResponseMessage response = null;
-            for (tryNo = 0; tryNo < maxTries; tryNo++)
-            {
                 try
                 {
-                    response = await _client.GetAsync(URL).ConfigureAwait(false);
-                    duration = DateTime.Now.Subtract(start);
-                    break;
-                }
-                catch (HttpRequestException ex)
-                {
-                    duration = DateTime.Now.Subtract(start);
-                    #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety,
-                        $"GetIpGeolocationInfo: try#: {tryNo}, HttpRequestException: {ex.Message} at {ex.StackTrace}, duration: {duration}");
-                    #endregion
-                    continue;
-                }
-                catch (TaskCanceledException)
-                {
-                    duration = DateTime.Now.Subtract(start);
-                    #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety,
-                        $"GetIpGeolocationInfo: try#: {tryNo}, timedout, duration: {duration}");
-                    #endregion
-                    continue;
-                }
-                catch (Exception ex)
-                {
-                    duration = DateTime.Now.Subtract(start);
-                    #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety,
-                        $"GetIpGeolocationInfo: try#: {tryNo}, Exception: {ex.Message} at {ex.StackTrace}, duration: {duration}");
-                    #endregion
-                    continue;
-                }
-            }
+                    IpGeolocationInfo info = JsonConvert.DeserializeObject<IpGeolocationInfo>(
+                        periodicHttpFetcher.Result
+                        .Replace("\"-:-\"", "\"00:00\""));
 
-            if (response != null)
-            {
-                if (response.IsSuccessStatusCode)
-                {
-                    string content = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                    IpGeolocationInfo info;
-
-                    try
-                    {
-                        info = JsonConvert.DeserializeObject<IpGeolocationInfo>(content.Replace("\"-:-\"", "\"00:00\""));
-                        _elevation = info.sun_altitude;
-                        _lastDataRead = DateTime.Now;
-                        #region debug
-                        debugger.WriteLine(Debugger.DebugLevel.DebugSafety,
-                            "GetIpGeolocationInfo: success: got " +
-                            $"elevation: {Angle.FromDegrees(_elevation, Angle.AngleType.Alt).ToShortNiceString()} " +
-                            $"after {tryNo + 1} tries " +
-                            $"in {duration.ToMinimalString()}");
-                        #endregion
-                    }
-                    catch (Exception ex)
-                    {
-                        #region debug
-                        debugger.WriteLine(Debugger.DebugLevel.DebugSafety,
-                            $"GetIpGeolocationInfo: caught {ex.Message} at\n{ex.StackTrace}");
-                        #endregion
-                        return;
-                    }
-                    return;
+                    return info.sun_altitude;
                 }
-                else
+                catch (InvalidValueException)
                 {
-                    #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety,
-                        $"GetIpGeolocationInfo: try#: {tryNo}, HTTP failure: StatusCode: {response.StatusCode}, ReasonPhrase: {response.ReasonPhrase} duration: {duration}");
-                    #endregion
+                    return Double.NaN;
                 }
-            }
-            else
-            {
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugSafety,
-                    $"GetIpGeolocationInfo: try#: {tryNo}, HTTP response == null, duration: {duration}");
-                #endregion
             }
         }
 
         private const string apiKey = "d6ce0c7ecb5c451ba2b462dfb5750364";
-
         private static readonly string URL = "https://api.ipgeolocation.io/astronomy?" +
             $"apiKey={apiKey}&" +
             $"lat={WiseSite.Instance.Latitude.Degrees}&" +
             $"long={WiseSite.Instance.Longitude.Degrees}";
 
-        private DateTime _lastDataRead = DateTime.MinValue;
-        private TimeSpan _timeBetweenIpGeolocationReads = TimeSpan.FromMinutes(2);
-        private TimeSpan _maxTimeBetweenIpGeolocationReads = TimeSpan.FromMinutes(5);
-        public HttpClient _client;
-        public Timer _periodicReadTimer;
         private bool _initialized = false;
-        private int _readingInterlock = 0;
-        private static double _elevation = Double.NaN;
+        private static PeriodicHttpFetcher periodicHttpFetcher;
 
         public void Init()
         {
@@ -281,14 +179,13 @@ namespace ASCOM.Wise40SafeToOperate
                 return;
 
             WiseName = "SunSensor";
-
-            _client = new HttpClient();
-            _client.DefaultRequestHeaders.Accept.Add(
-                new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/html"));
-            _client.Timeout = TimeSpan.FromSeconds(10);
-
-            _periodicReadTimer = new Timer(new TimerCallback(PeriodicReader));
-            _periodicReadTimer.Change(0, (int) _timeBetweenIpGeolocationReads.TotalMilliseconds);
+            periodicHttpFetcher = new PeriodicHttpFetcher(
+                WiseName,
+                URL,
+                TimeSpan.FromMinutes(2),
+                tries: 3,
+                maxAgeMillis: (int) TimeSpan.FromMinutes(5).TotalMilliseconds
+            );
 
             _initialized = true;
         }
