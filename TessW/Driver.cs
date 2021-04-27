@@ -168,7 +168,7 @@ namespace ASCOM.Wise40.TessW
         {
             get
             {
-                return WiseTessW.driverDescription;
+                return tessw.DriverDescription;
             }
         }
 

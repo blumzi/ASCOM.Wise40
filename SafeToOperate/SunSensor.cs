@@ -70,7 +70,7 @@ namespace ASCOM.Wise40SafeToOperate
                 Usable = !Double.IsNaN(elevation) && !stale,
                 Safe = !Double.IsNaN(elevation) && elevation <= max,
                 value = elevation,
-                timeOfLastUpdate = periodicHttpFetcher.LastFetch,
+                timeOfLastUpdate = periodicHttpFetcher.LastSuccess,
                 secondsSinceLastUpdate = periodicHttpFetcher.Age.TotalSeconds,
             };
 

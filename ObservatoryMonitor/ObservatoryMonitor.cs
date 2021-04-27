@@ -168,6 +168,8 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             }
             catch (Exception ex)
             {
+                if (ex.InnerException != null)
+                    ex = ex.InnerException;
                 Log($"Cannot connect the remote {remoteDriver} client");
                 Log($"CheckConnections:Exception: {ex.Message} at\n{ex.StackTrace}", debugOnly: true);
                 return false;

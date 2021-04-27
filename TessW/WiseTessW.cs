@@ -22,19 +22,17 @@ namespace ASCOM.Wise40.TessW
 
         private readonly Debugger debugger = Debugger.Instance;
         private bool _connected = false;
+        private bool _enabled = false;
         private bool _initialized = false;
-        private int _reading = 0;
         public DateTime updatedAtUT;
 
         public WiseTessW() { }
         static WiseTessW() { }
 
-        private DateTime _lastDataRead = DateTime.MinValue;
+        private DateTime _lastDataFetch = DateTime.MinValue;
         private readonly Dictionary<string, string> sensorData = new Dictionary<string, string>();
-        public HttpClient _client;
-        public System.Threading.Timer _periodicWebReadTimer;
-        public string _uri;
-        public TimeSpan _interval = TimeSpan.FromMinutes(1);
+
+        private PeriodicHttpFetcher periodicHttpFetcher;
 
         private static readonly Lazy<WiseTessW> lazy = new Lazy<WiseTessW>(() => new WiseTessW()); // Singleton
         private const string defaultIPAddress = "192.168.1.100";
@@ -57,137 +55,58 @@ namespace ASCOM.Wise40.TessW
         /// </summary>
         public void Refresh()
         {
-            if (_lastDataRead != DateTime.MinValue && DateTime.Now.Subtract(_lastDataRead) < _interval)
-                return;
-
-            PeriodicReader(new object());
-        }
-
-        private void PeriodicReader(object state)
-        {
             if (!Connected || !Enabled)
                 return;
 
-            if (Interlocked.CompareExchange(ref _reading, 1, 0) == 1)
+            DateTime lastFetch = periodicHttpFetcher.LastSuccess;
+            if (lastFetch == DateTime.MinValue || lastFetch <= _lastDataFetch)
                 return;
 
-            bool succeeded = GetTessWInfo().GetAwaiter().GetResult();
-            if (succeeded)
-                Instance._lastDataRead = DateTime.Now;
+            string content = periodicHttpFetcher.Result;
 
-            Interlocked.Exchange(ref _reading, 0);
-        }
-
-        public static async Task<bool> GetTessWInfo()
-        {
-            bool succeeded = false;
-            int maxTries = 10, tryNo;
-
-            DateTime start = DateTime.Now;
-            TimeSpan duration = TimeSpan.Zero;
-
-            HttpResponseMessage response = null;
-            for (tryNo = 0; tryNo < maxTries; tryNo++)
-            {
-                try
-                {
-                    response = await Instance._client.GetAsync(Instance._uri).ConfigureAwait(false);
-                    duration = DateTime.Now.Subtract(start);
-                    break;
-                }
-                catch (HttpRequestException ex)
-                {
-                    duration = DateTime.Now.Subtract(start);
-                    #region debug
-                    Instance.debugger.WriteLine(Debugger.DebugLevel.DebugSafety,
-                        $"GetTessWInfo: try#: {tryNo}, HttpRequestException: {ex.Message} at {ex.StackTrace}, duration: {duration}");
-                    #endregion
-                    continue;
-                }
-                catch (TaskCanceledException)
-                {
-                    duration = DateTime.Now.Subtract(start);
-                    #region debug
-                    Instance.debugger.WriteLine(Debugger.DebugLevel.DebugSafety,
-                        $"GetTessWInfo: try#: {tryNo}, timedout.");
-                    #endregion
-                    continue;
-                }
-                catch (Exception ex)
-                {
-                    duration = DateTime.Now.Subtract(start);
-                    #region debug
-                    Instance.debugger.WriteLine(Debugger.DebugLevel.DebugSafety,
-                        $"GetTessWInfo: try#: {tryNo}, Exception: {ex.Message} at {ex.StackTrace}, duration: {duration}");
-                    #endregion
-                    continue;
-                }
-            }
-
-            if (response is object)
-            {
-                try
-                {
-                    response.EnsureSuccessStatusCode();
-                }
-                catch (HttpRequestException)
-                {
-                    return false;
-                }
-
-                string content = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-
-                /// <!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,user-scalable=0">
-                /// <title>STA mode</title></head>
-                /// <body><META HTTP-EQUIV="Refresh" Content= "4" > <h2>STARS4ALL<br>TESS-W Data</h2>
-                /// <h3> Mag.V :  0.00 mv/as2<br> Frec. : 50000.00 Hz<br> T. IR :   -1.91 &ordm;C<br> T. Sens:   38.91 &ordm;C<br><br> Wifi :   -95 dBm<br>mqtt sec.: 17246</h3>
-                /// <p><a href="/config">Show Settings</a></p></body></html>
-                Regex r = new Regex(@"Mag.V :\s+(?<mag>[\d.]+).*" +
-                                    @"Frec.[\s:]+(?<frec>[\d.-]+).*" +
-                                    @"T. IR[\s:]+(?<tempSky>[\d.-]+).*" +
-                                    @"T. Sens[\s:]+(?<tempAmb>[\d.-]+).*" /* +
+            /// <!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,user-scalable=0">
+            /// <title>STA mode</title></head>
+            /// <body><META HTTP-EQUIV="Refresh" Content= "4" > <h2>STARS4ALL<br>TESS-W Data</h2>
+            /// <h3> Mag.V :  0.00 mv/as2<br> Frec. : 50000.00 Hz<br> T. IR :   -1.91 &ordm;C<br> T. Sens:   38.91 &ordm;C<br><br> Wifi :   -95 dBm<br>mqtt sec.: 17246</h3>
+            /// <p><a href="/config">Show Settings</a></p></body></html>
+            Regex r = new Regex(@"Mag.V :\s+(?<mag>[\d.]+).*" +
+                                @"Frec.[\s:]+(?<frec>[\d.-]+).*" +
+                                @"T. IR[\s:]+(?<tempSky>[\d.-]+).*" +
+                                @"T. Sens[\s:]+(?<tempAmb>[\d.-]+).*" /* +
                                     @"Wifi[\s:]+(?<wifi>[\d.-]+).*" +
                                     @"mqtt sec.[\s:]+(?<mqtt>\d+).*" */);
-                Match m = r.Match(content);
-                if (m.Success)
-                {
-                    Instance.sensorData["mag"] = m.Result("${mag}");
-                    Instance.sensorData["frec"] = m.Result("${frec}");
-                    Instance.sensorData["tempSky"] = m.Result("${tempSky}");
-                    Instance.sensorData["tempAmb"] = m.Result("${tempAmb}");
-                    //Instance.sensorData["wifi"] = m.Result("${wifi}");
-                    //Instance.sensorData["mqtt"] = m.Result("${mqtt}");
-
-                    double tAmb = Convert.ToDouble(Instance.sensorData["tempAmb"]);
-                    double tSky = Convert.ToDouble(Instance.sensorData["tempSky"]);
-
-                    double percent = 100 - (3 * (tAmb - tSky));
-                    Instance.sensorData["cloudCover"] = (Math.Max(percent, 0.0)).ToString();
-
-                    Instance.updatedAtUT = DateTime.UtcNow;
-
-                    Instance._weatherLogger?.Log(new Dictionary<string, string>()
-                        {
-                            ["Temperature"] = Instance.sensorData["tempAmb"],
-                            ["SkyAmbientTemp"] = Instance.sensorData["tempSky"],
-                            ["CloudCover"] = Instance.sensorData["cloudCover"],
-                        }, Instance.updatedAtUT);
-
-                    succeeded = true;
-                    #region debug
-                    Instance.debugger.WriteLine(Debugger.DebugLevel.DebugSafety,
-                        $"GetTessWInfo: try#: {tryNo}, Success, content: [{content}], duration: {duration}");
-                    #endregion
-                }
-            }
-            else
+            Match m = r.Match(content);
+            if (m.Success)
             {
+                Instance.sensorData["mag"] = m.Result("${mag}");
+                Instance.sensorData["frec"] = m.Result("${frec}");
+                Instance.sensorData["tempSky"] = m.Result("${tempSky}");
+                Instance.sensorData["tempAmb"] = m.Result("${tempAmb}");
+                //Instance.sensorData["wifi"] = m.Result("${wifi}");
+                //Instance.sensorData["mqtt"] = m.Result("${mqtt}");
+
+                double tAmb = Convert.ToDouble(Instance.sensorData["tempAmb"]);
+                double tSky = Convert.ToDouble(Instance.sensorData["tempSky"]);
+
+                double percent = 100 - (3 * (tAmb - tSky));
+                Instance.sensorData["cloudCover"] = (Math.Max(percent, 0.0)).ToString();
+
+                Instance.updatedAtUT = DateTime.UtcNow;
+
+                Instance._weatherLogger?.Log(new Dictionary<string, string>()
+                {
+                    ["Temperature"] = Instance.sensorData["tempAmb"],
+                    ["SkyAmbientTemp"] = Instance.sensorData["tempSky"],
+                    ["CloudCover"] = Instance.sensorData["cloudCover"],
+                }, Instance.updatedAtUT);
+
                 #region debug
                 Instance.debugger.WriteLine(Debugger.DebugLevel.DebugSafety,
-                    $"GetTessWInfo: try#: {tryNo}, HTTP response == null, duration: {DateTime.Now.Subtract(start)}");
+                    $"TessW.Refresh: Success, content: [{content}], duration: {periodicHttpFetcher.Duration}");
                 #endregion
+
+                _lastDataFetch = lastFetch;
             }
-            return succeeded;
         }
 
         public void Init()
@@ -196,21 +115,14 @@ namespace ASCOM.Wise40.TessW
                 return;
 
             WiseName = "TessW";
-            _periodicWebReadTimer = new System.Threading.Timer(PeriodicReader);
             ReadProfile();
-
-            _client = new HttpClient();
-            _client.DefaultRequestHeaders.Accept.Add(
-                new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/html"));
-            //_client.DefaultRequestHeaders.ConnectionClose = false;
-            _client.Timeout = TimeSpan.FromSeconds(10);
-
-            _uri = String.Format("http://{0}", IpAddress);
-
-            _periodicWebReadTimer = new System.Threading.Timer(new TimerCallback(PeriodicReader));
-
-            Refresh();
+            periodicHttpFetcher = new PeriodicHttpFetcher(
+                WiseName,
+                $"http://{IpAddress}",
+                TimeSpan.FromMinutes(1)
+            );
             _weatherLogger = new WeatherLogger("TESS-w");
+            Refresh();
 
             _initialized = true;
         }
@@ -231,18 +143,10 @@ namespace ASCOM.Wise40.TessW
 
                 ActivityMonitor.Event(new Event.DriverConnectEvent(Const.WiseDriverID.TessW, value, line: ActivityMonitor.Tracer.safety.Line));
 
-                if (Enabled)
-                    _periodicWebReadTimer.Change(0, (int)_interval.TotalMilliseconds);
-                else
-                    _periodicWebReadTimer.Change(Timeout.Infinite, Timeout.Infinite);
-            }
-        }
-
-        public string Description
-        {
-            get
-            {
-                return driverDescription;
+                if (_connected && Enabled)
+                    periodicHttpFetcher.Enabled = true;
+                else if (!_connected || !Enabled)
+                    periodicHttpFetcher.Enabled = false;
             }
         }
 
@@ -293,7 +197,7 @@ namespace ASCOM.Wise40.TessW
             }
         }
 
-        public static string DriverDescription
+        public string DriverDescription
         {
             get
             {
@@ -584,7 +488,7 @@ namespace ASCOM.Wise40.TessW
 
             Refresh();
 
-            return DateTime.Now.Subtract(_lastDataRead).TotalSeconds;
+            return DateTime.Now.Subtract(_lastDataFetch).TotalSeconds;
         }
 
         /// <summary>
@@ -627,13 +531,21 @@ namespace ASCOM.Wise40.TessW
 
         public override bool Enabled
         {
-            get { return true; }
+            get {
+                return _enabled;
+            }
+
             set
             {
-                if (value)
-                    _periodicWebReadTimer.Change(0, (int)_interval.TotalMilliseconds);
-                else
-                    _periodicWebReadTimer.Change(Timeout.Infinite, Timeout.Infinite);
+                if (periodicHttpFetcher != null)
+                {
+                    if (value && Connected)
+                        periodicHttpFetcher.Enabled = true;
+                    else if (!value || !Connected)
+                        periodicHttpFetcher.Enabled = false;
+                }
+
+                _enabled = value;
             }
         }
 

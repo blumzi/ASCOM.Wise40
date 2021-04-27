@@ -11,16 +11,18 @@ namespace ASCOM.Wise40.Common
 {
     public class PeriodicHttpFetcher
     {
-        private readonly HttpClient _client;
+        private HttpClient _client = null;
         private static readonly Debugger debugger = Debugger.Instance;
         private readonly string _url;
         private readonly HttpMethod _method;
         private readonly HttpContent _content;
         private readonly Timer _timer;
-        private readonly TimeSpan _period;
         private string _result;
         private readonly int _tries;
         private bool _oneshot = false;
+        private TimeSpan _period;
+        private bool _clientPropertiesHaveChanged = false;
+        private bool _enabled;
 
         public PeriodicHttpFetcher(string name,
             string url,
@@ -32,12 +34,8 @@ namespace ASCOM.Wise40.Common
             string method = "GET",
             string content = null)
         {
-            _client = new HttpClient();
-            _client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/html"));
-            _client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
-            _client.DefaultRequestHeaders.ConnectionClose = false;
-            _client.Timeout = TimeSpan.FromMilliseconds(period.TotalMilliseconds * 0.8);    // 80% of period
-            _period = period;
+            Period = period;
+            MakeHttpClient();
             _tries = tries;
             _oneshot = oneshot;
             MaxAge = (maxAgeMillis == 0) ?
@@ -56,8 +54,22 @@ namespace ASCOM.Wise40.Common
             if (_method == HttpMethod.Put)
                 _content = new StringContent(content);
             _url = url;
+            _enabled = true;
             _timer = new Timer(OnTimer, this, dueMillis, Timeout.Infinite);
             Name = $"PeriodicHttpFetcher(\"{name}\")";
+        }
+
+        private void MakeHttpClient()
+        {
+            _client?.Dispose();
+
+            _client = new HttpClient();
+            _client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/html"));
+            _client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+            _client.DefaultRequestHeaders.ConnectionClose = false;
+            _client.Timeout = TimeSpan.FromMilliseconds(Period.TotalMilliseconds * .8);
+
+            _clientPropertiesHaveChanged = false;
         }
 
         private static void OnTimer(object state)
@@ -77,7 +89,7 @@ namespace ASCOM.Wise40.Common
                 TimeSpan age = Age;
                 string op = Name + ".Response.get";
 
-                if (LastFetch == DateTime.MinValue)
+                if (LastSuccess == DateTime.MinValue)
                     Exceptor.Throw<InvalidValueException>(op, "Value never fetched!");
                 else if (Stale)
                     Exceptor.Throw<InvalidValueException>(op, $"Value is stale: {age.ToMinimalString()}");
@@ -91,13 +103,16 @@ namespace ASCOM.Wise40.Common
             }
         }
 
-        public DateTime LastFetch { get; set; } = DateTime.MinValue;
+        public DateTime LastSuccess { get; set; } = DateTime.MinValue;
+
+        public DateTime LastAttempt { get; set; } = DateTime.MinValue;
+        public DateTime LastFailure { get; set; } = DateTime.MinValue;
 
         public TimeSpan Age
         {
             get
             {
-                return DateTime.Now.Subtract(LastFetch);
+                return DateTime.Now.Subtract(LastSuccess);
             }
         }
 
@@ -118,10 +133,15 @@ namespace ASCOM.Wise40.Common
             Alive = false;
             CauseOfDeath = null;
 
+            if (_clientPropertiesHaveChanged)
+                MakeHttpClient();
+
             for (Tries = 0; Tries < _tries; Tries++)
             {
                 DateTime start = DateTime.Now;
+                LastAttempt = start;
                 Duration = TimeSpan.Zero;
+
                 try
                 {
                     using (HttpRequestMessage httpRequest = new HttpRequestMessage
@@ -138,7 +158,7 @@ namespace ASCOM.Wise40.Common
                             using (HttpContent content = response.Content)
                             {
                                 Result = content.ReadAsStringAsync().Result;
-                                LastFetch = DateTime.Now;
+                                LastSuccess = DateTime.Now;
                                 Alive = true;
                                 Successes++;
                                 Duration = DateTime.Now.Subtract(start);
@@ -160,6 +180,7 @@ namespace ASCOM.Wise40.Common
                         CauseOfDeath = "Timeout";
                     }
                     Failures++;
+                    LastFailure = DateTime.Now;
                 }
                 catch (HttpRequestException ex)
                 {
@@ -168,6 +189,7 @@ namespace ASCOM.Wise40.Common
                     #endregion
                     CauseOfDeath = $"HTTP error ({ex.Message})";
                     Failures++;
+                    LastFailure = DateTime.Now;
                 }
                 catch (Exception ex)
                 {
@@ -178,19 +200,37 @@ namespace ASCOM.Wise40.Common
                     #endregion
                     CauseOfDeath = $"Error ({ex.Message})";
                     Failures++;
+                    LastFailure = DateTime.Now;
                 }
                 finally
                 {
+                    DateTime now = DateTime.Now;
+
+                    LastAttempt = now;
                     if (Duration == TimeSpan.Zero)      // last transaction threw an exception
-                        Duration = DateTime.Now.Subtract(start);
+                        Duration = now.Subtract(start);
                     try
                     {
                         _timer.Change(_oneshot ?
                             Timeout.Infinite :
-                            (int)_period.TotalMilliseconds, Timeout.Infinite);
+                            (int)Period.TotalMilliseconds, Timeout.Infinite);
                     }
                     catch (ObjectDisposedException) { }
                 }
+            }
+        }
+
+        public TimeSpan Period
+        {
+            get
+            {
+                return _period;
+            }
+
+            set
+            {
+                _period = value;
+                _clientPropertiesHaveChanged = true;
             }
         }
 
@@ -213,5 +253,29 @@ namespace ASCOM.Wise40.Common
         public int Tries { get; set; } = 0;
 
         public string CauseOfDeath { get; set; } = null;
+
+        public bool Enabled
+        {
+            get
+            {
+                return _enabled;
+            }
+
+            set
+            {
+                bool wasEnabled = _enabled;
+
+                if (wasEnabled && !value)
+                {
+                    _timer.Change(Timeout.Infinite, Timeout.Infinite);
+                }
+                else if (!wasEnabled && value)
+                {
+                    _timer.Change((int) Period.TotalMilliseconds, Timeout.Infinite);
+                }
+
+                _enabled = value;
+            }
+        }
     }
 }

@@ -47,7 +47,7 @@ namespace ASCOM.Wise40SafeToOperate
 
         public override Reading GetReading()
         {
-            DateTime lastFetch = periodicHttpFetcher.LastFetch;
+            DateTime lastFetch = periodicHttpFetcher.LastSuccess;
 
             if (lastFetch > _lastFetch)
             {
