@@ -130,9 +130,6 @@ namespace ASCOM.Wise40.Common
             string op = $"{Name}.Fetch() ";
             #endregion
 
-            Alive = false;
-            CauseOfDeath = null;
-
             if (_clientPropertiesHaveChanged)
                 MakeHttpClient();
 
@@ -160,6 +157,7 @@ namespace ASCOM.Wise40.Common
                                 Result = content.ReadAsStringAsync().Result;
                                 LastSuccess = DateTime.Now;
                                 Alive = true;
+                                CauseOfDeath = null;
                                 Successes++;
                                 Duration = DateTime.Now.Subtract(start);
                                 #region debug
@@ -177,6 +175,7 @@ namespace ASCOM.Wise40.Common
                         #region debug
                         debugger.WriteLine(Debugger.DebugLevel.DebugWise, $"{op}: Timedout: {ex.Message} at\n{ex.StackTrace}");
                         #endregion
+                        Alive = false;
                         CauseOfDeath = "Timeout";
                     }
                     Failures++;
@@ -187,6 +186,7 @@ namespace ASCOM.Wise40.Common
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugWise, $"{op}: Network error: {ex.Message} at\n{ex.StackTrace}");
                     #endregion
+                    Alive = false;
                     CauseOfDeath = $"HTTP error ({ex.Message})";
                     Failures++;
                     LastFailure = DateTime.Now;
@@ -198,6 +198,7 @@ namespace ASCOM.Wise40.Common
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugWise, $"{op}: Caught: {ex.Message} at\n{ex.StackTrace}");
                     #endregion
+                    Alive = false;
                     CauseOfDeath = $"Error ({ex.Message})";
                     Failures++;
                     LastFailure = DateTime.Now;
