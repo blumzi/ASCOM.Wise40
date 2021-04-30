@@ -86,13 +86,12 @@ namespace ASCOM.Wise40.Common
         {
             get
             {
-                TimeSpan age = Age;
                 string op = Name + ".Response.get";
 
                 if (LastSuccess == DateTime.MinValue)
                     Exceptor.Throw<InvalidValueException>(op, "Value never fetched!");
                 else if (Stale)
-                    Exceptor.Throw<InvalidValueException>(op, $"Value is stale: {age.ToMinimalString()}");
+                    Exceptor.Throw<InvalidValueException>(op, $"Value is stale: age: {Age.ToMinimalString()} > {MaxAge.ToMinimalString()}");
 
                 return _result;
             }
