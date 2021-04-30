@@ -129,7 +129,7 @@ namespace Dash
 
         private void buttonStop_Click(object sender, EventArgs e)
         {
-            wisetele.pulsing.Abort();
+            wisetele.pulsing.Abort("Stopped by user");
         }
     }
 }
