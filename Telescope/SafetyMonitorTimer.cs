@@ -17,66 +17,65 @@ namespace ASCOM.Wise40 //.Telescope
     {
         private static readonly WiseTele wisetele = WiseTele.Instance;
         private readonly Timer _timer;
-        private readonly int _dueTime, _period;
+        private readonly int _period;
         private bool _enabled;
-        public enum ActionWhenNotSafe {  None, StopMotors, Backoff };
+        public enum ActionWhenNotSafe {  None, Stop, Backoff };
 
         public ActionWhenNotSafe WhenNotSafe { get; set; } = ActionWhenNotSafe.None;
 
-        private static long _active = 0;
-
         private void SafetyChecker(object StateObject)
         {
-            wisetele.safetyMonitorTimer.Enabled = false;
+            if (!Enabled || WhenNotSafe == ActionWhenNotSafe.None)
+                return;
 
             string reason = wisetele.SafeAtCoordinates(
                 Angle.RaFromHours(wisetele.RightAscension),
                 Angle.DecFromDegrees(wisetele.Declination));
 
-            if (string.IsNullOrEmpty(reason) && !wisetele.safetyMonitorTimer.Enabled)
-            {
-                wisetele.safetyMonitorTimer.Enabled = true;
-                return;
-            }
-
-            if (WhenNotSafe == ActionWhenNotSafe.None)
+            if (string.IsNullOrEmpty(reason))
                 return;
 
-            if (Interlocked.CompareExchange(ref _active, 1, 0) == 1)
+            string op = $"SafetyChecker: reason: {reason}";
+            if (!Hardware.Hardware.ComputerHasControl)
             {
                 #region debug
-                WiseTele.debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"SafetyChecker: already active (action: {WhenNotSafe}, reason: {reason})");
+                WiseTele.debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: Skipped: No computer control!");
                 #endregion
                 return;
             }
 
             #region debug
-            WiseTele.debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"SafetyChecker: activated (action: {WhenNotSafe}, reason: {reason})");
+            WiseTele.debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: activated (action: {WhenNotSafe})");
             #endregion
 
-            wisetele.AbortSlew($"SafetyChecker: ({reason})");
-            if (WhenNotSafe == ActionWhenNotSafe.Backoff)
-                wisetele.Backoff(reason);
+            wisetele.RecoveringSafety = true;
 
-            Interlocked.Exchange(ref _active, 0);
-
-            wisetele.safetyMonitorTimer.Enabled = true;
-        }
-
-        public bool Active
-        {
-            get
+            if (WhenNotSafe == ActionWhenNotSafe.Stop || WhenNotSafe == ActionWhenNotSafe.Backoff)
             {
-                return Interlocked.Read(ref _active) == 1;
+                if (wisetele.Slewing)
+                    wisetele.AbortSlew(op);
+
+                if (wisetele.IsPulseGuiding)
+                    wisetele.AbortPulseGuiding(op);
+
+                if (wisetele.Tracking)
+                    wisetele.Tracking = false;
             }
+
+            if (WhenNotSafe == ActionWhenNotSafe.Backoff)
+                wisetele.Backoff(op);
+
+            wisetele.RecoveringSafety = false;
+
+            if (Enabled)
+                _timer.Change(_period, Timeout.Infinite);
         }
 
-        public SafetyMonitorTimer(int dueTime = 1000, int period = 1000)
+        public SafetyMonitorTimer(int periodMillis = 1000)
         {
             _timer = new Timer(new TimerCallback(SafetyChecker));
-            this._dueTime = dueTime;
-            this._period = period;
-            _enabled = false;
+            this._period = periodMillis;
+            Enabled = false;
         }
 
         public bool Enabled
@@ -90,7 +89,7 @@ namespace ASCOM.Wise40 //.Telescope
             {
                 _enabled = value;
                 if (_enabled && !WiseTele.BypassCoordinatesSafety)
-                    _timer.Change(_dueTime, _period);
+                    _timer.Change(_period, Timeout.Infinite);
                 else
                     _timer.Change(Timeout.Infinite, Timeout.Infinite);
             }
