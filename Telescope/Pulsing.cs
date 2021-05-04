@@ -112,17 +112,19 @@ namespace ASCOM.Wise40
             }
         }
 
-        public void Abort()
+        public void Abort(string reason)
         {
             pulseGuideCTS.Cancel();
             pulseGuideCTS = new CancellationTokenSource();
             #region debug
-            debugger.WriteLine(Common.Debugger.DebugLevel.DebugLogic, "Aborted PulseGuiding");
+            debugger.WriteLine(Common.Debugger.DebugLevel.DebugLogic, $"Aborted PulseGuiding (reason: {reason})");
             #endregion
         }
 
         public void Start(GuideDirections direction, int duration)
         {
+            string op = $"Pulsing.Start(direction: {direction}, duration: {duration}) ";
+
             PulserTask pulserTask = new PulserTask() {
                 _axis = guideDirection2Axis[direction],
                 _duration = duration,
@@ -141,10 +143,9 @@ namespace ASCOM.Wise40
                 catch (Exception ex)
                 {
                     #region debug
-                    debugger.WriteLine(Common.Debugger.DebugLevel.DebugLogic,
-                        "Caught exception: {0}, aborting pulse guiding", ex.Message);
+                    debugger.WriteLine(Common.Debugger.DebugLevel.DebugLogic, $"{op}: Caught: {ex.Message} at {ex.StackTrace}");
                     #endregion
-                    Abort();
+                    Abort($"{op}: Caught: {ex.Message} at {ex.StackTrace}");
                     Deactivate(pulserTask, Activity.State.Aborted, $"Caught exception: {ex.Message}\n at {ex.StackTrace}\n");
                 }
             }, pulseGuideCT).ContinueWith((t) =>
