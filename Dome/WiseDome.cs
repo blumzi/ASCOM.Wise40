@@ -233,7 +233,7 @@ namespace ASCOM.Wise40
                 {
                     RestoreCalibrationData();
 
-                    if (!Calibrated && _autoCalibrate)
+                    if (!Calibrated && _autoCalibrate && Hardware.Hardware.ComputerHasControl)
                         Task.Run(() => StartFindingHome());
                 }
 
@@ -518,7 +518,7 @@ namespace ASCOM.Wise40
                 leftPin.SetOn();
             } catch (Hardware.Hardware.MaintenanceModeException)
             {
-                return;
+                throw;
             }
 
             SetDomeState(DomeState.MovingCCW);
@@ -625,14 +625,23 @@ namespace ASCOM.Wise40
         {
             get
             {
-                Angle ret;
+                Angle ret = Angle.AzFromDegrees(double.NaN);
 
                 if (!Calibrated)
                 {
                     if (_autoCalibrate)
-                        StartFindingHome();
+                    {
+                        try
+                        {
+                            StartFindingHome();
+                        }
+                        catch
+                        {
+                            return ret;
+                        }
+                    }
                     else
-                        return Angle.AzFromDegrees(double.NaN);
+                        return ret;
                 }
 
                 ret = domeEncoder.Azimuth;
@@ -695,10 +704,13 @@ namespace ASCOM.Wise40
 
         public void StartFindingHome()
         {
+            if (Hardware.Hardware.MaintenanceMode)
+                Exceptor.Throw<InvalidOperationException>("StartFindingHome", "Cannot move, MAINTENANCE MODE is active!");
+
             if (Calibrated)
             {
                 //
-                // Consider safety only AFTER calibration, otherwise we ca never produce
+                // Consider safety only AFTER calibration, otherwise we can never produce
                 //  an Azimuth reading
                 //
                 if (ShutterIsMoving)
@@ -782,6 +794,9 @@ namespace ASCOM.Wise40
         {
             Angle targetAng = new Angle(degrees, Angle.AngleType.Az);
             string op = $"SlewToAzimuth({targetAng.ToShortNiceString()}, reason: {reason})";
+
+            if (Hardware.Hardware.MaintenanceMode)
+                Exceptor.Throw<InvalidOperationException>(op, "MAINTENENCE MODE is active");
 
             if (Slaved)
                 Exceptor.Throw<InvalidOperationException>(op, "Dome is Slaved");
@@ -885,18 +900,7 @@ namespace ASCOM.Wise40
                 if (wisedomeshutter.periodicHttpFetcher.LastFailure != null)
                     _sinceLastFailure = now.Subtract(wisedomeshutter.periodicHttpFetcher.LastFailure);
 
-                return JsonConvert.SerializeObject(new DomeDigest()
-                {
-                    Azimuth = Azimuth.Degrees,
-                    TargetAzimuth = _targetAz == null ? Const.noTarget : _targetAz.Degrees,
-                    Calibrated = Calibrated,
-                    Status = Status,
-                    Vent = Vent,
-                    Projector = Projector,
-                    AtPark = AtPark,
-                    Slewing = Slewing,
-                    DirectionMotorsAreActive = DirectionMotorsAreActive,
-                    Shutter = new ShutterDigest()
+                ShutterDigest shutterDigest = new ShutterDigest()
                     {
                         Status = ShutterStatusString,
                         State = ShutterState,
@@ -909,8 +913,33 @@ namespace ASCOM.Wise40
                         FailedCommunicationAttempts = wisedomeshutter.periodicHttpFetcher.Failures,
                         TimeSinceLastSuccessfullReading = _sinceLastSuccess,
                         TimeSinceLastFailedReading = _sinceLastFailure,
-                    }
-                });
+                    };
+
+                double azimuth = Azimuth.Degrees;
+                double targetAzimuth = _targetAz == null ? Const.noTarget : _targetAz.Degrees;
+                bool calibrated = Calibrated;
+                string status = Status;
+                bool projector = Projector;
+                bool vent = Vent;
+                bool atPark = AtPark;
+                bool slewing = Slewing;
+                bool directionMotorsAreActive = DirectionMotorsAreActive;
+
+                DomeDigest domeDigest = new DomeDigest()
+                {
+                    Azimuth = azimuth,
+                    TargetAzimuth = targetAzimuth,
+                    Calibrated = calibrated,
+                    Status = status,
+                    Vent = vent,
+                    Projector = projector,
+                    AtPark = atPark,
+                    Slewing = slewing,
+                    DirectionMotorsAreActive = directionMotorsAreActive,
+                    Shutter = shutterDigest,
+                };
+
+                return JsonConvert.SerializeObject(domeDigest);
             }
         }
 
