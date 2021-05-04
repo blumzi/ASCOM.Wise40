@@ -81,6 +81,7 @@ namespace ASCOM.Wise40.Hardware
         {
             get
             {
+                Instance.Init();
                 return computerControlPin.isOn;
             }
         }
