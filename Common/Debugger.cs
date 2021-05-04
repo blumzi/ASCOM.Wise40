@@ -144,8 +144,17 @@ namespace ASCOM.Wise40.Common
             if (!_initialized || !Debugging(level))
                 return;
 
+            string msg = null;
+
             DateTime utcNow = DateTime.UtcNow;
-            string msg = string.Format(fmt, o);
+            try
+            {
+                msg = string.Format(fmt, o);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"exception: {ex.Message}\nfmt: \"{fmt.Normalize()}\", o.Length: {o.Length}");
+            }
             string taskID = (Task.CurrentId == null) ? "-1" : (Task.CurrentId ?? -1).ToString();
 
             string line = string.Format("{0} UT {1,-18} {2,-16} {3}",
@@ -178,7 +187,7 @@ namespace ASCOM.Wise40.Common
                     Trace.WriteLine("##\n");
                 }
 
-                Trace.WriteLine(line);
+                Trace.WriteLine(line.Normalize());
             }
 
             if (listBox != null && _appendToWindow)
