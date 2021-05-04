@@ -156,9 +156,9 @@ namespace ASCOM.Wise40
                 debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "DomeSlaveDriver: Waiting for dome to findHome");
                 #endregion
             }
-            catch
+            catch (Exception ex)
             {
-                wisedome.AbortSlew("(FindHome)");
+                wisedome.AbortSlew($"(FindHome): Caught: {ex.Message}");
             }
 
             #region debug
