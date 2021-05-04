@@ -16,6 +16,7 @@ using ASCOM.Wise40SafeToOperate;
 
 using ASCOM.Utilities;
 using Newtonsoft.Json;
+using TA.WinFormsControls;
 
 namespace Dash
 {
@@ -149,7 +150,7 @@ namespace Dash
 
                 annunciatorReadonly.Text = $"Readonly mode ({WiseSite.OperationalMode})";
                 annunciatorReadonly.ForeColor = warningColor;
-                annunciatorReadonly.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+                annunciatorReadonly.Cadence = CadencePattern.SteadyOn;
 
                 pictureBoxStop.Visible = false;
             }
@@ -277,6 +278,9 @@ namespace Dash
                 }
                 catch (Exception ex)
                 {
+                    if (ex.InnerException != null)
+                        ex = ex.InnerException;
+
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"RefreshDisplay: Caught: {ex.Message} at\n{ex.StackTrace}");
                     #endregion
@@ -292,6 +296,9 @@ namespace Dash
                 }
                 catch (Exception ex)
                 {
+                    if (ex.InnerException != null)
+                        ex = ex.InnerException;
+
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"RefreshDisplay: Caught: {ex.Message} at\n{ex.StackTrace}");
                     #endregion
@@ -307,6 +314,9 @@ namespace Dash
                 }
                 catch (Exception ex)
                 {
+                    if (ex.InnerException != null)
+                        ex = ex.InnerException;
+
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"RefreshDisplay: Caught: {ex.Message} at\n{ex.StackTrace}");
                     #endregion
@@ -322,6 +332,9 @@ namespace Dash
                 }
                 catch (Exception ex)
                 {
+                    if (ex.InnerException != null)
+                        ex = ex.InnerException;
+
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"RefreshDisplay: Caught: {ex.Message} at\n{ex.StackTrace}");
                     #endregion
@@ -342,6 +355,9 @@ namespace Dash
                 }
                 catch (Exception ex)
                 {
+                    if (ex.InnerException != null)
+                        ex = ex.InnerException;
+
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"RefreshDisplay: Caught: {ex.Message} at\n{ex.StackTrace}");
                     #endregion
@@ -473,9 +489,9 @@ namespace Dash
             {
                 buttonTelescopePark.Text = telescopeDigest.AtPark ? "Unpark" : "Park";
 
-                annunciatorTrack.Cadence = telescopeDigest.Tracking ? ASCOM.Controls.CadencePattern.SteadyOn : ASCOM.Controls.CadencePattern.SteadyOff;
-                annunciatorSlew.Cadence = telescopeDigest.Slewing ? ASCOM.Controls.CadencePattern.SteadyOn : ASCOM.Controls.CadencePattern.SteadyOff;
-                annunciatorPulse.Cadence = telescopeDigest.PulseGuiding ? ASCOM.Controls.CadencePattern.SteadyOn : ASCOM.Controls.CadencePattern.SteadyOff;
+                annunciatorTrack.Cadence = telescopeDigest.Tracking ? CadencePattern.SteadyOn : CadencePattern.SteadyOff;
+                annunciatorSlew.Cadence = telescopeDigest.Slewing ? CadencePattern.SteadyOn : CadencePattern.SteadyOff;
+                annunciatorPulse.Cadence = telescopeDigest.PulseGuiding ? CadencePattern.SteadyOn : CadencePattern.SteadyOff;
 
                 double primaryRate = Const.rateStopped;
                 double secondaryRate = Const.rateStopped;
@@ -490,21 +506,21 @@ namespace Dash
                 else if (telescopeDigest.SecondaryPins.SetPin)
                     secondaryRate = telescopeDigest.SlewPin ? Const.rateSlew : Const.rateSet;
 
-                annunciatorRARateSlew.Cadence = annunciatorRARateSet.Cadence = annunciatorRARateGuide.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+                annunciatorRARateSlew.Cadence = annunciatorRARateSet.Cadence = annunciatorRARateGuide.Cadence = CadencePattern.SteadyOff;
                 if (primaryRate == Const.rateSlew)
-                    annunciatorRARateSlew.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+                    annunciatorRARateSlew.Cadence = CadencePattern.SteadyOn;
                 else if (primaryRate == Const.rateSet)
-                    annunciatorRARateSet.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+                    annunciatorRARateSet.Cadence = CadencePattern.SteadyOn;
                 else if (primaryRate == Const.rateGuide)
-                    annunciatorRARateGuide.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+                    annunciatorRARateGuide.Cadence = CadencePattern.SteadyOn;
 
-                annunciatorDECRateSlew.Cadence = annunciatorDECRateSet.Cadence = annunciatorDECRateGuide.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+                annunciatorDECRateSlew.Cadence = annunciatorDECRateSet.Cadence = annunciatorDECRateGuide.Cadence = CadencePattern.SteadyOff;
                 if (secondaryRate == Const.rateSlew)
-                    annunciatorDECRateSlew.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+                    annunciatorDECRateSlew.Cadence = CadencePattern.SteadyOn;
                 else if (secondaryRate == Const.rateSet)
-                    annunciatorDECRateSet.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+                    annunciatorDECRateSet.Cadence = CadencePattern.SteadyOn;
                 else if (secondaryRate == Const.rateGuide)
-                    annunciatorDECRateGuide.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+                    annunciatorDECRateGuide.Cadence = CadencePattern.SteadyOn;
             }
             #endregion
 
@@ -544,19 +560,21 @@ namespace Dash
             #region Moon
             if (telescopeDigest != null)
             {
-                labelMoonIllum.Text = (Moon.Illumination * 100).ToString("F0") + "%";
+                labelMoonIllum.Text = (Moon.Instance.Illumination * 100).ToString("F0") + "%";
                 labelMoonIllum.ForeColor = safeColor;
 
-                Angle distance = Moon.Distance(telescopeRa.Radians, telescopeDec.Radians);
-                if (distance == Angle.Invalid)
+                try
+                {
+                    Angle distance = Moon.Instance.Distance(telescopeRa.Radians, telescopeDec.Radians);
+                    Angle dist = Angle.FromDegrees(distance.Degrees, Angle.AngleType.Az);
+
+                    labelMoonDist.Text = dist.ToShortNiceString();
+                    toolTip.SetToolTip(labelMoonDist, "Calculated angular distance between the telescope and the Moon");
+                }
+                catch (InvalidOperationException)
                 {
                     labelMoonDist.Text = "unknown";
                     toolTip.SetToolTip(labelMoonDist, "Moon distance could not be calculated!");
-                }
-                else
-                {
-                    labelMoonDist.Text = distance.ToShortNiceString();
-                    toolTip.SetToolTip(labelMoonDist, "Calculated angular distance between the telescope and the Moon");
                 }
             }
             else
@@ -592,7 +610,7 @@ namespace Dash
                 if (safetooperateDigest.ComputerControl.Safe)
                 {
                     annunciatorComputerControl.Text = "Computer has control";
-                    annunciatorComputerControl.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+                    annunciatorComputerControl.Cadence = CadencePattern.SteadyOff;
                     tip = "The computer control switch is ON";
 
                     if (WiseSite.OperationalMode == WiseSite.OpMode.WISE)
@@ -606,7 +624,7 @@ namespace Dash
                 else
                 {
                     annunciatorComputerControl.Text = "No computer control";
-                    annunciatorComputerControl.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+                    annunciatorComputerControl.Cadence = CadencePattern.SteadyOn;
                     tip = "The computer control switch is OFF!";
 
                     foreach (Control c in readonlyControls)
@@ -624,7 +642,7 @@ namespace Dash
                 {
                     text = "Human Intervention";
                     annunciatorSafeToOperate.ForeColor = unsafeColor;
-                    annunciatorSafeToOperate.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+                    annunciatorSafeToOperate.Cadence = CadencePattern.SteadyOn;
                     severity = Statuser.Severity.Error;
                     tip = String.Join("\n", safetooperateDigest.UnsafeReasons).Replace(Const.recordSeparator, "\n  ");
                 }
@@ -632,7 +650,7 @@ namespace Dash
                 {
                     text = "Safety bypassed";
                     annunciatorSafeToOperate.ForeColor = warningColor;
-                    annunciatorSafeToOperate.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+                    annunciatorSafeToOperate.Cadence = CadencePattern.SteadyOn;
                     severity = Statuser.Severity.Warning;
                     tip = "Safety checks are bypassed!";
                 }
@@ -640,7 +658,7 @@ namespace Dash
                 {
                     text = "Safe to operate";
                     annunciatorSafeToOperate.ForeColor = goodColor;
-                    annunciatorSafeToOperate.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+                    annunciatorSafeToOperate.Cadence = CadencePattern.SteadyOff;
                     severity = Statuser.Severity.Good;
                     tip = "Conditions are safe to operate.";
                 }
@@ -648,7 +666,7 @@ namespace Dash
                 {
                     text = "Not safe to operate";
                     annunciatorSafeToOperate.ForeColor = unsafeColor;
-                    annunciatorSafeToOperate.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+                    annunciatorSafeToOperate.Cadence = CadencePattern.SteadyOn;
                     severity = Statuser.Severity.Error;
                     tip = string.Join("\n", safetooperateDigest.UnsafeReasons).Replace(Const.recordSeparator, "\n");
                 }
@@ -664,13 +682,13 @@ namespace Dash
                 if (safetooperateDigest.Platform.Safe)
                 {
                     annunciatorDomePlatform.Text = "Platform is safe";
-                    annunciatorDomePlatform.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+                    annunciatorDomePlatform.Cadence = CadencePattern.SteadyOff;
                     tip = "Dome platform is at its lowest position.";
                 }
                 else
                 {
                     annunciatorDomePlatform.Text = "Platform is NOT SAFE";
-                    annunciatorDomePlatform.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+                    annunciatorDomePlatform.Cadence = CadencePattern.SteadyOn;
                     tip = "Dome platform is NOT at its lowest position!";
                 }
                 toolTip.SetToolTip(annunciatorDomePlatform, tip);
@@ -683,13 +701,13 @@ namespace Dash
             if (WiseObject.Simulated)
             {
                 annunciatorSimulation.Text = "SIMULATED HARDWARE";
-                annunciatorSimulation.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+                annunciatorSimulation.Cadence = CadencePattern.SteadyOn;
                 tip = "Hardware access is simulated by software";
             }
             else
             {
                 annunciatorSimulation.Text = "";
-                annunciatorSimulation.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+                annunciatorSimulation.Cadence = CadencePattern.SteadyOff;
                 tip = "";
             }
             toolTip.SetToolTip(annunciatorSimulation, tip);
@@ -700,15 +718,26 @@ namespace Dash
             #region RefreshDome
             if (domeDigest != null)
             {
-                labelDomeAzimuthValue.Text = Angle.AzFromDegrees(domeDigest.Azimuth).ToShortNiceString();
+                double azimuth = domeDigest.Azimuth;
+
+                if (azimuth == Double.NaN)
+                {
+                    toolTip.SetToolTip(labelDomeAzimuthValue, ASCOM.Wise40.Hardware.Hardware.MaintenanceMode ?
+                        "Dome cannot be calibrated due to MAINTENENCE MODE!" :
+                        "Dome azimuth cannot be calculated!");
+                }
+                else
+                    toolTip.SetToolTip(labelDomeAzimuthValue, "");
+
+                labelDomeAzimuthValue.Text = Angle.AzFromDegrees(azimuth).ToShortNiceString();
                 domeStatus.Show(domeDigest.Status);
                 buttonDomePark.Text = domeDigest.AtPark ? "Unpark" : "Park";
                 buttonVent.Text = domeDigest.Vent ? "Close Vent" : "Open Vent";
                 buttonProjector.Text = domeDigest.Projector ? "Turn projector Off" : "Turn projector On";
 
                 annunciatorDome.Cadence = domeDigest.DirectionMotorsAreActive ?
-                    ASCOM.Controls.CadencePattern.SteadyOn :
-                    ASCOM.Controls.CadencePattern.SteadyOff;
+                    CadencePattern.SteadyOn :
+                    CadencePattern.SteadyOff;
 
                 #region Shutter
                 string status = domeDigest.Shutter.Status, msg;
@@ -723,17 +752,17 @@ namespace Dash
                 {
                     case ShutterState.shutterOpening:
                         annunciatorShutter.Text = "SHUTTER(<->)";
-                        annunciatorShutter.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+                        annunciatorShutter.Cadence = CadencePattern.SteadyOn;
                         break;
 
                     case ShutterState.shutterClosing:
                         annunciatorShutter.Text = "SHUTTER(>-<)";
-                        annunciatorShutter.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+                        annunciatorShutter.Cadence = CadencePattern.SteadyOn;
                         break;
 
                     default:
                         annunciatorShutter.Text = "SHUTTER";
-                        annunciatorShutter.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+                        annunciatorShutter.Cadence = CadencePattern.SteadyOff;
                         break;
                 }
             }
@@ -795,8 +824,8 @@ namespace Dash
                 labelFocusCurrentValue.Text = focuserDigest.Position.ToString();
                 focuserStatus.Show(focuserDigest.StatusString);
                 annunciatorFocus.Cadence = focuserDigest.IsMoving ?
-                    ASCOM.Controls.CadencePattern.SteadyOn :
-                    ASCOM.Controls.CadencePattern.SteadyOff;
+                    CadencePattern.SteadyOn :
+                    CadencePattern.SteadyOff;
             }
             #endregion
 
@@ -805,11 +834,11 @@ namespace Dash
                     (filterWheelDigest.Arduino.Status == ArduinoInterface.ArduinoStatus.Communicating ||
                     filterWheelDigest.Arduino.Status == ArduinoInterface.ArduinoStatus.Moving))
             {
-                annunciatorFilterWheel.Cadence = ASCOM.Controls.CadencePattern.SteadyOn;
+                annunciatorFilterWheel.Cadence = CadencePattern.SteadyOn;
             }
             else
             {
-                annunciatorFilterWheel.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+                annunciatorFilterWheel.Cadence = CadencePattern.SteadyOff;
             }
             LoadFilterWheelInformation();
             #endregion

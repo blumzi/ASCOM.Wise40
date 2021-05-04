@@ -171,28 +171,28 @@
             this.pictureBoxWise = new System.Windows.Forms.PictureBox();
             this.labelDate = new System.Windows.Forms.Label();
             this.labelComputerControl = new System.Windows.Forms.Label();
-            this.annunciatorPanelSafety = new ASCOM.Controls.AnnunciatorPanel();
-            this.annunciatorComputerControl = new ASCOM.Controls.Annunciator();
-            this.annunciatorDomePlatform = new ASCOM.Controls.Annunciator();
-            this.annunciatorSafeToOperate = new ASCOM.Controls.Annunciator();
-            this.annunciatorSimulation = new ASCOM.Controls.Annunciator();
-            this.annunciatorReadonly = new ASCOM.Controls.Annunciator();
-            this.annunciatorPanelStatus = new ASCOM.Controls.AnnunciatorPanel();
-            this.annunciatorTrack = new ASCOM.Controls.Annunciator();
-            this.annunciatorSlew = new ASCOM.Controls.Annunciator();
-            this.annunciatorPulse = new ASCOM.Controls.Annunciator();
-            this.annunciatorDome = new ASCOM.Controls.Annunciator();
-            this.annunciatorShutter = new ASCOM.Controls.Annunciator();
-            this.annunciatorPrimary = new ASCOM.Controls.Annunciator();
-            this.annunciatorRARateSlew = new ASCOM.Controls.Annunciator();
-            this.annunciatorRARateSet = new ASCOM.Controls.Annunciator();
-            this.annunciatorRARateGuide = new ASCOM.Controls.Annunciator();
-            this.annunciatorSecondary = new ASCOM.Controls.Annunciator();
-            this.annunciatorDECRateSlew = new ASCOM.Controls.Annunciator();
-            this.annunciatorDECRateSet = new ASCOM.Controls.Annunciator();
-            this.annunciatorDECRateGuide = new ASCOM.Controls.Annunciator();
-            this.annunciatorFilterWheel = new ASCOM.Controls.Annunciator();
-            this.annunciatorFocus = new ASCOM.Controls.Annunciator();
+            this.annunciatorPanelSafety = new TA.WinFormsControls.AnnunciatorPanel();
+            this.annunciatorComputerControl = new TA.WinFormsControls.Annunciator();
+            this.annunciatorDomePlatform = new TA.WinFormsControls.Annunciator();
+            this.annunciatorSafeToOperate = new TA.WinFormsControls.Annunciator();
+            this.annunciatorSimulation = new TA.WinFormsControls.Annunciator();
+            this.annunciatorReadonly = new TA.WinFormsControls.Annunciator();
+            this.annunciatorPanelStatus = new TA.WinFormsControls.AnnunciatorPanel();
+            this.annunciatorTrack = new TA.WinFormsControls.Annunciator();
+            this.annunciatorSlew = new TA.WinFormsControls.Annunciator();
+            this.annunciatorPulse = new TA.WinFormsControls.Annunciator();
+            this.annunciatorDome = new TA.WinFormsControls.Annunciator();
+            this.annunciatorShutter = new TA.WinFormsControls.Annunciator();
+            this.annunciatorPrimary = new TA.WinFormsControls.Annunciator();
+            this.annunciatorRARateSlew = new TA.WinFormsControls.Annunciator();
+            this.annunciatorRARateSet = new TA.WinFormsControls.Annunciator();
+            this.annunciatorRARateGuide = new TA.WinFormsControls.Annunciator();
+            this.annunciatorSecondary = new TA.WinFormsControls.Annunciator();
+            this.annunciatorDECRateSlew = new TA.WinFormsControls.Annunciator();
+            this.annunciatorDECRateSet = new TA.WinFormsControls.Annunciator();
+            this.annunciatorDECRateGuide = new TA.WinFormsControls.Annunciator();
+            this.annunciatorFilterWheel = new TA.WinFormsControls.Annunciator();
+            this.annunciatorFocus = new TA.WinFormsControls.Annunciator();
             this.panel2 = new System.Windows.Forms.Panel();
             this.panel3 = new System.Windows.Forms.Panel();
             this.pictureBoxStop = new System.Windows.Forms.PictureBox();
@@ -2136,7 +2136,7 @@
             // 
             this.annunciatorComputerControl.ActiveColor = System.Drawing.Color.IndianRed;
             this.annunciatorComputerControl.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.annunciatorComputerControl.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            this.annunciatorComputerControl.Cadence = TA.WinFormsControls.CadencePattern.SteadyOff;
             this.annunciatorComputerControl.Font = new System.Drawing.Font("Consolas", 10F);
             this.annunciatorComputerControl.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorComputerControl.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
@@ -2152,7 +2152,7 @@
             // 
             this.annunciatorDomePlatform.ActiveColor = System.Drawing.Color.IndianRed;
             this.annunciatorDomePlatform.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.annunciatorDomePlatform.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            this.annunciatorDomePlatform.Cadence = TA.WinFormsControls.CadencePattern.SteadyOff;
             this.annunciatorDomePlatform.Font = new System.Drawing.Font("Consolas", 10F);
             this.annunciatorDomePlatform.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorDomePlatform.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
@@ -2169,7 +2169,7 @@
             // 
             this.annunciatorSafeToOperate.ActiveColor = System.Drawing.Color.IndianRed;
             this.annunciatorSafeToOperate.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.annunciatorSafeToOperate.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            this.annunciatorSafeToOperate.Cadence = TA.WinFormsControls.CadencePattern.SteadyOff;
             this.annunciatorSafeToOperate.Font = new System.Drawing.Font("Consolas", 10F);
             this.annunciatorSafeToOperate.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorSafeToOperate.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
@@ -2186,7 +2186,7 @@
             // 
             this.annunciatorSimulation.ActiveColor = System.Drawing.Color.Turquoise;
             this.annunciatorSimulation.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.annunciatorSimulation.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            this.annunciatorSimulation.Cadence = TA.WinFormsControls.CadencePattern.SteadyOff;
             this.annunciatorSimulation.Font = new System.Drawing.Font("Consolas", 10F, System.Drawing.FontStyle.Italic);
             this.annunciatorSimulation.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorSimulation.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
@@ -2203,7 +2203,7 @@
             // 
             this.annunciatorReadonly.ActiveColor = System.Drawing.Color.Orange;
             this.annunciatorReadonly.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.annunciatorReadonly.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            this.annunciatorReadonly.Cadence = TA.WinFormsControls.CadencePattern.SteadyOff;
             this.annunciatorReadonly.Font = new System.Drawing.Font("Consolas", 10F);
             this.annunciatorReadonly.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorReadonly.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
@@ -2246,7 +2246,7 @@
             this.annunciatorTrack.ActiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(192)))), ((int)(((byte)(192)))));
             this.annunciatorTrack.AutoSize = true;
             this.annunciatorTrack.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.annunciatorTrack.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            this.annunciatorTrack.Cadence = TA.WinFormsControls.CadencePattern.SteadyOff;
             this.annunciatorTrack.Font = new System.Drawing.Font("Consolas", 10F);
             this.annunciatorTrack.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorTrack.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
@@ -2263,7 +2263,7 @@
             this.annunciatorSlew.ActiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
             this.annunciatorSlew.AutoSize = true;
             this.annunciatorSlew.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.annunciatorSlew.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            this.annunciatorSlew.Cadence = TA.WinFormsControls.CadencePattern.SteadyOff;
             this.annunciatorSlew.Font = new System.Drawing.Font("Consolas", 10F);
             this.annunciatorSlew.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorSlew.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
@@ -2279,7 +2279,7 @@
             this.annunciatorPulse.ActiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(255)))));
             this.annunciatorPulse.AutoSize = true;
             this.annunciatorPulse.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.annunciatorPulse.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            this.annunciatorPulse.Cadence = TA.WinFormsControls.CadencePattern.SteadyOff;
             this.annunciatorPanelStatus.SetFlowBreak(this.annunciatorPulse, true);
             this.annunciatorPulse.Font = new System.Drawing.Font("Consolas", 10F);
             this.annunciatorPulse.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
@@ -2296,7 +2296,7 @@
             this.annunciatorDome.ActiveColor = System.Drawing.Color.Green;
             this.annunciatorDome.AutoSize = true;
             this.annunciatorDome.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.annunciatorDome.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            this.annunciatorDome.Cadence = TA.WinFormsControls.CadencePattern.SteadyOff;
             this.annunciatorDome.Font = new System.Drawing.Font("Consolas", 10F);
             this.annunciatorDome.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorDome.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
@@ -2313,7 +2313,7 @@
             this.annunciatorShutter.ActiveColor = System.Drawing.Color.YellowGreen;
             this.annunciatorShutter.AutoSize = true;
             this.annunciatorShutter.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.annunciatorShutter.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            this.annunciatorShutter.Cadence = TA.WinFormsControls.CadencePattern.SteadyOff;
             this.annunciatorPanelStatus.SetFlowBreak(this.annunciatorShutter, true);
             this.annunciatorShutter.Font = new System.Drawing.Font("Consolas", 10F);
             this.annunciatorShutter.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
@@ -2330,7 +2330,7 @@
             this.annunciatorPrimary.ActiveColor = System.Drawing.Color.Chocolate;
             this.annunciatorPrimary.AutoSize = true;
             this.annunciatorPrimary.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.annunciatorPrimary.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            this.annunciatorPrimary.Cadence = TA.WinFormsControls.CadencePattern.SteadyOff;
             this.annunciatorPrimary.Font = new System.Drawing.Font("Consolas", 10F);
             this.annunciatorPrimary.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorPrimary.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
@@ -2348,7 +2348,7 @@
             this.annunciatorRARateSlew.ActiveColor = System.Drawing.Color.Yellow;
             this.annunciatorRARateSlew.AutoSize = true;
             this.annunciatorRARateSlew.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.annunciatorRARateSlew.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            this.annunciatorRARateSlew.Cadence = TA.WinFormsControls.CadencePattern.SteadyOff;
             this.annunciatorRARateSlew.Font = new System.Drawing.Font("Consolas", 10F);
             this.annunciatorRARateSlew.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorRARateSlew.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
@@ -2364,7 +2364,7 @@
             this.annunciatorRARateSet.ActiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(192)))), ((int)(((byte)(0)))));
             this.annunciatorRARateSet.AutoSize = true;
             this.annunciatorRARateSet.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.annunciatorRARateSet.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            this.annunciatorRARateSet.Cadence = TA.WinFormsControls.CadencePattern.SteadyOff;
             this.annunciatorRARateSet.Font = new System.Drawing.Font("Consolas", 10F);
             this.annunciatorRARateSet.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorRARateSet.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
@@ -2380,7 +2380,7 @@
             this.annunciatorRARateGuide.ActiveColor = System.Drawing.Color.Olive;
             this.annunciatorRARateGuide.AutoSize = true;
             this.annunciatorRARateGuide.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.annunciatorRARateGuide.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            this.annunciatorRARateGuide.Cadence = TA.WinFormsControls.CadencePattern.SteadyOff;
             this.annunciatorPanelStatus.SetFlowBreak(this.annunciatorRARateGuide, true);
             this.annunciatorRARateGuide.Font = new System.Drawing.Font("Consolas", 10F);
             this.annunciatorRARateGuide.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
@@ -2397,7 +2397,7 @@
             this.annunciatorSecondary.ActiveColor = System.Drawing.Color.Chocolate;
             this.annunciatorSecondary.AutoSize = true;
             this.annunciatorSecondary.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.annunciatorSecondary.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            this.annunciatorSecondary.Cadence = TA.WinFormsControls.CadencePattern.SteadyOff;
             this.annunciatorSecondary.Font = new System.Drawing.Font("Consolas", 10F);
             this.annunciatorSecondary.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorSecondary.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
@@ -2413,7 +2413,7 @@
             this.annunciatorDECRateSlew.ActiveColor = System.Drawing.Color.Yellow;
             this.annunciatorDECRateSlew.AutoSize = true;
             this.annunciatorDECRateSlew.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.annunciatorDECRateSlew.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            this.annunciatorDECRateSlew.Cadence = TA.WinFormsControls.CadencePattern.SteadyOff;
             this.annunciatorDECRateSlew.Font = new System.Drawing.Font("Consolas", 10F);
             this.annunciatorDECRateSlew.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorDECRateSlew.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
@@ -2429,7 +2429,7 @@
             this.annunciatorDECRateSet.ActiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(192)))), ((int)(((byte)(0)))));
             this.annunciatorDECRateSet.AutoSize = true;
             this.annunciatorDECRateSet.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.annunciatorDECRateSet.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            this.annunciatorDECRateSet.Cadence = TA.WinFormsControls.CadencePattern.SteadyOff;
             this.annunciatorDECRateSet.Font = new System.Drawing.Font("Consolas", 10F);
             this.annunciatorDECRateSet.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorDECRateSet.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
@@ -2445,7 +2445,7 @@
             this.annunciatorDECRateGuide.ActiveColor = System.Drawing.Color.Olive;
             this.annunciatorDECRateGuide.AutoSize = true;
             this.annunciatorDECRateGuide.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.annunciatorDECRateGuide.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            this.annunciatorDECRateGuide.Cadence = TA.WinFormsControls.CadencePattern.SteadyOff;
             this.annunciatorPanelStatus.SetFlowBreak(this.annunciatorDECRateGuide, true);
             this.annunciatorDECRateGuide.Font = new System.Drawing.Font("Consolas", 10F);
             this.annunciatorDECRateGuide.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
@@ -2462,7 +2462,7 @@
             this.annunciatorFilterWheel.ActiveColor = System.Drawing.Color.DarkOrange;
             this.annunciatorFilterWheel.AutoSize = true;
             this.annunciatorFilterWheel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.annunciatorFilterWheel.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            this.annunciatorFilterWheel.Cadence = TA.WinFormsControls.CadencePattern.SteadyOff;
             this.annunciatorFilterWheel.Font = new System.Drawing.Font("Consolas", 10F);
             this.annunciatorFilterWheel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorFilterWheel.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
@@ -2479,7 +2479,7 @@
             this.annunciatorFocus.ActiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
             this.annunciatorFocus.AutoSize = true;
             this.annunciatorFocus.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.annunciatorFocus.Cadence = ASCOM.Controls.CadencePattern.SteadyOff;
+            this.annunciatorFocus.Cadence = TA.WinFormsControls.CadencePattern.SteadyOff;
             this.annunciatorFocus.Font = new System.Drawing.Font("Consolas", 10F);
             this.annunciatorFocus.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorFocus.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
@@ -3400,19 +3400,19 @@
         private System.Windows.Forms.Button buttonFocusIncrease;
         private System.Windows.Forms.Button buttonFocusDecrease;
         private System.Windows.Forms.Panel panel1;
-        private ASCOM.Controls.AnnunciatorPanel annunciatorPanelStatus;
-        private ASCOM.Controls.Annunciator annunciatorTrack;
-        private ASCOM.Controls.Annunciator annunciatorSlew;
-        private ASCOM.Controls.Annunciator annunciatorDome;
-        private ASCOM.Controls.Annunciator annunciatorFocus;
-        private ASCOM.Controls.Annunciator annunciatorFilterWheel;
+        private TA.WinFormsControls.AnnunciatorPanel annunciatorPanelStatus;
+        private TA.WinFormsControls.Annunciator annunciatorTrack;
+        private TA.WinFormsControls.Annunciator annunciatorSlew;
+        private TA.WinFormsControls.Annunciator annunciatorDome;
+        private TA.WinFormsControls.Annunciator annunciatorFocus;
+        private TA.WinFormsControls.Annunciator annunciatorFilterWheel;
         private System.Windows.Forms.Button buttonTrack;
-        private ASCOM.Controls.AnnunciatorPanel annunciatorPanelSafety;
-        private ASCOM.Controls.Annunciator annunciatorComputerControl;
-        private ASCOM.Controls.Annunciator annunciatorSafeToOperate;
-        private ASCOM.Controls.Annunciator annunciatorRARateSlew;
-        private ASCOM.Controls.Annunciator annunciatorRARateSet;
-        private ASCOM.Controls.Annunciator annunciatorRARateGuide;
+        private TA.WinFormsControls.AnnunciatorPanel annunciatorPanelSafety;
+        private TA.WinFormsControls.Annunciator annunciatorComputerControl;
+        private TA.WinFormsControls.Annunciator annunciatorSafeToOperate;
+        private TA.WinFormsControls.Annunciator annunciatorRARateSlew;
+        private TA.WinFormsControls.Annunciator annunciatorRARateSet;
+        private TA.WinFormsControls.Annunciator annunciatorRARateGuide;
         private System.Windows.Forms.GroupBox groupBoxFilterWheel;
         private System.Windows.Forms.Label labelFilterWheelStatus;
         private System.Windows.Forms.Label label4;
@@ -3420,10 +3420,10 @@
         private System.Windows.Forms.Button buttonFilterWheelGo;
         private System.Windows.Forms.ToolStripMenuItem settingsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem manageFilterInventoryToolStripMenuItem;
-        private ASCOM.Controls.Annunciator annunciatorDomePlatform;
-        private ASCOM.Controls.Annunciator annunciatorSimulation;
+        private TA.WinFormsControls.Annunciator annunciatorDomePlatform;
+        private TA.WinFormsControls.Annunciator annunciatorSimulation;
         private System.Windows.Forms.ToolStripMenuItem manage3FiltersToolStripMenuItem;
-        private ASCOM.Controls.Annunciator annunciatorPulse;
+        private TA.WinFormsControls.Annunciator annunciatorPulse;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemPulseGuide;
         private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.Panel panel3;
@@ -3431,13 +3431,13 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.Label labelCountdown;
         private System.Windows.Forms.Panel panel4;
-        private ASCOM.Controls.Annunciator annunciatorReadonly;
-        private ASCOM.Controls.Annunciator annunciatorShutter;
-        private ASCOM.Controls.Annunciator annunciatorDECRateSlew;
-        private ASCOM.Controls.Annunciator annunciatorDECRateSet;
-        private ASCOM.Controls.Annunciator annunciatorDECRateGuide;
-        private ASCOM.Controls.Annunciator annunciatorPrimary;
-        private ASCOM.Controls.Annunciator annunciatorSecondary;
+        private TA.WinFormsControls.Annunciator annunciatorReadonly;
+        private TA.WinFormsControls.Annunciator annunciatorShutter;
+        private TA.WinFormsControls.Annunciator annunciatorDECRateSlew;
+        private TA.WinFormsControls.Annunciator annunciatorDECRateSet;
+        private TA.WinFormsControls.Annunciator annunciatorDECRateGuide;
+        private TA.WinFormsControls.Annunciator annunciatorPrimary;
+        private TA.WinFormsControls.Annunciator annunciatorSecondary;
         private System.Windows.Forms.ToolStripMenuItem debugSafetyToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem debugDomeToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem debugDAQsToolStripMenuItem;
