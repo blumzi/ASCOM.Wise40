@@ -19,7 +19,7 @@ namespace ASCOM.Wise40.Common
         private readonly Timer _timer;
         private string _result;
         private readonly int _tries;
-        private bool _oneshot = false;
+        private readonly bool _oneshot = false;
         private TimeSpan _period;
         private bool _clientPropertiesHaveChanged = false;
         private bool _enabled;
