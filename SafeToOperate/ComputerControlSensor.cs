@@ -70,10 +70,6 @@ namespace ASCOM.Wise40SafeToOperate
                 value = Hardware.ComputerHasControl ? 1 : 0,
             };
 
-            #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "ComputerControlSensor: getIsSafe: {0}", r.Safe);
-            #endregion
-
             _status = r.Safe ? "Operational" : "Maintenance";
             if (r.Safe != _wasSafe)
             {
