@@ -85,11 +85,7 @@ namespace ASCOM.Wise40SafeToOperate
         public static TimeSpan _stabilizationPeriod;
         private const int _defaultStabilizationPeriodMinutes = 15;
 
-        private Astrometry.NOVAS.NOVAS31 novas31;
-        private static AstroUtils astroutils;
         public Astrometry.Accuracy astrometricAccuracy;
-        private static CatEntry3 dummy_star;
-        private Object3 Sun = new Object3();
 
         static WiseSafeToOperate() { }
         public WiseSafeToOperate() { }
@@ -181,21 +177,6 @@ namespace ASCOM.Wise40SafeToOperate
             }
 
             _connected = false;
-
-            novas31 = new NOVAS31();
-            astroutils = new AstroUtils();
-
-            novas31.MakeCatEntry("DUMMY", "xxx", 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, ref dummy_star);
-            int ret = novas31.MakeObject(0, Convert.ToInt16(Body.Sun), "Sun", dummy_star, ref Sun);
-            if (ret != 0)
-            {
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
-                    $"WiseSafeToOperate.Init: Cannot make Sun (novas31.MakeObject: ret == {ret})");
-                #endregion
-            }
-            Sun.Star.StarName = "Sun";
-            Sun.Star.Catalog = "Dummy";
 
             ReadProfile(); // Read device configuration from the ASCOM Profile store
             _safetyState = Event.SafetyEvent.SafetyState.Unknown;
