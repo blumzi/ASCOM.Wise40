@@ -27,8 +27,8 @@ namespace TestPeriodicHttpFetcher
                     name: "Sun elevation",
                     url: "https://api.ipgeolocation.io/astronomy?" +
                         "apiKey=d6ce0c7ecb5c451ba2b462dfb5750364&" +
-                        $"lat={WiseSite.Instance.Latitude.Degrees}&" +
-                        $"long={WiseSite.Instance.Longitude.Degrees}",
+                        $"lat={WiseSite.Latitude}&" +
+                        $"long={WiseSite.Longitude}",
                     period: TimeSpan.FromMinutes(1)),
             };
 
