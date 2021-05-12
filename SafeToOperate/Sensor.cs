@@ -735,7 +735,7 @@ namespace ASCOM.Wise40SafeToOperate
             }
             dbgDetails += $", {(StateIsSet(State.Safe) ? "safe" : "not-safe")}";
 
-            debugger.WriteLine(Debugger.DebugLevel.DebugSafety, $"{op}: {dbgDetails}");
+            debugger.WriteLine(Debugger.DebugLevel.DebugSafety, $"{op}{dbgDetails}");
             #endregion
             if (HasAttribute(Attribute.Periodic))
                 _timer.Change(Interval, Timeout.InfiniteTimeSpan);
