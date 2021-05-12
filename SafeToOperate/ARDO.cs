@@ -24,7 +24,7 @@ namespace ASCOM.Wise40SafeToOperate
         public DateTime _lastFetch = DateTime.MinValue, updatedAtUT, lastUpdatedAtUT = DateTime.MinValue;
 
         public ARDOSensor(WiseSafeToOperate instance) :
-            base("ARDOSensor",
+            base("ARDO",
                 Attribute.Periodic |
                 Attribute.ForInfoOnly |
                 Attribute.SingleReading |
