@@ -105,22 +105,22 @@ namespace ASCOM.Wise40SafeToOperate
                 s.Enabled = false;
 
             WiseSafeToOperate.cloudsSensor._repeats = Convert.ToInt32(textBoxCloudRepeats.Text);
-            WiseSafeToOperate.cloudsSensor._interval = TimeSpan.FromSeconds(Convert.ToInt32(textBoxCloudIntervalSeconds.Text));
+            WiseSafeToOperate.cloudsSensor.Interval = TimeSpan.FromSeconds(Convert.ToInt32(textBoxCloudIntervalSeconds.Text));
             WiseSafeToOperate.cloudsSensor.Enabled = checkBoxCloud.Checked;
 
             WiseSafeToOperate.windSensor._repeats = Convert.ToInt32(textBoxWindRepeats.Text);
-            WiseSafeToOperate.windSensor._interval = TimeSpan.FromSeconds(Convert.ToInt32(textBoxWindIntervalSeconds.Text));
+            WiseSafeToOperate.windSensor.Interval = TimeSpan.FromSeconds(Convert.ToInt32(textBoxWindIntervalSeconds.Text));
             WiseSafeToOperate.windSensor.Enabled = checkBoxWind.Checked;
 
             WiseSafeToOperate.humiditySensor._repeats = Convert.ToInt32(textBoxHumidityRepeats.Text);
-            WiseSafeToOperate.humiditySensor._interval = TimeSpan.FromSeconds(Convert.ToInt32(textBoxHumidityIntervalSeconds.Text));
+            WiseSafeToOperate.humiditySensor.Interval = TimeSpan.FromSeconds(Convert.ToInt32(textBoxHumidityIntervalSeconds.Text));
             WiseSafeToOperate.humiditySensor.Enabled = checkBoxHumidity.Checked;
 
-            WiseSafeToOperate.sunSensor._interval = TimeSpan.FromSeconds(Convert.ToInt32(textBoxSunIntervalSeconds.Text));
+            WiseSafeToOperate.sunSensor.Interval = TimeSpan.FromSeconds(Convert.ToInt32(textBoxSunIntervalSeconds.Text));
             WiseSafeToOperate.sunSensor.Enabled = checkBoxSun.Checked;
 
             WiseSafeToOperate.rainSensor._repeats = Convert.ToInt32(textBoxRainRepeats.Text);
-            WiseSafeToOperate.rainSensor._interval = TimeSpan.FromSeconds(Convert.ToInt32(textBoxRainIntervalSeconds.Text));
+            WiseSafeToOperate.rainSensor.Interval = TimeSpan.FromSeconds(Convert.ToInt32(textBoxRainIntervalSeconds.Text));
             WiseSafeToOperate.rainSensor.Enabled = checkBoxRain.Checked;
 
             WiseSafeToOperate.doorLockSensor.MaxAsString = textBoxDoorLockDelay.Text;
@@ -176,11 +176,11 @@ namespace ASCOM.Wise40SafeToOperate
             checkBoxSun.Tag = checkBoxSun.Checked = WiseSafeToOperate.sunSensor.Enabled;
             checkBoxWind.Tag = checkBoxWind.Checked = WiseSafeToOperate.windSensor.Enabled;
 
-            textBoxCloudIntervalSeconds.Tag = textBoxCloudIntervalSeconds.Text = (WiseSafeToOperate.cloudsSensor._interval.TotalSeconds).ToString();
-            textBoxHumidityIntervalSeconds.Tag = textBoxHumidityIntervalSeconds.Text = (WiseSafeToOperate.humiditySensor._interval.TotalSeconds).ToString();
-            textBoxRainIntervalSeconds.Tag = textBoxRainIntervalSeconds.Text = (WiseSafeToOperate.rainSensor._interval.TotalSeconds).ToString();
-            textBoxSunIntervalSeconds.Tag = textBoxSunIntervalSeconds.Text = (WiseSafeToOperate.sunSensor._interval.TotalSeconds).ToString();
-            textBoxWindIntervalSeconds.Tag = textBoxWindIntervalSeconds.Text = (WiseSafeToOperate.windSensor._interval.TotalSeconds).ToString();
+            textBoxCloudIntervalSeconds.Tag = textBoxCloudIntervalSeconds.Text = (WiseSafeToOperate.cloudsSensor.Interval.TotalSeconds).ToString();
+            textBoxHumidityIntervalSeconds.Tag = textBoxHumidityIntervalSeconds.Text = (WiseSafeToOperate.humiditySensor.Interval.TotalSeconds).ToString();
+            textBoxRainIntervalSeconds.Tag = textBoxRainIntervalSeconds.Text = (WiseSafeToOperate.rainSensor.Interval.TotalSeconds).ToString();
+            textBoxSunIntervalSeconds.Tag = textBoxSunIntervalSeconds.Text = (WiseSafeToOperate.sunSensor.Interval.TotalSeconds).ToString();
+            textBoxWindIntervalSeconds.Tag = textBoxWindIntervalSeconds.Text = (WiseSafeToOperate.windSensor.Interval.TotalSeconds).ToString();
 
             textBoxCloudRepeats.Tag = textBoxCloudRepeats.Text = WiseSafeToOperate.cloudsSensor._repeats.ToString();
             textBoxHumidityRepeats.Tag = textBoxHumidityRepeats.Text = WiseSafeToOperate.humiditySensor._repeats.ToString();
