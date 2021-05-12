@@ -80,7 +80,7 @@ namespace ASCOM.Wise40SafeToOperate
                 Usable = !Double.IsNaN(sunElevation.Value) && !sunElevation.Stale,
                 Safe = !Double.IsNaN(sunElevation.Value) && sunElevation.Value <= max,
                 value = sunElevation.Value,
-                timeOfLastUpdate = sunElevation.Time,
+                timeOfLastUpdate = sunElevation.LastUpdate,
                 secondsSinceLastUpdate = sunElevation.Age.TotalSeconds,
             };
 
@@ -208,6 +208,8 @@ namespace ASCOM.Wise40SafeToOperate
             $"lat={WiseSite.Latitude}&" +
             $"long={WiseSite.Longitude}";
         private static PeriodicHttpFetcher periodicHttpFetcher;
+#else
+        private DateTime _lastUpdate = DateTime.MinValue;
 #endif
 
         public void Init()
@@ -224,7 +226,6 @@ namespace ASCOM.Wise40SafeToOperate
                 maxAgeMillis: (int)TimeSpan.FromMinutes(5).TotalMilliseconds
             );
 #endif
-
             _initialized = true;
         }
 
@@ -299,19 +300,28 @@ namespace ASCOM.Wise40SafeToOperate
                     ref zd, ref az, ref rar, ref decr);
 
                 _value = 90.0 - zd;
-                Time = DateTime.Now;
+                _lastUpdate = DateTime.Now;
 #endif
                 return _value;
             }
         }
 
-        public DateTime Time { get; set; } = DateTime.MinValue;
+        public DateTime LastUpdate {
+            get
+            {
+#if USE_HTTP_FETCHER
+                return periodicHttpFetcher.LastSuccess;
+#else
+                return _lastUpdate;
+#endif
+            }
+        }
 
         public TimeSpan Age
         {
             get
             {
-                return DateTime.Now - Time;
+                return DateTime.Now - LastUpdate;
             }
         }
 
@@ -319,7 +329,7 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
-                return Age > _maxAge;
+                return Age > MaxAge;
             }
         }
 
@@ -327,7 +337,14 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
-                return _maxAge;
+                return
+#if USE_HTTP_FETCHER
+                    periodicHttpFetcher.MaxAge
+#else
+                    _maxAge
+#endif
+
+                ;
             }
         }
     }
