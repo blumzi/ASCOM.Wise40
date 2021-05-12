@@ -9,12 +9,14 @@ namespace ASCOM.Wise40
 {
     public class Moon
     {
-        private static readonly AstroUtils astroutils = new AstroUtils();
-        private static readonly NOVAS31 novas31 = new NOVAS31();
-        private static Object3 moon;
-        private static CatEntry3 dummy_star;
-        private static Observer observer;
-        private static readonly Debugger debugger = Debugger.Instance;
+        //public readonly NOVAS31 novas31 = new NOVAS31();
+        //public readonly AstroUtils astroutils = new AstroUtils();
+        public readonly SafeNovas31 novas31 = new SafeNovas31();
+        public readonly SafeAstroutils astroutils = new SafeAstroutils();
+
+        private static SkyPos moonPos = new SkyPos();
+        private static Observer observer = new Observer();
+        private static Object3 moonObject = new Object3();
 
         // start Singleton
         private static readonly Lazy<Moon> lazy =
@@ -24,27 +26,20 @@ namespace ASCOM.Wise40
         {
             get
             {
+                if (lazy.IsValueCreated)
+                    return lazy.Value;
+
                 lazy.Value.Init();
                 return lazy.Value;
             }
         }
 
-        private Moon() { }
+        private Moon() {}
         // end Singleton
 
-        private void Init()
-        {
-            double[] ScPos = { 0, 0, 0 };
-            double[] ScVel = { 0, 0, 0 };
-            InSpace ObsSpace = new InSpace();
+        private void Init() { }
 
-            novas31.MakeInSpace(ScPos, ScVel, ref ObsSpace);
-            novas31.MakeObserver(ObserverLocation.EarthSurface, WiseSite.Instance._onSurface, ObsSpace, ref observer);
-            novas31.MakeCatEntry("DUMMY", "xxx", 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, ref dummy_star);
-            novas31.MakeObject(ObjectType.MajorPlanetSunOrMoon, 11, "Moon", dummy_star, ref moon);
-        }
-
-        public static double Illumination
+        public double Illumination
         {
             get
             {
@@ -90,11 +85,16 @@ namespace ASCOM.Wise40
             return Math.Acos((Math.Sin(lat1) * Math.Sin(lat2)) + (Math.Cos(lat1) * Math.Cos(lat2) * Math.Cos(long1 - long2)));
         }
 
-        public static Angle Distance(double telescopeRA, double telescopeDec)
+        public Angle Distance(double telescopeRA, double telescopeDec)
         {
-            SkyPos moonPos = new SkyPos();
-            short ret = novas31.Place(astroutils.JulianDateUT1(0),
-                moon,
+            WiseSite.InitOCH();
+            novas31.MakeObserverOnSurface(WiseSite.Latitude, WiseSite.Longitude, WiseSite.Elevation,
+                WiseSite.och.Temperature, WiseSite.och.Pressure, ref observer);
+            novas31.MakeObject(ObjectType.MajorPlanetSunOrMoon, 11, "moon", new CatEntry3(), ref moonObject);
+
+            short ret = novas31.Place(
+                astroutils.JulianDateUT1(0),
+                moonObject,
                 observer,
                 0.0,
                 CoordSys.Astrometric,
@@ -102,15 +102,9 @@ namespace ASCOM.Wise40
                 ref moonPos);
 
             if (ret != 0)
-            {
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Moon.Distance: Cannot calculate Moon position (ret: {0})", ret);
-                #endregion
-                return Angle.Invalid;
-            }
+                Exceptor.Throw<InvalidOperationException>("Moon.Distance", $"Cannot calculate Moon position (novas31.Place: {ret})");
 
-            double rad = SphereDist(telescopeRA, telescopeDec, moonPos.RA, moonPos.Dec);
-            return Angle.AzFromRadians(rad);
+            return Angle.FromRadians(SphereDist(telescopeRA, telescopeDec, moonPos.RA, moonPos.Dec));
         }
     }
 }

@@ -61,9 +61,8 @@ namespace ASCOM.Wise40
         /// </summary>
         public static string driverDescription = $"Wise40 Telescope v{version}";
 
-        private static NOVAS31 novas31;
-        private static Astrometry.AstroUtils.AstroUtils astroutils;
-        private static readonly object eq2horLock = new object();
+        //private Astrometry.AstroUtils.AstroUtils astroutils;
+        private SafeAstroutils safeAstroUtils = new SafeAstroutils();
 
         private List<IConnectable> connectables;
         private List<IDisposable> disposables;
@@ -155,7 +154,8 @@ namespace ASCOM.Wise40
         private bool _syncingDomePosition = false;
 
         private static bool _atPark;
-        private static bool _movingToSafety = false;
+
+        public bool RecoveringSafety { get; set; } = false;
 
         private Angle _targetRightAscension, _targetHourAngle, _targetDeclination;
         private Angle _targetAltitude, _targetAzimuth;
@@ -465,8 +465,8 @@ namespace ASCOM.Wise40
             WiseName = "WiseTele";
 
             ReadProfile();
-            novas31 = new NOVAS31();
-            astroutils = new Astrometry.AstroUtils.AstroUtils();
+            //novas31 = new NOVAS31();
+            //astroutils = new Astrometry.AstroUtils.AstroUtils();
 
             parkingDeclination = Angle.DecFromDegrees(66.0);
 
@@ -791,7 +791,7 @@ namespace ASCOM.Wise40
             get
             {
                 Angle ret = primaryAxisMonitor.HourAngle;
-                return astroutils.ConditionHA(ret.Hours);
+                return safeAstroUtils.ConditionHA(ret.Hours);
             }
         }
 
@@ -815,7 +815,7 @@ namespace ASCOM.Wise40
                 double rar = 0, decr = 0, az = 0, zd = 0;
 
                 wisesite.PrepareRefractionData();
-                novas31.Equ2Hor(astroutils.JulianDateUT1(0), 0,
+                WiseSite.novas31.Equ2Hor(safeAstroUtils.JulianDateUT1(0), 0,
                     WiseSite.astrometricAccuracy,
                     0, 0,
                     wisesite._onSurface,
@@ -834,7 +834,7 @@ namespace ASCOM.Wise40
                 double rar = 0, decr = 0, az = 0, zd = 0;
 
                 wisesite.PrepareRefractionData();
-                novas31.Equ2Hor(astroutils.JulianDateUT1(0), 0,
+                WiseSite.novas31.Equ2Hor(safeAstroUtils.JulianDateUT1(0), 0,
                     WiseSite.astrometricAccuracy,
                     0, 0,
                     wisesite._onSurface,
@@ -923,7 +923,7 @@ namespace ASCOM.Wise40
                     if (!wisesafetooperate.IsSafeWithoutCheckingForShutdown() && !ShuttingDown && !BypassCoordinatesSafety)
                         Exceptor.Throw<InvalidOperationException>("Tracking.set", string.Join(", ", wisesafetooperate.UnsafeReasonsList()));
 
-                    if (safetyMonitorTimer.Active)
+                    if (RecoveringSafety)
                         Exceptor.Throw<InvalidOperationException>("Tracking.set", "Safety recovery is active");
 
                     if (Simulated)
@@ -1014,9 +1014,9 @@ namespace ASCOM.Wise40
             #endregion
         }
 
-        public void AbortPulseGuiding()
+        public void AbortPulseGuiding(string reason)
         {
-            pulsing.Abort();
+            pulsing.Abort("AbortPulseGuiding");
         }
 
         public void FullStop()
@@ -1025,7 +1025,7 @@ namespace ASCOM.Wise40
                 AbortSlew(reason: "Action(\"full-stop\")");
 
             if (IsPulseGuiding)
-                AbortPulseGuiding();
+                AbortPulseGuiding("FullStop");
             Tracking = false;
 
             foreach (WiseVirtualMotor motor in allMotors)
@@ -1083,8 +1083,8 @@ namespace ASCOM.Wise40
                     reasons.Add($"Motors: {string.Join(", ", motors)}");
                 }
 
-                if (_movingToSafety)
-                    reasons.Add("Moving to safety");
+                if (RecoveringSafety)
+                    reasons.Add("Recovering safety");
 
                 if (EnslavesDome && domeSlaveDriver.ShutterIsMoving)
                     reasons.Add("Shutter is moving");
@@ -1151,7 +1151,7 @@ namespace ASCOM.Wise40
             }
 
             if (!BypassCoordinatesSafety)
-                safetyMonitorTimer.EnableIfNeeded(SafetyMonitorTimer.ActionWhenNotSafe.StopMotors);
+                safetyMonitorTimer.EnableIfNeeded(SafetyMonitorTimer.ActionWhenNotSafe.Stop);
         }
 
         public void HandpadStop()
@@ -1309,8 +1309,11 @@ namespace ASCOM.Wise40
 
             if (stopTracking)
             {
-                _trackingRestorer.AddMover();
-                Tracking = false;
+                if (Tracking)
+                {
+                    _trackingRestorer.AddMover();
+                    Tracking = false;
+                }
             }
 
             #region debug
@@ -1429,7 +1432,7 @@ namespace ASCOM.Wise40
             bool ret;
 
             wisesite.PrepareRefractionData();
-            novas31.Equ2Hor(astroutils.JulianDateUT1(0), 0,
+            WiseSite.novas31.Equ2Hor(safeAstroUtils.JulianDateUT1(0), 0,
                 WiseSite.astrometricAccuracy,
                 0, 0,
                 wisesite._onSurface,
@@ -1469,16 +1472,13 @@ namespace ASCOM.Wise40
             List<string> reasons = new List<string>();
 
             wisesite.PrepareRefractionData();
-            lock (eq2horLock)
-            {
-                novas31.Equ2Hor(astroutils.JulianDateUT1(0), 0,
-                    WiseSite.astrometricAccuracy,
-                    0, 0,
-                    wisesite._onSurface,
-                    ra.Hours, dec.Degrees,
-                    WiseSite.refractionOption,
-                    ref zd, ref az, ref rar, ref decr);
-            }
+            WiseSite.novas31.Equ2Hor(safeAstroUtils.JulianDateUT1(0), 0,
+                WiseSite.astrometricAccuracy,
+                0, 0,
+                wisesite._onSurface,
+                ra.Hours, dec.Degrees,
+                WiseSite.refractionOption,
+                ref zd, ref az, ref rar, ref decr);
 
             Angle alt = Angle.AltFromDegrees(90.0 - zd);
             if (alt < altLimit)
@@ -1521,34 +1521,16 @@ namespace ASCOM.Wise40
             string op = $"Backoff(reason: {reason})";
             const int backoffMillis = 3000;
 
-            if (!Hardware.Hardware.ComputerHasControl)
-            {
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseTele.Backoff: No computer control!");
-                #endregion
-                return;
-            }
-
-            if (_movingToSafety)    // timer callback while being disabled
-                return;
-
-            _movingToSafety = true;
-            safetyMonitorTimer.Enabled = false;
-
-            if (Tracking)
-                Tracking = false;
-            Stop(op);
-
             List<BackoffAction> backoffs = new List<BackoffAction>();
             if (SafeToMove("east"))
-                backoffs.Add(new BackoffAction { Axis = TelescopeAxes.axisPrimary, Direction = "East", Rate = -Const.rateSlew });
+                backoffs.Add(new BackoffAction { Axis = TelescopeAxes.axisPrimary, Direction = "East", Rate = Const.rateSlew });
             else if (SafeToMove("west"))
-                backoffs.Add(new BackoffAction { Axis = TelescopeAxes.axisPrimary, Direction = "West", Rate = Const.rateSlew });
+                backoffs.Add(new BackoffAction { Axis = TelescopeAxes.axisPrimary, Direction = "West", Rate = -Const.rateSlew });
 
             if (SafeToMove("south"))
-                backoffs.Add(new BackoffAction { Axis = TelescopeAxes.axisSecondary, Direction = "South", Rate = Const.rateSlew });
+                backoffs.Add(new BackoffAction { Axis = TelescopeAxes.axisSecondary, Direction = "South", Rate = -Const.rateSlew });
             else if (SafeToMove("north"))
-                backoffs.Add(new BackoffAction { Axis = TelescopeAxes.axisSecondary, Direction = "North", Rate = -Const.rateSlew });
+                backoffs.Add(new BackoffAction { Axis = TelescopeAxes.axisSecondary, Direction = "North", Rate = Const.rateSlew });
 
             foreach (var b in backoffs)
             {
@@ -1565,11 +1547,8 @@ namespace ASCOM.Wise40
             }
 
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Backoff: done");
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: done");
             #endregion
-
-            _movingToSafety = false;
-            safetyMonitorTimer.Enabled = true;
         }
 
         public bool AtPark
@@ -1668,7 +1647,7 @@ namespace ASCOM.Wise40
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: calling AbortPulseGuiding() ...");
                 #endregion
-                AbortPulseGuiding();
+                AbortPulseGuiding(op);
                 do
                 {
                     #region debug
@@ -2615,9 +2594,9 @@ namespace ASCOM.Wise40
 
             Astrometry.Transform.Transform transform = new Astrometry.Transform.Transform()
             {
-                SiteElevation = wisesite.siteElevation,
-                SiteLatitude = wisesite.siteLatitude,
-                SiteLongitude = wisesite.siteLongitude,
+                SiteElevation = WiseSite.Elevation,
+                SiteLatitude = WiseSite.Latitude,
+                SiteLongitude = WiseSite.Longitude,
                 SiteTemperature = WiseSite.och.Temperature,
             };
 
@@ -2845,7 +2824,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return wisesite.Elevation;
+                return WiseSite.Elevation;
             }
 
             set
@@ -2858,7 +2837,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return wisesite.Latitude.Degrees;
+                return WiseSite.Latitude;
             }
 
             set
@@ -2874,7 +2853,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return wisesite.Longitude.Degrees;
+                return WiseSite.Longitude;
             }
 
             set
@@ -3413,6 +3392,10 @@ namespace ASCOM.Wise40
                     HandpadStop();
                     return "ok";
 
+                case "backoff":
+                    Backoff("Action(\"backoff\")");
+                    return "ok";
+
                 case "safe-to-move":
                     return JsonConvert.SerializeObject(SafeToMove(parameter.ToLower()));
 
@@ -3424,7 +3407,7 @@ namespace ASCOM.Wise40
                     switch(parameter.ToLower())
                     {
                         case "zenith":
-                            return MoveToKnownHaDec(new Angle("0h0m0s"), Angle.DecFromDegrees(wisesite.Latitude.Degrees));
+                            return MoveToKnownHaDec(new Angle("0h0m0s"), Angle.DecFromDegrees(WiseSite.Latitude));
 
                         case "flat":
                             return MoveToKnownHaDec(new Angle("-1h35m59.0s"), new Angle("41:59:20.0"));
@@ -3633,14 +3616,14 @@ namespace ASCOM.Wise40
                     try
                     {
                         ra = Angle.RaFromHours(TargetRightAscension);
-                        to += " RA " + ra.ToNiceString();
+                        to += " RA " + ra.ToString();
                     }
                     catch { }
 
                     try
                     {
                         dec = Angle.DecFromDegrees(TargetDeclination);
-                        to += " DEC " + dec.ToNiceString();
+                        to += " DEC " + dec.ToString();
                     }
                     catch { }
 
@@ -3686,9 +3669,9 @@ namespace ASCOM.Wise40
 
                 Astrometry.Transform.Transform t = new Astrometry.Transform.Transform()
                 {
-                    SiteElevation = wisesite.siteElevation,
-                    SiteLatitude = wisesite.siteLatitude,
-                    SiteLongitude = wisesite.siteLongitude,
+                    SiteElevation = WiseSite.Elevation,
+                    SiteLatitude = WiseSite.Latitude,
+                    SiteLongitude = WiseSite.Longitude,
                     SiteTemperature = temp,
                 };
 

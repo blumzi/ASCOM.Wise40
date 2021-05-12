@@ -206,5 +206,10 @@ namespace ASCOM.Wise40.Common
                 public static string Wise40_activities = "server=localhost;user=root;database=wise40;port=3306;password=@!ab4131!@";
             }
         }
+
+        public static class SafeNovas
+        {
+            public static string MutexName = "24df752f-15a3-4f8f-92cc-ca8ae22a7f39";
+        }
     }
 }

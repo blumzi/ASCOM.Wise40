@@ -33,7 +33,6 @@ using System.Threading;
 
 using ASCOM;
 using ASCOM.Astrometry;
-using ASCOM.Astrometry.AstroUtils;
 using ASCOM.Utilities;
 using ASCOM.DeviceInterface;
 using System.Globalization;
@@ -67,6 +66,8 @@ namespace ASCOM.Wise40 //.Telescope
         /// </summary>
         private bool _driverInitiatedSlew = false;
 
+        private bool _disposed;
+
         /// <summary>
         /// Private variable to hold the connected state
         /// </summary>
@@ -76,11 +77,6 @@ namespace ASCOM.Wise40 //.Telescope
         /// Private variable to hold an ASCOM Utilities object
         /// </summary>
         private Util util;
-
-        /// <summary>
-        /// Private variable to hold an ASCOM AstroUtilities object to provide the Range method
-        /// </summary>
-        private AstroUtils astroUtils;
 
         private static readonly WiseTele wisetele = WiseTele.Instance;
 
@@ -94,7 +90,6 @@ namespace ASCOM.Wise40 //.Telescope
 
             _connected = false; // Initialise connected to false
             util = new Util(); //Initialise util object
-            astroUtils = new AstroUtils(); // Initialise astro utilities object
 
             wisetele.Init();
         }
@@ -151,15 +146,26 @@ namespace ASCOM.Wise40 //.Telescope
             return wisetele.CommandString(command, raw);
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    util.Dispose();
+                    util = null;
+
+                    wisetele.Dispose();
+                }
+            }
+            _disposed = true;
+        }
+
         public void Dispose()
         {
-            util.Dispose();
-            util = null;
-
-            astroUtils.Dispose();
-            astroUtils = null;
-
-            wisetele.Dispose();
+            // Do not change this code. Put clean-up code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
 
         public bool Connected

@@ -716,7 +716,7 @@ namespace ASCOM.Wise40SafeToOperate
                 if (sunSensor.IsStale)
                     return Const.TriStateStatus.Warning;
 
-                double elevation = sunSensor.SunElevation;
+                double elevation = sunSensor.sunElevation.Value;
                 if (Double.IsNaN(elevation))
                     return Const.TriStateStatus.Warning;
 

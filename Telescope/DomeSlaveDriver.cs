@@ -15,8 +15,9 @@ namespace ASCOM.Wise40
     {
         private static readonly WiseDome wisedome = WiseDome.Instance;
         private bool _connected = false;
-        private ASCOM.Astrometry.NOVAS.NOVAS31 novas31 = new Astrometry.NOVAS.NOVAS31();
-        private AstroUtils astroutils = new AstroUtils();
+        //private ASCOM.Astrometry.NOVAS.NOVAS31 novas31 = new Astrometry.NOVAS.NOVAS31();
+        private SafeNovas31 safeNovas31 = new SafeNovas31();
+        private SafeAstroutils safeAstroutils = new SafeAstroutils();
         public AutoResetEvent _arrivedAtAz;
         private Debugger debugger;
 
@@ -51,8 +52,8 @@ namespace ASCOM.Wise40
             try
             {
                 debugger = Debugger.Instance;
-                novas31 = new Astrometry.NOVAS.NOVAS31();
-                astroutils = new AstroUtils();
+                //novas31 = new Astrometry.NOVAS.NOVAS31();
+                //astroutils = new AstroUtils();
                 _arrivedAtAz = new AutoResetEvent(false);
                 wisedome.SetArrivedAtAzEvent(_arrivedAtAz);
 
@@ -288,7 +289,7 @@ namespace ASCOM.Wise40
             double rar = 0, decr = 0, targetHA, targetAlt, targetAz = 0, zd = 0;
 
             wisesite.PrepareRefractionData();
-            novas31.Equ2Hor(astroutils.JulianDateUT1(0), 0,
+            safeNovas31.Equ2Hor(safeAstroutils.JulianDateUT1(0), 0,
                 WiseSite.astrometricAccuracy,
                 0, 0,
                 wisesite._onSurface,

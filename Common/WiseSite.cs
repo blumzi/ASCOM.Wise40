@@ -5,7 +5,6 @@ using System.Text;
 
 using ASCOM.Astrometry.AstroUtils;
 using ASCOM.Astrometry.NOVAS;
-using ASCOM.Wise40.Common.Properties;
 using ASCOM.Utilities;
 using ASCOM.Astrometry;
 using ASCOM.Wise40.Common;
@@ -20,14 +19,13 @@ namespace ASCOM.Wise40
     public class WiseSite : IDisposable
     {
         private static bool _initialized = false;
-        private static readonly Astrometry.NOVAS.NOVAS31 novas31 = new NOVAS31();
-        private static readonly AstroUtils astroutils = new AstroUtils();
-        private static readonly ASCOM.Utilities.Util ascomutils = new Util();
+        public static SafeNovas31 novas31 = new SafeNovas31();
+        public static SafeAstroutils astroutils = new SafeAstroutils();
+        public readonly ASCOM.Utilities.Util ascomutils = new Util();
         public Astrometry.OnSurface _onSurface;
         public Observer _observer;
         public static Astrometry.Accuracy astrometricAccuracy;
         public static Astrometry.RefractionOption refractionOption = RefractionOption.LocationRefraction;
-        public double siteLatitude, siteLongitude, siteElevation;
         public static ObservingConditions och;
         private static DateTime lastOCFetch;
         private static bool _och_initialized = false;
@@ -37,6 +35,7 @@ namespace ASCOM.Wise40
         private static string _processName;
         public static string _machine = Environment.MachineName.ToLower();
         public static readonly object siderealTimeLock = new object();
+        private bool _disposed = false;
 
         public enum OpMode { LCO, ACP, WISE, NONE };
 
@@ -68,15 +67,16 @@ namespace ASCOM.Wise40
             if (_initialized)
                 return;
 
-            siteLatitude = ascomutils.DMSToDegrees("30:35:50.43");
-            siteLongitude = ascomutils.DMSToDegrees("34:45:43.86");
-            siteElevation = 882.9;
-            novas31.MakeOnSurface(siteLatitude, siteLongitude, siteElevation, 0.0, 0.0, ref _onSurface);
-            refractionOption = Astrometry.RefractionOption.LocationRefraction;
+            Latitude = Instance.ascomutils.DMSToDegrees("30:35:50.43");
+            Longitude = Instance.ascomutils.DMSToDegrees("34:45:43.86");
+            Elevation = 882.9;
 
-            _transform.SiteElevation = siteElevation;
-            _transform.SiteLatitude = siteLatitude;
-            _transform.SiteLongitude = siteLongitude;
+            novas31.MakeOnSurface(Latitude, Longitude, Elevation, 0.0, 0.0, ref _onSurface);
+            refractionOption = RefractionOption.LocationRefraction;
+
+            _transform.SiteElevation = Elevation;
+            _transform.SiteLatitude = Latitude;
+            _transform.SiteLongitude = Longitude;
             _transform.Refraction = true;
 
             _processName = System.Diagnostics.Process.GetCurrentProcess().ProcessName;
@@ -84,7 +84,11 @@ namespace ASCOM.Wise40
             _initialized = true;
         }
 
-        public static bool TransformApparentToJ2000(double apparentRA, double apparentDEC, ref double j2000RA, ref double j2000DEC)
+        public static double Latitude { get; set; }
+        public static double Longitude { get; set; }
+        public static double Elevation { get; set; }
+
+public static bool TransformApparentToJ2000(double apparentRA, double apparentDEC, ref double j2000RA, ref double j2000DEC)
         {
             _transform.SiteTemperature = _tempFetcher.Temperature;
             _transform.SetApparent(apparentRA, apparentDEC);
@@ -152,32 +156,29 @@ namespace ASCOM.Wise40
 
         public void Dispose()
         {
-            novas31.Dispose();
-            astroutils.Dispose();
-            ascomutils.Dispose();
+            // Do not change this code. Put clean-up code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
 
-        public Angle Longitude
+        protected virtual void Dispose(bool disposing)
         {
-            get
+            if (!_disposed)
             {
-                return Angle.FromHours(_onSurface.Longitude / 15.0);
-            }
-        }
-
-        public Angle Latitude
-        {
-            get
-            {
-                return Angle.DecFromDegrees(_onSurface.Latitude);
-            }
-        }
-
-        public double Elevation
-        {
-            get
-            {
-                return _onSurface.Height;
+                try
+                {
+                    novas31.Dispose();
+                    novas31 = null;
+                }
+                catch { }
+                try
+                {
+                    astroutils.Dispose(disposing);
+                    astroutils = null;
+                }
+                catch { }
+                ascomutils.Dispose();
+                _disposed = true;
             }
         }
 
@@ -209,7 +210,7 @@ namespace ASCOM.Wise40
                 }
 
                 if (res == 0)
-                    return Angle.FromHours(gstNow) + Longitude;
+                    return Angle.FromHours(gstNow) + Angle.FromHours(Longitude / 15);
                 else
                     Exceptor.Throw<InvalidValueException>("LocalSiderealTime", $"Error getting novas31.SiderealTime, res: {res}");
 
