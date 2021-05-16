@@ -112,11 +112,8 @@ namespace ASCOM.Wise40SafeToOperate
 
             if (Double.IsNaN(currentElevation))
                 return "Sun elevation is not available yet";
-
-#if USE_HTTP_FETCHER
             else if (sunElevation.Stale)
                 return $"Sun elevation is stale (older than {sunElevation.MaxAge.ToMinimalString()})";
-#endif
 
             return currentElevation <= max ? "" : $"The Sun elevation ({FormatVerbal(currentElevation)}) is higher than {FormatVerbal(max)}";
         }
@@ -258,8 +255,6 @@ namespace ASCOM.Wise40SafeToOperate
 
                 WiseSite.InitOCH();
 
-                ASCOM.Utilities.Util ascomUtil = new Utilities.Util();
-
                 OnSurface onSurface = new OnSurface()
                 {
                     Latitude = WiseSite.Latitude,
@@ -284,7 +279,8 @@ namespace ASCOM.Wise40SafeToOperate
 
                 double ra = 0.0, dec = 0.0, dis = 0.0;
 
-                short ret = WiseSite.novas31.TopoPlanet(ascomUtil.JulianDate, target, WiseSite.astroutils.DeltaT(), onSurface, Accuracy.Full, ref ra, ref dec, ref dis);
+                short ret = WiseSite.novas31.TopoPlanet(
+                    WiseSite.ascomutil.JulianDate, target, WiseSite.astroutils.DeltaT(), onSurface, Accuracy.Full, ref ra, ref dec, ref dis);
 
                 if (ret != 0)
                     Exceptor.Throw<InvalidOperationException>("SunElevation", $"Cannot calculate Sun position (novas31.TopoPlanet: ret: {ret})");

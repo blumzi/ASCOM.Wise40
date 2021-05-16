@@ -128,6 +128,7 @@
     <Compile Include="Exceptor.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="PeriodicHttpFetcher.cs" />
+    <Compile Include="SafeAscomutil.cs" />
     <Compile Include="SafeAstroutils.cs" />
     <Compile Include="SafeNovas31.cs" />
     <Compile Include="WeatherLogger.cs" />

@@ -21,6 +21,7 @@ namespace ASCOM.Wise40
         private static bool _initialized = false;
         public static SafeNovas31 novas31 = new SafeNovas31();
         public static SafeAstroutils astroutils = new SafeAstroutils();
+        public static SafeAscomutil ascomutil = new SafeAscomutil();
         public readonly ASCOM.Utilities.Util ascomutils = new Util();
         public Astrometry.OnSurface _onSurface;
         public Observer _observer;
@@ -171,13 +172,19 @@ public static bool TransformApparentToJ2000(double apparentRA, double apparentDE
                     novas31 = null;
                 }
                 catch { }
+
+                try {
+                    ascomutils.Dispose();
+                }
+                catch { }
+
                 try
                 {
                     astroutils.Dispose(disposing);
                     astroutils = null;
                 }
                 catch { }
-                ascomutils.Dispose();
+
                 _disposed = true;
             }
         }

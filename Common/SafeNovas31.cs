@@ -24,7 +24,7 @@ namespace ASCOM.Wise40.Common
             try
             {
                 novas31 = new NOVAS31();
-                mutex = new Mutex(false, Const.SafeNovas.MutexName);
+                mutex = new Mutex(false, Const.Mutexes.Novas31);
             }
             catch (Exception ex)
             {

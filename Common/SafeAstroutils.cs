@@ -20,7 +20,7 @@ namespace ASCOM.Wise40.Common
             try
             {
                 astroUtils = new AstroUtils();
-                mutex = new Mutex(false, Const.SafeNovas.MutexName);
+                mutex = new Mutex(false, Const.Mutexes.AstroUtil);
             }
             catch (Exception ex)
             {
@@ -191,7 +191,6 @@ namespace ASCOM.Wise40.Common
 
         public double DeltaT()
         {
-
             bool gotMutex;
 
             try

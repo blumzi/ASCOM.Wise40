@@ -207,9 +207,12 @@ namespace ASCOM.Wise40.Common
             }
         }
 
-        public static class SafeNovas
+        public static class Mutexes
         {
-            public static string MutexName = "24df752f-15a3-4f8f-92cc-ca8ae22a7f39";
+            public static string Novas31 = "24df752f-15a3-4f8f-92cc-ca8ae22a7f39";
+            public static string AscomUtil = "24df752f-15a3-4f8f-92cc-ca8ae22a7f39";
+            public static string AstroUtil = "8a91148c-d0bb-4d4f-a06f-280e045305d2";
+            public static string Debug = "ffe8a24d-774e-4252-b163-c79b7ecf94b9";
         }
     }
 }
