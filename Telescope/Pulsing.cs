@@ -237,5 +237,13 @@ namespace ASCOM.Wise40
                 return _active.Count > 0;
             }
         }
+
+        public string ReasonsForPulseGuiding
+        {
+            get
+            {
+                return IsPulseGuiding ? ToString() : "Telescope is not PulseGuiding";
+            }
+        }
     }
 }

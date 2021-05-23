@@ -490,8 +490,13 @@ namespace Dash
                 buttonTelescopePark.Text = telescopeDigest.AtPark ? "Unpark" : "Park";
 
                 annunciatorTrack.Cadence = telescopeDigest.Tracking ? CadencePattern.SteadyOn : CadencePattern.SteadyOff;
+                toolTip.SetToolTip(annunciatorTrack, telescopeDigest.Tips.Tracking);
+
                 annunciatorSlew.Cadence = telescopeDigest.Slewing ? CadencePattern.SteadyOn : CadencePattern.SteadyOff;
+                toolTip.SetToolTip(annunciatorSlew, telescopeDigest.Tips.Slewing);
+
                 annunciatorPulse.Cadence = telescopeDigest.PulseGuiding ? CadencePattern.SteadyOn : CadencePattern.SteadyOff;
+                toolTip.SetToolTip(annunciatorPulse, telescopeDigest.Tips.PulseGuiding);
 
                 double primaryRate = Const.rateStopped;
                 double secondaryRate = Const.rateStopped;
@@ -738,6 +743,7 @@ namespace Dash
                 annunciatorDome.Cadence = domeDigest.DirectionMotorsAreActive ?
                     CadencePattern.SteadyOn :
                     CadencePattern.SteadyOff;
+                toolTip.SetToolTip(annunciatorDome, domeDigest.Tip);
 
                 #region Shutter
                 string status = domeDigest.Shutter.Status, msg;
@@ -765,6 +771,7 @@ namespace Dash
                         annunciatorShutter.Cadence = CadencePattern.SteadyOff;
                         break;
                 }
+                toolTip.SetToolTip(annunciatorShutter, domeDigest.Shutter.Tip);
             }
             #endregion
 

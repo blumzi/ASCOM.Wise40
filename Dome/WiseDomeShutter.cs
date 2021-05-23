@@ -450,6 +450,17 @@ namespace ASCOM.Wise40
             }
         }
 
+        public string ReasonsForIsMoving
+        {
+            get
+            {
+                if (IsMoving)
+                    return $"{(openPin.isOn ? "OpenPin" : "ClosePin")} is ON";
+                else
+                    return "Shutter is not moving";
+            }
+        }
+
         public int RangeCm
         {
             get
@@ -462,15 +473,22 @@ namespace ASCOM.Wise40
 
                 if (periodicHttpFetcher.Alive)
                 {
-                    string result = periodicHttpFetcher.Result;
-
-                    if (result.StartsWith(prefix) && result.EndsWith(suffix))
+                    try
                     {
-                        result = result.Remove(0, prefix.Length);
-                        result = result.Remove(result.IndexOf(suffix[0]));
+                        string result = periodicHttpFetcher.Result;
 
-                        if (!string.IsNullOrEmpty(result))
-                            return Convert.ToInt32(result);
+                        if (result.StartsWith(prefix) && result.EndsWith(suffix))
+                        {
+                            result = result.Remove(0, prefix.Length);
+                            result = result.Remove(result.IndexOf(suffix[0]));
+
+                            if (!string.IsNullOrEmpty(result))
+                                return Convert.ToInt32(result);
+                        }
+                    }
+                    catch
+                    {
+                        return -1;
                     }
                 }
 

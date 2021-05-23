@@ -17,7 +17,6 @@ using System.Threading.Tasks;
 using System.Linq;
 
 using Newtonsoft.Json;
-//using System.Diagnostics;
 
 /// <summary>
 /// <para>
@@ -76,6 +75,8 @@ namespace ASCOM.Wise40
         private const int waitForOtherAxisMillis = 500;           // half a second between checks setting an axis rate
 
         public static ManualResetEvent endOfAsyncSlewEvent = null;
+
+        private string _reasonsForSlewing;
 
         #region TrackingRestoration
         /// <summary>
@@ -1091,8 +1092,9 @@ namespace ASCOM.Wise40
 
                 if (reasons.Count > 0)
                 {
+                    ReasonsForSlewing = string.Join("; ", reasons);
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugASCOM, $"Slewing Get - True ({string.Join("; ", reasons)})");
+                    debugger.WriteLine(Debugger.DebugLevel.DebugASCOM, $"Slewing Get - True ({_reasonsForSlewing})");
                     #endregion debug
                     return true;
                 }
@@ -1100,6 +1102,19 @@ namespace ASCOM.Wise40
                 debugger.WriteLine(Debugger.DebugLevel.DebugASCOM, "Slewing Get - False");
                 #endregion debug
                 return false;
+            }
+        }
+
+        public string ReasonsForSlewing
+        {
+            get
+            {
+                return Slewing ? _reasonsForSlewing : "No observatory components are moving";
+            }
+
+            set
+            {
+                _reasonsForSlewing = value;
             }
         }
 
@@ -3731,6 +3746,13 @@ namespace ASCOM.Wise40
 
                 try
                 {
+                    TelescopeTips tips = new TelescopeTips()
+                    {
+                        Tracking = $"Telescope is {(Tracking ? "tracking" : "not tracking")}",
+                        Slewing = ReasonsForSlewing,
+                        PulseGuiding = Pulsing.Instance.ReasonsForPulseGuiding,
+                    };
+
                     TelescopeDigest digest = new TelescopeDigest()
                     {
                         Current = new TelescopePosition
@@ -3768,7 +3790,7 @@ namespace ASCOM.Wise40
                         },
                         SecondaryPins = new AxisPins
                         {
-                            SetPin = NorthPin.isOn || SouthGuidePin.isOn,
+                            SetPin = NorthPin.isOn || SouthPin.isOn,
                             GuidePin = NorthGuidePin.isOn || SouthGuidePin.isOn,
                         },
                         SafeAtCurrentCoordinates = SafeAtCoordinates(
@@ -3779,6 +3801,7 @@ namespace ASCOM.Wise40
                         PrimaryIsMoving = AxisIsMoving(TelescopeAxes.axisPrimary),
                         SecondaryIsMoving = AxisIsMoving(TelescopeAxes.axisSecondary),
                         ShuttingDown = activityMonitor.ShuttingDown,
+                        Tips = tips,
                     };
 
                     string response = JsonConvert.SerializeObject(digest);
@@ -3830,6 +3853,13 @@ namespace ASCOM.Wise40
         public double rate;
     }
 
+    public class TelescopeTips
+    {
+        public string Tracking;
+        public string Slewing;
+        public string PulseGuiding;
+    }
+
     public class TelescopeDigest
     {
         public TelescopePosition Current;
@@ -3850,5 +3880,6 @@ namespace ASCOM.Wise40
         public bool BypassCoordinatesSafety;
         public string Status;
         public bool ShuttingDown;
+        public TelescopeTips Tips;
     }
 }

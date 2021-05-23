@@ -913,6 +913,7 @@ namespace ASCOM.Wise40
                         FailedCommunicationAttempts = wisedomeshutter.periodicHttpFetcher.Failures,
                         TimeSinceLastSuccessfullReading = _sinceLastSuccess,
                         TimeSinceLastFailedReading = _sinceLastFailure,
+                        Tip = wisedomeshutter.ReasonsForIsMoving,
                     };
 
                 double azimuth = Azimuth.Degrees;
@@ -937,6 +938,7 @@ namespace ASCOM.Wise40
                     Slewing = slewing,
                     DirectionMotorsAreActive = directionMotorsAreActive,
                     Shutter = shutterDigest,
+                    Tip = ReasonsForSlewing,
                 };
 
                 return JsonConvert.SerializeObject(domeDigest);
@@ -986,6 +988,14 @@ namespace ASCOM.Wise40
                     Exceptor.Throw<InvalidOperationException>("Slewing", "Dome is Slaved");
 
                 return DomeIsMoving || ShutterIsMoving;
+            }
+        }
+
+        public string ReasonsForSlewing
+        {
+            get
+            {
+                return DomeIsMoving ? $"Moving {(StateIsOn(DomeState.MovingCCW) ? "CCW" : "CW")}" : "Dome is not moving";
             }
         }
 
@@ -1611,6 +1621,7 @@ namespace ASCOM.Wise40
         public TimeSpan TimeSinceLastFailedReading;
         public int TotalCommunicationAttempts, FailedCommunicationAttempts;
         //public ConnectionDigest Connection;
+        public string Tip;
     }
 
     public class DomeDigest
@@ -1625,5 +1636,6 @@ namespace ASCOM.Wise40
         public bool Slewing;
         public bool DirectionMotorsAreActive;
         public ShutterDigest Shutter;
+        public string Tip;
     }
 }
