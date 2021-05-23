@@ -35,8 +35,8 @@ namespace ASCOM.Wise40SafeToOperate
             periodicHttpFetcher = new PeriodicHttpFetcher(
                     "ARDOSensor",
                     "http://2.55.90.188:10500/cgi-bin/cgiLastData",
-                    TimeSpan.FromMinutes(1)
-                );
+                    period: TimeSpan.FromMinutes(1),
+                    maxAgeMillis: 90*1000);
             _weatherLogger = new WeatherLogger("ARDO");
         }
 
@@ -51,32 +51,39 @@ namespace ASCOM.Wise40SafeToOperate
 
             if (lastFetch > _lastFetch)
             {
-                string result = periodicHttpFetcher.Result;
-
-                foreach (string line in result.Split('\n').ToList())
+                try
                 {
-                    List<string> words = line.Split('=').ToList();
-                    if (words.Count == 2)
-                        sensorData[words[0]] = words[1];
-                }
+                    string result = periodicHttpFetcher.Result;
 
-                DateTime.TryParse(sensorData["dataGMTTime"] + "Z", out updatedAtUT);
-                if (updatedAtUT > lastUpdatedAtUT)
-                {
-                    _weatherLogger?.Log(new Dictionary<string, string>()
+                    foreach (string line in result.Split('\n').ToList())
                     {
-                        ["Temperature"] = sensorData["temp"],
-                        ["SkyAmbientTemp"] = sensorData["clouds"],
-                        ["Humidity"] = sensorData["hum"],
-                        ["DewPoint"] = sensorData["dewp"],
-                        ["WindSpeed"] = sensorData["wind"],
-                    }, updatedAtUT.ToLocalTime());
-                    #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, $"ARDOSensor.GetReading: logged data for {updatedAtUT}");
-                    #endregion
-                    lastUpdatedAtUT = updatedAtUT;
+                        List<string> words = line.Split('=').ToList();
+                        if (words.Count == 2)
+                            sensorData[words[0]] = words[1];
+                    }
+
+                    DateTime.TryParse(sensorData["dataGMTTime"] + "Z", out updatedAtUT);
+                    if (updatedAtUT > lastUpdatedAtUT)
+                    {
+                        _weatherLogger?.Log(new Dictionary<string, string>()
+                        {
+                            ["Temperature"] = sensorData["temp"],
+                            ["SkyAmbientTemp"] = sensorData["clouds"],
+                            ["Humidity"] = sensorData["hum"],
+                            ["DewPoint"] = sensorData["dewp"],
+                            ["WindSpeed"] = sensorData["wind"],
+                        }, updatedAtUT.ToLocalTime());
+                        #region debug
+                        debugger.WriteLine(Debugger.DebugLevel.DebugSafety, $"ARDOSensor.GetReading: logged data for {updatedAtUT}");
+                        #endregion
+                        lastUpdatedAtUT = updatedAtUT;
+                    }
+                    _lastFetch = lastFetch;
                 }
-                _lastFetch = lastFetch;
+                catch
+                {
+                    return null;
+                }
             }
             return null;
         }
