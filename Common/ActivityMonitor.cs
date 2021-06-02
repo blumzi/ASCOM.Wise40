@@ -9,8 +9,6 @@ using ASCOM.Wise40;
 using ASCOM.Wise40.Common;
 using ASCOM.Utilities;
 using System.IO;
-
-using MySql.Data;
 using MySql.Data.MySqlClient;
 using System.Collections.Concurrent;
 using ASCOM.DeviceInterface;
@@ -101,15 +99,15 @@ namespace ASCOM.Wise40
 
             if (inProgress == null)
             {
-                #region debug
+#region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"ActivityMonitor:EndActivity: No \"{type}\" inProgress");
-                #endregion
+#endregion
                 return;
             }
 
-            #region debug
+#region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"ActivityMonitor:EndActivity: Calling {type}.End()");
-            #endregion
+#endregion
             inProgress._endTime = par.endTime == default ? DateTime.UtcNow : par.endTime;
             inProgress.End(par);
         }
@@ -147,9 +145,9 @@ namespace ASCOM.Wise40
         public static bool ObservatoryIsActive()
         {
             bool ret = !idler.Idle;
-            #region debug
+#region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"ActivityMonitor:ObservatoryIsActive: idler.Status: {idler.Status}, ret: {ret}");
-            #endregion
+#endregion
             return ret;
         }
 
@@ -178,14 +176,14 @@ namespace ASCOM.Wise40
 
             if (inProgressDict.TryGetValue(type, out Activity ret))
             {
-                #region debug
+#region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, dbg + "Found");
-                #endregion
+#endregion
             } else
             {
-                #region debug
+#region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, dbg + "Not found");
-                #endregion
+#endregion
             }
             return ret;
         }
@@ -194,9 +192,9 @@ namespace ASCOM.Wise40
         {
             if (inProgressDict.ContainsKey(activity._type))
             {
-                #region debug
+#region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"inProgressDict already contains {activity._type}");
-                #endregion
+#endregion
                 return null;
             }
 
@@ -349,10 +347,10 @@ namespace ASCOM.Wise40
             _type = type;
             _startTime = DateTime.UtcNow;
 
-            #region debug
+#region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
                 $"Activity: {_type} created. start: {_startTime.ToMySqlDateTime()}");
-            #endregion
+#endregion
         }
 
         public override bool Equals(object obj)
@@ -406,9 +404,9 @@ namespace ASCOM.Wise40
             }
             catch (Exception ex)
             {
-                #region debug
+#region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"Activity.EmitStart: \nsql: {sql}\n Caught {ex.Message} at:\n{ex.StackTrace}");
-                #endregion
+#endregion
             }
         }
 
@@ -461,9 +459,9 @@ namespace ASCOM.Wise40
             }
             catch (Exception ex)
             {
-                #region debug
+#region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"Activity.EmitEnd: \nsql: {sql}\n caught: {ex.Message} at {ex.StackTrace}");
-                #endregion
+#endregion
             }
         }
 
@@ -481,10 +479,10 @@ namespace ASCOM.Wise40
             EmitEnd();
             if (monitor.inProgressDict.ContainsKey(_type) && !monitor.inProgressDict.TryRemove(_type, out _))
                 Exceptor.Throw <InvalidOperationException>("Activity:EndActivity:", $"Could not remove {_type} from inProgressDict");
-            #region debug
+#region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
                 $"ActivityMonitor:EndActivity: removed {_type} from inProgressDict => [{monitor.inProgressDict.ToCSV()}]");
-            #endregion
+#endregion
 
             if (monitor.inProgressDict.Count == 0 && effectOnGoingIdle_AtEnd == EffectOnGoingIdle.Renew)
                 ActivityMonitor.idler.StartGoingIdle(new Idler.StartParams() { reason = "no activities in progress" });
@@ -1263,9 +1261,9 @@ namespace ASCOM.Wise40
             }
             catch (Exception ex)
             {
-                #region debug
+#region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"Activity.EmitStart: \nsql: {sql}\n Caught: {ex.Message} at\n{ex.StackTrace}");
-                #endregion
+#endregion
             }
         }
 
