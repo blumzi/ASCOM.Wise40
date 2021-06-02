@@ -244,7 +244,7 @@ namespace ASCOM.Wise40SafeToOperate
 
                         _value = info.sun_altitude;
                     }
-                    catch (InvalidValueException)
+                    catch
                     {
                         _value = Double.NaN;
                     }
