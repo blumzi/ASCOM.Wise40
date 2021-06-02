@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 using System.Net.Http;
 using System.Threading;
+using Newtonsoft.Json;
 
 namespace ASCOM.Wise40.Common
 {
@@ -19,28 +20,24 @@ namespace ASCOM.Wise40.Common
         private readonly Timer _timer;
         private string _result;
         private readonly int _tries;
-        private readonly bool _oneshot = false;
         private TimeSpan _period;
         private bool _clientPropertiesHaveChanged = false;
         private bool _enabled;
+        private readonly TimeSpan defaultTimeout = TimeSpan.FromSeconds(30);
 
         public PeriodicHttpFetcher(string name,
             string url,
-            TimeSpan period,
-            bool oneshot = false,
+            TimeSpan? period = null,
             int tries = 1,
             int maxAgeMillis = 0,
             int dueMillis = 0,
             string method = "GET",
             string content = null)
         {
-            Period = period;
-            MakeHttpClient();
             _tries = tries;
-            _oneshot = oneshot;
-            MaxAge = (maxAgeMillis == 0) ?
-                TimeSpan.FromMilliseconds(period.TotalMilliseconds * 1.2) : // 120% of period
-                TimeSpan.FromMilliseconds(maxAgeMillis);
+            Period = (period == null) ? TimeSpan.Zero : (TimeSpan) period;
+            MaxAge = (maxAgeMillis == 0) ? defaultTimeout : TimeSpan.FromMilliseconds(maxAgeMillis);
+            MakeHttpClient();
 
             switch (method)
             {
@@ -67,7 +64,7 @@ namespace ASCOM.Wise40.Common
             _client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/html"));
             _client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
             _client.DefaultRequestHeaders.ConnectionClose = false;
-            _client.Timeout = TimeSpan.FromMilliseconds(Period.TotalMilliseconds * .8);
+            _client.Timeout = TimeSpan.FromMilliseconds(Period == TimeSpan.Zero ? defaultTimeout.TotalMilliseconds : Period.TotalMilliseconds * .8);
 
             _clientPropertiesHaveChanged = false;
         }
@@ -75,6 +72,11 @@ namespace ASCOM.Wise40.Common
         private static void OnTimer(object state)
         {
             (state as PeriodicHttpFetcher)?.Fetch();
+        }
+
+        public void Trigger()
+        {
+            _timer.Change(TimeSpan.Zero, Timeout.InfiniteTimeSpan);
         }
 
         public string Name { get; set; }
@@ -167,40 +169,39 @@ namespace ASCOM.Wise40.Common
                         }
                     }
                 }
-                catch (TaskCanceledException ex)
+                catch (AggregateException ae)
                 {
-                    if (ex.InnerException?.InnerException is TaskCanceledException)
+                    foreach (Exception ex in ae.InnerExceptions)
                     {
-                        #region debug
-                        debugger.WriteLine(Debugger.DebugLevel.DebugWise, $"{op}: Timedout: {ex.Message} at\n{ex.StackTrace}");
-                        #endregion
-                        Alive = false;
-                        CauseOfDeath = "Timeout";
+                        if (ex is TaskCanceledException)
+                        {
+                            #region debug
+                            debugger.WriteLine(Debugger.DebugLevel.DebugWise, $"{op}: Timedout: {ex.Message} at\n{ex.StackTrace}");
+                            #endregion
+                            Alive = false;
+                            CauseOfDeath = "Timeout";
+                        }
+                        else if (ex is HttpRequestException)
+                        {
+                            #region debug
+                            debugger.WriteLine(Debugger.DebugLevel.DebugWise, $"{op}: Network error: {ex.Message} at\n{ex.StackTrace}");
+                            #endregion
+                            Alive = false;
+                            CauseOfDeath = $"HTTP error ({ex.Message})";
+                            Failures++;
+                            LastFailure = DateTime.Now;
+                        }
+                        else
+                        {
+                            #region debug
+                            debugger.WriteLine(Debugger.DebugLevel.DebugWise, $"{op}: Caught: {ex.Message} at\n{ex.StackTrace}");
+                            #endregion
+                            Alive = false;
+                            CauseOfDeath = $"Exception ({ex.Message})";
+                            Failures++;
+                            LastFailure = DateTime.Now;
+                        }
                     }
-                    Failures++;
-                    LastFailure = DateTime.Now;
-                }
-                catch (HttpRequestException ex)
-                {
-                    #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugWise, $"{op}: Network error: {ex.Message} at\n{ex.StackTrace}");
-                    #endregion
-                    Alive = false;
-                    CauseOfDeath = $"HTTP error ({ex.Message})";
-                    Failures++;
-                    LastFailure = DateTime.Now;
-                }
-                catch (Exception ex)
-                {
-                    if (ex.InnerException != null)
-                        ex = ex.InnerException;
-                    #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugWise, $"{op}: Caught: {ex.Message} at\n{ex.StackTrace}");
-                    #endregion
-                    Alive = false;
-                    CauseOfDeath = $"Error ({ex.Message})";
-                    Failures++;
-                    LastFailure = DateTime.Now;
                 }
                 finally
                 {
@@ -211,9 +212,11 @@ namespace ASCOM.Wise40.Common
                         Duration = now.Subtract(start);
                     try
                     {
-                        _timer.Change(_oneshot ?
-                            Timeout.Infinite :
-                            (int)Period.TotalMilliseconds, Timeout.Infinite);
+                        _timer.Change(
+                            Period == TimeSpan.Zero ?
+                                Timeout.Infinite :
+                                (int)Period.TotalMilliseconds,
+                            Timeout.Infinite);
                     }
                     catch (ObjectDisposedException) { }
                 }
@@ -277,5 +280,41 @@ namespace ASCOM.Wise40.Common
                 _enabled = value;
             }
         }
+    }
+
+    public class AscomServerFetcher : PeriodicHttpFetcher
+    {
+        public AscomServerFetcher() : base(
+            name: "AscomServerChecker",
+            url: Const.RESTServer.top + "concurrency"
+            ) { }
+
+        public int Concurrency
+        {
+            get
+            {
+                try
+                {
+                    Trigger();
+                    ASCOMResponse ascomResponse = JsonConvert.DeserializeObject<ASCOMResponse>(this.Result);
+                    return Convert.ToInt32(ascomResponse.Value);
+                }
+                catch (Exception ex)
+                {
+                    Exceptor.Throw<WiseException>("AscomServerFetcher.Concurrency", $"Exception : {ex.Message}");
+                    return -1;
+                }
+            }
+        }
+    }
+
+    public class ASCOMResponse
+    {
+        public string Value;
+        public int ClientTransactionID;
+        public int ServerTransactionID;
+        public int ErrorNumber;
+        public string ErrorMessage;
+        public string DriverException;
     }
 }

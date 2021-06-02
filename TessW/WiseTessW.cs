@@ -62,51 +62,55 @@ namespace ASCOM.Wise40.TessW
             if (lastFetch == DateTime.MinValue || lastFetch <= _lastDataFetch)
                 return;
 
-            string content = periodicHttpFetcher.Result;
+            try
+            {
+                string content = periodicHttpFetcher.Result;
 
-            /// <!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,user-scalable=0">
-            /// <title>STA mode</title></head>
-            /// <body><META HTTP-EQUIV="Refresh" Content= "4" > <h2>STARS4ALL<br>TESS-W Data</h2>
-            /// <h3> Mag.V :  0.00 mv/as2<br> Frec. : 50000.00 Hz<br> T. IR :   -1.91 &ordm;C<br> T. Sens:   38.91 &ordm;C<br><br> Wifi :   -95 dBm<br>mqtt sec.: 17246</h3>
-            /// <p><a href="/config">Show Settings</a></p></body></html>
-            Regex r = new Regex(@"Mag.V :\s+(?<mag>[\d.]+).*" +
-                                @"Frec.[\s:]+(?<frec>[\d.-]+).*" +
-                                @"T. IR[\s:]+(?<tempSky>[\d.-]+).*" +
-                                @"T. Sens[\s:]+(?<tempAmb>[\d.-]+).*" /* +
+                /// <!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,user-scalable=0">
+                /// <title>STA mode</title></head>
+                /// <body><META HTTP-EQUIV="Refresh" Content= "4" > <h2>STARS4ALL<br>TESS-W Data</h2>
+                /// <h3> Mag.V :  0.00 mv/as2<br> Frec. : 50000.00 Hz<br> T. IR :   -1.91 &ordm;C<br> T. Sens:   38.91 &ordm;C<br><br> Wifi :   -95 dBm<br>mqtt sec.: 17246</h3>
+                /// <p><a href="/config">Show Settings</a></p></body></html>
+                Regex r = new Regex(@"Mag.V :\s+(?<mag>[\d.]+).*" +
+                                    @"Frec.[\s:]+(?<frec>[\d.-]+).*" +
+                                    @"T. IR[\s:]+(?<tempSky>[\d.-]+).*" +
+                                    @"T. Sens[\s:]+(?<tempAmb>[\d.-]+).*" /* +
                                     @"Wifi[\s:]+(?<wifi>[\d.-]+).*" +
                                     @"mqtt sec.[\s:]+(?<mqtt>\d+).*" */);
-            Match m = r.Match(content);
-            if (m.Success)
-            {
-                Instance.sensorData["mag"] = m.Result("${mag}");
-                Instance.sensorData["frec"] = m.Result("${frec}");
-                Instance.sensorData["tempSky"] = m.Result("${tempSky}");
-                Instance.sensorData["tempAmb"] = m.Result("${tempAmb}");
-                //Instance.sensorData["wifi"] = m.Result("${wifi}");
-                //Instance.sensorData["mqtt"] = m.Result("${mqtt}");
-
-                double tAmb = Convert.ToDouble(Instance.sensorData["tempAmb"]);
-                double tSky = Convert.ToDouble(Instance.sensorData["tempSky"]);
-
-                double percent = 100 - (3 * (tAmb - tSky));
-                Instance.sensorData["cloudCover"] = (Math.Max(percent, 0.0)).ToString();
-
-                Instance.updatedAtUT = DateTime.UtcNow;
-
-                Instance._weatherLogger?.Log(new Dictionary<string, string>()
+                Match m = r.Match(content);
+                if (m.Success)
                 {
-                    ["Temperature"] = Instance.sensorData["tempAmb"],
-                    ["SkyAmbientTemp"] = Instance.sensorData["tempSky"],
-                    ["CloudCover"] = Instance.sensorData["cloudCover"],
-                }, Instance.updatedAtUT);
+                    Instance.sensorData["mag"] = m.Result("${mag}");
+                    Instance.sensorData["frec"] = m.Result("${frec}");
+                    Instance.sensorData["tempSky"] = m.Result("${tempSky}");
+                    Instance.sensorData["tempAmb"] = m.Result("${tempAmb}");
+                    //Instance.sensorData["wifi"] = m.Result("${wifi}");
+                    //Instance.sensorData["mqtt"] = m.Result("${mqtt}");
 
-                #region debug
-                Instance.debugger.WriteLine(Debugger.DebugLevel.DebugSafety,
-                    $"TessW.Refresh: Success, content: [{content}], duration: {periodicHttpFetcher.Duration}");
-                #endregion
+                    double tAmb = Convert.ToDouble(Instance.sensorData["tempAmb"]);
+                    double tSky = Convert.ToDouble(Instance.sensorData["tempSky"]);
 
-                _lastDataFetch = lastFetch;
+                    double percent = 100 - (3 * (tAmb - tSky));
+                    Instance.sensorData["cloudCover"] = (Math.Max(percent, 0.0)).ToString();
+
+                    Instance.updatedAtUT = DateTime.UtcNow;
+
+                    Instance._weatherLogger?.Log(new Dictionary<string, string>()
+                    {
+                        ["Temperature"] = Instance.sensorData["tempAmb"],
+                        ["SkyAmbientTemp"] = Instance.sensorData["tempSky"],
+                        ["CloudCover"] = Instance.sensorData["cloudCover"],
+                    }, Instance.updatedAtUT);
+
+                    #region debug
+                    Instance.debugger.WriteLine(Debugger.DebugLevel.DebugSafety,
+                        $"TessW.Refresh: Success, content: [{content}], duration: {periodicHttpFetcher.Duration}");
+                    #endregion
+
+                    _lastDataFetch = lastFetch;
+                }
             }
+            catch { }
         }
 
         public void Init()

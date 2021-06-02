@@ -121,60 +121,100 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             string remoteDriver = null;
             #region Connect to remote ASCOM Drivers
 
-            try
+            remoteDriver = "Telescope";
+            if (wisetelescope == null)
             {
-                remoteDriver = "Telescope";
-                if (wisetelescope == null)
+                try
+                {
                     wisetelescope = new DriverAccess.Telescope("ASCOM.AlpacaDynamic1.Telescope");
-                if (!wisetelescope.Connected)
-                {
-                    wisetelescope.Connected = true;
-                    while (!wisetelescope.Connected)
-                    {
-                        Log($"Waiting for the \"{remoteDriver}\" client to connect ...", 5);
-                        Application.DoEvents();
-                    }
                 }
+                catch (Exception ex)
+                {
+                    Log($"Cannot connect the remote {remoteDriver} client");
 
-                remoteDriver = "SafeToOperate";
-                if (wisesafetooperate == null)
+                    string msg = $"CanConnect:Exception: {ex.Message}";
+                    if (ex.InnerException != null)
+                        msg += $" caused by {ex.InnerException}";
+                    msg += $" at {ex.StackTrace}";
+
+                    Log(msg, debugOnly: true);
+                    return false;
+                }
+            }
+
+            if (!wisetelescope.Connected)
+            {
+                wisetelescope.Connected = true;
+                while (!wisetelescope.Connected)
+                {
+                    Log($"Waiting for the \"{remoteDriver}\" client to connect ...", 5);
+                    Application.DoEvents();
+                }
+            }
+
+            remoteDriver = "SafeToOperate";
+            if (wisesafetooperate == null)
+                try
+                {
                     wisesafetooperate = new DriverAccess.SafetyMonitor("ASCOM.AlpacaDynamic1.SafetyMonitor");      // Must match ASCOM Remote Server Setup
-                if (!wisesafetooperate.Connected)
+                }
+                catch (Exception ex)
                 {
-                    wisesafetooperate.Connected = true;
-                    while (!wisesafetooperate.Connected)
-                    {
-                        Log($"Waiting for the \"{remoteDriver}\" client to connect ...", 5);
-                        Application.DoEvents();
-                    }
+                    if (ex.InnerException != null)
+                        ex = ex.InnerException;
+                    Log($"Cannot connect the remote {remoteDriver} client");
+                    Log($"CheckConnections:Exception: {ex?.Message} at {ex?.StackTrace}", debugOnly: true);
+                    return false;
                 }
 
-                remoteDriver = "Dome";
-                if (wisedome == null)
+            if (!wisesafetooperate.Connected)
+            {
+                wisesafetooperate.Connected = true;
+                while (!wisesafetooperate.Connected)
+                {
+                    Log($"Waiting for the \"{remoteDriver}\" client to connect ...", 5);
+                    Application.DoEvents();
+                }
+            }
+
+            remoteDriver = "Dome";
+            if (wisedome == null)
+                try
+                {
                     wisedome = new DriverAccess.Dome("ASCOM.AlpacaDynamic1.Dome");
-                if (!wisedome.Connected)
+                }
+                catch (Exception ex)
                 {
-                    wisedome.Connected = true;
-                    while (!wisedome.Connected)
-                    {
-                        Log($"Waiting for the \"{remoteDriver}\" client to connect", 5);
-                        Application.DoEvents();
-                    }
+                    if (ex.InnerException != null)
+                        ex = ex.InnerException;
+                    Log($"Cannot connect the remote {remoteDriver} client");
+                    Log($"CheckConnections:Exception: {ex?.Message} at {ex?.StackTrace}", debugOnly: true);
+                    return false;
                 }
 
-                if (!buttonProjector.Enabled)
+            if (!wisedome.Connected)
+            {
+                wisedome.Connected = true;
+                while (!wisedome.Connected)
+                {
+                    Log($"Waiting for the \"{remoteDriver}\" client to connect", 5);
+                    Application.DoEvents();
+                }
+            }
+
+            if (!buttonProjector.Enabled)
                     buttonProjector.Enabled = true;
 
                 return true;
-            }
-            catch (Exception ex)
-            {
-                if (ex.InnerException != null)
-                    ex = ex.InnerException;
-                Log($"Cannot connect the remote {remoteDriver} client");
-                Log($"CheckConnections:Exception: {ex?.Message} at {ex?.StackTrace}", debugOnly: true);
-                return false;
-            }
+            //}
+            //catch (Exception ex)
+            //{
+            //    if (ex.InnerException != null)
+            //        ex = ex.InnerException;
+            //    Log($"Cannot connect the remote {remoteDriver} client");
+            //    Log($"CheckConnections:Exception: {ex?.Message} at {ex?.StackTrace}", debugOnly: true);
+            //    return false;
+            //}
             #endregion
         }
 

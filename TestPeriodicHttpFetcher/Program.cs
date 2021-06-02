@@ -42,8 +42,10 @@ namespace TestPeriodicHttpFetcher
                     string value = fetchers[i].Result;
                     Console.WriteLine($"{fetchers[i].Name}: value: {value}, age: {fetchers[i].Age.ToMinimalString()}");
                 }
-                catch (InvalidValueException)
-                {}
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"{fetchers[i].Name}: Exception: {ex.Message}");
+                }
                 finally
                 {
                     Thread.Sleep(5000);
