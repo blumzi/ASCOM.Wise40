@@ -130,7 +130,7 @@ namespace ASCOM.Wise40.Common
             }
         }
 
-        public enum Application { RESTServer, Dash, WeatherLink, ObservatoryMonitor, OCH, RemoteClientLocalServer, SafetyDash }
+        public enum Application { RESTServer, Dash, WeatherLink, ObservatoryMonitor, OCH, AlpacaClientLocalServer, SafetyDash }
 
         public static Dictionary<Application, App> Apps = new Dictionary<Application, App>()
             {
@@ -184,10 +184,11 @@ namespace ASCOM.Wise40.Common
                 },
 
                 {
-                    Application.RemoteClientLocalServer, new App
+                    Application.AlpacaClientLocalServer, new App
                     {
                         locallyDeveloped = false,
-                        appName = "ASCOM.RemoteClientLocalServer",
+                        path = "c:/Program Files (x86)/Common Files/ASCOM/AlpacaDynamicClients/ASCOM.AlpacaClientLocalServer.exe",
+                        appName = "ASCOM.AlpacaClientLocalServer",
                     }
                 },
             };
