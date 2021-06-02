@@ -9,7 +9,8 @@ using ASCOM.Wise40.Common;
 using ASCOM.Wise40;
 using System.Diagnostics;
 using System.IO;
-using System.Runtime.CompilerServices;
+using System.Net.Http;
+using Newtonsoft.Json;
 
 namespace Wise40Watcher
 {
@@ -18,40 +19,30 @@ namespace Wise40Watcher
         private Const.App _app;
         private Process _process = null;
         private bool _stopping = false;
+        private readonly AscomServerFetcher ascomServerFetcher = new AscomServerFetcher();
 
-        private void Init(string name)
+        private readonly Dictionary<string, Const.Application> _appNameToToken = new Dictionary<string, Const.Application>
         {
-            WiseName = name;
-            switch (WiseName)
-            {
-                case "ascom":
-                    _app = Const.Apps[Const.Application.RESTServer];
-                    break;
+            { "ascom", Const.Application.RESTServer },
+            { "alpaca", Const.Application.AlpacaClientLocalServer },
+            { "weatherlink", Const.Application.WeatherLink },
+            { "dash", Const.Application.Dash },
+            { "obsmon", Const.Application.ObservatoryMonitor },
+            { "safetydash", Const.Application.SafetyDash },
+        };
 
-                case "weatherlink":
-                    _app = Const.Apps[Const.Application.WeatherLink];
-                    break;
-
-                case "dash":
-                    _app = Const.Apps[Const.Application.Dash];
-                    break;
-
-                case "obsmon":
-                    _app = Const.Apps[Const.Application.ObservatoryMonitor];
-                    break;
-
-                case "safetydash":
-                    _app = Const.Apps[Const.Application.SafetyDash];
-                    break;
-            }
+        private void Init(string shortName)
+        {
+            WiseName = shortName;
+            _app = Const.Apps[_appNameToToken[shortName]];
         }
 
-        public Watcher(string name)
+        public Watcher(string shortName)
         {
             string logDir = ASCOM.Wise40.Common.Debugger.LogDirectory();
             Directory.CreateDirectory(logDir);
 
-            Init(name);
+            Init(shortName);
         }
 
         public bool Responding
@@ -125,7 +116,7 @@ namespace Wise40Watcher
             if (WiseName == "ascom")
             {
                 KillAllProcesses(Const.Apps[Const.Application.OCH].appName);
-                KillAllProcesses(Const.Apps[Const.Application.RemoteClientLocalServer].appName);
+                KillAllProcesses(Const.Apps[Const.Application.AlpacaClientLocalServer].appName);
             }
         }
 
@@ -142,6 +133,7 @@ namespace Wise40Watcher
             {
                 Thread thread = new Thread(Worker);
                 thread.Start();
+                Wise40Watcher.Log($"{op}: worker thread started ...");
                 if (waitForResponse)
                 {
                     do
@@ -156,6 +148,19 @@ namespace Wise40Watcher
                         Wise40Watcher.Log($"{op}:[{_process.Id}]: waiting {waitMillis} millis for process to Respond ...");
                         Thread.Sleep(waitMillis);
                     } while (!_process.Responding);
+
+                    if (_app == Const.Apps[Const.Application.RESTServer])
+                    {
+                        try
+                        {
+                            int concurrency = -1; // concurrencyFetcher.Value;
+                            Wise40Watcher.Log($"{op}:[{_process.Id}]: concurrency: {concurrency}");
+                        }
+                        catch (Exception)
+                        {
+                            throw;
+                        }
+                    }
                     Wise40Watcher.Log($"{op}:[{_process.Id}]: process is responding");
                 }
             }
@@ -174,5 +179,86 @@ namespace Wise40Watcher
 
             KillAll();
         }
+
+        //private bool GetConcurrency()
+        //{
+        //    int tries;
+        //    string op = "GetConcurrency";
+
+        //    for (tries = 0; tries < 10; tries++)
+        //    {
+        //        try
+        //        {
+        //            using (HttpRequestMessage httpRequest = new HttpRequestMessage
+        //            {
+        //                RequestUri = new Uri(Const.RESTServer.top + "concurrency"),
+        //                Method = HttpMethod.Get,
+        //            })
+        //            {
+        //                using (HttpResponseMessage response = _client.SendAsync(httpRequest, HttpCompletionOption.ResponseContentRead).Result)
+        //                {
+        //                    using (HttpContent content = response.Content)
+        //                    {
+        //                        string json = content.ReadAsStringAsync().Result;
+        //                        ASCOMResponse ascomResponse = JsonConvert.DeserializeObject<ASCOMResponse>(json);
+        //                        #region debug
+        //                        Wise40Watcher.Log($"{op}: Succeeded at try #{tries + 1}, concurrency value: {ascomResponse.Value}.");
+        //                        #endregion
+        //                        return true;      // tries loop
+        //                    }
+        //                }
+        //            }
+        //        }
+        //        catch (TaskCanceledException ex)
+        //        {
+        //            if (ex.InnerException?.InnerException is TaskCanceledException)
+        //            {
+        //                #region debug
+        //                Wise40Watcher.Log($"{op}: Timedout: {ex.Message} at\n{ex.StackTrace}");
+        //                #endregion
+        //            }
+        //        }
+        //        catch (AggregateException ae)
+        //        {
+        //            ae.Handle((x) =>
+        //            {
+        //                if (x is HttpRequestException)
+        //                {
+        //                    #region debug
+        //                    Wise40Watcher.Log($"{op}: HttpRequestException: {x.Message}");
+        //                    #endregion
+        //                    return true;
+        //                }
+        //                return false;
+        //            });
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            #region debug
+        //            string msg = $"{op}: Caught: {ex.Message}";
+        //            if (ex.InnerException != null)
+        //                msg += $" from {ex.InnerException}";
+        //            msg += $" at {ex.StackTrace}";
+        //            Wise40Watcher.Log(msg);
+        //            #endregion
+        //        }
+        //        finally
+        //        {
+        //            Thread.Sleep(5000);
+        //        }
+        //    }
+
+        //    return false;
+        //}
+    }
+
+    public class ASCOMResponse
+    {
+        public string Value;
+        public int ClientTransactionID;
+        public int ServerTransactionID;
+        public int ErrorNumber;
+        public string ErrorMessage;
+        public string DriverException;
     }
 }

@@ -1,4 +1,7 @@
-﻿using System;
+﻿#define MYSQL_WORKS
+//#define SERVER_ONLY
+
+using System;
 using System.ServiceProcess;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -15,13 +18,16 @@ namespace Wise40Watcher
     public partial class Wise40Watcher : ServiceBase
     {
         private Watcher ascomWatcher;
+        private Watcher alpacaWatcher;
+#if !SERVER_ONLY
         private Watcher dashWatcher;
         private Watcher obsmonWatcher;
+#endif
         private Watcher weatherLinkWatcher;
         private readonly bool weatherLinkNeedsWatching = false;
         private const string serviceName = "Wise40Watcher";
         private static readonly WiseSite.OpMode opMode = WiseSite.OperationalMode;
-        private static object _lock = new object();
+        private static readonly object _lock = new object();
         private static readonly int pid = Process.GetCurrentProcess().Id;
 
         public Wise40Watcher()
@@ -63,10 +69,13 @@ namespace Wise40Watcher
         {
             //System.Diagnostics.Debugger.Launch();
             Log($"=========== Start (opMode: {opMode}) ===========");
-
+            
+            ConnectWlan();
             if (weatherLinkNeedsWatching)
                 weatherLinkWatcher = new Watcher("weatherlink");
             ascomWatcher = new Watcher("ascom");
+            alpacaWatcher = new Watcher("alpaca");
+#if !SERVER_ONLY
             switch (opMode)
             {
                 case WiseSite.OpMode.ACP:
@@ -78,10 +87,11 @@ namespace Wise40Watcher
                     obsmonWatcher = new Watcher("obsmon");
                     break;
             }
-
+#endif
             if (weatherLinkNeedsWatching)
                 weatherLinkWatcher.Start(args, waitForResponse: true);
 
+#if MYSQL_WORKS
             const string mySQL = "MySQL80";
             using (ServiceController sc = new ServiceController(mySQL))
             {
@@ -105,8 +115,11 @@ namespace Wise40Watcher
                         break;
                 }
             }
+#endif
 
             ascomWatcher.Start(args, waitForResponse: true);
+            alpacaWatcher.Start(args);
+#if !SERVER_ONLY
             switch (opMode)
             {
                 case WiseSite.OpMode.WISE:
@@ -118,6 +131,7 @@ namespace Wise40Watcher
                     obsmonWatcher.Start(args);
                     break;
             }
+#endif
             Thread.Sleep(2000);
             Log("=========== Start done ===========");
         }
@@ -127,7 +141,7 @@ namespace Wise40Watcher
             try
             {
                 Log("=========== Stop ===========");
-
+#if !SERVER_ONLY
                 switch (opMode)
                 {
                     case WiseSite.OpMode.WISE:
@@ -139,7 +153,9 @@ namespace Wise40Watcher
                         obsmonWatcher.Stop();
                         break;
                 }
+#endif
                 ascomWatcher.Stop();
+                alpacaWatcher.Stop();
                 if (weatherLinkNeedsWatching)
                     weatherLinkWatcher.Stop();
 
@@ -147,6 +163,44 @@ namespace Wise40Watcher
             } catch (Exception ex)
             {
                 Log($"OnStop(): caught {ex.Message} at {ex.StackTrace}");
+            }
+        }
+
+        private void ConnectWlan()
+        {
+            string output;
+            string interfaceName = "Wireless Network Connection 4";
+
+            using (var p = new Process())
+            {
+                p.StartInfo.UseShellExecute = false;
+                p.StartInfo.RedirectStandardOutput = true;
+                p.StartInfo.CreateNoWindow = true;
+                p.StartInfo.FileName = "netsh.exe";
+                p.StartInfo.Arguments = $"interface show interface name=\"{interfaceName}\"";
+                p.Start();
+
+                output = p.StandardOutput.ReadToEnd();
+                p.WaitForExit();
+            }
+
+            if (output.Contains("Connected"))
+            {
+                Log($"Interface '{interfaceName}' already connected.");
+            }
+            else
+            {
+                using (var p = new Process())
+                {
+                    p.StartInfo.UseShellExecute = false;
+                    p.StartInfo.RedirectStandardOutput = false;
+                    p.StartInfo.CreateNoWindow = true;
+                    p.StartInfo.FileName = "netsh.exe";
+                    p.StartInfo.Arguments = $"wlan connect interface=\"{interfaceName}\" name=wo";
+                    p.Start();
+
+                    Log($"Initiated WiFi connection with: {p.StartInfo.FileName} {p.StartInfo.Arguments} ...");
+                }
             }
         }
     }
