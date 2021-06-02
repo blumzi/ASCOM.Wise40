@@ -7,7 +7,6 @@ using System.IO;
 using System.Data;
 
 using MySql.Data.MySqlClient;
-using MySql.Data;
 using ASCOM.Wise40.Common;
 
 namespace ASCOM.Wise40.Common
@@ -30,9 +29,9 @@ namespace ASCOM.Wise40.Common
                 using (var _sqlConn = new MySqlConnection(Const.MySql.DatabaseConnectionString.Wise_weather))
                 {
                     _sqlConn.Open();
-                    #pragma warning disable CA2100
+#pragma warning disable CA2100
                     using (var sqlCmd = new MySqlCommand(sql, _sqlConn))
-                    #pragma warning restore CA2100
+#pragma warning restore CA2100
                     {
                         using (var cursor = sqlCmd.ExecuteReader())
                         {
@@ -46,10 +45,10 @@ namespace ASCOM.Wise40.Common
             {
                 prevLocalLoggedTime = DateTime.MinValue;
             }
-            #region debug
+#region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
                 $"WeatherLogger({_stationName}): .const:prevLoggedLocalTime: {prevLocalLoggedTime:yyyy-MM-dd HH:mm:ss.fff}");
-            #endregion
+#endregion
         }
 
         static WeatherLogger() { }
@@ -85,18 +84,18 @@ namespace ASCOM.Wise40.Common
                             sqlCmd.ExecuteNonQuery();
                         }
                         prevLocalLoggedTime = currentLocalLoggedTime;
-                        #region debug
+            #region debug
                         debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
                             $"WeatherLogger.Log({_stationName}): prevLoggedTime: {prevLocalLoggedTime:yyyy-MM-dd HH:mm:ss.fff}");
-                        #endregion
+            #endregion
                     }
                 }
                 catch (Exception ex)
                 {
-                    #region debug
+            #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
                         $"WeatherLogger.log: \nsql: {sql}\n Caught: {ex.Message} at\n{ex.StackTrace}");
-                    #endregion
+            #endregion
                 }
             }
         }
