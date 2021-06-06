@@ -53,7 +53,18 @@ namespace ASCOM.Wise40
 
         public static bool IsSet()
         {
-            return System.IO.File.Exists(Const.humanInterventionFilePath);
+            while (true)
+            {
+                try
+                {
+                    return System.IO.File.Exists(Const.humanInterventionFilePath);
+                }
+                catch (Exception ex)
+                {
+                    Debugger.Instance.WriteLine(Debugger.DebugLevel.DebugLogic, $"HumanIntervention:IsSet caught {ex.Message} at {ex.StackTrace}");
+                    System.Threading.Thread.Sleep(100);
+                }
+            }
         }
 
         public static HumanInterventionDetails Details
