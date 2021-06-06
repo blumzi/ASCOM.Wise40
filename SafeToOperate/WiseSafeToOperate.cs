@@ -213,8 +213,7 @@ namespace ASCOM.Wise40SafeToOperate
         }
 
         public ArrayList SupportedActions { get; } = new ArrayList() {
-            "start-bypass",
-            "end-bypass",
+            "bypass",
             "status",
             "unsafereasons",
             "unsafereasons-json",
@@ -230,9 +229,18 @@ namespace ASCOM.Wise40SafeToOperate
 
         public string Action(string actionName, string actionParameters)
         {
-            string ret;
+            string ret = "default-action-ret";
             List<string> sensors = new List<string>();
             string sensorName;
+            List<string> parameters = new List<string>();
+
+            if (!string.IsNullOrEmpty(actionParameters))
+            {
+                parameters = actionParameters.Split(',').ToList<string>();
+
+                for (int i = 0; i < parameters.Count; i++)
+                    parameters[i] = parameters[i].ToLower();
+            }
 
             switch (actionName.ToLower())
             {
@@ -257,50 +265,73 @@ namespace ASCOM.Wise40SafeToOperate
                     break;
 
                 case "sensor-is-safe":
-                    sensorName = actionParameters.ToLower();
-                    if (_sensorHandlers.ContainsKey(sensorName))
-                    {
-                        ret = JsonConvert.SerializeObject(_sensorHandlers[sensorName].IsSafe);
-                    }
+                    if (parameters.Count != 1)
+                        ret = "Must specify sensor name";
                     else
                     {
-                        Exceptor.Throw<InvalidValueException>("Action(sensor-is-safe)", $"Unknown sensor \"{sensorName}\"!");
-                        ret = string.Empty;
+                        sensorName = parameters[0];
+                        if (_sensorHandlers.ContainsKey(sensorName))
+                        {
+                            ret = JsonConvert.SerializeObject(_sensorHandlers[sensorName].IsSafe);
+                        }
+                        else
+                        {
+                            Exceptor.Throw<InvalidValueException>("Action(sensor-is-safe)", $"Unknown sensor \"{sensorName}\"!");
+                            ret = string.Empty;
+                        }
                     }
                     break;
 
                 case "wise-sensor-is-safe":
-                    sensorName = actionParameters.ToLower();
-                    if (!_sensorHandlers.ContainsKey(sensorName) || _sensorHandlers[sensorName].HasAttribute(Sensor.Attribute.Wise40Specific))
-                        Exceptor.Throw<InvalidValueException>("Action(wise-sensor-is-safe)", $"Unknown Wise-wide sensor \"{sensorName}\"!");
-                    ret = JsonConvert.SerializeObject(_sensorHandlers[sensorName].IsSafe);
+                    if (parameters.Count != 1)
+                        ret = "Must specify sensor name";
+                    else
+                    {
+                        sensorName = parameters[0];
+                        if (!_sensorHandlers.ContainsKey(sensorName) || _sensorHandlers[sensorName].HasAttribute(Sensor.Attribute.Wise40Specific))
+                            Exceptor.Throw<InvalidValueException>("Action(wise-sensor-is-safe)", $"Unknown Wise-wide sensor \"{sensorName}\"!");
+                        ret = JsonConvert.SerializeObject(_sensorHandlers[sensorName].IsSafe);
+                    }
                     break;
 
-                case "start-bypass":
-                    _bypassed = true;
-                    if (!string.Equals(actionParameters, "temporary", StringComparison.OrdinalIgnoreCase))
-                        _profile.WriteValue(driverID, Const.ProfileName.SafeToOperate_Bypassed, _bypassed.ToString());
-                    #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, $"Started bypass (parameter: {actionParameters})");
-                    #endregion
-                    ret = "ok";
+                case "bypass":
+                    if (parameters.Count < 1)
+                        ret = "Must specify parameter 'start', 'end' or 'status'";
+                    else
+                    {
+                        switch (parameters[0])
+                        {
+                            case "start":
+                                _bypassed = true;
+                                if (!parameters.Contains("temporary"))
+                                    _profile.WriteValue(driverID, Const.ProfileName.SafeToOperate_Bypassed, _bypassed.ToString());
+                                #region debug
+                                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, $"Started bypass (parameters: {string.Join(",", parameters.ToArray())})");
+                                #endregion
+                                ret = "ok";
+                                break;
+
+                            case "end":
+                                _bypassed = false;
+                                if (!parameters.Contains("temporary"))
+                                    _profile.WriteValue(driverID, Const.ProfileName.SafeToOperate_Bypassed, _bypassed.ToString());
+                                #region debug
+                                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, $"Ended bypass (parameters: {string.Join(",", parameters.ToArray())})");
+                                #endregion
+                                ret = "ok";
+                                break;
+
+                            case "status":
+                                ret = _bypassed.ToString();
+                                break;
+                        }
+                    }
                     break;
 
-                case "end-bypass":
-                    _bypassed = false;
-                    if (!string.Equals(actionParameters, "temporary", StringComparison.OrdinalIgnoreCase))
-                        _profile.WriteValue(driverID, Const.ProfileName.SafeToOperate_Bypassed, _bypassed.ToString());
-                    #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, $"Ended bypass (parameter: {actionParameters})");
-                    #endregion
-                    ret = "ok";
-                    break;
 
                 case "status":
-                    if (string.IsNullOrEmpty(actionParameters))
-                        return Digest;
-                    else
-                        return DigestSensors(actionParameters);
+                    ret = (parameters.Count == 0) ? Digest : DigestSensors(parameters[0]);
+                    break;
 
                 case "unsafereasons":
                     ret = string.Join(Const.recordSeparator, UnsafeReasonsList());
@@ -323,11 +354,13 @@ namespace ASCOM.Wise40SafeToOperate
                     break;
 
                 case "raw-weather-data":
-                    return RawWeatherData;
+                    ret = RawWeatherData;
+                    break;
 
                 default:
                     Exceptor.Throw<ActionNotImplementedException>("Action", $"Action {actionName} is not implemented by this driver");
-                    return string.Empty;
+                    ret = string.Empty;
+                    break;
             }
             return ret;
         }
@@ -792,6 +825,7 @@ namespace ASCOM.Wise40SafeToOperate
                     {
                         if (s.StateIsNotSet(Sensor.State.EnoughReadings))
                             _unsafeBecauseNotReady = true;
+
                         if (toBeIgnored == Sensor.Attribute.Wise40Specific && s.HasAttribute(Sensor.Attribute.Wise40Specific))
                         {
                             continue;
@@ -819,7 +853,7 @@ namespace ASCOM.Wise40SafeToOperate
             }
 
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "IsReallySafe: {0}", ret);
+            debugger.WriteLine(Debugger.DebugLevel.DebugSafety, $"IsSafeWithoutCheckingForShutdown: {ret}");
             #endregion
             return ret;
         }

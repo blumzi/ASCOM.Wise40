@@ -1623,7 +1623,7 @@ namespace ASCOM.Wise40
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: starting safetooperate bypass ...");
                 #endregion
                 rememberToCancelSafetyBypass = true;
-                wisesafetooperate.Action("start-bypass", "temporary");
+                wisesafetooperate.Action("bypass", "start,temporary");
             }
 
             if (AtPark)
@@ -1735,7 +1735,7 @@ namespace ASCOM.Wise40
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: ending safetooperate bypass ...");
                 #endregion
-                wisesafetooperate.Action("end-bypass", "temporary");
+                wisesafetooperate.Action("bypass", "end,temporary");
             }
 
             #region debug

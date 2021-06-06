@@ -28,7 +28,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
         private static DriverAccess.Dome wisedome = null;
         private static DriverAccess.SafetyMonitor wisesafetooperate = null;
         private readonly Version version = new Version(0, 2);
-        private static DateTime _nextCheck = DateTime.Now + TimeSpan.FromSeconds(20);
+        private static DateTime _nextCheck = DateTime.Now + TimeSpan.FromSeconds(25);
         private static bool _checking = false;
         public static TimeSpan _intervalBetweenRegularChecks;
         public static TimeSpan _intervalBetweenChecksWhileShuttingDown = TimeSpan.FromSeconds(20);
@@ -837,7 +837,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             if (wisesafetooperate == null)
                 return;
 
-            wisesafetooperate.Action(safetooperateDigest.Bypassed ? "end-bypass" : "start-bypass", string.Empty);
+            wisesafetooperate.Action("bypass", safetooperateDigest.Bypassed ? "end" : "start");
         }
 
         private void buttonProjector_Click(object sender, EventArgs e)
