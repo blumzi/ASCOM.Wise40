@@ -567,6 +567,7 @@ namespace Dash
             {
                 labelMoonIllum.Text = (Moon.Instance.Illumination * 100).ToString("F0") + "%";
                 labelMoonIllum.ForeColor = safeColor;
+                toolTip.SetToolTip(labelMoonIllum, "Calculated Moon illumination");
 
                 try
                 {
@@ -574,11 +575,13 @@ namespace Dash
                     Angle dist = Angle.FromDegrees(distance.Degrees, Angle.AngleType.Az);
 
                     labelMoonDist.Text = dist.ToShortNiceString();
+                    labelMoonDist.ForeColor = safeColor;
                     toolTip.SetToolTip(labelMoonDist, "Calculated angular distance between the telescope and the Moon");
                 }
                 catch (InvalidOperationException)
                 {
                     labelMoonDist.Text = "unknown";
+                    labelMoonDist.ForeColor = warningColor;
                     toolTip.SetToolTip(labelMoonDist, "Moon distance could not be calculated!");
                 }
             }
