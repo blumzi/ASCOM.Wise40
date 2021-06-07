@@ -235,12 +235,7 @@ namespace ASCOM.Wise40SafeToOperate
             List<string> parameters = new List<string>();
 
             if (!string.IsNullOrEmpty(actionParameters))
-            {
-                parameters = actionParameters.Split(',').ToList<string>();
-
-                for (int i = 0; i < parameters.Count; i++)
-                    parameters[i] = parameters[i].ToLower();
-            }
+                parameters = actionParameters.ToLower().Split(',').ToList<string>();
 
             switch (actionName.ToLower())
             {
@@ -266,7 +261,9 @@ namespace ASCOM.Wise40SafeToOperate
 
                 case "sensor-is-safe":
                     if (parameters.Count != 1)
+                    {
                         ret = "Must specify sensor name";
+                    }
                     else
                     {
                         sensorName = parameters[0];
@@ -284,7 +281,9 @@ namespace ASCOM.Wise40SafeToOperate
 
                 case "wise-sensor-is-safe":
                     if (parameters.Count != 1)
+                    {
                         ret = "Must specify sensor name";
+                    }
                     else
                     {
                         sensorName = parameters[0];
@@ -327,7 +326,6 @@ namespace ASCOM.Wise40SafeToOperate
                         }
                     }
                     break;
-
 
                 case "status":
                     ret = (parameters.Count == 0) ? Digest : DigestSensors(parameters[0]);
