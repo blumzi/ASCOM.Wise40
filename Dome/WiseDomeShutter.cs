@@ -316,7 +316,7 @@ namespace ASCOM.Wise40
                 else
                 {
                     ret = shutterMotionEndState;
-                    _stateReason = "motion timer has expired";
+                    _stateReason = "shutter is idle";
                 }
 
                 _state = ret;
