@@ -35,7 +35,6 @@ namespace ASCOM.Wise40
         private static readonly TempFetcher _tempFetcher = new TempFetcher(10);
         private static string _processName;
         public static string _machine = Environment.MachineName.ToLower();
-        public static readonly object siderealTimeLock = new object();
         private bool _disposed = false;
 
         public enum OpMode { LCO, ACP, WISE, NONE };
@@ -195,10 +194,11 @@ public static bool TransformApparentToJ2000(double apparentRA, double apparentDE
             {
                 double gstNow = 0;
                 short res = -1;
+                const int maxTries = 5;
 
-                try
+                for (int tries = 0; tries < maxTries; tries++)
                 {
-                    lock (siderealTimeLock)
+                    try
                     {
                         res = novas31.SiderealTime(
                             astroutils.JulianDateUT1(0), 0d,
@@ -208,19 +208,27 @@ public static bool TransformApparentToJ2000(double apparentRA, double apparentDE
                             astrometricAccuracy,
                             ref gstNow);
                     }
-                } catch (Exception ex)
-                {
-                    #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
-                        $"LocalSiderealTime: caught {ex.Message} at\n{ex.StackTrace}");
-                    #endregion
+                    catch (Exception ex)
+                    {
+                        #region debug
+                        debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                            $"LocalSiderealTime: try# {tries} of {maxTries} caught {ex.Message} at\n{ex.StackTrace}");
+                        #endregion
+                    }
+
+                    if (res == 0)
+                        return Angle.FromHours(gstNow) + Angle.FromHours(Longitude / 15);
+                    else
+                    {
+                        #region debug
+                        debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "LocalSiderealTime", $"try# {tries} of {maxTries}: Error getting novas31.SiderealTime, res: {res}");
+                        #endregion
+                    }
                 }
 
-                if (res == 0)
-                    return Angle.FromHours(gstNow) + Angle.FromHours(Longitude / 15);
-                else
-                    Exceptor.Throw<InvalidValueException>("LocalSiderealTime", $"Error getting novas31.SiderealTime, res: {res}");
-
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "LocalSiderealTime: Giving up, returning 0.0");
+                #endregion
                 return Angle.FromHours(0.0, Angle.AngleType.RA);
             }
         }
