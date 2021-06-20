@@ -13,6 +13,7 @@ using ASCOM.DriverAccess;
 
 using System.IO;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace ASCOM.Wise40
 {
@@ -362,12 +363,22 @@ public static bool TransformApparentToJ2000(double apparentRA, double apparentDE
             {
                 Dictionary<string, string> Host2Obs = new Dictionary<string, string>
                 {
-                    { "c18-pc", "c18" },
+                    { "wo-neo", "c18" },
                     { "c28-pc", "c28" },
                     { "dome-pc", "wise40" },
                 };
 
-                return Host2Obs[Environment.MachineName.ToLower()];
+                string machine = Environment.MachineName.ToLower();
+
+                if (! Host2Obs.Keys.Contains(machine))
+                {
+                    MessageBox.Show($"Unknown observatory name for machine: \"{machine}\"!\n" +
+                        "\n" +
+                        $"The application will now exit.", Application.ProductName);
+                    Application.Exit();
+                }
+
+                return Host2Obs[machine];
             }
         }
     }
