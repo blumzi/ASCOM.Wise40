@@ -35,7 +35,7 @@ namespace RemoteSafetyDashboard
         public static string remoteHostIp;
         private static readonly Debugger debugger = Debugger.Instance;
 
-        public static Version version = new Version(1, 1);
+        public static Version version = new Version(1, 2);
 
         public RemoteSafetyDashboard()
         {
