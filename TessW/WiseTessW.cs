@@ -35,7 +35,7 @@ namespace ASCOM.Wise40.TessW
         private PeriodicHttpFetcher periodicHttpFetcher;
 
         private static readonly Lazy<WiseTessW> lazy = new Lazy<WiseTessW>(() => new WiseTessW()); // Singleton
-        private const string defaultIPAddress = "192.168.1.100";
+        private const string defaultIPAddress = "192.168.1.13";
 
         public static WiseTessW Instance
         {
