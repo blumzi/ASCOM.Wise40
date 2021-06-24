@@ -156,8 +156,9 @@ namespace Dash
             }
             else
             {
-                annunciatorReadonly.ForeColor = safeColor;
-                annunciatorReadonly.Text = "Controls are active";
+                annunciatorReadonly.ForeColor = goodColor;
+                annunciatorReadonly.Text = $"Active mode ({WiseSite.OperationalMode})";
+                annunciatorReadonly.Cadence = CadencePattern.SteadyOn;
             }
 
             debugMenuItems = new List<ToolStripMenuItem> {
@@ -247,7 +248,7 @@ namespace Dash
 
             if (!filterWheelDigest.Enabled)
             {
-                filterWheelStatus.Show("Disabled (see Settings->FilterWheel->Settings)");
+                filterWheelStatus.Show("Disabled (see Settings->FilterWheel->Manage Loaded Filters)");
             }
         }
 
@@ -1003,9 +1004,9 @@ namespace Dash
                     $"at {WiseTele.RateName(handpadRate).Remove(0, 4)}";
                 telescopeStatus.Show(message, 0, Statuser.Severity.Good);
 
-                try
+                foreach (var m in movements)
                 {
-                    foreach (var m in movements)
+                    try
                     {
                         wiseTelescope.Action("handpad-move-axis",
                                                         JsonConvert.SerializeObject(new HandpadMoveAxisParameter
@@ -1015,11 +1016,12 @@ namespace Dash
                                                         }
                                                         ));
                     }
-                }
-                catch (Exception ex)
-                {
-                    telescopeStatus.Show("Not safe to move", 2000, Statuser.Severity.Error);
-                    toolTip.SetToolTip(telescopeStatus.Label, ex.Message.Replace(',', '\n'));
+                    catch (Exception ex)
+                    {
+                        telescopeStatus.Show("Not safe to move", 2000, Statuser.Severity.Error);
+                        toolTip.SetToolTip(telescopeStatus.Label, ex.Message.Replace(',', '\n'));
+                        break;
+                    }
                 }
             }
             else
@@ -1805,11 +1807,6 @@ namespace Dash
             new FilterWheelSetupDialogForm().Show();
         }
 
-        private void filterWheelToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            new FilterWheelForm(wiseFilterWheel).Show();
-        }
-
         private void syncVentWithShutterToolStripMenuItem_Click(object sender, EventArgs e)
         {
             ToolStripMenuItem item = sender as ToolStripMenuItem;
@@ -1853,11 +1850,6 @@ namespace Dash
         private void manage2InchFilterInventoryToolStripMenuItem_Click(object sender, EventArgs e)
         {
             new FiltersForm(wiseFilterWheel, WiseFilterWheel.FilterSize.TwoInch).Show();
-        }
-
-        private void toolStripMenuItemPulseGuide_Click(object sender, EventArgs e)
-        {
-            new PulseGuideForm().Show();
         }
 
         private void buttonFullStop_Click(object sender, EventArgs e)

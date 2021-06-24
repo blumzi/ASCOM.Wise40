@@ -160,8 +160,6 @@
             this.viewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.digitalIOCardsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.debuggingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.filterWheelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripMenuItemPulseGuide = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.wise40WikiToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
@@ -1975,9 +1973,7 @@
             // 
             this.viewToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.digitalIOCardsToolStripMenuItem,
-            this.debuggingToolStripMenuItem,
-            this.filterWheelToolStripMenuItem,
-            this.toolStripMenuItemPulseGuide});
+            this.debuggingToolStripMenuItem});
             this.viewToolStripMenuItem.ForeColor = System.Drawing.Color.DarkOrange;
             this.viewToolStripMenuItem.Name = "viewToolStripMenuItem";
             this.viewToolStripMenuItem.Size = new System.Drawing.Size(47, 20);
@@ -1987,7 +1983,7 @@
             // 
             this.digitalIOCardsToolStripMenuItem.ForeColor = System.Drawing.Color.DarkOrange;
             this.digitalIOCardsToolStripMenuItem.Name = "digitalIOCardsToolStripMenuItem";
-            this.digitalIOCardsToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
+            this.digitalIOCardsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.digitalIOCardsToolStripMenuItem.Text = "Digital IO Cards";
             this.digitalIOCardsToolStripMenuItem.Click += new System.EventHandler(this.digitalIOCardsToolStripMenuItem_Click);
             // 
@@ -1995,25 +1991,9 @@
             // 
             this.debuggingToolStripMenuItem.ForeColor = System.Drawing.Color.DarkOrange;
             this.debuggingToolStripMenuItem.Name = "debuggingToolStripMenuItem";
-            this.debuggingToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
+            this.debuggingToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.debuggingToolStripMenuItem.Text = "Debugging";
             this.debuggingToolStripMenuItem.Click += new System.EventHandler(this.debuggingToolStripMenuItem_Click);
-            // 
-            // filterWheelToolStripMenuItem
-            // 
-            this.filterWheelToolStripMenuItem.ForeColor = System.Drawing.Color.DarkOrange;
-            this.filterWheelToolStripMenuItem.Name = "filterWheelToolStripMenuItem";
-            this.filterWheelToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
-            this.filterWheelToolStripMenuItem.Text = "Filter Wheel";
-            this.filterWheelToolStripMenuItem.Click += new System.EventHandler(this.filterWheelToolStripMenuItem_Click);
-            // 
-            // toolStripMenuItemPulseGuide
-            // 
-            this.toolStripMenuItemPulseGuide.ForeColor = System.Drawing.Color.DarkOrange;
-            this.toolStripMenuItemPulseGuide.Name = "toolStripMenuItemPulseGuide";
-            this.toolStripMenuItemPulseGuide.Size = new System.Drawing.Size(165, 22);
-            this.toolStripMenuItemPulseGuide.Text = "PulseGuide";
-            this.toolStripMenuItemPulseGuide.Click += new System.EventHandler(this.toolStripMenuItemPulseGuide_Click);
             // 
             // aboutToolStripMenuItem
             // 
@@ -2141,7 +2121,6 @@
             this.annunciatorComputerControl.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorComputerControl.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorComputerControl.Location = new System.Drawing.Point(3, 0);
-            this.annunciatorComputerControl.Mute = false;
             this.annunciatorComputerControl.Name = "annunciatorComputerControl";
             this.annunciatorComputerControl.Size = new System.Drawing.Size(186, 17);
             this.annunciatorComputerControl.TabIndex = 0;
@@ -2157,7 +2136,6 @@
             this.annunciatorDomePlatform.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorDomePlatform.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorDomePlatform.Location = new System.Drawing.Point(3, 17);
-            this.annunciatorDomePlatform.Mute = false;
             this.annunciatorDomePlatform.Name = "annunciatorDomePlatform";
             this.annunciatorDomePlatform.Padding = new System.Windows.Forms.Padding(2, 0, 0, 0);
             this.annunciatorDomePlatform.Size = new System.Drawing.Size(186, 17);
@@ -2174,7 +2152,6 @@
             this.annunciatorSafeToOperate.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorSafeToOperate.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorSafeToOperate.Location = new System.Drawing.Point(3, 34);
-            this.annunciatorSafeToOperate.Mute = false;
             this.annunciatorSafeToOperate.Name = "annunciatorSafeToOperate";
             this.annunciatorSafeToOperate.Padding = new System.Windows.Forms.Padding(1, 0, 0, 0);
             this.annunciatorSafeToOperate.Size = new System.Drawing.Size(186, 17);
@@ -2191,7 +2168,6 @@
             this.annunciatorSimulation.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorSimulation.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorSimulation.Location = new System.Drawing.Point(3, 51);
-            this.annunciatorSimulation.Mute = false;
             this.annunciatorSimulation.Name = "annunciatorSimulation";
             this.annunciatorSimulation.Padding = new System.Windows.Forms.Padding(7, 5, 0, 0);
             this.annunciatorSimulation.Size = new System.Drawing.Size(186, 22);
@@ -2208,7 +2184,6 @@
             this.annunciatorReadonly.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorReadonly.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorReadonly.Location = new System.Drawing.Point(3, 73);
-            this.annunciatorReadonly.Mute = false;
             this.annunciatorReadonly.Name = "annunciatorReadonly";
             this.annunciatorReadonly.Padding = new System.Windows.Forms.Padding(5, 0, 0, 0);
             this.annunciatorReadonly.Size = new System.Drawing.Size(186, 17);
@@ -2251,7 +2226,6 @@
             this.annunciatorTrack.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorTrack.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorTrack.Location = new System.Drawing.Point(3, 0);
-            this.annunciatorTrack.Mute = false;
             this.annunciatorTrack.Name = "annunciatorTrack";
             this.annunciatorTrack.Padding = new System.Windows.Forms.Padding(8, 0, 0, 0);
             this.annunciatorTrack.Size = new System.Drawing.Size(56, 17);
@@ -2268,7 +2242,6 @@
             this.annunciatorSlew.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorSlew.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorSlew.Location = new System.Drawing.Point(65, 0);
-            this.annunciatorSlew.Mute = false;
             this.annunciatorSlew.Name = "annunciatorSlew";
             this.annunciatorSlew.Size = new System.Drawing.Size(40, 17);
             this.annunciatorSlew.TabIndex = 1;
@@ -2285,7 +2258,6 @@
             this.annunciatorPulse.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorPulse.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorPulse.Location = new System.Drawing.Point(111, 0);
-            this.annunciatorPulse.Mute = false;
             this.annunciatorPulse.Name = "annunciatorPulse";
             this.annunciatorPulse.Size = new System.Drawing.Size(48, 17);
             this.annunciatorPulse.TabIndex = 11;
@@ -2301,7 +2273,6 @@
             this.annunciatorDome.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorDome.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorDome.Location = new System.Drawing.Point(3, 17);
-            this.annunciatorDome.Mute = false;
             this.annunciatorDome.Name = "annunciatorDome";
             this.annunciatorDome.Padding = new System.Windows.Forms.Padding(25, 0, 0, 0);
             this.annunciatorDome.Size = new System.Drawing.Size(65, 17);
@@ -2319,7 +2290,6 @@
             this.annunciatorShutter.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorShutter.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorShutter.Location = new System.Drawing.Point(74, 17);
-            this.annunciatorShutter.Mute = false;
             this.annunciatorShutter.Name = "annunciatorShutter";
             this.annunciatorShutter.Size = new System.Drawing.Size(64, 17);
             this.annunciatorShutter.TabIndex = 12;
@@ -2335,7 +2305,6 @@
             this.annunciatorPrimary.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorPrimary.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorPrimary.Location = new System.Drawing.Point(3, 34);
-            this.annunciatorPrimary.Mute = false;
             this.annunciatorPrimary.Name = "annunciatorPrimary";
             this.annunciatorPrimary.Padding = new System.Windows.Forms.Padding(0, 0, 8, 0);
             this.annunciatorPrimary.Size = new System.Drawing.Size(40, 17);
@@ -2353,7 +2322,6 @@
             this.annunciatorRARateSlew.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorRARateSlew.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorRARateSlew.Location = new System.Drawing.Point(49, 34);
-            this.annunciatorRARateSlew.Mute = false;
             this.annunciatorRARateSlew.Name = "annunciatorRARateSlew";
             this.annunciatorRARateSlew.Size = new System.Drawing.Size(40, 17);
             this.annunciatorRARateSlew.TabIndex = 8;
@@ -2369,7 +2337,6 @@
             this.annunciatorRARateSet.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorRARateSet.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorRARateSet.Location = new System.Drawing.Point(95, 34);
-            this.annunciatorRARateSet.Mute = false;
             this.annunciatorRARateSet.Name = "annunciatorRARateSet";
             this.annunciatorRARateSet.Size = new System.Drawing.Size(32, 17);
             this.annunciatorRARateSet.TabIndex = 9;
@@ -2386,7 +2353,6 @@
             this.annunciatorRARateGuide.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorRARateGuide.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorRARateGuide.Location = new System.Drawing.Point(133, 34);
-            this.annunciatorRARateGuide.Mute = false;
             this.annunciatorRARateGuide.Name = "annunciatorRARateGuide";
             this.annunciatorRARateGuide.Size = new System.Drawing.Size(48, 17);
             this.annunciatorRARateGuide.TabIndex = 10;
@@ -2402,7 +2368,6 @@
             this.annunciatorSecondary.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorSecondary.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorSecondary.Location = new System.Drawing.Point(3, 51);
-            this.annunciatorSecondary.Mute = false;
             this.annunciatorSecondary.Name = "annunciatorSecondary";
             this.annunciatorSecondary.Size = new System.Drawing.Size(40, 17);
             this.annunciatorSecondary.TabIndex = 3;
@@ -2418,7 +2383,6 @@
             this.annunciatorDECRateSlew.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorDECRateSlew.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorDECRateSlew.Location = new System.Drawing.Point(49, 51);
-            this.annunciatorDECRateSlew.Mute = false;
             this.annunciatorDECRateSlew.Name = "annunciatorDECRateSlew";
             this.annunciatorDECRateSlew.Size = new System.Drawing.Size(40, 17);
             this.annunciatorDECRateSlew.TabIndex = 13;
@@ -2434,7 +2398,6 @@
             this.annunciatorDECRateSet.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorDECRateSet.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorDECRateSet.Location = new System.Drawing.Point(95, 51);
-            this.annunciatorDECRateSet.Mute = false;
             this.annunciatorDECRateSet.Name = "annunciatorDECRateSet";
             this.annunciatorDECRateSet.Size = new System.Drawing.Size(32, 17);
             this.annunciatorDECRateSet.TabIndex = 14;
@@ -2451,7 +2414,6 @@
             this.annunciatorDECRateGuide.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorDECRateGuide.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorDECRateGuide.Location = new System.Drawing.Point(133, 51);
-            this.annunciatorDECRateGuide.Mute = false;
             this.annunciatorDECRateGuide.Name = "annunciatorDECRateGuide";
             this.annunciatorDECRateGuide.Size = new System.Drawing.Size(48, 17);
             this.annunciatorDECRateGuide.TabIndex = 15;
@@ -2467,7 +2429,6 @@
             this.annunciatorFilterWheel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorFilterWheel.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorFilterWheel.Location = new System.Drawing.Point(3, 68);
-            this.annunciatorFilterWheel.Mute = false;
             this.annunciatorFilterWheel.Name = "annunciatorFilterWheel";
             this.annunciatorFilterWheel.Padding = new System.Windows.Forms.Padding(30, 0, 0, 0);
             this.annunciatorFilterWheel.Size = new System.Drawing.Size(94, 17);
@@ -2484,7 +2445,6 @@
             this.annunciatorFocus.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorFocus.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorFocus.Location = new System.Drawing.Point(103, 68);
-            this.annunciatorFocus.Mute = false;
             this.annunciatorFocus.Name = "annunciatorFocus";
             this.annunciatorFocus.Size = new System.Drawing.Size(48, 17);
             this.annunciatorFocus.TabIndex = 5;
@@ -3394,7 +3354,6 @@
         private System.Windows.Forms.ToolStripMenuItem wise40WikiToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemFilterWheel;
-        private System.Windows.Forms.ToolStripMenuItem filterWheelToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem5;
         private System.Windows.Forms.ComboBox comboBoxFocusStep;
         private System.Windows.Forms.Button buttonFocusIncrease;
@@ -3424,7 +3383,6 @@
         private TA.WinFormsControls.Annunciator annunciatorSimulation;
         private System.Windows.Forms.ToolStripMenuItem manage3FiltersToolStripMenuItem;
         private TA.WinFormsControls.Annunciator annunciatorPulse;
-        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemPulseGuide;
         private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.Panel panel3;
         private System.Windows.Forms.PictureBox pictureBoxStop;
