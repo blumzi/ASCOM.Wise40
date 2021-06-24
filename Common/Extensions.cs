@@ -88,7 +88,7 @@ namespace ASCOM.Wise40.Common
 
         public static string ToCSV(this List<string> list)
         {
-            return string.Join(",", list);
+            return list == null ? "" : string.Join(",", list);
         }
 
         public static string ToCSV<TKey, TValue>(this ConcurrentDictionary<TKey, TValue> dict)
