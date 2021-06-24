@@ -1147,7 +1147,7 @@ namespace ASCOM.Wise40
                 activityMonitor.NewActivity(new Activity.Handpad(new Activity.Handpad.StartParams() {
                     axis = Axis,
                     rate = Rate,
-                    start = (Axis == TelescopeAxes.axisPrimary) ?
+                    start_coord = (Axis == TelescopeAxes.axisPrimary) ?
                         WiseTele.Instance.RightAscension :
                         WiseTele.Instance.Declination,
                 }));
@@ -1158,7 +1158,7 @@ namespace ASCOM.Wise40
                 {
                     endState = Activity.State.Aborted,
                     endReason = $"Exception: {ex.Message}",
-                    end = (Axis == TelescopeAxes.axisPrimary) ?
+                    end_coord = (Axis == TelescopeAxes.axisPrimary) ?
                         WiseTele.Instance.RightAscension :
                         WiseTele.Instance.Declination,
                 });
@@ -1171,25 +1171,29 @@ namespace ASCOM.Wise40
 
         public void HandpadStop()
         {
-            TelescopeAxes axis;
+            List<TelescopeAxes> axes = new List<TelescopeAxes>();
 
             if (NorthMotor.IsOn || SouthMotor.IsOn)
-                axis = TelescopeAxes.axisSecondary;
-            else if (WestMotor.IsOn || EastMotor.IsOn)
-                axis = TelescopeAxes.axisPrimary;
-            else
+                axes.Add(TelescopeAxes.axisSecondary);
+            if (WestMotor.IsOn || EastMotor.IsOn)
+                axes.Add(TelescopeAxes.axisPrimary);
+
+            if (axes.Count == 0)
                 return;
 
-            StopAxis(axis);
-
-            activityMonitor.EndActivity(ActivityMonitor.ActivityType.Handpad, new Activity.Handpad.EndParams()
+            foreach (TelescopeAxes axis in axes)
             {
-                endState = Activity.State.Succeeded,
-                endReason = "HandpadStop()",
-                end = (axis == TelescopeAxes.axisPrimary) ?
-                        WiseTele.Instance.RightAscension :
-                        WiseTele.Instance.Declination,
-            });
+                StopAxis(axis);
+
+                activityMonitor.EndActivity(ActivityMonitor.ActivityType.Handpad, new Activity.Handpad.EndParams()
+                {
+                    endState = Activity.State.Succeeded,
+                    endReason = "HandpadStop()",
+                    end_coord = (axis == TelescopeAxes.axisPrimary) ?
+                            WiseTele.Instance.RightAscension :
+                            WiseTele.Instance.Declination,
+                });
+            }
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Handpad: stopped");
             #endregion
