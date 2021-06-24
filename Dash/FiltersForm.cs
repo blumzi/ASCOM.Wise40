@@ -18,7 +18,6 @@ namespace Dash
     public partial class FiltersForm : Form
     {
         private ASCOM.DriverAccess.FilterWheel _wiseFilterWheel;
-        //BindingList<Filter> boundFilters;
         BindingList<Filter> boundFilters;
         BindingSource source;
         Debugger debugger = Debugger.Instance;
@@ -96,7 +95,7 @@ namespace Dash
                 return;
             }
 
-            _wiseFilterWheel.Action("set-filters-inventory", JsonConvert.SerializeObject(new WiseFilterWheel.SetFilterInventoryParam
+            _wiseFilterWheel.Action("set-filter-inventory", JsonConvert.SerializeObject(new WiseFilterWheel.SetFilterInventoryParam
             {
                 FilterSize = _filterSize,
                 Filters = filters.ToArray(),
