@@ -1006,24 +1006,23 @@ namespace ASCOM.Wise40
             {
                 public DeviceInterface.TelescopeAxes axis;
                 public double rate;
-                public double start;
+                public double start_coord;
             }
 
             public class EndParams : Activity.GenericEndParams
             {
-                public double end;
+                public double end_coord;
             }
 
             public Handpad(StartParams par) : base(ActivityMonitor.ActivityType.Handpad)
             {
                 _axis = par.axis;
                 _rate = par.rate;
-                Angle a = (_axis == DeviceInterface.TelescopeAxes.axisPrimary) ?
-                        Angle.RaFromHours(_start) :
-                        Angle.DecFromDegrees(_start);
 
                 _startDetails = $"Axis: {_axis.ToString().Remove(0, "rate".Length)}\n" +
-                    $"Start: {a}\n" +
+                    "Start: " + ((_axis == TelescopeAxes.axisPrimary) ?
+                        $"ra: {Angle.RaFromHours(par.start_coord)}" :
+                        $"dec: {Angle.DecFromDegrees(par.start_coord)}") +
                     $"Rate: {RateName(_rate)}\n";
 
                 EmitStart();
@@ -1033,12 +1032,11 @@ namespace ASCOM.Wise40
             {
                 Handpad.EndParams par = p as Handpad.EndParams;
 
-                _end = par.end;
-                Angle a = (_axis == DeviceInterface.TelescopeAxes.axisPrimary) ?
-                        Angle.RaFromHours(_end) :
-                        Angle.DecFromDegrees(_end);
+                _end = par.end_coord;
 
-                _endDetails = $"End: {a}";
+                _endDetails = "End: " + ((_axis == TelescopeAxes.axisPrimary) ?
+                    $"ra: {Angle.RaFromHours(par.end_coord)}" :
+                    $"dec: {Angle.DecFromDegrees(par.end_coord)}");
             }
 
             public static string RateName(double rate)
