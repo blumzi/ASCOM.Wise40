@@ -79,8 +79,10 @@ namespace Wise40Watcher
             switch (opMode)
             {
                 case WiseSite.OpMode.ACP:
+                    dashWatcher = new Watcher("dash");  //dashWatcher = new Watcher("safetydash");
+                    break;
                 case WiseSite.OpMode.WISE:
-                    dashWatcher = new Watcher("safetydash");
+                    dashWatcher = new Watcher("dash");  //dashWatcher = new Watcher("safetydash");
                     break;
                 case WiseSite.OpMode.LCO:
                     dashWatcher = new Watcher("dash");
@@ -160,7 +162,8 @@ namespace Wise40Watcher
                     weatherLinkWatcher.Stop();
 
                 Log("=========== Stop done ===========");
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 Log($"OnStop(): caught {ex.Message} at {ex.StackTrace}");
             }
