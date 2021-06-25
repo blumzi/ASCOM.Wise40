@@ -160,6 +160,13 @@
             this.viewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.digitalIOCardsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.debuggingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.actionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.changeOperationalModeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.LCOToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.ACPToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.WISEToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.restartTheWise40ServiceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.stopTheWise40ServiceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.wise40WikiToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
@@ -196,6 +203,8 @@
             this.pictureBoxStop = new System.Windows.Forms.PictureBox();
             this.panel4 = new System.Windows.Forms.Panel();
             this.labelCountdown = new System.Windows.Forms.Label();
+            this.panel5 = new System.Windows.Forms.Panel();
+            this.buttonHumanIntervention = new System.Windows.Forms.Button();
             this.labelDashStatus = new System.Windows.Forms.Label();
             this.groupBoxFilterWheel = new System.Windows.Forms.GroupBox();
             this.labelFWFilterSize = new System.Windows.Forms.Label();
@@ -264,6 +273,7 @@
             this.panel3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxStop)).BeginInit();
             this.panel4.SuspendLayout();
+            this.panel5.SuspendLayout();
             this.groupBoxFilterWheel.SuspendLayout();
             this.groupBoxWeather.SuspendLayout();
             this.tableLayoutPanelWeather.SuspendLayout();
@@ -1711,6 +1721,7 @@
             this.fileToolStripMenuItem,
             this.toolStripMenuItem1,
             this.viewToolStripMenuItem,
+            this.actionsToolStripMenuItem,
             this.aboutToolStripMenuItem});
             this.menuStrip.Location = new System.Drawing.Point(0, 0);
             this.menuStrip.Name = "menuStrip";
@@ -1806,22 +1817,22 @@
             // settingsToolStripMenuItem
             // 
             this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
-            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(227, 22);
-            this.settingsToolStripMenuItem.Text = "Manage loaded filters";
+            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.settingsToolStripMenuItem.Text = "Loaded filters";
             this.settingsToolStripMenuItem.Click += new System.EventHandler(this.toolStripMenuItemFilterWheel_Click);
             // 
             // manageFilterInventoryToolStripMenuItem
             // 
             this.manageFilterInventoryToolStripMenuItem.Name = "manageFilterInventoryToolStripMenuItem";
-            this.manageFilterInventoryToolStripMenuItem.Size = new System.Drawing.Size(227, 22);
-            this.manageFilterInventoryToolStripMenuItem.Text = "Manage 2\" filters inventory";
+            this.manageFilterInventoryToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.manageFilterInventoryToolStripMenuItem.Text = "2\" filters inventory";
             this.manageFilterInventoryToolStripMenuItem.Click += new System.EventHandler(this.manage2InchFilterInventoryToolStripMenuItem_Click);
             // 
             // manage3FiltersToolStripMenuItem
             // 
             this.manage3FiltersToolStripMenuItem.Name = "manage3FiltersToolStripMenuItem";
-            this.manage3FiltersToolStripMenuItem.Size = new System.Drawing.Size(227, 22);
-            this.manage3FiltersToolStripMenuItem.Text = "Manage 3\" filters inventory";
+            this.manage3FiltersToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.manage3FiltersToolStripMenuItem.Text = "3\" filters inventory";
             this.manage3FiltersToolStripMenuItem.Click += new System.EventHandler(this.manage3InchFilterInventoryToolStripMenuItem_Click);
             // 
             // toolStripMenuItem5
@@ -1983,7 +1994,7 @@
             // 
             this.digitalIOCardsToolStripMenuItem.ForeColor = System.Drawing.Color.DarkOrange;
             this.digitalIOCardsToolStripMenuItem.Name = "digitalIOCardsToolStripMenuItem";
-            this.digitalIOCardsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.digitalIOCardsToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
             this.digitalIOCardsToolStripMenuItem.Text = "Digital IO Cards";
             this.digitalIOCardsToolStripMenuItem.Click += new System.EventHandler(this.digitalIOCardsToolStripMenuItem_Click);
             // 
@@ -1991,9 +2002,65 @@
             // 
             this.debuggingToolStripMenuItem.ForeColor = System.Drawing.Color.DarkOrange;
             this.debuggingToolStripMenuItem.Name = "debuggingToolStripMenuItem";
-            this.debuggingToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.debuggingToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
             this.debuggingToolStripMenuItem.Text = "Debugging";
             this.debuggingToolStripMenuItem.Click += new System.EventHandler(this.debuggingToolStripMenuItem_Click);
+            // 
+            // actionsToolStripMenuItem
+            // 
+            this.actionsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.changeOperationalModeToolStripMenuItem,
+            this.restartTheWise40ServiceToolStripMenuItem,
+            this.stopTheWise40ServiceToolStripMenuItem});
+            this.actionsToolStripMenuItem.ForeColor = System.Drawing.Color.DarkOrange;
+            this.actionsToolStripMenuItem.Name = "actionsToolStripMenuItem";
+            this.actionsToolStripMenuItem.Size = new System.Drawing.Size(61, 20);
+            this.actionsToolStripMenuItem.Text = "Actions";
+            // 
+            // changeOperationalModeToolStripMenuItem
+            // 
+            this.changeOperationalModeToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.LCOToolStripMenuItem,
+            this.ACPToolStripMenuItem,
+            this.WISEToolStripMenuItem});
+            this.changeOperationalModeToolStripMenuItem.Name = "changeOperationalModeToolStripMenuItem";
+            this.changeOperationalModeToolStripMenuItem.Size = new System.Drawing.Size(284, 22);
+            this.changeOperationalModeToolStripMenuItem.Text = "Change the Wise40 operational mode";
+            // 
+            // LCOToolStripMenuItem
+            // 
+            this.LCOToolStripMenuItem.Name = "LCOToolStripMenuItem";
+            this.LCOToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.LCOToolStripMenuItem.Text = "LCO";
+            this.LCOToolStripMenuItem.Click += new System.EventHandler(this.ChangeOperationalMode);
+            // 
+            // ACPToolStripMenuItem
+            // 
+            this.ACPToolStripMenuItem.Name = "ACPToolStripMenuItem";
+            this.ACPToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.ACPToolStripMenuItem.Text = "ACP";
+            this.ACPToolStripMenuItem.Click += new System.EventHandler(this.ChangeOperationalMode);
+            // 
+            // WISEToolStripMenuItem
+            // 
+            this.WISEToolStripMenuItem.Name = "WISEToolStripMenuItem";
+            this.WISEToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.WISEToolStripMenuItem.Text = "WISE";
+            this.WISEToolStripMenuItem.Click += new System.EventHandler(this.ChangeOperationalMode);
+            // 
+            // restartTheWise40ServiceToolStripMenuItem
+            // 
+            this.restartTheWise40ServiceToolStripMenuItem.Name = "restartTheWise40ServiceToolStripMenuItem";
+            this.restartTheWise40ServiceToolStripMenuItem.Size = new System.Drawing.Size(284, 22);
+            this.restartTheWise40ServiceToolStripMenuItem.Text = "Restart the Wise40 service";
+            this.restartTheWise40ServiceToolStripMenuItem.Click += new System.EventHandler(this.RestartWise40);
+            // 
+            // stopTheWise40ServiceToolStripMenuItem
+            // 
+            this.stopTheWise40ServiceToolStripMenuItem.Name = "stopTheWise40ServiceToolStripMenuItem";
+            this.stopTheWise40ServiceToolStripMenuItem.Size = new System.Drawing.Size(284, 22);
+            this.stopTheWise40ServiceToolStripMenuItem.Text = "Stop the Wise40 service";
+            this.stopTheWise40ServiceToolStripMenuItem.Click += new System.EventHandler(this.StopWise40);
             // 
             // aboutToolStripMenuItem
             // 
@@ -2032,10 +2099,11 @@
             this.flowLayoutPanel1.Controls.Add(this.annunciatorPanelStatus);
             this.flowLayoutPanel1.Controls.Add(this.panel2);
             this.flowLayoutPanel1.Controls.Add(this.panel4);
+            this.flowLayoutPanel1.Controls.Add(this.panel5);
             this.flowLayoutPanel1.Location = new System.Drawing.Point(3, 27);
             this.flowLayoutPanel1.Name = "flowLayoutPanel1";
             this.tableLayoutMain.SetRowSpan(this.flowLayoutPanel1, 3);
-            this.flowLayoutPanel1.Size = new System.Drawing.Size(195, 701);
+            this.flowLayoutPanel1.Size = new System.Drawing.Size(195, 730);
             this.flowLayoutPanel1.TabIndex = 29;
             // 
             // label1
@@ -2503,6 +2571,28 @@
             this.labelCountdown.Text = "Idle in 19m00s";
             this.labelCountdown.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.toolTip.SetToolTip(this.labelCountdown, "Time to Observatory Shutdown (if not active).");
+            // 
+            // panel5
+            // 
+            this.panel5.Controls.Add(this.buttonHumanIntervention);
+            this.panel5.Location = new System.Drawing.Point(3, 658);
+            this.panel5.Name = "panel5";
+            this.panel5.Size = new System.Drawing.Size(200, 64);
+            this.panel5.TabIndex = 42;
+            // 
+            // buttonHumanIntervention
+            // 
+            this.buttonHumanIntervention.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonHumanIntervention.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.buttonHumanIntervention.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.buttonHumanIntervention.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.buttonHumanIntervention.Location = new System.Drawing.Point(40, 10);
+            this.buttonHumanIntervention.Name = "buttonHumanIntervention";
+            this.buttonHumanIntervention.Size = new System.Drawing.Size(120, 44);
+            this.buttonHumanIntervention.TabIndex = 30;
+            this.buttonHumanIntervention.Text = "Activate Human Intervention";
+            this.buttonHumanIntervention.UseVisualStyleBackColor = false;
+            this.buttonHumanIntervention.Click += new System.EventHandler(this.buttonHumanIntervention_Click);
             // 
             // labelDashStatus
             // 
@@ -3214,6 +3304,7 @@
             this.panel3.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxStop)).EndInit();
             this.panel4.ResumeLayout(false);
+            this.panel5.ResumeLayout(false);
             this.groupBoxFilterWheel.ResumeLayout(false);
             this.groupBoxFilterWheel.PerformLayout();
             this.groupBoxWeather.ResumeLayout(false);
@@ -3436,6 +3527,15 @@
         private System.Windows.Forms.TextBox textBoxAltAzAlt;
         private System.Windows.Forms.TextBox textBoxAltAzAz;
         private System.Windows.Forms.Label label28;
+        private System.Windows.Forms.Panel panel5;
+        private System.Windows.Forms.Button buttonHumanIntervention;
+        private System.Windows.Forms.ToolStripMenuItem actionsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem changeOperationalModeToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem LCOToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem ACPToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem WISEToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem restartTheWise40ServiceToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem stopTheWise40ServiceToolStripMenuItem;
     }
 }
 

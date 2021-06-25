@@ -137,6 +137,8 @@ namespace Dash
 
                     radioButtonGuide, radioButtonSet, radioButtonSlew,
                     buttonFilterWheelGo, comboBoxFilterWheelPositions,
+
+                    buttonHumanIntervention,
                 };
 
             if (Readonly)
@@ -160,6 +162,34 @@ namespace Dash
                 annunciatorReadonly.Text = $"Active mode ({WiseSite.OperationalMode})";
                 annunciatorReadonly.Cadence = CadencePattern.SteadyOn;
             }
+
+            WiseSite.OpMode opMode = WiseSite.OperationalMode;
+            switch (opMode)
+            {
+                case WiseSite.OpMode.LCO:
+                    buttonHumanIntervention.Visible = false;
+                    break;
+
+                case WiseSite.OpMode.ACP:
+                case WiseSite.OpMode.WISE:
+                    if (HumanIntervention.IsSet())
+                    {
+                        buttonHumanIntervention.Text = "Deactivate Human Intervention";
+                        buttonHumanIntervention.ForeColor = safeColor;
+                    }
+                    else
+                    {
+                        buttonHumanIntervention.Text = "Activate Human Intervention";
+                        buttonHumanIntervention.ForeColor = unsafeColor;
+                    }
+                    buttonHumanIntervention.Visible = true;
+                    buttonHumanIntervention.Enabled = true;
+                    break;
+            }
+
+            UpdateCheckmark(LCOToolStripMenuItem, opMode == WiseSite.OpMode.LCO);
+            UpdateCheckmark(WISEToolStripMenuItem, opMode == WiseSite.OpMode.WISE);
+            UpdateCheckmark(ACPToolStripMenuItem, opMode == WiseSite.OpMode.ACP);
 
             debugMenuItems = new List<ToolStripMenuItem> {
                 debugASCOMToolStripMenuItem ,
@@ -643,46 +673,7 @@ namespace Dash
                 #endregion
 
                 #region SafeToOperate Annunciator
-                tip = null;
-                string text = "";
-                severity = Statuser.Severity.Normal;
-
-                if (!safetooperateDigest.HumanIntervention.Safe)
-                {
-                    text = "Human Intervention";
-                    annunciatorSafeToOperate.ForeColor = unsafeColor;
-                    annunciatorSafeToOperate.Cadence = CadencePattern.SteadyOn;
-                    severity = Statuser.Severity.Error;
-                    tip = String.Join("\n", safetooperateDigest.UnsafeReasons).Replace(Const.recordSeparator, "\n  ");
-                }
-                else if (safetooperateDigest.Bypassed)
-                {
-                    text = "Safety bypassed";
-                    annunciatorSafeToOperate.ForeColor = warningColor;
-                    annunciatorSafeToOperate.Cadence = CadencePattern.SteadyOn;
-                    severity = Statuser.Severity.Warning;
-                    tip = "Safety checks are bypassed!";
-                }
-                else if (safetooperateDigest.Safe)
-                {
-                    text = "Safe to operate";
-                    annunciatorSafeToOperate.ForeColor = goodColor;
-                    annunciatorSafeToOperate.Cadence = CadencePattern.SteadyOff;
-                    severity = Statuser.Severity.Good;
-                    tip = "Conditions are safe to operate.";
-                }
-                else
-                {
-                    text = "Not safe to operate";
-                    annunciatorSafeToOperate.ForeColor = unsafeColor;
-                    annunciatorSafeToOperate.Cadence = CadencePattern.SteadyOn;
-                    severity = Statuser.Severity.Error;
-                    tip = string.Join("\n", safetooperateDigest.UnsafeReasons).Replace(Const.recordSeparator, "\n");
-                }
-                annunciatorSafeToOperate.Text = text;
-                toolTip.SetToolTip(annunciatorSafeToOperate, tip);
-                toolTip.SetToolTip(safetooperateStatus.Label, tip);
-                safetooperateStatus.Show(text, 0, severity, true);
+                UpdateSafeToOperateControls();
                 #endregion
 
                 #region Platform Annunciator
@@ -860,6 +851,50 @@ namespace Dash
             #endregion
 
             timerRefreshDisplay.Enabled = true;
+        }
+
+        private void UpdateSafeToOperateControls()
+        {
+            string tip, text;
+            Statuser.Severity severity;
+
+            if (HumanIntervention.IsSet())
+            {
+                text = "Human Intervention";
+                annunciatorSafeToOperate.ForeColor = unsafeColor;
+                annunciatorSafeToOperate.Cadence = CadencePattern.SteadyOn;
+                severity = Statuser.Severity.Error;
+                tip = String.Join("\n", HumanIntervention.Details).Replace(Const.recordSeparator, "\n  ");
+            }
+            else if (safetooperateDigest.Bypassed)
+            {
+                text = "Safety bypassed";
+                annunciatorSafeToOperate.ForeColor = warningColor;
+                annunciatorSafeToOperate.Cadence = CadencePattern.SteadyOn;
+                severity = Statuser.Severity.Warning;
+                tip = "Safety checks are bypassed!";
+            }
+            else if (safetooperateDigest.Safe)
+            {
+                text = "Safe to operate";
+                annunciatorSafeToOperate.ForeColor = goodColor;
+                annunciatorSafeToOperate.Cadence = CadencePattern.SteadyOff;
+                severity = Statuser.Severity.Good;
+                tip = "Conditions are safe to operate.";
+            }
+            else
+            {
+                text = "Not safe to operate";
+                annunciatorSafeToOperate.ForeColor = unsafeColor;
+                annunciatorSafeToOperate.Cadence = CadencePattern.SteadyOn;
+                severity = Statuser.Severity.Error;
+                tip = string.Join("\n", safetooperateDigest.UnsafeReasons).Replace(Const.recordSeparator, "\n");
+            }
+
+            annunciatorSafeToOperate.Text = text;
+            toolTip.SetToolTip(annunciatorSafeToOperate, tip);
+            toolTip.SetToolTip(safetooperateStatus.Label, tip);
+            safetooperateStatus.Show(text, 0, severity, true);
         }
 
         private void RefreshInConditionsformation(Label label, Sensor.SensorDigest digest)
@@ -1908,6 +1943,125 @@ namespace Dash
 
         private void groupBoxDomeGroup_Enter(object sender, EventArgs e)
         {}
+
+        private void buttonHumanIntervention_Click(object sender, EventArgs e)
+        {
+            if (HumanIntervention.IsSet())
+            {
+                BackgroundWorker bw = new BackgroundWorker();
+                bw.DoWork += RemoveHumanInterventionFile;
+                bw.RunWorkerCompleted += AfterRemoveHumanInterventionFile;
+                bw.RunWorkerAsync();
+
+                buttonHumanIntervention.Text = "Activate Human Intervention";
+                buttonHumanIntervention.ForeColor = unsafeColor;
+            }
+            else
+            {
+                DialogResult result = new InterventionForm().ShowDialog();
+                if (result == DialogResult.OK)
+                    dashStatus.Show("Created operator intervention");
+
+                buttonHumanIntervention.Text = "Deactivate Human Intervention";
+                buttonHumanIntervention.ForeColor = goodColor;
+            }
+
+            try
+            {
+                safetooperateDigest = JsonConvert.DeserializeObject<SafeToOperateDigest>(wiseSafeToOperate.Action("status", ""));
+            }
+            catch (Exception ex)
+            {
+                if (ex.InnerException != null)
+                    ex = ex.InnerException;
+
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"RefreshDisplay: Caught: {ex.Message} at\n{ex.StackTrace}");
+                #endregion
+                safetooperateStatus.Show("ASCOM communication error", 2000, Statuser.Severity.Error);
+            }
+            UpdateSafeToOperateControls();
+        }
+
+        private void RemoveHumanInterventionFile(object sender, DoWorkEventArgs e)
+        {
+            HumanIntervention.Remove();
+        }
+
+        private void AfterRemoveHumanInterventionFile(object sender, RunWorkerCompletedEventArgs e)
+        {
+            dashStatus.Show("Removed operator intervention.");
+        }
+
+        private void ChangeOperationalMode(object sender, EventArgs e)
+        {
+            WiseSite.OpMode newMode = WiseSite.OpMode.NONE;
+            WiseSite.OpMode currentMode = WiseSite.OperationalMode;
+
+            if (sender == LCOToolStripMenuItem)
+                newMode = WiseSite.OpMode.LCO;
+            else if (sender == ACPToolStripMenuItem)
+                newMode = WiseSite.OpMode.ACP;
+            else if (sender == WISEToolStripMenuItem)
+                newMode = WiseSite.OpMode.WISE;
+
+            if (newMode == WiseSite.OpMode.NONE || newMode == currentMode)
+                return;
+
+            DialogResult result = MessageBox.Show(
+                "The Wise40 service must be restarted in order to change\n" +
+                $"       the operational mode from {currentMode} to {newMode}.\n\n" +
+                "  Are you sure?",
+                "Wise40 Operational Mode Change",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question,
+                MessageBoxDefaultButton.Button2
+            );
+
+            if (result == DialogResult.Yes)
+            {
+                WiseSite.OperationalMode = newMode;
+                System.Diagnostics.Process.Start(
+                    "powershell --command \"netsh interface set interface name='LCO Ethernet' admin=" +
+                    (newMode == WiseSite.OpMode.LCO ? "enable" : "disable") + "\"");
+                //System.Diagnostics.Process.Start("cmd.exe", "/c \"sc stop Wise40Watcher && sc start Wise40Watcher\"");
+                System.Diagnostics.Process.Start("powershell --command \"Restart-Service Wise40Watcher\"");
+            }
+        }
+
+        private void RestartWise40(object sender, EventArgs e)
+        {
+            DialogResult result = MessageBox.Show(
+                "The Wise40 service will be restarted.\n\n" +
+                "  Are you sure?",
+                "Restart Wise40 Service",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question,
+                MessageBoxDefaultButton.Button2
+            );
+
+            if (result == DialogResult.Yes)
+            {
+                System.Diagnostics.Process.Start("powershell --command \"Stop-Service Wise40Watcher\"");
+            }
+        }
+
+        private void StopWise40(object sender, EventArgs e)
+        {
+            DialogResult result = MessageBox.Show(
+                "The Wise40 service will be stopped.\n\n" +
+                "  Are you sure?",
+                "Stop Wise40 Service",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question,
+                MessageBoxDefaultButton.Button2
+            );
+
+            if (result == DialogResult.Yes)
+            {
+                System.Diagnostics.Process.Start("sc.exe", "stop Wise40Watcher");
+            }
+        }
 
         private void groupBoxFilterWheel_Enter(object sender, EventArgs e)
         {}
