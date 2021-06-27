@@ -137,8 +137,6 @@ namespace Dash
 
                     radioButtonGuide, radioButtonSet, radioButtonSlew,
                     buttonFilterWheelGo, comboBoxFilterWheelPositions,
-
-                    buttonHumanIntervention,
                 };
 
             if (Readonly)
@@ -2042,7 +2040,22 @@ namespace Dash
 
             if (result == DialogResult.Yes)
             {
-                System.Diagnostics.Process.Start("powershell --command \"Stop-Service Wise40Watcher\"");
+                try
+                {
+                    System.Diagnostics.ProcessStartInfo si = new System.Diagnostics.ProcessStartInfo("powershell.exe");
+                    foreach (var verb in si.Verbs)
+                        debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"verb: {verb}");
+                    //{
+                    //    FileName = "powershell.exe",
+                    //    Arguments = "-command \"& {Restart-Service Wise40Watcher}\"",
+                    //    CreateNoWindow = true,
+                    //};
+                    //System.Diagnostics.Process.Start(si);
+                }
+                catch (Exception ex)
+                {
+                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"Failed to run powershell, caught: {ex.Message}");
+                }
             }
         }
 
