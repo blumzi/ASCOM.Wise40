@@ -71,7 +71,8 @@ namespace Wise40Watcher
                 {
                     _process = Process.GetProcessById(pid);
                     Wise40Watcher.Log($"Worker ({WiseName}:[{pid}]): watching over process ({_app.Path}) ...");
-                    _process.Exited += OnExit;
+                    _process.EnableRaisingEvents = true;
+                    _process.Exited += new EventHandler(OnExit);
                     Wise40Watcher.Log($"Worker ({WiseName}:[{pid}]): waiting for process to exit ({_app.Path}) ...");
                     _process.WaitForExit();
                     Wise40Watcher.Log($"Worker ({WiseName}:[{pid}]): process has exited ({_app.Path}) ...");
