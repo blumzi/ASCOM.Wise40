@@ -41,7 +41,7 @@ namespace ASCOM.Wise40.VantagePro
 
         private static readonly Lazy<WiseVantagePro> lazy = new Lazy<WiseVantagePro>(() => new WiseVantagePro()); // Singleton
 
-        private readonly Seeing _seeing = new Seeing();
+        private Seeing _seeing;
 
         public static WiseVantagePro Instance
         {
@@ -65,7 +65,9 @@ namespace ASCOM.Wise40.VantagePro
                 RefreshFromDatafile();
             else
                 RefreshFromSerialPort();
-            _seeing.Refresh();
+
+            if (_seeing != null)
+                _seeing.Refresh();
         }
 
         public void RefreshFromDatafile()
@@ -240,7 +242,9 @@ namespace ASCOM.Wise40.VantagePro
             sensorData = new Dictionary<string, string>();
             ReadProfile();
             _weatherLogger = new WeatherLogger(WiseName);
-            Refresh();
+            if (WiseSite.OperationalMode == WiseSite.OpMode.LCO)
+                _seeing = new Seeing();
+        Refresh();
 
             _initialized = true;
         }
@@ -603,12 +607,7 @@ namespace ASCOM.Wise40.VantagePro
         {
             get
             {
-                if (_seeing == null)
-                {
-                    Exceptor.Throw<PropertyNotImplementedException>("StarFWHM", "Not implemented");
-                    return double.NaN;
-                }
-                return _seeing.FWHM;
+                return (_seeing == null) ? double.NaN : _seeing.FWHM;
             }
         }
 
