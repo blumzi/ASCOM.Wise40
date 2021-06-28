@@ -121,9 +121,11 @@ namespace ASCOM.Wise40.TessW
             WiseName = "TessW";
             ReadProfile();
             periodicHttpFetcher = new PeriodicHttpFetcher(
-                WiseName,
-                $"http://{IpAddress}",
-                TimeSpan.FromMinutes(1)
+                name: WiseName,
+                url: $"http://{IpAddress}",
+                period: TimeSpan.FromMinutes(1),
+                tries: 1,
+                maxAgeMillis: (int) TimeSpan.FromMinutes(1).TotalMilliseconds
             );
             _weatherLogger = new WeatherLogger("TESS-w");
             Refresh();
