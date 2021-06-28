@@ -2008,7 +2008,7 @@ namespace Dash
 
             DialogResult result = MessageBox.Show(
                 "The Wise40 service must be restarted in order to change\n" +
-                $"       the operational mode from {currentMode} to {newMode}.\n\n" +
+                $"     the operational mode from {currentMode} to {newMode}.\n\n" +
                 "  Are you sure?",
                 "Wise40 Operational Mode Change",
                 MessageBoxButtons.YesNo,
@@ -2019,11 +2019,7 @@ namespace Dash
             if (result == DialogResult.Yes)
             {
                 WiseSite.OperationalMode = newMode;
-                System.Diagnostics.Process.Start(
-                    "powershell --command \"netsh interface set interface name='LCO Ethernet' admin=" +
-                    (newMode == WiseSite.OpMode.LCO ? "enable" : "disable") + "\"");
-                //System.Diagnostics.Process.Start("cmd.exe", "/c \"sc stop Wise40Watcher && sc start Wise40Watcher\"");
-                System.Diagnostics.Process.Start("powershell --command \"Restart-Service Wise40Watcher\"");
+                ChangeWise40Service("Restart");
             }
         }
 
@@ -2039,23 +2035,29 @@ namespace Dash
             );
 
             if (result == DialogResult.Yes)
+                ChangeWise40Service("Restart");
+        }
+
+        void ChangeWise40Service(string verb)
+        {
+            try
             {
-                try
+                System.Diagnostics.ProcessStartInfo si = new System.Diagnostics.ProcessStartInfo()
                 {
-                    System.Diagnostics.ProcessStartInfo si = new System.Diagnostics.ProcessStartInfo("powershell.exe");
-                    foreach (var verb in si.Verbs)
-                        debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"verb: {verb}");
-                    //{
-                    //    FileName = "powershell.exe",
-                    //    Arguments = "-command \"& {Restart-Service Wise40Watcher}\"",
-                    //    CreateNoWindow = true,
-                    //};
-                    //System.Diagnostics.Process.Start(si);
-                }
-                catch (Exception ex)
-                {
-                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"Failed to run powershell, caught: {ex.Message}");
-                }
+                    FileName = "powershell.exe",
+                    Arguments = $"-WindowStyle Hidden -Command \"{verb}-Service -Name Wise40Watcher\"",
+                    CreateNoWindow = true,
+                    UseShellExecute = true,
+                    Verb = "runas",
+                };
+                System.Diagnostics.Process proc = System.Diagnostics.Process.Start(si);
+
+                proc.WaitForExit();
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"powershell, exitCode: {proc.ExitCode}");
+            }
+            catch (Exception ex)
+            {
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"Failed to run powershell, caught: {ex.Message}");
             }
         }
 
@@ -2071,9 +2073,7 @@ namespace Dash
             );
 
             if (result == DialogResult.Yes)
-            {
-                System.Diagnostics.Process.Start("sc.exe", "stop Wise40Watcher");
-            }
+                ChangeWise40Service("Stop");
         }
 
         private void groupBoxFilterWheel_Enter(object sender, EventArgs e)
