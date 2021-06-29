@@ -2009,9 +2009,9 @@
             // actionsToolStripMenuItem
             // 
             this.actionsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.changeOperationalModeToolStripMenuItem,
             this.restartTheWise40ServiceToolStripMenuItem,
-            this.stopTheWise40ServiceToolStripMenuItem});
+            this.stopTheWise40ServiceToolStripMenuItem,
+            this.changeOperationalModeToolStripMenuItem});
             this.actionsToolStripMenuItem.ForeColor = System.Drawing.Color.DarkOrange;
             this.actionsToolStripMenuItem.Name = "actionsToolStripMenuItem";
             this.actionsToolStripMenuItem.Size = new System.Drawing.Size(61, 20);

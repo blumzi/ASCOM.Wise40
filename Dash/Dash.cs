@@ -2038,26 +2038,64 @@ namespace Dash
                 ChangeWise40Service("Restart");
         }
 
+        private string EnableDisableLCONetwork()
+        {
+            bool shouldBeEnabled = WiseSite.OperationalMode == WiseSite.OpMode.LCO;
+
+            string output;
+            string interfaceName = "LCO Ethernet";
+
+            using (var p = new System.Diagnostics.Process())
+            {
+                p.StartInfo.UseShellExecute = false;
+                p.StartInfo.RedirectStandardOutput = true;
+                p.StartInfo.CreateNoWindow = true;
+                p.StartInfo.FileName = "netsh.exe";
+                p.StartInfo.Arguments = $"interface show interface name=\"{interfaceName}\"";
+                p.Start();
+
+                output = p.StandardOutput.ReadToEnd();
+                p.WaitForExit();
+            }
+
+            bool isEnabled = output.Contains("Enabled");
+            if (isEnabled == shouldBeEnabled)
+                return null;
+
+            return  $"netsh interface set interface name='{interfaceName}' admin=" +
+                    (shouldBeEnabled ? "enable" : "disable") +
+                    "; ";
+        }
+
         void ChangeWise40Service(string verb)
         {
+            string command =
+                $"-WindowStyle Hidden -Command \"{EnableDisableLCONetwork()}{verb}-Service -Name Wise40Watcher\"";
+
             try
             {
                 System.Diagnostics.ProcessStartInfo si = new System.Diagnostics.ProcessStartInfo()
                 {
                     FileName = "powershell.exe",
-                    Arguments = $"-WindowStyle Hidden -Command \"{verb}-Service -Name Wise40Watcher\"",
+                    Arguments = command,
                     CreateNoWindow = true,
                     UseShellExecute = true,
                     Verb = "runas",
                 };
-                System.Diagnostics.Process proc = System.Diagnostics.Process.Start(si);
+
+                System.Diagnostics.Process proc = new System.Diagnostics.Process()
+                {
+                    EnableRaisingEvents = true,
+                    StartInfo = si,
+                };
+                proc.Start();
 
                 proc.WaitForExit();
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"powershell, exitCode: {proc.ExitCode}");
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"powershell({command}), exitCode: {proc.ExitCode}");
             }
             catch (Exception ex)
             {
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"Failed to run powershell, caught: {ex.Message}");
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"powershell({command}), caught: {ex.Message}");
             }
         }
 

@@ -71,7 +71,6 @@ namespace Wise40Watcher
             Log($"=========== Start (opMode: {opMode}) ===========");
             
             ConnectWlan();
-            EnableDisableLCONetwork(opMode == WiseSite.OpMode.LCO);
             
             if (weatherLinkNeedsWatching)
                 weatherLinkWatcher = new Watcher("weatherlink");
@@ -206,43 +205,6 @@ namespace Wise40Watcher
 
                     Log($"Initiated WiFi connection with: {p.StartInfo.FileName} {p.StartInfo.Arguments} ...");
                 }
-            }
-        }
-
-        void EnableDisableLCONetwork(bool newState)
-        {
-            string output;
-            string interfaceName = "LCO Ethernet";            
-
-            using (var p = new Process())
-            {
-                p.StartInfo.UseShellExecute = false;
-                p.StartInfo.RedirectStandardOutput = true;
-                p.StartInfo.CreateNoWindow = true;
-                p.StartInfo.FileName = "netsh.exe";
-                p.StartInfo.Arguments = $"interface show interface name=\"{interfaceName}\"";
-                p.Start();
-
-                output = p.StandardOutput.ReadToEnd();
-                p.WaitForExit();
-            }
-
-            bool currentState = output.Contains("Enabled");
-            if (currentState == newState)
-                return;
-
-            using (var p = new Process())
-            {
-                p.StartInfo.UseShellExecute = true;
-                p.StartInfo.RedirectStandardOutput = false;
-                p.StartInfo.CreateNoWindow = true;
-                p.StartInfo.FileName = "netsh.exe";
-                p.StartInfo.Verb = "runas";
-                p.StartInfo.Arguments = $"netsh interface set interface name='{interfaceName}' admin=" + 
-                    (newState ? "enable" : "disable");
-                p.Start();
-
-                Log($"Changed administrative state of interface=\"{interfaceName}\" using: \"{p.StartInfo.FileName} {p.StartInfo.Arguments}\" ...");
             }
         }
     }
