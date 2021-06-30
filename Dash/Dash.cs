@@ -206,6 +206,8 @@ namespace Dash
             menuStrip.RenderMode = ToolStripRenderMode.ManagerRenderMode;
             ToolStripManager.Renderer = new ASCOM.Wise40.Common.Wise40ToolstripRenderer();
 
+            bypassSafetyToolStripMenuItem.Visible = false;
+
             telescopeStatus.Show("");
             focuserStatus.Show("");
             safetooperateStatus.Show("");
@@ -637,6 +639,20 @@ namespace Dash
                 labelAirMass.ForeColor = warningColor;
             }
 
+            if (telescopeDigest != null)
+            {
+                if (telescopeDigest.ShuttingDown)
+                {
+                    bypassSafetyToolStripMenuItem.Enabled = false;
+                    bypassSafetyToolStripMenuItem.ToolTipText = Const.UnsafeReasons.ShuttingDown;
+                }
+                else
+                {
+                    bypassSafetyToolStripMenuItem.Enabled = true;
+                    bypassSafetyToolStripMenuItem.ToolTipText = "";
+                }
+            }
+
             #endregion
 
             #region RefreshAnnunciators
@@ -810,6 +826,8 @@ namespace Dash
                     RefreshInConditionsformation(labelSunElevationValue, safetooperateDigest.SunElevation);
 
                     #endregion
+                    bypassSafetyToolStripMenuItem.Visible = true;
+                    UpdateCheckmark(bypassSafetyToolStripMenuItem, safetooperateDigest.Bypassed);
                 }
                 catch (ASCOM.PropertyNotImplementedException ex)
                 {
@@ -2180,6 +2198,16 @@ namespace Dash
         public void HandleDomainUnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             StopEverything(e.ExceptionObject as Exception);
+        }
+
+        private void BypassOperatingConditionsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (wiseSafeToOperate == null)
+                return;
+
+            bool bypassed = safetooperateDigest.Bypassed;
+            wiseSafeToOperate.Action("bypass", bypassed ? "end" : "start");
+            UpdateCheckmark(bypassSafetyToolStripMenuItem, !bypassed);
         }
         #endregion
     }

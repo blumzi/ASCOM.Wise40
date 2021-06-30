@@ -161,12 +161,14 @@
             this.digitalIOCardsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.debuggingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.actionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.restartTheWise40ServiceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.stopTheWise40ServiceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.changeOperationalModeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.LCOToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ACPToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.WISEToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.restartTheWise40ServiceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.stopTheWise40ServiceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem4 = new System.Windows.Forms.ToolStripMenuItem();
+            this.bypassSafetyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.wise40WikiToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
@@ -2011,11 +2013,27 @@
             this.actionsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.restartTheWise40ServiceToolStripMenuItem,
             this.stopTheWise40ServiceToolStripMenuItem,
-            this.changeOperationalModeToolStripMenuItem});
+            this.changeOperationalModeToolStripMenuItem,
+            this.toolStripMenuItem4,
+            this.bypassSafetyToolStripMenuItem});
             this.actionsToolStripMenuItem.ForeColor = System.Drawing.Color.DarkOrange;
             this.actionsToolStripMenuItem.Name = "actionsToolStripMenuItem";
             this.actionsToolStripMenuItem.Size = new System.Drawing.Size(61, 20);
             this.actionsToolStripMenuItem.Text = "Actions";
+            // 
+            // restartTheWise40ServiceToolStripMenuItem
+            // 
+            this.restartTheWise40ServiceToolStripMenuItem.Name = "restartTheWise40ServiceToolStripMenuItem";
+            this.restartTheWise40ServiceToolStripMenuItem.Size = new System.Drawing.Size(232, 22);
+            this.restartTheWise40ServiceToolStripMenuItem.Text = "Restart Wise40";
+            this.restartTheWise40ServiceToolStripMenuItem.Click += new System.EventHandler(this.RestartWise40);
+            // 
+            // stopTheWise40ServiceToolStripMenuItem
+            // 
+            this.stopTheWise40ServiceToolStripMenuItem.Name = "stopTheWise40ServiceToolStripMenuItem";
+            this.stopTheWise40ServiceToolStripMenuItem.Size = new System.Drawing.Size(232, 22);
+            this.stopTheWise40ServiceToolStripMenuItem.Text = "Stop Wise40";
+            this.stopTheWise40ServiceToolStripMenuItem.Click += new System.EventHandler(this.StopWise40);
             // 
             // changeOperationalModeToolStripMenuItem
             // 
@@ -2024,8 +2042,8 @@
             this.ACPToolStripMenuItem,
             this.WISEToolStripMenuItem});
             this.changeOperationalModeToolStripMenuItem.Name = "changeOperationalModeToolStripMenuItem";
-            this.changeOperationalModeToolStripMenuItem.Size = new System.Drawing.Size(284, 22);
-            this.changeOperationalModeToolStripMenuItem.Text = "Change the Wise40 operational mode";
+            this.changeOperationalModeToolStripMenuItem.Size = new System.Drawing.Size(232, 22);
+            this.changeOperationalModeToolStripMenuItem.Text = "Change operational mode";
             // 
             // LCOToolStripMenuItem
             // 
@@ -2048,19 +2066,18 @@
             this.WISEToolStripMenuItem.Text = "WISE";
             this.WISEToolStripMenuItem.Click += new System.EventHandler(this.ChangeOperationalMode);
             // 
-            // restartTheWise40ServiceToolStripMenuItem
+            // toolStripMenuItem4
             // 
-            this.restartTheWise40ServiceToolStripMenuItem.Name = "restartTheWise40ServiceToolStripMenuItem";
-            this.restartTheWise40ServiceToolStripMenuItem.Size = new System.Drawing.Size(284, 22);
-            this.restartTheWise40ServiceToolStripMenuItem.Text = "Restart the Wise40 service";
-            this.restartTheWise40ServiceToolStripMenuItem.Click += new System.EventHandler(this.RestartWise40);
+            this.toolStripMenuItem4.Name = "toolStripMenuItem4";
+            this.toolStripMenuItem4.Size = new System.Drawing.Size(232, 22);
+            this.toolStripMenuItem4.Text = "---";
             // 
-            // stopTheWise40ServiceToolStripMenuItem
+            // bypassSafetyToolStripMenuItem
             // 
-            this.stopTheWise40ServiceToolStripMenuItem.Name = "stopTheWise40ServiceToolStripMenuItem";
-            this.stopTheWise40ServiceToolStripMenuItem.Size = new System.Drawing.Size(284, 22);
-            this.stopTheWise40ServiceToolStripMenuItem.Text = "Stop the Wise40 service";
-            this.stopTheWise40ServiceToolStripMenuItem.Click += new System.EventHandler(this.StopWise40);
+            this.bypassSafetyToolStripMenuItem.Name = "bypassSafetyToolStripMenuItem";
+            this.bypassSafetyToolStripMenuItem.Size = new System.Drawing.Size(232, 22);
+            this.bypassSafetyToolStripMenuItem.Text = "Bypass operating conditions";
+            this.bypassSafetyToolStripMenuItem.Click += new System.EventHandler(this.BypassOperatingConditionsToolStripMenuItem_Click);
             // 
             // aboutToolStripMenuItem
             // 
@@ -3536,6 +3553,8 @@
         private System.Windows.Forms.ToolStripMenuItem WISEToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem restartTheWise40ServiceToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem stopTheWise40ServiceToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem4;
+        private System.Windows.Forms.ToolStripMenuItem bypassSafetyToolStripMenuItem;
     }
 }
 

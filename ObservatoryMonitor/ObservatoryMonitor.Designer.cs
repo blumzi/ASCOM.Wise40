@@ -35,11 +35,6 @@
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.setupToolStripMenuItemSetup = new System.Windows.Forms.ToolStripMenuItem();
-            this.operationModeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.aCPToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.lCOToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.wISEToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.conditionsBypassToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.listBoxLog = new System.Windows.Forms.ListBox();
             this.labelDate = new System.Windows.Forms.Label();
@@ -90,16 +85,14 @@
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(92, 22);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(93, 22);
             this.exitToolStripMenuItem.Text = "Exit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
             // 
             // settingsToolStripMenuItem
             // 
             this.settingsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.setupToolStripMenuItemSetup,
-            this.operationModeToolStripMenuItem,
-            this.conditionsBypassToolStripMenuItem});
+            this.setupToolStripMenuItemSetup});
             this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
             this.settingsToolStripMenuItem.Size = new System.Drawing.Size(61, 20);
             this.settingsToolStripMenuItem.Text = "Settings";
@@ -107,47 +100,9 @@
             // setupToolStripMenuItemSetup
             // 
             this.setupToolStripMenuItemSetup.Name = "setupToolStripMenuItemSetup";
-            this.setupToolStripMenuItemSetup.Size = new System.Drawing.Size(227, 22);
+            this.setupToolStripMenuItemSetup.Size = new System.Drawing.Size(217, 22);
             this.setupToolStripMenuItemSetup.Text = "Observatory Monitor Setup";
             this.setupToolStripMenuItemSetup.Click += new System.EventHandler(this.setupToolStripMenuItem_Click);
-            // 
-            // operationModeToolStripMenuItem
-            // 
-            this.operationModeToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.aCPToolStripMenuItem,
-            this.lCOToolStripMenuItem,
-            this.wISEToolStripMenuItem});
-            this.operationModeToolStripMenuItem.Name = "operationModeToolStripMenuItem";
-            this.operationModeToolStripMenuItem.Size = new System.Drawing.Size(227, 22);
-            this.operationModeToolStripMenuItem.Text = "Operation Mode";
-            // 
-            // aCPToolStripMenuItem
-            // 
-            this.aCPToolStripMenuItem.Name = "aCPToolStripMenuItem";
-            this.aCPToolStripMenuItem.Size = new System.Drawing.Size(100, 22);
-            this.aCPToolStripMenuItem.Text = "ACP";
-            this.aCPToolStripMenuItem.Click += new System.EventHandler(this.SelectOpMode);
-            // 
-            // lCOToolStripMenuItem
-            // 
-            this.lCOToolStripMenuItem.Name = "lCOToolStripMenuItem";
-            this.lCOToolStripMenuItem.Size = new System.Drawing.Size(100, 22);
-            this.lCOToolStripMenuItem.Text = "LCO";
-            this.lCOToolStripMenuItem.Click += new System.EventHandler(this.SelectOpMode);
-            // 
-            // wISEToolStripMenuItem
-            // 
-            this.wISEToolStripMenuItem.Name = "wISEToolStripMenuItem";
-            this.wISEToolStripMenuItem.Size = new System.Drawing.Size(100, 22);
-            this.wISEToolStripMenuItem.Text = "WISE";
-            this.wISEToolStripMenuItem.Click += new System.EventHandler(this.SelectOpMode);
-            // 
-            // conditionsBypassToolStripMenuItem
-            // 
-            this.conditionsBypassToolStripMenuItem.Name = "conditionsBypassToolStripMenuItem";
-            this.conditionsBypassToolStripMenuItem.Size = new System.Drawing.Size(227, 22);
-            this.conditionsBypassToolStripMenuItem.Text = "Bypass Operating Conditions";
-            this.conditionsBypassToolStripMenuItem.Click += new System.EventHandler(this.conditionsBypassToolStripMenuItem_Click);
             // 
             // aboutToolStripMenuItem
             // 
@@ -468,10 +423,6 @@
         private System.Windows.Forms.Label labelNextCheck;
         public System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.ToolStripMenuItem settingsToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem operationModeToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem lCOToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem wISEToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem aCPToolStripMenuItem;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label labelOperatingMode;
         private System.Windows.Forms.Label label5;
@@ -480,7 +431,6 @@
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label labelHumanInterventionStatus;
-        private System.Windows.Forms.ToolStripMenuItem conditionsBypassToolStripMenuItem;
         private System.Windows.Forms.Label labelTime;
         private System.Windows.Forms.Button buttonProjector;
     }

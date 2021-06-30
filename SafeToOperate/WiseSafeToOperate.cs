@@ -790,6 +790,8 @@ namespace ASCOM.Wise40SafeToOperate
             }
         }
 
+        private readonly object _lock = new object();
+
         public bool IsSafeWithoutCheckingForShutdown(Sensor.Attribute toBeIgnored = Sensor.Attribute.None)
         {
             bool ret = true;
@@ -803,35 +805,40 @@ namespace ASCOM.Wise40SafeToOperate
                 goto Out;
             }
 
-            foreach (Sensor s in _prioritizedSensors)
+            lock (_lock)
             {
-                if (s.HasAttribute(Sensor.Attribute.ForInfoOnly))
-                    continue;
-
-                if (!s.HasAttribute(Sensor.Attribute.AlwaysEnabled) && !s.StateIsSet(Sensor.State.Enabled))
-                    continue;
-
-                if (_bypassed && s.HasAttribute(Sensor.Attribute.CanBeBypassed))
-                    continue;
-
-                if (toBeIgnored != Sensor.Attribute.None && s.HasAttribute(toBeIgnored))
-                    continue;
-
-                if (!s.IsSafe)
+                Sensor unsafeSensor;
+                foreach (Sensor s in _prioritizedSensors)
                 {
-                    if (!s.HasAttribute(Sensor.Attribute.SingleReading))
+                    if (s.HasAttribute(Sensor.Attribute.ForInfoOnly))
+                        continue;
+
+                    if (!s.HasAttribute(Sensor.Attribute.AlwaysEnabled) && !s.StateIsSet(Sensor.State.Enabled))
+                        continue;
+
+                    if (_bypassed && s.HasAttribute(Sensor.Attribute.CanBeBypassed))
+                        continue;
+
+                    if (toBeIgnored != Sensor.Attribute.None && s.HasAttribute(toBeIgnored))
+                        continue;
+
+                    if (!s.IsSafe)
                     {
-                        if (s.StateIsNotSet(Sensor.State.EnoughReadings))
-                            _unsafeBecauseNotReady = true;
-
-                        if (toBeIgnored == Sensor.Attribute.Wise40Specific && s.HasAttribute(Sensor.Attribute.Wise40Specific))
+                        if (!s.HasAttribute(Sensor.Attribute.SingleReading))
                         {
-                            continue;
-                        }
-                    }
+                            if (s.StateIsNotSet(Sensor.State.EnoughReadings))
+                                _unsafeBecauseNotReady = true;
 
-                    ret = false;    // The first non-safe cumulative sensor forces NOT SAFE
-                    goto Out;
+                            if (toBeIgnored == Sensor.Attribute.Wise40Specific && s.HasAttribute(Sensor.Attribute.Wise40Specific))
+                            {
+                                continue;
+                            }
+                        }
+
+                        ret = false;    // The first non-safe cumulative sensor forces NOT SAFE
+                        unsafeSensor = s;
+                        goto Out;
+                    }
                 }
             }
 

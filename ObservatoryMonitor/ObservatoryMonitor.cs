@@ -229,29 +229,8 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             ToolStripManager.Renderer = new Wise40ToolstripRenderer();
 
             UpdateManualInterventionControls();
-            UpdateOpModeControls();
-
-            conditionsBypassToolStripMenuItem.Text = "";
-            conditionsBypassToolStripMenuItem.Enabled = false;
 
             serverCheckerHttpClient.Timeout = TimeSpan.FromSeconds(5);
-        }
-
-        private void UpdateConditionsBypassToolStripMenuItem(bool bypassed)
-        {
-            if (telescopeDigest.ShuttingDown)
-            {
-                conditionsBypassToolStripMenuItem.Enabled = false;
-                conditionsBypassToolStripMenuItem.ToolTipText = Const.UnsafeReasons.ShuttingDown;
-            }
-            else
-            {
-                conditionsBypassToolStripMenuItem.Enabled = true;
-            }
-
-            conditionsBypassToolStripMenuItem.Text = "Bypass safety";
-            if (bypassed)
-                conditionsBypassToolStripMenuItem.Text += Const.checkmark;
         }
 
         private void CheckSituation()
@@ -283,8 +262,6 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             #endregion
 
             #region UpdateDisplay
-
-            UpdateConditionsBypassToolStripMenuItem(safetooperateDigest.Bypassed);
 
             #region ComputerControlLabel
             if (safetooperateDigest.ComputerControl.Safe)
@@ -504,8 +481,6 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             labelConditions.Text = text;
             labelConditions.ForeColor = color;
             toolTip.SetToolTip(labelConditions, tip);
-
-            UpdateConditionsBypassToolStripMenuItem(safetooperateDigest.Bypassed);
         }
 
 #pragma warning disable IDE1006 // Naming Styles
@@ -721,19 +696,6 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             CheckSituation();
         }
 
-        private void SelectOpMode(object sender, EventArgs e)
-        {
-            ToolStripMenuItem selectedItem = sender as ToolStripMenuItem;
-            WiseSite.OpMode mode = (selectedItem == wISEToolStripMenuItem) ? WiseSite.OpMode.WISE :
-                (selectedItem == lCOToolStripMenuItem) ? WiseSite.OpMode.LCO : WiseSite.OpMode.ACP;
-
-            WiseSite.OperationalMode = mode;
-
-            UpdateOpModeControls();
-            CloseConnections();
-            KillWise40Apps();
-        }
-
         private void KillWise40Apps()
         {
             using (var client = new WebClient())
@@ -748,36 +710,6 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
             foreach (var proc in Process.GetProcessesByName("Dash"))
                 proc.Kill();
-        }
-
-        private void UpdateOpModeControls()
-        {
-            WiseSite.OpMode currentMode = WiseSite.OperationalMode;
-
-            List<ToolStripMenuItem> items = new List<ToolStripMenuItem>() {
-                wISEToolStripMenuItem,
-                lCOToolStripMenuItem,
-                aCPToolStripMenuItem,
-            };
-
-            foreach (var item in items)
-            {
-                if (item.Text.EndsWith(Const.checkmark))
-                {
-                    item.Text = item.Text.Substring(0, item.Text.Length - Const.checkmark.Length);
-                }
-            }
-
-            ToolStripMenuItem selected = null;
-            switch (currentMode)
-            {
-                case WiseSite.OpMode.LCO: selected = lCOToolStripMenuItem; break;
-                case WiseSite.OpMode.ACP: selected = aCPToolStripMenuItem; break;
-                case WiseSite.OpMode.WISE: selected = wISEToolStripMenuItem; break;
-            }
-            if (selected != null)
-                selected.Text += Const.checkmark;
-            labelOperatingMode.Text = currentMode.ToString();
         }
 
         private void setupToolStripMenuItem_Click(object sender, EventArgs e)
@@ -830,14 +762,6 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             {
                 _intervalBetweenRegularChecks = TimeSpan.FromMinutes(value);
             }
-        }
-
-        private void conditionsBypassToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (wisesafetooperate == null)
-                return;
-
-            wisesafetooperate.Action("bypass", safetooperateDigest.Bypassed ? "end" : "start");
         }
 
         private void buttonProjector_Click(object sender, EventArgs e)
