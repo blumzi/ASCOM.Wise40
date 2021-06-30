@@ -230,6 +230,9 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
             UpdateManualInterventionControls();
 
+            WiseSite.OpMode opMode = WiseSite.OperationalMode;
+            labelOperatingMode.Text = opMode.ToString();
+
             serverCheckerHttpClient.Timeout = TimeSpan.FromSeconds(5);
         }
 
