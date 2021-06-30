@@ -201,7 +201,7 @@
             this.annunciatorFilterWheel = new TA.WinFormsControls.Annunciator();
             this.annunciatorFocus = new TA.WinFormsControls.Annunciator();
             this.panel2 = new System.Windows.Forms.Panel();
-            this.panel3 = new System.Windows.Forms.Panel();
+            this.panelFullStop = new System.Windows.Forms.Panel();
             this.pictureBoxStop = new System.Windows.Forms.PictureBox();
             this.panel4 = new System.Windows.Forms.Panel();
             this.labelCountdown = new System.Windows.Forms.Label();
@@ -272,7 +272,7 @@
             this.annunciatorPanelSafety.SuspendLayout();
             this.annunciatorPanelStatus.SuspendLayout();
             this.panel2.SuspendLayout();
-            this.panel3.SuspendLayout();
+            this.panelFullStop.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxStop)).BeginInit();
             this.panel4.SuspendLayout();
             this.panel5.SuspendLayout();
@@ -2048,21 +2048,21 @@
             // LCOToolStripMenuItem
             // 
             this.LCOToolStripMenuItem.Name = "LCOToolStripMenuItem";
-            this.LCOToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.LCOToolStripMenuItem.Size = new System.Drawing.Size(102, 22);
             this.LCOToolStripMenuItem.Text = "LCO";
             this.LCOToolStripMenuItem.Click += new System.EventHandler(this.ChangeOperationalMode);
             // 
             // ACPToolStripMenuItem
             // 
             this.ACPToolStripMenuItem.Name = "ACPToolStripMenuItem";
-            this.ACPToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.ACPToolStripMenuItem.Size = new System.Drawing.Size(102, 22);
             this.ACPToolStripMenuItem.Text = "ACP";
             this.ACPToolStripMenuItem.Click += new System.EventHandler(this.ChangeOperationalMode);
             // 
             // WISEToolStripMenuItem
             // 
             this.WISEToolStripMenuItem.Name = "WISEToolStripMenuItem";
-            this.WISEToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.WISEToolStripMenuItem.Size = new System.Drawing.Size(102, 22);
             this.WISEToolStripMenuItem.Text = "WISE";
             this.WISEToolStripMenuItem.Click += new System.EventHandler(this.ChangeOperationalMode);
             // 
@@ -2074,6 +2074,7 @@
             // 
             // bypassSafetyToolStripMenuItem
             // 
+            this.bypassSafetyToolStripMenuItem.Enabled = false;
             this.bypassSafetyToolStripMenuItem.Name = "bypassSafetyToolStripMenuItem";
             this.bypassSafetyToolStripMenuItem.Size = new System.Drawing.Size(232, 22);
             this.bypassSafetyToolStripMenuItem.Text = "Bypass operating conditions";
@@ -2537,19 +2538,19 @@
             // 
             // panel2
             // 
-            this.panel2.Controls.Add(this.panel3);
+            this.panel2.Controls.Add(this.panelFullStop);
             this.panel2.Location = new System.Drawing.Point(3, 534);
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(189, 78);
             this.panel2.TabIndex = 40;
             // 
-            // panel3
+            // panelFullStop
             // 
-            this.panel3.Controls.Add(this.pictureBoxStop);
-            this.panel3.Location = new System.Drawing.Point(64, 6);
-            this.panel3.Name = "panel3";
-            this.panel3.Size = new System.Drawing.Size(72, 72);
-            this.panel3.TabIndex = 0;
+            this.panelFullStop.Controls.Add(this.pictureBoxStop);
+            this.panelFullStop.Location = new System.Drawing.Point(64, 6);
+            this.panelFullStop.Name = "panelFullStop";
+            this.panelFullStop.Size = new System.Drawing.Size(72, 72);
+            this.panelFullStop.TabIndex = 0;
             // 
             // pictureBoxStop
             // 
@@ -2564,6 +2565,7 @@
             this.pictureBoxStop.TabStop = false;
             this.toolTip.SetToolTip(this.pictureBoxStop, "Emergency stop of all moving parts \r\n(telescope, dome, shutter, focus, filter-whe" +
         "el)");
+            this.pictureBoxStop.Visible = false;
             this.pictureBoxStop.Click += new System.EventHandler(this.buttonFullStop_Click);
             // 
             // panel4
@@ -3318,7 +3320,7 @@
             this.annunciatorPanelStatus.ResumeLayout(false);
             this.annunciatorPanelStatus.PerformLayout();
             this.panel2.ResumeLayout(false);
-            this.panel3.ResumeLayout(false);
+            this.panelFullStop.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxStop)).EndInit();
             this.panel4.ResumeLayout(false);
             this.panel5.ResumeLayout(false);
@@ -3492,7 +3494,7 @@
         private System.Windows.Forms.ToolStripMenuItem manage3FiltersToolStripMenuItem;
         private TA.WinFormsControls.Annunciator annunciatorPulse;
         private System.Windows.Forms.Panel panel2;
-        private System.Windows.Forms.Panel panel3;
+        private System.Windows.Forms.Panel panelFullStop;
         private System.Windows.Forms.PictureBox pictureBoxStop;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.Label labelCountdown;

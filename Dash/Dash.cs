@@ -29,7 +29,6 @@ namespace Dash
 
         private DebuggingForm debuggingForm = new DebuggingForm();
         private readonly Debugger debugger = Debugger.Instance;
-        //private readonly FilterWheelForm filterWheelForm;
 
         private readonly Statuser dashStatus, telescopeStatus, domeStatus, shutterStatus, focuserStatus, safetooperateStatus, filterWheelStatus, filterWheelArduinoStatus;
 
@@ -49,6 +48,7 @@ namespace Dash
         private FocuserDigest focuserDigest = null;
         private WiseFilterWheelDigest filterWheelDigest = null;
         private string forecast;
+        private bool bypassSafetyPending, locallyBypassed;
 
         private readonly List<ToolStripMenuItem> debugMenuItems;
         private readonly Dictionary<object, string> alteredItems = new Dictionary<object, string>();
@@ -152,7 +152,7 @@ namespace Dash
                 annunciatorReadonly.ForeColor = warningColor;
                 annunciatorReadonly.Cadence = CadencePattern.SteadyOn;
 
-                pictureBoxStop.Visible = false;
+                pictureBoxStop.Enabled = false;
             }
             else
             {
@@ -182,6 +182,8 @@ namespace Dash
                     }
                     buttonHumanIntervention.Visible = true;
                     buttonHumanIntervention.Enabled = true;
+
+                    pictureBoxStop.Visible = (opMode == WiseSite.OpMode.WISE);
                     break;
             }
 
@@ -205,8 +207,6 @@ namespace Dash
 
             menuStrip.RenderMode = ToolStripRenderMode.ManagerRenderMode;
             ToolStripManager.Renderer = new ASCOM.Wise40.Common.Wise40ToolstripRenderer();
-
-            bypassSafetyToolStripMenuItem.Visible = false;
 
             telescopeStatus.Show("");
             focuserStatus.Show("");
@@ -652,6 +652,9 @@ namespace Dash
                     bypassSafetyToolStripMenuItem.ToolTipText = "";
                 }
             }
+            else
+                bypassSafetyToolStripMenuItem.Enabled = false;
+
 
             #endregion
 
@@ -826,8 +829,23 @@ namespace Dash
                     RefreshInConditionsformation(labelSunElevationValue, safetooperateDigest.SunElevation);
 
                     #endregion
+
+                    #region BypassSafetyMenuItem
                     bypassSafetyToolStripMenuItem.Visible = true;
-                    UpdateCheckmark(bypassSafetyToolStripMenuItem, safetooperateDigest.Bypassed);
+                    bool bypassedAtServer = safetooperateDigest.Bypassed;
+                    if (bypassSafetyPending)
+                    {
+                        if (locallyBypassed == bypassedAtServer)
+                        {
+                            bypassSafetyPending = false;
+                            UpdateCheckmark(bypassSafetyToolStripMenuItem, locallyBypassed);
+                        }
+                    }
+                    else
+                    {
+                        UpdateCheckmark(bypassSafetyToolStripMenuItem, safetooperateDigest.Bypassed);
+                    }
+                    #endregion
                 }
                 catch (ASCOM.PropertyNotImplementedException ex)
                 {
@@ -2202,12 +2220,22 @@ namespace Dash
 
         private void BypassOperatingConditionsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (wiseSafeToOperate == null)
+            if (wiseSafeToOperate == null || safetooperateDigest == null)
                 return;
 
             bool bypassed = safetooperateDigest.Bypassed;
-            wiseSafeToOperate.Action("bypass", bypassed ? "end" : "start");
-            UpdateCheckmark(bypassSafetyToolStripMenuItem, !bypassed);
+            if (bypassed)
+            {
+                wiseSafeToOperate.Action("bypass", "end");
+                locallyBypassed = false;
+            }
+            else
+            {
+                wiseSafeToOperate.Action("bypass", "start");
+                locallyBypassed = true;
+            }
+            bypassSafetyPending = true;
+            UpdateCheckmark(bypassSafetyToolStripMenuItem, locallyBypassed);
         }
         #endregion
     }
