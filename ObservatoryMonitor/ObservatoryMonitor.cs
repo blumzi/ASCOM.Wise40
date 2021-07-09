@@ -388,7 +388,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
             Log("    " +
                 $"Telescope at {ra.ToNiceString()} {dec.ToNiceString()}, " +
-                $"dome at {az.ToNiceString()}, " +
+                $"dome at {az.ToShortNiceString()}, " +
                 $"shutter {shutterState.ToString().ToLower().Remove(0, "shutter".Length)} ...",
                 _simulated ? 1 : 10);
         }
