@@ -21,8 +21,174 @@ namespace ASCOM.Wise40
         private static readonly Version version = new Version(0, 2);
         private static bool _initialized = false;
         private static bool _connected = false;
-        private const int _upwardCompensation = 100;
 
+        public class Reading
+        {
+            public int position;
+            public DateTime time;
+        }
+        public class Motion
+        {
+            public int start;               // starting position
+            public int target;              // target position
+            public int intermediate;        // intermediate target
+            public int startStopping;       // position where the stopping started
+            public int stop;                // actual stopping position
+            public Direction dirOrig;       // direction to target (not to intermediate)
+            public Direction dirCurrent;    // current direction (either to target or to intermediate)
+            private State state;            // of the automaton
+
+            private static readonly WiseFocuser focuser = WiseFocuser.Instance;
+            private static readonly Debugger debugger = Debugger.Instance;
+
+            public Motion(int targetPosition = noPosition, Direction direction = Direction.None)
+            {
+                dirCurrent = dirOrig = direction;
+                target = targetPosition;
+                state = new State()
+                {
+                    _flags = State.Flags.None,
+                };
+            }
+            public void Start()
+            {
+                if (target == noPosition && dirOrig == Direction.None)
+                {
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, "motion.Start(): no target and no direction");
+                    #endregion
+                    return;
+                }
+
+                if (target == noPosition)
+                {
+                    if (dirCurrent == Direction.Up)
+                        state.Set(State.Flags.MovingUp);
+                    else if (dirCurrent == Direction.Down)
+                        state.Set(State.Flags.MovingDown);
+
+                    StartMoving();      // dirCurrent is not Direction.None
+                    return;
+                }
+                else if (target == focuser.UpperLimit)
+                {
+                    dirCurrent = Direction.Up;
+                    state.Set(State.Flags.MovingUp);
+                    StartMoving();
+                    return;
+                }
+                else if (target == focuser.LowerLimit)
+                {
+                    dirCurrent = Direction.Down;
+                    state.Set(State.Flags.MovingDown);
+                    StartMoving();
+                    return;
+                }
+
+                int distance = (int) Math.Abs(target - start);
+
+                if (target > start)
+                {
+                    dirOrig = Direction.Up;
+                    if (distance < focuser.motionParameters[dirOrig].stoppingDistance)
+                    {
+                        // To move UP less than 10 units we need to first move down
+                        intermediate = target - focuser.motionParameters[dirOrig].compensation;
+                        state.Set(State.Flags.MovingToIntermediateTarget);
+                        dirCurrent = Direction.Down;
+                        StartMoving();
+                    }
+                    else
+                    {
+                        // Moving UP more than 10 units just works
+                        intermediate = noPosition;
+                        state.Set(State.Flags.MovingToTarget);
+                        dirCurrent = Direction.Up;
+                        StartMoving();
+                    }
+                }
+                else
+                {
+                    dirCurrent = dirOrig = Direction.Down;
+                    intermediate = target - focuser.motionParameters[dirCurrent].compensation;
+                    state.Set(State.Flags.MovingToIntermediateTarget);
+                    StartMoving();
+                }
+
+                activityMonitor.NewActivity(new Activity.Focuser(new Activity.Focuser.StartParams
+                {
+                    start = start,
+                    target = target,
+                    intermediateTarget = intermediate,
+                    direction = (dirOrig == Direction.Up) ?
+                        Activity.Focuser.Direction.Up :
+                        Activity.Focuser.Direction.Down,
+                }));
+
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugFocuser,
+                    $"motion.Start: start: {start}, target: {target}, intermediate: {intermediate}, state: [{state}]");
+                #endregion
+            }
+            public void StartMoving()
+            {
+                WisePin pin = null;
+
+                switch (dirCurrent)
+                {
+                    case Direction.Up:
+                        pin = focuser.pinUp;
+                        if (Simulated)
+                            focuser.encoder.startMoving(Const.Direction.Increasing);
+                        break;
+
+                    case Direction.Down:
+                        pin = focuser.pinDown;
+                        if (Simulated)
+                            focuser.encoder.startMoving(Const.Direction.Decreasing);
+                        break;
+                }
+
+                if (pin != null)
+                    pin.SetOn();
+            }
+
+            public void StartStopping(string reason)
+            {
+                if (state.IsSet(State.Flags.Stopping))
+                    return;
+
+                state.Set(State.Flags.Stopping);
+                if (Simulated)
+                    focuser.encoder.stopMoving();
+
+                focuser.pinUp.SetOff();
+                focuser.pinDown.SetOff();
+                startStopping = (int) focuser.Position;
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugFocuser,
+                    $"motion.StartStopping: position: {startStopping}, state: [{state}], reason: ({reason}) ...");
+                #endregion
+                Thread.Sleep(50);
+            }
+            public bool Runaway
+            {
+                get
+                {
+                    return state.IsSet(State.Flags.Stopping) &&
+                        Math.Abs(startStopping - focuser.Position) > focuser.motionParameters[dirCurrent].runawayPositions;
+                }
+            }
+
+            public State State
+            {
+                get
+                {
+                    return state;
+                }
+            }
+        }
+        public static Motion motion;
         public class State
         {
             [Flags]
@@ -75,9 +241,7 @@ namespace ASCOM.Wise40
             }
         }
 
-        private static readonly State _state = new State();
-        private int _startStoppingPosition;
-        private const int _runawayPositions = 500;
+        private const int noPosition = -1;
 
         public Debugger debugger = Debugger.Instance;
 
@@ -87,19 +251,20 @@ namespace ASCOM.Wise40
         private static readonly WiseSafeToOperate safetooperate = WiseSafeToOperate.Instance;
         private static readonly ActivityMonitor activityMonitor = ActivityMonitor.Instance;
 
-        public enum Direction { Up, Down, AllUp, AllDown };
-        public class MotionParameter
+        public enum Direction { None, Up, Down, AllUp, AllDown };
+        public class MotionParameters
         {
             public int stoppingDistance;   // number of encoder ticks to stop
+            public int compensation;
+            public int runawayPositions;
         };
 
-        private Dictionary<Direction, MotionParameter> motionParameters;
+        private Dictionary<Direction, MotionParameters> motionParameters;
 
-        private static int _targetPosition, _intermediatePosition;
-        private static int _mostRecentPosition;
+        private static Reading _latestReading, _previousReading;
 
         private const int nRecentPositions = 5;
-        private readonly FixedSizedQueue<uint> recentPositions = new FixedSizedQueue<uint>(nRecentPositions);
+        private readonly FixedSizedQueue<Reading> readings = new FixedSizedQueue<Reading>(nRecentPositions);
 
         private static System.Threading.Timer movementMonitoringTimer;
         private const int movementMonitoringMillis = 50;
@@ -114,7 +279,6 @@ namespace ASCOM.Wise40
         public WiseFocuser() { }
         static WiseFocuser() { }
 
-        private static DateTime _lastRead = DateTime.MinValue;
         private static bool _debugging;
 
         private static readonly Lazy<WiseFocuser> lazy = new Lazy<WiseFocuser>(() => new WiseFocuser()); // Singleton
@@ -149,17 +313,24 @@ namespace ASCOM.Wise40
             disposables.AddRange(new List<IDisposable> { pinUp, pinDown, encoder });
 
             movementMonitoringTimer = new System.Threading.Timer(new TimerCallback(OnTimer));
-            movementMonitoringTimer.Change(movementMonitoringMillis, movementMonitoringMillis);
+            movementMonitoringTimer.Change(movementMonitoringMillis, Timeout.Infinite);
 
-            motionParameters = new Dictionary<Direction, MotionParameter>
+            motionParameters = new Dictionary<Direction, MotionParameters>
             {
-                [Direction.Up] = new MotionParameter() { stoppingDistance = 10 },
-                [Direction.Down] = new MotionParameter() { stoppingDistance = 10 }
+                [Direction.Up] = new MotionParameters() {
+                    stoppingDistance = 10, compensation = 100, runawayPositions = 500,
+                },
+                [Direction.Down] = new MotionParameters() {
+                    stoppingDistance = 10, compensation = 50, runawayPositions = 500,
+                },
             };
 
-            _mostRecentPosition = (int)encoder.Value;
-            _lastRead = DateTime.Now;
-            recentPositions.Enqueue((uint)_mostRecentPosition);
+            _latestReading = new Reading
+            {
+                position = (int)encoder.Value,
+                time = DateTime.Now,
+            };
+            readings.Enqueue(_latestReading);
 
             _initialized = true;
         }
@@ -197,10 +368,16 @@ namespace ASCOM.Wise40
             }
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+                foreach (var disposable in disposables)
+                    disposable.Dispose();
+        }
         public void Dispose()
         {
-            foreach (var disposable in disposables)
-                disposable.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         internal void ReadProfile()
@@ -278,10 +455,10 @@ namespace ASCOM.Wise40
         {
             get
             {
-                int pos = _mostRecentPosition;
+                int pos = _latestReading.position;
 
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, $"position: {pos}");
+                debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, $"MostRecentPosition - Get: {pos}");
                 #endregion
                 return (uint) pos;
             }
@@ -306,31 +483,13 @@ namespace ASCOM.Wise40
             }
         }
 
-        public void StartStopping(string reason)
-        {
-            if (_state.IsSet(State.Flags.Stopping))
-                return;
-
-            _state.Set(State.Flags.Stopping);
-            #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugFocuser,
-                $"StartStopping: Started stopping at {Position} (new _state: {_state}, reason: {reason}) ...");
-            #endregion
-            if (Simulated)
-                encoder.stopMoving();
-
-            pinUp.SetOff();
-            pinDown.SetOff();
-            _startStoppingPosition = (int) Position;
-            Thread.Sleep(50);
-        }
-
         public void Halt(string reason = "Halt")
         {
             if (!Connected)
                 Exceptor.Throw<NotConnectedException>("Halt", "Not connected");
 
-            StartStopping(reason);
+            if (motion != null)
+                motion.StartStopping(reason);
         }
 
         public bool IsMoving
@@ -340,9 +499,12 @@ namespace ASCOM.Wise40
                 if (!Connected)
                     Exceptor.Throw<NotConnectedException>("IsMoving", "Not connected");
 
-                bool ret = _state.IsSet(State.Flags.AnyMoving) || pinUp.isOn || pinDown.isOn;
+                if (motion == null)
+                    return false;
+
+                bool ret = motion.State.IsSet(State.Flags.AnyMoving) || pinUp.isOn || pinDown.isOn || EncoderIsChanging;
                 #region debug
-                string dbg = $"IsMoving: ret: {ret}, state: {_state}";
+                string dbg = $"IsMoving: ret: {ret}, state: [{motion.State}]";
                 if (pinUp.isOn)
                     dbg += ", pinUp: ON";
                 if (pinDown.isOn)
@@ -359,6 +521,7 @@ namespace ASCOM.Wise40
             {
                 return Connected; // Direct function to the connected method, the Link method is just here for backwards compatibility
             }
+
             set
             {
                 Connected = value; // Direct function to the connected method, the Link method is just here for backwards compatibility
@@ -369,7 +532,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return (int)UpperLimit; // Maximum change in one move
+                return (int) UpperLimit; // Maximum change in one move
             }
         }
 
@@ -377,51 +540,13 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return (int)UpperLimit; // Maximum extent of the focuser, so position range is 0 to 10,000
+                return (int) UpperLimit; // Maximum extent of the focuser, so position range is 0 to 10,000
             }
         }
 
         public void Move(Direction dir)
         {
-            if (!safetooperate.IsSafeWithoutCheckingForShutdown())
-                Exceptor.Throw<InvalidOperationException>("Move", string.Join(", ", safetooperate.UnsafeReasonsList()));
-
-            #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, $"Starting Move({dir}) at {Position}");
-            #endregion
-            activityMonitor.NewActivity(new Activity.Focuser(new Activity.Focuser.StartParams
-            {
-                start = (int)Position,
-                direction = (dir == Direction.Up || dir == Direction.AllUp) ?
-                    Activity.Focuser.Direction.Up :
-                    Activity.Focuser.Direction.Down,
-                target = -1,
-            }));
-            switch (dir)
-            {
-                case Direction.Up:
-                    _state.Set(State.Flags.MovingUp);
-                    StartMoving(dir);
-                    break;
-                case Direction.Down:
-                    _state.Set(State.Flags.MovingDown);
-                    StartMoving(dir);
-                    break;
-                case Direction.AllUp:
-                    _state.Set(State.Flags.MovingUp);
-                    Move(targetPos: UpperLimit);
-                    break;
-                case Direction.AllDown:
-                    _state.Set(State.Flags.MovingDown);
-                    Move(targetPos: LowerLimit);
-                    break;
-            }
-        }
-
-        public void Move(uint targetPos)
-        {
-            uint currentPosition = Position;
-            string op = $"Move({targetPos}) from: {currentPosition}";
+            string op = $"Move(dir: {dir}): ";
 
             if (!Connected)
                 Exceptor.Throw<NotConnectedException>(op, "Not connected!");
@@ -435,10 +560,53 @@ namespace ASCOM.Wise40
             if (TempComp)
                 Exceptor.Throw<InvalidOperationException>(op, "Cannot Move while TempComp == true");
 
-            if (targetPos > UpperLimit || targetPos < LowerLimit)
+            if (!safetooperate.IsSafeWithoutCheckingForShutdown())
+                Exceptor.Throw<InvalidOperationException>(op, string.Join(", ", safetooperate.UnsafeReasonsList()));
+
+            motion = new Motion()
+            {
+                target = noPosition,
+                dirOrig = dir,
+                dirCurrent = dir,
+            };
+
+            switch (dir)
+            {
+                case Direction.Up:
+                case Direction.Down:
+                    break;
+
+                case Direction.AllUp:
+                    motion.target = (int) UpperLimit;
+                    break;
+                case Direction.AllDown:
+                    motion.target = (int)LowerLimit;
+                    break;
+            }
+            motion.Start();
+        }
+
+        public void Move(uint targetPosition)
+        {
+            uint currentPosition = Position;
+            string op = $"Move(from: {currentPosition} to {targetPosition})";
+
+            if (!Connected)
+                Exceptor.Throw<NotConnectedException>(op, "Not connected!");
+
+            if (IsMoving)
+                Exceptor.Throw<InvalidOperationException>(op, "Cannot move, already moving");
+
+            if (!safetooperate.IsSafe)
+                Exceptor.Throw<InvalidOperationException>(op, string.Join(", ", safetooperate.UnsafeReasonsList()));
+
+            if (TempComp)
+                Exceptor.Throw<InvalidOperationException>(op, "Cannot Move while TempComp == true");
+
+            if (targetPosition > UpperLimit || targetPosition < LowerLimit)
                 Exceptor.Throw <DriverException>(op, $"Can only move between {LowerLimit} and {UpperLimit}!");
 
-            if (currentPosition == targetPos)
+            if (currentPosition == targetPosition)
             {
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, $"{op} - target same as current, not moving");
@@ -446,75 +614,17 @@ namespace ASCOM.Wise40
                 return;
             }
 
-            if (targetPos > currentPosition && ((targetPos - currentPosition) < motionParameters[Direction.Up].stoppingDistance))
-                Exceptor.Throw<InvalidOperationException>(op, $"Too short. Move at least {motionParameters[Direction.Up].stoppingDistance} positions up!");
-
-            if (targetPos < currentPosition && ((currentPosition - targetPos) < motionParameters[Direction.Down].stoppingDistance))
-                Exceptor.Throw<InvalidOperationException>(op, $"Too short. Move at least {motionParameters[Direction.Down].stoppingDistance} positions down!");
-
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, op);
             #endregion
-            _targetPosition = (int) targetPos;
-            StartMovingToTarget();
-        }
 
-        private void StartMoving(Direction dir)
-        {
-            switch(dir)
+            motion = new Motion()
             {
-                case Direction.Up:
-                    pinUp.SetOn();
-                    if (Simulated)
-                        encoder.startMoving(Const.Direction.Increasing);
-                    break;
+                start = (int)currentPosition,
+                target = (int)targetPosition,
+            };
 
-                case Direction.Down:
-                    pinDown.SetOn();
-                    if (Simulated)
-                        encoder.startMoving(Const.Direction.Decreasing);
-                    break;
-            }
-            #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugFocuser,
-                $"StartMoving: _move({dir}) - at {Position} started moving {dir} ");
-            #endregion
-        }
-
-        private void StartMovingToTarget()
-        {
-            uint currentPos = Position;
-            Direction dir;
-
-            if (_targetPosition > currentPos)
-            {
-                _intermediatePosition = 0;
-                _state.Set(State.Flags.MovingToTarget);
-                dir = Direction.Up;
-                StartMoving(dir);
-            }
-            else
-            {
-                _intermediatePosition = _targetPosition - _upwardCompensation;
-                _state.Set(State.Flags.MovingToIntermediateTarget);
-                dir = Direction.Down;
-                StartMoving(dir);
-            }
-
-            activityMonitor.NewActivity(new Activity.Focuser(new Activity.Focuser.StartParams
-            {
-                start = (int)currentPos,
-                target = _targetPosition,
-                intermediateTarget = _intermediatePosition,
-                direction = (dir == Direction.Up) ?
-                    Activity.Focuser.Direction.Up :
-                    Activity.Focuser.Direction.Down,
-            }));
-
-            #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugFocuser,
-                $"StartMovingToTarget: at {currentPos}, _target: {_targetPosition}, _intermediateTarget: {_intermediatePosition}, _state: {_state}");
-            #endregion
+            motion.Start();
         }
 
         /// <summary>
@@ -660,138 +770,181 @@ namespace ASCOM.Wise40
 
         private void OnTimer(object StateObject)
         {
-            //movementMonitoringTimer.Change(Timeout.Infinite, Timeout.Infinite);
-
             //
-            // At the current timer interval (35 millis), the handler is actually called at about 140 millis
-            // intervals (don't really know why).  The typical measured maximal encoder change per 1 millisecond is
-            // 0.01 encoder ticks.
+            // The typical encoder change rate was measured at less than 0.05 ticks/milli.
             //
-            // Readings that produce a much larger value are discarded to eliminate noise interferences on
+            // Readings that produce a larger value are flagged (debug) to detect noise interferences on
             //  the encoder lines.
             //
-            const double maxEncoderChangeRatePerMilli = 0.010 * 100;
+            const double maxEncoderChangeRatePerMilli = 0.06;
 
-            State oldState = _state;
-            int reading = (int) encoder.Value;
-            DateTime now = DateTime.Now;
-            double deltaMillis = now.Subtract(_lastRead).TotalMilliseconds;
-            _lastRead = now;
+            #region Get encoder reading
+            _previousReading = _latestReading;
+            _latestReading = new Reading
+            {
+                position = (int) encoder.Value,
+                time = DateTime.Now,
+            };
+            double deltaMillis = _latestReading.time.Subtract(_previousReading.time).TotalMilliseconds;
 
-            int deltaPosition = Math.Abs(reading - _mostRecentPosition);
+            int deltaPositions = Math.Abs(_latestReading.position - _previousReading.position);
             double maxDeltaPosition = maxEncoderChangeRatePerMilli * deltaMillis;
 
             #region debug
             if (_debugging)
             {
-                debugger.WriteLine(Debugger.DebugLevel.DebugFocuser,
-                    $"OnTimer: reading: {reading}, _mostRecentPosition: {_mostRecentPosition}, delta: {deltaPosition}, deltaMillis: {deltaMillis}");
+                if (_latestReading.position != _previousReading.position)
+                    debugger.WriteLine(Debugger.DebugLevel.DebugFocuser,
+                        $"OnTimer: _latestReading.position: {_latestReading.position}, delta: {deltaPositions}, deltaMillis: {deltaMillis}," +
+                        $"rate: {deltaPositions/deltaMillis} positions/milli");
             }
             #endregion
 
-            if (_state.IsSet(State.Flags.MovingUp|State.Flags.MovingDown) && deltaPosition <= 10 && deltaMillis >= 1000)
+            if (_latestReading.position != 0 && deltaPositions != 0 && deltaPositions > maxDeltaPosition)
             {
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugFocuser,
-                    $"OnTimer: suspect stuck: state: {_state}, deltaPosition: {deltaPosition} in deltaMillis: {deltaMillis}");
+                    $"OnTimer: Too much movement: _latestReading.position: {_latestReading.position}, (delta: {deltaPositions} > maxDelta: {maxDeltaPosition})");
                 #endregion
             }
 
-            if (_mostRecentPosition != 0 &&  deltaPosition != 0 && deltaPosition > maxDeltaPosition) {
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugFocuser,
-                    $"OnTimer: suspect reading: {reading} _mostRecentPosition: {_mostRecentPosition}, (delta: {deltaPosition} > maxDelta: {maxDeltaPosition})");
-                #endregion
-            }
-            _mostRecentPosition = reading;
-
-            recentPositions.Enqueue((uint) _mostRecentPosition);
+            readings.Enqueue(_latestReading);
+            #endregion
 
             #region Check if encoder is changing
-            uint[] arr = recentPositions.ToArray();
+            Reading[] arr = readings.ToArray();
 
             bool _encoderIsChanging = false;
             if (arr.Length > 1)
             {
                 for (int i = 1; i < arr.Length; i++)
                 {
-                    if (arr[i] != arr[0])
+                    if (arr[i].position != arr[0].position)
                     {
                         _encoderIsChanging = true;
                         break;
                     }
                 }
             }
+
+            EncoderIsChanging = _encoderIsChanging;
             #endregion
 
+            if (motion == null)
+                goto Done;
+
+            State oldState = motion.State;
+
+            #region Stuck?
+            if (motion.State.IsSet(State.Flags.AnyMoving) && deltaPositions <= 10 && deltaMillis >= 1000)
+            {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugFocuser,
+                    $"OnTimer: suspect stuck: state: [{motion.State}], deltaPosition: {deltaPositions} in deltaMillis: {deltaMillis}");
+                #endregion
+            }
+            #endregion
+
+            #region Reached upper/lower limit
             if (
-                ((pinUp.isOn || _state.IsSet(State.Flags.MovingUp)) &&
-                        CloseEnough(_mostRecentPosition, (int) UpperLimit, Direction.Up)) ||
-                ((pinDown.isOn || _state.IsSet(State.Flags.MovingDown)) &&
-                        CloseEnough(_mostRecentPosition, (int) LowerLimit, Direction.Down))
+                ((pinUp.isOn || motion.State.IsSet(State.Flags.MovingUp)) &&
+                        CloseEnough(_latestReading.position, (int) UpperLimit, Direction.Up)) ||
+                ((pinDown.isOn || motion.State.IsSet(State.Flags.MovingDown)) &&
+                        CloseEnough(_latestReading.position, (int) LowerLimit, Direction.Down))
                )
             {
-                StartStopping($"OnTimer: at {_mostRecentPosition} Limit stop (state: {oldState})");
-                return;
+                motion.StartStopping($"OnTimer: at {_latestReading.position} Limit stop (state: [{oldState}])");
+                goto Done;
             }
+            #endregion
 
-            if (_state.IsSet(State.Flags.Stopping) && Math.Abs(_mostRecentPosition - _startStoppingPosition) > _runawayPositions)
+            #region Runaway
+            if (motion.Runaway)
             {
-                StartStopping($"OnTimer: runaway: Started stopping at {_startStoppingPosition} now at {_mostRecentPosition}");
-                return;
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, "OnTimer: Runaway");
+                #endregion
+                goto Done;
             }
+            #endregion
 
-            if (_state.IsSet(State.Flags.Stopping) && !_encoderIsChanging)
+            #region Stopping
+            if (motion.State.IsSet(State.Flags.Stopping) && !_encoderIsChanging)
             {
-                _state.Unset(State.Flags.Stopping);
+                motion.State.Unset(State.Flags.Stopping);
 
-                if (_state.IsSet(State.Flags.AnyMoving))
+                if (motion.State.IsSet(State.Flags.AnyMoving))
                 {
                     // Done moving
-                    bool wasMovingToIntermediateTarget = _state.IsSet(State.Flags.MovingToIntermediateTarget);
+                    bool wasMovingToIntermediateTarget = motion.State.IsSet(State.Flags.MovingToIntermediateTarget);
 
-                    _state.Unset(State.Flags.AnyMoving);
+                    motion.State.Unset(State.Flags.AnyMoving);
 
                     if (wasMovingToIntermediateTarget)
                     {
                         // Done moving to intermediate target, start moving to target
-                        _state.Set(State.Flags.MovingToTarget);
-                        StartMoving(Direction.Up);
+                        motion.State.Set(State.Flags.MovingToTarget);
+                        motion.dirCurrent = Direction.Up;
+                        motion.StartMoving();
+                        #region debug
+                        debugger.WriteLine(Debugger.DebugLevel.DebugFocuser,
+                            $"OnTimer: position: {_latestReading.position}, stopped moving to intermediate: {motion.intermediate}, started moving to target: {motion.target}");
+                        #endregion
                     }
                     else
                     {
+                        #region debug
+                        debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, $"OnTimer: position: {Position}, target: {motion.target}, motion ended, became idle");
+                        #endregion
+                        motion = null;
                         State.BecomeIdle();
                     }
-                    #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugFocuser,
-                        $"OnTimer: stopped moving: at {_mostRecentPosition} (target: {_targetPosition}, intermediateTarget: {_intermediatePosition}, old state: {oldState}, new state: {_state})");
-                    #endregion
+                    goto Done;
                 }
             }
+            #endregion
 
-            if (_state.IsSet(State.Flags.MovingToTarget) &&
-                        CloseEnough(_mostRecentPosition, _targetPosition, Direction.Up))
+            #region Reached target while MovingToTarget
+            if (motion.State.IsSet(State.Flags.MovingToTarget) &&
+                        CloseEnough(_latestReading.position, motion.target, Direction.Up))
             {
-                if (!_state.IsSet(State.Flags.Stopping))
-                    StartStopping($"OnTimer: close to target: at {_mostRecentPosition} (_state: {_state})");
+                if (!motion.State.IsSet(State.Flags.Stopping))
+                {
+                    motion.StartStopping($"OnTimer: position: {_latestReading.position}, close to target: {motion.target}");
+                    goto Done;
+                }
             }
+            #endregion
 
-            if (_state.IsSet(State.Flags.MovingToIntermediateTarget) &&
-                        CloseEnough(_mostRecentPosition, _intermediatePosition, Direction.Down))
+            #region Reached intermediate target
+            if (motion.State.IsSet(State.Flags.MovingToIntermediateTarget) &&
+                        CloseEnough(_latestReading.position, motion.intermediate, Direction.Down))
             {
-                if (!_state.IsSet(State.Flags.Stopping))
-                    StartStopping($"OnTimer: close to intermediate target: at {_mostRecentPosition} (_state: {_state})");
+                if (!motion.State.IsSet(State.Flags.Stopping))
+                {
+                    motion.StartStopping($"OnTimer: close to intermediate target: at {_latestReading.position} (state: [{motion.State}])");
+                    goto Done;
+                }
             }
+            #endregion
 
-            if (!_state.IsSet(State.Flags.AnyMoving) && _encoderIsChanging)
+            #region Not moving but encoder is changing
+            if (!motion.State.IsSet(State.Flags.AnyMoving) && _encoderIsChanging)
             {
-                string reason = $"OnTimer: Runaway: state: {_state}, _encoderIsChanging: {_encoderIsChanging}, readings: [ ";
-                foreach (uint pos in arr)
-                    reason += $"{pos} ";
+                string reason = $"OnTimer: Encoder is changing while focuser is not moving: state: [{motion.State}], readings: [ ";
+                foreach (var reading in arr)
+                    reason += $"{reading.position} ";
                 reason += "]";
-                StartStopping(reason);
+                motion.StartStopping(reason);
+                goto Done;
             }
+            #endregion
+
+        Done:
+                movementMonitoringTimer.Change(movementMonitoringMillis, Timeout.Infinite);
         }
+
+        public bool EncoderIsChanging { get; set; }
 
         private bool CloseEnough(int current, int target, Direction dir)
         {
@@ -828,27 +981,30 @@ namespace ASCOM.Wise40
             {
                 List<string> ret = new List<string>();
 
-                if (_state.IsSet(State.Flags.MovingUp))
+                if (motion == null)
+                    return "";
+
+                if (motion.State.IsSet(State.Flags.MovingUp))
                 {
                     ret.Add("moving-up");
                 }
 
-                if (_state.IsSet(State.Flags.MovingDown))
+                if (motion.State.IsSet(State.Flags.MovingDown))
                 {
                     ret.Add("moving-down");
                 }
 
-                if (_state.IsSet(State.Flags.MovingToTarget))
+                if (motion.State.IsSet(State.Flags.MovingToTarget))
                 {
-                    ret.Add($"moving-to-{_targetPosition}");
+                    ret.Add($"moving-to-{motion.target}");
                 }
 
-                if (_state.IsSet(State.Flags.MovingToIntermediateTarget))
+                if (motion.State.IsSet(State.Flags.MovingToIntermediateTarget))
                 {
-                    ret.Add($"moving-to-{_targetPosition}-via-{_intermediatePosition}");
+                    ret.Add($"moving-to-{motion.target}-via-{motion.intermediate}");
                 }
 
-                if (_state.IsSet(State.Flags.Stopping))
+                if (motion.State.IsSet(State.Flags.Stopping))
                     ret.Add("stopping");
 
                 string s = string.Join(",", ret);
