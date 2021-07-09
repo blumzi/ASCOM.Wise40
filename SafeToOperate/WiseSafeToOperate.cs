@@ -381,6 +381,7 @@ namespace ASCOM.Wise40SafeToOperate
                     SunElevation = Sensor.SensorDigest.FromSensor(sunSensor),
                     HumanIntervention = Sensor.SensorDigest.FromSensor(humanInterventionSensor),
                     Platform = Sensor.SensorDigest.FromSensor(platformSensor),
+                    HumanInterventionCampusGlobal = humanInterventionSensor.CampusGlobal,
 
                     Temperature = Sensor.SensorDigest.FromSensor(temperatureSensor),
                     Pressure = Sensor.SensorDigest.FromSensor(pressureSensor),
@@ -820,7 +821,10 @@ namespace ASCOM.Wise40SafeToOperate
                         continue;
 
                     if (toBeIgnored != Sensor.Attribute.None && s.HasAttribute(toBeIgnored))
-                        continue;
+                    {
+                        if (s == humanInterventionSensor && !(s as HumanInterventionSensor).CampusGlobal)
+                            continue;
+                    }
 
                     if (!s.IsSafe)
                     {
@@ -963,6 +967,7 @@ namespace ASCOM.Wise40SafeToOperate
         public bool UnsafeBecauseNotReady;
         public List<string> UnsafeReasons;
         public bool ShuttingDown;
+        public bool HumanInterventionCampusGlobal;
 
         // global sensors
         public Sensor.SensorDigest ComputerControl;

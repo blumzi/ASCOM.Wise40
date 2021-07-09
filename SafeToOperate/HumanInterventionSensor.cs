@@ -96,6 +96,14 @@ namespace ASCOM.Wise40SafeToOperate
 
             get { return 0.ToString(); }
         }
+
+        public bool CampusGlobal
+        {
+            get
+            {
+                return details != null && details.CampusGlobal;
+            }
+        }
     }
 
     public class HumanInterventionDigest

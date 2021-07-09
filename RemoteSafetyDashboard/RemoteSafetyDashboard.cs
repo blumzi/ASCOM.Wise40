@@ -187,7 +187,8 @@ namespace RemoteSafetyDashboard
                 RefreshSensor(labelSunElevationValue, safetooperateDigest.SunElevation);
                 RefreshSensor(labelTempValue, safetooperateDigest.Temperature);
 
-                if (!safetooperateDigest.HumanIntervention.Safe)
+                if ((!OnWise40 && safetooperateDigest.HumanInterventionCampusGlobal) ||
+                    (OnWise40 && !safetooperateDigest.HumanIntervention.Safe))
                 {
                     statuser.SetToolTip(String.Join("\n", safetooperateDigest.UnsafeReasons).Replace(Const.recordSeparator, "\n  "));
                     statuser.Show("Human Intervention", 0, Statuser.Severity.Error, true);
