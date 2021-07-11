@@ -33,7 +33,6 @@ namespace ASCOM.Wise40.Hardware
         private List<byte> _masks;
         private int _nbits;
         private bool _isGray;
-        private int _hwTicks;
         private bool _connected = false;
         private AtomicReader _atomicReader;
         protected Common.Debugger debugger = Common.Debugger.Instance;
@@ -60,7 +59,7 @@ namespace ASCOM.Wise40.Hardware
         /// <param name="timeoutMillis"></param>
         /// <param name="retries"></param>
         public void Init(string name,
-            int hwTicks,
+            int _,
             List<WiseEncSpec> specs,
             bool isGray = false,
             double timeoutMillis = Const.defaultReadTimeoutMillis,
@@ -70,7 +69,6 @@ namespace ASCOM.Wise40.Hardware
             _daqs = new List<WiseDaq>(nSpecs);
             _masks = new List<byte>(nSpecs);
             _isGray = isGray;
-            _hwTicks = hwTicks;
             WiseName = name;
 
             int encBit = 0;

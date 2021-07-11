@@ -970,14 +970,21 @@ namespace ASCOM.Wise40
                 return ret;
             }
         }
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                wisedomeshutter.Dispose();
+                leftPin.SetOff();
+                rightPin.SetOff();
 
+                Vent = false;
+            }
+        }
         public void Dispose()
         {
-            wisedomeshutter.Dispose();
-            leftPin.SetOff();
-            rightPin.SetOff();
-
-            Vent = false;
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         public bool Slewing

@@ -35,7 +35,6 @@ namespace ASCOM.Wise40.ObservatoryMonitor
         private DateTime LatestSuccessfulServerConnection = DateTime.MinValue;
         private TimeSpan TimeToRestartServer = TimeSpan.FromSeconds(30);
         static public int MinutesToIdle { get; set; }
-        private static TimeSpan _intervalBetweenLogs = _simulated ? TimeSpan.FromSeconds(10) : TimeSpan.FromSeconds(20);
         private static DateTime _lastLog = DateTime.MinValue;
         private static readonly string deltaFromUT = "(UT+" + DateTime.Now.Subtract(DateTime.UtcNow).Hours.ToString() + ")";
 
@@ -118,10 +117,9 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             }
             #endregion
 
-            string remoteDriver = null;
             #region Connect to remote ASCOM Drivers
 
-            remoteDriver = "Telescope";
+            string remoteDriver = "Telescope";
             if (wisetelescope == null)
             {
                 try
@@ -697,22 +695,6 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
             UpdateManualInterventionControls();
             CheckSituation();
-        }
-
-        private void KillWise40Apps()
-        {
-            using (var client = new WebClient())
-            {
-                try
-                {
-                    client.UploadData(Const.RESTServer.top + "restart", "PUT", null); // PUT to http://www.xxx.yyy.zzz/server/v1/restart
-                    Thread.Sleep(5000);
-                }
-                catch { }
-            }
-
-            foreach (var proc in Process.GetProcessesByName("Dash"))
-                proc.Kill();
         }
 
         private void setupToolStripMenuItem_Click(object sender, EventArgs e)

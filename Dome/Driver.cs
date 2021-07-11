@@ -464,7 +464,7 @@ namespace ASCOM.Wise40 //.Dome
         /// This technique should mean that it is never necessary to manually register a driver with ASCOM.
         /// </remarks>
         [ComRegisterFunction]
-        public static void RegisterASCOM(Type t)
+        public static void RegisterASCOM(Type _)
         {
             RegUnregASCOM(true);
         }
@@ -487,7 +487,7 @@ namespace ASCOM.Wise40 //.Dome
         /// This technique should mean that it is never necessary to manually unregister a driver from ASCOM.
         /// </remarks>
         [ComUnregisterFunction]
-        public static void UnregisterASCOM(Type t)
+        public static void UnregisterASCOM(Type _)
         {
             RegUnregASCOM(false);
         }

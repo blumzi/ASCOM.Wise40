@@ -694,8 +694,6 @@ namespace Dash
                 #endregion
 
                 #region Platform Annunciator
-                tip = null;
-
                 if (safetooperateDigest.Platform.Safe)
                 {
                     annunciatorDomePlatform.Text = "Platform is safe";
@@ -713,8 +711,6 @@ namespace Dash
             #endregion
 
             #region Simulation Annunciator
-            tip = null;
-
             if (WiseObject.Simulated)
             {
                 annunciatorSimulation.Text = "SIMULATED HARDWARE";
@@ -937,13 +933,13 @@ namespace Dash
             label.ForeColor = digest.Color;
 
             string tip;
-            if (digest.ToolTip != null && digest.ToolTip != string.Empty)
+            if (! string.IsNullOrEmpty(digest.ToolTip))
                 tip = digest.ToolTip;
             else
                 tip = $"latest reading {DateTime.Now.Subtract(digest.LatestReading.timeOfLastUpdate).TotalSeconds:f1} seconds ago";
             
             if (digest.Stale && !tip.Contains("stale"))
-                tip += tip != string.Empty ? " (stale)" : "Stale";
+                tip += !string.IsNullOrEmpty(tip) ? " (stale)" : "Stale";
 
             if (!tip.StartsWith(digest.Name + " - "))
                 tip = digest.Name + " - " + tip;
@@ -955,8 +951,10 @@ namespace Dash
         #region MainMenu
         private void digitalIOCardsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            HardwareForm hardwareForm = new HardwareForm(wiseTelescope);
-            hardwareForm.Visible = true;
+            new HardwareForm(wiseTelescope)
+            {
+                Visible = true,
+            }.Show();
         }
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
@@ -966,8 +964,10 @@ namespace Dash
 
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            AboutForm form = new AboutForm(this);
-            form.Visible = true;
+            new AboutForm(this)
+            {
+                Visible = true,
+            }.Show();
         }
         #endregion
 
@@ -1251,7 +1251,7 @@ namespace Dash
 
         #region ShutterControl
 
-        private void _startMovingShutter(bool open)
+        private void StartMovingShutter(bool open)
         {
             try
             {
@@ -1275,12 +1275,12 @@ namespace Dash
                 if (button == buttonFullOpenShutter)
                 {
                     shutterStatus.Show("Started opening shutter", 1000, Statuser.Severity.Good);
-                    _startMovingShutter(true);
+                    StartMovingShutter(true);
                 }
                 else if (button == buttonFullCloseShutter)
                 {
                     shutterStatus.Show("Started closing shutter", 1000, Statuser.Severity.Good);
-                    _startMovingShutter(false);
+                    StartMovingShutter(false);
                 }
             }
             catch (Exception ex)
@@ -1298,12 +1298,12 @@ namespace Dash
                 if (button == buttonOpenShutter)
                 {
                     shutterStatus.Show("Opening shutter", 0, Statuser.Severity.Good);
-                    _startMovingShutter(true);
+                    StartMovingShutter(true);
                 }
                 else if (button == buttonCloseShutter)
                 {
                     shutterStatus.Show("Closing shutter", 0, Statuser.Severity.Good);
-                    _startMovingShutter(false);
+                    StartMovingShutter(false);
                 }
             }
             catch (Exception ex)
@@ -1343,7 +1343,7 @@ namespace Dash
         private void textBoxDomeAzGo_Validated(object sender, EventArgs e)
         {
             TextBox tb = sender as TextBox;
-            if (tb.Text == string.Empty)
+            if (string.IsNullOrEmpty(tb.Text))
                 return;
             double az = Convert.ToDouble(tb.Text);
 
@@ -1549,7 +1549,7 @@ namespace Dash
 
         private void buttonFocusGoto_Click(object sender, EventArgs e)
         {
-            if (textBoxFocusGotoPosition.Text == string.Empty)
+            if (string.IsNullOrEmpty(textBoxFocusGotoPosition.Text))
                 return;
 
             try
@@ -1566,7 +1566,7 @@ namespace Dash
         {
             TextBox box = (sender as TextBox);
 
-            if (box.Text == string.Empty)
+            if (string.IsNullOrEmpty(box.Text))
                 return;
 
             int pos = Convert.ToInt32(box.Text);
@@ -1766,7 +1766,7 @@ namespace Dash
             labelFWPosition.Text = (position + 1).ToString();
 
             WiseFilterWheel.Wheel.PositionDigest currentFilter = filterWheelDigest.Wheel.Filters[position];
-            if (currentFilter.Name == string.Empty)
+            if (string.IsNullOrEmpty(currentFilter.Name))
             {
                 labelFWFilter.Text = "Clear";
                 toolTip.SetToolTip(labelFWFilter, "");
@@ -1819,7 +1819,6 @@ namespace Dash
 
         private void UpdateAlteredItems(ToolStripMenuItem item, string title)
         {
-            bool currentSetting = IsCheckmarked(item);
             if (alteredItems.ContainsKey(item))
                 alteredItems.Remove(item);
             else

@@ -36,7 +36,6 @@ namespace ASCOM.Wise40
             public int stop;                // actual stopping position
             public Direction dirOrig;       // direction to target (not to intermediate)
             public Direction dirCurrent;    // current direction (either to target or to intermediate)
-            private State state;            // of the automaton
 
             private static readonly WiseFocuser focuser = WiseFocuser.Instance;
             private static readonly Debugger debugger = Debugger.Instance;
@@ -45,7 +44,7 @@ namespace ASCOM.Wise40
             {
                 dirCurrent = dirOrig = direction;
                 target = targetPosition;
-                state = new State()
+                State = new State()
                 {
                     _flags = State.Flags.None,
                 };
@@ -63,9 +62,9 @@ namespace ASCOM.Wise40
                 if (target == noPosition)
                 {
                     if (dirCurrent == Direction.Up)
-                        state.Set(State.Flags.MovingUp);
+                        State.Set(State.Flags.MovingUp);
                     else if (dirCurrent == Direction.Down)
-                        state.Set(State.Flags.MovingDown);
+                        State.Set(State.Flags.MovingDown);
 
                     StartMoving();      // dirCurrent is not Direction.None
                     return;
@@ -73,14 +72,14 @@ namespace ASCOM.Wise40
                 else if (target == focuser.UpperLimit)
                 {
                     dirCurrent = Direction.Up;
-                    state.Set(State.Flags.MovingUp);
+                    State.Set(State.Flags.MovingUp);
                     StartMoving();
                     return;
                 }
                 else if (target == focuser.LowerLimit)
                 {
                     dirCurrent = Direction.Down;
-                    state.Set(State.Flags.MovingDown);
+                    State.Set(State.Flags.MovingDown);
                     StartMoving();
                     return;
                 }
@@ -94,7 +93,7 @@ namespace ASCOM.Wise40
                     {
                         // To move UP less than 10 units we need to first move down
                         intermediate = target - focuser.motionParameters[dirOrig].compensation;
-                        state.Set(State.Flags.MovingToIntermediateTarget);
+                        State.Set(State.Flags.MovingToIntermediateTarget);
                         dirCurrent = Direction.Down;
                         StartMoving();
                     }
@@ -102,7 +101,7 @@ namespace ASCOM.Wise40
                     {
                         // Moving UP more than 10 units just works
                         intermediate = noPosition;
-                        state.Set(State.Flags.MovingToTarget);
+                        State.Set(State.Flags.MovingToTarget);
                         dirCurrent = Direction.Up;
                         StartMoving();
                     }
@@ -111,7 +110,7 @@ namespace ASCOM.Wise40
                 {
                     dirCurrent = dirOrig = Direction.Down;
                     intermediate = target - focuser.motionParameters[dirCurrent].compensation;
-                    state.Set(State.Flags.MovingToIntermediateTarget);
+                    State.Set(State.Flags.MovingToIntermediateTarget);
                     StartMoving();
                 }
 
@@ -127,7 +126,7 @@ namespace ASCOM.Wise40
 
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugFocuser,
-                    $"motion.Start: start: {start}, target: {target}, intermediate: {intermediate}, state: [{state}]");
+                    $"motion.Start: start: {start}, target: {target}, intermediate: {intermediate}, state: [{State}]");
                 #endregion
             }
             public void StartMoving()
@@ -155,10 +154,10 @@ namespace ASCOM.Wise40
 
             public void StartStopping(string reason)
             {
-                if (state.IsSet(State.Flags.Stopping))
+                if (State.IsSet(State.Flags.Stopping))
                     return;
 
-                state.Set(State.Flags.Stopping);
+                State.Set(State.Flags.Stopping);
                 if (Simulated)
                     focuser.encoder.stopMoving();
 
@@ -167,7 +166,7 @@ namespace ASCOM.Wise40
                 startStopping = (int) focuser.Position;
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugFocuser,
-                    $"motion.StartStopping: position: {startStopping}, state: [{state}], reason: ({reason}) ...");
+                    $"motion.StartStopping: position: {startStopping}, state: [{State}], reason: ({reason}) ...");
                 #endregion
                 Thread.Sleep(50);
             }
@@ -175,18 +174,12 @@ namespace ASCOM.Wise40
             {
                 get
                 {
-                    return state.IsSet(State.Flags.Stopping) &&
+                    return State.IsSet(State.Flags.Stopping) &&
                         Math.Abs(startStopping - focuser.Position) > focuser.motionParameters[dirCurrent].runawayPositions;
                 }
             }
 
-            public State State
-            {
-                get
-                {
-                    return state;
-                }
-            }
+            public State State { get; }
         }
         public static Motion motion;
         public class State
@@ -367,7 +360,6 @@ namespace ASCOM.Wise40
                 ActivityMonitor.Event(new Event.DriverConnectEvent(Const.WiseDriverID.Focus, _connected, line: ActivityMonitor.Tracer.focuser.Line));
             }
         }
-
         protected virtual void Dispose(bool disposing)
         {
             if (disposing)
@@ -379,7 +371,6 @@ namespace ASCOM.Wise40
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-
         internal void ReadProfile()
         {
             using (Profile driverProfile = new Profile() { DeviceType = "Focuser" })

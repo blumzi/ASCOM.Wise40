@@ -7,7 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 
 [assembly: SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>", Scope = "member", Target = "~M:Dash.FilterWheelForm.buttonGoTo_Click(System.Object,System.EventArgs)")]
 [assembly: SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>", Scope = "member", Target = "~M:Dash.FormDash.#ctor")]
-[assembly: SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>", Scope = "member", Target = "~M:Dash.FormDash._startMovingShutter(System.Boolean)")]
+[assembly: SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>", Scope = "member", Target = "~M:Dash.FormDash.StartMovingShutter(System.Boolean)")]
 [assembly: SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>", Scope = "member", Target = "~M:Dash.FormDash.buttonCalibrateDome_Click(System.Object,System.EventArgs)")]
 [assembly: SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>", Scope = "member", Target = "~M:Dash.FormDash.buttonDomeAzGo_Click(System.Object,System.EventArgs)")]
 [assembly: SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>", Scope = "member", Target = "~M:Dash.FormDash.buttonDomeLeft_MouseDown(System.Object,System.Windows.Forms.MouseEventArgs)")]

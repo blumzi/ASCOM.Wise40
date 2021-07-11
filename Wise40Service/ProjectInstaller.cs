@@ -13,7 +13,7 @@ namespace Wise40Watcher
     [RunInstaller(true)]
     public partial class ProjectInstaller : Installer
     {
-        private ServiceProcessInstaller processInstaller = new ServiceProcessInstaller();
+        private readonly ServiceProcessInstaller processInstaller = new ServiceProcessInstaller();
         public ProjectInstaller()
         {
             InitializeComponent();

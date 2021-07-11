@@ -19,7 +19,6 @@ namespace Wise40Watcher
         private Const.App _app;
         private Process _process = null;
         private bool _stopping = false;
-        private readonly AscomServerFetcher ascomServerFetcher = new AscomServerFetcher();
 
         private readonly Dictionary<string, Const.Application> _appNameToToken = new Dictionary<string, Const.Application>
         {

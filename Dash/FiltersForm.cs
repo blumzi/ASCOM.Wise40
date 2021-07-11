@@ -17,11 +17,10 @@ namespace Dash
 {
     public partial class FiltersForm : Form
     {
-        private ASCOM.DriverAccess.FilterWheel _wiseFilterWheel;
-        BindingList<Filter> boundFilters;
-        BindingSource source;
-        Debugger debugger = Debugger.Instance;
-        private WiseFilterWheel.FilterSize _filterSize;
+        private readonly ASCOM.DriverAccess.FilterWheel _wiseFilterWheel;
+        private readonly BindingList<Filter> boundFilters;
+        private readonly BindingSource source;
+        private readonly WiseFilterWheel.FilterSize _filterSize;
 
         public FiltersForm(ASCOM.DriverAccess.FilterWheel wiseFilterWheel, WiseFilterWheel.FilterSize filterSize)
         {
@@ -75,7 +74,7 @@ namespace Dash
 
             foreach (Filter f in source.List)
             {
-                if (f.Name == string.Empty)
+                if (string.IsNullOrEmpty(f.Name))
                     continue;
                 names.Add(f.Name);
                 filters.Add(f);
@@ -107,7 +106,6 @@ namespace Dash
         {
             var grid = sender as DataGridView;
             var rowIdx = (e.RowIndex + 1).ToString();
-            Color color = Color.DarkOrange;
             SolidBrush brush = new SolidBrush(Color.DarkOrange);
 
             var centerFormat = new StringFormat()
@@ -125,7 +123,6 @@ namespace Dash
         {
             if ((e.Context & DataGridViewDataErrorContexts.Parsing) != 0)
             {
-                DataGridView view = sender as DataGridView;
                 List<string> columnNames = new List<string>() { "Name", "Description", "Focus offset" };
 
                 MessageBox.Show(string.Format("Bad \"{0}\" for filter #{1}", columnNames[e.ColumnIndex], e.RowIndex + 1));

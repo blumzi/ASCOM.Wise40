@@ -129,26 +129,6 @@ namespace RemoteSafetyDashboard
             toolTip.SetToolTip(label, digest.ToolTip);
         }
 
-        private void ClearLabels(string s, Color color)
-        {
-            foreach (Label l in new List<Label> {
-                    labelHumidityValue,
-                    labelCloudCoverValue,
-                    labelDewPointValue,
-                    labelWindSpeedValue,
-                    labelWindDirValue,
-                    labelPressureValue,
-                    labelSkyTempValue,
-                    labelRainRateValue,
-                    labelSunElevationValue,
-                    labelTempValue,
-                })
-            {
-                l.Text = s;
-                l.ForeColor = color;
-            }
-        }
-
         public void UpdateDisplay()
         {
             string safetyResponse, telescopeResponse;
@@ -502,10 +482,10 @@ namespace RemoteSafetyDashboard
         }
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            About form = new About
+            new About
             {
                 Visible = true
-            };
+            }.Show();
         }
     }
 }

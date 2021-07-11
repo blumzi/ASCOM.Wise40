@@ -60,8 +60,7 @@ namespace ASCOM.Wise40
         /// </summary>
         public static string driverDescription = $"Wise40 Telescope v{version}";
 
-        //private Astrometry.AstroUtils.AstroUtils astroutils;
-        private SafeAstroutils safeAstroUtils = new SafeAstroutils();
+        private readonly SafeAstroutils safeAstroUtils = new SafeAstroutils();
 
         private List<IConnectable> connectables;
         private List<IDisposable> disposables;
@@ -382,17 +381,25 @@ namespace ASCOM.Wise40
             }
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                foreach (var disposable in disposables)
+                {
+                    disposable.Dispose();
+                }
+                _targetRightAscension = null;
+                _targetDeclination = null;
+                _targetHourAngle = null;
+                _targetAzimuth = null;
+                _targetAltitude = null;
+            }
+        }
         public void Dispose()
         {
-            foreach (var disposable in disposables)
-            {
-                disposable.Dispose();
-            }
-            _targetRightAscension = null;
-            _targetDeclination = null;
-            _targetHourAngle = null;
-            _targetAzimuth = null;
-            _targetAltitude = null;
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         public void Connect(bool connected)
@@ -1017,7 +1024,7 @@ namespace ASCOM.Wise40
 
         public void AbortPulseGuiding(string reason)
         {
-            pulsing.Abort("AbortPulseGuiding");
+            pulsing.Abort($"ASCOM.AbortPulseGuiding: (reason {reason})");
         }
 
         public void FullStop()

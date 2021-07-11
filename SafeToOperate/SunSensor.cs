@@ -194,7 +194,6 @@ namespace ASCOM.Wise40SafeToOperate
 
     public class SunElevation
     {
-        private TimeSpan _maxAge = TimeSpan.FromSeconds(10);
         private double _value = Double.NaN;
         private bool _initialized = false;
 

@@ -14,7 +14,7 @@ namespace TestPeriodicHttpFetcher
 {
     class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
             PeriodicHttpFetcher[] fetchers =
             {

@@ -61,7 +61,7 @@ namespace ASCOM.Wise40 //.Focuser
         /// The DeviceID is used by ASCOM applications to load the driver at runtime.
         /// </summary>
 
-        private WiseFocuser wisefocuser = WiseFocuser.Instance;
+        private readonly WiseFocuser wisefocuser = WiseFocuser.Instance;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Wise40"/> class.
@@ -125,10 +125,15 @@ namespace ASCOM.Wise40 //.Focuser
         {
             return wisefocuser.CommandString(command, raw);
         }
-
         public void Dispose()
         {
-            wisefocuser.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+                wisefocuser.Dispose();
         }
 
         public bool Connected
@@ -338,7 +343,7 @@ namespace ASCOM.Wise40 //.Focuser
         /// This technique should mean that it is never necessary to manually register a driver with ASCOM.
         /// </remarks>
         [ComRegisterFunction]
-        public static void RegisterASCOM(Type t)
+        public static void RegisterASCOM(Type _)
         {
             RegUnregASCOM(true);
         }
@@ -361,7 +366,7 @@ namespace ASCOM.Wise40 //.Focuser
         /// This technique should mean that it is never necessary to manually unregister a driver from ASCOM.
         /// </remarks>
         [ComUnregisterFunction]
-        public static void UnregisterASCOM(Type t)
+        public static void UnregisterASCOM(Type _)
         {
             RegUnregASCOM(false);
         }

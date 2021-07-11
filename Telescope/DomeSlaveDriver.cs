@@ -16,8 +16,8 @@ namespace ASCOM.Wise40
         private static readonly WiseDome wisedome = WiseDome.Instance;
         private bool _connected = false;
         //private ASCOM.Astrometry.NOVAS.NOVAS31 novas31 = new Astrometry.NOVAS.NOVAS31();
-        private SafeNovas31 safeNovas31 = new SafeNovas31();
-        private SafeAstroutils safeAstroutils = new SafeAstroutils();
+        private readonly SafeNovas31 safeNovas31 = new SafeNovas31();
+        private readonly SafeAstroutils safeAstroutils = new SafeAstroutils();
         public AutoResetEvent _arrivedAtAz;
         private Debugger debugger;
 

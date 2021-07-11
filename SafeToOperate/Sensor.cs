@@ -524,8 +524,6 @@ namespace ASCOM.Wise40SafeToOperate
         //
         private void OnTimer(object StateObject)
         {
-            Sensor thisSensor = StateObject as Sensor;
-
             if (!Enabled || !Connected)
                 return;
 

@@ -335,8 +335,7 @@ namespace ASCOM.Wise40 //.FilterWheel
                     }
                 }
 
-                Enabled = WiseSite.OperationalMode == WiseSite.OpMode.LCO ?
-                    false :
+                Enabled = (WiseSite.OperationalMode != WiseSite.OpMode.LCO) &&
                     Convert.ToBoolean(driverProfile.GetValue(driverID, "Enabled", string.Empty, "false"));
             }
         }
