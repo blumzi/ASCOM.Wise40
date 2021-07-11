@@ -792,6 +792,7 @@ namespace ASCOM.Wise40SafeToOperate
         }
 
         private readonly object _lock = new object();
+        private Sensor unsafeSensor;
 
         public bool IsSafeWithoutCheckingForShutdown(Sensor.Attribute toBeIgnored = Sensor.Attribute.None)
         {
@@ -806,9 +807,9 @@ namespace ASCOM.Wise40SafeToOperate
                 goto Out;
             }
 
+            unsafeSensor = null;
             lock (_lock)
             {
-                Sensor unsafeSensor;
                 foreach (Sensor s in _prioritizedSensors)
                 {
                     if (s.HasAttribute(Sensor.Attribute.ForInfoOnly))
@@ -847,6 +848,9 @@ namespace ASCOM.Wise40SafeToOperate
             }
 
         Out:
+            if (ret == true && unsafeSensor == null)    // ret was true at start but no unsafeSensor was found
+                ret = false;
+
             Event.SafetyEvent.SafetyState currentSafetyState = (ret) ?
                 Event.SafetyEvent.SafetyState.Safe :
                 Event.SafetyEvent.SafetyState.Unsafe;
