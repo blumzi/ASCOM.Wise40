@@ -1718,7 +1718,7 @@ namespace Dash
 
         private void DashOutFilterWheelControls()
         {
-            foreach (Label l in new List<Label> { labelFWWheel, labelFWFilterSize, labelFWPosition, labelFWFilter}){
+            foreach (Label l in new List<Label> { labelFWWheel, labelFWPosition, labelFWFilter}){
                 l.Text = Const.noValue;
                 l.ForeColor = warningColor;
             }
@@ -1761,8 +1761,8 @@ namespace Dash
 
             short position = (short)filterWheelDigest.Wheel.CurrentPosition.Position;
 
-            labelFWWheel.Text = $"{filterWheelDigest.Wheel.Name}";
-            labelFWFilterSize.Text = filterWheelDigest.Wheel.Type == WiseFilterWheel.WheelType.Wheel4 ? "3 inch" : "2 inch";
+            labelFWWheel.Text = $"{filterWheelDigest.Wheel.Name}" +
+                $" ({(filterWheelDigest.Wheel.Type == WiseFilterWheel.WheelType.Wheel4 ? "3 inch" : "2 inch")})";
             labelFWPosition.Text = (position + 1).ToString();
 
             WiseFilterWheel.Wheel.PositionDigest currentFilter = filterWheelDigest.Wheel.Filters[position];
@@ -1773,11 +1773,14 @@ namespace Dash
             }
             else
             {
-                labelFWFilter.Text = $"{currentFilter.Name}: {currentFilter.Description}";
+                labelFWFilter.Text = $"{currentFilter.Name}";
+                if (!string.IsNullOrEmpty(currentFilter.Description))
+                    labelFWFilter.Text += $"({currentFilter.Description})";
                 toolTip.SetToolTip(labelFWFilter,
                     " Filter name:  " + currentFilter.Name + Const.crnl +
                     " Description:  " + currentFilter.Description + Const.crnl +
-                    " Focus offset: " + currentFilter.Offset.ToString());
+                    " Focus offset: " + currentFilter.Offset.ToString() + Const.crnl +
+                    " Comment:      " + currentFilter.Comment);
             }
 
             if (filterWheelDigest.Wheel.Filters.Count() != comboBoxFilterWheelPositions.Items.Count)

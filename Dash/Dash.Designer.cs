@@ -209,8 +209,6 @@
             this.buttonHumanIntervention = new System.Windows.Forms.Button();
             this.labelDashStatus = new System.Windows.Forms.Label();
             this.groupBoxFilterWheel = new System.Windows.Forms.GroupBox();
-            this.labelFWFilterSize = new System.Windows.Forms.Label();
-            this.label15 = new System.Windows.Forms.Label();
             this.labelFWArduinoStatus = new System.Windows.Forms.Label();
             this.labelFWFilter = new System.Windows.Forms.Label();
             this.label9 = new System.Windows.Forms.Label();
@@ -2627,8 +2625,6 @@
             // 
             // groupBoxFilterWheel
             // 
-            this.groupBoxFilterWheel.Controls.Add(this.labelFWFilterSize);
-            this.groupBoxFilterWheel.Controls.Add(this.label15);
             this.groupBoxFilterWheel.Controls.Add(this.labelFWArduinoStatus);
             this.groupBoxFilterWheel.Controls.Add(this.labelFWFilter);
             this.groupBoxFilterWheel.Controls.Add(this.label9);
@@ -2647,32 +2643,6 @@
             this.groupBoxFilterWheel.TabStop = false;
             this.groupBoxFilterWheel.Text = " FilterWheel ";
             this.groupBoxFilterWheel.Enter += new System.EventHandler(this.groupBoxFilterWheel_Enter);
-            // 
-            // labelFWFilterSize
-            // 
-            this.labelFWFilterSize.AutoEllipsis = true;
-            this.labelFWFilterSize.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.labelFWFilterSize.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelFWFilterSize.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelFWFilterSize.Location = new System.Drawing.Point(115, 61);
-            this.labelFWFilterSize.Name = "labelFWFilterSize";
-            this.labelFWFilterSize.Size = new System.Drawing.Size(207, 20);
-            this.labelFWFilterSize.TabIndex = 55;
-            this.labelFWFilterSize.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // label15
-            // 
-            this.label15.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.label15.AutoSize = true;
-            this.label15.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))));
-            this.label15.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label15.Location = new System.Drawing.Point(9, 62);
-            this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(96, 18);
-            this.label15.TabIndex = 54;
-            this.label15.Text = "Filter size:";
-            this.label15.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // labelFWArduinoStatus
             // 
@@ -2693,33 +2663,31 @@
             this.labelFWFilter.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.labelFWFilter.Font = new System.Drawing.Font("Lucida Sans Unicode", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelFWFilter.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelFWFilter.Location = new System.Drawing.Point(20, 135);
+            this.labelFWFilter.Location = new System.Drawing.Point(96, 112);
             this.labelFWFilter.Name = "labelFWFilter";
-            this.labelFWFilter.Size = new System.Drawing.Size(296, 20);
+            this.labelFWFilter.Size = new System.Drawing.Size(240, 20);
             this.labelFWFilter.TabIndex = 52;
-            this.labelFWFilter.Text = "filter description";
             this.labelFWFilter.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // label9
             // 
             this.label9.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.label9.AutoSize = true;
             this.label9.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))));
             this.label9.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
             this.label9.Location = new System.Drawing.Point(7, 114);
             this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(157, 18);
+            this.label9.Size = new System.Drawing.Size(81, 18);
             this.label9.TabIndex = 51;
-            this.label9.Text = "Filter description:";
-            this.label9.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.label9.Text = "Filter:";
+            this.label9.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // labelFWPosition
             // 
             this.labelFWPosition.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.labelFWPosition.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelFWPosition.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelFWPosition.Location = new System.Drawing.Point(115, 87);
+            this.labelFWPosition.Location = new System.Drawing.Point(96, 87);
             this.labelFWPosition.Name = "labelFWPosition";
             this.labelFWPosition.Size = new System.Drawing.Size(43, 20);
             this.labelFWPosition.TabIndex = 50;
@@ -2730,7 +2698,7 @@
             this.labelFWWheel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.labelFWWheel.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelFWWheel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelFWWheel.Location = new System.Drawing.Point(115, 35);
+            this.labelFWWheel.Location = new System.Drawing.Point(96, 35);
             this.labelFWWheel.Name = "labelFWWheel";
             this.labelFWWheel.Size = new System.Drawing.Size(203, 20);
             this.labelFWWheel.TabIndex = 49;
@@ -2754,7 +2722,6 @@
             // 
             this.label4.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.label4.AutoSize = true;
             this.label4.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))));
             this.label4.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
             this.label4.Location = new System.Drawing.Point(7, 88);
@@ -2762,7 +2729,7 @@
             this.label4.Size = new System.Drawing.Size(81, 18);
             this.label4.TabIndex = 41;
             this.label4.Text = "Position:";
-            this.label4.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.label4.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // comboBoxFilterWheelPositions
             // 
@@ -3527,8 +3494,6 @@
         private System.Windows.Forms.Label labelFWFilter;
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.Label labelFWArduinoStatus;
-        private System.Windows.Forms.Label labelFWFilterSize;
-        private System.Windows.Forms.Label label15;
         private System.Windows.Forms.TabControl tabControlGoTo;
         private System.Windows.Forms.TabPage tabPageRaDec;
         private System.Windows.Forms.Label label24;

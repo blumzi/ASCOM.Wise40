@@ -104,6 +104,7 @@ namespace ASCOM.Wise40 //.FilterWheel
                 public string Description;
                 public int Offset;
                 public string RFIDTag;
+                public string Comment;
             }
 
             public class WheelDigest
@@ -135,6 +136,7 @@ namespace ASCOM.Wise40 //.FilterWheel
                             Description = filter == null ? "" : filter.Description,
                             Offset = filter?.Offset ?? 0,
                             RFIDTag = _positions[i].tag,
+                            Comment = filter?.Comment ?? null,
                         });
                     }
                     return positions;
@@ -534,6 +536,7 @@ namespace ASCOM.Wise40 //.FilterWheel
             public string Name;
             public string Description;
             public int Offset;
+            public string Comment;
         }
 
         public class WheelFilterDigest
@@ -558,6 +561,7 @@ namespace ASCOM.Wise40 //.FilterWheel
                         Name = filter.Name,
                         Description = filter.Description,
                         Offset = filter.Offset,
+                        Comment = filter.Comment,
                     });
                 }
             }
