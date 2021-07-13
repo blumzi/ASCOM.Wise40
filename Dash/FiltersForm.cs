@@ -37,6 +37,7 @@ namespace Dash
             dataGridView.AllowUserToDeleteRows = true;
             dataGridView.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(64, 64, 64);
             dataGridView.EnableHeadersVisualStyles = false;
+            dataGridView.TopLeftHeaderCell.Value = "  #";
         }
 
         private void buttonAdd_Click(object sender, EventArgs e)

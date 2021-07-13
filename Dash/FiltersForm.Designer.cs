@@ -212,7 +212,7 @@
             this.Controls.Add(this.labelTitle);
             this.ForeColor = System.Drawing.Color.DarkOrange;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Name = "FiltersForm";
+            //this.Name = "FiltersForm";
             this.Text = "Wise40 Filters";
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).EndInit();
             this.ResumeLayout(false);
