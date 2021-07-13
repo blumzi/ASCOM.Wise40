@@ -18,8 +18,8 @@ namespace Dash
     public partial class FiltersForm : Form
     {
         private readonly ASCOM.DriverAccess.FilterWheel _wiseFilterWheel;
-        private readonly BindingList<Filter> boundFilters;
-        private readonly BindingSource source;
+        private BindingList<Filter> boundFilters;
+        private BindingSource source;
         private readonly WiseFilterWheel.FilterSize _filterSize;
 
         public FiltersForm(ASCOM.DriverAccess.FilterWheel wiseFilterWheel, WiseFilterWheel.FilterSize filterSize)

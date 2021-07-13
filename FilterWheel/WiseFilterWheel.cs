@@ -159,8 +159,7 @@ namespace ASCOM.Wise40 //.FilterWheel
             }
 
             //
-            // There are two filter inventory files (for two and three inch filters respectively)
-            // These are ';' separated CSV files
+            // There are two CSV filter inventory files (for two and three inch filters respectively)
             //
             private void ReadFiltersFromCsvFile()
             {
@@ -177,15 +176,24 @@ namespace ASCOM.Wise40 //.FilterWheel
                 {
                     string line;
                     string[] fields;
-                    char[] sep = { ';' };
                     int offset;
+                    string comment = null;
 
                     while ((line = sr.ReadLine()) != null)
                     {
                         line = line.TrimStart().TrimEnd();
+                        if (line.Length == 0)           // skip empty lines
+                            continue;
                         if (line.StartsWith("#"))       // skip comments
                             continue;
-                        fields = line.Split(';');
+                        int idx = line.IndexOf('#');    // remember comment
+                        if (idx != -1)
+                        {
+                            comment = line.Substring(idx + 1).Trim();
+                            line.Remove(idx);
+                            line = line.Trim();
+                        }
+                        fields = line.Split(CSVseparator[0]);
                         if (fields.Length != 3)         // skip bad lines
                             continue;
 
@@ -197,7 +205,7 @@ namespace ASCOM.Wise40 //.FilterWheel
                         {
                             offset = 0;
                         }
-                        _filterInventory.Add(new Filter(fields[0], fields[1], offset));
+                        _filterInventory.Add(new Filter(fields[0], fields[1], offset, comment));
                     }
                 }
                 _lastReadFromCSV = DateTime.Now;
@@ -500,7 +508,8 @@ namespace ASCOM.Wise40 //.FilterWheel
                         return JsonConvert.SerializeObject(Filters);
 
                 case "set-filter-inventory":
-                    SetFilterInventory(JsonConvert.DeserializeObject<SetFilterInventoryParam>(parameters));
+                    SetFilterInventoryParam par = JsonConvert.DeserializeObject<SetFilterInventoryParam>(parameters);
+                    SetFilterInventory(par);
                     return "ok";
 
                 case "get-tag":
@@ -587,8 +596,9 @@ namespace ASCOM.Wise40 //.FilterWheel
         {
             Wheel wheel = par.FilterSize == FilterSize.TwoInch ? wheel8 : wheel4;
 
-            for (var i = 0; i < par.Filters.Length; i++)
-                wheel._filterInventory[i] = par.Filters[i];
+            wheel._filterInventory = new List<Filter>();
+            foreach (var f in par.Filters)
+                wheel._filterInventory.Add(f);
 
             SaveFiltersInventoryToCsvFile(par.FilterSize);
         }
@@ -936,6 +946,7 @@ namespace ASCOM.Wise40 //.FilterWheel
             #endregion
         }
 
+        private const string CSVseparator = ",";
         public static void SaveFiltersInventoryToCsvFile(FilterSize filterSize)
         {
             Wheel wheel = filterSize == FilterSize.TwoInch ? wheel8 : wheel4;
@@ -944,24 +955,29 @@ namespace ASCOM.Wise40 //.FilterWheel
             if (!System.IO.Directory.Exists(System.IO.Path.GetDirectoryName(fileName)))
                 System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(fileName));
 
-            using (var sw = new System.IO.StreamWriter(fileName))
+            using (var sw = new System.IO.StreamWriter(fileName, false))
             {
                 sw.WriteLine("#");
-                sw.WriteLine(string.Format("# Wise40 {0}\" filter inventory", filterSize.ToString()));
-                sw.WriteLine(string.Format("# Last saved on: {0}", DateTime.Now.ToString()));
+                sw.WriteLine($"# Wise40 {filterSize}\" filter inventory");
+                sw.WriteLine($"# Last saved on: {DateTime.Now}");
                 sw.WriteLine("# Filter line format:");
-                sw.WriteLine("#  name;decription;offset");
+                sw.WriteLine($"#  name{CSVseparator}decription{CSVseparator}offset");
                 sw.WriteLine("# Name and description are free strings, offset must be a integer.");
                 sw.WriteLine("# Empty lines and comments (starting with #) are ignored.");
                 sw.WriteLine("#");
+                sw.WriteLine("\n");
 
                 foreach (var filter in wheel._filterInventory)
                 {
-                    sw.WriteLine(string.Format("{0};{1};{2}", filter.Name, filter.Description, filter.Offset.ToString()));
+                    string line = $"{filter.Name}{CSVseparator}{filter.Description}{CSVseparator}{filter.Offset}";
+                    if (!string.IsNullOrEmpty(filter.Comment))
+                        line += $" # {filter.Comment}";
+                    sw.WriteLine(line);
                 }
             }
         }
 
+        [Serializable]
         public class FilterWheelNotDetectedException : Exception
         {
             public FilterWheelNotDetectedException()
@@ -977,6 +993,11 @@ namespace ASCOM.Wise40 //.FilterWheel
             public FilterWheelNotDetectedException(string message, Exception inner)
                 : base(message, inner)
             {
+            }
+
+            protected FilterWheelNotDetectedException(System.Runtime.Serialization.SerializationInfo serializationInfo, System.Runtime.Serialization.StreamingContext streamingContext)
+            {
+                throw new System.NotImplementedException();
             }
         }
 
