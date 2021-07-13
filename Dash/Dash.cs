@@ -1777,10 +1777,10 @@ namespace Dash
                 if (!string.IsNullOrEmpty(currentFilter.Description))
                     labelFWFilter.Text += $"({currentFilter.Description})";
                 toolTip.SetToolTip(labelFWFilter,
-                    " Filter name:  " + currentFilter.Name + Const.crnl +
-                    " Description:  " + currentFilter.Description + Const.crnl +
-                    " Focus offset: " + currentFilter.Offset.ToString() + Const.crnl +
-                    " Comment:      " + currentFilter.Comment);
+                    " Name:    " + currentFilter.Name + Const.crnl +
+                    " Desc:    " + (string.IsNullOrEmpty(currentFilter.Description) ? "(no description)" : currentFilter.Description) + Const.crnl +
+                    " Offset:  " + currentFilter.Offset.ToString() + Const.crnl +
+                    " Comment: " + (string.IsNullOrEmpty(currentFilter.Comment) ? "(no comment)" : currentFilter.Comment));
             }
 
             if (filterWheelDigest.Wheel.Filters.Count() != comboBoxFilterWheelPositions.Items.Count)
