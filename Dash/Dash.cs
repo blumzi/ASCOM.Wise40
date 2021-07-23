@@ -69,14 +69,13 @@ namespace Dash
         private readonly int focuserLowerLimit = 0;
         private readonly int focuserUpperLimit = 0;
 
-        private static List<Control> readonlyControls;
-        private static bool Readonly
-        {
-            get
-            {
-                return WiseSite.OperationalMode != WiseSite.OpMode.WISE;
-            }
-        }
+        //private static List<Control> readonlyControls;
+        //private static List<Control> ComputerControlDependentControls;
+        private static Dictionary<WiseSite.OpMode, List<Control>> ActiveControls;
+        private static List<Control> WiseActiveControls, ACPActiveControls, LCOActiveControls;
+
+        private static Dictionary<WiseSite.OpMode, List<Control>> InvisibleControls;
+        private static List<Control> WiseInvisibleControls, ACPInvisibleControls, LCOInvisibleControls;
 
         #region Initialization
         public FormDash()
@@ -113,55 +112,118 @@ namespace Dash
                 focuserStatus.Show("Cannot connect to ASCOM server", severity: Statuser.Severity.Error, silent: true);
             }
 
-            readonlyControls = new List<Control>() {
-                    textBoxRaDecRa, textBoxRaDecDec,
-                    textBoxHaDecHa, textBoxHaDecDec,
-                    textBoxAltAzAlt, textBoxAltAzAz,
-                    buttonGoCoord,
-                    buttonNorth, buttonSouth, buttonEast, buttonWest,
-                    buttonNW, buttonNE, buttonSE, buttonSW,
-                    buttonStop, buttonMainStop,
-                    buttonTrack,
-                    buttonZenith, buttonFlat, buttonHandleCover, buttonTelescopePark,
+            //ComputerControlDependentControls = new List<Control> {
+            //        textBoxRaDecRa, textBoxRaDecDec,
+            //        textBoxHaDecHa, textBoxHaDecDec,
+            //        textBoxAltAzAlt, textBoxAltAzAz,
+            //        buttonGoCoord,
+            //        buttonNorth, buttonSouth, buttonEast, buttonWest,
+            //        buttonNW, buttonNE, buttonSE, buttonSW,
+            //        buttonStop, buttonMainStop,
+            //        buttonTrack,
+            //        buttonZenith, buttonFlat, buttonHandleCover, buttonTelescopePark,
 
-                    buttonDomeLeft, buttonDomeRight, buttonDomeStop, buttonDomePark,
-                    buttonDomeAzGo, buttonDomeAzSet, textBoxDomeAzValue,
-                    buttonCalibrateDome, buttonVent,
-                    buttonFullOpenShutter, buttonFullCloseShutter, buttonOpenShutter, buttonCloseShutter, buttonStopShutter,
+            //        buttonDomeLeft, buttonDomeRight, buttonDomeStop, buttonDomePark,
+            //        buttonDomeAzGo, buttonDomeAzSet, textBoxDomeAzValue,
+            //        buttonCalibrateDome, buttonVent,
+            //        buttonFullOpenShutter, buttonFullCloseShutter, buttonOpenShutter, buttonCloseShutter, buttonStopShutter,
 
-                    buttonFocusAllDown, buttonFocusAllUp, buttonFocusDecrease, buttonFocusIncrease,
-                    buttonFocuserStop, buttonFocusGoto, textBoxFocusGotoPosition,
-                    buttonFocusUp, buttonFocusDown, comboBoxFocusStep,
+            //        buttonFocusAllDown, buttonFocusAllUp, buttonFocusDecrease, buttonFocusIncrease,
+            //        buttonFocuserStop, buttonFocusGoto, textBoxFocusGotoPosition,
+            //        buttonFocusUp, buttonFocusDown, comboBoxFocusStep,
 
-                    pictureBoxStop,
+            //        pictureBoxStop,
 
-                    radioButtonGuide, radioButtonSet, radioButtonSlew,
-                    buttonFilterWheelGo, comboBoxFilterWheelPositions,
-                };
+            //        radioButtonGuide, radioButtonSet, radioButtonSlew,
+            //        buttonFilterWheelGo, comboBoxFilterWheelPositions
+            //};
 
-            if (Readonly)
+            WiseActiveControls = new List<Control>() {
+                        textBoxRaDecRa, textBoxRaDecDec,
+                        textBoxHaDecHa, textBoxHaDecDec,
+                        textBoxAltAzAlt, textBoxAltAzAz,
+                        buttonGoCoord,
+                        buttonNorth, buttonSouth, buttonEast, buttonWest,
+                        buttonNW, buttonNE, buttonSE, buttonSW,
+                        buttonStop, buttonMainStop,
+                        buttonTrack,
+                        buttonZenith, buttonFlat, buttonHandleCover, buttonTelescopePark,
+
+                        buttonDomeLeft, buttonDomeRight, buttonDomeStop, buttonDomePark,
+                        buttonDomeAzGo, buttonDomeAzSet, textBoxDomeAzValue,
+                        buttonCalibrateDome, buttonVent,
+                        buttonFullOpenShutter, buttonFullCloseShutter, buttonOpenShutter, buttonCloseShutter, buttonStopShutter,
+
+                        buttonFocusAllDown, buttonFocusAllUp, buttonFocusDecrease, buttonFocusIncrease,
+                        buttonFocuserStop, buttonFocusGoto, textBoxFocusGotoPosition,
+                        buttonFocusUp, buttonFocusDown, comboBoxFocusStep,
+
+                        pictureBoxStop,
+
+                        radioButtonGuide, radioButtonSet, radioButtonSlew,
+                        buttonFilterWheelGo, comboBoxFilterWheelPositions
+                    };
+
+            ACPActiveControls = new List<Control>() {
+                        buttonDomeLeft, buttonDomeRight, buttonDomeStop, buttonDomePark,
+                        buttonDomeAzGo, buttonDomeAzSet, textBoxDomeAzValue,
+                        buttonCalibrateDome, buttonVent,
+                        buttonFullOpenShutter, buttonFullCloseShutter, buttonOpenShutter, buttonCloseShutter, buttonStopShutter,
+                    };
+
+            LCOActiveControls = new List<Control>();
+
+            ActiveControls = new Dictionary<WiseSite.OpMode, List<Control>>() {
+                { WiseSite.OpMode.WISE, WiseActiveControls },
+                { WiseSite.OpMode.ACP, ACPActiveControls },
+                { WiseSite.OpMode.LCO, LCOActiveControls },
+            };
+
+            LCOInvisibleControls = new List<Control>()
             {
-                groupBoxTarget.Text += $"(from {WiseSite.OperationalMode}) ";
+                pictureBoxStop,
+                labelFWArduinoStatus, labelFWFilter, labelFWWheel, labelFWPosition, labelFilterWheelStatus,
+            };
 
-                foreach (var c in readonlyControls)
-                {
-                    c.Enabled = false;
-                }
-
-                annunciatorReadonly.Text = $"Readonly mode ({WiseSite.OperationalMode})";
-                annunciatorReadonly.ForeColor = warningColor;
-                annunciatorReadonly.Cadence = CadencePattern.SteadyOn;
-
-                pictureBoxStop.Enabled = false;
-            }
-            else
+            ACPInvisibleControls = new List<Control>()
             {
-                annunciatorReadonly.ForeColor = goodColor;
-                annunciatorReadonly.Text = $"Active mode ({WiseSite.OperationalMode})";
-                annunciatorReadonly.Cadence = CadencePattern.SteadyOn;
-            }
+                pictureBoxStop,
+            };
+
+            WiseInvisibleControls = new List<Control>();
+
+            InvisibleControls = new Dictionary<WiseSite.OpMode, List<Control>>() {
+                { WiseSite.OpMode.WISE, WiseInvisibleControls },
+                { WiseSite.OpMode.ACP, ACPInvisibleControls },
+                { WiseSite.OpMode.LCO, LCOInvisibleControls },
+            };
 
             WiseSite.OpMode opMode = WiseSite.OperationalMode;
+
+            if (opMode == WiseSite.OpMode.ACP || opMode == WiseSite.OpMode.LCO)
+            {
+                groupBoxTarget.Text += $"(from {opMode}) ";
+            }
+
+            foreach (var c in InvisibleControls[opMode])
+                c.Visible = false;
+
+            annunciatorOpMode.Text = $"Mode: {opMode}";
+            annunciatorOpMode.ForeColor = warningColor;
+            annunciatorOpMode.Cadence = CadencePattern.SteadyOn;
+            switch (opMode)
+            {
+                case WiseSite.OpMode.LCO:
+                    toolTip.SetToolTip(annunciatorOpMode, "Wise40 is controlled by LCO");
+                    break;
+                case WiseSite.OpMode.ACP:
+                    toolTip.SetToolTip(annunciatorOpMode, "Wise40 is controlled by ACP");
+                    break;
+                case WiseSite.OpMode.WISE:
+                    toolTip.SetToolTip(annunciatorOpMode, "Wise40 is controlled by this Dashboard");
+                    break;
+            }
+
             switch (opMode)
             {
                 case WiseSite.OpMode.LCO:
@@ -172,13 +234,15 @@ namespace Dash
                 case WiseSite.OpMode.WISE:
                     if (HumanIntervention.IsSet())
                     {
-                        buttonHumanIntervention.Text = "Deactivate Human Intervention";
-                        buttonHumanIntervention.ForeColor = safeColor;
+                        buttonHumanIntervention.Text = "Deactivate";
+                        labelHumanInterventionStatus.ForeColor = unsafeColor;
+                        labelHumanInterventionStatus.Text = "Active";
                     }
                     else
                     {
-                        buttonHumanIntervention.Text = "Activate Human Intervention";
-                        buttonHumanIntervention.ForeColor = unsafeColor;
+                        buttonHumanIntervention.Text = "Activate";
+                        labelHumanInterventionStatus.Text = "Inactive";
+                        labelHumanInterventionStatus.ForeColor = goodColor;
                     }
                     buttonHumanIntervention.Visible = true;
                     buttonHumanIntervention.Enabled = true;
@@ -225,39 +289,8 @@ namespace Dash
             UpdateCheckmark(debugDAQsToolStripMenuItem, Debugger.Debugging(Debugger.DebugLevel.DebugDAQs));
 
             UpdateFilterWheelControls();
-            //tabControlGoTo.DrawMode = TabDrawMode.OwnerDrawFixed;
-            //tabControlGoTo.DrawItem += tabControlDrawItem;
             tabControlGoTo.SelectedTab = tabPageRaDec;
         }
-
-        //private void tabControlDrawItem(object sender, DrawItemEventArgs e)
-        //{
-        //    TabControl tc = (TabControl)sender;
-
-        //    Graphics g = e.Graphics;
-        //    TabPage tp = tc.TabPages[e.Index];
-
-        //    StringFormat sf = new StringFormat
-        //    {
-        //        Alignment = StringAlignment.Center  //optional
-        //    };
-
-        //    // This is the rectangle to draw "over" the tabpage title
-        //    RectangleF headerRect = new RectangleF(e.Bounds.X, e.Bounds.Y + 2, e.Bounds.Width, e.Bounds.Height - 2);
-
-        //    // This is the default colour to use for the non-selected tabs
-        //    SolidBrush sb = new SolidBrush(Color.FromArgb(64, 64, 64));
-
-        //    // This changes the colour if we're trying to draw the selected tabpage
-        //    //if (tc.SelectedIndex == e.Index)
-        //    //    sb.Color =  Color.Aqua;
-
-        //    // Colour the header of the current tabpage based on what we did above
-        //    g.FillRectangle(sb, e.Bounds);
-
-        //    //Remember to redraw the text - I'm always using black for title text
-        //    g.DrawString(tp.Text, tc.Font, new SolidBrush(Color.DarkOrange), headerRect, sf);
-        //}
         #endregion
 
         public void UpdateFilterWheelControls()
@@ -291,12 +324,13 @@ namespace Dash
             DateTime utcTime = now.ToUniversalTime();
             DateTime localTime = now.ToLocalTime();
             Statuser.Severity severity;
+            WiseSite.OpMode opMode = WiseSite.OperationalMode;
 
             bool refreshDome = domePacer.ShouldRefresh(now);
             bool refreshSafeToOperate = safettoperatePacer.ShouldRefresh(now);
             bool refreshTelescope = telescopePacer.ShouldRefresh(now);
             bool refreshFocus = focusPacer.ShouldRefresh(now);
-            bool refreshFilterWheel = WiseSite.OperationalMode != WiseSite.OpMode.LCO && filterWheelPacer.ShouldRefresh(now);
+            bool refreshFilterWheel = opMode != WiseSite.OpMode.LCO && filterWheelPacer.ShouldRefresh(now);
             bool refreshForecast = forecastPacer.ShouldRefresh(now);
             string tip;
 
@@ -669,12 +703,9 @@ namespace Dash
                     annunciatorComputerControl.Cadence = CadencePattern.SteadyOff;
                     tip = "The computer control switch is ON";
 
-                    if (WiseSite.OperationalMode == WiseSite.OpMode.WISE)
+                    foreach (Control c in ActiveControls[opMode])
                     {
-                        foreach (Control c in readonlyControls)
-                        {
-                            c.Enabled = true;
-                        }
+                        c.Enabled = true;
                     }
                 }
                 else
@@ -683,7 +714,7 @@ namespace Dash
                     annunciatorComputerControl.Cadence = CadencePattern.SteadyOn;
                     tip = "The computer control switch is OFF!";
 
-                    foreach (Control c in readonlyControls)
+                    foreach (Control c in ActiveControls[opMode])
                         c.Enabled = false;
                 }
                 toolTip.SetToolTip(annunciatorComputerControl, tip);
@@ -1761,8 +1792,9 @@ namespace Dash
 
             short position = (short)filterWheelDigest.Wheel.CurrentPosition.Position;
 
-            labelFWWheel.Text = $"{filterWheelDigest.Wheel.Name}" +
-                $" ({(filterWheelDigest.Wheel.Type == WiseFilterWheel.WheelType.Wheel4 ? "3 inch" : "2 inch")})";
+            labelFWWheel.Text = (filterWheelDigest.Wheel.Type == WiseFilterWheel.WheelType.Wheel4) ?
+                "4 positions, 3 inch filters" :
+                "8 positions, 2 inch filters";
             labelFWPosition.Text = (position + 1).ToString();
 
             WiseFilterWheel.Wheel.PositionDigest currentFilter = filterWheelDigest.Wheel.Filters[position];
@@ -1989,8 +2021,9 @@ namespace Dash
                 bw.RunWorkerCompleted += AfterRemoveHumanInterventionFile;
                 bw.RunWorkerAsync();
 
-                buttonHumanIntervention.Text = "Activate Human Intervention";
-                buttonHumanIntervention.ForeColor = unsafeColor;
+                buttonHumanIntervention.Text = "Activate";
+                labelHumanInterventionStatus.Text = "Inactive";
+                labelHumanInterventionStatus.ForeColor = goodColor;
             }
             else
             {
@@ -1998,8 +2031,9 @@ namespace Dash
                 if (result == DialogResult.OK)
                     dashStatus.Show("Created operator intervention");
 
-                buttonHumanIntervention.Text = "Deactivate Human Intervention";
-                buttonHumanIntervention.ForeColor = goodColor;
+                buttonHumanIntervention.Text = "Deactivate";
+                labelHumanInterventionStatus.ForeColor = unsafeColor;
+                labelHumanInterventionStatus.Text = "Active";
             }
 
             try

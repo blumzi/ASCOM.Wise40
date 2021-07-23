@@ -183,7 +183,7 @@
             this.annunciatorDomePlatform = new TA.WinFormsControls.Annunciator();
             this.annunciatorSafeToOperate = new TA.WinFormsControls.Annunciator();
             this.annunciatorSimulation = new TA.WinFormsControls.Annunciator();
-            this.annunciatorReadonly = new TA.WinFormsControls.Annunciator();
+            this.annunciatorOpMode = new TA.WinFormsControls.Annunciator();
             this.annunciatorPanelStatus = new TA.WinFormsControls.AnnunciatorPanel();
             this.annunciatorTrack = new TA.WinFormsControls.Annunciator();
             this.annunciatorSlew = new TA.WinFormsControls.Annunciator();
@@ -206,6 +206,9 @@
             this.panel4 = new System.Windows.Forms.Panel();
             this.labelCountdown = new System.Windows.Forms.Label();
             this.panel5 = new System.Windows.Forms.Panel();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.labelHumanInterventionStatus = new System.Windows.Forms.Label();
+            this.label15 = new System.Windows.Forms.Label();
             this.buttonHumanIntervention = new System.Windows.Forms.Button();
             this.labelDashStatus = new System.Windows.Forms.Label();
             this.groupBoxFilterWheel = new System.Windows.Forms.GroupBox();
@@ -274,6 +277,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxStop)).BeginInit();
             this.panel4.SuspendLayout();
             this.panel5.SuspendLayout();
+            this.groupBox1.SuspendLayout();
             this.groupBoxFilterWheel.SuspendLayout();
             this.groupBoxWeather.SuspendLayout();
             this.tableLayoutPanelWeather.SuspendLayout();
@@ -332,6 +336,7 @@
             // comboBoxFocusStep
             // 
             this.comboBoxFocusStep.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.comboBoxFocusStep.Enabled = false;
             this.comboBoxFocusStep.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.comboBoxFocusStep.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.comboBoxFocusStep.FormattingEnabled = true;
@@ -346,6 +351,7 @@
             this.comboBoxFocusStep.Size = new System.Drawing.Size(94, 21);
             this.comboBoxFocusStep.TabIndex = 33;
             this.comboBoxFocusStep.Text = "  50";
+            this.toolTip.SetToolTip(this.comboBoxFocusStep, "Select increment size");
             // 
             // buttonFocusIncrease
             // 
@@ -353,6 +359,7 @@
             this.buttonFocusIncrease.AutoSize = true;
             this.buttonFocusIncrease.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.buttonFocusIncrease.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonFocusIncrease.Enabled = false;
             this.buttonFocusIncrease.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonFocusIncrease.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonFocusIncrease.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
@@ -361,6 +368,7 @@
             this.buttonFocusIncrease.Size = new System.Drawing.Size(24, 23);
             this.buttonFocusIncrease.TabIndex = 32;
             this.buttonFocusIncrease.Text = "+";
+            this.toolTip.SetToolTip(this.buttonFocusIncrease, "Click to move up by increment size");
             this.buttonFocusIncrease.UseVisualStyleBackColor = false;
             this.buttonFocusIncrease.Click += new System.EventHandler(this.buttonFocusIncrease_Click);
             // 
@@ -370,6 +378,7 @@
             this.buttonFocusDecrease.AutoSize = true;
             this.buttonFocusDecrease.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.buttonFocusDecrease.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonFocusDecrease.Enabled = false;
             this.buttonFocusDecrease.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonFocusDecrease.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonFocusDecrease.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
@@ -378,6 +387,7 @@
             this.buttonFocusDecrease.Size = new System.Drawing.Size(21, 23);
             this.buttonFocusDecrease.TabIndex = 31;
             this.buttonFocusDecrease.Text = "-";
+            this.toolTip.SetToolTip(this.buttonFocusDecrease, "Click to move down by increment size");
             this.buttonFocusDecrease.UseVisualStyleBackColor = false;
             this.buttonFocusDecrease.Click += new System.EventHandler(this.buttonFocusDecrease_Click);
             // 
@@ -399,6 +409,7 @@
             // 
             this.buttonFocusGoto.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonFocusGoto.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonFocusGoto.Enabled = false;
             this.buttonFocusGoto.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonFocusGoto.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonFocusGoto.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
@@ -428,6 +439,7 @@
             this.textBoxFocusGotoPosition.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.textBoxFocusGotoPosition.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.textBoxFocusGotoPosition.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.textBoxFocusGotoPosition.Enabled = false;
             this.textBoxFocusGotoPosition.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.textBoxFocusGotoPosition.Location = new System.Drawing.Point(78, 85);
             this.textBoxFocusGotoPosition.Name = "textBoxFocusGotoPosition";
@@ -440,6 +452,7 @@
             // 
             this.buttonFocusDown.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonFocusDown.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonFocusDown.Enabled = false;
             this.buttonFocusDown.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonFocusDown.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonFocusDown.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
@@ -448,6 +461,7 @@
             this.buttonFocusDown.Size = new System.Drawing.Size(50, 23);
             this.buttonFocusDown.TabIndex = 25;
             this.buttonFocusDown.Text = "Down";
+            this.toolTip.SetToolTip(this.buttonFocusDown, "Press to move down");
             this.buttonFocusDown.UseVisualStyleBackColor = false;
             this.buttonFocusDown.MouseDown += new System.Windows.Forms.MouseEventHandler(this.buttonFocusDown_MouseDown);
             this.buttonFocusDown.MouseUp += new System.Windows.Forms.MouseEventHandler(this.buttonFocusStop);
@@ -468,6 +482,7 @@
             // 
             this.buttonFocuserStop.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonFocuserStop.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonFocuserStop.Enabled = false;
             this.buttonFocuserStop.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonFocuserStop.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonFocuserStop.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
@@ -476,6 +491,7 @@
             this.buttonFocuserStop.Size = new System.Drawing.Size(57, 60);
             this.buttonFocuserStop.TabIndex = 28;
             this.buttonFocuserStop.Text = "Stop";
+            this.toolTip.SetToolTip(this.buttonFocuserStop, "Click to stop");
             this.buttonFocuserStop.UseVisualStyleBackColor = false;
             this.buttonFocuserStop.Click += new System.EventHandler(this.buttonFocuserStop_Click);
             // 
@@ -483,6 +499,7 @@
             // 
             this.buttonFocusAllDown.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonFocusAllDown.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonFocusAllDown.Enabled = false;
             this.buttonFocusAllDown.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonFocusAllDown.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonFocusAllDown.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
@@ -491,6 +508,7 @@
             this.buttonFocusAllDown.Size = new System.Drawing.Size(67, 24);
             this.buttonFocusAllDown.TabIndex = 24;
             this.buttonFocusAllDown.Text = "All down";
+            this.toolTip.SetToolTip(this.buttonFocusAllDown, "Click to move to the lower limit");
             this.buttonFocusAllDown.UseVisualStyleBackColor = false;
             this.buttonFocusAllDown.Click += new System.EventHandler(this.buttonFocusAllDown_Click);
             // 
@@ -498,6 +516,7 @@
             // 
             this.buttonFocusUp.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonFocusUp.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonFocusUp.Enabled = false;
             this.buttonFocusUp.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonFocusUp.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonFocusUp.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
@@ -506,6 +525,7 @@
             this.buttonFocusUp.Size = new System.Drawing.Size(50, 23);
             this.buttonFocusUp.TabIndex = 26;
             this.buttonFocusUp.Text = "Up";
+            this.toolTip.SetToolTip(this.buttonFocusUp, "Press to move up");
             this.buttonFocusUp.UseVisualStyleBackColor = false;
             this.buttonFocusUp.MouseDown += new System.Windows.Forms.MouseEventHandler(this.buttonFocusUp_MouseDown);
             this.buttonFocusUp.MouseUp += new System.Windows.Forms.MouseEventHandler(this.buttonFocusStop);
@@ -514,6 +534,7 @@
             // 
             this.buttonFocusAllUp.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonFocusAllUp.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonFocusAllUp.Enabled = false;
             this.buttonFocusAllUp.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonFocusAllUp.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonFocusAllUp.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
@@ -522,6 +543,7 @@
             this.buttonFocusAllUp.Size = new System.Drawing.Size(57, 24);
             this.buttonFocusAllUp.TabIndex = 23;
             this.buttonFocusAllUp.Text = "All up";
+            this.toolTip.SetToolTip(this.buttonFocusAllUp, "Click to move to the upper limit");
             this.buttonFocusAllUp.UseVisualStyleBackColor = false;
             this.buttonFocusAllUp.Click += new System.EventHandler(this.buttonFocusAllUp_Click);
             // 
@@ -554,6 +576,7 @@
             // buttonDomeAzSet
             // 
             this.buttonDomeAzSet.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonDomeAzSet.Enabled = false;
             this.buttonDomeAzSet.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonDomeAzSet.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonDomeAzSet.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
@@ -562,12 +585,14 @@
             this.buttonDomeAzSet.Size = new System.Drawing.Size(34, 23);
             this.buttonDomeAzSet.TabIndex = 31;
             this.buttonDomeAzSet.Text = "Set";
+            this.toolTip.SetToolTip(this.buttonDomeAzSet, "Click to set the dome azimuth to the selected azimuth");
             this.buttonDomeAzSet.UseVisualStyleBackColor = false;
             this.buttonDomeAzSet.Click += new System.EventHandler(this.buttonDomeAzSet_Click);
             // 
             // buttonDomePark
             // 
             this.buttonDomePark.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonDomePark.Enabled = false;
             this.buttonDomePark.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonDomePark.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonDomePark.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
@@ -576,6 +601,7 @@
             this.buttonDomePark.Size = new System.Drawing.Size(56, 23);
             this.buttonDomePark.TabIndex = 30;
             this.buttonDomePark.Text = "Park?";
+            this.toolTip.SetToolTip(this.buttonDomePark, "Click to park/unpark the dome");
             this.buttonDomePark.UseVisualStyleBackColor = false;
             this.buttonDomePark.Click += new System.EventHandler(this.buttonDomePark_Click);
             // 
@@ -590,12 +616,14 @@
             this.buttonProjector.Size = new System.Drawing.Size(120, 23);
             this.buttonProjector.TabIndex = 29;
             this.buttonProjector.Text = "Projector Off";
+            this.toolTip.SetToolTip(this.buttonProjector, "Turns the dome projector on/off");
             this.buttonProjector.UseVisualStyleBackColor = false;
             this.buttonProjector.Click += new System.EventHandler(this.buttonProjector_Click);
             // 
             // buttonVent
             // 
             this.buttonVent.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonVent.Enabled = false;
             this.buttonVent.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonVent.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonVent.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
@@ -604,12 +632,14 @@
             this.buttonVent.Size = new System.Drawing.Size(80, 23);
             this.buttonVent.TabIndex = 28;
             this.buttonVent.Text = "Close Vent";
+            this.toolTip.SetToolTip(this.buttonVent, "Click to open/close the dome vent");
             this.buttonVent.UseVisualStyleBackColor = false;
             this.buttonVent.Click += new System.EventHandler(this.buttonVent_Click);
             // 
             // buttonCalibrateDome
             // 
             this.buttonCalibrateDome.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonCalibrateDome.Enabled = false;
             this.buttonCalibrateDome.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonCalibrateDome.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonCalibrateDome.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
@@ -618,6 +648,7 @@
             this.buttonCalibrateDome.Size = new System.Drawing.Size(72, 23);
             this.buttonCalibrateDome.TabIndex = 27;
             this.buttonCalibrateDome.Text = "Calibrate";
+            this.toolTip.SetToolTip(this.buttonCalibrateDome, "Click to rotate the dome to the nearest calibration point");
             this.buttonCalibrateDome.UseVisualStyleBackColor = false;
             this.buttonCalibrateDome.Click += new System.EventHandler(this.buttonCalibrateDome_Click);
             // 
@@ -640,6 +671,7 @@
             // buttonCloseShutter
             // 
             this.buttonCloseShutter.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonCloseShutter.Enabled = false;
             this.buttonCloseShutter.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonCloseShutter.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonCloseShutter.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
@@ -648,6 +680,7 @@
             this.buttonCloseShutter.Size = new System.Drawing.Size(48, 23);
             this.buttonCloseShutter.TabIndex = 24;
             this.buttonCloseShutter.Text = "Close";
+            this.toolTip.SetToolTip(this.buttonCloseShutter, "Press to close the shutter");
             this.buttonCloseShutter.UseVisualStyleBackColor = false;
             this.buttonCloseShutter.MouseDown += new System.Windows.Forms.MouseEventHandler(this.MoveShutterClick);
             this.buttonCloseShutter.MouseUp += new System.Windows.Forms.MouseEventHandler(this.buttonStopShutter_Click);
@@ -656,6 +689,7 @@
             // 
             this.buttonOpenShutter.AutoSize = true;
             this.buttonOpenShutter.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonOpenShutter.Enabled = false;
             this.buttonOpenShutter.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonOpenShutter.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonOpenShutter.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
@@ -664,6 +698,7 @@
             this.buttonOpenShutter.Size = new System.Drawing.Size(48, 23);
             this.buttonOpenShutter.TabIndex = 23;
             this.buttonOpenShutter.Text = "Open";
+            this.toolTip.SetToolTip(this.buttonOpenShutter, "Press top open the shutter");
             this.buttonOpenShutter.UseVisualStyleBackColor = false;
             this.buttonOpenShutter.MouseDown += new System.Windows.Forms.MouseEventHandler(this.MoveShutterClick);
             this.buttonOpenShutter.MouseUp += new System.Windows.Forms.MouseEventHandler(this.buttonStopShutter_Click);
@@ -671,6 +706,7 @@
             // buttonStopShutter
             // 
             this.buttonStopShutter.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonStopShutter.Enabled = false;
             this.buttonStopShutter.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonStopShutter.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonStopShutter.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
@@ -679,12 +715,14 @@
             this.buttonStopShutter.Size = new System.Drawing.Size(48, 23);
             this.buttonStopShutter.TabIndex = 22;
             this.buttonStopShutter.Text = "Stop";
+            this.toolTip.SetToolTip(this.buttonStopShutter, "Click to stop the shutter");
             this.buttonStopShutter.UseVisualStyleBackColor = false;
             this.buttonStopShutter.Click += new System.EventHandler(this.buttonStopShutter_Click);
             // 
             // buttonFullCloseShutter
             // 
             this.buttonFullCloseShutter.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonFullCloseShutter.Enabled = false;
             this.buttonFullCloseShutter.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonFullCloseShutter.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonFullCloseShutter.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
@@ -693,12 +731,14 @@
             this.buttonFullCloseShutter.Size = new System.Drawing.Size(75, 23);
             this.buttonFullCloseShutter.TabIndex = 21;
             this.buttonFullCloseShutter.Text = "Full Close";
+            this.toolTip.SetToolTip(this.buttonFullCloseShutter, "Click to fully close the shutter");
             this.buttonFullCloseShutter.UseVisualStyleBackColor = false;
             this.buttonFullCloseShutter.Click += new System.EventHandler(this.MoveShutterClick);
             // 
             // buttonFullOpenShutter
             // 
             this.buttonFullOpenShutter.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonFullOpenShutter.Enabled = false;
             this.buttonFullOpenShutter.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonFullOpenShutter.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonFullOpenShutter.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
@@ -707,6 +747,7 @@
             this.buttonFullOpenShutter.Size = new System.Drawing.Size(75, 23);
             this.buttonFullOpenShutter.TabIndex = 20;
             this.buttonFullOpenShutter.Text = "Full Open";
+            this.toolTip.SetToolTip(this.buttonFullOpenShutter, "Click to fully open the shutter");
             this.buttonFullOpenShutter.UseVisualStyleBackColor = false;
             this.buttonFullOpenShutter.Click += new System.EventHandler(this.MoveShutterClick);
             // 
@@ -728,16 +769,19 @@
             // 
             this.textBoxDomeAzValue.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.textBoxDomeAzValue.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.textBoxDomeAzValue.Enabled = false;
             this.textBoxDomeAzValue.Location = new System.Drawing.Point(231, 29);
             this.textBoxDomeAzValue.Name = "textBoxDomeAzValue";
             this.textBoxDomeAzValue.Size = new System.Drawing.Size(36, 20);
             this.textBoxDomeAzValue.TabIndex = 25;
             this.textBoxDomeAzValue.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.toolTip.SetToolTip(this.textBoxDomeAzValue, "Select azimuth");
             this.textBoxDomeAzValue.Validated += new System.EventHandler(this.textBoxDomeAzGo_Validated);
             // 
             // buttonDomeAzGo
             // 
             this.buttonDomeAzGo.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonDomeAzGo.Enabled = false;
             this.buttonDomeAzGo.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonDomeAzGo.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonDomeAzGo.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
@@ -746,12 +790,14 @@
             this.buttonDomeAzGo.Size = new System.Drawing.Size(34, 23);
             this.buttonDomeAzGo.TabIndex = 24;
             this.buttonDomeAzGo.Text = "Go";
+            this.toolTip.SetToolTip(this.buttonDomeAzGo, "Click to rotate the dome to the selected azimuth");
             this.buttonDomeAzGo.UseVisualStyleBackColor = false;
             this.buttonDomeAzGo.Click += new System.EventHandler(this.buttonDomeAzGo_Click);
             // 
             // buttonDomeRight
             // 
             this.buttonDomeRight.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonDomeRight.Enabled = false;
             this.buttonDomeRight.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonDomeRight.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonDomeRight.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
@@ -760,6 +806,7 @@
             this.buttonDomeRight.Size = new System.Drawing.Size(76, 23);
             this.buttonDomeRight.TabIndex = 23;
             this.buttonDomeRight.Text = "Right";
+            this.toolTip.SetToolTip(this.buttonDomeRight, "Press to rotate the dome CW");
             this.buttonDomeRight.UseVisualStyleBackColor = false;
             this.buttonDomeRight.MouseDown += new System.Windows.Forms.MouseEventHandler(this.buttonDomeRight_MouseDown);
             this.buttonDomeRight.MouseUp += new System.Windows.Forms.MouseEventHandler(this.buttonDomeRight_MouseUp);
@@ -767,6 +814,7 @@
             // buttonDomeStop
             // 
             this.buttonDomeStop.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonDomeStop.Enabled = false;
             this.buttonDomeStop.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonDomeStop.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonDomeStop.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
@@ -775,12 +823,14 @@
             this.buttonDomeStop.Size = new System.Drawing.Size(76, 23);
             this.buttonDomeStop.TabIndex = 22;
             this.buttonDomeStop.Text = "Stop";
+            this.toolTip.SetToolTip(this.buttonDomeStop, "Click to stop the dome");
             this.buttonDomeStop.UseVisualStyleBackColor = false;
             this.buttonDomeStop.Click += new System.EventHandler(this.buttonDomeStop_Click);
             // 
             // buttonDomeLeft
             // 
             this.buttonDomeLeft.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonDomeLeft.Enabled = false;
             this.buttonDomeLeft.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonDomeLeft.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonDomeLeft.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
@@ -789,6 +839,7 @@
             this.buttonDomeLeft.Size = new System.Drawing.Size(76, 23);
             this.buttonDomeLeft.TabIndex = 21;
             this.buttonDomeLeft.Text = "Left";
+            this.toolTip.SetToolTip(this.buttonDomeLeft, "Press to rotate the dome CCW");
             this.buttonDomeLeft.UseVisualStyleBackColor = false;
             this.buttonDomeLeft.MouseDown += new System.Windows.Forms.MouseEventHandler(this.buttonDomeLeft_MouseDown);
             this.buttonDomeLeft.MouseUp += new System.Windows.Forms.MouseEventHandler(this.buttonDomeLeft_MouseUp);
@@ -857,6 +908,7 @@
             // 
             this.buttonTrack.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.buttonTrack.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonTrack.Enabled = false;
             this.buttonTrack.FlatAppearance.BorderSize = 0;
             this.buttonTrack.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.buttonTrack.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
@@ -867,6 +919,7 @@
             this.buttonTrack.Size = new System.Drawing.Size(58, 40);
             this.buttonTrack.TabIndex = 39;
             this.buttonTrack.Text = "Track";
+            this.toolTip.SetToolTip(this.buttonTrack, "Click to turn tracking on/off");
             this.buttonTrack.UseVisualStyleBackColor = false;
             this.buttonTrack.Click += new System.EventHandler(this.buttonTrack_Click);
             // 
@@ -885,6 +938,7 @@
             // buttonTelescopePark
             // 
             this.buttonTelescopePark.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonTelescopePark.Enabled = false;
             this.buttonTelescopePark.FlatAppearance.BorderSize = 0;
             this.buttonTelescopePark.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.buttonTelescopePark.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
@@ -895,12 +949,14 @@
             this.buttonTelescopePark.Size = new System.Drawing.Size(77, 32);
             this.buttonTelescopePark.TabIndex = 29;
             this.buttonTelescopePark.Text = "Park?";
+            this.toolTip.SetToolTip(this.buttonTelescopePark, "Click to park/unpark");
             this.buttonTelescopePark.UseVisualStyleBackColor = false;
             this.buttonTelescopePark.Click += new System.EventHandler(this.buttonTelescopePark_Click);
             // 
             // buttonFlat
             // 
             this.buttonFlat.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonFlat.Enabled = false;
             this.buttonFlat.FlatAppearance.BorderSize = 0;
             this.buttonFlat.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.buttonFlat.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
@@ -911,12 +967,14 @@
             this.buttonFlat.Size = new System.Drawing.Size(64, 32);
             this.buttonFlat.TabIndex = 33;
             this.buttonFlat.Text = "Flat";
+            this.toolTip.SetToolTip(this.buttonFlat, "Click to move to flat position");
             this.buttonFlat.UseVisualStyleBackColor = false;
             this.buttonFlat.Click += new System.EventHandler(this.buttonFlat_Click);
             // 
             // buttonHandleCover
             // 
             this.buttonHandleCover.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonHandleCover.Enabled = false;
             this.buttonHandleCover.FlatAppearance.BorderSize = 0;
             this.buttonHandleCover.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.buttonHandleCover.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
@@ -927,6 +985,7 @@
             this.buttonHandleCover.Size = new System.Drawing.Size(64, 32);
             this.buttonHandleCover.TabIndex = 32;
             this.buttonHandleCover.Text = "Cover";
+            this.toolTip.SetToolTip(this.buttonHandleCover, "Click to move to cover position");
             this.buttonHandleCover.UseVisualStyleBackColor = false;
             this.buttonHandleCover.Click += new System.EventHandler(this.buttonHandleCover_Click);
             // 
@@ -943,6 +1002,7 @@
             // buttonZenith
             // 
             this.buttonZenith.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonZenith.Enabled = false;
             this.buttonZenith.FlatAppearance.BorderSize = 0;
             this.buttonZenith.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.buttonZenith.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
@@ -953,6 +1013,7 @@
             this.buttonZenith.Size = new System.Drawing.Size(64, 32);
             this.buttonZenith.TabIndex = 31;
             this.buttonZenith.Text = "Zenith";
+            this.toolTip.SetToolTip(this.buttonZenith, "Click to move to Zenith");
             this.buttonZenith.UseVisualStyleBackColor = false;
             this.buttonZenith.Click += new System.EventHandler(this.buttonZenith_Click);
             // 
@@ -975,6 +1036,7 @@
             // buttonMainStop
             // 
             this.buttonMainStop.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonMainStop.Enabled = false;
             this.buttonMainStop.FlatAppearance.BorderSize = 0;
             this.buttonMainStop.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.buttonMainStop.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
@@ -985,6 +1047,7 @@
             this.buttonMainStop.Size = new System.Drawing.Size(58, 69);
             this.buttonMainStop.TabIndex = 26;
             this.buttonMainStop.Text = "Stop";
+            this.toolTip.SetToolTip(this.buttonMainStop, "Click to stop moving");
             this.buttonMainStop.UseVisualStyleBackColor = false;
             this.buttonMainStop.Click += new System.EventHandler(this.buttonTelescopeStop_Click);
             // 
@@ -1007,6 +1070,7 @@
             // buttonNE
             // 
             this.buttonNE.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonNE.Enabled = false;
             this.buttonNE.FlatAppearance.BorderSize = 0;
             this.buttonNE.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.buttonNE.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
@@ -1017,6 +1081,7 @@
             this.buttonNE.Size = new System.Drawing.Size(40, 40);
             this.buttonNE.TabIndex = 8;
             this.buttonNE.Text = "NE";
+            this.toolTip.SetToolTip(this.buttonNE, "Press to move NorthEast");
             this.buttonNE.UseVisualStyleBackColor = false;
             this.buttonNE.MouseDown += new System.Windows.Forms.MouseEventHandler(this.directionButton_MouseDown);
             this.buttonNE.MouseUp += new System.Windows.Forms.MouseEventHandler(this.directionButton_MouseUp);
@@ -1024,6 +1089,7 @@
             // buttonSE
             // 
             this.buttonSE.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonSE.Enabled = false;
             this.buttonSE.FlatAppearance.BorderSize = 0;
             this.buttonSE.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.buttonSE.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
@@ -1034,6 +1100,7 @@
             this.buttonSE.Size = new System.Drawing.Size(40, 40);
             this.buttonSE.TabIndex = 7;
             this.buttonSE.Text = "SE";
+            this.toolTip.SetToolTip(this.buttonSE, "Press to move SouthEast");
             this.buttonSE.UseVisualStyleBackColor = false;
             this.buttonSE.MouseDown += new System.Windows.Forms.MouseEventHandler(this.directionButton_MouseDown);
             this.buttonSE.MouseUp += new System.Windows.Forms.MouseEventHandler(this.directionButton_MouseUp);
@@ -1041,6 +1108,7 @@
             // buttonSW
             // 
             this.buttonSW.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonSW.Enabled = false;
             this.buttonSW.FlatAppearance.BorderSize = 0;
             this.buttonSW.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.buttonSW.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
@@ -1051,6 +1119,7 @@
             this.buttonSW.Size = new System.Drawing.Size(40, 40);
             this.buttonSW.TabIndex = 6;
             this.buttonSW.Text = "SW";
+            this.toolTip.SetToolTip(this.buttonSW, "Press to move SouthWest");
             this.buttonSW.UseVisualStyleBackColor = false;
             this.buttonSW.MouseDown += new System.Windows.Forms.MouseEventHandler(this.directionButton_MouseDown);
             this.buttonSW.MouseUp += new System.Windows.Forms.MouseEventHandler(this.directionButton_MouseUp);
@@ -1058,6 +1127,7 @@
             // buttonNW
             // 
             this.buttonNW.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonNW.Enabled = false;
             this.buttonNW.FlatAppearance.BorderSize = 0;
             this.buttonNW.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.buttonNW.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
@@ -1068,6 +1138,7 @@
             this.buttonNW.Size = new System.Drawing.Size(40, 40);
             this.buttonNW.TabIndex = 5;
             this.buttonNW.Text = "NW";
+            this.toolTip.SetToolTip(this.buttonNW, "Press to move NorthWest");
             this.buttonNW.UseVisualStyleBackColor = false;
             this.buttonNW.MouseDown += new System.Windows.Forms.MouseEventHandler(this.directionButton_MouseDown);
             this.buttonNW.MouseUp += new System.Windows.Forms.MouseEventHandler(this.directionButton_MouseUp);
@@ -1075,6 +1146,7 @@
             // buttonNorth
             // 
             this.buttonNorth.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonNorth.Enabled = false;
             this.buttonNorth.FlatAppearance.BorderSize = 0;
             this.buttonNorth.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.buttonNorth.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
@@ -1085,6 +1157,7 @@
             this.buttonNorth.Size = new System.Drawing.Size(40, 40);
             this.buttonNorth.TabIndex = 0;
             this.buttonNorth.Text = "N";
+            this.toolTip.SetToolTip(this.buttonNorth, "Press to move North");
             this.buttonNorth.UseVisualStyleBackColor = false;
             this.buttonNorth.MouseDown += new System.Windows.Forms.MouseEventHandler(this.directionButton_MouseDown);
             this.buttonNorth.MouseUp += new System.Windows.Forms.MouseEventHandler(this.directionButton_MouseUp);
@@ -1092,6 +1165,7 @@
             // buttonStop
             // 
             this.buttonStop.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonStop.Enabled = false;
             this.buttonStop.FlatAppearance.BorderColor = System.Drawing.Color.White;
             this.buttonStop.FlatAppearance.BorderSize = 0;
             this.buttonStop.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
@@ -1102,6 +1176,7 @@
             this.buttonStop.Size = new System.Drawing.Size(40, 40);
             this.buttonStop.TabIndex = 4;
             this.buttonStop.Text = "Stop";
+            this.toolTip.SetToolTip(this.buttonStop, "Click to stop moving");
             this.buttonStop.UseVisualStyleBackColor = false;
             this.buttonStop.Click += new System.EventHandler(this.buttonTelescopeStop_Click);
             this.buttonStop.MouseDown += new System.Windows.Forms.MouseEventHandler(this.directionButton_MouseDown);
@@ -1110,6 +1185,7 @@
             // buttonSouth
             // 
             this.buttonSouth.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonSouth.Enabled = false;
             this.buttonSouth.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonSouth.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonSouth.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
@@ -1118,6 +1194,7 @@
             this.buttonSouth.Size = new System.Drawing.Size(40, 40);
             this.buttonSouth.TabIndex = 2;
             this.buttonSouth.Text = "S";
+            this.toolTip.SetToolTip(this.buttonSouth, "Press to move South");
             this.buttonSouth.UseVisualStyleBackColor = false;
             this.buttonSouth.MouseDown += new System.Windows.Forms.MouseEventHandler(this.directionButton_MouseDown);
             this.buttonSouth.MouseUp += new System.Windows.Forms.MouseEventHandler(this.directionButton_MouseUp);
@@ -1125,6 +1202,7 @@
             // buttonEast
             // 
             this.buttonEast.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonEast.Enabled = false;
             this.buttonEast.FlatAppearance.BorderSize = 0;
             this.buttonEast.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonEast.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -1134,6 +1212,7 @@
             this.buttonEast.Size = new System.Drawing.Size(40, 40);
             this.buttonEast.TabIndex = 1;
             this.buttonEast.Text = "E";
+            this.toolTip.SetToolTip(this.buttonEast, "Press to move East");
             this.buttonEast.UseVisualStyleBackColor = false;
             this.buttonEast.MouseDown += new System.Windows.Forms.MouseEventHandler(this.directionButton_MouseDown);
             this.buttonEast.MouseUp += new System.Windows.Forms.MouseEventHandler(this.directionButton_MouseUp);
@@ -1141,6 +1220,7 @@
             // buttonWest
             // 
             this.buttonWest.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonWest.Enabled = false;
             this.buttonWest.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonWest.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonWest.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
@@ -1149,6 +1229,7 @@
             this.buttonWest.Size = new System.Drawing.Size(40, 40);
             this.buttonWest.TabIndex = 3;
             this.buttonWest.Text = "W";
+            this.toolTip.SetToolTip(this.buttonWest, "Press to move West");
             this.buttonWest.UseVisualStyleBackColor = false;
             this.buttonWest.MouseDown += new System.Windows.Forms.MouseEventHandler(this.directionButton_MouseDown);
             this.buttonWest.MouseUp += new System.Windows.Forms.MouseEventHandler(this.directionButton_MouseUp);
@@ -1165,11 +1246,13 @@
             this.groupBoxSpeed.TabIndex = 12;
             this.groupBoxSpeed.TabStop = false;
             this.groupBoxSpeed.Text = " Speed ";
+            this.toolTip.SetToolTip(this.groupBoxSpeed, "Select moving speed");
             // 
             // radioButtonSlew
             // 
             this.radioButtonSlew.AutoSize = true;
             this.radioButtonSlew.Checked = true;
+            this.radioButtonSlew.Enabled = false;
             this.radioButtonSlew.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.radioButtonSlew.Location = new System.Drawing.Point(8, 16);
             this.radioButtonSlew.Name = "radioButtonSlew";
@@ -1183,6 +1266,7 @@
             // radioButtonGuide
             // 
             this.radioButtonGuide.AutoSize = true;
+            this.radioButtonGuide.Enabled = false;
             this.radioButtonGuide.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.radioButtonGuide.Location = new System.Drawing.Point(8, 55);
             this.radioButtonGuide.Name = "radioButtonGuide";
@@ -1195,6 +1279,7 @@
             // radioButtonSet
             // 
             this.radioButtonSet.AutoSize = true;
+            this.radioButtonSet.Enabled = false;
             this.radioButtonSet.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.radioButtonSet.Location = new System.Drawing.Point(8, 36);
             this.radioButtonSet.Name = "radioButtonSet";
@@ -1481,6 +1566,7 @@
             // buttonGoCoord
             // 
             this.buttonGoCoord.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonGoCoord.Enabled = false;
             this.buttonGoCoord.FlatAppearance.BorderSize = 0;
             this.buttonGoCoord.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.buttonGoCoord.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
@@ -1491,6 +1577,7 @@
             this.buttonGoCoord.Size = new System.Drawing.Size(58, 32);
             this.buttonGoCoord.TabIndex = 25;
             this.buttonGoCoord.Text = "Go";
+            this.toolTip.SetToolTip(this.buttonGoCoord, "Click to move to the selected coordinates");
             this.buttonGoCoord.UseVisualStyleBackColor = false;
             this.buttonGoCoord.Click += new System.EventHandler(this.buttonGoCoord_Click);
             // 
@@ -1518,6 +1605,8 @@
             this.tabControlGoTo.SelectedIndex = 0;
             this.tabControlGoTo.Size = new System.Drawing.Size(272, 62);
             this.tabControlGoTo.TabIndex = 0;
+            this.tabControlGoTo.Tag = "";
+            this.toolTip.SetToolTip(this.tabControlGoTo, "Select type of coordinates");
             // 
             // tabPageRaDec
             // 
@@ -1558,6 +1647,7 @@
             // 
             this.textBoxRaDecRa.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.textBoxRaDecRa.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.textBoxRaDecRa.Enabled = false;
             this.textBoxRaDecRa.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.textBoxRaDecRa.Location = new System.Drawing.Point(30, 6);
             this.textBoxRaDecRa.Margin = new System.Windows.Forms.Padding(7, 3, 3, 3);
@@ -1572,6 +1662,7 @@
             // 
             this.textBoxRaDecDec.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.textBoxRaDecDec.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.textBoxRaDecDec.Enabled = false;
             this.textBoxRaDecDec.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.textBoxRaDecDec.Location = new System.Drawing.Point(156, 6);
             this.textBoxRaDecDec.Margin = new System.Windows.Forms.Padding(7, 3, 3, 3);
@@ -2188,7 +2279,7 @@
             this.annunciatorPanelSafety.Controls.Add(this.annunciatorDomePlatform);
             this.annunciatorPanelSafety.Controls.Add(this.annunciatorSafeToOperate);
             this.annunciatorPanelSafety.Controls.Add(this.annunciatorSimulation);
-            this.annunciatorPanelSafety.Controls.Add(this.annunciatorReadonly);
+            this.annunciatorPanelSafety.Controls.Add(this.annunciatorOpMode);
             this.annunciatorPanelSafety.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
             this.annunciatorPanelSafety.Location = new System.Drawing.Point(3, 334);
             this.annunciatorPanelSafety.Name = "annunciatorPanelSafety";
@@ -2259,21 +2350,21 @@
             this.annunciatorSimulation.Text = "SIMULATED HARDWARE";
             this.annunciatorSimulation.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // annunciatorReadonly
+            // annunciatorOpMode
             // 
-            this.annunciatorReadonly.ActiveColor = System.Drawing.Color.Orange;
-            this.annunciatorReadonly.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.annunciatorReadonly.Cadence = TA.WinFormsControls.CadencePattern.SteadyOff;
-            this.annunciatorReadonly.Font = new System.Drawing.Font("Consolas", 10F);
-            this.annunciatorReadonly.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorReadonly.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorReadonly.Location = new System.Drawing.Point(3, 73);
-            this.annunciatorReadonly.Name = "annunciatorReadonly";
-            this.annunciatorReadonly.Padding = new System.Windows.Forms.Padding(5, 0, 0, 0);
-            this.annunciatorReadonly.Size = new System.Drawing.Size(186, 17);
-            this.annunciatorReadonly.TabIndex = 5;
-            this.annunciatorReadonly.Text = "Readonly mode (WISE)";
-            this.annunciatorReadonly.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.annunciatorOpMode.ActiveColor = System.Drawing.Color.Orange;
+            this.annunciatorOpMode.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
+            this.annunciatorOpMode.Cadence = TA.WinFormsControls.CadencePattern.SteadyOff;
+            this.annunciatorOpMode.Font = new System.Drawing.Font("Consolas", 10F);
+            this.annunciatorOpMode.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciatorOpMode.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.annunciatorOpMode.Location = new System.Drawing.Point(3, 73);
+            this.annunciatorOpMode.Name = "annunciatorOpMode";
+            this.annunciatorOpMode.Padding = new System.Windows.Forms.Padding(5, 0, 0, 0);
+            this.annunciatorOpMode.Size = new System.Drawing.Size(186, 17);
+            this.annunciatorOpMode.TabIndex = 5;
+            this.annunciatorOpMode.Text = "OpMode";
+            this.annunciatorOpMode.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // annunciatorPanelStatus
             // 
@@ -2591,23 +2682,67 @@
             // 
             // panel5
             // 
-            this.panel5.Controls.Add(this.buttonHumanIntervention);
+            this.panel5.Controls.Add(this.groupBox1);
             this.panel5.Location = new System.Drawing.Point(3, 658);
             this.panel5.Name = "panel5";
-            this.panel5.Size = new System.Drawing.Size(200, 64);
+            this.panel5.Size = new System.Drawing.Size(200, 72);
             this.panel5.TabIndex = 42;
+            // 
+            // groupBox1
+            // 
+            this.groupBox1.Controls.Add(this.labelHumanInterventionStatus);
+            this.groupBox1.Controls.Add(this.label15);
+            this.groupBox1.Controls.Add(this.buttonHumanIntervention);
+            this.groupBox1.ForeColor = System.Drawing.Color.DarkOrange;
+            this.groupBox1.Location = new System.Drawing.Point(6, 0);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(183, 72);
+            this.groupBox1.TabIndex = 0;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "Human intervention";
+            // 
+            // labelHumanInterventionStatus
+            // 
+            this.labelHumanInterventionStatus.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.labelHumanInterventionStatus.AutoSize = true;
+            this.labelHumanInterventionStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(177)));
+            this.labelHumanInterventionStatus.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.labelHumanInterventionStatus.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.labelHumanInterventionStatus.Location = new System.Drawing.Point(18, 39);
+            this.labelHumanInterventionStatus.Name = "labelHumanInterventionStatus";
+            this.labelHumanInterventionStatus.Size = new System.Drawing.Size(39, 15);
+            this.labelHumanInterventionStatus.TabIndex = 32;
+            this.labelHumanInterventionStatus.Text = "status";
+            this.labelHumanInterventionStatus.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label15
+            // 
+            this.label15.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.label15.AutoSize = true;
+            this.label15.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label15.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
+            this.label15.Location = new System.Drawing.Point(14, 23);
+            this.label15.Name = "label15";
+            this.label15.Size = new System.Drawing.Size(47, 13);
+            this.label15.TabIndex = 31;
+            this.label15.Text = "Status:";
+            this.label15.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // buttonHumanIntervention
             // 
+            this.buttonHumanIntervention.AutoSize = true;
             this.buttonHumanIntervention.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.buttonHumanIntervention.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonHumanIntervention.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonHumanIntervention.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonHumanIntervention.Location = new System.Drawing.Point(40, 10);
+            this.buttonHumanIntervention.Location = new System.Drawing.Point(86, 19);
             this.buttonHumanIntervention.Name = "buttonHumanIntervention";
-            this.buttonHumanIntervention.Size = new System.Drawing.Size(120, 44);
+            this.buttonHumanIntervention.Size = new System.Drawing.Size(79, 40);
             this.buttonHumanIntervention.TabIndex = 30;
-            this.buttonHumanIntervention.Text = "Activate Human Intervention";
+            this.buttonHumanIntervention.Text = "Deactivate";
             this.buttonHumanIntervention.UseVisualStyleBackColor = false;
             this.buttonHumanIntervention.Click += new System.EventHandler(this.buttonHumanIntervention_Click);
             // 
@@ -2687,7 +2822,7 @@
             this.labelFWPosition.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.labelFWPosition.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelFWPosition.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelFWPosition.Location = new System.Drawing.Point(96, 87);
+            this.labelFWPosition.Location = new System.Drawing.Point(96, 83);
             this.labelFWPosition.Name = "labelFWPosition";
             this.labelFWPosition.Size = new System.Drawing.Size(43, 20);
             this.labelFWPosition.TabIndex = 50;
@@ -2698,7 +2833,7 @@
             this.labelFWWheel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.labelFWWheel.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelFWWheel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelFWWheel.Location = new System.Drawing.Point(96, 35);
+            this.labelFWWheel.Location = new System.Drawing.Point(96, 55);
             this.labelFWWheel.Name = "labelFWWheel";
             this.labelFWWheel.Size = new System.Drawing.Size(203, 20);
             this.labelFWWheel.TabIndex = 49;
@@ -2708,15 +2843,14 @@
             // 
             this.label8.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.label8.AutoSize = true;
             this.label8.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))));
             this.label8.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label8.Location = new System.Drawing.Point(7, 36);
+            this.label8.Location = new System.Drawing.Point(7, 56);
             this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(63, 18);
+            this.label8.Size = new System.Drawing.Size(81, 18);
             this.label8.TabIndex = 46;
             this.label8.Text = "Wheel:";
-            this.label8.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.label8.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // label4
             // 
@@ -2724,7 +2858,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.label4.Font = new System.Drawing.Font("Lucida Sans Unicode", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))));
             this.label4.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(151)))), ((int)(((byte)(116)))), ((int)(((byte)(58)))));
-            this.label4.Location = new System.Drawing.Point(7, 88);
+            this.label4.Location = new System.Drawing.Point(7, 84);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(81, 18);
             this.label4.TabIndex = 41;
@@ -2734,28 +2868,31 @@
             // comboBoxFilterWheelPositions
             // 
             this.comboBoxFilterWheelPositions.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.comboBoxFilterWheelPositions.Enabled = false;
             this.comboBoxFilterWheelPositions.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.comboBoxFilterWheelPositions.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.comboBoxFilterWheelPositions.FormattingEnabled = true;
-            this.comboBoxFilterWheelPositions.Location = new System.Drawing.Point(50, 175);
+            this.comboBoxFilterWheelPositions.Location = new System.Drawing.Point(50, 154);
             this.comboBoxFilterWheelPositions.Margin = new System.Windows.Forms.Padding(0);
             this.comboBoxFilterWheelPositions.Name = "comboBoxFilterWheelPositions";
             this.comboBoxFilterWheelPositions.Size = new System.Drawing.Size(264, 21);
             this.comboBoxFilterWheelPositions.TabIndex = 37;
-            this.toolTip.SetToolTip(this.comboBoxFilterWheelPositions, "Select a filter and press GO.");
+            this.toolTip.SetToolTip(this.comboBoxFilterWheelPositions, "Select a filter and click GO");
             // 
             // buttonFilterWheelGo
             // 
             this.buttonFilterWheelGo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonFilterWheelGo.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.buttonFilterWheelGo.Enabled = false;
             this.buttonFilterWheelGo.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonFilterWheelGo.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonFilterWheelGo.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonFilterWheelGo.Location = new System.Drawing.Point(8, 175);
+            this.buttonFilterWheelGo.Location = new System.Drawing.Point(8, 154);
             this.buttonFilterWheelGo.Name = "buttonFilterWheelGo";
             this.buttonFilterWheelGo.Size = new System.Drawing.Size(34, 23);
             this.buttonFilterWheelGo.TabIndex = 36;
             this.buttonFilterWheelGo.Text = "Go";
+            this.toolTip.SetToolTip(this.buttonFilterWheelGo, "Click to move to the selected filter");
             this.buttonFilterWheelGo.UseVisualStyleBackColor = false;
             this.buttonFilterWheelGo.Click += new System.EventHandler(this.buttonFilterWheelGo_Click);
             // 
@@ -3291,8 +3428,9 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxStop)).EndInit();
             this.panel4.ResumeLayout(false);
             this.panel5.ResumeLayout(false);
+            this.groupBox1.ResumeLayout(false);
+            this.groupBox1.PerformLayout();
             this.groupBoxFilterWheel.ResumeLayout(false);
-            this.groupBoxFilterWheel.PerformLayout();
             this.groupBoxWeather.ResumeLayout(false);
             this.tableLayoutPanelWeather.ResumeLayout(false);
             this.tableLayoutPanelWeather.PerformLayout();
@@ -3466,7 +3604,7 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.Label labelCountdown;
         private System.Windows.Forms.Panel panel4;
-        private TA.WinFormsControls.Annunciator annunciatorReadonly;
+        private TA.WinFormsControls.Annunciator annunciatorOpMode;
         private TA.WinFormsControls.Annunciator annunciatorShutter;
         private TA.WinFormsControls.Annunciator annunciatorDECRateSlew;
         private TA.WinFormsControls.Annunciator annunciatorDECRateSet;
@@ -3522,6 +3660,9 @@
         private System.Windows.Forms.ToolStripMenuItem stopTheWise40ServiceToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem4;
         private System.Windows.Forms.ToolStripMenuItem bypassSafetyToolStripMenuItem;
+        private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.Label labelHumanInterventionStatus;
+        private System.Windows.Forms.Label label15;
     }
 }
 
