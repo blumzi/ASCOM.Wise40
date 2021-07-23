@@ -2930,14 +2930,19 @@ namespace ASCOM.Wise40
         public static void SyncToCoordinates(double RightAscension, double Declination)
         {
             if (! WiseTele.Instance.Tracking)
-                Exceptor.Throw<InvalidOperationException>($"SyncToCoordinates({RightAscension}, {Declination})", "Invalid while NOT Tracking");
+                Exceptor.Throw<InvalidOperationException>($"SyncToCoordinates({RightAscension}, {Declination})", "NOT Tracking");
 
             #region debug
+            double lst = wisesite.LocalSiderealTime.Hours;
+            double ha = RightAscension - lst;
+            double dec = Declination;
+
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
-                $"SyncToCoordinates(ra: {RightAscension}, dec: {Declination}): " +
-                $"Old HA: {WiseTele.Instance.HourAngle}, DEC: {WiseTele.Instance.Declination}, " +
-                $"Synced HA: {RightAscension - wisesite.LocalSiderealTime.Hours}" +
-                $"renishaw ha.Position: {renishawHaEncoder.Position}, dec.Position: {renishawDecEncoder.Position}");
+                $"SyncToCoordinates(ra: {RightAscension}, dec: {Declination}): lst: {lst} " +
+                $"Old ha: {WiseTele.Instance.HourAngle}, dec: {WiseTele.Instance.Declination}, " +
+                "SyncedCoordinates " + 
+                    $"ha: {ha}, ha.renishaw.position: {renishawHaEncoder.Position}, ha.radians: {Angle.Hours2Rad(ha)}" + ", " +
+                    $"dec: {dec}, dec.renishaw.position: {renishawDecEncoder.Position}, dec.radians: {Angle.Deg2Rad(dec)}");
             #endregion
             //Exceptor.Throw<MethodNotImplementedException>($"SyncToCoordinates({RightAscension}, {Declination})", "SyncToCoordinates not implemented");
         }
@@ -3084,7 +3089,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return true;
+                return false;
             }
         }
 
