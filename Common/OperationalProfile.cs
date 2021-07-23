@@ -28,7 +28,7 @@ namespace ASCOM.Wise40.Common
         {
             get
             {
-                return OpMode == WiseSite.OpMode.LCO || OpMode == WiseSite.OpMode.WISE;
+                return OpMode == WiseSite.OpMode.LCO || OpMode == WiseSite.OpMode.ACP;
             }
         }
 
