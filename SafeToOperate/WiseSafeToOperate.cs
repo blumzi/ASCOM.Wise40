@@ -848,8 +848,8 @@ namespace ASCOM.Wise40SafeToOperate
             }
 
         Out:
-            if (ret == true && unsafeSensor == null)    // ret was true at start but no unsafeSensor was found
-                ret = false;
+            //if (ret == true && unsafeSensor == null)    // ret was true at start but no unsafeSensor was found
+            //    ret = false;
 
             Event.SafetyEvent.SafetyState currentSafetyState = (ret) ?
                 Event.SafetyEvent.SafetyState.Safe :
