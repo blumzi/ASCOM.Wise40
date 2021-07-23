@@ -170,12 +170,51 @@ namespace ASCOM.Wise40
                 #endregion
                 Thread.Sleep(50);
             }
+
             public bool Runaway
             {
                 get
                 {
-                    return State.IsSet(State.Flags.Stopping) &&
-                        Math.Abs(startStopping - focuser.Position) > focuser.motionParameters[dirCurrent].runawayPositions;
+                    int limit;
+                    int position = (int) focuser.Position;
+                    string op = $"motion.Runaway: at {position}";
+
+                    limit = focuser.motionParameters[dirCurrent].runawayPositions;
+                    if (dirCurrent == Direction.Up)
+                    {
+                        if (State.IsSet(State.Flags.MovingToTarget) && (position - target) > limit)
+                        {
+                            #region debug
+                            debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, $"{op}: overshoot target {target} by more than {limit} units");
+                            #endregion
+                            return true;
+                        }
+                        else if(State.IsSet(State.Flags.MovingToIntermediateTarget) && (position - intermediate) > limit)
+                        {
+                            #region debug
+                            debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, $"{op}: overshoot intermediate target {intermediate} by more than {limit} units");
+                            #endregion
+                            return true;
+                        }
+                    }
+                    else
+                    {
+                        if (State.IsSet(State.Flags.MovingToTarget) && (target - position) > limit)
+                        {
+                            #region debug
+                            debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, $"{op}: undershoot target {target} by more than {limit} units");
+                            #endregion
+                            return true;
+                        }
+                        else if (State.IsSet(State.Flags.MovingToIntermediateTarget) && (intermediate - position) > limit)
+                        {
+                            #region debug
+                            debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, $"{op}: undershoot intermediate target {intermediate} by more than {limit} units");
+                            #endregion
+                            return true;
+                        }
+                    }
+                    return false;
                 }
             }
 
@@ -195,6 +234,8 @@ namespace ASCOM.Wise40
                 Stopping = (1 << 4),                   // The motor(s) have been stopped, maybe not yet fully stopped
 
                 AnyMoving = MovingUp | MovingDown | MovingToIntermediateTarget | MovingToTarget | Stopping,
+                Stuck = (1 << 5),
+                Runaway = (1 << 6),
             };
             public Flags _flags;
 
@@ -827,13 +868,17 @@ namespace ASCOM.Wise40
             State oldState = motion.State;
 
             #region Stuck?
-            if (motion.State.IsSet(State.Flags.AnyMoving) && deltaPositions <= 10 && deltaMillis >= 1000)
+            if ((pinDown.isOn || pinDown.isOn) && !EncoderIsChanging)
             {
+                WisePin pin = pinUp.isOn ? pinUp : pinDown;
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugFocuser,
-                    $"OnTimer: suspect stuck: state: [{motion.State}], deltaPosition: {deltaPositions} in deltaMillis: {deltaMillis}");
+                    $"OnTimer: stuck: position: {Position}, {pin}.isOn, encoder not changing!");
                 #endregion
+                motion.State.Set(State.Flags.Stuck);
             }
+            else
+                motion.State.Unset(State.Flags.Stuck);
             #endregion
 
             #region Reached upper/lower limit
@@ -852,9 +897,7 @@ namespace ASCOM.Wise40
             #region Runaway
             if (motion.Runaway)
             {
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugFocuser, "OnTimer: Runaway");
-                #endregion
+                motion.StartStopping("Runaway");
                 goto Done;
             }
             #endregion
@@ -932,25 +975,22 @@ namespace ASCOM.Wise40
             #endregion
 
         Done:
-                movementMonitoringTimer.Change(movementMonitoringMillis, Timeout.Infinite);
+            movementMonitoringTimer.Change(movementMonitoringMillis, Timeout.Infinite);
         }
 
         public bool EncoderIsChanging { get; set; }
 
-        private bool CloseEnough(int current, int target, Direction dir)
+        private bool CloseEnough(int currentPos, int targetPos, Direction dir)
         {
-            if (dir == Direction.Up)
+            switch (dir)
             {
-                return ((target - current) <= motionParameters[Direction.Up].stoppingDistance) ||
-                    (current >= target);
+                case Direction.Up:
+                    return ((targetPos - currentPos) <= motionParameters[dir].stoppingDistance) || (currentPos >= targetPos);
+                case Direction.Down:
+                    return ((currentPos - targetPos) <= motionParameters[dir].stoppingDistance) || (currentPos <= targetPos);
+                default:
+                    return false;
             }
-            else if (dir == Direction.Down)
-            {
-                return ((current - target) <= motionParameters[Direction.Down].stoppingDistance) ||
-                   (current <= target);
-            }
-
-            return false;
         }
 
         public string Digest
@@ -997,6 +1037,12 @@ namespace ASCOM.Wise40
 
                 if (motion.State.IsSet(State.Flags.Stopping))
                     ret.Add("stopping");
+
+                if (motion.State.IsSet(State.Flags.Stuck))
+                    ret.Add($"stuck at {Position}");
+
+                if (motion.State.IsSet(State.Flags.Runaway))
+                    ret.Add("runaway");
 
                 string s = string.Join(",", ret);
 
