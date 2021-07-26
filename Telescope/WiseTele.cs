@@ -2814,12 +2814,23 @@ namespace ASCOM.Wise40
 
         public void SyncToTarget()
         {
-            //region debug
-            //debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
-            //    $"SyncToTarget: ra: {TargetRightAscension}, dec: {TargetDeclination}" +
-            //    $"renishaw ha: {Renishaw.Read(Renishaw.EncoderType.HA)}, dec: {Renishaw.Read(Renishaw.EncoderType.Dec)}");
-            //#endregion
-            Exceptor.Throw<MethodNotImplementedException>("SyncToTarget", "SyncToTarget not implemented");
+            if (!WiseTele.Instance.Tracking)
+                Exceptor.Throw<InvalidOperationException>($"SyncToTarget({TargetRightAscension}, {TargetDeclination})", "NOT Tracking");
+
+            #region debug
+            double lst = wisesite.LocalSiderealTime.Hours;
+            double ra = TargetRightAscension;
+            double dec = TargetDeclination;
+            double ha = ra - lst;
+
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                $"SyncToTarget(ra: {ra}, dec: {dec}): lst: {lst} " +
+                $"Old ha: {WiseTele.Instance.HourAngle}, dec: {WiseTele.Instance.Declination}, " +
+                "SyncedCoordinates " +
+                    $"ha: {ha}, ha.renishaw.position: {renishawHaEncoder.Position}, ha.radians: {Angle.Hours2Rad(ha)}" + ", " +
+                    $"dec: {dec}, dec.renishaw.position: {renishawDecEncoder.Position}, dec.radians: {Angle.Deg2Rad(dec)}");
+            #endregion
+            //Exceptor.Throw<MethodNotImplementedException>("SyncToTarget", "SyncToTarget not implemented");
         }
 
         public string Description
