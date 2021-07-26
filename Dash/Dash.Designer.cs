@@ -2800,7 +2800,7 @@
             this.labelFWFilter.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.labelFWFilter.Location = new System.Drawing.Point(96, 112);
             this.labelFWFilter.Name = "labelFWFilter";
-            this.labelFWFilter.Size = new System.Drawing.Size(240, 20);
+            this.labelFWFilter.Size = new System.Drawing.Size(222, 20);
             this.labelFWFilter.TabIndex = 52;
             this.labelFWFilter.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
