@@ -181,6 +181,6 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>"C:\Program Files (x86)\Inno Setup 6\Compil32.exe" /cc $(ProjectDir)RemoteSafetyDashboard.iss</PostBuildEvent>
+    <PostBuildEvent>"C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "/DSolutionDir=$(SolutionDir)"  "/DProjectDir=$(ProjectDir)" $(ProjectDir)RemoteSafetyDashboard.iss</PostBuildEvent>
   </PropertyGroup>
 </Project>
