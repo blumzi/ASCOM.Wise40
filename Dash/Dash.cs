@@ -1788,6 +1788,7 @@ namespace Dash
 
             short position = (short)filterWheelDigest.Wheel.CurrentPosition.Position;
 
+            labelFWWheel.ForeColor = labelFWPosition.ForeColor = labelFWFilter.ForeColor = safeColor;
             labelFWWheel.Text = (filterWheelDigest.Wheel.Type == WiseFilterWheel.WheelType.Wheel4) ?
                 "4 positions, 3 inch filters" :
                 "8 positions, 2 inch filters";
