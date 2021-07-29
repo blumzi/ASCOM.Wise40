@@ -310,14 +310,19 @@ namespace ASCOM.Wise40.Boltwood
                     return ret;
                 }
 
-                ret = CloudConditionToNumeric(C18Station.SensorData.cloudCondition);
+                SensorData.CloudCondition C18CloudCondition = (C18Station == null || C18Station.SensorData == null) ?
+                    SensorData.CloudCondition.cloudUnknown :
+                    C18Station.SensorData.cloudCondition;
+
+                SensorData.CloudCondition C28CloudCondition = (C28Station == null || C28Station.SensorData == null) ?
+                    SensorData.CloudCondition.cloudUnknown :
+                    C28Station.SensorData.cloudCondition;
+
+                ret = CloudConditionToNumeric(C18CloudCondition);
 
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugSafety,
-                    string.Format("Boltwood: CloudCover_numeric - get => {0} (C18: {1}, C28: {2})",
-                    ret.ToString(),
-                    CloudConditionToNumeric(C18Station.SensorData.cloudCondition),
-                    CloudConditionToNumeric(C28Station.SensorData.cloudCondition)));
+                    $"Boltwood: CloudCover_numeric - get => {ret} (C18: {C18CloudCondition}, C28: {C28CloudCondition}");
                 #endregion 
                 return ret;
             }
@@ -344,7 +349,9 @@ namespace ASCOM.Wise40.Boltwood
                 {
                     return SensorData.CloudCondition.cloudUnknown;
                 }
-                return C18Station.SensorData.cloudCondition;
+                return (C18Station == null || C18Station.SensorData == null) ?
+                    SensorData.CloudCondition.cloudUnknown :
+                    C18Station.SensorData.cloudCondition;
             }
         }
 
@@ -365,8 +372,12 @@ namespace ASCOM.Wise40.Boltwood
                 }
                 catch
                 {
-                    return double.NaN;
+                    Exceptor.Throw<PropertyNotImplementedException>("DewPoint", "not available");
                 }
+
+                if (C18Station == null || C18Station.SensorData == null)
+                    Exceptor.Throw<PropertyNotImplementedException>("DewPoint", "not available");
+
                 return C18Station.SensorData.dewPoint;
             }
         }
@@ -388,8 +399,12 @@ namespace ASCOM.Wise40.Boltwood
                 }
                 catch
                 {
-                    return double.NaN;
+                    Exceptor.Throw<PropertyNotImplementedException>("Humidity", "not available");
                 }
+
+                if (C18Station == null || C18Station.SensorData == null)
+                    Exceptor.Throw<PropertyNotImplementedException>("DewPoint", "not available");
+
                 return C18Station.SensorData.humidity;
             }
         }
@@ -556,8 +571,12 @@ namespace ASCOM.Wise40.Boltwood
                 }
                 catch
                 {
-                    return double.NaN;
+                    Exceptor.Throw<PropertyNotImplementedException>("Temperature", "not available");
                 }
+
+                if (C18Station == null || C18Station.SensorData == null)
+                    Exceptor.Throw<PropertyNotImplementedException>("Temperature", "not available");
+
                 double ret = C18Station.SensorData.ambientTemp;
 
                 #region debug
@@ -591,6 +610,9 @@ namespace ASCOM.Wise40.Boltwood
                     Exceptor.Throw<MethodNotImplementedException>("TimeSinceLastUpdate(" + PropertyName + ")", "Not implemented");
                     return Double.NaN;
             }
+
+            if (C18Station == null || C18Station.SensorData == null)
+                return TimeSpan.MaxValue.TotalSeconds;
 
             return C18Station.SensorData.age;
         }
@@ -636,8 +658,12 @@ namespace ASCOM.Wise40.Boltwood
                 }
                 catch
                 {
-                    return double.NaN;
+                    Exceptor.Throw<PropertyNotImplementedException>("WindSpeed", "not available");
                 }
+
+                if (C18Station == null || C18Station.SensorData == null)
+                    Exceptor.Throw<PropertyNotImplementedException>("WindSpeed", "not available");
+
                 double ret = C18Station.SensorData.windSpeed;
 
                 switch (C18Station.SensorData.windUnits)
