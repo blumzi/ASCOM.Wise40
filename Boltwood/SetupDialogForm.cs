@@ -13,7 +13,7 @@ namespace ASCOM.Wise40.Boltwood
 {
     [ComVisible(false)]					// Form not registered for COM!
     public partial class SetupDialogForm : Form
-    {
+    {      
         public SetupDialogForm()
         {
             InitializeComponent();
@@ -69,18 +69,27 @@ namespace ASCOM.Wise40.Boltwood
         {
             Control[] controls;
             CheckBox cb;
+            Label label;
 
             for (int i = 0; i < WiseBoltwood.nStations; i++)
             {
-                controls = Controls.Find("checkBox" + i.ToString(), true);
+                controls = Controls.Find($"checkBox{i}", true);
+                if (controls.Length < 1)
+                    continue;
+
                 cb = controls[0] as CheckBox;
 
                 cb.Text = WiseBoltwood.stations[i].Name;
                 cb.Checked = WiseBoltwood.stations[i].Enabled;
 
-                controls = Controls.Find("labelPath" + i.ToString(), true);
-                cb = controls[0] as CheckBox;
-                cb.Text = WiseBoltwood.stations[i].FilePath;
+                if (!WiseBoltwood.stations[i].Enabled)
+                    continue;
+
+                controls = Controls.Find($"labelPath{i}", true);
+                if (controls.Length < 1)
+                    continue;
+                label = controls[0] as Label;
+                label.Text = WiseBoltwood.stations[i].FilePath;
             }
         }
 
