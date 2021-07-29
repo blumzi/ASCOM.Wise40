@@ -3158,19 +3158,7 @@ namespace ASCOM.Wise40
             return new AxisRates(Axis);
         }
 
-        public short SlewSettleTime
-        {
-            get
-            {
-                Exceptor.Throw<PropertyNotImplementedException>("SlewSettleTime", "SlewSettleTime");
-                return short.MinValue;
-            }
-
-            set
-            {
-                Exceptor.Throw<PropertyNotImplementedException>("SlewSettleTime", "SlewSettleTime", true);
-            }
-        }
+        public short SlewSettleTime { get; set; } = 1;
 
         public void MakeRaDecFromAltAz(double Azimuth, double Altitude, string whatfor, ref double ra, ref double dec, bool noSafetyCheck = false)
         {
