@@ -125,7 +125,7 @@ namespace ASCOM.Wise40.TessW
                 url: $"http://{IpAddress}",
                 period: TimeSpan.FromMinutes(1),
                 tries: 1,
-                maxAgeMillis: (int) TimeSpan.FromMinutes(1).TotalMilliseconds
+                maxAgeMillis: (int) TimeSpan.FromSeconds(90).TotalMilliseconds
             );
             _weatherLogger = new WeatherLogger("TESS-w");
             Refresh();
