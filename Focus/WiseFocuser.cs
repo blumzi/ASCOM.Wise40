@@ -501,7 +501,8 @@ namespace ASCOM.Wise40
             get
             {
                 if (!Connected)
-                    Exceptor.Throw<NotConnectedException>("Position", "Not connected");
+                    Connected = true;
+                    //Exceptor.Throw<NotConnectedException>("Position", "Not connected");
 
                 return MostRecentPosition;
             }
