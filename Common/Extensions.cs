@@ -81,8 +81,8 @@ namespace ASCOM.Wise40.Common
             if (ret == null)
                 ret = "";
 
-            if (showMillis && ret.StartsWith("0."))
-                return ret.TrimStart(new char[] { '0' });
+            //if (showMillis && ret.StartsWith("0."))
+            //    return ret.TrimStart(new char[] { '0' });
             return ret;
         }
 
