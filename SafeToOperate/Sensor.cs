@@ -540,7 +540,7 @@ namespace ASCOM.Wise40SafeToOperate
             string op = $"Sensor({WiseName}):onTimer: attrs: [{_attributes}]";
             
             if (HasAttribute(Attribute.Periodic))
-                op += $", every: {Interval.ToMinimalString()}";
+                op += $", every: {Interval.ToMinimalString()}, ";
 
             string dbgDetails = null;
             #endregion
