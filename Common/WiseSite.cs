@@ -143,6 +143,7 @@ public static bool TransformApparentToJ2000(double apparentRA, double apparentDE
                     Connected = true
                 };
                 lastOCFetch = DateTime.Now;
+                _och_initialized = true;
             }
             catch (Exception ex)
             {
@@ -152,7 +153,6 @@ public static bool TransformApparentToJ2000(double apparentRA, double apparentDE
                 och = null;
             }
 
-            _och_initialized = true;
         }
 
         public void Dispose()
