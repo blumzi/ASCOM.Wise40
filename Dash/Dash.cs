@@ -112,32 +112,6 @@ namespace Dash
                 focuserStatus.Show("Cannot connect to ASCOM server", severity: Statuser.Severity.Error, silent: true);
             }
 
-            //ComputerControlDependentControls = new List<Control> {
-            //        textBoxRaDecRa, textBoxRaDecDec,
-            //        textBoxHaDecHa, textBoxHaDecDec,
-            //        textBoxAltAzAlt, textBoxAltAzAz,
-            //        buttonGoCoord,
-            //        buttonNorth, buttonSouth, buttonEast, buttonWest,
-            //        buttonNW, buttonNE, buttonSE, buttonSW,
-            //        buttonStop, buttonMainStop,
-            //        buttonTrack,
-            //        buttonZenith, buttonFlat, buttonHandleCover, buttonTelescopePark,
-
-            //        buttonDomeLeft, buttonDomeRight, buttonDomeStop, buttonDomePark,
-            //        buttonDomeAzGo, buttonDomeAzSet, textBoxDomeAzValue,
-            //        buttonCalibrateDome, buttonVent,
-            //        buttonFullOpenShutter, buttonFullCloseShutter, buttonOpenShutter, buttonCloseShutter, buttonStopShutter,
-
-            //        buttonFocusAllDown, buttonFocusAllUp, buttonFocusDecrease, buttonFocusIncrease,
-            //        buttonFocuserStop, buttonFocusGoto, textBoxFocusGotoPosition,
-            //        buttonFocusUp, buttonFocusDown, comboBoxFocusStep,
-
-            //        pictureBoxStop,
-
-            //        radioButtonGuide, radioButtonSet, radioButtonSlew,
-            //        buttonFilterWheelGo, comboBoxFilterWheelPositions
-            //};
-
             WiseActiveControls = new List<Control>() {
                         textBoxRaDecRa, textBoxRaDecDec,
                         textBoxHaDecHa, textBoxHaDecDec,
@@ -224,31 +198,17 @@ namespace Dash
                     break;
             }
 
-            switch (opMode)
+            if (HumanIntervention.IsSet())
             {
-                case WiseSite.OpMode.LCO:
-                    buttonHumanIntervention.Visible = false;
-                    break;
-
-                case WiseSite.OpMode.ACP:
-                case WiseSite.OpMode.WISE:
-                    if (HumanIntervention.IsSet())
-                    {
-                        buttonHumanIntervention.Text = "Deactivate";
-                        labelHumanInterventionStatus.ForeColor = unsafeColor;
-                        labelHumanInterventionStatus.Text = "Active";
-                    }
-                    else
-                    {
-                        buttonHumanIntervention.Text = "Activate";
-                        labelHumanInterventionStatus.Text = "Inactive";
-                        labelHumanInterventionStatus.ForeColor = goodColor;
-                    }
-                    buttonHumanIntervention.Visible = true;
-                    buttonHumanIntervention.Enabled = true;
-
-                    pictureBoxStop.Visible = (opMode == WiseSite.OpMode.WISE);
-                    break;
+                buttonHumanIntervention.Text = "Deactivate";
+                labelHumanInterventionStatus.ForeColor = unsafeColor;
+                labelHumanInterventionStatus.Text = "Active";
+            }
+            else
+            {
+                buttonHumanIntervention.Text = "Activate";
+                labelHumanInterventionStatus.Text = "Inactive";
+                labelHumanInterventionStatus.ForeColor = goodColor;
             }
 
             UpdateCheckmark(LCOToolStripMenuItem, opMode == WiseSite.OpMode.LCO);
@@ -295,12 +255,10 @@ namespace Dash
 
         public void UpdateFilterWheelControls()
         {
-            if (WiseSite.OperationalMode == WiseSite.OpMode.LCO)
+            if (! WiseSite.FilterWheelInUse)
             {
                 toolStripMenuItemFilterWheel.Enabled = false;
-                labelFWWheel.Text = "";
-                labelFWPosition.Text = "";
-                filterWheelStatus.Show("Not available in LCO mode");
+                groupBoxFilterWheel.Text = $" FilterWheel (not used in {WiseSite.OperationalMode} mode) ";
                 return;
             }
 
@@ -311,7 +269,7 @@ namespace Dash
 
             if (!filterWheelDigest.Enabled)
             {
-                filterWheelStatus.Show("Disabled (see Settings->FilterWheel->Manage Loaded Filters)");
+                filterWheelStatus.Show("Disabled (see Settings -> FilterWheel -> Loaded Filters)");
             }
         }
 
@@ -373,6 +331,7 @@ namespace Dash
 
             if (refreshSafeToOperate)
             {
+                groupBoxSafeToOperate.Text = " Safe To Operate (latest readings) - refreshing ";
                 try
                 {
                     safetooperateDigest = JsonConvert.DeserializeObject<SafeToOperateDigest>(wiseSafeToOperate.Action("status", ""));
@@ -388,9 +347,16 @@ namespace Dash
                     safetooperateStatus.Show("ASCOM communication error", 2000, Statuser.Severity.Error);
                 }
             }
+            else
+            {
+                string ttr = safettoperatePacer.TimeToRefresh.ToMinimalString();
+                groupBoxSafeToOperate.Text = $" Safe To Operate (latest readings) " + (string.IsNullOrEmpty(ttr) ?
+                    "" : $"- refreshing in {ttr} ");
+            }
 
             if (refreshFocus)
             {
+                groupBoxFocuser.Text = " Focuser - refreshing ";
                 try
                 {
                     focuserDigest = JsonConvert.DeserializeObject<FocuserDigest>(wiseFocuser.Action("status", ""));
@@ -406,27 +372,43 @@ namespace Dash
                     focuserStatus.Show("ASCOM communication error", 2000, Statuser.Severity.Error);
                 }
             }
+            else
+            {
+                string ttr = focusPacer.TimeToRefresh.ToMinimalString();
+                groupBoxFocuser.Text = $" Focuser " + (string.IsNullOrEmpty(ttr) ?
+                    "" : $"- refreshing in {ttr} ");
+            }
 
             if (refreshForecast)
             {
                 forecast = wiseVantagePro.Action("forecast", "");
             }
 
-            if (refreshFilterWheel)
+            if (WiseSite.FilterWheelInUse)
             {
-                try
+                if (refreshFilterWheel)
                 {
-                    filterWheelDigest = JsonConvert.DeserializeObject<WiseFilterWheelDigest>(wiseFilterWheel.Action("status", ""));
-                }
-                catch (Exception ex)
-                {
-                    if (ex.InnerException != null)
-                        ex = ex.InnerException;
+                    groupBoxFilterWheel.Text = " FilterWheel - refreshing ";
+                    try
+                    {
+                        filterWheelDigest = JsonConvert.DeserializeObject<WiseFilterWheelDigest>(wiseFilterWheel.Action("status", ""));
+                    }
+                    catch (Exception ex)
+                    {
+                        if (ex.InnerException != null)
+                            ex = ex.InnerException;
 
-                    #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"RefreshDisplay: Caught: {ex.Message} at\n{ex.StackTrace}");
-                    #endregion
-                    filterWheelStatus.Show("ASCOM communication error", 2000, Statuser.Severity.Error);
+                        #region debug
+                        debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"RefreshDisplay: Caught: {ex.Message} at\n{ex.StackTrace}");
+                        #endregion
+                        filterWheelStatus.Show("ASCOM communication error", 2000, Statuser.Severity.Error);
+                    }
+                }
+                else
+                {
+                    string ttr = filterWheelPacer.TimeToRefresh.ToMinimalString();
+                    groupBoxFilterWheel.Text = $" FilterWheel " + (string.IsNullOrEmpty(ttr) ?
+                        "" : $"- refreshing in {ttr} ");
                 }
             }
             #endregion
@@ -628,12 +610,12 @@ namespace Dash
             #endregion
 
             #region Moon
-            if (telescopeDigest != null)
-            {
-                labelMoonIllum.Text = (Moon.Instance.Illumination * 100).ToString("F0") + "%";
-                labelMoonIllum.ForeColor = safeColor;
-                toolTip.SetToolTip(labelMoonIllum, "Calculated Moon illumination");
+            labelMoonIllum.Text = (Moon.Instance.Illumination * 100).ToString("F0") + "%";
+            labelMoonIllum.ForeColor = safeColor;
+            toolTip.SetToolTip(labelMoonIllum, "Calculated Moon illumination");
 
+            if (telescopeRa != null && telescopeDec != null)
+            {
                 try
                 {
                     Angle distance = Moon.Instance.Distance(telescopeRa.Radians, telescopeDec.Radians);
@@ -649,11 +631,6 @@ namespace Dash
                     labelMoonDist.ForeColor = warningColor;
                     toolTip.SetToolTip(labelMoonDist, "Moon distance could not be calculated!");
                 }
-            }
-            else
-            {
-                labelMoonIllum.Text = labelMoonDist.Text = Const.noValue;
-                labelMoonIllum.ForeColor = labelMoonDist.ForeColor = warningColor;
             }
             #endregion
 
@@ -1782,7 +1759,7 @@ namespace Dash
                 {
                     severity = Statuser.Severity.Error;
                 }
-                filterWheelArduinoStatus.Show(arduinoStatus, 5000, severity);
+                filterWheelArduinoStatus.Show("Arduino: " + arduinoStatus, 5000, severity);
                 return;
             }
 
@@ -1833,9 +1810,9 @@ namespace Dash
                 filterWheelArduinoStatus.Show("");
 
             if (!string.IsNullOrEmpty(filterWheelDigest.Arduino.Error))
-                filterWheelArduinoStatus.Show(filterWheelDigest.Arduino.Error, 5000, Statuser.Severity.Error);
+                filterWheelArduinoStatus.Show("Arduino: " + filterWheelDigest.Arduino.Error, 5000, Statuser.Severity.Error);
             else if (!string.IsNullOrEmpty(filterWheelDigest.Arduino.StatusString))
-                filterWheelArduinoStatus.Show(filterWheelDigest.Arduino.StatusString);
+                filterWheelArduinoStatus.Show("Arduino: " + filterWheelDigest.Arduino.StatusString);
 
             string tip = "Arduino:\r\n";
             TimeSpan ts = DateTime.Now.Subtract(Convert.ToDateTime(filterWheelDigest.LastDataReceived));
@@ -2043,7 +2020,7 @@ namespace Dash
                     ex = ex.InnerException;
 
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"RefreshDisplay: Caught: {ex.Message} at\n{ex.StackTrace}");
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"RefreshDisplay: Caught: {ex.Message} at {ex.StackTrace}");
                 #endregion
                 safetooperateStatus.Show("ASCOM communication error", 2000, Statuser.Severity.Error);
             }
@@ -2292,6 +2269,14 @@ namespace Dash
                 return true;
             }
             return false;
+        }
+
+        public TimeSpan TimeToRefresh
+        {
+            get
+            {
+                return (_lastTime + _interval) - DateTime.Now;
+            }
         }
     }
 }

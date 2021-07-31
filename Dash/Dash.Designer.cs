@@ -222,7 +222,7 @@
             this.comboBoxFilterWheelPositions = new System.Windows.Forms.ComboBox();
             this.buttonFilterWheelGo = new System.Windows.Forms.Button();
             this.labelFilterWheelStatus = new System.Windows.Forms.Label();
-            this.groupBoxWeather = new System.Windows.Forms.GroupBox();
+            this.groupBoxSafeToOperate = new System.Windows.Forms.GroupBox();
             this.labelWeatherStatus = new System.Windows.Forms.Label();
             this.tableLayoutPanelWeather = new System.Windows.Forms.TableLayoutPanel();
             this.label12 = new System.Windows.Forms.Label();
@@ -279,7 +279,7 @@
             this.panel5.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.groupBoxFilterWheel.SuspendLayout();
-            this.groupBoxWeather.SuspendLayout();
+            this.groupBoxSafeToOperate.SuspendLayout();
             this.tableLayoutPanelWeather.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -296,7 +296,7 @@
             this.tableLayoutMain.Controls.Add(this.flowLayoutPanel1, 0, 1);
             this.tableLayoutMain.Controls.Add(this.labelDashStatus, 1, 4);
             this.tableLayoutMain.Controls.Add(this.groupBoxFilterWheel, 2, 3);
-            this.tableLayoutMain.Controls.Add(this.groupBoxWeather, 1, 3);
+            this.tableLayoutMain.Controls.Add(this.groupBoxSafeToOperate, 1, 3);
             this.tableLayoutMain.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutMain.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutMain.Name = "tableLayoutMain";
@@ -2910,20 +2910,20 @@
             this.labelFilterWheelStatus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.toolTip.SetToolTip(this.labelFilterWheelStatus, "Filter wheel status");
             // 
-            // groupBoxWeather
+            // groupBoxSafeToOperate
             // 
-            this.groupBoxWeather.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.groupBoxSafeToOperate.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.groupBoxWeather.Controls.Add(this.labelWeatherStatus);
-            this.groupBoxWeather.Controls.Add(this.tableLayoutPanelWeather);
-            this.groupBoxWeather.ForeColor = System.Drawing.Color.DarkOrange;
-            this.groupBoxWeather.Location = new System.Drawing.Point(204, 499);
-            this.groupBoxWeather.Name = "groupBoxWeather";
-            this.groupBoxWeather.Size = new System.Drawing.Size(401, 258);
-            this.groupBoxWeather.TabIndex = 33;
-            this.groupBoxWeather.TabStop = false;
-            this.groupBoxWeather.Text = "Safe To Operate (latest readings) ";
+            this.groupBoxSafeToOperate.Controls.Add(this.labelWeatherStatus);
+            this.groupBoxSafeToOperate.Controls.Add(this.tableLayoutPanelWeather);
+            this.groupBoxSafeToOperate.ForeColor = System.Drawing.Color.DarkOrange;
+            this.groupBoxSafeToOperate.Location = new System.Drawing.Point(204, 499);
+            this.groupBoxSafeToOperate.Name = "groupBoxSafeToOperate";
+            this.groupBoxSafeToOperate.Size = new System.Drawing.Size(401, 258);
+            this.groupBoxSafeToOperate.TabIndex = 33;
+            this.groupBoxSafeToOperate.TabStop = false;
+            this.groupBoxSafeToOperate.Text = "Safe To Operate (latest readings) ";
             // 
             // labelWeatherStatus
             // 
@@ -3431,7 +3431,7 @@
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.groupBoxFilterWheel.ResumeLayout(false);
-            this.groupBoxWeather.ResumeLayout(false);
+            this.groupBoxSafeToOperate.ResumeLayout(false);
             this.tableLayoutPanelWeather.ResumeLayout(false);
             this.tableLayoutPanelWeather.PerformLayout();
             this.ResumeLayout(false);
@@ -3512,7 +3512,7 @@
         private System.Windows.Forms.Button buttonFocusAllDown;
         private System.Windows.Forms.Button buttonFocusUp;
         private System.Windows.Forms.Button buttonFocusAllUp;
-        private System.Windows.Forms.GroupBox groupBoxWeather;
+        private System.Windows.Forms.GroupBox groupBoxSafeToOperate;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanelWeather;
         private System.Windows.Forms.Label labelWindSpeedValue;
         private System.Windows.Forms.Label labelWindDirValue;
