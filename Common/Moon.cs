@@ -9,8 +9,6 @@ namespace ASCOM.Wise40
 {
     public class Moon
     {
-        //public readonly NOVAS31 novas31 = new NOVAS31();
-        //public readonly AstroUtils astroutils = new AstroUtils();
         public readonly SafeNovas31 novas31 = new SafeNovas31();
         public readonly SafeAstroutils astroutils = new SafeAstroutils();
 
