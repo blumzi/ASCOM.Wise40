@@ -28,7 +28,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
         private static DriverAccess.Dome wisedome = null;
         private static DriverAccess.SafetyMonitor wisesafetooperate = null;
         private readonly Version version = new Version(0, 2);
-        private static DateTime _nextCheck = DateTime.Now + TimeSpan.FromSeconds(25);
+        private static DateTime _nextCheck = DateTime.Now.AddSeconds(50);
         private static bool _checking = false;
         public static TimeSpan _intervalBetweenRegularChecks;
         public static TimeSpan _intervalBetweenChecksWhileShuttingDown = TimeSpan.FromSeconds(20);
