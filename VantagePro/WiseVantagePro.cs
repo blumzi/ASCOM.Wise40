@@ -22,10 +22,10 @@ namespace ASCOM.Wise40.VantagePro
         private readonly Util util = new Util();
 
         public enum OpMode { File, Serial };
-        public OpMode _opMode = WiseVantagePro.OpMode.File;
+        public OpMode OperationalMode { get; set; }  = WiseVantagePro.OpMode.File;
 
-        public string _portName = null;
-        public int _portSpeed = 19200;
+        public string SerialPortName { get; set; }
+        public int SerialPortSpeed { get; set; } = 19200;
         private System.IO.Ports.SerialPort _port = new System.IO.Ports.SerialPort();
 
         public static Common.Debugger debugger = Debugger.Instance;
@@ -61,7 +61,7 @@ namespace ASCOM.Wise40.VantagePro
         /// </summary>
         public void Refresh()
         {
-            if (_opMode == OpMode.File)
+            if (OperationalMode == OpMode.File)
                 RefreshFromDatafile();
             else
                 RefreshFromSerialPort();
@@ -135,8 +135,8 @@ namespace ASCOM.Wise40.VantagePro
             else if (_port.IsOpen)
                 return;
 
-            _port.PortName = _portName;
-            _port.BaudRate = _portSpeed;
+            _port.PortName = SerialPortName;
+            _port.BaudRate = SerialPortSpeed;
             _port.ReadTimeout = 1000;
             _port.ReadBufferSize = 100;
             try
@@ -147,7 +147,7 @@ namespace ASCOM.Wise40.VantagePro
             {
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugDevice, "TryOpenPort: Cannot open \"{0}\", ex: {1}",
-                    _portName, ex.Message);
+                    SerialPortName, ex.Message);
                 #endregion
                 throw;
             }
@@ -261,7 +261,7 @@ namespace ASCOM.Wise40.VantagePro
                 if (value == _connected)
                     return;
 
-                if (Simulated || _opMode == OpMode.Serial)
+                if (Simulated || OperationalMode == OpMode.Serial)
                 {
                     if (value)
                         TryOpenPort();
@@ -369,7 +369,18 @@ namespace ASCOM.Wise40.VantagePro
         {
             get
             {
-                return "Wrapper for VantagePro Report file. Version: " + String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
+                string info = $"Wise40 VantagePro driver v{DriverVersion}, ";
+
+                switch (OperationalMode)
+                {
+                    case OpMode.File:
+                        info += $"mode: {OperationalMode}, file: {DataFile}";
+                        break;
+                    case OpMode.Serial:
+                        info += $"mode: {OperationalMode}, port: {SerialPortName}, speed: {SerialPortSpeed}";
+                        break;
+                }
+                return info;
             }
         }
 
@@ -377,7 +388,7 @@ namespace ASCOM.Wise40.VantagePro
         {
             get
             {
-                return String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
+                return $"{version.Major}.{version.Minor}";
             }
         }
 
@@ -393,9 +404,9 @@ namespace ASCOM.Wise40.VantagePro
             using (Profile driverProfile = new Profile() { DeviceType = "ObservingConditions" })
             {
                 Enum.TryParse<OpMode>(driverProfile.GetValue(Const.WiseDriverID.VantagePro, Const.ProfileName.VantagePro_OpMode, string.Empty, nameof(OpMode.File)), out OpMode mode);
-                _opMode = mode;
+                OperationalMode = mode;
                 DataFile = driverProfile.GetValue(Const.WiseDriverID.VantagePro, Const.ProfileName.VantagePro_DataFile, string.Empty, defaultReportFile);
-                _portName = driverProfile.GetValue(Const.WiseDriverID.VantagePro, Const.ProfileName.VantagePro_SerialPort, string.Empty, "");
+                SerialPortName = driverProfile.GetValue(Const.WiseDriverID.VantagePro, Const.ProfileName.VantagePro_SerialPort, string.Empty, "");
             }
         }
 
@@ -406,9 +417,9 @@ namespace ASCOM.Wise40.VantagePro
         {
             using (Profile driverProfile = new Profile() { DeviceType = "ObservingConditions" })
             {
-                driverProfile.WriteValue(Const.WiseDriverID.VantagePro, Const.ProfileName.VantagePro_OpMode, _opMode.ToString());
+                driverProfile.WriteValue(Const.WiseDriverID.VantagePro, Const.ProfileName.VantagePro_OpMode, OperationalMode.ToString());
                 driverProfile.WriteValue(Const.WiseDriverID.VantagePro, Const.ProfileName.VantagePro_DataFile, DataFile);
-                driverProfile.WriteValue(Const.WiseDriverID.VantagePro, Const.ProfileName.VantagePro_SerialPort, _portName);
+                driverProfile.WriteValue(Const.WiseDriverID.VantagePro, Const.ProfileName.VantagePro_SerialPort, SerialPortName);
             }
         }
 
@@ -467,7 +478,7 @@ namespace ASCOM.Wise40.VantagePro
                 var dewPoint = Convert.ToDouble(sensorData["outsideDewPt"]);
 
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, string.Format("VantagePro: DewPoint - get => {0}", dewPoint.ToString()));
+                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, $"VantagePro: DewPoint - get => {dewPoint}");
                 #endregion
                 return dewPoint;
             }
@@ -488,7 +499,7 @@ namespace ASCOM.Wise40.VantagePro
                 var humidity = Convert.ToDouble(sensorData["outsideHumidity"]);
 
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, string.Format("VantagePro: Humidity - get => {0}", humidity.ToString()));
+                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, $"VantagePro: Humidity - get => {humidity}");
                 #endregion
                 return humidity;
             }
@@ -507,10 +518,23 @@ namespace ASCOM.Wise40.VantagePro
             get
             {
                 Refresh();
-                var pressure = Convert.ToDouble(sensorData["barometer"]);
+                double pressure = double.NaN;
+
+                try
+                {
+                    pressure = Convert.ToDouble(sensorData["barometer"]);
+                }
+                catch (Exception ex)
+                {
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, $"VantagePro: Pressure - Caught {ex.Message}, nkeys: {sensorData.Keys.Count}");
+                    foreach (var key in sensorData.Keys)
+                        debugger.WriteLine(Debugger.DebugLevel.DebugSafety, $"VantagePro: sensorData[{key}]: {sensorData[key]}");
+                    #endregion
+                }
 
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, string.Format("VantagePro: Pressure - get => {0}", pressure.ToString()));
+                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, $"VantagePro: Pressure - get => {pressure}");
                 #endregion
                 return pressure;
             }
@@ -634,7 +658,7 @@ namespace ASCOM.Wise40.VantagePro
                 var temperature = Convert.ToDouble(sensorData["outsideTemp"]);
 
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, string.Format("VantagePro: Temperature - get => {0}", temperature.ToString()));
+                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, $"VantagePro: Temperature - get => {temperature}");
                 #endregion
                 return temperature;
             }
@@ -672,7 +696,7 @@ namespace ASCOM.Wise40.VantagePro
             }
 
             double seconds = 0.0;
-            if (_opMode == OpMode.File)
+            if (OperationalMode == OpMode.File)
             {
                 seconds = (DateTime.UtcNow - utcTime).TotalSeconds;
             }
@@ -730,7 +754,7 @@ namespace ASCOM.Wise40.VantagePro
                 double windSpeed = MPS(kmh);
 
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, string.Format("VantagePro: WindSpeed - get => {0}", windSpeed.ToString()));
+                debugger.WriteLine(Debugger.DebugLevel.DebugSafety, $"VantagePro: WindSpeed - get => {windSpeed}");
                 #endregion
                 return windSpeed;
             }
