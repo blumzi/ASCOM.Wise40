@@ -24,6 +24,7 @@ namespace ASCOM.Wise40
     [ComVisible(true)]
     public class Rate : ASCOM.DeviceInterface.IRate
     {
+        public static readonly Exceptor Exceptor = new Exceptor(Debugger.DebugLevel.DebugTele);
         //
         // Default constructor - Internal prevents public creation
         // of instances. These are values for AxisRates.
@@ -152,6 +153,7 @@ namespace ASCOM.Wise40
     {
         private readonly DriveRates[] trackingRates;
         private static int pos = -1;
+        public static readonly Exceptor Exceptor = new Exceptor(Debugger.DebugLevel.DebugTele);
 
         //
         // Default constructor - Internal prevents public creation

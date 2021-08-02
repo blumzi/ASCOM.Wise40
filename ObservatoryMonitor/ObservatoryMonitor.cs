@@ -50,6 +50,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
         private SafeToOperateDigest safetooperateDigest;
 
         private static readonly Common.Debugger debugger = Common.Debugger.Instance;
+        public static readonly Exceptor Exceptor = new Exceptor(Common.Debugger.DebugLevel.DebugSafety);
 
         public static bool weInitiatedShutdown = false;
 

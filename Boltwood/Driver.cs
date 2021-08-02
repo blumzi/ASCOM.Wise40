@@ -57,6 +57,7 @@ namespace ASCOM.Wise40.Boltwood
     public class ObservingConditions : IObservingConditions
     {
         private static readonly WiseBoltwood boltwood = WiseBoltwood.Instance;
+        public static readonly Exceptor WeatherExceptor = new Exceptor(Common.Debugger.DebugLevel.DebugWeather);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Wise40.Boltwood"/> class.
@@ -100,20 +101,20 @@ namespace ASCOM.Wise40.Boltwood
         public void CommandBlind(string command, bool raw)
         {
             CheckConnected("CommandBlind");
-            Exceptor.Throw<MethodNotImplementedException>("CommandBlind", "Not implemented");
+            WeatherExceptor.Throw<MethodNotImplementedException>("CommandBlind", "Not implemented");
         }
 
         public bool CommandBool(string command, bool raw)
         {
             CheckConnected("CommandBool");
-            Exceptor.Throw<MethodNotImplementedException>("CommandBool", "Not implemented");
+            WeatherExceptor.Throw<MethodNotImplementedException>("CommandBool", "Not implemented");
             return false;
         }
 
         public string CommandString(string command, bool raw)
         {
             CheckConnected("CommandString");
-            Exceptor.Throw<MethodNotImplementedException>("CommandString", "Not implemented");
+            WeatherExceptor.Throw<MethodNotImplementedException>("CommandString", "Not implemented");
             return string.Empty;
         }
 
@@ -542,7 +543,7 @@ namespace ASCOM.Wise40.Boltwood
         private void CheckConnected(string message)
         {
             if (!IsConnected)
-                Exceptor.Throw<NotConnectedException>("CheckConnected", message);
+                WeatherExceptor.Throw<NotConnectedException>("CheckConnected", message);
         }
 
         /// <summary>

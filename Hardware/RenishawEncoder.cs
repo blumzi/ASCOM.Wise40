@@ -38,6 +38,7 @@ namespace ASCOM.Wise40.Hardware
         private const int jitterBits = 6;       // number of LSBs to discard
 
         private static readonly Debugger debugger = Debugger.Instance;
+        public static readonly Exceptor Exceptor = new Exceptor(Common.Debugger.DebugLevel.DebugEncoders);
 
         public RenishawEncoder(Module module)
         {

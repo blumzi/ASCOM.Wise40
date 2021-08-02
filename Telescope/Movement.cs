@@ -15,6 +15,7 @@ namespace ASCOM.Wise40
     {
         public readonly TelescopeAxes axis;
         public readonly Const.AxisDirection direction;
+        public static readonly Exceptor Exceptor = new Exceptor(Debugger.DebugLevel.DebugTele);
 
         public bool Equals(Tuple<TelescopeAxes, double, Const.AxisDirection> other)
         {

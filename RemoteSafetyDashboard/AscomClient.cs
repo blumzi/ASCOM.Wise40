@@ -38,6 +38,7 @@ namespace RemoteSafetyDashboard
         private readonly HTTPCommunicator httpCommunicator;
         private bool connected = false;
         private AscomTransaction t;
+        private static readonly Exceptor Exceptor = new Exceptor(Debugger.DebugLevel.DebugHTTP);
 
         public AscomClient(string uri)
         {

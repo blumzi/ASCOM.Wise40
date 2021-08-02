@@ -74,6 +74,7 @@ namespace ASCOM.Wise
         private const string driverDescription = "ASCOM SafetyMonitor Driver for Wise.SafeToOperate.";
 
         private static DriverAccess.SafetyMonitor  wisesafetooperate = null;
+        public static readonly Exceptor Exceptor = new Exceptor(Wise40.Common.Debugger.DebugLevel.DebugSafety);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Wise.SafeToOperate"/> class.

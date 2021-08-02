@@ -34,6 +34,7 @@ namespace ASCOM.Wise40
         private static string _error;
 
         private static readonly Lazy<ArduinoInterface> lazy = new Lazy<ArduinoInterface>(() => new ArduinoInterface()); // Singleton
+        public static readonly Exceptor Exceptor = new Exceptor(Common.Debugger.DebugLevel.DebugFilterWheel);
 
         public static ArduinoInterface Instance
         {
@@ -114,7 +115,7 @@ namespace ASCOM.Wise40
                     if (nums.Length == 1)
                         _error = "Connector " + nums[0].ToString() + " is NOT CONNECTED!";
                     else
-                        _error = "Connectors " + String.Join(" and ", nums) + " are NOT CONNECTED!";
+                        _error = "Connectors " + String.Join(",", nums) + " are NOT CONNECTED!";
                 }
 
                 if (op == Activity.FilterWheel.Operation.Move)

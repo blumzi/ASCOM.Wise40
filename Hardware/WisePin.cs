@@ -19,6 +19,7 @@ namespace ASCOM.Wise40.Hardware
         private bool _connected = false;
         private readonly bool _controlled;
         private readonly Debugger debugger = Debugger.Instance;
+        public static readonly Exceptor Exceptor = new Exceptor(Common.Debugger.DebugLevel.DebugDAQs);
 
         public WisePin(string name,
             WiseBoard brd,
@@ -33,7 +34,7 @@ namespace ASCOM.Wise40.Hardware
             WiseName = $"{name}@Board{boardNumber}{port}[{bit}]";
 
             if ((daq = brd.daqs.Find(x => x.porttype == port)) == null)
-                Exceptor.Throw<WiseException>("WisePin", $"{WiseName}: Invalid Daq spec, no {port} on this board");
+                Exceptor.Throw<Exception>("WisePin", $"{WiseName}: Invalid Daq spec, no {port} on this board");
             this.dir = dir;
             this.bit = bit;
             this.inverse = inverse;

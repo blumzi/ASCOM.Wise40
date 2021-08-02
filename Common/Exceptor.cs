@@ -6,16 +6,22 @@ using System.Threading.Tasks;
 
 namespace ASCOM.Wise40.Common
 {
-    public static class Exceptor
+    public class Exceptor
     {
         private static readonly Debugger debugger = Debugger.Instance;
+        private static Debugger.DebugLevel debugLevel;
 
-        public static void Throw<TException>(string op, string message, bool accessorIsSet = false) where TException : Exception, new()
+        public Exceptor(Debugger.DebugLevel d)
+        {
+            debugLevel = d;
+        }
+
+        public void Throw<TException>(string op, string message, bool accessorIsSet = false) where TException : Exception, new()
         {
             if (typeof(Exception).IsAssignableFrom(typeof(TException)))
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"Throw: operation: {op}, cancelled with {typeof(TException)}({message})");
+                debugger.WriteLine(debugLevel, $"Throw: operation: {op}, cancelled with {typeof(TException)}({message})");
                 #endregion
                 if (typeof(TException) == typeof(PropertyNotImplementedException))
                     throw new PropertyNotImplementedException(message, accessorIsSet);
@@ -25,7 +31,7 @@ namespace ASCOM.Wise40.Common
             else
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                debugger.WriteLine(debugLevel,
                     $"Throw: Operation {op}, invalid exception type {typeof(TException)} for reason: {message}");
                 #endregion
             }

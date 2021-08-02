@@ -88,6 +88,7 @@ namespace ASCOM.Wise40 //.Dome
         private static WiseDome wisedome = WiseDome.Instance;
 
         public AutoResetEvent arrived = new AutoResetEvent(false);
+        public static readonly Exceptor Exceptor = new Exceptor(Common.Debugger.DebugLevel.DebugDome);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Wise40Hardware"/> class.

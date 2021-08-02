@@ -73,6 +73,7 @@ namespace ASCOM.Wise40.TessW
         private static readonly string driverDescription = "ASCOM Wise40.TessW v" + WiseTessW.DriverVersion;
 
         private readonly WiseTessW tessw = WiseTessW.Instance;
+        public static readonly Exceptor Exceptor = new Exceptor(Common.Debugger.DebugLevel.DebugWeather);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Wise40.TessW"/> class.

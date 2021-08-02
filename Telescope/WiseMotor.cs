@@ -37,6 +37,7 @@ namespace ASCOM.Wise40.Hardware
         private readonly WiseTele wisetele = WiseTele.Instance;
         private readonly WiseSite wisesite = WiseSite.Instance;
         private readonly List<WisePin> allPins;
+        public static readonly Exceptor Exceptor = new Exceptor(Debugger.DebugLevel.DebugTele);
 
         public WiseVirtualMotor(
             string name,
@@ -61,7 +62,7 @@ namespace ASCOM.Wise40.Hardware
             this._direction = direction;
 
             if (Simulated && (encoders == null || encoders.Count == 0))
-                Exceptor.Throw<WiseException>("WiseVirtualMotor", $"{WiseName}: A simulated WiseVirtualMotor must have at least one encoder reference");
+                Exceptor.Throw<Exception>("WiseVirtualMotor", $"{WiseName}: A simulated WiseVirtualMotor must have at least one encoder reference");
 
             if (Simulated)
             {

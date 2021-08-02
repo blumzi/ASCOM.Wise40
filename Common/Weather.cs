@@ -22,6 +22,7 @@ namespace ASCOM.Wise40
 
         public int _unitId;
         public WeatherLogger _weatherLogger;
+        public static readonly Exceptor Exceptor = new Exceptor(Debugger.DebugLevel.DebugWeather);
 
         public abstract WeatherStationVendor Vendor
         {

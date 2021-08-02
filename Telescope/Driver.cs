@@ -79,6 +79,7 @@ namespace ASCOM.Wise40 //.Telescope
         private Util util;
 
         private static readonly WiseTele wisetele = WiseTele.Instance;
+        public static readonly Exceptor Exceptor = new Exceptor(Common.Debugger.DebugLevel.DebugDAQs);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Wise40"/> class.

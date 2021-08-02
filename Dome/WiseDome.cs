@@ -38,6 +38,7 @@ namespace ASCOM.Wise40
 
         public WiseDomeShutter wisedomeshutter = WiseDomeShutter.Instance;
         public static ActivityMonitor activityMonitor = ActivityMonitor.Instance;
+        public static readonly Exceptor Exceptor = new Exceptor(Common.Debugger.DebugLevel.DebugDome);
 
         [Flags] public enum DomeState {
             Idle = 0,
@@ -151,9 +152,9 @@ namespace ASCOM.Wise40
                 connectables.AddRange(domePins);
                 disposables.AddRange(domePins);
             }
-            catch (WiseException e)
+            catch (Exception e)
             {
-                debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome: constructor caught: {0}.", e.Message);
+                debugger.WriteLine(Debugger.DebugLevel.DebugDome, $"WiseDome: constructor caught: {e.Message} at {e.StackTrace}.");
             }
 
             try

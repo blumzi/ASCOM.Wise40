@@ -20,6 +20,8 @@ namespace ASCOM.Wise40
         private static readonly Lazy<Moon> lazy =
             new Lazy<Moon>(() => new Moon()); // Singleton
 
+        private readonly Exceptor MoonExceptor = new Exceptor(Debugger.DebugLevel.DebugMoon);
+
         public static Moon Instance
         {
             get
@@ -100,7 +102,7 @@ namespace ASCOM.Wise40
                 ref moonPos);
 
             if (ret != 0)
-                Exceptor.Throw<InvalidOperationException>("Moon.Distance", $"Cannot calculate Moon position (novas31.Place: {ret})");
+                MoonExceptor.Throw<InvalidOperationException>("Moon.Distance", $"Cannot calculate Moon position (novas31.Place: {ret})");
 
             return Angle.FromRadians(SphereDist(telescopeRA, telescopeDec, moonPos.RA, moonPos.Dec));
         }

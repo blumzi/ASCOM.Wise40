@@ -41,6 +41,7 @@ namespace ASCOM.Wise40 //.FilterWheel
         private readonly string _savedFile = "c://Wise40/FilterWheel/Config.txt";
         private static readonly System.Threading.Timer _updateTimer = new System.Threading.Timer(new TimerCallback(Updater));
         public static DateTime _lastDataReceived;
+        public static readonly Exceptor Exceptor = new Exceptor(Debugger.DebugLevel.DebugFilterWheel);
 
         public struct FWPosition
         {

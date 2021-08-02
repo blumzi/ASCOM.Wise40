@@ -155,7 +155,6 @@
     <Compile Include="Statuser.cs" />
     <Compile Include="Weather.cs" />
     <Compile Include="Wise40Renderer.cs" />
-    <Compile Include="WiseException.cs" />
     <Compile Include="WiseObject.cs" />
     <Compile Include="OperationalProfile.cs" />
     <Compile Include="WiseSite.cs" />

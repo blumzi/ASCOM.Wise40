@@ -21,6 +21,7 @@ namespace ASCOM.Wise40
         private static readonly Version version = new Version(0, 2);
         private static bool _initialized = false;
         private static bool _connected = false;
+        private readonly Exceptor FocusExceptor = new Exceptor(Debugger.DebugLevel.DebugFocuser);
 
         public class Reading
         {
@@ -434,7 +435,7 @@ namespace ASCOM.Wise40
                 #region trace
                 //tl.LogMessage("Temperature Get", "Not implemented");
                 #endregion
-                Exceptor.Throw<PropertyNotImplementedException>("Temperature", "Not implemented");
+                FocusExceptor.Throw<PropertyNotImplementedException>("Temperature", "Not implemented");
                 return Double.NaN;
             }
         }
@@ -464,7 +465,7 @@ namespace ASCOM.Wise40
                 #region trace
                 //tl.LogMessage("TempComp Set", "Not implemented");
                 #endregion
-                Exceptor.Throw<PropertyNotImplementedException>("TempComp", "Not implemented", true);
+                FocusExceptor.Throw<PropertyNotImplementedException>("TempComp", "Not implemented", true);
             }
         }
 
@@ -502,7 +503,7 @@ namespace ASCOM.Wise40
             {
                 if (!Connected)
                     Connected = true;
-                    //Exceptor.Throw<NotConnectedException>("Position", "Not connected");
+                //FocusExceptor.Throw<NotConnectedException>("Position", "Not connected");
 
                 return MostRecentPosition;
             }
@@ -519,7 +520,7 @@ namespace ASCOM.Wise40
         public void Halt(string reason = "Halt")
         {
             if (!Connected)
-                Exceptor.Throw<NotConnectedException>("Halt", "Not connected");
+                FocusExceptor.Throw<NotConnectedException>("Halt", "Not connected");
 
             if (motion != null)
                 motion.StartStopping(reason);
@@ -530,7 +531,7 @@ namespace ASCOM.Wise40
             get
             {
                 if (!Connected)
-                    Exceptor.Throw<NotConnectedException>("IsMoving", "Not connected");
+                    FocusExceptor.Throw<NotConnectedException>("IsMoving", "Not connected");
 
                 if (motion == null)
                     return false;
@@ -582,19 +583,19 @@ namespace ASCOM.Wise40
             string op = $"Move(dir: {dir}): ";
 
             if (!Connected)
-                Exceptor.Throw<NotConnectedException>(op, "Not connected!");
+                FocusExceptor.Throw<NotConnectedException>(op, "Not connected!");
 
             if (IsMoving)
-                Exceptor.Throw<InvalidOperationException>(op, "Cannot move, already moving");
+                FocusExceptor.Throw<InvalidOperationException>(op, "Cannot move, already moving");
 
             if (!safetooperate.IsSafe)
-                Exceptor.Throw<InvalidOperationException>(op, string.Join(", ", safetooperate.UnsafeReasonsList()));
+                FocusExceptor.Throw<InvalidOperationException>(op, string.Join(", ", safetooperate.UnsafeReasonsList()));
 
             if (TempComp)
-                Exceptor.Throw<InvalidOperationException>(op, "Cannot Move while TempComp == true");
+                FocusExceptor.Throw<InvalidOperationException>(op, "Cannot Move while TempComp == true");
 
             if (!safetooperate.IsSafeWithoutCheckingForShutdown())
-                Exceptor.Throw<InvalidOperationException>(op, string.Join(", ", safetooperate.UnsafeReasonsList()));
+                FocusExceptor.Throw<InvalidOperationException>(op, string.Join(", ", safetooperate.UnsafeReasonsList()));
 
             motion = new Motion()
             {
@@ -625,19 +626,19 @@ namespace ASCOM.Wise40
             string op = $"Move(from: {currentPosition} to {targetPosition})";
 
             if (!Connected)
-                Exceptor.Throw<NotConnectedException>(op, "Not connected!");
+                FocusExceptor.Throw<NotConnectedException>(op, "Not connected!");
 
             if (IsMoving)
-                Exceptor.Throw<InvalidOperationException>(op, "Cannot move, already moving");
+                FocusExceptor.Throw<InvalidOperationException>(op, "Cannot move, already moving");
 
             if (!safetooperate.IsSafe)
-                Exceptor.Throw<InvalidOperationException>(op, string.Join(", ", safetooperate.UnsafeReasonsList()));
+                FocusExceptor.Throw<InvalidOperationException>(op, string.Join(", ", safetooperate.UnsafeReasonsList()));
 
             if (TempComp)
-                Exceptor.Throw<InvalidOperationException>(op, "Cannot Move while TempComp == true");
+                FocusExceptor.Throw<InvalidOperationException>(op, "Cannot Move while TempComp == true");
 
             if (targetPosition > UpperLimit || targetPosition < LowerLimit)
-                Exceptor.Throw <DriverException>(op, $"Can only move between {LowerLimit} and {UpperLimit}!");
+                FocusExceptor.Throw <DriverException>(op, $"Can only move between {LowerLimit} and {UpperLimit}!");
 
             if (currentPosition == targetPosition)
             {
@@ -667,7 +668,7 @@ namespace ASCOM.Wise40
         private void CheckConnected(string message)
         {
             if (!Connected)
-                Exceptor.Throw<NotConnectedException>("CheckConnected", message);
+                FocusExceptor.Throw<NotConnectedException>("CheckConnected", message);
         }
 
         public ArrayList SupportedActions { get; } = new ArrayList() {
@@ -739,7 +740,7 @@ namespace ASCOM.Wise40
             }
             else
             {
-                Exceptor.Throw<ActionNotImplementedException>($"Action({action})", "Not implemented by this driver");
+                FocusExceptor.Throw<ActionNotImplementedException>($"Action({action})", "Not implemented by this driver");
                 return string.Empty;
             }
         }
@@ -747,20 +748,20 @@ namespace ASCOM.Wise40
         public void CommandBlind(string command, bool raw)
         {
             CheckConnected("CommandBlind");
-            Exceptor.Throw<MethodNotImplementedException>($"CommandBlind({command}, {raw}", "Not implemented");
+            FocusExceptor.Throw<MethodNotImplementedException>($"CommandBlind({command}, {raw}", "Not implemented");
         }
 
         public bool CommandBool(string command, bool raw)
         {
             CheckConnected("CommandBool");
-            Exceptor.Throw<MethodNotImplementedException>($"CommandBool({command}, {raw}", "Not implemented");
+            FocusExceptor.Throw<MethodNotImplementedException>($"CommandBool({command}, {raw}", "Not implemented");
             return false;
         }
 
         public string CommandString(string command, bool raw)
         {
             CheckConnected("CommandString");
-            Exceptor.Throw<MethodNotImplementedException>($"CommandString({command}, {raw}", "Not implemented");
+            FocusExceptor.Throw<MethodNotImplementedException>($"CommandString({command}, {raw}", "Not implemented");
             return string.Empty;
         }
 

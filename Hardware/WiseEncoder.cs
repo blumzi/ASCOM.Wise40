@@ -36,6 +36,7 @@ namespace ASCOM.Wise40.Hardware
         private bool _connected = false;
         private AtomicReader _atomicReader;
         protected Common.Debugger debugger = Common.Debugger.Instance;
+        public static readonly Exceptor Exceptor = new Exceptor(Common.Debugger.DebugLevel.DebugEncoders);
 
         public WiseEncoder() { }
 
@@ -79,7 +80,7 @@ namespace ASCOM.Wise40.Hardware
                 byte mask;
 
                 if ((daq = spec.brd.daqs.Find(x => x.porttype == spec.port)) == null)
-                    Exceptor.Throw<WiseException>("Init", $"{name}: Cannot find Daq for {spec.port} on {spec.brd.WiseName}");
+                    Exceptor.Throw<Exception>("Init", $"{name}: Cannot find Daq for {spec.port} on {spec.brd.WiseName}");
 
                 mask = (byte)((spec.mask == 0) ? ~(1 << daq.nbits) : spec.mask);
                 daq.SetDir(MccDaq.DigitalPortDirection.DigitalIn);

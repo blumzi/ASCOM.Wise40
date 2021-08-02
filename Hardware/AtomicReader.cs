@@ -20,6 +20,7 @@ namespace ASCOM.Wise40.Hardware
         private readonly object _lock = new object();
 
         private readonly Common.Debugger debugger = Common.Debugger.Instance;
+        public static readonly Exceptor Exceptor = new Exceptor(Common.Debugger.DebugLevel.DebugEncoders);
 
         public AtomicReader(string name, List<WiseDaq> daqs,
             double timeoutMillis = Const.defaultReadTimeoutMillis,
@@ -104,7 +105,7 @@ namespace ASCOM.Wise40.Hardware
 
                 debugger.WriteLine(Common.Debugger.DebugLevel.DebugDAQs, err);
                 #endregion
-                Exceptor.Throw<WiseException>("Values", err);
+                Exceptor.Throw<Exception>("Values", err);
                 return new List<uint>();
             }
         }

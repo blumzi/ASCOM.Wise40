@@ -66,6 +66,7 @@ namespace ASCOM.Wise40
         private List<IDisposable> disposables;
 
         public static Debugger debugger = Debugger.Instance;
+        public static readonly Exceptor Exceptor = new Exceptor(Debugger.DebugLevel.DebugTele);
 
         private bool _connected = false;
 
@@ -108,7 +109,7 @@ namespace ASCOM.Wise40
                     #endregion
                 }
                 #region debug
-               debugger.WriteLine(Debugger.DebugLevel.DebugLogic, dbg);
+               debugger.WriteLine(Debugger.DebugLevel.DebugTele, dbg);
                 #endregion
             }
 
@@ -130,7 +131,7 @@ namespace ASCOM.Wise40
                     }
                 }
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, dbg);
+                debugger.WriteLine(Debugger.DebugLevel.DebugTele, dbg);
                 #endregion
             }
         };
@@ -511,10 +512,10 @@ namespace ASCOM.Wise40
                 //RenishawHaEncoder = new RenishawEncoder(RenishawEncoder.Module.Ha);
                 //RenishawDecEncoder = new RenishawEncoder(RenishawEncoder.Module.Dec);
             }
-            catch (WiseException e)
+            catch (Exception e)
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugExceptions, "WiseTele constructor caught: {0}.", e.Message);
+                debugger.WriteLine(Debugger.DebugLevel.DebugExceptions, $"WiseTele constructor caught: {e.Message} at {e.StackTrace}");
                 #endregion debug
             }
 
@@ -726,7 +727,7 @@ namespace ASCOM.Wise40
 
             _initialized = true;
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseTele init() done.");
+            debugger.WriteLine(Debugger.DebugLevel.DebugTele, "WiseTele init() done.");
             #endregion debug
         }
 
@@ -743,7 +744,7 @@ namespace ASCOM.Wise40
             string op = $"AbortSlew(reason: {reason})";
 
             #region debug
-            debugger.WriteLine(Common.Debugger.DebugLevel.DebugLogic, $"{op}: started.");
+            debugger.WriteLine(Common.Debugger.DebugLevel.DebugTele, $"{op}: started.");
             #endregion debug
 
             ActivityMonitor.StayActive(op);
@@ -770,7 +771,7 @@ namespace ASCOM.Wise40
             if (!telescopeCT.IsCancellationRequested)
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                debugger.WriteLine(Debugger.DebugLevel.DebugTele,
                     $"{op} - Canceling telescopeCTS: #{telescopeCTS.GetHashCode()}");
                 #endregion
                 telescopeCTS.Cancel();
@@ -778,7 +779,7 @@ namespace ASCOM.Wise40
             }
 
             #region debug
-            debugger.WriteLine(Common.Debugger.DebugLevel.DebugLogic, $"{op}: done.");
+            debugger.WriteLine(Common.Debugger.DebugLevel.DebugTele, $"{op}: done.");
             #endregion debug
         }
 
@@ -979,7 +980,7 @@ namespace ASCOM.Wise40
         {
             string op = $"WiseTele:Stop (reason: {reason})";
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: started");
+            debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"{op}: started");
             #endregion
 
             if (Slewing)
@@ -989,7 +990,7 @@ namespace ASCOM.Wise40
                     try
                     {
                         #region debug
-                        debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: Calling DomeStopper");
+                        debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"{op}: Calling DomeStopper");
                         #endregion
                         DomeStopper();
                     }
@@ -1011,14 +1012,14 @@ namespace ASCOM.Wise40
                 if (motor.IsOn)
                 {
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: Stopping {motor.WiseName}");
+                    debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"{op}: Stopping {motor.WiseName}");
                     #endregion
                     motor.SetOff();
                 }
 
             safetyMonitorTimer.DisableIfNotNeeded();
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: done.");
+            debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"{op}: done.");
             #endregion
         }
 
@@ -1039,7 +1040,7 @@ namespace ASCOM.Wise40
             foreach (WiseVirtualMotor motor in allMotors)
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseTele:FullStop - Stopping {0}", motor.WiseName);
+                debugger.WriteLine(Debugger.DebugLevel.DebugTele, "WiseTele:FullStop - Stopping {0}", motor.WiseName);
                 #endregion
                 motor.SetOff(); // ForceOff
             }
@@ -1202,7 +1203,7 @@ namespace ASCOM.Wise40
                 });
             }
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Handpad: stopped");
+            debugger.WriteLine(Debugger.DebugLevel.DebugTele, "Handpad: stopped");
             #endregion
         }
 
@@ -1373,7 +1374,7 @@ namespace ASCOM.Wise40
             {
                 bool ret = Pulsing.Instance.IsPulseGuiding;
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"IsPulseGuiding: {ret}");
+                debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"IsPulseGuiding: {ret}");
                 #endregion
                 return ret;
             }
@@ -1393,7 +1394,7 @@ namespace ASCOM.Wise40
 
             string op = $"SlewToTargetAsync({ra}, {dec})";
             #region debug
-            debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, op);
+            debugger.WriteLine(Debugger.DebugLevel.DebugASCOM, op);
             #endregion debug
 
             if (AtPark)
@@ -1446,7 +1447,7 @@ namespace ASCOM.Wise40
             }
             safer = SaferAtCoordinates(direction, Angle.RaFromHours(ra), Angle.DecFromDegrees(dec));
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"SafeToMove({direction}: {safer}");
+            debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"SafeToMove({direction}: {safer}");
             #endregion
             return safer;
         }
@@ -1470,7 +1471,7 @@ namespace ASCOM.Wise40
             dist1 = Math.Abs(Math.Cos(Angle.Deg2Rad(Altitude)));
             ret = dist0 < dist1;
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+            debugger.WriteLine(Debugger.DebugLevel.DebugTele,
                 $"SaferAtCoordinates({dir}, {ra.ToNiceString()}, {dec.ToNiceString()}): new: {dist0:f12} < curr: {dist1:f12} => {ret}");
             #endregion
             return ret;
@@ -1525,7 +1526,7 @@ namespace ASCOM.Wise40
             {
                 string msg = $"SafeAtCoordinates(ra: {ra}, dec: {dec}) - " + String.Join(", ", reasons.ToArray());
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, msg);
+                debugger.WriteLine(Debugger.DebugLevel.DebugTele, msg);
                 #endregion
                 return msg;
             }
@@ -1567,7 +1568,7 @@ namespace ASCOM.Wise40
                 MoveAxis(b.Axis, b.Rate);
                 Thread.Sleep(backoffMillis);
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: stopping {b.Axis}");
+                debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"{op}: stopping {b.Axis}");
                 #endregion
                 MoveAxis(b.Axis, Const.rateStopped);
             }
@@ -1583,7 +1584,7 @@ namespace ASCOM.Wise40
             {
                 bool ret = _atPark;
                 #region debug
-                debugger.WriteLine(Common.Debugger.DebugLevel.DebugLogic, $"AtPark Get - {ret}");
+                debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, $"AtPark Get - {ret}");
                 #endregion debug
                 return ret;
             }
@@ -1592,7 +1593,7 @@ namespace ASCOM.Wise40
             {
                 _atPark = value;
                 #region debug
-                debugger.WriteLine(Common.Debugger.DebugLevel.DebugLogic, $"AtPark Set - {_atPark}");
+                debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, $"AtPark Set - {_atPark}");
                 #endregion debug
             }
         }
@@ -1604,7 +1605,7 @@ namespace ASCOM.Wise40
             if (activityMonitor.ShuttingDown)
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                debugger.WriteLine(Debugger.DebugLevel.DebugTele,
                     $"{op}: shutdown already in progress (activityMonitor.ShuttingDown == true) => skipping shutdown");
                 #endregion
                 return;
@@ -1613,7 +1614,7 @@ namespace ASCOM.Wise40
             if (AtPark && domeSlaveDriver.AtPark && domeSlaveDriver.ShutterState == ShutterState.shutterClosed)
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                debugger.WriteLine(Debugger.DebugLevel.DebugTele,
                     $"{op}: Wise40 is already shut down (AtPark and dome.AtPark and shutterClosed) => skipping shutdown");
                 #endregion
                 return;
@@ -1624,14 +1625,14 @@ namespace ASCOM.Wise40
             bool rememberToCancelSafetyBypass = false;
 
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: starting activity ShuttingDown ...");
+            debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"{op}: starting activity ShuttingDown ...");
             #endregion
             activityMonitor.NewActivity(new Activity.Shutdown(new Activity.Shutdown.StartParams() { reason = reason }));
 
             if (!safetooperateDigest.Bypassed)
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: starting safetooperate bypass ...");
+                debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"{op}: starting safetooperate bypass ...");
                 #endregion
                 rememberToCancelSafetyBypass = true;
                 wisesafetooperate.Action("bypass", "start,temporary");
@@ -1640,7 +1641,7 @@ namespace ASCOM.Wise40
             if (AtPark)
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: setting AtPark to false ...");
+                debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"{op}: setting AtPark to false ...");
                 #endregion
                 AtPark = false; // Don't call Unpark(), it throws exception if while ShuttingDown
             }
@@ -1648,7 +1649,7 @@ namespace ASCOM.Wise40
             if (domeSlaveDriver.AtPark)
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: calling domeSlaveDriver.Unpark() ...");
+                debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"{op}: calling domeSlaveDriver.Unpark() ...");
                 #endregion
                 DomeSlaveDriver.Unpark();
             }
@@ -1656,13 +1657,13 @@ namespace ASCOM.Wise40
             if (Slewing)
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: calling AbortSlew() ...");
+                debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"{op}: calling AbortSlew() ...");
                 #endregion
                 AbortSlew(op);
                 do
                 {
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: waiting for !Slewing ...");
+                    debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"{op}: waiting for !Slewing ...");
                     #endregion
                     Thread.Sleep(1000);
                 } while (Slewing);
@@ -1671,13 +1672,13 @@ namespace ASCOM.Wise40
             if (IsPulseGuiding)
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: calling AbortPulseGuiding() ...");
+                debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"{op}: calling AbortPulseGuiding() ...");
                 #endregion
                 AbortPulseGuiding(op);
                 do
                 {
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: waiting for !IsPulseGuiding ...");
+                    debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"{op}: waiting for !IsPulseGuiding ...");
                     #endregion
                     Thread.Sleep(1000);
                 } while (IsPulseGuiding);
@@ -1686,23 +1687,23 @@ namespace ASCOM.Wise40
             if (domeSlaveDriver.Slewing)
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: calling domeSlaveDriver.AbortSlew() ...");
+                debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"{op}: calling domeSlaveDriver.AbortSlew() ...");
                 #endregion
                 DomeSlaveDriver.AbortSlew();
                 do
                 {
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: waiting for Slewing to end ...");
+                    debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"{op}: waiting for Slewing to end ...");
                     #endregion
                     Thread.Sleep(1000);
                 } while (domeSlaveDriver.Slewing);
             }
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: Not Slewing.");
+            debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"{op}: Not Slewing.");
             #endregion
 
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: setting Tracking to false ...");
+            debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"{op}: setting Tracking to false ...");
             #endregion
             Tracking = false;
 
@@ -1710,23 +1711,23 @@ namespace ASCOM.Wise40
             {
                 // Wait for shutter to close before continuing
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: calling domeSlaveDriver.CloseShutter() ...");
+                debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"{op}: calling domeSlaveDriver.CloseShutter() ...");
                 #endregion
                 DomeSlaveDriver.CloseShutter($"{op}");
                 while (domeSlaveDriver.ShutterState != ShutterState.shutterClosed)
                 {
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: waiting for domeSlaveDriver.ShutterState == ShutterState.shutterClosed ...");
+                    debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"{op}: waiting for domeSlaveDriver.ShutterState == ShutterState.shutterClosed ...");
                     #endregion
                     Thread.Sleep(1000);
                 }
             }
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: Shutter is closed.");
+            debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"{op}: Shutter is closed.");
             #endregion
 
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: calling Park() ...");
+            debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"{op}: calling Park() ...");
             #endregion
             try
             {
@@ -1734,23 +1735,23 @@ namespace ASCOM.Wise40
             } catch (Exception ex)
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: exception during Park(): {0}", ex.ToString());
+                debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"{op}: exception during Park(): {0}", ex.ToString());
                 #endregion
             }
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: after Park() ...");
+            debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"{op}: after Park() ...");
             #endregion
 
             if (rememberToCancelSafetyBypass)
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: ending safetooperate bypass ...");
+                debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"{op}: ending safetooperate bypass ...");
                 #endregion
                 wisesafetooperate.Action("bypass", "end,temporary");
             }
 
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: ending activity ShuttingDown ...");
+            debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"{op}: ending activity ShuttingDown ...");
             #endregion
             activityMonitor.EndActivity(ActivityMonitor.ActivityType.ShuttingDown,
             new Activity.Shutdown.GenericEndParams()
@@ -1771,7 +1772,7 @@ namespace ASCOM.Wise40
         public void Park()
         {
             #region debug
-            debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, "Park: started");
+            debugger.WriteLine(Common.Debugger.DebugLevel.DebugTele, "Park: started");
             #endregion debug
             if (AtPark)
                 return;
@@ -1801,7 +1802,7 @@ namespace ASCOM.Wise40
                 if (wasEnslavingDome)
                 {
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: starting DomeParker() ...");
+                    debugger.WriteLine(Debugger.DebugLevel.DebugTele, "Park: starting DomeParker() ...");
                     #endregion
                     DomeParker();
                 }
@@ -1812,20 +1813,20 @@ namespace ASCOM.Wise40
                 while (! (primaryAxisMonitor.IsReady && secondaryAxisMonitor.IsReady))
                 {
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: waiting for axis monitors to be ready ...");
+                    debugger.WriteLine(Debugger.DebugLevel.DebugTele, "Park: waiting for axis monitors to be ready ...");
                     #endregion
                     Thread.Sleep(500);
                 }
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: setting Tracking = true ...");
+                debugger.WriteLine(Debugger.DebugLevel.DebugTele, "Park: setting Tracking = true ...");
                 #endregion
                 Tracking = true;
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: starting InternalSlewToCoordinatesSync ...");
+                debugger.WriteLine(Debugger.DebugLevel.DebugTele, "Park: starting InternalSlewToCoordinatesSync ...");
                 #endregion
                 InternalSlewToCoordinatesSync(targetRa, targetDec, "Park");
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: after InternalSlewToCoordinatesSync ...");
+                debugger.WriteLine(Debugger.DebugLevel.DebugTele, "Park: after InternalSlewToCoordinatesSync ...");
                 #endregion
             }
             catch(Exception ex)
@@ -1846,7 +1847,7 @@ namespace ASCOM.Wise40
                     shutterPercent = WiseDome.Instance.wisedomeshutter.PercentOpen,
                 });
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: Aborted due to Exception: {0}", ex.ToString());
+                debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"Park: Aborted due to Exception: {ex.Message}");
                 #endregion
                 if (ShuttingDown)
                     throw;
@@ -1857,14 +1858,14 @@ namespace ASCOM.Wise40
             {
                 // The dome (not enslaved at this time) may be still moving
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: Waiting for Slewing to end ...");
+                debugger.WriteLine(Debugger.DebugLevel.DebugTele, "Park: Waiting for Slewing to end ...");
                 #endregion
                 Thread.Sleep(5000);
             }
 
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: Not Slewing.");
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "Park: all done, setting AtPark == true");
+            debugger.WriteLine(Debugger.DebugLevel.DebugTele, "Park: Not Slewing.");
+            debugger.WriteLine(Debugger.DebugLevel.DebugTele, "Park: all done, setting AtPark == true");
             #endregion
             AtPark = true;
             Parking = false;
@@ -1887,7 +1888,7 @@ namespace ASCOM.Wise40
         public void ParkFromGui(bool parkDome)
         {
             #region debug
-            debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM, "Park");
+            debugger.WriteLine(Debugger.DebugLevel.DebugTele, "Park");
             #endregion debug
             if (AtPark)
                 return;
@@ -1908,7 +1909,7 @@ namespace ASCOM.Wise40
                 $"for: {whatfor})";
 
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op} called");
+            debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"{op} called");
             #endregion debug
             try
             {
@@ -1919,7 +1920,7 @@ namespace ASCOM.Wise40
                     telescopeCTS = new CancellationTokenSource();
                     telescopeCT = telescopeCTS.Token;
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                    debugger.WriteLine(Debugger.DebugLevel.DebugTele,
                         $"{op}: New telescopeCTS (#{telescopeCTS.GetHashCode()}), telescopeCT: (#{telescopeCT.GetHashCode()})");
                     #endregion
                 }
@@ -1931,7 +1932,7 @@ namespace ASCOM.Wise40
                 }, telescopeCT);
                 #region debug
                 Thread.Sleep(100);
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: slewing task status: {t.Status}");
+                debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"{op}: slewing task status: {t.Status}");
                 #endregion
             }
             catch (AggregateException ae)
@@ -1939,19 +1940,19 @@ namespace ASCOM.Wise40
                 ae.Handle((Func<Exception, bool>)((ex) =>
                 {
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: Caught \"{ex.Message}\" at\n{ex.StackTrace}");
+                    debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"{op}: Caught \"{ex.Message}\" at\n{ex.StackTrace}");
                     #endregion
                     return false;
                 }));
             }
 
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: waiting for endOfAsyncSlewEvent");
+            debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"{op}: waiting for endOfAsyncSlewEvent");
             #endregion
             endOfAsyncSlewEvent.WaitOne();
 
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: received endOfAsyncSlewEvent");
+            debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"{op}: received endOfAsyncSlewEvent");
             #endregion
             endOfAsyncSlewEvent.Dispose();
             endOfAsyncSlewEvent = null;
@@ -1989,7 +1990,7 @@ namespace ASCOM.Wise40
             string op = $"ScopeAxisSlewer(to: {targetAngle.ToNiceString()}): type: {targetAngle.Type}, from: {currentAngle.ToNiceString()}";
 
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op} ...");
+            debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"{op} ...");
             #endregion
 
             ScopeSlewerStatus status = ScopeSlewerStatus.Initial;
@@ -2118,7 +2119,7 @@ namespace ASCOM.Wise40
                                 if (currentDistance.angle.Radians > prevDistance)   // the distance to target is increasing
                                 {
                                     #region debug
-                                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                                    debugger.WriteLine(Debugger.DebugLevel.DebugTele,
                                         $"SUSPECT: {op}: distance to target is INCREASING");
                                     #endregion
                                     //status = ScopeSlewerStatus.Failed;
@@ -2168,7 +2169,7 @@ namespace ASCOM.Wise40
                                         $"{dx / dt:f10} rad/ms, millis: {(now - startVelocity).TotalMilliseconds}, " +
                                         $"dx: {dx:f10}, dt: {dt:f10}, {DirectionMotorsAreActive}, " +
                                         $"curr: {currentAngle.Radians:f10}, target: {targetAngle.Radians:f10}, delta: {Math.Abs(targetAngle.Radians - currentAngle.Radians):f10}";
-                                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, dbg);
+                                    debugger.WriteLine(Debugger.DebugLevel.DebugTele, dbg);
                                     #endregion
                                     lastVelocitySampleTime = now;
                                     lastVelocitySampleRadians = currentDistance.angle.Radians;
@@ -2238,7 +2239,7 @@ namespace ASCOM.Wise40
                         {
                             StopAxisAndWaitForHalt(thisAxis, slewerName, rate);
                             #region Velocity
-                            debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                            debugger.WriteLine(Debugger.DebugLevel.DebugTele,
                                 $"mp[{motors}].lowestRad: {lowestRad:f10}, highestRad: {highestRad:f10}, rate: {RateName(rate)}");
                             #endregion
                         }
@@ -2376,7 +2377,7 @@ namespace ASCOM.Wise40
                 }, domeCT).ContinueWith((domeSlewerTask) =>
                 {
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                    debugger.WriteLine(Debugger.DebugLevel.DebugTele,
                         $"slewer \"{Slewers.Type.Dome}\" completed with status: {domeSlewerTask.Status}");
                     #endregion
                     domeSlewTimer.Change(Timeout.Infinite, Timeout.Infinite);
@@ -2423,13 +2424,13 @@ namespace ASCOM.Wise40
             Angle.AngleType primaryAngleType = primaryTargetAngle.Type;
 
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: Before CheckCoordinateSanity.");
+            debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"{op}: Before CheckCoordinateSanity.");
             #endregion
             CheckCoordinateSanity(primaryAngleType, primaryTargetAngle.Hours, reason);
             CheckCoordinateSanity(secondaryTargetAngle.Type, secondaryTargetAngle.Degrees, reason);
             // Check coordinates safety ???
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: After CheckCoordinateSanity.");
+            debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"{op}: After CheckCoordinateSanity.");
             #endregion
 
             Slewers.Clear();
@@ -2456,7 +2457,7 @@ namespace ASCOM.Wise40
                 ! EnoughDistanceToMove(TelescopeAxes.axisSecondary, secondaryDistance.angle, Const.rateGuide))
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: Too short.");
+                debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"{op}: Too short.");
                 #endregion
                 activityMonitor.EndActivity(ActivityMonitor.ActivityType.TelescopeSlew, new Activity.TelescopeSlew.EndParams
                     {
@@ -2472,7 +2473,7 @@ namespace ASCOM.Wise40
                 if (WiseTele.endOfAsyncSlewEvent != null)
                 {
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: Too short, generating endOfAsyncSlewEvent.");
+                    debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"{op}: Too short, generating endOfAsyncSlewEvent.");
                     #endregion
                     endOfAsyncSlewEvent.Set();
                 }
@@ -2489,7 +2490,7 @@ namespace ASCOM.Wise40
                 telescopeCTS = new CancellationTokenSource();
                 telescopeCT = telescopeCTS.Token;
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                debugger.WriteLine(Debugger.DebugLevel.DebugTele,
                     $"{op}: New telescopeCTS (#{telescopeCTS.GetHashCode()}), telescopeCT: (#{telescopeCT.GetHashCode()})");
                 #endregion
 
@@ -2508,13 +2509,13 @@ namespace ASCOM.Wise40
 
                         slewers.Add(slewer);
                         #region debug
-                        debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: Running slewer \"{slewer.type}\" ...");
+                        debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"{op}: Running slewer \"{slewer.type}\" ...");
                         #endregion
                         slewer.task = Task.Run(() => ScopeAxisSlewer(angle), telescopeCT).
                             ContinueWith((slewerTask) =>
                         {
                             #region debug
-                            debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                            debugger.WriteLine(Debugger.DebugLevel.DebugTele,
                                 $"{op}: Slewer \"{slewer.type}\" completed with status: {slewerTask.Status}");
                             #endregion
                             slewers.Delete(slewerType);
@@ -2530,7 +2531,7 @@ namespace ASCOM.Wise40
                     catch (OperationCanceledException ex)
                     {
                         #region debug
-                        debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                        debugger.WriteLine(Debugger.DebugLevel.DebugTele,
                             $"{op}: Slewer \"{slewer.type}\": Caught: {(ex.InnerException ?? ex).Message}" +
                             $"at\n{(ex.InnerException ?? ex).StackTrace}");
                         #endregion
@@ -2540,7 +2541,7 @@ namespace ASCOM.Wise40
                     catch (Exception ex)
                     {
                         #region debug
-                        debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: Failed to run slewer {slewerType}: {ex.Message} at\n{ex.StackTrace}");
+                        debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"{op}: Failed to run slewer {slewerType}: {ex.Message} at\n{ex.StackTrace}");
                         #endregion
                         slewers.Delete(slewerType);
                     }
@@ -2633,7 +2634,7 @@ namespace ASCOM.Wise40
                 alt = transform.ElevationTopocentric;
 
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: calling SlewToAltAz(" +
+                debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"{op}: calling SlewToAltAz(" +
                         $"az: {Angle.AltFromDegrees(az).ToNiceString()} " +
                         $"alt: {Angle.AzFromDegrees(alt).ToNiceString()})");
                 #endregion
@@ -2661,7 +2662,7 @@ namespace ASCOM.Wise40
             string op = $"SlewToCoordinatesAsync(ra: {ra.ToNiceString()}, dec: {dec.ToNiceString()}, for: {whatfor})";
 
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, op);
+            debugger.WriteLine(Debugger.DebugLevel.DebugTele, op);
             #endregion
 
             if (doChecks)
@@ -2823,7 +2824,7 @@ namespace ASCOM.Wise40
             double dec = TargetDeclination;
             double ha = ra - lst;
 
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+            debugger.WriteLine(Debugger.DebugLevel.DebugTele,
                 $"SyncToTarget(ra: {ra}, dec: {dec}): lst: {lst} " +
                 $"Old ha: {WiseTele.Instance.HourAngle}, dec: {WiseTele.Instance.Declination}, " +
                 "SyncedCoordinates " +
@@ -2948,7 +2949,7 @@ namespace ASCOM.Wise40
             double ha = RightAscension - lst;
             double dec = Declination;
 
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+            debugger.WriteLine(Debugger.DebugLevel.DebugTele,
                 $"SyncToCoordinates(ra: {RightAscension}, dec: {Declination}): lst: {lst} " +
                 $"Old ha: {WiseTele.Instance.HourAngle}, dec: {WiseTele.Instance.Declination}, " +
                 "SyncedCoordinates " + 
@@ -3360,7 +3361,7 @@ namespace ASCOM.Wise40
                     telescopeCTS = new CancellationTokenSource();
                     telescopeCT = telescopeCTS.Token;
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                    debugger.WriteLine(Debugger.DebugLevel.DebugTele,
                         $"Action(\"shutdown\"): New telescopeCTS: {telescopeCTS.GetHashCode()}, telescopeCT: {telescopeCT.GetHashCode()}");
                     #endregion
                     try
@@ -3369,7 +3370,7 @@ namespace ASCOM.Wise40
                     }
                     catch (Exception ex)
                     {
-                        debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                        debugger.WriteLine(Debugger.DebugLevel.DebugTele,
                             $"Action(\"shutdown\"): Caught {ex.Message} at\n{ex.StackTrace}");
                     }
                     return "ok";
@@ -3691,7 +3692,7 @@ namespace ASCOM.Wise40
                 catch (Exception ex)
                 {
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                    debugger.WriteLine(Debugger.DebugLevel.DebugTele,
                         $"WiseTele.Digest: Cannot get WiseSite.och.temperature: caught {ex.Message} at\n{ex.StackTrace}");
                     #endregion
                     temp = 21.0;
@@ -3719,7 +3720,7 @@ namespace ASCOM.Wise40
                     catch (Exception ex)
                     {
                         #region debug
-                        debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                        debugger.WriteLine(Debugger.DebugLevel.DebugTele,
                             $"WiseTele.Digest: Could not transform apparent to topocentric, caught {ex.Message}");
                         #endregion
                         throw;
@@ -3734,7 +3735,7 @@ namespace ASCOM.Wise40
                 catch (Exception ex)
                 {
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                    debugger.WriteLine(Debugger.DebugLevel.DebugTele,
                         $"WiseTele.Digest: Failed to get LST: caught {ex.Message} at\n{ex.StackTrace}");
                     #endregion
                 }
@@ -3752,7 +3753,7 @@ namespace ASCOM.Wise40
                     catch (Exception ex)
                     {
                         #region debug
-                        debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                        debugger.WriteLine(Debugger.DebugLevel.DebugTele,
                             $"WiseTele.Digest: Could not transform topocentric to apparent, caught {ex.Message}");
                         #endregion
                     }
@@ -3823,7 +3824,7 @@ namespace ASCOM.Wise40
                     if (string.IsNullOrEmpty(response))
                     {
                         #region debug
-                        debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "WiseTelecope:Digest: Empty response");
+                        debugger.WriteLine(Debugger.DebugLevel.DebugTele, "WiseTelecope:Digest: Empty response");
                         #endregion
                     }
                     return JsonConvert.SerializeObject(digest);
@@ -3831,7 +3832,7 @@ namespace ASCOM.Wise40
                 catch (Exception ex)
                 {
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"WiseTelecope:Digest: Caught {ex.Message} at\n{ex.StackTrace}");
+                    debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"WiseTelecope:Digest: Caught {ex.Message} at\n{ex.StackTrace}");
                     #endregion
                     return JsonConvert.SerializeObject(null);
                 }

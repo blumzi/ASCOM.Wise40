@@ -49,6 +49,7 @@ namespace ASCOM.Wise40.Hardware
         public object _lock = new object();
 
         private readonly Debugger debugger = Debugger.Instance;
+        private readonly Exceptor Exceptor = new Exceptor(Debugger.DebugLevel.DebugDAQs);
 
         /// <summary>
         /// The Daq's direction
@@ -68,7 +69,7 @@ namespace ASCOM.Wise40.Hardware
                         }
                     } catch (Exception err)
                     {
-                        Exceptor.Throw<WiseException>("SetDir", $"{WiseName}: UL DConfigPort({porttype}, {dir}) failed with {err.Message}");
+                        Exceptor.Throw<Exception>("SetDir", $"{WiseName}: UL DConfigPort({porttype}, {dir}) failed with {err.Message}");
                     }
                 }
                 else
@@ -80,7 +81,7 @@ namespace ASCOM.Wise40.Hardware
                         err = wiseBoard.mccBoard.DConfigPort(porttype, dir);
                     }
                     if (err.Value != 0)
-                        Exceptor.Throw<WiseException>("SetDir", $"{WiseName}: UL DConfigPort({porttype}, {dir}) failed with {err.Message}");
+                        Exceptor.Throw<Exception>("SetDir", $"{WiseName}: UL DConfigPort({porttype}, {dir}) failed with {err.Message}");
                 }
             }
             portdir = dir;
@@ -147,7 +148,7 @@ namespace ASCOM.Wise40.Hardware
                         }
                         catch (Exception err)
                         {
-                            Exceptor.Throw<WiseException>("Value", $"{WiseName}: UL DIn({porttype}) failed with {err.Message}");
+                            Exceptor.Throw<Exception>("Value", $"{WiseName}: UL DIn({porttype}) failed with {err.Message}");
                         }
                     }
                     else
@@ -158,7 +159,7 @@ namespace ASCOM.Wise40.Hardware
                             err = wiseBoard.mccBoard.DIn(porttype, out v);
                         }
                         if (err.Value != ErrorInfo.ErrorCode.NoErrors)
-                            Exceptor.Throw<WiseException>("Value", $"{WiseName}: UL DIn({porttype}) failed with {err.Message}");
+                            Exceptor.Throw<Exception>("Value", $"{WiseName}: UL DIn({porttype}) failed with {err.Message}");
                     }
                 }
                 else
@@ -191,7 +192,7 @@ namespace ASCOM.Wise40.Hardware
                             }
                             catch (Exception err)
                             {
-                                Exceptor.Throw<WiseException>("Value.set", $"{WiseName}: UL DOut({porttype}, 0x{value:x}) failed with :\"{err.Message}\"");
+                                Exceptor.Throw<Exception>("Value.set", $"{WiseName}: UL DOut({porttype}, 0x{value:x}) failed with :\"{err.Message}\"");
                             }
                         }
                         else
@@ -202,7 +203,7 @@ namespace ASCOM.Wise40.Hardware
                                 err = wiseBoard.mccBoard.DOut(porttype, value);
                             }
                             if (err.Value != ErrorInfo.ErrorCode.NoErrors)
-                                Exceptor.Throw<WiseException>("Value.set", $"{WiseName}: UL DOut({porttype}, 0x{value:x}) failed with :\"{err.Message}\"");
+                                Exceptor.Throw<Exception>("Value.set", $"{WiseName}: UL DOut({porttype}, 0x{value:x}) failed with :\"{err.Message}\"");
                         }
 
                         _value = value;

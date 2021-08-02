@@ -12,7 +12,7 @@ namespace ASCOM.Wise40.VantagePro
     [ComVisible(false)]					// Form not registered for COM!
     public partial class SetupDialogForm : Form
     {
-        WiseVantagePro vantagePro = WiseVantagePro.Instance;
+        private readonly WiseVantagePro vantagePro = WiseVantagePro.Instance;
 
         public SetupDialogForm()
         {

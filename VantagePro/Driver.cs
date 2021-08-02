@@ -59,6 +59,7 @@ namespace ASCOM.Wise40.VantagePro
     public class ObservingConditions : IObservingConditions
     {
         private readonly WiseVantagePro vantagePro = WiseVantagePro.Instance;
+        public static readonly Exceptor Exceptor = new Exceptor(Common.Debugger.DebugLevel.DebugWeather);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Wise40.VantagePro"/> class.

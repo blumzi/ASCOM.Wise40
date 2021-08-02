@@ -71,6 +71,8 @@ namespace ASCOM.Wise40SafeToOperate
 
         private static readonly ASCOM.DriverAccess.ObservingConditions tessw = new ASCOM.DriverAccess.ObservingConditions("ASCOM.Wise40.TessW.ObservingConditions");
 
+        public static readonly Exceptor Exceptor = new Exceptor(Debugger.DebugLevel.DebugSafety);
+
         /// <summary>
         /// Private variable to hold the connected state
         /// </summary>

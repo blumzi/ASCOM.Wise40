@@ -25,6 +25,7 @@ namespace ASCOM.Wise40.Boltwood
         public const int nStations = 3;
         public static BoltwoodStation[] stations = new BoltwoodStation[nStations];
         private BoltwoodStation C18Station, C28Station;
+        public static readonly Exceptor Exceptor = ObservingConditions.WeatherExceptor;
 
         static WiseBoltwood() { }
         public WiseBoltwood() { }
@@ -782,7 +783,7 @@ namespace ASCOM.Wise40.Boltwood
             string str = "";
 
             #region debug
-            Debugger.Instance.WriteLine(Debugger.DebugLevel.DebugLogic,
+            Debugger.Instance.WriteLine(Debugger.DebugLevel.DebugWeather,
                 $"GetClarityIISensorData: Name: {Name}, Id: {Id}, Enabled: {Enabled}, FilePath: \"{FilePath}\"");
             #endregion
 
@@ -794,7 +795,7 @@ namespace ASCOM.Wise40.Boltwood
 
             DateTime lastTimeFileWasUpdated = System.IO.File.GetLastWriteTime(FilePath);
             #region debug
-            Debugger.Instance.WriteLine(Debugger.DebugLevel.DebugLogic,
+            Debugger.Instance.WriteLine(Debugger.DebugLevel.DebugWeather,
                 $"GetClarityIISensorData: Name: {Name}, _lastTimeWeReadTheFile: {_lastTimeWeReadTheFile}, lastTimeFileWasUpdated: {lastTimeFileWasUpdated}");
             #endregion
 
@@ -818,7 +819,7 @@ namespace ASCOM.Wise40.Boltwood
             else
             {
                 #region debug
-                Debugger.Instance.WriteLine(Debugger.DebugLevel.DebugLogic,
+                Debugger.Instance.WriteLine(Debugger.DebugLevel.DebugWeather,
                     $"GetClarityIISensorData: Name: {Name}, Too soon.  lastTimeFileWasUpdated: {_lastTimeWeReadTheFile}, lastTimeFileWasUpdated {lastTimeFileWasUpdated}");
                 #endregion
             }

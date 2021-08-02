@@ -240,7 +240,7 @@ namespace ASCOM.Wise40.Boltwood
             }
             catch (Exception e)
             {
-                Exceptor.Throw<InvalidValueException>("SensorData", $"Could not parse sensor data, caught: {e.Message} at\n{e.StackTrace}");
+                ObservingConditions.WeatherExceptor.Throw<InvalidValueException>("SensorData", $"Could not parse sensor data, caught: {e.Message} at\n{e.StackTrace}");
             }
         }
     }

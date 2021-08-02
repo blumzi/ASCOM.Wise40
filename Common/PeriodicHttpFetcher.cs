@@ -24,6 +24,7 @@ namespace ASCOM.Wise40.Common
         private bool _clientPropertiesHaveChanged = false;
         private bool _enabled;
         private readonly TimeSpan defaultTimeout = TimeSpan.FromSeconds(30);
+        public static readonly Exceptor HTTPExceptor = new Exceptor(Debugger.DebugLevel.DebugHTTP);
 
         public PeriodicHttpFetcher(string name,
             string url,
@@ -91,9 +92,9 @@ namespace ASCOM.Wise40.Common
                 string op = Name + ".Response.get";
 
                 if (LastSuccess == DateTime.MinValue)
-                    Exceptor.Throw<InvalidValueException>(op, "Value never fetched!");
+                    HTTPExceptor.Throw<InvalidValueException>(op, "Value never fetched!");
                 else if (Stale)
-                    Exceptor.Throw<InvalidValueException>(op, $"Value is stale: age: {Age.ToMinimalString()} > {MaxAge.ToMinimalString()}");
+                    HTTPExceptor.Throw<InvalidValueException>(op, $"Value is stale: age: {Age.ToMinimalString()} > {MaxAge.ToMinimalString()}");
 
                 return _result;
             }
@@ -285,7 +286,7 @@ namespace ASCOM.Wise40.Common
     public class AscomServerFetcher : PeriodicHttpFetcher
     {
         public AscomServerFetcher() : base(
-            name: "AscomServerChecker",
+            name: "AscomServerFetcher",
             url: Const.RESTServer.top + "concurrency"
             ) { }
 
@@ -301,7 +302,7 @@ namespace ASCOM.Wise40.Common
                 }
                 catch (Exception ex)
                 {
-                    Exceptor.Throw<WiseException>("AscomServerFetcher.Concurrency", $"Exception : {ex.Message}");
+                    HTTPExceptor.Throw<InvalidOperationException>("AscomServerFetcher.Concurrency", $"Caught: {ex.Message}");
                     return -1;
                 }
             }
