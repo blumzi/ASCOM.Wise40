@@ -28,6 +28,7 @@ namespace ASCOM.Wise40 //.Telescope
         private int prev_worm = int.MinValue, prev_axis = int.MinValue;
 
         private readonly Object _lock = new object();
+        private bool disposed = false;
 
         //private readonly RenishawEncoder RenishawHaEncoder;
 
@@ -252,10 +253,21 @@ namespace ASCOM.Wise40 //.Telescope
             }
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposed)
+            {
+                axisEncoder.Dispose();
+                wormEncoder.Dispose();
+                disposed = true;
+            }
+        }
+
         public void Dispose()
         {
-            axisEncoder.Dispose();
-            wormEncoder.Dispose();
+            // Do not change this code. Put clean-up code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }

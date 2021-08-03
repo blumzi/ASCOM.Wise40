@@ -12,7 +12,7 @@ using System.Threading;
 
 namespace ASCOM.Wise40 //.Focuser
 {
-    public class WiseFocuserEnc : WiseEncoder, IDisposable
+    public class WiseFocuserEnc : WiseEncoder
     {
         private static readonly WiseFocuserEnc instance = new WiseFocuserEnc();
         private bool _initialized = false;

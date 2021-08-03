@@ -180,7 +180,7 @@ public static bool TransformApparentToJ2000(double apparentRA, double apparentDE
 
                 try
                 {
-                    astroutils.Dispose(disposing);
+                    astroutils.Dispose();
                     astroutils = null;
                 }
                 catch { }

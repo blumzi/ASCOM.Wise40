@@ -19,6 +19,7 @@ namespace ASCOM.Wise40.Hardware
         private bool _connected = false;
         private readonly bool _controlled;
         private readonly Debugger debugger = Debugger.Instance;
+        private bool disposed = false;
         public static readonly Exceptor Exceptor = new Exceptor(Common.Debugger.DebugLevel.DebugDAQs);
 
         public WisePin(string name,
@@ -190,10 +191,22 @@ namespace ASCOM.Wise40.Hardware
             }
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposed)
+            {
+                SetOff();
+                daq.UnsetOwner(bit);
+
+                disposed = true;
+            }
+        }
+
         public void Dispose()
         {
-            SetOff();
-            daq.UnsetOwner(bit);
+            // Do not change this code. Put clean-up code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
 
         public Const.Direction Direction { get; } = Const.Direction.None;

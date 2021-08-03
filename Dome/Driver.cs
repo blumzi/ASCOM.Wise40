@@ -89,6 +89,7 @@ namespace ASCOM.Wise40 //.Dome
 
         public AutoResetEvent arrived = new AutoResetEvent(false);
         public static readonly Exceptor Exceptor = new Exceptor(Common.Debugger.DebugLevel.DebugDome);
+        private bool disposed = false;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Wise40Hardware"/> class.
@@ -161,14 +162,26 @@ namespace ASCOM.Wise40 //.Dome
             return wisedome.CommandString(command, raw);
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposed)
+            {
+                utilities.Dispose();
+                utilities = null;
+                astroUtilities.Dispose();
+                astroUtilities = null;
+                wisedome.Dispose();
+                wisedome = null;
+
+                disposed = true;
+            }
+        }
+
         public void Dispose()
         {
-            utilities.Dispose();
-            utilities = null;
-            astroUtilities.Dispose();
-            astroUtilities = null;
-            wisedome.Dispose();
-            wisedome = null;
+            // Do not change this code. Put clean-up code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
 
         public bool Connected

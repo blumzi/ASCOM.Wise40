@@ -38,6 +38,7 @@ namespace ASCOM.Wise40.Hardware
         private readonly WiseSite wisesite = WiseSite.Instance;
         private readonly List<WisePin> allPins;
         public static readonly Exceptor Exceptor = new Exceptor(Debugger.DebugLevel.DebugTele);
+        private bool disposed = false;
 
         public WiseVirtualMotor(
             string name,
@@ -327,12 +328,23 @@ namespace ASCOM.Wise40.Hardware
             }
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposed)
+            {
+                foreach (WisePin pin in new List<WisePin>() { motorPin, guideMotorPin })
+                {
+                    pin?.Dispose();
+                }
+                disposed = true;
+            }
+        }
+
         public void Dispose()
         {
-            foreach (WisePin pin in new List<WisePin>() { motorPin, guideMotorPin })
-            {
-                pin?.Dispose();
-            }
+            // Do not change this code. Put clean-up code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
 
         public override string ToString()

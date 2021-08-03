@@ -26,6 +26,7 @@ namespace ASCOM.Wise40
         private int prev_worm, prev_axis;
 
         private readonly Object _lock = new Object();
+        private bool disposed = false;
 
         public WiseDecEncoder(string name)
         {
@@ -79,9 +80,21 @@ namespace ASCOM.Wise40
             }
         }
 
-        public void Dispose() {
-            axisEncoder.Dispose();
-            wormEncoder.Dispose();
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposed)
+            {
+                axisEncoder.Dispose();
+                wormEncoder.Dispose();
+                disposed = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put clean-up code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
 
         /// <summary>

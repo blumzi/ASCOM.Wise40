@@ -233,7 +233,7 @@ namespace ASCOM.Wise40.Common
         /// Dispose of objects used by the wrapper
         /// </summary>
         /// <param name="disposing"></param>
-        public virtual void Dispose(bool disposing)
+        protected virtual void Dispose(bool disposing)
         {
             if (!disposed)
             {

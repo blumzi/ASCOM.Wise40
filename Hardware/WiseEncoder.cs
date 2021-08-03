@@ -37,6 +37,7 @@ namespace ASCOM.Wise40.Hardware
         private AtomicReader _atomicReader;
         protected Common.Debugger debugger = Common.Debugger.Instance;
         public static readonly Exceptor Exceptor = new Exceptor(Common.Debugger.DebugLevel.DebugEncoders);
+        private bool disposed = false;
 
         public WiseEncoder() { }
 
@@ -275,16 +276,28 @@ namespace ASCOM.Wise40.Hardware
             }
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposed)
+            {
+                for (int daqno = 0; daqno < _daqs.Count; daqno++)
+                {
+                    for (int bit = 0; bit < _daqs[daqno].nbits; bit++)
+                    {
+                        if ((_masks[daqno] & (1 << bit)) != 0)
+                            _daqs[daqno].UnsetOwner(bit);
+                    }
+                }
+
+                disposed = true;
+            }
+        }
+
         public void Dispose()
         {
-            for (int daqno = 0; daqno < _daqs.Count; daqno++)
-            {
-                for (int bit = 0; bit < _daqs[daqno].nbits; bit++)
-                {
-                    if ((_masks[daqno] & (1 << bit)) != 0)
-                        _daqs[daqno].UnsetOwner(bit);
-                }
-            }
+            // Do not change this code. Put clean-up code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }
