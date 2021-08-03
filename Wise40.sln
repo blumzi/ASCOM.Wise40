@@ -120,6 +120,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ascom-restricted", "ascom-r
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{CE8A582C-7917-4614-B41D-7624E02465A6}"
 	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
 		Wiki\diagram.puml = Wiki\diagram.puml
 	EndProjectSection
 EndProject

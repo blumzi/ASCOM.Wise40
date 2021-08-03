@@ -18,7 +18,7 @@ namespace ASCOM.Wise40 //.Focuser
         private bool _initialized = false;
 
         private WisePin pinLatch;
-        private Hardware.Hardware hardware = Hardware.Hardware.Instance;
+        private readonly Hardware.Hardware hardware = Hardware.Hardware.Instance;
 
         //
         // 17 Jan 2017 - Arie Blumenzweig
@@ -59,25 +59,25 @@ namespace ASCOM.Wise40 //.Focuser
         //      was re-used for an additional turn-bit, so we' have 5 of them (up-to 32 turns).
         //
 
-        private BitExtractor positionBits = new BitExtractor(nbits: 9, lsb: 3);
-        private BitExtractor turnsBits = new BitExtractor(nbits: 6, lsb: 12);
+        private readonly BitExtractor positionBits = new BitExtractor(nbits: 9, lsb: 3);
+        private readonly BitExtractor turnsBits = new BitExtractor(nbits: 6, lsb: 12);
 
         private uint _daqsValue;
         private bool _connected = false;
         private bool _multiTurn = false;
         
-        private static uint _upperHardLimit = 10122, _lowerHardLimit = 20;      // Measured on May 29th, 2017
-        private static uint _upperSoftLimit = 10200, _lowerSoftLimit = 200;     // Enforced by software
+        private const uint _upperHardLimit = 10122, _lowerHardLimit = 20;      // Measured on May 29th, 2017
+        private const uint _upperSoftLimit = 10200, _lowerSoftLimit = 200;     // Enforced by software
 
         private static uint _simulatedValue = (_upperHardLimit - _lowerHardLimit) / 2;
         private static Const.Direction _simulatedDirection;
-        private static Timer _simulationTimer = new Timer(new TimerCallback(simulateMovement));
-        private static uint _simulatedStep = 1;
+        private static readonly Timer _simulationTimer = new Timer(new TimerCallback(simulateMovement));
+        private const uint _simulatedStep = 1;
 
         private uint _maxValue;
 
-        List<IConnectable> connectables = new List<IConnectable>();
-        List<IDisposable> disposables = new List<IDisposable>();
+        readonly List<IConnectable> connectables = new List<IConnectable>();
+        readonly List<IDisposable> disposables = new List<IDisposable>();
 
         public WiseFocuserEnc() { }
 
