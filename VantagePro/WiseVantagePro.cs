@@ -716,6 +716,8 @@ namespace ASCOM.Wise40.VantagePro
             get
             {
                 Refresh();
+                if (WindSpeedMps == 0)
+                    return 0;
                 return Convert.ToDouble(sensorData["windDir"]);
             }
         }
