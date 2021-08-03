@@ -455,6 +455,11 @@ namespace ASCOM.Wise40.Common
             return a1.Radians >= a2.Radians;
         }
 
+        public override int GetHashCode()
+        {
+            return _radians.GetHashCode() ^ _type.GetHashCode() ^ _isHMS.GetHashCode();
+        }
+
         public static Angle Min(Angle a1, Angle a2)
         {
             if (a1 is null || (a2 is null))
