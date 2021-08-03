@@ -2715,7 +2715,7 @@
             this.labelHumanInterventionStatus.Size = new System.Drawing.Size(39, 15);
             this.labelHumanInterventionStatus.TabIndex = 32;
             this.labelHumanInterventionStatus.Text = "status";
-            this.labelHumanInterventionStatus.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.labelHumanInterventionStatus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // label15
             // 

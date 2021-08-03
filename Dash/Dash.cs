@@ -41,6 +41,7 @@ namespace Dash
         private readonly RefreshPacer filterWheelPacer = new RefreshPacer(TimeSpan.FromSeconds(5));
         private readonly RefreshPacer telescopePacer = new RefreshPacer(TimeSpan.FromMilliseconds(200));
         private readonly RefreshPacer forecastPacer = new RefreshPacer(TimeSpan.FromMinutes(2));
+        private readonly RefreshPacer humanInterventionPacer = new RefreshPacer(TimeSpan.FromSeconds(5));
 
         private SafeToOperateDigest safetooperateDigest = null;
         private DomeDigest domeDigest = null;
@@ -198,18 +199,7 @@ namespace Dash
                     break;
             }
 
-            if (HumanIntervention.IsSet())
-            {
-                buttonHumanIntervention.Text = "Deactivate";
-                labelHumanInterventionStatus.ForeColor = unsafeColor;
-                labelHumanInterventionStatus.Text = "Active";
-            }
-            else
-            {
-                buttonHumanIntervention.Text = "Activate";
-                labelHumanInterventionStatus.Text = "Inactive";
-                labelHumanInterventionStatus.ForeColor = goodColor;
-            }
+            UpdateHumanInterventionControls();
 
             UpdateCheckmark(LCOToolStripMenuItem, opMode == WiseSite.OpMode.LCO);
             UpdateCheckmark(WISEToolStripMenuItem, opMode == WiseSite.OpMode.WISE);
@@ -290,6 +280,7 @@ namespace Dash
             bool refreshFocus = focusPacer.ShouldRefresh(now);
             bool refreshFilterWheel = opMode != WiseSite.OpMode.LCO && filterWheelPacer.ShouldRefresh(now);
             bool refreshForecast = forecastPacer.ShouldRefresh(now);
+            bool refreshHumanIntervention = humanInterventionPacer.ShouldRefresh(now);
             string tip;
 
             #region GetStatuses
@@ -383,6 +374,9 @@ namespace Dash
             {
                 forecast = wiseVantagePro.Action("forecast", "");
             }
+
+            if (refreshHumanIntervention)
+                UpdateHumanInterventionControls();
 
             if (WiseSite.FilterWheelInUse)
             {
@@ -1986,6 +1980,25 @@ namespace Dash
         private void groupBoxDomeGroup_Enter(object sender, EventArgs e)
         {}
 
+        private void UpdateHumanInterventionControls()
+        {
+            if (HumanIntervention.IsSet())
+            {
+                buttonHumanIntervention.Text = "Deactivate";
+                labelHumanInterventionStatus.Text = "Active";
+                labelHumanInterventionStatus.ForeColor = unsafeColor;
+                toolTip.SetToolTip(labelHumanInterventionStatus,
+                    String.Join("\n", HumanIntervention.Details).Replace(Const.recordSeparator, "\n  "));
+            }
+            else
+            {
+                buttonHumanIntervention.Text = "Activate";
+                labelHumanInterventionStatus.Text = "Inactive";
+                labelHumanInterventionStatus.ForeColor = goodColor;
+                toolTip.SetToolTip(labelHumanInterventionStatus, "");
+            }
+        }
+
         private void buttonHumanIntervention_Click(object sender, EventArgs e)
         {
             if (HumanIntervention.IsSet())
@@ -1994,21 +2007,14 @@ namespace Dash
                 bw.DoWork += RemoveHumanInterventionFile;
                 bw.RunWorkerCompleted += AfterRemoveHumanInterventionFile;
                 bw.RunWorkerAsync();
-
-                buttonHumanIntervention.Text = "Activate";
-                labelHumanInterventionStatus.Text = "Inactive";
-                labelHumanInterventionStatus.ForeColor = goodColor;
             }
             else
             {
                 DialogResult result = new InterventionForm().ShowDialog();
                 if (result == DialogResult.OK)
-                    dashStatus.Show("Created operator intervention");
-
-                buttonHumanIntervention.Text = "Deactivate";
-                labelHumanInterventionStatus.ForeColor = unsafeColor;
-                labelHumanInterventionStatus.Text = "Active";
+                    dashStatus.Show("Created human intervention");
             }
+            UpdateHumanInterventionControls();
 
             try
             {
@@ -2034,7 +2040,7 @@ namespace Dash
 
         private void AfterRemoveHumanInterventionFile(object sender, RunWorkerCompletedEventArgs e)
         {
-            dashStatus.Show("Removed operator intervention.");
+            dashStatus.Show("Removed human intervention.");
         }
 
         private void ChangeOperationalMode(object sender, EventArgs e)
