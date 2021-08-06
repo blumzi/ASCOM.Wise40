@@ -29,6 +29,8 @@ namespace Wise40Watcher
         private static readonly WiseSite.OpMode opMode = WiseSite.OperationalMode;
         private static readonly object _lock = new object();
         private static readonly int pid = Process.GetCurrentProcess().Id;
+        private static readonly System.Threading.Timer timer = new System.Threading.Timer(onTimer);
+        private const int WiFiReconnectIntervalMillis = 15000;
 
         public Wise40Watcher()
         {
@@ -69,8 +71,8 @@ namespace Wise40Watcher
         {
             //System.Diagnostics.Debugger.Launch();
             Log($"=========== Start (opMode: {opMode}) ===========");
-            
-            ConnectWlan();
+
+            timer.Change(WiFiReconnectIntervalMillis, Timeout.Infinite);
             
             if (weatherLinkNeedsWatching)
                 weatherLinkWatcher = new Watcher("weatherlink");
@@ -170,7 +172,7 @@ namespace Wise40Watcher
             }
         }
 
-        private void ConnectWlan()
+        private static void ConnectWlan()
         {
             string output;
             string interfaceName = "Wireless Network Connection 4";
@@ -188,11 +190,7 @@ namespace Wise40Watcher
                 p.WaitForExit();
             }
 
-            if (output.Contains("Connected"))
-            {
-                Log($"Interface '{interfaceName}' already connected.");
-            }
-            else
+            if (!output.Contains("Connected"))
             {
                 using (var p = new Process())
                 {
@@ -203,9 +201,15 @@ namespace Wise40Watcher
                     p.StartInfo.Arguments = $"wlan connect interface=\"{interfaceName}\" name=wo";
                     p.Start();
 
-                    Log($"Initiated WiFi connection with: {p.StartInfo.FileName} {p.StartInfo.Arguments} ...");
+                    Log($"Reconnected WiFi network with: {p.StartInfo.FileName} {p.StartInfo.Arguments} ...");
                 }
             }
+        }
+
+        private static void onTimer(object _)
+        {
+            ConnectWlan();
+            timer.Change(WiFiReconnectIntervalMillis, Timeout.Infinite);
         }
     }
 }
