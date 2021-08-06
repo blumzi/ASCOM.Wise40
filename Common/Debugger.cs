@@ -256,5 +256,17 @@ namespace ASCOM.Wise40.Common
                 }
             }
         }
+
+        public static string CodeLocation
+        {
+            get
+            {
+                System.Diagnostics.StackFrame sf = new System.Diagnostics.StackTrace(true).GetFrame(2);
+                string fileName = sf.GetFileName();
+
+                fileName = fileName.Remove(0, fileName.IndexOf("ASCOM.Wise40") + "ASCOM.Wise40".Length);
+                return $"{sf.GetMethod().Name}@...{fileName}:{sf.GetFileLineNumber()}";
+            }
+        }
     }
 }

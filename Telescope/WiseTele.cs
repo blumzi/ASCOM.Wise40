@@ -923,8 +923,7 @@ namespace ASCOM.Wise40
             set
             {
                 #region debug
-                System.Diagnostics.StackFrame sf = new System.Diagnostics.StackTrace(true).GetFrame(1);
-                debugger.WriteLine(Debugger.DebugLevel.DebugASCOM, $"Tracking Set - {value} (from: {sf.GetMethod().Name}@{sf.GetFileName()}:{sf.GetFileLineNumber()})");
+                debugger.WriteLine(Debugger.DebugLevel.DebugASCOM, $"Tracking Set - {value} (from: {Debugger.CodeLocation})");
                 #endregion
 
                 if (value)
