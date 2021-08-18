@@ -1863,10 +1863,15 @@ namespace ASCOM.Wise40
             }
 
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugTele, "Park: Not Slewing.");
-            debugger.WriteLine(Debugger.DebugLevel.DebugTele, "Park: all done, setting AtPark == true");
+            debugger.WriteLine(Debugger.DebugLevel.DebugTele, "Park: all done.");
             #endregion
-            AtPark = true;
+            if (WiseSite.OperationalMode != WiseSite.OpMode.WISE)
+            {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugTele, "Park: setting AtPark == true");
+                #endregion
+                AtPark = true;
+            }
             Parking = false;
             Tracking = false;
             EnslavesDome = wasEnslavingDome;
@@ -3361,7 +3366,7 @@ namespace ASCOM.Wise40
                     telescopeCT = telescopeCTS.Token;
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugTele,
-                        $"Action(\"shutdown\"): New telescopeCTS: {telescopeCTS.GetHashCode()}, telescopeCT: {telescopeCT.GetHashCode()}");
+                        $"Action(\"{action}\"): New telescopeCTS: {telescopeCTS.GetHashCode()}, telescopeCT: {telescopeCT.GetHashCode()}");
                     #endregion
                     try
                     {
@@ -3370,15 +3375,15 @@ namespace ASCOM.Wise40
                     catch (Exception ex)
                     {
                         debugger.WriteLine(Debugger.DebugLevel.DebugTele,
-                            $"Action(\"shutdown\"): Caught {ex.Message} at\n{ex.StackTrace}");
+                            $"Action(\"{action}\"): Caught {ex.Message} at\n{ex.StackTrace}");
                     }
                     return "ok";
 
                 case "abort-shutdown":
-                    AbortSlew("Action(\"abort-shutdown\")");
+                    AbortSlew($"Action(\"{action}\")");
                     activityMonitor.EndActivity(ActivityMonitor.ActivityType.ShuttingDown, new Activity.GenericEndParams
                     {
-                        endReason = "Action(\"abort-shutdown\")",
+                        endReason = $"Action(\"{action}\")",
                         endState = Activity.State.Aborted,
                     });
                     return "ok";
@@ -3423,7 +3428,7 @@ namespace ASCOM.Wise40
                     return "ok";
 
                 case "backoff":
-                    Backoff("Action(\"backoff\")");
+                    Backoff($"Action(\"{action}\")");
                     return "ok";
 
                 case "safe-to-move":
@@ -3439,9 +3444,6 @@ namespace ASCOM.Wise40
                         case "zenith":
                             return MoveToKnownHaDec(new Angle("0h0m0s"), Angle.DecFromDegrees(WiseSite.Latitude));
 
-                        case "flat":
-                            return MoveToKnownHaDec(new Angle("-1h35m59.0s"), new Angle("41:59:20.0"));
-
                         case "ha0":
                             return "ok";
 
@@ -3449,7 +3451,7 @@ namespace ASCOM.Wise40
                             return MoveToKnownHaDec(new Angle("11h55m00.0s"), new Angle("88:00:00.0"));
 
                         default:
-                            return $"move-to-preset: Bad parameter \"{parameter.ToLower()}\"";
+                            return $"{action}: Bad parameter \"{parameter.ToLower()}\"";
                     }
 
                 case "hardware-meta-digest":
@@ -3485,7 +3487,7 @@ namespace ASCOM.Wise40
                         return "Parameters HourAngle and Declination must be supplied";
 
                     SlewToHaDecAsync(ha, dec,
-                        "Action(\"slew-to-ha-dec\"): " +
+                        $"Action(\"{action}\"): " +
                         $"ha: {Angle.HaFromHours(ha).ToNiceString()}, " +
                         $"dec: {Angle.DecFromDegrees(dec).ToNiceString()}");
                     return "ok";

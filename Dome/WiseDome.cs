@@ -359,7 +359,8 @@ namespace ASCOM.Wise40
                 if (StateIsOn(DomeState.Parking))
                 {
                     UnsetDomeState(DomeState.Parking);
-                    AtPark = true;
+                    if (WiseSite.OperationalMode != WiseSite.OpMode.WISE)
+                        AtPark = true;
                 }
 
                 GenerateArrivalEvent();
