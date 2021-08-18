@@ -70,7 +70,6 @@
             this.buttonTrack = new System.Windows.Forms.Button();
             this.panel1 = new System.Windows.Forms.Panel();
             this.buttonTelescopePark = new System.Windows.Forms.Button();
-            this.buttonFlat = new System.Windows.Forms.Button();
             this.buttonHandleCover = new System.Windows.Forms.Button();
             this.label3 = new System.Windows.Forms.Label();
             this.buttonZenith = new System.Windows.Forms.Button();
@@ -916,7 +915,7 @@
             this.buttonTrack.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.buttonTrack.Location = new System.Drawing.Point(296, 338);
             this.buttonTrack.Name = "buttonTrack";
-            this.buttonTrack.Size = new System.Drawing.Size(58, 40);
+            this.buttonTrack.Size = new System.Drawing.Size(69, 40);
             this.buttonTrack.TabIndex = 39;
             this.buttonTrack.Text = "Track";
             this.toolTip.SetToolTip(this.buttonTrack, "Click to turn tracking on/off");
@@ -926,13 +925,12 @@
             // panel1
             // 
             this.panel1.Controls.Add(this.buttonTelescopePark);
-            this.panel1.Controls.Add(this.buttonFlat);
             this.panel1.Controls.Add(this.buttonHandleCover);
             this.panel1.Controls.Add(this.label3);
             this.panel1.Controls.Add(this.buttonZenith);
-            this.panel1.Location = new System.Drawing.Point(8, 387);
+            this.panel1.Location = new System.Drawing.Point(48, 389);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(368, 48);
+            this.panel1.Size = new System.Drawing.Size(336, 48);
             this.panel1.TabIndex = 37;
             // 
             // buttonTelescopePark
@@ -944,32 +942,14 @@
             this.buttonTelescopePark.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonTelescopePark.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonTelescopePark.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonTelescopePark.Location = new System.Drawing.Point(280, 9);
+            this.buttonTelescopePark.Location = new System.Drawing.Point(248, 9);
             this.buttonTelescopePark.Name = "buttonTelescopePark";
-            this.buttonTelescopePark.Size = new System.Drawing.Size(77, 32);
+            this.buttonTelescopePark.Size = new System.Drawing.Size(69, 32);
             this.buttonTelescopePark.TabIndex = 29;
-            this.buttonTelescopePark.Text = "Park?";
+            this.buttonTelescopePark.Text = "Unpark";
             this.toolTip.SetToolTip(this.buttonTelescopePark, "Click to park/unpark");
             this.buttonTelescopePark.UseVisualStyleBackColor = false;
             this.buttonTelescopePark.Click += new System.EventHandler(this.buttonTelescopePark_Click);
-            // 
-            // buttonFlat
-            // 
-            this.buttonFlat.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.buttonFlat.Enabled = false;
-            this.buttonFlat.FlatAppearance.BorderSize = 0;
-            this.buttonFlat.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.buttonFlat.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.buttonFlat.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.buttonFlat.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonFlat.Location = new System.Drawing.Point(120, 9);
-            this.buttonFlat.Name = "buttonFlat";
-            this.buttonFlat.Size = new System.Drawing.Size(64, 32);
-            this.buttonFlat.TabIndex = 33;
-            this.buttonFlat.Text = "Flat";
-            this.toolTip.SetToolTip(this.buttonFlat, "Click to move to flat position");
-            this.buttonFlat.UseVisualStyleBackColor = false;
-            this.buttonFlat.Click += new System.EventHandler(this.buttonFlat_Click);
             // 
             // buttonHandleCover
             // 
@@ -980,9 +960,9 @@
             this.buttonHandleCover.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonHandleCover.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonHandleCover.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonHandleCover.Location = new System.Drawing.Point(192, 9);
+            this.buttonHandleCover.Location = new System.Drawing.Point(161, 9);
             this.buttonHandleCover.Name = "buttonHandleCover";
-            this.buttonHandleCover.Size = new System.Drawing.Size(64, 32);
+            this.buttonHandleCover.Size = new System.Drawing.Size(71, 32);
             this.buttonHandleCover.TabIndex = 32;
             this.buttonHandleCover.Text = "Cover";
             this.toolTip.SetToolTip(this.buttonHandleCover, "Click to move to cover position");
@@ -992,7 +972,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(8, 12);
+            this.label3.Location = new System.Drawing.Point(24, 12);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(36, 26);
             this.label3.TabIndex = 34;
@@ -1008,9 +988,9 @@
             this.buttonZenith.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.buttonZenith.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonZenith.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonZenith.Location = new System.Drawing.Point(48, 9);
+            this.buttonZenith.Location = new System.Drawing.Point(73, 9);
             this.buttonZenith.Name = "buttonZenith";
-            this.buttonZenith.Size = new System.Drawing.Size(64, 32);
+            this.buttonZenith.Size = new System.Drawing.Size(80, 32);
             this.buttonZenith.TabIndex = 31;
             this.buttonZenith.Text = "Zenith";
             this.toolTip.SetToolTip(this.buttonZenith, "Click to move to Zenith");
@@ -1044,7 +1024,7 @@
             this.buttonMainStop.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.buttonMainStop.Location = new System.Drawing.Point(296, 258);
             this.buttonMainStop.Name = "buttonMainStop";
-            this.buttonMainStop.Size = new System.Drawing.Size(58, 69);
+            this.buttonMainStop.Size = new System.Drawing.Size(69, 69);
             this.buttonMainStop.TabIndex = 26;
             this.buttonMainStop.Text = "Stop";
             this.toolTip.SetToolTip(this.buttonMainStop, "Click to stop moving");
@@ -2654,7 +2634,6 @@
             this.pictureBoxStop.TabStop = false;
             this.toolTip.SetToolTip(this.pictureBoxStop, "Emergency stop of all moving parts \r\n(telescope, dome, shutter, focus, filter-whe" +
         "el)");
-            this.pictureBoxStop.Visible = false;
             this.pictureBoxStop.Click += new System.EventHandler(this.buttonFullStop_Click);
             // 
             // panel4
@@ -3563,7 +3542,6 @@
         private System.Windows.Forms.ToolStripMenuItem domeToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem telescopeToolStripMenuItem;
         private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.Button buttonFlat;
         private System.Windows.Forms.Button buttonHandleCover;
         private System.Windows.Forms.Button buttonZenith;
         private System.Windows.Forms.ToolStripMenuItem wise40WikiToolStripMenuItem;

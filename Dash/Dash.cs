@@ -122,7 +122,7 @@ namespace Dash
                         buttonNW, buttonNE, buttonSE, buttonSW,
                         buttonStop, buttonMainStop,
                         buttonTrack,
-                        buttonZenith, buttonFlat, buttonHandleCover, buttonTelescopePark,
+                        buttonZenith, buttonHandleCover, buttonTelescopePark,
 
                         buttonDomeLeft, buttonDomeRight, buttonDomeStop, buttonDomePark,
                         buttonDomeAzGo, buttonDomeAzSet, textBoxDomeAzValue,
@@ -512,12 +512,12 @@ namespace Dash
             }
             else
             {
-                textBoxRaDecRa.Text = "";
-                textBoxRaDecDec.Text = "";
-                textBoxHaDecHa.Text = "";
-                textBoxHaDecDec.Text = "";
-                textBoxAltAzAlt.Text = "";
-                textBoxAltAzAz.Text = "";
+                //textBoxRaDecRa.Text = "";
+                //textBoxRaDecDec.Text = "";
+                //textBoxHaDecHa.Text = "";
+                //textBoxHaDecDec.Text = "";
+                //textBoxAltAzAlt.Text = "";
+                //textBoxAltAzAz.Text = "";
             }
             }
             #endregion
