@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Drawing;
 
 namespace ASCOM.Wise40.Common
 {
@@ -215,5 +216,10 @@ namespace ASCOM.Wise40.Common
             public static string AstroUtil = "8a91148c-d0bb-4d4f-a06f-280e045305d2";
             public static string Debug = "ffe8a24d-774e-4252-b163-c79b7ecf94b9";
         }
+
+        public static Color NormalColor = Color.FromArgb(176, 161, 142);
+        public static Color WarningColor = Color.Yellow;
+        public static Color ErrorColor = Color.IndianRed;
+        public static Color GoodColor = Color.Green;
     }
 }

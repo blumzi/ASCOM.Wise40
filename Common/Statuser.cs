@@ -13,10 +13,10 @@ namespace ASCOM.Wise40.Common
         public enum Severity { Normal, Good, Warning, Error };
         public static Dictionary<Severity, Color> colors = new Dictionary<Severity, Color>()
             {
-                { Severity.Normal, Color.FromArgb(176, 161, 142) },
-                { Severity.Warning, Color.Yellow },
-                { Severity.Error, Color.IndianRed },
-                { Severity.Good, Color.Green },
+                { Severity.Normal, Const.NormalColor },
+                { Severity.Warning, Const.WarningColor },
+                { Severity.Error, Const.ErrorColor },
+                { Severity.Good, Const.GoodColor },
             };
         private readonly ToolTip _toolTip;
         private DateTime _expiration;
