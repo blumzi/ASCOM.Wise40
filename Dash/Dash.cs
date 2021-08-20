@@ -78,6 +78,16 @@ namespace Dash
         private static Dictionary<WiseSite.OpMode, List<Control>> InvisibleControls;
         private static List<Control> WiseInvisibleControls, ACPInvisibleControls, LCOInvisibleControls;
 
+        private static Dictionary<string, bool> targetIsActive = new Dictionary<string, bool>
+        {
+            { "radec_ra", false },
+            { "radec_dec", false },
+            { "hadec_ha", false },
+            { "hadec_dec", false },
+            { "az", false },
+            { "alt", false },
+        };
+
         #region Initialization
         public FormDash()
         {
@@ -408,16 +418,15 @@ namespace Dash
             #endregion
 
             #region RefreshTelescope
-
             Angle telescopeRa = null, telescopeDec = null, telescopeHa;
 
-            #region Coordinates
             labelDate.Text = localTime.ToString("ddd, dd MMM yyyy\n hh:mm:ss tt");
             labelLTValue.Text = now.TimeOfDay.ToString(@"hh\hmm\mss\.f\s");
             labelUTValue.Text = utcTime.TimeOfDay.ToString(@"hh\hmm\mss\.f\s");
 
             if (telescopeDigest != null)
             {
+                #region Coordinates
                 labelSiderealValue.Text = Angle.RaFromHours(telescopeDigest.LocalSiderealTime).ToNiceString();
 
                 telescopeRa = Angle.RaFromHours(telescopeDigest.Current.RightAscension);
@@ -448,84 +457,132 @@ namespace Dash
 
                 labelAzimuthValue.Text = Angle.FromDegrees(telescopeDigest.Current.Azimuth, Angle.AngleType.Deg).ToNiceString();
                 #endregion
-            #region Target
-            if (telescopeDigest.Slewing)
-            {
-                if (telescopeDigest.Target.RightAscension == Const.noTarget)
+                #region Target
+                if (telescopeDigest.Slewing)
                 {
-                    textBoxRaDecRa.Text = "";
-                    toolTip.SetToolTip(textBoxRaDecRa, "Target RightAscension either not set or already reached");
-                }
-                else
-                {
-                    textBoxRaDecRa.Text = Angle.RaFromHours(telescopeDigest.Target.RightAscension).ToNiceString();
-                    toolTip.SetToolTip(textBoxRaDecRa, "Current target RightAscension");
-                }
+                    TextBox tb;
 
-                if (telescopeDigest.Target.Declination == Const.noTarget)
-                {
-                    textBoxRaDecDec.Text = "";
-                    toolTip.SetToolTip(textBoxRaDecDec, "Target Declination either not set or already reached");
-                    textBoxHaDecHa.Text = "";
-                    toolTip.SetToolTip(textBoxHaDecDec, "Target Declination either not set or already reached");
-                }
-                else
-                {
-                    textBoxRaDecDec.Text = Angle.DecFromDegrees(telescopeDigest.Target.Declination).ToNiceString();
-                    toolTip.SetToolTip(textBoxRaDecDec, "Current target Declination");
-                    textBoxHaDecDec.Text = Angle.DecFromDegrees(telescopeDigest.Target.Declination).ToNiceString();
-                    toolTip.SetToolTip(textBoxHaDecDec, "Current target Declination");
-                }
+                    tb = textBoxRaDecRa;
+                    if (telescopeDigest.Target.RaDec_RA == Const.noTarget)
+                    {
+                        tb.Text = "";
+                        toolTip.SetToolTip(tb, "Target RightAscension either not set or already reached");
+                    }
+                    else
+                    {
+                        tb.Text = Angle.RaFromHours(telescopeDigest.Target.RaDec_RA).ToNiceString();
+                        toolTip.SetToolTip(tb, "Current target RightAscension");
+                        targetIsActive["radec_ra"] = true;
+                    }
 
-                if (telescopeDigest.Target.HourAngle == Const.noTarget)
-                {
-                    textBoxHaDecHa.Text = "";
-                    toolTip.SetToolTip(textBoxHaDecHa, "Target HourAngle either not set or already reached");
-                }
-                else
-                {
-                    textBoxHaDecHa.Text = Angle.FromHours(telescopeDigest.Target.HourAngle).ToNiceString();
-                    toolTip.SetToolTip(textBoxHaDecHa, "Current target HourAngle");
-                }
+                    tb = textBoxRaDecDec;
+                    if (telescopeDigest.Target.RaDec_Dec == Const.noTarget)
+                    {
+                        tb.Text = "";
+                        toolTip.SetToolTip(tb, "Target Declination either not set or already reached");
+                    }
+                    else
+                    {
+                        tb.Text = Angle.DecFromDegrees(telescopeDigest.Target.RaDec_Dec).ToNiceString();
+                        toolTip.SetToolTip(tb, "Current target Declination");
+                        targetIsActive["radec_dec"] = true;
+                    }
 
-                if (telescopeDigest.Target.Altitude == Const.noTarget)
-                {
-                    textBoxAltAzAlt.Text = "";
-                    toolTip.SetToolTip(textBoxAltAzAlt, "Target Altiude either not set or already reached");
-                }
-                else
-                {
-                    textBoxAltAzAlt.Text = Angle.AltFromDegrees(telescopeDigest.Target.Altitude).ToNiceString();
-                    toolTip.SetToolTip(textBoxAltAzAlt, "Current target Altitude");
-                }
+                    tb = textBoxHaDecHa;
+                    if (telescopeDigest.Target.HaDec_HA == Const.noTarget)
+                    {
+                        tb.Text = "";
+                        toolTip.SetToolTip(tb, "Target HourAngle either not set or already reached");
+                    }
+                    else
+                    {
+                        tb.Text = Angle.FromHours(telescopeDigest.Target.HaDec_HA).ToNiceString();
+                        toolTip.SetToolTip(tb, "Current target HourAngle");
+                        targetIsActive["hadec_ha"] = true;
+                    }
 
-                if (telescopeDigest.Target.Azimuth == Const.noTarget)
-                {
-                    textBoxAltAzAz.Text = "";
-                    toolTip.SetToolTip(textBoxAltAzAz, "Target Azimuth either not set or already reached");
+                    tb = textBoxHaDecDec;
+                    if (telescopeDigest.Target.HaDec_Dec == Const.noTarget)
+                    {
+                        tb.Text = "";
+                        toolTip.SetToolTip(tb, "Target Declination either not set or already reached");
+                    }
+                    else
+                    {
+                        tb.Text = Angle.DecFromDegrees(telescopeDigest.Target.HaDec_Dec).ToNiceString();
+                        toolTip.SetToolTip(tb, "Current target Declination");
+                        targetIsActive["hadec_dec"] = true;
+                    }
+
+                    tb = textBoxAltAzAlt;
+                    if (telescopeDigest.Target.Alt == Const.noTarget)
+                    {
+                        tb.Text = "";
+                        toolTip.SetToolTip(tb, "Target Altitude either not set or already reached");
+                    }
+                    else
+                    {
+                        tb.Text = Angle.AltFromDegrees(telescopeDigest.Target.Alt).ToNiceString();
+                        toolTip.SetToolTip(tb, "Current target Altitude");
+                        targetIsActive["alt"] = true;
+                    }
+
+                    tb = textBoxAltAzAz;
+                    if (telescopeDigest.Target.Az == Const.noTarget)
+                    {
+                        tb.Text = "";
+                        toolTip.SetToolTip(tb, "Target Azimuth either not set or already reached");
+                    }
+                    else
+                    {
+                        tb.Text = Angle.FromDegrees(telescopeDigest.Target.Az).ToNiceString();
+                        toolTip.SetToolTip(tb, "Current target Azimuth");
+                        targetIsActive["az"] = true;
+                    }
                 }
                 else
                 {
-                    textBoxAltAzAz.Text = Angle.FromDegrees(telescopeDigest.Target.Azimuth).ToNiceString();
-                    toolTip.SetToolTip(textBoxAltAzAz, "Current target Azimuth");
+                    if (targetIsActive["radec_ra"])
+                    {
+                        textBoxRaDecRa.Text = "";
+                        targetIsActive["radec_ra"] = false;
+                    }
+
+                    if (targetIsActive["radec_dec"])
+                    {
+                        textBoxRaDecDec.Text = "";
+                        targetIsActive["radec_dec"] = false;
+                    }
+
+                    if (targetIsActive["hadec_ha"])
+                    {
+                        textBoxHaDecHa.Text = "";
+                        targetIsActive["hadec_ha"] = false;
+                    }
+
+                    if (targetIsActive["hadec_dec"])
+                    {
+                        textBoxHaDecDec.Text = "";
+                        targetIsActive["hadec_dec"] = false;
+                    }
+
+                    if (targetIsActive["alt"])
+                    {
+                        textBoxAltAzAlt.Text = "";
+                        targetIsActive["alt"] = false;
+                    }
+
+                    if (targetIsActive["az"])
+                    {
+                        textBoxAltAzAz.Text = "";
+                        targetIsActive["az"] = false;
+                    }
                 }
+                #endregion
             }
-            else
-            {
-                //textBoxRaDecRa.Text = "";
-                //textBoxRaDecDec.Text = "";
-                //textBoxHaDecHa.Text = "";
-                //textBoxHaDecDec.Text = "";
-                //textBoxAltAzAlt.Text = "";
-                //textBoxAltAzAz.Text = "";
-            }
-            }
-            #endregion
-
             #endregion
 
             #region Telescope
-
             if (telescopeDigest != null)
             {
                 buttonTelescopePark.Text = telescopeDigest.AtPark ? "Unpark" : "Park";
@@ -879,8 +936,8 @@ namespace Dash
             #endregion
 
             timerRefreshDisplay.Enabled = true;
-            #endregion
         }
+        #endregion
 
         private void UpdateSafeToOperateControls()
         {
@@ -1643,12 +1700,6 @@ namespace Dash
         {
             telescopeStatus.Show("Moving to cover station", 2000, Statuser.Severity.Good);
             wiseTelescope.Action("move-to-preset", "cover");
-        }
-
-        private void buttonFlat_Click(object sender, EventArgs e)
-        {
-            telescopeStatus.Show("Moving to Flat", 2000, Statuser.Severity.Good);
-            wiseTelescope.Action("move-to-preset", "flat");
         }
 
         private void checkBoxTrack_Click(object sender, EventArgs e)

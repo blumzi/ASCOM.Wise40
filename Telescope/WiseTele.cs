@@ -212,20 +212,22 @@ namespace ASCOM.Wise40
 
         public double _lastTrackingLST;
 
-        public static Dictionary<Const.AxisDirection, string> axisPrimaryNames = new Dictionary<Const.AxisDirection, string>()
-            {
-                { Const.AxisDirection.Increasing, "East" },
-                { Const.AxisDirection.Decreasing, "West" },
-            }, axisSecondaryNames = new Dictionary<Const.AxisDirection, string>()
-            {
-                { Const.AxisDirection.Increasing, "North" },
-                { Const.AxisDirection.Decreasing, "South" },
-            };
-
-        public static Dictionary<TelescopeAxes, Dictionary<Const.AxisDirection, string>> axisDirectionName = new Dictionary<TelescopeAxes, Dictionary<Const.AxisDirection, string>>()
-            {
-                { TelescopeAxes.axisPrimary, axisPrimaryNames },
-                { TelescopeAxes.axisSecondary, axisSecondaryNames },
+        public static readonly Dictionary<TelescopeAxes, Dictionary<Const.AxisDirection, string>> axisDirectionName =
+            new Dictionary<TelescopeAxes, Dictionary<Const.AxisDirection, string>>() {
+                {
+                    TelescopeAxes.axisPrimary, new Dictionary<Const.AxisDirection, string>()
+                        {
+                            { Const.AxisDirection.Increasing, "East" },
+                            { Const.AxisDirection.Decreasing, "West" },
+                        }
+                },
+                {
+                    TelescopeAxes.axisSecondary, new Dictionary<Const.AxisDirection, string>()
+                        {
+                            { Const.AxisDirection.Increasing, "North" },
+                            { Const.AxisDirection.Decreasing, "South" },
+                        }
+                },
             };
 
         private readonly Hardware.Hardware hardware = Hardware.Hardware.Instance;
@@ -1384,9 +1386,9 @@ namespace ASCOM.Wise40
 #pragma warning restore RCS1047 // Non-asynchronous method name should not end with 'Async'.
         {
             if (_targetRightAscension == null)
-                Exceptor.Throw<ValueNotSetException>("SlewToTargeAsync", "Target RA not set");
+                Exceptor.Throw<ValueNotSetException>("SlewToTargetAsync", "Target RA not set");
             if (_targetDeclination == null)
-                Exceptor.Throw<ValueNotSetException>("SlewToTargeAsync", "Target Dec not set");
+                Exceptor.Throw<ValueNotSetException>("SlewToTargetAsync", "Target Dec not set");
 
             Angle ra = Angle.RaFromHours(TargetRightAscension);
             Angle dec = Angle.DecFromDegrees(TargetDeclination);
@@ -1776,8 +1778,8 @@ namespace ASCOM.Wise40
             if (AtPark)
                 return;
 
-            Angle targetRa = wisesite.LocalSiderealTime;
-            Angle targetDec = parkingDeclination;
+            Angle parkingRa = wisesite.LocalSiderealTime;
+            Angle parkingDec = parkingDeclination;
             bool wasEnslavingDome = EnslavesDome;
 
             try
@@ -1791,8 +1793,8 @@ namespace ASCOM.Wise40
                     },
                     target = new Activity.TelescopeSlew.Coords
                     {
-                        ra = targetRa.Hours,
-                        dec = targetDec.Degrees,
+                        ra = parkingRa.Hours,
+                        dec = parkingDec.Degrees,
                     },
                     domeStartAz = WiseDome.Instance.Azimuth.Degrees,
                     domeTargetAz = 90.0,
@@ -1805,8 +1807,8 @@ namespace ASCOM.Wise40
                     #endregion
                     DomeParker();
                 }
-                TargetRightAscension = targetRa.Hours;
-                TargetDeclination = targetDec.Degrees;
+                TargetRightAscension = parkingRa.Hours;
+                TargetDeclination = parkingDec.Degrees;
 
                 EnslavesDome = false;
                 while (! (primaryAxisMonitor.IsReady && secondaryAxisMonitor.IsReady))
@@ -1823,7 +1825,7 @@ namespace ASCOM.Wise40
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugTele, "Park: starting InternalSlewToCoordinatesSync ...");
                 #endregion
-                InternalSlewToCoordinatesSync(targetRa, targetDec, "Park");
+                InternalSlewToCoordinatesSync(parkingRa, parkingDec, "Park");
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugTele, "Park: after InternalSlewToCoordinatesSync ...");
                 #endregion
@@ -1874,6 +1876,8 @@ namespace ASCOM.Wise40
             }
             Parking = false;
             Tracking = false;
+            //_targetRightAscension = null;
+            //_targetDeclination = null;
             EnslavesDome = wasEnslavingDome;
             activityMonitor.EndActivity(ActivityMonitor.ActivityType.Parking, new Activity.Park.EndParams()
             {
@@ -1907,12 +1911,12 @@ namespace ASCOM.Wise40
 
         private void InternalSlewToCoordinatesSync(Angle primaryTargetAngle, Angle secondaryTargetAngle, string whatfor)
         {
+            #region debug
             string op = "InternalSlewToCoordinatesSync(" +
                 $"{primaryTargetAngle.ToNiceString()}, " +
                 $"{secondaryTargetAngle.ToNiceString()}, " +
                 $"for: {whatfor})";
 
-            #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"{op} called");
             #endregion debug
             try
@@ -1934,8 +1938,8 @@ namespace ASCOM.Wise40
                     DoSlewToCoordinatesAsync(primaryTargetAngle, secondaryTargetAngle, op);
                     Thread.Sleep(500);
                 }, telescopeCT);
-                #region debug
                 Thread.Sleep(100);
+                #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"{op}: slewing task status: {t.Status}");
                 #endregion
             }
@@ -3781,13 +3785,14 @@ namespace ASCOM.Wise40
                             Azimuth = Azimuth,
                         },
 
-                        Target = new TelescopePosition
+                        Target = new TelescopeTarget
                         {
-                            RightAscension = targetRa,
-                            Declination = targetDec,
-                            HourAngle = targetHa,
-                            Altitude = targetAlt,
-                            Azimuth = targetAz,
+                            RaDec_RA = targetRa,
+                            RaDec_Dec = targetDec,
+                            HaDec_HA = targetHa,
+                            HaDec_Dec = targetDec,
+                            Alt = targetAlt,
+                            Az = targetAz,
                         },
 
                         LocalSiderealTime = lst,
@@ -3856,7 +3861,15 @@ namespace ASCOM.Wise40
     public class TelescopePosition
     {
         public double RightAscension, Declination;
-        public double HourAngle, Azimuth, Altitude;
+        public double HourAngle;
+        public double Azimuth, Altitude;
+    }
+
+    public class TelescopeTarget
+    {
+        public double RaDec_RA, RaDec_Dec;
+        public double HaDec_HA, HaDec_Dec;
+        public double Az, Alt;
     }
 
     public class AxisPins
@@ -3880,7 +3893,7 @@ namespace ASCOM.Wise40
     public class TelescopeDigest
     {
         public TelescopePosition Current;
-        public TelescopePosition Target;
+        public TelescopeTarget Target;
         public double LocalSiderealTime;
         public bool Slewing;
         public bool Tracking;
