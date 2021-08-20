@@ -196,6 +196,16 @@ namespace ASCOM.Wise40SafeToOperate
                 digest.Stale = TooOld(s);
                 digest.AffectsSafety = false;
                 digest.ToolTip = "Does not affect safety";
+                DateTime timeOfLastUpdate;
+
+                try
+                {
+                    timeOfLastUpdate = DateTime.Now.Subtract(TimeSpan.FromSeconds(s));
+                }
+                catch (System.OverflowException)
+                {
+                    timeOfLastUpdate = DateTime.MinValue;
+                }
 
                 digest.LatestReading = new Reading
                 {
@@ -204,7 +214,7 @@ namespace ASCOM.Wise40SafeToOperate
                     Stale = TooOld(s),
                     Usable = true,
                     secondsSinceLastUpdate = s,
-                    timeOfLastUpdate = DateTime.Now.Subtract(TimeSpan.FromSeconds(s)),
+                    timeOfLastUpdate = timeOfLastUpdate,
                 };
                 return digest;
             }
