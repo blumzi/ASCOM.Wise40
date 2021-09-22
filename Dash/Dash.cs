@@ -33,7 +33,6 @@ namespace Dash
         private readonly Statuser dashStatus, telescopeStatus, domeStatus, shutterStatus, focuserStatus, safetooperateStatus, filterWheelStatus, filterWheelArduinoStatus;
 
         private double handpadRate = Const.rateSlew;
-        private readonly bool _saveFocusUpperLimit = false, _saveFocusLowerLimit = false;
 
         private readonly RefreshPacer domePacer = new RefreshPacer(TimeSpan.FromSeconds(1));
         private readonly RefreshPacer safettoperatePacer = new RefreshPacer(TimeSpan.FromSeconds(20));
@@ -50,8 +49,6 @@ namespace Dash
         private WiseFilterWheelDigest filterWheelDigest = null;
         private string forecast;
         private bool bypassSafetyPending, locallyBypassed;
-
-        private readonly Dictionary<object, string> alteredItems = new Dictionary<object, string>();
 
         public readonly Color safeColor = Statuser.colors[Statuser.Severity.Normal];
         public readonly Color unsafeColor = Statuser.colors[Statuser.Severity.Error];
@@ -236,7 +233,7 @@ namespace Dash
                 { Debugger.DebugLevel.DebugMotors, debugMotorsToolStripMenuItem},
                 { Debugger.DebugLevel.DebugSafety, debugSafetyToolStripMenuItem },
                 { Debugger.DebugLevel.DebugShutter, debugShutterToolStripMenuItem},
-                //{ Debugger.DebugLevel.DebugWise, },
+                { Debugger.DebugLevel.DebugWise, debugWiseToolStripMenuItem},
                 { Debugger.DebugLevel.DebugTele, debugTelescopeToolStripMenuItem},
                 { Debugger.DebugLevel.DebugWeather, debugWeatherToolStripMenuItem},
             };
@@ -1631,26 +1628,6 @@ namespace Dash
                 UpdateCheckmark(debugMenuItemDict[level], false);
         }
 
-        private void domeAutoCalibrateToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            ToolStripMenuItem item = sender as ToolStripMenuItem;
-            bool autoCalibrate = !IsCheckmarked(item);
-
-            wiseDome.Action("auto-calibrate", autoCalibrate.ToString());
-            UpdateCheckmark(item, autoCalibrate);
-            UpdateAlteredItems(item, "Dome");
-        }
-
-        private void enslaveDomeToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            ToolStripMenuItem item = sender as ToolStripMenuItem;
-            bool onOff = !IsCheckmarked(item);
-
-            wiseTelescope.Action("enslave-dome", onOff.ToString());
-            UpdateCheckmark(item, onOff);
-            UpdateAlteredItems(item, "Telescope");
-        }
-
         private void buttonZenith_Click(object sender, EventArgs e)
         {
             telescopeStatus.Show("Moving to Zenith", 2000, Statuser.Severity.Good);
@@ -1711,7 +1688,6 @@ namespace Dash
             #endregion
 
             UpdateDebuggingCheckmarks();
-            UpdateAlteredItems(item, "Debugging");
         }
 
         private void DashOutFilterWheelControls()
@@ -1820,54 +1796,6 @@ namespace Dash
             toolTip.SetToolTip(filterWheelArduinoStatus.Label, tip);
         }
 
-        private void UpdateAlteredItems(ToolStripMenuItem item, string title)
-        {
-            if (alteredItems.ContainsKey(item))
-                alteredItems.Remove(item);
-            else
-                alteredItems[item] = title;
-
-            string alterations = string.Empty;
-            foreach (var key in alteredItems.Keys)
-            {
-                string text = ((ToolStripMenuItem)key).Text;
-                string mark;
-
-                if (IsCheckmarked(key as ToolStripMenuItem))
-                {
-                    text = text.Remove(text.Length - Const.checkmark.Length);
-                    mark = "+";
-                }
-                else
-                {
-                    mark = "-";
-                }
-
-                alterations += $"  {alteredItems[key] + ":",-20} {mark} {text}" + Const.crnl;
-            }
-
-            if (!string.IsNullOrEmpty(alterations))
-            {
-                saveToProfileToolStripMenuItem.ToolTipText = "To be saved to profile:" + Const.crnl + Const.crnl + alterations;
-                saveToProfileToolStripMenuItem.Text = "** Save To Profile **";
-            }
-            else
-            {
-                saveToProfileToolStripMenuItem.ToolTipText = "No changes";
-                saveToProfileToolStripMenuItem.Text = "Save To Profile";
-            }
-        }
-
-        private void saveToProfileToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            debugger.WriteProfile();
-            WiseDome.Instance.WriteProfile();
-            WiseTele.WriteProfile();
-            if (_saveFocusUpperLimit || _saveFocusLowerLimit)
-                WiseFocuser.WriteProfile();
-            saveToProfileToolStripMenuItem.Text = "Save To Profile";
-        }
-
         private void toolStripMenuItemSafeToOperate_Click(object sender, EventArgs e)
         {
             new SafeToOperateSetupDialogForm().Show();
@@ -1876,18 +1804,6 @@ namespace Dash
         private void toolStripMenuItemFilterWheel_Click(object sender, EventArgs e)
         {
             new FilterWheelSetupDialogForm().Show();
-        }
-
-        private void syncVentWithShutterToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            ToolStripMenuItem item = sender as ToolStripMenuItem;
-
-            bool sync = Convert.ToBoolean(wiseDome.Action("sync-vent-with-shutter", ""));
-
-            sync = !sync;
-            wiseDome.Action("sync-vent-with-shutter", sync.ToString());
-            UpdateCheckmark(item, sync);
-            UpdateAlteredItems(item, "Dome");
         }
 
         private void buttonFocusIncrease_Click(object sender, EventArgs e)
@@ -2086,9 +2002,9 @@ namespace Dash
                 UpdateCheckmark(debugMenuItemDict[level], (current & level) != 0);
         }
 
-        private void FormDash_Load(object sender, EventArgs e)
+        private void saveDebugToolStripMenuItem3_Click(object sender, EventArgs e)
         {
-
+            Debugger.Instance.WriteProfile();
         }
 
         private void RestartWise40(object sender, EventArgs e)
