@@ -140,20 +140,28 @@
             this.manage3FiltersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem5 = new System.Windows.Forms.ToolStripMenuItem();
             this.debuggingToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.debugActivityToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.debugASCOMToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.debugSafetyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.debugDomeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.debugDAQsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.debugShutterToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.debugDeviceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.debugAxesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.debugDAQsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.debugDeviceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.debugDomeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.debugEncodersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.debugExceptionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.debugFocuserToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.debugFilterWheelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.debugHTTPToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.debugLogicToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.debugMoonToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.debugMotorsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.debugSafetyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.debugShutterToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.debugTelescopeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.debugWeatherToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            this.debugAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.debugDefaultsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.debugNoneToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.debugAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
             this.saveToProfileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.viewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -1915,79 +1923,79 @@
             // debuggingToolStripMenuItem1
             // 
             this.debuggingToolStripMenuItem1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.debugActivityToolStripMenuItem,
             this.debugASCOMToolStripMenuItem,
-            this.debugSafetyToolStripMenuItem,
-            this.debugDomeToolStripMenuItem,
-            this.debugDAQsToolStripMenuItem,
-            this.debugShutterToolStripMenuItem,
-            this.debugDeviceToolStripMenuItem,
             this.debugAxesToolStripMenuItem,
+            this.debugDAQsToolStripMenuItem,
+            this.debugDeviceToolStripMenuItem,
+            this.debugDomeToolStripMenuItem,
             this.debugEncodersToolStripMenuItem,
             this.debugExceptionsToolStripMenuItem,
+            this.debugFocuserToolStripMenuItem,
+            this.debugFilterWheelToolStripMenuItem,
+            this.debugHTTPToolStripMenuItem,
             this.debugLogicToolStripMenuItem,
+            this.debugMoonToolStripMenuItem,
             this.debugMotorsToolStripMenuItem,
+            this.debugSafetyToolStripMenuItem,
+            this.debugShutterToolStripMenuItem,
+            this.debugTelescopeToolStripMenuItem,
+            this.debugWeatherToolStripMenuItem,
             this.toolStripSeparator1,
-            this.debugAllToolStripMenuItem,
-            this.debugNoneToolStripMenuItem});
+            this.debugDefaultsToolStripMenuItem,
+            this.debugNoneToolStripMenuItem,
+            this.debugAllToolStripMenuItem});
             this.debuggingToolStripMenuItem1.Name = "debuggingToolStripMenuItem1";
             this.debuggingToolStripMenuItem1.Size = new System.Drawing.Size(201, 22);
             this.debuggingToolStripMenuItem1.Text = "Debugging";
             // 
+            // debugActivityToolStripMenuItem
+            // 
+            this.debugActivityToolStripMenuItem.Name = "debugActivityToolStripMenuItem";
+            this.debugActivityToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.debugActivityToolStripMenuItem.Text = "Activity";
+            // 
             // debugASCOMToolStripMenuItem
             // 
             this.debugASCOMToolStripMenuItem.Name = "debugASCOMToolStripMenuItem";
-            this.debugASCOMToolStripMenuItem.Size = new System.Drawing.Size(134, 22);
+            this.debugASCOMToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.debugASCOMToolStripMenuItem.Text = "ASCOM";
             this.debugASCOMToolStripMenuItem.ToolTipText = "Debug ASCOM traffic";
             this.debugASCOMToolStripMenuItem.Click += new System.EventHandler(this.debugSelectedToolStripMenuItem_Click);
             // 
-            // debugSafetyToolStripMenuItem
-            // 
-            this.debugSafetyToolStripMenuItem.Name = "debugSafetyToolStripMenuItem";
-            this.debugSafetyToolStripMenuItem.Size = new System.Drawing.Size(134, 22);
-            this.debugSafetyToolStripMenuItem.Text = "Safety";
-            this.debugSafetyToolStripMenuItem.Click += new System.EventHandler(this.debugSelectedToolStripMenuItem_Click);
-            // 
-            // debugDomeToolStripMenuItem
-            // 
-            this.debugDomeToolStripMenuItem.Name = "debugDomeToolStripMenuItem";
-            this.debugDomeToolStripMenuItem.Size = new System.Drawing.Size(134, 22);
-            this.debugDomeToolStripMenuItem.Text = "Dome";
-            this.debugDomeToolStripMenuItem.Click += new System.EventHandler(this.debugSelectedToolStripMenuItem_Click);
-            // 
-            // debugDAQsToolStripMenuItem
-            // 
-            this.debugDAQsToolStripMenuItem.Name = "debugDAQsToolStripMenuItem";
-            this.debugDAQsToolStripMenuItem.Size = new System.Drawing.Size(134, 22);
-            this.debugDAQsToolStripMenuItem.Text = "DAQs";
-            this.debugDAQsToolStripMenuItem.Click += new System.EventHandler(this.debugSelectedToolStripMenuItem_Click);
-            // 
-            // debugShutterToolStripMenuItem
-            // 
-            this.debugShutterToolStripMenuItem.Name = "debugShutterToolStripMenuItem";
-            this.debugShutterToolStripMenuItem.Size = new System.Drawing.Size(134, 22);
-            this.debugShutterToolStripMenuItem.Text = "Shutter";
-            this.debugShutterToolStripMenuItem.Click += new System.EventHandler(this.debugSelectedToolStripMenuItem_Click);
-            // 
-            // debugDeviceToolStripMenuItem
-            // 
-            this.debugDeviceToolStripMenuItem.Name = "debugDeviceToolStripMenuItem";
-            this.debugDeviceToolStripMenuItem.Size = new System.Drawing.Size(134, 22);
-            this.debugDeviceToolStripMenuItem.Text = "Device";
-            this.debugDeviceToolStripMenuItem.Click += new System.EventHandler(this.debugSelectedToolStripMenuItem_Click);
-            // 
             // debugAxesToolStripMenuItem
             // 
             this.debugAxesToolStripMenuItem.Name = "debugAxesToolStripMenuItem";
-            this.debugAxesToolStripMenuItem.Size = new System.Drawing.Size(134, 22);
+            this.debugAxesToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.debugAxesToolStripMenuItem.Text = "Axes";
             this.debugAxesToolStripMenuItem.ToolTipText = "Debug axis movements";
             this.debugAxesToolStripMenuItem.Click += new System.EventHandler(this.debugSelectedToolStripMenuItem_Click);
             // 
+            // debugDAQsToolStripMenuItem
+            // 
+            this.debugDAQsToolStripMenuItem.Name = "debugDAQsToolStripMenuItem";
+            this.debugDAQsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.debugDAQsToolStripMenuItem.Text = "DAQs";
+            this.debugDAQsToolStripMenuItem.Click += new System.EventHandler(this.debugSelectedToolStripMenuItem_Click);
+            // 
+            // debugDeviceToolStripMenuItem
+            // 
+            this.debugDeviceToolStripMenuItem.Name = "debugDeviceToolStripMenuItem";
+            this.debugDeviceToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.debugDeviceToolStripMenuItem.Text = "Device";
+            this.debugDeviceToolStripMenuItem.Click += new System.EventHandler(this.debugSelectedToolStripMenuItem_Click);
+            // 
+            // debugDomeToolStripMenuItem
+            // 
+            this.debugDomeToolStripMenuItem.Name = "debugDomeToolStripMenuItem";
+            this.debugDomeToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.debugDomeToolStripMenuItem.Text = "Dome";
+            this.debugDomeToolStripMenuItem.Click += new System.EventHandler(this.debugSelectedToolStripMenuItem_Click);
+            // 
             // debugEncodersToolStripMenuItem
             // 
             this.debugEncodersToolStripMenuItem.Name = "debugEncodersToolStripMenuItem";
-            this.debugEncodersToolStripMenuItem.Size = new System.Drawing.Size(134, 22);
+            this.debugEncodersToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.debugEncodersToolStripMenuItem.Text = "Encoders";
             this.debugEncodersToolStripMenuItem.ToolTipText = "Debug encoder changes";
             this.debugEncodersToolStripMenuItem.Click += new System.EventHandler(this.debugSelectedToolStripMenuItem_Click);
@@ -2001,41 +2009,99 @@
             this.debugExceptionsToolStripMenuItem.ToolTipText = "Debug exceptions";
             this.debugExceptionsToolStripMenuItem.Click += new System.EventHandler(this.debugSelectedToolStripMenuItem_Click);
             // 
+            // debugFocuserToolStripMenuItem
+            // 
+            this.debugFocuserToolStripMenuItem.Name = "debugFocuserToolStripMenuItem";
+            this.debugFocuserToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.debugFocuserToolStripMenuItem.Text = "Focuser";
+            // 
+            // debugFilterWheelToolStripMenuItem
+            // 
+            this.debugFilterWheelToolStripMenuItem.Name = "debugFilterWheelToolStripMenuItem";
+            this.debugFilterWheelToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.debugFilterWheelToolStripMenuItem.Text = "FilterWheel";
+            // 
+            // debugHTTPToolStripMenuItem
+            // 
+            this.debugHTTPToolStripMenuItem.Name = "debugHTTPToolStripMenuItem";
+            this.debugHTTPToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.debugHTTPToolStripMenuItem.Text = "HTTP";
+            // 
             // debugLogicToolStripMenuItem
             // 
             this.debugLogicToolStripMenuItem.Name = "debugLogicToolStripMenuItem";
-            this.debugLogicToolStripMenuItem.Size = new System.Drawing.Size(134, 22);
+            this.debugLogicToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.debugLogicToolStripMenuItem.Text = "Logic";
             this.debugLogicToolStripMenuItem.ToolTipText = "Debug driver logic";
             this.debugLogicToolStripMenuItem.Click += new System.EventHandler(this.debugSelectedToolStripMenuItem_Click);
             // 
+            // debugMoonToolStripMenuItem
+            // 
+            this.debugMoonToolStripMenuItem.Name = "debugMoonToolStripMenuItem";
+            this.debugMoonToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.debugMoonToolStripMenuItem.Text = "Moon";
+            // 
             // debugMotorsToolStripMenuItem
             // 
             this.debugMotorsToolStripMenuItem.Name = "debugMotorsToolStripMenuItem";
-            this.debugMotorsToolStripMenuItem.Size = new System.Drawing.Size(134, 22);
+            this.debugMotorsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.debugMotorsToolStripMenuItem.Text = "Motors";
             this.debugMotorsToolStripMenuItem.Click += new System.EventHandler(this.debugSelectedToolStripMenuItem_Click);
+            // 
+            // debugSafetyToolStripMenuItem
+            // 
+            this.debugSafetyToolStripMenuItem.Name = "debugSafetyToolStripMenuItem";
+            this.debugSafetyToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.debugSafetyToolStripMenuItem.Text = "Safety";
+            this.debugSafetyToolStripMenuItem.Click += new System.EventHandler(this.debugSelectedToolStripMenuItem_Click);
+            // 
+            // debugShutterToolStripMenuItem
+            // 
+            this.debugShutterToolStripMenuItem.Name = "debugShutterToolStripMenuItem";
+            this.debugShutterToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.debugShutterToolStripMenuItem.Text = "Shutter";
+            this.debugShutterToolStripMenuItem.Click += new System.EventHandler(this.debugSelectedToolStripMenuItem_Click);
+            // 
+            // debugTelescopeToolStripMenuItem
+            // 
+            this.debugTelescopeToolStripMenuItem.Name = "debugTelescopeToolStripMenuItem";
+            this.debugTelescopeToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.debugTelescopeToolStripMenuItem.Text = "Telescope";
+            // 
+            // debugWeatherToolStripMenuItem
+            // 
+            this.debugWeatherToolStripMenuItem.Name = "debugWeatherToolStripMenuItem";
+            this.debugWeatherToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.debugWeatherToolStripMenuItem.Text = "Weather";
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(131, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(177, 6);
             // 
-            // debugAllToolStripMenuItem
+            // debugDefaultsToolStripMenuItem
             // 
-            this.debugAllToolStripMenuItem.Name = "debugAllToolStripMenuItem";
-            this.debugAllToolStripMenuItem.Size = new System.Drawing.Size(134, 22);
-            this.debugAllToolStripMenuItem.Text = "All";
-            this.debugAllToolStripMenuItem.ToolTipText = "Turn on all debugging levels";
-            this.debugAllToolStripMenuItem.Click += new System.EventHandler(this.debugAllToolStripMenuItem_Click);
+            this.debugDefaultsToolStripMenuItem.Name = "debugDefaultsToolStripMenuItem";
+            this.debugDefaultsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.debugDefaultsToolStripMenuItem.Text = "Defaults";
+            this.debugDefaultsToolStripMenuItem.ToolTipText = "Turn on only default debugging levels";
+            this.debugDefaultsToolStripMenuItem.Click += new System.EventHandler(this.debugDefaultsToolStripMenuItem_Click);
             // 
             // debugNoneToolStripMenuItem
             // 
             this.debugNoneToolStripMenuItem.Name = "debugNoneToolStripMenuItem";
-            this.debugNoneToolStripMenuItem.Size = new System.Drawing.Size(134, 22);
+            this.debugNoneToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.debugNoneToolStripMenuItem.Text = "None";
-            this.debugNoneToolStripMenuItem.ToolTipText = "Turn off all debugging levels";
+            this.debugNoneToolStripMenuItem.ToolTipText = "Turn OFF all debugging levels";
             this.debugNoneToolStripMenuItem.Click += new System.EventHandler(this.debugNoneToolStripMenuItem_Click);
+            // 
+            // debugAllToolStripMenuItem
+            // 
+            this.debugAllToolStripMenuItem.Name = "debugAllToolStripMenuItem";
+            this.debugAllToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.debugAllToolStripMenuItem.Text = "All";
+            this.debugAllToolStripMenuItem.ToolTipText = "Turn ON all debugging levels";
+            this.debugAllToolStripMenuItem.Click += new System.EventHandler(this.debugAllToolStripMenuItem_Click);
             // 
             // toolStripMenuItem2
             // 
@@ -3371,6 +3437,7 @@
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "Wise40 Dashboard";
+            this.Load += new System.EventHandler(this.FormDash_Load);
             this.tableLayoutMain.ResumeLayout(false);
             this.tableLayoutMain.PerformLayout();
             this.groupBoxFocuser.ResumeLayout(false);
@@ -3641,6 +3708,14 @@
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.Label labelHumanInterventionStatus;
         private System.Windows.Forms.Label label15;
+        private System.Windows.Forms.ToolStripMenuItem debugFocuserToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem debugFilterWheelToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem debugActivityToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem debugMoonToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem debugHTTPToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem debugWeatherToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem debugTelescopeToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem debugDefaultsToolStripMenuItem;
     }
 }
 

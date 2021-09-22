@@ -65,13 +65,13 @@ namespace ASCOM.Wise40.Common
             DebugHTTP = (1 << 16),
             DebugWeather = (1 << 17),
             DebugTele = (1 << 18),
+            DebugLast = DebugTele,
 
             DebugDefault = DebugAxes | DebugExceptions | DebugASCOM | DebugLogic | DebugShutter |
-                DebugWise | DebugActivity | DebugMoon | DebugHTTP | DebugWeather | DebugTele,
+                DebugWise | DebugActivity | DebugMoon | DebugHTTP | DebugWeather | DebugTele | DebugSafety,
 
-            DebugAll = DebugASCOM |
-                DebugDevice | DebugLogic | DebugExceptions | DebugAxes | DebugMotors | DebugEncoders | DebugSafety | DebugDome | DebugShutter |
-                DebugDAQs | DebugFocuser | DebugFilterWheel | DebugWise | DebugActivity | DebugMoon | DebugHTTP | DebugWeather | DebugTele,
+            DebugAll = DebugDefault | 
+                DebugDevice | DebugMotors | DebugEncoders | DebugDome | DebugShutter | DebugDAQs | DebugFocuser | DebugFilterWheel,
         };
 
         private static DebugLevel _currentLevel;
@@ -217,7 +217,7 @@ namespace ASCOM.Wise40.Common
             }
         }
 
-        public DebugLevel Level
+        public static DebugLevel Level
         {
             get
             {
@@ -228,11 +228,25 @@ namespace ASCOM.Wise40.Common
         public static void StartDebugging(DebugLevel levels)
         {
             _currentLevel |= levels;
+            #region debug
+            Instance.WriteLine(DebugLevel.DebugLogic, $"StopDebugging: current: {_currentLevel}");
+            #endregion
         }
 
         public static void StopDebugging(DebugLevel levels)
         {
             _currentLevel &= ~levels;
+            #region debug
+            Instance.WriteLine(DebugLevel.DebugLogic, $"StopDebugging: current: {_currentLevel}");
+            #endregion
+        }
+
+        public static void SetCurrentLevel(DebugLevel levels)
+        {
+            _currentLevel = levels;
+            #region debug
+            Instance.WriteLine(DebugLevel.DebugLogic, $"SetCurrentLevel (from: {CodeLocation}): current: {_currentLevel}");
+            #endregion
         }
 
         public void WriteProfile()

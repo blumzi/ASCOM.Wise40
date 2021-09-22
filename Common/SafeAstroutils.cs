@@ -31,6 +31,7 @@ namespace ASCOM.Wise40.Common
         public double JulianDateUT1(double DeltaUT1)
         {
             bool gotMutex;
+            string methodName = MethodBase.GetCurrentMethod().Name;
 
             try
             {
@@ -38,17 +39,19 @@ namespace ASCOM.Wise40.Common
             }
             catch (AbandonedMutexException ex)
             {
-                throw new DriverException($"{className} - Abandoned Mutex Exception for method {MethodBase.GetCurrentMethod().Name}. See inner exception for detail", ex);
+                throw new DriverException($"{className} - AbandonedMutexException for {className}.{methodName}", ex);
             }
             catch (Exception ex)
             {
-                throw new DriverException($"{className} - Exception acquiring Mutex for method {MethodBase.GetCurrentMethod().Name}. See inner exception for detail", ex);
+                if (ex.InnerException != null)
+                    ex = ex.InnerException;
+                throw new DriverException($"{className} - Exception acquiring Mutex for {className}.{methodName}", ex);
             }
 
             // Test whether we have the mutex
             if (!gotMutex) // Exit if we failed to get the mutex within the timeout period
             {
-                throw new DriverException($"{className} - Timed out waiting for AstroUtils mutex after {mutexTimeoutMillis}ms in method {MethodBase.GetCurrentMethod().Name}.");
+                throw new DriverException($"{className} - Timed out waiting for AstroUtils mutex after {mutexTimeoutMillis}ms in {className}.{methodName}.");
             }
 
             double ret;
@@ -58,7 +61,9 @@ namespace ASCOM.Wise40.Common
             }
             catch (Exception ex)
             {
-                throw new DriverException($"{className} - Exception calling method AstroUtils.{MethodBase.GetCurrentMethod().Name}: {ex.Message}. See inner exception for details", ex);
+                if (ex.InnerException != null)
+                    ex = ex.InnerException;
+                throw new DriverException($"{className} - Exception calling method {className}.{methodName}: {ex.Message}", ex);
             }
             finally
             {

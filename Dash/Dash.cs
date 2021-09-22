@@ -51,7 +51,6 @@ namespace Dash
         private string forecast;
         private bool bypassSafetyPending, locallyBypassed;
 
-        private readonly List<ToolStripMenuItem> debugMenuItems;
         private readonly Dictionary<object, string> alteredItems = new Dictionary<object, string>();
 
         public readonly Color safeColor = Statuser.colors[Statuser.Severity.Normal];
@@ -65,6 +64,8 @@ namespace Dash
         public ASCOM.DriverAccess.FilterWheel wiseFilterWheel;
         public ASCOM.DriverAccess.SafetyMonitor wiseSafeToOperate;
         public ASCOM.DriverAccess.ObservingConditions wiseVantagePro, wiseBoltwood;
+
+        private List<ASCOM.DriverAccess.AscomDriver> drivers;
 
         private readonly int focuserMaxStep = 0;
         private readonly int focuserLowerLimit = 0;
@@ -93,6 +94,16 @@ namespace Dash
             wiseSafeToOperate = new ASCOM.DriverAccess.SafetyMonitor("ASCOM.AlpacaDynamic1.SafetyMonitor");
             wiseVantagePro = new ASCOM.DriverAccess.ObservingConditions(Const.WiseDriverID.VantagePro);
             wiseBoltwood = new ASCOM.DriverAccess.ObservingConditions(Const.WiseDriverID.Boltwood);
+
+            drivers = new List<ASCOM.DriverAccess.AscomDriver> {
+                wiseTelescope,
+                wiseDome,
+                wiseFocuser,
+                wiseFilterWheel,
+                wiseSafeToOperate,
+                wiseVantagePro,
+                wiseBoltwood,
+            };
 
             //filterWheelForm = new FilterWheelForm(wiseFilterWheel);
 
@@ -208,18 +219,26 @@ namespace Dash
             UpdateCheckmark(WISEToolStripMenuItem, opMode == WiseSite.OpMode.WISE);
             UpdateCheckmark(ACPToolStripMenuItem, opMode == WiseSite.OpMode.ACP);
 
-            debugMenuItems = new List<ToolStripMenuItem> {
-                debugASCOMToolStripMenuItem ,
-                debugAxesToolStripMenuItem,
-                debugDeviceToolStripMenuItem,
-                debugMotorsToolStripMenuItem,
-                debugEncodersToolStripMenuItem,
-                debugExceptionsToolStripMenuItem,
-                debugLogicToolStripMenuItem,
-                debugSafetyToolStripMenuItem,
-                debugDomeToolStripMenuItem,
-                debugShutterToolStripMenuItem,
-                debugDAQsToolStripMenuItem,
+            debugMenuItemDict = new Dictionary<Debugger.DebugLevel, ToolStripMenuItem>() {
+                { Debugger.DebugLevel.DebugActivity, debugActivityToolStripMenuItem},
+                { Debugger.DebugLevel.DebugASCOM, debugASCOMToolStripMenuItem },
+                { Debugger.DebugLevel.DebugAxes, debugAxesToolStripMenuItem },
+                { Debugger.DebugLevel.DebugDAQs, debugDAQsToolStripMenuItem},
+                { Debugger.DebugLevel.DebugDevice, debugDeviceToolStripMenuItem },
+                { Debugger.DebugLevel.DebugDome, debugDomeToolStripMenuItem },
+                { Debugger.DebugLevel.DebugEncoders, debugEncodersToolStripMenuItem },
+                { Debugger.DebugLevel.DebugExceptions, debugExceptionsToolStripMenuItem },
+                { Debugger.DebugLevel.DebugFocuser, debugFocuserToolStripMenuItem},
+                { Debugger.DebugLevel.DebugFilterWheel, debugFilterWheelToolStripMenuItem},
+                { Debugger.DebugLevel.DebugHTTP, debugHTTPToolStripMenuItem},
+                { Debugger.DebugLevel.DebugLogic, debugLogicToolStripMenuItem },
+                { Debugger.DebugLevel.DebugMoon, debugMoonToolStripMenuItem},
+                { Debugger.DebugLevel.DebugMotors, debugMotorsToolStripMenuItem},
+                { Debugger.DebugLevel.DebugSafety, debugSafetyToolStripMenuItem },
+                { Debugger.DebugLevel.DebugShutter, debugShutterToolStripMenuItem},
+                //{ Debugger.DebugLevel.DebugWise, },
+                { Debugger.DebugLevel.DebugTele, debugTelescopeToolStripMenuItem},
+                { Debugger.DebugLevel.DebugWeather, debugWeatherToolStripMenuItem},
             };
 
             menuStrip.RenderMode = ToolStripRenderMode.ManagerRenderMode;
@@ -229,22 +248,26 @@ namespace Dash
             focuserStatus.Show("");
             safetooperateStatus.Show("");
 
-            UpdateCheckmark(debugASCOMToolStripMenuItem, Debugger.Debugging(Debugger.DebugLevel.DebugASCOM));
-            UpdateCheckmark(debugDeviceToolStripMenuItem, Debugger.Debugging(Debugger.DebugLevel.DebugDevice));
-            UpdateCheckmark(debugAxesToolStripMenuItem, Debugger.Debugging(Debugger.DebugLevel.DebugAxes));
-            UpdateCheckmark(debugLogicToolStripMenuItem, Debugger.Debugging(Debugger.DebugLevel.DebugAxes));
-            UpdateCheckmark(debugEncodersToolStripMenuItem, Debugger.Debugging(Debugger.DebugLevel.DebugAxes));
-            UpdateCheckmark(debugMotorsToolStripMenuItem, Debugger.Debugging(Debugger.DebugLevel.DebugAxes));
-            UpdateCheckmark(debugExceptionsToolStripMenuItem, Debugger.Debugging(Debugger.DebugLevel.DebugExceptions));
-            UpdateCheckmark(debugSafetyToolStripMenuItem, Debugger.Debugging(Debugger.DebugLevel.DebugSafety));
-            UpdateCheckmark(debugDomeToolStripMenuItem, Debugger.Debugging(Debugger.DebugLevel.DebugDome));
-            UpdateCheckmark(debugShutterToolStripMenuItem, Debugger.Debugging(Debugger.DebugLevel.DebugShutter));
-            UpdateCheckmark(debugDAQsToolStripMenuItem, Debugger.Debugging(Debugger.DebugLevel.DebugDAQs));
+            UpdateDebuggingCheckmarks();
 
             UpdateFilterWheelControls();
             tabControlGoTo.SelectedTab = tabPageRaDec;
         }
         #endregion
+
+        private Dictionary<Debugger.DebugLevel, ToolStripMenuItem> debugMenuItemDict = new Dictionary<Debugger.DebugLevel, ToolStripMenuItem>();
+
+        private void UpdateDebuggingCheckmarks()
+        {
+            try
+            {
+                Enum.TryParse<Debugger.DebugLevel>(wiseTelescope.Action("debug", ""), out Debugger.DebugLevel current);
+
+                foreach (var level in debugMenuItemDict.Keys)
+                    UpdateCheckmark(debugMenuItemDict[level], (current & level) != 0);
+            }
+            catch { }
+        }
 
         public void UpdateFilterWheelControls()
         {
@@ -1586,10 +1609,26 @@ namespace Dash
         #region Settings
         private void debugAllToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Debugger.StartDebugging(Debugger.DebugLevel.DebugAll);
+            Debugger.DebugLevel current = Debugger.DebugLevel.DebugAll;
+            Debugger.SetCurrentLevel(current);
 
-            foreach (var item in debugMenuItems)
-                UpdateCheckmark(item, true);
+            foreach (ASCOM.DriverAccess.AscomDriver driver in drivers)
+                driver.Action("debug", $"{current}");
+
+            foreach (var level in debugMenuItemDict.Keys)
+                UpdateCheckmark(debugMenuItemDict[level], true);
+        }
+
+        private void debugNoneToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Debugger.DebugLevel current = Debugger.DebugLevel.DebugNone;
+            Debugger.SetCurrentLevel(current);
+
+            foreach (ASCOM.DriverAccess.AscomDriver driver in drivers)
+                driver.Action("debug", $"{current}");
+
+            foreach (var level in debugMenuItemDict.Keys)
+                UpdateCheckmark(debugMenuItemDict[level], false);
         }
 
         private void domeAutoCalibrateToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1631,14 +1670,6 @@ namespace Dash
             wiseTelescope.Tracking = box.Checked;
         }
 
-        private void debugNoneToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            Debugger.StopDebugging(Debugger.DebugLevel.DebugAll);
-
-            foreach (var item in debugMenuItems)
-                UpdateCheckmark(item, false);
-        }
-
         private void wise40WikiToolStripMenuItem_Click(object sender, EventArgs e)
         {
             System.Diagnostics.Process.Start("https://github.com/blumzi/ASCOM.Wise40/wiki");
@@ -1648,43 +1679,39 @@ namespace Dash
         {
             ToolStripMenuItem item = sender as ToolStripMenuItem;
             Debugger.DebugLevel selectedLevel = Debugger.DebugLevel.DebugNone;
+            Debugger.DebugLevel current;
 
-            if (item == debugASCOMToolStripMenuItem)
-                selectedLevel = Debugger.DebugLevel.DebugASCOM;
-            else if (item == debugDeviceToolStripMenuItem)
-                selectedLevel = Debugger.DebugLevel.DebugDevice;
-            else if (item == debugAxesToolStripMenuItem)
-                selectedLevel = Debugger.DebugLevel.DebugAxes;
-            else if (item == debugEncodersToolStripMenuItem)
-                selectedLevel = Debugger.DebugLevel.DebugEncoders;
-            else if (item == debugMotorsToolStripMenuItem)
-                selectedLevel = Debugger.DebugLevel.DebugMotors;
-            else if (item == debugExceptionsToolStripMenuItem)
-                selectedLevel = Debugger.DebugLevel.DebugExceptions;
-            else if (item == debugLogicToolStripMenuItem)
-                selectedLevel = Debugger.DebugLevel.DebugLogic;
-            else if (item == debugSafetyToolStripMenuItem)
-                selectedLevel = Debugger.DebugLevel.DebugSafety;
-            else if (item == debugDomeToolStripMenuItem)
-                selectedLevel = Debugger.DebugLevel.DebugDome;
-            else if (item == debugShutterToolStripMenuItem)
-                selectedLevel = Debugger.DebugLevel.DebugShutter;
-            else if (item == debugDAQsToolStripMenuItem)
-                selectedLevel = Debugger.DebugLevel.DebugDAQs;
+            try
+            {
+                Enum.TryParse<Debugger.DebugLevel>(wiseTelescope.Action("debug", ""), out current);
+            }
+            catch
+            {
+                return;
+            }
+
+            foreach (var level in debugMenuItemDict.Keys)
+            {
+                if (debugMenuItemDict[level] == item)
+                {
+                    selectedLevel = level;
+                    break;
+                }
+            }
 
             if (selectedLevel == Debugger.DebugLevel.DebugNone)
                 return;
 
-            if (Debugger.Debugging(selectedLevel))
-                Debugger.StopDebugging(selectedLevel);
-            else
-                Debugger.StartDebugging(selectedLevel);
-            UpdateCheckmark(item, Debugger.Debugging(selectedLevel));
-            UpdateAlteredItems(item, "Debugging");
+            current ^= selectedLevel;
+            foreach (ASCOM.DriverAccess.AscomDriver driver in drivers)
+                driver.Action("debug", $"{current}");
 
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, "New debug level: {0}", debugger.Level);
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"New debug level: {current}");
             #endregion
+
+            UpdateDebuggingCheckmarks();
+            UpdateAlteredItems(item, "Debugging");
         }
 
         private void DashOutFilterWheelControls()
@@ -2046,6 +2073,22 @@ namespace Dash
                 WiseSite.OperationalMode = newMode;
                 ChangeWise40Service("Restart");
             }
+        }
+
+        private void debugDefaultsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Debugger.DebugLevel current = Debugger.DebugLevel.DebugDefault;
+            Debugger.SetCurrentLevel(current);
+            foreach (ASCOM.DriverAccess.AscomDriver driver in drivers)
+                driver.Action("debug", $"{current}");
+
+            foreach (var level in debugMenuItemDict.Keys)
+                UpdateCheckmark(debugMenuItemDict[level], (current & level) != 0);
+        }
+
+        private void FormDash_Load(object sender, EventArgs e)
+        {
+
         }
 
         private void RestartWise40(object sender, EventArgs e)

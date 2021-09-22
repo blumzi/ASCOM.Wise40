@@ -799,6 +799,14 @@ namespace ASCOM.Wise40SafeToOperate
                     //debugger.WriteLine(Debugger.DebugLevel.DebugSafety, $"Sensor ({WiseName}), (SingleReading) isSafe: {ret}");
                     #endregion
                 }
+                //else if (StateIsSet(State.Stabilizing))
+                //{
+                //    ret = false;
+                //    #region debug
+                //    //debugger.WriteLine(Debugger.DebugLevel.DebugSafety,
+                //    //    $"Sensor ({WiseName}), (stabilizing) isSafe: {ret} (state: {_state})");
+                //    #endregion
+                //}
                 else
                 {
                     ret = StateIsSet(State.Safe);

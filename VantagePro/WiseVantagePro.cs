@@ -290,6 +290,7 @@ namespace ASCOM.Wise40.VantagePro
             "raw-data",
             "OCHTag",
             "forecast",
+            "debug",
         };
 
         public ArrayList SupportedActions
@@ -306,6 +307,22 @@ namespace ASCOM.Wise40.VantagePro
 
             switch (action)
             {
+                case "debug":
+                    if (!String.IsNullOrEmpty(parameter))
+                    {
+                        Debugger.DebugLevel newDebugLevel;
+                        try
+                        {
+                            Enum.TryParse<Debugger.DebugLevel>(parameter, out newDebugLevel);
+                            Debugger.SetCurrentLevel(newDebugLevel);
+                        }
+                        catch
+                        {
+                            return $"Cannot parse DebugLevel \"{parameter}\"";
+                        }
+                    }
+                    return $"{Debugger.Level}";
+
                 case "OCHTag":
                     ret = "Wise40.VantagePro2";
                     break;

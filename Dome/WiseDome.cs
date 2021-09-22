@@ -1281,6 +1281,22 @@ namespace ASCOM.Wise40
 
             switch (actionName)
             {
+                case "debug":
+                    if (!String.IsNullOrEmpty(actionParameters))
+                    {
+                        Debugger.DebugLevel newDebugLevel;
+                        try
+                        {
+                            Enum.TryParse<Debugger.DebugLevel>(actionParameters, out newDebugLevel);
+                            Debugger.SetCurrentLevel(newDebugLevel);
+                        }
+                        catch
+                        {
+                            return $"Cannot parse DebugLevel \"{actionParameters}\"";
+                        }
+                    }
+                    return $"{Debugger.Level}";
+
                 case "projector":
                     if (!string.IsNullOrEmpty(param))
                         Projector = Convert.ToBoolean(param);

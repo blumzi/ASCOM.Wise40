@@ -227,6 +227,7 @@ namespace ASCOM.Wise40SafeToOperate
             "issafe",
             "wise-issafe",
             "wise-unsafereasons",
+            "debug",
         };
 
         public string Action(string actionName, string actionParameters)
@@ -241,6 +242,22 @@ namespace ASCOM.Wise40SafeToOperate
 
             switch (actionName.ToLower())
             {
+                case "debug":
+                    if (!String.IsNullOrEmpty(actionParameters))
+                    {
+                        Debugger.DebugLevel newDebugLevel;
+                        try
+                        {
+                            Enum.TryParse<Debugger.DebugLevel>(actionParameters, out newDebugLevel);
+                            Debugger.SetCurrentLevel(newDebugLevel);
+                        }
+                        catch
+                        {
+                            return $"Cannot parse DebugLevel \"{actionParameters}\"";
+                        }
+                    }
+                    return $"{Debugger.Level}";
+
                 case "list-sensors":
                     foreach (Sensor s in _prioritizedSensors)
                     {

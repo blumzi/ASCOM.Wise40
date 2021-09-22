@@ -3355,6 +3355,22 @@ namespace ASCOM.Wise40
 
             switch (action)
             {
+                case "debug":
+                    if (!String.IsNullOrEmpty(parameter))
+                    {
+                        Debugger.DebugLevel newDebugLevel;
+                        try
+                        {
+                            Enum.TryParse<Debugger.DebugLevel>(parameter, out newDebugLevel);
+                            Debugger.SetCurrentLevel(newDebugLevel);
+                        }
+                        catch
+                        {
+                            return $"Cannot parse DebugLevel \"{parameter}\"";
+                        }
+                    }
+                    return $"{Debugger.Level}";
+
                 case "active":
                     if (!string.IsNullOrEmpty(parameter))
                         ActivityMonitor.StayActive($"action active={Convert.ToBoolean(parameter)}");

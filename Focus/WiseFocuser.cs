@@ -673,8 +673,13 @@ namespace ASCOM.Wise40
 
         public ArrayList SupportedActions { get; } = new ArrayList() {
             "status",
-            "start-testing",
-            "end-testing",
+            "start-debugging",
+            "end-debugging",
+            "debug",
+            "move",
+            "halt",
+            "stop",
+            "limit",
         };
 
         public string Action(string action, string parameter)
@@ -686,10 +691,32 @@ namespace ASCOM.Wise40
             {
                 return Digest;
             }
+            else if (action == "start-debugging")
+            {
+                _debugging = true;
+                return JsonConvert.SerializeObject(_debugging);
+            }
+            else if (action == "end-debugging")
+            {
+                _debugging = false;
+                return JsonConvert.SerializeObject(_debugging);
+            }
             else if (action == "debug")
             {
-                _debugging = Convert.ToBoolean(parameter);
-                return JsonConvert.SerializeObject(_debugging);
+                if (!String.IsNullOrEmpty(parameter))
+                {
+                    Debugger.DebugLevel newDebugLevel;
+                    try
+                    {
+                        Enum.TryParse<Debugger.DebugLevel>(parameter, out newDebugLevel);
+                        Debugger.SetCurrentLevel(newDebugLevel);
+                    }
+                    catch
+                    {
+                        return $"Cannot parse DebugLevel \"{parameter}\"";
+                    }
+                }
+                return $"{Debugger.Level}";
             }
             else if (action == "move")
             {

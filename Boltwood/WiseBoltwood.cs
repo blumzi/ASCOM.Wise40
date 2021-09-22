@@ -107,6 +107,7 @@ namespace ASCOM.Wise40.Boltwood
         private static readonly ArrayList supportedActions = new ArrayList() {
             "raw-data",
             "OCHTag",
+            "debug",
         };
 
         public ArrayList SupportedActions
@@ -121,6 +122,22 @@ namespace ASCOM.Wise40.Boltwood
         {
             switch (action)
             {
+                case "debug":
+                    if (!String.IsNullOrEmpty(parameter))
+                    {
+                        Debugger.DebugLevel newDebugLevel;
+                        try
+                        {
+                            Enum.TryParse<Debugger.DebugLevel>(parameter, out newDebugLevel);
+                            Debugger.SetCurrentLevel(newDebugLevel);
+                        }
+                        catch
+                        {
+                            return $"Cannot parse DebugLevel \"{parameter}\"";
+                        }
+                    }
+                    return $"{Debugger.Level}";
+
                 case "OCHTag":
                     return "Wise40.Boltwood";
 

@@ -465,6 +465,22 @@ namespace ASCOM.Wise40 //.FilterWheel
         {
             switch (action.ToLower())
             {
+                case "debug":
+                    if (!String.IsNullOrEmpty(parameters))
+                    {
+                        Debugger.DebugLevel newDebugLevel;
+                        try
+                        {
+                            Enum.TryParse<Debugger.DebugLevel>(parameters, out newDebugLevel);
+                            Debugger.SetCurrentLevel(newDebugLevel);
+                        }
+                        catch
+                        {
+                            return $"Cannot parse DebugLevel \"{parameters}\"";
+                        }
+                    }
+                    return $"{Debugger.Level}";
+
                 case "enabled":
                     if (string.IsNullOrEmpty(parameters))
                     {
