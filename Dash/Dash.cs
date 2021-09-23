@@ -23,11 +23,10 @@ namespace Dash
     public partial class FormDash : Form
     {
         public WiseSite wisesite = WiseSite.Instance;
-        private readonly ASCOM.Utilities.Util ascomutil = new Util();
+        private readonly Util ascomutil = new Util();
         public enum GoToMode { RaDec, HaDec, AltAz /*, DeltaRa, DeltaHa */};
         private GoToMode goToMode = GoToMode.RaDec;
 
-        private DebuggingForm debuggingForm = new DebuggingForm();
         private readonly Debugger debugger = Debugger.Instance;
 
         private readonly Statuser dashStatus, telescopeStatus, domeStatus, shutterStatus, focuserStatus, safetooperateStatus, filterWheelStatus, filterWheelArduinoStatus;
@@ -1102,13 +1101,6 @@ namespace Dash
             wiseTelescope.Action("handpad-stop", "");
         }
 
-        private void debuggingToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (debuggingForm.IsDisposed || debuggingForm == null)
-                debuggingForm = new DebuggingForm();
-            debuggingForm.Visible = true;
-        }
-
         private void buttonGoCoord_Click(object sender, EventArgs e)
         {
             switch (tabControlGoTo.SelectedTab.Name)
@@ -2004,7 +1996,7 @@ namespace Dash
 
         private void saveDebugToolStripMenuItem3_Click(object sender, EventArgs e)
         {
-            Debugger.Instance.WriteProfile();
+            Debugger.WriteProfile();
         }
 
         private void RestartWise40(object sender, EventArgs e)

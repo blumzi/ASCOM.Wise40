@@ -896,11 +896,15 @@ namespace ASCOM.Wise40
             {
                 TimeSpan _sinceLastSuccess = TimeSpan.MaxValue, _sinceLastFailure = TimeSpan.MaxValue;
                 DateTime now = DateTime.Now;
+                PeriodicHttpFetcher fetcher = wisedomeshutter.periodicHttpFetcher;
 
-                if (wisedomeshutter.periodicHttpFetcher.LastSuccess != DateTime.MinValue)
-                    _sinceLastSuccess = now.Subtract(wisedomeshutter.periodicHttpFetcher.LastSuccess);
-                if (wisedomeshutter.periodicHttpFetcher.LastFailure != null)
-                    _sinceLastFailure = now.Subtract(wisedomeshutter.periodicHttpFetcher.LastFailure);
+                if (fetcher != null)
+                {
+                    if (fetcher.LastSuccess != DateTime.MinValue)
+                        _sinceLastSuccess = now.Subtract(fetcher.LastSuccess);
+                    if (fetcher.LastFailure != null)
+                        _sinceLastFailure = now.Subtract(fetcher.LastFailure);
+                }
 
                 ShutterDigest shutterDigest = new ShutterDigest()
                     {
@@ -909,10 +913,10 @@ namespace ASCOM.Wise40
                         Reason = ShutterStateReason,
                         RangeCm = wisedomeshutter.RangeCm,
                         PercentOpen = wisedomeshutter.PercentOpen,
-                        TimeSinceLastReading = wisedomeshutter.periodicHttpFetcher.Age,
-                        WiFiIsWorking = wisedomeshutter.periodicHttpFetcher.Alive,
-                        TotalCommunicationAttempts = wisedomeshutter.periodicHttpFetcher.Successes + wisedomeshutter.periodicHttpFetcher.Failures,
-                        FailedCommunicationAttempts = wisedomeshutter.periodicHttpFetcher.Failures,
+                        TimeSinceLastReading = (fetcher == null) ? TimeSpan.MaxValue : fetcher.Age,
+                        WiFiIsWorking = (fetcher == null) ? false : fetcher.Alive,
+                        TotalCommunicationAttempts = (fetcher == null) ? 0 : fetcher.Successes + fetcher.Failures,
+                        FailedCommunicationAttempts = (fetcher == null) ? 0 : fetcher.Failures,
                         TimeSinceLastSuccessfullReading = _sinceLastSuccess,
                         TimeSinceLastFailedReading = _sinceLastFailure,
                         Tip = wisedomeshutter.ReasonsForIsMoving,
@@ -1244,7 +1248,7 @@ namespace ASCOM.Wise40
             {
                 string ret = ShutterState.ToString().ToLower().Remove(0, "shutter".Length);
 
-                if (wisedomeshutter.periodicHttpFetcher.Alive)
+                if (wisedomeshutter.periodicHttpFetcher != null && wisedomeshutter.periodicHttpFetcher.Alive)
                 {
                     int percent = wisedomeshutter.PercentOpen;
 

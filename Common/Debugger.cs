@@ -12,8 +12,6 @@ namespace ASCOM.Wise40.Common
 {
     public class Debugger
     {
-        private ListBox listBox;
-        private bool _appendToWindow = false;
         private static bool _initialized = false;
         private static string _appName = string.Empty;
         private static string _logFile = string.Empty;
@@ -65,7 +63,6 @@ namespace ASCOM.Wise40.Common
             DebugHTTP = (1 << 16),
             DebugWeather = (1 << 17),
             DebugTele = (1 << 18),
-            DebugLast = DebugTele,
 
             DebugDefault = DebugAxes | DebugExceptions | DebugASCOM | DebugLogic | DebugShutter |
                 DebugWise | DebugActivity | DebugMoon | DebugHTTP | DebugWeather | DebugTele | DebugSafety,
@@ -101,12 +98,6 @@ namespace ASCOM.Wise40.Common
             }
         }
 
-        public void SetWindow(ListBox list, bool append = false)
-        {
-            listBox = list;
-            _appendToWindow = append;
-        }
-
         public bool Autoflush
         {
             get
@@ -118,11 +109,6 @@ namespace ASCOM.Wise40.Common
             {
                 System.Diagnostics.Trace.AutoFlush = value;
             }
-        }
-
-        public void AppendToWindow(bool append)
-        {
-            _appendToWindow = append;
         }
 
         /// <summary>
@@ -198,23 +184,6 @@ namespace ASCOM.Wise40.Common
 
                 Trace.WriteLine(line.Normalize());
             }
-
-            if (listBox != null && _appendToWindow)
-            {
-                if (listBox.InvokeRequired)
-                {
-                    listBox.Invoke(new Action(() =>
-                    {
-                        listBox.Items.Add(line);
-                        listBox.Update();
-                    }));
-                }
-                else
-                {
-                    listBox.Items.Add(line);
-                    listBox.Update();
-                }
-            }
         }
 
         public static DebugLevel Level
@@ -249,7 +218,7 @@ namespace ASCOM.Wise40.Common
             #endregion
         }
 
-        public void WriteProfile()
+        public static void WriteProfile()
         {
             using (ASCOM.Utilities.Profile p = new Utilities.Profile() { DeviceType = "Telescope" })
             {

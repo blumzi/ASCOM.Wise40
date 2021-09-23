@@ -296,7 +296,7 @@ namespace ASCOM.Wise40
 
         private Dictionary<Direction, MotionParameters> motionParameters;
 
-        private static Reading _latestReading, _previousReading;
+        private static Reading _latestReading = null, _previousReading = null;
 
         private const int nRecentPositions = 5;
         private readonly FixedSizedQueue<Reading> readings = new FixedSizedQueue<Reading>(nRecentPositions);
@@ -838,6 +838,8 @@ namespace ASCOM.Wise40
             //  the encoder lines.
             //
             const double maxEncoderChangeRatePerMilli = 0.06;
+            double deltaMillis, maxDeltaPosition;
+            int deltaPositions;
 
             #region Get encoder reading
             _previousReading = _latestReading;
@@ -846,30 +848,33 @@ namespace ASCOM.Wise40
                 position = (int) encoder.Value,
                 time = DateTime.Now,
             };
-            double deltaMillis = _latestReading.time.Subtract(_previousReading.time).TotalMilliseconds;
 
-            int deltaPositions = Math.Abs(_latestReading.position - _previousReading.position);
-            double maxDeltaPosition = maxEncoderChangeRatePerMilli * deltaMillis;
-
-            #region debug
-            if (_debugging)
+            if (_previousReading != null)
             {
-                if (_latestReading.position != _previousReading.position)
-                    debugger.WriteLine(Debugger.DebugLevel.DebugFocuser,
-                        $"OnTimer: _latestReading.position: {_latestReading.position}, delta: {deltaPositions}, deltaMillis: {deltaMillis}," +
-                        $"rate: {deltaPositions/deltaMillis} positions/milli");
-            }
-            #endregion
-
-            if (_latestReading.position != 0 && deltaPositions != 0 && deltaPositions > maxDeltaPosition)
-            {
+                deltaMillis = _latestReading.time.Subtract(_previousReading.time).TotalMilliseconds;
+                deltaPositions = Math.Abs(_latestReading.position - _previousReading.position);
+                maxDeltaPosition = maxEncoderChangeRatePerMilli * deltaMillis;
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugFocuser,
-                    $"OnTimer: Too much movement: _latestReading.position: {_latestReading.position}, (delta: {deltaPositions} > maxDelta: {maxDeltaPosition})");
+                if (_debugging)
+                {
+                    if (_latestReading.position != _previousReading.position)
+                        debugger.WriteLine(Debugger.DebugLevel.DebugFocuser,
+                            $"OnTimer: _latestReading.position: {_latestReading.position}, delta: {deltaPositions}, deltaMillis: {deltaMillis}," +
+                            $"rate: {deltaPositions / deltaMillis} positions/milli");
+                }
                 #endregion
+                if (_latestReading.position != 0 && deltaPositions != 0 && deltaPositions > maxDeltaPosition)
+                {
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugFocuser,
+                        $"OnTimer: Too much movement: _latestReading.position: {_latestReading.position}, (delta: {deltaPositions} > maxDelta: {maxDeltaPosition})");
+                    #endregion
+                }
             }
 
             readings.Enqueue(_latestReading);
+            if (_previousReading == null)
+                goto Done;
             #endregion
 
             #region Check if encoder is changing

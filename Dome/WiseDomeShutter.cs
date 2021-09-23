@@ -154,7 +154,8 @@ namespace ASCOM.Wise40
                 percentOpen = PercentOpen,
             });
 
-            periodicHttpFetcher.Period = pacingTimeSpans["slow"];
+            if (periodicHttpFetcher != null)
+                periodicHttpFetcher.Period = pacingTimeSpans["slow"];
         }
 
         public static bool CloseEnough(int value, int limit)
@@ -179,7 +180,7 @@ namespace ASCOM.Wise40
                 return;
             }
 
-            if (periodicHttpFetcher.Alive)
+            if (periodicHttpFetcher != null && periodicHttpFetcher.Alive)
             {
                 int rangeCm = RangeCm;
                 if (rangeCm != -1 && CloseEnough(rangeCm, lowestRange))
@@ -205,7 +206,8 @@ namespace ASCOM.Wise40
                 closePin.SetOn();
                 shutterMotionTimer.Change((int) shutterMotionTravelTime.TotalMilliseconds, Timeout.Infinite);
 
-                periodicHttpFetcher.Period = pacingTimeSpans["fast"];
+                if (periodicHttpFetcher != null)
+                    periodicHttpFetcher.Period = pacingTimeSpans["fast"];
             }
         }
 
@@ -226,7 +228,7 @@ namespace ASCOM.Wise40
                 return;
             }
 
-            if (periodicHttpFetcher.Alive)
+            if (periodicHttpFetcher != null && periodicHttpFetcher.Alive)
             {
                 int rangeCm = RangeCm;
                 if (rangeCm != -1 && CloseEnough(rangeCm, highestRange))
@@ -252,7 +254,8 @@ namespace ASCOM.Wise40
                 }));
                 openPin.SetOn();
                 shutterMotionTimer.Change((int)shutterMotionTravelTime.TotalMilliseconds, Timeout.Infinite);
-                periodicHttpFetcher.Period = pacingTimeSpans["fast"];
+                if (periodicHttpFetcher != null)
+                    periodicHttpFetcher.Period = pacingTimeSpans["fast"];
             }
         }
 
@@ -288,7 +291,7 @@ namespace ASCOM.Wise40
                     ret = ShutterState.shutterClosing;
                     _stateReason = "closePin is ON";
                 }
-                else if (periodicHttpFetcher.Alive)
+                else if (periodicHttpFetcher != null && periodicHttpFetcher.Alive)
                 {
                     int rangeCm = RangeCm;
 
@@ -471,7 +474,7 @@ namespace ASCOM.Wise40
                 const string prefix = "<!DOCTYPE HTML>\r\n<html>";
                 const string suffix = "</html>\r\n";
 
-                if (periodicHttpFetcher.Alive)
+                if (periodicHttpFetcher != null && periodicHttpFetcher.Alive)
                 {
                     try
                     {
