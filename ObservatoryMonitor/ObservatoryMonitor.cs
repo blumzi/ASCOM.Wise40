@@ -371,7 +371,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 telescopeDigest = JsonConvert.DeserializeObject<TelescopeDigest>(wisetelescope.Action("status", ""));
                 if (!telescopeDigest.Active)
                 {
-                    DoShutdownObservatory("Wise40 is idle");
+                    DoShutdownObservatory(Const.Proto.Request.Wise40IsIdle);
                     return;
                 }
             }
@@ -608,8 +608,9 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             if (weInitiatedShutdown)    // already initiated a shutdown
                 return;
 
+            string reply = wisetelescope.Action("shutdown", reason);
             #region Initiate shutdown
-            if (wisetelescope.Action("shutdown", reason) == "ok")
+            if (reply == "ok")
             {
                 string indent = "";
 
@@ -628,6 +629,11 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 LogCurrentPosition();
                 weInitiatedShutdown = true;
                 _nextCheck = DateTime.Now + _intervalBetweenChecksWhileShuttingDown;
+                return;
+            }
+            else if (reason == Const.Proto.Request.Wise40IsIdle && reply.StartsWith(Const.Proto.Reply.Wise40IsActive))
+            {
+                Log($"   Wise40 became acive: {reply.Remove(0, Const.Proto.Reply.Wise40IsActive.Length)}");
                 return;
             }
             else

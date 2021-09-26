@@ -3381,6 +3381,11 @@ namespace ASCOM.Wise40
                     return JsonConvert.SerializeObject(ActivityMonitor.ObservatoryActivities);
 
                 case "shutdown":
+                    if (parameter == Const.Proto.Request.Wise40IsIdle && ActivityMonitor.ObservatoryIsActive())
+                    {
+                        return $"{Const.Proto.Reply.Wise40IsActive}{string.Join(", ", ActivityMonitor.ObservatoryActivities)}";
+                    }
+
                     telescopeCTS?.Dispose();
                     telescopeCTS = new CancellationTokenSource();
                     telescopeCT = telescopeCTS.Token;
