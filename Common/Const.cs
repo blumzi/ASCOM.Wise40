@@ -217,9 +217,30 @@ namespace ASCOM.Wise40.Common
             public static string Debug = "ffe8a24d-774e-4252-b163-c79b7ecf94b9";
         }
 
-        public static Color NormalColor = Color.FromArgb(176, 161, 142);
-        public static Color WarningColor = Color.Yellow;
-        public static Color ErrorColor = Color.IndianRed;
-        public static Color GoodColor = Color.Green;
+        //public static Color NormalColor = Color.FromArgb(176, 161, 142);
+        //public static Color WarningColor = Color.Yellow;
+        //public static Color ErrorColor = Color.IndianRed;
+        //public static Color GoodColor = Color.Green;
+
+        public static class Colors
+        {
+            public static Color Normal = Color.FromArgb(176, 161, 142);
+            public static Color Warning = Color.Yellow;
+            public static Color Error = Color.IndianRed;
+            public static Color Good = Color.Green;
+        }
+
+        public static class Proto
+        {
+            public static class Request
+            {
+                public static string Wise40IsIdle = "Wise40 is idle";
+            }
+
+            public static class Reply
+            {
+                public static string Wise40IsActive = "active: ";
+            }
+        }
     }
 }

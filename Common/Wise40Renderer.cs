@@ -7,7 +7,7 @@ namespace ASCOM.Wise40.Common
     {
         protected override void OnRenderItemText(ToolStripItemTextRenderEventArgs e)
         {
-            e.TextColor = Const.NormalColor;
+            e.TextColor = Const.Colors.Normal;
             e.ToolStrip.BackColor = Color.FromArgb(64, 64, 64);
             base.OnRenderItemText(e);
         }
