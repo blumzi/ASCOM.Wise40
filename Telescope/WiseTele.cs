@@ -144,8 +144,10 @@ namespace ASCOM.Wise40
         public WiseHAEncoder HAEncoder;
         public WiseDecEncoder DecEncoder;
 
-        public static readonly RenishawEncoder renishawHaEncoder = new RenishawEncoder(RenishawEncoder.Module.Ha);
-        public static readonly RenishawEncoder renishawDecEncoder = new RenishawEncoder(RenishawEncoder.Module.Dec);
+        //public static readonly RenishawEncoder renishawHaEncoder = new RenishawEncoder(RenishawEncoder.Module.Ha);
+        //public static readonly RenishawEncoder renishawDecEncoder = new RenishawEncoder(RenishawEncoder.Module.Dec);
+        public static readonly RenishawHAEncoder renishawHaEncoder = new RenishawHAEncoder();
+        public static readonly RenishawDecEncoder renishawDecEncoder = new RenishawDecEncoder();
 
         public WisePin TrackPin;
         private WisePin SlewPin;
@@ -2839,8 +2841,41 @@ namespace ASCOM.Wise40
                     $"ha: {ha}, ha.renishaw.position: {renishawHaEncoder.Position}, ha.radians: {Angle.Hours2Rad(ha)}" + ", " +
                     $"dec: {dec}, dec.renishaw.position: {renishawDecEncoder.Position}, dec.radians: {Angle.Deg2Rad(dec)}");
             #endregion
-            //Exceptor.Throw<MethodNotImplementedException>("SyncToTarget", "SyncToTarget not implemented");
         }
+
+        /* Oct 6, 2021 - We performed a series of ACP FindLostScope.vbs runs which:
+         *      - take an image
+         *      - plate-solve the image
+         *      - if the solving succeeds, calls Telescope.SyncToTarget(ra, dec) with the center-of-image coordinates
+         *      
+         *  We recorded the following results:
+         * 
+         * 19:12:17.669 UT 15452,38,-1        DebugTele        SyncToTarget(ra: 22.2302073643848, dec: 69.9793498080761): lst: 22.5665766126597 Old ha: 0.297172339634292, dec: 70.043211700404, SyncedCoordinates ha: -0.336369248274927, ha.renishaw.position: 19351104, ha.radians: -0.088061263272836, dec: 69.9793498080761, dec.renishaw.position: 18816442, dec.radians: 1.22137006255579
+         * 19:27:21.012 UT 15452,47,-1        DebugTele        SyncToTarget(ra: 21.9597835410286, dec: -20.0711833033614): lst: 22.8181922191679 Old ha: 0.818266089634292, dec: -20.000001190221, SyncedCoordinates ha: -0.858408678139263, ha.renishaw.position: 19113632, ha.radians: -0.224730866418336, dec: -20.0711833033614, dec.renishaw.position: 11476719, dec.radians: -0.350308233414968
+         * 19:34:03.164 UT 15452,34,-1        DebugTele        SyncToTarget(ra: 22.9654613292657, dec: 29.9303564166369): lst: 22.9302066753452 Old ha: -0.0739621004698747, dec: 29.999949981654, SyncedCoordinates ha: 0.035254653920525, ha.renishaw.position: 19520220, ha.radians: 0.00922964681346432, dec: 29.9303564166369, dec.renishaw.position: 15552436, dec.radians: 0.522383265765726
+         * 19:39:31.280 UT 15452,8,-1         DebugTele        SyncToTarget(ra: 2.96039255677, dec: 29.9508174662959): lst: 23.021600097902 Old ha: -3.97831594161571, dec: 29.999803497279, SyncedCoordinates ha: -20.061207541132, ha.renishaw.position: 21299784, ha.radians: -5.25201185278004, dec: 29.9508174662959, dec.renishaw.position: 15552267, dec.radians: 0.522740378450689
+         * 19:46:01.572 UT 15452,36,-1        DebugTele        SyncToTarget(ra: 18.960845102289, dec: 29.9386467947406): lst: 23.1303113579014 Old ha: 4.13028594640512, dec: 29.999803497279, SyncedCoordinates ha: -4.16946625561244, ha.renishaw.position: 17604386, ha.radians: -1.09156371316855, dec: 29.9386467947406, dec.renishaw.position: 15552372, dec.radians: 0.52252796015987
+         * 20:02:40.379 UT 15452,6,-1         DebugTele        SyncToTarget(ra: 20.9612816477871, dec: 49.9335460587729): lst: 23.4085173476953 Old ha: 2.40853301671762, dec: 49.999901153529, SyncedCoordinates ha: -2.44723569990817, ha.renishaw.position: 18388977, ha.radians: -0.640684808036181, dec: 49.9335460587729, dec.renishaw.position: 17182764, dec.radians: 0.871504785921825
+         * 21:01:47.659 UT 15452,15,-1        DebugTele        SyncToTarget(ra: 1.80124914400626, dec: 45.8007149196587): lst: 0.396569788730086 Old ha: -1.44340383224071, dec: 45.859813262904, SyncedCoordinates ha: 1.40467935527617, ha.renishaw.position: 20144316, ha.radians: 0.367744195265406, dec: 45.8007149196587, dec.renishaw.position: 16845348, dec.radians: 0.799373275115335
+         * 21:09:14.024 UT 15452,14,-1        DebugTele        SyncToTarget(ra: 2.46106168549742, dec: -0.0601692329452953): lst: 0.52090008659588 Old ha: -1.97914601974071, dec: 9.64660290423975E-05, SyncedCoordinates ha: 1.94016159890154, ha.renishaw.position: 20388470, ha.radians: 0.507933118823842, dec: -0.0601692329452953, dec.renishaw.position: 13107123, dec.radians: -0.00105015122329485
+         * 21:13:40.805 UT 15452,27,-1        DebugTele        SyncToTarget(ra: 2.48065753093716, dec: -0.0605717901098018): lst: 0.595208800003721 Old ha: -1.92432831140737, dec: 9.64660290423975E-05, SyncedCoordinates ha: 1.88544873093344, ha.renishaw.position: 20363489, ha.radians: 0.493609323485057, dec: -0.0605717901098018, dec.renishaw.position: 13107128, dec.radians: -0.00105717717124298
+         * 21:27:56.470 UT 15452,32,-1        DebugTele        SyncToTarget(ra: 22.9979564149898, dec: -0.00278698826495569): lst: 0.833544540292105 Old ha: 1.79626901932179, dec: 0.067918731654043, SyncedCoordinates ha: 22.1644118746977, ha.renishaw.position: 18668013, ha.radians: 5.80262945972405, dec: -0.00278698826495569, dec.renishaw.position: 13112607, dec.radians: -4.86421214379209E-05
+         * 21:36:27.315 UT 15452,6,-1         DebugTele        SyncToTarget(ra: 23.9992357357827, dec: -9.99912507505749): lst: 0.975834156346724 Old ha: 0.936869605259292, dec: -9.92890744022095, SyncedCoordinates ha: 23.023401579436, ha.renishaw.position: 19059563, ha.radians: 6.02751243855031, dec: -9.99912507505749, dec.renishaw.position: 12297813, dec.radians: -0.174517654878478
+         * 22:08:44.375 UT 15452,25,-1        DebugTele        SyncToTarget(ra: 2.99988336066172, dec: -9.99880359441257): lst: 1.51537951686333 Old ha: -1.52370982182404, dec: -9.93447384647099, SyncedCoordinates ha: 1.48450384379839, ha.renishaw.position: 20180887, ha.radians: 0.388642197491903, dec: -9.99880359441257, dec.renishaw.position: 12297287, dec.radians: -0.174512043982743
+         * 22:20:21.672 UT 15452,12,-1        DebugTele        SyncToTarget(ra: 3.99966014055636, dec: 59.9869785909469): lst: 1.70960342637448 Old ha: -2.32974823328238, dec: 60.043602325404, SyncedCoordinates ha: 2.29005671418188, ha.renishaw.position: 20548281, ha.radians: 0.599535445798147, dec: 59.9869785909469, dec.renishaw.position: 18001277, dec.radians: 1.04697028473537
+         * 
+         * Using ha = ra - lst, we produced the following:
+         * 
+         *  HourAngle:
+         *              renishaw    ha
+         *     lowest:  17604386     -4.16946625561244
+         *     highest: 21299784    -20.061207541132
+         *   
+         *  Declination:         
+         *              renishaw    dec
+         *     lowest:  11476719    -20.0711833033614
+         *     highest: 18816442     69.9793498080761
+         */
 
         public string Description
         {
@@ -2959,10 +2994,10 @@ namespace ASCOM.Wise40
 
             debugger.WriteLine(Debugger.DebugLevel.DebugTele,
                 $"SyncToCoordinates(ra: {RightAscension}, dec: {Declination}): lst: {lst} " +
-                $"Old ha: {WiseTele.Instance.HourAngle}, dec: {WiseTele.Instance.Declination}, " +
-                "SyncedCoordinates " + 
-                    $"ha: {ha}, ha.renishaw.position: {renishawHaEncoder.Position}, ha.radians: {Angle.Hours2Rad(ha)}" + ", " +
-                    $"dec: {dec}, dec.renishaw.position: {renishawDecEncoder.Position}, dec.radians: {Angle.Deg2Rad(dec)}");
+                $"Old coord: (ha: {WiseTele.Instance.HourAngle}, dec: {WiseTele.Instance.Declination}), " +
+                "New coord: (" + 
+                    $"ha: {ha}, renishaw: {renishawHaEncoder.Position}, radians: {Angle.Hours2Rad(ha)}" + ", " +
+                    $"dec: {dec}, renishaw: {renishawDecEncoder.Position}, radians: {Angle.Deg2Rad(dec)})");
             #endregion
             //Exceptor.Throw<MethodNotImplementedException>($"SyncToCoordinates({RightAscension}, {Declination})", "SyncToCoordinates not implemented");
         }

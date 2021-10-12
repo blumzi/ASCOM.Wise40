@@ -30,8 +30,6 @@ namespace ASCOM.Wise40 //.Telescope
         private readonly Object _lock = new object();
         private bool disposed = false;
 
-        //private readonly RenishawEncoder RenishawHaEncoder;
-
         public WiseHAEncoder(string name, WiseDecEncoder decEncoder)
         {
             WiseName = "HAEncoder";

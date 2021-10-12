@@ -9,6 +9,12 @@ using ASCOM.Wise40.Common;
 
 namespace ASCOM.Wise40.Hardware
 {
+    public struct Solved
+    {
+        public UInt64 enc;
+        public double coord;
+    }
+
     /// <summary>
     /// <para>
     /// Hardware:
@@ -29,6 +35,8 @@ namespace ASCOM.Wise40.Hardware
         private const double haConstant = 0.604916 / 19237927;
         private const double decConstant = 36.007347 / 16047243;
 
+        public Dictionary<string, Solved> solved;
+
         private enum BissMode { B = 0, C = 1 };
         private static readonly PCIe1711 Board = PCIe1711.OpenBoard(0);
         public enum Module { Ha = 0, Dec = 1 };
@@ -39,6 +47,7 @@ namespace ASCOM.Wise40.Hardware
 
         private static readonly Debugger debugger = Debugger.Instance;
         public static readonly Exceptor Exceptor = new Exceptor(Common.Debugger.DebugLevel.DebugEncoders);
+
 
         public RenishawEncoder(Module module)
         {
@@ -170,9 +179,90 @@ namespace ASCOM.Wise40.Hardware
             }
         }
 
+        public double CurrentCoord
+        {
+            get
+            {
+                double ret;
+
+                ret = (
+                        (Position - solved["low"].enc) /
+                        (solved["high"].coord - solved["low"].coord)
+                      ) *
+                        (solved["high"].coord - solved["low"].coord) +
+                        solved["low"].coord;
+                return ret;
+            }
+        }
+
         ~RenishawEncoder()
         {
             Board.BissMasterReleaseSingleCycle(moduleNbr: _moduleNumber);
+        }
+    }
+
+    public class RenishawHAEncoder: RenishawEncoder
+    {
+        public RenishawHAEncoder() : base(Module.Ha)
+        {
+            solved = new Dictionary<string, Solved>
+            {
+                { "low", new Solved {
+                    enc = 17604386,
+                    coord = -4.16946625561244 } },
+                { "high", new Solved {
+                    enc = 21299784,
+                    coord = -20.061207541132 } },
+            };
+        }
+
+        public new double Radians
+        {
+            get
+            {
+                return Angle.FromHours(HourAngle).Radians;
+            }
+        }
+
+        public new double HourAngle
+        {
+            get
+            {
+                return CurrentCoord;
+            }
+        }
+    }
+
+
+    public class RenishawDecEncoder: RenishawEncoder
+    {
+        public RenishawDecEncoder() : base(Module.Dec)
+        {
+            solved = new Dictionary<string, Solved>
+            {
+                { "low", new Solved {
+                    enc = 11476719,
+                    coord = -20.0711833033614 } },
+                { "high", new Solved {
+                    enc = 18816442, 
+                    coord = 69.9793498080761 } },
+            };
+        }
+
+        public new double Radians
+        {
+            get
+            {
+                return Angle.FromDegrees(Declination).Radians;
+            }
+        }
+
+        public new double Declination
+        {
+            get
+            {
+                return CurrentCoord;
+            }
         }
     }
 }

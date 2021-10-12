@@ -147,6 +147,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestPeriodicHttpFetcher", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestNovas", "TestNovas\TestNovas.csproj", "{B047855A-5181-4EB8-B8F5-A90F241A6689}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConditionHA", "ConditionHA\ConditionHA.csproj", "{A8C67249-9819-4686-BC5D-88759E92773B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -491,6 +493,18 @@ Global
 		{B047855A-5181-4EB8-B8F5-A90F241A6689}.Release|x64.Build.0 = Release|Any CPU
 		{B047855A-5181-4EB8-B8F5-A90F241A6689}.Release|x86.ActiveCfg = Release|Any CPU
 		{B047855A-5181-4EB8-B8F5-A90F241A6689}.Release|x86.Build.0 = Release|Any CPU
+		{A8C67249-9819-4686-BC5D-88759E92773B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A8C67249-9819-4686-BC5D-88759E92773B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A8C67249-9819-4686-BC5D-88759E92773B}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A8C67249-9819-4686-BC5D-88759E92773B}.Debug|x64.Build.0 = Debug|Any CPU
+		{A8C67249-9819-4686-BC5D-88759E92773B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A8C67249-9819-4686-BC5D-88759E92773B}.Debug|x86.Build.0 = Debug|Any CPU
+		{A8C67249-9819-4686-BC5D-88759E92773B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A8C67249-9819-4686-BC5D-88759E92773B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A8C67249-9819-4686-BC5D-88759E92773B}.Release|x64.ActiveCfg = Release|Any CPU
+		{A8C67249-9819-4686-BC5D-88759E92773B}.Release|x64.Build.0 = Release|Any CPU
+		{A8C67249-9819-4686-BC5D-88759E92773B}.Release|x86.ActiveCfg = Release|Any CPU
+		{A8C67249-9819-4686-BC5D-88759E92773B}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
