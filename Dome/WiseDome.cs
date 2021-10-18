@@ -73,6 +73,7 @@ namespace ASCOM.Wise40
         };
         private readonly List<CalibrationPoint> calibrationPoints = new List<CalibrationPoint>();
         public const int TicksPerDomeRevolution = 1018;
+        public CalibrationPoint closestCalibrationPoint;
 
         public const double DegreesPerTick = 360.0 / TicksPerDomeRevolution;
         public const double ticksPerDegree = TicksPerDomeRevolution / 360;
@@ -736,19 +737,18 @@ namespace ASCOM.Wise40
 
             if (Calibrated)
             {
-                List<ShortestDistanceResult> distanceToCaliPoints = new List<ShortestDistanceResult>();
-                foreach (var cp in calibrationPoints)
-                    distanceToCaliPoints.Add(Azimuth.ShortestDistance(cp.az));
-
                 ShortestDistanceResult closest = new ShortestDistanceResult(new Angle(360.0, Angle.AngleType.Az), Const.AxisDirection.None);
-                foreach (var res in distanceToCaliPoints)
+                ShortestDistanceResult distance;
+                foreach (var cp in calibrationPoints)
                 {
-                    if (res.angle < closest.angle)
+                    if ((distance = Azimuth.ShortestDistance(cp.az)).angle < closest.angle)
                     {
-                        closest = res;
+                        closestCalibrationPoint = cp;
+                        closest = distance;
                     }
                 }
 
+                SetDomeState(DomeState.Calibrating);
                 switch (closest.direction)
                 {
                     case Const.AxisDirection.Decreasing: StartMovingCCW(); break;
@@ -757,6 +757,7 @@ namespace ASCOM.Wise40
             }
             else
             {
+                closestCalibrationPoint = null;
                 SetDomeState(DomeState.Calibrating);
                 StartMovingCCW();
             }
@@ -969,7 +970,8 @@ namespace ASCOM.Wise40
                     ret += $" to {_targetAz.ToShortNiceString()}";
 
                 if (StateIsOn(DomeState.Calibrating))
-                    ret += " (calibrating)";
+                    ret += $" (calibrating" +
+                        ((closestCalibrationPoint != null) ? $" at {closestCalibrationPoint.az.ToShortNiceString()}" : " blind") + ")";
                 if (StateIsOn(DomeState.Parking))
                     ret += " (parking)";
 
@@ -1348,7 +1350,7 @@ namespace ASCOM.Wise40
                     return ret;
 
                 case "shutter":
-                    switch(param)
+                    switch (param)
                     {
                         case "halt":
                             wisedomeshutter.Stop($"Action \"{actionName}\".");
@@ -1401,9 +1403,8 @@ namespace ASCOM.Wise40
                     return ret;
 
                 case "calibrate":
-                    if (! Calibrated)
-                        StartFindingHome();
-                    return ret;
+                    new Task(StartFindingHome).Start();
+                    return "ok";
 
                 default:
                     Exceptor.Throw<ActionNotImplementedException>($"Action(\"{actionName}\")",

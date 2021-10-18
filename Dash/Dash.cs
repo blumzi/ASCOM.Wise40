@@ -1427,15 +1427,12 @@ namespace Dash
 
         private void buttonCalibrateDome_Click(object sender, EventArgs e)
         {
-            try
+            if (!wiseSafeToOperate.IsSafe)
             {
-                wiseDome.Action("calibrate", "");
-                domeStatus.Show("Started dome calibration", 1000, Statuser.Severity.Good);
+                domeStatus.Show("Not safe to move!", 3000, Statuser.Severity.Error);
+                return;
             }
-            catch (Exception ex)
-            {
-                domeStatus.Show(ex.Message, 2000, Statuser.Severity.Error);
-            }
+            wiseDome.Action("calibrate", "");
         }
 
         private void buttonVent_Click(object sender, EventArgs e)
@@ -2012,6 +2009,11 @@ namespace Dash
 
             if (result == DialogResult.Yes)
                 ChangeWise40Service("Restart");
+        }
+
+        private void renishawToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            new RenishawForm(wiseTelescope).Show();
         }
 
         private string EnableDisableLCONetwork()
