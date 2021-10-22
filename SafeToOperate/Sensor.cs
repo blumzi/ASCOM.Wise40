@@ -886,8 +886,7 @@ namespace ASCOM.Wise40SafeToOperate
             {
                 using (StreamWriter sw = File.CreateText(SavedSensorStateFile))
                 {
-                    JsonSerializer js = new JsonSerializer();
-                    js.Serialize(sw, saved);
+                    sw.WriteLine(JsonConvert.SerializeObject(saved, Formatting.Indented));
                 }
             }
             catch { }
@@ -901,9 +900,16 @@ namespace ASCOM.Wise40SafeToOperate
             SavedSensorState saved = null;
             string file = SavedSensorStateFile;
             string op = $"Restore({WiseName}) from \"{file}\": ";
+            FileInfo fileInfo = new FileInfo(file);
 
-            if (!File.Exists(file))
+            if (!fileInfo.Exists)
                 return;
+
+            if (fileInfo.Length == 0)
+            {
+                fileInfo.Delete();
+                return;
+            }
 
             using (StreamReader sr = new StreamReader(file))
             {
