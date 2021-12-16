@@ -54,6 +54,8 @@ namespace ASCOM.Wise40
 {
     public class WiseTele : WiseObject, IDisposable, IConnectable
     {
+        public enum EncodersInUseEnum { Old, New };
+        public EncodersInUseEnum encodersInUse;
         private static readonly Version version = new Version(0, 2);
         /// <summary>
         /// Driver description that displays in the ASCOM Chooser.
@@ -3375,6 +3377,7 @@ namespace ASCOM.Wise40
                 return new ArrayList() {
                     "active",
                     "activities",
+                    "encoders",
                     "seconds-till-idle",
                     "opmode",
                     "status",
@@ -3405,6 +3408,19 @@ namespace ASCOM.Wise40
                         }
                     }
                     return $"{Debugger.Level}";
+
+                case "encoders":
+                    if (!string.IsNullOrEmpty(parameter))
+                    {
+                        if (parameter == "old")
+                            EncodersInUse = EncodersInUseEnum.Old;
+                        else if (parameter == "new")
+                            EncodersInUse = EncodersInUseEnum.New;
+                        else
+                            return $"Bad parameter.  Must be either \"old\" or \"new\".";
+
+                    }
+                    return EncodersInUse.ToString().ToLower();
 
                 case "active":
                     if (!string.IsNullOrEmpty(parameter))
@@ -3676,6 +3692,9 @@ namespace ASCOM.Wise40
                     WiseSite.astrometricAccuracy = acc;
                 else
                     WiseSite.astrometricAccuracy = Accuracy.Full;
+
+                Enum.TryParse<EncodersInUseEnum>(driverProfile.GetValue(driverID, Const.ProfileName.Telescope_EncodersInUse, string.Empty, "Old"), out EncodersInUseEnum enc);
+                Instance.EncodersInUse = enc;
                 BypassCoordinatesSafety = Convert.ToBoolean(driverProfile.GetValue(driverID, Const.ProfileName.Telescope_BypassCoordinatesSafety, string.Empty, false.ToString()));
             }
         }
@@ -3689,6 +3708,7 @@ namespace ASCOM.Wise40
             {
                 driverProfile.WriteValue(driverID, Const.ProfileName.Telescope_AstrometricAccuracy, WiseSite.astrometricAccuracy.ToString());
                 driverProfile.WriteValue(driverID, Const.ProfileName.Telescope_BypassCoordinatesSafety, BypassCoordinatesSafety.ToString());
+                driverProfile.WriteValue(driverID, Const.ProfileName.Telescope_EncodersInUse, Instance.EncodersInUse.ToString());
             }
         }
 
@@ -3728,6 +3748,20 @@ namespace ASCOM.Wise40
                     return "PulseGuiding in " + pulsing.ToString();
                 }
                 return ret;
+            }
+        }
+
+        public EncodersInUseEnum EncodersInUse
+        {
+            get
+            {
+                return encodersInUse;
+            }
+
+            set
+            {
+                encodersInUse = value;
+                WriteProfile();
             }
         }
 
@@ -3880,6 +3914,18 @@ namespace ASCOM.Wise40
                         SecondaryIsMoving = AxisIsMoving(TelescopeAxes.axisSecondary),
                         ShuttingDown = activityMonitor.ShuttingDown,
                         Tips = tips,
+                        EncodersInUse = EncodersInUse,
+                        Renishaw = new RenishawDigest
+                        {
+                            EncHA = renishawHaEncoder.Position,
+                            EncDEC = renishawDecEncoder.Position,
+                            HA = renishawHaEncoder.HourAngle,
+                            Dec = renishawDecEncoder.Declination,
+                            deltaHA = Math.Abs(renishawHaEncoder.HourAngle - HourAngle),
+                            deltaDec = Math.Abs(renishawDecEncoder.Declination - Declination),
+                            radHA = renishawHaEncoder.Radians,
+                            radDec = renishawDecEncoder.Radians,
+                        }
                     };
 
                     string response = JsonConvert.SerializeObject(digest);
@@ -3946,6 +3992,14 @@ namespace ASCOM.Wise40
         public string PulseGuiding;
     }
 
+    public class RenishawDigest
+    {
+        public int EncHA, EncDEC;
+        public double HA, Dec;
+        public double deltaHA, deltaDec;
+        public double radHA, radDec;
+    }
+
     public class TelescopeDigest
     {
         public TelescopePosition Current;
@@ -3967,5 +4021,7 @@ namespace ASCOM.Wise40
         public string Status;
         public bool ShuttingDown;
         public TelescopeTips Tips;
+        public WiseTele.EncodersInUseEnum EncodersInUse;
+        public RenishawDigest Renishaw;
     }
 }

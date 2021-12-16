@@ -888,7 +888,7 @@ namespace Dash
             if (HumanIntervention.IsSet())
             {
                 text = "Human Intervention";
-                annunciatorSafeToOperate.ForeColor = unsafeColor;
+                annunciatorSafeToOperate.ActiveColor = unsafeColor;
                 annunciatorSafeToOperate.Cadence = CadencePattern.SteadyOn;
                 severity = Statuser.Severity.Error;
                 tip = String.Join("\n", HumanIntervention.Details).Replace(Const.recordSeparator, "\n  ");
@@ -896,7 +896,7 @@ namespace Dash
             else if (safetooperateDigest.Bypassed)
             {
                 text = "Safety bypassed";
-                annunciatorSafeToOperate.ForeColor = warningColor;
+                annunciatorSafeToOperate.ActiveColor = warningColor;
                 annunciatorSafeToOperate.Cadence = CadencePattern.SteadyOn;
                 severity = Statuser.Severity.Warning;
                 tip = "Safety checks are bypassed!";
@@ -904,7 +904,7 @@ namespace Dash
             else if (safetooperateDigest.Safe)
             {
                 text = "Safe to operate";
-                annunciatorSafeToOperate.ForeColor = goodColor;
+                annunciatorSafeToOperate.ActiveColor = goodColor;
                 annunciatorSafeToOperate.Cadence = CadencePattern.SteadyOff;
                 severity = Statuser.Severity.Good;
                 tip = "Conditions are safe to operate.";
@@ -912,7 +912,7 @@ namespace Dash
             else
             {
                 text = "Not safe to operate";
-                annunciatorSafeToOperate.ForeColor = unsafeColor;
+                annunciatorSafeToOperate.ActiveColor = unsafeColor;
                 annunciatorSafeToOperate.Cadence = CadencePattern.SteadyOn;
                 severity = Statuser.Severity.Error;
                 tip = string.Join("\n", safetooperateDigest.UnsafeReasons).Replace(Const.recordSeparator, "\n");

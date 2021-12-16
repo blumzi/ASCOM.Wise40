@@ -16,7 +16,7 @@ namespace ConditionHA
         {
             AstroUtils util = new AstroUtils();
 
-            using (StreamReader sr = new StreamReader("ha.dat"))
+            using (StreamReader sr = new StreamReader("ha1.dat"))
             {
                 string line;
                 string[] fields;
@@ -30,17 +30,18 @@ namespace ConditionHA
                     if (line.StartsWith("#"))       // skip comments
                         continue;
                     fields = line.Split(' ');
-                    if (fields.Length != 4)         // skip bad lines
+                    if (fields.Length != 5)         // skip bad lines
                         continue;
 
-                    double ra = Convert.ToDouble(fields[0]);
-                    double lst = Convert.ToDouble(fields[1]);
-                    double wise40_ha = Convert.ToDouble(fields[2]);
-                    double solved_ha = Convert.ToDouble(fields[3]);
+                    int enc = Convert.ToInt32(fields[0]);
+                    double ra = Convert.ToDouble(fields[1]);
+                    double lst = Convert.ToDouble(fields[2]);
+                    double wise40_ha = Convert.ToDouble(fields[3]);
+                    double solved_ha = Convert.ToDouble(fields[4]);
 
                     double solved_hours = Angle.HaFromHours(util.ConditionHA(solved_ha)).Hours * -1;
 
-                    Console.WriteLine(String.Format("wise-ha: {0,-20} solved-ha: {1,-20} delta: {2,-20}", wise40_ha, solved_hours, Math.Abs(solved_hours - wise40_ha)));
+                    Console.WriteLine(String.Format("enc: {0,10} wise-ha: {1,-20} solved-ha: {2,-20} delta: {3,-20}", enc, wise40_ha, solved_hours, Math.Abs(solved_hours - wise40_ha)));
                 }
             }
         }

@@ -6,12 +6,13 @@ using System.Threading.Tasks;
 
 using PCIe1711_NET;
 using ASCOM.Wise40.Common;
+using ASCOM.Astrometry.AstroUtils;
 
 namespace ASCOM.Wise40.Hardware
 {
     public struct Solved
     {
-        public UInt64 enc;
+        public int enc;
         public double coord;
     }
 
@@ -35,7 +36,7 @@ namespace ASCOM.Wise40.Hardware
         private const double haConstant = 0.604916 / 19237927;
         private const double decConstant = 36.007347 / 16047243;
 
-        public Dictionary<string, Solved> solved;
+        public static AstroUtils astroUtils = new AstroUtils();
 
         private enum BissMode { B = 0, C = 1 };
         private static readonly PCIe1711 Board = PCIe1711.OpenBoard(0);
@@ -47,6 +48,8 @@ namespace ASCOM.Wise40.Hardware
 
         private static readonly Debugger debugger = Debugger.Instance;
         public static readonly Exceptor Exceptor = new Exceptor(Common.Debugger.DebugLevel.DebugEncoders);
+
+        private int prevPosition = Int32.MinValue;
 
 
         public RenishawEncoder(Module module)
@@ -81,7 +84,7 @@ namespace ASCOM.Wise40.Hardware
                 throw new Exception($"BissMasterInitSingleCycle(moduleNumber: {_moduleNumber}) returned {ret}");
         }
 
-        public UInt64 Position
+        public int Position
         {
             get
             {
@@ -118,7 +121,7 @@ namespace ASCOM.Wise40.Hardware
                 UInt64 reading = ((UInt64)high << 32) | (UInt64)low;
                 bool warning = (reading & (1 << 0)) == 0;
                 bool error = (reading & (1 << 1)) == 0;
-                UInt32 position = (UInt32)((reading >> 2) & 0xffffffff);
+                int position = (int) ((reading >> 2) & 0xffffffff);
 
                 if (warning)
                 {
@@ -142,18 +145,15 @@ namespace ASCOM.Wise40.Hardware
                         debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: needed {tries} tries to read encoder");
                         #endregion
                     }
-                    return position >> jitterBits;
-                }
-            }
-        }
 
-        public double Radians
-        {
-            get
-            {
-                return (_module == Module.Ha) ?
-                    Angle.Hours2Rad(HourAngle) :
-                    Angle.Deg2Rad(Declination);
+                    position >>= jitterBits;
+                    if (prevPosition != int.MinValue && (Math.Abs(prevPosition - position) == 1))
+                    {
+                        position = prevPosition;
+                    }
+                    prevPosition = position;
+                    return position;
+                }
             }
         }
 
@@ -179,21 +179,6 @@ namespace ASCOM.Wise40.Hardware
             }
         }
 
-        public double CurrentCoord
-        {
-            get
-            {
-                double ret;
-
-                ret = (
-                        (Position - solved["low"].enc) /
-                        (solved["high"].coord - solved["low"].coord)
-                      ) *
-                        (solved["high"].coord - solved["low"].coord) +
-                        solved["low"].coord;
-                return ret;
-            }
-        }
 
         ~RenishawEncoder()
         {
@@ -205,22 +190,43 @@ namespace ASCOM.Wise40.Hardware
     {
         public RenishawHAEncoder() : base(Module.Ha)
         {
-            solved = new Dictionary<string, Solved>
-            {
-                { "low", new Solved {
-                    enc = 17604386,
-                    coord = -4.16946625561244 } },
-                { "high", new Solved {
-                    enc = 21299784,
-                    coord = -20.061207541132 } },
-            };
         }
 
-        public new double Radians
+        /*
+         * 17604386 4.16946625561244
+         * 18388977 2.44723569990817
+         * 18668013 1.8355881253023
+         * 19059563 0.976598420563999
+         * 19113632 0.858408678139263
+         * 19351104 0.336369248274927
+         * 19520220 -0.035254653920525
+         * 19620534 -0.255659491837299
+         * 20144316 -1.40467935527617
+         * 20180887 -1.48450384379839
+         * 20363489 -1.88544873093344
+         * 20388470 -1.94016159890154
+         * 20548281 -2.29005671418188
+         * 21299784 -3.938792458868
+         */
+
+        const double ENCmax = 21299784, HAmax = -3.938792458868,   RADmax = HAmax * 2.0 * Math.PI / 24.0;
+        const double ENCmin = 17604386, HAmin =  4.16946625561244, RADmin = HAmin * 2.0 * Math.PI / 24.0;
+
+        const double rad_per_tick = (RADmin - RADmax) / (ENCmax - ENCmin);
+
+        public double Radians
         {
             get
             {
-                return Angle.FromHours(HourAngle).Radians;
+
+                double rad = RADmax + ((ENCmax - Position) * rad_per_tick);
+
+                while (rad > 2 * Math.PI)
+                    rad -= 2 * Math.PI;
+                while (rad < -2 * Math.PI)
+                    rad += 2 * Math.PI;
+
+                return rad;
             }
         }
 
@@ -228,7 +234,14 @@ namespace ASCOM.Wise40.Hardware
         {
             get
             {
-                return CurrentCoord;
+                double rad = Radians;
+
+                while (rad > 2 * Math.PI)
+                    rad -= 2 * Math.PI;
+                while (rad < -2 * Math.PI)
+                    rad += 2 * Math.PI;
+
+                return astroUtils.ConditionHA(Angle.Rad2Hours(rad));
             }
         }
     }
@@ -238,30 +251,69 @@ namespace ASCOM.Wise40.Hardware
     {
         public RenishawDecEncoder() : base(Module.Dec)
         {
-            solved = new Dictionary<string, Solved>
-            {
-                { "low", new Solved {
-                    enc = 11476719,
-                    coord = -20.0711833033614 } },
-                { "high", new Solved {
-                    enc = 18816442, 
-                    coord = 69.9793498080761 } },
-            };
         }
 
-        public new double Radians
-        {
-            get
-            {
-                return Angle.FromDegrees(Declination).Radians;
-            }
-        }
+        /*
+         * 11476719 -20.0711833033614
+         * 12297287 -9.99880359441257
+         * 12297813 -9.99912507505749
+         * 13107123 -0.0601692329452953
+         * 13107128 -0.0605717901098018
+         * 13112607 -0.00278698826495569
+         * 15552267 29.9508174662959
+         * 15552372 29.9386467947406
+         * 15552436 29.9303564166369
+         * 16367685 39.9361051036646
+         * 16845348 45.8007149196587
+         * 17182764 49.9335460587729
+         * 18001277 59.9869785909469
+         * 18816442 69.9793498080761
+         */
+
+        const double ENCmax = 18816442, ENCmin = 11476719;
+        const double DECmax = 69.9793498080761, DECmin = -20.0711833033614;
+        const double deg_per_tick = (DECmax + -DECmin) / (ENCmax - ENCmin);
+
+        const double RADmax = (DECmax * Math.PI) / 180.0, RADmin = (DECmin * Math.PI) / 180.0;
+        const double rad_per_tick = (RADmax + -RADmin) / (ENCmax - ENCmin);
 
         public new double Declination
         {
             get
             {
-                return CurrentCoord;
+
+                double rad = Radians;
+
+                while (rad > Math.PI / 2)
+                    rad -= Math.PI / 2;
+                while (rad < -Math.PI / 2)
+                    rad += Math.PI / 2;
+
+                return Angle.Rad2Deg(rad);
+            }
+        }
+
+        public bool Over90Deg
+        {
+            get
+            {
+                return Radians > Math.PI / 2;
+            }
+        }
+
+        public double Radians
+        {
+            get
+            {
+
+                double rad = RADmax - ((ENCmax - Position) * rad_per_tick);
+
+                while (rad > 2 * Math.PI)
+                    rad -= 2 * Math.PI;
+                while (rad < -2 * Math.PI)
+                    rad += 2 * Math.PI;
+
+                return rad;
             }
         }
     }

@@ -159,9 +159,11 @@
             this.debugTelescopeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.debugWeatherToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.debugWiseToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.separatorToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.debugDefaultsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.debugNoneToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.debugAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.separatorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveDebugToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.viewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.digitalIOCardsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -258,8 +260,7 @@
             this.label7 = new System.Windows.Forms.Label();
             this.timerRefreshDisplay = new System.Windows.Forms.Timer(this.components);
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
-            this.separatorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.separatorToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.renishawToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tableLayoutMain.SuspendLayout();
             this.groupBoxFocuser.SuspendLayout();
             this.groupBoxDomeGroup.SuspendLayout();
@@ -2090,6 +2091,12 @@
             this.debugWiseToolStripMenuItem.ToolTipText = "Communications between Wise computers";
             this.debugWiseToolStripMenuItem.Click += new System.EventHandler(this.debugSelectedToolStripMenuItem_Click);
             // 
+            // separatorToolStripMenuItem1
+            // 
+            this.separatorToolStripMenuItem1.Name = "separatorToolStripMenuItem1";
+            this.separatorToolStripMenuItem1.Size = new System.Drawing.Size(200, 22);
+            this.separatorToolStripMenuItem1.Text = "---";
+            // 
             // debugDefaultsToolStripMenuItem
             // 
             this.debugDefaultsToolStripMenuItem.Name = "debugDefaultsToolStripMenuItem";
@@ -2114,6 +2121,12 @@
             this.debugAllToolStripMenuItem.ToolTipText = "Turn ON all debugging levels";
             this.debugAllToolStripMenuItem.Click += new System.EventHandler(this.debugAllToolStripMenuItem_Click);
             // 
+            // separatorToolStripMenuItem
+            // 
+            this.separatorToolStripMenuItem.Name = "separatorToolStripMenuItem";
+            this.separatorToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
+            this.separatorToolStripMenuItem.Text = "---";
+            // 
             // saveDebugToolStripMenuItem
             // 
             this.saveDebugToolStripMenuItem.Name = "saveDebugToolStripMenuItem";
@@ -2125,7 +2138,8 @@
             // viewToolStripMenuItem
             // 
             this.viewToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.digitalIOCardsToolStripMenuItem});
+            this.digitalIOCardsToolStripMenuItem,
+            this.renishawToolStripMenuItem});
             this.viewToolStripMenuItem.ForeColor = System.Drawing.Color.DarkOrange;
             this.viewToolStripMenuItem.Name = "viewToolStripMenuItem";
             this.viewToolStripMenuItem.Size = new System.Drawing.Size(47, 20);
@@ -2135,7 +2149,7 @@
             // 
             this.digitalIOCardsToolStripMenuItem.ForeColor = System.Drawing.Color.DarkOrange;
             this.digitalIOCardsToolStripMenuItem.Name = "digitalIOCardsToolStripMenuItem";
-            this.digitalIOCardsToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
+            this.digitalIOCardsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.digitalIOCardsToolStripMenuItem.Text = "Digital IO Cards";
             this.digitalIOCardsToolStripMenuItem.Click += new System.EventHandler(this.digitalIOCardsToolStripMenuItem_Click);
             // 
@@ -2331,7 +2345,7 @@
             // 
             // annunciatorComputerControl
             // 
-            this.annunciatorComputerControl.ActiveColor = System.Drawing.Color.IndianRed;
+            //this.annunciatorComputerControl.ActiveColor = System.Drawing.Color.IndianRed;
             this.annunciatorComputerControl.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.annunciatorComputerControl.Cadence = TA.WinFormsControls.CadencePattern.SteadyOff;
             this.annunciatorComputerControl.Font = new System.Drawing.Font("Consolas", 10F);
@@ -2346,7 +2360,7 @@
             // 
             // annunciatorDomePlatform
             // 
-            this.annunciatorDomePlatform.ActiveColor = System.Drawing.Color.IndianRed;
+            //this.annunciatorDomePlatform.ActiveColor = System.Drawing.Color.IndianRed;
             this.annunciatorDomePlatform.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.annunciatorDomePlatform.Cadence = TA.WinFormsControls.CadencePattern.SteadyOff;
             this.annunciatorDomePlatform.Font = new System.Drawing.Font("Consolas", 10F);
@@ -2362,7 +2376,7 @@
             // 
             // annunciatorSafeToOperate
             // 
-            this.annunciatorSafeToOperate.ActiveColor = System.Drawing.Color.IndianRed;
+            //this.annunciatorSafeToOperate.ActiveColor = System.Drawing.Color.IndianRed;
             this.annunciatorSafeToOperate.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.annunciatorSafeToOperate.Cadence = TA.WinFormsControls.CadencePattern.SteadyOff;
             this.annunciatorSafeToOperate.Font = new System.Drawing.Font("Consolas", 10F);
@@ -3418,17 +3432,12 @@
             // 
             this.toolTip.IsBalloon = true;
             // 
-            // separatorToolStripMenuItem
+            // renishawToolStripMenuItem
             // 
-            this.separatorToolStripMenuItem.Name = "separatorToolStripMenuItem";
-            this.separatorToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
-            this.separatorToolStripMenuItem.Text = "---";
-            // 
-            // separatorToolStripMenuItem1
-            // 
-            this.separatorToolStripMenuItem1.Name = "separatorToolStripMenuItem1";
-            this.separatorToolStripMenuItem1.Size = new System.Drawing.Size(200, 22);
-            this.separatorToolStripMenuItem1.Text = "---";
+            this.renishawToolStripMenuItem.Name = "renishawToolStripMenuItem";
+            this.renishawToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.renishawToolStripMenuItem.Text = "Renishaw";
+            this.renishawToolStripMenuItem.Click += new System.EventHandler(this.renishawToolStripMenuItem_Click);
             // 
             // FormDash
             // 
@@ -3723,6 +3732,7 @@
         private System.Windows.Forms.ToolStripMenuItem saveDebugToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem separatorToolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem separatorToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem renishawToolStripMenuItem;
     }
 }
 

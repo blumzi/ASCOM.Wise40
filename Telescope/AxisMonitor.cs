@@ -279,13 +279,14 @@ namespace ASCOM.Wise40
 
             double renishawHa = Angle.FromRadians(WiseTele.renishawHaEncoder.HourAngle).Hours;
             double renishawRa = wisesite.LocalSiderealTime.Hours - renishawHa;
+            double discrepancy = Math.Abs(_hourAngle - renishawHa);
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
                 $"{WiseName}:SampleAxisMovement: _currPosition(rad): {_currPosition.radians:F15} ({(_currPosition.predicted ? "PREDICTED" : "REAL")}), " +
                 $"_prevPosition(rad): {_prevPosition.radians:F15} ({(_prevPosition.predicted ? "PREDICTED" : "REAL")})," +
                 $"raDelta: {raDelta:F15}, haDelta: {haDelta:F15}, active motors: {ActiveMotors(_axis)}" +
                 $"enc: {_encoder.AxisValue}, renishaw: {WiseTele.renishawHaEncoder.Position}, renishaw.Radians: {WiseTele.renishawHaEncoder.Radians:F15}, " +
-                $"Ha: {_hourAngle}, renishawHa: {renishawHa}, Ra: {_rightAscension}, renishawRa: {renishawRa}"
+                $"Ha: {_hourAngle}, renishawHa: {renishawHa}, Ra: {_rightAscension}, renishawRa: {renishawRa}, discrepancy: {discrepancy}"
                 );
             #endregion
 
@@ -494,12 +495,13 @@ namespace ASCOM.Wise40
             _decDeltas.Enqueue(delta);
 
             double renishawDec = WiseTele.renishawDecEncoder.Declination;
+            double discrepancy = Math.Abs(_declination - renishawDec);
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
                 $"{WiseName}:SampleAxisMovement: _currPosition(rad): {_currPosition.radians:F15}, _prevPosition(rad): {_prevPosition.radians:F15}, " +
                 $"delta: {delta:F15}, active motors: {ActiveMotors(_axis)}" +
                 $"enc: {_encoder.EncoderValue}, renishaw: {WiseTele.renishawDecEncoder.Position}, renishaw.Radians: {WiseTele.renishawDecEncoder.Radians:F15}, " +
-                $"dec: {_declination}, renishawDec: {renishawDec}"
+                $"dec: {_declination}, renishawDec: {renishawDec}, discrepancy: {discrepancy}"
                 );
             #endregion
 

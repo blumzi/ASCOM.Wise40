@@ -73,6 +73,7 @@ namespace ASCOM.Wise40.Common
             public static string Telescope_BypassCoordinatesSafety = "BypassCoordinatesSafety";
             public static string Telescope_PlotSlews = "PlotSlews";
             public static string Telescope_MinutesToIdle = "MinutesToIdle";
+            public static string Telescope_EncodersInUse = "EncodersInUse";
 
             public static string SafeToOperate_AgeMaxSeconds = "AgeMaxSeconds";
             public static string SafeToOperate_StableAfterMin = "StableAfterMin";

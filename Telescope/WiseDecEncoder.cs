@@ -13,6 +13,7 @@ namespace ASCOM.Wise40
         private double _daqsValue;
 
         private readonly WiseEncoder axisEncoder, wormEncoder;
+        private readonly RenishawDecEncoder renishawDecEncoder = new RenishawDecEncoder();
 
         private bool _connected = false;
 
@@ -49,7 +50,6 @@ namespace ASCOM.Wise40
             );
 
             WiseName = name;
-            //RenishawDecEncoder = new RenishawEncoder(RenishawEncoder.Module.Dec);
 
             Angle = Simulated ?
                 Angle.DecFromDegrees(85) :
@@ -194,19 +194,11 @@ namespace ASCOM.Wise40
             }
         }
 
-        public bool DecOver90Degrees
+        public bool Over90Degrees
         {
             get
             {
-                return false;
-
-                //bool over90 = _angle.Radians > halfPI;
-
-                //#region debug
-                //debugger.WriteLine(Debugger.DebugLevel.DebugEncoders,
-                //    "DecOver90Degrees: radians: {0} (delta: {1}), ret: {2}", _angle.Radians, _angle.Radians - halfPI, over90);
-                //#endregion
-                //return over90;
+                return Radians > Const.halfPI;
             }
         }
 
@@ -214,7 +206,9 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return (EncoderValue * DecMultiplier) + DecCorrection;
+                return (WiseTele.Instance.EncodersInUse == WiseTele.EncodersInUseEnum.Old) ?
+                    (EncoderValue * DecMultiplier) + DecCorrection :
+                    renishawDecEncoder.Radians;
             }
         }
 
@@ -222,27 +216,17 @@ namespace ASCOM.Wise40
         {
             get
             {
-                double radians = Radians;
+                double rad = Radians;
 
-                if (radians > Const.onePI)
-                    radians -= Const.twoPI;
-                _angle.Radians = radians;
+                while (rad > Const.twoPI)
+                    rad -= Const.twoPI;
+                while (rad < Const.twoPI)
+                    rad += Const.twoPI;
 
-                Angle ret = _angle;
-                if (DecOver90Degrees)
-                {
-                    #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugEncoders, "WiseDecEncoder:Degrees: over90");
-                    #endregion
-                    ret.Radians = Const.onePI - ret.Radians;
-                }
+                if (Over90Degrees)
+                    rad = Const.onePI - rad;
 
-                //#region debug
-                //debugger.WriteLine(Debugger.DebugLevel.DebugEncoders,
-                //    "[{0}] {1} Degrees - Value: {2}, deg: {3}", this.GetHashCode(), Name, current_value, ret);
-                //#endregion
-
-                return ret.Degrees;
+                return Angle.Rad2Deg(rad);
             }
 
             set
