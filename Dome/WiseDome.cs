@@ -1039,6 +1039,11 @@ namespace ASCOM.Wise40
         {
             string op = $"WiseDome.OpenShutter(reason: {reason})";
 
+            if (!Hardware.Hardware.ComputerHasControl)
+            {
+                Exceptor.Throw<InvalidOperationException>($"{op}", Const.computerControlAtMaintenance);
+            }
+
             if (activityMonitor.ShuttingDown)
             {
                 if (WiseSite.OperationalMode == WiseSite.OpMode.ACP)
@@ -1094,6 +1099,11 @@ namespace ASCOM.Wise40
         public void CloseShutter(string reason)
         {
             string op = $"CloseShutter(reason: {reason})";
+
+            if (! Hardware.Hardware.ComputerHasControl)
+            {
+                Exceptor.Throw<InvalidOperationException>($"{op}", Const.computerControlAtMaintenance);
+            }
 
             if (DirectionMotorsAreActive)
             {
