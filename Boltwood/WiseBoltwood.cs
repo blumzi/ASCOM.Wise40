@@ -125,10 +125,9 @@ namespace ASCOM.Wise40.Boltwood
                 case "debug":
                     if (!String.IsNullOrEmpty(parameter))
                     {
-                        Debugger.DebugLevel newDebugLevel;
                         try
                         {
-                            Enum.TryParse<Debugger.DebugLevel>(parameter, out newDebugLevel);
+                            Enum.TryParse<Debugger.DebugLevel>(parameter, out Debugger.DebugLevel newDebugLevel);
                             Debugger.SetCurrentLevel(newDebugLevel);
                         }
                         catch
@@ -798,22 +797,23 @@ namespace ASCOM.Wise40.Boltwood
         private void GetClarityIISensorData()
         {
             string str = "";
+            string op = "GetClarityIISensorData";
 
             #region debug
             Debugger.Instance.WriteLine(Debugger.DebugLevel.DebugWeather,
-                $"GetClarityIISensorData: Name: {Name}, Id: {Id}, Enabled: {Enabled}, FilePath: \"{FilePath}\"");
+                $"{op}: Name: {Name}, Id: {Id}, Enabled: {Enabled}, FilePath: \"{FilePath}\"");
             #endregion
 
             if (string.IsNullOrEmpty(FilePath))
-                Exceptor.Throw<InvalidOperationException>("GetSensorData", "FilePath is either null or empty!");
+                Exceptor.Throw<InvalidOperationException>($"{op}", "FilePath is either null or empty!");
 
             if (!System.IO.File.Exists(FilePath))
-                Exceptor.Throw<InvalidOperationException>("GetSensorData", $"FilePath \"{FilePath}\" DOES NOT exist!");
+                Exceptor.Throw<InvalidOperationException>($"{op}", $"FilePath \"{FilePath}\" DOES NOT exist!");
 
             DateTime lastTimeFileWasUpdated = System.IO.File.GetLastWriteTime(FilePath);
             #region debug
             Debugger.Instance.WriteLine(Debugger.DebugLevel.DebugWeather,
-                $"GetClarityIISensorData: Name: {Name}, _lastTimeWeReadTheFile: {_lastTimeWeReadTheFile}, lastTimeFileWasUpdated: {lastTimeFileWasUpdated}");
+                $"{op}: Name: {Name}, _lastTimeWeReadTheFile: {_lastTimeWeReadTheFile}, lastTimeFileWasUpdated: {lastTimeFileWasUpdated}");
             #endregion
 
             if (_lastTimeWeReadTheFile == DateTime.MinValue || lastTimeFileWasUpdated.CompareTo(_lastTimeWeReadTheFile) > 0)
@@ -827,7 +827,7 @@ namespace ASCOM.Wise40.Boltwood
                 }
                 catch (Exception e)
                 {
-                    Exceptor.Throw<InvalidOperationException>("GetSensorData", $"Cannot read \"{FilePath}\", caught {e.Message}");
+                    Exceptor.Throw<InvalidOperationException>($"{op}", $"Cannot read \"{FilePath}\", caught {e.Message}");
                 }
 
                 _sensorData = new SensorData(str, this);
@@ -837,7 +837,7 @@ namespace ASCOM.Wise40.Boltwood
             {
                 #region debug
                 Debugger.Instance.WriteLine(Debugger.DebugLevel.DebugWeather,
-                    $"GetClarityIISensorData: Name: {Name}, Too soon.  lastTimeFileWasUpdated: {_lastTimeWeReadTheFile}, lastTimeFileWasUpdated {lastTimeFileWasUpdated}");
+                    $"{op}: Name: {Name}, Too soon.  lastTimeFileWasUpdated: {_lastTimeWeReadTheFile}, lastTimeFileWasUpdated {lastTimeFileWasUpdated}");
                 #endregion
             }
         }
