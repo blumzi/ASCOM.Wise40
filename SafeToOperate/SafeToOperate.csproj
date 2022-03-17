@@ -132,6 +132,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CloudNetSensor.cs" />
     <Compile Include="ARDO.cs" />
     <Compile Include="CloudsSensor.cs" />
     <Compile Include="ComputerControlSensor.cs" />

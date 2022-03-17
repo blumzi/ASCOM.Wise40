@@ -52,6 +52,7 @@ namespace ASCOM.Wise40SafeToOperate
         public static TessWRefresher tessWRefresher;
         public static OWLRefresher owlRefresher;
         public static ARDOSensor ardoSensor;
+        public static CloudNetSensor cloudNetSensor;
 
         public static DoorLockSensor doorLockSensor;
         public static ComputerControlSensor computerControlSensor;
@@ -140,6 +141,7 @@ namespace ASCOM.Wise40SafeToOperate
             tessWRefresher = new TessWRefresher(this);
             owlRefresher = new OWLRefresher(this);
             ardoSensor = new ARDOSensor(this);
+            cloudNetSensor = new CloudNetSensor(this);
 
             //
             // The sensors in priotity order.  The first one that:
@@ -168,6 +170,7 @@ namespace ASCOM.Wise40SafeToOperate
                 tessWRefresher,             // Refreshers
                 owlRefresher,
                 ardoSensor,
+                cloudNetSensor,
             };
 
             _cumulativeSensors = new List<Sensor>();
@@ -975,6 +978,7 @@ namespace ASCOM.Wise40SafeToOperate
                     TessW = JsonConvert.DeserializeObject<TessWStationRawData>(tessw.Action("raw-data", "")),
                     OWL = WiseSafeToOperate.owlRefresher.Digest() as OWLRefresher.OWLDigest,
                     ARDO = ardoSensor.Digest() as ARDORawData,
+                    CloudNet = cloudNetSensor.Digest() as CloudNetRawData,
                 };
 
                 return JsonConvert.SerializeObject(ret);
@@ -1030,5 +1034,6 @@ namespace ASCOM.Wise40SafeToOperate
         public TessWStationRawData TessW;
         public OWLRefresher.OWLDigest OWL;
         public ARDORawData ARDO;
+        public CloudNetRawData CloudNet;
     }
 }
