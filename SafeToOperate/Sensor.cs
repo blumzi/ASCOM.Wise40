@@ -924,6 +924,12 @@ namespace ASCOM.Wise40SafeToOperate
                 }
             }
 
+            if (saved == null)
+            {
+                fileInfo.Delete();
+                return;
+            }
+
             DateTime now = DateTime.Now;
             TimeSpan age = now.Subtract(saved.TimeOfSave);
             if (age <= TimeSpan.FromMinutes(5))
