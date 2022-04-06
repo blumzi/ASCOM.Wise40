@@ -61,15 +61,14 @@ namespace ASCOM.Wise40SafeToOperate
             {
                 try
                 {
-                    string json = periodicHttpFetcher.Result;
+                    string json = periodicHttpFetcher.Result.Replace("'", "");
+                    // NOTE: Do not print the value of json, it contains double quotes
                     CloudNetResult result = JsonConvert.DeserializeObject<CloudNetResult>(json);
-                    if (result.timeStamp.EndsWith("'"))
-                        result.timeStamp = result.timeStamp.Remove(result.timeStamp.Length - 1);
-                    DateTime stamp = Convert.ToDateTime(DateTime.ParseExact(result.timeStamp, "dd-MM-yyyy, hh:mm:ss", CultureInfo.InvariantCulture));
-                    DateTime updatedAtUT = stamp.ToUniversalTime();
+                    updatedAtUT = Convert.ToDateTime(DateTime.ParseExact(result.timeStamp, "dd-MM-yyyy, hh:mm:ss", CultureInfo.InvariantCulture));
                     if (updatedAtUT > lastUpdatedAtUT)
                     {
                         bool safe = Convert.ToBoolean(result.safeToOperate);
+                        sensorData["CloudCover"] = safe ? "0" : "1";
                         _weatherLogger?.Log(new Dictionary<string, string>()
                         {
                             ["CloudCover"] = (safe ? 20 : 80).ToString(),
@@ -84,7 +83,7 @@ namespace ASCOM.Wise40SafeToOperate
                 catch (Exception ex)
                 {
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, $"CloudNetSensor.GetReading: Got: {ex.Message}");
+                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, $"CloudNetSensor.GetReading: Got: {ex.Message} at\n{ex.StackTrace}");
                     #endregion
                     return null;
                 }
