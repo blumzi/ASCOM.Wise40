@@ -97,7 +97,6 @@ namespace ASCOM.Wise40.Boltwood
         public WetFlagValue rainFlag;
         public WetFlagValue wetFlag;
         public int secondsSinceLastValidData;
-        public DateTime lastWriten;
         public enum CloudCondition
         {
             cloudUnknown = 0,
