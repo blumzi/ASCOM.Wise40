@@ -59,9 +59,10 @@ namespace ASCOM.Wise40SafeToOperate
 
             if (lastFetch > _lastFetch)
             {
+                string json = "";
                 try
                 {
-                    string json = periodicHttpFetcher.Result.Replace("'", "");
+                    json = periodicHttpFetcher.Result.Replace("'", "");
                     // NOTE: Do not print the value of json, it contains double quotes
                     CloudNetResult result = JsonConvert.DeserializeObject<CloudNetResult>(json);
                     updatedAtUT = Convert.ToDateTime(DateTime.ParseExact(result.timeStamp, "dd-MM-yyyy, hh:mm:ss", CultureInfo.InvariantCulture));
@@ -83,7 +84,7 @@ namespace ASCOM.Wise40SafeToOperate
                 catch (Exception ex)
                 {
                     #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, $"CloudNetSensor.GetReading: Got: {ex.Message} at\n{ex.StackTrace}");
+                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety, $@"CloudNetSensor.GetReading: Caught: {ex.Message} at\n{ex.StackTrace}");
                     #endregion
                     return null;
                 }
