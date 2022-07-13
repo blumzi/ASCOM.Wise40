@@ -22,7 +22,8 @@ namespace RemoteSafetyDashboard
                               "It does this by periodically contacting the\n" +
                               $"ASCOM Server on {RemoteSafetyDashboard.remoteHostIp}\n" +
                               "\n" +
-                              $"Version: v{RemoteSafetyDashboard.version}";
+                              $"Version: v{RemoteSafetyDashboard.version}\n" +
+                              $"Build time: {ASCOM.Wise40.Common.WiseObject.GetLinkerTimestampUtc(System.Reflection.Assembly.GetExecutingAssembly()):r}";
 
         }
 

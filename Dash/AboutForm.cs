@@ -47,6 +47,8 @@ namespace Dash
             string repo = $"{Properties.Resources.RemoteUrl.Replace(".git", "")}";
             urlCommit = $"{repo}/commit/{Properties.Resources.CurrentCommitLong}";
             urlRelease = $"{repo}/releases/tag/{Properties.Resources.RemoteTag}";
+
+            labelBuildTimeValue.Text = WiseObject.GetLinkerTimestampUtc(System.Reflection.Assembly.GetExecutingAssembly()).ToString("r");
         }
 
         private void button1_Click(object sender, EventArgs e)

@@ -52,6 +52,8 @@
             this.linkLabelLatestCommit = new System.Windows.Forms.LinkLabel();
             this.label8 = new System.Windows.Forms.Label();
             this.linkLabelRelease = new System.Windows.Forms.LinkLabel();
+            this.labelBuildTime = new System.Windows.Forms.Label();
+            this.labelBuildTimeValue = new System.Windows.Forms.Label();
             this.tableLayoutPanel1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -59,7 +61,7 @@
             // 
             this.buttonOK.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.buttonOK.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.buttonOK.Location = new System.Drawing.Point(219, 476);
+            this.buttonOK.Location = new System.Drawing.Point(219, 503);
             this.buttonOK.Name = "buttonOK";
             this.buttonOK.Size = new System.Drawing.Size(75, 23);
             this.buttonOK.TabIndex = 0;
@@ -102,7 +104,7 @@
             this.tableLayoutPanel1.Controls.Add(this.labelBoltwoodVersion, 3, 3);
             this.tableLayoutPanel1.Controls.Add(this.labelVantageProVersion, 3, 4);
             this.tableLayoutPanel1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.tableLayoutPanel1.Location = new System.Drawing.Point(48, 334);
+            this.tableLayoutPanel1.Location = new System.Drawing.Point(48, 361);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
             this.tableLayoutPanel1.RowCount = 5;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
@@ -427,6 +429,36 @@
             this.linkLabelRelease.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.linkLabelRelease.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabelVersion_LinkClicked);
             // 
+            // labelBuildTime
+            // 
+            this.labelBuildTime.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.labelBuildTime.AutoSize = true;
+            this.labelBuildTime.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
+            this.labelBuildTime.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
+            this.labelBuildTime.Location = new System.Drawing.Point(136, 329);
+            this.labelBuildTime.Name = "labelBuildTime";
+            this.labelBuildTime.Size = new System.Drawing.Size(69, 17);
+            this.labelBuildTime.TabIndex = 12;
+            this.labelBuildTime.Text = "Build time";
+            this.labelBuildTime.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // labelBuildTimeValue
+            // 
+            this.labelBuildTimeValue.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.labelBuildTimeValue.AutoSize = true;
+            this.labelBuildTimeValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F);
+            this.labelBuildTimeValue.ForeColor = System.Drawing.Color.DarkOrange;
+            this.labelBuildTimeValue.Location = new System.Drawing.Point(239, 329);
+            this.labelBuildTimeValue.Name = "labelBuildTimeValue";
+            this.labelBuildTimeValue.Size = new System.Drawing.Size(31, 15);
+            this.labelBuildTimeValue.TabIndex = 19;
+            this.labelBuildTimeValue.Text = "time";
+            this.labelBuildTimeValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
             // AboutForm
             // 
             this.AcceptButton = this.buttonOK;
@@ -434,6 +466,8 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.ClientSize = new System.Drawing.Size(507, 538);
+            this.Controls.Add(this.labelBuildTimeValue);
+            this.Controls.Add(this.labelBuildTime);
             this.Controls.Add(this.linkLabelRelease);
             this.Controls.Add(this.label8);
             this.Controls.Add(this.linkLabelLatestCommit);
@@ -478,5 +512,7 @@
         private System.Windows.Forms.LinkLabel linkLabelLatestCommit;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.LinkLabel linkLabelRelease;
+        private System.Windows.Forms.Label labelBuildTime;
+        private System.Windows.Forms.Label labelBuildTimeValue;
     }
 }
