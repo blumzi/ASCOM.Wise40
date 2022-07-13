@@ -366,6 +366,7 @@ public static bool TransformApparentToJ2000(double apparentRA, double apparentDE
                     { "wo-neo", "c18" },
                     { "c28-pc", "c28" },
                     { "dome-pc", "wise40" },
+                    { "h80-pc", "h80" },
                 };
 
                 string machine = Environment.MachineName.ToLower();
