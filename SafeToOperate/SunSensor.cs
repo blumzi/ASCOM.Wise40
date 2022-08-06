@@ -217,7 +217,7 @@ namespace ASCOM.Wise40SafeToOperate
             periodicHttpFetcher = new PeriodicHttpFetcher(
                 "SunElevation",
                 URL,
-                TimeSpan.FromMinutes(2),
+                TimeSpan.FromMinutes(4),
                 tries: 3,
                 maxAgeMillis: (int)TimeSpan.FromMinutes(5).TotalMilliseconds
             );
