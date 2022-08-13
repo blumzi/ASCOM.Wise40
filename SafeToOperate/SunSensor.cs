@@ -1,5 +1,5 @@
 ﻿
-#define USE_HTTP_FETCHER
+#define USE_COORDINATE_SHARP
 
 using System;
 using ASCOM.Wise40;
@@ -7,10 +7,18 @@ using ASCOM.Wise40.Common;
 
 #if USE_HTTP_FETCHER
 using Newtonsoft.Json;
-#else
+#endif
+
+#if USE_ASCOM
 using ASCOM.Astrometry;
 #endif
 
+#if USE_COORDINATE_SHARP
+// NuGet package manager: Install-Package CoordinateSharp -Version 2.13.1.1
+// Github: https://github.com/Tronald/CoordinateSharp
+// Web Site: https://coordinatesharp.com/DeveloperGuide#solar-and-lunar-coordinates
+using CoordinateSharp;
+#endif
 
 namespace ASCOM.Wise40SafeToOperate
 {
@@ -221,6 +229,10 @@ namespace ASCOM.Wise40SafeToOperate
                 tries: 3,
                 maxAgeMillis: (int)TimeSpan.FromMinutes(5).TotalMilliseconds
             );
+#elif USE_ASCOM
+            // nothing special
+#elif USE_COORDINATE_SHARP
+            // nothing special
 #endif
             _initialized = true;
         }
@@ -248,7 +260,7 @@ namespace ASCOM.Wise40SafeToOperate
                         _value = Double.NaN;
                     }
                 }
-#else
+#elif USE_ASCOM
                 if (!Stale)
                     return _value;
 
@@ -296,6 +308,10 @@ namespace ASCOM.Wise40SafeToOperate
 
                 _value = 90.0 - zd;
                 _lastUpdate = DateTime.Now;
+#elif USE_COORDINATE_SHARP
+                Coordinate c = new Coordinate(WiseSite.Latitude, WiseSite.Longitude, DateTime.UtcNow);
+                _value = c.CelestialInfo.SunAltitude;
+                _lastUpdate = DateTime.Now;
 #endif
                 return _value;
             }
@@ -306,7 +322,8 @@ namespace ASCOM.Wise40SafeToOperate
             {
 #if USE_HTTP_FETCHER
                 return periodicHttpFetcher.LastSuccess;
-#else
+#elif   USE_ASCOM
+#elif USE_COORDINATE_SHARP
                 return _lastUpdate;
 #endif
             }
@@ -335,8 +352,10 @@ namespace ASCOM.Wise40SafeToOperate
                 return
 #if USE_HTTP_FETCHER
                     periodicHttpFetcher.MaxAge
-#else
+#elif USE_ASCOM
                     _maxAge
+#elif USE_COORDINATE_SHARP
+                    TimeSpan.FromMinutes(1);
 #endif
 
                 ;
