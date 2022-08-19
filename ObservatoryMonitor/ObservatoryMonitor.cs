@@ -413,7 +413,10 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             labelDate.Text = $"{localTime:ddd, dd MMM yyyy}";
             labelTime.Text = $"{localTime:hh:mm:ss tt} " + deltaFromUT;
 
-            if (DateTime.Now >= _nextCheck && !_checking)
+            if (_checking)
+                return;
+
+            if (DateTime.Now >= _nextCheck /* && !_checking */)
             {
                 _checking = true;
                 if (CanConnect())
