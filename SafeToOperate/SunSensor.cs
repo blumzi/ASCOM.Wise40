@@ -5,18 +5,10 @@ using System;
 using ASCOM.Wise40;
 using ASCOM.Wise40.Common;
 
-#if USE_HTTP_FETCHER
-using Newtonsoft.Json;
-#endif
-
-#if USE_ASCOM
-using ASCOM.Astrometry;
-#endif
-
 #if USE_COORDINATE_SHARP
 // NuGet package manager: Install-Package CoordinateSharp -Version 2.13.1.1
-// Github: https://github.com/Tronald/CoordinateSharp
-// Web Site: https://coordinatesharp.com/DeveloperGuide#solar-and-lunar-coordinates
+// Github:                https://github.com/Tronald/CoordinateSharp
+// Web Site:              https://coordinatesharp.com/DeveloperGuide#solar-and-lunar-coordinates
 using CoordinateSharp;
 #endif
 
@@ -79,7 +71,6 @@ namespace ASCOM.Wise40SafeToOperate
                 return null;
 
             double max = DateTime.Now.Hour < 12 ? _maxAtDawn : _maxAtDusk;
-            DateTime now = DateTime.Now;
             bool stale = sunElevation.Stale;
 
             Reading r = new Reading
@@ -94,10 +85,6 @@ namespace ASCOM.Wise40SafeToOperate
 
             if (Double.IsNaN(sunElevation.Value))
                 _status = "Sun elevation is not available yet";
-#if USE_HTTP_FETCHER
-            else if (r.Stale)
-                _status = $"Sun elevation is stale (older than {sunElevation.MaxAge.ToMinimalString()})";
-#endif
             else
                 _status = $"Sun elevation is {FormatVerbal(sunElevation.Value)} (max: {FormatVerbal(max)})";
 
@@ -170,70 +157,18 @@ namespace ASCOM.Wise40SafeToOperate
         public bool IsSafe;
     }
 
-#if USE_HTTP_FETCHER
-    public class IpGeolocationLocation
-    {
-        public double latitude;
-        public double longitude;
-    }
-
-    public class IpGeolocationInfo
-    {
-        public IpGeolocationLocation location;
-        public DateTime date;
-        public DateTime current_time;
-        public DateTime sunrise;
-        public DateTime sunset;
-        public string sun_status;
-        public DateTime solar_noon;
-        public TimeSpan day_length;
-        public double sun_altitude;
-        public double sun_distance;
-        public double sun_azimuth;
-        public DateTime moonrise;
-        public DateTime moonset;
-        public string moon_status;
-        public double moon_altitude;
-        public double moon_distance;
-        public double moon_azimuth;
-        public double moon_parallactic_angle;
-    }
-#endif
-
     public class SunElevation
     {
         private double _value = Double.NaN;
         private bool _initialized = false;
 
-#if USE_HTTP_FETCHER
-        private const string apiKey = "d6ce0c7ecb5c451ba2b462dfb5750364";
-        private static readonly string URL = "https://api.ipgeolocation.io/astronomy?" +
-            $"apiKey={apiKey}&" +
-            $"lat={WiseSite.Latitude}&" +
-            $"long={WiseSite.Longitude}";
-        private static PeriodicHttpFetcher periodicHttpFetcher;
-#else
         private DateTime _lastUpdate = DateTime.MinValue;
-#endif
 
         public void Init()
         {
             if (_initialized)
                 return;
 
-#if USE_HTTP_FETCHER
-            periodicHttpFetcher = new PeriodicHttpFetcher(
-                "SunElevation",
-                URL,
-                TimeSpan.FromMinutes(4),
-                tries: 3,
-                maxAgeMillis: (int)TimeSpan.FromMinutes(5).TotalMilliseconds
-            );
-#elif USE_ASCOM
-            // nothing special
-#elif USE_COORDINATE_SHARP
-            // nothing special
-#endif
             _initialized = true;
         }
 
@@ -243,76 +178,9 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
-#if USE_HTTP_FETCHER
-                if (!periodicHttpFetcher.Alive)
-                    _value = Double.NaN;
-                else {
-                    try
-                    {
-                        IpGeolocationInfo info = JsonConvert.DeserializeObject<IpGeolocationInfo>(
-                            periodicHttpFetcher.Result
-                            .Replace("\"-:-\"", "\"00:00\""));
-
-                        _value = info.sun_altitude;
-                    }
-                    catch
-                    {
-                        _value = Double.NaN;
-                    }
-                }
-#elif USE_ASCOM
-                if (!Stale)
-                    return _value;
-
-                WiseSite.InitOCH();
-
-                OnSurface onSurface = new OnSurface()
-                {
-                    Latitude = WiseSite.Latitude,
-                    Longitude = WiseSite.Longitude,
-                    Height = WiseSite.Elevation,
-                    Pressure = WiseSite.och.Pressure,
-                    Temperature = WiseSite.och.Temperature,
-                };
-
-                CatEntry3 catEntry = new CatEntry3()
-                {
-                    StarName = "Sun",
-                };
-
-                Object3 target = new Object3()
-                {
-                    Name = "Sun",
-                    Number = Body.Sun,
-                    Star = catEntry,
-                    Type = ObjectType.MajorPlanetSunOrMoon,
-                };
-
-                double ra = 0.0, dec = 0.0, dis = 0.0;
-
-                short ret = WiseSite.novas31.TopoPlanet(
-                    WiseSite.ascomutil.JulianDate, target, WiseSite.astroutils.DeltaT(), onSurface, Accuracy.Full, ref ra, ref dec, ref dis);
-
-                if (ret != 0)
-                    Exceptor.Throw<InvalidOperationException>("SunElevation", $"Cannot calculate Sun position (novas31.TopoPlanet: ret: {ret})");
-
-                double rar = 0, decr = 0, az = 0, zd = 0;
-
-                WiseSite.novas31.Equ2Hor(WiseSite.astroutils.JulianDateUT1(0), 0,
-                    WiseSite.astrometricAccuracy,
-                    0, 0,
-                    onSurface,
-                    ra, dec,
-                    WiseSite.refractionOption,
-                    ref zd, ref az, ref rar, ref decr);
-
-                _value = 90.0 - zd;
-                _lastUpdate = DateTime.Now;
-#elif USE_COORDINATE_SHARP
                 Coordinate c = new Coordinate(WiseSite.Latitude, WiseSite.Longitude, DateTime.UtcNow);
                 _value = c.CelestialInfo.SunAltitude;
                 _lastUpdate = DateTime.Now;
-#endif
                 return _value;
             }
         }
@@ -320,12 +188,7 @@ namespace ASCOM.Wise40SafeToOperate
         public DateTime LastUpdate {
             get
             {
-#if USE_HTTP_FETCHER
-                return periodicHttpFetcher.LastSuccess;
-#elif   USE_ASCOM
-#elif USE_COORDINATE_SHARP
                 return _lastUpdate;
-#endif
             }
         }
 
@@ -349,16 +212,7 @@ namespace ASCOM.Wise40SafeToOperate
         {
             get
             {
-                return
-#if USE_HTTP_FETCHER
-                    periodicHttpFetcher.MaxAge
-#elif USE_ASCOM
-                    _maxAge
-#elif USE_COORDINATE_SHARP
-                    TimeSpan.FromMinutes(1);
-#endif
-
-                ;
+                return TimeSpan.FromMinutes(1);
             }
         }
     }
