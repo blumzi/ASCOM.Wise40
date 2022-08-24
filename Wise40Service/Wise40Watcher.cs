@@ -72,7 +72,7 @@ namespace Wise40Watcher
             //System.Diagnostics.Debugger.Launch();
             Log($"=========== Start (opMode: {opMode}) ===========");
 
-            timer.Change(WiFiReconnectIntervalMillis, Timeout.Infinite);
+            // timer.Change(WiFiReconnectIntervalMillis, Timeout.Infinite);  // Not neede, it is now connected by Ethernet
             
             if (weatherLinkNeedsWatching)
                 weatherLinkWatcher = new Watcher("weatherlink");
