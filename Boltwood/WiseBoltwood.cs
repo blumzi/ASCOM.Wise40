@@ -25,10 +25,10 @@ namespace ASCOM.Wise40.Boltwood
         public const int nStations = 3;
         public static BoltwoodStation[] stations = new BoltwoodStation[nStations];
         private BoltwoodStation C18Station, C28Station;
-        public static readonly Exceptor Exceptor = ObservingConditions.WeatherExceptor;
+        public Exceptor Exceptor = new Exceptor(Common.Debugger.DebugLevel.DebugWeather);
 
-        static WiseBoltwood() { }
-        public WiseBoltwood() { }
+        static WiseBoltwood() {}
+        public WiseBoltwood() {}
 
         private static readonly Lazy<WiseBoltwood> lazy = new Lazy<WiseBoltwood>(() => new WiseBoltwood()); // Singleton
 
@@ -49,6 +49,7 @@ namespace ASCOM.Wise40.Boltwood
             if (_initialized)
                 return;
 
+            Exceptor = ObservingConditions.WeatherExceptor;
             for (int i = 0; i < nStations; i++)
             {
                 stations[i] = new BoltwoodStation(i);   // calls ReadProfile()
@@ -327,6 +328,9 @@ namespace ASCOM.Wise40.Boltwood
                     return ret;
                 }
 
+                if (!C18Station.Enabled)
+                    return CloudConditionToNumeric(SensorData.CloudCondition.cloudUnknown);
+
                 SensorData.CloudCondition C18CloudCondition = (C18Station == null || C18Station.SensorData == null) ?
                     SensorData.CloudCondition.cloudUnknown :
                     C18Station.SensorData.cloudCondition;
@@ -366,6 +370,10 @@ namespace ASCOM.Wise40.Boltwood
                 {
                     return SensorData.CloudCondition.cloudUnknown;
                 }
+
+                if (!C18Station.Enabled)
+                    return SensorData.CloudCondition.cloudUnknown;
+
                 return (C18Station == null || C18Station.SensorData == null) ?
                     SensorData.CloudCondition.cloudUnknown :
                     C18Station.SensorData.cloudCondition;
@@ -392,7 +400,7 @@ namespace ASCOM.Wise40.Boltwood
                     Exceptor.Throw<PropertyNotImplementedException>("DewPoint", "not available");
                 }
 
-                if (C18Station == null || C18Station.SensorData == null)
+                if (!C18Station.Enabled || C18Station == null || C18Station.SensorData == null)
                     Exceptor.Throw<PropertyNotImplementedException>("DewPoint", "not available");
 
                 return C18Station.SensorData.dewPoint;
@@ -419,7 +427,7 @@ namespace ASCOM.Wise40.Boltwood
                     Exceptor.Throw<PropertyNotImplementedException>("Humidity", "not available");
                 }
 
-                if (C18Station == null || C18Station.SensorData == null)
+                if (!C18Station.Enabled || C18Station == null || C18Station.SensorData == null)
                     Exceptor.Throw<PropertyNotImplementedException>("DewPoint", "not available");
 
                 return C18Station.SensorData.humidity;
@@ -501,10 +509,10 @@ namespace ASCOM.Wise40.Boltwood
                 case "StarFWHM":
                 case "WindDirection":
                 case "WindGust":
-                    Exceptor.Throw<MethodNotImplementedException>("SensorDescription(" + PropertyName + ")", "Not implemented");
+                    Instance.Exceptor.Throw<MethodNotImplementedException>("SensorDescription(" + PropertyName + ")", "Not implemented");
                     return string.Empty;
                 default:
-                    Exceptor.Throw<InvalidValueException>("SensorDescription(" + PropertyName + ")", $"Invalid value \"{PropertyName}\"");
+                    Instance.Exceptor.Throw<InvalidValueException>("SensorDescription(" + PropertyName + ")", $"Invalid value \"{PropertyName}\"");
                     return string.Empty;
             }
         }
@@ -560,6 +568,11 @@ namespace ASCOM.Wise40.Boltwood
                 {
                     return 100; // ???
                 }
+
+                if (!C18Station.Enabled)
+                    //Exceptor.Throw<PropertyNotImplementedException>("SkyTemperature", "not available");
+                    return Double.NaN;
+
                 var ret = C18Station.SensorData.skyAmbientTemp;
 
                 if (ret == (double)SensorData.SpecialTempValue.specialTempSaturatedHot)
@@ -591,7 +604,7 @@ namespace ASCOM.Wise40.Boltwood
                     Exceptor.Throw<PropertyNotImplementedException>("Temperature", "not available");
                 }
 
-                if (C18Station == null || C18Station.SensorData == null)
+                if (!C18Station.Enabled || C18Station == null || C18Station.SensorData == null)
                     Exceptor.Throw<PropertyNotImplementedException>("Temperature", "not available");
 
                 double ret = C18Station.SensorData.ambientTemp;
@@ -628,7 +641,7 @@ namespace ASCOM.Wise40.Boltwood
                     return Double.NaN;
             }
 
-            if (C18Station == null || C18Station.SensorData == null)
+            if (!C18Station.Enabled || C18Station == null || C18Station.SensorData == null)
                 return TimeSpan.MaxValue.TotalSeconds;
 
             return C18Station.SensorData.age;
@@ -678,7 +691,7 @@ namespace ASCOM.Wise40.Boltwood
                     Exceptor.Throw<PropertyNotImplementedException>("WindSpeed", "not available");
                 }
 
-                if (C18Station == null || C18Station.SensorData == null)
+                if (!C18Station.Enabled || C18Station == null || C18Station.SensorData == null)
                     Exceptor.Throw<PropertyNotImplementedException>("WindSpeed", "not available");
 
                 double ret = C18Station.SensorData.windSpeed;

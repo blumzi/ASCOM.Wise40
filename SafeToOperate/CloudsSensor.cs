@@ -45,7 +45,7 @@ namespace ASCOM.Wise40SafeToOperate
 
         public override Reading GetReading()
         {
-            if (WiseSite.och == null)
+            if (WiseSite.och == null || !Enabled)
                 return null;
 
             double seconds = SecondsSinceLastUpdate;
@@ -99,7 +99,7 @@ namespace ASCOM.Wise40SafeToOperate
             {
                 return _max.ToString();
             }
-        }
+        }        
     }
 
     public class CloudsDigest
