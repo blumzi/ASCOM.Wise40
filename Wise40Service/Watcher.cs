@@ -58,7 +58,7 @@ namespace Wise40Watcher
         {
             Process p = sender as Process;
 
-            Wise40Watcher.Log($"OnExit: Process {p.Id} on session {p.SessionId} has exited with {p.ExitCode} at {p.ExitTime}");
+            Wise40Watcher.Log($"OnExit: Process {p.Id} has exited with {p.ExitCode} at {p.ExitTime}");
         }
 
         public void Worker()
