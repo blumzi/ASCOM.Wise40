@@ -13,6 +13,7 @@ namespace ASCOM.Wise40SafeToOperate
     {
         private uint _max;
         private string _status = "";
+        private ASCOM.DriverAccess.ObservingConditions tessw;
 
         public CloudsSensor(WiseSafeToOperate instance) :
             base("Clouds",
@@ -20,7 +21,13 @@ namespace ASCOM.Wise40SafeToOperate
                 Attribute.CanBeStale |
                 Attribute.CanBeBypassed,
                 "", "", "f0", "CloudCover",
-                instance) { }
+                instance) {
+
+            tessw = new DriverAccess.ObservingConditions("ASCOM.Wise40.TessW.ObservingConditions")
+            {
+                Connected = true
+            };
+        }
 
         public override object Digest()
         {
@@ -45,7 +52,7 @@ namespace ASCOM.Wise40SafeToOperate
 
         public override Reading GetReading()
         {
-            if (WiseSite.och == null || !Enabled)
+            if (tessw == null || !Enabled)
                 return null;
 
             double seconds = SecondsSinceLastUpdate;
@@ -54,7 +61,7 @@ namespace ASCOM.Wise40SafeToOperate
                 Stale = IsStale,
                 secondsSinceLastUpdate = seconds,
                 timeOfLastUpdate = DateTime.Now.Subtract(TimeSpan.FromSeconds(seconds)),
-                value = WiseSite.och.CloudCover,
+                value = tessw.CloudCover,
             };
 
             if (r.Stale) {

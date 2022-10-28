@@ -224,9 +224,9 @@ namespace ASCOM.Wise40SafeToOperate
             this.label11.ForeColor = System.Drawing.Color.DarkOrange;
             this.label11.Location = new System.Drawing.Point(248, 132);
             this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(57, 13);
+            this.label11.Size = new System.Drawing.Size(47, 13);
             this.label11.TabIndex = 23;
-            this.label11.Text = "(Boltwood)";
+            this.label11.Text = "(TessW)";
             // 
             // label13
             // 
