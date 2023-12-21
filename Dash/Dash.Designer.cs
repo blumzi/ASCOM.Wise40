@@ -167,6 +167,7 @@
             this.saveDebugToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.viewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.digitalIOCardsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.renishawToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.actionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.restartTheWise40ServiceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.stopTheWise40ServiceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -260,7 +261,6 @@
             this.label7 = new System.Windows.Forms.Label();
             this.timerRefreshDisplay = new System.Windows.Forms.Timer(this.components);
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
-            this.renishawToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tableLayoutMain.SuspendLayout();
             this.groupBoxFocuser.SuspendLayout();
             this.groupBoxDomeGroup.SuspendLayout();
@@ -1335,10 +1335,10 @@
             this.labelLTValue.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.labelLTValue.Font = new System.Drawing.Font("Lucida Console", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelLTValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelLTValue.Location = new System.Drawing.Point(236, 0);
+            this.labelLTValue.Location = new System.Drawing.Point(237, 0);
             this.labelLTValue.Margin = new System.Windows.Forms.Padding(0);
             this.labelLTValue.Name = "labelLTValue";
-            this.labelLTValue.Size = new System.Drawing.Size(118, 32);
+            this.labelLTValue.Size = new System.Drawing.Size(117, 32);
             this.labelLTValue.TabIndex = 22;
             this.labelLTValue.Text = "00h00m00.0s";
             this.labelLTValue.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -1365,10 +1365,10 @@
             this.labelAltitudeValue.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.labelAltitudeValue.Font = new System.Drawing.Font("Lucida Console", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelAltitudeValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelAltitudeValue.Location = new System.Drawing.Point(56, 96);
+            this.labelAltitudeValue.Location = new System.Drawing.Point(57, 96);
             this.labelAltitudeValue.Margin = new System.Windows.Forms.Padding(0);
             this.labelAltitudeValue.Name = "labelAltitudeValue";
-            this.labelAltitudeValue.Size = new System.Drawing.Size(118, 32);
+            this.labelAltitudeValue.Size = new System.Drawing.Size(117, 32);
             this.labelAltitudeValue.TabIndex = 17;
             this.labelAltitudeValue.Text = "00°00\'00.0\"";
             this.labelAltitudeValue.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -1395,10 +1395,10 @@
             this.labelUTValue.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.labelUTValue.Font = new System.Drawing.Font("Lucida Console", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelUTValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelUTValue.Location = new System.Drawing.Point(56, 0);
+            this.labelUTValue.Location = new System.Drawing.Point(57, 0);
             this.labelUTValue.Margin = new System.Windows.Forms.Padding(0);
             this.labelUTValue.Name = "labelUTValue";
-            this.labelUTValue.Size = new System.Drawing.Size(118, 32);
+            this.labelUTValue.Size = new System.Drawing.Size(117, 32);
             this.labelUTValue.TabIndex = 20;
             this.labelUTValue.Text = "00h00m00.0s";
             this.labelUTValue.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -1425,10 +1425,10 @@
             this.labelSiderealValue.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.labelSiderealValue.Font = new System.Drawing.Font("Lucida Console", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelSiderealValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelSiderealValue.Location = new System.Drawing.Point(236, 32);
+            this.labelSiderealValue.Location = new System.Drawing.Point(237, 32);
             this.labelSiderealValue.Margin = new System.Windows.Forms.Padding(0);
             this.labelSiderealValue.Name = "labelSiderealValue";
-            this.labelSiderealValue.Size = new System.Drawing.Size(118, 32);
+            this.labelSiderealValue.Size = new System.Drawing.Size(117, 32);
             this.labelSiderealValue.TabIndex = 8;
             this.labelSiderealValue.Text = "00h00m00.0s";
             this.labelSiderealValue.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -1441,10 +1441,10 @@
             this.labelRightAscensionValue.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.labelRightAscensionValue.Font = new System.Drawing.Font("Lucida Console", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelRightAscensionValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelRightAscensionValue.Location = new System.Drawing.Point(46, 64);
+            this.labelRightAscensionValue.Location = new System.Drawing.Point(47, 64);
             this.labelRightAscensionValue.Margin = new System.Windows.Forms.Padding(0);
             this.labelRightAscensionValue.Name = "labelRightAscensionValue";
-            this.labelRightAscensionValue.Size = new System.Drawing.Size(128, 32);
+            this.labelRightAscensionValue.Size = new System.Drawing.Size(127, 32);
             this.labelRightAscensionValue.TabIndex = 12;
             this.labelRightAscensionValue.Text = "-00h00m00.0s";
             this.labelRightAscensionValue.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -1485,10 +1485,10 @@
             this.labelHourAngleValue.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.labelHourAngleValue.Font = new System.Drawing.Font("Lucida Console", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelHourAngleValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelHourAngleValue.Location = new System.Drawing.Point(46, 32);
+            this.labelHourAngleValue.Location = new System.Drawing.Point(47, 32);
             this.labelHourAngleValue.Margin = new System.Windows.Forms.Padding(0);
             this.labelHourAngleValue.Name = "labelHourAngleValue";
-            this.labelHourAngleValue.Size = new System.Drawing.Size(128, 32);
+            this.labelHourAngleValue.Size = new System.Drawing.Size(127, 32);
             this.labelHourAngleValue.TabIndex = 10;
             this.labelHourAngleValue.Text = "-00h00m00.0s";
             this.labelHourAngleValue.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -1514,10 +1514,10 @@
             this.labelDeclinationValue.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.labelDeclinationValue.Font = new System.Drawing.Font("Lucida Console", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelDeclinationValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelDeclinationValue.Location = new System.Drawing.Point(236, 64);
+            this.labelDeclinationValue.Location = new System.Drawing.Point(237, 64);
             this.labelDeclinationValue.Margin = new System.Windows.Forms.Padding(0);
             this.labelDeclinationValue.Name = "labelDeclinationValue";
-            this.labelDeclinationValue.Size = new System.Drawing.Size(118, 32);
+            this.labelDeclinationValue.Size = new System.Drawing.Size(117, 32);
             this.labelDeclinationValue.TabIndex = 16;
             this.labelDeclinationValue.Text = "00°00\'00.0\"";
             this.labelDeclinationValue.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -1529,10 +1529,10 @@
             this.labelAzimuthValue.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.labelAzimuthValue.Font = new System.Drawing.Font("Lucida Console", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelAzimuthValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.labelAzimuthValue.Location = new System.Drawing.Point(226, 96);
+            this.labelAzimuthValue.Location = new System.Drawing.Point(227, 96);
             this.labelAzimuthValue.Margin = new System.Windows.Forms.Padding(0);
             this.labelAzimuthValue.Name = "labelAzimuthValue";
-            this.labelAzimuthValue.Size = new System.Drawing.Size(128, 32);
+            this.labelAzimuthValue.Size = new System.Drawing.Size(127, 32);
             this.labelAzimuthValue.TabIndex = 18;
             this.labelAzimuthValue.Text = "000°00\'00.0\"";
             this.labelAzimuthValue.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -2149,9 +2149,16 @@
             // 
             this.digitalIOCardsToolStripMenuItem.ForeColor = System.Drawing.Color.DarkOrange;
             this.digitalIOCardsToolStripMenuItem.Name = "digitalIOCardsToolStripMenuItem";
-            this.digitalIOCardsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.digitalIOCardsToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
             this.digitalIOCardsToolStripMenuItem.Text = "Digital IO Cards";
             this.digitalIOCardsToolStripMenuItem.Click += new System.EventHandler(this.digitalIOCardsToolStripMenuItem_Click);
+            // 
+            // renishawToolStripMenuItem
+            // 
+            this.renishawToolStripMenuItem.Name = "renishawToolStripMenuItem";
+            this.renishawToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
+            this.renishawToolStripMenuItem.Text = "Renishaw";
+            this.renishawToolStripMenuItem.Click += new System.EventHandler(this.renishawToolStripMenuItem_Click);
             // 
             // actionsToolStripMenuItem
             // 
@@ -2345,7 +2352,7 @@
             // 
             // annunciatorComputerControl
             // 
-            //this.annunciatorComputerControl.ActiveColor = System.Drawing.Color.IndianRed;
+            this.annunciatorComputerControl.ActiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(200)))), ((int)(((byte)(4)))), ((int)(((byte)(4)))));
             this.annunciatorComputerControl.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.annunciatorComputerControl.Cadence = TA.WinFormsControls.CadencePattern.SteadyOff;
             this.annunciatorComputerControl.Font = new System.Drawing.Font("Consolas", 10F);
@@ -2360,7 +2367,7 @@
             // 
             // annunciatorDomePlatform
             // 
-            //this.annunciatorDomePlatform.ActiveColor = System.Drawing.Color.IndianRed;
+            this.annunciatorDomePlatform.ActiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(200)))), ((int)(((byte)(4)))), ((int)(((byte)(4)))));
             this.annunciatorDomePlatform.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.annunciatorDomePlatform.Cadence = TA.WinFormsControls.CadencePattern.SteadyOff;
             this.annunciatorDomePlatform.Font = new System.Drawing.Font("Consolas", 10F);
@@ -2376,7 +2383,7 @@
             // 
             // annunciatorSafeToOperate
             // 
-            //this.annunciatorSafeToOperate.ActiveColor = System.Drawing.Color.IndianRed;
+            this.annunciatorSafeToOperate.ActiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(200)))), ((int)(((byte)(4)))), ((int)(((byte)(4)))));
             this.annunciatorSafeToOperate.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.annunciatorSafeToOperate.Cadence = TA.WinFormsControls.CadencePattern.SteadyOff;
             this.annunciatorSafeToOperate.Font = new System.Drawing.Font("Consolas", 10F);
@@ -3431,13 +3438,6 @@
             // toolTip
             // 
             this.toolTip.IsBalloon = true;
-            // 
-            // renishawToolStripMenuItem
-            // 
-            this.renishawToolStripMenuItem.Name = "renishawToolStripMenuItem";
-            this.renishawToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.renishawToolStripMenuItem.Text = "Renishaw";
-            this.renishawToolStripMenuItem.Click += new System.EventHandler(this.renishawToolStripMenuItem_Click);
             // 
             // FormDash
             // 

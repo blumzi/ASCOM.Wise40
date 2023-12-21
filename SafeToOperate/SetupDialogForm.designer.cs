@@ -51,6 +51,13 @@ namespace ASCOM.Wise40SafeToOperate
             this.textBoxCloudCoverPercent = new System.Windows.Forms.TextBox();
             this.textBoxDoorLockDelay = new System.Windows.Forms.TextBox();
             this.textBoxSunElevationAtDusk = new System.Windows.Forms.TextBox();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.label26 = new System.Windows.Forms.Label();
+            this.label25 = new System.Windows.Forms.Label();
+            this.label24 = new System.Windows.Forms.Label();
+            this.checkBoxARDOEnabled = new System.Windows.Forms.CheckBox();
+            this.checkBoxOWLEnabled = new System.Windows.Forms.CheckBox();
+            this.checkBoxTessWEnabled = new System.Windows.Forms.CheckBox();
             this.label16 = new System.Windows.Forms.Label();
             this.label18 = new System.Windows.Forms.Label();
             this.textBoxCloudIntervalSeconds = new System.Windows.Forms.TextBox();
@@ -80,7 +87,9 @@ namespace ASCOM.Wise40SafeToOperate
             this.label21 = new System.Windows.Forms.Label();
             this.label22 = new System.Windows.Forms.Label();
             this.label23 = new System.Windows.Forms.Label();
+            this.label27 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).BeginInit();
+            this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
             // cmdOK
@@ -89,7 +98,7 @@ namespace ASCOM.Wise40SafeToOperate
             this.cmdOK.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.cmdOK.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.cmdOK.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.cmdOK.Location = new System.Drawing.Point(378, 348);
+            this.cmdOK.Location = new System.Drawing.Point(378, 447);
             this.cmdOK.Name = "cmdOK";
             this.cmdOK.Size = new System.Drawing.Size(59, 24);
             this.cmdOK.TabIndex = 0;
@@ -104,7 +113,7 @@ namespace ASCOM.Wise40SafeToOperate
             this.cmdCancel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.cmdCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.cmdCancel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
-            this.cmdCancel.Location = new System.Drawing.Point(378, 377);
+            this.cmdCancel.Location = new System.Drawing.Point(378, 481);
             this.cmdCancel.Name = "cmdCancel";
             this.cmdCancel.Size = new System.Drawing.Size(59, 25);
             this.cmdCancel.TabIndex = 1;
@@ -330,6 +339,97 @@ namespace ASCOM.Wise40SafeToOperate
             this.textBoxSunElevationAtDusk.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.toolTip1.SetToolTip(this.textBoxSunElevationAtDusk, "Maximal Sun elevation (degrees)");
             // 
+            // groupBox1
+            // 
+            this.groupBox1.Controls.Add(this.label26);
+            this.groupBox1.Controls.Add(this.label25);
+            this.groupBox1.Controls.Add(this.label24);
+            this.groupBox1.Controls.Add(this.checkBoxARDOEnabled);
+            this.groupBox1.Controls.Add(this.checkBoxOWLEnabled);
+            this.groupBox1.Controls.Add(this.checkBoxTessWEnabled);
+            this.groupBox1.ForeColor = System.Drawing.Color.DarkOrange;
+            this.groupBox1.Location = new System.Drawing.Point(27, 412);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(296, 100);
+            this.groupBox1.TabIndex = 70;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = " External sensors ";
+            this.toolTip1.SetToolTip(this.groupBox1, "These sensors are monitored and their data\r\n is stored in the DataBase.\r\nThey don" +
+        "\'t affect the SafeToOperate decision.\r\nThey can be enabled/disabled to isolate t" +
+        "he system\r\nfrom external failures");
+            // 
+            // label26
+            // 
+            this.label26.AutoSize = true;
+            this.label26.ForeColor = System.Drawing.Color.DarkOrange;
+            this.label26.Location = new System.Drawing.Point(82, 68);
+            this.label26.Name = "label26";
+            this.label26.Size = new System.Drawing.Size(41, 13);
+            this.label26.TabIndex = 55;
+            this.label26.Text = "TessW";
+            // 
+            // label25
+            // 
+            this.label25.AutoSize = true;
+            this.label25.ForeColor = System.Drawing.Color.DarkOrange;
+            this.label25.Location = new System.Drawing.Point(82, 45);
+            this.label25.Name = "label25";
+            this.label25.Size = new System.Drawing.Size(179, 13);
+            this.label25.TabIndex = 54;
+            this.label25.Text = "Korean observatory weather stations";
+            // 
+            // label24
+            // 
+            this.label24.AutoSize = true;
+            this.label24.ForeColor = System.Drawing.Color.DarkOrange;
+            this.label24.Location = new System.Drawing.Point(82, 21);
+            this.label24.Name = "label24";
+            this.label24.Size = new System.Drawing.Size(177, 13);
+            this.label24.TabIndex = 53;
+            this.label24.Text = "Adrien\'s observatory weather station";
+            // 
+            // checkBoxARDOEnabled
+            // 
+            this.checkBoxARDOEnabled.AutoSize = true;
+            this.checkBoxARDOEnabled.Checked = true;
+            this.checkBoxARDOEnabled.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkBoxARDOEnabled.ForeColor = System.Drawing.Color.DarkOrange;
+            this.checkBoxARDOEnabled.Location = new System.Drawing.Point(13, 19);
+            this.checkBoxARDOEnabled.Name = "checkBoxARDOEnabled";
+            this.checkBoxARDOEnabled.Size = new System.Drawing.Size(57, 17);
+            this.checkBoxARDOEnabled.TabIndex = 52;
+            this.checkBoxARDOEnabled.Text = "ARDO";
+            this.checkBoxARDOEnabled.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxOWLEnabled
+            // 
+            this.checkBoxOWLEnabled.AutoSize = true;
+            this.checkBoxOWLEnabled.Checked = true;
+            this.checkBoxOWLEnabled.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkBoxOWLEnabled.ForeColor = System.Drawing.Color.DarkOrange;
+            this.checkBoxOWLEnabled.Location = new System.Drawing.Point(13, 43);
+            this.checkBoxOWLEnabled.Name = "checkBoxOWLEnabled";
+            this.checkBoxOWLEnabled.Size = new System.Drawing.Size(51, 17);
+            this.checkBoxOWLEnabled.TabIndex = 51;
+            this.checkBoxOWLEnabled.Text = "OWL";
+            this.checkBoxOWLEnabled.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxTessWEnabled
+            // 
+            this.checkBoxTessWEnabled.AutoSize = true;
+            this.checkBoxTessWEnabled.Checked = true;
+            this.checkBoxTessWEnabled.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkBoxTessWEnabled.ForeColor = System.Drawing.Color.DarkOrange;
+            this.checkBoxTessWEnabled.Location = new System.Drawing.Point(13, 66);
+            this.checkBoxTessWEnabled.Name = "checkBoxTessWEnabled";
+            this.checkBoxTessWEnabled.Size = new System.Drawing.Size(60, 17);
+            this.checkBoxTessWEnabled.TabIndex = 50;
+            this.checkBoxTessWEnabled.Text = "TessW";
+            this.toolTip1.SetToolTip(this.checkBoxTessWEnabled, "TessW is currently the ONLY cloud sensor Wise has.\r\nEnabling/disabling it will au" +
+        "tomatically enable/disable\r\nthe Cloud sensor (above)");
+            this.checkBoxTessWEnabled.UseVisualStyleBackColor = true;
+            this.checkBoxTessWEnabled.CheckedChanged += new System.EventHandler(this.checkBoxTessWEnabled_CheckedChanged);
+            // 
             // label16
             // 
             this.label16.AutoSize = true;
@@ -499,6 +599,7 @@ namespace ASCOM.Wise40SafeToOperate
             this.checkBoxCloud.TabIndex = 49;
             this.checkBoxCloud.Text = "Cloud";
             this.checkBoxCloud.UseVisualStyleBackColor = true;
+            this.checkBoxCloud.CheckedChanged += new System.EventHandler(this.checkBoxCloud_CheckedChanged);
             // 
             // checkBoxRain
             // 
@@ -652,12 +753,24 @@ namespace ASCOM.Wise40SafeToOperate
             this.label23.TabIndex = 69;
             this.label23.Text = "Dusk";
             // 
+            // label27
+            // 
+            this.label27.AutoSize = true;
+            this.label27.ForeColor = System.Drawing.Color.DarkOrange;
+            this.label27.Location = new System.Drawing.Point(37, 101);
+            this.label27.Name = "label27";
+            this.label27.Size = new System.Drawing.Size(46, 13);
+            this.label27.TabIndex = 71;
+            this.label27.Text = "Enabled";
+            // 
             // SafeToOperateSetupDialogForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.ClientSize = new System.Drawing.Size(481, 426);
+            this.ClientSize = new System.Drawing.Size(481, 525);
+            this.Controls.Add(this.label27);
+            this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.label23);
             this.Controls.Add(this.label22);
             this.Controls.Add(this.label21);
@@ -716,6 +829,8 @@ namespace ASCOM.Wise40SafeToOperate
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Wise40.SafeToOperate Setup";
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).EndInit();
+            this.groupBox1.ResumeLayout(false);
+            this.groupBox1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -774,5 +889,13 @@ namespace ASCOM.Wise40SafeToOperate
         private System.Windows.Forms.Label label21;
         private System.Windows.Forms.Label label22;
         private System.Windows.Forms.Label label23;
+        private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.Label label26;
+        private System.Windows.Forms.Label label25;
+        private System.Windows.Forms.Label label24;
+        private System.Windows.Forms.CheckBox checkBoxARDOEnabled;
+        private System.Windows.Forms.CheckBox checkBoxOWLEnabled;
+        private System.Windows.Forms.CheckBox checkBoxTessWEnabled;
+        private System.Windows.Forms.Label label27;
     }
 }

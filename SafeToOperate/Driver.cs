@@ -74,7 +74,12 @@ namespace ASCOM.Wise40SafeToOperate
         /// </summary>
         public SafetyMonitor()
         {
-            wisesafetooperate = WiseSafeToOperate.Instance;
+            try
+            {
+                wisesafetooperate = WiseSafeToOperate.Instance;
+            } catch (Exception ex) {
+                ;
+            }
         }
 
         //

@@ -2,12 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
+using System.Net;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
 using ASCOM.Utilities;
 //using ASCOM.Wise40.SafeToOperate;
 using ASCOM.Wise40.Boltwood;
+using ASCOM.Wise40.Common;
+using ASCOM.Wise40.TessW;
 
 namespace ASCOM.Wise40SafeToOperate
 {
@@ -104,6 +107,25 @@ namespace ASCOM.Wise40SafeToOperate
             foreach (Sensor s in WiseSafeToOperate._cumulativeSensors)
                 s.Enabled = false;
 
+            bool chk = checkBoxTessWEnabled.Checked;
+            var tessW = WiseTessW.Instance;
+            tessW.Enabled = chk;
+            tessW.WriteProfile();
+            using (Profile driverProfile = new Profile() { DeviceType = "ObservingConditions" })
+            {
+                driverProfile.WriteValue(Const.WiseDriverID.TessW, Const.ProfileName.TessW_Enabled, chk.ToString());
+            }
+
+            chk = checkBoxOWLEnabled.Checked;
+            var owlRefresher = WiseSafeToOperate.owlRefresher;
+            owlRefresher.Enabled = chk;
+            owlRefresher.WriteProfile();
+
+            chk = checkBoxARDOEnabled.Checked;
+            var ardoRefresher = WiseSafeToOperate.ardoSensor;
+            ardoRefresher.Enabled = chk;
+            ardoRefresher.WriteProfile();
+
             WiseSafeToOperate.cloudsSensor._repeats = Convert.ToInt32(textBoxCloudRepeats.Text);
             WiseSafeToOperate.cloudsSensor.Interval = TimeSpan.FromSeconds(Convert.ToInt32(textBoxCloudIntervalSeconds.Text));
             WiseSafeToOperate.cloudsSensor.Enabled = checkBoxCloud.Checked;
@@ -195,6 +217,19 @@ namespace ASCOM.Wise40SafeToOperate
             string tip = $"Between {WiseSafeToOperate.sunSensor.MinSettableElevation} and {WiseSafeToOperate.sunSensor.MaxSettableElevation} (deg)";
             toolTip1.SetToolTip(textBoxSunElevationAtDawn, tip);
             toolTip1.SetToolTip(textBoxSunElevationAtDusk, tip);
+
+
+            bool check = Convert.ToBoolean(wisesafetooperate._profile.GetValue(Const.WiseDriverID.SafeToOperate, "ARDO", "Enabled", true.ToString()));
+            checkBoxARDOEnabled.Tag = check;
+            checkBoxARDOEnabled.Checked = check;
+
+            check = Convert.ToBoolean(wisesafetooperate._profile.GetValue(Const.WiseDriverID.SafeToOperate, "OWLRefresher", "Enabled", true.ToString()));
+            checkBoxOWLEnabled.Tag = WiseSafeToOperate.owlRefresher.Enabled.ToString();
+            checkBoxOWLEnabled.Checked= check;
+
+            check = Convert.ToBoolean(wisesafetooperate._profile.GetValue(Const.WiseDriverID.SafeToOperate, "TessWRefresher", "Enabled", true.ToString()));
+            checkBoxTessWEnabled.Tag = check;
+            checkBoxTessWEnabled.Checked= check;
         }
 
         private void textBoxWind_Validating(object sender, CancelEventArgs e)
@@ -234,6 +269,18 @@ namespace ASCOM.Wise40SafeToOperate
                 ((TextBox)sender).ForeColor = Color.DarkOrange;
             }
             base.OnTextChanged(e);
+        }
+
+        private void checkBoxTessWEnabled_CheckedChanged(object sender, EventArgs e)
+        {
+            bool chk = checkBoxTessWEnabled.Checked;
+            checkBoxCloud.Checked = chk;
+        }
+
+        private void checkBoxCloud_CheckedChanged(object sender, EventArgs e)
+        {
+            bool chk = checkBoxCloud.Checked;
+            checkBoxTessWEnabled.Checked = chk;
         }
     }
 }

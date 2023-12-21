@@ -19,14 +19,25 @@ namespace ASCOM.Wise40SafeToOperate
             base("Clouds",
                 Attribute.Periodic |
                 Attribute.CanBeStale |
-                Attribute.CanBeBypassed,
+                Attribute.CanBeBypassed /*|
+                Attribute.AlwaysEnabled  */,
                 "", "", "f0", "CloudCover",
                 instance) {
 
-            tessw = new DriverAccess.ObservingConditions("ASCOM.Wise40.TessW.ObservingConditions")
-            {
-                Connected = true
-            };
+            //
+            // The only clouds sensor we currently have is the TessW (no more Boltwoods)
+            // This sensor (CloudsSensor) cannot be enabled unless teh TessW is enabled
+            //
+            bool tessWEnabled = Convert.ToBoolean(wisesafetooperate._profile.GetValue(Const.WiseDriverID.SafeToOperate, "TessWRefresher", "Enabled", true.ToString()));
+            if (tessWEnabled)
+                Enabled = Convert.ToBoolean(wisesafetooperate._profile.GetValue(Const.WiseDriverID.SafeToOperate, "Clouds", "Enabled", true.ToString()));
+            else
+                Enabled = false;
+
+            if (Enabled)
+                tessw = new DriverAccess.ObservingConditions("ASCOM.Wise40.TessW.ObservingConditions")            {
+                    Connected = true
+                };
         }
 
         public override object Digest()

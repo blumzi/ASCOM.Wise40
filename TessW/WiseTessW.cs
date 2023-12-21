@@ -120,6 +120,9 @@ namespace ASCOM.Wise40.TessW
 
             WiseName = "TessW";
             ReadProfile();
+            if (!Enabled)
+                return;
+
             periodicHttpFetcher = new PeriodicHttpFetcher(
                 name: WiseName,
                 url: $"http://{IpAddress}",
@@ -142,17 +145,14 @@ namespace ASCOM.Wise40.TessW
 
             set
             {
-                if (value == _connected)
+                if (!Enabled || value == _connected)
                     return;
 
                 _connected = value;
 
                 ActivityMonitor.Event(new Event.DriverConnectEvent(Const.WiseDriverID.TessW, value, line: ActivityMonitor.Tracer.safety.Line));
 
-                if (_connected && Enabled)
-                    periodicHttpFetcher.Enabled = true;
-                else if (!_connected || !Enabled)
-                    periodicHttpFetcher.Enabled = false;
+                periodicHttpFetcher.Enabled = _connected;
             }
         }
 
@@ -258,7 +258,7 @@ namespace ASCOM.Wise40.TessW
         /// <summary>
         /// Write the device configuration to the  ASCOM  Profile store
         /// </summary>
-        internal void WriteProfile()
+        public void WriteProfile()
         {
             using (Profile driverProfile = new Profile() { DeviceType = "ObservingConditions" })
             {
@@ -302,7 +302,17 @@ namespace ASCOM.Wise40.TessW
         {
             get
             {
-                return Convert.ToDouble(sensorData["cloudCover"]);
+                if (!Enabled)
+                    return double.NaN;
+
+                double ret = double.NaN;
+                try
+                {
+                    ret = Convert.ToDouble(sensorData["cloudCover"]);
+                }
+                catch { }
+                return ret;
+
             }
         }
 
@@ -453,8 +463,13 @@ namespace ASCOM.Wise40.TessW
         {
             get
             {
+                if (!Enabled)
+                    return double.NaN;
+
+                double temperature;
+
                 Refresh();
-                var temperature = Convert.ToDouble(sensorData["tempSky"]);
+                temperature = Convert.ToDouble(sensorData["tempSky"]);
 
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugSafety, string.Format($"TessW: SkyTemperature - get => {temperature}"));
@@ -470,8 +485,11 @@ namespace ASCOM.Wise40.TessW
         {
             get
             {
+                if (!Enabled)
+                    return double.NaN;
+
                 Refresh();
-                var temperature = Convert.ToDouble(sensorData["tempAmb"]);
+                double temperature = Convert.ToDouble(sensorData["tempAmb"]);
 
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugSafety, string.Format($"TessW: Temperature - get => {temperature}"));

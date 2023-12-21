@@ -27,11 +27,11 @@ namespace ASCOM.Wise40SafeToOperate
             base("ARDO",
                 Attribute.Periodic |
                 Attribute.ForInfoOnly |
-                Attribute.SingleReading |
-                Attribute.AlwaysEnabled,
+                Attribute.SingleReading,
                 "", "", "", "",
                 instance)
         {
+            ReadSensorProfile();
             periodicHttpFetcher = new PeriodicHttpFetcher(
                     "ARDOSensor",
                     "http://2.55.90.188:10500/cgi-bin/cgiLastData",
@@ -104,8 +104,12 @@ namespace ASCOM.Wise40SafeToOperate
             set { }
         }
 
-        public override void WriteSensorProfile() { }
-        public override void ReadSensorProfile() { }
+        public override void WriteSensorProfile() {
+            wisesafetooperate._profile.WriteValue(Const.WiseDriverID.SafeToOperate, "ARDO", "Enabled", Enabled.ToString());
+        }
+        public override void ReadSensorProfile() {
+            Enabled = Convert.ToBoolean(wisesafetooperate._profile.GetValue(Const.WiseDriverID.SafeToOperate, "ARDO", "Enabled", true.ToString()));
+        }
 
         public override string Status
         {

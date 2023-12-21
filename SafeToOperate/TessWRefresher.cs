@@ -15,8 +15,7 @@ namespace ASCOM.Wise40SafeToOperate
             base("TessWRefresher",
                 Attribute.Periodic |
                 Attribute.ForInfoOnly |
-                Attribute.SingleReading |
-                Attribute.AlwaysEnabled,
+                Attribute.SingleReading,
                 "", "", "", "",
                 instance)
         {

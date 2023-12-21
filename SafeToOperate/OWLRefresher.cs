@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 using ASCOM.Wise40.Common;
 using System.Text.RegularExpressions;
+using ASCOM.Utilities;
 
 namespace ASCOM.Wise40SafeToOperate
 {
@@ -36,11 +37,12 @@ namespace ASCOM.Wise40SafeToOperate
             base("OWLRefresher",
                 Attribute.Periodic |
                 Attribute.ForInfoOnly |
-                Attribute.SingleReading |
-                Attribute.AlwaysEnabled,
+                Attribute.SingleReading,
                 "", "", "", "",
                 instance)
         {
+            ReadSensorProfile();
+
             foreach (var s in stations.Keys)
             {
                 stations[s]._weatherLogger = new WeatherLogger(s);
@@ -211,14 +213,18 @@ namespace ASCOM.Wise40SafeToOperate
         }
         public override Reading GetReading()
         {
-            ParseAWS();
-            ParseSTWM();
+            if (Enabled) { 
+                ParseAWS();
+                ParseSTWM();
+            }
             return null;
         }
 
         public override object Digest()
         {
-            return new OWLDigest();
+            if (Enabled)
+                return new OWLDigest();
+            return null;
         }
 
         public override string MaxAsString
@@ -227,8 +233,12 @@ namespace ASCOM.Wise40SafeToOperate
             set { }
         }
 
-        public override void WriteSensorProfile() { }
-        public override void ReadSensorProfile() { }
+        public override void WriteSensorProfile() {
+            wisesafetooperate._profile.WriteValue(Const.WiseDriverID.SafeToOperate, "OWLRefresher", "Enabled", Enabled? "true" : "false");
+        }
+        public override void ReadSensorProfile() {
+            Enabled = Convert.ToBoolean(wisesafetooperate._profile.GetValue(Const.WiseDriverID.SafeToOperate, "OWLRefresher", "Enabled", true.ToString()));
+        }
 
         public override string Status
         {
