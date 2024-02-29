@@ -61,9 +61,11 @@ namespace ASCOM.Wise40
             Safety = (1 << 12),
             DomeTracking = (1 << 13),
             PulsingDec = (1 << 14),
+            HunkeringDown = (1 << 15),
+            HunkeringUp = (1 << 16),
 
             // activities that affect the observatory's Idle state
-            RealActivities = TelescopeSlew | PulsingRa | PulsingDec | DomeSlew | Handpad | Parking | Shutter | Focuser | FilterWheel | ShuttingDown,
+            RealActivities = TelescopeSlew | PulsingRa | PulsingDec | DomeSlew | Handpad | Parking | Shutter | Focuser | FilterWheel | ShuttingDown | HunkeringDown,
         };
 
         public static void Init()
@@ -117,6 +119,14 @@ namespace ASCOM.Wise40
             get
             {
                 return inProgressDict.ContainsKey(ActivityType.ShuttingDown);
+            }
+        }
+
+        public bool HunkeringDown
+        {
+            get
+            {
+                return inProgressDict.ContainsKey(ActivityType.HunkeringDown);
             }
         }
 
@@ -283,6 +293,21 @@ namespace ASCOM.Wise40
                 public enum Code { Idle = 0, Active = 170 };
             }
             public static Shutdown shutdown = new Shutdown();
+
+            public class HunkerDown : Tracer
+            {
+                public HunkerDown() : base("hunkerdown", "Hunkerdown") { }
+                public enum Code { Idle = 0, Active = 190 };
+            }
+            public static HunkerDown hunkerdown = new HunkerDown();
+
+
+            public class HunkerUp : Tracer
+            {
+                public HunkerUp() : base("hunkerup", "HunkerUp") { }
+                public enum Code { Idle = 0, Active = 190 };
+            }
+            public static HunkerUp hunkerup = new HunkerUp();
 
             public class Focuser : Tracer
             {
@@ -994,6 +1019,68 @@ namespace ASCOM.Wise40
 
                 EndActivity(par);
                 Idler.BecomeIdle("End of Shuttdown");
+            }
+        }
+
+        public class HunkeringDown : TimeConsuming
+        {
+            public string _reason;
+
+            public class StartParams : Activity.GenericStartParams
+            {
+                public string reason;
+            }
+
+            public HunkeringDown(StartParams par) : base(ActivityMonitor.ActivityType.HunkeringDown)
+            {
+                _reason = par.reason;
+                _code = (int)ActivityMonitor.Tracer.HunkerDown.Code.Active;
+                _line = ActivityMonitor.Tracer.HunkerDown.shutdown.Line;
+                _tags = new List<string>() { "HunkeringDown", "InProgress" };
+
+                _startDetails = $"Reason: {_reason}\n";
+                effectOnGoingIdle_AtStart = EffectOnGoingIdle.Remove;
+                effectOnGoingIdle_AtEnd = EffectOnGoingIdle.Remove;
+                EmitStart();
+            }
+
+            public override void End(Activity.GenericEndParams p)
+            {
+                HunkeringDown.GenericEndParams par = p as HunkeringDown.GenericEndParams;
+
+                EndActivity(par);
+                Idler.BecomeIdle("End of Hunkeringdown");
+            }
+        }
+
+        public class HunkeringUp : TimeConsuming
+        {
+            public string _reason;
+
+            public class StartParams : Activity.GenericStartParams
+            {
+                public string reason;
+            }
+
+            public HunkeringUp(StartParams par) : base(ActivityMonitor.ActivityType.HunkeringUp)
+            {
+                _reason = par.reason;
+                _code = (int)ActivityMonitor.Tracer.HunkerUp.Code.Active;
+                _line = ActivityMonitor.Tracer.HunkerUp.shutdown.Line;
+                _tags = new List<string>() { "Hunkeringdown", "InProgress" };
+
+                _startDetails = $"Reason: {_reason}\n";
+                effectOnGoingIdle_AtStart = EffectOnGoingIdle.Remove;
+                effectOnGoingIdle_AtEnd = EffectOnGoingIdle.Remove;
+                EmitStart();
+            }
+
+            public override void End(Activity.GenericEndParams p)
+            {
+                HunkeringUp.GenericEndParams par = p as HunkeringUp.GenericEndParams;
+
+                EndActivity(par);
+                Idler.BecomeIdle("End of HunkeringUp");
             }
         }
 

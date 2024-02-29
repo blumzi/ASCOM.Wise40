@@ -198,6 +198,7 @@ namespace ASCOM.Wise40.Common
         public static class UnsafeReasons
         {
             public static string ShuttingDown = "Wise40 is shutting down";
+            public static string HunkeringDown = "Wise40 is hunkering down";
         }
 
         public static class MySql

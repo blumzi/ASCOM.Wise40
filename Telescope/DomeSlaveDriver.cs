@@ -222,7 +222,7 @@ namespace ASCOM.Wise40
             }
         }
 
-        public static void OpenShutter(bool bypassSafety = false)
+        public void OpenShutter(bool bypassSafety = false)
         {
             wisedome.OpenShutter("ASCOM.Wise40.Telescope:DomeSlaveDriver", bypassSafety);
         }
@@ -232,7 +232,7 @@ namespace ASCOM.Wise40
             wisedome.CloseShutter($"ASCOM.Wise40.Telescope:DomeSlaveDriver (reason: {reason})");
         }
 
-        public static void StopShutter(string reason)
+        public void StopShutter(string reason)
         {
             wisedome.wisedomeshutter.Stop(reason);
         }

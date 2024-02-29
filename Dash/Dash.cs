@@ -320,7 +320,7 @@ namespace Dash
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"RefreshDisplay: Caught: {ex.Message} at\n{ex.StackTrace}");
                     #endregion
-                    telescopeStatus.Show("ASCOM communication error", 2000, Statuser.Severity.Error);
+                    telescopeStatus.Show("ASCOM communication error", 2000, Statuser.Severity.Error, silent: true);
                 }
             }
 
@@ -338,7 +338,7 @@ namespace Dash
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"RefreshDisplay: Caught: {ex.Message} at\n{ex.StackTrace}");
                     #endregion
-                    domeStatus.Show("ASCOM communication error", 2000, Statuser.Severity.Error);
+                    domeStatus.Show("ASCOM communication error", 2000, Statuser.Severity.Error, silent: true);
                 }
             }
 
@@ -357,7 +357,7 @@ namespace Dash
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"RefreshDisplay: Caught: {ex.Message} at\n{ex.StackTrace}");
                     #endregion
-                    safetooperateStatus.Show("ASCOM communication error", 2000, Statuser.Severity.Error);
+                    safetooperateStatus.Show("ASCOM communication error", 2000, Statuser.Severity.Error, silent: true);
                 }
             }
             else
@@ -382,7 +382,7 @@ namespace Dash
                     #region debug
                     debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"RefreshDisplay: Caught: {ex.Message} at\n{ex.StackTrace}");
                     #endregion
-                    focuserStatus.Show("ASCOM communication error", 2000, Statuser.Severity.Error);
+                    focuserStatus.Show("ASCOM communication error", 2000, Statuser.Severity.Error, silent: true);
                 }
             }
             else
@@ -417,7 +417,7 @@ namespace Dash
                         #region debug
                         debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"RefreshDisplay: Caught: {ex.Message} at\n{ex.StackTrace}");
                         #endregion
-                        filterWheelStatus.Show("ASCOM communication error", 2000, Statuser.Severity.Error);
+                        filterWheelStatus.Show("ASCOM communication error", 2000, Statuser.Severity.Error, silent: true);
                     }
                 }
                 else
@@ -1933,7 +1933,7 @@ namespace Dash
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"RefreshDisplay: Caught: {ex.Message} at {ex.StackTrace}");
                 #endregion
-                safetooperateStatus.Show("ASCOM communication error", 2000, Statuser.Severity.Error);
+                safetooperateStatus.Show("ASCOM communication error", 2000, Statuser.Severity.Error, silent: true);
             }
             UpdateSafeToOperateControls();
         }

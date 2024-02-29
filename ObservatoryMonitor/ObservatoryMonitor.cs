@@ -19,6 +19,12 @@ using System.Linq;
 
 namespace ASCOM.Wise40.ObservatoryMonitor
 {
+    public enum OnIdle
+    {
+        ShutDown,
+        HunkerDown,
+    }
+
     public partial class ObsMainForm : Form
     {
         private static readonly bool _simulated = WiseObject.Simulated;
@@ -31,6 +37,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
         private static DateTime _nextCheck = DateTime.Now.AddSeconds(50);
         private static bool _checking = false;
         public static TimeSpan _intervalBetweenRegularChecks;
+        public static OnIdle _onIdle = OnIdle.ShutDown;
         public static TimeSpan _intervalBetweenChecksWhileShuttingDown = TimeSpan.FromSeconds(20);
         private DateTime LatestSuccessfulServerConnection = DateTime.MinValue;
         private TimeSpan TimeToRestartServer = TimeSpan.FromSeconds(30);
@@ -53,10 +60,12 @@ namespace ASCOM.Wise40.ObservatoryMonitor
         public static readonly Exceptor Exceptor = new Exceptor(Common.Debugger.DebugLevel.DebugSafety);
 
         public static bool weInitiatedShutdown = false;
+        public static bool weInitiatedHunkerdown = false;
 
         private static readonly HttpClient serverCheckerHttpClient = new HttpClient();
 
         private const string parkedMessage = "Wise40 is parked and closed";
+        private const string closedMessage = "Wise40 is closed";
 
         public static void CloseConnections()
         {
@@ -116,6 +125,11 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 }
                 return false;
             }
+            catch (Exception ex)
+            {
+                Log($"Caught exception: {ex.Message}");
+                return false;
+            }
             #endregion
 
             #region Connect to remote ASCOM Drivers
@@ -143,7 +157,16 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
             if (!wisetelescope.Connected)
             {
-                wisetelescope.Connected = true;
+                try
+                {
+                    wisetelescope.Connected = true;
+                }
+                catch
+                {
+                    Log("Failed connecting to the remote Telescope service");
+                    return false;
+                }
+
                 while (!wisetelescope.Connected)
                 {
                     Log($"Waiting for the \"{remoteDriver}\" client to connect ...", 5);
@@ -168,7 +191,15 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
             if (!wisesafetooperate.Connected)
             {
-                wisesafetooperate.Connected = true;
+                try
+                {
+                    wisesafetooperate.Connected = true;
+                } catch
+                {
+                    Log($"Failed connecting to the remote {remoteDriver} service");
+                    return false;
+                }
+
                 while (!wisesafetooperate.Connected)
                 {
                     Log($"Waiting for the \"{remoteDriver}\" client to connect ...", 5);
@@ -193,7 +224,15 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
             if (!wisedome.Connected)
             {
-                wisedome.Connected = true;
+                try
+                {
+                    wisedome.Connected = true;
+                } catch
+                {
+                    Log($"Failed connecting to the remote {remoteDriver} service");
+                    return false;
+                }
+
                 while (!wisedome.Connected)
                 {
                     Log($"Waiting for the \"{remoteDriver}\" client to connect", 5);
@@ -304,6 +343,12 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 labelActivity.ForeColor = warningColor;
                 toolTip.SetToolTip(labelActivity, Const.UnsafeReasons.ShuttingDown);
             }
+            else if (telescopeDigest.HunkeringDown)
+            {
+                labelActivity.Text = "HunkeringDown";
+                labelActivity.ForeColor = warningColor;
+                toolTip.SetToolTip(labelActivity, Const.UnsafeReasons.HunkeringDown);
+            }
             else if (telescopeDigest.Active)
             {
                 labelActivity.Text = "Active";
@@ -340,7 +385,25 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 }
             }
 
-            if (telescopeDigest.ShuttingDown)
+            if (weInitiatedHunkerdown)
+            {
+                if (!telescopeDigest.HunkeringDown)
+                {
+                    weInitiatedHunkerdown = false;
+                    LogCurrentPosition();
+                    Log("Done Wise40 hunkerdown");
+                    return;
+                }
+
+                if (!safetooperateDigest.ComputerControl.Safe)
+                {
+                    weInitiatedHunkerdown = false;
+                    Log("Wise40 is in MAINTENANCE mode, hunkerdown aborted");
+                    return;
+                }
+            }
+
+            if (telescopeDigest.ShuttingDown || telescopeDigest.HunkeringDown)
             {
                 // Wise40 is shutting down
                 LogCurrentPosition();
@@ -353,6 +416,12 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 return;
             }
 
+            if (ObservatoryIsClosed)
+            {
+                Log(closedMessage);
+                return;
+            }
+
             if (safetooperateDigest.Safe && telescopeDigest.Active)
             {
                 Log($"Safe and active ({String.Join(", ", telescopeDigest.Activities.ToArray())})");
@@ -361,7 +430,19 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
             if (!safetooperateDigest.Safe && !safetooperateDigest.UnsafeBecauseNotReady)
             {
-                DoShutdownObservatory(string.Join(Const.recordSeparator, safetooperateDigest.UnsafeReasons));
+                //
+                // If not safe because of sun elevation, shutdown
+                //  else, according to _onIdle, either shutdown or hunkerdown
+                //
+                string reason = string.Join(Const.recordSeparator, safetooperateDigest.UnsafeReasons);
+                if (!safetooperateDigest.SunElevation.Safe || _onIdle == OnIdle.ShutDown)
+                    DoShutdownObservatory(reason);
+                else
+                {
+                    if (domeDigest.Shutter.Status != "closed")
+                        DoHunkerdownObservatory(reason);
+                }
+
                 return;
             }
 
@@ -371,7 +452,10 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 telescopeDigest = JsonConvert.DeserializeObject<TelescopeDigest>(wisetelescope.Action("status", ""));
                 if (!telescopeDigest.Active)
                 {
-                    DoShutdownObservatory(Const.Proto.Request.Wise40IsIdle);
+                    if (_onIdle == OnIdle.ShutDown)
+                        DoShutdownObservatory(Const.Proto.Request.Wise40IsIdle);
+                    else if (_onIdle == OnIdle.HunkerDown && domeDigest.Shutter.Status != "closed")
+                        DoHunkerdownObservatory(Const.Proto.Request.Wise40IsIdle);
                     return;
                 }
             }
@@ -425,7 +509,11 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                     UpdateManualInterventionControls();
                     UpdateConditionsControls();
                 }
-                _nextCheck = DateTime.Now + ((weInitiatedShutdown || (telescopeDigest?.ShuttingDown == true)) ?
+                _nextCheck = DateTime.Now + (
+                    (
+                        (weInitiatedShutdown   || telescopeDigest?.ShuttingDown == true) ||
+                        (weInitiatedHunkerdown || telescopeDigest?.HunkeringDown == true)
+                    ) ?
                     _intervalBetweenChecksWhileShuttingDown :
                     _intervalBetweenRegularChecks);
                 _checking = false;
@@ -570,6 +658,33 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             toolTip.SetToolTip(labelActivity, Const.UnsafeReasons.ShuttingDown);
         }
 
+        private void DoHunkerdownObservatory(string reason)
+        {
+            if (!safetooperateDigest.ComputerControl.Safe)
+            {
+                Log("Wise40 is in MAINTENANCE mode, hunkerdown skipped");
+                return;
+            }
+
+            CT = CTS.Token;
+
+            Task.Run(() =>
+            {
+                try
+                {
+                    HunkerdownObservatory(reason);
+                }
+                catch (Exception ex)
+                {
+                    Log($"DoHunkerdownObservatory:Exception: {(ex.InnerException ?? ex).Message}");
+                }
+            }, CT);
+
+            labelActivity.Text = "HunkeringDown";
+            labelActivity.ForeColor = warningColor;
+            toolTip.SetToolTip(labelActivity, Const.UnsafeReasons.HunkeringDown);
+        }
+
         private bool ObservatoryIsPhysicallyParked
         {
             get
@@ -601,6 +716,24 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                     Exception e = ex.InnerException ?? ex;
 
                     Log($"ObservatoryIsLogicallyParked: Caught: {e.Message} at\n{e.StackTrace}", debugOnly: true);
+                    return false;
+                }
+            }
+        }
+
+        private bool ObservatoryIsClosed
+        {
+            get
+            {
+                try
+                {
+                    return wisedome.ShutterStatus == ShutterState.shutterClosed;
+                }
+                catch (Exception ex)
+                {
+                    Exception e = ex.InnerException ?? ex;
+
+                    Log($"ObservatoryIsClosed: Caught: {e.Message} at\n{e.StackTrace}", debugOnly: true);
                     return false;
                 }
             }
@@ -650,6 +783,47 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             #endregion
         }
 
+        private void HunkerdownObservatory(string reason)
+        {
+            if (weInitiatedHunkerdown)    // already initiated a shutdown
+                return;
+
+            string reply = wisetelescope.Action("hunkerdown", reason);
+            #region Initiate hunkerdown
+            if (reply == "ok")
+            {
+                string indent = "";
+
+                Log("Initiating Wise40 hunkerdown. Reason(s):");
+                foreach (string r in reason.Split(Const.recordSeparator[0]).ToList<string>())
+                {
+                    Log($"    {indent}{r}");
+                    if (r.StartsWith("HumanIntervention"))
+                        indent = " ";
+                }
+
+                //Log($" Closing the dome ...");
+                //LogCurrentPosition();
+                weInitiatedHunkerdown = true;
+                _nextCheck = DateTime.Now + _intervalBetweenChecksWhileShuttingDown;
+                return;
+            }
+            else if (reason == Const.Proto.Request.Wise40IsIdle && reply.StartsWith(Const.Proto.Reply.Wise40IsActive))
+            {
+                Log($"   Wise40 became acive: {reply.Remove(0, Const.Proto.Reply.Wise40IsActive.Length)}");
+                return;
+            }
+            else
+            {
+                Log("   Failed to initiate Wise40 hunkerdown.");
+                Exceptor.Throw<OperationCanceledException>($"HunkerdownObservatory({reason})",
+                        "Action(\"telescope:hunkerdown\") did not reply with \"ok\"");
+                weInitiatedHunkerdown = false;
+                return;
+            }
+            #endregion
+        }
+
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
             new ObservatoryMonitorAboutForm(version).Show();
@@ -658,7 +832,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
         private void UpdateManualInterventionControls()
         {
             if (telescopeDigest != null)
-                buttonManualIntervention.Enabled = !telescopeDigest.ShuttingDown;
+                buttonManualIntervention.Enabled = !(telescopeDigest.ShuttingDown || telescopeDigest.HunkeringDown);
 
             if (HumanIntervention.IsSet())
             {
@@ -722,6 +896,10 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                     "MinutesBetweenChecks", string.Empty, "5"));
 
                 _intervalBetweenRegularChecks = TimeSpan.FromMinutes(minutes);
+
+                if (Enum.TryParse(driverProfile.GetValue(Const.WiseDriverID.ObservatoryMonitor,
+                    "OnIdle", string.Empty, OnIdle.HunkerDown.ToString()), out OnIdle onIdle))
+                    _onIdle = onIdle;
             }
 
             using (Profile driverProfile = new Profile() { DeviceType = "Telescope" })
@@ -737,6 +915,9 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             {
                 driverProfile.WriteValue(Const.WiseDriverID.ObservatoryMonitor, "MinutesBetweenChecks",
                     MinutesBetweenChecks.ToString());
+
+                driverProfile.WriteValue(Const.WiseDriverID.ObservatoryMonitor, "OnIdle",
+                    _onIdle.ToString());
             }
 
             using (Profile driverProfile = new Profile() { DeviceType = "Telescope" })

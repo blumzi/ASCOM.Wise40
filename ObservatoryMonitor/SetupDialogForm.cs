@@ -58,6 +58,10 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             ObsMainForm.ReadProfile();
             textBoxMonitoringFrequency.Text = _mainForm.MinutesBetweenChecks.ToString();
             textBoxIdleAfterMinutes.Text = ObsMainForm.MinutesToIdle.ToString();
+            if (ObsMainForm._onIdle == OnIdle.HunkerDown)
+                radioButtonHunkerDown.Checked = true;
+            else if (ObsMainForm._onIdle == OnIdle.ShutDown)
+                radioButtonShutDown.Checked = true;
         }
     }
 }

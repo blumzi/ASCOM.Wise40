@@ -54,6 +54,12 @@ namespace ASCOM.Wise40
 {
     public class WiseTele : WiseObject, IDisposable, IConnectable
     {
+        public enum OnIdle {ShutDown, HunkerDown}
+        private OnIdle _onIdle = OnIdle.HunkerDown;
+
+        private bool _hunkeringDown = false;
+        private bool _hunkeringUp = false;
+
         public enum EncodersInUseEnum { Old, New };
         public EncodersInUseEnum encodersInUse;
         private static readonly Version version = new Version(0, 2);
@@ -1083,6 +1089,12 @@ namespace ASCOM.Wise40
                 if (slewers?.Count > 0)
                     reasons.Add($"Slewers: {slewers}");
 
+                if (_hunkeringDown)
+                    reasons.Add($"Hunkering Down");
+
+                if (_hunkeringUp)
+                    reasons.Add($"Hunkering Up");
+
                 if (!IsPulseGuiding && DirectionMotorsAreActive)
                 {
                     List<string> motors = new List<string>();
@@ -1603,6 +1615,71 @@ namespace ASCOM.Wise40
             }
         }
 
+        private void DoHunkerDown(string reason)
+        {
+            string op = $"DoHunkerDown(reason: {reason})";
+
+            if (activityMonitor.HunkeringDown)
+            {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugTele,
+                    $"{op}: hunkerdown already in progress (activityMonitor.HunkeringDown == true) => skipping hunkerdown");
+                #endregion
+                return;
+            }
+
+            if (domeSlaveDriver.ShutterState == ShutterState.shutterClosing || domeSlaveDriver.ShutterState == ShutterState.shutterClosed)
+            {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugTele,
+                    $"{op}: Wise40 is already hunkered down (ShutterState = {domeSlaveDriver.ShutterState}) => skipping hunkerdown");
+                #endregion
+                return;
+            }
+
+            _hunkeringDown = true;
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"{op}: starting activity HunkeringDown ...");
+            #endregion
+            activityMonitor.NewActivity(new Activity.HunkeringDown(new Activity.HunkeringDown.StartParams() { reason = reason }));
+
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"{op}: setting Tracking to false ...");
+            #endregion
+            Tracking = false;
+
+            if (domeSlaveDriver.ShutterState != ShutterState.shutterClosed)
+            {
+                // Wait for shutter to close
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"{op}: calling domeSlaveDriver.CloseShutter() ...");
+                #endregion
+                DomeSlaveDriver.CloseShutter($"{op}");
+                while (domeSlaveDriver.ShutterState != ShutterState.shutterClosed)
+                {
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"{op}: waiting for domeSlaveDriver.ShutterState == ShutterState.shutterClosed ...");
+                    #endregion
+                    Thread.Sleep(1000);
+                }
+            }
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"{op}: Shutter is closed.");
+            #endregion
+
+            #region debug
+            debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"{op}: ending activity HunkeringDown ...");
+            #endregion
+            activityMonitor.EndActivity(ActivityMonitor.ActivityType.HunkeringDown,
+            new Activity.HunkeringDown.GenericEndParams()
+            {
+                endState = Activity.State.Succeeded,
+                endReason = "Hunkerdown done"
+            });
+
+            _hunkeringDown = false;
+        }
+
         private void DoShutdown(string reason)
         {
             string op = $"DoShutdown(reason: {reason})";
@@ -1769,6 +1846,11 @@ namespace ASCOM.Wise40
         public void Shutdown(string reason)
         {
             Task.Run(() => DoShutdown(reason), telescopeCT);
+        }
+
+        public void Hunkerdown(string reason)
+        {
+            Task.Run(() => DoHunkerDown(reason), telescopeCT);
         }
 
         //
@@ -2690,11 +2772,46 @@ namespace ASCOM.Wise40
                     Exceptor.Throw<InvalidOperationException>(op, notSafe);
             }
 
-            if (EnslavesDome && domeSlaveDriver.ShutterIsMoving)
-                Exceptor.Throw<InvalidOperationException>(op, "Cannot slew while the shutter is moving");
-
             if (!ShuttingDown && !wisesafetooperate.IsSafe)
                 Exceptor.Throw<InvalidOperationException>(op, string.Join(", ", wisesafetooperate.UnsafeReasonsList()));
+
+            if (EnslavesDome)
+            {
+                if (Instance._onIdle == OnIdle.ShutDown)
+                {
+                    if (domeSlaveDriver.ShutterIsMoving)
+                        Exceptor.Throw<InvalidOperationException>(op, "Cannot slew while the shutter is moving");
+                }
+                else if (Instance._onIdle == OnIdle.HunkerDown)
+                {
+                    _hunkeringUp = true;
+
+                    if (domeSlaveDriver.ShutterState == ShutterState.shutterClosing)
+                    {
+                        domeSlaveDriver.StopShutter($"{op}");
+                        while (domeSlaveDriver.ShutterIsMoving)
+                        {
+                            #region debug
+                            debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"{op}: waiting for shutter to stop closing");
+                            #endregion
+                            Thread.Sleep(5000);
+                        }
+                    }
+
+                    domeSlaveDriver.OpenShutter(true);
+                    while (domeSlaveDriver.ShutterIsMoving)
+                    {
+                        #region debug
+                        debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"{op}: waiting for shutter to stop opening");
+                        #endregion
+                        Thread.Sleep(5000);
+                    }
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"{op}: shutter stopped opening");
+                    #endregion
+                    _hunkeringUp = false;
+                }
+            }
 
             try
             {
@@ -3455,6 +3572,31 @@ namespace ASCOM.Wise40
                     }
                     return "ok";
 
+                case "hunkerdown":
+                    if (parameter == Const.Proto.Request.Wise40IsIdle && ActivityMonitor.ObservatoryIsActive())
+                    {
+                        return $"{Const.Proto.Reply.Wise40IsActive}{string.Join(", ", ActivityMonitor.ObservatoryActivities)}";
+                    }
+
+                    telescopeCTS?.Dispose();
+                    telescopeCTS = new CancellationTokenSource();
+                    telescopeCT = telescopeCTS.Token;
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugTele,
+                        $"Action(\"{action}\"): New telescopeCTS: {telescopeCTS.GetHashCode()}, telescopeCT: {telescopeCT.GetHashCode()}");
+                    #endregion
+
+                    try
+                    {
+                        Task.Run(() => Hunkerdown(parameter), telescopeCT);
+                    }
+                    catch (Exception ex)
+                    {
+                        debugger.WriteLine(Debugger.DebugLevel.DebugTele,
+                            $"Action(\"{action}\"): Caught {ex.Message} at\n{ex.StackTrace}");
+                    }
+                    return "ok";
+
                 case "abort-shutdown":
                     AbortSlew($"Action(\"{action}\")");
                     activityMonitor.EndActivity(ActivityMonitor.ActivityType.ShuttingDown, new Activity.GenericEndParams
@@ -3697,6 +3839,13 @@ namespace ASCOM.Wise40
                 Instance.EncodersInUse = enc;
                 BypassCoordinatesSafety = Convert.ToBoolean(driverProfile.GetValue(driverID, Const.ProfileName.Telescope_BypassCoordinatesSafety, string.Empty, false.ToString()));
             }
+
+            using (Profile driverProfile = new Profile() { DeviceType = "SafetyMonitor" })
+            {
+                if (Enum.TryParse(driverProfile.GetValue(Const.WiseDriverID.ObservatoryMonitor,
+                    "OnIdle", string.Empty, OnIdle.HunkerDown.ToString()), out OnIdle onIdle))
+                    Instance._onIdle = onIdle;
+            }
         }
 
         /// <summary>
@@ -3913,6 +4062,7 @@ namespace ASCOM.Wise40
                         PrimaryIsMoving = AxisIsMoving(TelescopeAxes.axisPrimary),
                         SecondaryIsMoving = AxisIsMoving(TelescopeAxes.axisSecondary),
                         ShuttingDown = activityMonitor.ShuttingDown,
+                        HunkeringDown = activityMonitor.HunkeringDown,
                         Tips = tips,
                         EncodersInUse = EncodersInUse,
                         Renishaw = new RenishawDigest
@@ -4020,6 +4170,7 @@ namespace ASCOM.Wise40
         public bool BypassCoordinatesSafety;
         public string Status;
         public bool ShuttingDown;
+        public bool HunkeringDown;
         public TelescopeTips Tips;
         public WiseTele.EncodersInUseEnum EncodersInUse;
         public RenishawDigest Renishaw;

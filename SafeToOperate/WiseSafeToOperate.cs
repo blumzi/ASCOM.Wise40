@@ -677,8 +677,12 @@ namespace ASCOM.Wise40SafeToOperate
             }
 
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "UnsafeReasons: {0}",
-                string.Join(Const.recordSeparator, reasons));
+            string digest = "None";
+            if (reasons.Count > 0)
+            {
+                digest = string.Join(Const.recordSeparator, reasons);
+            }
+            debugger.WriteLine(Debugger.DebugLevel.DebugSafety, "UnsafeReasons: {0}", digest);
             #endregion
             return reasons;
         }

@@ -131,7 +131,7 @@ namespace ASCOM.Wise40.Common
                 Const.topWise40Directory :
                 Const.topWiseDirectory;
 
-            return string.Format($"{top}/Logs/{now.Year}-{now.Month:D2}-{now.Day:D2}");
+            return $"{top}/Logs/{now.Year}-{now.Month:D2}-{now.Day:D2}";
         }
 
         public void WriteLine(DebugLevel level, string fmt, params object[] o)
