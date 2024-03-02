@@ -416,30 +416,23 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 return;
             }
 
-            if (ObservatoryIsClosed)
-            {
-                Log(closedMessage);
-                return;
-            }
-
             if (safetooperateDigest.Safe && telescopeDigest.Active)
             {
                 Log($"Safe and active ({String.Join(", ", telescopeDigest.Activities.ToArray())})");
                 return;
             }
 
-            if (!safetooperateDigest.Safe && !safetooperateDigest.UnsafeBecauseNotReady)
+            if (!safetooperateDigest.Safe)
             {
-                //
-                // If not safe because of sun elevation, shutdown
-                //  else, according to _onIdle, either shutdown or hunkerdown
-                //
                 string reason = string.Join(Const.recordSeparator, safetooperateDigest.UnsafeReasons);
-                if (!safetooperateDigest.SunElevation.Safe || _onIdle == OnIdle.ShutDown)
+
+                if (safetooperateDigest.UnsafeBecauseNotReady)      // after server restart we shutdown
                     DoShutdownObservatory(reason);
-                else
+                else if (!safetooperateDigest.SunElevation.Safe)    // at day-time we shutdown
+                    DoShutdownObservatory(reason);
+                else if (_onIdle == OnIdle.ShutDown)                // on any other safety issue, we hunkerdown
                 {
-                    if (domeDigest.Shutter.Status != "closed")
+                    if (domeDigest.Shutter.State != ShutterState.shutterClosed)
                         DoHunkerdownObservatory(reason);
                 }
 
@@ -460,6 +453,12 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 }
             }
             catch { }
+
+            if (ObservatoryIsClosed)
+            {
+                Log(closedMessage);
+                return;
+            }
         }
 
         private void LogCurrentPosition()
