@@ -59,6 +59,7 @@ namespace ASCOM.Wise40
 
         private bool _hunkeringDown = false;
         private bool _hunkeringUp = false;
+        private bool _hunkeredDown = false;
 
         public enum EncodersInUseEnum { Old, New };
         public EncodersInUseEnum encodersInUse;
@@ -1678,6 +1679,7 @@ namespace ASCOM.Wise40
             });
 
             _hunkeringDown = false;
+            _hunkeredDown = true;
         }
 
         private void DoShutdown(string reason)
@@ -2784,6 +2786,7 @@ namespace ASCOM.Wise40
                 }
                 else if (Instance._onIdle == OnIdle.HunkerDown)
                 {
+                    _hunkeredDown = false;
                     _hunkeringUp = true;
 
                     if (domeSlaveDriver.ShutterState == ShutterState.shutterClosing)
@@ -4063,6 +4066,7 @@ namespace ASCOM.Wise40
                         SecondaryIsMoving = AxisIsMoving(TelescopeAxes.axisSecondary),
                         ShuttingDown = activityMonitor.ShuttingDown,
                         HunkeringDown = activityMonitor.HunkeringDown,
+                        HunkeredDown = _hunkeredDown,
                         Tips = tips,
                         EncodersInUse = EncodersInUse,
                         Renishaw = new RenishawDigest
@@ -4171,6 +4175,7 @@ namespace ASCOM.Wise40
         public string Status;
         public bool ShuttingDown;
         public bool HunkeringDown;
+        public bool HunkeredDown;
         public TelescopeTips Tips;
         public WiseTele.EncodersInUseEnum EncodersInUse;
         public RenishawDigest Renishaw;

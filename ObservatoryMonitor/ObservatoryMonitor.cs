@@ -410,6 +410,18 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 return;
             }
 
+            if (telescopeDigest.HunkeredDown)
+            {
+                Log("Wise40 is hunkered down");
+                return;
+            }
+
+            if (domeDigest.Shutter.State == ShutterState.shutterClosed)
+            {
+                Log("The dome is closed (hunkered down)");
+                return;
+            }
+
             if (ObservatoryIsLogicallyParked)
             {
                 Log(parkedMessage);
@@ -430,12 +442,18 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                     DoShutdownObservatory(reason);
                 else if (!safetooperateDigest.SunElevation.Safe)    // at day-time we shutdown
                     DoShutdownObservatory(reason);
-                else if (_onIdle == OnIdle.ShutDown)                // on any other safety issue, we hunkerdown
+                else
                 {
-                    if (domeDigest.Shutter.State != ShutterState.shutterClosed)
-                        DoHunkerdownObservatory(reason);
+                    if (_onIdle == OnIdle.HunkerDown)                // on any other safety issue, we hunkerdown
+                    {
+                        if (domeDigest.Shutter.State != ShutterState.shutterClosed)
+                            DoHunkerdownObservatory(reason);
+                    }
+                    else
+                    {
+                        DoShutdownObservatory(reason);
+                    }
                 }
-
                 return;
             }
 
@@ -447,7 +465,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                 {
                     if (_onIdle == OnIdle.ShutDown)
                         DoShutdownObservatory(Const.Proto.Request.Wise40IsIdle);
-                    else if (_onIdle == OnIdle.HunkerDown && domeDigest.Shutter.Status != "closed")
+                    else if (_onIdle == OnIdle.HunkerDown && domeDigest.Shutter.State != ShutterState.shutterClosed)
                         DoHunkerdownObservatory(Const.Proto.Request.Wise40IsIdle);
                     return;
                 }
