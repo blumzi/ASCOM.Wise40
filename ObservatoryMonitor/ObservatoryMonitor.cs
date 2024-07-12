@@ -413,14 +413,14 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             if (telescopeDigest.HunkeredDown)
             {
                 Log("Wise40 is hunkered down");
-                return;
+                // return;
             }
 
-            if (domeDigest.Shutter.State == ShutterState.shutterClosed)
-            {
-                Log("The dome is closed (hunkered down)");
-                return;
-            }
+            //if (domeDigest.Shutter.State == ShutterState.shutterClosed)
+            //{
+            //    Log("The dome is closed (hunkered down)");
+            //    return;
+            //}
 
             if (ObservatoryIsLogicallyParked)
             {
@@ -444,7 +444,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                     DoShutdownObservatory(reason);
                 else
                 {
-                    if (_onIdle == OnIdle.HunkerDown)                // on any other safety issue, we hunkerdown
+                    if (_onIdle == OnIdle.HunkerDown)               // on any other safety issue, we hunkerdown
                     {
                         if (domeDigest.Shutter.State != ShutterState.shutterClosed)
                             DoHunkerdownObservatory(reason);
