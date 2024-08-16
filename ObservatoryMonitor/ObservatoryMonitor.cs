@@ -422,7 +422,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
             //    return;
             //}
 
-            if (ObservatoryIsLogicallyParked)
+            if (ObservatoryIsLogicallyParked  && !telescopeDigest.HunkeredDown)
             {
                 Log(parkedMessage);
                 return;
