@@ -1712,6 +1712,7 @@ namespace ASCOM.Wise40
             debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"{op}: starting activity ShuttingDown ...");
             #endregion
             activityMonitor.NewActivity(new Activity.Shutdown(new Activity.Shutdown.StartParams() { reason = reason }));
+            this._hunkeredDown = false;
 
             if (!safetooperateDigest.Bypassed)
             {
