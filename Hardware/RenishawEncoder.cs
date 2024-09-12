@@ -209,8 +209,27 @@ namespace ASCOM.Wise40.Hardware
          * 21299784 -3.938792458868
          */
 
-        const double ENCmax = 21299784, HAmax = -3.938792458868,   RADmax = HAmax * 2.0 * Math.PI / 24.0;
-        const double ENCmin = 17604386, HAmin =  4.16946625561244, RADmin = HAmin * 2.0 * Math.PI / 24.0;
+        /*
+         * 2024-09-11 - Shai & Arie
+         * ASCOM.RemoteServer.txt:18:10:27.799 UT 9108,41,-1         DebugTele        SyncToTarget(ra: 22.9664517666336, dec: 33.4698318667035): lst: 19.9087454706083 Old ha: -3.09997121505321, dec: 33.516746856654, SyncedCoordinates ha: 3.05770629602527, ha.renishaw.position: 2597350, ha.radians: 0.80050563636902, dec: 33.4698318667035, dec.renishaw.position: 15839913, dec.radians: 0.584158766162896
+         * ASCOM.RemoteServer.txt:18:28:52.697 UT 9108,50,-1         DebugTele        SyncToTarget(ra: 16.9459831594741, dec: 29.126897449709): lst: 20.2165019118029 Old ha: 3.22836537348846, dec: 29.186522247279, SyncedCoordinates ha: -3.2705187523288, ha.renishaw.position: 5476984, ha.radians: -0.856219807145319, dec: 29.126897449709, dec.renishaw.position: 15486979, dec.radians: 0.508360261388161
+         * ASCOM.RemoteServer.txt:18:41:00.187 UT 9108,15,-1         DebugTele        SyncToTarget(ra: 20.0518799106981, dec: 69.7819718771881): lst: 20.4191360266371 Old ha: 0.32443470942596, dec: 69.841942169154, SyncedCoordinates ha: -0.367256115938972, ha.renishaw.position: 4155679, ha.radians: -0.0961474263183162, dec: 69.7819718771881, dec.renishaw.position: 18801008, dec.radians: 1.21792516779102
+         * ASCOM.RemoteServer.txt:18:47:13.805 UT 9108,48,-1         DebugTele        SyncToTarget(ra: 20.0553863134397, dec: -19.6907627788847): lst: 20.5232024009925 Old ha: 0.424678850050959, dec: -19.6254406433459, SyncedCoordinates ha: -0.467816087552759, ha.renishaw.position: 4201310, ha.radians: -0.122473965323906, dec: -19.6907627788847, dec.renishaw.position: 11507362, dec.radians: -0.343668642720686
+         */
+
+        /*
+         * ha: 3.05770629602527, ha.renishaw.position: 2597350
+         * ha: -3.2705187523288, ha.renishaw.position: 5476984
+         * 
+         * dec:  69.7819718771881, dec.renishaw.position: 18801008
+         * dec: -19.6907627788847, dec.renishaw.position: 11507362
+         */
+
+        // const double ENCmax = 21299784, HAmax = -3.938792458868,   RADmax = HAmax * 2.0 * Math.PI / 24.0;
+        //const double ENCmin = 17604386, HAmin =  4.16946625561244, RADmin = HAmin * 2.0 * Math.PI / 24.0;
+
+        const double ENCmax = 5476984, HAmax = -3.2705187523288, RADmax = HAmax * 2.0 * Math.PI / 24.0;
+        const double ENCmin = 2597350, HAmin = 3.05770629602527, RADmin = HAmin * 2.0 * Math.PI / 24.0;
 
         const double rad_per_tick = (RADmin - RADmax) / (ENCmax - ENCmin);
 
@@ -270,8 +289,28 @@ namespace ASCOM.Wise40.Hardware
          * 18816442 69.9793498080761
          */
 
-        const double ENCmax = 18816442, ENCmin = 11476719;
-        const double DECmax = 69.9793498080761, DECmin = -20.0711833033614;
+        /*
+         * 2024-09-11 - Shai & Arie
+         * ASCOM.RemoteServer.txt:18:10:27.799 UT 9108,41,-1         DebugTele        SyncToTarget(ra: 22.9664517666336, dec: 33.4698318667035): lst: 19.9087454706083 Old ha: -3.09997121505321, dec: 33.516746856654, SyncedCoordinates ha: 3.05770629602527, ha.renishaw.position: 2597350, ha.radians: 0.80050563636902, dec: 33.4698318667035, dec.renishaw.position: 15839913, dec.radians: 0.584158766162896
+         * ASCOM.RemoteServer.txt:18:28:52.697 UT 9108,50,-1         DebugTele        SyncToTarget(ra: 16.9459831594741, dec: 29.126897449709): lst: 20.2165019118029 Old ha: 3.22836537348846, dec: 29.186522247279, SyncedCoordinates ha: -3.2705187523288, ha.renishaw.position: 5476984, ha.radians: -0.856219807145319, dec: 29.126897449709, dec.renishaw.position: 15486979, dec.radians: 0.508360261388161
+         * ASCOM.RemoteServer.txt:18:41:00.187 UT 9108,15,-1         DebugTele        SyncToTarget(ra: 20.0518799106981, dec: 69.7819718771881): lst: 20.4191360266371 Old ha: 0.32443470942596, dec: 69.841942169154, SyncedCoordinates ha: -0.367256115938972, ha.renishaw.position: 4155679, ha.radians: -0.0961474263183162, dec: 69.7819718771881, dec.renishaw.position: 18801008, dec.radians: 1.21792516779102
+         * ASCOM.RemoteServer.txt:18:47:13.805 UT 9108,48,-1         DebugTele        SyncToTarget(ra: 20.0553863134397, dec: -19.6907627788847): lst: 20.5232024009925 Old ha: 0.424678850050959, dec: -19.6254406433459, SyncedCoordinates ha: -0.467816087552759, ha.renishaw.position: 4201310, ha.radians: -0.122473965323906, dec: -19.6907627788847, dec.renishaw.position: 11507362, dec.radians: -0.343668642720686
+         */
+
+        /*
+         * ha: 3.05770629602527, ha.renishaw.position: 2597350
+         * ha: -3.2705187523288, ha.renishaw.position: 5476984
+         * 
+         * dec:  69.7819718771881, dec.renishaw.position: 18801008
+         * dec: -19.6907627788847, dec.renishaw.position: 11507362
+         */
+
+        // const double ENCmax = 18816442, ENCmin = 11476719;
+        // const double DECmax = 69.9793498080761, DECmin = -20.0711833033614;
+
+        const double ENCmax = 18801008, ENCmin = 11507362;
+        const double DECmax = 69.7819718771881, DECmin = -19.6907627788847;
+
         const double deg_per_tick = (DECmax + -DECmin) / (ENCmax - ENCmin);
 
         const double RADmax = (DECmax * Math.PI) / 180.0, RADmin = (DECmin * Math.PI) / 180.0;
