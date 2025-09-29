@@ -624,21 +624,31 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
         public void LogToGUI(string line)
         {
-            // InvokeRequired required compares the thread ID of the  
-            // calling thread to the thread ID of the creating thread.  
-            // If these threads are different, it returns true.  
+            if (IsDisposed || !IsHandleCreated) return;
+
             if (listBoxLog.InvokeRequired)
             {
-                this.Invoke(new LogDelegate(LogToGUI), new object[] { line });
+                try
+                {
+                    // Non-blocking; avoids deadlocks on shutdown paths.
+                    BeginInvoke((Action<string>)LogToGUI, line);
+                }
+                catch (ObjectDisposedException) { /* form is closing */ }
+                return;
             }
-            else
-            {
-                if (listBoxLog.Items.Count > _maxLogItems)
-                    listBoxLog.Items.RemoveAt(0);
-                listBoxLog.Items.Add(line);
 
-                int visibleItems = listBoxLog.ClientSize.Height / listBoxLog.ItemHeight;
-                listBoxLog.TopIndex = Math.Max(listBoxLog.Items.Count - visibleItems + 1, 0);
+            listBoxLog.BeginUpdate();
+            try
+            {
+                while (listBoxLog.Items.Count >= _maxLogItems)
+                    listBoxLog.Items.RemoveAt(0);
+
+                listBoxLog.Items.Add(line);
+                listBoxLog.TopIndex = Math.Max(listBoxLog.Items.Count - 1, 0);
+            }
+            finally
+            {
+                listBoxLog.EndUpdate();
             }
         }
 
