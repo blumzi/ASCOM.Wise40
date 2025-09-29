@@ -135,6 +135,7 @@
     <Compile Include="RenishawEncoder.cs" />
     <Compile Include="WiseBoard.cs" />
     <Compile Include="WiseDaq.cs" />
+    <Compile Include="WiseHardLimit.cs" />
     <Compile Include="WiseDomePlatform.cs" />
     <Compile Include="WiseEncoder.cs" />
     <Compile Include="WiseHardware.cs" />

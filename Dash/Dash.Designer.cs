@@ -189,6 +189,7 @@
             this.annunciatorPanelSafety = new TA.WinFormsControls.AnnunciatorPanel();
             this.annunciatorComputerControl = new TA.WinFormsControls.Annunciator();
             this.annunciatorDomePlatform = new TA.WinFormsControls.Annunciator();
+            this.anunciatorHardLimit = new TA.WinFormsControls.Annunciator();
             this.annunciatorSafeToOperate = new TA.WinFormsControls.Annunciator();
             this.annunciatorSimulation = new TA.WinFormsControls.Annunciator();
             this.annunciatorOpMode = new TA.WinFormsControls.Annunciator();
@@ -314,7 +315,7 @@
             this.tableLayoutMain.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutMain.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutMain.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutMain.Size = new System.Drawing.Size(942, 787);
+            this.tableLayoutMain.Size = new System.Drawing.Size(942, 806);
             this.tableLayoutMain.TabIndex = 0;
             // 
             // groupBoxFocuser
@@ -2340,6 +2341,7 @@
             this.annunciatorPanelSafety.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.annunciatorPanelSafety.Controls.Add(this.annunciatorComputerControl);
             this.annunciatorPanelSafety.Controls.Add(this.annunciatorDomePlatform);
+            this.annunciatorPanelSafety.Controls.Add(this.anunciatorHardLimit);
             this.annunciatorPanelSafety.Controls.Add(this.annunciatorSafeToOperate);
             this.annunciatorPanelSafety.Controls.Add(this.annunciatorSimulation);
             this.annunciatorPanelSafety.Controls.Add(this.annunciatorOpMode);
@@ -2381,6 +2383,22 @@
             this.annunciatorDomePlatform.Text = "Platform Down";
             this.annunciatorDomePlatform.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
+            // anunciatorHardLimit
+            // 
+            this.anunciatorHardLimit.ActiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(200)))), ((int)(((byte)(4)))), ((int)(((byte)(4)))));
+            this.anunciatorHardLimit.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
+            this.anunciatorHardLimit.Cadence = TA.WinFormsControls.CadencePattern.SteadyOff;
+            this.anunciatorHardLimit.Font = new System.Drawing.Font("Consolas", 10F);
+            this.anunciatorHardLimit.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.anunciatorHardLimit.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.anunciatorHardLimit.Location = new System.Drawing.Point(3, 34);
+            this.anunciatorHardLimit.Name = "anunciatorHardLimit";
+            this.anunciatorHardLimit.Padding = new System.Windows.Forms.Padding(2, 0, 0, 0);
+            this.anunciatorHardLimit.Size = new System.Drawing.Size(186, 17);
+            this.anunciatorHardLimit.TabIndex = 6;
+            this.anunciatorHardLimit.Text = "Hard Limit";
+            this.anunciatorHardLimit.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
             // annunciatorSafeToOperate
             // 
             this.annunciatorSafeToOperate.ActiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(200)))), ((int)(((byte)(4)))), ((int)(((byte)(4)))));
@@ -2389,7 +2407,7 @@
             this.annunciatorSafeToOperate.Font = new System.Drawing.Font("Consolas", 10F);
             this.annunciatorSafeToOperate.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorSafeToOperate.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorSafeToOperate.Location = new System.Drawing.Point(3, 34);
+            this.annunciatorSafeToOperate.Location = new System.Drawing.Point(3, 51);
             this.annunciatorSafeToOperate.Name = "annunciatorSafeToOperate";
             this.annunciatorSafeToOperate.Padding = new System.Windows.Forms.Padding(1, 0, 0, 0);
             this.annunciatorSafeToOperate.Size = new System.Drawing.Size(186, 17);
@@ -2405,7 +2423,7 @@
             this.annunciatorSimulation.Font = new System.Drawing.Font("Consolas", 10F, System.Drawing.FontStyle.Italic);
             this.annunciatorSimulation.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorSimulation.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorSimulation.Location = new System.Drawing.Point(3, 51);
+            this.annunciatorSimulation.Location = new System.Drawing.Point(3, 68);
             this.annunciatorSimulation.Name = "annunciatorSimulation";
             this.annunciatorSimulation.Padding = new System.Windows.Forms.Padding(7, 5, 0, 0);
             this.annunciatorSimulation.Size = new System.Drawing.Size(186, 22);
@@ -2421,7 +2439,7 @@
             this.annunciatorOpMode.Font = new System.Drawing.Font("Consolas", 10F);
             this.annunciatorOpMode.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.annunciatorOpMode.InactiveColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.annunciatorOpMode.Location = new System.Drawing.Point(3, 73);
+            this.annunciatorOpMode.Location = new System.Drawing.Point(3, 90);
             this.annunciatorOpMode.Name = "annunciatorOpMode";
             this.annunciatorOpMode.Padding = new System.Windows.Forms.Padding(5, 0, 0, 0);
             this.annunciatorOpMode.Size = new System.Drawing.Size(186, 17);
@@ -3443,7 +3461,7 @@
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.ClientSize = new System.Drawing.Size(942, 787);
+            this.ClientSize = new System.Drawing.Size(942, 806);
             this.Controls.Add(this.tableLayoutMain);
             this.DoubleBuffered = true;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -3733,6 +3751,7 @@
         private System.Windows.Forms.ToolStripMenuItem separatorToolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem separatorToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem renishawToolStripMenuItem;
+        private TA.WinFormsControls.Annunciator anunciatorHardLimit;
     }
 }
 

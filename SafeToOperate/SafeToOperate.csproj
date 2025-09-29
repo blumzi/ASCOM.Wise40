@@ -146,6 +146,7 @@
     <Compile Include="HumanInterventionSensor.cs" />
     <Compile Include="HumiditySensor.cs" />
     <Compile Include="OWLRefresher.cs" />
+    <Compile Include="HardLimitSensor.cs" />
     <Compile Include="PlatformSensor.cs" />
     <Compile Include="PressureSensor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

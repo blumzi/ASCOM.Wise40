@@ -57,6 +57,7 @@ namespace ASCOM.Wise40SafeToOperate
         public static DoorLockSensor doorLockSensor;
         public static ComputerControlSensor computerControlSensor;
         public static PlatformSensor platformSensor;
+        public static HardLimitSensor hardLimitSensor;
 
         public static List<Sensor> _cumulativeSensors, _prioritizedSensors;
         public static Dictionary<string, Sensor> _sensorHandlers = new Dictionary<string, Sensor>();
@@ -134,6 +135,7 @@ namespace ASCOM.Wise40SafeToOperate
             humanInterventionSensor = new HumanInterventionSensor(this);
             computerControlSensor = new ComputerControlSensor(this);
             platformSensor = new PlatformSensor(this);
+            hardLimitSensor = new HardLimitSensor(this);
             doorLockSensor = new DoorLockSensor(this);
             pressureSensor = new PressureSensor(this);
             temperatureSensor = new TemperatureSensor(this);
@@ -157,6 +159,7 @@ namespace ASCOM.Wise40SafeToOperate
                 computerControlSensor,
                 platformSensor,
                 doorLockSensor,
+                hardLimitSensor,
 
                 sunSensor,                  // Weather sensors - affecting isSafe
                 windSensor,
@@ -403,6 +406,7 @@ namespace ASCOM.Wise40SafeToOperate
                     SunElevation = Sensor.SensorDigest.FromSensor(sunSensor),
                     HumanIntervention = Sensor.SensorDigest.FromSensor(humanInterventionSensor),
                     Platform = Sensor.SensorDigest.FromSensor(platformSensor),
+                    HardLimit = Sensor.SensorDigest.FromSensor(hardLimitSensor),
                     HumanInterventionCampusGlobal = humanInterventionSensor.CampusGlobal,
 
                     Temperature = Sensor.SensorDigest.FromSensor(temperatureSensor),
@@ -1003,6 +1007,7 @@ namespace ASCOM.Wise40SafeToOperate
         // global sensors
         public Sensor.SensorDigest ComputerControl;
         public Sensor.SensorDigest Platform;
+        public Sensor.SensorDigest HardLimit;
         public Sensor.SensorDigest HumanIntervention;
         public Sensor.SensorDigest SunElevation;
 

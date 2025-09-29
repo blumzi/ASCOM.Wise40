@@ -706,6 +706,22 @@ namespace Dash
                 }
                 toolTip.SetToolTip(annunciatorDomePlatform, tip);
                 #endregion
+
+                #region HardLimit Annunciator
+                if (safetooperateDigest.HardLimit.Safe)
+                {
+                    anunciatorHardLimit.Text = "HardLimit is safe";
+                    anunciatorHardLimit.Cadence = CadencePattern.SteadyOff;
+                    tip = "Hard limit switch is not triggered";
+                }
+                else
+                {
+                    annunciatorDomePlatform.Text = "HardLimit is NOT SAFE";
+                    annunciatorDomePlatform.Cadence = CadencePattern.SteadyOn;
+                    tip = "Hard limit switch is TRIGGERED";
+                }
+                toolTip.SetToolTip(anunciatorHardLimit, tip);
+                #endregion
             }
             #region Simulation Annunciator
             if (WiseObject.Simulated)
