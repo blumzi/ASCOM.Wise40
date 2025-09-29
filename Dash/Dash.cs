@@ -716,8 +716,8 @@ namespace Dash
                 }
                 else
                 {
-                    annunciatorDomePlatform.Text = "HardLimit is NOT SAFE";
-                    annunciatorDomePlatform.Cadence = CadencePattern.SteadyOn;
+                    anunciatorHardLimit.Text = "HardLimit is NOT SAFE";
+                    anunciatorHardLimit.Cadence = CadencePattern.SteadyOn;
                     tip = "Hard limit switch is TRIGGERED";
                 }
                 toolTip.SetToolTip(anunciatorHardLimit, tip);
