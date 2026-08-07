@@ -64,6 +64,22 @@ namespace ASCOM.Wise40
         private static void DataReceivedHandler(object sender, SerialDataReceivedEventArgs e)
         {
             string data = (sender as SerialPort)?.ReadLine().TrimEnd(crnls);
+
+            //
+            // Debug lines from the Arduino start with a hash mark.  They are not
+            //  replies to a command, so they must not affect the status or the
+            //  last tag/error we got.
+            //
+            if (data != null && data.StartsWith("#"))
+            {
+                WiseFilterWheel._lastDataReceived = DateTime.Now;
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugFilterWheel,
+                    "ArduinoInterface:DataReceivedHandler: arduino debug: {0}", data);
+                #endregion
+                return;
+            }
+
             WiseFilterWheel.Wheel wheel = null;
             Activity.FilterWheel.Operation op = ArduinoInterface._lastCommandSent == "get-tag" ?
                         Activity.FilterWheel.Operation.Detect :
