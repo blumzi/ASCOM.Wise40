@@ -2256,7 +2256,7 @@
             this.flowLayoutPanel1.Location = new System.Drawing.Point(3, 27);
             this.flowLayoutPanel1.Name = "flowLayoutPanel1";
             this.tableLayoutMain.SetRowSpan(this.flowLayoutPanel1, 3);
-            this.flowLayoutPanel1.Size = new System.Drawing.Size(195, 730);
+            this.flowLayoutPanel1.Size = new System.Drawing.Size(195, 764);
             this.flowLayoutPanel1.TabIndex = 29;
             // 
             // label1
@@ -2321,6 +2321,7 @@
             // 
             this.annunciatorPanelSafety.AutoSize = true;
             this.annunciatorPanelSafety.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.annunciatorPanelSafety.Margin = new System.Windows.Forms.Padding(3, 3, 3, 17);
             this.annunciatorPanelSafety.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.annunciatorPanelSafety.Controls.Add(this.annunciatorComputerControl);
             this.annunciatorPanelSafety.Controls.Add(this.annunciatorDomePlatform);
@@ -2823,6 +2824,9 @@
             // 
             // groupBoxFilterWheel
             // 
+            this.groupBoxFilterWheel.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBoxFilterWheel.Controls.Add(this.labelFWArduinoStatus);
             this.groupBoxFilterWheel.Controls.Add(this.labelFWFilter);
             this.groupBoxFilterWheel.Controls.Add(this.label9);
@@ -3444,7 +3448,7 @@
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
-            this.ClientSize = new System.Drawing.Size(942, 806);
+            this.ClientSize = new System.Drawing.Size(942, 838);
             this.Controls.Add(this.tableLayoutMain);
             this.DoubleBuffered = true;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
