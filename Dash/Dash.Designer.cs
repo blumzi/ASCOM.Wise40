@@ -136,8 +136,6 @@
             this.toolStripMenuItemSafeToOperate = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItemFilterWheel = new System.Windows.Forms.ToolStripMenuItem();
             this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.manageFilterInventoryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.manage3FiltersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem5 = new System.Windows.Forms.ToolStripMenuItem();
             this.debuggingToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.debugActivityToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -1884,9 +1882,7 @@
             // toolStripMenuItemFilterWheel
             // 
             this.toolStripMenuItemFilterWheel.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.settingsToolStripMenuItem,
-            this.manageFilterInventoryToolStripMenuItem,
-            this.manage3FiltersToolStripMenuItem});
+            this.settingsToolStripMenuItem});
             this.toolStripMenuItemFilterWheel.Enabled = false;
             this.toolStripMenuItemFilterWheel.Name = "toolStripMenuItemFilterWheel";
             this.toolStripMenuItemFilterWheel.Size = new System.Drawing.Size(201, 22);
@@ -1899,21 +1895,7 @@
             this.settingsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.settingsToolStripMenuItem.Text = "Loaded filters";
             this.settingsToolStripMenuItem.Click += new System.EventHandler(this.toolStripMenuItemFilterWheel_Click);
-            // 
-            // manageFilterInventoryToolStripMenuItem
-            // 
-            this.manageFilterInventoryToolStripMenuItem.Name = "manageFilterInventoryToolStripMenuItem";
-            this.manageFilterInventoryToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.manageFilterInventoryToolStripMenuItem.Text = "2\" filters inventory";
-            this.manageFilterInventoryToolStripMenuItem.Click += new System.EventHandler(this.manage2InchFilterInventoryToolStripMenuItem_Click);
-            // 
-            // manage3FiltersToolStripMenuItem
-            // 
-            this.manage3FiltersToolStripMenuItem.Name = "manage3FiltersToolStripMenuItem";
-            this.manage3FiltersToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.manage3FiltersToolStripMenuItem.Text = "3\" filters inventory";
-            this.manage3FiltersToolStripMenuItem.Click += new System.EventHandler(this.manage3InchFilterInventoryToolStripMenuItem_Click);
-            // 
+            //
             // toolStripMenuItem5
             // 
             this.toolStripMenuItem5.Name = "toolStripMenuItem5";
@@ -2337,6 +2319,7 @@
             // 
             // annunciatorPanelSafety
             // 
+            this.annunciatorPanelSafety.AutoSize = true;
             this.annunciatorPanelSafety.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.annunciatorPanelSafety.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(22)))), ((int)(((byte)(16)))));
             this.annunciatorPanelSafety.Controls.Add(this.annunciatorComputerControl);
@@ -3669,10 +3652,8 @@
         private System.Windows.Forms.ComboBox comboBoxFilterWheelPositions;
         private System.Windows.Forms.Button buttonFilterWheelGo;
         private System.Windows.Forms.ToolStripMenuItem settingsToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem manageFilterInventoryToolStripMenuItem;
         private TA.WinFormsControls.Annunciator annunciatorDomePlatform;
         private TA.WinFormsControls.Annunciator annunciatorSimulation;
-        private System.Windows.Forms.ToolStripMenuItem manage3FiltersToolStripMenuItem;
         private TA.WinFormsControls.Annunciator annunciatorPulse;
         private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.Panel panelFullStop;

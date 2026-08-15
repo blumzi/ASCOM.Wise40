@@ -1869,11 +1869,6 @@ namespace Dash
             wiseFilterWheel.Position = (short)targetPosition;
         }
 
-        private void manage2InchFilterInventoryToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            new FiltersForm(wiseFilterWheel, WiseFilterWheel.FilterSize.TwoInch).Show();
-        }
-
         private void buttonFullStop_Click(object sender, EventArgs e)
         {
             #region debug
@@ -1909,11 +1904,6 @@ namespace Dash
         private void domeToolStripMenuItem_Click(object sender, EventArgs e)
         {
             new DomeSetupDialogForm().Show();
-        }
-
-        private void manage3InchFilterInventoryToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            new FiltersForm(wiseFilterWheel, WiseFilterWheel.FilterSize.ThreeInch).Show();
         }
 
         private void buttonTrack_Click(object sender, EventArgs e)
