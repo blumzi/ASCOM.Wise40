@@ -277,7 +277,14 @@ namespace ASCOM.Wise40
             _raDeltas.Enqueue(raDelta);
             _haDeltas.Enqueue(haDelta);
 
-            double renishawHa = Angle.FromRadians(WiseTele.renishawHaEncoder.HourAngle).Hours;
+            //
+            // NOTE: RenishawHAEncoder.HourAngle already returns HOURS, not radians.
+            //  Passing it through Angle.FromRadians().Hours converted it a second
+            //  time, inflating it by 12/pi (~3.82) and making every discrepancy
+            //  logged here useless.  The Dec monitor below never had this problem,
+            //  it uses .Declination directly.
+            //
+            double renishawHa = WiseTele.renishawHaEncoder.HourAngle;
             double renishawRa = wisesite.LocalSiderealTime.Hours - renishawHa;
             double discrepancy = Math.Abs(_hourAngle - renishawHa);
             #region debug
