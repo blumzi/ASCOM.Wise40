@@ -127,9 +127,9 @@ namespace ASCOM.Wise40
             this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label1.Location = new System.Drawing.Point(27, 32);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(261, 39);
+            this.label1.Size = new System.Drawing.Size(516, 39);
             this.label1.TabIndex = 2;
-            this.label1.Text = "Use this form to update which filters\r\nhave been loaded into the filter-wheels.";
+            this.label1.Text = "Filter names are fetched from MaxIm DL, focus offsets from ACP.\r\nOnly the RFID tags belong to Wise40 - and only they can be edited here.";
             this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // picASCOM
