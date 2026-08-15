@@ -24,6 +24,23 @@ namespace ASCOM.Wise40.Common
 
             string sql = $"SELECT time FROM weather WHERE station = '{_stationName}' ORDER BY time DESC LIMIT 0 , 1; ";
 
+            //
+            // What this reports is worth being careful about.  It used to swallow
+            //  every exception into DateTime.MinValue and log only the date, so a
+            //  station with no rows, a database that was down, and a query that
+            //  timed out all looked identical - and one of them was really
+            //  happening.  Until 2026-08-15 the weather table had no index on
+            //  Station, so this query was a backward scan of 36 million rows and
+            //  took some 28 seconds per station, sometimes tipping over its own
+            //  timeout.  Nobody could tell, because the failure looked exactly like
+            //  an idle sensor.
+            //
+            // So: distinguish "no rows" from "it went wrong", say which, and say
+            //  how long it took.
+            //
+            string outcome;
+            System.Diagnostics.Stopwatch stopwatch = System.Diagnostics.Stopwatch.StartNew();
+
             try
             {
                 using (var _sqlConn = new MySqlConnection(Const.MySql.DatabaseConnectionString.Wise_weather))
@@ -35,19 +52,32 @@ namespace ASCOM.Wise40.Common
                     {
                         using (var cursor = sqlCmd.ExecuteReader())
                         {
-                            cursor.Read();
-                            prevLocalLoggedTime = Convert.ToDateTime(cursor["time"]).ToLocalTime();
+                            if (cursor.Read())
+                            {
+                                prevLocalLoggedTime = Convert.ToDateTime(cursor["time"]).ToLocalTime();
+                                outcome = $"prevLoggedLocalTime: {prevLocalLoggedTime:yyyy-MM-dd HH:mm:ss.fff}";
+                            }
+                            else
+                            {
+                                //  No rows for this station.  Not an error - it has
+                                //   simply never been logged.
+                                prevLocalLoggedTime = DateTime.MinValue;
+                                outcome = "no rows for this station yet";
+                            }
                         }
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
                 prevLocalLoggedTime = DateTime.MinValue;
+                outcome = $"FAILED: {ex.Message}";
             }
+            stopwatch.Stop();
+
 #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
-                $"WeatherLogger({_stationName}): .const:prevLoggedLocalTime: {prevLocalLoggedTime:yyyy-MM-dd HH:mm:ss.fff}");
+                $"WeatherLogger({_stationName}): .const: {outcome} (took {stopwatch.ElapsedMilliseconds}ms)");
 #endregion
         }
 
