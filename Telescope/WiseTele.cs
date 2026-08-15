@@ -726,6 +726,14 @@ namespace ASCOM.Wise40
             disposables.Add(TrackingMotor);
             disposables.Add(HAEncoder);
             disposables.Add(DecEncoder);
+            //
+            // Deliberately NOT the two Renishaw encoders.  They are static readonly,
+            //  built once at type initialization and never rebuilt - while this list
+            //  is disposed by Driver.Dispose(), i.e. whenever a client releases the
+            //  driver object, not only at shutdown.  Disposing them there would
+            //  release the BiSS modules for good: Init() would hand out encoders
+            //  whose modules nobody ever initializes again.
+            //
             try
             {
                 SlewPin.SetOff();

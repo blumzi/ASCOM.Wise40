@@ -13,7 +13,14 @@ namespace ASCOM.Wise40
         private double _daqsValue;
 
         private readonly WiseEncoder axisEncoder, wormEncoder;
-        private readonly RenishawDecEncoder renishawDecEncoder = new RenishawDecEncoder();
+        //
+        // Deliberately NOT our own instance.  There is one Renishaw Dec encoder on
+        //  the telescope, on BiSS module 1, and every RenishawEncoder built calls
+        //  BissMasterInitSingleCycle() on its module in the constructor and
+        //  BissMasterReleaseSingleCycle() in the finalizer.  Two instances meant
+        //  the module was initialized twice, and whichever was collected first
+        //  released it out from under the other.  Use the one WiseTele owns.
+        //
 
         private bool _connected = false;
 
@@ -208,7 +215,7 @@ namespace ASCOM.Wise40
             {
                 return (WiseTele.Instance.EncodersInUse == WiseTele.EncodersInUseEnum.Old) ?
                     (EncoderValue * DecMultiplier) + DecCorrection :
-                    renishawDecEncoder.Radians;
+                    WiseTele.renishawDecEncoder.Radians;
             }
         }
 

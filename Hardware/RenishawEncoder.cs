@@ -28,7 +28,7 @@ namespace ASCOM.Wise40.Hardware
     /// The other encoder is slave #0 of the functional module #1.
     /// </para>
     /// </summary>
-    public class RenishawEncoder
+    public class RenishawEncoder : IDisposable
     {
         private enum ChannelMode { BISS = 0, SSI = 1 };
         private const byte CRCPolynom = ((1 << 6) | (1 << 1) | (1 << 0));
@@ -51,6 +51,21 @@ namespace ASCOM.Wise40.Hardware
 
         private int prevPosition = Int32.MinValue;
 
+        //
+        // There is exactly one physical encoder on each BiSS functional module, and
+        //  the module is a global resource: constructing an encoder initializes it,
+        //  disposing one releases it.  Two instances on the same module therefore
+        //  initialized it twice, and whichever was released first pulled it out from
+        //  under the other.  That is not a thing to leave to whoever edits next, so
+        //  a second instance on a module is refused outright.
+        //
+        private static readonly object modulesLock = new object();
+        private static readonly HashSet<Module> modulesInUse = new HashSet<Module>();
+
+        private bool _moduleReserved;       // we hold the reservation in modulesInUse
+        private bool _moduleInitialized;    // BissMasterInitSingleCycle() succeeded
+        private bool _disposed;
+
 
         public RenishawEncoder(Module module)
         {
@@ -64,6 +79,16 @@ namespace ASCOM.Wise40.Hardware
 
             _moduleNumber = (byte)module;
             _module = module;
+
+            lock (modulesLock)
+            {
+                if (modulesInUse.Contains(module))
+                    Exceptor.Throw<InvalidOperationException>("RenishawEncoder",
+                        $"BiSS module {module} is already in use by another RenishawEncoder. " +
+                        "There is one encoder per module; share the existing instance instead of building a second one.");
+                modulesInUse.Add(module);
+            }
+            _moduleReserved = true;
 
             ret = Board.BissMasterInitSingleCycle(moduleNbr: _moduleNumber,
                 sensorDataFreqDivisor: 17,
@@ -81,7 +106,26 @@ namespace ASCOM.Wise40.Hardware
             System.Threading.Thread.Sleep(500);
 
             if (ret != 0)
+            {
+                //
+                // Give the reservation back, otherwise a module we never managed to
+                //  initialize stays blocked for the lifetime of the process and no
+                //  retry can ever succeed.
+                //
+                ReleaseReservation();
                 throw new Exception($"BissMasterInitSingleCycle(moduleNumber: {_moduleNumber}) returned {ret}");
+            }
+            _moduleInitialized = true;
+        }
+
+        private void ReleaseReservation()
+        {
+            if (!_moduleReserved)
+                return;
+
+            lock (modulesLock)
+                modulesInUse.Remove(_module);
+            _moduleReserved = false;
         }
 
         public int Position
@@ -180,9 +224,37 @@ namespace ASCOM.Wise40.Hardware
         }
 
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+                return;
+
+            //
+            // Only give the hardware back when disposed deliberately.  Board is a
+            //  managed PCIe1711, and on the finalizer thread it may already have
+            //  been finalized itself - calling into it there is how you get a
+            //  crash at shutdown instead of a clean exit.  Letting the process
+            //  end without the release is harmless by comparison.
+            //
+            if (disposing && _moduleInitialized)
+            {
+                Board.BissMasterReleaseSingleCycle(moduleNbr: _moduleNumber);
+                _moduleInitialized = false;
+            }
+
+            ReleaseReservation();       // a static HashSet: safe from either thread
+            _disposed = true;
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
         ~RenishawEncoder()
         {
-            Board.BissMasterReleaseSingleCycle(moduleNbr: _moduleNumber);
+            Dispose(false);
         }
     }
 
