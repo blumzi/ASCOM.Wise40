@@ -150,17 +150,23 @@ namespace ASCOM.Wise40 //.FilterWheel
                         Filter filter = (string.IsNullOrEmpty(filterName)) ? null : _filterInventory.Find((x) => x.Name == filterName);
 
                         //
-                        // Best effort: ACP's file is positional and may be shorter
-                        //  than the wheel we have on (or longer).  Take the slots it
-                        //  covers and leave the rest unknown, rather than guessing.
+                        // Best effort: neither MaxIm's list nor ACP's file knows
+                        //  which of our wheels is mounted, and both are positional.
+                        //  Take the slots they cover and leave the rest unknown,
+                        //  rather than guessing.
                         //
                         AcpFilterInfo.Entry acp = AcpFilterInfo.ForPosition(i);
+                        string maxImName = MaxImFilterNames.ForPosition(i);
+
+                        if (!string.IsNullOrEmpty(maxImName))
+                            filterName = maxImName;
 
                         positions.Add(new PositionDigest
                         {
                             Position = i,
                             Name = filterName,
-                            NameSource = string.IsNullOrEmpty(filterName) ? "unknown" : "Wise40",
+                            NameSource = !string.IsNullOrEmpty(maxImName) ? MaxImFilterNames.Provenance :
+                                         string.IsNullOrEmpty(filterName) ? "unknown" : "Wise40 (MaxIm names none)",
                             Description = filter == null ? "" : filter.Description,
                             Offset = acp?.Offset ?? filter?.Offset ?? 0,
                             OffsetSource = acp != null ? AcpFilterInfo.Provenance : "unknown",
@@ -767,15 +773,27 @@ namespace ASCOM.Wise40 //.FilterWheel
                 if (currentWheel == null)
                     Exceptor.Throw<FilterWheelNotDetectedException>("FocusOffsets", "No filter wheel detected");
 
-                List<int> focusOffsets = new List<int>();
+                //
+                // Zero for every position, for the same reason Names is empty: we do
+                //  not know.  Focus offsets belong to ACP, which keeps them in its
+                //  own FilterInfo.txt and applies them itself - it has never taken
+                //  them from here.  Reporting a number we cannot stand behind is
+                //  worse than reporting none.
+                //
+                // This also removes a way to crash a mandatory ASCOM property.  It
+                //  used to do
+                //
+                //      _filterInventory.Find(x => x.Name == position.filterName).Offset
+                //
+                //  where Find() returns null for anything not in the inventory - a
+                //  filter renamed in MaxIm, an inventory line deleted - and the
+                //  dereference threw NullReferenceException at whatever client had
+                //  asked.  Retiring the inventory made that more likely, not less.
+                //
+                if (currentWheel._positions == null)
+                    return Array.Empty<int>();
 
-                foreach (FWPosition position in currentWheel._positions) // Write filter offsets to the log
-                {
-                    int offset = (string.IsNullOrEmpty(position.filterName)) ? 0 :
-                                    currentWheel._filterInventory.Find((x) => x.Name == position.filterName).Offset;
-                    focusOffsets.Add(offset);
-                }
-                return focusOffsets.ToArray();
+                return new int[currentWheel._positions.Length];
             }
         }
 
@@ -788,15 +806,27 @@ namespace ASCOM.Wise40 //.FilterWheel
                 if (currentWheel == null)
                     Exceptor.Throw<FilterWheelNotDetectedException>("Names", "No filter wheel detected");
 
-                List<string> names = new List<string>();
+                //
+                // We do not know the filter names, and we say so.
+                //
+                // Wise40 knows which slot the wheel is at - it reads the RFID tag -
+                //  but nothing about what filter is sitting in that slot.  That is
+                //  the observer's business and they keep it in MaxIm DL, which is
+                //  also the client asking us here.  Reporting a name back would be
+                //  telling MaxIm what MaxIm told us, and would go stale the moment
+                //  somebody swapped a filter without telling Wise40.
+                //
+                // Every name is empty rather than the array being empty: ASCOM
+                //  requires Names to have one element per filter position, same as
+                //  FocusOffsets, and clients index it by position.  A zero length
+                //  array would claim the wheel has no positions at all, which is a
+                //  different and false statement, and would throw in any client
+                //  that reads Names[Position].
+                //
                 if (currentWheel._positions == null)
-                    return names.ToArray();
-                foreach (FWPosition position in currentWheel._positions)
-                {
-                    names.Add(position.filterName);
-                }
+                    return Array.Empty<string>();
 
-                return names.ToArray();
+                return Enumerable.Repeat(string.Empty, currentWheel._positions.Length).ToArray();
             }
         }
 
