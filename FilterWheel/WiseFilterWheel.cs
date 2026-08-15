@@ -107,6 +107,24 @@ namespace ASCOM.Wise40 //.FilterWheel
                 public int Offset;
                 public string RFIDTag;
                 public string Comment;
+
+                //
+                // Where each field came from, for display.  We own the RFID tag -
+                //  nothing else can know it - while the rest is looked up in
+                //  whatever the observer maintains elsewhere, and may be absent.
+                //
+                public string NameSource;
+                public string OffsetSource;
+
+                //
+                // The rest of what ACP keeps per slot.  Null when its FilterInfo.txt
+                //  says nothing about this slot, which is the normal case for a
+                //  4 position wheel against a file written for the 8 position one.
+                //
+                public int? ReferenceFilter;
+                public int? PointingFilter;
+                public double? AutofocusMinMag;
+                public double? AutofocusMaxMag;
             }
 
             public class WheelDigest
@@ -131,14 +149,28 @@ namespace ASCOM.Wise40 //.FilterWheel
                         string filterName = _positions[i].filterName;
                         Filter filter = (string.IsNullOrEmpty(filterName)) ? null : _filterInventory.Find((x) => x.Name == filterName);
 
+                        //
+                        // Best effort: ACP's file is positional and may be shorter
+                        //  than the wheel we have on (or longer).  Take the slots it
+                        //  covers and leave the rest unknown, rather than guessing.
+                        //
+                        AcpFilterInfo.Entry acp = AcpFilterInfo.ForPosition(i);
+
                         positions.Add(new PositionDigest
                         {
                             Position = i,
                             Name = filterName,
+                            NameSource = string.IsNullOrEmpty(filterName) ? "unknown" : "Wise40",
                             Description = filter == null ? "" : filter.Description,
-                            Offset = filter?.Offset ?? 0,
+                            Offset = acp?.Offset ?? filter?.Offset ?? 0,
+                            OffsetSource = acp != null ? AcpFilterInfo.Provenance : "unknown",
                             RFIDTag = _positions[i].tag,
                             Comment = filter?.Comment ?? null,
+
+                            ReferenceFilter = acp?.ReferenceFilter,
+                            PointingFilter = acp?.PointingFilter,
+                            AutofocusMinMag = acp?.AutofocusMinMag,
+                            AutofocusMaxMag = acp?.AutofocusMaxMag,
                         });
                     }
                     return positions;
