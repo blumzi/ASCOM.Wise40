@@ -52,7 +52,11 @@ namespace ASCOM.Wise40 //.Telescope
             );
 
             WiseName = name;
-            //RenishawHaEncoder = new RenishawEncoder(RenishawEncoder.Module.Ha);
+            //
+            // No Renishaw encoder is built here.  There is one per BiSS module and
+            //  WiseTele owns both - see WiseTele.renishawHaEncoder.  Building a
+            //  second one on module 0 is now refused by RenishawEncoder itself.
+            //
 
             if (Simulated)
                 _angle = new Angle("00h00m00.0s");
@@ -141,7 +145,14 @@ namespace ASCOM.Wise40 //.Telescope
         {
             get
             {
-                return (EncoderValue * HaMultiplier) + HaCorrection;
+                //
+                // Everything else here - Angle, Degrees, Hours, RightAscension -
+                //  goes through this, so this is the only place the choice of
+                //  encoder has to be made.  Same as WiseDecEncoder.Radians.
+                //
+                return (WiseTele.Instance.EncodersInUse == WiseTele.EncodersInUseEnum.Old) ?
+                    (EncoderValue * HaMultiplier) + HaCorrection :
+                    WiseTele.renishawHaEncoder.Radians;
             }
         }
 
