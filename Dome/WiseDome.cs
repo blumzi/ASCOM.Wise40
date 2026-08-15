@@ -94,7 +94,7 @@ namespace ASCOM.Wise40
 
         private readonly AutoResetEvent internalArrivedAtAzEvent = new AutoResetEvent(false);
         private readonly List<AutoResetEvent> externalArrivedAtAzEvents = new List<AutoResetEvent>();
-        private readonly static AutoResetEvent _foundCalibration = new AutoResetEvent(false);
+        private readonly AutoResetEvent _foundCalibration = new AutoResetEvent(false);
         private readonly static Hardware.Hardware hw = Hardware.Hardware.Instance;
 
         public static bool _adjustingForTracking = false;
@@ -776,6 +776,7 @@ namespace ASCOM.Wise40
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome: FindHomePoint: _foundCalibration was Set()");
             #endregion
+            SlewToAzimuth(_parkAzimuth, "Homing");
         }
 
         public void GenerateArrivalEvent()
