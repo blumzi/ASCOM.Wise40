@@ -1703,6 +1703,46 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        /// What we know about the filter at a wheel position, and where each part
+        ///  of it came from.
+        ///
+        /// Only the RFID tag is ours - it is read off the wheel itself, and nothing
+        ///  else can know it.  Everything else is looked up in whatever the observer
+        ///  maintains elsewhere (ACP's FilterInfo.txt for the offsets, MaxIm for the
+        ///  names), so any of it may be missing.  Saying which source a value came
+        ///  from is the point: a zero offset from ACP and a zero offset because we
+        ///  found nothing look identical otherwise.
+        /// </summary>
+        private static string FilterTooltip(WiseFilterWheel.Wheel.PositionDigest filter)
+        {
+            string Source(string s) => string.IsNullOrEmpty(s) ? "" : $"   [{s}]";
+
+            string tip =
+                " Name:     " + (string.IsNullOrEmpty(filter.Name) ? "(none)" : filter.Name) + Source(filter.NameSource) + Const.crnl +
+                " Desc:     " + (string.IsNullOrEmpty(filter.Description) ? "(no description)" : filter.Description) + Const.crnl +
+                " RFID tag: " + (string.IsNullOrEmpty(filter.RFIDTag) ? "(none)" : filter.RFIDTag) + "   [Wise40]" + Const.crnl +
+                " Offset:   " + filter.Offset.ToString() + Source(filter.OffsetSource) + Const.crnl +
+                " Comment:  " + (string.IsNullOrEmpty(filter.Comment) ? "(no comment)" : filter.Comment);
+
+            //
+            // The rest of what ACP keeps per slot.  Absent whenever its FilterInfo.txt
+            //  does not reach this position - which is the normal case for the 4
+            //  position wheel against a file written for the 8 position one.
+            //
+            if (filter.ReferenceFilter.HasValue || filter.PointingFilter.HasValue)
+                tip += Const.crnl +
+                    " Ref filt: " + (filter.ReferenceFilter.HasValue ? filter.ReferenceFilter.ToString() : "?") +
+                    "   Ptg filt: " + (filter.PointingFilter.HasValue ? filter.PointingFilter.ToString() : "?");
+
+            if (filter.AutofocusMinMag.HasValue || filter.AutofocusMaxMag.HasValue)
+                tip += Const.crnl +
+                    " AF mags:  " + (filter.AutofocusMinMag.HasValue ? filter.AutofocusMinMag.ToString() : "?") +
+                    " .. " + (filter.AutofocusMaxMag.HasValue ? filter.AutofocusMaxMag.ToString() : "?");
+
+            return tip;
+        }
+
         private void LoadFilterWheelInformation()
         {
             if (!WiseSite.FilterWheelInUse)
@@ -1747,22 +1787,12 @@ namespace Dash
             labelFWPosition.Text = (position + 1).ToString();
 
             WiseFilterWheel.Wheel.PositionDigest currentFilter = filterWheelDigest.Wheel.Filters[position];
-            if (string.IsNullOrEmpty(currentFilter.Name))
-            {
-                labelFWFilter.Text = "Clear";
-                toolTip.SetToolTip(labelFWFilter, "");
-            }
-            else
-            {
-                labelFWFilter.Text = $"{currentFilter.Name}";
-                if (!string.IsNullOrEmpty(currentFilter.Description))
-                    labelFWFilter.Text += $"({currentFilter.Description})";
-                toolTip.SetToolTip(labelFWFilter,
-                    " Name:    " + currentFilter.Name + Const.crnl +
-                    " Desc:    " + (string.IsNullOrEmpty(currentFilter.Description) ? "(no description)" : currentFilter.Description) + Const.crnl +
-                    " Offset:  " + currentFilter.Offset.ToString() + Const.crnl +
-                    " Comment: " + (string.IsNullOrEmpty(currentFilter.Comment) ? "(no comment)" : currentFilter.Comment));
-            }
+
+            labelFWFilter.Text = string.IsNullOrEmpty(currentFilter.Name) ? "Clear" : currentFilter.Name;
+            if (!string.IsNullOrEmpty(currentFilter.Name) && !string.IsNullOrEmpty(currentFilter.Description))
+                labelFWFilter.Text += $"({currentFilter.Description})";
+
+            toolTip.SetToolTip(labelFWFilter, FilterTooltip(currentFilter));
 
             if (filterWheelDigest.Wheel.Filters.Count() != comboBoxFilterWheelPositions.Items.Count)
             {
