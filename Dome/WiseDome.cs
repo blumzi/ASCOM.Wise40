@@ -95,6 +95,14 @@ namespace ASCOM.Wise40
         private readonly AutoResetEvent internalArrivedAtAzEvent = new AutoResetEvent(false);
         private readonly List<AutoResetEvent> externalArrivedAtAzEvents = new List<AutoResetEvent>();
         private readonly AutoResetEvent _foundCalibration = new AutoResetEvent(false);
+
+        //
+        // How long StartFindingHome() will wait for a calibration point before
+        //  giving up.  A full revolution at slew speed is well inside this; the
+        //  point is to fail rather than to hang for ever when the dome cannot get
+        //  there at all.
+        //
+        private static readonly TimeSpan _findingHomeTimeout = TimeSpan.FromMinutes(3);
         private readonly static Hardware.Hardware hw = Hardware.Hardware.Instance;
 
         public static bool _adjustingForTracking = false;
@@ -765,7 +773,42 @@ namespace ASCOM.Wise40
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome:StartFindingHome: waiting for _foundCalibration ...");
             #endregion
-            _foundCalibration.WaitOne();
+            //
+            // Bounded, because this used to be a bare WaitOne().
+            //
+            // _foundCalibration is Set() from OnDomeTimer, and only when the dome
+            //  physically reaches a calibration point.  If it never gets there -
+            //  the dome jams, the drive loses power, the calibration sensor or its
+            //  cable fails, or something else calls Stop() on the way - then the
+            //  Set() never comes and we waited here for ever.  Whoever called us
+            //  waited with us: FindHome() over ASCOM, a slew that found itself
+            //  uncalibrated, or the telescope's dome slaving.
+            //
+            if (!_foundCalibration.WaitOne(_findingHomeTimeout))
+            {
+                //
+                // Put everything back by hand.  Calibrating is otherwise left true
+                //  for ever, and OnDomeTimer would then Stop() the dome mid-slew at
+                //  the next calibration point it passed, and Set() the event with
+                //  nobody waiting - so the NEXT FindHome would return instantly and
+                //  report success without having homed.
+                //
+                Stop($"Giving up on finding home after {_findingHomeTimeout.TotalMinutes} minutes");
+                Calibrating = false;
+                UnsetDomeState(DomeState.Calibrating);
+
+                activityMonitor.EndActivity(ActivityMonitor.ActivityType.DomeSlew, new Activity.DomeSlew.EndParams()
+                {
+                    endState = Activity.State.Failed,
+                    endReason = $"Did not reach a calibration point within {_findingHomeTimeout.TotalMinutes} minutes",
+                    endAz = Azimuth.Degrees,
+                });
+
+                Exceptor.Throw<InvalidOperationException>("StartFindingHome",
+                    $"Did not reach a calibration point within {_findingHomeTimeout.TotalMinutes} minutes. " +
+                    "The dome may be stuck, or the calibration sensor may have failed.");
+            }
+
             UnsetDomeState(DomeState.Calibrating);
             activityMonitor.EndActivity(ActivityMonitor.ActivityType.DomeSlew, new Activity.DomeSlew.EndParams()
             {
