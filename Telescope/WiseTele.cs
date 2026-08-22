@@ -3120,7 +3120,15 @@ namespace ASCOM.Wise40
 
             #region debug
             double lst = wisesite.LocalSiderealTime.Hours;
-            double ha = RightAscension - lst;
+            //
+            // Hour angle is LST - RA.  This had it the other way round, and the
+            //  values it logged were used to calibrate the Renishaw HA encoder -
+            //  see RenishawEncoder.cs - so that encoder ended up reporting the
+            //  negative of the hour angle.  Checked against all four of the
+            //  2024-09-11 syncs: LST-RA agrees in sign and to ~0.04h with what the
+            //  old encoder read at the time, RA-LST is its mirror image.
+            //
+            double ha = lst - RightAscension;
             double dec = Declination;
 
             debugger.WriteLine(Debugger.DebugLevel.DebugTele,

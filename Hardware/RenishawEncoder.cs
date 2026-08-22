@@ -297,11 +297,26 @@ namespace ASCOM.Wise40.Hardware
          * dec: -19.6907627788847, dec.renishaw.position: 11507362
          */
 
+        // An older pair, kept for reference.  NOTE these still carry the RA - LST
+        //  sign error described below - negate them before ever using them again.
         // const double ENCmax = 21299784, HAmax = -3.938792458868,   RADmax = HAmax * 2.0 * Math.PI / 24.0;
         //const double ENCmin = 17604386, HAmin =  4.16946625561244, RADmin = HAmin * 2.0 * Math.PI / 24.0;
 
-        const double ENCmax = 5476984, HAmax = -3.2705187523288, RADmax = HAmax * 2.0 * Math.PI / 24.0;
-        const double ENCmin = 2597350, HAmin = 3.05770629602527, RADmin = HAmin * 2.0 * Math.PI / 24.0;
+        //
+        // NOTE the signs.  These were taken from SyncToCoordinates' log in
+        //  September 2024, and that method computed the hour angle as RA - LST
+        //  instead of LST - RA - so every value it logged was the NEGATIVE of the
+        //  hour angle, and this encoder inherited it.  Fixed in WiseTele.cs; these
+        //  constants are negated to match.
+        //
+        // Checked against all four of the 2024-09-11 syncs.  The two points that
+        //  do NOT define the fit come out at 0.36685h and 0.46712h against a sky
+        //  truth of 0.36726 and 0.46782 - residuals under 0.0007h, about 2.5
+        //  seconds of time.  The old encoder read 0.32443 and 0.42468 at those
+        //  same moments, off by a consistent 0.043h.
+        //
+        const double ENCmax = 5476984, HAmax = 3.2705187523288, RADmax = HAmax * 2.0 * Math.PI / 24.0;
+        const double ENCmin = 2597350, HAmin = -3.05770629602527, RADmin = HAmin * 2.0 * Math.PI / 24.0;
 
         const double rad_per_tick = (RADmin - RADmax) / (ENCmax - ENCmin);
 
