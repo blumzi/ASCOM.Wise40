@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;     // parsing the calibration-point action's parameter
 using ASCOM.Utilities;
 using ASCOM.Astrometry;
 using ASCOM.Astrometry.NOVAS;
@@ -3547,7 +3548,8 @@ namespace ASCOM.Wise40
                     "opmode",
                     "status",
                     "nearly-parked",
-                    "slew-to-ha-dec"
+                    "slew-to-ha-dec",
+                    "calibration-point"
                 };
             }
         }
@@ -3586,6 +3588,60 @@ namespace ASCOM.Wise40
 
                     }
                     return EncodersInUse.ToString().ToLower();
+
+                //
+                // Records one Renishaw calibration point from a plate solve.
+                //  Parameter: "<solved RA in hours>,<solved Dec in degrees>".
+                //
+                // Deliberately NOT tied to a sync.  ACP's pointing runs - Test
+                //  Pointing.vbs and the model builder - walk an all-sky mesh
+                //  solving at every stop and never sync at all, and that mesh is
+                //  exactly the spread of angles this calibration needs.  A script
+                //  can hand us a point with one line right after its solve:
+                //
+                //      Telescope.Action "calibration-point", RATrue & "," & DecTrue
+                //
+                // Nothing here depends on ACP's pointing model, on whether
+                //  corrections were applied, or on where it thought it was
+                //  pointing.  We record where it REALLY pointed, from the solve,
+                //  beside what the encoders read at that instant.  So a model
+                //  gathered this way can be thrown away afterwards; only the mesh
+                //  mattered.
+                //
+                case "calibration-point":
+                    {
+                        if (string.IsNullOrWhiteSpace(parameter))
+                            return "error: expected \"<ra hours>,<dec degrees>\"";
+
+                        string[] fields = parameter.Split(',');
+                        if (fields.Length != 2 ||
+                            !double.TryParse(fields[0].Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out double solvedRa) ||
+                            !double.TryParse(fields[1].Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out double solvedDec))
+                            return $"error: cannot parse \"{parameter}\" as \"<ra hours>,<dec degrees>\"";
+
+                        //
+                        // Sidereal time and both counts together, before anything
+                        //  else - the axis turns 15 arcsec of hour angle a second,
+                        //  so a count only means something beside the clock reading
+                        //  taken with it.
+                        //
+                        double lstNow = wisesite.LocalSiderealTime.Hours;
+                        int haCountNow = renishawHaEncoder.Position;
+                        int decCountNow = renishawDecEncoder.Position;
+
+                        RenishawCalibrationLog.Record(
+                            lstHours: lstNow,
+                            solvedRaHours: solvedRa,
+                            solvedDecDegrees: solvedDec,
+                            haCount: haCountNow,
+                            decCount: decCountNow,
+                            oldHaHours: Instance.HourAngle,
+                            oldDecDegrees: Instance.Declination,
+                            renishawHaHours: renishawHaEncoder.HourAngle,
+                            renishawDecDegrees: renishawDecEncoder.Declination);
+
+                        return $"ok: {RenishawCalibrationLog.Path}";
+                    }
 
                 case "active":
                     if (!string.IsNullOrEmpty(parameter))
