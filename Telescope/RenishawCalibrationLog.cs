@@ -50,6 +50,7 @@ namespace ASCOM.Wise40
 
         private const string Header =
             "utc,lst_hours,solved_ra_hours,solved_dec_deg,true_ha_hours," +
+            "through_pole,axis_ha_hours,axis_dec_deg," +
             "ha_count,dec_count," +
             "old_ha_hours,old_dec_deg," +
             "renishaw_ha_hours,renishaw_dec_deg";
@@ -74,10 +75,14 @@ namespace ASCOM.Wise40
         /// <param name="oldDecDegrees">likewise</param>
         /// <param name="renishawHaHours">what the Renishaw says with today's constants</param>
         /// <param name="renishawDecDegrees">likewise</param>
+        /// <param name="throughPole">
+        /// whether the declination axis has gone past 90 degrees
+        /// </param>
         public static void Record(
             double lstHours,
             double solvedRaHours,
             double solvedDecDegrees,
+            bool throughPole,
             int haCount,
             int decCount,
             double oldHaHours,
@@ -93,6 +98,33 @@ namespace ASCOM.Wise40
                 //  Renishaw HA encoder reporting the negative of the hour angle.
                 //
                 double trueHaHours = lstHours - solvedRaHours;
+
+                //
+                // What the counts actually measure is the AXIS, and past the pole
+                //  that is not where the telescope is looking:
+                //
+                //      axis Dec = 180 - Dec(sky)        axis HA = HA(sky) + 12h
+                //
+                // Recorded as its own pair of columns rather than left to whoever
+                //  fits the data.  A point taken past the pole would otherwise sit
+                //  in the file looking exactly like every other point, and land in
+                //  the fit as a wild outlier - or worse, as a plausible one.  ACP's
+                //  pointing mesh is generated in Alt/Az and excludes only the zenith
+                //  and the horizon, so it will happily walk through the polar region.
+                //
+                double axisHaHours = trueHaHours;
+                double axisDecDegrees = solvedDecDegrees;
+
+                if (throughPole)
+                {
+                    axisDecDegrees = 180.0 - solvedDecDegrees;
+                    axisHaHours = trueHaHours + 12.0;
+                }
+
+                while (axisHaHours > 12.0)
+                    axisHaHours -= 24.0;
+                while (axisHaHours < -12.0)
+                    axisHaHours += 24.0;
 
                 string path = Path;
                 string directory = System.IO.Path.GetDirectoryName(path);
@@ -113,6 +145,7 @@ namespace ASCOM.Wise40
                         {
                             DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture),
                             F(lstHours), F(solvedRaHours), F(solvedDecDegrees), F(trueHaHours),
+                            throughPole ? "1" : "0", F(axisHaHours), F(axisDecDegrees),
                             haCount.ToString(CultureInfo.InvariantCulture),
                             decCount.ToString(CultureInfo.InvariantCulture),
                             F(oldHaHours), F(oldDecDegrees),

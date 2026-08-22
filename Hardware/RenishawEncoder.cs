@@ -403,27 +403,50 @@ namespace ASCOM.Wise40.Hardware
         const double RADmax = (DECmax * Math.PI) / 180.0, RADmin = (DECmin * Math.PI) / 180.0;
         const double rad_per_tick = (RADmax + -RADmin) / (ENCmax - ENCmin);
 
+        /// <summary>
+        /// The declination the telescope is looking at, which past the pole is not
+        ///  the same as the angle of the axis.
+        ///
+        /// Declination does NOT wrap modulo 90 degrees.  This used to subtract
+        ///  Math.PI/2 in a loop until the value was in range, which turned an axis
+        ///  at 91 degrees into a declination of 1 - a plausible looking number
+        ///  nowhere near the pole.  Past the pole the telescope is looking at the
+        ///  REFLECTION of the axis angle:
+        ///
+        ///      Dec = 180 - axis        and the hour angle gains 12h
+        ///
+        /// The hour angle half of that pair is applied by the caller - see
+        ///  WiseHAEncoder.RightAscension, which adds 12h when the Dec encoder says
+        ///  Over90Deg.  The two must be applied together or not at all.
+        ///
+        /// Note this is NOT the pointing path: WiseDecEncoder reads Radians, the
+        ///  raw axis angle, and does its own pole handling.  This property feeds
+        ///  the logs, the digest and the calibration record.
+        /// </summary>
         public new double Declination
         {
             get
             {
-
                 double rad = Radians;
 
-                while (rad > Math.PI / 2)
-                    rad -= Math.PI / 2;
-                while (rad < -Math.PI / 2)
-                    rad += Math.PI / 2;
+                if (rad > Math.PI / 2)              // north, over the pole
+                    rad = Math.PI - rad;
+                else if (rad < -Math.PI / 2)        // south, over the other one
+                    rad = -Math.PI - rad;
 
                 return Angle.Rad2Deg(rad);
             }
         }
 
+        /// <summary>
+        /// True when the axis has gone past the pole, so that Declination is the
+        ///  reflection of the axis angle and the hour angle needs its 12 hours.
+        /// </summary>
         public bool Over90Deg
         {
             get
             {
-                return Radians > Math.PI / 2;
+                return Math.Abs(Radians) > Math.PI / 2;
             }
         }
 
