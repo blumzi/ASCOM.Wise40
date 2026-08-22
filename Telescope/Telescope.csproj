@@ -141,6 +141,7 @@
     <Compile Include="Pulsing.cs" />
     <Compile Include="Slewers.cs" />
     <Compile Include="AxisMonitor.cs" />
+    <Compile Include="RenishawCalibrationLog.cs" />
     <Compile Include="DomeSlaveDriver.cs" />
     <Compile Include="Driver.cs" />
     <Compile Include="Movement.cs" />

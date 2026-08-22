@@ -3118,8 +3118,18 @@ namespace ASCOM.Wise40
             if (! WiseTele.Instance.Tracking)
                 Exceptor.Throw<InvalidOperationException>($"SyncToCoordinates({RightAscension}, {Declination})", "NOT Tracking");
 
-            #region debug
+            //
+            // Read the sidereal time and both raw Renishaw counts together, in as
+            //  few statements as possible.  This simultaneity IS the measurement:
+            //  while tracking, the telescope holds its place on sky - so the solved
+            //  coordinates stay good for as long as it stays on the field - but the
+            //  AXIS turns at 15 arcsec of hour angle per second.  A count is only
+            //  meaningful beside the clock reading taken with it.
+            //
             double lst = wisesite.LocalSiderealTime.Hours;
+            int haCount = renishawHaEncoder.Position;
+            int decCount = renishawDecEncoder.Position;
+
             //
             // Hour angle is LST - RA.  This had it the other way round, and the
             //  values it logged were used to calibrate the Renishaw HA encoder -
@@ -3131,12 +3141,30 @@ namespace ASCOM.Wise40
             double ha = lst - RightAscension;
             double dec = Declination;
 
+            //
+            // One calibration point per solved sync, somewhere it can be fitted -
+            //  rather than transcribed by hand out of the debug log, which is how
+            //  we ended up calibrating a 32 bit encoder from two points.
+            //
+            RenishawCalibrationLog.Record(
+                lstHours: lst,
+                solvedRaHours: RightAscension,
+                solvedDecDegrees: Declination,
+                haCount: haCount,
+                decCount: decCount,
+                oldHaHours: WiseTele.Instance.HourAngle,
+                oldDecDegrees: WiseTele.Instance.Declination,
+                renishawHaHours: renishawHaEncoder.HourAngle,
+                renishawDecDegrees: renishawDecEncoder.Declination);
+
+            #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugTele,
                 $"SyncToCoordinates(ra: {RightAscension}, dec: {Declination}): lst: {lst} " +
                 $"Old coord: (ha: {WiseTele.Instance.HourAngle}, dec: {WiseTele.Instance.Declination}), " +
-                "New coord: (" + 
-                    $"ha: {ha}, renishaw: {renishawHaEncoder.Position}, radians: {Angle.Hours2Rad(ha)}" + ", " +
-                    $"dec: {dec}, renishaw: {renishawDecEncoder.Position}, radians: {Angle.Deg2Rad(dec)})");
+                "New coord: (" +
+                    $"ha: {ha}, renishaw: {haCount}, radians: {Angle.Hours2Rad(ha)}" + ", " +
+                    $"dec: {dec}, renishaw: {decCount}, radians: {Angle.Deg2Rad(dec)})" +
+                $", calibration point logged to {RenishawCalibrationLog.Path}");
             #endregion
             //Exceptor.Throw<MethodNotImplementedException>($"SyncToCoordinates({RightAscension}, {Declination})", "SyncToCoordinates not implemented");
         }
