@@ -1716,14 +1716,31 @@ namespace Dash
         /// </summary>
         private static string FilterTooltip(WiseFilterWheel.Wheel.PositionDigest filter)
         {
-            string Source(string s) => string.IsNullOrEmpty(s) ? "" : $"   [{s}]";
+            //
+            // Laid out as "label: value" with the source on its own indented line,
+            //  NOT as columns padded with spaces.  This is a stock ToolTip, drawn in
+            //  the system's proportional UI font, so padding does not line anything
+            //  up - "Name:" and "RFID tag:" are simply different widths and the
+            //  columns wander.  Give each value its own line and the ragged edge
+            //  goes away without owner-drawing the tooltip.
+            //
+            StringBuilder tip = new StringBuilder();
 
-            string tip =
-                " Name:     " + (string.IsNullOrEmpty(filter.Name) ? "(none)" : filter.Name) + Source(filter.NameSource) + Const.crnl +
-                " Desc:     " + (string.IsNullOrEmpty(filter.Description) ? "(no description)" : filter.Description) + Const.crnl +
-                " RFID tag: " + (string.IsNullOrEmpty(filter.RFIDTag) ? "(none)" : filter.RFIDTag) + "   [Wise40]" + Const.crnl +
-                " Offset:   " + filter.Offset.ToString() + Source(filter.OffsetSource) + Const.crnl +
-                " Comment:  " + (string.IsNullOrEmpty(filter.Comment) ? "(no comment)" : filter.Comment);
+            void Field(string label, string value, string source)
+            {
+                if (tip.Length > 0)
+                    tip.Append(Const.crnl);
+                tip.Append($"{label}: {value}");
+                if (!string.IsNullOrEmpty(source))
+                    tip.Append(Const.crnl + $"    from {source}");
+            }
+
+            tip.Append($"Filter at position {filter.Position + 1}" + Const.crnl);
+
+            Field("Name", string.IsNullOrEmpty(filter.Name) ? "(none)" : filter.Name, filter.NameSource);
+            Field("RFID tag", string.IsNullOrEmpty(filter.RFIDTag) ? "(none)" : filter.RFIDTag,
+                  "Wise40, read off the wheel");
+            Field("Focus offset", filter.Offset.ToString(), filter.OffsetSource);
 
             //
             // The rest of what ACP keeps per slot.  Absent whenever its FilterInfo.txt
@@ -1731,16 +1748,16 @@ namespace Dash
             //  position wheel against a file written for the 8 position one.
             //
             if (filter.ReferenceFilter.HasValue || filter.PointingFilter.HasValue)
-                tip += Const.crnl +
-                    " Ref filt: " + (filter.ReferenceFilter.HasValue ? filter.ReferenceFilter.ToString() : "?") +
-                    "   Ptg filt: " + (filter.PointingFilter.HasValue ? filter.PointingFilter.ToString() : "?");
+                Field("Reference / pointing filter",
+                    (filter.ReferenceFilter.HasValue ? filter.ReferenceFilter.ToString() : "?") + " / " +
+                    (filter.PointingFilter.HasValue ? filter.PointingFilter.ToString() : "?"), null);
 
             if (filter.AutofocusMinMag.HasValue || filter.AutofocusMaxMag.HasValue)
-                tip += Const.crnl +
-                    " AF mags:  " + (filter.AutofocusMinMag.HasValue ? filter.AutofocusMinMag.ToString() : "?") +
-                    " .. " + (filter.AutofocusMaxMag.HasValue ? filter.AutofocusMaxMag.ToString() : "?");
+                Field("Autofocus magnitudes",
+                    (filter.AutofocusMinMag.HasValue ? filter.AutofocusMinMag.ToString() : "?") + " to " +
+                    (filter.AutofocusMaxMag.HasValue ? filter.AutofocusMaxMag.ToString() : "?"), null);
 
-            return tip;
+            return tip.ToString();
         }
 
         private void LoadFilterWheelInformation()
@@ -1788,9 +1805,14 @@ namespace Dash
 
             WiseFilterWheel.Wheel.PositionDigest currentFilter = filterWheelDigest.Wheel.Filters[position];
 
+            //
+            // Just the name.  It used to append a description, but the name came
+            //  from MaxIm and the description from our own inventory, keyed on the
+            //  name Wise40 had stored - so the two could be about different filters
+            //  and it read as one: "c4(I)", and "V(I)" once MaxIm held real names.
+            //  The inventory is gone and so is the description.
+            //
             labelFWFilter.Text = string.IsNullOrEmpty(currentFilter.Name) ? "Clear" : currentFilter.Name;
-            if (!string.IsNullOrEmpty(currentFilter.Name) && !string.IsNullOrEmpty(currentFilter.Description))
-                labelFWFilter.Text += $"({currentFilter.Description})";
 
             toolTip.SetToolTip(labelFWFilter, FilterTooltip(currentFilter));
 
@@ -1806,7 +1828,7 @@ namespace Dash
                 if (!string.IsNullOrEmpty(filterWheelDigest.Wheel.Filters[pos].Name))
                 {
                     comboBoxFilterWheelPositions.Items[pos] =
-                        $"{pos + 1} - {filterWheelDigest.Wheel.Filters[pos].Name}: {filterWheelDigest.Wheel.Filters[pos].Description}";
+                        $"{pos + 1} - {filterWheelDigest.Wheel.Filters[pos].Name}";
                 }
             }
 

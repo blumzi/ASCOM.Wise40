@@ -10,6 +10,5 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>", Scope = "member", Target = "~M:ASCOM.Wise40.FilterWheelSetupDialogForm.BrowseToAscom(System.Object,System.EventArgs)")]
 [assembly: SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>", Scope = "member", Target = "~M:ASCOM.Wise40.WiseFilterWheel.RaiseWheelOrPositionChanged")]
 [assembly: SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>", Scope = "member", Target = "~M:ASCOM.Wise40.WiseFilterWheel.RestoreCurrentWheelFromFile")]
-[assembly: SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>", Scope = "member", Target = "~M:ASCOM.Wise40.WiseFilterWheel.Wheel.ReadFiltersFromCsvFile")]
 [assembly: SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>", Scope = "member", Target = "~P:ASCOM.Wise40.ArduinoInterface.Connected")]
 [assembly: SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>", Scope = "member", Target = "~P:ASCOM.Wise40.WiseFilterWheel.Position")]

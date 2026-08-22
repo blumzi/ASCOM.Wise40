@@ -32,7 +32,6 @@ namespace ASCOM.Wise40 //.FilterWheel
 
         public enum WheelType { Wheel8, Wheel4, Unknown};
         public enum FilterSize { TwoInch, ThreeInch };
-        public static List<FilterSize> filterSizes = new List<FilterSize> { FilterSize.TwoInch, FilterSize.ThreeInch };
 
         public static Wheel wheel8 = new Wheel(WheelType.Wheel8);
         public static Wheel wheel4 = new Wheel(WheelType.Wheel4);
@@ -64,9 +63,6 @@ namespace ASCOM.Wise40 //.FilterWheel
             public short _targetPosition;
             public int _nPositions;
             public FilterSize _filterSize;
-            public List<Filter> _filterInventory;
-            public string _filterCSVFile;
-            public DateTime _lastReadFromCSV;
 
             public Wheel(WheelType type)
             {
@@ -76,13 +72,11 @@ namespace ASCOM.Wise40 //.FilterWheel
                     case WheelType.Wheel4:
                         _nPositions = 4;
                         _filterSize = FilterSize.ThreeInch;
-                        _filterCSVFile = Const.topWise40Directory + "/FilterWheel/threeInchFilters.csv";
                         break;
 
                     case WheelType.Wheel8:
                         _nPositions = 8;
                         _filterSize = FilterSize.TwoInch;
-                        _filterCSVFile = Const.topWise40Directory + "/FilterWheel/twoInchFilters.csv";
                         break;
                 }
                 _positions = new FWPosition[_nPositions];
@@ -95,18 +89,24 @@ namespace ASCOM.Wise40 //.FilterWheel
                     _positions[i].filterName = _positions[i].tag = string.Empty;
                 }
                 _position = -1;
-
-                ReadFiltersFromCsvFile();
             }
 
             public class PositionDigest
             {
                 public int Position;
                 public string Name;
-                public string Description;
                 public int Offset;
                 public string RFIDTag;
-                public string Comment;
+
+                //
+                // No Description and no Comment.  They came from our own filter
+                //  inventory CSVs, which are gone: MaxIm DL supplies a name and
+                //  nothing else, and ACP supplies the offset.  Worse, they were
+                //  looked up by the filter name Wise40 had STORED while Name was
+                //  overwritten with MaxIm's, so a position could report the name of
+                //  one filter beside the description of another - "c4(I)" on the
+                //  dashboard, and "V(I)" once MaxIm holds real names.
+                //
 
                 //
                 // Where each field came from, for display.  We own the RFID tag -
@@ -146,9 +146,6 @@ namespace ASCOM.Wise40 //.FilterWheel
 
                     for (int i = 0; i < _positions.Length; i++)
                     {
-                        string filterName = _positions[i].filterName;
-                        Filter filter = (string.IsNullOrEmpty(filterName)) ? null : _filterInventory.Find((x) => x.Name == filterName);
-
                         //
                         // Best effort: neither MaxIm's list nor ACP's file knows
                         //  which of our wheels is mounted, and both are positional.
@@ -158,20 +155,15 @@ namespace ASCOM.Wise40 //.FilterWheel
                         AcpFilterInfo.Entry acp = AcpFilterInfo.ForPosition(i);
                         string maxImName = MaxImFilterNames.ForPosition(i);
 
-                        if (!string.IsNullOrEmpty(maxImName))
-                            filterName = maxImName;
-
                         positions.Add(new PositionDigest
                         {
                             Position = i,
-                            Name = filterName,
-                            NameSource = !string.IsNullOrEmpty(maxImName) ? MaxImFilterNames.Provenance :
-                                         string.IsNullOrEmpty(filterName) ? "unknown" : "Wise40 (MaxIm names none)",
-                            Description = filter == null ? "" : filter.Description,
-                            Offset = acp?.Offset ?? filter?.Offset ?? 0,
+                            Name = maxImName ?? string.Empty,
+                            NameSource = !string.IsNullOrEmpty(maxImName) ?
+                                            MaxImFilterNames.Provenance : "MaxIm DL names no filter here",
+                            Offset = acp?.Offset ?? 0,
                             OffsetSource = acp != null ? AcpFilterInfo.Provenance : "unknown",
                             RFIDTag = _positions[i].tag,
-                            Comment = filter?.Comment ?? null,
 
                             ReferenceFilter = acp?.ReferenceFilter,
                             PointingFilter = acp?.PointingFilter,
@@ -197,67 +189,6 @@ namespace ASCOM.Wise40 //.FilterWheel
                         FilterSizeInch = _filterSize == FilterSize.ThreeInch ? "3" : "2",
                         FilterSizeString = _filterSize.ToString(),
                     };
-                }
-            }
-
-            //
-            // There are two CSV filter inventory files (for two and three inch filters respectively)
-            //
-            private void ReadFiltersFromCsvFile()
-            {
-                if (_filterInventory == null)
-                    _filterInventory = new List<Filter>();
-
-                if (!System.IO.File.Exists(_filterCSVFile))
-                    return;
-
-                if (System.IO.File.GetLastWriteTime(_filterCSVFile).CompareTo(_lastReadFromCSV) <= 0)
-                    return;
-
-                using (var sr = new System.IO.StreamReader(_filterCSVFile))
-                {
-                    string line;
-                    string[] fields;
-                    int offset;
-                    string comment = null;
-
-                    while ((line = sr.ReadLine()) != null)
-                    {
-                        line = line.TrimStart().TrimEnd();
-                        if (line.Length == 0)           // skip empty lines
-                            continue;
-                        if (line.StartsWith("#"))       // skip comments
-                            continue;
-                        int idx = line.IndexOf('#');    // remember comment
-                        if (idx != -1)
-                        {
-                            comment = line.Substring(idx + 1).Trim();
-                            line.Remove(idx);
-                            line = line.Trim();
-                        }
-                        fields = line.Split(CSVseparator[0]);
-                        if (fields.Length != 3)         // skip bad lines
-                            continue;
-
-                        try
-                        {
-                            offset = Convert.ToInt32(fields[2]);
-                        }
-                        catch (FormatException)
-                        {
-                            offset = 0;
-                        }
-                        _filterInventory.Add(new Filter(fields[0], fields[1], offset, comment));
-                    }
-                }
-                _lastReadFromCSV = DateTime.Now;
-            }
-
-            public List<Filter> GetKnownFilters
-            {
-                get
-                {
-                    return _filterInventory;
                 }
             }
         }
@@ -334,9 +265,6 @@ namespace ASCOM.Wise40 //.FilterWheel
             if (!Enabled)
                 return;
 
-            //foreach (var size in filterSizes)
-            //    ReadFiltersFromCsvFile(size);
-
             RestoreCurrentWheelFromFile();
 
             if (!Simulated)
@@ -389,12 +317,6 @@ namespace ASCOM.Wise40 //.FilterWheel
                     Convert.ToBoolean(driverProfile.GetValue(driverID, "Enabled", string.Empty, "false"));
             }
         }
-
-        public static Dictionary<FilterSize, int> filterSizeToIndex = new Dictionary<FilterSize, int>
-        {
-            {FilterSize.TwoInch, 0 },
-            {FilterSize.ThreeInch, 1 },
-        };
 
         public static void WriteProfile()
         {
@@ -562,14 +484,6 @@ namespace ASCOM.Wise40 //.FilterWheel
                         return "ok";
                     }
 
-                case "get-filter-inventory":
-                        return JsonConvert.SerializeObject(Filters);
-
-                case "set-filter-inventory":
-                    SetFilterInventoryParam par = JsonConvert.DeserializeObject<SetFilterInventoryParam>(parameters);
-                    SetFilterInventory(par);
-                    return "ok";
-
                 case "get-tag":
                     arduino.StartReadingTag();
                     return "ok";
@@ -585,82 +499,6 @@ namespace ASCOM.Wise40 //.FilterWheel
                     Exceptor.Throw<ASCOM.ActionNotImplementedException>($"Action(\"{action}\")", "Not implemented by this driver");
                     return string.Empty;
             }
-        }
-
-        public class FilterDigest
-        {
-            public string Name;
-            public string Description;
-            public int Offset;
-            public string Comment;
-        }
-
-        public class WheelFilterDigest
-        {
-            public string Wheel;
-            public string FilterSize;
-            public List<FilterDigest> Filters;
-
-            public WheelFilterDigest(FilterSize size)
-            {
-                Wheel wheel = size == WiseFilterWheel.FilterSize.TwoInch ? wheel8 : wheel4;
-                Wheel = wheel.WiseName;
-                FilterSize = size.ToString();
-                Filters = new List<FilterDigest>();
-
-                List<Filter> inventory = wheel._filterInventory;
-
-                foreach (var filter in inventory)
-                {
-                    Filters.Add(new FilterDigest
-                    {
-                        Name = filter.Name,
-                        Description = filter.Description,
-                        Offset = filter.Offset,
-                        Comment = filter.Comment,
-                    });
-                }
-            }
-        }
-
-        public class FiltersInventoryDigest
-        {
-            public WheelFilterDigest[] FilterInventory = new WheelFilterDigest[2];
-
-            public FiltersInventoryDigest()
-            {
-                FilterInventory = new WheelFilterDigest[WiseFilterWheel.filterSizes.Count];
-
-                foreach (var filterSize in WiseFilterWheel.filterSizes)
-                {
-                    FilterInventory[filterSizeToIndex[filterSize]] = new WheelFilterDigest(filterSize);
-                }
-            }
-        }
-
-        public FiltersInventoryDigest Filters
-        {
-            get
-            {
-               return new FiltersInventoryDigest();
-            }
-        }
-
-        public class SetFilterInventoryParam
-        {
-            public FilterSize FilterSize;
-            public Filter[] Filters;
-        }
-
-        public static void SetFilterInventory(SetFilterInventoryParam par)
-        {
-            Wheel wheel = par.FilterSize == FilterSize.TwoInch ? wheel8 : wheel4;
-
-            wheel._filterInventory = new List<Filter>();
-            foreach (var f in par.Filters)
-                wheel._filterInventory.Add(f);
-
-            SaveFiltersInventoryToCsvFile(par.FilterSize);
         }
 
         public string State
@@ -1041,36 +879,6 @@ namespace ASCOM.Wise40 //.FilterWheel
             #endregion
         }
 
-        private const string CSVseparator = ",";
-        public static void SaveFiltersInventoryToCsvFile(FilterSize filterSize)
-        {
-            Wheel wheel = filterSize == FilterSize.TwoInch ? wheel8 : wheel4;
-            string fileName = wheel._filterCSVFile;
-
-            if (!System.IO.Directory.Exists(System.IO.Path.GetDirectoryName(fileName)))
-                System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(fileName));
-
-            using (var sw = new System.IO.StreamWriter(fileName, false))
-            {
-                sw.WriteLine("#");
-                sw.WriteLine($"# Wise40 {filterSize}\" filter inventory");
-                sw.WriteLine($"# Last saved on: {DateTime.Now}");
-                sw.WriteLine("# Filter line format:");
-                sw.WriteLine($"#  name{CSVseparator}decription{CSVseparator}offset");
-                sw.WriteLine("# Name and description are free strings, offset must be a integer.");
-                sw.WriteLine("# Empty lines and comments (starting with #) are ignored.");
-                sw.WriteLine("#");
-                sw.WriteLine("\n");
-
-                foreach (var filter in wheel._filterInventory)
-                {
-                    string line = $"{filter.Name}{CSVseparator}{filter.Description}{CSVseparator}{filter.Offset}";
-                    if (!string.IsNullOrEmpty(filter.Comment))
-                        line += $" # {filter.Comment}";
-                    sw.WriteLine(line);
-                }
-            }
-        }
 
         [Serializable]
         public class FilterWheelNotDetectedException : Exception

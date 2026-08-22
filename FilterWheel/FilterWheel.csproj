@@ -125,7 +125,6 @@
     <Compile Include="ArduinoInterface.cs" />
     <Compile Include="Driver.cs" />
     <Compile Include="AcpFilterInfo.cs" />
-    <Compile Include="Filter.cs" />
     <Compile Include="MaxImFilterNames.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
