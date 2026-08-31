@@ -156,7 +156,14 @@ namespace ASCOM.Wise40 //.Telescope
                     util.Dispose();
                     util = null;
 
-                    wisetele.Dispose();
+                    //
+                    // Deliberately NOT wisetele.Dispose().  This object is one
+                    // client's handle; WiseTele.Instance is shared by all of them.
+                    // WiseTele.Dispose() disposes the singleton's disposables and
+                    // clears its target coordinates, so forwarding it here let any
+                    // client that correctly released its driver object tear down
+                    // state the others were still using.
+                    //
                 }
             }
             _disposed = true;
@@ -169,18 +176,39 @@ namespace ASCOM.Wise40 //.Telescope
             GC.SuppressFinalize(this);
         }
 
+        //
+        // Connected is per-client, as ASCOM scopes it: _connected says whether
+        // THIS client asked to be connected, wisetele.Connected whether the
+        // hardware is up.
+        //
+        // The hardware comes up on the first connect and stays up for the life
+        // of the local server.  We never take it down on a client's behalf:
+        // WiseTele.Connected is a single flag on a singleton with no reference
+        // counting, and setting it false runs Connect(false) over every motor -
+        // the tracking motor included - both encoders and both axis monitors.
+        // Any well-behaved ASCOM client sets Connected = false as it exits, so
+        // forwarding that stopped the mount for everyone else.
+        //
+        // There is nothing to gain from disconnecting anyway: WisePin.Connect
+        // (false) releases DAQ bit ownership, which is a server-lifetime concern,
+        // not a per-client one.
+        //
         public bool Connected
         {
             get
             {
-                _connected = wisetele.Connected;
-                return _connected;
+                return _connected && wisetele.Connected;
             }
 
             set
             {
-                wisetele.Connected = value;
-                _connected = wisetele.Connected;
+                if (value == _connected)
+                    return;
+
+                if (value)
+                    wisetele.Connected = true;      // idempotent; the first client wins
+
+                _connected = value;
             }
         }
 

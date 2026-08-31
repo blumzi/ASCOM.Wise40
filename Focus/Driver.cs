@@ -63,6 +63,8 @@ namespace ASCOM.Wise40 //.Focuser
 
         private readonly WiseFocuser wisefocuser = WiseFocuser.Instance;
 
+        private bool _connected = false;        // this client's connection state - see Connected
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Wise40"/> class.
         /// Must be public for COM registration.
@@ -132,20 +134,39 @@ namespace ASCOM.Wise40 //.Focuser
         }
         protected virtual void Dispose(bool disposing)
         {
-            if (disposing)
-                wisefocuser.Dispose();
+            //
+            // Deliberately NOT wisefocuser.Dispose().  This object is one client's
+            // handle; WiseFocuser.Instance is shared by all of them, and its
+            // Dispose() disposes pinUp, pinDown and the encoder.
+            //
         }
 
+        //
+        // Connected is per-client, as ASCOM scopes it: _connected says whether
+        // THIS client asked to be connected, wisefocuser.Connected whether the
+        // hardware is up.
+        //
+        // The hardware comes up on the first connect and stays up for the life of
+        // the local server.  WiseFocuser.Connected runs Connect(value) over pinUp,
+        // pinDown and the encoder, so forwarding a client's disconnect released the
+        // focuser's pins while other clients were still using it.
+        //
         public bool Connected
         {
             get
             {
-                return wisefocuser.Connected;
+                return _connected && wisefocuser.Connected;
             }
 
             set
             {
-                wisefocuser.Connected = value;
+                if (value == _connected)
+                    return;
+
+                if (value)
+                    wisefocuser.Connected = true;   // idempotent; the first client wins
+
+                _connected = value;
             }
         }
 

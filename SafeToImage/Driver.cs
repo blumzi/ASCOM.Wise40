@@ -66,6 +66,8 @@ namespace ASCOM.Wise40.SafeToOperate
     public class SafetyMonitor : ISafetyMonitor
     {
         internal WiseSafeToOperate wisesafetoimage = WiseSafeToOperate.InstanceImage;
+
+        private bool _connected = false;        // this client's connection state - see Connected
         private static string driverID = "ASCOM.Wise40.SafeToImage.SafetyMonitor";
         //private static string driverDescription = "ASCOM Wise40 SafeToImage";
 
@@ -147,15 +149,30 @@ namespace ASCOM.Wise40.SafeToOperate
             wisesafetoimage.Dispose();
         }
 
+        //
+        // Connected is per-client, as ASCOM scopes it.  See SafeToOperate's Driver
+        // for the reasoning; this one matters for an extra reason.
+        //
+        // WiseSafeToOperate.InstanceImage is a second instance of the same class,
+        // but StopSensors() is static and walks the static _prioritizedSensors
+        // list.  So a client disconnecting from SafeToImage stopped the sensors
+        // that SafeToOperate reads too.
+        //
         public bool Connected
         {
             get
             {
-                return wisesafetoimage.Connected;
+                return _connected && wisesafetoimage.Connected;
             }
             set
             {
-                wisesafetoimage.Connected = value;
+                if (value == _connected)
+                    return;
+
+                if (value)
+                    wisesafetoimage.Connected = true;   // idempotent; the first client wins
+
+                _connected = value;
             }
         }
 

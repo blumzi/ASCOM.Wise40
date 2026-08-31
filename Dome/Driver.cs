@@ -91,6 +91,8 @@ namespace ASCOM.Wise40 //.Dome
         public static readonly Exceptor Exceptor = new Exceptor(Common.Debugger.DebugLevel.DebugDome);
         private bool disposed = false;
 
+        private bool _connected = false;        // this client's connection state - see Connected
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Wise40Hardware"/> class.
         /// Must be public for COM registration.
@@ -170,8 +172,18 @@ namespace ASCOM.Wise40 //.Dome
                 utilities = null;
                 astroUtilities.Dispose();
                 astroUtilities = null;
-                wisedome.Dispose();
-                wisedome = null;
+
+                //
+                // Deliberately NOT wisedome.Dispose(), and emphatically not
+                // wisedome = null.  This object is one client's handle;
+                // WiseDome.Instance is shared, and `wisedome` is a STATIC field -
+                // nulling it here broke every other Driver instance too.
+                //
+                // WiseDome.Dispose() also drives hardware directly: leftPin.SetOff(),
+                // rightPin.SetOff() and Vent = false.  So a client merely releasing
+                // its dome object stopped dome motion and closed the vent for
+                // everyone.
+                //
 
                 disposed = true;
             }
@@ -184,16 +196,32 @@ namespace ASCOM.Wise40 //.Dome
             GC.SuppressFinalize(this);
         }
 
+        //
+        // Connected is per-client, as ASCOM scopes it: _connected says whether
+        // THIS client asked to be connected, wisedome.Connected whether the
+        // hardware is up.
+        //
+        // The hardware comes up on the first connect and stays up for the life
+        // of the local server.  WiseDome is a singleton shared by every client -
+        // ACP, the Dash, MaxIm, Alpaca, scripts - so a client must not be able to
+        // take the dome down on its way out.
+        //
         public bool Connected
         {
             get
             {
-                return wisedome.Connected;
+                return _connected && wisedome.Connected;
             }
 
             set
             {
-                wisedome.Connected = value;
+                if (value == _connected)
+                    return;
+
+                if (value)
+                    wisedome.Connected = true;      // idempotent; the first client wins
+
+                _connected = value;
             }
         }
 

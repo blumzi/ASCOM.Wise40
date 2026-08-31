@@ -68,6 +68,8 @@ namespace ASCOM.Wise40SafeToOperate
         public static WiseSafeToOperate wisesafetooperate;
         private const string driverID = Const.WiseDriverID.SafeToOperate;
 
+        private bool _connected = false;        // this client's connection state - see Connected
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Wise40.SafeToOperate"/> class.
         /// Must be public for COM registration.
@@ -144,15 +146,32 @@ namespace ASCOM.Wise40SafeToOperate
             wisesafetooperate.Dispose();
         }
 
+        //
+        // Connected is per-client, as ASCOM scopes it: _connected says whether THIS
+        // client asked to be connected, wisesafetooperate.Connected whether the
+        // sensors are running.
+        //
+        // The sensors start on the first connect and keep running for the life of
+        // the local server.  WiseSafeToOperate.Connected calls StopSensors() on
+        // disconnect, so forwarding a client's exit stopped the safety sensors for
+        // everyone - including whatever was relying on them to decide it was still
+        // safe to be open.
+        //
         public bool Connected
         {
             get
             {
-                return wisesafetooperate.Connected;
+                return _connected && wisesafetooperate.Connected;
             }
             set
             {
-                wisesafetooperate.Connected = value;
+                if (value == _connected)
+                    return;
+
+                if (value)
+                    wisesafetooperate.Connected = true;     // idempotent; the first client wins
+
+                _connected = value;
             }
         }
 

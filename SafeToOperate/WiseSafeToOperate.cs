@@ -487,11 +487,32 @@ namespace ASCOM.Wise40SafeToOperate
                 if (value == _connected)
                     return;
 
-                _connected = WiseSite.och.Connected;
-                if (_connected)
+                if (value)
+                {
+                    //
+                    // The sensors read through the ObservingConditions hub, so there
+                    // is nothing to start without it.  WiseSite.och is null when the
+                    // hub could not be reached at site initialisation.
+                    //
+                    // This used to assign _connected = WiseSite.och.Connected instead
+                    // of `value`, which had two consequences: it threw
+                    // NullReferenceException when the hub was absent, and when the hub
+                    // was merely disconnected a CONNECT request silently became a
+                    // disconnect - StopSensors() - and then reported success. A safety
+                    // monitor that quietly stops reading its sensors while claiming to
+                    // be fine is the worst failure mode available to it, so refuse
+                    // audibly instead.
+                    //
+                    if (WiseSite.och == null || !WiseSite.och.Connected)
+                        Exceptor.Throw<NotConnectedException>("Connected.set",
+                            "Cannot connect: the ObservingConditions hub is not connected");
+
                     StartSensors();
+                }
                 else
                     StopSensors();
+
+                _connected = value;
 
                 ActivityMonitor.Event(new Event.DriverConnectEvent(Const.WiseDriverID.WiseSafeToOperate, _connected, line: ActivityMonitor.Tracer.safety.Line));
             }

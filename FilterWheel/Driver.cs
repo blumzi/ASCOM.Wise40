@@ -63,6 +63,8 @@ namespace ASCOM.Wise40 //.FilterWheel
         /// </summary>
         private readonly WiseFilterWheel wisefilterwheel = WiseFilterWheel.Instance;
 
+        private bool _connected = false;        // this client's connection state - see Connected
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Wise40"/> class.
         /// Must be public for COM registration.
@@ -122,15 +124,32 @@ namespace ASCOM.Wise40 //.FilterWheel
             wisefilterwheel.Dispose();
         }
 
+        //
+        // Connected is per-client, as ASCOM scopes it: _connected says whether THIS
+        // client asked to be connected, wisefilterwheel.Connected whether the
+        // hardware is up.  Keeping the singleton in the getter also preserves the
+        // LCO check, which reports the wheel unavailable in that operational mode.
+        //
+        // The hardware comes up on the first connect and stays up for the life of
+        // the local server.  WiseFilterWheel.Connected forwards to the Arduino
+        // interface, whose disconnect does _serialPort.Close() and Dispose() - so
+        // one client leaving closed the wheel's serial port for everyone.
+        //
         public bool Connected
         {
             get
             {
-                return wisefilterwheel.Connected;
+                return _connected && wisefilterwheel.Connected;
             }
             set
             {
-                wisefilterwheel.Connected = value;
+                if (value == _connected)
+                    return;
+
+                if (value)
+                    wisefilterwheel.Connected = true;   // idempotent; the first client wins
+
+                _connected = value;
             }
         }
 
