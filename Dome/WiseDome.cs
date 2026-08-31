@@ -239,6 +239,19 @@ namespace ASCOM.Wise40
 
             set
             {
+                //
+                // The already-connected guard MUST come first.  WiseDome is a
+                // singleton shared by every client - ACP, the Dash, MaxIm, Alpaca,
+                // scripts - and each of them sets Connected = true at startup as
+                // ordinary ASCOM behaviour.  With this test below the block, a
+                // client attaching to an already-connected dome would re-run
+                // RestoreCalibrationData() and could launch StartFindingHome(),
+                // sending the dome off to hunt for home in the middle of someone
+                // else's exposure.
+                //
+                if (value == _connected)
+                    return;
+
                 if (value)
                 {
                     RestoreCalibrationData();
@@ -246,9 +259,6 @@ namespace ASCOM.Wise40
                     if (!Calibrated && _autoCalibrate && Hardware.Hardware.ComputerHasControl)
                         Task.Run(() => StartFindingHome());
                 }
-
-                if (value == _connected)
-                    return;
 
                 _connected = value;
             }
