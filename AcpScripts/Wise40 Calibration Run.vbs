@@ -44,6 +44,82 @@ Option Explicit
 ' Variables used in multiple functions
 Dim SUP                                                     ' Acquire support object
 Dim FSO                                                     ' A FileSystemObject
+Dim W40                                                     ' WISE40: our own ASCOM telescope client
+Dim W40Failed                                               ' WISE40: True once we have given up
+
+' WISE40: the telescope driver, as ACP has it configured.
+Const WISE40_PROGID = "ASCOM.AlpacaDynamic1.Telescope"
+
+'----------------------------------------------------------------------------------------
+'
+' ----------
+' RecordCalibrationPoint() - WISE40: hand a solved point to the driver
+' ----------
+'
+' ACP's Telescope object does not expose Action(), so we talk to the driver
+' directly.  Coordinates must be local topocentric - see the caller.
+'
+' TWO THINGS THIS MUST NEVER DO, both because the Wise40 driver keeps a single
+' shared instance rather than per-client state:
+'
+'   .Connected = ...    WiseTele.Connected is one flag on a singleton with no
+'                       reference counting.  Setting it False here would run
+'                       Connect(False) over every motor - the tracking motor
+'                       included - both encoders and both axis monitors, pulling
+'                       the mount out from under ACP mid-run.  We do not need it
+'                       anyway:  Action() never checks Connected, and ACP has the
+'                       telescope connected already or it could not be slewing.
+'
+'   .Dispose            Driver.Dispose() forwards to WiseTele.Dispose(), which
+'                       disposes the singleton's disposables and clears its
+'                       target coordinates.  Also shared, also still in use.
+'
+' So: create it once, keep it for the whole run, and let the script's teardown
+' release it.
+'
+'----------------------------------------------------------------------------------------
+Sub RecordCalibrationPoint(raHours, decDegrees)
+    Dim reply
+
+    If W40Failed Then Exit Sub                                  ' Complain once, not per point
+
+    On Error Resume Next
+    If Not IsObject(W40) Then
+        Set W40 = CreateObject("ASCOM.DriverAccess.Telescope")
+        If Err.Number <> 0 Then
+            Console.PrintLine "  **Wise40: cannot create ASCOM.DriverAccess.Telescope: " & Err.Description
+            Console.PrintLine "    No calibration points will be recorded this run."
+            Err.Clear
+            W40Failed = True
+            On Error GoTo 0
+            Exit Sub
+        End If
+        W40.DriverID = WISE40_PROGID
+        If Err.Number <> 0 Then
+            Console.PrintLine "  **Wise40: cannot select " & WISE40_PROGID & ": " & Err.Description
+            Console.PrintLine "    Fix WISE40_PROGID at the top of this script."
+            Err.Clear
+            W40Failed = True
+            On Error GoTo 0
+            Exit Sub
+        End If
+    End If
+
+    reply = W40.Action("calibration-point", InvNum(raHours) & "," & InvNum(decDegrees))
+    If Err.Number <> 0 Then
+        Console.PrintLine "  **Wise40 calibration-point failed: " & Err.Description
+        Err.Clear
+    ElseIf InStr(reply, "error:") = 1 Then
+        '
+        ' The driver answered, but refused the point.  Worth shouting about - the
+        ' run would otherwise finish looking healthy with a short CSV.
+        '
+        Console.PrintLine "  **Wise40 calibration-point rejected: " & reply
+    Else
+        Console.PrintLine "  Wise40 calibration point recorded."
+    End If
+    On Error GoTo 0
+End Sub
 
 '----------------------------------------------------------------------------------------
 '
@@ -76,7 +152,7 @@ End Function
 '----------------------------------------------------------------------------------------
 Function CheckPoint(N, RightAscension, Declination)
     Dim P, TgtName, ImageFile, RATrue, DecTrue, buf, CT
-    Dim calRA, calDec                                           ' Wise40 calibration point
+    Dim calRA, calDec, calOK                                    ' Wise40 calibration point
     '
     ' (1) Make target and file names (no extension). Delete old image file.
     '
@@ -142,16 +218,22 @@ Function CheckPoint(N, RightAscension, Declination)
     '      Prefs.DoLocalTopo, so that neither ACP's own error measurement below nor
     '      its configuration can affect what we record.
     '
+    '      ACP's Telescope object does NOT pass Action() through - tested and
+    '      confirmed - so the point goes via our own ASCOM client instead.  See
+    '      RecordCalibrationPoint below.
+    '
     calRA = RATrue
     calDec = DecTrue
+    calOK = True
     On Error Resume Next
     SUP.J2000ToLocalTopocentric calRA, calDec
-    Telescope.Action "calibration-point", InvNum(SUP.LocalTopoRA) & "," & InvNum(SUP.LocalTopoDec)
     If Err.Number <> 0 Then
-        Console.PrintLine "  **Wise40 calibration-point failed: " & Err.Description
+        Console.PrintLine "  **Wise40: J2000ToLocalTopocentric failed: " & Err.Description
         Err.Clear
+        calOK = False                                           ' LocalTopoRA/Dec would be stale
     End If
     On Error GoTo 0
+    If calOK Then RecordCalibrationPoint SUP.LocalTopoRA, SUP.LocalTopoDec
     '
     ' (6) Return the pointing error
     '

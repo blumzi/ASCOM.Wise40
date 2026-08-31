@@ -7,6 +7,12 @@
 '               can an ACP script reach the Wise40 telescope driver's ASCOM
 '               Action() method through ACP's Telescope object?
 '
+'               ANSWERED, 31-Aug-2026:  no, it cannot.  ACP's Telescope object
+'               does not expose Action(), so "Wise40 Calibration Run.vbs" now
+'               creates its own ASCOM.DriverAccess.Telescope - step (4) here.
+'               This script is kept as the check to re-run after any ACP or
+'               driver upgrade.
+'
 '               "Wise40 Calibration Run.vbs" records every calibration point by
 '               calling
 '
@@ -158,11 +164,26 @@ Function Fragment(json, key)
 End Function
 
 '------------------------------------------------------------------------------
-' The fallback: talk to the driver directly rather than through ACP.
+' Talk to the driver directly rather than through ACP.  This is the route
+' "Wise40 Calibration Run.vbs" uses, since ACP's Telescope object does not pass
+' Action() through.
 '
-' Note this attaches as an additional ASCOM client.  That is ordinary for a
-' local server - ACP and the Dash are already connected - but it is why this is
-' only attempted when the normal route has already failed.
+' WE DELIBERATELY DO NOT TOUCH .Connected OR .Dispose, because the Wise40 driver
+' keeps a single shared instance rather than per-client state:
+'
+'   .Connected = ...    WiseTele.Connected is one flag on a singleton with no
+'                       reference counting.  Setting it False runs Connect(False)
+'                       over every motor - the tracking motor included - both
+'                       encoders and both axis monitors, disconnecting the mount
+'                       out from under ACP.  An earlier version of this script
+'                       did exactly that.
+'
+'   .Dispose            Driver.Dispose() forwards to WiseTele.Dispose(), which
+'                       disposes the singleton's disposables and clears its
+'                       target coordinates.  Also shared, also still in use.
+'
+' Neither is needed:  Action() never checks Connected, and if ACP is running the
+' telescope is connected already.
 '------------------------------------------------------------------------------
 Sub TryDirect()
     Dim T, result
@@ -183,27 +204,18 @@ Sub TryDirect()
         Exit Sub
     End If
 
-    T.Connected = True
-    If Err.Number <> 0 Then
-        Console.PrintLine "    **Cannot connect: " & Err.Description
-        Err.Clear
-        Exit Sub
-    End If
-
     result = T.Action("calibration-point", "")
     If Err.Number <> 0 Then
         Console.PrintLine "    **Action failed even directly: " & Err.Description
         Err.Clear
     Else
         Console.PrintLine "    -> " & result
-        Console.PrintLine "      The direct client works.  The calibration script can use this."
+        Console.PrintLine "      The direct client works.  The calibration script uses this."
     End If
 
     '
-    ' Leave the driver as we found it.  Disconnecting our own client does not
-    ' disturb ACP's or the Dash's - a local server counts its clients.
+    ' Just drop the reference - releasing the COM object does not call Dispose.
     '
-    T.Connected = False
     Set T = Nothing
     On Error GoTo 0
 End Sub
