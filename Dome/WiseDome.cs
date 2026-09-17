@@ -90,6 +90,26 @@ namespace ASCOM.Wise40
         private readonly int _movementTimeout = 2000;
         private readonly int _domeTimeout = 50;
 
+        //
+        // Motion instrumentation.
+        //
+        // There is NO dome angular rate anywhere in this code - the dome is a single-speed
+        //  AC motor driven through leftPin/rightPin, and how fast it actually turns has never
+        //  been measured.  That matters now: the telescope axes were taken from ~126 s to
+        //  ~69 s for a 20 degree slew, and Slewing stays true until the dome finishes
+        //  (WiseTele.cs, Slewers.Type.Dome), so the dome is the next candidate for the
+        //  binding constraint on every pointing run.
+        //
+        // These three fields let a move be reconstructed from the log: where and when it
+        //  started, and therefore the rate, the coast after the relays drop, and how much of
+        //  the total is settling rather than turning.
+        //
+        private DateTime _motionStartedAt = DateTime.MinValue;
+        private uint _motionStartEncoder;
+        private string _motionStartAz = "?";
+        private int _motionTicks;                       // OnDomeTimer ticks since motion began
+        private int _calibrationsCrossed;               // calibration sensors passed during this move
+
         private readonly Debugger debugger = Debugger.Instance;
 
         private readonly AutoResetEvent internalArrivedAtAzEvent = new AutoResetEvent(false);
@@ -351,9 +371,64 @@ namespace ASCOM.Wise40
         {
             CalibrationPoint cp;
 
+            #region debug
+            //
+            // One sample per second while moving - this timer fires every 50ms, so log every
+            //  20th tick.  Enough to derive the rate, and deliberately NOT every tick: the
+            //  telescope's own 10ms loop logs unthrottled and produced a 2.03 GiB file in one
+            //  night.  The counter is a FIELD, not a local; the equivalent in
+            //  ScopeAxisSlewer is declared inside the loop, so its "log every 5th" has always
+            //  logged every time.
+            //
+            if (StateIsOn(DomeState.MovingCW) || StateIsOn(DomeState.MovingCCW))
+            {
+                if (++_motionTicks % 20 == 0 && _motionStartedAt != DateTime.MinValue)
+                {
+                    uint enc = domeEncoder.Value;
+                    double secs = DateTime.Now.Subtract(_motionStartedAt).TotalSeconds;
+                    double degrees = TicksToDegrees(_motionStartEncoder, enc);
+
+                    debugger.WriteLine(Debugger.DebugLevel.DebugDome,
+                        $"WiseDome:motion: t={secs:F1}s, encoder: {enc}, moved: {degrees:F2} deg, " +
+                        $"mean rate: {(secs > 0 ? degrees / secs : 0):F3} deg/sec, " +
+                        $"az: {(Calibrated ? Azimuth.ToShortNiceString() : "uncalibrated")}");
+                }
+            }
+            #endregion
+
             if ((cp = AtCaliPoint) != null)
             {
+                #region debug
+                //
+                // Passing one of the three calibration sensors re-anchors the tick-to-azimuth
+                //  mapping, so the reported AZIMUTH steps here.  The raw tick count does not:
+                //  Calibrate() only sets _caliTicks/_caliAz, so cumulative travel measured in
+                //  ticks stays continuous across this and needs no correction.
+                //
+                // The step is worth recording rather than hiding.  A full dome revolution is
+                //  not exactly TicksPerDomeRevolution counts, so DegreesPerTick (360/1018) is
+                //  an approximation and the encoder drifts against the sky.  These sensors
+                //  exist to pull it back, which makes the size of each correction a direct
+                //  measurement of that drift over a known arc - and the thing to use if
+                //  DegreesPerTick is ever to be replaced by a measured value.
+                //
+                string azBefore = Calibrated ? Azimuth.ToShortNiceString() : "uncalibrated";
+                uint ticksAtCali = domeEncoder.Value;
+                #endregion
+
                 domeEncoder.Calibrate(cp.az);
+
+                #region debug
+                if (_motionStartedAt != DateTime.MinValue)
+                {
+                    _calibrationsCrossed++;
+                    debugger.WriteLine(Debugger.DebugLevel.DebugDome,
+                        $"WiseDome:motion: recalibrated at sensor {calibrationPoints.IndexOf(cp)} " +
+                        $"(az: {cp.az.ToShortNiceString()}), encoder: {ticksAtCali}, " +
+                        $"azimuth stepped {azBefore} -> {Azimuth.ToShortNiceString()}");
+                }
+                #endregion
+
                 if (Calibrating)
                 {
                     Calibrating = false;
@@ -525,9 +600,7 @@ namespace ASCOM.Wise40
             SetDomeState(DomeState.MovingCW);
             domeEncoder.setMovement(Direction.CW);
             _movementTimer.Change(0, _movementTimeout);
-            #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome: Started moving CW");
-            #endregion
+            NoteMotionStart("CW");
         }
 
         public void StartMovingCCW()
@@ -545,9 +618,41 @@ namespace ASCOM.Wise40
             SetDomeState(DomeState.MovingCCW);
             domeEncoder.setMovement(Direction.CCW);
             _movementTimer.Change(0, _movementTimeout);
+            NoteMotionStart("CCW");
+        }
+
+        /// <summary>
+        /// Stamps the start of a dome move so Stop() can report how it went.
+        /// </summary>
+        private void NoteMotionStart(string direction)
+        {
+            _motionStartedAt = DateTime.Now;
+            _motionStartEncoder = domeEncoder.Value;
+            _motionStartAz = Calibrated ? Azimuth.ToShortNiceString() : "uncalibrated";
+            _motionTicks = 0;
+            _calibrationsCrossed = 0;
+
             #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugDome, "WiseDome: Started moving CCW");
+            debugger.WriteLine(Debugger.DebugLevel.DebugDome,
+                $"WiseDome:motion: started {direction} at az: {_motionStartAz}, encoder: {_motionStartEncoder}, " +
+                $"target: {((_targetAz == null) ? "none" : _targetAz.ToShortNiceString())}");
             #endregion
+        }
+
+        /// <summary>
+        /// Ticks of encoder travel expressed as degrees, shortest way round the 1018-tick
+        ///  revolution so a move across the wrap does not read as 359 degrees.
+        /// </summary>
+        private static double TicksToDegrees(uint from, uint to)
+        {
+            int ticks = (int)to - (int)from;
+
+            while (ticks > TicksPerDomeRevolution / 2)
+                ticks -= TicksPerDomeRevolution;
+            while (ticks < -TicksPerDomeRevolution / 2)
+                ticks += TicksPerDomeRevolution;
+
+            return ticks * DegreesPerTick;
         }
 
         public void Stop(string reason)
@@ -572,6 +677,15 @@ namespace ASCOM.Wise40
             UnsetDomeState(DomeState.MovingCCW | DomeState.MovingCW);
             domeEncoder.setMovement(Direction.None);
 
+            //
+            // Everything from here to the end of the settle loop is coast: the relays are
+            //  already off.  Captured separately from the powered travel because they are
+            //  different questions - how fast the dome turns, versus how long it takes to
+            //  stop - and the second one is a fixed cost on every dome move.
+            //
+            uint encoderAtRelayOff = domeEncoder.Value;
+            DateTime relayOffAt = DateTime.Now;
+
             for (tries = 0; tries < 10; tries++)
             {
                 uint prev = domeEncoder.Value;
@@ -580,6 +694,36 @@ namespace ASCOM.Wise40
                 if (prev == curr)
                     break;
             }
+
+            #region debug
+            if (_motionStartedAt != DateTime.MinValue)
+            {
+                uint encoderAtRest = domeEncoder.Value;
+                double totalSecs = DateTime.Now.Subtract(_motionStartedAt).TotalSeconds;
+                double poweredSecs = relayOffAt.Subtract(_motionStartedAt).TotalSeconds;
+                double settleSecs = DateTime.Now.Subtract(relayOffAt).TotalSeconds;
+                double poweredDeg = TicksToDegrees(_motionStartEncoder, encoderAtRelayOff);
+                double coastDeg = TicksToDegrees(encoderAtRelayOff, encoderAtRest);
+
+                debugger.WriteLine(Debugger.DebugLevel.DebugDome,
+                    $"WiseDome:motion: DONE ({reason}) from az: {_motionStartAz} " +
+                    $"powered: {poweredDeg:F2} deg in {poweredSecs:F1}s " +
+                    $"({(poweredSecs > 0 ? poweredDeg / poweredSecs : 0):F3} deg/sec), " +
+                    $"coast: {coastDeg:F2} deg, settle: {settleSecs:F1}s ({tries + 1} tries), " +
+                    $"total: {totalSecs:F1}s, " +
+                    //
+                    // Degrees here come from ticks x DegreesPerTick, which is an
+                    //  approximation - a full revolution is not exactly 1018 ticks.  Crossing
+                    //  a calibration sensor re-anchors azimuth without disturbing the tick
+                    //  count, so these figures stay self-consistent, but they are ticks
+                    //  dressed as degrees.  Say how many sensors were crossed so a rate taken
+                    //  from this line can be weighed accordingly.
+                    //
+                    $"calibrations crossed: {_calibrationsCrossed}");
+
+                _motionStartedAt = DateTime.MinValue;
+            }
+            #endregion
 
             if (Calibrated)
                 SaveCalibrationData();
