@@ -108,6 +108,7 @@ namespace ASCOM.Wise40
         private uint _motionStartEncoder;
         private string _motionStartAz = "?";
         private int _motionTicks;                       // OnDomeTimer ticks since motion began
+        private int _calibrationsCrossed;               // calibration sensors passed during this move
 
         private readonly Debugger debugger = Debugger.Instance;
 
@@ -397,7 +398,37 @@ namespace ASCOM.Wise40
 
             if ((cp = AtCaliPoint) != null)
             {
+                #region debug
+                //
+                // Passing one of the three calibration sensors re-anchors the tick-to-azimuth
+                //  mapping, so the reported AZIMUTH steps here.  The raw tick count does not:
+                //  Calibrate() only sets _caliTicks/_caliAz, so cumulative travel measured in
+                //  ticks stays continuous across this and needs no correction.
+                //
+                // The step is worth recording rather than hiding.  A full dome revolution is
+                //  not exactly TicksPerDomeRevolution counts, so DegreesPerTick (360/1018) is
+                //  an approximation and the encoder drifts against the sky.  These sensors
+                //  exist to pull it back, which makes the size of each correction a direct
+                //  measurement of that drift over a known arc - and the thing to use if
+                //  DegreesPerTick is ever to be replaced by a measured value.
+                //
+                string azBefore = Calibrated ? Azimuth.ToShortNiceString() : "uncalibrated";
+                uint ticksAtCali = domeEncoder.Value;
+                #endregion
+
                 domeEncoder.Calibrate(cp.az);
+
+                #region debug
+                if (_motionStartedAt != DateTime.MinValue)
+                {
+                    _calibrationsCrossed++;
+                    debugger.WriteLine(Debugger.DebugLevel.DebugDome,
+                        $"WiseDome:motion: recalibrated at sensor {calibrationPoints.IndexOf(cp)} " +
+                        $"(az: {cp.az.ToShortNiceString()}), encoder: {ticksAtCali}, " +
+                        $"azimuth stepped {azBefore} -> {Azimuth.ToShortNiceString()}");
+                }
+                #endregion
+
                 if (Calibrating)
                 {
                     Calibrating = false;
@@ -599,6 +630,7 @@ namespace ASCOM.Wise40
             _motionStartEncoder = domeEncoder.Value;
             _motionStartAz = Calibrated ? Azimuth.ToShortNiceString() : "uncalibrated";
             _motionTicks = 0;
+            _calibrationsCrossed = 0;
 
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugDome,
@@ -678,7 +710,16 @@ namespace ASCOM.Wise40
                     $"powered: {poweredDeg:F2} deg in {poweredSecs:F1}s " +
                     $"({(poweredSecs > 0 ? poweredDeg / poweredSecs : 0):F3} deg/sec), " +
                     $"coast: {coastDeg:F2} deg, settle: {settleSecs:F1}s ({tries + 1} tries), " +
-                    $"total: {totalSecs:F1}s");
+                    $"total: {totalSecs:F1}s, " +
+                    //
+                    // Degrees here come from ticks x DegreesPerTick, which is an
+                    //  approximation - a full revolution is not exactly 1018 ticks.  Crossing
+                    //  a calibration sensor re-anchors azimuth without disturbing the tick
+                    //  count, so these figures stay self-consistent, but they are ticks
+                    //  dressed as degrees.  Say how many sensors were crossed so a rate taken
+                    //  from this line can be weighed accordingly.
+                    //
+                    $"calibrations crossed: {_calibrationsCrossed}");
 
                 _motionStartedAt = DateTime.MinValue;
             }
