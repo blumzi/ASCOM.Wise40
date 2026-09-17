@@ -21,9 +21,9 @@ number or a flag, verify it still exists before relying on it.
 ## Working on this repo
 
 **Changes go through pull requests — do not commit to `master`.** Branch with a short
-kebab-case name, keep one commit per concern, push the branch and open a PR. `gh` is not
-installed, so until it is, hand over the compare URL:
-`https://github.com/blumzi/ASCOM.Wise40/compare/master...<branch>?expand=1`
+kebab-case name, keep one commit per concern, push the branch and open a PR with `gh pr
+create`. If `gh` is unavailable, hand over
+`https://github.com/blumzi/ASCOM.Wise40/compare/master...<branch>?expand=1` instead.
 
 ## Memory index
 

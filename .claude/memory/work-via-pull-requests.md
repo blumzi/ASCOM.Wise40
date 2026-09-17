@@ -15,10 +15,14 @@ metadata:
 - Keep the commit-per-concern habit — it survives into the PR and makes review readable.
 - Push the branch, then open the PR.
 
-**`gh` is NOT installed** (checked 2026-09-17), so a PR cannot be opened from the command line yet. Until it is, push the branch and hand over the compare URL:
+**`gh` is installed** at `%LOCALAPPDATA%\Programs\GitHub CLI\bin\gh.exe`, v2.101.0, and is on the user `Path`. So `gh pr create` works.
+
+Installing it needed a detour worth remembering: `winget install --id GitHub.cli` fails with **`0x80070020` — "the process cannot access the file because it is being used by another process"**, both elevated and not. The MSI is the problem, not permissions. The portable **zip** from the same release installs cleanly with no elevation at all — download `gh_<ver>_windows_amd64.zip`, expand into `%LOCALAPPDATA%\Programs\GitHub CLI`, add its `bin` to the user `Path`. Use that route if it ever needs reinstalling or upgrading.
+
+`gh` holds its **own** credential — deliberately not the PAT embedded in the git remote URL. `gh auth login` is interactive, so it has to be run by Arie, not from a tool call.
+
+If `gh` is ever unavailable, the fallback is to push the branch and hand over:
 
     https://github.com/blumzi/ASCOM.Wise40/compare/master...<branch>?expand=1
-
-Installing it (`winget install GitHub.cli`) would allow `gh pr create` directly. Note the remote URL has a PAT embedded in it, so `gh` will want its own auth rather than reusing that.
 
 See [[notes-live-in-the-repo]] for where memories and plans go.
