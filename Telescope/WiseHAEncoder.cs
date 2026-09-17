@@ -151,8 +151,51 @@ namespace ASCOM.Wise40 //.Telescope
                 //  encoder has to be made.  Same as WiseDecEncoder.Radians.
                 //
                 return (WiseTele.Instance.EncodersInUse == WiseTele.EncodersInUseEnum.Old) ?
-                    (EncoderValue * HaMultiplier) + HaCorrection :
+                    OldRadians :
                     WiseTele.renishawHaEncoder.Radians;
+            }
+        }
+
+        //
+        // This encoder's OWN reading, whichever encoder is currently in use.
+        //
+        // Needed so the digest can report a genuine Renishaw-minus-old difference.
+        //  While the old encoders were driving, deltaHA compared the Renishaw against
+        //  "the hour angle", which was the old encoder - a real cross-check between two
+        //  independent sensors.  Switching to New silently turned that into the
+        //  Renishaw compared with itself, so it read zero by construction and the
+        //  cross-check was lost exactly when it started to matter.
+        //
+        public double OldRadians
+        {
+            get
+            {
+                return (EncoderValue * HaMultiplier) + HaCorrection;
+            }
+        }
+
+        public double OldHourAngle
+        {
+            get
+            {
+                //
+                // Folded to +/-12h the same way RenishawHaEncoder.HourAngle folds it
+                //  (via astroUtils.ConditionHA), so the two can be differenced.
+                //
+                // This matters: OldRadians runs from HaCorrection (-3.0636 rad) to
+                //  HaCorrection + 2*PI, i.e. -11.70h to +12.30h.  Unfolded, a point
+                //  just past +12h would sit at +12.30 while the Renishaw reported
+                //  -11.70, and the difference would come out as 24 hours rather than
+                //  the few arcseconds it really is.
+                //
+                double hours = Angle.Rad2Hours(OldRadians);
+
+                if (hours > 12.0)
+                    hours -= 24.0;
+                else if (hours < -12.0)
+                    hours += 24.0;
+
+                return hours;
             }
         }
 

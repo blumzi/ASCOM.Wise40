@@ -32,8 +32,14 @@ namespace Dash
             TelescopeDigest telescopeDigest = JsonConvert.DeserializeObject<TelescopeDigest>(tele.Action("status", ""));
             RenishawDigest renishawDigest = telescopeDigest.Renishaw;
 
-            double oldHA = telescopeDigest.Current.HourAngle;
-            double oldDec = telescopeDigest.Current.Declination;
+            //
+            // Take the old encoders' readings from the digest, NOT from
+            //  telescopeDigest.Current - that is whichever encoder is in use, so once
+            //  EncodersInUse became New this form was comparing the Renishaw with
+            //  itself and every delta showed zero.
+            //
+            double oldHA = renishawDigest.oldHA;
+            double oldDec = renishawDigest.oldDec;
             double newHA = renishawDigest.HA;
             double newDec = renishawDigest.Dec;
             Angle lst = Angle.FromHours(telescopeDigest.LocalSiderealTime);
@@ -62,7 +68,8 @@ namespace Dash
             double deltaHA = Math.Abs(oldHA - newHA);
             double deltaDec = Math.Abs(oldDec - newDec);
             labelDeltaHA.Text = $"{Angle.FromHours(deltaHA).ToNiceString()} [{deltaHA}]";
-            labelDeltaDec.Text = $"{Angle.FromHours(deltaDec).ToNiceString()} [{deltaDec}]";
+            // Dec is in DEGREES - FromHours here showed it 15x too large.
+            labelDeltaDec.Text = $"{Angle.FromDegrees(deltaDec).ToNiceString()} [{deltaDec}]";
         }
 
         private void radioButtonOldEncoders_CheckedChanged(object sender, EventArgs e)

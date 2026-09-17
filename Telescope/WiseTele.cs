@@ -4178,8 +4178,10 @@ namespace ASCOM.Wise40
                             EncDEC = renishawDecEncoder.Position,
                             HA = renishawHaEncoder.HourAngle,
                             Dec = renishawDecEncoder.Declination,
-                            deltaHA = Math.Abs(renishawHaEncoder.HourAngle - HourAngle),
-                            deltaDec = Math.Abs(renishawDecEncoder.Declination - Declination),
+                            oldHA = HAEncoder.OldHourAngle,
+                            oldDec = DecEncoder.OldDeclination,
+                            deltaHA = Math.Abs(renishawHaEncoder.HourAngle - HAEncoder.OldHourAngle),
+                            deltaDec = Math.Abs(renishawDecEncoder.Declination - DecEncoder.OldDeclination),
                             radHA = renishawHaEncoder.Radians,
                             radDec = renishawDecEncoder.Radians,
                         }
@@ -4253,7 +4255,21 @@ namespace ASCOM.Wise40
     {
         public int EncHA, EncDEC;
         public double HA, Dec;
+
+        //
+        // The OLD encoders' own readings, and the Renishaw-minus-old differences.
+        //
+        // deltaHA/deltaDec used to be the Renishaw compared against "the hour angle",
+        //  which was the old encoder only while the old encoders were in use.  Once
+        //  EncodersInUse became New that compared the Renishaw with itself and read
+        //  zero by construction.  Both are now explicitly Renishaw minus old, so the
+        //  cross-check between two independent sensors holds in either mode.
+        //
+        // deltaHA is in HOURS, deltaDec in DEGREES.
+        //
+        public double oldHA, oldDec;
         public double deltaHA, deltaDec;
+
         public double radHA, radDec;
     }
 

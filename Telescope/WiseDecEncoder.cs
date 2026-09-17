@@ -214,8 +214,41 @@ namespace ASCOM.Wise40
             get
             {
                 return (WiseTele.Instance.EncodersInUse == WiseTele.EncodersInUseEnum.Old) ?
-                    (EncoderValue * DecMultiplier) + DecCorrection :
+                    OldRadians :
                     WiseTele.renishawDecEncoder.Radians;
+            }
+        }
+
+        //
+        // This encoder's OWN reading, whichever encoder is currently in use - see the
+        //  matching comment in WiseHAEncoder.
+        //
+        public double OldRadians
+        {
+            get
+            {
+                return (EncoderValue * DecMultiplier) + DecCorrection;
+            }
+        }
+
+        //
+        // Reflected the same way RenishawDecEncoder.Declination reflects, so the two are
+        //  compared on equal terms.  Deliberately NOT routed through Degrees below: that
+        //  property's wrap loop reads "while (rad < Const.twoPI) rad += Const.twoPI",
+        //  which is missing a minus sign and would never terminate sensibly.
+        //
+        public double OldDeclination
+        {
+            get
+            {
+                double rad = OldRadians;
+
+                if (rad > Const.halfPI)
+                    rad = Const.onePI - rad;            // north, over the pole
+                else if (rad < -Const.halfPI)
+                    rad = -Const.onePI - rad;           // south
+
+                return Angle.Rad2Deg(rad);
             }
         }
 
