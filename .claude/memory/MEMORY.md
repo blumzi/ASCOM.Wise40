@@ -1,5 +1,7 @@
-- [Work via pull requests](work-via-pull-requests.md) — branch and open a PR; don't commit to master. `gh` is not installed yet
+- [Work via pull requests](work-via-pull-requests.md) — branch and open a PR; don't commit to master. `gh` is installed
 - [Notes live in the repo](notes-live-in-the-repo.md) — memories and plans belong in `<repo>/.claude/`, git-tracked, not the per-user store
+- [Telescope drive topology](telescope-drive-topology.md) — TeleSlew is a shared speed selector; both axes must use the same speed among slew/set, only guide is independent
+- [Slew time: where it goes](slew-time-where-it-goes.md) — 67% of motion time was at set rate crawling the last degrees; the coast distances were never measured. Stage 1 landed 2026-09-17
 - [Renishaw encoder calibration](renishaw-encoder-calibration.md) — calibrated against the sky 2026-09-16: no scale error, zero point corrected, now the encoders in use; what's left is a pointing model
 - [Wise40 ACP/driver integration](wise40-acp-driver-integration.md) — ACP won't pass Action through, DriverAccess isn't COM-creatable, and only one ProgID is safe to use
 - [Wise40 build and environment gotchas](wise40-build-and-environment-gotchas.md) — COM registration needs elevation and an elevated rebuild wipes ASCOM Profile values; the watcher gives children a broken environment; logs roll at noon UT
@@ -8,4 +10,3 @@
 - [Wise40 filter wheel Arduino source](wise40-filterwheel-arduino-source.md) — three copies exist; the live one is in Documents\Arduino, not the ASCOM.Wise40 solution tree
 - [Filter wheel firmware validated on hardware](filterwheel-fixes-awaiting-hardware-test.md) — works end to end as of 2026-08-15; the slit detector needs ~40ms to settle or it lies convincingly
 - [Filter wheel RFID stays on SoftwareSerial](filterwheel-rfid-stays-on-softwareserial.md) — rewiring D0 to pin 19 for hardware Serial1 was considered and rejected; don't propose it again
-- [Slew duration findings](../plans/shorten-slew-duration.md) — plan, not memory: 67% of motion time is at `set` rate because the coast model is guesswork
