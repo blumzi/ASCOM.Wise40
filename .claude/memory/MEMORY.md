@@ -1,0 +1,10 @@
+- [Notes live in the repo](notes-live-in-the-repo.md) — memories and plans belong in `<repo>/.claude/`, git-tracked, not the per-user store
+- [Renishaw encoder calibration](renishaw-encoder-calibration.md) — calibrated against the sky 2026-09-16: no scale error, zero point corrected, now the encoders in use; what's left is a pointing model
+- [Wise40 ACP/driver integration](wise40-acp-driver-integration.md) — ACP won't pass Action through, DriverAccess isn't COM-creatable, and only one ProgID is safe to use
+- [Wise40 build and environment gotchas](wise40-build-and-environment-gotchas.md) — COM registration needs elevation and an elevated rebuild wipes ASCOM Profile values; the watcher gives children a broken environment; logs roll at noon UT
+- [Wise40 driver Connected/Dispose scoping](wise40-driver-connected-dispose.md) — per-client teardown used to reach shared singletons and stop the mount; fixed in six drivers, two left
+- [Wise40 filter metadata sources](wise40-filter-metadata-sources.md) — names from MaxIm DL 7, offsets from ACP; Wise40 keeps only the RFID tags
+- [Wise40 filter wheel Arduino source](wise40-filterwheel-arduino-source.md) — three copies exist; the live one is in Documents\Arduino, not the ASCOM.Wise40 solution tree
+- [Filter wheel firmware validated on hardware](filterwheel-fixes-awaiting-hardware-test.md) — works end to end as of 2026-08-15; the slit detector needs ~40ms to settle or it lies convincingly
+- [Filter wheel RFID stays on SoftwareSerial](filterwheel-rfid-stays-on-softwareserial.md) — rewiring D0 to pin 19 for hardware Serial1 was considered and rejected; don't propose it again
+- [Slew duration findings](../plans/shorten-slew-duration.md) — plan, not memory: 67% of motion time is at `set` rate because the coast model is guesswork
