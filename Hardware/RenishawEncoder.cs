@@ -320,12 +320,38 @@ namespace ASCOM.Wise40.Hardware
 
         const double rad_per_tick = (RADmin - RADmax) / (ENCmax - ENCmin);
 
+        //
+        // Zero-point correction, measured against the sky on 2026-09-16.
+        //
+        // Sixteen plate-solved points - C:\Wise40\Logs\2026-09-16\renishaw-calibration.csv
+        //  - put this encoder a constant +0.192857 h AHEAD of the true hour angle:
+        //  mean +10414.3", SEM 7.0", over an HA range of -4.885h to +4.310h.
+        //
+        // It really is a constant, which is the whole point of that run.  The residual
+        //  against HA has a slope of 3.76"/h with R2 = 0.10 - no scale error - and this
+        //  encoder agrees with the completely independent old one to 9.5" sd across the
+        //  whole range.  A scale error is the one term a pointing model cannot absorb;
+        //  a zero point is exactly degenerate with its index error, so strictly ACP
+        //  would have swallowed this.  It is corrected here anyway so the mount reports
+        //  near-true coordinates BEFORE any model - which is what lets PinPoint solve
+        //  locally instead of falling back to all-sky at three minutes a point.
+        //
+        // The 2024 constants above are deliberately left exactly as they were; they
+        //  carry their own provenance.  If the tape or the read head is ever moved,
+        //  re-measure this one number and change nothing else.
+        //
+        // Dec needed no such correction: it measured +3.06" against an SEM of 8.12",
+        //  i.e. indistinguishable from zero.  See RenishawDecEncoder below.
+        //
+        const double HaZeroPointCorrectionHours = 0.192857117;
+        const double RADZeroPointCorrection = HaZeroPointCorrectionHours * 2.0 * Math.PI / 24.0;
+
         public double Radians
         {
             get
             {
 
-                double rad = RADmax + ((ENCmax - Position) * rad_per_tick);
+                double rad = RADmax + ((ENCmax - Position) * rad_per_tick) - RADZeroPointCorrection;
 
                 while (rad > 2 * Math.PI)
                     rad -= 2 * Math.PI;
@@ -353,6 +379,21 @@ namespace ASCOM.Wise40.Hardware
     }
 
 
+    //
+    // Verified against the sky on 2026-09-16 and left ALONE on purpose.
+    //
+    // Sixteen plate-solved points over a Dec range of -9.6 to +57.3 degrees put this
+    //  encoder +3.06" from the truth, against an SEM of 8.12" - indistinguishable
+    //  from zero, so there is no zero point worth correcting.  Residual against Dec
+    //  slopes -0.42"/deg with R2 = 0.07, so no scale error either.  For comparison the
+    //  OLD Dec encoder was out by +221.5" (3.7').
+    //
+    // Do not add a correction here on the strength of a residual plot: the ~32" of
+    //  scatter is common to BOTH encoders (they agree with each other to 8.5" sd), so
+    //  it is the mount, not this sensor.  Most of it is a Dec error growing at
+    //  9.5"/h with hour angle - a polar misalignment signature, identical in the old
+    //  encoder at 9.2"/h - and that belongs in a pointing model, not here.
+    //
     public class RenishawDecEncoder: RenishawEncoder
     {
         public RenishawDecEncoder() : base(Module.Dec)
