@@ -1224,12 +1224,20 @@ namespace Dash
             while (dRa < -12.0)
                 dRa += 24.0;
 
-            return "Tgt: (" +
-                    $"{Angle.RaFromHours(digest.Target.RaDec_RA).ToNiceString()}, " +
-                    $"{Angle.DecFromDegrees(digest.Target.RaDec_Dec).ToNiceString()})" +
-                   ", Dist: (" +
-                    $"{SignedAngle(dRa, isHours: true)}, " +
-                    $"{SignedAngle(dDec, isHours: false)})";
+            //
+            // Deliberately sparse.  The first version read
+            //
+            //     Tgt: (12h26m20.5s, 48°19'59.5"), Dist: (-0.3s, -26'37.3")
+            //
+            // - 57 characters into a 370px label, and more than half of them punctuation.
+            //  Colons, brackets and commas earn nothing here: the two pairs are already
+            //  separated by their units, and a run of digits is easier to read without
+            //  brackets around it.
+            //
+            return $"Tgt {Angle.RaFromHours(digest.Target.RaDec_RA).ToNiceString()} " +
+                   $"{Angle.DecFromDegrees(digest.Target.RaDec_Dec).ToNiceString()}" +
+                   $"   Δ {SignedAngle(dRa, isHours: true)} " +
+                   $"{SignedAngle(dDec, isHours: false)}";
         }
 
         /// <summary>

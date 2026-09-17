@@ -1011,7 +1011,10 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.labelTelescopeStatus.AutoEllipsis = true;
             this.labelTelescopeStatus.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.labelTelescopeStatus.Font = new System.Drawing.Font("Lucida Sans Unicode", 9F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            // Regular, not Italic like the other status labels: this one carries dense
+            //  numerics - coordinates and deltas - and italic costs far more legibility on
+            //  digits and primes than it does on the prose the others show.
+            this.labelTelescopeStatus.Font = new System.Drawing.Font("Lucida Sans Unicode", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelTelescopeStatus.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(176)))), ((int)(((byte)(161)))), ((int)(((byte)(142)))));
             this.labelTelescopeStatus.Location = new System.Drawing.Point(11, 438);
             this.labelTelescopeStatus.Name = "labelTelescopeStatus";
