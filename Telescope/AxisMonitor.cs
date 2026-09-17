@@ -45,7 +45,13 @@ namespace ASCOM.Wise40
 
         public const int _samplingFrequency = 20;     // samples per second
         public const double simulatedDelta = 0.4;
-        public const int nSamples = 500 / _samplingFrequency;  // a half second's worth of samples
+
+        //
+        // Half a second's worth of samples.  This was 500 / _samplingFrequency = 25, which at
+        //  20 Hz is 1.25 seconds - the arithmetic was upside down, and the window was 2.5x
+        //  what the comment claimed.  Every stop had to wait it out.
+        //
+        public const int nSamples = 500 * _samplingFrequency / 1000;
 
         public FixedSizedQueue<AxisPosition> _samples = new FixedSizedQueue<AxisPosition>(nSamples);
         protected bool _ready = false;
@@ -435,9 +441,40 @@ namespace ASCOM.Wise40
         }
     }
 
+    /// <summary>
+    /// Watches the declination axis.
+    ///
+    /// The "has it stopped" test used to be "is EVERY delta in the window exactly zero",
+    ///  with no tolerance at all.  Dec resolves 0.0442 arcsec per count and the reading
+    ///  dithers between adjacent counts when the axis is standing still, so that test could
+    ///  only pass when 25 consecutive samples happened to land on the same count - waiting
+    ///  for a coincidence.
+    ///
+    /// Measured on 2026-09-17, after a 20 degree slew: the axis was physically stationary
+    ///  4.6 seconds after the motor was cut, and StopAxisAndWaitForHalt did not agree for a
+    ///  further 21.1 seconds.  The logged positions across that time are four ADJACENT
+    ///  encoder counts recurring, with no decay - noise at the last bit, not ringing.  That
+    ///  cost was paid on the slew-to-set handover of every slew.
+    /// </summary>
     public class SecondaryAxisMonitor : AxisMonitor
     {
         public static FixedSizedQueue<double> _decDeltas = new FixedSizedQueue<double>(nSamples);
+
+        //
+        // Below this per-sample change the axis counts as stopped.  Degrees, since _decDeltas
+        //  holds degrees.
+        //
+        // 0.15 arcsec per 50ms sample is 3 arcsec/sec, and about 3.4 Renishaw counts - well
+        //  clear of the 1 to 2 counts of dither seen on a stationary axis, and far below any
+        //  rate the telescope can actually be driven at.  The slowest, rateGuide, is
+        //  0.86 arcsec/sec, which is 0.043 arcsec per sample; a real guide-rate motion still
+        //  registers because it accumulates, whereas dither does not.
+        //
+        // This is not a precision the mount can use: its own repeatability is ~30 arcsec, and
+        //  after this handover the next leg drives at 49.6 arcsec/sec. Insisting on stillness
+        //  to 0.044 arcsec bought nothing and cost 21 seconds a slew.
+        //
+        private const double decEpsilon = 0.15 / 3600.0;
 
         private double _declination = double.NaN, _prevDeclination = double.NaN;
         public FixedSizedQueue<double> _decSamples = new FixedSizedQueue<double>(nSamples);
@@ -544,7 +581,7 @@ namespace ASCOM.Wise40
                 double[] arr = _decDeltas.ToArray();
 
                 foreach (double d in arr)
-                    if (d != 0.0)
+                    if (d > decEpsilon)
                     {
                         #region debug
                         debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}:IsMoving: true", WiseName);
