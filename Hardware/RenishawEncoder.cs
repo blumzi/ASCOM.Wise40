@@ -343,7 +343,10 @@ namespace ASCOM.Wise40.Hardware
         // Dec needed no such correction: it measured +3.06" against an SEM of 8.12",
         //  i.e. indistinguishable from zero.  See RenishawDecEncoder below.
         //
-        const double HaZeroPointCorrectionHours = 0.192857117;
+        // Public so RenishawCalibrationLog can stamp it into every row it writes -
+        //  see the "one trap" section of "Renishaw - calibration\README.md".
+        public const double HaZeroPointCorrectionHours = 0.192857117;
+
         const double RADZeroPointCorrection = HaZeroPointCorrectionHours * 2.0 * Math.PI / 24.0;
 
         public double Radians
@@ -396,6 +399,14 @@ namespace ASCOM.Wise40.Hardware
     //
     public class RenishawDecEncoder: RenishawEncoder
     {
+        //
+        // Zero, deliberately - see the comment above.  Declared anyway so that
+        //  RenishawCalibrationLog can state in every row that Dec carries no
+        //  correction, rather than leaving a reader to assume it.  If Dec ever does
+        //  need one, this is the single place to put it.
+        //
+        public const double DecZeroPointCorrectionDegrees = 0.0;
+
         public RenishawDecEncoder() : base(Module.Dec)
         {
         }

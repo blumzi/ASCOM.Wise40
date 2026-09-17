@@ -65,7 +65,20 @@ digest's `deltaHA`/`deltaDec` after the fix (31.36′/3.64′).
 The raw counts mean the same thing forever. The derived columns do not: this file predates
 the zero-point correction, so its `renishaw_ha_hours` is 0.192857 h high, while every file
 written after 2026-09-17 has the correction already applied and should scatter about zero. A
-fit spanning both, using the hours column, would be wrong by exactly that offset.
+fit spanning both, using the hours column, would be wrong by exactly that offset — and would
+look perfectly well behaved while being wrong, the same failure mode as handing the driver
+J2000 coordinates instead of topocentric.
+
+Files written from 2026-09-17 on carry two extra columns at the end,
+**`ha_correction_hours`** and **`dec_correction_deg`**, holding the correction that was in
+force when the row was written. So a later file is self-describing: add the value back to
+`renishaw_ha_hours` to recover the uncorrected reading, or subtract it from an older file's
+to bring the two onto the same footing.
+
+They are per-row rather than a header line precisely so they survive concatenation, and
+appended rather than inserted so the first 14 columns stay where they are. **The 2026-09-16
+file below has neither column**, which itself means "no correction applied" — it is the only
+file that will ever be in that state.
 
 ## Known gaps in the 2026-09-16 run
 

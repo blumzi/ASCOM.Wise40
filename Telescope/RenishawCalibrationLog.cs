@@ -3,6 +3,7 @@ using System.Globalization;
 using System.IO;
 
 using ASCOM.Wise40.Common;
+using ASCOM.Wise40.Hardware;        // RenishawHaEncoder/RenishawDecEncoder correction constants
 
 namespace ASCOM.Wise40
 {
@@ -48,12 +49,33 @@ namespace ASCOM.Wise40
         private static readonly object _lock = new object();
         private const string FileName = "renishaw-calibration.csv";
 
+        //
+        // The two correction columns make the file self-describing, and they are the
+        //  LAST columns on purpose.
+        //
+        // renishaw_ha_hours is a DERIVED value: it already has the zero-point
+        //  correction applied.  Files written before 2026-09-17 have no correction in
+        //  them at all, so that column is 0.192857h higher there than here for the same
+        //  physical pointing.  Concatenate two nights from either side of that and fit
+        //  the hours column, and the fit comes out wrong by exactly that offset while
+        //  looking perfectly well behaved - the same failure mode as handing the driver
+        //  J2000 coordinates instead of topocentric.
+        //
+        // Stamping the correction on every ROW rather than in a header line is what
+        //  makes it survive concatenation, which is the whole point.  Appending rather
+        //  than inserting keeps the first 14 columns where any existing reader expects
+        //  them.
+        //
+        // Safest of all: fit on ha_count / dec_count.  Raw counts mean the same thing
+        //  forever.
+        //
         private const string Header =
             "utc,lst_hours,solved_ra_hours,solved_dec_deg,true_ha_hours," +
             "through_pole,axis_ha_hours,axis_dec_deg," +
             "ha_count,dec_count," +
             "old_ha_hours,old_dec_deg," +
-            "renishaw_ha_hours,renishaw_dec_deg";
+            "renishaw_ha_hours,renishaw_dec_deg," +
+            "ha_correction_hours,dec_correction_deg";
 
         /// <summary>
         /// The file for tonight.  Debugger.LogDirectory() rolls at noon UT, so a
@@ -150,6 +172,8 @@ namespace ASCOM.Wise40
                             decCount.ToString(CultureInfo.InvariantCulture),
                             F(oldHaHours), F(oldDecDegrees),
                             F(renishawHaHours), F(renishawDecDegrees),
+                            F(RenishawHaEncoder.HaZeroPointCorrectionHours),
+                            F(RenishawDecEncoder.DecZeroPointCorrectionDegrees),
                         }));
                     }
                 }
