@@ -52,4 +52,20 @@ Duration barely depends on distance, and a **3° slew takes longer than a 100° 
 
 Expect the **dome** to become the binding constraint afterwards: `Slewing` stays true until it finishes (`WiseTele.cs:1099`, `DomeSlaveDriver.cs:103` waits with no timeout) and there is **no dome angular rate anywhere in the code** — it has never been measured.
 
+## ALMOST ALL OF THIS IS DEC. HA IS LARGELY UNVERIFIED
+
+Flagged by Arie, 2026-09-17, and it bounds how much of the day's work is actually confirmed. **Every timing test was a Dec-only move with RA essentially stationary** — 0.5° and 20° in declination, nothing that drove the hour-angle axis any distance.
+
+What HA *is* backed by: slew-rate travel-after-threshold of 1.846–2.895° (n=8, from log forensics, not a controlled test), which is what says its 3.0° `stopMovement` is already right — 0 of 8 legs overshot. Its `set`→`guide` threshold of 30″ looks right too, since RA guide legs exit `CloseEnough` in 3–8 s without reversing.
+
+What HA has **no** measurement behind:
+
+- **`primaryEpsilon`** (0.40″/sample = 8″/s, replacing the unreachable `raEpsilon`/`haEpsilon`) was never exercised on the mount. The value was derived from the HA encoder's 0.1187″ quantum by analogy with Dec, **not** from observed dither — nobody has watched a stationary HA axis the way we watched Dec sit on four adjacent counts for 21 seconds.
+- **HA stop-detection time.** The 4.6 s real / 21.1 s detector split is a Dec measurement. HA's may differ: different drum, different inertia, and a coarser encoder.
+- **Direction dependence.** Dec's `set`-rate coast is 20″ north against 27.9″ south. East/west asymmetry on HA is plausible — the axis is loaded differently either side of the meridian — and completely unmeasured.
+- **RA's "no measurable coast" at `set` rate** may just mean "below the 30″ threshold", not zero.
+- **Both axes working at once.** The `ReadyToSlewFlags` rendezvous has never been exercised with both axes doing real travel; a Dec-only move leaves RA skipping straight to guide. A pointing run does drive both.
+
+To do it properly: a large RA-only move in each direction, with the same log forensics — travel after the threshold trips, coast at each rate, and stop-detection time separated into real deceleration versus detector lag. Then a diagonal move to exercise the rendezvous.
+
 See [[telescope-drive-topology]] for why the axes cannot simply be decoupled.
