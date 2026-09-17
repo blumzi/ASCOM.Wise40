@@ -212,8 +212,30 @@ namespace ASCOM.Wise40
 
     public class PrimaryAxisMonitor : AxisMonitor
     {
-        public const double raEpsilon = 2e-3;        // epsilon for primaryMonitor, while tracking
-        public const double haEpsilon = 7.0;         // epsilon for primaryMonitor, while NOT tracking
+        //
+        // Below this per-sample change the axis counts as stopped.  HOURS, because that is
+        //  what _raDeltas and _haDeltas hold.
+        //
+        // 0.40 arcsec per 50ms sample is 8 arcsec/sec, about 3.4 HA encoder counts (0.1187
+        //  arcsec each) - clear of the 1-2 counts of dither a stationary axis shows, and well
+        //  below rateSet at 52.3 arcsec/sec.
+        //
+        // ONE value now, used whether or not the telescope is tracking.  What changes with
+        //  tracking is WHICH series to watch - RightAscension should hold still while
+        //  tracking, HourAngle while not - and that choice is made below.  The threshold has
+        //  no business differing, and the two it replaced were both wrong:
+        //
+        //    raEpsilon = 2e-3 hours per sample = 108 arcsec per sample = 0.6 deg/sec.  Only
+        //      the slew rate ever exceeded that; set and guide never registered.
+        //
+        //    haEpsilon = 7.0 HOURS per sample, against a maximum possible value of 24.
+        //      Unreachable, so while NOT tracking this axis could never report motion at all.
+        //
+        // Note guide rate cannot be detected per-sample on this axis by any threshold:
+        //  0.86 arcsec/sec is 0.043 arcsec per sample, a third of one encoder count.  It is
+        //  below quantisation, not below this epsilon.
+        //
+        public const double primaryEpsilon = 0.40 / (3600.0 * 15.0);
 
         public static FixedSizedQueue<double> _raDeltas = new FixedSizedQueue<double>(nSamples);
         public static FixedSizedQueue<double> _haDeltas = new FixedSizedQueue<double>(nSamples);
@@ -357,12 +379,12 @@ namespace ASCOM.Wise40
                 if (tracking)
                 {
                     arr = _raDeltas.ToArray();
-                    epsilon = raEpsilon;
+                    epsilon = primaryEpsilon;
                 }
                 else
                 {
                     arr = _haDeltas.ToArray();
-                    epsilon = haEpsilon;
+                    epsilon = primaryEpsilon;
                 }
 
                 foreach (double d in arr)
