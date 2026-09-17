@@ -633,7 +633,7 @@ namespace Dash
                 labelAirMass.Text = WiseSite.AirMass(alt.Radians).ToString("g4");
                 labelAirMass.ForeColor = safeColor;
 
-                telescopeStatus.Show(telescopeDigest.Status);
+                telescopeStatus.Show(TelescopeStatusText(telescopeDigest));
             }
             else
             {
@@ -1185,6 +1185,66 @@ namespace Dash
             {
                 telescopeStatus.Show(ex.Message, 5000, Statuser.Severity.Error);
             }
+        }
+
+        /// <summary>
+        /// What the telescope group's status line shows.
+        ///
+        /// While slewing to a known RA/Dec target it shows where we are going and how far
+        ///  there is left to go, refreshed on every tick:
+        ///
+        ///     Tgt: (21h07m05.6s, 48°50'01.7"), Dist: (-00h00m12.3s, +01°23'45.6")
+        ///
+        /// The distance is what makes it worth watching - the target alone is static, and a
+        ///  Wise40 slew can spend minutes at set rate closing the last fraction of a degree,
+        ///  during which a bare "Slewing to ..." tells you nothing about progress.
+        ///
+        /// Anything else - not slewing, or no RA/Dec target set, as after an Alt/Az slew -
+        ///  falls back to the driver's own status string.
+        /// </summary>
+        private static string TelescopeStatusText(TelescopeDigest digest)
+        {
+            if (!digest.Slewing ||
+                digest.Target == null ||
+                digest.Target.RaDec_RA == Const.noTarget ||
+                digest.Target.RaDec_Dec == Const.noTarget)
+            {
+                return digest.Status;
+            }
+
+            double dRa = digest.Target.RaDec_RA - digest.Current.RightAscension;
+            double dDec = digest.Target.RaDec_Dec - digest.Current.Declination;
+
+            //
+            // Shortest way round in hour angle: without this, a slew across 0h reads as
+            //  23-and-a-bit hours to go.
+            //
+            while (dRa > 12.0)
+                dRa -= 24.0;
+            while (dRa < -12.0)
+                dRa += 24.0;
+
+            return "Tgt: (" +
+                    $"{Angle.RaFromHours(digest.Target.RaDec_RA).ToNiceString()}, " +
+                    $"{Angle.DecFromDegrees(digest.Target.RaDec_Dec).ToNiceString()})" +
+                   ", Dist: (" +
+                    $"{SignedAngle(dRa, isHours: true)}, " +
+                    $"{SignedAngle(dDec, isHours: false)})";
+        }
+
+        /// <summary>
+        /// A signed angle for the distance-to-target display.  Angle.ToNiceString() formats a
+        ///  magnitude, so the sign is carried separately - and the sign is the useful part
+        ///  here, since it says which way the axis still has to travel.
+        /// </summary>
+        private static string SignedAngle(double value, bool isHours)
+        {
+            string sign = (value < 0) ? "-" : "+";
+            double magnitude = Math.Abs(value);
+
+            return sign + (isHours
+                ? Angle.FromHours(magnitude).ToNiceString()
+                : Angle.FromDegrees(magnitude).ToNiceString());
         }
 
         private void buttonTelescopeStop_Click(object sender, EventArgs e)
