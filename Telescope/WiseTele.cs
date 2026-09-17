@@ -3941,7 +3941,21 @@ namespace ASCOM.Wise40
                 else
                     WiseSite.astrometricAccuracy = Accuracy.Full;
 
-                Enum.TryParse<EncodersInUseEnum>(driverProfile.GetValue(driverID, Const.ProfileName.Telescope_EncodersInUse, string.Empty, "Old"), out EncodersInUseEnum enc);
+                //
+                // Default New since 2026-09-17.  The Renishaws were calibrated against
+                //  16 plate-solved points on 2026-09-16 and came out better than the old
+                //  encoders on both axes: no scale error (HA residual slopes 3.76"/h at
+                //  R2 = 0.10), a Dec zero point of +3.06" against the old encoders'
+                //  +221.5", and agreement with those independent encoders to 9.5" sd.
+                //
+                // The default matters more than it looks.  An elevated rebuild
+                //  re-registers the driver for COM, which wipes this profile subkey, so
+                //  every rebuild silently reverts whatever is persisted here to the
+                //  default - which is how a deliberate switch to New was lost once
+                //  already.  Keep the default equal to what the telescope should
+                //  actually run on.
+                //
+                Enum.TryParse<EncodersInUseEnum>(driverProfile.GetValue(driverID, Const.ProfileName.Telescope_EncodersInUse, string.Empty, "New"), out EncodersInUseEnum enc);
                 Instance.EncodersInUse = enc;
                 BypassCoordinatesSafety = Convert.ToBoolean(driverProfile.GetValue(driverID, Const.ProfileName.Telescope_BypassCoordinatesSafety, string.Empty, false.ToString()));
             }
