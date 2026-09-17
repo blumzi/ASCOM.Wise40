@@ -624,7 +624,37 @@ namespace ASCOM.Wise40
                     [Const.rateSlew] = new MovementParameters()
                     {
                         minimalMovement = new Angle("00:30:00.0"),
-                        stopMovement = new Angle("04:30:00.0"),
+                        //
+                        // MEASURED, and measured as the right thing.  What matters is the
+                        //  total travel from the moment this threshold trips to the moment
+                        //  the axis is stationary - NOT the "stopping distance" the log
+                        //  prints, which understates it because the axis runs on at full
+                        //  speed during the detect-and-stop sequence.  A 20 degree slew on
+                        //  2026-09-17 logged 2.89 deg of stopping distance while actually
+                        //  travelling 3.21 deg from trip to halt.
+                        //
+                        // Over Dec slew legs from 2026-09-16 plus that one:
+                        //      min 2.954   mean 3.153   max 3.386 degrees
+                        //
+                        // Chosen 3.5, above the maximum, DELIBERATELY conservative: the axis
+                        //  should undershoot every time and never sail past its target at
+                        //  1.7 deg/sec.  Aiming at the mean would be ~17 seconds faster per
+                        //  slew and would overshoot on roughly half of them; that trade was
+                        //  considered and declined.
+                        //
+                        // Was 4.5, which left 1.35 deg to crawl at 49.6 arcsec/sec - 98
+                        //  seconds, 73% of a 20 degree slew.  3.5 leaves 0.11 to 0.55 deg,
+                        //  so 8 to 40 seconds.
+                        //
+                        // Side effect worth knowing: the engage threshold is minimalMovement
+                        //  + stopMovement, so this also drops from 5.0 to 4.0 degrees and
+                        //  more moves now get the fast motor at all.
+                        //
+                        // RA is deliberately untouched at 3.0: its travel measures 1.85 to
+                        //  2.90 deg, so it already undershoots every time with 0.1 deg to
+                        //  spare. It was right.
+                        //
+                        stopMovement = new Angle("03:30:00.0"),
                         minRadChangePerPollingInterval = 0.0785,
                         maxRadChangePerPollingInterval = 1.6946717173,
                         maxTime = TimeSpan.FromMinutes(5),

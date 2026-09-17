@@ -12,7 +12,31 @@ metadata:
 
 `RegisterForComInterop` is on for several projects, so a **non-elevated build unregisters and then fails to re-register**, leaving the driver missing from the ASCOM Profile. That is exactly how `ASCOM.Wise40.TessW.ObservingConditions` lost its registration — and it cost **3m44s of every startup** until fixed with an elevated `regasm /codebase`. Build from an elevated Visual Studio, or expect it back.
 
-To compile-check without elevation: `MSBuild <proj> /t:Rebuild /p:RegisterForComInterop=false`. **That flag does not propagate to project references** — MSBuild walks into them and tries to unregister, which is how TessW lost its registration a second time on 2026-09-16. Add `/p:BuildProjectReferences=false` to compile one project against the DLLs already on disk.
+To compile-check without elevation, **specify the platform**:
+
+```
+MSBuild <proj> /t:Build /p:Configuration=Debug /p:Platform=x86 \
+        /p:RegisterForComInterop=false /p:BuildProjectReferences=false
+```
+
+`/p:Platform=x86` is **not optional**. Without it MSBuild builds AnyCPU into `bin\Debug`, reports success, and leaves `bin\x86\Debug` — which is what the chain actually loads — untouched. The giveaway is the `Telescope -> ...\bin\Debug\...` line in normal verbosity.
+
+`/p:BuildProjectReferences=false` compiles against the DLLs already on disk. Fast, but it will compile against **stale** dependencies: after making a constant `public` in `Hardware`, the Telescope build failed with `CS0117 ... does not contain a definition for` until `Hardware` was rebuilt first. Build `Common` → `Hardware` → `Telescope` in order. **That flag does not propagate to project references** — MSBuild walks into them and tries to unregister, which is how TessW lost its registration a second time on 2026-09-16. Add `/p:BuildProjectReferences=false` to compile one project against the DLLs already on disk.
+
+## Taking the chain down and up
+
+**The chain is the `Wise40Watcher` Windows service.** Stop it to take everything down, start it to bring everything back:
+
+```powershell
+Stop-Service  Wise40Watcher      # needs elevation
+Start-Service Wise40Watcher
+```
+
+It is `Automatic` start type and reports `CanStop: False` to a non-elevated caller, so drive it through an elevated `Start-Process ... -Verb RunAs` the same way as `regasm` and the ACP script copies.
+
+Do this **before** an elevated build — the RemoteServer holds `ASCOM.Wise40.Telescope.dll` open, and the build will not overwrite it while the chain runs.
+
+**A pure constant change may not need an elevated rebuild at all.** COM registration only has to be refreshed when the interface or type library changes; editing a value in `movementParameters` changes neither. Build the x86 DLL (see below), then just restart the service — it will load the new binary from the registered codebase path.
 
 ## Close FocusMax before building — and check the build log, don't trust the timestamps
 
