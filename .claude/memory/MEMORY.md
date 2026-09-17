@@ -1,3 +1,4 @@
+- [Work via pull requests](work-via-pull-requests.md) — branch and open a PR; don't commit to master. `gh` is not installed yet
 - [Notes live in the repo](notes-live-in-the-repo.md) — memories and plans belong in `<repo>/.claude/`, git-tracked, not the per-user store
 - [Renishaw encoder calibration](renishaw-encoder-calibration.md) — calibrated against the sky 2026-09-16: no scale error, zero point corrected, now the encoders in use; what's left is a pointing model
 - [Wise40 ACP/driver integration](wise40-acp-driver-integration.md) — ACP won't pass Action through, DriverAccess isn't COM-creatable, and only one ProgID is safe to use
