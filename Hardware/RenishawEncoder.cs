@@ -51,6 +51,18 @@ namespace ASCOM.Wise40.Hardware
 
         private int prevPosition = Int32.MinValue;
 
+        /// <summary>
+        /// The value Position returned last time, WITHOUT performing a BiSS read.
+        ///
+        /// For logging a position that has already been fetched this pass.  Every other
+        ///  accessor here - Position, Radians, HourAngle, Declination - performs a fresh
+        ///  BiSS transaction, so writing all three into one log line costs three reads of
+        ///  the same instant.
+        ///
+        /// Int32.MinValue if the encoder has never been read.
+        /// </summary>
+        public int LastPosition => prevPosition;
+
         //
         // There is exactly one physical encoder on each BiSS functional module, and
         //  the module is a global resource: constructing an encoder initializes it,
