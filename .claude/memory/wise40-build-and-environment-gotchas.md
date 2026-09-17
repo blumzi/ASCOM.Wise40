@@ -12,7 +12,16 @@ metadata:
 
 `RegisterForComInterop` is on for several projects, so a **non-elevated build unregisters and then fails to re-register**, leaving the driver missing from the ASCOM Profile. That is exactly how `ASCOM.Wise40.TessW.ObservingConditions` lost its registration — and it cost **3m44s of every startup** until fixed with an elevated `regasm /codebase`. Build from an elevated Visual Studio, or expect it back.
 
-To compile-check without elevation: `MSBuild <proj> /t:Rebuild /p:RegisterForComInterop=false`. **That flag does not propagate to project references** — MSBuild walks into them and tries to unregister, which is how TessW lost its registration a second time on 2026-09-16. Add `/p:BuildProjectReferences=false` to compile one project against the DLLs already on disk.
+To compile-check without elevation, **specify the platform**:
+
+```
+MSBuild <proj> /t:Build /p:Configuration=Debug /p:Platform=x86 \
+        /p:RegisterForComInterop=false /p:BuildProjectReferences=false
+```
+
+`/p:Platform=x86` is **not optional**. Without it MSBuild builds AnyCPU into `bin\Debug`, reports success, and leaves `bin\x86\Debug` — which is what the chain actually loads — untouched. The giveaway is the `Telescope -> ...\bin\Debug\...` line in normal verbosity.
+
+`/p:BuildProjectReferences=false` compiles against the DLLs already on disk. Fast, but it will compile against **stale** dependencies: after making a constant `public` in `Hardware`, the Telescope build failed with `CS0117 ... does not contain a definition for` until `Hardware` was rebuilt first. Build `Common` → `Hardware` → `Telescope` in order. **That flag does not propagate to project references** — MSBuild walks into them and tries to unregister, which is how TessW lost its registration a second time on 2026-09-16. Add `/p:BuildProjectReferences=false` to compile one project against the DLLs already on disk.
 
 ## Close FocusMax before building — and check the build log, don't trust the timestamps
 
