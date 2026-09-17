@@ -1233,9 +1233,18 @@ namespace Dash
         }
 
         /// <summary>
-        /// A signed angle for the distance-to-target display.  Angle.ToNiceString() formats a
-        ///  magnitude, so the sign is carried separately - and the sign is the useful part
-        ///  here, since it says which way the axis still has to travel.
+        /// A signed angle for the distance-to-target display.  Angle formats a magnitude, so
+        ///  the sign is carried separately - and the sign is the useful part here, since it
+        ///  says which way the axis still has to travel.
+        ///
+        /// ToCompactString() drops leading all-zero groups, so a distance reads "0.3s" and
+        ///  "26'37.3"" rather than "00h00m00.3s" and "00d26'37.3"".  The full form did not
+        ///  fit the status field, and most of it was zeros: a slew spends nearly all its
+        ///  time inside a degree of the target.
+        ///
+        /// Only the DISTANCES are compacted.  The target keeps its full form, because
+        ///  dropping the leading units off a coordinate loses the cue that says whether it
+        ///  is hours or degrees.
         /// </summary>
         private static string SignedAngle(double value, bool isHours)
         {
@@ -1243,8 +1252,8 @@ namespace Dash
             double magnitude = Math.Abs(value);
 
             return sign + (isHours
-                ? Angle.FromHours(magnitude).ToNiceString()
-                : Angle.FromDegrees(magnitude).ToNiceString());
+                ? Angle.FromHours(magnitude).ToCompactString()
+                : Angle.FromDegrees(magnitude).ToCompactString());
         }
 
         private void buttonTelescopeStop_Click(object sender, EventArgs e)

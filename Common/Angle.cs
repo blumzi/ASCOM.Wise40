@@ -368,6 +368,48 @@ namespace ASCOM.Wise40.Common
                 ToNiceString();
         }
 
+        /// <summary>
+        /// ToNiceString() with leading all-zero groups dropped, for places where the full
+        ///  form does not fit:
+        ///
+        ///     00h00m00.3s  ->  0.3s
+        ///     00h12m34.5s  ->  12m34.5s
+        ///     00°00'08.6"  ->  8.6"
+        ///     00°26'37.3"  ->  26'37.3"
+        ///     48°50'01.7"  ->  48°50'01.7"     (nothing to drop)
+        ///
+        /// Note this is NOT ToShortNiceString(), which only abbreviates Alt and Az and
+        ///  falls through to ToNiceString() for everything else.
+        ///
+        /// Best kept for DIFFERENCES rather than positions.  Dropping the units off the
+        ///  front makes a small angle much easier to read, but it also removes the cue that
+        ///  says whether you are looking at hours or degrees - fine for "how far is left to
+        ///  go", misleading for a coordinate.
+        /// </summary>
+        public string ToCompactString()
+        {
+            string s = ToNiceString();
+
+            if (s == "Invalid")
+                return s;
+
+            string sign = "";
+            if (s.StartsWith("-") || s.StartsWith("+"))
+            {
+                sign = s.Substring(0, 1);
+                s = s.Substring(1);
+            }
+
+            // leading zero hours or degrees, then leading zero minutes
+            s = System.Text.RegularExpressions.Regex.Replace(s, @"^0+[h°]", "");
+            s = System.Text.RegularExpressions.Regex.Replace(s, @"^0+[m']", "");
+
+            // and any zero padding left on the front of the remaining number, keeping one digit
+            s = System.Text.RegularExpressions.Regex.Replace(s, @"^0+(?=\d)", "");
+
+            return sign + s;
+        }
+
         //private static double NormalizeAltAndDec(Angle a, double d)
         //{
         //    if (d > a._highest)
