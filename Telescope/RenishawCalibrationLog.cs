@@ -3,7 +3,7 @@ using System.Globalization;
 using System.IO;
 
 using ASCOM.Wise40.Common;
-using ASCOM.Wise40.Hardware;        // RenishawHaEncoder/RenishawDecEncoder correction constants
+using ASCOM.Wise40.Hardware;        // RenishawHAEncoder/RenishawDecEncoder correction constants
 
 namespace ASCOM.Wise40
 {
@@ -172,7 +172,7 @@ namespace ASCOM.Wise40
                             decCount.ToString(CultureInfo.InvariantCulture),
                             F(oldHaHours), F(oldDecDegrees),
                             F(renishawHaHours), F(renishawDecDegrees),
-                            F(RenishawHaEncoder.HaZeroPointCorrectionHours),
+                            F(RenishawHAEncoder.HaZeroPointCorrectionHours),
                             F(RenishawDecEncoder.DecZeroPointCorrectionDegrees),
                         }));
                     }

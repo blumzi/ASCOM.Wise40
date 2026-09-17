@@ -14,6 +14,21 @@ metadata:
 
 To compile-check without elevation: `MSBuild <proj> /t:Rebuild /p:RegisterForComInterop=false`. **That flag does not propagate to project references** — MSBuild walks into them and tries to unregister, which is how TessW lost its registration a second time on 2026-09-16. Add `/p:BuildProjectReferences=false` to compile one project against the DLLs already on disk.
 
+## Close FocusMax before building — and check the build log, don't trust the timestamps
+
+**FocusMax is an ASCOM client and holds `Common.dll`, `Hardware.dll`, `ASCOM.Wise40SafeToOperate.SafetyMonitor.dll` and `ASCOM.Wise40.TessW.ObservingConditions.dll` open.** ACP starts it (`assuring that FocusMax is running now...`) and it **outlives the observing run** — on 2026-09-17 it had been holding those DLLs since 20:14 the previous evening.
+
+```
+error MSB3027: Could not copy ... Exceeded retry count of 10.
+Failed. The file is locked by: "FocusMax V6 (23228)"
+```
+
+It is **not part of the Wise40 chain**, so stopping the chain does not release it and a process scan for ASCOM/Wise40 processes will not find it. Before an elevated build: stop the chain **and close FocusMax**.
+
+A failure in one project cascades confusingly — the Telescope project failing leaves Dash, ObservatoryMonitor and RemoteSafetyDashboard reporting `CS0006: Metadata file ASCOM.Wise40.Telescope.dll could not be found`, which looks like a missing-reference problem and is not.
+
+**Verify a build actually produced a new binary.** Compare the DLL's timestamp against the source file's, or better, check a value you changed in the driver's own log output. A build that failed this way can leave every copy on disk — `obj/` included — at its previous version while nothing obviously complains. That cost a full telescope test on 2026-09-17: the move behaved identically because the running DLL was seven hours old.
+
 ## An elevated rebuild wipes ASCOM Profile values
 
 Re-registering a driver for COM **deletes its profile subkey**, so the driver restarts on its *code default* and re-persists that. Anything held only in the profile is silently lost on every rebuild.
