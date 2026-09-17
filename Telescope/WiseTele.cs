@@ -606,6 +606,11 @@ namespace ASCOM.Wise40
                     {
                         minimalMovement = Angle.FromHours(Angle.Deg2Hours("00:00:01.0")),
                         //
+                        // The most this rate will accept.  120 arcsec = 8 SECONDS OF TIME on
+                        //  this axis, which parses HMS.  See TooFarToMoveAtRate.
+                        //
+                        maximalMovement = new Angle("00h00m08.0s"),
+                        //
                         // Arrival tolerance, 1.5 -> 3.0 arcsec.  NOTE this axis parses HMS, so
                         //  "00h00m00.2s" is 0.2 SECONDS OF TIME = 3.0 arcsec of angle.  RA
                         //  needs no coast correction: it shows no measurable coast at rateSet
@@ -686,6 +691,10 @@ namespace ASCOM.Wise40
                     [Const.rateGuide] = new MovementParameters()
                     {
                         minimalMovement = new Angle("00:00:01.0"),
+                        //
+                        // The most this rate will accept - 120 arcsec.  See TooFarToMoveAtRate.
+                        //
+                        maximalMovement = new Angle("00:02:00.0"),
                         //
                         // Arrival tolerance.  Was 0.1 arcsec - about 2.3 Renishaw counts, on a
                         //  mount whose own repeatability is ~30 arcsec - so the CloseEnough
@@ -2162,10 +2171,28 @@ namespace ASCOM.Wise40
             double r = Const.rateStopped;
             int nRates = rates.Count, closeEnoughRates = 0;
 
+            //
+            // The outer loop is bounded now.  It never was: AbortSlew on a leg timeout was
+            //  the only thing that ended it, and that has been removed so a timeout can be
+            //  retried at a faster rate.  Without a cap, an axis that cannot converge - a
+            //  stuck encoder, a motor that will not move - would spin here forever.
+            //
+            // Passes are cheap when things are healthy: a normal slew completes in one.
+            //
+            const int maxCascadePasses = 5;
+            int cascadePasses = 0;
+
             try
             {
                 while (closeEnoughRates != nRates)
                 {
+                    if (++cascadePasses > maxCascadePasses)
+                    {
+                        AbortSlew($"{op}: giving up after {maxCascadePasses} passes, still " +
+                            $"{distanceToTarget.angle.ToNiceString()} from target");
+                        break;
+                    }
+
                     closeEnoughRates = 0;
 
                     foreach (var rate in rates)
@@ -2195,6 +2222,19 @@ namespace ASCOM.Wise40
                             continue;
                         }
 
+                        if (TooFarToMoveAtRate(thisAxis, distanceToTarget.angle, rate))
+                        {
+                            //
+                            // Too far for this rate - a faster one must take it.  Note this
+                            //  does NOT count towards closeEnoughRates: we have not arrived.
+                            //
+                            #region debug
+                            debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                                $"{op}: {slewerName}: distance {distanceToTarget.angle.ToNiceString()} too FAR for {RateName(rate)}, leaving it to a faster rate");
+                            #endregion
+                            continue;
+                        }
+
                         // enough distance to move, let's wait for the other axis
                         while (!readyToSlewFlags.AxisCanMoveAtRate(thisAxis, rate))
                         {
@@ -2209,6 +2249,38 @@ namespace ASCOM.Wise40
 
                         currentAngle = CurrentPosition(targetAngle.Type);
                         distanceToTarget = currentAngle.ShortestDistance(targetAngle);
+
+                        //
+                        // RE-CHECK, because the rate was chosen BEFORE the rendezvous above
+                        //  and that wait is unbounded - it lasts as long as the other axis
+                        //  needs, which has been over 90 seconds.  The distance measured then
+                        //  can be meaningless by now.
+                        //
+                        // This is not hypothetical.  On 2026-09-17 the RA axis measured 10.5
+                        //  arcsec, correctly skipped slew and set, committed to guide, and
+                        //  then waited 64 seconds for Dec.  During that wait the reported
+                        //  position jumped 1875 arcsec.  RA drove the whole phantom distance
+                        //  at 0.86 arcsec/sec until it hit maxTime, and the slew was aborted.
+                        //  Set was never reconsidered, though it was 58x faster and idle.
+                        //
+                        if (!EnoughDistanceToMove(thisAxis, distanceToTarget.angle, rate))
+                        {
+                            closeEnoughRates++;
+                            #region debug
+                            debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                                $"{op}: {slewerName}: after waiting, distance {distanceToTarget.angle.ToNiceString()} is too short for {RateName(rate)} (closeEnoughRates: {closeEnoughRates})");
+                            #endregion
+                            continue;
+                        }
+
+                        if (TooFarToMoveAtRate(thisAxis, distanceToTarget.angle, rate))
+                        {
+                            #region debug
+                            debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                                $"{op}: {slewerName}: after waiting, distance {distanceToTarget.angle.ToNiceString()} is too FAR for {RateName(rate)}, leaving it to a faster rate");
+                            #endregion
+                            continue;
+                        }
 
                         // Wait for InternalMoveAxis to start moving thisAxis
                         while (! InternalMoveAxis(thisAxis, rate, distanceToTarget.direction, false))
@@ -2408,8 +2480,28 @@ namespace ASCOM.Wise40
                             #endregion
                         }
 
+                        //
+                        // A leg timing out used to AbortSlew, killing the whole slew for both
+                        //  axes.  It is now recoverable: fall out of this rate and let the
+                        //  outer loop re-run the cascade, which re-measures and can pick a
+                        //  faster rate.
+                        //
+                        // On 2026-09-17 the guide leg timed out holding 1875 arcsec it could
+                        //  never cover.  Simply re-running the cascade would have handed that
+                        //  to set, which clears it in 38 seconds - instead the slew aborted.
+                        //  A timeout says "this rate is not working", not "give up".
+                        //
+                        // The pass cap below is what makes that safe: AbortSlew was the only
+                        //  thing bounding the outer loop.
+                        //
                         if (status == ScopeSlewerStatus.Timedout)
-                            AbortSlew($"{op}: Timedout at rate {RateName(rate)} after {elapsed.ToMinimalString()}");
+                        {
+                            #region debug
+                            debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                                $"{op}: {slewerName}: {RateName(rate)} timed out after {elapsed.ToMinimalString()} " +
+                                $"with {distanceToTarget.angle.ToNiceString()} to go - retrying the cascade");
+                            #endregion
+                        }
                     }
                 }
 
@@ -2462,6 +2554,29 @@ namespace ASCOM.Wise40
             Angle minimalMovementAngle = mp.minimalMovement + mp.stopMovement;
 
             return distance >= minimalMovementAngle;
+        }
+
+        /// <summary>
+        /// Whether this distance is more than this rate should be asked to cover.
+        ///
+        /// The counterpart to EnoughDistanceToMove, which only ever tested a MINIMUM.  With
+        ///  no upper bound, rateGuide would accept any distance at all - and at 0.86
+        ///  arcsec/sec its 5 minute maxTime buys only 258 arcsec, so anything larger is a
+        ///  guaranteed timeout rather than a slow arrival.
+        ///
+        /// Only rateGuide declares a maximalMovement.  That is deliberate: every distance
+        ///  must have some rate willing to take it, or ScopeAxisSlewer's outer loop never
+        ///  terminates.  A null maximalMovement means "no limit".
+        ///
+        /// Declining as TOO FAR is not the same as being close enough, and the caller must
+        ///  not count it towards closeEnoughRates - the slew has not arrived, it just needs
+        ///  a faster rate.
+        /// </summary>
+        private bool TooFarToMoveAtRate(TelescopeAxes axis, Angle distance, double rate)
+        {
+            MovementParameters mp = movementParameters[axis][rate];
+
+            return mp.maximalMovement != null && distance > mp.maximalMovement;
         }
 
         private static readonly Dictionary<TelescopeAxes, bool> AxisIsStoppingDict = new Dictionary<TelescopeAxes, bool>()
