@@ -1232,9 +1232,15 @@ namespace Dash
             // - 57 characters into a 370px label, and more than half of them punctuation.
             //  Colons, brackets and commas earn nothing here: the two pairs are already
             //  separated by their units, and a run of digits is easier to read without
-            //  brackets around it.
+            //  brackets around it.  Now:
             //
-            return $"Tgt {Angle.RaFromHours(digest.Target.RaDec_RA).ToNiceString()} " +
+            //     ⇒ 12h26m20.5s 48°19'59.5"   Δ -0.3s -26'37.3"
+            //
+            // Both symbols are WGL4 and verified present in Lucida Sans Unicode, the label's
+            //  font (U+21D2 and U+0394).  The dingbat arrows - U+27A1, U+279C, U+2794 - are
+            //  NOT in it and would render as boxes.
+            //
+            return $"⇒ {Angle.RaFromHours(digest.Target.RaDec_RA).ToNiceString()} " +
                    $"{Angle.DecFromDegrees(digest.Target.RaDec_Dec).ToNiceString()}" +
                    $"   Δ {SignedAngle(dRa, isHours: true)} " +
                    $"{SignedAngle(dDec, isHours: false)}";
