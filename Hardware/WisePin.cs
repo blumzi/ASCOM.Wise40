@@ -60,11 +60,54 @@ namespace ASCOM.Wise40.Hardware
                 return;
             }
 
-            int i, maxTries = 10;
+            DriveAndVerify(on: true, op: "SetOn");
+        }
+
+        //
+        // How long to keep trying before declaring the pin dead, and how often to look.
+        //
+        // The budget is the same 1200ms the old loop spent (10 tries x (100 + 20)), kept
+        //  deliberately: a genuine hardware refusal should still be reported after the same
+        //  wait, and shortening it is a judgement about relays that the code has no evidence
+        //  for.  What changed is that the readback is now CHECKED every 5ms instead of once
+        //  every 120ms, so the ordinary case - which is every case that ever succeeds - costs
+        //  a few milliseconds rather than a flat 100.
+        //
+        private const int readbackBudgetMillis = 1200;
+        private const int readbackPollMillis = 5;
+        private const int rewriteEveryMillis = 100;     // the old loop re-issued DOut each try
+
+        /// <summary>
+        /// Drives this pin and confirms it read back, then returns as soon as it has.
+        ///
+        /// Two things were wrong with doing this inline, twice, once per direction:
+        ///
+        ///  - It compared the WHOLE PORT.  v was the port as read, with our bit adjusted, and
+        ///     success meant the entire port matched.  TeleNorth/East/West/South share
+        ///     FirstPortCL bits 0-3 and the four guide pins share FirstPortB bits 0-3, so a
+        ///     write by the other axis between our read and our readback made the comparison
+        ///     fail on a bit that was never ours - and burned the whole retry budget doing it.
+        ///     Only the bit being written is checked now.
+        ///
+        ///  - Every attempt cost a flat Thread.Sleep(100) while holding daq._lock, so the
+        ///     other axis waited too.  A slew does 10-16 pin writes across both axes; that is
+        ///     1.0-1.6 seconds of sleeping per slew.
+        ///
+        /// Worth recording what the logs say about the retry loop this replaces: across a
+        ///  full night, retries succeeded ZERO times and gave up 8 times.  A pin either reads
+        ///  back at once or it never does, so the repeated attempts bought nothing except the
+        ///  1.2 seconds they took to conclude. The diagnostic on failure now says what was
+        ///  actually read and whether other bits on the port moved, which distinguishes a
+        ///  refusing relay from contention.
+        /// </summary>
+        private void DriveAndVerify(bool on, string op)
+        {
+            ushort mask = (ushort)(1 << bit);
+
             lock (daq._lock)
             {
-                daq.wiseBoard.mccBoard.DIn(daq.porttype, out ushort v);
-                v |= (ushort)(1 << bit);
+                daq.wiseBoard.mccBoard.DIn(daq.porttype, out ushort before);
+                ushort want = on ? (ushort)(before | mask) : (ushort)(before & ~mask);
 
                 if (WiseName.StartsWith("Focus"))
                 {
@@ -73,31 +116,51 @@ namespace ASCOM.Wise40.Hardware
                     //  behave differently from the pins on the other boards.
                     // DON'T do the validation loop.
                     //
-                    daq.wiseBoard.mccBoard.DOut(daq.porttype, v);
+                    daq.wiseBoard.mccBoard.DOut(daq.porttype, want);
                     return;
                 }
 
-                for (i = 0; i < maxTries; i++)
-                {
-                    daq.wiseBoard.mccBoard.DOut(daq.porttype, v);
+                System.Diagnostics.Stopwatch sw = System.Diagnostics.Stopwatch.StartNew();
+                long nextWriteAt = 0;
+                ushort got = before;
 
-                    Thread.Sleep(100);
-                    daq.wiseBoard.mccBoard.DIn(daq.porttype, out ushort v1);
-                    if (v1 == v)
+                while (sw.ElapsedMilliseconds < readbackBudgetMillis)
+                {
+                    if (sw.ElapsedMilliseconds >= nextWriteAt)
                     {
-                        if (i > 0)
-                            #region debug
-                            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"SetOn: pin {WiseName} got On after {i + 1} tries!");
-                            #endregion
+                        daq.wiseBoard.mccBoard.DOut(daq.porttype, want);
+                        nextWriteAt = sw.ElapsedMilliseconds + rewriteEveryMillis;
+                    }
+
+                    Thread.Sleep(readbackPollMillis);
+                    daq.wiseBoard.mccBoard.DIn(daq.porttype, out got);
+
+                    if ((got & mask) == (want & mask))
+                    {
+                        #region debug
+                        if (sw.ElapsedMilliseconds > 50)
+                            debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                                $"{op}: pin {WiseName} took {sw.ElapsedMilliseconds}ms to read back");
+                        #endregion
                         return;
                     }
-                    Thread.Sleep(20);
                 }
-            }
 
-            #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"SetOn: pin {WiseName} does not get On after {maxTries} tries!");
-            #endregion
+                #region debug
+                //
+                // Say what was actually read, and whether anything ELSE on the port moved -
+                //  that is what separates a relay that will not pick up from contention with
+                //  another pin on the same port.
+                //
+                ushort otherBitsChanged = (ushort)((got ^ before) & ~mask);
+
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                    $"{op}: pin {WiseName} did not read back {(on ? "On" : "Off")} after " +
+                    $"{sw.ElapsedMilliseconds}ms: wanted port 0x{want:X4}, read 0x{got:X4}, " +
+                    $"our bit {bit} reads {((got & mask) != 0 ? 1 : 0)}" +
+                    (otherBitsChanged != 0 ? $", OTHER bits changed: 0x{otherBitsChanged:X4}" : ", no other bits moved"));
+                #endregion
+            }
         }
 
         public void SetOff()
@@ -114,46 +177,7 @@ namespace ASCOM.Wise40.Hardware
                 return;
             }
 
-            int i, maxTries = 10;
-            lock (daq._lock)
-            {
-                daq.wiseBoard.mccBoard.DIn(daq.porttype, out ushort v);
-
-                v &= (ushort)~(1 << bit);
-
-                if (WiseName.StartsWith("Focus"))
-                {
-                    //
-                    // Somehow the Focus pins (maybe this is specific to the DAQ board,
-                    //  behave differently from the pins on the other boards.
-                    // DON'T do the validation loop.
-                    //
-                    daq.wiseBoard.mccBoard.DOut(daq.porttype, v);
-                    return;
-                }
-
-                for (i = 0; i < maxTries; i++)
-                {
-                    daq.wiseBoard.mccBoard.DOut(daq.porttype, v);
-                    Thread.Sleep(100);
-                    daq.wiseBoard.mccBoard.DIn(daq.porttype, out ushort v1);
-                    if (v == v1)
-                    {
-                        if (i > 0)
-                            #region debug
-                            debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
-                                    $"SetOff: pin {WiseName} got Off after {i + 1} tries!");
-                            #endregion
-                        return;
-                    }
-                    Thread.Sleep(20);
-                }
-            }
-
-            #region debug
-            debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
-                $"SetOff: pin {WiseName} does not get Off after {maxTries} tries!");
-            #endregion
+            DriveAndVerify(on: false, op: "SetOff");
         }
 
         public bool isOn
