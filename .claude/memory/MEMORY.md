@@ -1,3 +1,5 @@
+- [Telescope drive topology](telescope-drive-topology.md) — TeleSlew is a shared speed selector; both axes must use the same speed among slew/set, only guide is independent
+- [Slew time: where it goes](slew-time-where-it-goes.md) — 67% of motion time is at set rate crawling the last degrees; the coast distances were never measured
 - [Notes live in the repo](notes-live-in-the-repo.md) — memories and plans belong in `<repo>/.claude/`, git-tracked, not the per-user store
 - [Renishaw encoder calibration](renishaw-encoder-calibration.md) — calibrated against the sky 2026-09-16: no scale error, zero point corrected, now the encoders in use; what's left is a pointing model
 - [Wise40 ACP/driver integration](wise40-acp-driver-integration.md) — ACP won't pass Action through, DriverAccess isn't COM-creatable, and only one ProgID is safe to use

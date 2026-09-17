@@ -108,13 +108,28 @@ margin stops mattering — but raise the caps to 10 minutes anyway so a bad coas
 slow slew rather than an `AbortSlew`. Two slews hit the cap on 2026-09-16
 (`C:\Wise40\Logs\2026-09-16\suspects.txt`).
 
-### 6. Optional, later — rendezvous only at `rateSlew`
+### 6. Optional, later — relax the rendezvous at `guide` ONLY
 
-`ReadyToSlewFlags` (`WiseTele.cs:2125-2150`) holds both axes in lockstep at *every* rate. That
-is a hardware necessity only at slew rate, because `SlewPin` is a single relay shared by all
-four direction motors (`WiseTele.cs:515`, `WiseMotor.cs:111-123`). `set` and `guide` use
-per-motor pins and need no rendezvous. RA sits idle 56 % of every slew. This mostly frees RA
-rather than shortening wall clock, since Dec is the critical path — do it after 1–5 land.
+`ReadyToSlewFlags` (`WiseTele.cs:2125-2150`) holds both axes in lockstep at every rate, and RA
+sits idle 56 % of every slew. It is tempting to read that as pointless coupling. It is not.
+
+`TeleSlew` is a **shared speed selector**, not a motor enable: `TeleSlew` + `Tele<dir>` gives
+slew speed, `Tele<dir>` alone gives set speed. So **both axes must use the same speed among
+slew and set at any instant** — the rendezvous at those two rates is a hardware requirement.
+
+Worse, removing it at `set` would be actively dangerous. `WiseVirtualMotor.SetOn`
+(`WiseMotor.cs:110-131`) only declines to switch `SlewPin` *off* when the other axis is at
+`rateSlew`, then energises the direction pin regardless of rate. An axis asking for `rateSet`
+while the other is at `rateSlew` would run with `SlewPin` still on — **moving at slew speed
+while the control loop believes it is at set speed**, 1.69°/s against an assumed 49.6″/s, with
+`stopMovement` sized for the slow rate.
+
+Only **guide** is independent: it uses separate `Tele<dir>Guide` pins and is unaffected by
+`TeleSlew`, so one axis may guide while the other slews or sets. Relaxing the rendezvous there
+is safe, and lets the axis that finishes first run its guide leg while the other is still at
+set. Modest — Dec is the critical path — so do it after 1–5 land, if at all.
+
+See `.claude/memory/telescope-drive-topology.md`.
 
 ## Staging
 

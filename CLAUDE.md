@@ -20,6 +20,8 @@ number or a flag, verify it still exists before relying on it.
 
 ## Memory index
 
+- [Telescope drive topology](.claude/memory/telescope-drive-topology.md) — `TeleSlew` is a shared speed selector, so both axes must use the same speed among slew/set; only guide is independent. Read before touching the slew rendezvous
+- [Slew time: where it goes](.claude/memory/slew-time-where-it-goes.md) — 67 % of motion time is at set rate crawling the last degrees, because the coast distances were never measured
 - [Renishaw encoder calibration](.claude/memory/renishaw-encoder-calibration.md) — calibrated against the sky 2026-09-16; no scale error, zero point corrected, now the encoders in use
 - [ACP / driver integration](.claude/memory/wise40-acp-driver-integration.md) — ACP will not pass `Action` through, `DriverAccess` is not COM-creatable, and only one ProgID is safe to use
 - [Build and environment gotchas](.claude/memory/wise40-build-and-environment-gotchas.md) — COM registration needs elevation, an elevated rebuild wipes ASCOM Profile values, the watcher gives children a broken environment, logs roll at noon UT
