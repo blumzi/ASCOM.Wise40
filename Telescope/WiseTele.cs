@@ -605,7 +605,14 @@ namespace ASCOM.Wise40
                     [Const.rateGuide] = new MovementParameters()
                     {
                         minimalMovement = Angle.FromHours(Angle.Deg2Hours("00:00:01.0")),
-                        stopMovement = new Angle("00h00m00.1s"),
+                        //
+                        // Arrival tolerance, 1.5 -> 3.0 arcsec.  NOTE this axis parses HMS, so
+                        //  "00h00m00.2s" is 0.2 SECONDS OF TIME = 3.0 arcsec of angle.  RA
+                        //  needs no coast correction: it shows no measurable coast at rateSet
+                        //  or rateGuide, and its 30 arcsec set->guide threshold is already
+                        //  right - RA guide legs exit CloseEnough without reversing.
+                        //
+                        stopMovement = new Angle("00h00m00.2s"),
                         minRadChangePerPollingInterval = 0.0000072,
                         maxRadChangePerPollingInterval = 0.0014668186,
                         maxTime = TimeSpan.FromMinutes(5),
@@ -626,7 +633,21 @@ namespace ASCOM.Wise40
                     [Const.rateSet] = new MovementParameters()
                     {
                         minimalMovement = new Angle("00:00:10.0"),
-                        stopMovement = new Angle("00:00:03.0"),
+                        //
+                        // stopMovement is the MEASURED coast of this axis after the motor is
+                        //  switched off, not a safe margin.  Dec coasts 11.9-38.0 arcsec at
+                        //  rateSet, mean 22.7 (52 slews, 2026-09-16 logs; a controlled test on
+                        //  2026-09-17 measured 20.0).  It was 3 arcsec, so Dec could not stop
+                        //  where it was told: it declared CloseEnough at 3 arcsec, coasted ~23
+                        //  arcsec past the target, and every one of 52 guide legs then ran
+                        //  BACKWARDS at 0.79 arcsec/sec to undo it - 21 to 48 seconds each.
+                        //
+                        // Aim at the MEAN coast, not an upper bound.  The guide leg cleans up
+                        //  at the same speed in either direction, so undershooting by X costs
+                        //  exactly what overshooting by X costs; a conservative value buys
+                        //  nothing and guarantees the reversal.
+                        //
+                        stopMovement = new Angle("00:00:23.0"),
                         minRadChangePerPollingInterval = 0.000014,
                         maxRadChangePerPollingInterval = 0.0469464707,
                         maxTime = TimeSpan.FromMinutes(5),
@@ -635,7 +656,14 @@ namespace ASCOM.Wise40
                     [Const.rateGuide] = new MovementParameters()
                     {
                         minimalMovement = new Angle("00:00:01.0"),
-                        stopMovement = new Angle("00:00:00.1"),
+                        //
+                        // Arrival tolerance.  Was 0.1 arcsec - about 2.3 Renishaw counts, on a
+                        //  mount whose own repeatability is ~30 arcsec - so the CloseEnough
+                        //  test could never pass and this leg could only ever exit by
+                        //  overshooting or by timing out.  3 arcsec is achievable and is far
+                        //  below anything the pointing model or a plate solve cares about.
+                        //
+                        stopMovement = new Angle("00:00:03.0"),
                         minRadChangePerPollingInterval = 0.00000049,
                         maxRadChangePerPollingInterval = 0.0001234182,
                         maxTime = TimeSpan.FromMinutes(5),
