@@ -128,6 +128,34 @@ namespace ASCOM.Wise40
             return ret;
         }
 
+        private int _logTicks;
+
+        /// <summary>
+        /// Whether to write a sample line this tick.
+        ///
+        /// SampleAxisMovement runs 20 times a second on each axis and logged every single
+        ///  time, whether or not the telescope was doing anything - 40 lines a second, all
+        ///  night, which is most of how a night's log reaches 2 GiB.  An idle axis producing
+        ///  the same numbers 40 times a second is not diagnosis, it is noise that buries it.
+        ///
+        /// So: every sample while the axis is being DRIVEN, once a second while it is not.
+        ///  The detail is kept exactly where it is worth having and the idle case still
+        ///  leaves a heartbeat.
+        ///
+        /// The tracking motor deliberately does not count as driven - it runs most of the
+        ///  night, and if it counted, the primary axis would log at full rate throughout.
+        ///  axisMotors holds only the direction motors; ActiveMotors() adds TrackingMotor
+        ///  separately for display.
+        /// </summary>
+        protected bool ShouldLogSample()
+        {
+            _logTicks++;
+
+            bool driven = wisetele.axisMotors[_axis].Any(m => m.IsOn);
+
+            return driven || (_logTicks % _samplingFrequency == 0);
+        }
+
         protected abstract void SampleAxisMovement(object StateObject);
 
         /// <summary>
@@ -327,7 +355,7 @@ namespace ASCOM.Wise40
             // Now: one HourAngle read, and LastPosition for the raw count, which returns
             //  what that read already produced.
             //
-            if (Debugger.Debugging(Debugger.DebugLevel.DebugAxes))
+            if (ShouldLogSample() && Debugger.Debugging(Debugger.DebugLevel.DebugAxes))
             {
                 double renishawHa = WiseTele.renishawHaEncoder.HourAngle;
                 double renishawRa = wisesite.LocalSiderealTime.Hours - renishawHa;
@@ -580,7 +608,7 @@ namespace ASCOM.Wise40
 
             #region debug
             // See the matching comment in PrimaryAxisMonitor: guarded, and one read.
-            if (Debugger.Debugging(Debugger.DebugLevel.DebugAxes))
+            if (ShouldLogSample() && Debugger.Debugging(Debugger.DebugLevel.DebugAxes))
             {
                 double renishawDec = WiseTele.renishawDecEncoder.Declination;
                 double discrepancy = Math.Abs(_declination - renishawDec);

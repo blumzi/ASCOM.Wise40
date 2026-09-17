@@ -2305,6 +2305,15 @@ namespace ASCOM.Wise40
                         ShortestDistanceResult startingDistance = startingPosition.ShortestDistance(targetAngle);
                         const double lowestRad = Double.MaxValue, highestRad = Double.MinValue;
                         double prevDistance = 0.0;
+
+                        //
+                        // Throttle for the progress line inside the loop below.  Declared HERE
+                        //  rather than in the loop body, which is where it was: a fresh
+                        //  "byte count = 0" every iteration made "(count %= 5) == 0" always
+                        //  true, so the intended one-in-five logged every time - at 10ms, per
+                        //  axis.  The count++ at the bottom was dead.
+                        //
+                        int progressTicks = 0;
                         TimeSpan elapsed;
 
                         #region Velocity
@@ -2448,9 +2457,20 @@ namespace ASCOM.Wise40
                                 }
                                 #endregion
                                 #region debug
-                                byte count = 0;
-
-                                if ((count %= 5) == 0)
+                                //
+                                // One line per 5 iterations, and only if DebugAxes is on.
+                                //
+                                // The loop polls every 10ms but CurrentPosition is refreshed by
+                                //  AxisMonitor every 50ms, so four of every five iterations had
+                                //  nothing new to report and logged it anyway.  One in five
+                                //  matches the rate at which the data actually changes.
+                                //
+                                // The Debugging() test is not redundant with WriteLine's own:
+                                //  C# builds an interpolated string at the CALL SITE, so
+                                //  without this the line is fully formatted - four Angle
+                                //  ToString calls among them - and then thrown away.
+                                //
+                                if (++progressTicks % 5 == 0 && Debugger.Debugging(Debugger.DebugLevel.DebugAxes))
                                 {
                                     debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
                                         $"{op}: {slewerName} at {RateName(rate)}: at {currentAngle}, " +
@@ -2458,7 +2478,6 @@ namespace ASCOM.Wise40
                                         $"remaining (Angle.rad: {currentDistance.angle.Radians:f10}, direction: {currentDistance.direction}) > " +
                                         $"stopMovement.rad: {mp.stopMovement.Radians:f10}, deltaRad: {deltaRad:f10} sleeping {mp.pollingFreqMillis} millis ...");
                                 }
-                                count++;
                                 #endregion debug
                                 telescopeCT.ThrowIfCancellationRequested();
                                 Thread.Sleep(mp.pollingFreqMillis);
