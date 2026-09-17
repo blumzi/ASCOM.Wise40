@@ -39,9 +39,17 @@
 Option Explicit
 
 '
-' Only used if ACP's Telescope object turns out NOT to expose Action().  This is
-' the ProgID of the telescope driver as ACP has it - adjust if the fallback
-' reports that it cannot create the object.
+' The ProgID of the telescope driver as ACP has it.
+'
+' This MUST be the Alpaca dynamic client, which is registered LocalServer32 and
+' therefore routes to the one running driver instance - the same one ACP is
+' talking to.  Do NOT use "ASCOM.Wise40.Telescope": that is registered
+' InprocServer32, so CreateObject would load the driver INTO ACP's own process
+' and stand up a second WiseTele singleton contending for the same DAQ pins.
+'
+' Created with a plain CreateObject.  "ASCOM.DriverAccess.Telescope" is not a
+' registered ProgID - it is a .NET wrapper for .NET clients - and CreateObject
+' on it fails with "ActiveX component can't create object".
 '
 Const DIRECT_PROGID = "ASCOM.AlpacaDynamic1.Telescope"
 
@@ -189,16 +197,9 @@ Sub TryDirect()
     Dim T, result
 
     On Error Resume Next
-    Set T = CreateObject("ASCOM.DriverAccess.Telescope")
+    Set T = CreateObject(DIRECT_PROGID)
     If Err.Number <> 0 Then
-        Console.PrintLine "    **Cannot create ASCOM.DriverAccess.Telescope: " & Err.Description
-        Err.Clear
-        Exit Sub
-    End If
-
-    T.DriverID = DIRECT_PROGID
-    If Err.Number <> 0 Then
-        Console.PrintLine "    **Cannot set DriverID to " & DIRECT_PROGID & ": " & Err.Description
+        Console.PrintLine "    **Cannot create " & DIRECT_PROGID & ": " & Err.Description
         Console.PrintLine "      Edit DIRECT_PROGID at the top of this script."
         Err.Clear
         Exit Sub

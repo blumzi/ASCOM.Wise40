@@ -48,6 +48,16 @@ Dim W40                                                     ' WISE40: our own AS
 Dim W40Failed                                               ' WISE40: True once we have given up
 
 ' WISE40: the telescope driver, as ACP has it configured.
+'
+' This MUST be the Alpaca dynamic client, which is registered LocalServer32 and
+' therefore routes to the one running driver instance - the same one ACP is
+' talking to.  Do NOT use "ASCOM.Wise40.Telescope": that is registered
+' InprocServer32, so CreateObject would load the driver INTO ACP's own process
+' and stand up a second WiseTele singleton contending for the same DAQ pins.
+'
+' Note this is created with a plain CreateObject.  "ASCOM.DriverAccess.Telescope"
+' is not a registered ProgID - it is a .NET wrapper for .NET clients - and trying
+' to CreateObject it fails with "ActiveX component can't create object".
 Const WISE40_PROGID = "ASCOM.AlpacaDynamic1.Telescope"
 
 '----------------------------------------------------------------------------------------
@@ -85,19 +95,10 @@ Sub RecordCalibrationPoint(raHours, decDegrees)
 
     On Error Resume Next
     If Not IsObject(W40) Then
-        Set W40 = CreateObject("ASCOM.DriverAccess.Telescope")
+        Set W40 = CreateObject(WISE40_PROGID)
         If Err.Number <> 0 Then
-            Console.PrintLine "  **Wise40: cannot create ASCOM.DriverAccess.Telescope: " & Err.Description
+            Console.PrintLine "  **Wise40: cannot create " & WISE40_PROGID & ": " & Err.Description
             Console.PrintLine "    No calibration points will be recorded this run."
-            Err.Clear
-            W40Failed = True
-            On Error GoTo 0
-            Exit Sub
-        End If
-        W40.DriverID = WISE40_PROGID
-        If Err.Number <> 0 Then
-            Console.PrintLine "  **Wise40: cannot select " & WISE40_PROGID & ": " & Err.Description
-            Console.PrintLine "    Fix WISE40_PROGID at the top of this script."
             Err.Clear
             W40Failed = True
             On Error GoTo 0
