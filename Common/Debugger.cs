@@ -64,8 +64,24 @@ namespace ASCOM.Wise40.Common
             DebugWeather = (1 << 17),
             DebugTele = (1 << 18),
 
+            //
+            // DebugDome was NOT in here, which meant the dome motion instrumentation wrote
+            //  nothing: WiseDome logs at DebugDome, the running level is DebugDefault, and
+            //  a night's log contained zero dome lines.  The dome would have been driven all
+            //  through an ACP session and recorded nothing.
+            //
+            // Setting it at runtime via Action("debug", ...) works but does not persist -
+            //  that path calls SetCurrentLevel without writing the profile - so it is lost on
+            //  the next chain restart, and the profile itself is wiped by an elevated
+            //  rebuild.  Putting it in the default is the only place it survives both.
+            //
+            // It is affordable: DebugDome is event-driven, not periodic.  Of its three sites
+            //  inside the 50ms OnDomeTimer, one is behind a 1 Hz throttle and the other two
+            //  fire only on crossing a calibration sensor or completing a home search.
+            //
             DebugDefault = DebugAxes | DebugExceptions | DebugASCOM | DebugLogic | DebugShutter |
-                DebugWise | DebugActivity | DebugMoon | DebugHTTP | DebugWeather | DebugTele | DebugSafety,
+                DebugWise | DebugActivity | DebugMoon | DebugHTTP | DebugWeather | DebugTele |
+                DebugSafety | DebugDome,
 
             DebugAll = DebugDefault | 
                 DebugDevice | DebugMotors | DebugEncoders | DebugDome | DebugShutter | DebugDAQs | DebugFocuser | DebugFilterWheel,
