@@ -1,6 +1,6 @@
 ﻿---
 name: slew-time-where-it-goes
-description: "Where Wise40 slew time goes on both axes, verified on sky 2026-09-18. HA coast is direction dependent; every RA coast figure before that date was measured with a broken stop detector, and the detector is still blind at guide rate"
+description: "Where Wise40 slew time goes on both axes, verified on sky 2026-09-18. HA coast is direction dependent and tunable; Dec is not repeatable enough to tune. The stop detector is blind at guide rate and its stopping-distance field lies on Dec"
 metadata:
   type: project
 ---
@@ -131,6 +131,58 @@ This is a strong candidate for the "duration barely depends on distance" puzzle 
 
 Related trap: `_maxDeltaRadiansAtSlewRate` is 0.0021 rad against a measured slew-rate step of 0.00208 rad — **1 % margin**, so `Acceptable()` would reject about half of all legitimate slew-rate samples. Very likely why `Predicted()` was neutered to `return reading; // pred;`. Raise that threshold to ~2× the real step before reviving that path. See [[renishaw-encoder-calibration]].
 
+## Both axes at once, and why Dec cannot be tuned like HA
+
+Measured 2026-09-18: two diagonal moves (RA 22.5° + Dec 20°) and two Dec-only moves (20°). The dome was not enslaved, so it cannot confound these timings.
+
+### The rendezvous works and is cheap
+
+`ReadyToSlewFlags` had never been exercised with both axes doing real travel. It behaves correctly — RA held at `rateSet` until Dec finished its slew leg, Dec held at `rateGuide` until RA finished its set leg, exactly as `TeleSlew` being a shared selector requires. No deadlock, no starvation.
+
+| leg | who waited | at | duration |
+|---|---|---|---|
+| out | Dec for RA | slew start | 0.24 s |
+| out | RA for Dec | set | 0.71 s |
+| out | Dec for RA | guide | 2.90 s |
+| back | Dec for RA | slew start | ~0.02 s |
+| back | Dec for RA | set | 1.73 s |
+
+**3.85 s of a 46.6 s slew, 1.75 s of an 80.4 s one.** The rendezvous is not worth optimising. The earlier note that "RA sits idle 56 % of every slew" describes the *idle axis on a single-axis move*, not this.
+
+### Dual-axis operation costs about one sample of detection latency
+
+| leg | threshold | actually cut at | late by |
+|---|---|---|---|
+| single-axis east | 2.10° | 2.083° | 0.017° |
+| single-axis west | 3.00° | 2.975° | 0.025° |
+| **dual-axis east** | 2.10° | **1.998°** | **0.103°** |
+| **dual-axis west** | 3.00° | **2.919°** | **0.081°** |
+
+At 1.8°/s, 0.10° is ~56 ms — roughly one extra sample period when both axes are sampling. **RA overshot on both diagonal legs** (631″ east, 321″ west) and needed a reversing set leg, which no single-axis leg that day did. The margins set in PR #29 are tight enough that this latency converts them into overshoot. Consider it before tightening anything further.
+
+### `stopping distance` is unreliable on Dec — derive the coast from positions
+
+The logged `stopping distance` matched the position-derived coast for **RA every time** and for **Dec only once in four**. Always compute Dec's coast as (distance remaining when `CloseEnough` fired) ± (distance from target where it came to rest). Conclusions drawn from the field itself have been wrong: it was what first suggested Dec's slew coast is direction-independent, which the positions contradict.
+
+### Dec's coast is not repeatable
+
+| leg | direction | cut at | came to rest | coast |
+|---|---|---|---|---|
+| diagonal | south | 3.257° out | 0.122° short | **3.135°** |
+| single-axis | south | 3.494° out | **0.472° PAST** | **3.966°** |
+| diagonal | north | 3.496° out | 0.485° short | 3.012° |
+| single-axis | north | 3.459° out | 0.548° short | 2.911° |
+
+Northward is tight (2.911–3.012°). **Southward spans 3.135–3.966° — a 27 % spread across two measurements**, and the single-axis south leg overshot by 0.47°, paying a 34 s reversing set leg. Slew speed was identical in both (1.628 vs 1.630°/s), so it is not a speed effect.
+
+**This is the difference between the two axes.** HA's eastward coast repeated to 1 % across three measurements, which is what made a tight constant safe there. Dec's does not, so Dec's margins have to stay generous and no amount of constant-tuning will fix it. Finding the cause of the southward variation is the useful next step, not retuning.
+
+### Dec set→guide stays at 23″
+
+Measured coasts, n=4: **24.4, 24.7, 24.4, 35.0″**. Three cluster, one is 43 % off.
+
+At the current 23″ the common case overshoots by **1.4″**, inside the 4″ arrival tolerance, so no guide leg runs — confirmed, the single-axis south leg finished at 1.8″ with no guide phase. The 35.0″ case overshoots by 14″ and costs a 15 s guide leg, and moving the constant to 24.5″ would not rescue it. **The variance is the problem, not the constant.** Raising it was considered and declined 2026-09-18 for that reason.
+
 ## The counter-intuitive bit
 
 Duration barely depends on distance, and a **3° slew took longer than a 100° slew**:
@@ -155,6 +207,7 @@ Expect the **dome** to become the binding constraint: `Slewing` stays true until
 
 ## Still unmeasured
 
-- **Both axes at once.** The `ReadyToSlewFlags` rendezvous has never been exercised with both axes doing real travel — every test so far moved one axis. A pointing run drives both. See [[telescope-drive-topology]] for why they cannot simply be decoupled.
+- **Why Dec's southward coast varies by 27 %.** The open question on this axis, and the one that actually limits it. Northward repeats to 1 %; southward does not. Until that is understood, Dec's margins stay generous — retuning the constants is not the answer. See [[telescope-drive-topology]].
 - **The guide-rate coast, on either axis.** Blocked on the epsilon above — the detector cannot see guide-rate motion, so it has never actually been measured on any axis.
-- **Dec direction dependence at slew rate.** HA turned out to be strongly asymmetric; Dec's `set`-rate coast is 20″ north against 27.9″ south, but its slew-rate coast has never been split by direction.
+- **A pointing run end to end.** The rendezvous and both axes are now exercised in isolation and in a diagonal, but not across a long sequence of slews with plate solves between them, which is what a pointing model build actually does.
+- **The dome**, still — instrumented, never read after an ACP session.
