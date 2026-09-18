@@ -30,6 +30,8 @@ create`. If `gh` is unavailable, hand over
 - [Work via pull requests](.claude/memory/work-via-pull-requests.md) — branch and open a PR; don't commit to master
 - [Notes live in the repo](.claude/memory/notes-live-in-the-repo.md) — memories and plans belong under `.claude/`, git-tracked
 - [Stop tracking after tests](.claude/memory/stop-tracking-after-tests.md) — switch tracking off when a test or session ends, and verify the motor pins are actually clear
+- [Park position](.claude/memory/park-position.md) — Dec +66° on the meridian; `Park()` lands ~15′ west of it, and the fix is to lead the target by the slew duration
+- [slew-to-ha-dec is broken](.claude/memory/slew-to-ha-dec-broken.md) — case-sensitivity bug, also breaks the Dash's HA/Dec slew. **Awaiting a fix**
 - [Telescope drive topology](.claude/memory/telescope-drive-topology.md) — `TeleSlew` is a shared speed selector, so both axes must use the same speed among slew/set; only guide is independent. Read before touching the slew rendezvous
 - [Slew time: where it goes](.claude/memory/slew-time-where-it-goes.md) — where slew time goes on both axes, verified on sky. HA is tuned and 73 % faster eastward; **Dec is not repeatable enough to tune**. Read the two measurement traps before trusting any coast figure
 - [Renishaw encoder calibration](.claude/memory/renishaw-encoder-calibration.md) — calibrated against the sky 2026-09-16; no scale error, zero point corrected, now the encoders in use

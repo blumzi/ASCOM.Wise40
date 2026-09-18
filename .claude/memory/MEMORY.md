@@ -1,6 +1,8 @@
 ﻿- [Work via pull requests](work-via-pull-requests.md) — branch and open a PR; don't commit to master. `gh` lives at `C:\Users\mizpe\bin\gh\bin` (never a temp dir); MSI installs fail on this box until it is rebooted
 - [Notes live in the repo](notes-live-in-the-repo.md) — memories and plans belong in `<repo>/.claude/`, git-tracked, not the per-user store
 - [Stop tracking after tests](stop-tracking-after-tests.md) — switch tracking off when a test or session ends; left on, the mount drifts toward the western HA and altitude limits unattended
+- [Park position](park-position.md) — Dec +66° on the meridian (Alt 54.61°, Az 0°); **`Park()` lands ~15′ west of it** because `parkingRa` is sampled before the slew — target `LST + slew duration` instead
+- [slew-to-ha-dec is broken](slew-to-ha-dec-broken.md) — a case-sensitivity bug makes the Action always fail, and it takes the Dash's HA/Dec slew with it. **Awaiting a fix**
 - [Telescope drive topology](telescope-drive-topology.md) — TeleSlew is a shared speed selector; both axes must use the same speed among slew/set, only guide is independent
 - [Slew time: where it goes](slew-time-where-it-goes.md) — where slew time goes on both axes, verified on sky. **HA coast is direction dependent and now tuned (east slews 73 % faster); Dec's southward coast varies 27 % and cannot be tuned the same way.** The rendezvous is cheap. Two measurement traps: the detector is blind at guide rate, and `stopping distance` lies on Dec
 - [Renishaw encoder calibration](renishaw-encoder-calibration.md) — calibrated against the sky 2026-09-16: no scale error, zero point corrected, now the encoders in use; what's left is a pointing model
