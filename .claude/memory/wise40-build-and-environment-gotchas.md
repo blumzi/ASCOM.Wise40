@@ -23,6 +23,55 @@ MSBuild <proj> /t:Build /p:Configuration=Debug /p:Platform=x86 \
 
 `/p:BuildProjectReferences=false` compiles against the DLLs already on disk. Fast, but it will compile against **stale** dependencies: after making a constant `public` in `Hardware`, the Telescope build failed with `CS0117 ... does not contain a definition for` until `Hardware` was rebuilt first. Build `Common` → `Hardware` → `Telescope` in order. **That flag does not propagate to project references** — MSBuild walks into them and tries to unregister, which is how TessW lost its registration a second time on 2026-09-16. Add `/p:BuildProjectReferences=false` to compile one project against the DLLs already on disk.
 
+### Overriding `OutputPath` breaks reference resolution
+
+A compile-check that writes somewhere harmless looks like the obvious move, but
+`/p:OutputPath=<scratch>` also becomes where MSBuild *looks for* the project references, so
+every one of them fails:
+
+```
+CSC : error CS0006: Metadata file '<scratch>\Common.dll' could not be found
+CSC : error CS0006: Metadata file '<scratch>\Hardware.dll' could not be found
+```
+
+Stage the existing binaries into the scratch directory first, then build:
+
+```powershell
+Copy-Item "<repo>\Telescope\bin\x86\Debug\*" $scratch -Recurse -Force
+```
+
+Cost this twice on 2026-09-18 before the pattern was obvious.
+
+### Elevation is needed at EVERY step, which is why Claude cannot deploy
+
+Three things in the cycle need an administrator token:
+
+| step | why |
+|---|---|
+| stop the chain | the service ACL denies `WP` to Interactive Users — see below |
+| build the solution | `RegisterForComInterop` re-registration, per the top of this section |
+| start the chain | the same ACL denies `RP` |
+
+And the build cannot run *while* the chain is up, because the RemoteServer holds
+`ASCOM.Wise40.Telescope.dll` open. So there is no ordering that avoids elevation, and
+`Start-Process -Verb RunAs` raises a UAC prompt that a tool call cannot answer.
+
+**The workable division of labour:** Claude writes the change, compile-checks it
+non-elevated (above), opens the PR, and afterwards verifies the deploy and runs the on-sky
+tests through the Alpaca API. Arie does the elevated build and the chain restart. Do not plan
+a workflow that assumes Claude can rebuild and retest unattended — it cannot, and proposing
+one just wastes a round trip.
+
+**Verifying someone else's build**, which Claude *can* do unaided:
+
+- the x86 DLL timestamp under `Telescope\bin\x86\Debug`, against `bin\Debug` — if AnyCPU is
+  the newer one, `/p:Platform=x86` was missed and the chain is running old code
+- the `## ===== ... started =====` banner in today's log, for the restart
+- `EncodersInUse` in the `status` Action, since an elevated rebuild wipes the ASCOM Profile
+- a **zero-motion probe** of whatever changed. Feeding `slew-to-ha-dec` an out-of-range hour
+  angle proved the new binary was live and found a second bug, without moving the telescope.
+  Prefer one of these to assuming the build took.
+
 ## Taking the chain down and up
 
 **The chain is the `Wise40Watcher` Windows service.** Stop it to take everything down, start it to bring everything back:
