@@ -1,4 +1,4 @@
-# ASCOM.Wise40
+﻿# ASCOM.Wise40
 
 Driver suite for the Wise Observatory 40-inch telescope.
 
@@ -30,7 +30,7 @@ create`. If `gh` is unavailable, hand over
 - [Work via pull requests](.claude/memory/work-via-pull-requests.md) — branch and open a PR; don't commit to master
 - [Notes live in the repo](.claude/memory/notes-live-in-the-repo.md) — memories and plans belong under `.claude/`, git-tracked
 - [Telescope drive topology](.claude/memory/telescope-drive-topology.md) — `TeleSlew` is a shared speed selector, so both axes must use the same speed among slew/set; only guide is independent. Read before touching the slew rendezvous
-- [Slew time: where it goes](.claude/memory/slew-time-where-it-goes.md) — 20° Dec slew 125.7 s → 60.8 s on 2026-09-17, every gain from a constant nobody had measured. **Read the caveat: almost all of it is Dec, and the HA axis is largely unverified**
+- [Slew time: where it goes](.claude/memory/slew-time-where-it-goes.md) — where slew time goes on both axes. **HA coast is direction dependent**; RA coast figures predating 2026-09-18 were measured with a broken stop detector; a single bad encoder sample could truncate a slew leg
 - [Renishaw encoder calibration](.claude/memory/renishaw-encoder-calibration.md) — calibrated against the sky 2026-09-16; no scale error, zero point corrected, now the encoders in use
 - [ACP / driver integration](.claude/memory/wise40-acp-driver-integration.md) — ACP will not pass `Action` through, `DriverAccess` is not COM-creatable, and only one ProgID is safe to use
 - [Build and environment gotchas](.claude/memory/wise40-build-and-environment-gotchas.md) — COM registration needs elevation, an elevated rebuild wipes ASCOM Profile values, the watcher gives children a broken environment, logs roll at noon UT
