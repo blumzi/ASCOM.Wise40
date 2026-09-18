@@ -84,6 +84,21 @@ namespace ASCOM.Wise40
 
         private const int waitForOtherAxisMillis = 500;           // half a second between checks setting an axis rate
 
+        //
+        // How long a reversal of the distance-to-target must PERSIST before the slewer
+        //  believes it.  See the ChangedDirection test in ScopeAxisSlewer.
+        //
+        // It is a duration and not an iteration count on purpose.  CurrentPosition()
+        //  returns primaryAxisMonitor.RightAscension, a field the monitor refreshes
+        //  about every 59ms, while the slewer loop polls every 10ms - so one bad
+        //  reading is handed to roughly six consecutive iterations.  Counting
+        //  iterations would confirm nothing; the test has to outlast the cache.
+        //
+        // 150ms spans at least two independent encoder reads even with the jitter we
+        //  see in the sampling cadence (nominal 50ms, measured 59-62ms).
+        //
+        private const int directionChangeConfirmMillis = 150;
+
         public static ManualResetEvent endOfAsyncSlewEvent = null;
 
         private string _reasonsForSlewing;
@@ -2316,6 +2331,12 @@ namespace ASCOM.Wise40
                         int progressTicks = 0;
                         TimeSpan elapsed;
 
+                        //
+                        // When the distance-to-target was FIRST seen to have reversed sign.
+                        //  DateTime.MinValue means "not currently reversed".
+                        //
+                        DateTime directionChangedAt = DateTime.MinValue;
+
                         #region Velocity
                         string motors = "";
                         foreach (WiseVirtualMotor m in axisMotors[thisAxis])
@@ -2345,7 +2366,47 @@ namespace ASCOM.Wise40
                                 #endregion
                             }
 
-                            if (startingDistance.direction != currentDistance.direction)
+                            //
+                            // A direction change ends the leg, so it must be CONFIRMED rather
+                            //  than taken from one reading.
+                            //
+                            // On 2026-09-18 07:12:59 a single spurious reading of 18h18m27.4s
+                            //  arrived while the axis was really at 05h40m55.9s (85ms later).
+                            //  The distance to target flipped sign, this test fired on that one
+                            //  sample, and the slew was cut 9.57 degrees short - handing 6.875
+                            //  degrees to the set leg at 52 arcsec/sec, a four minute stall.
+                            //  The 2026-09-16 logs hold 86 ChangedDirection events over 52
+                            //  slews, ~1.65 per slew, so this was not a one-off.
+                            //
+                            // Note the reading never passes through AxisMonitor.Acceptable():
+                            //  that filter guards the monitor's own sample queue, not
+                            //  CurrentPosition(), which the slewer's arithmetic uses.
+                            //
+                            // Deliberately NOT part of the else-if chain below: while a
+                            //  reversal is unconfirmed the CloseEnough test must keep running,
+                            //  so a genuine overshoot still stops the motor immediately and
+                            //  only the ChangedDirection exit waits.  At slew rate the wait
+                            //  costs 0.28 degrees against a coast of 2.0-2.8 degrees.
+                            //
+                            bool directionReversed = startingDistance.direction != currentDistance.direction;
+
+                            if (directionReversed && directionChangedAt == DateTime.MinValue)
+                            {
+                                directionChangedAt = DateTime.Now;      // first sighting, start the clock
+                            }
+                            else if (!directionReversed && directionChangedAt != DateTime.MinValue)
+                            {
+                                #region debug
+                                debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                                        $"SUSPECT: {op}: {slewerName} at {RateName(rate)}: " +
+                                        $"at {currentAngle}, a reversal did not hold for " +
+                                        $"{directionChangeConfirmMillis}ms - discarding it as a spurious reading");
+                                #endregion
+                                directionChangedAt = DateTime.MinValue;
+                            }
+
+                            if (directionReversed && directionChangedAt != DateTime.MinValue &&
+                                DateTime.Now.Subtract(directionChangedAt).TotalMilliseconds >= directionChangeConfirmMillis)
                             {
                                 #region Direction has changed
                                 status = ScopeSlewerStatus.ChangedDirection;
@@ -2354,7 +2415,8 @@ namespace ASCOM.Wise40
                                         $"{op}: {slewerName} at {RateName(rate)}: " +
                                         $"at {currentAngle}, ChangedDirection ==> target: {targetAngle}, " +
                                         $"originalDirection: {startingDistance.direction} != " +
-                                        $"currentDistance.direction: {currentDistance.direction}");
+                                        $"currentDistance.direction: {currentDistance.direction}, " +
+                                        $"confirmed over {DateTime.Now.Subtract(directionChangedAt).TotalMilliseconds:f0}ms");
                                 #endregion
                                 break;
                                 #endregion
