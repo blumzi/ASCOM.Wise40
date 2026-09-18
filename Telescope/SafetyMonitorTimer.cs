@@ -19,56 +19,126 @@ namespace ASCOM.Wise40 //.Telescope
         private readonly Timer _timer;
         private readonly int _period;
         private bool _enabled;
+
+        //
+        // Re-entrancy guard.  The callback can block for seconds - Backoff sleeps 3000ms per
+        //  axis - so without this a check could start on top of a recovery still in progress.
+        //
+        private int _inCallback;
+
+        //
+        // Consecutive checks that found the telescope unsafe.  Used only to throttle the log:
+        //  a condition we cannot recover from would otherwise write a line every second for
+        //  as long as it lasts, and a night's log is already measured in gigabytes.
+        //
+        private int _consecutiveUnsafe;
+
         public enum ActionWhenNotSafe {  None, Stop, Backoff };
 
         public ActionWhenNotSafe WhenNotSafe { get; set; } = ActionWhenNotSafe.None;
 
         private void SafetyChecker(object StateObject)
         {
-            if (!Enabled || WhenNotSafe == ActionWhenNotSafe.None)
-                return;
+            if (Interlocked.CompareExchange(ref _inCallback, 1, 0) != 0)
+                return;      // a previous check is still running; it will re-arm us
 
-            string reason = wisetele.SafeAtCoordinates(
-                Angle.RaFromHours(wisetele.RightAscension),
-                Angle.DecFromDegrees(wisetele.Declination));
+            bool armedAtEntry = _enabled;
+            ActionWhenNotSafe actionAtEntry = WhenNotSafe;
+            bool wasUnsafe = false;
 
-            if (string.IsNullOrEmpty(reason))
-                return;
-
-            string op = $"SafetyChecker: reason: {reason}";
-            if (!Hardware.Hardware.ComputerHasControl)
+            try
             {
+                if (!armedAtEntry || actionAtEntry == ActionWhenNotSafe.None)
+                    return;
+
+                string reason = wisetele.SafeAtCoordinates(
+                    Angle.RaFromHours(wisetele.RightAscension),
+                    Angle.DecFromDegrees(wisetele.Declination));
+
+                if (string.IsNullOrEmpty(reason))
+                {
+                    _consecutiveUnsafe = 0;
+                    return;
+                }
+
+                wasUnsafe = true;
+                _consecutiveUnsafe++;
+                bool logThisPass = (_consecutiveUnsafe == 1) || (_consecutiveUnsafe % 60 == 0);
+
+                string op = $"SafetyChecker: reason: {reason}";
+                if (!Hardware.Hardware.ComputerHasControl)
+                {
+                    #region debug
+                    if (logThisPass)
+                        WiseTele.debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: Skipped: No computer control!");
+                    #endregion
+                    return;
+                }
+
                 #region debug
-                WiseTele.debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: Skipped: No computer control!");
+                if (logThisPass)
+                    WiseTele.debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: activated (action: {actionAtEntry})");
                 #endregion
-                return;
+
+                //
+                // try/finally around RecoveringSafety.  Backoff calls MoveAxis, which throws
+                //  if wisesafetooperate reports unsafe - entirely plausible when a coordinates
+                //  violation coincides with a weather shutdown.  Without this the flag stayed
+                //  true forever, which adds "Recovering safety" to the unsafe reasons and
+                //  makes Tracking.set throw "Safety recovery is active" until the chain is
+                //  restarted.
+                //
+                wisetele.RecoveringSafety = true;
+                try
+                {
+                    if (wisetele.Slewing)
+                        wisetele.AbortSlew(op);
+
+                    if (wisetele.IsPulseGuiding)
+                        wisetele.AbortPulseGuiding(op);
+
+                    if (wisetele.Tracking)
+                        wisetele.Tracking = false;
+
+                    if (actionAtEntry == ActionWhenNotSafe.Backoff)
+                        wisetele.Backoff(op);
+                }
+                finally
+                {
+                    wisetele.RecoveringSafety = false;
+                }
             }
-
-            #region debug
-            WiseTele.debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: activated (action: {WhenNotSafe})");
-            #endregion
-
-            wisetele.RecoveringSafety = true;
-
-            if (WhenNotSafe == ActionWhenNotSafe.Stop || WhenNotSafe == ActionWhenNotSafe.Backoff)
+            finally
             {
-                if (wisetele.Slewing)
-                    wisetele.AbortSlew(op);
+                //
+                // Re-arm.
+                //
+                // This used to be the last statement of the method, guarded by "if (Enabled)".
+                //  Two things went wrong with that.  The ordinary SAFE path returns early, so
+                //  it never reached the re-arm at all and the "periodic" monitor ran exactly
+                //  once per enable - a 60 second slew got one check, about a second in, while
+                //  the telescope was still next to where it started.  And on the unsafe path
+                //  it did reach the line but Enabled was already false, because Backoff
+                //  disables us: its closing MoveAxis(axis, rateStopped) reaches
+                //  DisableIfNotNeeded, and Tracking has just been turned off, so no motors are
+                //  active.  WhenNotSafe was reset to None by the same path.  Both are restored
+                //  here.
+                //
+                // Terminating condition: keep checking while the motors are running, or while
+                //  the position is still unsafe.  Once the telescope is both idle and safe we
+                //  stop re-arming, which is what DisableIfNotNeeded intends.
+                //
+                bool motorsActive = wisetele.DirectionMotorsAreActive || wisetele.TrackingMotor.IsOn;
 
-                if (wisetele.IsPulseGuiding)
-                    wisetele.AbortPulseGuiding(op);
+                if (armedAtEntry && !WiseTele.BypassCoordinatesSafety && (motorsActive || wasUnsafe))
+                {
+                    _enabled = true;
+                    WhenNotSafe = actionAtEntry;
+                    _timer.Change(_period, Timeout.Infinite);
+                }
 
-                if (wisetele.Tracking)
-                    wisetele.Tracking = false;
+                Interlocked.Exchange(ref _inCallback, 0);
             }
-
-            if (WhenNotSafe == ActionWhenNotSafe.Backoff)
-                wisetele.Backoff(op);
-
-            wisetele.RecoveringSafety = false;
-
-            if (Enabled)
-                _timer.Change(_period, Timeout.Infinite);
         }
 
         public SafetyMonitorTimer(int periodMillis = 1000)
@@ -97,11 +167,24 @@ namespace ASCOM.Wise40 //.Telescope
 
         public void EnableIfNeeded(ActionWhenNotSafe action)
         {
-            if ((wisetele.DirectionMotorsAreActive || wisetele.TrackingMotor.IsOn) && !Enabled)
-            {
+            if (!(wisetele.DirectionMotorsAreActive || wisetele.TrackingMotor.IsOn))
+                return;
+
+            //
+            // Upgrade the action even when already armed.  This assignment used to sit inside
+            //  the "!Enabled" test, so whichever caller armed the timer first decided what it
+            //  would do for the rest of the episode: Tracking.set and InternalMoveAxis ask for
+            //  Backoff, HandpadMoveAxis asks for Stop, and a handpad move that got there
+            //  first left the monitor unable to back away from a limit.
+            //
+            // The enum is declared weakest to strongest - None, Stop, Backoff - so a plain
+            //  comparison picks the stronger of the two.
+            //
+            if (action > WhenNotSafe)
                 WhenNotSafe = action;
+
+            if (!Enabled)
                 Enabled = true;
-            }
         }
 
         public void DisableIfNotNeeded()
