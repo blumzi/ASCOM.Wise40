@@ -266,6 +266,25 @@ namespace ASCOM.Wise40
             public Angle minimalMovement;
             public Angle maximalMovement;
             public Angle stopMovement;
+
+            //
+            // Optional, primary axis only: the coast to allow when the axis is moving
+            //  in the Increasing direction (East on axisPrimary).  Null means "this rate
+            //  coasts the same both ways", which is how every other entry behaves.
+            //
+            // The HA axis does NOT coast symmetrically.  Measured 2026-09-18 at slew rate,
+            //  both legs entering within 2% of the same speed:
+            //
+            //      west  HA 2.84 -> 3.03   2.824 deg      west  HA 3.85   2.699 deg
+            //      east  HA 3.04 -> 2.90   1.997 deg      east  HA 1.61   2.002 deg
+            //
+            // The 07:43 east leg was run deliberately in the same hour-angle window as
+            //  the 06:44 west leg to separate the two explanations: a 41% difference
+            //  survived at identical HA, so this is direction, not a polar-axis imbalance
+            //  whose torque would vary as sin(HA).  Eastward coast is also far steadier
+            //  than westward - 2.002 and 1.997 deg across 1.4h of hour angle.
+            //
+            public Angle stopMovementIncreasing;
             public double minRadChangePerPollingInterval;
             public double maxRadChangePerPollingInterval;
             public int pollingFreqMillis;
@@ -603,6 +622,13 @@ namespace ASCOM.Wise40
                     {
                         minimalMovement = new Angle("00h02m00.0s"),
                         stopMovement = new Angle("00h12m00.0s"),
+                        //
+                        // 2.10 deg = the measured 2.00 deg eastward coast plus a small
+                        //  margin.  One shared 3.0 deg value cut eastward slews 2.951 deg
+                        //  out, left 0.955 deg after the coast, and spent 65.4 s of a
+                        //  104.5 s slew crawling it at 52 arcsec/sec.
+                        //
+                        stopMovementIncreasing = new Angle("00h08m24.0s"),
                         minRadChangePerPollingInterval = 0.052,
                         maxRadChangePerPollingInterval = 1.5724276374,
                         maxTime = TimeSpan.FromMinutes(5),
@@ -611,7 +637,16 @@ namespace ASCOM.Wise40
                     [Const.rateSet] = new MovementParameters()
                     {
                         minimalMovement = Angle.FromHours(Angle.Deg2Hours("00:00:05.0")),
-                        stopMovement = new Angle("00h00m02.0s"),
+                        //
+                        // 2.3s of RA = 34.5 arcsec, the mean of three measured coasts
+                        //  (34.5, 36.0, 31.5) on 2026-09-18.  At the old 30 arcsec all
+                        //  three overshot and the guide leg then reversed to undo it,
+                        //  costing 4.9, 11.8 and 20.1 seconds.  The old value looked
+                        //  correct only because every earlier measurement was taken with
+                        //  raEpsilon = 2e-3 h (108 arcsec/sample), which tripped "stopped"
+                        //  while the axis was still coasting and understated this by 38x.
+                        //
+                        stopMovement = new Angle("00h00m02.3s"),
                         minRadChangePerPollingInterval = 0.000146,
                         maxRadChangePerPollingInterval = 0.0436017917,
                         maxTime = TimeSpan.FromMinutes(6),
@@ -2388,6 +2423,17 @@ namespace ASCOM.Wise40
                             //  only the ChangedDirection exit waits.  At slew rate the wait
                             //  costs 0.28 degrees against a coast of 2.0-2.8 degrees.
                             //
+                            //
+                            // Which coast applies depends on which way this axis is going.
+                            //  Falls back to the single value when a rate has no direction
+                            //  specific figure, so every other axis and rate is unchanged.
+                            //
+                            Angle stopMovement =
+                                (mp.stopMovementIncreasing != null &&
+                                 currentDistance.direction == Const.AxisDirection.Increasing)
+                                    ? mp.stopMovementIncreasing
+                                    : mp.stopMovement;
+
                             bool directionReversed = startingDistance.direction != currentDistance.direction;
 
                             if (directionReversed && directionChangedAt == DateTime.MinValue)
@@ -2434,16 +2480,16 @@ namespace ASCOM.Wise40
                                 }
                                 #endregion
                             }
-                            else if (currentDistance.angle <= mp.stopMovement)
+                            else if (currentDistance.angle <= stopMovement)
                             {
                                 #region Reached target
                                 status = ScopeSlewerStatus.CloseEnough;
-                                double deltaRad = Math.Abs(currentDistance.angle.Radians - mp.stopMovement.Radians);
+                                double deltaRad = Math.Abs(currentDistance.angle.Radians - stopMovement.Radians);
                                 #region debug
                                 debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
                                         $"{op}: {slewerName}:{GetHashCode()} at {RateName(rate)}: at {currentAngle}, " +
                                         $"CloseEnough ==> target: {targetAngle}, " +
-                                        $"currentDistance.angle.rad: {currentDistance.angle.Radians} <= mp.stopMovement.rad: {mp.stopMovement.Radians}" +
+                                        $"currentDistance.angle.rad: {currentDistance.angle.Radians} <= stopMovement.rad: {stopMovement.Radians}" +
                                         $"delta.rad: {deltaRad}");
                                 #endregion
                                 break;
@@ -2451,7 +2497,7 @@ namespace ASCOM.Wise40
                             }
                             else
                             {
-                                double deltaRad = Math.Abs(currentDistance.angle.Radians - mp.stopMovement.Radians);
+                                double deltaRad = Math.Abs(currentDistance.angle.Radians - stopMovement.Radians);
                                 #region Try to catch anomalies
                                 //if (deltaRad < lowestRad)
                                 //    lowestRad = deltaRad;
@@ -2538,7 +2584,7 @@ namespace ASCOM.Wise40
                                         $"{op}: {slewerName} at {RateName(rate)}: at {currentAngle}, " +
                                         $"moving ==> target: {targetAngle}, " +
                                         $"remaining (Angle.rad: {currentDistance.angle.Radians:f10}, direction: {currentDistance.direction}) > " +
-                                        $"stopMovement.rad: {mp.stopMovement.Radians:f10}, deltaRad: {deltaRad:f10} sleeping {mp.pollingFreqMillis} millis ...");
+                                        $"stopMovement.rad: {stopMovement.Radians:f10}, deltaRad: {deltaRad:f10} sleeping {mp.pollingFreqMillis} millis ...");
                                 }
                                 #endregion debug
                                 telescopeCT.ThrowIfCancellationRequested();
