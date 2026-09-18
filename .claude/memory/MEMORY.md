@@ -1,7 +1,7 @@
-- [Work via pull requests](work-via-pull-requests.md) — branch and open a PR; don't commit to master. `gh` is installed
+﻿- [Work via pull requests](work-via-pull-requests.md) — branch and open a PR; don't commit to master. `gh` lives at `C:\Users\mizpe\bin\gh\bin` (never a temp dir); MSI installs fail on this box until it is rebooted
 - [Notes live in the repo](notes-live-in-the-repo.md) — memories and plans belong in `<repo>/.claude/`, git-tracked, not the per-user store
 - [Telescope drive topology](telescope-drive-topology.md) — TeleSlew is a shared speed selector; both axes must use the same speed among slew/set, only guide is independent
-- [Slew time: where it goes](slew-time-where-it-goes.md) — 20° Dec slew 125.7s → 60.8s on 2026-09-17, all from unmeasured constants. **Almost all of it is Dec; the HA axis is largely unverified**
+- [Slew time: where it goes](slew-time-where-it-goes.md) — where slew time actually goes on both axes. **HA coast is direction dependent** (east 2.00°, west 2.82°); every RA coast figure before 2026-09-18 is wrong because the stop detector was; a single bad encoder sample could end a slew leg
 - [Renishaw encoder calibration](renishaw-encoder-calibration.md) — calibrated against the sky 2026-09-16: no scale error, zero point corrected, now the encoders in use; what's left is a pointing model
 - [Wise40 ACP/driver integration](wise40-acp-driver-integration.md) — ACP won't pass Action through, DriverAccess isn't COM-creatable, and only one ProgID is safe to use
 - [Wise40 build and environment gotchas](wise40-build-and-environment-gotchas.md) — COM registration needs elevation and an elevated rebuild wipes ASCOM Profile values; the watcher gives children a broken environment; logs roll at noon UT
