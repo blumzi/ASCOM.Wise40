@@ -1,4 +1,4 @@
----
+﻿---
 name: wise40-build-and-environment-gotchas
 description: "Wise40 traps that each cost real time - COM registration needing elevation, the watcher's broken child-process environment, log rollover, and known-bad startup paths"
 metadata: 
@@ -32,7 +32,16 @@ Stop-Service  Wise40Watcher      # needs elevation
 Start-Service Wise40Watcher
 ```
 
-It is `Automatic` start type and reports `CanStop: False` to a non-elevated caller, so drive it through an elevated `Start-Process ... -Verb RunAs` the same way as `regasm` and the ACP script copies.
+**Cycling the chain is pre-authorised** — Arie, 2026-09-18. Stop and start it as needed to take the chain down and up; no need to ask first.
+
+It is `Automatic` start type. **Do not trust `CanStop` to tell you whether you may stop it** — it reported `True` from a non-elevated session on 2026-09-18, because it reflects whether the *service* accepts a stop (`SERVICE_ACCEPT_STOP`), not whether the *caller* has permission. The permission is in the service ACL, and `sc sdshow Wise40Watcher` says:
+
+```
+(A;;CCLCSWLOCRRC;;;IU)                 Interactive Users: query/enumerate/interrogate/read
+(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;BA)   Administrators:    the above plus RP (start), WP (stop)
+```
+
+Interactive Users have neither `RP` nor `WP`, so a non-elevated `Stop-Service` fails with access denied at the call, not at the capability check. Drive it through an elevated `Start-Process ... -Verb RunAs`, the same way as `regasm` and the ACP script copies — which raises a UAC prompt, so it is authorised but not unattended.
 
 Do this **before** an elevated build — the RemoteServer holds `ASCOM.Wise40.Telescope.dll` open, and the build will not overwrite it while the chain runs.
 
