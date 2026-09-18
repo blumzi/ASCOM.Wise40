@@ -4259,15 +4259,39 @@ namespace ASCOM.Wise40
                         return "Two parameters needed";
 
                     double ha = Double.NaN, dec = Double.NaN;
-                    foreach(string p in par)
+
+                    //
+                    // Split each item on '=' rather than trusting a hand-counted prefix
+                    //  length.  The previous form tested StartsWith("Declination") and then
+                    //  cut "Declination".Length characters - eleven, not twelve - so it handed
+                    //  "=66" to Convert.ToDouble and threw FormatException.  HourAngle was
+                    //  written correctly with its '=' in both places; only Declination was
+                    //  wrong, and the case-sensitivity bug fixed earlier had kept the branch
+                    //  unreachable, so the asymmetry never showed.
+                    //
+                    // Also: keys compared case-insensitively, values trimmed, and TryParse
+                    //  instead of Convert, so a malformed number produces this Action's own
+                    //  error message rather than a FormatException surfacing at the ASCOM
+                    //  layer as "Input string was not in a correct format".
+                    //
+                    foreach (string p in par)
                     {
-                        if (p.StartsWith("HourAngle="))
+                        string[] kv = p.Split('=');
+                        if (kv.Length != 2)
+                            continue;
+
+                        string key = kv[0].Trim();
+                        string val = kv[1].Trim();
+
+                        if (key.Equals("HourAngle", StringComparison.OrdinalIgnoreCase))
                         {
-                            ha = Convert.ToDouble(p.Substring("HourAngle=".Length));
+                            if (!Double.TryParse(val, out ha))
+                                ha = Double.NaN;
                         }
-                        else if (p.StartsWith("Declination"))
+                        else if (key.Equals("Declination", StringComparison.OrdinalIgnoreCase))
                         {
-                            dec = Convert.ToDouble(p.Substring("Declination".Length));
+                            if (!Double.TryParse(val, out dec))
+                                dec = Double.NaN;
                         }
                     }
 
