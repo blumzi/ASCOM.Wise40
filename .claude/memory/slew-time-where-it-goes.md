@@ -1,6 +1,6 @@
----
+﻿---
 name: slew-time-where-it-goes
-description: "Measured breakdown of Wise40 slew time - where it goes on both axes, the coast figures that were wrong because the stop detector was, and the HA coast being direction dependent"
+description: "Where Wise40 slew time goes on both axes, verified on sky 2026-09-18. HA coast is direction dependent; every RA coast figure before that date was measured with a broken stop detector, and the detector is still blind at guide rate"
 metadata:
   type: project
 ---
@@ -53,12 +53,16 @@ Previously flagged as unverified. Now done — a west leg, two east legs, and a 
 |---|---|---|
 | west | 2.84 → 3.03 h | **2.824°** |
 | west | ~3.85 h | 2.699° |
+| west | −0.06 → 0.09 h | 2.913° |
 | **east** | **3.04 → 2.90 h** | **1.997°** |
 | east | 1.61 → 1.47 h | 2.002° |
+| east | −1.35 → −1.42 h | 2.017° |
+
+**Means: east 2.005° (n=3, 1 % spread), west 2.812° (n=3).** Eastward is the steadier by a wide margin, and shows no hour-angle trend across 4.4 h of HA.
 
 The second east leg was run *deliberately in the west leg's hour-angle window* to separate direction dependence from a polar-axis imbalance, whose torque would vary as sin(HA). A **41 % gap survived at identical HA** — so it is direction, and the imbalance hypothesis is dead. Eastward is also far steadier: 2.002° and 1.997° across 1.4 h of hour angle.
 
-One shared 3.0° therefore cannot serve both. Eastward it cut 2.951° out, coasted 1.997°, and left 0.955° to crawl at 52″/s — **65.4 s of a 104.5 s slew**. Fixed by `stopMovementIncreasing` (east 2.10°); see PR #27.
+One shared 3.0° therefore cannot serve both. Eastward it cut 2.951° out, coasted 1.997°, and left 0.955° to crawl at 52″/s — **65.4 s of a 104.5 s slew**. Fixed by `stopMovementIncreasing` (east 2.10°); see PR #29.
 
 **Phase breakdown**, west 34.6° / east 19.6° of travel:
 
@@ -71,11 +75,44 @@ One shared 3.0° therefore cannot serve both. Eastward it cut 2.951° out, coast
 | guide (reversing) | 4.92 s | 11.77 s |
 | **total** | **42.34 s** | **92.77 s** |
 
+### Verified on sky 2026-09-18, after the fix
+
+Matched 1.5 h legs east and west, tracking on, run back to back:
+
+| phase | EAST before | **EAST after** | WEST after (control) |
+|---|---|---|---|
+| slew motor on | 10.90 s | 11.28 s | 10.83 s |
+| slew stop-detect | 5.13 s | 7.32 s | 9.72 s |
+| **set motor on** | **62.26 s** | **4.19 s** | 3.80 s |
+| set stop-detect | 2.57 s | 2.18 s | 2.71 s |
+| **guide** | **11.77 s** | **none — skipped** | **none — skipped** |
+| **total** | **92.77 s** | **25.00 s** | 27.07 s |
+
+**Eastward is 73 % faster.** The mechanism did exactly what it was built to do: east cut at 2.083° (the new threshold, not 2.951°), coasted 2.017°, and was left **237″** rather than 0.955°. West cut at 2.975° and coasted 2.913°, confirming `stopMovementIncreasing` applies only to the Increasing/East direction and leaves the base 3.0° untouched.
+
+Both directions now skip the guide leg entirely — the set→guide change to 34.5″ lands the axis 1.5–3″ out, inside the 4″ arrival tolerance, so the log reads `too short for rateGuide`. **RA set coast is now n=5: 34.5, 36.0, 31.5, 33.0, 34.5″, mean 33.9″.**
+
+No `ChangedDirection` or `reversal did not hold` fired during either leg.
+
 **Real rates, not the nominal ones.** Slew is **1.80–1.84°/s**, not the 2.0°/s in `Const.cs`. Set ≈ 52″/s, guide 0.6–0.8″/s. The `AxisMonitor` sample period is **59–62 ms**, not the nominal 50, so one `_raDeltas` window (10 samples) spans ~0.6 s.
 
 **Stop detection on HA is mostly real, unlike Dec.** Of the west leg's 11.10 s: **3.6 s** is bulk deceleration (429″→~1″/sample, >97 % of velocity), then a **tail with τ ≈ 2.5 s** while the axis oscillates about the tracking rate at ±6–20″/s as elastic wind-up releases into the track drive. Dec's split was 4.6 s real / 21.1 s detector — HA's is the other way round.
 
 **`primaryEpsilon` is validated.** A 60 s dither run with tracking on: median |ΔRA| **0.043″**/sample, mean 0.048″, max 3.79″, 1 of 965 samples over the 0.400″ threshold. Median is below the 0.1187″ encoder quantum, so the measurement is quantisation-limited. ~9× margin.
+
+**But the detector is BLIND AT GUIDE RATE, and the logs look like data.** Guide runs 0.6–0.8″/s, which over a ~60 ms sample is 0.04–0.05″ — an order of magnitude under the 0.400″ epsilon. Checked against a guide leg that demonstrably ran 20.11 s and covered ~16.5″:
+
+| sample | window max | epsilon | `IsMoving` |
+|---|---|---|---|
+| 07:44:36.587 | 0.363″ | 0.400″ | **False** |
+| 07:44:37.157 | 0.151″ | 0.400″ | **False** |
+| 07:44:37.869 | 0.120″ | 0.400″ | **False** |
+
+False throughout, with the motor on. So **every `stopping distance: 00h00m00.0s` at `rateGuide` in these logs is an artifact** — it declares "stopped" instantly because it never saw motion. The guide-rate coast is **unmeasured, not zero**. Same class of error as the old `raEpsilon`, in the opposite direction.
+
+This matters the moment anyone tries to tighten the arrival tolerance. Note that tolerance is **4″, not 3″**: `EnoughDistanceToMove` tests `minimalMovement + stopMovement` = 1″ + 3″. Setting it below the true guide coast is exactly what produced Dec's 52-of-52 reversals. Measure the coast first — from `SampleAxisMovement` positions, since `IsMoving` cannot see it — and fix the epsilon before trusting any guide-rate figure. The proper fix is a **rate-aware epsilon**: 0.400″/sample is right for slew and set (set runs 3.1″/sample, 7.8× above it) and ~10× too coarse for guide. `PrimaryAxisMonitor.IsMoving` currently uses `primaryEpsilon` for both of its branches.
+
+Asked and declined 2026-09-18 (Arie): leave the tolerance at 4″ for now.
 
 **What `raDelta` actually measures.** `raDelta = |Δ(LST − HA)|`, so under tracking the detector is watching **tracking error**, not axis motion — two quantities each ~0.93″/sample that must cancel to under 0.400″. On a bit-for-bit motionless axis, 683 samples gave `raDelta` = 0.93″ ± 0.05″ (pure LST) while `haDelta` was **exactly 0**. The code switches queues on `Tracking` and so is correct in both states, but this is why HA settles slowly and Dec does not. LST itself is smooth — sampling jitter sits ~8× below epsilon and contributes nothing.
 
@@ -119,4 +156,5 @@ Expect the **dome** to become the binding constraint: `Slewing` stays true until
 ## Still unmeasured
 
 - **Both axes at once.** The `ReadyToSlewFlags` rendezvous has never been exercised with both axes doing real travel — every test so far moved one axis. A pointing run drives both. See [[telescope-drive-topology]] for why they cannot simply be decoupled.
+- **The guide-rate coast, on either axis.** Blocked on the epsilon above — the detector cannot see guide-rate motion, so it has never actually been measured on any axis.
 - **Dec direction dependence at slew rate.** HA turned out to be strongly asymmetric; Dec's `set`-rate coast is 20″ north against 27.9″ south, but its slew-rate coast has never been split by direction.
