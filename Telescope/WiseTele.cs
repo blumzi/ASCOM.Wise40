@@ -1607,14 +1607,27 @@ namespace ASCOM.Wise40
                     ra -= Angle.Deg2Hours(delta);
                     break;
             }
-            safer = SaferAtCoordinates(direction, Angle.RaFromHours(ra), Angle.DecFromDegrees(dec));
+            safer = HigherAtCoordinates(direction, Angle.RaFromHours(ra), Angle.DecFromDegrees(dec));
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"SafeToMove({direction}: {safer}");
             #endregion
             return safer;
         }
 
-        public bool SaferAtCoordinates(string dir, Angle ra, Angle dec)
+        /// <summary>
+        /// Whether the given coordinates are HIGHER in altitude than where we are now.
+        ///
+        /// Renamed from SaferAtCoordinates, which overstated it: this consults none of
+        ///  altLimit, eastern_haLimit, western_haLimit, lower_decLimit or upper_decLimit.  It
+        ///  is an altitude gradient and nothing more.
+        ///
+        /// Backoff relies on it, and gets away with it because altitude peaks at the meridian
+        ///  for a given declination, so "uphill" happens to mean "toward the meridian" for an
+        ///  hour-angle violation and "toward the latitude" for either declination limit.  That
+        ///  is incidental rather than by construction - worth knowing before the limits or the
+        ///  site change.
+        /// </summary>
+        public bool HigherAtCoordinates(string dir, Angle ra, Angle dec)
         {
             double rar = 0, decr = 0, az = 0, zd = 0;
             double dist0, dist1;
@@ -1629,12 +1642,21 @@ namespace ASCOM.Wise40
                 WiseSite.refractionOption,
                 ref zd, ref az, ref rar, ref decr);
 
-            dist0 = Math.Abs(Math.Cos(Angle.Deg2Rad(90.0 - zd)));
-            dist1 = Math.Abs(Math.Cos(Angle.Deg2Rad(Altitude)));
-            ret = dist0 < dist1;
+            //
+            // Compare the altitudes directly.
+            //
+            // This was Abs(Cos(alt_target)) < Abs(Cos(alt_now)).  For altitudes between 0 and
+            //  90 that is equivalent, but the Abs made a position BELOW the horizon compare
+            //  equal to its mirror image above it - Abs(Cos(-20)) == Abs(Cos(+20)) - so a move
+            //  from 20 degrees under the horizon to 20 degrees over it read as "not higher"
+            //  and was refused.  Exactly the case a recovery exists for.
+            //
+            dist0 = 90.0 - zd;          // altitude at the candidate coordinates
+            dist1 = Altitude;           // altitude now
+            ret = dist0 > dist1;
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugTele,
-                $"SaferAtCoordinates({dir}, {ra.ToNiceString()}, {dec.ToNiceString()}): new: {dist0:f12} < curr: {dist1:f12} => {ret}");
+                $"HigherAtCoordinates({dir}, {ra.ToNiceString()}, {dec.ToNiceString()}): new alt: {dist0:f6} > curr alt: {dist1:f6} => {ret}");
             #endregion
             return ret;
         }
@@ -1678,7 +1700,23 @@ namespace ASCOM.Wise40
             if (dec < lower_decLimit)
                 reasons.Add($"Declination too low: {dec} < {lower_decLimit}");
 
-            double ha = HourAngle;
+            //
+            // The hour angle OF THE TARGET, derived from the ra argument.
+            //
+            // This was "double ha = HourAngle", i.e. where the telescope happens to be
+            //  pointing right now.  Altitude and declination were tested against the target
+            //  while the hour angle was tested against the current position, so a slew whose
+            //  target lay beyond the hour-angle limits was accepted as long as the CURRENT
+            //  position was inside them.  Altitude does not cover for it: at declination 66 a
+            //  target at hour angle 8h - an hour past the western limit - sits at altitude
+            //  16.9 degrees, above the 16 degree floor, so nothing rejected it and the mount
+            //  was driven at the limit switches.
+            //
+            // The line was correct for the OTHER caller, the safety timer, which passes the
+            //  current right ascension; that is presumably how it survived.  ConditionHA
+            //  normalises to -12..+12, matching the HourAngle property and the limits.
+            //
+            double ha = safeAstroUtils.ConditionHA(wisesite.LocalSiderealTime.Hours - ra.Hours);
             if (ha < eastern_haLimit.Hours)
                 reasons.Add($"HourAngle too low: {Angle.HaFromHours(ha)} < {eastern_haLimit}");
             else if (ha > western_haLimit.Hours)
@@ -2163,7 +2201,46 @@ namespace ASCOM.Wise40
             SlewToHaDecAsync(0.0, dec.Degrees, "ParkFromGui");
         }
 
-        private void InternalSlewToCoordinatesSync(Angle primaryTargetAngle, Angle secondaryTargetAngle, string whatfor)
+        /// <summary>
+        /// Rejects a slew whose TARGET lies in the forbidden zone.
+        ///
+        /// Lives here so that every slew passes through it.  It used to be each caller's
+        ///  responsibility, which left holes: DoSlewToCoordinatesAsync carried a
+        ///  "// Check coordinates safety ???" comment where the check was not, and an
+        ///  hour-angle slew reached safety only indirectly, through the alt/az conversion it
+        ///  no longer performs.
+        ///
+        /// noSafetyCheck is an EXPLICIT opt-out, not an accident of which caller was used.
+        ///  move-to-preset "cover" needs it: the mirror cover sits at hour angle 11h55m,
+        ///  far outside the +/-7h limits, and must remain reachable.
+        /// </summary>
+        private void RejectUnsafeTarget(Angle primaryTargetAngle, Angle secondaryTargetAngle, string op)
+        {
+            Angle ra;
+
+            if (primaryTargetAngle.Type == Angle.AngleType.HA)
+            {
+                //
+                // SafeAtCoordinates works in right ascension, so convert.  It derives the
+                //  hour angle back out, which round-trips exactly enough - the two reads of
+                //  LocalSiderealTime are microseconds apart.
+                //
+                double raHours = wisesite.LocalSiderealTime.Hours - primaryTargetAngle.Hours;
+                while (raHours < 0.0)
+                    raHours += 24.0;
+                while (raHours >= 24.0)
+                    raHours -= 24.0;
+                ra = Angle.RaFromHours(raHours);
+            }
+            else
+                ra = primaryTargetAngle;
+
+            string notSafe = SafeAtCoordinates(ra, secondaryTargetAngle);
+            if (!string.IsNullOrEmpty(notSafe))
+                Exceptor.Throw<InvalidOperationException>(op, notSafe);
+        }
+
+        private void InternalSlewToCoordinatesSync(Angle primaryTargetAngle, Angle secondaryTargetAngle, string whatfor, bool noSafetyCheck = false)
         {
             #region debug
             string op = "InternalSlewToCoordinatesSync(" +
@@ -2187,9 +2264,17 @@ namespace ASCOM.Wise40
                     #endregion
                 }
 
+                //
+                // Checked HERE, before the task, and then skipped inside it.  An exception
+                //  raised inside Task.Run becomes an unobserved task fault - the caller would
+                //  see a slew that silently did nothing rather than a rejection.
+                //
+                if (!noSafetyCheck)
+                    RejectUnsafeTarget(primaryTargetAngle, secondaryTargetAngle, op);
+
                 Task t = Task.Run(() =>
                 {
-                    DoSlewToCoordinatesAsync(primaryTargetAngle, secondaryTargetAngle, op);
+                    DoSlewToCoordinatesAsync(primaryTargetAngle, secondaryTargetAngle, op, noSafetyCheck: true);
                     Thread.Sleep(500);
                 }, telescopeCT);
                 Thread.Sleep(100);
@@ -2858,7 +2943,7 @@ namespace ASCOM.Wise40
         }
 
 #pragma warning disable RCS1047 // Non-asynchronous method name should not end with 'Async'.
-        private void DoSlewToCoordinatesAsync(Angle primaryTargetAngle, Angle secondaryTargetAngle, string reason)
+        private void DoSlewToCoordinatesAsync(Angle primaryTargetAngle, Angle secondaryTargetAngle, string reason, bool noSafetyCheck = false)
 #pragma warning restore RCS1047 // Non-asynchronous method name should not end with 'Async'.
         {
             string op = "DoSlewToCoordinatesAsync(" +
@@ -2903,7 +2988,8 @@ namespace ASCOM.Wise40
             #endregion
             CheckCoordinateSanity(primaryAngleType, primaryTargetAngle.Hours, reason);
             CheckCoordinateSanity(secondaryTargetAngle.Type, secondaryTargetAngle.Degrees, reason);
-            // Check coordinates safety ???
+            if (!noSafetyCheck)
+                RejectUnsafeTarget(primaryTargetAngle, secondaryTargetAngle, op);
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"{op}: After CheckCoordinateSanity.");
             #endregion
@@ -3193,7 +3279,12 @@ namespace ASCOM.Wise40
 
             try
             {
-                DoSlewToCoordinatesAsync(ra, dec, op);
+                //
+                // doChecks == false is the deliberate bypass - MoveToKnownHaDec uses it for
+                //  move-to-preset "cover" at hour angle 11h55m.  Thread it through rather
+                //  than letting the absence of a caller-side check be the bypass.
+                //
+                DoSlewToCoordinatesAsync(ra, dec, op, noSafetyCheck: !doChecks);
             }
             catch (Exception e)
             {
@@ -4168,15 +4259,39 @@ namespace ASCOM.Wise40
                         return "Two parameters needed";
 
                     double ha = Double.NaN, dec = Double.NaN;
-                    foreach(string p in par)
+
+                    //
+                    // Split each item on '=' rather than trusting a hand-counted prefix
+                    //  length.  The previous form tested StartsWith("Declination") and then
+                    //  cut "Declination".Length characters - eleven, not twelve - so it handed
+                    //  "=66" to Convert.ToDouble and threw FormatException.  HourAngle was
+                    //  written correctly with its '=' in both places; only Declination was
+                    //  wrong, and the case-sensitivity bug fixed earlier had kept the branch
+                    //  unreachable, so the asymmetry never showed.
+                    //
+                    // Also: keys compared case-insensitively, values trimmed, and TryParse
+                    //  instead of Convert, so a malformed number produces this Action's own
+                    //  error message rather than a FormatException surfacing at the ASCOM
+                    //  layer as "Input string was not in a correct format".
+                    //
+                    foreach (string p in par)
                     {
-                        if (p.StartsWith("HourAngle="))
+                        string[] kv = p.Split('=');
+                        if (kv.Length != 2)
+                            continue;
+
+                        string key = kv[0].Trim();
+                        string val = kv[1].Trim();
+
+                        if (key.Equals("HourAngle", StringComparison.OrdinalIgnoreCase))
                         {
-                            ha = Convert.ToDouble(p.Substring("HourAngle=".Length));
+                            if (!Double.TryParse(val, out ha))
+                                ha = Double.NaN;
                         }
-                        else if (p.StartsWith("Declination"))
+                        else if (key.Equals("Declination", StringComparison.OrdinalIgnoreCase))
                         {
-                            dec = Convert.ToDouble(p.Substring("Declination".Length));
+                            if (!Double.TryParse(val, out dec))
+                                dec = Double.NaN;
                         }
                     }
 
