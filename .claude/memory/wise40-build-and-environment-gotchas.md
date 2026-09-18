@@ -23,6 +23,70 @@ MSBuild <proj> /t:Build /p:Configuration=Debug /p:Platform=x86 \
 
 `/p:BuildProjectReferences=false` compiles against the DLLs already on disk. Fast, but it will compile against **stale** dependencies: after making a constant `public` in `Hardware`, the Telescope build failed with `CS0117 ... does not contain a definition for` until `Hardware` was rebuilt first. Build `Common` → `Hardware` → `Telescope` in order. **That flag does not propagate to project references** — MSBuild walks into them and tries to unregister, which is how TessW lost its registration a second time on 2026-09-16. Add `/p:BuildProjectReferences=false` to compile one project against the DLLs already on disk.
 
+### `MSBuild Wise40.sln` CANNOT work - build the project instead
+
+Established 2026-09-18 by trying it. It fails in about 8 seconds, and **not** because of
+anything you changed:
+
+```
+error MSB3202: The project file "...\FocuserApplication\FocuserApplication.csproj" was not found.
+error MSB3202: The project file "C:\Users\mizpe\Arduino\FilterWheel_Arduino\FilterWheel_Arduino.vcxproj" was not found.
+error MSB3202: The project file "C:\Users\mizpe\Arduino\Shutter\Shutter.vcxproj" was not found.
+error MSB4226: The imported project "...\Node.js Tools\Microsoft.NodejsToolsV2.targets" was not found.   [WeatherGraphs.njsproj]
+```
+
+The solution references three projects that do not exist on disk and one that needs Node.js
+Tools targets that are not installed. **Visual Studio tolerates unavailable projects; MSBuild
+does not.** So Arie building from the IDE is a constraint, not a preference.
+
+**The errors that follow are fallout and will mislead you.** Once the solution metaproj
+aborts, `Common` is never built, so its dependents fail with what looks like a real source
+problem:
+
+```
+ComputerControl\Driver.cs(38,20): error CS0234: The type or namespace name 'Common' does not
+    exist in the namespace 'ASCOM.Wise40'
+Restore-ASCOM-Profiles\Program.cs(8,13): error CS0234: ... 'Wise40' does not exist in 'ASCOM'
+TestMySql\Program.cs(7,7): error CS0246: ... 'ASCOM' could not be found
+```
+
+Nothing is wrong with those three projects. Do not go looking.
+
+### The invocation that works
+
+Build the one project that changed. Elevated, with the chain down:
+
+```
+MSBuild Telescope\Telescope.csproj /p:Configuration=Debug /p:Platform=x86 ^
+        /p:BuildProjectReferences=false /t:Build
+```
+
+**`BuildProjectReferences=false` is mandatory here, not a shortcut.** `/p:Platform=x86`
+propagates into project references and **`TessW.csproj` has no `Debug|x86` configuration**, so
+walking into it fails immediately:
+
+```
+error : The BaseOutputPath/OutputPath property is not set for project 'TessW.csproj'.
+        Configuration='Debug'  Platform='x86'
+```
+
+It is also the right thing when only `Telescope` changed, since every dependency on disk is
+already current. If something in `Common` or `Hardware` changed too, build those first, in
+order, each on its own - see the stale-dependency warning above.
+
+Leave `RegisterForComInterop` alone when elevated. No `/p:OutputPath`.
+
+### Guard the restart on the build result
+
+Worth keeping in any deploy script: start the chain only if MSBuild exited 0 **and** the x86
+DLL is actually newer than the build started. Two conditions because a missed `/p:Platform`
+exits 0 while writing AnyCPU and leaving `bin\x86\Debug` untouched.
+
+It paid for itself on 2026-09-18: two failed builds in a row left the chain down and never
+touched `ASCOM.Wise40.Telescope.dll`, which stayed at its previous timestamp throughout - so
+there was never a half-new mixture of DLLs to reason about. A failed build that starts the
+chain anyway is the dangerous case.
+
 ### Overriding `OutputPath` breaks reference resolution
 
 A compile-check that writes somewhere harmless looks like the obvious move, but
