@@ -345,11 +345,29 @@ namespace ASCOM.Wise40
                     break;
 
                 case Angle.AngleType.RA:
-                case Angle.AngleType.HA:
                     if (value < 0.0 || value > 24.0)
                     {
                         Exceptor.Throw<InvalidValueException>("CheckCoordinateSanity",
-                            $"Invalid primary coordinate (value: {value}, reason: {reason}, angle: {Angle.FromHours(value, type).ToNiceString()}). Must be between 0 to 24");
+                            $"Invalid Right Ascension (value: {value}, reason: {reason}, angle: {Angle.FromHours(value, type).ToNiceString()}). Must be between 0 to 24");
+                    }
+                    break;
+
+                //
+                // Hour angle is NOT right ascension and does not share its range.  Angle
+                //  defines AngleType.HA as -12..+12, non-periodic (Angle.cs), negative east
+                //  of the meridian - which is what HourAngle actually returns.
+                //
+                // These two shared a case, so the 0..24 test rejected every hour angle east
+                //  of the meridian.  That made SlewToHaDecAsync throw for half the sky, and
+                //  took SlewToAltAzAsync with it, since that builds
+                //  Angle.HaFromHours(LocalSiderealTime - ra) and hands it to
+                //  DoSlewToCoordinatesAsync, which sanity-checks it here.
+                //
+                case Angle.AngleType.HA:
+                    if (value < -12.0 || value > 12.0)
+                    {
+                        Exceptor.Throw<InvalidValueException>("CheckCoordinateSanity",
+                            $"Invalid Hour Angle (value: {value}, reason: {reason}, angle: {Angle.FromHours(value, type).ToNiceString()}). Must be between -12 and 12");
                     }
                     break;
             }
@@ -1993,8 +2011,23 @@ namespace ASCOM.Wise40
             if (AtPark)
                 return;
 
-            Angle parkingRa = wisesite.LocalSiderealTime;
+            //
+            // Park in the MOUNT frame.  This was LocalSiderealTime sampled once, before the
+            //  slew, which pinned the target to the meridian as it was at that instant; the
+            //  telescope then arrived about 15 arcmin west of it for a 60 second slew.  An
+            //  hour angle of zero is the meridian whenever we get there.
+            //
+            Angle parkingHa = Angle.HaFromHours(0.0);
             Angle parkingDec = parkingDeclination;
+
+            //
+            // A right ascension rendering of the park target, for the activity record and for
+            //  TargetRightAscension, which ASCOM clients read and which has no hour-angle
+            //  equivalent.  It is a SNAPSHOT - the meridian as it stands now - and is
+            //  deliberately not what the slew aims at.  Same value the old code used as the
+            //  target, so nothing a client sees changes.
+            //
+            Angle parkingRaAtStart = wisesite.LocalSiderealTime;
             bool wasEnslavingDome = EnslavesDome;
 
             try
@@ -2008,7 +2041,7 @@ namespace ASCOM.Wise40
                     },
                     target = new Activity.TelescopeSlew.Coords
                     {
-                        ra = parkingRa.Hours,
+                        ra = parkingRaAtStart.Hours,
                         dec = parkingDec.Degrees,
                     },
                     domeStartAz = WiseDome.Instance.Azimuth.Degrees,
@@ -2022,7 +2055,7 @@ namespace ASCOM.Wise40
                     #endregion
                     DomeParker();
                 }
-                TargetRightAscension = parkingRa.Hours;
+                TargetRightAscension = parkingRaAtStart.Hours;
                 TargetDeclination = parkingDec.Degrees;
 
                 EnslavesDome = false;
@@ -2033,14 +2066,16 @@ namespace ASCOM.Wise40
                     #endregion
                     Thread.Sleep(500);
                 }
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugTele, "Park: setting Tracking = true ...");
-                #endregion
-                Tracking = true;
+                //
+                // Tracking is NOT turned on here any more.  It used to be, because the park
+                //  target was a right ascension and tracking is what holds one.  The target
+                //  is now an hour angle, which tracking would actively walk away from;
+                //  DoSlewToCoordinatesAsync turns it off for exactly that reason.
+                //
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugTele, "Park: starting InternalSlewToCoordinatesSync ...");
                 #endregion
-                InternalSlewToCoordinatesSync(parkingRa, parkingDec, "Park");
+                InternalSlewToCoordinatesSync(parkingHa, parkingDec, "Park");
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugTele, "Park: after InternalSlewToCoordinatesSync ...");
                 #endregion
@@ -2116,12 +2151,16 @@ namespace ASCOM.Wise40
             if (AtPark)
                 return;
 
-            Angle ra = wisesite.LocalSiderealTime;
+            //
+            // Mount frame, as in Park() above - hour angle zero is the meridian whenever we
+            //  arrive, where LocalSiderealTime sampled here is the meridian as it was when
+            //  the button was pressed.
+            //
             Angle dec = parkingDeclination;
 
             if (parkDome)
                 DomeParker();
-            SlewToCoordinatesAsync(ra.Hours, dec.Degrees, "ParkFromGui", false);
+            SlewToHaDecAsync(0.0, dec.Degrees, "ParkFromGui");
         }
 
         private void InternalSlewToCoordinatesSync(Angle primaryTargetAngle, Angle secondaryTargetAngle, string whatfor)
@@ -2829,6 +2868,36 @@ namespace ASCOM.Wise40
 
             Angle.AngleType primaryAngleType = primaryTargetAngle.Type;
 
+            //
+            // An hour-angle target is a MOUNT-frame target: it names where the axis should
+            //  point, not a place on the sky.  Tracking has to be off for the axis to hold
+            //  it, for two independent reasons:
+            //
+            //  . The track motor drives the hour angle west at the sidereal rate, 15.04
+            //    arcsec/sec, while the slewer's finest correction is rateGuide at about 0.6
+            //    arcsec/sec.  The cleanup leg cannot win that race.
+            //
+            //  . PrimaryAxisMonitor.IsMoving switches on Tracking: with tracking on it judges
+            //    motion from _raDeltas, and an axis tracking at sidereal shows a right
+            //    ascension delta of zero.  It would read "stopped" while the hour angle walks
+            //    away.
+            //
+            // Right ascension targets are the opposite case and are left alone - there
+            //  tracking is what HOLDS the target, and it is invisible to _raDeltas by design.
+            //
+            // Tracking is deliberately NOT restored afterwards.  Arriving at an hour angle
+            //  and then letting the mount drift off it would defeat the point; the caller
+            //  re-enables tracking if it wants to follow the sky.
+            //
+            if (primaryAngleType == Angle.AngleType.HA && Tracking)
+            {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugTele,
+                    $"{op}: hour-angle target, turning Tracking off so the axis can hold it.");
+                #endregion
+                Tracking = false;
+            }
+
             #region debug
             debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"{op}: Before CheckCoordinateSanity.");
             #endregion
@@ -3023,33 +3092,29 @@ namespace ASCOM.Wise40
             CheckCoordinateSanity(Angle.AngleType.HA, ha, op);
             CheckCoordinateSanity(Angle.AngleType.Dec, dec, op);
 
-            double alt, az;
-
-            Astrometry.Transform.Transform transform = new Astrometry.Transform.Transform()
-            {
-                SiteElevation = WiseSite.Elevation,
-                SiteLatitude = WiseSite.Latitude,
-                SiteLongitude = WiseSite.Longitude,
-                SiteTemperature = WiseSite.och.Temperature,
-            };
-
-            try
-            {
-                transform.SetApparent(wisesite.LocalSiderealTime.Hours - ha, dec);
-                az = transform.AzimuthTopocentric;
-                alt = transform.ElevationTopocentric;
-
-                #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"{op}: calling SlewToAltAz(" +
-                        $"az: {Angle.AltFromDegrees(az).ToNiceString()} " +
-                        $"alt: {Angle.AzFromDegrees(alt).ToNiceString()})");
-                #endregion
-                SlewToAltAzAsync(az, alt, op);
-            }
-            catch (Exception ex)
-            {
-                Exceptor.Throw<InvalidOperationException>(op, $"Caught: {ex.Message} at {ex.StackTrace}");
-            }
+            //
+            // Slew to the hour angle DIRECTLY.
+            //
+            // This used to convert ha -> ra -> alt/az and call SlewToAltAzAsync, which
+            //  converted straight back to hour angle.  Three conversions to arrive where we
+            //  started, and two real problems with them:
+            //
+            //  . The ha -> ra step was evaluated ONCE, here, so the target was pinned to the
+            //    local sidereal time at the moment of the call.  The sky keeps turning while
+            //    the mount slews, so the telescope landed west of the requested hour angle by
+            //    however long the slew took - about 15 arcmin for a 60 second slew.
+            //
+            //  . It went through Transform's TOPOCENTRIC alt/az, i.e. through refraction, and
+            //    depended on WiseSite.och.Temperature being available.  An hour angle is a
+            //    mechanical statement about where the axis points; refraction has no business
+            //    in it.
+            //
+            // DoSlewToCoordinatesAsync already accepts a typed angle and switches the slewer
+            //  on it (Slewers.Type.Ha vs .Ra), and CurrentPosition() serves AngleType.HA from
+            //  the encoder, so the loop now compares encoder hour angle against a FIXED
+            //  target.  No time dependence, and no lead needed.
+            //
+            DoSlewToCoordinatesAsync(Angle.HaFromHours(ha), Angle.DecFromDegrees(dec), op);
         }
 
 #pragma warning disable RCS1047 // Non-asynchronous method name should not end with 'Async'.
@@ -4090,7 +4155,15 @@ namespace ASCOM.Wise40
                     return JsonConvert.SerializeObject(HardwareDigest.FromHardware());
 
                 case "slew-to-ha-dec":
-                    List<string> par = parameter.ToLower().Split(',').ToList();
+                    //
+                    // Do NOT lowercase here.  This used to be parameter.ToLower(), and the
+                    //  two tests below are case-sensitive, so neither could ever match and
+                    //  the Action returned "Parameters HourAngle and Declination must be
+                    //  supplied" for every well-formed call.  Dash.cs passes
+                    //  "HourAngle={ha},Declination={dec}", so the Dash's HA/Dec slew was
+                    //  broken by the same bug.
+                    //
+                    List<string> par = parameter.Split(',').ToList();
                     if (par.Count != 2)
                         return "Two parameters needed";
 
