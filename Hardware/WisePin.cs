@@ -104,63 +104,108 @@ namespace ASCOM.Wise40.Hardware
         {
             ushort mask = (ushort)(1 << bit);
 
+            //
+            // What our bit must read once the relay has responded.  Same comparison the old
+            //  code made - it built a whole target port value and then masked it down to this.
+            //  Note this is the RAW bit sense: inverse is applied by isOn, not here, which is
+            //  how it always behaved.
+            //
+            ushort target = on ? mask : (ushort)0;
+            ushort before, got;
+
+            //
+            // THE LOCK IS TAKEN PER DAQ ACCESS, NEVER ACROSS THE WAIT.
+            //
+            // The poll loop used to sit inside one lock (daq._lock) spanning the whole method,
+            //  Thread.Sleep included, so a single pin could hold a shared BOARD lock for up to
+            //  readbackBudgetMillis - 1200ms.  Everything else touching that board queued
+            //  behind it, and there is a lot of it: WisePin.isOn is a live DIn, so StopAxis's
+            //  m.IsOn, WiseVirtualMotor.ActiveMortorPins - called twice per SetOff - and
+            //  AxisMonitor's ActiveMotors all block on it.
+            //
+            // Measured consequence, 2026-09-19: StopAxis took 1.19 SECONDS on the primary axis.
+            //  At slew rate that is 2.2 degrees of travel after the decision to stop, which
+            //  turned a 0.19 degree undershoot into a 2.0 degree overshoot and cost 139 seconds
+            //  of set-rate crawling to undo.  Neither the "took Nms to read back" line nor the
+            //  timeout line had fired, so no individual verify was slow - it was all queueing.
+            //
+            // Every other holder of this lock, in WiseDaq, wraps exactly one DIn or DOut.  This
+            //  was the only one that slept, and in the motor-OFF path each millisecond of delay
+            //  is 1.8 millidegrees of unwanted travel at slew rate.
+            //
             lock (daq._lock)
             {
-                daq.wiseBoard.mccBoard.DIn(daq.porttype, out ushort before);
-                ushort want = on ? (ushort)(before | mask) : (ushort)(before & ~mask);
+                daq.wiseBoard.mccBoard.DIn(daq.porttype, out before);
+                ushort w = on ? (ushort)(before | mask) : (ushort)(before & ~mask);
+                daq.wiseBoard.mccBoard.DOut(daq.porttype, w);
+            }
 
-                if (WiseName.StartsWith("Focus"))
+            //
+            // The relay is commanded from here on.  Everything below only CONFIRMS it, so it
+            //  must not block anybody.
+            //
+            if (WiseName.StartsWith("Focus"))
+            {
+                //
+                // Somehow the Focus pins (maybe this is specific to the DAQ board) behave
+                //  differently from the pins on the other boards.  DON'T do the validation loop.
+                //
+                return;
+            }
+
+            System.Diagnostics.Stopwatch sw = System.Diagnostics.Stopwatch.StartNew();
+            long nextWriteAt = rewriteEveryMillis;
+            got = before;
+
+            while (sw.ElapsedMilliseconds < readbackBudgetMillis)
+            {
+                Thread.Sleep(readbackPollMillis);           // lock NOT held
+
+                lock (daq._lock)
+                    daq.wiseBoard.mccBoard.DIn(daq.porttype, out got);
+
+                if ((got & mask) == target)
                 {
-                    //
-                    // Somehow the Focus pins (maybe this is specific to the DAQ board,
-                    //  behave differently from the pins on the other boards.
-                    // DON'T do the validation loop.
-                    //
-                    daq.wiseBoard.mccBoard.DOut(daq.porttype, want);
+                    #region debug
+                    if (sw.ElapsedMilliseconds > 50)
+                        debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                            $"{op}: pin {WiseName} took {sw.ElapsedMilliseconds}ms to read back");
+                    #endregion
                     return;
                 }
 
-                System.Diagnostics.Stopwatch sw = System.Diagnostics.Stopwatch.StartNew();
-                long nextWriteAt = 0;
-                ushort got = before;
-
-                while (sw.ElapsedMilliseconds < readbackBudgetMillis)
+                if (sw.ElapsedMilliseconds >= nextWriteAt)
                 {
-                    if (sw.ElapsedMilliseconds >= nextWriteAt)
+                    //
+                    // Re-read and recompute rather than reusing a value from before the wait.
+                    //  Splitting the lock means another pin on this port may legitimately have
+                    //  moved in between, and rewriting a stale port image would clobber it.  The
+                    //  old code sidestepped this only by never letting go of the lock.
+                    //
+                    lock (daq._lock)
                     {
-                        daq.wiseBoard.mccBoard.DOut(daq.porttype, want);
-                        nextWriteAt = sw.ElapsedMilliseconds + rewriteEveryMillis;
+                        daq.wiseBoard.mccBoard.DIn(daq.porttype, out ushort cur);
+                        ushort w = on ? (ushort)(cur | mask) : (ushort)(cur & ~mask);
+                        daq.wiseBoard.mccBoard.DOut(daq.porttype, w);
                     }
-
-                    Thread.Sleep(readbackPollMillis);
-                    daq.wiseBoard.mccBoard.DIn(daq.porttype, out got);
-
-                    if ((got & mask) == (want & mask))
-                    {
-                        #region debug
-                        if (sw.ElapsedMilliseconds > 50)
-                            debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
-                                $"{op}: pin {WiseName} took {sw.ElapsedMilliseconds}ms to read back");
-                        #endregion
-                        return;
-                    }
+                    nextWriteAt = sw.ElapsedMilliseconds + rewriteEveryMillis;
                 }
-
-                #region debug
-                //
-                // Say what was actually read, and whether anything ELSE on the port moved -
-                //  that is what separates a relay that will not pick up from contention with
-                //  another pin on the same port.
-                //
-                ushort otherBitsChanged = (ushort)((got ^ before) & ~mask);
-
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
-                    $"{op}: pin {WiseName} did not read back {(on ? "On" : "Off")} after " +
-                    $"{sw.ElapsedMilliseconds}ms: wanted port 0x{want:X4}, read 0x{got:X4}, " +
-                    $"our bit {bit} reads {((got & mask) != 0 ? 1 : 0)}" +
-                    (otherBitsChanged != 0 ? $", OTHER bits changed: 0x{otherBitsChanged:X4}" : ", no other bits moved"));
-                #endregion
             }
+
+            #region debug
+            //
+            // Say what was actually read, and whether anything ELSE on the port moved - that is
+            //  what separates a relay that will not pick up from contention with another pin on
+            //  the same port.
+            //
+            ushort otherBitsChanged = (ushort)((got ^ before) & ~mask);
+
+            debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                $"{op}: pin {WiseName} did not read back {(on ? "On" : "Off")} after " +
+                $"{sw.ElapsedMilliseconds}ms: read 0x{got:X4}, our bit {bit} reads " +
+                $"{((got & mask) != 0 ? 1 : 0)}" +
+                (otherBitsChanged != 0 ? $", OTHER bits changed: 0x{otherBitsChanged:X4}" : ", no other bits moved"));
+            #endregion
         }
 
         public void SetOff()
