@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Checks Angle's radians <-> HMS conversions and ShortestDistance over HOUR ANGLES.
+
+    A standalone console exe, matching the other Test* projects here, rather than an MSTest
+    class: it can be built and run without a test runner, and AngleTestProject - the one place
+    that does have a test framework - no longer compiles (42 references to Angle.Type, which is
+    now Angle.AngleType) and is not in the solution.
+
+    net48/x86 to match Common.
+
+    Deliberately a plain Reference with a HintPath rather than a ProjectReference: a
+    ProjectReference rebuilds Common into bin\Debug, i.e. the AnyCPU path, and "AnyCPU newer
+    than x86" is the signal used to catch a build that forgot /p:Platform=x86.  Building this
+    test should not disturb that.  Build Common first if this cannot find it.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net48</TargetFramework>
+    <PlatformTarget>x86</PlatformTarget>
+    <AssemblyName>TestAngleHa</AssemblyName>
+    <RootNamespace>TestAngleHa</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Common">
+      <HintPath>..\Common\bin\x86\Debug\Common.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+  </ItemGroup>
+
+</Project>
