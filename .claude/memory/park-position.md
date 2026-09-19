@@ -1,6 +1,6 @@
 ﻿---
 name: park-position
-description: "The Wise40 park position is Dec 66 on the meridian - what it looks like physically, and why Park() lands about 15 arcmin west of it"
+description: "The Wise40 park position is Dec 66 on the meridian - what it looks like physically, why Park() lands about 15 arcmin west of it, and why commanding HA instead is NOT the fix"
 metadata:
   type: reference
 ---
@@ -25,13 +25,22 @@ metadata:
 
 The sign is worth being sure of: HA = LST − RA, and RA is held fixed, so HA grows **positive** = **west**.
 
-### The proper fix: command HA, not RA
+### DO NOT command HA to fix this — it was tried and it ran the axis into a limit
 
-**The drift is a property of using RA, not of parking.** HA is time-independent for a fixed mechanical position — HA 0 is HA 0 whenever you arrive — so pointing `Park()` and `ParkFromGui` at `SlewToHaDecAsync(0, 66)` removes the error outright instead of compensating for it. **No lead is needed at all.**
+This section used to say the proper fix was to point `Park()` and `ParkFromGui` at
+`SlewToHaDecAsync(0, 66)`, since an hour angle is time-independent and needs no lead. **The
+reasoning is still right and the implementation is broken.** It was done in PR #33, and on
+2026-09-19 Park drove the primary axis about 80° the wrong way into a physical limit switch,
+because `Angle.ShortestDistance` mis-computes distance and direction for HA-typed angles: it
+reported 5.35 rad for a 0.357 rad move and the value grew as the axis ran. Reverted in PR #40,
+and `SlewToHaDecAsync` now throws rather than slewing.
 
-### The workaround until then: lead the RA target
+See [[ha-angle-distance-is-broken]]. **Fix the arithmetic, with a test, before revisiting this.**
+Until then the lead below is not a workaround, it is the only method that works.
 
-`slew-to-ha-dec` is broken ([[slew-to-ha-dec-broken]]), so RA is the only route today. Target `RA = LST_now + d`, where `d` is the expected slew duration in hours. Confirmed — a trim with `d = 0.00417` h (15 s) landed **25″** off, against 310″ without.
+### The method that works: lead the RA target
+
+An HA target is unusable ([[ha-angle-distance-is-broken]]), so RA is the only route. Target `RA = LST_now + d`, where `d` is the expected slew duration in hours. Confirmed — a trim with `d = 0.00417` h (15 s) landed **25″** off, against 310″ without.
 
 Iterating unled trims does *not* converge, because each reintroduces its own duration: a second unled trim took 15.4 s and put back 231″ of the 310″ it had just removed. `d` need not be accurate; any reasonable estimate shrinks the error to the difference between guess and actual, so one led pass reaches tens of arcsec.
 
@@ -51,4 +60,5 @@ Alt/Az would be the better *description* if the park exists for physical clearan
 
 With tracking off the axis holds still and the **mechanical** hour angle is frozen, so the telescope stays on the meridian. With tracking on it holds RA instead and drifts west at sidereal. See [[stop-tracking-after-tests]].
 
-Related: [[slew-to-ha-dec-broken]] — the Action that would express this target directly is broken, which is why the RA/Dec path plus a lead is the working route today.
+Related: [[ha-angle-distance-is-broken]] — why the Action that would express this target
+directly is disabled, and why the RA/Dec path plus a lead is the only working route.
