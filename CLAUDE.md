@@ -31,6 +31,8 @@ create`. If `gh` is unavailable, hand over
 - [Notes live in the repo](.claude/memory/notes-live-in-the-repo.md) — memories and plans belong under `.claude/`, git-tracked
 - [Stop tracking after tests](.claude/memory/stop-tracking-after-tests.md) — switch tracking off when a test or session ends, and verify the motor pins are actually clear
 - [Park position](.claude/memory/park-position.md) — Dec +66° on the meridian; `Park()` lands ~15′ west of it, and the fix is to lead the target by the slew duration
+- [Soft limits are not conservative](.claude/memory/soft-limits-are-not-conservative.md) — a physical limit switch trips inside `eastern_haLimit` at some declinations; passing the soft limits does not mean a position is reachable
+- [HA angle distance is broken](.claude/memory/ha-angle-distance-is-broken.md) — `Angle.ShortestDistance` is wrong for HA-typed angles and ran an axis into a limit. **Do not command HA targets**
 - [slew-to-ha-dec is broken](.claude/memory/slew-to-ha-dec-broken.md) — case-sensitivity bug, also breaks the Dash's HA/Dec slew. **Awaiting a fix**
 - [Telescope drive topology](.claude/memory/telescope-drive-topology.md) — `TeleSlew` is a shared speed selector, so both axes must use the same speed among slew/set; only guide is independent. Read before touching the slew rendezvous
 - [Slew time: where it goes](.claude/memory/slew-time-where-it-goes.md) — where slew time goes on both axes, verified on sky. HA is tuned and 73 % faster eastward; **Dec is not repeatable enough to tune**. Read the two measurement traps before trusting any coast figure

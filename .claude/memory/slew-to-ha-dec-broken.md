@@ -1,11 +1,19 @@
 ﻿---
 name: slew-to-ha-dec-broken
-description: "The slew-to-ha-dec Action always fails on a case-sensitivity bug, which also kills the Dash's HA/Dec slew - to be fixed"
+description: "SUPERSEDED - the slew-to-ha-dec parsing bugs are fixed, but the Action is now disabled because HA-typed slews mis-compute distance; kept for the parsing detail"
 metadata:
   type: project
 ---
 
-**`Action("slew-to-ha-dec", ...)` can never succeed.** Found 2026-09-18, confirmed against the live driver, **not yet fixed** — Arie asked to leave it for later.
+**Superseded 2026-09-19. The parsing bugs described here are FIXED; the Action is now
+deliberately disabled for a worse reason** — an HA-typed slew mis-computes its distance and ran
+the primary axis into a limit switch. See [[ha-angle-distance-is-broken]], which is the note to
+read. This one is kept for the parsing detail and the diagnostic trap at the end.
+
+The original entry follows.
+
+**`Action("slew-to-ha-dec", ...)` could never succeed.** Found 2026-09-18, confirmed against the
+live driver.
 
 `WiseTele.cs:4093` lowercases the whole parameter string:
 
@@ -43,6 +51,6 @@ SlewToCoordinatesAsync(ra.Hours, dec.Degrees, op, false);
 
 A true HA slew looks feasible without much work: `CurrentPosition` already handles `Angle.AngleType.HA` (returning `HourAngle`), and `ScopeAxisSlewer` branches on `primaryAngleType`, so an HA-typed target would have the loop compare encoder HA against a fixed HA — no drift and no lead. **Verify that path before relying on it**; it has never been exercised.
 
-**Fix `Park()` in the same change.** `Park()` and `ParkFromGui` command `RA = LST` (`WiseTele.cs:1996`, `:2118`), which lands ~15′ west of the meridian because RA drifts relative to the mount while it slews. Once this Action works, both should command **HA/Dec** instead — an HA target is time-independent, so that removes the error rather than compensating for it and **no slew-duration lead is needed**. See [[park-position]], which also records why Alt/Az was considered and rejected.
+**~~Fix `Park()` in the same change~~ — DO NOT.** This used to advise pointing `Park()` and `ParkFromGui` at HA/Dec, on the grounds that an HA target is time-independent and needs no slew-duration lead. That was done in PR #33 and drove the primary axis about 80° the wrong way into a limit switch on 2026-09-19; both were reverted to right-ascension targets in PR #40. The reasoning was sound, the arithmetic underneath it is not. See [[ha-angle-distance-is-broken]].
 
 **Diagnostic note for next time:** the Alpaca `action` endpoint needs `PUT`, not `GET`, and the parameter must be URL-encoded (`curl --data-urlencode`) or the embedded `=` and `,` are mangled and you get the misleading "Two parameters needed" instead.
