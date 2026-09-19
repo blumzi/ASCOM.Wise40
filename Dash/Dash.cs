@@ -188,6 +188,49 @@ namespace Dash
             if (opMode == WiseSite.OpMode.ACP || opMode == WiseSite.OpMode.LCO)
             {
                 groupBoxTarget.Text += $"(from {opMode}) ";
+
+                //
+                // Make the Target sub-group a DISPLAY rather than a form.
+                //
+                // Blanking the text is not enough.  The six boxes are drawn as filled tan
+                //  rectangles with FixedSingle borders, and that is what reads as "type here"
+                //  even when they are empty.
+                //
+                // Nor does leaving them out of ACPActiveControls / LCOActiveControls disable
+                //  them: that list only toggles Enabled when computer control changes, so a
+                //  control absent from it is never touched at all.  Only textBoxRaDecRa and
+                //  textBoxRaDecDec carry Enabled=false in the designer - the Ha/Dec and Alt/Az
+                //  pairs default to enabled, and really were editable in these modes.
+                //
+                // ReadOnly rather than Enabled=false: a disabled TextBox ignores ForeColor and
+                //  draws grey system text, which would not match the coordinates.  ReadOnly
+                //  keeps our colours and still refuses input.
+                //
+                foreach (var tb in new TextBox[] {
+                            textBoxRaDecRa, textBoxRaDecDec,
+                            textBoxHaDecHa, textBoxHaDecDec,
+                            textBoxAltAzAlt, textBoxAltAzAz })
+                {
+                    tb.ReadOnly = true;
+                    tb.Enabled = true;
+                    tb.TabStop = false;
+                    tb.BorderStyle = BorderStyle.None;
+
+                    // Taken from the live controls rather than restated as literals, so the target
+                    //  cannot drift away from the coordinates it is meant to look like.
+                    tb.BackColor = tabPageRaDec.BackColor;
+                    tb.ForeColor = labelRightAscensionValue.ForeColor;
+
+                    //
+                    // Double-clicking a box copies the CURRENT coordinates into it.  A typing
+                    //  convenience in WISE mode; here it would overwrite the displayed target
+                    //  with something the external client never asked for.
+                    //
+                    tb.DoubleClick -= coordBox_MouseDoubleClick;
+                }
+
+                // Nothing to Go to - the target arrives from outside, already being slewed to.
+                buttonGoCoord.Visible = false;
             }
 
             foreach (var c in InvisibleControls[opMode])
@@ -470,53 +513,142 @@ namespace Dash
                 labelAzimuthValue.Text = Angle.FromDegrees(telescopeDigest.Current.Azimuth, Angle.AngleType.Deg).ToNiceString();
                 #endregion
 
-                double coord;
-                string coordName;
-
-                targetTextBox[textBoxRaDecRa] = new Tuple<double, string>(telescopeDigest.Target.RaDec_RA, "RighAscension");
-                targetTextBox[textBoxRaDecDec] = new Tuple<double, string>(telescopeDigest.Target.RaDec_Dec, "Declination");
-                targetTextBox[textBoxHaDecHa] = new Tuple<double, string>(telescopeDigest.Target.HaDec_HA, "HourAngle");
-                targetTextBox[textBoxHaDecDec] = new Tuple<double, string>(telescopeDigest.Target.HaDec_Dec, "Declination");
-                targetTextBox[textBoxAltAzAlt] = new Tuple<double, string>(telescopeDigest.Target.Alt, "Altitude");
-                targetTextBox[textBoxAltAzAz] = new Tuple<double, string>(telescopeDigest.Target.Az, "Azimuth");
-
-                foreach (var tb in targetTextBox.Keys)
+                //
+                // The Target sub-group is human input, and only in WISE mode.  In ACP and LCO the
+                //  target is requested externally, so there is nothing to type: the group becomes a
+                //  read-only display of whatever was asked for, or empty when nothing was.
+                //
+                // The boxes were turned into read-only borderless text at startup, and the Go
+                //  button hidden - see the ACP/LCO block in the initialisation above.  What is
+                //  left to do per tick is the contents, and whether there is anything to show.
+                //
+                if (opMode == WiseSite.OpMode.ACP || opMode == WiseSite.OpMode.LCO)
                 {
-                    coord = targetTextBox[tb].Item1;
-                    coordName = targetTextBox[tb].Item2;
+                    //
+                    // Not gated on Slewing, unlike the WISE branch below.  A requested target exists
+                    //  from the moment it is set until it is cleared, and the group should show it
+                    //  for exactly that long - including after the slew has finished.
+                    //
+                    bool haveTarget =
+                        telescopeDigest.Target.RaDec_RA != Const.noTarget &&
+                        telescopeDigest.Target.RaDec_Dec != Const.noTarget;
 
-                    if (telescopeDigest.Slewing)
+                    //
+                    // EMPTY means empty.  Borderless boxes with no text still leave the tab strip
+                    //  and the RA/Dec prompt labels on screen, which is not what "the group is
+                    //  empty when nothing was requested" should look like.  Hiding the whole tab
+                    //  control leaves the group frame and its "(from ACP)" caption and nothing
+                    //  else, which is the honest rendering of "no target".
+                    //
+                    tabControlGoTo.Visible = haveTarget;
+
+                    //
+                    // Which tab to show.  ALWAYS Ra/Dec at present, and that is a property of the
+                    //  driver rather than a shortcut taken here.
+                    //
+                    // A target only ever arrives through the TargetRightAscension and
+                    //  TargetDeclination setters.  _targetHourAngle is derived from the right
+                    //  ascension the moment it is set, and _targetAltitude and _targetAzimuth are
+                    //  derived inside WiseTele.Digest.  So for any target at all, every one of the
+                    //  six values is populated, and none is distinguishable from a requested one.
+                    //  There is no Alt/Az or Ha/Dec REQUEST path at all - SlewToAltAzAsync never
+                    //  touches the target fields.
+                    //
+                    // Kept as a variable rather than inlined so that showing another tab is a
+                    //  one-line change if the driver ever records which type was asked for, which
+                    //  is what it would need to do for this to be more than decoration.
+                    //
+                    TabPage page = tabPageRaDec;
+
+                    foreach (var tb in targetTextBox.Keys)
                     {
-                        if (coord == Const.noTarget)
+                        if (!haveTarget || tb.Parent != page)
                         {
                             tb.Text = "";
-                            toolTip.SetToolTip(tb, $"Target {coordName} either not set or already reached");
+                            toolTip.SetToolTip(tb, haveTarget ?
+                                $"The target was not requested as {page.Text}" :
+                                $"No target requested by {opMode}");
+                            continue;
+                        }
+
+                        if (tb == textBoxRaDecRa)
+                            tb.Text = Angle.RaFromHours(telescopeDigest.Target.RaDec_RA).ToNiceString();
+                        else if (tb == textBoxRaDecDec)
+                            tb.Text = Angle.DecFromDegrees(telescopeDigest.Target.RaDec_Dec).ToNiceString();
+                        else if (tb == textBoxHaDecHa)
+                            tb.Text = Angle.HaFromHours(telescopeDigest.Target.HaDec_HA).ToNiceString();
+                        else if (tb == textBoxHaDecDec)
+                            tb.Text = Angle.DecFromDegrees(telescopeDigest.Target.HaDec_Dec).ToNiceString();
+                        else if (tb == textBoxAltAzAlt)
+                            tb.Text = Angle.AltFromDegrees(telescopeDigest.Target.Alt).ToNiceString();
+                        else if (tb == textBoxAltAzAz)
+                            tb.Text = Angle.AzFromDegrees(telescopeDigest.Target.Az).ToNiceString();
+
+                        toolTip.SetToolTip(tb, $"Target requested by {opMode}");
+                    }
+
+                    //
+                    // Only move the selection when it is actually wrong.  Assigning SelectedTab on
+                    //  every refresh would fight anyone clicking through the tabs to look around.
+                    //
+                    if (haveTarget && tabControlGoTo.SelectedTab != page)
+                        tabControlGoTo.SelectedTab = page;
+                }
+                else
+                {
+                    //
+                    // WISE mode: unchanged.  These are live input boxes, and targetIsActive exists so
+                    //  that only values this code put there are cleared - never something a human is
+                    //  part-way through typing.
+                    //
+                    double coord;
+                    string coordName;
+
+                    targetTextBox[textBoxRaDecRa] = new Tuple<double, string>(telescopeDigest.Target.RaDec_RA, "RighAscension");
+                    targetTextBox[textBoxRaDecDec] = new Tuple<double, string>(telescopeDigest.Target.RaDec_Dec, "Declination");
+                    targetTextBox[textBoxHaDecHa] = new Tuple<double, string>(telescopeDigest.Target.HaDec_HA, "HourAngle");
+                    targetTextBox[textBoxHaDecDec] = new Tuple<double, string>(telescopeDigest.Target.HaDec_Dec, "Declination");
+                    targetTextBox[textBoxAltAzAlt] = new Tuple<double, string>(telescopeDigest.Target.Alt, "Altitude");
+                    targetTextBox[textBoxAltAzAz] = new Tuple<double, string>(telescopeDigest.Target.Az, "Azimuth");
+
+                    foreach (var tb in targetTextBox.Keys)
+                    {
+                        coord = targetTextBox[tb].Item1;
+                        coordName = targetTextBox[tb].Item2;
+
+                        if (telescopeDigest.Slewing)
+                        {
+                            if (coord == Const.noTarget)
+                            {
+                                tb.Text = "";
+                                toolTip.SetToolTip(tb, $"Target {coordName} either not set or already reached");
+                            }
+                            else
+                            {
+                                if (tb == textBoxRaDecRa)
+                                    tb.Text = Angle.RaFromHours(coord).ToNiceString();
+                                else if (tb == textBoxRaDecDec)
+                                    tb.Text = Angle.DecFromDegrees(telescopeDigest.Target.RaDec_Dec).ToNiceString();
+                                else if (tb == textBoxHaDecHa)
+                                    tb.Text = Angle.FromHours(telescopeDigest.Target.HaDec_HA).ToNiceString();
+                                else if (tb == textBoxHaDecDec)
+                                    tb.Text = Angle.DecFromDegrees(telescopeDigest.Target.HaDec_Dec).ToNiceString();
+                                else if (tb == textBoxAltAzAlt)
+                                    tb.Text = Angle.AltFromDegrees(telescopeDigest.Target.Alt).ToNiceString();
+                                else if (tb == textBoxAltAzAz)
+                                    tb.Text = Angle.FromDegrees(telescopeDigest.Target.Az).ToNiceString();
+
+                                toolTip.SetToolTip(tb, $"Current target {coordName}");
+                                targetIsActive[tb] = true;
+                            }
                         }
                         else
                         {
-                            if (tb == textBoxRaDecRa)
-                                tb.Text = Angle.RaFromHours(coord).ToNiceString();
-                            else if (tb == textBoxRaDecDec)
-                                tb.Text = Angle.DecFromDegrees(telescopeDigest.Target.RaDec_Dec).ToNiceString();
-                            else if (tb == textBoxHaDecHa)
-                                tb.Text = Angle.FromHours(telescopeDigest.Target.HaDec_HA).ToNiceString();
-                            else if (tb == textBoxHaDecDec)
-                                tb.Text = Angle.DecFromDegrees(telescopeDigest.Target.HaDec_Dec).ToNiceString();
-                            else if (tb == textBoxAltAzAlt)
-                                tb.Text = Angle.AltFromDegrees(telescopeDigest.Target.Alt).ToNiceString();
-                            else if (tb == textBoxAltAzAz)
-                                tb.Text = Angle.FromDegrees(telescopeDigest.Target.Az).ToNiceString();
-
-                            toolTip.SetToolTip(tb, $"Current target {coordName}");
-                            targetIsActive[tb] = true;
-                        }
-                    }
-                    else
-                    {
-                        if (targetIsActive[tb])
-                        {
-                            tb.Text = "";
-                            targetIsActive[tb] = false;
+                            if (targetIsActive[tb])
+                            {
+                                tb.Text = "";
+                                targetIsActive[tb] = false;
+                            }
                         }
                     }
                 }
@@ -1190,14 +1322,15 @@ namespace Dash
         /// <summary>
         /// What the telescope group's status line shows.
         ///
-        /// While slewing to a known RA/Dec target it shows where we are going and how far
-        ///  there is left to go, refreshed on every tick:
+        /// While slewing to a known RA/Dec target: how far there is left to go, refreshed on
+        ///  every tick.
         ///
-        ///     Tgt: (21h07m05.6s, 48°50'01.7"), Dist: (-00h00m12.3s, +01°23'45.6")
+        ///     Δ -00h00m12.3s +01°23'45.6"
         ///
-        /// The distance is what makes it worth watching - the target alone is static, and a
-        ///  Wise40 slew can spend minutes at set rate closing the last fraction of a degree,
-        ///  during which a bare "Slewing to ..." tells you nothing about progress.
+        /// The distance is the whole point.  The target itself is static, and it now has a home
+        ///  of its own - the Target sub-group shows it in ACP and LCO modes - whereas a Wise40
+        ///  slew can spend minutes at set rate closing the last fraction of a degree, during
+        ///  which a bare "Slewing to ..." tells you nothing about progress.
         ///
         /// Anything else - not slewing, or no RA/Dec target set, as after an Alt/Az slew -
         ///  falls back to the driver's own status string.
@@ -1225,24 +1358,20 @@ namespace Dash
                 dRa += 24.0;
 
             //
-            // Deliberately sparse.  The first version read
-            //
-            //     Tgt: (12h26m20.5s, 48°19'59.5"), Dist: (-0.3s, -26'37.3")
-            //
-            // - 57 characters into a 370px label, and more than half of them punctuation.
-            //  Colons, brackets and commas earn nothing here: the two pairs are already
-            //  separated by their units, and a run of digits is easier to read without
-            //  brackets around it.  Now:
+            // DISTANCE ONLY.  This used to lead with the target itself:
             //
             //     ⇒ 12h26m20.5s 48°19'59.5"   Δ -0.3s -26'37.3"
             //
-            // Both symbols are WGL4 and verified present in Lucida Sans Unicode, the label's
-            //  font (U+21D2 and U+0394).  The dingbat arrows - U+27A1, U+279C, U+2794 - are
-            //  NOT in it and would render as boxes.
+            // The target now has a proper home: in ACP and LCO modes the Target sub-group shows it
+            //  in the same format as the current coordinates.  Repeating it here spent half a 370px
+            //  label on something already on screen, and what the status line uniquely offers is
+            //  how far there is still to go.
             //
-            return $"⇒ {Angle.RaFromHours(digest.Target.RaDec_RA).ToNiceString()} " +
-                   $"{Angle.DecFromDegrees(digest.Target.RaDec_Dec).ToNiceString()}" +
-                   $"   Δ {SignedAngle(dRa, isHours: true)} " +
+            // Δ is U+0394, WGL4 and verified present in Lucida Sans Unicode, the label's font.
+            //  The dingbat arrows - U+27A1, U+279C, U+2794 - are NOT in it and render as boxes, so
+            //  do not be tempted back to one if the target ever returns here.
+            //
+            return $"Δ {SignedAngle(dRa, isHours: true)} " +
                    $"{SignedAngle(dDec, isHours: false)}";
         }
 
