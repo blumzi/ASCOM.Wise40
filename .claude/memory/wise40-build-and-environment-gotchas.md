@@ -76,11 +76,31 @@ order, each on its own - see the stale-dependency warning above.
 
 Leave `RegisterForComInterop` alone when elevated. No `/p:OutputPath`.
 
+### A GUI change also needs `Dash` built — it is a chain child
+
+The deploy order is `Common` → `Hardware` → `Telescope` → **`Dash`**. Dash comes last because
+with `BuildProjectReferences=false` it compiles against whatever DLLs are on disk at that
+moment.
+
+Easy to miss, because `Dash` is not part of the driver: it is a separate process that
+`Wise40Watcher` launches from `Dash\bin\x86\Debug\Dash.exe`, so it is stopped and relaunched by
+the ordinary chain cycle. Omit it from the build list and the watcher faithfully relaunches the
+**old** exe — a GUI change that deploys, verifies green, and visibly does nothing. Gate on
+`Dash.exe` against the newest `Dash` source like any other artefact. There is no AnyCPU Dash
+build to confuse the platform check.
+
 ### Guard the restart on the build result
 
-Worth keeping in any deploy script: start the chain only if MSBuild exited 0 **and** the x86
-DLL is actually newer than the build started. Two conditions because a missed `/p:Platform`
-exits 0 while writing AnyCPU and leaving `bin\x86\Debug` untouched.
+Worth keeping in any deploy script: start the chain only if MSBuild exited 0 **and** the built
+artefact is genuinely current. Two conditions because a missed `/p:Platform` exits 0 while
+writing AnyCPU and leaving `bin\x86\Debug` untouched.
+
+**"Current" means not older than the newest source in the project — NOT newer than the build
+started.** The stricter form was tried on 2026-09-19 and is wrong: MSBuild skips projects that
+are already up to date, writes nothing, and exits 0, which the gate then read as a failure and
+left the chain down for no reason. A build that does no work is a success. Compare the artefact
+against the newest `.cs` under the project (excluding `obj` and `bin`), plus x86 newer than
+AnyCPU to catch the platform slip.
 
 It paid for itself on 2026-09-18: two failed builds in a row left the chain down and never
 touched `ASCOM.Wise40.Telescope.dll`, which stayed at its previous timestamp throughout - so
