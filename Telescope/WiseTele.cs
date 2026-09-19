@@ -1750,8 +1750,27 @@ namespace ASCOM.Wise40
         }
 
         public readonly Angle altLimit = new Angle(16.0, Angle.AngleType.Alt);
-        public readonly Angle eastern_haLimit = Angle.HaFromHours(-7.0);
-        public readonly Angle western_haLimit = Angle.HaFromHours(7.0);
+        //
+        // Tightened from +/-7.0 to +/-6.5 on 2026-09-19, after these limits failed to protect
+        //  the mount.
+        //
+        // A runaway slew reached a PHYSICAL limit switch at HA -6.7255 with Dec 62.915 - inside
+        //  the -7.0 soft limit, which therefore never fired.  The HardLimit switch cuts motor
+        //  power, so the hardware stopped the axis; nothing in software did.
+        //
+        // Why a fixed hour angle can be wrong at all: the switches sense absolute orientation,
+        //  so their trip locus is a CURVE in (HA, Dec), while these are single numbers that
+        //  ignore declination.  There must therefore be declinations where a switch trips before
+        //  the soft limit, and Dec 62.9 is one of them.
+        //
+        // 6.5 buys 0.2255 h - about 3.4 degrees - of margin at the one declination where the
+        //  trip point is actually known.  It is NOT provably safe everywhere: the rest of the
+        //  (HA, Dec) trip locus has never been mapped, and a full fix would make the limit a
+        //  function of declination rather than a constant.  Treat this as a smaller constant,
+        //  not as a solved problem.  See [[soft-limits-are-not-conservative]].
+        //
+        public readonly Angle eastern_haLimit = Angle.HaFromHours(-6.5);
+        public readonly Angle western_haLimit = Angle.HaFromHours(6.5);
         public readonly Angle lower_decLimit = Angle.DecFromDegrees(-35.0);
         public readonly Angle upper_decLimit = Angle.DecFromDegrees(89.9);
 
@@ -2159,9 +2178,10 @@ namespace ASCOM.Wise40
             //  sample: 5.3502, 5.3504, 5.3518, 5.3554, 5.3613.  ChangedDirection never fired
             //  because the direction was wrong from the first sample rather than changing, so
             //  nothing stopped it.  It ran 77 seconds and covered about 80 degrees of hour
-            //  angle before being aborted by hand, 4.1 degrees short of eastern_haLimit.  Left
-            //  alone it would have continued to mp.maxTime - five minutes - through the soft
-            //  limit.
+            //  angle before a PHYSICAL limit switch cut motor power and stopped it at HA
+            //  -6.7255 - inside the then -7.0 soft limit, which never fired.  The manual
+            //  AbortSlew that followed was after the fact; the hardware stopped it, not
+            //  software.  Left alone the driver would have kept commanding to mp.maxTime.
             //
             //  The declination axis was fine in the same slew: 0.349 rad for a 20 degree move,
             //  decreasing correctly.  It is specific to the HA angle path.
@@ -3317,8 +3337,9 @@ namespace ASCOM.Wise40
             //  distance growing every sample.  ChangedDirection never fired, because the
             //  direction was wrong from the first sample rather than changing, so nothing
             //  stopped it: 77 seconds and about 80 degrees of hour angle before it was aborted
-            //  by hand, 4.1 degrees short of eastern_haLimit.  Declination was correct in the
-            //  same slew, so this is specific to the HA angle path.
+            //  by a physical limit switch cutting motor power at HA -6.7255, inside the then
+            //  -7.0 soft limit.  Declination was correct in the same slew, so this is specific
+            //  to the HA angle path.
             //
             // Why refusing matters more than it looks: Dash.cs:1170 calls this from the HA/Dec
             //  slew button.  Until 2026-09-18 that button was harmlessly broken by a

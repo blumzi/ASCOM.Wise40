@@ -1,4 +1,4 @@
----
+﻿---
 name: stop-tracking-after-tests
 description: "Arie wants the telescope's tracking switched off when a test or measurement session ends, not left running"
 metadata:
@@ -7,7 +7,7 @@ metadata:
 
 **Turn tracking off when the testing stops.** Asked for on 2026-09-18, after a session of HA slew measurements where it was left on more than once.
 
-**Why:** with tracking on the mount keeps following the sky unattended, so the hour angle climbs toward the `western_haLimit` of +7.0 h and the altitude falls toward the 16° soft limit — the `SafetyMonitorTimer` will eventually `AbortSlew`/`Backoff` on its own, which is not how a session should end. It also leaves the track motor energised on an old analog drive for no reason. Parked with tracking off, the axis simply sits still and the *encoder* hour angle stays put.
+**Why:** with tracking on the mount keeps following the sky unattended, so the hour angle climbs toward the `western_haLimit` of +6.5 h and the altitude falls toward the 16° soft limit — the `SafetyMonitorTimer` will eventually `AbortSlew`/`Backoff` on its own, which is not how a session should end. It also leaves the track motor energised on an old analog drive for no reason. Parked with tracking off, the axis simply sits still and the *encoder* hour angle stays put.
 
 **How to apply:**
 
