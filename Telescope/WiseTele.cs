@@ -1785,6 +1785,50 @@ namespace ASCOM.Wise40
         public readonly Angle lower_decLimit = Angle.DecFromDegrees(-35.0);
         public readonly Angle upper_decLimit = Angle.DecFromDegrees(89.9);
 
+        //
+        // A TEMPORARY extra restriction for on-sky testing, set through the "test-envelope"
+        //  Action.  Null means no extra restriction, which is the state after every restart.
+        //
+        // The point is to keep a test well away from the real danger zones: the limit switch at
+        //  the eastern end cut the mount's power on 2026-09-19, and the compiled limits are not
+        //  themselves conservative - see [[soft-limits-are-not-conservative]].
+        //
+        // Three properties make this safe to have in the safety path at all:
+        //
+        //  1. It can only ADD a rejection reason, never remove one.  SafeAtCoordinates stays at
+        //     least as strict as the compiled limits no matter what these hold.
+        //  2. The Action REFUSES any value looser than the compiled limit, so it cannot widen
+        //     the envelope even by mistake or typo.
+        //  3. Deliberately NOT persisted to the profile.  A restart restores the real limits,
+        //     which is the honest default - a forgotten tight envelope sitting in the profile
+        //     would quietly shrink the working sky for the next ACP night, and an elevated
+        //     rebuild wipes the profile subkey anyway.
+        //
+        // Rejections name the TEST limit explicitly, so a slew refused by the temporary envelope
+        //  never looks like a slew refused by a real limit.
+        //
+        private static double? testAltLimitDeg = null;
+        private static double? testHaLimitHours = null;
+
+        /// <summary>
+        /// Describes the temporary test envelope, for the Action and for logging.
+        /// </summary>
+        public static string TestEnvelopeDescription
+        {
+            get
+            {
+                if (!testAltLimitDeg.HasValue && !testHaLimitHours.HasValue)
+                    return "test-envelope: off (the compiled limits apply)";
+
+                List<string> parts = new List<string>();
+                if (testAltLimitDeg.HasValue)
+                    parts.Add($"AltLimit={testAltLimitDeg.Value:F1} deg");
+                if (testHaLimitHours.HasValue)
+                    parts.Add($"HaLimit=+/-{testHaLimitHours.Value:F2} h");
+                return "test-envelope: " + String.Join(", ", parts);
+            }
+        }
+
         /// <summary>
         /// Checks if we're safe at a given position:  Used:
         ///  - before slewing to check if the scope will be safe at the target coordinates
@@ -1813,6 +1857,13 @@ namespace ASCOM.Wise40
             if (alt < altLimit)
                 reasons.Add($"Altitude too low: {alt} < {altLimit}");
 
+            //
+            // Separate from the check above, never folded into it: the compiled limit must keep
+            //  rejecting on its own, whatever the test envelope holds.
+            //
+            if (testAltLimitDeg.HasValue && alt < Angle.AltFromDegrees(testAltLimitDeg.Value))
+                reasons.Add($"Altitude below the TEST limit: {alt} < {Angle.AltFromDegrees(testAltLimitDeg.Value)}");
+
             if (dec > upper_decLimit)
                 reasons.Add($"Declination too high: {dec} > {upper_decLimit}");
             if (dec < lower_decLimit)
@@ -1839,6 +1890,16 @@ namespace ASCOM.Wise40
                 reasons.Add($"HourAngle too low: {Angle.HaFromHours(ha)} < {eastern_haLimit}");
             else if (ha > western_haLimit.Hours)
                 reasons.Add($"HourAngle too high: {Angle.HaFromHours(ha)} > {western_haLimit}");
+
+            //
+            // A plain if, not another else-if on the chain above: a target beyond BOTH the
+            //  compiled limit and the test limit should say so twice rather than hide one.
+            //
+            // Symmetric, because both ends carry a limit switch.  Splitting it into east and
+            //  west is a two-field change here if a test ever needs an asymmetric envelope.
+            //
+            if (testHaLimitHours.HasValue && Math.Abs(ha) > testHaLimitHours.Value)
+                reasons.Add($"HourAngle outside the TEST envelope: {Angle.HaFromHours(ha)} beyond +/-{testHaLimitHours.Value:F2}h");
 
             if (reasons.Count > 0)
             {
@@ -4511,6 +4572,98 @@ namespace ASCOM.Wise40
 
                 case "hardware-digest":
                     return JsonConvert.SerializeObject(HardwareDigest.FromHardware());
+
+                case "test-envelope":
+                    {
+                        //
+                        // A temporary, TIGHTER safety envelope for on-sky testing.  See the
+                        //  testAltLimitDeg / testHaLimitHours fields above for why this can only
+                        //  ever restrict, and why it is deliberately not persisted.
+                        //
+                        //   test-envelope                          report the current state
+                        //   test-envelope   off                    back to the compiled limits
+                        //   test-envelope   AltLimit=30,HaLimit=3  restrict (either key optional)
+                        //
+                        // Braced because C# switch sections share one scope and slew-to-ha-dec
+                        //  below already declares par, ha, dec, kv, key and val.
+                        //
+                        if (string.IsNullOrWhiteSpace(parameter))
+                            return TestEnvelopeDescription;
+
+                        if (parameter.Trim().Equals("off", StringComparison.OrdinalIgnoreCase))
+                        {
+                            testAltLimitDeg = null;
+                            testHaLimitHours = null;
+                            #region debug
+                            debugger.WriteLine(Debugger.DebugLevel.DebugTele, "test-envelope: cleared");
+                            #endregion
+                            return TestEnvelopeDescription;
+                        }
+
+                        double? newAlt = null, newHa = null;
+
+                        foreach (string item in parameter.Split(','))
+                        {
+                            string[] kvPair = item.Split('=');
+                            if (kvPair.Length != 2)
+                                return $"Malformed parameter \"{item.Trim()}\", expected Key=Value";
+
+                            string envKey = kvPair[0].Trim();
+                            string envVal = kvPair[1].Trim();
+
+                            if (!Double.TryParse(envVal, out double envNum))
+                                return $"\"{envVal}\" is not a number";
+
+                            if (envKey.Equals("AltLimit", StringComparison.OrdinalIgnoreCase))
+                                newAlt = envNum;
+                            else if (envKey.Equals("HaLimit", StringComparison.OrdinalIgnoreCase))
+                                newHa = envNum;
+                            else
+                                return $"Unknown key \"{envKey}\", expected AltLimit or HaLimit";
+                        }
+
+                        if (!newAlt.HasValue && !newHa.HasValue)
+                            return "Nothing to set: supply AltLimit, HaLimit, or \"off\"";
+
+                        //
+                        // REFUSE anything looser than the compiled limit.  This is the guard that
+                        //  makes the Action incapable of widening the envelope: a slip of the
+                        //  keyboard can only ever make the test area smaller.
+                        //
+                        if (newAlt.HasValue && newAlt.Value < altLimit.Degrees)
+                            return $"Refused: AltLimit={newAlt.Value} is BELOW the real limit of {altLimit.Degrees}; the test envelope may only restrict";
+
+                        if (newHa.HasValue && (newHa.Value <= 0.0 || newHa.Value > western_haLimit.Hours))
+                            return $"Refused: HaLimit={newHa.Value} must be above 0 and at most the real limit of {western_haLimit.Hours}; the test envelope may only restrict";
+
+                        //
+                        // Refuse to arm an envelope that excludes where the mount is standing.
+                        //
+                        // The safety monitor is armed when motion STARTS, not continuously, so an
+                        //  envelope that already excludes the current position does nothing until
+                        //  the next command - and then answers that command with a backoff
+                        //  instead of the test that was intended.  Better to refuse now than to
+                        //  have the first slew of the night behave inexplicably.
+                        //
+                        double curAlt = Altitude;
+                        double curHa = safeAstroUtils.ConditionHA(HourAngle);
+
+                        if (newAlt.HasValue && curAlt < newAlt.Value)
+                            return $"Refused: the mount is at altitude {curAlt:F2}, below the requested AltLimit={newAlt.Value}; move it inside the envelope first";
+
+                        if (newHa.HasValue && Math.Abs(curHa) > newHa.Value)
+                            return $"Refused: the mount is at hour angle {curHa:F3}h, outside the requested HaLimit=+/-{newHa.Value}; move it inside the envelope first";
+
+                        if (newAlt.HasValue)
+                            testAltLimitDeg = newAlt;
+                        if (newHa.HasValue)
+                            testHaLimitHours = newHa;
+
+                        #region debug
+                        debugger.WriteLine(Debugger.DebugLevel.DebugTele, TestEnvelopeDescription);
+                        #endregion
+                        return TestEnvelopeDescription;
+                    }
 
                 case "slew-to-ha-dec":
                     //
