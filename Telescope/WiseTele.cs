@@ -285,8 +285,42 @@ namespace ASCOM.Wise40
             //  than westward - 2.002 and 1.997 deg across 1.4h of hour angle.
             //
             public Angle stopMovementIncreasing;
+            //
+            // Dead.  Set for every rate here but read nowhere - the only references are
+            //  commented out, in ScopeAxisSlewer.  They are the vestige of an earlier attempt
+            //  at exactly what stoppedWindowSeconds/stoppedArcsec below now do.  Left in place
+            //  rather than removed, because the values are measured data worth keeping, but do
+            //  not mistake them for something in use.
+            //
             public double minRadChangePerPollingInterval;
             public double maxRadChangePerPollingInterval;
+
+            //
+            // When this axis, having last been driven at this rate, counts as STOPPED:
+            //  displacement of no more than stoppedArcsec over the last stoppedWindowSeconds.
+            //  Zero means "not specified" and AxisMonitor falls back to its finest criterion.
+            //
+            // Why displacement over a window instead of a per-sample threshold, and why the
+            //  value has to differ per rate: at the measured 62ms sampling interval an axis
+            //  travels 429 arcsec per sample at slew rate, 3.2 at set and 0.043 at guide -
+            //  about 10000:1.  The single primaryEpsilon of 0.400 arcsec/sample sat 1073x
+            //  below slew, 8x below set and 9x ABOVE guide, so guide-rate motion was invisible:
+            //  a guide leg that ran 20.11s and covered 16.5 arcsec reported not-moving
+            //  throughout, and every "stopping distance: 00h00m00.0s" logged at rateGuide is
+            //  that artefact rather than a measurement.
+            //
+            // Lowering the threshold could not have fixed it.  Guide-rate motion is 0.043
+            //  arcsec per sample against an encoder quantum of 0.1187 - under half a count -
+            //  so the signal is below quantisation, not below the threshold.  The window has
+            //  to be long enough for real motion to accumulate past the quantum, which is why
+            //  guide gets 2 seconds where slew gets half of one.
+            //
+            // Plain doubles in ARCSEC, deliberately not Angle: on the primary axis Angle
+            //  parses HMS, so "00h00m00.5s" would mean 7.5 arcsec, and that trap has already
+            //  cost this file enough.
+            //
+            public double stoppedWindowSeconds;
+            public double stoppedArcsec;
             public int pollingFreqMillis;
             public TimeSpan maxTime;
 
@@ -649,6 +683,12 @@ namespace ASCOM.Wise40
                         stopMovementIncreasing = new Angle("00h08m24.0s"),
                         minRadChangePerPollingInterval = 0.052,
                         maxRadChangePerPollingInterval = 1.5724276374,
+                        //
+                        // 3.2 arcsec over 0.5s = 6.4 arcsec/sec, which is exactly what the old
+                        //  0.400 arcsec per 62ms sample came to.  Unchanged on purpose.
+                        //
+                        stoppedWindowSeconds = 0.5,
+                        stoppedArcsec = 3.2,
                         maxTime = TimeSpan.FromMinutes(5),
                     },
 
@@ -667,6 +707,14 @@ namespace ASCOM.Wise40
                         stopMovement = new Angle("00h00m02.3s"),
                         minRadChangePerPollingInterval = 0.000146,
                         maxRadChangePerPollingInterval = 0.0436017917,
+                        //
+                        // Also unchanged.  Tightening this would add several seconds to the end
+                        //  of every slew - the settling tail decays with a time constant of
+                        //  about 2.5s - and buy nothing: the set-rate coast was already measured
+                        //  reliably at this threshold and cross-checked against positions.
+                        //
+                        stoppedWindowSeconds = 0.5,
+                        stoppedArcsec = 3.2,
                         maxTime = TimeSpan.FromMinutes(6),
                     },
 
@@ -688,6 +736,15 @@ namespace ASCOM.Wise40
                         stopMovement = new Angle("00h00m00.2s"),
                         minRadChangePerPollingInterval = 0.0000072,
                         maxRadChangePerPollingInterval = 0.0014668186,
+                        //
+                        // The case that was broken.  0.5 arcsec over 2s = 0.25 arcsec/sec, about
+                        //  a third of the measured 0.6-0.8 arcsec/sec guide rate, so a running
+                        //  guide leg is now distinguishable from a stopped axis.  0.5 arcsec is
+                        //  also some 4 encoder counts, so it sits above quantisation rather than
+                        //  inside it.  This is what makes the guide-rate coast measurable at all.
+                        //
+                        stoppedWindowSeconds = 2.0,
+                        stoppedArcsec = 0.5,
                         maxTime = TimeSpan.FromMinutes(5),
                     }
                 },
@@ -730,6 +787,13 @@ namespace ASCOM.Wise40
                         stopMovement = new Angle("03:30:00.0"),
                         minRadChangePerPollingInterval = 0.0785,
                         maxRadChangePerPollingInterval = 1.6946717173,
+                        //
+                        // 1.2 arcsec over 0.5s = 2.4 arcsec/sec, reproducing this axis's old
+                        //  decEpsilon of 0.15 arcsec per 62ms sample.  Dec was always the finer
+                        //  of the two; keep it that way.
+                        //
+                        stoppedWindowSeconds = 0.5,
+                        stoppedArcsec = 1.2,
                         maxTime = TimeSpan.FromMinutes(5),
                     },
 
@@ -753,6 +817,8 @@ namespace ASCOM.Wise40
                         stopMovement = new Angle("00:00:23.0"),
                         minRadChangePerPollingInterval = 0.000014,
                         maxRadChangePerPollingInterval = 0.0469464707,
+                        stoppedWindowSeconds = 0.5,
+                        stoppedArcsec = 1.2,
                         maxTime = TimeSpan.FromMinutes(5),
                     },
 
@@ -773,6 +839,14 @@ namespace ASCOM.Wise40
                         stopMovement = new Angle("00:00:03.0"),
                         minRadChangePerPollingInterval = 0.00000049,
                         maxRadChangePerPollingInterval = 0.0001234182,
+                        //
+                        // As the primary's guide entry.  0.25 arcsec/sec against a measured Dec
+                        //  guide rate of 0.79, and 0.5 arcsec is roughly 11 counts on this
+                        //  encoder.  Dec reverses at guide rate on almost every slew, so its
+                        //  coast is the one most worth being able to measure.
+                        //
+                        stoppedWindowSeconds = 2.0,
+                        stoppedArcsec = 0.5,
                         maxTime = TimeSpan.FromMinutes(5),
                     }
                 }
@@ -1208,6 +1282,20 @@ namespace ASCOM.Wise40
                 return primaryAxisMonitor.IsMoving;
             if (axis == TelescopeAxes.axisSecondary)
                 return secondaryAxisMonitor.IsMoving;
+            return false;
+        }
+
+        /// <summary>
+        /// As above, but judged against the rate the axis was last driven at.  See
+        ///  AxisMonitor.IsMovingAtRate: one threshold cannot serve rates spanning 10000:1,
+        ///  and the old one could not see guide-rate motion at all.
+        /// </summary>
+        public static bool AxisIsMoving(TelescopeAxes axis, double rate)
+        {
+            if (axis == TelescopeAxes.axisPrimary)
+                return primaryAxisMonitor.IsMovingAtRate(rate);
+            if (axis == TelescopeAxes.axisSecondary)
+                return secondaryAxisMonitor.IsMovingAtRate(rate);
             return false;
         }
 
@@ -2856,7 +2944,12 @@ namespace ASCOM.Wise40
                 Angle.DecFromDegrees(Declination);
             debugger.WriteLine(Debugger.DebugLevel.DebugAxes, msg + $"at {a} waiting for {axis} to stop moving ...");
             #endregion debug
-            while (AxisIsMoving(axis))
+            //
+            // Judged against the rate that was just running.  After a set leg the next rate is
+            //  guide at 0.7 arcsec/sec, so "stopped" has to mean a good deal slower than that -
+            //  which the old single threshold, equivalent to 6.4 arcsec/sec, did not.
+            //
+            while (AxisIsMoving(axis, rate))
             {
                 Thread.Sleep(waitForOtherAxisMillis);
             }

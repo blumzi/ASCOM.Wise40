@@ -78,6 +78,117 @@ namespace ASCOM.Wise40
 
         public abstract bool IsMoving { get; }
 
+        /// <summary>
+        /// Whether the axis is still moving, judged against the rate it was last driven at.
+        ///
+        /// A single per-sample threshold cannot serve all three rates.  With the measured
+        ///  62ms sampling interval an axis travels 429 arcsec per sample at slew rate, 3.2 at
+        ///  set, and 0.043 at guide - a span of about 10000:1.  The old primaryEpsilon of
+        ///  0.400 arcsec/sample sat 1073x below slew, 8x below set, and 9x ABOVE guide, so
+        ///  guide-rate motion was invisible: a guide leg that ran 20.11s and covered 16.5
+        ///  arcsec reported IsMoving false throughout.  Every "stopping distance:
+        ///  00h00m00.0s" logged at rateGuide is that artefact, not a measurement.
+        ///
+        /// Lowering the threshold cannot fix it.  Guide-rate motion is 0.043 arcsec per
+        ///  sample against an encoder quantum of 0.1187 - less than half a count - so most
+        ///  samples read zero and the occasional one reads a whole count.  The signal is below
+        ///  quantisation, and no per-sample threshold separates it from noise.
+        ///
+        /// So this measures DISPLACEMENT OVER A WINDOW instead, with the window long enough
+        ///  for the rate in question.  Displacement also rejects the zero-mean quantisation
+        ///  noise that a sum of absolute per-sample deltas would accumulate.
+        /// </summary>
+        public abstract bool IsMovingAtRate(double rate);
+
+        //
+        // Timestamped position sample, in arcsec so every threshold below is in arcsec too.
+        //  Windows are selected by ELAPSED TIME rather than sample count, because the real
+        //  sampling interval is 62ms against a nominal 50 - counting samples would silently
+        //  give a window 25% longer than intended.
+        //
+        public struct TimedValue
+        {
+            public DateTime when;
+            public double arcsec;
+        };
+
+        //
+        // Three seconds at the nominal rate, comfortably more than the longest window below.
+        //  Deliberately NOT nSamples: that still sizes _samples and therefore IsReady, which
+        //  must not become slower to satisfy this.
+        //
+        public const int nTimedSamples = 3 * _samplingFrequency;
+
+        /// <summary>
+        /// How still the axis must be to count as stopped, for the rate it was last driven at.
+        ///
+        /// The values live in WiseTele's movementParameters table, beside stopMovement and the
+        ///  rest of the per-axis per-rate constants, because that is what they are - see the
+        ///  reasoning on MovementParameters.stoppedWindowSeconds.  Keeping them here in a
+        ///  switch would have put two halves of the same tuning job in two files.
+        /// </summary>
+        protected void StoppedCriterion(double rate, out double windowSeconds, out double maxArcsec)
+        {
+            //
+            // Fallback: the finest criterion.  Used for rateStopped - which is what the plain
+            //  IsMoving property asks for - for rateTrack, and for the simulated parameter set,
+            //  none of which carry values of their own.
+            //
+            windowSeconds = 2.0;
+            maxArcsec = 0.5;
+
+            if (wisetele?.movementParameters == null)
+                return;
+
+            //
+            // Math.Abs because direction is carried in the sign of the rate, while the table is
+            //  keyed by the unsigned Const.rateXxx values.
+            //
+            if (wisetele.movementParameters.TryGetValue(_axis, out Dictionary<double, WiseTele.MovementParameters> byRate) &&
+                byRate.TryGetValue(Math.Abs(rate), out WiseTele.MovementParameters mp) &&
+                mp.stoppedWindowSeconds > 0.0)
+            {
+                windowSeconds = mp.stoppedWindowSeconds;
+                maxArcsec = mp.stoppedArcsec;
+            }
+        }
+
+        /// <summary>
+        /// Displacement across the newest window of the given length, in arcsec.  Returns NaN
+        ///  when the queue does not yet span enough time to judge.
+        /// </summary>
+        protected static double DisplacementOverWindow(TimedValue[] arr, double windowSeconds, out double spanSeconds)
+        {
+            spanSeconds = 0.0;
+            if (arr == null || arr.Length < 2)
+                return double.NaN;
+
+            //
+            // Scan for newest rather than assuming the queue's ordering.
+            //
+            TimedValue newest = arr[0];
+            foreach (TimedValue v in arr)
+                if (v.when > newest.when)
+                    newest = v;
+
+            DateTime cutoff = newest.when.AddSeconds(-windowSeconds);
+            TimedValue basis = newest;
+            foreach (TimedValue v in arr)
+                if (v.when >= cutoff && v.when < basis.when)
+                    basis = v;
+
+            spanSeconds = newest.when.Subtract(basis.when).TotalSeconds;
+
+            //
+            // Too little history to be sure - the caller treats that as "still moving", which
+            //  is the safe direction: it waits longer rather than handing off early.
+            //
+            if (spanSeconds < 0.6 * windowSeconds)
+                return double.NaN;
+
+            return Math.Abs(newest.arcsec - basis.arcsec);
+        }
+
         public abstract bool IsReady { get; set; }
 
         public double DeltaT
@@ -263,10 +374,30 @@ namespace ASCOM.Wise40
         //  0.86 arcsec/sec is 0.043 arcsec per sample, a third of one encoder count.  It is
         //  below quantisation, not below this epsilon.
         //
+        //
+        // SUPERSEDED and no longer read.  Kept because its value is cited in the measurements
+        //  it came from: 0.400 arcsec per sample, validated against a 60s dither run with a
+        //  median of 0.043 and one sample in 965 over the threshold.  The successor is
+        //  stoppedWindowSeconds/stoppedArcsec in WiseTele's movementParameters table, which is
+        //  per rate - this one number could not be.
+        //
         public const double primaryEpsilon = 0.40 / (3600.0 * 15.0);
 
         public static FixedSizedQueue<double> _raDeltas = new FixedSizedQueue<double>(nSamples);
         public static FixedSizedQueue<double> _haDeltas = new FixedSizedQueue<double>(nSamples);
+
+        //
+        // Timestamped positions in arcsec, for IsMovingAtRate.  Both are kept so the decision
+        //  can switch on Tracking without the queue having to be reset: right ascension when
+        //  tracking, because a correctly tracking axis holds it constant and the sidereal rate
+        //  subtracts itself out, and hour angle when not.
+        //
+        // The per-sample delta queues above are retained: nothing decides anything from them
+        //  now, but they are what the DebugAxes line prints, and that line earned its keep
+        //  diagnosing this very problem.
+        //
+        public static FixedSizedQueue<TimedValue> _raArcsec = new FixedSizedQueue<TimedValue>(nTimedSamples);
+        public static FixedSizedQueue<TimedValue> _haArcsec = new FixedSizedQueue<TimedValue>(nTimedSamples);
 
         private double _rightAscension = double.NaN, _hourAngle = double.NaN;
         private double _prevRightAscension = double.NaN, _prevHourAngle = double.NaN;
@@ -281,6 +412,7 @@ namespace ASCOM.Wise40
         public static void ResetRASamples()
         {
             _raDeltas = new FixedSizedQueue<double>(nSamples);
+            _raArcsec = new FixedSizedQueue<TimedValue>(nTimedSamples);
         }
 
         protected override void SampleAxisMovement(object StateObject)
@@ -332,6 +464,10 @@ namespace ASCOM.Wise40
             double haDelta = Math.Abs(_hourAngle - _prevHourAngle);
             _raDeltas.Enqueue(raDelta);
             _haDeltas.Enqueue(haDelta);
+
+            DateTime sampledAt = DateTime.Now;
+            _raArcsec.Enqueue(new TimedValue { when = sampledAt, arcsec = _rightAscension * 54000.0 });
+            _haArcsec.Enqueue(new TimedValue { when = sampledAt, arcsec = _hourAngle * 54000.0 });
 
             //
             // NOTE: RenishawHAEncoder.HourAngle already returns HOURS, not radians.
@@ -405,50 +541,46 @@ namespace ASCOM.Wise40
             }
         }
 
-        public override bool IsMoving
+        //
+        // Kept for the Slewing digest and anything else that just wants "is it moving".
+        //  rateStopped selects the finest criterion, which is what a reporting caller wants.
+        //
+        public override bool IsMoving => IsMovingAtRate(Const.rateStopped);
+
+        public override bool IsMovingAtRate(double rate)
         {
-            get
+            if (!IsReady)
             {
-                if (!IsReady)
-                {
-                    #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, $"{WiseName}:IsMoving: No ready.)");
-                    #endregion
-                    return false;
-                }
-
-                double max = double.MinValue;
-                bool tracking = wisetele.Tracking;
-                double[] arr;
-                double epsilon;
-
-                if (tracking)
-                {
-                    arr = _raDeltas.ToArray();
-                    epsilon = primaryEpsilon;
-                }
-                else
-                {
-                    arr = _haDeltas.ToArray();
-                    epsilon = primaryEpsilon;
-                }
-
-                foreach (double d in arr)
-                {
-                    if (d > max)
-                        max = d;
-                }
-
-                bool ret = max > epsilon;
-
                 #region debug
-                string deb = $"{WiseName}:IsMoving: max: {max:F15}, epsilon: {epsilon:F15}, ret: {ret}, active: {ActiveMotors(_axis)}" + "[";
-                foreach (double d in arr)
-                    deb += $" {d:F10}";
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, deb + " ]");
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, $"{WiseName}:IsMovingAtRate: not ready.");
                 #endregion
-                return ret;
+                return false;
             }
+
+            bool tracking = wisetele.Tracking;
+            TimedValue[] arr = (tracking ? _raArcsec : _haArcsec).ToArray();
+
+            StoppedCriterion(rate, out double windowSeconds, out double maxArcsec);
+            double moved = DisplacementOverWindow(arr, windowSeconds, out double spanSeconds);
+
+            //
+            // NaN means the window is not yet populated.  Report still-moving: waiting a
+            //  little longer is always safer than handing the axis to the next rate early.
+            //
+            bool ret = Double.IsNaN(moved) || (moved > maxArcsec);
+
+            #region debug
+            if (Debugger.Debugging(Debugger.DebugLevel.DebugAxes))
+            {
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                    $"{WiseName}:IsMovingAtRate({WiseTele.RateName(rate)}): " +
+                    $"moved {(Double.IsNaN(moved) ? "n/a" : moved.ToString("F4"))}\" over {spanSeconds:F2}s " +
+                    $"(window {windowSeconds:F1}s, limit {maxArcsec:F2}\", " +
+                    $"{(tracking ? "RA, tracking" : "HA, not tracking")}), ret: {ret}, " +
+                    $"active: {ActiveMotors(_axis)}");
+            }
+            #endregion
+            return ret;
         }
 
         public override double Velocity()
@@ -529,6 +661,12 @@ namespace ASCOM.Wise40
         public static FixedSizedQueue<double> _decDeltas = new FixedSizedQueue<double>(nSamples);
 
         //
+        // Timestamped declination in arcsec, for IsMovingAtRate.  One queue, not two: this
+        //  axis has no tracking rate to subtract.
+        //
+        public static FixedSizedQueue<TimedValue> _decArcsec = new FixedSizedQueue<TimedValue>(nTimedSamples);
+
+        //
         // Below this per-sample change the axis counts as stopped.  Degrees, since _decDeltas
         //  holds degrees.
         //
@@ -541,6 +679,11 @@ namespace ASCOM.Wise40
         // This is not a precision the mount can use: its own repeatability is ~30 arcsec, and
         //  after this handover the next leg drives at 49.6 arcsec/sec. Insisting on stillness
         //  to 0.044 arcsec bought nothing and cost 21 seconds a slew.
+        //
+        //
+        // SUPERSEDED and no longer read, as primaryEpsilon above.  0.15 arcsec per sample is
+        //  2.4 arcsec/sec, which is what the secondary's slew and set entries in the table now
+        //  reproduce as 1.2 arcsec over 0.5s.
         //
         private const double decEpsilon = 0.15 / 3600.0;
 
@@ -605,6 +748,7 @@ namespace ASCOM.Wise40
 
             double delta = Math.Abs(_declination - _prevDeclination);
             _decDeltas.Enqueue(delta);
+            _decArcsec.Enqueue(new TimedValue { when = DateTime.Now, arcsec = _currPosition.radians * 3600.0 * 180.0 / Math.PI });
 
             #region debug
             // See the matching comment in PrimaryAxisMonitor: guarded, and one read.
@@ -639,34 +783,34 @@ namespace ASCOM.Wise40
             }
         }
 
-        public override bool IsMoving
+        public override bool IsMoving => IsMovingAtRate(Const.rateStopped);
+
+        public override bool IsMovingAtRate(double rate)
         {
-            get
+            if (! IsReady)
             {
-                if (! IsReady)
-                {
-                    #region debug
-                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes, $"{WiseName}:IsMoving: Not ready.");
-                    #endregion
-                    return false;    // not enough samples
-                }
-
-                double[] arr = _decDeltas.ToArray();
-
-                foreach (double d in arr)
-                    if (d > decEpsilon)
-                    {
-                        #region debug
-                        debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}:IsMoving: true", WiseName);
-                        #endregion
-                        return true;
-                    }
-
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, "{0}:IsMoving: false", WiseName);
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes, $"{WiseName}:IsMovingAtRate: not ready.");
                 #endregion
-                return false;
+                return false;    // not enough samples
             }
+
+            StoppedCriterion(rate, out double windowSeconds, out double maxArcsec);
+            double moved = DisplacementOverWindow(_decArcsec.ToArray(), windowSeconds, out double spanSeconds);
+
+            bool ret = Double.IsNaN(moved) || (moved > maxArcsec);
+
+            #region debug
+            if (Debugger.Debugging(Debugger.DebugLevel.DebugAxes))
+            {
+                debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                    $"{WiseName}:IsMovingAtRate({WiseTele.RateName(rate)}): " +
+                    $"moved {(Double.IsNaN(moved) ? "n/a" : moved.ToString("F4"))}\" over {spanSeconds:F2}s " +
+                    $"(window {windowSeconds:F1}s, limit {maxArcsec:F2}\"), ret: {ret}, " +
+                    $"active: {ActiveMotors(_axis)}");
+            }
+            #endregion
+            return ret;
         }
 
         public Angle Declination
