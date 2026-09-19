@@ -1,12 +1,21 @@
----
+﻿---
 name: ha-angle-distance-is-broken
-description: "Angle.ShortestDistance mis-computes distance and direction for AngleType.HA, which ran the primary axis 80 degrees the wrong way into a limit switch"
+description: "Two defects made an HA-typed slew run an axis into a limit: FromRadians was 15x wrong for HMS types (FIXED), and movementDict maps Increasing to EastMotor whatever the angle type (OPEN)"
 metadata:
   type: project
 ---
 
-**An HA-typed slew drives the wrong way and does not stop.** Found 2026-09-19 by doing it to the
-telescope. **Not fixed** — the affected callers were reverted or disabled instead.
+**An HA-typed slew drove the wrong way and did not stop.** Found 2026-09-19 by doing it to the
+telescope. It turned out to be **two independent defects**:
+
+| | status |
+|---|---|
+| `Angle.FromRadians` was 15× wrong for HMS types, so the distance was 15× too large | **fixed**, PR #44 |
+| `movementDict` maps `axisPrimary` + `Increasing` to `EastMotor` whatever the angle type | **OPEN** |
+
+**HA-typed slews remain disabled, and should.** With the distance now correct, an HA target would
+compute the right magnitude and still drive the wrong way. `Park` stays on a right-ascension
+target.
 
 ## The measurement
 
@@ -24,32 +33,63 @@ then drove **East**, away from the target, the reported distance **growing** eve
 5.3502  5.3504  5.3518  5.3554  5.3613 ...
 ```
 
-`ChangedDirection` never fired, because the direction was **wrong from the first sample rather
-than changing** — the reversal detector compares `startingDistance.direction` with
-`currentDistance.direction`, and both were computed by the same broken arithmetic. So nothing
-stopped it. It ran **77 s and about 80° of hour angle**, and was stopped by a physical limit
-switch — see [[soft-limits-are-not-conservative]].
+**`ChangedDirection` never fired, and correctly so** — this was first written up as the detector
+being fooled by a wrong direction, which is not what happened. The reversal detector compares
+`startingDistance.direction` with `currentDistance.direction`, and both were `Increasing`
+throughout, which was *right*: the target stayed west of the axis the whole time, because the axis
+was running east. There was no reversal to detect. Driving away from the target is invisible to a
+detector that only watches for the direction *flipping*.
+
+So nothing stopped it. It ran **77 s and about 80° of hour angle**, and was stopped by a physical
+limit switch — see [[soft-limits-are-not-conservative]].
+
+Worth noting as a gap in its own right: the slewer has no check for "distance to target is
+increasing". There is a dead branch for exactly that at `WiseTele.cs` — `prevDistance` is assigned
+outside the loop, so it is always 0.0 inside and the test never fires, and its body only logs
+`SUSPECT: distance to target is INCREASING` with the `status = Failed` commented out. A working
+version of that check would have caught this in a second or two, whatever the cause.
 
 **Declination was correct in the same slew**: 0.349 rad for a 20° move, decreasing properly. So
 this is specific to the HA angle path, not to the slewer.
 
-## Where it is not
+## What it actually was
 
-`Angle.ShortestDistance` takes the non-periodic branch for `AngleType.HA`, because `Angle`
-declares that type `_periodic = false` with bounds −12..+12:
+Settled by `TestAngleHa`, which reproduces the whole thing in under a second with no telescope.
+**Two guesses recorded here before that test were wrong**, and both are worth stating because they
+are the natural things to suspect:
+
+- **"Negative hour angles are mishandled."** No. They round-trip exactly, `Hours` and `Radians`
+  both correct from −12 to +12. That case is in the test *because* it rules this out.
+- **"The direction was inverted."** No. `ShortestDistance` returned the correct `AxisDirection` in
+  all 14 test cases — zero direction failures. It is not why the axis went the wrong way.
+
+The real fault was a units confusion worth exactly **15**, degrees per hour:
 
 ```csharp
-result.angle = Angle.FromRadians(Math.Abs(this.Radians - other.Radians), this._type);
-result.direction = (this.Radians > other.Radians) ? Decreasing : Increasing;
+public static Angle FromRadians(double rad, AngleType type = AngleType.Deg)
+{
+    return new Angle(rad * 180.0 / Math.PI, type);   // DEGREES, whatever the type
+}
 ```
 
-That arithmetic is correct as written. From −1.3624 h to 0 it should give 0.357 rad and
-`Increasing`. It gave 5.35 rad and drove the other way, so **the fault is more likely in how a
-NEGATIVE hour angle is represented in `Hours`/`Radians` than in the subtraction** — but that was
-inferred, not proven. Prove it with a test against known values before changing anything.
+For an HMS type the constructor reads that number as **hours**. 0.356675 rad is 20.436 degrees,
+stored as 20.436 hours — hence 5.3502 rad reported for a 0.357 rad move.
 
-Note 5.3502 rad is 20.44 h, not the 22.64 h you would get from a naive 24-hour wrap, so whatever
-happens is not simply "treated as 0..24".
+**Why only hour angles showed it:** `HA` is the only `AngleType` that is both non-periodic *and*
+HMS. `Dec` takes the same non-periodic branch of `ShortestDistance` but is degree-based, so
+radians→degrees is right. `RA` and `Az` are periodic and take the *other* branch, which was already
+guarded by `_isHMS`. The correct pattern existed four times over in the same file.
+
+**RA was silently affected, not unaffected:** `RaFromRadians(1.701696)` should give 6.5 h and gave
+**1.5 h**, because RA is periodic over 0..24 and 97.5 mod 24 is 1.5. A plausible wrong answer is
+worse than an obvious one. Its only caller is `PrimaryAxisMonitor.Velocity()`, which has no callers
+itself, so the damage was a wrong readout rather than wrong control.
+
+Also wrong by the same 15×, and fixed with it: `RaFromRadians`, `HaFromRadians`, `Angle.Min` and
+`Angle.Max`.
+
+**The lesson, since two reasoned guesses missed it:** this was pure arithmetic, testable in
+minutes without hardware. Reach for the test before the explanation.
 
 ## What was done instead
 
@@ -71,10 +111,26 @@ at a limit. See [[park-position]].
 
 ## Before re-enabling any of it
 
-1. A test of `Angle.ShortestDistance` over HA-typed angles, **both signs**, against hand-computed
-   values. This is pure arithmetic and needs no telescope.
-2. Only then reconsider `Park` on an HA target, which remains the right design — an hour angle
-   needs no lead for the slew duration.
+The arithmetic is done — `TestAngleHa` covers HA `ShortestDistance` and the radians→HMS
+conversions, both signs, and passes. What remains is the direction mapping:
+
+```csharp
+[new MovementSpecifier(TelescopeAxes.axisPrimary, Const.AxisDirection.Increasing)] =
+    new MovementWorker(new WiseVirtualMotor[] { EastMotor }),
+```
+
+`Increasing` **right ascension** is east. `Increasing` **hour angle** is **west**. The dictionary is
+keyed on a direction whose meaning depends on the angle type, and nothing tells it which it has.
+
+Two defensible fixes, and this is a design choice rather than a bug fix:
+
+- **Key it by angle type as well**, so an HA target maps `Increasing` to `WestMotor`. Keeps the
+  time-independence that made an HA target attractive.
+- **Normalise HA targets to RA before the slewer sees them.** Less invasive and arguably where the
+  conversion belongs, but it gives up that time-independence and brings back the slew-duration
+  lead — see [[park-position]].
+
+Decide it deliberately, not in the same motion as a bug fix.
 
 **Park is what unattended systems call** — ACP parks at the end of a session, and the Dash has a
 park button. That is why this could not be left in place while the arithmetic was investigated.
