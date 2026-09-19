@@ -207,14 +207,60 @@ namespace ASCOM.Wise40.Common
             return hours * 2.0 * pi / 24.0;
         }
 
+        /// <summary>
+        /// Whether this angle type is measured in hours rather than degrees, i.e. whether the
+        ///  Angle constructor will read a bare value as HOURS.
+        /// </summary>
+        /// <remarks>
+        /// The instance field _isHMS says the same thing, but it is only available once an Angle
+        ///  exists - and the conversions below have to know BEFORE constructing one.
+        /// </remarks>
+        public static bool IsHms(AngleType type)
+        {
+            return type == AngleType.RA || type == AngleType.HA;
+        }
+
         public static Angle FromRadians(double rad, AngleType type = AngleType.Deg)
         {
-            return new Angle(rad * 180.0 / Math.PI, type);
+            //
+            // Type-aware since 2026-09-19.  This used to be, unconditionally:
+            //
+            //      return new Angle(rad * 180.0 / Math.PI, type);
+            //
+            // i.e. it converted radians to DEGREES whatever the type was - and for an HMS type
+            //  the constructor reads a bare value as HOURS.  Every radians-to-HMS conversion was
+            //  therefore 15x too large, 15 being degrees per hour.  0.356675 rad is 20.436
+            //  degrees, and that number went in as 20.436 hours.
+            //
+            // It surfaced through ShortestDistance's non-periodic branch, which is the only
+            //  unguarded caller that can receive an HMS type.  AngleType.HA is the only type that
+            //  is both non-periodic and HMS, which is why nothing else ever showed it: Dec takes
+            //  the same branch but is degree-based, and RA and Az are periodic and take the other
+            //  branch, which was already guarded by _isHMS.
+            //
+            // The consequence was not subtle.  An HA-targeted Park slew computed 5.3502 rad for a
+            //  0.357 rad move, never approached arrival, and ran the primary axis about 80 degrees
+            //  into a physical limit switch.  See TestAngleHa, which reproduces all of it in under
+            //  a second without a telescope.
+            //
+            // Angle.Min, Angle.Max and RaFromRadians/HaFromRadians were wrong by the same 15x for
+            //  the same reason; the first two are fixed by this change, the helpers below
+            //  duplicated the expression and are fixed there.
+            //
+            return IsHms(type) ?
+                new Angle(Rad2Hours(rad), type) :
+                new Angle(rad * 180.0 / Math.PI, type);
         }
 
         public static Angle RaFromRadians(double rad)
         {
-            return new Angle(rad * 180.0 / Math.PI, AngleType.RA);
+            //
+            // Rad2Hours, not degrees - see FromRadians above.  This was 15x too large, and
+            //  because RA is periodic over 0..24 the error WRAPPED rather than blowing up:
+            //  1.701696 rad should be 6.5h and came out as 1.5h, since 97.5 mod 24 is 1.5.  A
+            //  plausible wrong answer is worse than an obvious one.
+            //
+            return new Angle(Rad2Hours(rad), AngleType.RA);
         }
 
         public static Angle AzFromRadians(double rad)
@@ -234,7 +280,8 @@ namespace ASCOM.Wise40.Common
 
         public static Angle HaFromRadians(double rad)
         {
-            return new Angle(rad * 180.0 / Math.PI, AngleType.HA);
+            // Rad2Hours, not degrees - see FromRadians above.
+            return new Angle(Rad2Hours(rad), AngleType.HA);
         }
 
         public static Angle FromHours(double hours, AngleType type = AngleType.RA)
