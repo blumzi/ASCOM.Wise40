@@ -188,6 +188,49 @@ namespace Dash
             if (opMode == WiseSite.OpMode.ACP || opMode == WiseSite.OpMode.LCO)
             {
                 groupBoxTarget.Text += $"(from {opMode}) ";
+
+                //
+                // Make the Target sub-group a DISPLAY rather than a form.
+                //
+                // Blanking the text is not enough.  The six boxes are drawn as filled tan
+                //  rectangles with FixedSingle borders, and that is what reads as "type here"
+                //  even when they are empty.
+                //
+                // Nor does leaving them out of ACPActiveControls / LCOActiveControls disable
+                //  them: that list only toggles Enabled when computer control changes, so a
+                //  control absent from it is never touched at all.  Only textBoxRaDecRa and
+                //  textBoxRaDecDec carry Enabled=false in the designer - the Ha/Dec and Alt/Az
+                //  pairs default to enabled, and really were editable in these modes.
+                //
+                // ReadOnly rather than Enabled=false: a disabled TextBox ignores ForeColor and
+                //  draws grey system text, which would not match the coordinates.  ReadOnly
+                //  keeps our colours and still refuses input.
+                //
+                foreach (var tb in new TextBox[] {
+                            textBoxRaDecRa, textBoxRaDecDec,
+                            textBoxHaDecHa, textBoxHaDecDec,
+                            textBoxAltAzAlt, textBoxAltAzAz })
+                {
+                    tb.ReadOnly = true;
+                    tb.Enabled = true;
+                    tb.TabStop = false;
+                    tb.BorderStyle = BorderStyle.None;
+
+                    // Taken from the live controls rather than restated as literals, so the target
+                    //  cannot drift away from the coordinates it is meant to look like.
+                    tb.BackColor = tabPageRaDec.BackColor;
+                    tb.ForeColor = labelRightAscensionValue.ForeColor;
+
+                    //
+                    // Double-clicking a box copies the CURRENT coordinates into it.  A typing
+                    //  convenience in WISE mode; here it would overwrite the displayed target
+                    //  with something the external client never asked for.
+                    //
+                    tb.DoubleClick -= coordBox_MouseDoubleClick;
+                }
+
+                // Nothing to Go to - the target arrives from outside, already being slewed to.
+                buttonGoCoord.Visible = false;
             }
 
             foreach (var c in InvisibleControls[opMode])
@@ -475,9 +518,9 @@ namespace Dash
                 //  target is requested externally, so there is nothing to type: the group becomes a
                 //  read-only display of whatever was asked for, or empty when nothing was.
                 //
-                // The controls are already inert in those modes - ACPActiveControls and
-                //  LCOActiveControls omit the six textboxes and buttonGoCoord, where
-                //  WiseActiveControls lists them - so only the CONTENTS need handling here.
+                // The boxes were turned into read-only borderless text at startup, and the Go
+                //  button hidden - see the ACP/LCO block in the initialisation above.  What is
+                //  left to do per tick is the contents, and whether there is anything to show.
                 //
                 if (opMode == WiseSite.OpMode.ACP || opMode == WiseSite.OpMode.LCO)
                 {
@@ -489,6 +532,15 @@ namespace Dash
                     bool haveTarget =
                         telescopeDigest.Target.RaDec_RA != Const.noTarget &&
                         telescopeDigest.Target.RaDec_Dec != Const.noTarget;
+
+                    //
+                    // EMPTY means empty.  Borderless boxes with no text still leave the tab strip
+                    //  and the RA/Dec prompt labels on screen, which is not what "the group is
+                    //  empty when nothing was requested" should look like.  Hiding the whole tab
+                    //  control leaves the group frame and its "(from ACP)" caption and nothing
+                    //  else, which is the honest rendering of "no target".
+                    //
+                    tabControlGoTo.Visible = haveTarget;
 
                     //
                     // Which tab to show.  ALWAYS Ra/Dec at present, and that is a property of the
