@@ -136,6 +136,39 @@ one just wastes a round trip.
   angle proved the new binary was live and found a second bug, without moving the telescope.
   Prefer one of these to assuming the build took.
 
+### Knowing when a deploy has actually finished
+
+**"Start-Service returned" is not "the chain is up."** `Wise40Watcher` is a supervisor, so a
+Running service only means the *watcher* started. Measured 2026-09-19: the Alpaca endpoint
+answered **8 seconds after** the service reported Running, with the four children appearing in
+between.
+
+End the cycle on functional checks, all of which work non-elevated:
+
+1. service `Running`
+2. all four children present — `ASCOM.RemoteServer`, `ASCOM.OCH.Server`,
+   `ASCOM.AlpacaClientLocalServer`, `Dash`
+3. **the endpoint answers `connected=true`** — the first check that proves anything
+4. every rebuilt DLL not older than its newest source, and the x86 DLL newer than the AnyCPU one
+5. a restart banner in today's log, dated after the build
+6. **`EncodersInUse` reads New** — an elevated rebuild wipes the ASCOM Profile subkey, and this
+   is the known silent failure
+7. a **zero-motion probe** that the binary answering is the one just built
+
+And one gate worth having on the way in: **if the chain will not stop, do not build.** The
+RemoteServer holds `ASCOM.Wise40.Telescope.dll` open, and building anyway risks a partial
+overwrite that is far worse than an aborted deploy.
+
+### "Newer than the build started" is the WRONG freshness test
+
+Tried on 2026-09-19 and it produced a **false failure that left the chain down**: all three
+projects exited 0, but MSBuild had skipped them as already up to date because they had been built
+eight minutes earlier, so nothing was rewritten and the gate called it a failure.
+
+**A build that does no work is a success.** Compare each DLL against the newest source in its
+project instead, and catch a missed `/p:Platform` by requiring the x86 DLL to be newer than the
+AnyCPU one — that is the actual failure mode, and it does not depend on wall-clock timing at all.
+
 ## Taking the chain down and up
 
 **The chain is the `Wise40Watcher` Windows service.** Stop it to take everything down, start it to bring everything back:

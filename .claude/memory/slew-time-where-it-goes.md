@@ -149,16 +149,51 @@ Measured 2026-09-18: two diagonal moves (RA 22.5° + Dec 20°) and two Dec-only 
 
 **3.85 s of a 46.6 s slew, 1.75 s of an 80.4 s one.** The rendezvous is not worth optimising. The earlier note that "RA sits idle 56 % of every slew" describes the *idle axis on a single-axis move*, not this.
 
-### Dual-axis operation costs about one sample of detection latency
+### The overshoot was the DAQ lock, not sampling latency
+
+**Corrected 2026-09-19, by fixing it and watching the overshoot go away.** This section used to
+claim dual-axis operation cost "about one sample of detection latency", from these trip points:
 
 | leg | threshold | actually cut at | late by |
 |---|---|---|---|
 | single-axis east | 2.10° | 2.083° | 0.017° |
 | single-axis west | 3.00° | 2.975° | 0.025° |
-| **dual-axis east** | 2.10° | **1.998°** | **0.103°** |
-| **dual-axis west** | 3.00° | **2.919°** | **0.081°** |
+| dual-axis east | 2.10° | 1.998° | 0.103° |
+| dual-axis west | 3.00° | 2.919° | 0.081° |
 
-At 1.8°/s, 0.10° is ~56 ms — roughly one extra sample period when both axes are sampling. **RA overshot on both diagonal legs** (631″ east, 321″ west) and needed a reversing set leg, which no single-axis leg that day did. The margins set in PR #29 are tight enough that this latency converts them into overshoot. Consider it before tightening anything further.
+The trip points are real — the loop does notice the threshold a sample later under load — but they
+are not what caused the overshoot. **`WisePin.DriveAndVerify` held the shared DAQ board lock
+across its `Thread.Sleep`**, for up to `readbackBudgetMillis` = 1200 ms, so a motor could take
+that long to actually switch off. `WisePin.isOn` is a live `DIn`, so `StopAxis`'s `m.IsOn`,
+`WiseVirtualMotor.ActiveMortorPins` (twice per `SetOff`) and `AxisMonitor`'s `ActiveMotors` all
+queued behind it. Every other holder of that lock, in `WiseDaq`, wraps exactly one `DIn`/`DOut`.
+
+The arithmetic gives it away: 631″ at 1.84°/s is **0.14 s**, and 321″ is 0.07 s — the *mean*
+`StopAxis` time, not a 56 ms sampling artefact.
+
+Measured worst case, 2026-09-19: `StopAxis` took **1.19 s**, which at slew rate is **2.2° of
+travel after the decision to stop**. It turned a 0.19° undershoot into a 2.0° overshoot and cost
+**139 s** of set-rate crawling. The same diagonal pair that ran 46.6 s / 80.4 s on 2026-09-18
+took 63.5 s / **168.9 s**.
+
+Fixed in PR #38 — the lock is now taken per DAQ access and the sleep is outside it. Same pair
+afterwards: **64.2 s / 66.8 s**, the back leg better than the original baseline, and RA lands
+0.99″ out instead of 8.51″.
+
+| | before | after |
+|---|---|---|
+| `StopAxis` primary, max | **1.188 s** | 0.249 s |
+| `StopAxis` secondary, max | 0.987 s | 0.026 s |
+| diagonal back leg | 168.9 s | 66.8 s |
+
+**What this does not touch.** The `stopMovement` constants stand: the logged coast is measured
+*after* `StopAxis` returns, so the delay was never inside those figures. Dec's 27 % coast spread
+lives in the same logged figures and is not this either. What the delay corrupted was **landing
+accuracy** — where the axis ended up, not how far it coasted once unpowered.
+
+**The lesson worth keeping.** A variable delay between deciding to stop and the relay opening
+cannot be absorbed by any constant, because `stopMovement` is a distance and the delay is a
+time. Before blaming a coast constant for an overshoot, check how long `StopAxis` took.
 
 ### `stopping distance` is unreliable on Dec — derive the coast from positions
 
@@ -208,6 +243,6 @@ Expect the **dome** to become the binding constraint: `Slewing` stays true until
 ## Still unmeasured
 
 - **Why Dec's southward coast varies by 27 %.** The open question on this axis, and the one that actually limits it. Northward repeats to 1 %; southward does not. Until that is understood, Dec's margins stay generous — retuning the constants is not the answer. See [[telescope-drive-topology]].
-- **The guide-rate coast, on either axis.** Blocked on the epsilon above — the detector cannot see guide-rate motion, so it has never actually been measured on any axis.
+- **The guide-rate coast, on either axis.** The detector could not see guide-rate motion at all; PR #37 replaced the per-sample threshold with displacement over a rate-dependent window, which should make it measurable. **Deployed 2026-09-19 but not yet read off a guide leg**, and the guide thresholds in that PR are derived from arithmetic rather than measured, so they are a starting point.
 - **A pointing run end to end.** The rendezvous and both axes are now exercised in isolation and in a diagonal, but not across a long sequence of slews with plate solves between them, which is what a pointing model build actually does.
 - **The dome**, still — instrumented, never read after an ACP session.
