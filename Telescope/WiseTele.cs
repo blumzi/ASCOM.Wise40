@@ -99,6 +99,17 @@ namespace ASCOM.Wise40
         //
         private const int directionChangeConfirmMillis = 150;
 
+        //
+        // How long the distance to target must keep growing before the slew is abandoned.  See
+        //  the diverging check in ScopeAxisSlewer.
+        //
+        // The magnitude threshold there does most of the work, so this only has to outlast a
+        //  spurious encoder reading - the same reasoning as directionChangeConfirmMillis above,
+        //  and the same 150ms for the same reason: CurrentPosition is a cached field refreshed
+        //  about every 59ms, so one bad value reaches several consecutive iterations.
+        //
+        private const int divergingConfirmMillis = 150;
+
         public static ManualResetEvent endOfAsyncSlewEvent = null;
 
         private string _reasonsForSlewing;
@@ -2622,7 +2633,14 @@ namespace ASCOM.Wise40
                         DateTime startingTime = DateTime.Now;
                         ShortestDistanceResult startingDistance = startingPosition.ShortestDistance(targetAngle);
                         const double lowestRad = Double.MaxValue, highestRad = Double.MinValue;
-                        double prevDistance = 0.0;
+
+                        //
+                        // Closest the axis has come to the target during this leg, and since when
+                        //  it has been further away than that.  DateTime.MinValue means "not
+                        //  currently diverging".
+                        //
+                        double closestRad = Double.MaxValue;
+                        DateTime divergingSince = DateTime.MinValue;
 
                         //
                         // Throttle for the progress line inside the loop below.  Declared HERE
@@ -2632,7 +2650,11 @@ namespace ASCOM.Wise40
                         //  axis.  The count++ at the bottom was dead.
                         //
                         int progressTicks = 0;
-                        TimeSpan elapsed;
+                        //
+                        // Initialised because the diverging check below can break out of
+                        //  the loop before this is assigned.
+                        //
+                        TimeSpan elapsed = TimeSpan.Zero;
 
                         //
                         // When the distance-to-target was FIRST seen to have reversed sign.
@@ -2656,6 +2678,86 @@ namespace ASCOM.Wise40
 
                             currentAngle = CurrentPosition(targetAngle.Type);
                             currentDistance = currentAngle.ShortestDistance(targetAngle);
+
+                            //
+                            // IS THE AXIS GETTING CLOSER?
+                            //
+                            // The one check that does not need to know WHY something is wrong.  On
+                            //  2026-09-19 an HA-targeted slew ran 77 seconds and about 80 degrees
+                            //  the wrong way, into a limit switch, and nothing in the loop noticed:
+                            //  the distance arithmetic was wrong by 15x and the direction-to-motor
+                            //  mapping was inverted, so the axis drove away from its target while
+                            //  every existing exit condition stayed quiet.
+                            //
+                            //  ChangedDirection could not catch it either, and correctly so: it
+                            //  watches for the direction FLIPPING, and the direction never flipped
+                            //  - the target stayed west of the axis the whole time, because the axis
+                            //  was running east.  Driving away from a target is invisible to that
+                            //  test.
+                            //
+                            // There WAS a check for this, and it had never run: prevDistance was
+                            //  assigned after the while loop closed, so it stayed 0.0 for the
+                            //  loop's entire life and its `else if (prevDistance != 0.0)` never
+                            //  fired.  Its body only logged, with the status assignment and break
+                            //  commented out.  It is gone, replaced by this.
+                            //
+                            // Deliberately NOT part of the else-if chain below.  The dead branch
+                            //  sat above the CloseEnough test, so repairing it in place would have
+                            //  disabled arrival detection on every leg - that hazard is why it was
+                            //  left alone on 2026-09-17 rather than fixed.
+                            //
+                            // Two conditions, so ordinary behaviour cannot trip it:
+                            //
+                            //  . the distance must exceed the CLOSEST approach so far by more than
+                            //    mp.stopMovement.  That scales with the rate for free - about 3
+                            //    degrees at slew, 34 arcsec at set, 3 arcsec at guide - and an axis
+                            //    that is converging never diverges from its own best approach at
+                            //    all.  An axis merely sitting still, waiting on the rendezvous or
+                            //    held by the other axis' TeleSlew, holds its distance constant and
+                            //    is not diverging either.
+                            //
+                            //  . it must stay that way for divergingConfirmMillis, so a single
+                            //    spurious encoder reading cannot abandon a good slew.
+                            //
+                            // At slew rate this trips after roughly 1.6 seconds and 3 degrees of
+                            //  wrong-way travel, against the 77 seconds and 80 degrees it took to
+                            //  reach a limit switch unaided.
+                            //
+                            // AbortSlew rather than status = Failed: Failed only ends this RATE,
+                            //  and the cascade would retry up to maxCascadePasses times, giving a
+                            //  runaway five more chances.  AbortSlew cancels telescopeCTS, which
+                            //  the ThrowIfCancellationRequested above turns into the
+                            //  OperationCanceledException this method already handles.
+                            //
+                            double currentRad = currentDistance.angle.Radians;
+
+                            if (currentRad < closestRad)
+                            {
+                                closestRad = currentRad;
+                                divergingSince = DateTime.MinValue;
+                            }
+                            else if (currentRad > closestRad + mp.stopMovement.Radians)
+                            {
+                                if (divergingSince == DateTime.MinValue)
+                                {
+                                    divergingSince = DateTime.Now;
+                                }
+                                else if (DateTime.Now.Subtract(divergingSince).TotalMilliseconds >= divergingConfirmMillis)
+                                {
+                                    #region debug
+                                    debugger.WriteLine(Debugger.DebugLevel.DebugAxes,
+                                        $"SUSPECT: {op}: {slewerName} at {RateName(rate)}: at {currentAngle}, " +
+                                        $"DIVERGING ==> target: {targetAngle}: distance " +
+                                        $"{currentDistance.angle.ToNiceString()} is more than " +
+                                        $"{mp.stopMovement.ToNiceString()} beyond the closest approach of " +
+                                        $"{Angle.FromRadians(closestRad, targetAngle.Type).ToNiceString()}, " +
+                                        $"for {DateTime.Now.Subtract(divergingSince).TotalMilliseconds:f0}ms - aborting the slew");
+                                    #endregion
+                                    status = ScopeSlewerStatus.Failed;
+                                    AbortSlew($"{op}: {slewerName} at {RateName(rate)}: axis is moving AWAY from the target");
+                                    break;
+                                }
+                            }
 
                             elapsed = DateTime.Now.Subtract(startingTime);
                             if (elapsed >= mp.maxTime) {
@@ -2733,19 +2835,6 @@ namespace ASCOM.Wise40
                                         $"confirmed over {DateTime.Now.Subtract(directionChangedAt).TotalMilliseconds:f0}ms");
                                 #endregion
                                 break;
-                                #endregion
-                            }
-                            else if (prevDistance != 0.0) {
-                                #region Distance to Target is NOT decreasing
-                                if (currentDistance.angle.Radians > prevDistance)   // the distance to target is increasing
-                                {
-                                    #region debug
-                                    debugger.WriteLine(Debugger.DebugLevel.DebugTele,
-                                        $"SUSPECT: {op}: distance to target is INCREASING");
-                                    #endregion
-                                    //status = ScopeSlewerStatus.Failed;
-                                    //break;
-                                }
                                 #endregion
                             }
                             else if (currentDistance.angle <= stopMovement)
@@ -2861,8 +2950,6 @@ namespace ASCOM.Wise40
                                 // not there yet, continue looping
                             }
                         }
-                        prevDistance = currentDistance.angle.Radians;
-
                         if (status == ScopeSlewerStatus.Failed ||
                             status == ScopeSlewerStatus.CloseEnough ||
                             status == ScopeSlewerStatus.Timedout ||
