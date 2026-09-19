@@ -2143,7 +2143,39 @@ namespace ASCOM.Wise40
             //  telescope then arrived about 15 arcmin west of it for a 60 second slew.  An
             //  hour angle of zero is the meridian whenever we get there.
             //
-            Angle parkingHa = Angle.HaFromHours(0.0);
+            //
+            // REVERTED to a right-ascension target on 2026-09-19.  DO NOT make this an hour
+            //  angle again until Angle.ShortestDistance is fixed for AngleType.HA and checked
+            //  against known values offline.
+            //
+            // What happened: PR #33 changed this to Angle.HaFromHours(0.0), on the sound
+            //  reasoning that an hour angle needs no lead for the slew duration.  But an
+            //  HA-typed slew computes its distance wrongly.  Parking from HA -01h21m44.8s to
+            //  HA 0 - a true distance of 1.363h, 20.4 degrees, 0.357 rad - the slewer logged
+            //
+            //      remaining (Angle.rad: 5.3502389458)      i.e. 306 degrees, 20.4 HOURS
+            //
+            //  and drove EAST, away from the target, the reported distance GROWING every
+            //  sample: 5.3502, 5.3504, 5.3518, 5.3554, 5.3613.  ChangedDirection never fired
+            //  because the direction was wrong from the first sample rather than changing, so
+            //  nothing stopped it.  It ran 77 seconds and covered about 80 degrees of hour
+            //  angle before being aborted by hand, 4.1 degrees short of eastern_haLimit.  Left
+            //  alone it would have continued to mp.maxTime - five minutes - through the soft
+            //  limit.
+            //
+            //  The declination axis was fine in the same slew: 0.349 rad for a 20 degree move,
+            //  decreasing correctly.  It is specific to the HA angle path.
+            //
+            //  This matters more than an ordinary bug because Park is what UNATTENDED systems
+            //  call: ACP parks at the end of a session and the Dash has a park button.
+            //
+            // The cost of reverting is the defect PR #33 set out to fix: sampling
+            //  LocalSiderealTime once, before the slew, pins the target to the meridian as it
+            //  was at that instant, so the mount lands about 15 arcmin west of it for a 60
+            //  second slew.  Fifteen arcmin of parking error is a great deal better than an
+            //  axis running at a limit.  See [[park-position]].
+            //
+            Angle parkingRa = wisesite.LocalSiderealTime;
             Angle parkingDec = parkingDeclination;
 
             //
@@ -2153,7 +2185,7 @@ namespace ASCOM.Wise40
             //  deliberately not what the slew aims at.  Same value the old code used as the
             //  target, so nothing a client sees changes.
             //
-            Angle parkingRaAtStart = wisesite.LocalSiderealTime;
+            Angle parkingRaAtStart = parkingRa;
             bool wasEnslavingDome = EnslavesDome;
 
             try
@@ -2193,15 +2225,18 @@ namespace ASCOM.Wise40
                     Thread.Sleep(500);
                 }
                 //
-                // Tracking is NOT turned on here any more.  It used to be, because the park
-                //  target was a right ascension and tracking is what holds one.  The target
-                //  is now an hour angle, which tracking would actively walk away from;
-                //  DoSlewToCoordinatesAsync turns it off for exactly that reason.
+                // Tracking back on before the slew, as it was before PR #33: the target is a
+                //  right ascension again and tracking is what holds one.  Park still ends with
+                //  Tracking = false further down, as it always did.
                 //
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugTele, "Park: setting Tracking = true ...");
+                #endregion
+                Tracking = true;
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugTele, "Park: starting InternalSlewToCoordinatesSync ...");
                 #endregion
-                InternalSlewToCoordinatesSync(parkingHa, parkingDec, "Park");
+                InternalSlewToCoordinatesSync(parkingRa, parkingDec, "Park");
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugTele, "Park: after InternalSlewToCoordinatesSync ...");
                 #endregion
@@ -2278,15 +2313,16 @@ namespace ASCOM.Wise40
                 return;
 
             //
-            // Mount frame, as in Park() above - hour angle zero is the meridian whenever we
-            //  arrive, where LocalSiderealTime sampled here is the meridian as it was when
-            //  the button was pressed.
+            // REVERTED with Park() above - see the long comment there.  An HA-typed slew
+            //  computes its distance wrongly and drove the primary axis away from the target at
+            //  slew rate until it was aborted by hand.
             //
+            Angle ra = wisesite.LocalSiderealTime;
             Angle dec = parkingDeclination;
 
             if (parkDome)
                 DomeParker();
-            SlewToHaDecAsync(0.0, dec.Degrees, "ParkFromGui");
+            SlewToCoordinatesAsync(ra.Hours, dec.Degrees, "ParkFromGui", false);
         }
 
         /// <summary>
@@ -3267,6 +3303,36 @@ namespace ASCOM.Wise40
                     $"ha: {Angle.HaFromHours(ha).ToNiceString()}, " +
                     $"dec: {Angle.DecFromDegrees(dec).ToNiceString()}, " +
                     $"for: {whatfor})";
+
+            //
+            // DISABLED 2026-09-19.  Refuse rather than drive, until Angle.ShortestDistance is
+            //  fixed for AngleType.HA and checked against known values offline.
+            //
+            // An HA-typed slew computes its distance wrongly.  Going from HA -01h21m44.8s to
+            //  HA 0 - a true distance of 1.363h, 20.4 degrees, 0.357 rad - the slewer logged
+            //
+            //      remaining (Angle.rad: 5.3502389458)      i.e. 306 degrees, 20.4 HOURS
+            //
+            //  then drove the primary axis AWAY from the target at slew rate, the reported
+            //  distance growing every sample.  ChangedDirection never fired, because the
+            //  direction was wrong from the first sample rather than changing, so nothing
+            //  stopped it: 77 seconds and about 80 degrees of hour angle before it was aborted
+            //  by hand, 4.1 degrees short of eastern_haLimit.  Declination was correct in the
+            //  same slew, so this is specific to the HA angle path.
+            //
+            // Why refusing matters more than it looks: Dash.cs:1170 calls this from the HA/Dec
+            //  slew button.  Until 2026-09-18 that button was harmlessly broken by a
+            //  case-sensitivity bug in the Action parameter parsing; fixing that parsing made
+            //  the button WORK, which is what made this reachable.  A button that returns an
+            //  error is fine.  A button that runs an axis into a limit is not.
+            //
+            // Park and ParkFromGui have been reverted to right-ascension targets for the same
+            //  reason - see the comment in Park().
+            //
+            Exceptor.Throw<InvalidOperationException>(op,
+                "slew-to-ha-dec is disabled: Angle.ShortestDistance mis-computes distance and " +
+                "direction for hour-angle targets, and drove the primary axis toward a limit on " +
+                "2026-09-19.  Use RA/Dec until that is fixed.");
 
             CheckCoordinateSanity(Angle.AngleType.HA, ha, op);
             CheckCoordinateSanity(Angle.AngleType.Dec, dec, op);
