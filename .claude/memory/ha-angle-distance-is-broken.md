@@ -1,9 +1,23 @@
 ﻿---
 name: ha-angle-distance-is-broken
-description: "Two defects made an HA-typed slew run an axis into a limit: FromRadians was 15x wrong for HMS types (FIXED), and movementDict maps Increasing to EastMotor whatever the angle type (OPEN)"
+description: "RESOLVED 2026-09-20 - two defects made an HA-typed slew run an axis into a limit: FromRadians was 15x wrong for HMS types, and the direction reached the wrong motor. Both fixed and proven on sky"
 metadata:
   type: project
 ---
+
+> **RESOLVED 2026-09-20.** Both defects below are fixed and covered by `TestAngleHa`. The second
+> one — the direction — was fixed by `Angle.MechanicalDirection`, which inverts for `AngleType.HA`
+> because `movementDict` is keyed in right-ascension sense and hour angle grows the other way.
+>
+> Proven on sky the same day: two 0.9° legs, west then east, landing **0.02′** from target each
+> time, with a wrong-way abort armed at 7′ that never fired. Hour-angle targets are also *more*
+> accurate than RA ones for this, since they do not drift with the meridian — compare the 24′ of
+> pure lead error in [[park-position]].
+>
+> `Park` and `ParkFromGui` still use RA targets deliberately; moving them is a separate decision.
+>
+> Getting there needed [[common-dll-shadowing]] solved first: the fix was compiled and deployed
+> but a stale `Common.dll` from another driver's folder was what actually loaded.
 
 **An HA-typed slew drove the wrong way and did not stop.** Found 2026-09-19 by doing it to the
 telescope. It turned out to be **two independent defects**:

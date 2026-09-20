@@ -1,14 +1,15 @@
 ﻿---
 name: slew-to-ha-dec-broken
-description: "SUPERSEDED - the slew-to-ha-dec parsing bugs are fixed, but the Action is now disabled because HA-typed slews mis-compute distance; kept for the parsing detail"
+description: "RESOLVED - the slew-to-ha-dec parsing bugs are fixed and the Action works on sky again as of 2026-09-20; kept for the parsing detail and the diagnostic trap"
 metadata:
   type: project
 ---
 
-**Superseded 2026-09-19. The parsing bugs described here are FIXED; the Action is now
-deliberately disabled for a worse reason** — an HA-typed slew mis-computes its distance and ran
-the primary axis into a limit switch. See [[ha-angle-distance-is-broken]], which is the note to
-read. This one is kept for the parsing detail and the diagnostic trap at the end.
+**RESOLVED. The parsing bugs described here were fixed 2026-09-18, and the Action itself — disabled
+2026-09-19 after an HA-typed slew ran an axis into a limit switch — was re-enabled and proven on sky
+on 2026-09-20.** See [[ha-angle-distance-is-broken]] for the two defects that caused the runaway and
+how they were fixed. This note is kept for the parsing detail and the diagnostic trap at the end,
+both of which still apply to anyone touching Action parameter handling.
 
 The original entry follows.
 
