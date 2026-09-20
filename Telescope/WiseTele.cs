@@ -199,6 +199,9 @@ namespace ASCOM.Wise40
         private Angle _targetRightAscension, _targetHourAngle, _targetDeclination;
         private Angle _targetAltitude, _targetAzimuth;
 
+        // See TargetCoordinateType: recorded where the request arrives, never inferred later.
+        private TargetCoordinateType _targetType = TargetCoordinateType.None;
+
         public static readonly List<double> rates = new List<double> { Const.rateSlew, Const.rateSet, Const.rateGuide };
         public static readonly List<TelescopeAxes> axes = new List<TelescopeAxes> { TelescopeAxes.axisPrimary, TelescopeAxes.axisSecondary };
 
@@ -435,6 +438,10 @@ namespace ASCOM.Wise40
             {
                 CheckCoordinateSanity(Angle.AngleType.Dec, value, $"TargetDeclination Set - {value}");
                 _targetDeclination = Angle.DecFromDegrees(value);
+
+                // This is the ASCOM property, which only an RA/Dec client uses.  The hour-angle
+                //  and alt/az paths set the backing field directly and record their own type.
+                _targetType = TargetCoordinateType.RaDec;
                 ActivityMonitor.StayActive("TargetDeclination was set");
                 #region debug
                 debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM,
@@ -462,6 +469,7 @@ namespace ASCOM.Wise40
                 CheckCoordinateSanity(Angle.AngleType.RA, value, $"TargetRightAscension Set - {value}");
                 _targetRightAscension = Angle.RaFromHours(value);
                 _targetHourAngle = wisesite.LocalSiderealTime - _targetRightAscension;
+                _targetType = TargetCoordinateType.RaDec;
                 ActivityMonitor.StayActive("TargetRightAscension was set");
                 #region debug
                 debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM,
@@ -506,6 +514,7 @@ namespace ASCOM.Wise40
                 _targetHourAngle = null;
                 _targetAzimuth = null;
                 _targetAltitude = null;
+                _targetType = TargetCoordinateType.None;
             }
         }
         public void Dispose()
@@ -3555,6 +3564,29 @@ namespace ASCOM.Wise40
             CheckCoordinateSanity(Angle.AngleType.Dec, dec, op);
 
             //
+            // RECORD THE TARGET.  This path set no target field whatever until 2026-09-20, so an
+            //  hour-angle slew showed an empty Target group in the Dash and reported no target to
+            //  any ASCOM client.  Invisible while the Action was disabled; a real gap once it
+            //  worked.
+            //
+            // The hour angle is the invariant here, so it is stored as given.  The right
+            //  ascension is a SNAPSHOT taken now - it is what makes Digest able to derive
+            //  altitude and azimuth - and it goes stale as the sky turns, which is correct: for
+            //  an hour-angle target it is the right ascension that moves, not the hour angle.
+            //
+            _targetHourAngle = Angle.HaFromHours(ha);
+            _targetDeclination = Angle.DecFromDegrees(dec);
+
+            double raSnapshot = wisesite.LocalSiderealTime.Hours - ha;
+            while (raSnapshot < 0.0) raSnapshot += 24.0;
+            while (raSnapshot >= 24.0) raSnapshot -= 24.0;
+            _targetRightAscension = Angle.RaFromHours(raSnapshot);
+
+            _targetAltitude = null;     // let Digest derive them from the pair above
+            _targetAzimuth = null;
+            _targetType = TargetCoordinateType.HaDec;
+
+            //
             // Slew to the hour angle DIRECTLY.
             //
             // This used to convert ha -> ra -> alt/az and call SlewToAltAzAsync, which
@@ -4259,6 +4291,26 @@ namespace ASCOM.Wise40
             double ra = Double.NaN, dec = Double.NaN;
 
             MakeRaDecFromAltAz(Azimuth, Altitude, op, ref ra, ref dec, noSafetyCheck);
+
+            //
+            // RECORD THE TARGET, same gap as SlewToHaDecAsync: this path set nothing either.
+            //
+            // Altitude and azimuth are the invariants, so they are stored and the equatorial
+            //  fields are left null for Digest to re-derive on every tick.  That is what keeps an
+            //  alt/az target correct as the sky turns: it is fixed to the dome, and its right
+            //  ascension is what moves.
+            //
+            // This is also why the type cannot be recovered further down the call: the slew is
+            //  handed an HOUR ANGLE below, so by the time the slewer sees it this request is
+            //  indistinguishable from a genuine HaDec one.
+            //
+            _targetAltitude = Angle.AltFromDegrees(Altitude);
+            _targetAzimuth = Angle.AzFromDegrees(Azimuth);
+            _targetRightAscension = null;
+            _targetDeclination = null;
+            _targetHourAngle = null;
+            _targetType = TargetCoordinateType.AltAz;
+
             DoSlewToCoordinatesAsync(
                 Angle.HaFromHours((wisesite.LocalSiderealTime - Angle.RaFromHours(ra)).Hours),
                 Angle.DecFromDegrees(dec),
@@ -5108,6 +5160,7 @@ namespace ASCOM.Wise40
                             HaDec_Dec = targetDec,
                             Alt = targetAlt,
                             Az = targetAz,
+                            Type = _targetType,
                         },
 
                         LocalSiderealTime = lst,
@@ -5196,11 +5249,36 @@ namespace ASCOM.Wise40
         public double Azimuth, Altitude;
     }
 
+    /// <summary>
+    /// WHICH COORDINATES THE CLIENT ACTUALLY ASKED FOR.
+    /// </summary>
+    //
+    // Recorded at the entry points, deliberately not inferred from the angle types later on.
+    //
+    // Two reasons it cannot be inferred.  First, every target ends up with all six values
+    //  populated: WiseTele.Digest derives alt/az from ra/dec and ra/dec from alt/az, so by the
+    //  time anything reads the digest, nothing distinguishes a requested value from a derived
+    //  one.  Second, SlewToAltAzAsync converts to an HOUR ANGLE before calling
+    //  DoSlewToCoordinatesAsync, so at the slewer an alt/az request is indistinguishable from an
+    //  hour-angle one - inferring from primaryTargetAngle.Type would silently label every alt/az
+    //  slew as HaDec.
+    //
+    public enum TargetCoordinateType
+    {
+        None,       // nothing requested since startup
+        RaDec,
+        HaDec,
+        AltAz,
+    }
+
     public class TelescopeTarget
     {
         public double RaDec_RA, RaDec_Dec;
         public double HaDec_HA, HaDec_Dec;
         public double Az, Alt;
+
+        // What the client asked for; the rest of the fields above are derived from it.
+        public TargetCoordinateType Type;
     }
 
     public class AxisPins
