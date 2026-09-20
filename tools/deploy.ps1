@@ -49,7 +49,28 @@ $projects = @(
     "$repo\Dash\Dash.csproj"
 )
 
-$children = '^(ASCOM\.RemoteServer|ASCOM\.OCH\.Server|ASCOM\.AlpacaClientLocalServer|Dash)$'
+#
+# WHAT THIS LIST IS: every process that LOADS OUR ASSEMBLIES, and therefore has to be gone
+# before we can rewrite them.  It is NOT "everything Wise40Watcher supervises" - those are two
+# different sets and confusing them is dangerous in both directions.
+#
+# The watcher's set is Const.Apps in Common: RESTServer, Dash, SafetyDash, WeatherLink,
+# ObservatoryMonitor, OCH and AlpacaClientLocalServer.  Which of them it actually starts depends
+# on the operational mode - see Wise40Watcher.OnStart: ACP and WISE get the Dash, LCO also gets
+# ObservatoryMonitor, SafetyDash is commented out, and WeatherLink only when the VantagePro
+# driver is reading its HTML report (weatherLinkNeedsWatching).
+#
+# WEATHERLINK IS DELIBERATELY ABSENT.  It is Davis's own logger in c:\WeatherLink, it holds none
+# of our DLLs - the VantagePro driver only reads a file it writes - and it is watched, running,
+# and was never the thing blocking a build.  Adding it here would make the straggler kill below
+# terminate the weather logger on every deploy, and weather is what SafeToOperate decides on.
+# The only correct thing to do with WeatherLink during a deploy is leave it alone.
+#
+# ObservatoryMonitor and RemoteSafetyDashboard ARE here: both are built from this repo and carry
+# their own Common.dll, so either one running would hold an assembly the sync step rewrites.
+# Neither runs in ACP mode, which is why their absence has not bitten yet.
+#
+$children = '^(ASCOM\.RemoteServer|ASCOM\.OCH\.Server|ASCOM\.AlpacaClientLocalServer|Dash|ObservatoryMonitor|RemoteSafetyDashboard)$'
 $x86 = "$repo\Telescope\bin\x86\Debug\ASCOM.Wise40.Telescope.dll"
 $any = "$repo\Telescope\bin\Debug\ASCOM.Wise40.Telescope.dll"
 $hw  = "$repo\Telescope\bin\x86\Debug\Hardware.dll"
