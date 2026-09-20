@@ -209,7 +209,7 @@ namespace Dash
                 //  In ACP and LCO the group now shows exactly two lines, or nothing at all:
                 //
                 //      RA 10h36m37.6s   DEC 65°59'57.1"      <- what was asked for
-                //       Δ       -0.3s     Δ      -26'37.3"   <- how far there is left to go
+                //       Δ       -0.3s             -26'37.3"  <- how far there is left to go
                 //
                 // The labels change with the requested coordinate type - RA/DEC, HA/DEC or
                 //  ALT/AZ - so the first line matches whichever line it echoes from the block
@@ -248,7 +248,14 @@ namespace Dash
                 distCapLeft    = TargetCaption(); distValLeft    = TargetValue();
                 distCapRight   = TargetCaption(); distValRight   = TargetValue();
 
-                distCapLeft.Text = distCapRight.Text = "Δ";
+                //
+                // One Δ, on the left, marking the whole row.  The second one sat in the DEC/AZ
+                //  caption column and said nothing the first had not: both cells are the same
+                //  row, so one glyph labels it.  The right-hand caption cell stays in place and
+                //  empty, which is what keeps the two distance values under their coordinates.
+                //
+                distCapLeft.Text = "Δ";
+                distCapRight.Text = "";
 
                 targetDisplay.Controls.Add(targetCapLeft,  0, 0);
                 targetDisplay.Controls.Add(targetValLeft,  1, 0);
