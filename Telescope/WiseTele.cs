@@ -3606,6 +3606,40 @@ namespace ASCOM.Wise40
                             slewers.Delete(slewerType);
 
                             //
+                            // THE TARGET IS OVER once no axis is still going there.
+                            //
+                            // Nothing used to retire a target: the only code that cleared the
+                            //  fields was Dispose, and the two lines that would have done it after
+                            //  a park are commented out in Park().  So a target stayed "current"
+                            //  until the chain restarted, and the Dash had to infer that it was
+                            //  finished by watching Slewing.
+                            //
+                            // Ra, Dec and Ha only - NOT the dome.  Slewers.Count includes the dome
+                            //  slewer, which can still be turning long after the telescope has
+                            //  arrived, and it is arrival that ends the target.
+                            //
+                            // Only the TYPE is cleared.  The right ascension and declination stay
+                            //  readable, because TargetRightAscension.get throws ValueNotSetException
+                            //  when null and ASCOM says a read returns the last value set - nulling
+                            //  them would make every post-slew read throw at whatever client is
+                            //  watching, ACP included.  Type is what the digest and the Dash use to
+                            //  decide a target exists, so clearing it is enough and costs nothing.
+                            //
+                            if (!Slewers.Active(Slewers.Type.Ra) &&
+                                !Slewers.Active(Slewers.Type.Dec) &&
+                                !Slewers.Active(Slewers.Type.Ha))
+                            {
+                                if (_targetType != TargetCoordinateType.None)
+                                {
+                                    #region debug
+                                    debugger.WriteLine(Debugger.DebugLevel.DebugTele,
+                                        $"{op}: all axis slewers done - retiring the {_targetType} target");
+                                    #endregion
+                                    _targetType = TargetCoordinateType.None;
+                                }
+                            }
+
+                            //
                             // A FAULTED slewer used to vanish without a word.
                             //
                             // Only Canceled was handled, and nothing ever read slewerTask.Exception,

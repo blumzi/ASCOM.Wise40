@@ -95,9 +95,20 @@ namespace Dash
         //
         private Label targetNoneLabel;
         private string targetGroupBaseText;
-        private DateTime targetExpiresAt = DateTime.MinValue;    // MinValue: not counting down
-        private string lastTargetKey;
-        private const int targetLingerSeconds = 60;
+
+        //
+        // The driver now retires a target itself, the moment no axis is still slewing to it - see
+        //  the slewer ContinueWith in WiseTele.  So the Dash no longer has to infer completion
+        //  from Slewing; it simply shows a target while one exists, and then keeps the last one
+        //  on screen for a little longer so a glance a few seconds late still says where it went.
+        //
+        // The cached strings are what get shown during the linger.  The target they describe is
+        //  gone from the digest by then, so they are frozen rather than recomputed: a distance to
+        //  a target that no longer exists would be a number with nothing behind it.
+        //
+        private DateTime targetGoneAt = DateTime.MinValue;       // MinValue: nothing to linger over
+        private string[] lastTargetText;                         // capL, valL, capR, valR, dL, dR
+        private const int targetLingerSeconds = 30;
 
         private static Dictionary<WiseSite.OpMode, List<Control>> InvisibleControls;
         private static List<Control> WiseInvisibleControls, ACPInvisibleControls, LCOInvisibleControls;
@@ -619,39 +630,30 @@ namespace Dash
                         telescopeDigest.Target.Type != TargetCoordinateType.None;
 
                     //
-                    // THE LINGER CLOCK.  See the fields for why arrival is the signal.
+                    // SHOW WHILE IT EXISTS, PLUS A LINGER.
                     //
-                    // Keyed on the target itself, so a NEW target restarts the minute even if it
-                    //  arrives while the previous one is still counting down.  Rounded before
-                    //  comparing: the alt/az pair is re-derived every tick from the equatorial
-                    //  one and drifts in the last decimals, which would otherwise look like a new
-                    //  target every second and the countdown would never advance.
+                    // The driver retires the target when the last axis stops slewing to it, so
+                    //  haveTarget going false IS completion - no inference from Slewing needed,
+                    //  and an aborted slew retires its target too, which is right: it is over
+                    //  either way.
                     //
-                    string targetKey = !haveTarget ? null : string.Format(
-                        "{0}|{1:F5}|{2:F5}|{3:F5}|{4:F4}|{5:F4}",
-                        telescopeDigest.Target.Type,
-                        telescopeDigest.Target.RaDec_RA, telescopeDigest.Target.RaDec_Dec,
-                        telescopeDigest.Target.HaDec_HA,
-                        telescopeDigest.Target.Alt, telescopeDigest.Target.Az);
-
-                    if (targetKey != lastTargetKey)
-                    {
-                        lastTargetKey = targetKey;
-                        targetExpiresAt = DateTime.MinValue;
-                    }
-
+                    // The linger starts at that moment and shows the CACHED text, because the
+                    //  target is already gone from the digest by then.
+                    //
                     if (haveTarget)
-                    {
-                        if (telescopeDigest.Slewing)
-                            targetExpiresAt = DateTime.MinValue;     // still on its way; no clock
-                        else if (targetExpiresAt == DateTime.MinValue)
-                            targetExpiresAt = DateTime.Now.AddSeconds(targetLingerSeconds);
-                    }
+                        targetGoneAt = DateTime.MinValue;
+                    else if (targetGoneAt == DateTime.MinValue && lastTargetText != null)
+                        targetGoneAt = DateTime.Now.AddSeconds(targetLingerSeconds);
 
-                    TimeSpan remaining = (targetExpiresAt == DateTime.MinValue) ?
-                        TimeSpan.Zero : targetExpiresAt.Subtract(DateTime.Now);
-                    bool counting = haveTarget && targetExpiresAt != DateTime.MinValue;
-                    bool showTarget = haveTarget && (!counting || remaining > TimeSpan.Zero);
+                    TimeSpan remaining = (targetGoneAt == DateTime.MinValue) ?
+                        TimeSpan.Zero : targetGoneAt.Subtract(DateTime.Now);
+                    bool lingering = !haveTarget && targetGoneAt != DateTime.MinValue &&
+                                     remaining > TimeSpan.Zero;
+
+                    if (!haveTarget && !lingering)
+                        lastTargetText = null;      // done; stop holding on to it
+
+                    bool showTarget = haveTarget || lingering;
 
                     targetDisplay.Visible = showTarget;
                     targetNoneLabel.Visible = !showTarget;
@@ -661,9 +663,19 @@ namespace Dash
                     //  their refresh timers - see groupBoxSafeToOperate and groupBoxFocus.
                     //
                     groupBoxTarget.Text = targetGroupBaseText +
-                        ((showTarget && counting) ? $"- clearing in {remaining.ToMinimalString()} " : "");
+                        (lingering ? $"- clearing in {remaining.ToMinimalString()} " : "");
 
-                    if (showTarget)
+                    if (lingering)
+                    {
+                        targetCapLeft.Text  = lastTargetText[0];
+                        targetValLeft.Text  = lastTargetText[1];
+                        targetCapRight.Text = lastTargetText[2];
+                        targetValRight.Text = lastTargetText[3];
+                        distValLeft.Text    = lastTargetText[4];
+                        distValRight.Text   = lastTargetText[5];
+                    }
+
+                    if (haveTarget)
                     {
                         string capLeft, capRight;
                         double valLeft, valRight, dLeft, dRight;
@@ -717,6 +729,18 @@ namespace Dash
                         toolTip.SetToolTip(targetValRight, $"Target {capRight} requested by {opMode}");
                         toolTip.SetToolTip(distValLeft, $"{capLeft} still to go");
                         toolTip.SetToolTip(distValRight, $"{capRight} still to go");
+
+                        //
+                        // Kept for the linger.  Once the driver retires the target there is
+                        //  nothing left in the digest to render from, so the last frame is what
+                        //  gets shown - including the final distance, which is the landing error
+                        //  and the most interesting number of the whole slew.
+                        //
+                        lastTargetText = new string[] {
+                            targetCapLeft.Text, targetValLeft.Text,
+                            targetCapRight.Text, targetValRight.Text,
+                            distValLeft.Text, distValRight.Text,
+                        };
                     }
                 }
                 else
