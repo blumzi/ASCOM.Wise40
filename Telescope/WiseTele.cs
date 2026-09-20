@@ -1472,6 +1472,26 @@ namespace ASCOM.Wise40
                 throw;
             }
 
+            //
+            // THIS ASKS FOR Stop AND WILL GET Backoff.  Intentional, but not obvious.
+            //
+            // InternalMoveAxis above has already asked for Backoff by the time we get here, and
+            //  EnableIfNeeded only ever UPGRADES - the enum is ordered None < Stop < Backoff and
+            //  a weaker request cannot displace a stronger one.  So a handpad move that wanders
+            //  past a limit is backed away from it, not merely stopped, and Stop is never the
+            //  effective action anywhere in the driver.
+            //
+            // The upgrade rule is the deliberate part: before it, whichever caller armed the
+            //  timer first decided the action for the whole episode, so a handpad move arriving
+            //  first left the monitor unable to back away from a limit at all.  That was the
+            //  worse failure, and it is the one that was fixed.
+            //
+            // The call is kept rather than deleted because it still records what the handpad
+            //  WANTS - a human is driving, and being yanked 6 degrees off target is startling -
+            //  and because it re-arms the monitor for this move.  If the intent is ever to be
+            //  honoured, upgrading is not the thing to change: the handpad would need its own
+            //  way of saying "stop only", which is a decision about behaviour, not a tidy-up.
+            //
             if (!BypassCoordinatesSafety)
                 safetyMonitorTimer.EnableIfNeeded(SafetyMonitorTimer.ActionWhenNotSafe.Stop);
         }
