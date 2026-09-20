@@ -75,6 +75,28 @@ for ($i = 0; $i -lt 45; $i++) { if ((Get-Service Wise40Watcher).Status -eq 'Stop
 Say ("STOP: service is " + (Get-Service Wise40Watcher).Status)
 
 for ($i = 0; $i -lt 45; $i++) { if ((LiveChildren).Count -eq 0) { break }; Start-Sleep -Seconds 1 }
+#
+# STRAGGLERS GET KILLED, then we re-check.
+#
+# ASCOM.AlpacaClientLocalServer is a COM local server and does not always exit when the watcher
+# stops - twice on 2026-09-20, each time leaving the whole chain down until someone killed it by
+# hand.  The hard abort below is right about the danger (building against DLLs another process
+# holds open can leave a partial mixture on disk) but wrong about the remedy: the service is
+# already stopped, these processes are meant to be gone, and killing one that has outstayed its
+# welcome is safer than leaving the telescope, dome and focuser offline.
+#
+# Still bounded, and the abort still stands if a kill does not take.
+#
+$live = LiveChildren
+if ($live.Count -ne 0) {
+    Say ("STOP: still running after the wait, killing: " + (($live | ForEach-Object { "$($_.ProcessName)($($_.Id))" }) -join ', '))
+    foreach ($proc in $live) {
+        try { Stop-Process -Id $proc.Id -Force -ErrorAction Stop; Say ("STOP: killed $($proc.ProcessName)($($proc.Id))") }
+        catch { Say ("STOP: could not kill $($proc.ProcessName)($($proc.Id)): " + $_.Exception.Message) }
+    }
+    for ($i = 0; $i -lt 15; $i++) { if ((LiveChildren).Count -eq 0) { break }; Start-Sleep -Seconds 1 }
+}
+
 $live = LiveChildren
 if ($live.Count -ne 0) {
     #
