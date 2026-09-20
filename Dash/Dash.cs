@@ -81,6 +81,35 @@ namespace Dash
         private Label targetCapLeft, targetValLeft, targetCapRight, targetValRight;
         private Label distCapLeft, distValLeft, distCapRight, distValRight;
 
+        //
+        // A reached target lingers for a minute, then the group says so.
+        //
+        // The driver never nullifies a target - the only place that clears the fields is Dispose,
+        //  and the two lines that would have done it after a slew are commented out at
+        //  WiseTele.cs:2382.  So "the target was reached and nullified" has to be decided here,
+        //  and arrival is the honest signal: Slewing goes false while a target is still recorded.
+        //
+        // The clock therefore starts on ARRIVAL, not on the target being set, and any change of
+        //  target restarts it.  While a slew is running there is no countdown at all - the target
+        //  is current, however long it takes.
+        //
+        private Label targetNoneLabel;
+        private string targetGroupBaseText;
+
+        //
+        // The driver now retires a target itself, the moment no axis is still slewing to it - see
+        //  the slewer ContinueWith in WiseTele.  So the Dash no longer has to infer completion
+        //  from Slewing; it simply shows a target while one exists, and then keeps the last one
+        //  on screen for a little longer so a glance a few seconds late still says where it went.
+        //
+        // The cached strings are what get shown during the linger.  The target they describe is
+        //  gone from the digest by then, so they are frozen rather than recomputed: a distance to
+        //  a target that no longer exists would be a number with nothing behind it.
+        //
+        private DateTime targetGoneAt = DateTime.MinValue;       // MinValue: nothing to linger over
+        private string[] lastTargetText;                         // capL, valL, capR, valR, dL, dR
+        private const int targetLingerSeconds = 30;
+
         private static Dictionary<WiseSite.OpMode, List<Control>> InvisibleControls;
         private static List<Control> WiseInvisibleControls, ACPInvisibleControls, LCOInvisibleControls;
         private static Dictionary<TextBox, Tuple<double, string>> targetTextBox = new Dictionary<TextBox, Tuple<double, string>>(6);
@@ -267,6 +296,32 @@ namespace Dash
                 targetDisplay.Controls.Add(distValRight,   3, 1);
 
                 groupBoxTarget.Controls.Add(targetDisplay);
+
+                //
+                // What the group says when there is nothing to show: one centred line, occupying
+                //  exactly the area the two lines would have, so the group does not change size
+                //  or shift as it swaps between them.
+                //
+                // Caption styling rather than value styling - this is an absence, and it should
+                //  not read as loudly as a coordinate.
+                //
+                targetNoneLabel = new Label
+                {
+                    AutoSize = false,
+                    Text = "No current target",
+                    Font = labelRightAscension.Font,
+                    ForeColor = labelRightAscension.ForeColor,
+                    TextAlign = ContentAlignment.MiddleCenter,
+                    Location = targetDisplay.Location,
+                    Size = targetDisplay.Size,
+                    Margin = new Padding(0),
+                    Visible = false,
+                };
+                groupBoxTarget.Controls.Add(targetNoneLabel);
+
+                // Captured AFTER the "(from ACP)" suffix was appended, so the countdown can be
+                //  added and removed without losing which mode supplied the target.
+                targetGroupBaseText = groupBoxTarget.Text;
             }
 
             foreach (var c in InvisibleControls[opMode])
@@ -574,7 +629,51 @@ namespace Dash
                     bool haveTarget = telescopeDigest.Target != null &&
                         telescopeDigest.Target.Type != TargetCoordinateType.None;
 
-                    targetDisplay.Visible = haveTarget;
+                    //
+                    // SHOW WHILE IT EXISTS, PLUS A LINGER.
+                    //
+                    // The driver retires the target when the last axis stops slewing to it, so
+                    //  haveTarget going false IS completion - no inference from Slewing needed,
+                    //  and an aborted slew retires its target too, which is right: it is over
+                    //  either way.
+                    //
+                    // The linger starts at that moment and shows the CACHED text, because the
+                    //  target is already gone from the digest by then.
+                    //
+                    if (haveTarget)
+                        targetGoneAt = DateTime.MinValue;
+                    else if (targetGoneAt == DateTime.MinValue && lastTargetText != null)
+                        targetGoneAt = DateTime.Now.AddSeconds(targetLingerSeconds);
+
+                    TimeSpan remaining = (targetGoneAt == DateTime.MinValue) ?
+                        TimeSpan.Zero : targetGoneAt.Subtract(DateTime.Now);
+                    bool lingering = !haveTarget && targetGoneAt != DateTime.MinValue &&
+                                     remaining > TimeSpan.Zero;
+
+                    if (!haveTarget && !lingering)
+                        lastTargetText = null;      // done; stop holding on to it
+
+                    bool showTarget = haveTarget || lingering;
+
+                    targetDisplay.Visible = showTarget;
+                    targetNoneLabel.Visible = !showTarget;
+
+                    //
+                    // The countdown in the caption, in the same shape the other groups use for
+                    //  their refresh timers - see groupBoxSafeToOperate and groupBoxFocus.
+                    //
+                    groupBoxTarget.Text = targetGroupBaseText +
+                        (lingering ? $"- clearing in {remaining.ToMinimalString()} " : "");
+
+                    if (lingering)
+                    {
+                        targetCapLeft.Text  = lastTargetText[0];
+                        targetValLeft.Text  = lastTargetText[1];
+                        targetCapRight.Text = lastTargetText[2];
+                        targetValRight.Text = lastTargetText[3];
+                        distValLeft.Text    = lastTargetText[4];
+                        distValRight.Text   = lastTargetText[5];
+                    }
 
                     if (haveTarget)
                     {
@@ -630,6 +729,18 @@ namespace Dash
                         toolTip.SetToolTip(targetValRight, $"Target {capRight} requested by {opMode}");
                         toolTip.SetToolTip(distValLeft, $"{capLeft} still to go");
                         toolTip.SetToolTip(distValRight, $"{capRight} still to go");
+
+                        //
+                        // Kept for the linger.  Once the driver retires the target there is
+                        //  nothing left in the digest to render from, so the last frame is what
+                        //  gets shown - including the final distance, which is the landing error
+                        //  and the most interesting number of the whole slew.
+                        //
+                        lastTargetText = new string[] {
+                            targetCapLeft.Text, targetValLeft.Text,
+                            targetCapRight.Text, targetValRight.Text,
+                            distValLeft.Text, distValRight.Text,
+                        };
                     }
                 }
                 else
