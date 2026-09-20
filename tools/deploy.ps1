@@ -49,7 +49,28 @@ $projects = @(
     "$repo\Dash\Dash.csproj"
 )
 
-$children = '^(ASCOM\.RemoteServer|ASCOM\.OCH\.Server|ASCOM\.AlpacaClientLocalServer|Dash)$'
+#
+# WHAT THIS LIST IS: every process that LOADS OUR ASSEMBLIES, and therefore has to be gone
+# before we can rewrite them.  It is NOT "everything Wise40Watcher supervises" - those are two
+# different sets and confusing them is dangerous in both directions.
+#
+# The watcher's set is Const.Apps in Common: RESTServer, Dash, SafetyDash, WeatherLink,
+# ObservatoryMonitor, OCH and AlpacaClientLocalServer.  Which of them it actually starts depends
+# on the operational mode - see Wise40Watcher.OnStart: ACP and WISE get the Dash, LCO also gets
+# ObservatoryMonitor, SafetyDash is commented out, and WeatherLink only when the VantagePro
+# driver is reading its HTML report (weatherLinkNeedsWatching).
+#
+# WEATHERLINK IS DELIBERATELY ABSENT.  It is Davis's own logger in c:\WeatherLink, it holds none
+# of our DLLs - the VantagePro driver only reads a file it writes - and it is watched, running,
+# and was never the thing blocking a build.  Adding it here would make the straggler kill below
+# terminate the weather logger on every deploy, and weather is what SafeToOperate decides on.
+# The only correct thing to do with WeatherLink during a deploy is leave it alone.
+#
+# ObservatoryMonitor and RemoteSafetyDashboard ARE here: both are built from this repo and carry
+# their own Common.dll, so either one running would hold an assembly the sync step rewrites.
+# Neither runs in ACP mode, which is why their absence has not bitten yet.
+#
+$children = '^(ASCOM\.RemoteServer|ASCOM\.OCH\.Server|ASCOM\.AlpacaClientLocalServer|Dash|ObservatoryMonitor|RemoteSafetyDashboard)$'
 $x86 = "$repo\Telescope\bin\x86\Debug\ASCOM.Wise40.Telescope.dll"
 $any = "$repo\Telescope\bin\Debug\ASCOM.Wise40.Telescope.dll"
 $hw  = "$repo\Telescope\bin\x86\Debug\Hardware.dll"
@@ -75,6 +96,28 @@ for ($i = 0; $i -lt 45; $i++) { if ((Get-Service Wise40Watcher).Status -eq 'Stop
 Say ("STOP: service is " + (Get-Service Wise40Watcher).Status)
 
 for ($i = 0; $i -lt 45; $i++) { if ((LiveChildren).Count -eq 0) { break }; Start-Sleep -Seconds 1 }
+#
+# STRAGGLERS GET KILLED, then we re-check.
+#
+# ASCOM.AlpacaClientLocalServer is a COM local server and does not always exit when the watcher
+# stops - twice on 2026-09-20, each time leaving the whole chain down until someone killed it by
+# hand.  The hard abort below is right about the danger (building against DLLs another process
+# holds open can leave a partial mixture on disk) but wrong about the remedy: the service is
+# already stopped, these processes are meant to be gone, and killing one that has outstayed its
+# welcome is safer than leaving the telescope, dome and focuser offline.
+#
+# Still bounded, and the abort still stands if a kill does not take.
+#
+$live = LiveChildren
+if ($live.Count -ne 0) {
+    Say ("STOP: still running after the wait, killing: " + (($live | ForEach-Object { "$($_.ProcessName)($($_.Id))" }) -join ', '))
+    foreach ($proc in $live) {
+        try { Stop-Process -Id $proc.Id -Force -ErrorAction Stop; Say ("STOP: killed $($proc.ProcessName)($($proc.Id))") }
+        catch { Say ("STOP: could not kill $($proc.ProcessName)($($proc.Id)): " + $_.Exception.Message) }
+    }
+    for ($i = 0; $i -lt 15; $i++) { if ((LiveChildren).Count -eq 0) { break }; Start-Sleep -Seconds 1 }
+}
+
 $live = LiveChildren
 if ($live.Count -ne 0) {
     #
