@@ -81,6 +81,24 @@ namespace Dash
         private Label targetCapLeft, targetValLeft, targetCapRight, targetValRight;
         private Label distCapLeft, distValLeft, distCapRight, distValRight;
 
+        //
+        // A reached target lingers for a minute, then the group says so.
+        //
+        // The driver never nullifies a target - the only place that clears the fields is Dispose,
+        //  and the two lines that would have done it after a slew are commented out at
+        //  WiseTele.cs:2382.  So "the target was reached and nullified" has to be decided here,
+        //  and arrival is the honest signal: Slewing goes false while a target is still recorded.
+        //
+        // The clock therefore starts on ARRIVAL, not on the target being set, and any change of
+        //  target restarts it.  While a slew is running there is no countdown at all - the target
+        //  is current, however long it takes.
+        //
+        private Label targetNoneLabel;
+        private string targetGroupBaseText;
+        private DateTime targetExpiresAt = DateTime.MinValue;    // MinValue: not counting down
+        private string lastTargetKey;
+        private const int targetLingerSeconds = 60;
+
         private static Dictionary<WiseSite.OpMode, List<Control>> InvisibleControls;
         private static List<Control> WiseInvisibleControls, ACPInvisibleControls, LCOInvisibleControls;
         private static Dictionary<TextBox, Tuple<double, string>> targetTextBox = new Dictionary<TextBox, Tuple<double, string>>(6);
@@ -267,6 +285,32 @@ namespace Dash
                 targetDisplay.Controls.Add(distValRight,   3, 1);
 
                 groupBoxTarget.Controls.Add(targetDisplay);
+
+                //
+                // What the group says when there is nothing to show: one centred line, occupying
+                //  exactly the area the two lines would have, so the group does not change size
+                //  or shift as it swaps between them.
+                //
+                // Caption styling rather than value styling - this is an absence, and it should
+                //  not read as loudly as a coordinate.
+                //
+                targetNoneLabel = new Label
+                {
+                    AutoSize = false,
+                    Text = "No current target",
+                    Font = labelRightAscension.Font,
+                    ForeColor = labelRightAscension.ForeColor,
+                    TextAlign = ContentAlignment.MiddleCenter,
+                    Location = targetDisplay.Location,
+                    Size = targetDisplay.Size,
+                    Margin = new Padding(0),
+                    Visible = false,
+                };
+                groupBoxTarget.Controls.Add(targetNoneLabel);
+
+                // Captured AFTER the "(from ACP)" suffix was appended, so the countdown can be
+                //  added and removed without losing which mode supplied the target.
+                targetGroupBaseText = groupBoxTarget.Text;
             }
 
             foreach (var c in InvisibleControls[opMode])
@@ -574,9 +618,52 @@ namespace Dash
                     bool haveTarget = telescopeDigest.Target != null &&
                         telescopeDigest.Target.Type != TargetCoordinateType.None;
 
-                    targetDisplay.Visible = haveTarget;
+                    //
+                    // THE LINGER CLOCK.  See the fields for why arrival is the signal.
+                    //
+                    // Keyed on the target itself, so a NEW target restarts the minute even if it
+                    //  arrives while the previous one is still counting down.  Rounded before
+                    //  comparing: the alt/az pair is re-derived every tick from the equatorial
+                    //  one and drifts in the last decimals, which would otherwise look like a new
+                    //  target every second and the countdown would never advance.
+                    //
+                    string targetKey = !haveTarget ? null : string.Format(
+                        "{0}|{1:F5}|{2:F5}|{3:F5}|{4:F4}|{5:F4}",
+                        telescopeDigest.Target.Type,
+                        telescopeDigest.Target.RaDec_RA, telescopeDigest.Target.RaDec_Dec,
+                        telescopeDigest.Target.HaDec_HA,
+                        telescopeDigest.Target.Alt, telescopeDigest.Target.Az);
+
+                    if (targetKey != lastTargetKey)
+                    {
+                        lastTargetKey = targetKey;
+                        targetExpiresAt = DateTime.MinValue;
+                    }
 
                     if (haveTarget)
+                    {
+                        if (telescopeDigest.Slewing)
+                            targetExpiresAt = DateTime.MinValue;     // still on its way; no clock
+                        else if (targetExpiresAt == DateTime.MinValue)
+                            targetExpiresAt = DateTime.Now.AddSeconds(targetLingerSeconds);
+                    }
+
+                    TimeSpan remaining = (targetExpiresAt == DateTime.MinValue) ?
+                        TimeSpan.Zero : targetExpiresAt.Subtract(DateTime.Now);
+                    bool counting = haveTarget && targetExpiresAt != DateTime.MinValue;
+                    bool showTarget = haveTarget && (!counting || remaining > TimeSpan.Zero);
+
+                    targetDisplay.Visible = showTarget;
+                    targetNoneLabel.Visible = !showTarget;
+
+                    //
+                    // The countdown in the caption, in the same shape the other groups use for
+                    //  their refresh timers - see groupBoxSafeToOperate and groupBoxFocus.
+                    //
+                    groupBoxTarget.Text = targetGroupBaseText +
+                        ((showTarget && counting) ? $"- clearing in {remaining.ToMinimalString()} " : "");
+
+                    if (showTarget)
                     {
                         string capLeft, capRight;
                         double valLeft, valRight, dLeft, dRight;
