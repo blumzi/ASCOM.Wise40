@@ -1025,8 +1025,37 @@ namespace ASCOM.Wise40
                 debugger.WriteLine(Debugger.DebugLevel.DebugTele,
                     $"{op} - Canceling telescopeCTS: #{telescopeCTS.GetHashCode()}");
                 #endregion
-                telescopeCTS.Cancel();
-                telescopeCTS.Dispose();
+                //
+                // KILLED THE ASCOM SERVER on 2026-09-20:
+                //
+                //   System.ObjectDisposedException: The CancellationTokenSource has been disposed.
+                //     at WiseTele.AbortSlew(String reason)
+                //     at SafetyMonitorTimer.SafetyChecker(Object StateObject)
+                //
+                // The guard above tests the TOKEN, which says nothing about whether the SOURCE
+                //  has been disposed - and a new slew replaces telescopeCTS with a fresh one
+                //  while telescopeCT may still refer to the old. Two overlapping aborts, or an
+                //  abort racing the start of a slew, and Cancel() lands on a disposed source.
+                //
+                // The Dispose() that used to follow is GONE.  It was the thing creating disposed
+                //  sources for everyone else to trip over, and it was never needed: the two
+                //  places that replace telescopeCTS already dispose the old one first, and a
+                //  CancellationTokenSource with no timer holds nothing that requires disposal.
+                //
+                // Caught rather than prevented as well, because this runs on the safety path and
+                //  the cost of being wrong is the whole server.
+                //
+                try
+                {
+                    telescopeCTS.Cancel();
+                }
+                catch (ObjectDisposedException)
+                {
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugTele,
+                        $"{op} - telescopeCTS was already disposed; the slew it belonged to is over.");
+                    #endregion
+                }
             }
 
             #region debug
@@ -1490,6 +1519,22 @@ namespace ASCOM.Wise40
                 Exceptor.Throw<InvalidOperationException>(op, string.Join(", ", wisesafetooperate.UnsafeReasonsList()));
             }
 
+            //
+            // Nothing new starts while a recovery is in progress.
+            //
+            // RecoveringSafety used to guard only Tracking.set, and PulseGuide indirectly through
+            //  Slewing.  MoveAxis was not guarded at all, so a move could be accepted in the
+            //  middle of a backoff - observed 2026-09-20, a handpad-rate move accepted 1.4s into
+            //  a recovery, which then ran for a second until the backoff's own closing stop
+            //  killed it.  A recovery that can be interrupted and then silently cancel what
+            //  interrupted it is worse than either behaviour on its own.
+            //
+            // Stop, FullStop and AbortSlew are deliberately NOT guarded: stopping must always
+            //  work.  Backoff reaches InternalMoveAxis directly and so is exempt.
+            //
+            if (RecoveringSafety)
+                Exceptor.Throw<InvalidOperationException>(op, "Safety recovery is active");
+
             Const.AxisDirection direction = (Rate == Const.rateStopped) ? Const.AxisDirection.None :
                 (Rate < 0.0) ? Const.AxisDirection.Decreasing : Const.AxisDirection.Increasing;
 
@@ -1847,6 +1892,16 @@ namespace ASCOM.Wise40
         /// <param name="dec">Declination of the checked position</param>
         public string SafeAtCoordinates(Angle ra, Angle dec)
         {
+            return SafeAtCoordinates(ra, dec, out _);
+        }
+
+        /// <param name="violations">
+        /// Which limits were breached, for callers that have to undo them.  None when safe.
+        /// </param>
+        public string SafeAtCoordinates(Angle ra, Angle dec, out SafetyViolation violations)
+        {
+            violations = SafetyViolation.None;
+
             if (BypassCoordinatesSafety)
                 return string.Empty;
 
@@ -1864,19 +1919,31 @@ namespace ASCOM.Wise40
 
             Angle alt = Angle.AltFromDegrees(90.0 - zd);
             if (alt < altLimit)
+            {
                 reasons.Add($"Altitude too low: {alt} < {altLimit}");
+                violations |= SafetyViolation.AltitudeTooLow;
+            }
 
             //
             // Separate from the check above, never folded into it: the compiled limit must keep
             //  rejecting on its own, whatever the test envelope holds.
             //
             if (testAltLimitDeg.HasValue && alt < Angle.AltFromDegrees(testAltLimitDeg.Value))
+            {
                 reasons.Add($"Altitude below the TEST limit: {alt} < {Angle.AltFromDegrees(testAltLimitDeg.Value)}");
+                violations |= SafetyViolation.AltitudeTooLow;
+            }
 
             if (dec > upper_decLimit)
+            {
                 reasons.Add($"Declination too high: {dec} > {upper_decLimit}");
+                violations |= SafetyViolation.DeclinationTooHigh;
+            }
             if (dec < lower_decLimit)
+            {
                 reasons.Add($"Declination too low: {dec} < {lower_decLimit}");
+                violations |= SafetyViolation.DeclinationTooLow;
+            }
 
             //
             // The hour angle OF THE TARGET, derived from the ra argument.
@@ -1896,9 +1963,15 @@ namespace ASCOM.Wise40
             //
             double ha = safeAstroUtils.ConditionHA(wisesite.LocalSiderealTime.Hours - ra.Hours);
             if (ha < eastern_haLimit.Hours)
+            {
                 reasons.Add($"HourAngle too low: {Angle.HaFromHours(ha)} < {eastern_haLimit}");
+                violations |= SafetyViolation.HourAngleTooLow;
+            }
             else if (ha > western_haLimit.Hours)
+            {
                 reasons.Add($"HourAngle too high: {Angle.HaFromHours(ha)} > {western_haLimit}");
+                violations |= SafetyViolation.HourAngleTooHigh;
+            }
 
             //
             // A plain if, not another else-if on the chain above: a target beyond BOTH the
@@ -1908,7 +1981,13 @@ namespace ASCOM.Wise40
             //  west is a two-field change here if a test ever needs an asymmetric envelope.
             //
             if (testHaLimitHours.HasValue && Math.Abs(ha) > testHaLimitHours.Value)
+            {
                 reasons.Add($"HourAngle outside the TEST envelope: {Angle.HaFromHours(ha)} beyond +/-{testHaLimitHours.Value:F2}h");
+
+                // The envelope is symmetric, so the SIGN says which side was left and therefore
+                //  which way recovery has to go.
+                violations |= (ha > 0) ? SafetyViolation.HourAngleTooHigh : SafetyViolation.HourAngleTooLow;
+            }
 
             if (reasons.Count > 0)
             {
@@ -1931,34 +2010,122 @@ namespace ASCOM.Wise40
         /// <summary>
         /// Checks what motors are on and moves the scope away from danger.
         /// </summary>
+        /// <summary>
+        /// Backs away from whatever limit the CURRENT position breaches.
+        /// </summary>
         public void Backoff(string reason)
         {
-            string op = $"Backoff(reason: {reason})";
+            SafeAtCoordinates(Angle.RaFromHours(RightAscension), Angle.DecFromDegrees(Declination),
+                out SafetyViolation violations);
+            Backoff(reason, violations);
+        }
+
+        /// <summary>
+        /// Backs away from the limits named in <paramref name="violations"/>, and only those.
+        /// </summary>
+        //
+        // It used to move BOTH axes toward higher altitude, whatever had gone wrong: it asked
+        //  SafeToMove which way was higher and went that way.  On 2026-09-20 an hour-angle breach
+        //  of 14 arcseconds was answered with 3.8 degrees east AND 7.05 degrees south - the
+        //  declination axis correcting a declination limit that was never breached, leaving the
+        //  mount 7 degrees from where anyone expected it.
+        //
+        // Now each breach moves its own axis its own way:
+        //
+        //   hour angle too low  (east of the eastern limit)  -> WEST
+        //   hour angle too high (west of the western limit)  -> EAST
+        //   declination too high                             -> SOUTH
+        //   declination too low                              -> NORTH
+        //
+        // ALTITUDE is the exception and keeps the old heuristic, because altitude is not the
+        //  property of one axis: it is a function of both, and which one to move depends on where
+        //  you are. Asking SafeToMove which direction is higher is the right question for that
+        //  breach - it just was not the right question for the others.
+        //
+        // An empty violation set does nothing, which is what a caller that found no breach
+        //  should get.
+        //
+        public void Backoff(string reason, SafetyViolation violations)
+        {
+            string op = $"Backoff(reason: {reason}, violations: {violations})";
             const int backoffMillis = 3000;
 
             List<BackoffAction> backoffs = new List<BackoffAction>();
-            if (SafeToMove("east"))
+
+            if (violations.HasFlag(SafetyViolation.HourAngleTooHigh))
                 backoffs.Add(new BackoffAction { Axis = TelescopeAxes.axisPrimary, Direction = "East", Rate = Const.rateSlew });
-            else if (SafeToMove("west"))
+            else if (violations.HasFlag(SafetyViolation.HourAngleTooLow))
                 backoffs.Add(new BackoffAction { Axis = TelescopeAxes.axisPrimary, Direction = "West", Rate = -Const.rateSlew });
 
-            if (SafeToMove("south"))
+            if (violations.HasFlag(SafetyViolation.DeclinationTooHigh))
                 backoffs.Add(new BackoffAction { Axis = TelescopeAxes.axisSecondary, Direction = "South", Rate = -Const.rateSlew });
-            else if (SafeToMove("north"))
+            else if (violations.HasFlag(SafetyViolation.DeclinationTooLow))
                 backoffs.Add(new BackoffAction { Axis = TelescopeAxes.axisSecondary, Direction = "North", Rate = Const.rateSlew });
 
-            foreach (var b in backoffs)
+            if (violations.HasFlag(SafetyViolation.AltitudeTooLow))
+            {
+                //
+                // Only whichever axis is not already being moved for a breach of its own, so a
+                //  position that is both too low AND past an hour-angle limit does not get two
+                //  conflicting commands for the same axis.
+                //
+                if (!backoffs.Any(b => b.Axis == TelescopeAxes.axisPrimary))
+                {
+                    if (SafeToMove("east"))
+                        backoffs.Add(new BackoffAction { Axis = TelescopeAxes.axisPrimary, Direction = "East", Rate = Const.rateSlew });
+                    else if (SafeToMove("west"))
+                        backoffs.Add(new BackoffAction { Axis = TelescopeAxes.axisPrimary, Direction = "West", Rate = -Const.rateSlew });
+                }
+
+                if (!backoffs.Any(b => b.Axis == TelescopeAxes.axisSecondary))
+                {
+                    if (SafeToMove("south"))
+                        backoffs.Add(new BackoffAction { Axis = TelescopeAxes.axisSecondary, Direction = "South", Rate = -Const.rateSlew });
+                    else if (SafeToMove("north"))
+                        backoffs.Add(new BackoffAction { Axis = TelescopeAxes.axisSecondary, Direction = "North", Rate = Const.rateSlew });
+                }
+            }
+
+            if (backoffs.Count == 0)
             {
                 #region debug
-                debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
-                    $"{op}: {b.Direction}: calling MoveAxis({b.Axis}, {b.Direction}, {RateName(b.Rate)}) for {backoffMillis} millis ...");
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic, $"{op}: nothing to back away from");
                 #endregion
-                MoveAxis(b.Axis, b.Rate);
+                return;
+            }
+
+            //
+            // InternalMoveAxis, NOT the public MoveAxis.  Two reasons, both deliberate.
+            //
+            // The public wrapper now refuses while RecoveringSafety is set, so that an incoming
+            //  slew or handpad nudge cannot land on top of a recovery in progress.  The recovery
+            //  is the one caller that must be exempt, and going straight to the internal method
+            //  is the exemption - no flag to thread through, no way for anything else to claim it.
+            //
+            // It also drops the wrapper's wisesafetooperate check, which is a fix rather than a
+            //  loss: that check made the recovery THROW when the weather was unsafe, which is
+            //  exactly when a coordinates violation is most likely and least excusable to ignore.
+            //  The try/finally around RecoveringSafety in SafetyChecker exists because of that
+            //  throw.  Backing away from a limit is the safe action in any weather.
+            //
+            // Otherwise identical to what the wrapper did: same direction rule, same
+            //  stopTracking: true.
+            //
+            foreach (var b in backoffs)
+            {
+                Const.AxisDirection dir = (b.Rate < 0.0) ?
+                    Const.AxisDirection.Decreasing : Const.AxisDirection.Increasing;
+
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
+                    $"{op}: {b.Direction}: calling InternalMoveAxis({b.Axis}, {b.Direction}, {RateName(b.Rate)}) for {backoffMillis} millis ...");
+                #endregion
+                InternalMoveAxis(b.Axis, b.Rate, dir, true);
                 Thread.Sleep(backoffMillis);
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"{op}: stopping {b.Axis}");
                 #endregion
-                MoveAxis(b.Axis, Const.rateStopped);
+                InternalMoveAxis(b.Axis, Const.rateStopped, Const.AxisDirection.None, true);
             }
 
             #region debug
@@ -3271,6 +3438,22 @@ namespace ASCOM.Wise40
                 $"{primaryTargetAngle.ToNiceString()}, " +
                 $"{secondaryTargetAngle.ToNiceString()}, " +
                 $"reason: {reason})";
+
+            //
+            // Nothing new starts while a recovery is in progress.  This is the funnel all three
+            //  slew entry points reach - SlewToCoordinatesAsync, SlewToHaDecAsync and
+            //  SlewToAltAzAsync - so one guard covers them all.
+            //
+            // A slew accepted mid-backoff is worse than the handpad case that prompted this: it
+            //  builds a new telescopeCTS and new slewer tasks, and then the recovery's trailing
+            //  MoveAxis(rateStopped) lands on one of their axes a second or two later, leaving a
+            //  slew running on one axis only.
+            //
+            // Refused rather than queued, matching what Tracking.set already does for the same
+            //  condition.  A client that sees the exception can retry; ACP already handles one.
+            //
+            if (RecoveringSafety)
+                Exceptor.Throw<InvalidOperationException>(op, "Safety recovery is active");
 
             Angle.AngleType primaryAngleType = primaryTargetAngle.Type;
 
@@ -5269,6 +5452,30 @@ namespace ASCOM.Wise40
         RaDec,
         HaDec,
         AltAz,
+    }
+
+    /// <summary>
+    /// WHICH limits a position breaches, so that recovery can undo the breach that happened
+    /// rather than every breach that might have.
+    /// </summary>
+    //
+    // SafeAtCoordinates returned only prose, so Backoff could not know what to fix.  It guessed
+    //  by altitude: it asked SafeToMove which way was HIGHER and moved both axes that way.  On
+    //  2026-09-20 an hour-angle breach of 14 arcseconds was answered with 3.8 degrees east AND
+    //  7.05 degrees south - the declination move corrected a limit that had not been breached.
+    //
+    // Flags rather than a single value because a position can breach more than one at once, and
+    //  each wants its own axis moved its own way.
+    //
+    [Flags]
+    public enum SafetyViolation
+    {
+        None = 0,
+        AltitudeTooLow = 1 << 0,
+        DeclinationTooHigh = 1 << 1,
+        DeclinationTooLow = 1 << 2,
+        HourAngleTooLow = 1 << 3,    // east of the eastern limit: recover by going WEST
+        HourAngleTooHigh = 1 << 4,   // west of the western limit: recover by going EAST
     }
 
     public class TelescopeTarget

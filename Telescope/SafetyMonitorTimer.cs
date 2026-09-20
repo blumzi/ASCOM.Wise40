@@ -33,6 +33,14 @@ namespace ASCOM.Wise40 //.Telescope
         //
         private int _consecutiveUnsafe;
 
+        //
+        // Consecutive passes that found nothing moving and nothing unsafe.  The monitor keeps
+        //  re-arming through a few of these so that arming need not coincide with the motors
+        //  starting - see the re-arm block in SafetyChecker.
+        //
+        private int _idlePasses;
+        private const int idlePassesBeforeGivingUp = 3;
+
         public enum ActionWhenNotSafe {  None, Stop, Backoff };
 
         public ActionWhenNotSafe WhenNotSafe { get; set; } = ActionWhenNotSafe.None;
@@ -51,9 +59,12 @@ namespace ASCOM.Wise40 //.Telescope
                 if (!armedAtEntry || actionAtEntry == ActionWhenNotSafe.None)
                     return;
 
+                // The violations are carried through to Backoff so it undoes the breach that
+                //  happened rather than every breach that might have.  See WiseTele.Backoff.
                 string reason = wisetele.SafeAtCoordinates(
                     Angle.RaFromHours(wisetele.RightAscension),
-                    Angle.DecFromDegrees(wisetele.Declination));
+                    Angle.DecFromDegrees(wisetele.Declination),
+                    out SafetyViolation violations);
 
                 if (string.IsNullOrEmpty(reason))
                 {
@@ -101,12 +112,32 @@ namespace ASCOM.Wise40 //.Telescope
                         wisetele.Tracking = false;
 
                     if (actionAtEntry == ActionWhenNotSafe.Backoff)
-                        wisetele.Backoff(op);
+                        wisetele.Backoff(op, violations);
                 }
                 finally
                 {
                     wisetele.RecoveringSafety = false;
                 }
+            }
+            catch (Exception ex)
+            {
+                //
+                // A TIMER CALLBACK THAT THROWS TERMINATES THE PROCESS.
+                //
+                // There was no catch here until 2026-09-20, when an ObjectDisposedException out
+                //  of AbortSlew took the whole ASCOM server down - the safety monitor killing the
+                //  thing it exists to protect, and with it the telescope, dome and focuser.
+                //
+                // Everything this method calls can throw: AbortSlew, Tracking.set and Backoff all
+                //  reach hardware, and Backoff calls MoveAxis, which throws outright when
+                //  wisesafetooperate reports unsafe.  So the callback swallows and logs instead.
+                //  A check that fails is a check we retry in a second; a check that throws is an
+                //  observatory that stops answering.
+                //
+                #region debug
+                WiseTele.debugger.WriteLine(Debugger.DebugLevel.DebugExceptions,
+                    $"SafetyChecker: caught {ex.GetType().Name}: {ex.Message} at\n{ex.StackTrace}");
+                #endregion
             }
             finally
             {
@@ -130,7 +161,26 @@ namespace ASCOM.Wise40 //.Telescope
                 //
                 bool motorsActive = wisetele.DirectionMotorsAreActive || wisetele.TrackingMotor.IsOn;
 
-                if (armedAtEntry && !WiseTele.BypassCoordinatesSafety && (motorsActive || wasUnsafe))
+                //
+                // A GRACE PERIOD, so that arming and the motors starting need not be simultaneous.
+                //
+                // Without it, removing the guard from EnableIfNeeded would only move the race one
+                //  second later: arm, tick before the motors are up, find nothing moving and
+                //  nothing unsafe, stop re-arming - and the move that follows is unmonitored, the
+                //  very failure this is meant to end.
+                //
+                // Three idle passes, so a motor that takes up to about three seconds to report
+                //  active is still covered.  Anything genuinely idle costs three extra
+                //  SafeAtCoordinates calls and then stops, which is what DisableIfNotNeeded
+                //  intends anyway.
+                //
+                if (motorsActive || wasUnsafe)
+                    _idlePasses = 0;
+                else
+                    _idlePasses++;
+
+                if (armedAtEntry && !WiseTele.BypassCoordinatesSafety &&
+                    (motorsActive || wasUnsafe || _idlePasses < idlePassesBeforeGivingUp))
                 {
                     _enabled = true;
                     WhenNotSafe = actionAtEntry;
@@ -167,9 +217,28 @@ namespace ASCOM.Wise40 //.Telescope
 
         public void EnableIfNeeded(ActionWhenNotSafe action)
         {
-            if (!(wisetele.DirectionMotorsAreActive || wisetele.TrackingMotor.IsOn))
-                return;
-
+            //
+            // NO "are the motors running yet?" TEST HERE.
+            //
+            // There used to be one, and it armed the monitor only if the motors happened to be
+            //  active at the instant of the call:
+            //
+            //      if (!(wisetele.DirectionMotorsAreActive || wisetele.TrackingMotor.IsOn))
+            //          return;
+            //
+            // Both callers ask BEFORE or WHILE the motors spin up - MoveAxis at WiseTele.cs:1438
+            //  and the motor-start path at :1626 - so whether coordinate safety was watching at
+            //  all came down to timing.  Measured 2026-09-20: four MoveAxis creeps past a test
+            //  limit, three caught within a second, the fourth not caught at all.  The mount sat
+            //  0.012h past the limit for twelve seconds and nothing happened, and there was no
+            //  log line to say so, because the thing that would have written one was not running.
+            //
+            // Arming when nothing turns out to be moving is harmless: the re-arm test at the end
+            //  of SafetyChecker is the real "should I keep going?" decision, and it now allows a
+            //  few idle passes before giving up so that this arm-then-spin-up order is covered.
+            //  The cost of a wasted pass is one SafeAtCoordinates; the cost of not arming is an
+            //  unmonitored move.
+            //
             //
             // Upgrade the action even when already armed.  This assignment used to sit inside
             //  the "!Enabled" test, so whichever caller armed the timer first decided what it
@@ -182,6 +251,9 @@ namespace ASCOM.Wise40 //.Telescope
             //
             if (action > WhenNotSafe)
                 WhenNotSafe = action;
+
+            // A fresh request gets the full grace, whether or not we were already armed.
+            _idlePasses = 0;
 
             if (!Enabled)
                 Enabled = true;
