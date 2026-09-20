@@ -41,6 +41,14 @@ namespace ASCOM.Wise40 //.Telescope
         private int _idlePasses;
         private const int idlePassesBeforeGivingUp = 3;
 
+        //
+        // Ordered weakest to strongest: EnableIfNeeded compares them, so a later, weaker request
+        //  cannot displace a stronger one already in force.
+        //
+        // Stop is currently NEVER the effective action.  Its only caller is HandpadMoveAxis, and
+        //  by the time that asks, InternalMoveAxis has already asked for Backoff - see the
+        //  comment at that call site.  Do not read a Stop request as a promise of stopping.
+        //
         public enum ActionWhenNotSafe {  None, Stop, Backoff };
 
         public ActionWhenNotSafe WhenNotSafe { get; set; } = ActionWhenNotSafe.None;
