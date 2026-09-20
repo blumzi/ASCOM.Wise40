@@ -1519,6 +1519,22 @@ namespace ASCOM.Wise40
                 Exceptor.Throw<InvalidOperationException>(op, string.Join(", ", wisesafetooperate.UnsafeReasonsList()));
             }
 
+            //
+            // Nothing new starts while a recovery is in progress.
+            //
+            // RecoveringSafety used to guard only Tracking.set, and PulseGuide indirectly through
+            //  Slewing.  MoveAxis was not guarded at all, so a move could be accepted in the
+            //  middle of a backoff - observed 2026-09-20, a handpad-rate move accepted 1.4s into
+            //  a recovery, which then ran for a second until the backoff's own closing stop
+            //  killed it.  A recovery that can be interrupted and then silently cancel what
+            //  interrupted it is worse than either behaviour on its own.
+            //
+            // Stop, FullStop and AbortSlew are deliberately NOT guarded: stopping must always
+            //  work.  Backoff reaches InternalMoveAxis directly and so is exempt.
+            //
+            if (RecoveringSafety)
+                Exceptor.Throw<InvalidOperationException>(op, "Safety recovery is active");
+
             Const.AxisDirection direction = (Rate == Const.rateStopped) ? Const.AxisDirection.None :
                 (Rate < 0.0) ? Const.AxisDirection.Decreasing : Const.AxisDirection.Increasing;
 
@@ -2078,18 +2094,38 @@ namespace ASCOM.Wise40
                 return;
             }
 
+            //
+            // InternalMoveAxis, NOT the public MoveAxis.  Two reasons, both deliberate.
+            //
+            // The public wrapper now refuses while RecoveringSafety is set, so that an incoming
+            //  slew or handpad nudge cannot land on top of a recovery in progress.  The recovery
+            //  is the one caller that must be exempt, and going straight to the internal method
+            //  is the exemption - no flag to thread through, no way for anything else to claim it.
+            //
+            // It also drops the wrapper's wisesafetooperate check, which is a fix rather than a
+            //  loss: that check made the recovery THROW when the weather was unsafe, which is
+            //  exactly when a coordinates violation is most likely and least excusable to ignore.
+            //  The try/finally around RecoveringSafety in SafetyChecker exists because of that
+            //  throw.  Backing away from a limit is the safe action in any weather.
+            //
+            // Otherwise identical to what the wrapper did: same direction rule, same
+            //  stopTracking: true.
+            //
             foreach (var b in backoffs)
             {
+                Const.AxisDirection dir = (b.Rate < 0.0) ?
+                    Const.AxisDirection.Decreasing : Const.AxisDirection.Increasing;
+
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugLogic,
-                    $"{op}: {b.Direction}: calling MoveAxis({b.Axis}, {b.Direction}, {RateName(b.Rate)}) for {backoffMillis} millis ...");
+                    $"{op}: {b.Direction}: calling InternalMoveAxis({b.Axis}, {b.Direction}, {RateName(b.Rate)}) for {backoffMillis} millis ...");
                 #endregion
-                MoveAxis(b.Axis, b.Rate);
+                InternalMoveAxis(b.Axis, b.Rate, dir, true);
                 Thread.Sleep(backoffMillis);
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugTele, $"{op}: stopping {b.Axis}");
                 #endregion
-                MoveAxis(b.Axis, Const.rateStopped);
+                InternalMoveAxis(b.Axis, Const.rateStopped, Const.AxisDirection.None, true);
             }
 
             #region debug
@@ -3402,6 +3438,22 @@ namespace ASCOM.Wise40
                 $"{primaryTargetAngle.ToNiceString()}, " +
                 $"{secondaryTargetAngle.ToNiceString()}, " +
                 $"reason: {reason})";
+
+            //
+            // Nothing new starts while a recovery is in progress.  This is the funnel all three
+            //  slew entry points reach - SlewToCoordinatesAsync, SlewToHaDecAsync and
+            //  SlewToAltAzAsync - so one guard covers them all.
+            //
+            // A slew accepted mid-backoff is worse than the handpad case that prompted this: it
+            //  builds a new telescopeCTS and new slewer tasks, and then the recovery's trailing
+            //  MoveAxis(rateStopped) lands on one of their axes a second or two later, leaving a
+            //  slew running on one axis only.
+            //
+            // Refused rather than queued, matching what Tracking.set already does for the same
+            //  condition.  A client that sees the exception can retry; ACP already handles one.
+            //
+            if (RecoveringSafety)
+                Exceptor.Throw<InvalidOperationException>(op, "Safety recovery is active");
 
             Angle.AngleType primaryAngleType = primaryTargetAngle.Type;
 
