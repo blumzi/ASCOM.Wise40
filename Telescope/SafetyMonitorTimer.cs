@@ -51,9 +51,12 @@ namespace ASCOM.Wise40 //.Telescope
                 if (!armedAtEntry || actionAtEntry == ActionWhenNotSafe.None)
                     return;
 
+                // The violations are carried through to Backoff so it undoes the breach that
+                //  happened rather than every breach that might have.  See WiseTele.Backoff.
                 string reason = wisetele.SafeAtCoordinates(
                     Angle.RaFromHours(wisetele.RightAscension),
-                    Angle.DecFromDegrees(wisetele.Declination));
+                    Angle.DecFromDegrees(wisetele.Declination),
+                    out SafetyViolation violations);
 
                 if (string.IsNullOrEmpty(reason))
                 {
@@ -101,12 +104,32 @@ namespace ASCOM.Wise40 //.Telescope
                         wisetele.Tracking = false;
 
                     if (actionAtEntry == ActionWhenNotSafe.Backoff)
-                        wisetele.Backoff(op);
+                        wisetele.Backoff(op, violations);
                 }
                 finally
                 {
                     wisetele.RecoveringSafety = false;
                 }
+            }
+            catch (Exception ex)
+            {
+                //
+                // A TIMER CALLBACK THAT THROWS TERMINATES THE PROCESS.
+                //
+                // There was no catch here until 2026-09-20, when an ObjectDisposedException out
+                //  of AbortSlew took the whole ASCOM server down - the safety monitor killing the
+                //  thing it exists to protect, and with it the telescope, dome and focuser.
+                //
+                // Everything this method calls can throw: AbortSlew, Tracking.set and Backoff all
+                //  reach hardware, and Backoff calls MoveAxis, which throws outright when
+                //  wisesafetooperate reports unsafe.  So the callback swallows and logs instead.
+                //  A check that fails is a check we retry in a second; a check that throws is an
+                //  observatory that stops answering.
+                //
+                #region debug
+                WiseTele.debugger.WriteLine(Debugger.DebugLevel.DebugExceptions,
+                    $"SafetyChecker: caught {ex.GetType().Name}: {ex.Message} at\n{ex.StackTrace}");
+                #endregion
             }
             finally
             {
