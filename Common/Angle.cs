@@ -632,6 +632,45 @@ namespace ASCOM.Wise40.Common
             return result;
         }
 
+        /// <summary>
+        /// Converts an Increasing/Decreasing in a target's OWN coordinate into the mechanical
+        ///  sense that the telescope's motors and coast figures are keyed by.
+        /// </summary>
+        //
+        // ShortestDistance reports its direction in the coordinate it was given: "Increasing"
+        //  means the number goes up, nothing more.  The driver's movementDict maps
+        //  axisPrimary+Increasing to the EAST motor, and the per-direction coast figures in
+        //  realMovementParameters were measured east and west.  Both are therefore in RIGHT
+        //  ASCENSION sense, because right ascension increases EASTWARD.
+        //
+        // Hour angle increases WESTWARD - HA = LST - RA - so for an hour-angle target every
+        //  direction out of ShortestDistance means the opposite motor and the opposite coast.
+        //
+        // Unconverted, that is precisely what happened on 2026-09-19.  A Park from HA
+        //  -01h21m44.8s to HA 0 needs the hour angle to INCREASE, which is westward; the
+        //  dictionary read Increasing and started the EAST motor.  The axis ran about 80 degrees
+        //  the wrong way until a physical limit switch cut its power.  The 15x distance error
+        //  fixed in FromRadians was the other half of that failure; this is the half that
+        //  survived it, and the reason slew-to-ha-dec stayed disabled after the distance was
+        //  correct again.
+        //
+        // Kept here rather than in the driver so TestAngleHa can check it without a telescope,
+        //  and beside ShortestDistance because it is only ever applied to that method's output.
+        //
+        public static Const.AxisDirection MechanicalDirection(Const.AxisDirection coordinateDirection, AngleType type)
+        {
+            if (type != AngleType.HA)
+                return coordinateDirection;
+
+            if (coordinateDirection == Const.AxisDirection.Increasing)
+                return Const.AxisDirection.Decreasing;
+
+            if (coordinateDirection == Const.AxisDirection.Decreasing)
+                return Const.AxisDirection.Increasing;
+
+            return coordinateDirection;     // None stays None
+        }
+
         public static double Deg2Hours(string s)
         {
             return new Angle(s).Hours;

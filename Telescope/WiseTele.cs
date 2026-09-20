@@ -199,6 +199,9 @@ namespace ASCOM.Wise40
         private Angle _targetRightAscension, _targetHourAngle, _targetDeclination;
         private Angle _targetAltitude, _targetAzimuth;
 
+        // See TargetCoordinateType: recorded where the request arrives, never inferred later.
+        private TargetCoordinateType _targetType = TargetCoordinateType.None;
+
         public static readonly List<double> rates = new List<double> { Const.rateSlew, Const.rateSet, Const.rateGuide };
         public static readonly List<TelescopeAxes> axes = new List<TelescopeAxes> { TelescopeAxes.axisPrimary, TelescopeAxes.axisSecondary };
 
@@ -435,6 +438,10 @@ namespace ASCOM.Wise40
             {
                 CheckCoordinateSanity(Angle.AngleType.Dec, value, $"TargetDeclination Set - {value}");
                 _targetDeclination = Angle.DecFromDegrees(value);
+
+                // This is the ASCOM property, which only an RA/Dec client uses.  The hour-angle
+                //  and alt/az paths set the backing field directly and record their own type.
+                _targetType = TargetCoordinateType.RaDec;
                 ActivityMonitor.StayActive("TargetDeclination was set");
                 #region debug
                 debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM,
@@ -462,6 +469,7 @@ namespace ASCOM.Wise40
                 CheckCoordinateSanity(Angle.AngleType.RA, value, $"TargetRightAscension Set - {value}");
                 _targetRightAscension = Angle.RaFromHours(value);
                 _targetHourAngle = wisesite.LocalSiderealTime - _targetRightAscension;
+                _targetType = TargetCoordinateType.RaDec;
                 ActivityMonitor.StayActive("TargetRightAscension was set");
                 #region debug
                 debugger.WriteLine(Common.Debugger.DebugLevel.DebugASCOM,
@@ -506,6 +514,7 @@ namespace ASCOM.Wise40
                 _targetHourAngle = null;
                 _targetAzimuth = null;
                 _targetAltitude = null;
+                _targetType = TargetCoordinateType.None;
             }
         }
         public void Dispose()
@@ -2672,15 +2681,24 @@ namespace ASCOM.Wise40
                             continue;
                         }
 
+                        //
+                        // Coordinate sense to MOTOR sense.  movementDict is keyed in right
+                        //  ascension sense, so an hour-angle target needs the opposite motor -
+                        //  see Angle.MechanicalDirection, which carries the full story.  For RA
+                        //  and Dec this is the identity, so nothing else changes.
+                        //
+                        Const.AxisDirection motorDirection =
+                            Angle.MechanicalDirection(distanceToTarget.direction, targetAngle.Type);
+
                         // Wait for InternalMoveAxis to start moving thisAxis
-                        while (! InternalMoveAxis(thisAxis, rate, distanceToTarget.direction, false))
+                        while (! InternalMoveAxis(thisAxis, rate, motorDirection, false))
                         {
                             const int waitForAxisToStartMovingMillis = 500;
 
                             currentAngle = CurrentPosition(targetAngle.Type);
                             #region debug
                             debugger.WriteLine(Debugger.DebugLevel.DebugAxes, $"{op}: {slewerName}: at {currentAngle} waiting {waitForAxisToStartMovingMillis} " +
-                                $"millis to start InternalMoveAxis({thisAxis}, {RateName(rate)}, {distanceToTarget.direction}) ...");
+                                $"millis to start InternalMoveAxis({thisAxis}, {RateName(rate)}, {motorDirection}) ...");
                             #endregion
                             telescopeCT.ThrowIfCancellationRequested();
                             Thread.Sleep(waitForAxisToStartMovingMillis);
@@ -2859,9 +2877,15 @@ namespace ASCOM.Wise40
                             //  Falls back to the single value when a rate has no direction
                             //  specific figure, so every other axis and rate is unchanged.
                             //
+                            // MECHANICAL sense here too, not the coordinate one: the two figures
+                            //  were measured going east and going west.  On an hour-angle target
+                            //  the raw direction would pick the wrong one of the pair - about 0.9
+                            //  degrees of coast apart on RA at slew rate, so a landing error
+                            //  rather than a hazard, but wrong.
                             Angle stopMovement =
                                 (mp.stopMovementIncreasing != null &&
-                                 currentDistance.direction == Const.AxisDirection.Increasing)
+                                 Angle.MechanicalDirection(currentDistance.direction, targetAngle.Type)
+                                     == Const.AxisDirection.Increasing)
                                     ? mp.stopMovementIncreasing
                                     : mp.stopMovement;
 
@@ -3378,6 +3402,36 @@ namespace ASCOM.Wise40
                             #endregion
                             slewers.Delete(slewerType);
 
+                            //
+                            // A FAULTED slewer used to vanish without a word.
+                            //
+                            // Only Canceled was handled, and nothing ever read slewerTask.Exception,
+                            //  so a slewer that threw logged one line - "completed with status:
+                            //  Faulted" - and took its reason with it.  On 2026-09-20 both slewers
+                            //  faulted 3 ms after starting and there was NOTHING in the log to say
+                            //  why: no exception, no stack, not even which statement.  A telescope
+                            //  that silently declines to move is its own kind of hazard, and it
+                            //  cost a deploy cycle to get back to this point.
+                            //
+                            // Logged at DebugExceptions as well as DebugTele: the first is what one
+                            //  greps when something went wrong, the second is where the surrounding
+                            //  slew narrative lives.
+                            //
+                            if (slewerTask.Status == TaskStatus.Faulted)
+                            {
+                                AggregateException ae = slewerTask.Exception;
+                                string detail = (ae == null) ?
+                                    "(no exception attached)" :
+                                    string.Join(" | ", ae.Flatten().InnerExceptions
+                                        .Select(e => $"{e.GetType().Name}: {e.Message} at {e.StackTrace}"));
+                                #region debug
+                                debugger.WriteLine(Debugger.DebugLevel.DebugExceptions,
+                                    $"{op}: Slewer \"{slewer.type}\" FAULTED: {detail}");
+                                debugger.WriteLine(Debugger.DebugLevel.DebugTele,
+                                    $"{op}: Slewer \"{slewer.type}\" FAULTED: {detail}");
+                                #endregion
+                            }
+
                             if (slewerTask.Status == TaskStatus.Canceled)
                             {
                                 Exceptor.Throw<OperationCanceledException>(
@@ -3473,38 +3527,64 @@ namespace ASCOM.Wise40
                     $"for: {whatfor})";
 
             //
-            // DISABLED 2026-09-19.  Refuse rather than drive, until Angle.ShortestDistance is
-            //  fixed for AngleType.HA and checked against known values offline.
+            // RE-ENABLED 2026-09-20, after both halves of the 2026-09-19 failure were fixed and
+            //  checked offline.  It had been disabled here rather than left to drive.
             //
-            // An HA-typed slew computes its distance wrongly.  Going from HA -01h21m44.8s to
-            //  HA 0 - a true distance of 1.363h, 20.4 degrees, 0.357 rad - the slewer logged
+            // What went wrong then, and what fixed it:
             //
-            //      remaining (Angle.rad: 5.3502389458)      i.e. 306 degrees, 20.4 HOURS
+            //  1. THE DISTANCE was 15x too large.  Going from HA -01h21m44.8s to HA 0 - a true
+            //     0.357 rad - the slewer logged "remaining (Angle.rad: 5.3502389458)", never
+            //     approached arrival, and would have run to mp.maxTime.  Cause: FromRadians
+            //     treated every type as degrees, and AngleType.HA is the only type that is both
+            //     non-periodic and HMS, so it was the only one reaching the unguarded branch.
+            //     Fixed in Angle.FromRadians; TestAngleHa covers it.
             //
-            //  then drove the primary axis AWAY from the target at slew rate, the reported
-            //  distance growing every sample.  ChangedDirection never fired, because the
-            //  direction was wrong from the first sample rather than changing, so nothing
-            //  stopped it: 77 seconds and about 80 degrees of hour angle before it was aborted
-            //  by a physical limit switch cutting motor power at HA -6.7255, inside the then
-            //  -7.0 soft limit.  Declination was correct in the same slew, so this is specific
-            //  to the HA angle path.
+            //  2. THE DIRECTION reached the wrong motor.  movementDict is keyed in right
+            //     ascension sense, and hour angle increases the other way, so the axis ran EAST
+            //     when the target lay WEST.  It covered about 80 degrees in 77 seconds before a
+            //     physical limit switch cut motor power at HA -6.7255, inside the then -7.0 soft
+            //     limit.  Fixed by Angle.MechanicalDirection at the two places the slewer turns
+            //     a coordinate direction into hardware.
             //
-            // Why refusing matters more than it looks: Dash.cs:1170 calls this from the HA/Dec
-            //  slew button.  Until 2026-09-18 that button was harmlessly broken by a
-            //  case-sensitivity bug in the Action parameter parsing; fixing that parsing made
-            //  the button WORK, which is what made this reachable.  A button that returns an
-            //  error is fine.  A button that runs an axis into a limit is not.
+            // Declination was correct throughout that slew, which is what localised it to the
+            //  hour-angle path.
             //
-            // Park and ParkFromGui have been reverted to right-ascension targets for the same
-            //  reason - see the comment in Park().
+            // Two guards now stand behind this that did not exist then: the diverging check
+            //  aborts an axis that moves away from its target for 150 ms, and the eastern and
+            //  western soft limits are +/-6.5h rather than +/-7.0.
             //
-            Exceptor.Throw<InvalidOperationException>(op,
-                "slew-to-ha-dec is disabled: Angle.ShortestDistance mis-computes distance and " +
-                "direction for hour-angle targets, and drove the primary axis toward a limit on " +
-                "2026-09-19.  Use RA/Dec until that is fixed.");
+            // Park and ParkFromGui deliberately still use right-ascension targets.  They are
+            //  what UNATTENDED systems call, and parking is accurate to 24 arcmin of pure lead
+            //  error as it stands - see the comment in Park() and [[park-position]].  Moving
+            //  them onto this path is a separate decision, to be taken once hour-angle slews
+            //  have a record on sky.
+            //
 
             CheckCoordinateSanity(Angle.AngleType.HA, ha, op);
             CheckCoordinateSanity(Angle.AngleType.Dec, dec, op);
+
+            //
+            // RECORD THE TARGET.  This path set no target field whatever until 2026-09-20, so an
+            //  hour-angle slew showed an empty Target group in the Dash and reported no target to
+            //  any ASCOM client.  Invisible while the Action was disabled; a real gap once it
+            //  worked.
+            //
+            // The hour angle is the invariant here, so it is stored as given.  The right
+            //  ascension is a SNAPSHOT taken now - it is what makes Digest able to derive
+            //  altitude and azimuth - and it goes stale as the sky turns, which is correct: for
+            //  an hour-angle target it is the right ascension that moves, not the hour angle.
+            //
+            _targetHourAngle = Angle.HaFromHours(ha);
+            _targetDeclination = Angle.DecFromDegrees(dec);
+
+            double raSnapshot = wisesite.LocalSiderealTime.Hours - ha;
+            while (raSnapshot < 0.0) raSnapshot += 24.0;
+            while (raSnapshot >= 24.0) raSnapshot -= 24.0;
+            _targetRightAscension = Angle.RaFromHours(raSnapshot);
+
+            _targetAltitude = null;     // let Digest derive them from the pair above
+            _targetAzimuth = null;
+            _targetType = TargetCoordinateType.HaDec;
 
             //
             // Slew to the hour angle DIRECTLY.
@@ -4211,6 +4291,26 @@ namespace ASCOM.Wise40
             double ra = Double.NaN, dec = Double.NaN;
 
             MakeRaDecFromAltAz(Azimuth, Altitude, op, ref ra, ref dec, noSafetyCheck);
+
+            //
+            // RECORD THE TARGET, same gap as SlewToHaDecAsync: this path set nothing either.
+            //
+            // Altitude and azimuth are the invariants, so they are stored and the equatorial
+            //  fields are left null for Digest to re-derive on every tick.  That is what keeps an
+            //  alt/az target correct as the sky turns: it is fixed to the dome, and its right
+            //  ascension is what moves.
+            //
+            // This is also why the type cannot be recovered further down the call: the slew is
+            //  handed an HOUR ANGLE below, so by the time the slewer sees it this request is
+            //  indistinguishable from a genuine HaDec one.
+            //
+            _targetAltitude = Angle.AltFromDegrees(Altitude);
+            _targetAzimuth = Angle.AzFromDegrees(Azimuth);
+            _targetRightAscension = null;
+            _targetDeclination = null;
+            _targetHourAngle = null;
+            _targetType = TargetCoordinateType.AltAz;
+
             DoSlewToCoordinatesAsync(
                 Angle.HaFromHours((wisesite.LocalSiderealTime - Angle.RaFromHours(ra)).Hours),
                 Angle.DecFromDegrees(dec),
@@ -5060,6 +5160,7 @@ namespace ASCOM.Wise40
                             HaDec_Dec = targetDec,
                             Alt = targetAlt,
                             Az = targetAz,
+                            Type = _targetType,
                         },
 
                         LocalSiderealTime = lst,
@@ -5148,11 +5249,36 @@ namespace ASCOM.Wise40
         public double Azimuth, Altitude;
     }
 
+    /// <summary>
+    /// WHICH COORDINATES THE CLIENT ACTUALLY ASKED FOR.
+    /// </summary>
+    //
+    // Recorded at the entry points, deliberately not inferred from the angle types later on.
+    //
+    // Two reasons it cannot be inferred.  First, every target ends up with all six values
+    //  populated: WiseTele.Digest derives alt/az from ra/dec and ra/dec from alt/az, so by the
+    //  time anything reads the digest, nothing distinguishes a requested value from a derived
+    //  one.  Second, SlewToAltAzAsync converts to an HOUR ANGLE before calling
+    //  DoSlewToCoordinatesAsync, so at the slewer an alt/az request is indistinguishable from an
+    //  hour-angle one - inferring from primaryTargetAngle.Type would silently label every alt/az
+    //  slew as HaDec.
+    //
+    public enum TargetCoordinateType
+    {
+        None,       // nothing requested since startup
+        RaDec,
+        HaDec,
+        AltAz,
+    }
+
     public class TelescopeTarget
     {
         public double RaDec_RA, RaDec_Dec;
         public double HaDec_HA, HaDec_Dec;
         public double Az, Alt;
+
+        // What the client asked for; the rest of the fields above are derived from it.
+        public TargetCoordinateType Type;
     }
 
     public class AxisPins
