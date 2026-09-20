@@ -3393,6 +3393,36 @@ namespace ASCOM.Wise40
                             #endregion
                             slewers.Delete(slewerType);
 
+                            //
+                            // A FAULTED slewer used to vanish without a word.
+                            //
+                            // Only Canceled was handled, and nothing ever read slewerTask.Exception,
+                            //  so a slewer that threw logged one line - "completed with status:
+                            //  Faulted" - and took its reason with it.  On 2026-09-20 both slewers
+                            //  faulted 3 ms after starting and there was NOTHING in the log to say
+                            //  why: no exception, no stack, not even which statement.  A telescope
+                            //  that silently declines to move is its own kind of hazard, and it
+                            //  cost a deploy cycle to get back to this point.
+                            //
+                            // Logged at DebugExceptions as well as DebugTele: the first is what one
+                            //  greps when something went wrong, the second is where the surrounding
+                            //  slew narrative lives.
+                            //
+                            if (slewerTask.Status == TaskStatus.Faulted)
+                            {
+                                AggregateException ae = slewerTask.Exception;
+                                string detail = (ae == null) ?
+                                    "(no exception attached)" :
+                                    string.Join(" | ", ae.Flatten().InnerExceptions
+                                        .Select(e => $"{e.GetType().Name}: {e.Message} at {e.StackTrace}"));
+                                #region debug
+                                debugger.WriteLine(Debugger.DebugLevel.DebugExceptions,
+                                    $"{op}: Slewer \"{slewer.type}\" FAULTED: {detail}");
+                                debugger.WriteLine(Debugger.DebugLevel.DebugTele,
+                                    $"{op}: Slewer \"{slewer.type}\" FAULTED: {detail}");
+                                #endregion
+                            }
+
                             if (slewerTask.Status == TaskStatus.Canceled)
                             {
                                 Exceptor.Throw<OperationCanceledException>(
