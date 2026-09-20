@@ -144,7 +144,7 @@ if (-not (($code -eq 0) -and $x86ok -and $hwok -and $dashok -and $platOk)) {
     exit 3
 }
 
-# ---- 2c. SYNC every x86 copy of Common.dll and Hardware.dll -------------
+# ---- 2c. SYNC every copy of Common.dll and Hardware.dll -----------------
 #
 # THE BUG THIS EXISTS FOR, 2026-09-20.  An hour-angle slew failed with
 #   MissingMethodException: Angle.MechanicalDirection
@@ -160,9 +160,26 @@ if (-not (($code -eq 0) -and $x86ok -and $hwok -and $dashok -and $platOk)) {
 # That also means it is a RACE: it depends on activation order, which is why some earlier
 # Common and Hardware changes appeared to work and others did not.
 #
-# Only x86 copies are synced.  Common builds as X86, so writing it into an AnyCPU bin\Debug
-# slot would change that project's architecture - a different bug for a different day.  AnyCPU
-# stragglers are listed below instead, not touched.
+# MATCHED BY ARCHITECTURE, NOT BY FOLDER NAME.
+#
+# The first version of this synced anything under bin\x86\Debug and skipped bin\Debug, on the
+# assumption that bin\Debug means AnyCPU.  It does not: bin\Debug holds whatever was last built
+# into it, and twelve of those copies turned out to be X86 already - including the only two that
+# are actually LOADED, by the watcher service and the OCH server.  Those were being skipped for
+# a reason that was not true of them.
+#
+# The invariant is what makes this safe: this NEVER changes a file's architecture, it only
+# replaces a file with a newer build OF THE SAME ARCHITECTURE.  An existing x86 copy is itself
+# the evidence that whatever loads it is a 32-bit process, so replacing it in kind cannot break
+# a host that was working.  Genuine MSIL copies are left alone and listed - an x86 assembly
+# cannot load into a 64-bit process at all, so overwriting one could turn a working AnyCPU host
+# into a BadImageFormatException.
+#
+function AssemblyArch($path) {
+    try { return [string][System.Reflection.AssemblyName]::GetAssemblyName($path).ProcessorArchitecture }
+    catch { return 'unreadable' }
+}
+
 $syncPairs = @(
     @{ name = 'Common.dll';   src = "$repo\Common\bin\x86\Debug\Common.dll" },
     @{ name = 'Hardware.dll'; src = "$repo\Hardware\bin\x86\Debug\Hardware.dll" }
@@ -171,41 +188,58 @@ $syncFailed = $false
 foreach ($pair in $syncPairs) {
     if (-not (Test-Path $pair.src)) { Say ("SYNC: source missing: " + $pair.src); $syncFailed = $true; continue }
     $src = Get-Item $pair.src
+    $srcArch = AssemblyArch $src.FullName
 
     $targets = @()
     $targets += Get-ChildItem $repo -Recurse -Filter $pair.name -ErrorAction SilentlyContinue |
-                Where-Object { $_.FullName -match '\\bin\\x86\\Debug\\' -and $_.FullName -ne $src.FullName }
+                Where-Object { $_.FullName -match '\\bin\\' -and $_.FullName -ne $src.FullName }
     $targets += Get-ChildItem "C:\Program Files (x86)\Common Files\ASCOM" -Recurse -Filter $pair.name -ErrorAction SilentlyContinue
     $targets += Get-ChildItem "C:\Program Files (x86)\ASCOM" -Recurse -Filter $pair.name -ErrorAction SilentlyContinue
 
-    $n = 0
+    $n = 0; $skipped = @(); $stale = @()
     foreach ($t in ($targets | Sort-Object FullName -Unique)) {
-        if ($t.LastWriteTime -lt $src.LastWriteTime) {
-            try {
-                Copy-Item $src.FullName $t.FullName -Force -ErrorAction Stop
-                $n++
-                Say ("SYNC: updated " + $t.FullName)
-            } catch {
-                Say ("SYNC: FAILED on " + $t.FullName + " : " + $_.Exception.Message)
-                $syncFailed = $true
-            }
+        if ($t.LastWriteTime -ge $src.LastWriteTime) { continue }
+
+        $arch = AssemblyArch $t.FullName
+        if ($arch -ne $srcArch) {
+            $skipped += ("{0} [{1}]" -f $t.FullName, $arch)
+            continue
+        }
+        try {
+            Copy-Item $src.FullName $t.FullName -Force -ErrorAction Stop
+            $n++
+            Say ("SYNC: updated " + $t.FullName)
+        } catch {
+            Say ("SYNC: FAILED on " + $t.FullName + " : " + $_.Exception.Message)
+            $syncFailed = $true
         }
     }
-    Say ("SYNC: {0}: {1} copy/copies updated" -f $pair.name, $n)
+    Say ("SYNC: {0}: source is {1}; {2} copy/copies updated" -f $pair.name, $srcArch, $n)
 
-    # Verify: nothing x86 may remain older than the build we just made.
-    $left = @(Get-ChildItem $repo -Recurse -Filter $pair.name -ErrorAction SilentlyContinue |
-              Where-Object { $_.FullName -match '\\bin\\x86\\Debug\\' -and $_.LastWriteTime -lt $src.LastWriteTime })
-    if ($left.Count -ne 0) {
-        Say ("SYNC: STILL STALE after sync: " + (($left | ForEach-Object { $_.FullName }) -join '; '))
+    #
+    # Verify, RE-READING each file from disk.
+    #
+    # The $targets objects were captured by Get-ChildItem BEFORE the copies, so their
+    #  LastWriteTime is the value from before the write.  Trusting it reported every file that
+    #  had just been updated as still stale, failed the sync gate and left the chain down -
+    #  2026-09-20, caught on the first run of this rule.
+    #
+    foreach ($t in ($targets | Sort-Object FullName -Unique)) {
+        $now = Get-Item $t.FullName -ErrorAction SilentlyContinue
+        if ($null -eq $now) { continue }
+        if ($now.LastWriteTime -lt $src.LastWriteTime -and (AssemblyArch $now.FullName) -eq $srcArch) {
+            $stale += $now.FullName
+        }
+    }
+    if ($stale.Count -ne 0) {
+        Say ("SYNC: STILL STALE after sync: " + ($stale -join '; '))
         $syncFailed = $true
     }
 
-    # AnyCPU copies: reported, deliberately not touched.
-    $anycpu = @(Get-ChildItem $repo -Recurse -Filter $pair.name -ErrorAction SilentlyContinue |
-                Where-Object { $_.FullName -match '\\bin\\Debug\\' -and $_.LastWriteTime -lt $src.LastWriteTime })
-    if ($anycpu.Count -ne 0) {
-        Say ("SYNC: {0}: {1} AnyCPU copy/copies are older and were NOT touched (different architecture)" -f $pair.name, $anycpu.Count)
+    # Different architecture: reported, deliberately not touched.
+    if ($skipped.Count -ne 0) {
+        Say ("SYNC: {0}: {1} copy/copies left alone, wrong architecture for this build:" -f $pair.name, $skipped.Count)
+        foreach ($s in $skipped) { Say ("SYNC:   skipped " + $s) }
     }
 }
 
