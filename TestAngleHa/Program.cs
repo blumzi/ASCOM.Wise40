@@ -144,12 +144,75 @@ namespace TestAngleHa
             Console.WriteLine("   done");
         }
 
+        //
+        // Section 4: the OTHER half of the 2026-09-19 failure.
+        //
+        // Section 3 proves ShortestDistance reports the right direction in the hour angle's own
+        //  terms.  That was never the problem: the direction was correct in all 14 cases even
+        //  while the axis ran the wrong way.  What was wrong is that the driver's movementDict is
+        //  keyed in RIGHT ASCENSION sense - Increasing means the east motor, because right
+        //  ascension increases eastward - while hour angle increases WESTWARD.
+        //
+        // So a correct "Increasing" reached the dictionary and started the wrong motor.  These
+        //  checks pin the conversion that now sits between them.
+        //
+        static void MotorMapping()
+        {
+            Console.WriteLine("4. Coordinate direction -> mechanical (motor) direction");
+
+            const Const.AxisDirection inc = Const.AxisDirection.Increasing;
+            const Const.AxisDirection dec = Const.AxisDirection.Decreasing;
+            const Const.AxisDirection non = Const.AxisDirection.None;
+
+            // Hour angle: inverted, because it grows westward and the dictionary counts eastward.
+            CheckDir(inc, Angle.AngleType.HA, dec);
+            CheckDir(dec, Angle.AngleType.HA, inc);
+            CheckDir(non, Angle.AngleType.HA, non);
+
+            // Everything else: the identity.  A regression here would break RA and Dec slewing,
+            //  which is the whole reason this is a separate function and not a sign flip inline.
+            foreach (Angle.AngleType t in new Angle.AngleType[] {
+                        Angle.AngleType.RA, Angle.AngleType.Dec, Angle.AngleType.Deg,
+                        Angle.AngleType.Alt, Angle.AngleType.Az })
+            {
+                CheckDir(inc, t, inc);
+                CheckDir(dec, t, dec);
+                CheckDir(non, t, non);
+            }
+
+            //
+            // End to end on the move that ran into the limit switch: Park from HA -01h21m44.8s
+            //  to HA 0.  The hour angle must INCREASE (-1.36 -> 0), which is westward, so the
+            //  mechanical direction must come out Decreasing - the key movementDict maps to the
+            //  WEST motor.  Before the fix this reached the dictionary as Increasing and started
+            //  the EAST motor, and the axis ran about 80 degrees the wrong way.
+            //
+            ShortestDistanceResult r =
+                Angle.HaFromHours(-1.3624).ShortestDistance(Angle.HaFromHours(0.0));
+            if (r.direction != inc)
+                Fail("end-to-end: coordinate direction should be Increasing, got " + r.direction);
+            if (Angle.MechanicalDirection(r.direction, Angle.AngleType.HA) != dec)
+                Fail("end-to-end: the runaway move must drive WEST (mechanical Decreasing), got " +
+                     Angle.MechanicalDirection(r.direction, Angle.AngleType.HA));
+
+            Console.WriteLine("   done");
+        }
+
+        static void CheckDir(Const.AxisDirection given, Angle.AngleType type, Const.AxisDirection want)
+        {
+            Const.AxisDirection got = Angle.MechanicalDirection(given, type);
+            if (got != want)
+                Fail(string.Format("MechanicalDirection({0}, {1}): got {2}, wanted {3}",
+                                   given, type, got, want));
+        }
+
         static int Main()
         {
             Console.WriteLine("Angle hour-angle tests\n");
             Representation();
             RadiansToHms();
             Distances();
+            MotorMapping();
 
             Console.WriteLine();
             if (failures == 0)

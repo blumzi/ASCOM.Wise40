@@ -2672,15 +2672,24 @@ namespace ASCOM.Wise40
                             continue;
                         }
 
+                        //
+                        // Coordinate sense to MOTOR sense.  movementDict is keyed in right
+                        //  ascension sense, so an hour-angle target needs the opposite motor -
+                        //  see Angle.MechanicalDirection, which carries the full story.  For RA
+                        //  and Dec this is the identity, so nothing else changes.
+                        //
+                        Const.AxisDirection motorDirection =
+                            Angle.MechanicalDirection(distanceToTarget.direction, targetAngle.Type);
+
                         // Wait for InternalMoveAxis to start moving thisAxis
-                        while (! InternalMoveAxis(thisAxis, rate, distanceToTarget.direction, false))
+                        while (! InternalMoveAxis(thisAxis, rate, motorDirection, false))
                         {
                             const int waitForAxisToStartMovingMillis = 500;
 
                             currentAngle = CurrentPosition(targetAngle.Type);
                             #region debug
                             debugger.WriteLine(Debugger.DebugLevel.DebugAxes, $"{op}: {slewerName}: at {currentAngle} waiting {waitForAxisToStartMovingMillis} " +
-                                $"millis to start InternalMoveAxis({thisAxis}, {RateName(rate)}, {distanceToTarget.direction}) ...");
+                                $"millis to start InternalMoveAxis({thisAxis}, {RateName(rate)}, {motorDirection}) ...");
                             #endregion
                             telescopeCT.ThrowIfCancellationRequested();
                             Thread.Sleep(waitForAxisToStartMovingMillis);
@@ -2859,9 +2868,15 @@ namespace ASCOM.Wise40
                             //  Falls back to the single value when a rate has no direction
                             //  specific figure, so every other axis and rate is unchanged.
                             //
+                            // MECHANICAL sense here too, not the coordinate one: the two figures
+                            //  were measured going east and going west.  On an hour-angle target
+                            //  the raw direction would pick the wrong one of the pair - about 0.9
+                            //  degrees of coast apart on RA at slew rate, so a landing error
+                            //  rather than a hazard, but wrong.
                             Angle stopMovement =
                                 (mp.stopMovementIncreasing != null &&
-                                 currentDistance.direction == Const.AxisDirection.Increasing)
+                                 Angle.MechanicalDirection(currentDistance.direction, targetAngle.Type)
+                                     == Const.AxisDirection.Increasing)
                                     ? mp.stopMovementIncreasing
                                     : mp.stopMovement;
 
@@ -3473,35 +3488,38 @@ namespace ASCOM.Wise40
                     $"for: {whatfor})";
 
             //
-            // DISABLED 2026-09-19.  Refuse rather than drive, until Angle.ShortestDistance is
-            //  fixed for AngleType.HA and checked against known values offline.
+            // RE-ENABLED 2026-09-20, after both halves of the 2026-09-19 failure were fixed and
+            //  checked offline.  It had been disabled here rather than left to drive.
             //
-            // An HA-typed slew computes its distance wrongly.  Going from HA -01h21m44.8s to
-            //  HA 0 - a true distance of 1.363h, 20.4 degrees, 0.357 rad - the slewer logged
+            // What went wrong then, and what fixed it:
             //
-            //      remaining (Angle.rad: 5.3502389458)      i.e. 306 degrees, 20.4 HOURS
+            //  1. THE DISTANCE was 15x too large.  Going from HA -01h21m44.8s to HA 0 - a true
+            //     0.357 rad - the slewer logged "remaining (Angle.rad: 5.3502389458)", never
+            //     approached arrival, and would have run to mp.maxTime.  Cause: FromRadians
+            //     treated every type as degrees, and AngleType.HA is the only type that is both
+            //     non-periodic and HMS, so it was the only one reaching the unguarded branch.
+            //     Fixed in Angle.FromRadians; TestAngleHa covers it.
             //
-            //  then drove the primary axis AWAY from the target at slew rate, the reported
-            //  distance growing every sample.  ChangedDirection never fired, because the
-            //  direction was wrong from the first sample rather than changing, so nothing
-            //  stopped it: 77 seconds and about 80 degrees of hour angle before it was aborted
-            //  by a physical limit switch cutting motor power at HA -6.7255, inside the then
-            //  -7.0 soft limit.  Declination was correct in the same slew, so this is specific
-            //  to the HA angle path.
+            //  2. THE DIRECTION reached the wrong motor.  movementDict is keyed in right
+            //     ascension sense, and hour angle increases the other way, so the axis ran EAST
+            //     when the target lay WEST.  It covered about 80 degrees in 77 seconds before a
+            //     physical limit switch cut motor power at HA -6.7255, inside the then -7.0 soft
+            //     limit.  Fixed by Angle.MechanicalDirection at the two places the slewer turns
+            //     a coordinate direction into hardware.
             //
-            // Why refusing matters more than it looks: Dash.cs:1170 calls this from the HA/Dec
-            //  slew button.  Until 2026-09-18 that button was harmlessly broken by a
-            //  case-sensitivity bug in the Action parameter parsing; fixing that parsing made
-            //  the button WORK, which is what made this reachable.  A button that returns an
-            //  error is fine.  A button that runs an axis into a limit is not.
+            // Declination was correct throughout that slew, which is what localised it to the
+            //  hour-angle path.
             //
-            // Park and ParkFromGui have been reverted to right-ascension targets for the same
-            //  reason - see the comment in Park().
+            // Two guards now stand behind this that did not exist then: the diverging check
+            //  aborts an axis that moves away from its target for 150 ms, and the eastern and
+            //  western soft limits are +/-6.5h rather than +/-7.0.
             //
-            Exceptor.Throw<InvalidOperationException>(op,
-                "slew-to-ha-dec is disabled: Angle.ShortestDistance mis-computes distance and " +
-                "direction for hour-angle targets, and drove the primary axis toward a limit on " +
-                "2026-09-19.  Use RA/Dec until that is fixed.");
+            // Park and ParkFromGui deliberately still use right-ascension targets.  They are
+            //  what UNATTENDED systems call, and parking is accurate to 24 arcmin of pure lead
+            //  error as it stands - see the comment in Park() and [[park-position]].  Moving
+            //  them onto this path is a separate decision, to be taken once hour-angle slews
+            //  have a record on sky.
+            //
 
             CheckCoordinateSanity(Angle.AngleType.HA, ha, op);
             CheckCoordinateSanity(Angle.AngleType.Dec, dec, op);
