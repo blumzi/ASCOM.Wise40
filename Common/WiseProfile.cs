@@ -108,6 +108,9 @@ namespace ASCOM.Wise40.Common
         //
         private static Dictionary<string, Dictionary<string, Dictionary<string, JToken>>> _store;
 
+        // write time of the file as last read, so an external change is noticed - see Load()
+        private static DateTime _loadedStamp = DateTime.MinValue;
+
         /// <summary>
         /// Several ProgIDs, one set of settings.  See the note above about ObservatoryMonitor.
         /// </summary>
@@ -263,9 +266,26 @@ namespace ASCOM.Wise40.Common
             finally { fileMutex.ReleaseMutex(); }
         }
 
+        //
+        // ANOTHER PROCESS MAY HAVE CHANGED THE FILE SINCE WE LAST READ IT.
+        //
+        // The registry gave us this for free: every GetValue went to the registry, so a setting
+        //  changed anywhere was visible everywhere, immediately.  A cached file does not - and
+        //  that is exactly the setup flow.  An inproc COM driver's setup dialog runs in the
+        //  CALLER's process (the ASCOM Chooser, or whichever hub opened Properties), never in the
+        //  RemoteServer process where the live driver instance sits.  Caching for the life of the
+        //  process would mean a changed setting silently not taking effect until a restart.
+        //
+        // So compare the file's write time and re-read when it moves.  One stat per GetValue is
+        //  far cheaper than the registry call it replaces.
+        //
         private static void Load()
         {
-            if (_store != null)
+            DateTime stamp = DateTime.MinValue;
+            try { if (File.Exists(SettingsFile)) stamp = File.GetLastWriteTimeUtc(SettingsFile); }
+            catch { }
+
+            if (_store != null && stamp == _loadedStamp)
                 return;
 
             try
@@ -275,6 +295,7 @@ namespace ASCOM.Wise40.Common
                     _store = JsonConvert.DeserializeObject<
                         Dictionary<string, Dictionary<string, Dictionary<string, JToken>>>>(
                             File.ReadAllText(SettingsFile));
+                    _loadedStamp = stamp;
                 }
             }
             catch (Exception ex)
@@ -337,6 +358,10 @@ namespace ASCOM.Wise40.Common
                 File.WriteAllText(tmp, JsonConvert.SerializeObject(ordered, Formatting.Indented));
                 File.Copy(tmp, SettingsFile, true);
                 File.Delete(tmp);
+
+                // Our own write is already in _store, so record its stamp rather than re-reading
+                //  the file on the next GetValue.
+                _loadedStamp = File.GetLastWriteTimeUtc(SettingsFile);
             }
             catch (Exception ex)
             {
