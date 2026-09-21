@@ -271,3 +271,6 @@ CurrentCommit.txt
 /TestRenishawEncoder/max-deltas
 /RemoteSafetyDashboard/RemoteSafetyDashboard v1.0.exe
 /InstallUtil.InstallLog
+
+# perl -i and similar leave these behind; they are not source
+*.csproj.bak
