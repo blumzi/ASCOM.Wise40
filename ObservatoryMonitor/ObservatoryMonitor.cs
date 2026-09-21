@@ -929,7 +929,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                     _onIdle = onIdle;
             }
 
-            using (Profile driverProfile = new Profile() { DeviceType = "Telescope" })
+            using (WiseProfile driverProfile = new WiseProfile() { DeviceType = "Telescope" })
             {
                 MinutesToIdle = Convert.ToInt32(driverProfile.GetValue(Const.WiseDriverID.Telescope,
                     Const.ProfileName.Telescope_MinutesToIdle, string.Empty, "15"));
@@ -938,7 +938,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
 
         public void WriteProfile()
         {
-            using (Profile driverProfile = new Profile() { DeviceType = "SafetyMonitor" })
+            using (WiseProfile driverProfile = new WiseProfile() { DeviceType = "SafetyMonitor" })
             {
                 driverProfile.WriteValue(Const.WiseDriverID.ObservatoryMonitor, "MinutesBetweenChecks",
                     MinutesBetweenChecks.ToString());
@@ -947,7 +947,7 @@ namespace ASCOM.Wise40.ObservatoryMonitor
                     _onIdle.ToString());
             }
 
-            using (Profile driverProfile = new Profile() { DeviceType = "Telescope" })
+            using (WiseProfile driverProfile = new WiseProfile() { DeviceType = "Telescope" })
             {
                 driverProfile.WriteValue(Const.WiseDriverID.Telescope,
                     Const.ProfileName.Telescope_MinutesToIdle, MinutesToIdle.ToString());

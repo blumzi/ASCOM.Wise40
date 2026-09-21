@@ -248,7 +248,7 @@ namespace ASCOM.Wise40.TessW
         /// </summary>
         internal void ReadProfile()
         {
-            using (Profile driverProfile = new Profile() { DeviceType = "ObservingConditions" })
+            using (WiseProfile driverProfile = new WiseProfile() { DeviceType = "ObservingConditions" })
             {
                 IpAddress = driverProfile.GetValue(Const.WiseDriverID.TessW, Const.ProfileName.TessW_IpAddress, string.Empty, defaultIPAddress);
                 Enabled = Convert.ToBoolean(driverProfile.GetValue(Const.WiseDriverID.TessW, Const.ProfileName.TessW_Enabled, string.Empty, "true"));
@@ -260,7 +260,7 @@ namespace ASCOM.Wise40.TessW
         /// </summary>
         public void WriteProfile()
         {
-            using (Profile driverProfile = new Profile() { DeviceType = "ObservingConditions" })
+            using (WiseProfile driverProfile = new WiseProfile() { DeviceType = "ObservingConditions" })
             {
                 driverProfile.WriteValue(Const.WiseDriverID.TessW, Const.ProfileName.TessW_IpAddress, IpAddress);
                 driverProfile.WriteValue(Const.WiseDriverID.TessW, Const.ProfileName.TessW_Enabled, Enabled.ToString());

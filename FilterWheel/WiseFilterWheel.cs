@@ -296,7 +296,7 @@ namespace ASCOM.Wise40 //.FilterWheel
 
         public static void ReadProfile()
         {
-            using (Profile driverProfile = new Profile() { DeviceType = "FilterWheel" })
+            using (WiseProfile driverProfile = new WiseProfile() { DeviceType = "FilterWheel" })
             {
                 string subKey;
 
@@ -320,7 +320,7 @@ namespace ASCOM.Wise40 //.FilterWheel
 
         public static void WriteProfile()
         {
-            using (Profile driverProfile = new Profile() { DeviceType = "FilterWheel" })
+            using (WiseProfile driverProfile = new WiseProfile() { DeviceType = "FilterWheel" })
             {
                 string subKey;
 

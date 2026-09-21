@@ -1,4 +1,4 @@
-//tabs=4
+﻿//tabs=4
 // --------------------------------------------------------------------------------
 //
 // ASCOM Telescope driver for Wise40
@@ -1000,7 +1000,7 @@ namespace ASCOM.Wise40 //.Telescope
         /// </summary>
         internal void ReadProfile()
         {
-            using (Profile driverProfile = new Profile() { DeviceType = "Telescope" })
+            using (WiseProfile driverProfile = new WiseProfile() { DeviceType = "Telescope" })
             {
                 WiseSite.astrometricAccuracy =
                     driverProfile.GetValue(Const.WiseDriverID.Telescope, Const.ProfileName.Telescope_AstrometricAccuracy, string.Empty, "Full") == "Full" ?
@@ -1014,7 +1014,7 @@ namespace ASCOM.Wise40 //.Telescope
         /// </summary>
         internal void WriteProfile()
         {
-            using (Profile driverProfile = new Profile() { DeviceType = "Telescope" })
+            using (WiseProfile driverProfile = new WiseProfile() { DeviceType = "Telescope" })
             {
                 driverProfile.WriteValue(Const.WiseDriverID.Telescope,
                     Const.ProfileName.Telescope_AstrometricAccuracy,

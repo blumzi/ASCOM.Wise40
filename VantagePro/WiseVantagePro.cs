@@ -418,7 +418,7 @@ namespace ASCOM.Wise40.VantagePro
                     "c:/temp/Weather_Wise40_Vantage_Pro.htm" :
                     "c:/Wise40/Weather/Davis VantagePro/Weather_Wise40_Vantage_Pro.htm";
 
-            using (Profile driverProfile = new Profile() { DeviceType = "ObservingConditions" })
+            using (WiseProfile driverProfile = new WiseProfile() { DeviceType = "ObservingConditions" })
             {
                 Enum.TryParse<OpMode>(driverProfile.GetValue(Const.WiseDriverID.VantagePro, Const.ProfileName.VantagePro_OpMode, string.Empty, nameof(OpMode.File)), out OpMode mode);
                 OperationalMode = mode;
@@ -432,7 +432,7 @@ namespace ASCOM.Wise40.VantagePro
         /// </summary>
         internal void WriteProfile()
         {
-            using (Profile driverProfile = new Profile() { DeviceType = "ObservingConditions" })
+            using (WiseProfile driverProfile = new WiseProfile() { DeviceType = "ObservingConditions" })
             {
                 driverProfile.WriteValue(Const.WiseDriverID.VantagePro, Const.ProfileName.VantagePro_OpMode, OperationalMode.ToString());
                 driverProfile.WriteValue(Const.WiseDriverID.VantagePro, Const.ProfileName.VantagePro_DataFile, DataFile);

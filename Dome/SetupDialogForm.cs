@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -28,7 +28,7 @@ namespace ASCOM.Wise40 //.Dome
             textBoxShutterLowestValue.Text = wisedome.wisedomeshutter.lowestRange.ToString();
             checkBoxShutterUseWebClient.Checked = wisedome.wisedomeshutter.ShutterWebClientEnabled;
 
-            using (ASCOM.Utilities.Profile driverProfile = new ASCOM.Utilities.Profile())
+            using (WiseProfile driverProfile = new WiseProfile())
             {
                 driverProfile.DeviceType = "Telescope";
                 double minimalStep = Convert.ToDouble(driverProfile.GetValue(Const.WiseDriverID.Telescope,
@@ -48,7 +48,7 @@ namespace ASCOM.Wise40 //.Dome
 
             wisedome.WriteProfile();
 
-            using (ASCOM.Utilities.Profile driverProfile = new ASCOM.Utilities.Profile())
+            using (WiseProfile driverProfile = new WiseProfile())
             {
                 driverProfile.DeviceType = "Telescope";
                 driverProfile.WriteValue(Const.WiseDriverID.Telescope,

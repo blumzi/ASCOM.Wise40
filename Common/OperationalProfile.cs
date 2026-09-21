@@ -15,7 +15,7 @@ namespace ASCOM.Wise40.Common
             if (WiseSite.ObservatoryName != "wise40")
                 return;
 
-            using (Profile driverProfile = new Profile() { DeviceType = "Telescope" })
+            using (WiseProfile driverProfile = new WiseProfile() { DeviceType = "Telescope" })
             {
                 if (Enum.TryParse<WiseSite.OpMode>(driverProfile.GetValue(Const.WiseDriverID.Telescope,"SiteOperationMode", null, "WISE").ToUpper(), out WiseSite.OpMode mode))
                     OpMode = mode;

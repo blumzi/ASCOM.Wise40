@@ -449,7 +449,7 @@ namespace ASCOM.Wise40.Common
         /// </summary>
         internal void ReadProfile()
         {
-            using (Profile driverProfile = new Profile())
+            using (WiseProfile driverProfile = new WiseProfile())
             {
                 driverProfile.DeviceType = "SafetyMonitor";
                 cloudsMax = Convert.ToDouble(driverProfile.GetValue(driverID, cloudsMaxProfileName, string.Empty, 0.ToString()));                
@@ -483,7 +483,7 @@ namespace ASCOM.Wise40.Common
         /// </summary>
         public void WriteProfile()
         {
-            using (Profile driverProfile = new Profile())
+            using (WiseProfile driverProfile = new WiseProfile())
             {
                 driverProfile.DeviceType = "SafetyMonitor";
                 driverProfile.WriteValue(driverID, cloudsMaxProfileName, cloudsMax.ToString());

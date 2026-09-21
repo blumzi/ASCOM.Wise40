@@ -5184,7 +5184,7 @@ namespace ASCOM.Wise40
         /// </summary>
         internal static void ReadProfile()
         {
-            using (Profile driverProfile = new Profile() { DeviceType = "Telescope" })
+            using (WiseProfile driverProfile = new WiseProfile() { DeviceType = "Telescope" })
             {
                 if (Enum.TryParse<Accuracy>(driverProfile.GetValue(driverID, Const.ProfileName.Telescope_AstrometricAccuracy, string.Empty, "Full"), out Accuracy acc))
                     WiseSite.astrometricAccuracy = acc;
@@ -5210,7 +5210,7 @@ namespace ASCOM.Wise40
                 BypassCoordinatesSafety = Convert.ToBoolean(driverProfile.GetValue(driverID, Const.ProfileName.Telescope_BypassCoordinatesSafety, string.Empty, false.ToString()));
             }
 
-            using (Profile driverProfile = new Profile() { DeviceType = "SafetyMonitor" })
+            using (WiseProfile driverProfile = new WiseProfile() { DeviceType = "SafetyMonitor" })
             {
                 if (Enum.TryParse(driverProfile.GetValue(Const.WiseDriverID.ObservatoryMonitor,
                     "OnIdle", string.Empty, OnIdle.HunkerDown.ToString()), out OnIdle onIdle))
@@ -5223,7 +5223,7 @@ namespace ASCOM.Wise40
         /// </summary>
         public static void WriteProfile()
         {
-            using (Profile driverProfile = new Profile() { DeviceType = "Telescope" })
+            using (WiseProfile driverProfile = new WiseProfile() { DeviceType = "Telescope" })
             {
                 driverProfile.WriteValue(driverID, Const.ProfileName.Telescope_AstrometricAccuracy, WiseSite.astrometricAccuracy.ToString());
                 driverProfile.WriteValue(driverID, Const.ProfileName.Telescope_BypassCoordinatesSafety, BypassCoordinatesSafety.ToString());

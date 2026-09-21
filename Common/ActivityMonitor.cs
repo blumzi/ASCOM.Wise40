@@ -79,7 +79,7 @@ namespace ASCOM.Wise40
             int defaultMinutesToIdle = (int) TimeSpan.FromMilliseconds(defaultRealMillisToInactivity).TotalMinutes;
             int minutesToIdle;
 
-            using (Profile p = new Profile() { DeviceType = "Telescope" })
+            using (WiseProfile p = new WiseProfile() { DeviceType = "Telescope" })
             {
                 minutesToIdle = Convert.ToInt32(p.GetValue(Const.WiseDriverID.Telescope,
                     Const.ProfileName.Telescope_MinutesToIdle,
