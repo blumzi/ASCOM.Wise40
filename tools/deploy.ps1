@@ -416,21 +416,50 @@ function AssemblyArch($path) {
 # solution produces two (x86 for the 17 x86 projects, MSIL for the 11 AnyCPU ones), so each copy
 # can be compared against the build for ITS OWN architecture instead of being skipped.
 #
-# Scope of the gate: only projects the solution actually builds can be expected to be current.
-# Abandoned trees (.sav folders, projects dropped from the solution) legitimately hold old copies
-# and must not fail a deploy - they are reported and no more.
+# SCOPE OF THE GATE: a stale copy only matters where something can LOAD it.
 #
-$slnDirs = @{}
-foreach ($l in (Get-Content $sln)) {
-    if ($l -match '^Project\("\{[0-9A-Fa-f-]+\}"\)\s*=\s*"[^"]+",\s*"([^"]+)"') {
-        $rel = $matches[1]
-        if ($rel -match '\.(csproj|vcxproj)$') {
+# The first version gated on "is this project in the solution", and on 2026-09-21 that failed the
+# deploy on 11 copies that were all harmless: Boltwood, Dome, FilterWheel, Focus, Hardware,
+# Telescope and VantagePro all have a bin\Debug left over from when they built as AnyCPU, plus
+# Wise40Service\bin\x86\Debug.  The PROJECT is in the solution, but that bin SUBDIRECTORY is not
+# written by the Debug|x86 configuration, so nothing refreshes it and nothing reads it.
+#
+# Two independent tests, either of which makes a directory live:
+#
+#   . the COM registration points at it.  This is the authoritative answer to "what does the
+#     chain load", read from the registry rather than guessed - and it is not simply bin\x86\Debug
+#     everywhere: TessW genuinely loads from bin\Debug, which is why a blanket rule would be
+#     wrong in both directions.
+#   . the build just wrote the directory's OWN product.  If a project's own DLL is fresh here but
+#     its Common.dll is not, that IS a shadow.  If its own product is as old as the Common beside
+#     it, the whole directory is abandoned.
+#
+$liveDirs = @{}
+# whatever the chain is registered to load
+Get-ChildItem "HKLM:\SOFTWARE\WOW6432Node\Classes\CLSID" -ErrorAction SilentlyContinue | ForEach-Object {
+    $progid = (Get-ItemProperty "$($_.PSPath)\ProgId" -ErrorAction SilentlyContinue).'(default)'
+    if ($progid -match 'Wise40') {
+        $cb = (Get-ItemProperty "$($_.PSPath)\InprocServer32" -ErrorAction SilentlyContinue).CodeBase
+        if ($cb) {
             try {
-                $full = [System.IO.Path]::GetFullPath((Join-Path $repo $rel))
-                $slnDirs[[System.IO.Path]::GetDirectoryName($full).ToLower()] = $true
+                $p = $cb -replace '^file:///','' -replace '/','\'
+                $liveDirs[([System.IO.Path]::GetDirectoryName($p)).ToLower()] = 'COM registration'
             } catch {}
         }
     }
+}
+# and the watcher itself, which no COM registration mentions
+$liveDirs[("$repo\Wise40Service\bin\Debug").ToLower()] = 'the watcher service'
+Say ("CHECK: live load paths from the registry: " + $liveDirs.Count)
+
+# Did the build write this directory?  Compare its own product - anything but the shared
+#  assemblies we are checking - against the build we are verifying.
+function DirWasBuilt($dir, $since) {
+    $own = Get-ChildItem $dir -Filter '*.dll' -ErrorAction SilentlyContinue |
+           Where-Object { $_.Name -ne 'Common.dll' -and $_.Name -ne 'Hardware.dll' }
+    $own += Get-ChildItem $dir -Filter '*.exe' -ErrorAction SilentlyContinue
+    if (-not $own) { return $false }
+    return [bool](@($own | Where-Object { $_.LastWriteTime -ge $since.AddSeconds(-1) }).Count)
 }
 
 $checkPairs = @(
@@ -464,14 +493,23 @@ foreach ($pair in $checkPairs) {
         # one second of slack: copy-local preserves the source stamp, but filesystem granularity
         #  and the copy itself can leave a sub-second difference.
         if ($t.LastWriteTime -lt $built[$arch].AddSeconds(-1)) {
-            $projDir = ($t.FullName -split '\\bin\\')[0].ToLower()
-            if ($slnDirs.ContainsKey($projDir)) { $shadow += ("{0} [{1}] {2}" -f $t.FullName, $arch, $t.LastWriteTime.ToString('MM-dd HH:mm')) }
-            else { $orphan += ("{0} [{1}] not built by the solution" -f $t.FullName, $arch) }
+            $dir = (Split-Path $t.FullName -Parent).ToLower()
+            $why = $null
+            if ($liveDirs.ContainsKey($dir))               { $why = $liveDirs[$dir] }
+            elseif (DirWasBuilt $dir $built[$arch])        { $why = 'the build wrote this directory' }
+
+            if ($why) {
+                $shadow += ("{0} [{1}] {2} - LIVE: {3}" -f $t.FullName, $arch, $t.LastWriteTime.ToString('MM-dd HH:mm'), $why)
+            }
+            else {
+                $orphan += ("{0} [{1}] {2} - abandoned output dir, nothing loads or writes it" -f `
+                            $t.FullName, $arch, $t.LastWriteTime.ToString('MM-dd HH:mm'))
+            }
         }
         else { $current++ }
     }
 
-    Say ("CHECK: {0}: {1} copy/copies current, {2} stale in solution projects, {3} outside the solution" -f `
+    Say ("CHECK: {0}: {1} current, {2} STALE WHERE IT MATTERS, {3} stale but unreachable" -f `
          $pair.name, $current, $shadow.Count, $orphan.Count)
     foreach ($o in $orphan) { Say ("CHECK:   ignored " + $o) }
     if ($shadow.Count -ne 0) {
