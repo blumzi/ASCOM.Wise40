@@ -63,7 +63,7 @@ namespace ASCOM.Wise40.ComputerControl
         /// ASCOM DeviceID (COM ProgID) for this driver.
         /// The DeviceID is used by ASCOM applications to load the driver at runtime.
         /// </summary>
-        internal static string driverID = Const.wiseComputerControlDriverID;
+        internal static string driverID = Const.WiseDriverID.ComputerControl;
         // TODO Change the descriptive string for your driver then remove this line
         /// <summary>
         /// Driver description that displays in the ASCOM Chooser.
