@@ -267,6 +267,7 @@ $buildErr = Join-Path $logDir 'deploy-msbuild-stderr.log'
 $deadline = 30      # minutes; a full 26-project solution build is minutes, not tens of minutes
 
 Say "BUILD: Wise40.sln (Debug|x86, serial)"
+$sw = [System.Diagnostics.Stopwatch]::StartNew()
 $proc = Start-Process -FilePath $msb -PassThru -NoNewWindow `
         -RedirectStandardOutput $buildOut -RedirectStandardError $buildErr `
         -ArgumentList @(
@@ -274,6 +275,16 @@ $proc = Start-Process -FilePath $msb -PassThru -NoNewWindow `
             '/t:Build', '/v:minimal', '/nologo', '/fl',
             "`"/flp:logfile=$msblog;verbosity=normal;append=true`""
         )
+#
+# TOUCHING .Handle IS LOAD-BEARING.  .NET only populates ExitCode and ExitTime if the process
+#  HANDLE was retained, and Start-Process -PassThru without -Wait does not retain it.  Reading
+#  .Handle here caches it, which is what makes the exit code readable after the wait.
+#
+# Without this the exit code comes back $null - and `$null -ne 0` is TRUE - so on 2026-09-21 a
+#  CLEAN build (0 errors, 13.8s) was reported as "solution FAILED, exit code ," and the gate left
+#  the chain down for nothing.  The giveaway was "after -63,925,595,215s", ExitTime unset.
+#
+$null = $proc.Handle
 Say ("BUILD: msbuild pid " + $proc.Id + ", deadline " + $deadline + " min")
 
 if (-not $proc.WaitForExit($deadline * 60 * 1000)) {
@@ -282,8 +293,15 @@ if (-not $proc.WaitForExit($deadline * 60 * 1000)) {
     $code = 9
 }
 else {
+    $proc.WaitForExit()          # the timed overload can return before the handles settle
     $code = $proc.ExitCode
-    Say ("BUILD: msbuild exited " + $code + " after {0:N0}s" -f ($proc.ExitTime - $proc.StartTime).TotalSeconds)
+    if ($null -eq $code) {
+        # Never let "I could not read the result" masquerade as "the result was failure" without
+        #  saying so - that ambiguity is the whole bug above.
+        Say "BUILD: exit code UNAVAILABLE despite a cached handle - treating as failure, but the build itself may have been fine; check deploy-msbuild.log"
+        $code = 8
+    }
+    Say ("BUILD: msbuild exited {0} after {1:N0}s" -f $code, $sw.Elapsed.TotalSeconds)
 }
 
 if ($code -ne 0) {
@@ -293,6 +311,19 @@ if ($code -ne 0) {
               ForEach-Object { $_.Line.Trim() } | Select-Object -Unique)
     Say ("BUILD: solution FAILED, exit code $code, " + $errs.Count + " distinct error line(s)")
     foreach ($e in ($errs | Select-Object -First 10)) { Say ("BUILD:   " + $e.Substring(0, [Math]::Min(200, $e.Length))) }
+
+    #
+    # A non-zero exit with NOTHING to show for it means the exit code is more likely wrong than
+    #  the build is.  Say that out loud rather than leaving a reader to conclude the tree is
+    #  broken - on 2026-09-21 the log said "FAILED ... 0 distinct error line(s)" while MSBuild's
+    #  own summary said "0 Error(s)", and the chain stayed down on the strength of it.
+    #
+    if ($errs.Count -eq 0) {
+        $tail = @(Get-Content $msblog -Tail 15 -ErrorAction SilentlyContinue |
+                  Where-Object { $_ -match 'Error\(s\)|Warning\(s\)|Build succeeded|Build FAILED|Time Elapsed' })
+        Say "BUILD: NOTE - a failing exit code with no error lines is suspicious; MSBuild's own summary says:"
+        foreach ($t in $tail) { Say ("BUILD:   " + $t.Trim()) }
+    }
 }
 else {
     Say "BUILD: solution ok"
