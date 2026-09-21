@@ -42,11 +42,22 @@ if (-not (Test-Path $msb)) {
 # BuildProjectReferences=false it compiles against whatever DLLs are on disk at that moment.
 # It is also a chain child (see $children), so it is already stopped before any of this and
 # relaunched by the watcher afterwards - which is what puts the new GUI on screen.
+#
+# Wise40Service builds the WATCHER ITSELF - the service this script stops and starts.  That
+# works only because the stop above has already happened by the time we build, so the exe is
+# not locked; it would fail outright if the order were different.
+#
+# It was missing until 2026-09-21, which meant a fix to Watcher.cs could be committed, merged
+# and "deployed" without the running service ever changing.  Note also that its output goes to
+# bin\Debug rather than bin\x86\Debug despite the assembly being X86 - which is why it shows up
+# in the sync below as an "AnyCPU-slot" file that is really x86.
+#
 $projects = @(
     "$repo\Common\Common.csproj",
     "$repo\Hardware\Hardware.csproj",
     "$repo\Telescope\Telescope.csproj",
-    "$repo\Dash\Dash.csproj"
+    "$repo\Dash\Dash.csproj",
+    "$repo\Wise40Service\Wise40Watcher.csproj"
 )
 
 #
@@ -292,6 +303,24 @@ if ($syncFailed) {
     Say "VERDICT: FAILED (sync)"
     exit 5
 }
+
+# ---- 2d. RECOVERY: make Windows restart the watcher if it dies ----------
+#
+# The watcher had NO failure actions configured, so when it crashed it simply stayed dead.  On
+# 2026-09-21 it died at 03:59:15 and the four children ran orphaned until 10:35 - 6.6 hours,
+# through the end of the night, with nothing supervising the observatory and nothing able to
+# restart a Dash or a RemoteServer that failed.  Windows had recorded six such deaths.
+#
+# The crash itself is fixed in Watcher.cs, but a supervisor that can die and stay dead is worth
+# a backstop regardless of the bug of the day.  Applied here, idempotently, so it survives a
+# service reinstall rather than living in somebody's shell history.
+#
+# reset= 86400 : the failure count returns to zero after a quiet day
+# actions=     : restart after 5s, then 10s, then 30s for subsequent failures
+#
+& sc.exe failure Wise40Watcher reset= 86400 actions= restart/5000/restart/10000/restart/30000 | Out-Null
+if ($LASTEXITCODE -eq 0) { Say "RECOVERY: failure actions set (restart 5s/10s/30s, reset 24h)" }
+else { Say "RECOVERY: sc failure returned $LASTEXITCODE - not fatal, continuing" }
 
 # ---- 3. START -----------------------------------------------------------
 Say "START: starting Wise40Watcher"
