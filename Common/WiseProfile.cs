@@ -144,9 +144,26 @@ namespace ASCOM.Wise40.Common
             return aliases.TryGetValue(driverID, out string s) ? s : driverID;
         }
 
+        //
+        // The name for "this driver's settings, not in a sub-key".
+        //
+        // It was the empty string, which is what ASCOM's subKey parameter means - and which JSON
+        //  permits as a property name.  Newtonsoft reads it happily; PowerShell 5.1 does not, and
+        //  refuses the whole document:
+        //
+        //      ConvertFrom-Json : Cannot process argument because the value of argument
+        //                         "name" is not valid.
+        //
+        // This file is meant to be read and edited by people and scripts, so one unreadable
+        //  property name that poisons the entire document is not a good trade for matching ASCOM's
+        //  internal convention.  Parentheses cannot collide with a real sub-key: the ones in use
+        //  are names like Station0, Interval, Max and Wheel4/Position1.
+        //
+        public const string RootSub = "(root)";
+
         private static string Sub(string subKey)
         {
-            return string.IsNullOrEmpty(subKey) ? "" : subKey.Replace('\\', '/').Trim('/');
+            return string.IsNullOrEmpty(subKey) ? RootSub : subKey.Replace('\\', '/').Trim('/');
         }
 
         /// <summary>
@@ -439,6 +456,9 @@ namespace ASCOM.Wise40.Common
                 return 0;
 
             int n = 0;
+            // Recursion below keeps building paths from the raw registry names, so translate to
+            //  the stored name - "" becomes RootSub - only here, where the store is indexed.
+            string stored = Sub(sub);
             foreach (string name in key.GetValueNames())
             {
                 // The default value is the driver's description, which belongs to registration.
@@ -447,10 +467,10 @@ namespace ASCOM.Wise40.Common
 
                 if (!_store.ContainsKey(section))
                     _store[section] = new Dictionary<string, Dictionary<string, JToken>>();
-                if (!_store[section].ContainsKey(sub))
-                    _store[section][sub] = new Dictionary<string, JToken>();
+                if (!_store[section].ContainsKey(stored))
+                    _store[section][stored] = new Dictionary<string, JToken>();
 
-                _store[section][sub][name] = ToToken(Convert.ToString(key.GetValue(name)));
+                _store[section][stored][name] = ToToken(Convert.ToString(key.GetValue(name)));
                 n++;
             }
 
