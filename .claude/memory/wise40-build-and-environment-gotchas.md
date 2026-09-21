@@ -12,21 +12,37 @@ metadata:
 
 `RegisterForComInterop` is on for several projects, so a **non-elevated build unregisters and then fails to re-register**, leaving the driver missing from the ASCOM Profile. That is exactly how `ASCOM.Wise40.TessW.ObservingConditions` lost its registration — and it cost **3m44s of every startup** until fixed with an elevated `regasm /codebase`. Build from an elevated Visual Studio, or expect it back.
 
-To compile-check without elevation, **specify the platform**:
+> **CORRECTED 2026-09-21 — this section used to recommend `/p:RegisterForComInterop=false`
+> for an unelevated compile-check. DO NOT. That setting does not skip registration, it runs
+> `UnregisterAssembly`, and on 2026-09-21 it deleted `ASCOM.Wise40.TessW.ObservingConditions`
+> from the ASCOM Profile while reporting only an access-denied error for the half that
+> failed. There is no safe unelevated build of this solution — `/t:Compile` reaches the
+> register target too. See [[no-safe-unelevated-solution-build]].**
+
+To compile-check, use the elevated deploy, or build a single project that has **no**
+`RegisterForComInterop` — and specify the platform:
 
 ```
-MSBuild <proj> /t:Build /p:Configuration=Debug /p:Platform=x86 \
-        /p:RegisterForComInterop=false /p:BuildProjectReferences=false
+MSBuild <proj> /t:Build /p:Configuration=Debug /p:Platform=x86 /p:BuildProjectReferences=false
 ```
 
 `/p:Platform=x86` is **not optional**. Without it MSBuild builds AnyCPU into `bin\Debug`, reports success, and leaves `bin\x86\Debug` — which is what the chain actually loads — untouched. The giveaway is the `Telescope -> ...\bin\Debug\...` line in normal verbosity.
 
 `/p:BuildProjectReferences=false` compiles against the DLLs already on disk. Fast, but it will compile against **stale** dependencies: after making a constant `public` in `Hardware`, the Telescope build failed with `CS0117 ... does not contain a definition for` until `Hardware` was rebuilt first. Build `Common` → `Hardware` → `Telescope` in order. **That flag does not propagate to project references** — MSBuild walks into them and tries to unregister, which is how TessW lost its registration a second time on 2026-09-16. Add `/p:BuildProjectReferences=false` to compile one project against the DLLs already on disk.
 
-### `MSBuild Wise40.sln` CANNOT work - build the project instead
+### `MSBuild Wise40.sln` works now — it is what the deploy uses
 
-Established 2026-09-18 by trying it. It fails in about 8 seconds, and **not** because of
-anything you changed:
+> **SUPERSEDED 2026-09-21.** This section used to say the solution build *cannot* work. It
+> can, and `tools/deploy.ps1` now builds `Wise40.sln` as its primary mechanism, because
+> only a solution build propagates a fresh `Common.dll` to every consumer via copy-local.
+> A project subset cannot, which is why the old file-sync approach kept leaving stale
+> copies behind. The four bad entries below were removed and the two genuinely broken
+> projects fixed; the solution builds with **zero C# errors**.
+>
+> Keep reading for what was wrong, because the failure signature is worth recognising.
+
+The historical failure, established 2026-09-18 by trying it — about 8 seconds, and **not**
+because of anything you changed:
 
 ```
 error MSB3202: The project file "...\FocuserApplication\FocuserApplication.csproj" was not found.
@@ -50,7 +66,17 @@ Restore-ASCOM-Profiles\Program.cs(8,13): error CS0234: ... 'Wise40' does not exi
 TestMySql\Program.cs(7,7): error CS0246: ... 'ASCOM' could not be found
 ```
 
-Nothing is wrong with those three projects. Do not go looking.
+Most of that is fallout — but **not all of it, and this note used to say otherwise.**
+
+**CORRECTED 2026-09-21:** `ComputerControl` and `Restore-ASCOM-Profiles` were genuinely
+broken, independently of the metaproj aborting. Both targeted **.NET Framework v4.5** while
+`Common` and `Hardware` target **v4.8**, so MSBuild *dropped* the reference (`MSB3274`) and
+the compiler reported the missing namespace. A dropped reference is only a warning; what
+surfaces is `CS0234`, which reads like missing source. `ComputerControl` was retargeted to
+v4.8 and `Restore-ASCOM-Profiles` dropped from the solution as obsolete.
+
+So: check for `MSB3274` before concluding "fallout, do not go looking". Today's earlier
+advice sent this session past a real bug twice.
 
 ### The invocation that works
 
@@ -151,7 +177,10 @@ one just wastes a round trip.
 - the x86 DLL timestamp under `Telescope\bin\x86\Debug`, against `bin\Debug` — if AnyCPU is
   the newer one, `/p:Platform=x86` was missed and the chain is running old code
 - the `## ===== ... started =====` banner in today's log, for the restart
-- `EncodersInUse` in the `status` Action, since an elevated rebuild wipes the ASCOM Profile
+- `EncodersInUse` in the `status` Action. An elevated rebuild still wipes the ASCOM Profile
+  **registry** tree, but since 2026-09-21 the drivers no longer read their values from there
+  — settings live in `c:\Wise40\settings.json` and survive a rebuild. Checking it is still
+  worthwhile as a "did the right binary load" signal. See [[settings-live-in-json]]
 - a **zero-motion probe** of whatever changed. Feeding `slew-to-ha-dec` an out-of-range hour
   angle proved the new binary was live and found a second bug, without moving the telescope.
   Prefer one of these to assuming the build took.
