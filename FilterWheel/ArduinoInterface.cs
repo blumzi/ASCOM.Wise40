@@ -148,7 +148,7 @@ namespace ASCOM.Wise40
         }
 
         private static Task communicatorTask;
-        private static Timer communicationTimer = new Timer(CommunicationTimedOut);
+        private static Timer communicationTimer = new Timer(Guarded.Timer(nameof(CommunicationTimedOut), CommunicationTimedOut));
         private static string _command;
         private static int _timeoutMillis;
         private static string _tag;
@@ -327,7 +327,7 @@ namespace ASCOM.Wise40
             if (timeoutMillis != 0)
             {
                 _timeoutMillis = timeoutMillis;
-                communicationTimer = new Timer(CommunicationTimedOut);
+                communicationTimer = new Timer(Guarded.Timer(nameof(CommunicationTimedOut), CommunicationTimedOut));
                 communicationTimer.Change(_timeoutMillis, Timeout.Infinite);
             }
             else

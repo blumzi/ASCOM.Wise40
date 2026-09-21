@@ -1,4 +1,4 @@
-//This library is a port of Brett Beauregard's Arduino PID library with some variations:
+﻿//This library is a port of Brett Beauregard's Arduino PID library with some variations:
 //http://www.arduino.cc/playground/Code/PIDLibrary
 
 using System;
@@ -82,7 +82,16 @@ namespace PID
             ControllerDirection = controllerDirection;
             ControllerMode = controllerMode;
 
-            _computeTimer = new Timer(callback => Compute(), null, Timeout.Infinite, Timeout.Infinite);
+            //
+            // Guarded inline rather than with Common.Guarded: PIDLibrary deliberately does not
+            //  reference Common, and a general-purpose PID controller should not acquire an
+            //  observatory dependency.  The hazard is the same either way - an exception escaping
+            //  a timer callback terminates whatever process is hosting the controller.
+            //
+            // guarded-inline
+            _computeTimer = new Timer(
+                callback => { try { Compute(); } catch { /* never let a tick kill the host */ } },
+                null, Timeout.Infinite, Timeout.Infinite);
         }
 
         /// <summary>

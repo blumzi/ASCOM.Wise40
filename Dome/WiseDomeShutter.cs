@@ -29,7 +29,7 @@ namespace ASCOM.Wise40
         public DomeSimulation(WiseDomeShutter wiseDomeShutter)
         {
             _wiseDomeShutter = wiseDomeShutter;
-            _timer = new System.Threading.Timer(OnTimer, this, Timeout.Infinite, Timeout.Infinite);
+            _timer = new System.Threading.Timer(Guarded.Timer(nameof(OnTimer), OnTimer), this, Timeout.Infinite, Timeout.Infinite);
         }
 
         public static void OnTimer(object state)
@@ -101,7 +101,7 @@ namespace ASCOM.Wise40
         };
 
         private static readonly ActivityMonitor activityMonitor = ActivityMonitor.Instance;
-        public static System.Threading.Timer shutterMotionTimer = new System.Threading.Timer(OnShutterMotionTimer);
+        public static System.Threading.Timer shutterMotionTimer = new System.Threading.Timer(Guarded.Timer(nameof(OnShutterMotionTimer), OnShutterMotionTimer));
         private readonly TimeSpan shutterMotionTravelTime = TimeSpan.FromSeconds(22);
         private ShutterState shutterMotionEndState;     // the shutter state after 22 seconds, when we have no WiFi
 

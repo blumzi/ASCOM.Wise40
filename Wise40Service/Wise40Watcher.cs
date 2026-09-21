@@ -29,7 +29,7 @@ namespace Wise40Watcher
         private static readonly WiseSite.OpMode opMode = WiseSite.OperationalMode;
         private static readonly object _lock = new object();
         private static readonly int pid = Process.GetCurrentProcess().Id;
-        private static readonly System.Threading.Timer timer = new System.Threading.Timer(onTimer);
+        private static readonly System.Threading.Timer timer = new System.Threading.Timer(ASCOM.Wise40.Common.Guarded.Timer(nameof(onTimer), onTimer));
         private const int WiFiReconnectIntervalMillis = 15000;
 
         public Wise40Watcher()

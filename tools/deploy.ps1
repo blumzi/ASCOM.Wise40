@@ -304,6 +304,22 @@ if ($syncFailed) {
     exit 5
 }
 
+# ---- 2c-bis. Report unguarded callbacks --------------------------------
+#
+# Reports, does NOT gate.  A grep is not an analyser, and refusing to deploy at 3am because a
+# regex matched something new would be a worse failure than the thing it is guarding against.
+# The count is in the log, where a rising number is visible to whoever reads it next.
+#
+try {
+    $guardOut = & (Join-Path $PSScriptRoot 'check-guarded.ps1') 2>&1
+    $fatalLine = ($guardOut | Where-Object { $_ -match 'KILL THE PROCESS' }) -join ''
+    $silentLine = ($guardOut | Where-Object { $_ -match 'UNOBSERVED TASKS' }) -join ''
+    Say ("GUARD: $fatalLine")
+    Say ("GUARD: $silentLine")
+} catch {
+    Say ("GUARD: check-guarded.ps1 failed: " + $_.Exception.Message)
+}
+
 # ---- 2d. RECOVERY: make Windows restart the watcher if it dies ----------
 #
 # The watcher had NO failure actions configured, so when it crashed it simply stayed dead.  On

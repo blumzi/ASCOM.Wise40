@@ -196,12 +196,12 @@ namespace ASCOM.Wise40
             Calibrating = false;
             _state = DomeState.Idle;
 
-            _domeTimer = new System.Threading.Timer(new TimerCallback(OnDomeTimer));
+            _domeTimer = new System.Threading.Timer(Guarded.Timer(nameof(OnDomeTimer), OnDomeTimer));
             _domeTimer.Change(_domeTimeout, _domeTimeout);
 
-            _movementTimer = new System.Threading.Timer(new TimerCallback(OnMovementTimer));
+            _movementTimer = new System.Threading.Timer(Guarded.Timer(nameof(OnMovementTimer), OnMovementTimer));
 
-            _stuckTimer = new System.Threading.Timer(new TimerCallback(OnStuckTimer));
+            _stuckTimer = new System.Threading.Timer(Guarded.Timer(nameof(OnStuckTimer), OnStuckTimer));
 
             _initialized = true;
 
@@ -277,7 +277,7 @@ namespace ASCOM.Wise40
                     RestoreCalibrationData();
 
                     if (!Calibrated && _autoCalibrate && Hardware.Hardware.ComputerHasControl)
-                        Task.Run(() => StartFindingHome());
+                        Guarded.Fire(nameof(StartFindingHome), () => StartFindingHome());
                 }
 
                 _connected = value;

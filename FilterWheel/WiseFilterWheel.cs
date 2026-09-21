@@ -39,7 +39,7 @@ namespace ASCOM.Wise40 //.FilterWheel
         public static List<Wheel> wheels = new List<Wheel>() { wheel8, wheel4 };
 
         private readonly string _savedFile = "c://Wise40/FilterWheel/Config.txt";
-        private static readonly System.Threading.Timer _updateTimer = new System.Threading.Timer(new TimerCallback(Updater));
+        private static readonly System.Threading.Timer _updateTimer = new System.Threading.Timer(Guarded.Timer(nameof(Updater), Updater));
         public static DateTime _lastDataReceived;
         public static readonly Exceptor Exceptor = new Exceptor(Debugger.DebugLevel.DebugFilterWheel);
 

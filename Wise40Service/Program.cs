@@ -14,6 +14,14 @@ namespace Wise40Watcher
         /// </summary>
         public static void Main()
         {
+            //
+            // Says what killed us, on the way out.  It cannot PREVENT the termination - by design
+            //  since .NET 2.0 - but the watcher died seven times before anyone knew why, and the
+            //  only record was a Windows .NET Runtime event.  A line in our own log would have
+            //  found it far sooner.
+            //
+            ASCOM.Wise40.Common.Guarded.InstallProcessHandlers("Wise40Watcher");
+
             ServiceBase[] ServicesToRun = new ServiceBase[] { new Wise40Watcher() };
             ServiceBase.Run(ServicesToRun);
         }

@@ -290,7 +290,7 @@ namespace ASCOM.Wise40
         public void AxisMovementChecker()
         {
             TimerCallback axisMovementTimerCallback = new TimerCallback(SampleAxisMovement);
-            movementCheckerTimer = new System.Threading.Timer(axisMovementTimerCallback);
+            movementCheckerTimer = new System.Threading.Timer(Guarded.Timer("axisMovementChecker", axisMovementTimerCallback));
             movementCheckerTimer.Change(0, 1000 / _samplingFrequency);
         }
 
@@ -301,7 +301,7 @@ namespace ASCOM.Wise40
 
             try
             {
-                movementCheckerTask = Task.Run(() => AxisMovementChecker(), movementCheckerCancellationToken);
+                movementCheckerTask = Guarded.Fire(nameof(AxisMovementChecker), () => AxisMovementChecker(), movementCheckerCancellationToken);
             }
             catch (OperationCanceledException)
             {

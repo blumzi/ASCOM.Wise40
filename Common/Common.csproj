@@ -118,6 +118,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ActivityMonitor.cs" />
+    <Compile Include="Guarded.cs" />
     <Compile Include="Angle.cs" />
     <Compile Include="Const.cs" />
     <Compile Include="Coordinates.cs" />

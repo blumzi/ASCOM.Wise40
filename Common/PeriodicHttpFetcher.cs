@@ -53,7 +53,7 @@ namespace ASCOM.Wise40.Common
                 _content = new StringContent(content);
             _url = url;
             _enabled = true;
-            _timer = new Timer(OnTimer, this, dueMillis, Timeout.Infinite);
+            _timer = new Timer(Guarded.Timer(nameof(OnTimer), OnTimer), this, dueMillis, Timeout.Infinite);
             Name = $"PeriodicHttpFetcher(\"{name}\")";
         }
 

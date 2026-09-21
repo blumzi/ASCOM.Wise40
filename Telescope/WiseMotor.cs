@@ -69,7 +69,7 @@ namespace ASCOM.Wise40.Hardware
             {
                 simulationTimerFrequency = 30; // 15;
                 TimerCallback TimerCallback = new TimerCallback(BumpEncoders);
-                simulationTimer = new System.Threading.Timer(TimerCallback, null, Timeout.Infinite, Timeout.Infinite);
+                simulationTimer = new System.Threading.Timer(Guarded.Timer("WiseMotorSimulation", TimerCallback), null, Timeout.Infinite, Timeout.Infinite);
             }
         }
 
