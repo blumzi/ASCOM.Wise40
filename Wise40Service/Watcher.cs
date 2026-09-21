@@ -54,20 +54,67 @@ namespace Wise40Watcher
             }
         }
 
+        //
+        // THIS CALLBACK KILLED THE SERVICE SIX TIMES.
+        //
+        // Exited is raised on a thread-pool thread, and an exception escaping a thread-pool
+        //  callback terminates the process.  There was no try/catch here, and the body reads
+        //  p.Id, p.ExitCode and p.ExitTime - every one of which throws InvalidOperationException
+        //  once the Process object has been Closed by the worker loop below:
+        //
+        //      System.InvalidOperationException
+        //         at System.Diagnostics.Process.get_Id()
+        //         at Wise40Watcher.Watcher.OnExit(Object, EventArgs)
+        //         at System.Diagnostics.Process.OnExited()
+        //
+        // Logged by Windows as "The Wise40Watcher service terminated unexpectedly. It has done
+        //  this 6 time(s)."  The cost is not a lost log line: the watcher is what restarts a
+        //  dead Dash or RemoteServer and what stops them all when the service stops.  On
+        //  2026-09-21 it died at 03:59:15 and the four children ran orphaned until 10:35 -
+        //  6.6 hours, through the end of the night, with nothing supervising the observatory.
+        //  A deploy in that state found nothing to stop and had to kill the children itself.
+        //
+        // So: everything guarded, and the catch logs rather than rethrows.  A watcher that
+        //  cannot describe an exit is a nuisance; a watcher that is not running is an outage.
+        //
         private static void OnExit(object sender, System.EventArgs e)
         {
-            Process p = sender as Process;
-
-            Wise40Watcher.Log($"OnExit: Process {p.Id} has exited with {p.ExitCode} at {p.ExitTime}");
+            try
+            {
+                if (sender is Process p)
+                    Wise40Watcher.Log($"OnExit: Process {p.Id} has exited with {p.ExitCode} at {p.ExitTime}");
+            }
+            catch (Exception ex)
+            {
+                try { Wise40Watcher.Log($"OnExit: caught {ex.GetType().Name}: {ex.Message}"); } catch { }
+            }
         }
 
         public void Worker()
         {
             while (!_stopping)
             {
-                CreateProcessAsUserWrapper.LaunchChildProcess(_app.Path, out int pid);
-                if (pid != 0)
+                //
+                // The whole body is guarded.  This runs on its own thread, so anything that
+                //  escapes takes the service down with it - and there are several candidates
+                //  besides the Exited race: GetProcessById throws ArgumentException if the
+                //  child dies between being launched and being looked up, and LaunchChildProcess
+                //  reaches into another session and can fail for reasons we do not control.
+                //
+                try
                 {
+                    CreateProcessAsUserWrapper.LaunchChildProcess(_app.Path, out int pid);
+                    if (pid == 0)
+                    {
+                        //
+                        // Launch failed.  Without this pause the loop spins as fast as the CPU
+                        //  allows, re-attempting a launch that is probably going to keep failing.
+                        //
+                        Wise40Watcher.Log($"Worker ({WiseName}): could not launch ({_app.Path}), retrying in 5s ...");
+                        Thread.Sleep(5000);
+                        continue;
+                    }
+
                     _process = Process.GetProcessById(pid);
                     Wise40Watcher.Log($"Worker ({WiseName}:[{pid}]): watching over process ({_app.Path}) ...");
                     _process.EnableRaisingEvents = true;
@@ -75,7 +122,22 @@ namespace Wise40Watcher
                     Wise40Watcher.Log($"Worker ({WiseName}:[{pid}]): waiting for process to exit ({_app.Path}) ...");
                     _process.WaitForExit();
                     Wise40Watcher.Log($"Worker ({WiseName}:[{pid}]): process has exited ({_app.Path}) ...");
+
+                    //
+                    // UNSUBSCRIBE BEFORE Close, which is the actual fix rather than the safety net.
+                    //
+                    // WaitForExit returns as soon as the process ends, but Exited is dispatched
+                    //  separately on a thread-pool thread.  Close() then releases the object's
+                    //  state, so a callback arriving a moment later found p.Id throwing.  Detaching
+                    //  the handler first means the late callback has nothing to run.
+                    //
+                    _process.Exited -= OnExit;
                     _process.Close();
+                }
+                catch (Exception ex)
+                {
+                    Wise40Watcher.Log($"Worker ({WiseName}): caught {ex.GetType().Name}: {ex.Message} at\n{ex.StackTrace}");
+                    Thread.Sleep(2000);
                 }
             }
         }
