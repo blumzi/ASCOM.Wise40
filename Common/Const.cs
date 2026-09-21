@@ -56,6 +56,7 @@ namespace ASCOM.Wise40.Common
             public const string FilterWheel = "ASCOM.Wise40.FilterWheel";
             public const string ObservatoryMonitor = "ASCOM.Wise40.ObservatoryMonitor.SafetyMonitor";
             public const string TessW = "ASCOM.Wise40.TessW.ObservingConditions";
+            public const string ComputerControl = "ASCOM.Wise40.ComputerControl.SafetyMonitor";
         }
 
         public const string computerControlAtMaintenance = "ComputerControl at Maintenance";

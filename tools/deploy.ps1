@@ -1,4 +1,4 @@
-# Elevated deploy: stop the chain, rebuild in dependency order, start it, then VERIFY.
+# Elevated deploy: stop the chain, rebuild the solution, start it, then VERIFY.
 #
 # Bundled into one script so there is a single UAC prompt.
 #
@@ -34,31 +34,16 @@ if (-not (Test-Path $msb)) {
     exit 6
 }
 
-# In dependency order.  BuildProjectReferences=false compiles against the DLLs already on
-# disk, so a change in Hardware is invisible to Telescope until Hardware is rebuilt first.
-# Telescope last: its bin\x86\Debug is what the COM registration points at and what the chain
-# loads, and the project reference copies the fresh Hardware.dll in beside it.
-# Dash after Telescope: it references Common, Hardware AND the Telescope driver, and with
-# BuildProjectReferences=false it compiles against whatever DLLs are on disk at that moment.
-# It is also a chain child (see $children), so it is already stopped before any of this and
-# relaunched by the watcher afterwards - which is what puts the new GUI on screen.
+# The solution, built whole - see the BUILD section for why a project subset cannot keep the
+# ~30 Common.dll copies consistent.  MSBuild orders the projects from the reference graph, so
+# there is no dependency list to maintain here and no BuildProjectReferences=false to get wrong.
 #
-# Wise40Service builds the WATCHER ITSELF - the service this script stops and starts.  That
-# works only because the stop above has already happened by the time we build, so the exe is
-# not locked; it would fail outright if the order were different.
+# This also covers Wise40Service, which builds the WATCHER ITSELF.  That works only because the
+# stop above has already happened by the time we build, so the exe is not locked.  It was absent
+# from the old subset list until 2026-09-21, which meant a fix to Watcher.cs could be committed,
+# merged and "deployed" without the running service ever changing.
 #
-# It was missing until 2026-09-21, which meant a fix to Watcher.cs could be committed, merged
-# and "deployed" without the running service ever changing.  Note also that its output goes to
-# bin\Debug rather than bin\x86\Debug despite the assembly being X86 - which is why it shows up
-# in the sync below as an "AnyCPU-slot" file that is really x86.
-#
-$projects = @(
-    "$repo\Common\Common.csproj",
-    "$repo\Hardware\Hardware.csproj",
-    "$repo\Telescope\Telescope.csproj",
-    "$repo\Dash\Dash.csproj",
-    "$repo\Wise40Service\Wise40Watcher.csproj"
-)
+$sln = "$repo\Wise40.sln"
 
 #
 # WHAT THIS LIST IS: every process that LOADS OUR ASSEMBLIES, and therefore has to be gone
@@ -95,7 +80,25 @@ function Say($m) {
 }
 function LiveChildren { @(Get-Process -ErrorAction SilentlyContinue | Where-Object { $_.ProcessName -match $children }) }
 
-Say ("elevated  : " + ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator))
+#
+# ELEVATION IS A GATE, NOT A NOTE.  This used to be logged and ignored, and on 2026-09-21 that
+# produced the worst possible outcome: Stop-Service failed with "Cannot open Wise40Watcher
+# service", so the watcher stayed up and RELAUNCHED the children mid-sync; five assemblies were
+# locked and silently left at the old build; and the script still started the chain and reported
+# the children running.  A half-updated tree that reports success is worse than a refusal.
+#
+# Elevation is also required for its own sake: RegisterForComInterop makes the build run regasm,
+# and a non-elevated build UNREGISTERS each driver and then fails to re-register it - which is
+# exactly the DriverNotRegisteredException seen on 2026-08-15.
+#
+$elevated = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+Say ("elevated  : " + $elevated)
+if (-not $elevated) {
+    Say "ABORT: not elevated.  Nothing has been stopped, built or copied."
+    Say "ABORT: re-run this script from an Administrator shell."
+    Say "VERDICT: FAILED (not elevated)"
+    exit 4
+}
 
 # ---- 1. STOP, and treat failure to stop as fatal --------------------------
 if ((Get-Service Wise40Watcher).Status -eq 'Stopped') { Say "STOP: already stopped" }
@@ -142,19 +145,39 @@ if ($live.Count -ne 0) {
 }
 Say "STOP: all chain processes exited"
 
-# ---- 2. BUILD in order, stop at the first failure ------------------------
+# ---- 2. BUILD THE SOLUTION ------------------------------------------------
+#
+# WHY THE WHOLE SOLUTION, NOT A LIST OF PROJECTS.
+#
+# Every driver references Common.csproj as a ProjectReference, and MSBuild's default for that is
+# copy-local.  So a solution build propagates a fresh Common.dll into every consumer's bin as a
+# BYPRODUCT of building them - which is how this repo kept ~30 copies consistent for years.
+#
+# Building a subset cannot do that, so the old script imitated copy-local with a file sync.  It
+# could not work, for two structural reasons:
+#
+#   . It only ever held the x86 Common.  But the solution maps 17 projects to Debug|x86 and 11 to
+#     Debug|Any CPU, so a real build produces TWO Commons - x86 and MSIL - and each consumer takes
+#     the one matching its platform.  The sync correctly refuses to cross architectures (an x86
+#     assembly cannot load into an AnyCPU host), so every MSIL consumer was simply never updated.
+#   . It cannot overwrite a file held open by the running chain.
+#
+# Both bit on 2026-09-21: 23 copies updated, 5 locked, 8 skipped, and the two weather drivers ended
+# up loading a Common that was not the one just built.
+#
+# Serial, NOT /m.  /t:Compile and /m together do not honour the solution's dependency ordering,
+# and projects race ahead of Common - which produced 12 phantom "namespace Common does not exist"
+# errors that vanished on a serial run.  The wall-clock saving is not worth diagnosing ghosts.
+#
 $code = 0
-foreach ($proj in $projects) {
-    $name = Split-Path $proj -Leaf
-    Say "BUILD: $name"
-    & $msb $proj /p:Configuration=Debug /p:Platform=x86 /p:BuildProjectReferences=false `
-           /t:Build /v:minimal /nologo /fl "/flp:logfile=$msblog;verbosity=normal;append=true"
-    if ($LASTEXITCODE -ne 0) {
-        Say ("BUILD: $name FAILED with exit code $LASTEXITCODE - stopping, not building against a half-built dependency")
-        $code = $LASTEXITCODE
-        break
-    }
-    Say ("BUILD: $name ok")
+Say "BUILD: Wise40.sln (Debug|x86, serial)"
+& $msb $sln /p:Configuration=Debug /p:Platform=x86 `
+       /t:Build /v:minimal /nologo /fl "/flp:logfile=$msblog;verbosity=normal;append=true"
+if ($LASTEXITCODE -ne 0) {
+    Say ("BUILD: solution FAILED with exit code $LASTEXITCODE")
+    $code = $LASTEXITCODE
+} else {
+    Say "BUILD: solution ok"
 }
 
 #
@@ -234,73 +257,84 @@ function AssemblyArch($path) {
     catch { return 'unreadable' }
 }
 
-$syncPairs = @(
-    @{ name = 'Common.dll';   src = "$repo\Common\bin\x86\Debug\Common.dll" },
-    @{ name = 'Hardware.dll'; src = "$repo\Hardware\bin\x86\Debug\Hardware.dll" }
+#
+# THIS NO LONGER COPIES ANYTHING.  The solution build's copy-local already put the right
+# Common.dll and Hardware.dll beside every consumer, in the right architecture.  What is left to
+# do is CHECK that claim, because a stale copy is invisible at runtime until it shadows the fresh
+# one and something fails with a MissingMethodException - see .claude/memory/common-dll-shadowing.
+#
+# Checking both architectures is only possible now.  A subset build produced one Common; the
+# solution produces two (x86 for the 17 x86 projects, MSIL for the 11 AnyCPU ones), so each copy
+# can be compared against the build for ITS OWN architecture instead of being skipped.
+#
+# Scope of the gate: only projects the solution actually builds can be expected to be current.
+# Abandoned trees (.sav folders, projects dropped from the solution) legitimately hold old copies
+# and must not fail a deploy - they are reported and no more.
+#
+$slnDirs = @{}
+foreach ($l in (Get-Content $sln)) {
+    if ($l -match '^Project\("\{[0-9A-Fa-f-]+\}"\)\s*=\s*"[^"]+",\s*"([^"]+)"') {
+        $rel = $matches[1]
+        if ($rel -match '\.(csproj|vcxproj)$') {
+            try {
+                $full = [System.IO.Path]::GetFullPath((Join-Path $repo $rel))
+                $slnDirs[[System.IO.Path]::GetDirectoryName($full).ToLower()] = $true
+            } catch {}
+        }
+    }
+}
+
+$checkPairs = @(
+    @{ name = 'Common.dll';   X86 = "$repo\Common\bin\x86\Debug\Common.dll";     MSIL = "$repo\Common\bin\Debug\Common.dll" },
+    @{ name = 'Hardware.dll'; X86 = "$repo\Hardware\bin\x86\Debug\Hardware.dll"; MSIL = "$repo\Hardware\bin\Debug\Hardware.dll" }
 )
 $syncFailed = $false
-foreach ($pair in $syncPairs) {
-    if (-not (Test-Path $pair.src)) { Say ("SYNC: source missing: " + $pair.src); $syncFailed = $true; continue }
-    $src = Get-Item $pair.src
-    $srcArch = AssemblyArch $src.FullName
+foreach ($pair in $checkPairs) {
+    $built = @{}
+    foreach ($a in @('X86','MSIL')) {
+        if (Test-Path $pair[$a]) { $built[$a] = (Get-Item $pair[$a]).LastWriteTime }
+    }
+    if ($built.Count -eq 0) {
+        Say ("CHECK: {0}: NO BUILD OUTPUT - the solution did not produce it" -f $pair.name)
+        $syncFailed = $true
+        continue
+    }
+    foreach ($a in $built.Keys) { Say ("CHECK: {0} [{1}] built {2}" -f $pair.name, $a, $built[$a].ToString('MM-dd HH:mm:ss')) }
 
     $targets = @()
     $targets += Get-ChildItem $repo -Recurse -Filter $pair.name -ErrorAction SilentlyContinue |
-                Where-Object { $_.FullName -match '\\bin\\' -and $_.FullName -ne $src.FullName }
+                Where-Object { $_.FullName -match '\\bin\\' }
     $targets += Get-ChildItem "C:\Program Files (x86)\Common Files\ASCOM" -Recurse -Filter $pair.name -ErrorAction SilentlyContinue
     $targets += Get-ChildItem "C:\Program Files (x86)\ASCOM" -Recurse -Filter $pair.name -ErrorAction SilentlyContinue
 
-    $n = 0; $skipped = @(); $stale = @()
+    $shadow = @(); $orphan = @(); $current = 0
     foreach ($t in ($targets | Sort-Object FullName -Unique)) {
-        if ($t.LastWriteTime -ge $src.LastWriteTime) { continue }
-
         $arch = AssemblyArch $t.FullName
-        if ($arch -ne $srcArch) {
-            $skipped += ("{0} [{1}]" -f $t.FullName, $arch)
-            continue
-        }
-        try {
-            Copy-Item $src.FullName $t.FullName -Force -ErrorAction Stop
-            $n++
-            Say ("SYNC: updated " + $t.FullName)
-        } catch {
-            Say ("SYNC: FAILED on " + $t.FullName + " : " + $_.Exception.Message)
-            $syncFailed = $true
-        }
-    }
-    Say ("SYNC: {0}: source is {1}; {2} copy/copies updated" -f $pair.name, $srcArch, $n)
+        if (-not $built.ContainsKey($arch)) { $orphan += ("{0} [{1}]" -f $t.FullName, $arch); continue }
 
-    #
-    # Verify, RE-READING each file from disk.
-    #
-    # The $targets objects were captured by Get-ChildItem BEFORE the copies, so their
-    #  LastWriteTime is the value from before the write.  Trusting it reported every file that
-    #  had just been updated as still stale, failed the sync gate and left the chain down -
-    #  2026-09-20, caught on the first run of this rule.
-    #
-    foreach ($t in ($targets | Sort-Object FullName -Unique)) {
-        $now = Get-Item $t.FullName -ErrorAction SilentlyContinue
-        if ($null -eq $now) { continue }
-        if ($now.LastWriteTime -lt $src.LastWriteTime -and (AssemblyArch $now.FullName) -eq $srcArch) {
-            $stale += $now.FullName
+        # one second of slack: copy-local preserves the source stamp, but filesystem granularity
+        #  and the copy itself can leave a sub-second difference.
+        if ($t.LastWriteTime -lt $built[$arch].AddSeconds(-1)) {
+            $projDir = ($t.FullName -split '\\bin\\')[0].ToLower()
+            if ($slnDirs.ContainsKey($projDir)) { $shadow += ("{0} [{1}] {2}" -f $t.FullName, $arch, $t.LastWriteTime.ToString('MM-dd HH:mm')) }
+            else { $orphan += ("{0} [{1}] not built by the solution" -f $t.FullName, $arch) }
         }
+        else { $current++ }
     }
-    if ($stale.Count -ne 0) {
-        Say ("SYNC: STILL STALE after sync: " + ($stale -join '; '))
+
+    Say ("CHECK: {0}: {1} copy/copies current, {2} stale in solution projects, {3} outside the solution" -f `
+         $pair.name, $current, $shadow.Count, $orphan.Count)
+    foreach ($o in $orphan) { Say ("CHECK:   ignored " + $o) }
+    if ($shadow.Count -ne 0) {
+        foreach ($s in $shadow) { Say ("CHECK:   STALE " + $s) }
         $syncFailed = $true
-    }
-
-    # Different architecture: reported, deliberately not touched.
-    if ($skipped.Count -ne 0) {
-        Say ("SYNC: {0}: {1} copy/copies left alone, wrong architecture for this build:" -f $pair.name, $skipped.Count)
-        foreach ($s in $skipped) { Say ("SYNC:   skipped " + $s) }
     }
 }
 
 if ($syncFailed) {
-    Say "START: SKIPPED - assembly sync failed; starting now would run a mixture of builds."
+    Say "START: SKIPPED - a stale assembly survived the build; starting now would run a mixture."
     Say "START: THE CHAIN IS LEFT DOWN DELIBERATELY."
-    Say "VERDICT: FAILED (sync)"
+    Say "VERDICT: FAILED (stale assembly)"
     exit 5
 }
 
