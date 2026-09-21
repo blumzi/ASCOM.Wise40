@@ -1,4 +1,4 @@
-# Elevated deploy: stop the chain, rebuild in dependency order, start it, then VERIFY.
+# Elevated deploy: stop the chain, rebuild the solution, start it, then VERIFY.
 #
 # Bundled into one script so there is a single UAC prompt.
 #
@@ -34,31 +34,16 @@ if (-not (Test-Path $msb)) {
     exit 6
 }
 
-# In dependency order.  BuildProjectReferences=false compiles against the DLLs already on
-# disk, so a change in Hardware is invisible to Telescope until Hardware is rebuilt first.
-# Telescope last: its bin\x86\Debug is what the COM registration points at and what the chain
-# loads, and the project reference copies the fresh Hardware.dll in beside it.
-# Dash after Telescope: it references Common, Hardware AND the Telescope driver, and with
-# BuildProjectReferences=false it compiles against whatever DLLs are on disk at that moment.
-# It is also a chain child (see $children), so it is already stopped before any of this and
-# relaunched by the watcher afterwards - which is what puts the new GUI on screen.
+# The solution, built whole - see the BUILD section for why a project subset cannot keep the
+# ~30 Common.dll copies consistent.  MSBuild orders the projects from the reference graph, so
+# there is no dependency list to maintain here and no BuildProjectReferences=false to get wrong.
 #
-# Wise40Service builds the WATCHER ITSELF - the service this script stops and starts.  That
-# works only because the stop above has already happened by the time we build, so the exe is
-# not locked; it would fail outright if the order were different.
+# This also covers Wise40Service, which builds the WATCHER ITSELF.  That works only because the
+# stop above has already happened by the time we build, so the exe is not locked.  It was absent
+# from the old subset list until 2026-09-21, which meant a fix to Watcher.cs could be committed,
+# merged and "deployed" without the running service ever changing.
 #
-# It was missing until 2026-09-21, which meant a fix to Watcher.cs could be committed, merged
-# and "deployed" without the running service ever changing.  Note also that its output goes to
-# bin\Debug rather than bin\x86\Debug despite the assembly being X86 - which is why it shows up
-# in the sync below as an "AnyCPU-slot" file that is really x86.
-#
-$projects = @(
-    "$repo\Common\Common.csproj",
-    "$repo\Hardware\Hardware.csproj",
-    "$repo\Telescope\Telescope.csproj",
-    "$repo\Dash\Dash.csproj",
-    "$repo\Wise40Service\Wise40Watcher.csproj"
-)
+$sln = "$repo\Wise40.sln"
 
 #
 # WHAT THIS LIST IS: every process that LOADS OUR ASSEMBLIES, and therefore has to be gone
@@ -88,14 +73,116 @@ $hw  = "$repo\Telescope\bin\x86\Debug\Hardware.dll"
 $dash = "$repo\Dash\bin\x86\Debug\Dash.exe"
 
 $t0 = Get-Date
-Set-Content -Path $log -Value "=== elevated deploy ===" -Encoding utf8
+
+#
+# LOGGING MUST NOT BE ABLE TO SILENCE THIS SCRIPT.
+#
+# On 2026-09-21 the log stopped dead after "BUILD: Wise40.sln" and the deploy appeared to die
+# without a word.  It had not: a `tail -f` had been opened on deploy.log to watch progress, which
+# on Windows holds the file, so every later Add-Content failed.  Under
+# $ErrorActionPreference = 'Continue' those failures were non-terminating and invisible, so the
+# script ran to completion writing nothing - and the build-failure gate left the chain down with
+# no way to say so.  Watching the log broke the log.
+#
+# So: every line goes to the CONSOLE first, which Start-Transcript captures to a second file, and
+# the file write is best-effort with its own fallback.  No single locked file can hide a run.
+#
 function Say($m) {
     $line = "{0} (+{1,5:N1}s)  {2}" -f (Get-Date -Format 'HH:mm:ss'), ((Get-Date) - $t0).TotalSeconds, $m
-    Add-Content -Path $log -Value $line -Encoding utf8
+    Write-Host $line
+    try { Add-Content -Path $log -Value $line -Encoding utf8 -ErrorAction Stop }
+    catch { try { Add-Content -Path "$log.alt" -Value $line -Encoding utf8 -ErrorAction Stop } catch {} }
 }
+try { Set-Content -Path $log -Value "=== elevated deploy ===" -Encoding utf8 -ErrorAction Stop }
+catch { Write-Host "WARNING: $log is not writable ($($_.Exception.Message)) - using $log.alt and the console transcript" }
 function LiveChildren { @(Get-Process -ErrorAction SilentlyContinue | Where-Object { $_.ProcessName -match $children }) }
 
-Say ("elevated  : " + ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator))
+#
+# ALWAYS LEAVE A VERDICT.
+#
+# On 2026-09-21 this script logged "BUILD: Wise40.sln" and then nothing.  MSBuild finished 17
+# seconds later with 7 errors, the process exited about five minutes after that, and no pass/fail
+# line or VERDICT was ever written.  The chain was left down with no statement that it had been -
+# which is the exact failure this script exists to prevent.  "Stopped and silent" is
+# indistinguishable from "still working", and that ambiguity is what costs observing time.
+#
+# Two defences:
+#   . Verdict() records that an outcome WAS stated.
+#   . the exit handler fires on any path that did not state one - unhandled error, closed console,
+#     kill - and both says so and PUTS THE CHAIN BACK.  A deliberate refusal has already written
+#     its verdict and is left alone; only an UNPLANNED exit restarts the chain, because in that
+#     case nobody chose to leave the observatory down.
+#
+$global:Wise40Verdict = $false
+function Verdict($m) { $global:Wise40Verdict = $true; Say ("VERDICT: " + $m) }
+
+# Restarting the chain and stating an outcome are separate jobs: the trap states its own, more
+#  specific outcome and still needs the restart, so this must not be gated on the verdict flag.
+function global:Wise40Recover($logPath) {
+    function Note($m) { Add-Content -Path $logPath -Value ("{0}            {1}" -f (Get-Date -Format 'HH:mm:ss'), $m) -Encoding utf8 }
+    try {
+        if ((Get-Service Wise40Watcher -ErrorAction Stop).Status -ne 'Running') {
+            Note "RECOVER: the chain is down and nothing chose that - starting Wise40Watcher"
+            Start-Service Wise40Watcher -ErrorAction Stop
+            Start-Sleep -Seconds 3
+            Note ("RECOVER: service is " + (Get-Service Wise40Watcher).Status)
+        }
+    }
+    catch { Note "RECOVER: FAILED - START Wise40Watcher BY HAND" }
+}
+
+function global:Wise40ExitNet($logPath) {
+    if ($global:Wise40Verdict) { return }     # an outcome was stated; a refusal is deliberate
+    Add-Content -Path $logPath -Encoding utf8 -Value `
+        ("{0}            VERDICT: FAILED (terminated without reaching a verdict - see deploy-console.log)" -f (Get-Date -Format 'HH:mm:ss'))
+    Wise40Recover -logPath $logPath
+}
+$null = Register-EngineEvent PowerShell.Exiting -Action ({ Wise40ExitNet -logPath $log }.GetNewClosure())
+
+#
+# A terminating error would otherwise unwind without a word.
+#
+# This must not assume Say exists.  A trap covers its whole scope regardless of where it appears,
+# so it can fire on a statement that runs BEFORE the function definitions do - which is exactly
+# what happened while testing this: the initial log write failed, the trap fired, and the trap
+# itself then died on "The term 'Say' is not recognized", burying the original error.
+#
+trap {
+    $m1 = "UNHANDLED: " + $_.Exception.Message
+    $m2 = "UNHANDLED: line " + $_.InvocationInfo.ScriptLineNumber + ": " + $_.InvocationInfo.Line.Trim()
+    Write-Host $m1; Write-Host $m2
+    foreach ($m in @($m1, $m2, "VERDICT: FAILED (unhandled error)")) {
+        try { Add-Content -Path $log -Value ("{0}            {1}" -f (Get-Date -Format 'HH:mm:ss'), $m) -Encoding utf8 -ErrorAction Stop }
+        catch { try { Add-Content -Path "$log.alt" -Value $m -Encoding utf8 -ErrorAction Stop } catch {} }
+    }
+    $global:Wise40Verdict = $true
+    if (Get-Command Wise40Recover -ErrorAction SilentlyContinue) { Wise40Recover -logPath $log }
+    break
+}
+
+# The elevated window's console output died with the window on 2026-09-21, taking the only
+#  record of what MSBuild said.  Keep a copy on disk.
+try { Start-Transcript -Path (Join-Path $logDir 'deploy-console.log') -Force | Out-Null } catch {}
+
+#
+# ELEVATION IS A GATE, NOT A NOTE.  This used to be logged and ignored, and on 2026-09-21 that
+# produced the worst possible outcome: Stop-Service failed with "Cannot open Wise40Watcher
+# service", so the watcher stayed up and RELAUNCHED the children mid-sync; five assemblies were
+# locked and silently left at the old build; and the script still started the chain and reported
+# the children running.  A half-updated tree that reports success is worse than a refusal.
+#
+# Elevation is also required for its own sake: RegisterForComInterop makes the build run regasm,
+# and a non-elevated build UNREGISTERS each driver and then fails to re-register it - which is
+# exactly the DriverNotRegisteredException seen on 2026-08-15.
+#
+$elevated = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+Say ("elevated  : " + $elevated)
+if (-not $elevated) {
+    Say "ABORT: not elevated.  Nothing has been stopped, built or copied."
+    Say "ABORT: re-run this script from an Administrator shell."
+    Verdict "FAILED (not elevated)"
+    exit 4
+}
 
 # ---- 1. STOP, and treat failure to stop as fatal --------------------------
 if ((Get-Service Wise40Watcher).Status -eq 'Stopped') { Say "STOP: already stopped" }
@@ -137,24 +224,118 @@ if ($live.Count -ne 0) {
     # overwrite it, which can leave a partial mixture on disk.
     #
     Say ("STOP: ABORTING - still running: " + (($live | ForEach-Object { "$($_.ProcessName)($($_.Id))" }) -join ', '))
-    Say "VERDICT: FAILED (chain would not stop; nothing was built, chain left as found)"
+    Verdict "FAILED (chain would not stop; nothing was built, chain left as found)"
     exit 2
 }
 Say "STOP: all chain processes exited"
+#
+# From here until START, the observatory is down.  The exit handler covers an unhandled error or
+#  a closed console, but nothing in-process survives a hard kill of this window - which is exactly
+#  what happened on 2026-09-21 when the live-path scan crawled and the process vanished, leaving
+#  the chain stopped with no verdict.  So say the recovery out loud, now, while there is still a
+#  log to say it in.
+#
+Say "STOP: >>> THE CHAIN IS DOWN FROM HERE.  If this run dies without a VERDICT line,"
+Say "STOP: >>> recover with:  Start-Service Wise40Watcher   (elevated)"
 
-# ---- 2. BUILD in order, stop at the first failure ------------------------
+# ---- 2. BUILD THE SOLUTION ------------------------------------------------
+#
+# WHY THE WHOLE SOLUTION, NOT A LIST OF PROJECTS.
+#
+# Every driver references Common.csproj as a ProjectReference, and MSBuild's default for that is
+# copy-local.  So a solution build propagates a fresh Common.dll into every consumer's bin as a
+# BYPRODUCT of building them - which is how this repo kept ~30 copies consistent for years.
+#
+# Building a subset cannot do that, so the old script imitated copy-local with a file sync.  It
+# could not work, for two structural reasons:
+#
+#   . It only ever held the x86 Common.  But the solution maps 17 projects to Debug|x86 and 11 to
+#     Debug|Any CPU, so a real build produces TWO Commons - x86 and MSIL - and each consumer takes
+#     the one matching its platform.  The sync correctly refuses to cross architectures (an x86
+#     assembly cannot load into an AnyCPU host), so every MSIL consumer was simply never updated.
+#   . It cannot overwrite a file held open by the running chain.
+#
+# Both bit on 2026-09-21: 23 copies updated, 5 locked, 8 skipped, and the two weather drivers ended
+# up loading a Common that was not the one just built.
+#
+# Serial, NOT /m.  /t:Compile and /m together do not honour the solution's dependency ordering,
+# and projects race ahead of Common - which produced 12 phantom "namespace Common does not exist"
+# errors that vanished on a serial run.  The wall-clock saving is not worth diagnosing ghosts.
+#
+#
+# Run MSBuild as a tracked process with a deadline, rather than "& $msb" inline.
+#
+# Inline, there is no way to tell "still compiling" from "this call will never return", and no
+# upper bound on either - which is exactly the ambiguity that left the chain down and silent on
+# 2026-09-21.  A tracked process gives a PID to report, a hard deadline, and output on disk
+# instead of in a console window that dies with the window.
+#
 $code = 0
-foreach ($proj in $projects) {
-    $name = Split-Path $proj -Leaf
-    Say "BUILD: $name"
-    & $msb $proj /p:Configuration=Debug /p:Platform=x86 /p:BuildProjectReferences=false `
-           /t:Build /v:minimal /nologo /fl "/flp:logfile=$msblog;verbosity=normal;append=true"
-    if ($LASTEXITCODE -ne 0) {
-        Say ("BUILD: $name FAILED with exit code $LASTEXITCODE - stopping, not building against a half-built dependency")
-        $code = $LASTEXITCODE
-        break
+$buildOut = Join-Path $logDir 'deploy-msbuild-stdout.log'
+$buildErr = Join-Path $logDir 'deploy-msbuild-stderr.log'
+$deadline = 30      # minutes; a full 26-project solution build is minutes, not tens of minutes
+
+Say "BUILD: Wise40.sln (Debug|x86, serial)"
+$sw = [System.Diagnostics.Stopwatch]::StartNew()
+$proc = Start-Process -FilePath $msb -PassThru -NoNewWindow `
+        -RedirectStandardOutput $buildOut -RedirectStandardError $buildErr `
+        -ArgumentList @(
+            "`"$sln`"", '/p:Configuration=Debug', '/p:Platform=x86',
+            '/t:Build', '/v:minimal', '/nologo', '/fl',
+            "`"/flp:logfile=$msblog;verbosity=normal;append=true`""
+        )
+#
+# TOUCHING .Handle IS LOAD-BEARING.  .NET only populates ExitCode and ExitTime if the process
+#  HANDLE was retained, and Start-Process -PassThru without -Wait does not retain it.  Reading
+#  .Handle here caches it, which is what makes the exit code readable after the wait.
+#
+# Without this the exit code comes back $null - and `$null -ne 0` is TRUE - so on 2026-09-21 a
+#  CLEAN build (0 errors, 13.8s) was reported as "solution FAILED, exit code ," and the gate left
+#  the chain down for nothing.  The giveaway was "after -63,925,595,215s", ExitTime unset.
+#
+$null = $proc.Handle
+Say ("BUILD: msbuild pid " + $proc.Id + ", deadline " + $deadline + " min")
+
+if (-not $proc.WaitForExit($deadline * 60 * 1000)) {
+    Say ("BUILD: TIMED OUT after $deadline minutes - killing pid " + $proc.Id)
+    try { $proc.Kill(); $proc.WaitForExit(30000) } catch { Say ("BUILD: kill failed: " + $_.Exception.Message) }
+    $code = 9
+}
+else {
+    $proc.WaitForExit()          # the timed overload can return before the handles settle
+    $code = $proc.ExitCode
+    if ($null -eq $code) {
+        # Never let "I could not read the result" masquerade as "the result was failure" without
+        #  saying so - that ambiguity is the whole bug above.
+        Say "BUILD: exit code UNAVAILABLE despite a cached handle - treating as failure, but the build itself may have been fine; check deploy-msbuild.log"
+        $code = 8
     }
-    Say ("BUILD: $name ok")
+    Say ("BUILD: msbuild exited {0} after {1:N0}s" -f $code, $sw.Elapsed.TotalSeconds)
+}
+
+if ($code -ne 0) {
+    # Name the failures here.  Digging them out of a 1.2 MB MSBuild log is what turned a plain
+    #  build failure into an afternoon on 2026-09-21.
+    $errs = @(Select-String -Path $msblog -Pattern 'error [A-Z]+[0-9]+' -ErrorAction SilentlyContinue |
+              ForEach-Object { $_.Line.Trim() } | Select-Object -Unique)
+    Say ("BUILD: solution FAILED, exit code $code, " + $errs.Count + " distinct error line(s)")
+    foreach ($e in ($errs | Select-Object -First 10)) { Say ("BUILD:   " + $e.Substring(0, [Math]::Min(200, $e.Length))) }
+
+    #
+    # A non-zero exit with NOTHING to show for it means the exit code is more likely wrong than
+    #  the build is.  Say that out loud rather than leaving a reader to conclude the tree is
+    #  broken - on 2026-09-21 the log said "FAILED ... 0 distinct error line(s)" while MSBuild's
+    #  own summary said "0 Error(s)", and the chain stayed down on the strength of it.
+    #
+    if ($errs.Count -eq 0) {
+        $tail = @(Get-Content $msblog -Tail 15 -ErrorAction SilentlyContinue |
+                  Where-Object { $_ -match 'Error\(s\)|Warning\(s\)|Build succeeded|Build FAILED|Time Elapsed' })
+        Say "BUILD: NOTE - a failing exit code with no error lines is suspicious; MSBuild's own summary says:"
+        foreach ($t in $tail) { Say ("BUILD:   " + $t.Trim()) }
+    }
+}
+else {
+    Say "BUILD: solution ok"
 }
 
 #
@@ -194,7 +375,7 @@ Say ("CHECK: exit 0 [{0}]  Telescope up to date [{1}]  Hardware up to date [{2}]
 if (-not (($code -eq 0) -and $x86ok -and $hwok -and $dashok -and $platOk)) {
     Say "START: SKIPPED - build did not succeed cleanly."
     Say "START: THE CHAIN IS LEFT DOWN DELIBERATELY. Telescope, dome and focuser are offline."
-    Say "VERDICT: FAILED (build; inspect deploy-msbuild.log, then Start-Service Wise40Watcher)"
+    Verdict "FAILED (build; inspect deploy-msbuild.log, then Start-Service Wise40Watcher)"
     exit 3
 }
 
@@ -234,73 +415,160 @@ function AssemblyArch($path) {
     catch { return 'unreadable' }
 }
 
-$syncPairs = @(
-    @{ name = 'Common.dll';   src = "$repo\Common\bin\x86\Debug\Common.dll" },
-    @{ name = 'Hardware.dll'; src = "$repo\Hardware\bin\x86\Debug\Hardware.dll" }
+#
+# THIS NO LONGER COPIES ANYTHING.  The solution build's copy-local already put the right
+# Common.dll and Hardware.dll beside every consumer, in the right architecture.  What is left to
+# do is CHECK that claim, because a stale copy is invisible at runtime until it shadows the fresh
+# one and something fails with a MissingMethodException - see .claude/memory/common-dll-shadowing.
+#
+# Checking both architectures is only possible now.  A subset build produced one Common; the
+# solution produces two (x86 for the 17 x86 projects, MSIL for the 11 AnyCPU ones), so each copy
+# can be compared against the build for ITS OWN architecture instead of being skipped.
+#
+# SCOPE OF THE GATE: a stale copy only matters where something can LOAD it.
+#
+# The first version gated on "is this project in the solution", and on 2026-09-21 that failed the
+# deploy on 11 copies that were all harmless: Boltwood, Dome, FilterWheel, Focus, Hardware,
+# Telescope and VantagePro all have a bin\Debug left over from when they built as AnyCPU, plus
+# Wise40Service\bin\x86\Debug.  The PROJECT is in the solution, but that bin SUBDIRECTORY is not
+# written by the Debug|x86 configuration, so nothing refreshes it and nothing reads it.
+#
+# Two independent tests, either of which makes a directory live:
+#
+#   . the COM registration points at it.  This is the authoritative answer to "what does the
+#     chain load", read from the registry rather than guessed - and it is not simply bin\x86\Debug
+#     everywhere: TessW genuinely loads from bin\Debug, which is why a blanket rule would be
+#     wrong in both directions.
+#   . the build just wrote the directory's OWN product.  If a project's own DLL is fresh here but
+#     its Common.dll is not, that IS a shadow.  If its own product is as old as the Common beside
+#     it, the whole directory is abandoned.
+#
+#
+# GO FROM OUR DRIVERS TO THEIR CLSIDs, NOT THE OTHER WAY.
+#
+# The first version walked every key under Classes\CLSID - about 2954 of them, two registry opens
+# each - asking "are you one of ours".  On 2026-09-21 that took the deploy from "built in 6
+# seconds" to crawling for two minutes and then dying outright, with the chain stopped and no
+# verdict written.  It also uses the PowerShell registry provider, which is far slower than the
+# .NET API for this.
+#
+# Reversed, it is a handful of lookups: read the ~14 Wise ProgIDs out of the ASCOM Profile's
+# driver lists, then ProgID -> CLSID -> server key for each.  Measured at 0.25s against 2954-key
+# enumeration, returning the identical nine directories.
+#
+# Two registry views are in play and mixing them up returns nothing at all: ProgID keys are NOT
+# WOW-redirected (SOFTWARE\Classes\<ProgID>, 64-bit view), while the CLSID keys they point at ARE
+# (32-bit view).
+#
+$liveDirs = @{}
+$hklm32 = [Microsoft.Win32.RegistryKey]::OpenBaseKey('LocalMachine','Registry32')
+$hklm64 = [Microsoft.Win32.RegistryKey]::OpenBaseKey('LocalMachine','Registry64')
+
+$progids = New-Object System.Collections.Generic.List[string]
+$ascomKey = $hklm32.OpenSubKey('SOFTWARE\ASCOM')
+if ($ascomKey) {
+    foreach ($devType in $ascomKey.GetSubKeyNames()) {
+        if ($devType -notlike '* Drivers') { continue }
+        $dk = $ascomKey.OpenSubKey($devType)
+        if (-not $dk) { continue }
+        foreach ($p in $dk.GetSubKeyNames()) { if ($p -match 'Wise') { $progids.Add($p) } }
+        $dk.Close()
+    }
+    $ascomKey.Close()
+}
+
+foreach ($progid in ($progids | Sort-Object -Unique)) {
+    $pk = $hklm64.OpenSubKey("SOFTWARE\Classes\$progid\CLSID")
+    if (-not $pk) { continue }
+    $clsid = $pk.GetValue(''); $pk.Close()
+    if (-not $clsid) { continue }
+    foreach ($server in 'InprocServer32','LocalServer32') {
+        $sk = $hklm32.OpenSubKey("SOFTWARE\Classes\CLSID\$clsid\$server")
+        if (-not $sk) { continue }
+        $path = $sk.GetValue('CodeBase'); if (-not $path) { $path = $sk.GetValue('') }
+        $sk.Close()
+        if (-not $path) { continue }
+        try {
+            $p2 = ($path -replace '^file:///','' -replace '/','\').Trim('"')
+            $dir = [System.IO.Path]::GetDirectoryName($p2)
+            if ($dir) { $liveDirs[$dir.ToLower()] = "COM registration ($progid)" }
+        } catch {}
+    }
+}
+# and the watcher itself, which no COM registration mentions
+$liveDirs[("$repo\Wise40Service\bin\Debug").ToLower()] = 'the watcher service'
+Say ("CHECK: {0} Wise ProgIDs in the ASCOM Profile -> {1} live load path(s)" -f $progids.Count, $liveDirs.Count)
+
+# Did the build write this directory?  Compare its own product - anything but the shared
+#  assemblies we are checking - against the build we are verifying.
+function DirWasBuilt($dir, $since) {
+    $own = Get-ChildItem $dir -Filter '*.dll' -ErrorAction SilentlyContinue |
+           Where-Object { $_.Name -ne 'Common.dll' -and $_.Name -ne 'Hardware.dll' }
+    $own += Get-ChildItem $dir -Filter '*.exe' -ErrorAction SilentlyContinue
+    if (-not $own) { return $false }
+    return [bool](@($own | Where-Object { $_.LastWriteTime -ge $since.AddSeconds(-1) }).Count)
+}
+
+$checkPairs = @(
+    @{ name = 'Common.dll';   X86 = "$repo\Common\bin\x86\Debug\Common.dll";     MSIL = "$repo\Common\bin\Debug\Common.dll" },
+    @{ name = 'Hardware.dll'; X86 = "$repo\Hardware\bin\x86\Debug\Hardware.dll"; MSIL = "$repo\Hardware\bin\Debug\Hardware.dll" }
 )
 $syncFailed = $false
-foreach ($pair in $syncPairs) {
-    if (-not (Test-Path $pair.src)) { Say ("SYNC: source missing: " + $pair.src); $syncFailed = $true; continue }
-    $src = Get-Item $pair.src
-    $srcArch = AssemblyArch $src.FullName
+foreach ($pair in $checkPairs) {
+    $built = @{}
+    foreach ($a in @('X86','MSIL')) {
+        if (Test-Path $pair[$a]) { $built[$a] = (Get-Item $pair[$a]).LastWriteTime }
+    }
+    if ($built.Count -eq 0) {
+        Say ("CHECK: {0}: NO BUILD OUTPUT - the solution did not produce it" -f $pair.name)
+        $syncFailed = $true
+        continue
+    }
+    foreach ($a in $built.Keys) { Say ("CHECK: {0} [{1}] built {2}" -f $pair.name, $a, $built[$a].ToString('MM-dd HH:mm:ss')) }
 
     $targets = @()
     $targets += Get-ChildItem $repo -Recurse -Filter $pair.name -ErrorAction SilentlyContinue |
-                Where-Object { $_.FullName -match '\\bin\\' -and $_.FullName -ne $src.FullName }
+                Where-Object { $_.FullName -match '\\bin\\' }
     $targets += Get-ChildItem "C:\Program Files (x86)\Common Files\ASCOM" -Recurse -Filter $pair.name -ErrorAction SilentlyContinue
     $targets += Get-ChildItem "C:\Program Files (x86)\ASCOM" -Recurse -Filter $pair.name -ErrorAction SilentlyContinue
 
-    $n = 0; $skipped = @(); $stale = @()
+    $shadow = @(); $orphan = @(); $current = 0
     foreach ($t in ($targets | Sort-Object FullName -Unique)) {
-        if ($t.LastWriteTime -ge $src.LastWriteTime) { continue }
-
         $arch = AssemblyArch $t.FullName
-        if ($arch -ne $srcArch) {
-            $skipped += ("{0} [{1}]" -f $t.FullName, $arch)
-            continue
-        }
-        try {
-            Copy-Item $src.FullName $t.FullName -Force -ErrorAction Stop
-            $n++
-            Say ("SYNC: updated " + $t.FullName)
-        } catch {
-            Say ("SYNC: FAILED on " + $t.FullName + " : " + $_.Exception.Message)
-            $syncFailed = $true
-        }
-    }
-    Say ("SYNC: {0}: source is {1}; {2} copy/copies updated" -f $pair.name, $srcArch, $n)
+        if (-not $built.ContainsKey($arch)) { $orphan += ("{0} [{1}]" -f $t.FullName, $arch); continue }
 
-    #
-    # Verify, RE-READING each file from disk.
-    #
-    # The $targets objects were captured by Get-ChildItem BEFORE the copies, so their
-    #  LastWriteTime is the value from before the write.  Trusting it reported every file that
-    #  had just been updated as still stale, failed the sync gate and left the chain down -
-    #  2026-09-20, caught on the first run of this rule.
-    #
-    foreach ($t in ($targets | Sort-Object FullName -Unique)) {
-        $now = Get-Item $t.FullName -ErrorAction SilentlyContinue
-        if ($null -eq $now) { continue }
-        if ($now.LastWriteTime -lt $src.LastWriteTime -and (AssemblyArch $now.FullName) -eq $srcArch) {
-            $stale += $now.FullName
+        # one second of slack: copy-local preserves the source stamp, but filesystem granularity
+        #  and the copy itself can leave a sub-second difference.
+        if ($t.LastWriteTime -lt $built[$arch].AddSeconds(-1)) {
+            $dir = (Split-Path $t.FullName -Parent).ToLower()
+            $why = $null
+            if ($liveDirs.ContainsKey($dir))               { $why = $liveDirs[$dir] }
+            elseif (DirWasBuilt $dir $built[$arch])        { $why = 'the build wrote this directory' }
+
+            if ($why) {
+                $shadow += ("{0} [{1}] {2} - LIVE: {3}" -f $t.FullName, $arch, $t.LastWriteTime.ToString('MM-dd HH:mm'), $why)
+            }
+            else {
+                $orphan += ("{0} [{1}] {2} - abandoned output dir, nothing loads or writes it" -f `
+                            $t.FullName, $arch, $t.LastWriteTime.ToString('MM-dd HH:mm'))
+            }
         }
+        else { $current++ }
     }
-    if ($stale.Count -ne 0) {
-        Say ("SYNC: STILL STALE after sync: " + ($stale -join '; '))
+
+    Say ("CHECK: {0}: {1} current, {2} STALE WHERE IT MATTERS, {3} stale but unreachable" -f `
+         $pair.name, $current, $shadow.Count, $orphan.Count)
+    foreach ($o in $orphan) { Say ("CHECK:   ignored " + $o) }
+    if ($shadow.Count -ne 0) {
+        foreach ($s in $shadow) { Say ("CHECK:   STALE " + $s) }
         $syncFailed = $true
-    }
-
-    # Different architecture: reported, deliberately not touched.
-    if ($skipped.Count -ne 0) {
-        Say ("SYNC: {0}: {1} copy/copies left alone, wrong architecture for this build:" -f $pair.name, $skipped.Count)
-        foreach ($s in $skipped) { Say ("SYNC:   skipped " + $s) }
     }
 }
 
 if ($syncFailed) {
-    Say "START: SKIPPED - assembly sync failed; starting now would run a mixture of builds."
+    Say "START: SKIPPED - a stale assembly survived the build; starting now would run a mixture."
     Say "START: THE CHAIN IS LEFT DOWN DELIBERATELY."
-    Say "VERDICT: FAILED (sync)"
+    Verdict "FAILED (stale assembly)"
     exit 5
 }
 
@@ -425,8 +693,8 @@ if (Test-Path $rsLog) {
 Say ("VERIFY: 'did not read back' lines in today's log: $badReadback (0 expected)")
 
 if ($connected -and ($names.Count -ge 4) -and $encOk -and $probeOk -and $envOk) {
-    Say "VERDICT: OK - chain up, correct binary answering, profile intact"
+    Verdict "OK - chain up, correct binary answering, profile intact"
     exit 0
 }
-Say "VERDICT: DEPLOYED BUT NOT VERIFIED - see the VERIFY lines above"
+Verdict "DEPLOYED BUT NOT VERIFIED - see the VERIFY lines above"
 exit 4

@@ -17,6 +17,13 @@ metadata:
 
 **`gh` is installed** at `C:\Users\mizpe\bin\gh\bin\gh.exe`, v2.101.0, on the user `Path`. So `gh pr create` works.
 
+**Call it by full path, and do not trust `command -v gh`.** A shell inherits its environment at
+launch, so any session started before the `Path` edit — which is most of them, the edit having been
+made once — reports `gh: command not found` while the binary sits exactly where this note says.
+On 2026-09-21 that reading was taken at face value: the conclusion "gh not installed" was reported
+to Arie and two PRs were handed over as `compare/...` URLs instead of being opened. **Check this
+file before concluding a tool is missing** — the answer was already written down.
+
 **Do not put it under a temp directory.** An earlier install went into a session scratchpad and was cleaned up, so a later session found no `gh` while this memory still claimed it was installed. `C:\Users\mizpe\bin\gh` is outside anything that gets swept.
 
 **Why `winget install --id GitHub.cli` fails here, correctly diagnosed 2026-09-18.** It returns **`0x80070020` — "the process cannot access the file because it is being used by another process"**. This is *not* a property of the `gh` package, and not permissions. The machine has a **pending-reboot state**: `PendingFileRenameOperations` holds 104 entries including `C:\Config.Msi\*.rbf` (Windows Installer rollback files staged for deletion), and `CBS RebootPending` is set, on **42 days of uptime**. While `C:\Config.Msi` is in that state no new MSI transaction can get exclusive access, so **every MSI install on this box fails the same way** until it is restarted. Restarting takes the telescope chain down with it, so it belongs in a maintenance window.
