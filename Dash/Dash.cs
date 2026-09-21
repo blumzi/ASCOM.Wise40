@@ -1859,7 +1859,7 @@ namespace Dash
                 if (wiseDome.AtPark)
                     wiseDome.Action("unpark", "");
                 else
-                    Task.Run(() => wiseDome.Park());
+                    Guarded.Fire("DomePark", () => wiseDome.Park());
             }
             catch (Exception ex)
             {

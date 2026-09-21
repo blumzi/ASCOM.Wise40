@@ -19,7 +19,7 @@ namespace ASCOM.Wise40SafeToOperate
         private static WisePin BypassPin;
         public static int _doorLockDelaySeconds, _defaultDoorLockDelaySeconds = 30;
         private readonly Hardware hardware = Hardware.Instance;
-        private static readonly Timer _timer = new Timer(new System.Threading.TimerCallback(Check));
+        private static readonly Timer _timer = new Timer(Guarded.Timer(nameof(Check), Check));
         private static bool _doorLockWasSafe = false, _bypassWasSafe = false;
         private static bool _isSafe = true;
         private static bool _debugging = false;

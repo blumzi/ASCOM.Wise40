@@ -71,7 +71,7 @@ namespace ASCOM.Wise40 //.Focuser
 
         private static uint _simulatedValue = (_upperHardLimit - _lowerHardLimit) / 2;
         private static Const.Direction _simulatedDirection;
-        private static readonly Timer _simulationTimer = new Timer(new TimerCallback(simulateMovement));
+        private static readonly Timer _simulationTimer = new Timer(Guarded.Timer(nameof(simulateMovement), simulateMovement));
         private const uint _simulatedStep = 1;
 
         private uint _maxValue;

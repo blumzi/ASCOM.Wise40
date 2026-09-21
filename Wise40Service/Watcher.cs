@@ -18,6 +18,11 @@ namespace Wise40Watcher
     {
         private Const.App _app;
         private Process _process = null;
+
+        // Kept so the unsubscribe below removes the SAME delegate instance that was added -
+        //  Guarded.Event returns a new closure each call, so "-= Guarded.Event(...)" would
+        //  silently remove nothing and leave the handler attached across Close().
+        private EventHandler _exitHandler;
         private bool _stopping = false;
 
         private readonly Dictionary<string, Const.Application> _appNameToToken = new Dictionary<string, Const.Application>
@@ -118,7 +123,14 @@ namespace Wise40Watcher
                     _process = Process.GetProcessById(pid);
                     Wise40Watcher.Log($"Worker ({WiseName}:[{pid}]): watching over process ({_app.Path}) ...");
                     _process.EnableRaisingEvents = true;
-                    _process.Exited += new EventHandler(OnExit);
+
+                    //
+                    // Guarded as well as detached-before-Close below.  OnExit has its own
+                    //  try/catch, but routing through Guarded means the day someone simplifies
+                    //  that method the protection does not leave with it.
+                    //
+                    _exitHandler = Guarded.Event(nameof(OnExit), OnExit);
+                    _process.Exited += _exitHandler;
                     Wise40Watcher.Log($"Worker ({WiseName}:[{pid}]): waiting for process to exit ({_app.Path}) ...");
                     _process.WaitForExit();
                     Wise40Watcher.Log($"Worker ({WiseName}:[{pid}]): process has exited ({_app.Path}) ...");
@@ -131,7 +143,7 @@ namespace Wise40Watcher
                     //  state, so a callback arriving a moment later found p.Id throwing.  Detaching
                     //  the handler first means the late callback has nothing to run.
                     //
-                    _process.Exited -= OnExit;
+                    _process.Exited -= _exitHandler;
                     _process.Close();
                 }
                 catch (Exception ex)
@@ -193,7 +205,7 @@ namespace Wise40Watcher
 
             try
             {
-                Thread thread = new Thread(Worker);
+                Thread thread = new Thread(Guarded.Thread(nameof(Worker), Worker));
                 thread.Start();
                 Wise40Watcher.Log($"{op}: worker thread started ...");
                 if (waitForResponse)

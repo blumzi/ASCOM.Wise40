@@ -1,4 +1,4 @@
-//
+﻿//
 // ASCOM.Wise40.Server Local COM Server
 //
 // This is the core of a managed COM Local Server, capable of serving
@@ -613,7 +613,20 @@ namespace ASCOM.Wise40.Server
 
             // Start up the garbage collection thread.
             GarbageCollection GarbageCollector = new GarbageCollection(1000);
-            Thread GCThread = new Thread(new ThreadStart(GarbageCollector.GCWatch));
+            //
+            // Guarded inline: Wise40.Server does not reference Common, and this is the local
+            //  server's own housekeeping thread.  An exception escaping a thread entry point
+            //  terminates the process - here that would be the COM host for every served driver.
+            //
+            // guarded-inline
+            Thread GCThread = new Thread(new ThreadStart(() =>
+            {
+                try { GarbageCollector.GCWatch(); }
+                catch (Exception ex)
+                {
+                    try { System.Diagnostics.Trace.WriteLine($"GCWatch died: {ex}"); } catch { }
+                }
+            }));
             GCThread.Name = "Garbage Collection Thread";
             GCThread.Start();
 

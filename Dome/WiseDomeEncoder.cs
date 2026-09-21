@@ -67,7 +67,7 @@ namespace ASCOM.Wise40 //.Dome
                 simulatedValue = 0;
                 simulatedStuckAzimuth = Angle.InvalidAz;
                 int simulationTimeout = 1000 / _simulatedEncoderTicksPerSecond;
-                simulationTimer = new System.Threading.Timer(new System.Threading.TimerCallback(onSimulationTimer));
+                simulationTimer = new System.Threading.Timer(Guarded.Timer(nameof(onSimulationTimer), onSimulationTimer));
                 simulationTimer.Change(simulationTimeout, simulationTimeout);
             }
             _initialized = true;

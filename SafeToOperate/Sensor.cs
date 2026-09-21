@@ -362,7 +362,7 @@ namespace ASCOM.Wise40SafeToOperate
             _attributes = attributes;
 
             if (HasAttribute(Attribute.Periodic))
-                _timer = new System.Threading.Timer(new TimerCallback(OnTimer), this, Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
+                _timer = new System.Threading.Timer(Guarded.Timer(nameof(OnTimer), OnTimer), this, Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
 
             if (HasAttribute(Attribute.AlwaysEnabled))
                 Enabled = true;

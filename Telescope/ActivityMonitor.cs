@@ -59,7 +59,7 @@ namespace ASCOM.Wise40
         public ActivityMonitor()
         {
             wisesite.init();
-            inactivityTimer = new System.Threading.Timer(BecomeIdle);
+            inactivityTimer = new System.Threading.Timer(Guarded.Timer(nameof(BecomeIdle), BecomeIdle));
             _currentlyActive = Activity.None;
             StartTimer("init");
         }

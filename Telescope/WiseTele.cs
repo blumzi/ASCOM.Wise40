@@ -593,6 +593,11 @@ namespace ASCOM.Wise40
 
             WiseName = "WiseTele";
 
+            // The drivers have no Main of their own - they are loaded into ASCOM.RemoteServer,
+            //  which is the process an unguarded callback would take down.  Idempotent, so it
+            //  does not matter that several drivers may ask.
+            Guarded.InstallProcessHandlers("ASCOM.RemoteServer");
+
             ReadProfile();
             //novas31 = new NOVAS31();
             //astroutils = new Astrometry.AstroUtils.AstroUtils();
@@ -1148,7 +1153,7 @@ namespace ASCOM.Wise40
                     return;
 
                 if (trackingTimer == null)
-                    trackingTimer = new System.Threading.Timer(new System.Threading.TimerCallback(AdjustDomePositionWhileTracking));
+                    trackingTimer = new System.Threading.Timer(Guarded.Timer(nameof(AdjustDomePositionWhileTracking), AdjustDomePositionWhileTracking));
 
                 if (value)
                 {
@@ -2405,12 +2410,12 @@ namespace ASCOM.Wise40
 
         public void Shutdown(string reason)
         {
-            Task.Run(() => DoShutdown(reason), telescopeCT);
+            Guarded.Fire(nameof(DoShutdown), () => DoShutdown(reason), telescopeCT);
         }
 
         public void Hunkerdown(string reason)
         {
-            Task.Run(() => DoHunkerDown(reason), telescopeCT);
+            Guarded.Fire(nameof(DoHunkerDown), () => DoHunkerDown(reason), telescopeCT);
         }
 
         //
@@ -3396,7 +3401,7 @@ namespace ASCOM.Wise40
         {
             domeSlewer = new SlewerTask() { type = Slewers.Type.Dome, task = null };
             domeCT = domeCTS.Token;
-            domeSlewTimer = new System.Threading.Timer(new TimerCallback(CheckDomeActionCancelled));
+            domeSlewTimer = new System.Threading.Timer(Guarded.Timer(nameof(CheckDomeActionCancelled), CheckDomeActionCancelled));
 
             slewers.Add(domeSlewer);
             domeSlewer.task = Task.Run(() =>
@@ -4790,7 +4795,7 @@ namespace ASCOM.Wise40
                     #endregion
                     try
                     {
-                        Task.Run(() => Shutdown(parameter), telescopeCT);
+                        Guarded.Fire(nameof(Shutdown), () => Shutdown(parameter), telescopeCT);
                     }
                     catch (Exception ex)
                     {
@@ -4815,7 +4820,7 @@ namespace ASCOM.Wise40
 
                     try
                     {
-                        Task.Run(() => Hunkerdown(parameter), telescopeCT);
+                        Guarded.Fire(nameof(Hunkerdown), () => Hunkerdown(parameter), telescopeCT);
                     }
                     catch (Exception ex)
                     {
@@ -4880,7 +4885,7 @@ namespace ASCOM.Wise40
                     return JsonConvert.SerializeObject(SafeToMove(parameter.ToLower()));
 
                 case "park":
-                    Task.Run(() => Park());
+                    Guarded.Fire(nameof(Park), () => Park());
                     return "ok";
 
                 case "move-to-preset":

@@ -18,6 +18,8 @@ namespace Dash
         [STAThread]
         private static void Main(string[] args)
         {
+            ASCOM.Wise40.Common.Guarded.InstallProcessHandlers("Dash");
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 

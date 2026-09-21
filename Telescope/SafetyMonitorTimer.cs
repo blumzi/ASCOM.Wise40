@@ -201,7 +201,7 @@ namespace ASCOM.Wise40 //.Telescope
 
         public SafetyMonitorTimer(int periodMillis = 1000)
         {
-            _timer = new Timer(new TimerCallback(SafetyChecker));
+            _timer = new Timer(Guarded.Timer(nameof(SafetyChecker), SafetyChecker));
             this._period = periodMillis;
             Enabled = false;
         }

@@ -59,7 +59,7 @@ namespace Dash
             start = DateTime.Now;
             dataPoints = new List<DataPoint>();
             TimerCallback TimerCallback = new TimerCallback(SampleMotion);
-            timer = new Timer(TimerCallback, null, 0, samplingIntervalMillis);
+            timer = new Timer(Guarded.Timer("MotionStudy", TimerCallback), null, 0, samplingIntervalMillis);
         }
 
         public void Dispose()

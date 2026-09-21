@@ -1150,7 +1150,14 @@ namespace ASCOM.Wise40
     public sealed class Idler : Activity
     {
         public DateTime _due;
-        private readonly System.Threading.Timer _timer = new System.Threading.Timer(OnTimer);
+        //
+        // Guarded because this timer runs in EVERY driver process.  OnTimer calls BecomeIdle,
+        //  which ends an activity, raises an event and touches shared state - any of which can
+        //  throw - and an exception escaping a timer callback terminates the host.  For the
+        //  RemoteServer that is the telescope, dome, focuser and filter wheel at once.
+        //
+        private readonly System.Threading.Timer _timer =
+            new System.Threading.Timer(Guarded.Timer(nameof(OnTimer), OnTimer));
         public string startReason, endReason;
         public enum IdlerState { GoingIdle, Idle, ActivitiesInProgress }
         private IdlerState _idlerState;

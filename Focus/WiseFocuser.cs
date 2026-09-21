@@ -347,7 +347,7 @@ namespace ASCOM.Wise40
             connectables.AddRange(new List<IConnectable> { pinUp, pinDown, encoder });
             disposables.AddRange(new List<IDisposable> { pinUp, pinDown, encoder });
 
-            movementMonitoringTimer = new System.Threading.Timer(new TimerCallback(OnTimer));
+            movementMonitoringTimer = new System.Threading.Timer(Guarded.Timer(nameof(OnTimer), OnTimer));
             movementMonitoringTimer.Change(movementMonitoringMillis, Timeout.Infinite);
 
             motionParameters = new Dictionary<Direction, MotionParameters>
