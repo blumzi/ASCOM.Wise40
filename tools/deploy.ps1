@@ -73,12 +73,96 @@ $hw  = "$repo\Telescope\bin\x86\Debug\Hardware.dll"
 $dash = "$repo\Dash\bin\x86\Debug\Dash.exe"
 
 $t0 = Get-Date
-Set-Content -Path $log -Value "=== elevated deploy ===" -Encoding utf8
+
+#
+# LOGGING MUST NOT BE ABLE TO SILENCE THIS SCRIPT.
+#
+# On 2026-09-21 the log stopped dead after "BUILD: Wise40.sln" and the deploy appeared to die
+# without a word.  It had not: a `tail -f` had been opened on deploy.log to watch progress, which
+# on Windows holds the file, so every later Add-Content failed.  Under
+# $ErrorActionPreference = 'Continue' those failures were non-terminating and invisible, so the
+# script ran to completion writing nothing - and the build-failure gate left the chain down with
+# no way to say so.  Watching the log broke the log.
+#
+# So: every line goes to the CONSOLE first, which Start-Transcript captures to a second file, and
+# the file write is best-effort with its own fallback.  No single locked file can hide a run.
+#
 function Say($m) {
     $line = "{0} (+{1,5:N1}s)  {2}" -f (Get-Date -Format 'HH:mm:ss'), ((Get-Date) - $t0).TotalSeconds, $m
-    Add-Content -Path $log -Value $line -Encoding utf8
+    Write-Host $line
+    try { Add-Content -Path $log -Value $line -Encoding utf8 -ErrorAction Stop }
+    catch { try { Add-Content -Path "$log.alt" -Value $line -Encoding utf8 -ErrorAction Stop } catch {} }
 }
+try { Set-Content -Path $log -Value "=== elevated deploy ===" -Encoding utf8 -ErrorAction Stop }
+catch { Write-Host "WARNING: $log is not writable ($($_.Exception.Message)) - using $log.alt and the console transcript" }
 function LiveChildren { @(Get-Process -ErrorAction SilentlyContinue | Where-Object { $_.ProcessName -match $children }) }
+
+#
+# ALWAYS LEAVE A VERDICT.
+#
+# On 2026-09-21 this script logged "BUILD: Wise40.sln" and then nothing.  MSBuild finished 17
+# seconds later with 7 errors, the process exited about five minutes after that, and no pass/fail
+# line or VERDICT was ever written.  The chain was left down with no statement that it had been -
+# which is the exact failure this script exists to prevent.  "Stopped and silent" is
+# indistinguishable from "still working", and that ambiguity is what costs observing time.
+#
+# Two defences:
+#   . Verdict() records that an outcome WAS stated.
+#   . the exit handler fires on any path that did not state one - unhandled error, closed console,
+#     kill - and both says so and PUTS THE CHAIN BACK.  A deliberate refusal has already written
+#     its verdict and is left alone; only an UNPLANNED exit restarts the chain, because in that
+#     case nobody chose to leave the observatory down.
+#
+$global:Wise40Verdict = $false
+function Verdict($m) { $global:Wise40Verdict = $true; Say ("VERDICT: " + $m) }
+
+# Restarting the chain and stating an outcome are separate jobs: the trap states its own, more
+#  specific outcome and still needs the restart, so this must not be gated on the verdict flag.
+function global:Wise40Recover($logPath) {
+    function Note($m) { Add-Content -Path $logPath -Value ("{0}            {1}" -f (Get-Date -Format 'HH:mm:ss'), $m) -Encoding utf8 }
+    try {
+        if ((Get-Service Wise40Watcher -ErrorAction Stop).Status -ne 'Running') {
+            Note "RECOVER: the chain is down and nothing chose that - starting Wise40Watcher"
+            Start-Service Wise40Watcher -ErrorAction Stop
+            Start-Sleep -Seconds 3
+            Note ("RECOVER: service is " + (Get-Service Wise40Watcher).Status)
+        }
+    }
+    catch { Note "RECOVER: FAILED - START Wise40Watcher BY HAND" }
+}
+
+function global:Wise40ExitNet($logPath) {
+    if ($global:Wise40Verdict) { return }     # an outcome was stated; a refusal is deliberate
+    Add-Content -Path $logPath -Encoding utf8 -Value `
+        ("{0}            VERDICT: FAILED (terminated without reaching a verdict - see deploy-console.log)" -f (Get-Date -Format 'HH:mm:ss'))
+    Wise40Recover -logPath $logPath
+}
+$null = Register-EngineEvent PowerShell.Exiting -Action ({ Wise40ExitNet -logPath $log }.GetNewClosure())
+
+#
+# A terminating error would otherwise unwind without a word.
+#
+# This must not assume Say exists.  A trap covers its whole scope regardless of where it appears,
+# so it can fire on a statement that runs BEFORE the function definitions do - which is exactly
+# what happened while testing this: the initial log write failed, the trap fired, and the trap
+# itself then died on "The term 'Say' is not recognized", burying the original error.
+#
+trap {
+    $m1 = "UNHANDLED: " + $_.Exception.Message
+    $m2 = "UNHANDLED: line " + $_.InvocationInfo.ScriptLineNumber + ": " + $_.InvocationInfo.Line.Trim()
+    Write-Host $m1; Write-Host $m2
+    foreach ($m in @($m1, $m2, "VERDICT: FAILED (unhandled error)")) {
+        try { Add-Content -Path $log -Value ("{0}            {1}" -f (Get-Date -Format 'HH:mm:ss'), $m) -Encoding utf8 -ErrorAction Stop }
+        catch { try { Add-Content -Path "$log.alt" -Value $m -Encoding utf8 -ErrorAction Stop } catch {} }
+    }
+    $global:Wise40Verdict = $true
+    if (Get-Command Wise40Recover -ErrorAction SilentlyContinue) { Wise40Recover -logPath $log }
+    break
+}
+
+# The elevated window's console output died with the window on 2026-09-21, taking the only
+#  record of what MSBuild said.  Keep a copy on disk.
+try { Start-Transcript -Path (Join-Path $logDir 'deploy-console.log') -Force | Out-Null } catch {}
 
 #
 # ELEVATION IS A GATE, NOT A NOTE.  This used to be logged and ignored, and on 2026-09-21 that
@@ -96,7 +180,7 @@ Say ("elevated  : " + $elevated)
 if (-not $elevated) {
     Say "ABORT: not elevated.  Nothing has been stopped, built or copied."
     Say "ABORT: re-run this script from an Administrator shell."
-    Say "VERDICT: FAILED (not elevated)"
+    Verdict "FAILED (not elevated)"
     exit 4
 }
 
@@ -140,7 +224,7 @@ if ($live.Count -ne 0) {
     # overwrite it, which can leave a partial mixture on disk.
     #
     Say ("STOP: ABORTING - still running: " + (($live | ForEach-Object { "$($_.ProcessName)($($_.Id))" }) -join ', '))
-    Say "VERDICT: FAILED (chain would not stop; nothing was built, chain left as found)"
+    Verdict "FAILED (chain would not stop; nothing was built, chain left as found)"
     exit 2
 }
 Say "STOP: all chain processes exited"
@@ -169,14 +253,48 @@ Say "STOP: all chain processes exited"
 # and projects race ahead of Common - which produced 12 phantom "namespace Common does not exist"
 # errors that vanished on a serial run.  The wall-clock saving is not worth diagnosing ghosts.
 #
+#
+# Run MSBuild as a tracked process with a deadline, rather than "& $msb" inline.
+#
+# Inline, there is no way to tell "still compiling" from "this call will never return", and no
+# upper bound on either - which is exactly the ambiguity that left the chain down and silent on
+# 2026-09-21.  A tracked process gives a PID to report, a hard deadline, and output on disk
+# instead of in a console window that dies with the window.
+#
 $code = 0
+$buildOut = Join-Path $logDir 'deploy-msbuild-stdout.log'
+$buildErr = Join-Path $logDir 'deploy-msbuild-stderr.log'
+$deadline = 30      # minutes; a full 26-project solution build is minutes, not tens of minutes
+
 Say "BUILD: Wise40.sln (Debug|x86, serial)"
-& $msb $sln /p:Configuration=Debug /p:Platform=x86 `
-       /t:Build /v:minimal /nologo /fl "/flp:logfile=$msblog;verbosity=normal;append=true"
-if ($LASTEXITCODE -ne 0) {
-    Say ("BUILD: solution FAILED with exit code $LASTEXITCODE")
-    $code = $LASTEXITCODE
-} else {
+$proc = Start-Process -FilePath $msb -PassThru -NoNewWindow `
+        -RedirectStandardOutput $buildOut -RedirectStandardError $buildErr `
+        -ArgumentList @(
+            "`"$sln`"", '/p:Configuration=Debug', '/p:Platform=x86',
+            '/t:Build', '/v:minimal', '/nologo', '/fl',
+            "`"/flp:logfile=$msblog;verbosity=normal;append=true`""
+        )
+Say ("BUILD: msbuild pid " + $proc.Id + ", deadline " + $deadline + " min")
+
+if (-not $proc.WaitForExit($deadline * 60 * 1000)) {
+    Say ("BUILD: TIMED OUT after $deadline minutes - killing pid " + $proc.Id)
+    try { $proc.Kill(); $proc.WaitForExit(30000) } catch { Say ("BUILD: kill failed: " + $_.Exception.Message) }
+    $code = 9
+}
+else {
+    $code = $proc.ExitCode
+    Say ("BUILD: msbuild exited " + $code + " after {0:N0}s" -f ($proc.ExitTime - $proc.StartTime).TotalSeconds)
+}
+
+if ($code -ne 0) {
+    # Name the failures here.  Digging them out of a 1.2 MB MSBuild log is what turned a plain
+    #  build failure into an afternoon on 2026-09-21.
+    $errs = @(Select-String -Path $msblog -Pattern 'error [A-Z]+[0-9]+' -ErrorAction SilentlyContinue |
+              ForEach-Object { $_.Line.Trim() } | Select-Object -Unique)
+    Say ("BUILD: solution FAILED, exit code $code, " + $errs.Count + " distinct error line(s)")
+    foreach ($e in ($errs | Select-Object -First 10)) { Say ("BUILD:   " + $e.Substring(0, [Math]::Min(200, $e.Length))) }
+}
+else {
     Say "BUILD: solution ok"
 }
 
@@ -217,7 +335,7 @@ Say ("CHECK: exit 0 [{0}]  Telescope up to date [{1}]  Hardware up to date [{2}]
 if (-not (($code -eq 0) -and $x86ok -and $hwok -and $dashok -and $platOk)) {
     Say "START: SKIPPED - build did not succeed cleanly."
     Say "START: THE CHAIN IS LEFT DOWN DELIBERATELY. Telescope, dome and focuser are offline."
-    Say "VERDICT: FAILED (build; inspect deploy-msbuild.log, then Start-Service Wise40Watcher)"
+    Verdict "FAILED (build; inspect deploy-msbuild.log, then Start-Service Wise40Watcher)"
     exit 3
 }
 
@@ -334,7 +452,7 @@ foreach ($pair in $checkPairs) {
 if ($syncFailed) {
     Say "START: SKIPPED - a stale assembly survived the build; starting now would run a mixture."
     Say "START: THE CHAIN IS LEFT DOWN DELIBERATELY."
-    Say "VERDICT: FAILED (stale assembly)"
+    Verdict "FAILED (stale assembly)"
     exit 5
 }
 
@@ -459,8 +577,8 @@ if (Test-Path $rsLog) {
 Say ("VERIFY: 'did not read back' lines in today's log: $badReadback (0 expected)")
 
 if ($connected -and ($names.Count -ge 4) -and $encOk -and $probeOk -and $envOk) {
-    Say "VERDICT: OK - chain up, correct binary answering, profile intact"
+    Verdict "OK - chain up, correct binary answering, profile intact"
     exit 0
 }
-Say "VERDICT: DEPLOYED BUT NOT VERIFIED - see the VERIFY lines above"
+Verdict "DEPLOYED BUT NOT VERIFIED - see the VERIFY lines above"
 exit 4
