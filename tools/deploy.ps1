@@ -228,6 +228,15 @@ if ($live.Count -ne 0) {
     exit 2
 }
 Say "STOP: all chain processes exited"
+#
+# From here until START, the observatory is down.  The exit handler covers an unhandled error or
+#  a closed console, but nothing in-process survives a hard kill of this window - which is exactly
+#  what happened on 2026-09-21 when the live-path scan crawled and the process vanished, leaving
+#  the chain stopped with no verdict.  So say the recovery out loud, now, while there is still a
+#  log to say it in.
+#
+Say "STOP: >>> THE CHAIN IS DOWN FROM HERE.  If this run dies without a VERDICT line,"
+Say "STOP: >>> recover with:  Start-Service Wise40Watcher   (elevated)"
 
 # ---- 2. BUILD THE SOLUTION ------------------------------------------------
 #
@@ -434,23 +443,61 @@ function AssemblyArch($path) {
 #     its Common.dll is not, that IS a shadow.  If its own product is as old as the Common beside
 #     it, the whole directory is abandoned.
 #
+#
+# GO FROM OUR DRIVERS TO THEIR CLSIDs, NOT THE OTHER WAY.
+#
+# The first version walked every key under Classes\CLSID - about 2954 of them, two registry opens
+# each - asking "are you one of ours".  On 2026-09-21 that took the deploy from "built in 6
+# seconds" to crawling for two minutes and then dying outright, with the chain stopped and no
+# verdict written.  It also uses the PowerShell registry provider, which is far slower than the
+# .NET API for this.
+#
+# Reversed, it is a handful of lookups: read the ~14 Wise ProgIDs out of the ASCOM Profile's
+# driver lists, then ProgID -> CLSID -> server key for each.  Measured at 0.25s against 2954-key
+# enumeration, returning the identical nine directories.
+#
+# Two registry views are in play and mixing them up returns nothing at all: ProgID keys are NOT
+# WOW-redirected (SOFTWARE\Classes\<ProgID>, 64-bit view), while the CLSID keys they point at ARE
+# (32-bit view).
+#
 $liveDirs = @{}
-# whatever the chain is registered to load
-Get-ChildItem "HKLM:\SOFTWARE\WOW6432Node\Classes\CLSID" -ErrorAction SilentlyContinue | ForEach-Object {
-    $progid = (Get-ItemProperty "$($_.PSPath)\ProgId" -ErrorAction SilentlyContinue).'(default)'
-    if ($progid -match 'Wise40') {
-        $cb = (Get-ItemProperty "$($_.PSPath)\InprocServer32" -ErrorAction SilentlyContinue).CodeBase
-        if ($cb) {
-            try {
-                $p = $cb -replace '^file:///','' -replace '/','\'
-                $liveDirs[([System.IO.Path]::GetDirectoryName($p)).ToLower()] = 'COM registration'
-            } catch {}
-        }
+$hklm32 = [Microsoft.Win32.RegistryKey]::OpenBaseKey('LocalMachine','Registry32')
+$hklm64 = [Microsoft.Win32.RegistryKey]::OpenBaseKey('LocalMachine','Registry64')
+
+$progids = New-Object System.Collections.Generic.List[string]
+$ascomKey = $hklm32.OpenSubKey('SOFTWARE\ASCOM')
+if ($ascomKey) {
+    foreach ($devType in $ascomKey.GetSubKeyNames()) {
+        if ($devType -notlike '* Drivers') { continue }
+        $dk = $ascomKey.OpenSubKey($devType)
+        if (-not $dk) { continue }
+        foreach ($p in $dk.GetSubKeyNames()) { if ($p -match 'Wise') { $progids.Add($p) } }
+        $dk.Close()
+    }
+    $ascomKey.Close()
+}
+
+foreach ($progid in ($progids | Sort-Object -Unique)) {
+    $pk = $hklm64.OpenSubKey("SOFTWARE\Classes\$progid\CLSID")
+    if (-not $pk) { continue }
+    $clsid = $pk.GetValue(''); $pk.Close()
+    if (-not $clsid) { continue }
+    foreach ($server in 'InprocServer32','LocalServer32') {
+        $sk = $hklm32.OpenSubKey("SOFTWARE\Classes\CLSID\$clsid\$server")
+        if (-not $sk) { continue }
+        $path = $sk.GetValue('CodeBase'); if (-not $path) { $path = $sk.GetValue('') }
+        $sk.Close()
+        if (-not $path) { continue }
+        try {
+            $p2 = ($path -replace '^file:///','' -replace '/','\').Trim('"')
+            $dir = [System.IO.Path]::GetDirectoryName($p2)
+            if ($dir) { $liveDirs[$dir.ToLower()] = "COM registration ($progid)" }
+        } catch {}
     }
 }
 # and the watcher itself, which no COM registration mentions
 $liveDirs[("$repo\Wise40Service\bin\Debug").ToLower()] = 'the watcher service'
-Say ("CHECK: live load paths from the registry: " + $liveDirs.Count)
+Say ("CHECK: {0} Wise ProgIDs in the ASCOM Profile -> {1} live load path(s)" -f $progids.Count, $liveDirs.Count)
 
 # Did the build write this directory?  Compare its own product - anything but the shared
 #  assemblies we are checking - against the build we are verifying.
