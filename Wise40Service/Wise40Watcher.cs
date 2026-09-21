@@ -38,7 +38,7 @@ namespace Wise40Watcher
 
             Log($"opMode: {opMode}");
 
-            using (Profile driverProfile = new Profile() { DeviceType = "ObservingConditions" })
+            using (WiseProfile driverProfile = new WiseProfile() { DeviceType = "ObservingConditions" })
             {
                 Enum.TryParse<WiseVantagePro.OpMode>(driverProfile.GetValue(Const.WiseDriverID.VantagePro,
                     Const.ProfileName.VantagePro_OpMode, string.Empty,

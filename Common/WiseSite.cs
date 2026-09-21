@@ -286,7 +286,7 @@ public static bool TransformApparentToJ2000(double apparentRA, double apparentDE
         {
             get
             {
-                using (Profile driverProfile = new Profile() { DeviceType = "Telescope" })
+                using (WiseProfile driverProfile = new WiseProfile() { DeviceType = "Telescope" })
                 {
                     if (Enum.TryParse<OpMode>(driverProfile.GetValue(Const.WiseDriverID.Telescope, "SiteOperationMode", null, "WISE").ToUpper(), out OpMode mode))
                         OperationalProfile.OpMode = mode;
@@ -298,7 +298,7 @@ public static bool TransformApparentToJ2000(double apparentRA, double apparentDE
             set
             {
                 OperationalProfile.OpMode = value;
-                using (Profile driverProfile = new Profile() { DeviceType = "Telescope" })
+                using (WiseProfile driverProfile = new WiseProfile() { DeviceType = "Telescope" })
                 {
                     driverProfile.WriteValue(Const.WiseDriverID.Telescope, "SiteOperationMode", OperationalProfile.OpMode.ToString());
                 }

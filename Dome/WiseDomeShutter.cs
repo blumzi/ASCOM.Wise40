@@ -414,7 +414,7 @@ namespace ASCOM.Wise40
         {
             bool defaultSyncVentWithShutter = WiseSite.OperationalMode == WiseSite.OpMode.WISE;
 
-            using (Profile driverProfile = new Profile() { DeviceType = "Dome" })
+            using (WiseProfile driverProfile = new WiseProfile() { DeviceType = "Dome" })
             {
                 ShutterWebClientEnabled = Convert.ToBoolean(driverProfile.GetValue(Const.WiseDriverID.Dome, Const.ProfileName.DomeShutter_UseWebClient, string.Empty, false.ToString()));
                 ipAddress = driverProfile.GetValue(Const.WiseDriverID.Dome, Const.ProfileName.DomeShutter_IPAddress, string.Empty, "").Trim();
@@ -426,7 +426,7 @@ namespace ASCOM.Wise40
 
         public void WriteProfile()
         {
-            using (Profile driverProfile = new Profile() { DeviceType = "Dome" })
+            using (WiseProfile driverProfile = new WiseProfile() { DeviceType = "Dome" })
             {
                 driverProfile.WriteValue(Const.WiseDriverID.Dome, Const.ProfileName.DomeShutter_UseWebClient, ShutterWebClientEnabled.ToString());
                 driverProfile.WriteValue(Const.WiseDriverID.Dome, Const.ProfileName.DomeShutter_IPAddress, ipAddress);

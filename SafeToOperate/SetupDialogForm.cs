@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -111,7 +111,7 @@ namespace ASCOM.Wise40SafeToOperate
             var tessW = WiseTessW.Instance;
             tessW.Enabled = chk;
             tessW.WriteProfile();
-            using (Profile driverProfile = new Profile() { DeviceType = "ObservingConditions" })
+            using (WiseProfile driverProfile = new WiseProfile() { DeviceType = "ObservingConditions" })
             {
                 driverProfile.WriteValue(Const.WiseDriverID.TessW, Const.ProfileName.TessW_Enabled, chk.ToString());
             }

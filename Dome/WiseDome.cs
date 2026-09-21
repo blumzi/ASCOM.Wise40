@@ -1799,7 +1799,7 @@ namespace ASCOM.Wise40
         /// </summary>
         public void ReadProfile()
         {
-            using (Profile driverProfile = new Profile() { DeviceType = "Dome" })
+            using (WiseProfile driverProfile = new WiseProfile() { DeviceType = "Dome" })
             {
                 _autoCalibrate = Convert.ToBoolean(driverProfile.GetValue(
                     Const.WiseDriverID.Dome, Const.ProfileName.Dome_AutoCalibrate, string.Empty, true.ToString()));
@@ -1816,7 +1816,7 @@ namespace ASCOM.Wise40
         /// </summary>
         public void WriteProfile()
         {
-            using (Profile driverProfile = new Profile() { DeviceType = "Dome" })
+            using (WiseProfile driverProfile = new WiseProfile() { DeviceType = "Dome" })
             {
                 driverProfile.WriteValue(Const.WiseDriverID.Dome, Const.ProfileName.Dome_AutoCalibrate, _autoCalibrate.ToString());
             }

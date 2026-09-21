@@ -972,7 +972,7 @@ namespace ASCOM.Wise40SafeToOperate
             foreach (Sensor s in _prioritizedSensors)
                 s.ReadProfile();
 
-            using (Profile driverProfile = new Profile())
+            using (WiseProfile driverProfile = new WiseProfile())
             {
                 const string telescopeDriverId = Const.WiseDriverID.Telescope;
 

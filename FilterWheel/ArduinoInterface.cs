@@ -244,7 +244,7 @@ namespace ASCOM.Wise40
             set
             {
                 _serialPortName = value;
-                using (ASCOM.Utilities.Profile driverProfile = new ASCOM.Utilities.Profile() { DeviceType = "FilterWheel" })
+                using (WiseProfile driverProfile = new WiseProfile() { DeviceType = "FilterWheel" })
                 {
                     driverProfile.WriteValue(Const.WiseDriverID.FilterWheel, "Port", _serialPortName);
                 }
@@ -284,7 +284,7 @@ namespace ASCOM.Wise40
             if (_initialized)
                 return;
 
-            using (ASCOM.Utilities.Profile driverProfile = new ASCOM.Utilities.Profile() { DeviceType = "FilterWheel" })
+            using (WiseProfile driverProfile = new WiseProfile() { DeviceType = "FilterWheel" })
             {
                 string port = driverProfile.GetValue(Const.WiseDriverID.FilterWheel, "Port", string.Empty, "COM7");
                 if (SerialPort.GetPortNames().Contains(port))

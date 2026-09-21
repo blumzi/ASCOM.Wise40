@@ -765,7 +765,7 @@ namespace ASCOM.Wise40.Boltwood
         {
             string subKey = "Station" + Id.ToString();
 
-            using (Profile driverProfile = new Profile() { DeviceType = "ObservingConditions" })
+            using (WiseProfile driverProfile = new WiseProfile() { DeviceType = "ObservingConditions" })
             {
                 Name = driverProfile.GetValue(Const.WiseDriverID.Boltwood, Const.ProfileName.Boltwood_Name, subKey, string.Empty);
                 Enabled = Convert.ToBoolean(driverProfile.GetValue(Const.WiseDriverID.Boltwood, Const.ProfileName.Boltwood_Enabled, subKey, "false"));
@@ -780,7 +780,7 @@ namespace ASCOM.Wise40.Boltwood
         {
             string subKey = "Station" + Id.ToString();
 
-            using (Profile driverProfile = new Profile() { DeviceType = "ObservingConditions" })
+            using (WiseProfile driverProfile = new WiseProfile() { DeviceType = "ObservingConditions" })
             {
                 driverProfile.WriteValue(Const.WiseDriverID.Boltwood, Const.ProfileName.Boltwood_Name, Name, subKey);
                 driverProfile.WriteValue(Const.WiseDriverID.Boltwood, Const.ProfileName.Boltwood_Enabled, Enabled.ToString(), subKey);
