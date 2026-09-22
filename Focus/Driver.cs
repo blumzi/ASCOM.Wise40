@@ -54,7 +54,11 @@ namespace ASCOM.Wise40 //.Focuser
     [Guid("701BBD4A-7ABE-47DB-815C-719436EF9741")]
     [ClassInterface(ClassInterfaceType.None)]
     [ComVisible(true)]
-    public class Focuser : IFocuserV2, IDisposable
+    // IFocuserV3, not V2.  Platform 6.5 SP1 - the version installed here - ships both, and they
+    //  are member-identical (45 each, and V3 does not even inherit V2; they are parallel
+    //  declarations).  V3 is a version marker rather than new functionality, so this costs nothing
+    //  to implement and stops modern clients negotiating down to V2, or further to V1's Link.
+    public class Focuser : IFocuserV3, IDisposable
     {
         /// <summary>
         /// ASCOM DeviceID (COM ProgID) for this driver.
@@ -72,7 +76,7 @@ namespace ASCOM.Wise40 //.Focuser
         public Focuser() { }
 
         //
-        // PUBLIC COM INTERFACE IFocuserV2 IMPLEMENTATION
+        // PUBLIC COM INTERFACE IFocuserV3 IMPLEMENTATION
         //
 
         #region Common properties and methods.
@@ -235,15 +239,29 @@ namespace ASCOM.Wise40 //.Focuser
             }
         }
 
+        //
+        // Link is IFocuserV1's name for Connected, so it must BE Connected - not a second path to
+        //  the same hardware.
+        //
+        // It used to forward straight to the singleton, skipping this shim's per-client _connected
+        //  flag entirely.  A client that connected with Link therefore brought the hardware up
+        //  while leaving _connected false, so this shim's Connected getter - which is
+        //  "_connected && wisefocuser.Connected" - reported the driver as disconnected even though
+        //  it was working.  Old clients connect with Link; FocusMax is one.
+        //
+        // Delegating to the property rather than copying its body is deliberate: the per-client
+        //  rules (never propagate false to the singleton, first client wins) then cannot drift
+        //  between the two names for the same thing.
+        //
         public bool Link
         {
             get
             {
-                return wisefocuser.Link;
+                return Connected;
             }
             set
             {
-                wisefocuser.Link = value;
+                Connected = value;
             }
         }
 
