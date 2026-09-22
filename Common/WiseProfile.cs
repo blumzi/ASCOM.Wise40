@@ -466,6 +466,35 @@ namespace ASCOM.Wise40.Common
             return result;
         }
 
+        /// <summary>
+        /// Move <paramref name="tmp"/> onto <paramref name="target"/> atomically.
+        /// </summary>
+        //
+        // Retried, because a rename fails while anything else holds the target open - a reader
+        //  mid-ReadAllText, a text editor, a backup tool.  Reads are brief, so a few attempts
+        //  clear it.  If they do not, the caller's catch reports the write as lost, which is the
+        //  honest outcome: better a logged failure than a torn file.
+        //
+        private static void Swap(string tmp, string target)
+        {
+            const int attempts = 5;
+            for (int i = 1; ; i++)
+            {
+                try
+                {
+                    if (File.Exists(target))
+                        File.Replace(tmp, target, null);      // atomic, keeps the target's ACLs
+                    else
+                        File.Move(tmp, target);               // first write: nothing to replace
+                    return;
+                }
+                catch (IOException) when (i < attempts)
+                {
+                    Thread.Sleep(40);
+                }
+            }
+        }
+
         private static void Save()
         {
             try
@@ -477,11 +506,24 @@ namespace ASCOM.Wise40.Common
                 //  alphabetically - which is also how someone reads it.
                 JObject ordered = Sorted(_store, true);
 
-                // Write-then-replace: a crash mid-write leaves the old file, not half a new one.
+                //
+                // WRITE TO A TEMPORARY FILE, THEN SWAP IT IN ATOMICALLY.
+                //
+                // This used File.Copy, which writes into the destination in place.  Readers do not
+                //  take the cross-process mutex - deliberately, so that a settings read never waits
+                //  on a kernel object - so a reader in another process could observe the file
+                //  half-written, fail to parse it, and fall back to an empty store.  Every setting
+                //  would then read as its code default until the next read retried.  It
+                //  self-corrected, and the defaults are the stricter direction, but "the safety
+                //  system briefly ran on defaults" is not a thing to leave to chance.
+                //
+                // A rename is atomic: a reader sees the whole old file or the whole new one, never
+                //  a mixture.  File.Replace also preserves the destination's ACLs, which matters
+                //  if this file is ever locked down.
+                //
                 string tmp = SettingsFile + ".tmp";
                 File.WriteAllText(tmp, ordered.ToString(Formatting.Indented));
-                File.Copy(tmp, SettingsFile, true);
-                File.Delete(tmp);
+                Swap(tmp, SettingsFile);
 
                 // Our own write is already in _store, so record its stamp rather than re-reading
                 //  the file on the next GetValue.
