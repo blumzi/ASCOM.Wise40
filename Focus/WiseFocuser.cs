@@ -825,10 +825,7 @@ namespace ASCOM.Wise40
         {
             get
             {
-                // Matches the interface the COM shim declares - see Focus/Driver.cs.  A driver
-                //  that implements IFocuserV3 while reporting 2 invites a client to negotiate
-                //  down, and the V1 fallback it lands on is Link, which behaved differently here.
-                return 3;
+                return 2;
             }
         }
 
