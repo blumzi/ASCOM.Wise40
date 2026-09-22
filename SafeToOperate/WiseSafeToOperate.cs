@@ -38,7 +38,20 @@ namespace ASCOM.Wise40SafeToOperate
         public string driverDescription;
         private string name;
 
-        public Profile _profile;
+        //
+        // WiseProfile, not ASCOM.Utilities.Profile.  This field was missed when the settings moved
+        //  to c:\Wise40\settings.json on 2026-09-21, because the converter decided per `new
+        //  Profile()` block by looking ahead ~40 lines for GetValue/WriteValue calls - and this one
+        //  is a FIELD, assigned in the constructor and used hundreds of lines away, so it looked
+        //  like a block that touched no values.
+        //
+        // The miss was silent until the SafeToOperate settings were re-keyed to
+        //  [sensor][attribute] on 2026-09-22: the code then asked the REGISTRY, which still holds
+        //  [attribute][sensor], every read missed, and the whole safety system quietly ran on its
+        //  code defaults - a stricter Sun threshold (-10 deg rather than the configured 0) being
+        //  the visible symptom.
+        //
+        public WiseProfile _profile;
 
         public static WindSensor windSensor;
         public static CloudsSensor cloudsSensor;
@@ -121,7 +134,7 @@ namespace ASCOM.Wise40SafeToOperate
 
             if (_profile == null)
             {
-                _profile = new Profile() { DeviceType = "SafetyMonitor" };
+                _profile = new WiseProfile() { DeviceType = "SafetyMonitor" };
             }
 
             WiseSite.InitOCH();
