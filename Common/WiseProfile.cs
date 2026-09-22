@@ -15,7 +15,7 @@ namespace ASCOM.Wise40.Common
 {
     /// <summary>
     /// Wise40's own settings store: a drop-in for ASCOM.Utilities.Profile, backed by
-    /// c:\Wise40\settings.json instead of the registry.
+    /// c:\Wise40\Settings.json instead of the registry.
     /// </summary>
     //
     // WHY NOT THE ASCOM PROFILE
@@ -48,7 +48,7 @@ namespace ASCOM.Wise40.Common
     public class WiseProfile : IDisposable
     {
         public static readonly string SettingsFile = Path.Combine(
-            Const.topWise40Directory.Replace('/', '\\'), "settings.json");
+            Const.topWise40Directory.Replace('/', '\\'), "Settings.json");
 
         //
         // Cross-process, because the RemoteServer, the Dash, the ObservatoryMonitor and the
@@ -94,18 +94,35 @@ namespace ASCOM.Wise40.Common
             }
         }
 
-        // section -> subKey (RootSub, i.e. "(root)", for the section root) -> name -> value
         //
-        // JToken, not string.  The registry could only hold strings, so booleans arrived as
-        //  whatever the writer happened to produce - "True" from bool.ToString() in one place and
-        //  a literal "true" in another, sitting next to each other in the same section.  This is
-        //  our file now, so it holds real JSON types: a human editing it sees
-        //  "Enabled": true rather than "Enabled": "True".
+        // The document itself, not a dictionary-of-dictionaries.
         //
-        // Safe because nothing compares these as strings - all 22 boolean reads go through
-        //  Convert.ToBoolean or bool.TryParse, both case-insensitive.
+        // Values are real JSON types rather than strings.  The registry could only hold strings, so
+        //  booleans arrived as whatever the writer happened to produce - "True" from bool.ToString()
+        //  in one place and a literal "true" in another, side by side in the same section.  This is
+        //  our file now, so someone editing it sees "Enabled": true.  Safe because nothing compares
+        //  these as strings: every boolean read goes through Convert.ToBoolean or bool.TryParse,
+        //  both case-insensitive.
         //
-        private static Dictionary<string, Dictionary<string, Dictionary<string, JToken>>> _store;
+        // A section holds its driver-level settings DIRECTLY, and a sub-key is simply a nested
+        //  object beside them:
+        //
+        //      "SafeToOperate": {
+        //          "Bypassed": false,                       <- a driver-level setting, a leaf
+        //          "Wind": { "Enabled": true, "Max": 40 }   <- a sub-key, an object
+        //      }
+        //
+        // The previous shape forced every section through a "(root)" wrapper so that all three
+        //  levels were uniform.  It made the file read like a data structure rather than a
+        //  settings file, and "(root)" existed only because the empty string - ASCOM's own name
+        //  for "no sub-key" - is a property name PowerShell refuses to parse.
+        //
+        // Leaf-or-object is what distinguishes the two, so the lookups below type-check rather
+        //  than assume: an object found where a value was asked for reads as absent, and vice
+        //  versa.  Verified before the change that no section has a setting sharing a name with
+        //  a sub-key, so nothing is ambiguous today.
+        //
+        private static JObject _store;
 
         // write time of the file as last read, so an external change is noticed - see Load()
         private static DateTime _loadedStamp = DateTime.MinValue;
@@ -144,25 +161,43 @@ namespace ASCOM.Wise40.Common
         }
 
         //
-        // The name for "this driver's settings, not in a sub-key".
+        // null means "the section itself", not a sub-key.  ASCOM spells that as the empty string,
+        //  which JSON permits as a property name but PowerShell 5.1 refuses to parse - it rejects
+        //  the whole document.  A "(root)" placeholder was used for a while to dodge that; the
+        //  section now holds its own settings directly and needs no placeholder at all.
         //
-        // It was the empty string, which is what ASCOM's subKey parameter means - and which JSON
-        //  permits as a property name.  Newtonsoft reads it happily; PowerShell 5.1 does not, and
-        //  refuses the whole document:
-        //
-        //      ConvertFrom-Json : Cannot process argument because the value of argument
-        //                         "name" is not valid.
-        //
-        // This file is meant to be read and edited by people and scripts, so one unreadable
-        //  property name that poisons the entire document is not a good trade for matching ASCOM's
-        //  internal convention.  Parentheses cannot collide with a real sub-key: the ones in use
-        //  are names like Station0, Interval, Max and Wheel4/Position1.
-        //
-        public const string RootSub = "(root)";
-
         private static string Sub(string subKey)
         {
-            return string.IsNullOrEmpty(subKey) ? RootSub : subKey.Replace('\\', '/').Trim('/');
+            return string.IsNullOrEmpty(subKey) ? null : subKey.Replace('\\', '/').Trim('/');
+        }
+
+        /// <summary>
+        /// The object holding the values for (section, sub) - the section itself when sub is null.
+        /// </summary>
+        //
+        // Type-checked rather than assumed.  A section mixes leaves (its own settings) with objects
+        //  (its sub-keys), so finding the wrong kind means the caller asked for something that is
+        //  not there - report absent rather than coerce, which would either read a sub-key as a
+        //  value or, worse on the write path, overwrite a whole sub-key with a scalar.
+        //
+        private static JObject Container(string section, string sub, bool create)
+        {
+            if (!(_store[section] is JObject sec))
+            {
+                if (!create || _store[section] != null) return null;
+                sec = new JObject();
+                _store[section] = sec;
+            }
+            if (sub == null)
+                return sec;
+
+            if (!(sec[sub] is JObject inner))
+            {
+                if (!create || sec[sub] != null) return null;
+                inner = new JObject();
+                sec[sub] = inner;
+            }
+            return inner;
         }
 
         /// <summary>
@@ -223,11 +258,11 @@ namespace ASCOM.Wise40.Common
             lock (memoryLock)
             {
                 Load();
-                string section = Section(driverID), sub = Sub(subKey);
+                JObject c = Container(Section(driverID), Sub(subKey), false);
+                JToken v = c?[name];
 
-                if (_store.TryGetValue(section, out var subs) &&
-                    subs.TryGetValue(sub, out var values) &&
-                    values.TryGetValue(name, out JToken v))
+                // An object here is a sub-key of the same name, not this setting's value.
+                if (v != null && v.Type != JTokenType.Object)
                     return FromToken(v);
             }
 
@@ -278,12 +313,35 @@ namespace ASCOM.Wise40.Common
                     _store = null;
                     Load();
 
-                    if (!_store.ContainsKey(section))
-                        _store[section] = new Dictionary<string, Dictionary<string, JToken>>();
-                    if (!_store[section].ContainsKey(sub))
-                        _store[section][sub] = new Dictionary<string, JToken>();
+                    JObject c = Container(section, sub, true);
+                    if (c == null)
+                    {
+                        // Something of the wrong kind is in the way - a scalar where a sub-key
+                        //  belongs.  Refuse rather than replace it: silently discarding settings
+                        //  is worse than not writing one.
+                        try
+                        {
+                            Debugger.Instance.WriteLine(Debugger.DebugLevel.DebugExceptions,
+                                $"WiseProfile: cannot write {section}/{sub ?? "(section)"}/{name} - " +
+                                "a value already occupies that path");
+                        }
+                        catch { }
+                        return;
+                    }
 
-                    _store[section][sub][name] = ToToken(value);
+                    if (c[name] is JObject)
+                    {
+                        // Writing here would delete a whole sub-key of the same name.
+                        try
+                        {
+                            Debugger.Instance.WriteLine(Debugger.DebugLevel.DebugExceptions,
+                                $"WiseProfile: refusing to overwrite the sub-key {section}/{name} with a value");
+                        }
+                        catch { }
+                        return;
+                    }
+
+                    c[name] = ToToken(value);
                     Save();
                 }
             }
@@ -316,10 +374,29 @@ namespace ASCOM.Wise40.Common
             {
                 if (File.Exists(SettingsFile))
                 {
-                    _store = JsonConvert.DeserializeObject<
-                        Dictionary<string, Dictionary<string, Dictionary<string, JToken>>>>(
-                            File.ReadAllText(SettingsFile));
+                    _store = JObject.Parse(File.ReadAllText(SettingsFile));
                     _loadedStamp = stamp;
+
+                    //
+                    // A "(root)" object means this file predates the flattening of 2026-09-22, so
+                    //  every driver-level setting in that section is sitting where nothing looks
+                    //  for it any more.  Do not silently half-read it - the reads would return
+                    //  code defaults and look like a working startup.
+                    //
+                    foreach (var sec in _store.Properties())
+                    {
+                        if ((sec.Value as JObject)?["(root)"] != null)
+                        {
+                            try
+                            {
+                                Debugger.Instance.WriteLine(Debugger.DebugLevel.DebugExceptions,
+                                    $"WiseProfile: {SettingsFile} section '{sec.Name}' still has a " +
+                                    "'(root)' block - this file predates the 2026-09-22 flattening and " +
+                                    "its driver-level settings WILL NOT BE READ. Flatten it or restore a current backup.");
+                            }
+                            catch { }
+                        }
+                    }
                 }
             }
             catch (Exception ex)
@@ -338,7 +415,7 @@ namespace ASCOM.Wise40.Common
             }
 
             if (_store == null)
-                _store = new Dictionary<string, Dictionary<string, Dictionary<string, JToken>>>();
+                _store = new JObject();
 
             //
             //
@@ -366,12 +443,28 @@ namespace ASCOM.Wise40.Common
                     Debugger.Instance.WriteLine(Debugger.DebugLevel.DebugExceptions,
                         $"WiseProfile: {SettingsFile} DOES NOT EXIST - every setting will come from its " +
                         "code default, and nothing will repopulate the file. Restore it from a backup " +
-                        "(settings.json.predeploy) if this was not intended.");
+                        "(Settings.json.predeploy) if this was not intended.");
                 }
                 catch { }
             }
         }
 
+
+        /// <summary>
+        /// A copy with properties ordered: values before nested objects, each alphabetically.
+        /// </summary>
+        private static JObject Sorted(JObject o, bool valuesFirst)
+        {
+            JObject result = new JObject();
+            IEnumerable<JProperty> props = o.Properties();
+
+            foreach (JProperty p in props.Where(x => !(x.Value is JObject)).OrderBy(x => x.Name))
+                result[p.Name] = p.Value;
+            foreach (JProperty p in props.Where(x => x.Value is JObject).OrderBy(x => x.Name))
+                result[p.Name] = Sorted((JObject)p.Value, valuesFirst);
+
+            return result;
+        }
 
         private static void Save()
         {
@@ -379,16 +472,14 @@ namespace ASCOM.Wise40.Common
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(SettingsFile));
 
-                // Sorted, so a diff of this file shows what changed rather than what moved.
-                var ordered = _store.OrderBy(s => s.Key).ToDictionary(
-                    s => s.Key,
-                    s => s.Value.OrderBy(k => k.Key).ToDictionary(
-                        k => k.Key,
-                        k => k.Value.OrderBy(v => v.Key).ToDictionary(v => v.Key, v => v.Value)));
+                // Sorted, so a diff of this file shows what changed rather than what moved.  Within
+                //  a section the driver's own settings come first and its sub-keys after, each
+                //  alphabetically - which is also how someone reads it.
+                JObject ordered = Sorted(_store, true);
 
                 // Write-then-replace: a crash mid-write leaves the old file, not half a new one.
                 string tmp = SettingsFile + ".tmp";
-                File.WriteAllText(tmp, JsonConvert.SerializeObject(ordered, Formatting.Indented));
+                File.WriteAllText(tmp, ordered.ToString(Formatting.Indented));
                 File.Copy(tmp, SettingsFile, true);
                 File.Delete(tmp);
 
