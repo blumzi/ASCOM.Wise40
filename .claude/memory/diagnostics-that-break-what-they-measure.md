@@ -59,6 +59,20 @@ while the CLSID keys they point at ARE (32-bit view). A first attempt looked for
 `WOW6432Node`, ran in 0.84s and reported **zero** live paths - a gate that is silently useless
 rather than visibly slow.
 
+## 4. A watcher that matches its own subject
+
+A loop waited for the deploy to finish with `grep -q 'VERDICT' deploy.log`. It returned on the
+first poll every time, reporting a stale snapshot that made green runs look stalled - because
+`deploy.ps1` prints this the moment the chain goes down:
+
+```
+STOP: >>> ... If this run dies without a VERDICT line,
+```
+
+The word the watcher was waiting for is in the safety hint. Three separate "the deploy seems
+hung" diagnoses came from that before the cause was found. Anchor on the real line - `VERDICT:`
+with the colon - and be suspicious when a wait returns instantly.
+
 ## The general lesson
 
 When a long-running tool goes quiet, **suspect the observation before the tool**. In all three
