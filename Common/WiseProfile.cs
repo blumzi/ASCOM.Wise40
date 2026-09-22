@@ -232,17 +232,25 @@ namespace ASCOM.Wise40.Common
             }
 
             //
-            // Absent means "write the default and return it", which is what ASCOM's GetValue does
-            //  and what the drivers rely on: it is how a fresh install ends up with a populated
-            //  settings set.  Only when a default was actually offered, though - the three-argument
-            //  form asks a question rather than declaring a value.
+            // A READ DOES NOT WRITE.  Removed 2026-09-22 (Arie's decision).
             //
-            if (defaultValue != null)
-            {
-                WriteValue(driverID, name, defaultValue, subKey);
-                return defaultValue;
-            }
-            return string.Empty;
+            // This used to persist the default when a value was absent.  That was a defence
+            //  against the ASCOM Profile vanishing at build time - regasm's unregister deleting
+            //  the device tree - so a read that re-created what the build had destroyed looked
+            //  like a repair.  The file is the source of truth now and a build cannot touch it, so
+            //  the defence has nothing left to defend and only its costs remain:
+            //
+            //   . a read mutates the store, which is a side effect nobody calling GetValue expects
+            //   . it makes "present in settings.json" mean "something once asked for it" rather
+            //     than "somebody set it", so the file stops being a record of decisions
+            //   . worst, it fights the timestamp cache in Load(): rewriting the file bumps its
+            //     write time, which invalidates the cached copy in EVERY OTHER PROCESS.  A read
+            //     would trigger a reload chain-wide.
+            //
+            // Absent now simply means "use the caller's default".  Values reach the file when
+            //  something deliberately writes them - WriteProfile, or a setup dialog.
+            //
+            return defaultValue ?? string.Empty;
         }
 
         public void WriteValue(string driverID, string name, string value, string subKey = "")
@@ -345,9 +353,11 @@ namespace ASCOM.Wise40.Common
             //  would quietly fall back to its code default.  A stale seed is worse than no seed,
             //  because it looks like data.
             //
-            // So an absent file means the drivers start from their code defaults and write them
-            //  back, exactly as ASCOM's own GetValue does on a fresh install.  That is a real
-            //  loss of settings, so SAY SO LOUDLY rather than letting it pass as normal startup.
+            // So an absent file means every driver runs on its code defaults.  Nothing repopulates
+            //  it either - GetValue no longer writes defaults back - so the file stays missing
+            //  until something deliberately writes, and the observatory quietly runs on source
+            //  defaults in the meantime.  That is a real loss of settings: SAY SO LOUDLY rather
+            //  than letting it pass as ordinary startup.
             //
             if (!File.Exists(SettingsFile))
             {
@@ -355,7 +365,7 @@ namespace ASCOM.Wise40.Common
                 {
                     Debugger.Instance.WriteLine(Debugger.DebugLevel.DebugExceptions,
                         $"WiseProfile: {SettingsFile} DOES NOT EXIST - every setting will come from its " +
-                        "code default and be written back. Restore it from a backup " +
+                        "code default, and nothing will repopulate the file. Restore it from a backup " +
                         "(settings.json.predeploy) if this was not intended.");
                 }
                 catch { }
