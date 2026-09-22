@@ -22,3 +22,4 @@
 - [Wise40 filter wheel Arduino source](wise40-filterwheel-arduino-source.md) — three copies exist; the live one is in Documents\Arduino, not the ASCOM.Wise40 solution tree
 - [Filter wheel firmware validated on hardware](filterwheel-fixes-awaiting-hardware-test.md) — works end to end as of 2026-08-15; the slit detector needs ~40ms to settle or it lies convincingly
 - [Filter wheel RFID stays on SoftwareSerial](filterwheel-rfid-stays-on-softwareserial.md) — rewiring D0 to pin 19 for hardware Serial1 was considered and rejected; don't propose it again
+- [Focuser COM interfaces](focuser-com-interfaces.md) — use FocusMax **v5**, not v4: Platform 6.5 SP1 defines no V1 `IFocuser`, so v4 cannot bind and dies at startup. And on a `ClassInterfaceType.None` driver, swapping the declared interface **removes** the old one from QueryInterface — declare both, never replace
