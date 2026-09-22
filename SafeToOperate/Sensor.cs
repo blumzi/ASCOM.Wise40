@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -442,7 +442,7 @@ namespace ASCOM.Wise40SafeToOperate
             if (HasAttribute(Attribute.Periodic))
             {
                 int fromProfile = Convert.ToInt32(wisesafetooperate._profile.GetValue(
-                    Const.WiseDriverID.SafeToOperate, WiseName, "Interval", defaultInterval.ToString()));
+                    Const.WiseDriverID.SafeToOperate, "Interval", WiseName, defaultInterval.ToString()));
 
                 Interval = TimeSpan.FromSeconds(fromProfile);
             }
@@ -450,12 +450,12 @@ namespace ASCOM.Wise40SafeToOperate
             _repeats = HasAttribute(Attribute.SingleReading)
                 ? 1
                 : Convert.ToInt32(wisesafetooperate._profile.GetValue(
-                    Const.WiseDriverID.SafeToOperate, WiseName, "Repeats", defaultRepeats.ToString()));
+                    Const.WiseDriverID.SafeToOperate, "Repeats", WiseName, defaultRepeats.ToString()));
 
             if (HasAttribute(Attribute.AlwaysEnabled))
                 Enabled = true;
             else
-                Enabled = Convert.ToBoolean(wisesafetooperate._profile.GetValue(Const.WiseDriverID.SafeToOperate, WiseName, "Enabled", true.ToString()));
+                Enabled = Convert.ToBoolean(wisesafetooperate._profile.GetValue(Const.WiseDriverID.SafeToOperate, "Enabled", WiseName, true.ToString()));
 
             if (Enabled && !HasAttribute(Attribute.SingleReading) && _repeats > 0)
                 _readings = new FixedSizedQueue<Reading>(_repeats);
@@ -465,13 +465,13 @@ namespace ASCOM.Wise40SafeToOperate
 
         public void WriteProfile()
         {
-            wisesafetooperate._profile.WriteValue(Const.WiseDriverID.SafeToOperate, WiseName, $"{Interval.TotalSeconds}", "Interval");
+            wisesafetooperate._profile.WriteValue(Const.WiseDriverID.SafeToOperate, "Interval", $"{Interval.TotalSeconds}", WiseName);
 
             if (DoesNotHaveAttribute(Attribute.SingleReading))
-                wisesafetooperate._profile.WriteValue(Const.WiseDriverID.SafeToOperate, WiseName, _repeats.ToString(), "Repeats");
+                wisesafetooperate._profile.WriteValue(Const.WiseDriverID.SafeToOperate, "Repeats", _repeats.ToString(), WiseName);
 
             if (DoesNotHaveAttribute(Attribute.AlwaysEnabled))
-                wisesafetooperate._profile.WriteValue(Const.WiseDriverID.SafeToOperate, WiseName, Enabled.ToString(), "Enabled");
+                wisesafetooperate._profile.WriteValue(Const.WiseDriverID.SafeToOperate, "Enabled", Enabled.ToString(), WiseName);
 
             WriteSensorProfile();
         }

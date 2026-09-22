@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -28,9 +28,9 @@ namespace ASCOM.Wise40SafeToOperate
             // The only clouds sensor we currently have is the TessW (no more Boltwoods)
             // This sensor (CloudsSensor) cannot be enabled unless teh TessW is enabled
             //
-            bool tessWEnabled = Convert.ToBoolean(wisesafetooperate._profile.GetValue(Const.WiseDriverID.SafeToOperate, "TessWRefresher", "Enabled", true.ToString()));
+            bool tessWEnabled = Convert.ToBoolean(wisesafetooperate._profile.GetValue(Const.WiseDriverID.SafeToOperate, "Enabled", "TessWRefresher", true.ToString()));
             if (tessWEnabled)
-                Enabled = Convert.ToBoolean(wisesafetooperate._profile.GetValue(Const.WiseDriverID.SafeToOperate, "Clouds", "Enabled", true.ToString()));
+                Enabled = Convert.ToBoolean(wisesafetooperate._profile.GetValue(Const.WiseDriverID.SafeToOperate, "Enabled", "Clouds", true.ToString()));
             else
                 Enabled = false;
 
@@ -53,12 +53,12 @@ namespace ASCOM.Wise40SafeToOperate
         {
             const uint defaultMax = 0;
 
-            MaxAsString = wisesafetooperate._profile.GetValue(Const.WiseDriverID.SafeToOperate, WiseName, "Max", defaultMax.ToString());
+            MaxAsString = wisesafetooperate._profile.GetValue(Const.WiseDriverID.SafeToOperate, "Max", WiseName, defaultMax.ToString());
         }
 
         public override void WriteSensorProfile()
         {
-            wisesafetooperate._profile.WriteValue(Const.WiseDriverID.SafeToOperate, WiseName, MaxAsString, "Max");
+            wisesafetooperate._profile.WriteValue(Const.WiseDriverID.SafeToOperate, "Max", MaxAsString, WiseName);
         }
 
         public override Reading GetReading()
