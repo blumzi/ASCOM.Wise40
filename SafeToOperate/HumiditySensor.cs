@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -35,12 +35,12 @@ namespace ASCOM.Wise40SafeToOperate
         {
             const double defaultMax = 90.0;
 
-            MaxAsString = wisesafetooperate._profile.GetValue(Const.WiseDriverID.SafeToOperate, WiseName, "Max", defaultMax.ToString());
+            MaxAsString = wisesafetooperate._profile.GetValue(Const.WiseDriverID.SafeToOperate, "Max", WiseName, defaultMax.ToString());
         }
 
         public override void WriteSensorProfile()
         {
-            wisesafetooperate._profile.WriteValue(Const.WiseDriverID.SafeToOperate, WiseName, MaxAsString, "Max");
+            wisesafetooperate._profile.WriteValue(Const.WiseDriverID.SafeToOperate, "Max", MaxAsString, WiseName);
         }
 
         public override Reading GetReading()

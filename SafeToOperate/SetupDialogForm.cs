@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -219,15 +219,15 @@ namespace ASCOM.Wise40SafeToOperate
             toolTip1.SetToolTip(textBoxSunElevationAtDusk, tip);
 
 
-            bool check = Convert.ToBoolean(wisesafetooperate._profile.GetValue(Const.WiseDriverID.SafeToOperate, "ARDO", "Enabled", true.ToString()));
+            bool check = Convert.ToBoolean(wisesafetooperate._profile.GetValue(Const.WiseDriverID.SafeToOperate, "Enabled", "ARDO", true.ToString()));
             checkBoxARDOEnabled.Tag = check;
             checkBoxARDOEnabled.Checked = check;
 
-            check = Convert.ToBoolean(wisesafetooperate._profile.GetValue(Const.WiseDriverID.SafeToOperate, "OWLRefresher", "Enabled", true.ToString()));
+            check = Convert.ToBoolean(wisesafetooperate._profile.GetValue(Const.WiseDriverID.SafeToOperate, "Enabled", "OWLRefresher", true.ToString()));
             checkBoxOWLEnabled.Tag = WiseSafeToOperate.owlRefresher.Enabled.ToString();
             checkBoxOWLEnabled.Checked= check;
 
-            check = Convert.ToBoolean(wisesafetooperate._profile.GetValue(Const.WiseDriverID.SafeToOperate, "TessWRefresher", "Enabled", true.ToString()));
+            check = Convert.ToBoolean(wisesafetooperate._profile.GetValue(Const.WiseDriverID.SafeToOperate, "Enabled", "TessWRefresher", true.ToString()));
             checkBoxTessWEnabled.Tag = check;
             checkBoxTessWEnabled.Checked= check;
         }

@@ -8,7 +8,6 @@ using System.Security.Principal;
 
 using System.Globalization;
 
-using Microsoft.Win32;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -95,7 +94,7 @@ namespace ASCOM.Wise40.Common
             }
         }
 
-        // section -> subKey ("" for the section root) -> name -> value
+        // section -> subKey (RootSub, i.e. "(root)", for the section root) -> name -> value
         //
         // JToken, not string.  The registry could only hold strings, so booleans arrived as
         //  whatever the writer happened to produce - "True" from bool.ToString() in one place and
@@ -334,28 +333,35 @@ namespace ASCOM.Wise40.Common
                 _store = new Dictionary<string, Dictionary<string, Dictionary<string, JToken>>>();
 
             //
-            // SELF-SEEDING.  On a machine that has never had this file, take whatever the ASCOM
-            //  Profile still holds rather than starting from code defaults - the registry values
-            //  are the ones the observatory was actually set to, and silently reverting to
-            //  defaults is the exact failure this whole change exists to end.
             //
-            // Runs once: Save() below creates the file, so the next Load finds it.
+            // NO SEEDING FROM THE REGISTRY.  Removed 2026-09-22 (Arie's decision).
             //
-            if (!_seeded && !File.Exists(SettingsFile))
+            // This used to import the ASCOM Profile when the file was absent, on the reasoning
+            //  that the registry held what the observatory was actually set to.  That stopped
+            //  being true the moment the file became the source of truth: the registry is a
+            //  snapshot frozen at migration, and it does not even share this file's shape any
+            //  more - SafeToOperate was re-keyed from [attribute][sensor] to [sensor][attribute],
+            //  so a re-seed would produce a section the drivers cannot read and every sensor
+            //  would quietly fall back to its code default.  A stale seed is worse than no seed,
+            //  because it looks like data.
+            //
+            // So an absent file means the drivers start from their code defaults and write them
+            //  back, exactly as ASCOM's own GetValue does on a fresh install.  That is a real
+            //  loss of settings, so SAY SO LOUDLY rather than letting it pass as normal startup.
+            //
+            if (!File.Exists(SettingsFile))
             {
-                _seeded = true;
-                int n = ImportFromRegistry();
-                Save();
                 try
                 {
-                    Debugger.Instance.WriteLine(Debugger.DebugLevel.DebugLogic,
-                        $"WiseProfile: seeded {SettingsFile} with {n} values from the ASCOM Profile");
+                    Debugger.Instance.WriteLine(Debugger.DebugLevel.DebugExceptions,
+                        $"WiseProfile: {SettingsFile} DOES NOT EXIST - every setting will come from its " +
+                        "code default and be written back. Restore it from a backup " +
+                        "(settings.json.predeploy) if this was not intended.");
                 }
                 catch { }
             }
         }
 
-        private static bool _seeded;
 
         private static void Save()
         {
@@ -389,96 +395,6 @@ namespace ASCOM.Wise40.Common
                 }
                 catch { }
             }
-        }
-
-        /// <summary>
-        /// Seeds settings.json from the ASCOM Profile registry tree, once.
-        /// </summary>
-        //
-        // Reads the registry directly rather than through ASCOM.Utilities.Profile: the tree shape
-        //  is simple and known, it needs no COM object, and it can run before any driver is
-        //  registered.  Returns the number of values imported; zero means there was nothing to
-        //  take, not that it failed.
-        //
-        public static int MigrateFromRegistry(bool force = false)
-        {
-            if (File.Exists(SettingsFile) && !force)
-                return 0;
-
-            lock (memoryLock)
-            {
-                _seeded = true;          // an explicit migration is a seeding
-                Load();
-                int n = ImportFromRegistry();
-                Save();
-                return n;
-            }
-        }
-
-        /// <summary>
-        /// The import itself: no locking, no Load - callers own both.
-        /// </summary>
-        private static int ImportFromRegistry()
-        {
-            int imported = 0;
-
-            // Registry32: the ASCOM tree lives under WOW6432Node on a 64-bit machine, and the
-            //  drivers are x86, so this is the view they see.
-            using (RegistryKey hklm = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32))
-            using (RegistryKey ascom = hklm.OpenSubKey(@"SOFTWARE\ASCOM"))
-            {
-                if (ascom == null)
-                    return 0;
-
-                foreach (string deviceType in ascom.GetSubKeyNames())
-                {
-                    using (RegistryKey devKey = ascom.OpenSubKey(deviceType))
-                    {
-                        if (devKey == null) continue;
-
-                        foreach (string driverID in devKey.GetSubKeyNames())
-                        {
-                            if (driverID.IndexOf("Wise", StringComparison.OrdinalIgnoreCase) < 0)
-                                continue;
-
-                            using (RegistryKey drvKey = devKey.OpenSubKey(driverID))
-                                imported += ImportKey(drvKey, Section(driverID), "");
-                        }
-                    }
-                }
-            }
-            return imported;
-        }
-
-        private static int ImportKey(RegistryKey key, string section, string sub)
-        {
-            if (key == null)
-                return 0;
-
-            int n = 0;
-            // Recursion below keeps building paths from the raw registry names, so translate to
-            //  the stored name - "" becomes RootSub - only here, where the store is indexed.
-            string stored = Sub(sub);
-            foreach (string name in key.GetValueNames())
-            {
-                // The default value is the driver's description, which belongs to registration.
-                if (string.IsNullOrEmpty(name))
-                    continue;
-
-                if (!_store.ContainsKey(section))
-                    _store[section] = new Dictionary<string, Dictionary<string, JToken>>();
-                if (!_store[section].ContainsKey(stored))
-                    _store[section][stored] = new Dictionary<string, JToken>();
-
-                _store[section][stored][name] = ToToken(Convert.ToString(key.GetValue(name)));
-                n++;
-            }
-
-            foreach (string child in key.GetSubKeyNames())
-                using (RegistryKey childKey = key.OpenSubKey(child))
-                    n += ImportKey(childKey, section, string.IsNullOrEmpty(sub) ? child : sub + "/" + child);
-
-            return n;
         }
 
         /// <summary>

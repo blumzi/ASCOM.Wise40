@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -105,10 +105,16 @@ namespace ASCOM.Wise40SafeToOperate
         }
 
         public override void WriteSensorProfile() {
-            wisesafetooperate._profile.WriteValue(Const.WiseDriverID.SafeToOperate, "ARDO", "Enabled", Enabled.ToString());
+            // Was WriteValue(..., "ARDO", "Enabled", Enabled.ToString()) - GetValue's argument
+            //  order, not WriteValue's, so it wrote the literal "Enabled" as the VALUE into a
+            //  sub-key named "True"/"False".  settings.json still carried the evidence:
+            //      "true": { "ARDO": "Enabled", "OWLRefresher": "Enabled" }
+            //  ARDO's Enabled was never persisted by this method; only Sensor.WriteProfile's
+            //  correct write made it survive a restart.
+            wisesafetooperate._profile.WriteValue(Const.WiseDriverID.SafeToOperate, "Enabled", Enabled.ToString(), "ARDO");
         }
         public override void ReadSensorProfile() {
-            Enabled = Convert.ToBoolean(wisesafetooperate._profile.GetValue(Const.WiseDriverID.SafeToOperate, "ARDO", "Enabled", true.ToString()));
+            Enabled = Convert.ToBoolean(wisesafetooperate._profile.GetValue(Const.WiseDriverID.SafeToOperate, "Enabled", "ARDO", true.ToString()));
         }
 
         public override string Status

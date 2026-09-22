@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -141,10 +141,13 @@ namespace ASCOM.Wise40SafeToOperate
         }
 
         public override void WriteSensorProfile() {
-            wisesafetooperate._profile.WriteValue(Const.WiseDriverID.SafeToOperate, "OWLRefresher", "Enabled", Enabled? "true" : "false");
+            // Same argument-order slip as ARDO had - see the note there.  The value is written
+            //  through Enabled.ToString() like every other sensor rather than a hand-rolled
+            //  "true"/"false", since the store now holds a real JSON boolean either way.
+            wisesafetooperate._profile.WriteValue(Const.WiseDriverID.SafeToOperate, "Enabled", Enabled.ToString(), "OWLRefresher");
         }
         public override void ReadSensorProfile() {
-            Enabled = Convert.ToBoolean(wisesafetooperate._profile.GetValue(Const.WiseDriverID.SafeToOperate, "OWLRefresher", "Enabled", true.ToString()));
+            Enabled = Convert.ToBoolean(wisesafetooperate._profile.GetValue(Const.WiseDriverID.SafeToOperate, "Enabled", "OWLRefresher", true.ToString()));
         }
 
         public override string Status
