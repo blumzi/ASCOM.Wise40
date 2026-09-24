@@ -171,6 +171,13 @@ Dim g_WiseScope                                                 ' our own client
 Const MOON_CACHE_SECONDS = 60
 
 '
+' Attempts allowed per mapping point before giving up.  Generous: a legal point is normally
+' found in a handful of tries, so reaching this many means the constraints genuinely leave
+' nowhere to go, not that we were unlucky.
+'
+Const MAX_POINT_TRIES = 5000
+
+'
 ' ACP's Telescope object does NOT pass Action() through - it creates its own
 ' ASCOM.DriverAccess.Telescope, tested and confirmed on the instrument.  So a script that
 ' needs a driver Action has to make its own client.
@@ -410,6 +417,7 @@ End Function
 Sub GeneratePoints(Az(), Alt(), N, West)
     Dim I, J, z, t, r, x, y
     Dim IHiAlt, tAz, tAlt, dist, distMin, JMin
+    Dim tries                                                   ' Wise40: see MAX_POINT_TRIES
     
     '
     ' Generate N points in Alt/Az, evenly distributed on the 
@@ -424,7 +432,31 @@ Sub GeneratePoints(Az(), Alt(), N, West)
         ' generated so far. Loop till we get one that satisfies
         ' those criteria.
         '
+        tries = 0
         Do While True
+            '
+            ' Wise40: this loop retries until a candidate passes every test, which is how a
+            '  point rejected for being too near the Moon gets REPLACED rather than lost - the
+            '  requested number of points is preserved without any extra bookkeeping.
+            '
+            ' But the loop has no natural escape, and adding the Moon test made it possible to
+            '  ask for something unsatisfiable: a large exclusion radius, plus the 120/N minimum
+            '  separation, plus the horizon and tilt limits, can leave nowhere legal to put the
+            '  next point.  Without this guard the script would spin silently forever.
+            '
+            tries = tries + 1
+            If tries > MAX_POINT_TRIES Then
+                Console.PrintLine "** Cannot place point " & I & " of " & N & " after " & _
+                    MAX_POINT_TRIES & " attempts."
+                If g_MinMoonDist > 0 Then
+                    Console.PrintLine "** The Moon exclusion of " & _
+                        Util.FormatVar(g_MinMoonDist, "0.0") & " deg leaves too little sky."
+                    Console.PrintLine "** Reduce it, or ask for fewer points, and run again."
+                Else
+                    Console.PrintLine "** The slew limits leave too little sky for " & N & " points."
+                End If
+                Err.Raise 5, "GeneratePoints", "cannot place point " & I & " within limits"
+            End If
             '
             ' Generate a point in xyz
             '
@@ -739,8 +771,11 @@ Sub Main
     '  plate-solving problem rather than the exclusion doing its job.
     '
     If g_MinMoonDist > 0 Then
-        Console.PrintLine "Moon exclusion rejected " & g_MoonSkips & _
-            " candidate point(s) closer than " & Util.FormatVar(g_MinMoonDist, "0.0") & " deg"
+        Console.PrintLine "Moon exclusion (" & Util.FormatVar(g_MinMoonDist, "0.0") & _
+            " deg) rejected " & g_MoonSkips & " candidate(s) during generation - each was" & _
+            " replaced, so the point count was not reduced."
+        Console.PrintLine "  Any point skipped at acquisition time is reported above and is NOT" & _
+            " replaced; the arrays and visiting order are fixed once generation ends."
     End If
     SUP.Terminate
     Voice.Speak "Training run completed, " & I - 1 & " successful points."
