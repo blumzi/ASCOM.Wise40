@@ -166,25 +166,20 @@ public static bool TransformApparentToJ2000(double apparentRA, double apparentDE
         {
             if (!_disposed)
             {
-                try
-                {
-                    novas31.Dispose();
-                    novas31 = null;
-                }
-                catch { }
-
-                try {
-                    ascomutils.Dispose();
-                }
-                catch { }
-
-                try
-                {
-                    astroutils.Dispose();
-                    astroutils = null;
-                }
-                catch { }
-
+                //
+                // NOTHING TO RELEASE, AND RELEASING WOULD BE FATAL.
+                //
+                // This used to dispose novas31, ascomutils and astroutils.  They are facades
+                //  over library state shared by the whole process, so disposing them here - on
+                //  a singleton, from whichever client happened to go away last - killed every
+                //  other astrometry user in the process outright: no managed exception, no log
+                //  line, just a dead driver host.  See Common/SafeNovas31.cs for the three
+                //  measured signatures.
+                //
+                // The wrappers now hold one static instance each and ignore Dispose, so there
+                //  is nothing left for this to do.  Left in place, and deliberately empty, so
+                //  the IDisposable contract still holds.
+                //
                 _disposed = true;
             }
         }

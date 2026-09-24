@@ -8,7 +8,13 @@ namespace ASCOM.Wise40.Common
 {
     public class SafeAscomutil : IDisposable
     {
-        private Util util;
+        //
+        // One per process, never released - the same rule as SafeNovas31 and
+        //  SafeAstroutils, and for the same reason: these wrappers exist to serialise
+        //  access to shared library state, and a per-wrapper instance that gets disposed
+        //  or collected takes that state down for the whole process.
+        //
+        private static readonly Util util = new Util();
         private Mutex mutex;
         private const int mutexTimeoutMillis = 5000;
         private bool disposed = false;
@@ -20,7 +26,6 @@ namespace ASCOM.Wise40.Common
 
             try
             {
-                util = new Util();
                 mutex = new Mutex(false, Const.Mutexes.AscomUtil);
             }
             catch (Exception ex)
@@ -39,13 +44,7 @@ namespace ASCOM.Wise40.Common
             {
                 if (disposing)
                 {
-                    try
-                    {
-                        util.Dispose();
-                        util = null;
-                    }
-                    catch { }
-
+                    // util is deliberately NOT disposed - see the field above.
                     try
                     {
                         mutex.Dispose();

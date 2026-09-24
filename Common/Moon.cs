@@ -21,6 +21,21 @@ namespace ASCOM.Wise40
             new Lazy<Moon>(() => new Moon()); // Singleton
 
         private readonly Exceptor MoonExceptor = new Exceptor(Debugger.DebugLevel.DebugMoon);
+        private static readonly Debugger debugger = Debugger.Instance;
+
+        //
+        // TRACING, ON PURPOSE.  The moon-position action kills ASCOM.RemoteServer with a
+        //  native fast-fail (0xc0000409 in ucrtbase) that leaves no managed stack and no log
+        //  line, so the only way to localise it is for each step to announce itself before it
+        //  runs.  The last line in the log is then the step that died.
+        //
+        // AutoFlush is on, so a line written is a line on disk even when the process is
+        //  killed microseconds later.
+        //
+        private static void Trace(string what)
+        {
+            debugger.WriteLine(Debugger.DebugLevel.DebugMoon, "Moon: {0}", what);
+        }
 
         public static Moon Instance
         {
@@ -43,7 +58,12 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return astroutils.MoonIllumination(astroutils.JulianDateUT1(0));
+                Trace("Illumination: JulianDateUT1");
+                double jd = astroutils.JulianDateUT1(0);
+                Trace($"Illumination: MoonIllumination(jd: {jd})");
+                double ret = astroutils.MoonIllumination(jd);
+                Trace($"Illumination: {ret}");
+                return ret;
             }
         }
 
@@ -51,7 +71,12 @@ namespace ASCOM.Wise40
         {
             get
             {
-                return astroutils.MoonPhase(astroutils.JulianDateUT1(0));
+                Trace("Phase: JulianDateUT1");
+                double jd = astroutils.JulianDateUT1(0);
+                Trace($"Phase: MoonPhase(jd: {jd})");
+                double ret = astroutils.MoonPhase(jd);
+                Trace($"Phase: {ret}");
+                return ret;
             }
         }
 
@@ -128,37 +153,52 @@ namespace ASCOM.Wise40
 
         public void Position(out double raRadians, out double decRadians)
         {
+            Trace("Position: entered");
             lock (_positionLock)
             {
                 if (DateTime.UtcNow - _positionComputedAt < PositionCacheLifetime)
                 {
                     raRadians = _cachedRA;
                     decRadians = _cachedDec;
+                    Trace($"Position: cache hit, age {(DateTime.UtcNow - _positionComputedAt).TotalSeconds:F1}s");
                     return;
                 }
+                Trace("Position: cache miss");
 
                 ComputePosition(out _cachedRA, out _cachedDec);
                 _positionComputedAt = DateTime.UtcNow;
                 raRadians = _cachedRA;
                 decRadians = _cachedDec;
+                Trace($"Position: computed ra {raRadians} dec {decRadians}");
             }
         }
 
         private void ComputePosition(out double raRadians, out double decRadians)
         {
+            Trace("ComputePosition: InitOCH");
             WiseSite.InitOCH();
+            Trace("ComputePosition: och.Temperature");
+            double temperature = WiseSite.och.Temperature;
+            Trace($"ComputePosition: och.Pressure (temperature: {temperature})");
+            double pressure = WiseSite.och.Pressure;
+            Trace($"ComputePosition: MakeObserverOnSurface (pressure: {pressure})");
             novas31.MakeObserverOnSurface(WiseSite.Latitude, WiseSite.Longitude, WiseSite.Elevation,
-                WiseSite.och.Temperature, WiseSite.och.Pressure, ref observer);
+                temperature, pressure, ref observer);
+            Trace("ComputePosition: MakeObject");
             novas31.MakeObject(ObjectType.MajorPlanetSunOrMoon, 11, "moon", new CatEntry3(), ref moonObject);
+            Trace("ComputePosition: JulianDateUT1");
+            double jdut1 = astroutils.JulianDateUT1(0);
+            Trace($"ComputePosition: Place (jd: {jdut1})");
 
             short ret = novas31.Place(
-                astroutils.JulianDateUT1(0),
+                jdut1,
                 moonObject,
                 observer,
                 0.0,
                 CoordSys.Astrometric,
                 Accuracy.Reduced,   // milliarcseconds for the Moon; the full series is not needed here
                 ref moonPos);
+            Trace($"ComputePosition: Place returned {ret}, ra {moonPos.RA}h dec {moonPos.Dec}deg");
 
             if (ret != 0)
                 MoonExceptor.Throw<InvalidOperationException>("Moon.Position", $"Cannot calculate Moon position (novas31.Place: {ret})");

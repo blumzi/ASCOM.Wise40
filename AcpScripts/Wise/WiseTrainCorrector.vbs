@@ -7,14 +7,17 @@
 ' Version:      5.0.3-wise1
 ' Requires:     ACP 5.0 or later
 '               Windows Script 5.6 or later
-'               Wise40 telescope driver with the "moon-position" action
+'               No Wise40 driver features - the Moon is computed in this script
 '
 ' Wise changes:  Mapping points too close to the Moon are skipped.  The minimum distance is
 '                asked for at the start of the run, in degrees; 0 or empty disables it.
 '
-'                The Moon's position comes from the Wise40 telescope driver rather than a
-'                web service - the observatory already computes it with NOVAS, and a run
-'                lasting hours should not depend on a remote site staying reachable.
+'                The Moon is computed in this script, not fetched.  An earlier version
+'                asked the Wise40 driver for it, and that KILLED THE DRIVER HOST - see the
+'                notes in the moon-exclusion section below.  Meeus' low-precision lunar
+'                position is good to about a degree here, and the exclusion radius is
+'                widened by that much so the test errs towards excluding rather than
+'                towards the Moon.
 '
 '                The test is hooked into CheckSlewLimits, which both the point-generation
 '                and the acquisition-time re-check pass through, so a point that was far
@@ -147,77 +150,55 @@ Dim CT
 '
 ' ---- Wise40 moon exclusion -------------------------------------------------
 '
-' Mapping points too close to the Moon are skipped.  The Moon's position comes from the
-' Wise40 telescope driver's "moon-position" action, which returns
+' Mapping points too close to the Moon are skipped.
 '
-'       raDegrees,decDegrees,illumination
+' THE MOON IS COMPUTED HERE, IN THIS SCRIPT.  Deliberately, and as a second design: the
+' first asked the Wise40 telescope driver through a "moon-position" action, and serving
+' that action KILLED ASCOM.RemoteServer - any call reaching the ephemeris fast-failed
+' natively and took the driver host down with it, five times in six calls.  The action is
+' withdrawn.  See .claude/memory/ascom-moonillumination-kills-the-process.md in the
+' ASCOM.Wise40 repo, and do not reintroduce a driver call here.
 '
-' computed with NOVAS on this machine.  Deliberately not a web service: a pointing run
-' lasts hours, and a network dependency that can fail or rate-limit partway through is a
-' poor trade for an ephemeris the observatory already computes.
+' A web service was rejected for its own reasons: a pointing run lasts hours, and a network
+' dependency that can fail or rate-limit partway through is a poor trade.
 '
-' The position is cached briefly rather than fetched per candidate.  The Moon moves about
-' 0.5 deg/hour, so a 60-second cache is good to well under an arcminute, while point
-' generation tries hundreds of candidates and would otherwise make hundreds of round
-' trips.  CheckSlewLimits is also called again at acquisition time - hours later in a long
-' run - and the cache expiry means that second check uses a fresh Moon, not a stale one.
+' So: Meeus' low-precision lunar position (Astronomical Algorithms, ch. 47, principal terms
+' only).  Twenty lines, no dependencies.  It is geocentric and truncated, and CHECKED
+' against NOVAS rather than assumed: at two epochs on 2026-09-24 it sat 0.98 and 0.91 deg
+' from the topocentric position the driver's NOVAS had logged, most of that being lunar
+' parallax.
+'
+' That error is handled rather than ignored - MOON_UNCERTAINTY_DEG is ADDED to the
+' separation the user asks for, so a marginal point is excluded rather than accepted.  An
+' exclusion radius is a safety margin chosen in whole degrees; widening it by one costs
+' little sky.
+'
+' The position is still cached briefly.  The Moon moves about 0.5 deg/hour, so a 60-second
+' cache is good to well under an arcminute, and point generation tests hundreds of
+' candidates.  CheckSlewLimits also runs again at acquisition time, hours later in a long
+' run, and the cache expiry means that second check uses a fresh Moon, not a stale one.
 '
 Dim g_MinMoonDist                                               ' degrees; 0 disables
 Dim g_MoonRA, g_MoonDec                                         ' degrees
 Dim g_MoonValidUntil                                            ' when the cache expires
 Dim g_MoonSkips                                                 ' how many points were rejected
-Dim g_WiseScope                                                 ' our own client - see WiseScope()
 
 Const MOON_CACHE_SECONDS = 60
+Const MOON_UNCERTAINTY_DEG = 1.5                                 ' measured against NOVAS; see above
 
 '
 ' Attempts allowed per mapping point before giving up.  Generous: a legal point is normally
 ' found in a handful of tries, so reaching this many means the constraints genuinely leave
 ' nowhere to go, not that we were unlucky.
-'
-Const MAX_POINT_TRIES = 5000
-
-'
-' ACP's Telescope object does NOT pass Action() through - it creates its own
-' ASCOM.DriverAccess.Telescope, tested and confirmed on the instrument.  So a script that
-' needs a driver Action has to make its own client.
-'
-' The ProgID matters:
-'
-'   ASCOM.AlpacaDynamic1.Telescope   LocalServer32   <- this one: routes to the single
-'                                                       running instance, the same one ACP
-'                                                       is driving
-'   ASCOM.Wise40.Telescope           InprocServer32  <- never from ACP: loads the driver
-'                                                       INTO ACP's process and stands up a
-'                                                       second WiseTele contending for the
-'                                                       same DAQ pins
-'
-' And do NOT touch .Connected or .Dispose on it.  Action() does not check Connected, ACP has
-' the mount connected already, and an earlier script disconnected the mount out from under a
-' run by tidying up on exit.
-'
-' See .claude/memory/wise40-acp-driver-integration.md in the ASCOM.Wise40 repo, and
-' AcpScripts\Wise40 Action Test.vbs for the ten-second re-check after any upgrade.
-'
-Const WISE_PROGID = "ASCOM.AlpacaDynamic1.Telescope"
-
-' -----------
-' WiseScope() - Our own driver client, created once, for Action() calls only
-' -----------
-'
-Function WiseScope()
-    If Not IsObject(g_WiseScope) Then
-        Set g_WiseScope = CreateObject(WISE_PROGID)
-    End If
-    Set WiseScope = g_WiseScope
-End Function
-
 ' ----------
-' GetMoon() - Refresh the cached Moon position if stale. True if we have one.
+' GetMoon() - Refresh the cached Moon position if stale.  Always succeeds.
 ' ----------
+'
+' Meeus, Astronomical Algorithms, ch. 47, principal terms only.  Accuracy, and why it is
+'  acceptable, are in the notes at the top of the moon-exclusion section.
 '
 Function GetMoon()
-    Dim s, parts
+    Dim T, Lp, M, F, lambda, beta, eps, sl, cl, sb, cb, se, ce, x, y, z
 
     If g_MoonValidUntil <> "" Then
         If Now < g_MoonValidUntil Then
@@ -226,26 +207,28 @@ Function GetMoon()
         End If
     End If
 
-    On Error Resume Next
-    s = WiseScope().Action("moon-position", "")
-    If Err.Number <> 0 Then
-        Console.PrintLine "  ** Moon position unavailable: " & Err.Description
-        Err.Clear
-        On Error GoTo 0
-        GetMoon = False
-        Exit Function
-    End If
-    On Error GoTo 0
+    ' Centuries from J2000.  ACP hands us the Julian date directly.
+    T = (Util.SysJulianDate - 2451545.0) / 36525.0
 
-    parts = Split(s, ",")
-    If UBound(parts) < 1 Then
-        Console.PrintLine "  ** Moon position malformed: '" & s & "'"
-        GetMoon = False
-        Exit Function
-    End If
+    Lp = 218.316 + 481267.881 * T                               ' mean longitude, deg
+    M  = 134.963 + 477198.867 * T                               ' mean anomaly, deg
+    F  =  93.272 + 483202.018 * T                               ' argument of latitude, deg
 
-    g_MoonRA = CDbl(parts(0))
-    g_MoonDec = CDbl(parts(1))
+    lambda = Lp + 6.289 * Sin(D2R * M)                          ' ecliptic longitude, deg
+    beta   =      5.128 * Sin(D2R * F)                          ' ecliptic latitude, deg
+    eps    = 23.439291 - 0.0130042 * T                          ' obliquity, deg
+
+    ' Ecliptic to equatorial through direction cosines, so no quadrant is lost.
+    sl = Sin(D2R * lambda) : cl = Cos(D2R * lambda)
+    sb = Sin(D2R * beta)   : cb = Cos(D2R * beta)
+    se = Sin(D2R * eps)    : ce = Cos(D2R * eps)
+
+    x = cb * cl
+    y = ce * cb * sl - se * sb
+    z = se * cb * sl + ce * sb
+
+    g_MoonRA  = Atn4Q(y, x) / D2R
+    g_MoonDec = ASin(z) / D2R
     g_MoonValidUntil = DateAdd("s", MOON_CACHE_SECONDS, Now)
     GetMoon = True
 End Function
@@ -260,17 +243,15 @@ Function MoonDistanceOK(RADeg, DecDeg)
     MoonDistanceOK = True
     If g_MinMoonDist <= 0 Then Exit Function                    ' feature disabled
 
-    '
-    ' If the Moon cannot be read, ACCEPT the point and say so.  Silently rejecting
-    '  everything on a failed lookup would look like a working run that mysteriously
-    '  produced very few points.
-    '
-    If Not GetMoon() Then Exit Function
+    GetMoon                                                     ' computed locally; cannot fail
 
     ' SphDist is this script's own spherical-distance helper - degrees in, degrees out, and
     '  it does not care whether the longitude argument is azimuth or right ascension.
     d = SphDist(g_MoonRA, g_MoonDec, RADeg, DecDeg)
-    If d < g_MinMoonDist Then
+
+    ' Widened by the formula's own uncertainty, so a marginal point is excluded rather than
+    '  accepted.  See MOON_UNCERTAINTY_DEG.
+    If d < (g_MinMoonDist + MOON_UNCERTAINTY_DEG) Then
         MoonDistanceOK = False
         g_MoonSkips = g_MoonSkips + 1
     End If
@@ -279,6 +260,22 @@ End Function
 
 ' -------
 ' Atn4Q() - 4-quadrant arctangent (radians, safe for dx = 0)
+' ------
+' ASin() - arcsine in radians, clamped so rounding at the poles cannot fault
+' ------
+'
+Function ASin(x)
+
+    If x >= 1. Then
+      ASin = 2.*Atn(1.)
+    ElseIf x <= -1. Then
+      ASin = -2.*Atn(1.)
+    Else
+      ASin = Atn( x/Sqr(1.-x*x) )
+    End If
+
+End Function
+
 ' -------
 '
 Function Atn4Q(dy, dx)
@@ -713,20 +710,12 @@ Sub Main
     If buf <> "" Then g_MinMoonDist = CDbl(buf)
 
     If g_MinMoonDist > 0 Then
-        If GetMoon() Then
-            Console.PrintLine "Moon exclusion: " & Util.FormatVar(g_MinMoonDist, "0.0") & _
-                " deg. Moon is now at RA " & Util.FormatVar(g_MoonRA / 15.0, "0.000") & _
-                "h Dec " & Util.FormatVar(g_MoonDec, "0.00") & " deg"
-        Else
-            '
-            ' Refuse to start rather than run a training pass that silently ignores the
-            '  limit that was just asked for.
-            '
-            Console.PrintLine "** Moon exclusion was requested but the Moon position cannot be read."
-            Console.PrintLine "** Check that the Wise40 telescope driver supports the 'moon-position' action."
-            SUP.Terminate
-            Exit Sub
-        End If
+        GetMoon
+        Console.PrintLine "Moon exclusion: " & Util.FormatVar(g_MinMoonDist, "0.0") & _
+            " deg, tested as " & Util.FormatVar(g_MinMoonDist + MOON_UNCERTAINTY_DEG, "0.0") & _
+            " to cover the formula's uncertainty. Moon is now at RA " & _
+            Util.FormatVar(g_MoonRA / 15.0, "0.000") & "h Dec " & _
+            Util.FormatVar(g_MoonDec, "0.00") & " deg"
     Else
         Console.PrintLine "Moon exclusion: disabled"
     End If

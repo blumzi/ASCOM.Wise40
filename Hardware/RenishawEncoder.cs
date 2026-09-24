@@ -36,7 +36,13 @@ namespace ASCOM.Wise40.Hardware
         private const double haConstant = 0.604916 / 19237927;
         private const double decConstant = 36.007347 / 16047243;
 
-        public static AstroUtils astroUtils = new AstroUtils();
+        //
+        // Guarded, not raw.  HourAngle below is read by the primary axis monitor every
+        //  50 ms, and a bare AstroUtils call there runs concurrently with every other
+        //  NOVAS user in the process - which corrupts the native library rather than
+        //  merely returning the wrong number.  See Const.Mutexes.
+        //
+        public static SafeAstroutils astroUtils = new SafeAstroutils();
 
         private enum BissMode { B = 0, C = 1 };
         private static readonly PCIe1711 Board = PCIe1711.OpenBoard(0);
