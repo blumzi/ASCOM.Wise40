@@ -7,17 +7,16 @@
 ' Version:      5.0.3-wise1
 ' Requires:     ACP 5.0 or later
 '               Windows Script 5.6 or later
-'               No Wise40 driver features - the Moon is computed in this script
+'               Internet access for JPL Horizons (falls back to a local formula)
 '
 ' Wise changes:  Mapping points too close to the Moon are skipped.  The minimum distance is
 '                asked for at the start of the run, in degrees; 0 or empty disables it.
 '
-'                The Moon is computed in this script, not fetched.  An earlier version
-'                asked the Wise40 driver for it, and that KILLED THE DRIVER HOST - see the
-'                notes in the moon-exclusion section below.  Meeus' low-precision lunar
-'                position is good to about a degree here, and the exclusion radius is
-'                widened by that much so the test errs towards excluding rather than
-'                towards the Moon.
+'                The Moon comes from JPL Horizons - topocentric, and agreeing with NOVAS to
+'                5 arcsec - with a local Meeus formula as the fallback if the network is
+'                unavailable.  Whichever answered, its uncertainty is added to the exclusion
+'                radius so the test errs towards excluding.  An earlier version asked the
+'                Wise40 driver, and that KILLED THE DRIVER HOST; see the notes below.
 '
 '                The test is hooked into CheckSlewLimits, which both the point-generation
 '                and the acquisition-time re-check pass through, so a point that was far
@@ -150,65 +149,199 @@ Dim CT
 '
 ' ---- Wise40 moon exclusion -------------------------------------------------
 '
-' Mapping points too close to the Moon are skipped.
+' Mapping points too close to the Moon are skipped.  The minimum separation is asked for at
+' the start of the run, in degrees; 0 or empty disables the whole thing.
 '
-' THE MOON IS COMPUTED HERE, IN THIS SCRIPT.  Deliberately, and as a second design: the
-' first asked the Wise40 telescope driver through a "moon-position" action, and serving
-' that action KILLED ASCOM.RemoteServer - any call reaching the ephemeris fast-failed
-' natively and took the driver host down with it, five times in six calls.  The action is
-' withdrawn.  See .claude/memory/ascom-moonillumination-kills-the-process.md in the
-' ASCOM.Wise40 repo, and do not reintroduce a driver call here.
+' WHERE THE MOON COMES FROM, AND WHY IT IS NOT THE DRIVER
 '
-' A web service was rejected for its own reasons: a pointing run lasts hours, and a network
-' dependency that can fail or rate-limit partway through is a poor trade.
+' The first version asked the Wise40 telescope driver through a "moon-position" action.  That
+' KILLED ASCOM.RemoteServer - any call reaching the ephemeris fast-failed natively and took the
+' driver host down with it, five times in six calls.  The action is withdrawn.  See
+' .claude/memory/ascom-moonillumination-kills-the-process.md in the ASCOM.Wise40 repo.  Do not
+' reintroduce a driver call here, and do not reach for ASCOM's NOVAS31 or NOVAS2COM either:
+' both are COM-scriptable and would work, and both wrap that same native library, so using
+' them from here would only move the crash into ACP - which is worse.
 '
-' So: Meeus' low-precision lunar position (Astronomical Algorithms, ch. 47, principal terms
-' only).  Twenty lines, no dependencies.  It is geocentric and truncated, and CHECKED
-' against NOVAS rather than assumed: at two epochs on 2026-09-24 it sat 0.98 and 0.91 deg
-' from the topocentric position the driver's NOVAS had logged, most of that being lunar
-' parallax.
+' Everything else on this machine was checked.  ACP has no lunar code at all: no mention of the
+' Moon in acp.exe, acp.tlb or any shipped script, and none of Util's 99 members.  ACP Scheduler
+' does moon avoidance, but declaratively - RTML constraints evaluated inside the Scheduler by
+' MoonAvoidConstraint.dll - with no position API to call.  ASCOM's Kepler ephemeris is
+' COM-scriptable and would have been ideal, but it is a planetary theory: asking it for body 10
+' or 11 returns "Invalid value for planet number".
 '
-' That error is handled rather than ignored - MOON_UNCERTAINTY_DEG is ADDED to the
-' separation the user asks for, so a marginal point is excluded rather than accepted.  An
-' exclusion radius is a safety margin chosen in whole degrees; widening it by one costs
-' little sky.
+' So: JPL Horizons, with a local formula as the fallback.
 '
-' The position is still cached briefly.  The Moon moves about 0.5 deg/hour, so a 60-second
-' cache is good to well under an arcminute, and point generation tests hundreds of
-' candidates.  CheckSlewLimits also runs again at acquisition time, hours later in a long
-' run, and the cache expiry means that second check uses a fresh Moon, not a stale one.
+' PRIMARY - HORIZONS.  Topocentric apparent RA/Dec for this exact site, straight from the
+' authority.  Checked against the NOVAS position the driver had logged for the same instant:
+' they agreed to 5 ARCSECONDS, which also confirms the site coordinates are being sent right.
+'
+' FALLBACK - MEEUS.  Principal terms only, twenty lines, no dependencies.  Geocentric and
+' truncated: measured 0.91 to 1.06 deg against NOVAS and Horizons on 2026-09-24, most of that
+' being lunar parallax.  A network hiccup therefore costs accuracy, not the run.
+'
+' The uncertainty of whichever source answered is ADDED to the separation the user asked for,
+' so a marginal point is excluded rather than pointed at.  For Horizons that addition is zero.
+'
+' CACHING.  Five minutes, which costs 0.04 deg of staleness at the Moon's 0.5 deg/hour and
+' keeps a three-hour run down to a few dozen requests.  Point generation tests hundreds of
+' candidates in a few seconds and so makes one request, not hundreds.  CheckSlewLimits also
+' runs again at acquisition time, hours later, and the cache expiry means that second check
+' uses a fresh Moon rather than a stale one.
 '
 Dim g_MinMoonDist                                               ' degrees; 0 disables
 Dim g_MoonRA, g_MoonDec                                         ' degrees
 Dim g_MoonValidUntil                                            ' when the cache expires
 Dim g_MoonSkips                                                 ' how many points were rejected
+Dim g_MoonSource                                                ' "JPL Horizons" or "local formula"
+Dim g_MoonUncertainty                                           ' degrees, added to the radius
+Dim g_MoonFellBack                                              ' so the warning is printed once
 
-Const MOON_CACHE_SECONDS = 60
-Const MOON_UNCERTAINTY_DEG = 1.5                                 ' measured against NOVAS; see above
+Const MOON_CACHE_SECONDS = 300
+Const MOON_LOCAL_UNCERTAINTY_DEG = 2.0                          ' measured 0.91 to 1.06; rounded up
+Const MOON_HORIZONS_UNCERTAINTY_DEG = 0.0                       ' agreed with NOVAS to 5 arcsec
 
-'
-' Attempts allowed per mapping point before giving up.  Generous: a legal point is normally
-' found in a handful of tries, so reaching this many means the constraints genuinely leave
-' nowhere to go, not that we were unlucky.
+' Timeouts in milliseconds - resolve, connect, send, receive.  A pointing run must never be
+'  able to stall on a web request; if Horizons is slow we fall back and carry on.
+Const HORIZONS_TIMEOUT_MS = 12000
+
 ' ----------
 ' GetMoon() - Refresh the cached Moon position if stale.  Always succeeds.
 ' ----------
 '
-' Meeus, Astronomical Algorithms, ch. 47, principal terms only.  Accuracy, and why it is
-'  acceptable, are in the notes at the top of the moon-exclusion section.
-'
-Function GetMoon()
-    Dim T, Lp, M, F, lambda, beta, eps, sl, cl, sb, cb, se, ce, x, y, z
+Sub GetMoon()
 
     If g_MoonValidUntil <> "" Then
-        If Now < g_MoonValidUntil Then
-            GetMoon = True
-            Exit Function
+        If Now < g_MoonValidUntil Then Exit Sub
+    End If
+
+    If GetMoonFromHorizons() Then
+        g_MoonSource = "JPL Horizons"
+        g_MoonUncertainty = MOON_HORIZONS_UNCERTAINTY_DEG
+    Else
+        GetMoonLocal
+        g_MoonSource = "local formula"
+        g_MoonUncertainty = MOON_LOCAL_UNCERTAINTY_DEG
+        If Not g_MoonFellBack Then
+            Console.PrintLine "  ** Moon: JPL Horizons unreachable - using the local formula" & _
+                " (about 1 deg, and the exclusion radius is widened to match)."
+            g_MoonFellBack = True
         End If
     End If
 
-    ' Centuries from J2000.  ACP hands us the Julian date directly.
-    T = (Util.SysJulianDate - 2451545.0) / 36525.0
+    g_MoonValidUntil = DateAdd("s", MOON_CACHE_SECONDS, Now)
+
+End Sub
+
+' --------------------
+' GetMoonFromHorizons() - Topocentric apparent RA/Dec for this site.  False on any failure.
+' --------------------
+'
+' The site comes from the mount rather than from constants here, so the script stays correct if
+'  the observatory is ever resurveyed.  ASCOM longitudes are east-positive, which is what
+'  Horizons wants, and its elevation is in KILOMETRES.
+'
+' The reply is text.  Between the $$SOE and $$EOE markers each row is date, time, some optional
+'  one-character flags, then RA and Dec.  The flags come and go - "*", "m", "N", "A" - so the
+'  parse takes the LAST TWO fields on the row rather than counting from the left.
+'
+Function GetMoonFromHorizons()
+    Dim http, url, body, lines, i, j, row, f, n, lat, lon, elev, t0, t1
+
+    GetMoonFromHorizons = False
+
+    On Error Resume Next
+
+    lat = Telescope.SiteLatitude
+    lon = Telescope.SiteLongitude
+    elev = Telescope.SiteElevation / 1000.0                      ' metres -> km
+    If Err.Number <> 0 Then
+        Err.Clear
+        On Error GoTo 0
+        Exit Function                                            ' no site, no request
+    End If
+
+    ' A one-minute window around now, asked for in UTC.
+    t0 = UTCStamp(Util.SysUTCDate)
+    t1 = UTCStamp(DateAdd("n", 1, Util.SysUTCDate))
+
+    url = "https://ssd.jpl.nasa.gov/api/horizons.api" & _
+          "?format=text&COMMAND='301'&OBJ_DATA='NO'&EPHEM_TYPE='OBSERVER'" & _
+          "&CENTER='coord@399'" & _
+          "&SITE_COORD='" & Util.FormatVar(lon, "0.00000") & "," & _
+                            Util.FormatVar(lat, "0.00000") & "," & _
+                            Util.FormatVar(elev, "0.0000") & "'" & _
+          "&START_TIME='" & t0 & "'&STOP_TIME='" & t1 & "'&STEP_SIZE='1m'" & _
+          "&QUANTITIES='1'&ANG_FORMAT='DEG'"
+
+    Set http = CreateObject("MSXML2.ServerXMLHTTP.6.0")
+    If Err.Number <> 0 Then
+        Err.Clear
+        On Error GoTo 0
+        Exit Function
+    End If
+
+    http.setTimeouts HORIZONS_TIMEOUT_MS, HORIZONS_TIMEOUT_MS, HORIZONS_TIMEOUT_MS, HORIZONS_TIMEOUT_MS
+    http.open "GET", url, False
+    http.send
+    If Err.Number <> 0 Or http.status <> 200 Then
+        Err.Clear
+        On Error GoTo 0
+        Set http = Nothing
+        Exit Function
+    End If
+    body = http.responseText
+    Set http = Nothing
+    On Error GoTo 0
+
+    lines = Split(Replace(body, vbCrLf, vbLf), vbLf)
+
+    j = -1
+    For i = 0 To UBound(lines)
+        If InStr(lines(i), "$$SOE") = 1 Then
+            j = i + 1
+            Exit For
+        End If
+    Next
+    If j < 0 Or j > UBound(lines) Then Exit Function
+
+    row = Trim(lines(j))
+    Do While InStr(row, "  ") > 0                                ' squeeze runs of blanks
+        row = Replace(row, "  ", " ")
+    Loop
+    f = Split(row, " ")
+    n = UBound(f)
+    If n < 2 Then Exit Function
+
+    If Not (IsNumeric(f(n - 1)) And IsNumeric(f(n))) Then Exit Function
+
+    g_MoonRA = CDbl(f(n - 1))
+    g_MoonDec = CDbl(f(n))
+    GetMoonFromHorizons = True
+
+End Function
+
+' -----------
+' UTCStamp() - A VBScript date as "YYYY-MM-DD HH:MM", which is what Horizons parses
+' -----------
+'
+Function UTCStamp(d)
+    UTCStamp = Right("0000" & Year(d), 4) & "-" & _
+               Right("00" & Month(d), 2) & "-" & _
+               Right("00" & Day(d), 2) & " " & _
+               Right("00" & Hour(d), 2) & ":" & _
+               Right("00" & Minute(d), 2)
+End Function
+
+' --------------
+' GetMoonLocal() - Fallback: Meeus, Astronomical Algorithms ch. 47, principal terms only
+' --------------
+'
+' Geocentric and truncated.  Accuracy, and how it is paid for, are in the notes above.
+'
+Sub GetMoonLocal()
+    Dim T, Lp, M, F, lambda, beta, eps, sl, cl, sb, cb, se, ce, x, y, z
+
+    T = (Util.SysJulianDate - 2451545.0) / 36525.0               ' centuries from J2000
 
     Lp = 218.316 + 481267.881 * T                               ' mean longitude, deg
     M  = 134.963 + 477198.867 * T                               ' mean anomaly, deg
@@ -229,9 +362,17 @@ Function GetMoon()
 
     g_MoonRA  = Atn4Q(y, x) / D2R
     g_MoonDec = ASin(z) / D2R
-    g_MoonValidUntil = DateAdd("s", MOON_CACHE_SECONDS, Now)
-    GetMoon = True
-End Function
+
+    ' Into [0, 360).  SphDist would not care, but the startup banner prints this and a
+    '  negative right ascension reads as a bug.
+    Do While g_MoonRA < 0.0
+        g_MoonRA = g_MoonRA + 360.0
+    Loop
+    Do While g_MoonRA >= 360.0
+        g_MoonRA = g_MoonRA - 360.0
+    Loop
+
+End Sub
 
 ' -----------------
 ' MoonDistanceOK() - False if this RA/Dec (both degrees) is too close to the Moon
@@ -243,15 +384,15 @@ Function MoonDistanceOK(RADeg, DecDeg)
     MoonDistanceOK = True
     If g_MinMoonDist <= 0 Then Exit Function                    ' feature disabled
 
-    GetMoon                                                     ' computed locally; cannot fail
+    GetMoon                                                     ' cached; cannot fail
 
     ' SphDist is this script's own spherical-distance helper - degrees in, degrees out, and
     '  it does not care whether the longitude argument is azimuth or right ascension.
     d = SphDist(g_MoonRA, g_MoonDec, RADeg, DecDeg)
 
-    ' Widened by the formula's own uncertainty, so a marginal point is excluded rather than
-    '  accepted.  See MOON_UNCERTAINTY_DEG.
-    If d < (g_MinMoonDist + MOON_UNCERTAINTY_DEG) Then
+    ' Widened by whatever the answering source is worth, so a marginal point is excluded
+    '  rather than accepted.  Zero when Horizons answered.
+    If d < (g_MinMoonDist + g_MoonUncertainty) Then
         MoonDistanceOK = False
         g_MoonSkips = g_MoonSkips + 1
     End If
@@ -712,8 +853,8 @@ Sub Main
     If g_MinMoonDist > 0 Then
         GetMoon
         Console.PrintLine "Moon exclusion: " & Util.FormatVar(g_MinMoonDist, "0.0") & _
-            " deg, tested as " & Util.FormatVar(g_MinMoonDist + MOON_UNCERTAINTY_DEG, "0.0") & _
-            " to cover the formula's uncertainty. Moon is now at RA " & _
+            " deg, tested as " & Util.FormatVar(g_MinMoonDist + g_MoonUncertainty, "0.0") & _
+            " deg. Source: " & g_MoonSource & ". Moon is now at RA " & _
             Util.FormatVar(g_MoonRA / 15.0, "0.000") & "h Dec " & _
             Util.FormatVar(g_MoonDec, "0.00") & " deg"
     Else
@@ -761,8 +902,8 @@ Sub Main
     '
     If g_MinMoonDist > 0 Then
         Console.PrintLine "Moon exclusion (" & Util.FormatVar(g_MinMoonDist, "0.0") & _
-            " deg) rejected " & g_MoonSkips & " candidate(s) during generation - each was" & _
-            " replaced, so the point count was not reduced."
+            " deg, from " & g_MoonSource & ") rejected " & g_MoonSkips & " candidate(s)" & _
+            " during generation - each was replaced, so the point count was not reduced."
         Console.PrintLine "  Any point skipped at acquisition time is reported above and is NOT" & _
             " replaced; the arrays and visiting order are fixed once generation ends."
     End If
