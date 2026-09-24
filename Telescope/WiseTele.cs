@@ -4870,8 +4870,11 @@ namespace ASCOM.Wise40
                 //  position cache was stepped over, so this is not a rare edge.
                 //
                 // A driver action that can kill the driver host is worse than no action at all.
-                //  Withdrawn until the cause is understood; the pointing-model script computes
-                //  the Moon itself instead, which needs no driver and cannot take one down.
+                //  Withdrawn until the cause is understood.  The consumer was ACP's pointing-model
+                //  script, which now computes the Moon itself - no driver involved, so nothing it
+                //  does can take one down.  That script lives in the blumzi/ACP repository at
+                //  Scripts/Wise/WiseTrainCorrector.vbs, not here: that tree is ACP's live script
+                //  directory, so tracking it there removes a copy step rather than adding one.
                 //
                 // Read .claude/memory/ascom-moonillumination-kills-the-process.md before putting
                 //  this back.  It lists the four explanations already ruled out, and how - none of

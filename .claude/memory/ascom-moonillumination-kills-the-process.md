@@ -30,6 +30,11 @@ chain or in isolation, so the position is safe to serve. The Dash has read
 `Moon.Instance.Illumination` on its refresh timer for years without dying; whatever the trigger
 is, it is specific to the driver host.
 
+The consumer was ACP's pointing-model script, which now gets the Moon from JPL Horizons with a
+local formula as fallback. It lives in the **blumzi/ACP** repository at
+`Scripts/Wise/WiseTrainCorrector.vbs` — not in this one, because that tree is ACP's live script
+directory. See `.claude/memory/acp-scripts-are-the-live-tree.md` there.
+
 **Do not re-derive these.** Each was tested properly and is NOT the cause:
 
 | hypothesis | how it was ruled out |
