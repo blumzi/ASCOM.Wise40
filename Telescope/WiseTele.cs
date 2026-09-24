@@ -4676,7 +4676,9 @@ namespace ASCOM.Wise40
                     "status",
                     "nearly-parked",
                     "slew-to-ha-dec",
-                    "calibration-point"
+                    "calibration-point",
+                    "moon-position",
+                    "moon-distance"
                 };
             }
         }
@@ -4858,6 +4860,48 @@ namespace ASCOM.Wise40
 
                 case "nearly-parked":
                     return NearlyParked.ToString();
+
+                //
+                // Where the Moon is, and how far a given direction is from it.
+                //
+                // Exposed for ACP's pointing-model training: Scripts\Wise\WiseTrainCorrector.vbs
+                //  skips mapping points that fall too close to the Moon.  A script could fetch the
+                //  Moon from a web service instead, but that would add a network dependency to a
+                //  run lasting hours and would have to get topocentric-versus-geocentric right;
+                //  NOVAS already does, on this machine, from Common/Moon.cs.
+                //
+                // Units are DEGREES in both directions - RA in degrees rather than hours, because
+                //  a caller comparing angular distances wants one unit, and mixing hours with
+                //  degrees inside Moon.Distance is precisely the bug this pair was written after.
+                //
+                // Returns "raDegrees,decDegrees,illumination" - deliberately CSV rather than the
+                //  JSON the other actions use.  The consumer is a VBScript under ACP, which has no
+                //  JSON parser; Split(s, ",") is the whole implementation there, and a hand-rolled
+                //  JSON scraper in VBScript would be the fragile part of this feature.
+                case "moon-position":
+                    {
+                        Moon.Instance.Position(out double moonRA, out double moonDec);
+                        return string.Format(CultureInfo.InvariantCulture, "{0:F6},{1:F6},{2:F4}",
+                            Angle.Rad2Deg(moonRA), Angle.Rad2Deg(moonDec), Moon.Instance.Illumination);
+                    }
+
+                // "ra,dec" in DEGREES; returns the separation in degrees.
+                case "moon-distance":
+                    {
+                        // Initialised because Exceptor.Throw is a void call as far as the compiler
+                        //  is concerned, so it does not count as terminating the path.
+                        double raDeg = 0.0, decDeg = 0.0;
+                        string[] parts = (parameter ?? string.Empty).Split(',');
+                        if (parts.Length != 2 ||
+                            !double.TryParse(parts[0], NumberStyles.Float, CultureInfo.InvariantCulture, out raDeg) ||
+                            !double.TryParse(parts[1], NumberStyles.Float, CultureInfo.InvariantCulture, out decDeg))
+                        {
+                            Exceptor.Throw<InvalidValueException>("moon-distance",
+                                $"Expected \"raDegrees,decDegrees\", got \"{parameter}\"");
+                        }
+                        return Moon.Instance.Distance(Angle.Deg2Rad(raDeg), Angle.Deg2Rad(decDeg))
+                                   .Degrees.ToString("F4", CultureInfo.InvariantCulture);
+                    }
 
                 case "enslave-dome":
                     if (!string.IsNullOrEmpty(parameter))

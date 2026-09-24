@@ -80,12 +80,29 @@ namespace ASCOM.Wise40
         //   Result := arccos(sin(Lat1)*sin(Lat2) + cos(Lat1)*cos(Lat2)*cos(Long1 - Long2));
         //end;
 
+        /// <summary>
+        /// Angular distance between two directions.  ALL FOUR ARGUMENTS ARE RADIANS.
+        /// </summary>
         public static double SphereDist(double long1, double lat1, double long2, double lat2)
         {
             return Math.Acos((Math.Sin(lat1) * Math.Sin(lat2)) + (Math.Cos(lat1) * Math.Cos(lat2) * Math.Cos(long1 - long2)));
         }
 
-        public Angle Distance(double telescopeRA, double telescopeDec)
+        /// <summary>
+        /// Where the Moon is now, as (RA radians, Dec radians).
+        /// </summary>
+        //
+        // Kept separate from Distance so callers can have the position itself - the telescope
+        //  driver exposes it as the "moon-position" Action - and so the unit conversion below
+        //  exists in exactly one place.
+        //
+        // NOVAS reports SkyPos.RA in HOURS and SkyPos.Dec in DEGREES.  That cost a real bug:
+        //  Distance() used to hand those straight to SphereDist, which takes radians, and so
+        //  reported 19 degrees where the true separation was 77.  Always too small, always
+        //  plausible - the worst kind of wrong for something meant to keep the telescope away
+        //  from the Moon.
+        //
+        public void Position(out double raRadians, out double decRadians)
         {
             WiseSite.InitOCH();
             novas31.MakeObserverOnSurface(WiseSite.Latitude, WiseSite.Longitude, WiseSite.Elevation,
@@ -102,9 +119,19 @@ namespace ASCOM.Wise40
                 ref moonPos);
 
             if (ret != 0)
-                MoonExceptor.Throw<InvalidOperationException>("Moon.Distance", $"Cannot calculate Moon position (novas31.Place: {ret})");
+                MoonExceptor.Throw<InvalidOperationException>("Moon.Position", $"Cannot calculate Moon position (novas31.Place: {ret})");
 
-            return Angle.FromRadians(SphereDist(telescopeRA, telescopeDec, moonPos.RA, moonPos.Dec));
+            raRadians = Angle.Deg2Rad(Angle.Hours2Deg(moonPos.RA));   // hours -> degrees -> radians
+            decRadians = Angle.Deg2Rad(moonPos.Dec);                  // degrees -> radians
+        }
+
+        /// <summary>
+        /// Angular distance from the Moon.  Both arguments are RADIANS.
+        /// </summary>
+        public Angle Distance(double telescopeRA, double telescopeDec)
+        {
+            Position(out double moonRA, out double moonDec);
+            return Angle.FromRadians(SphereDist(telescopeRA, telescopeDec, moonRA, moonDec));
         }
     }
 }
