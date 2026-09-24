@@ -37,9 +37,18 @@ namespace ASCOM.Wise40.Common
             {
                 gotMutex = mutex.WaitOne(mutexTimeoutMillis, false);
             }
-            catch (AbandonedMutexException ex)
+            catch (AbandonedMutexException)
             {
-                throw new DriverException($"{className} - AbandonedMutexException for {className}.{methodName}", ex);
+                //
+                // The previous owner died without releasing.  THIS EXCEPTION MEANS WE NOW OWN
+                //  IT, so carry on; the finally below releases it.
+                //
+                // Throwing here - the old behaviour - left the mutex held forever, because the
+                //  thrower never released what it had just been granted.  Every replacement
+                //  process then took the same path, so the chain could not recover without a
+                //  full service stop.  Watched happening on 2026-09-24, telescope included.
+                //
+                gotMutex = true;
             }
             catch (Exception ex)
             {
@@ -81,9 +90,18 @@ namespace ASCOM.Wise40.Common
             {
                 gotMutex = mutex.WaitOne(mutexTimeoutMillis, false);
             }
-            catch (AbandonedMutexException ex)
+            catch (AbandonedMutexException)
             {
-                throw new DriverException($"{className} - Abandoned Mutex Exception for method {MethodBase.GetCurrentMethod().Name}. See inner exception for detail", ex);
+                //
+                // The previous owner died without releasing.  THIS EXCEPTION MEANS WE NOW OWN
+                //  IT, so carry on; the finally below releases it.
+                //
+                // Throwing here - the old behaviour - left the mutex held forever, because the
+                //  thrower never released what it had just been granted.  Every replacement
+                //  process then took the same path, so the chain could not recover without a
+                //  full service stop.  Watched happening on 2026-09-24, telescope included.
+                //
+                gotMutex = true;
             }
             catch (Exception ex)
             {
@@ -121,9 +139,18 @@ namespace ASCOM.Wise40.Common
             {
                 gotMutex = mutex.WaitOne(mutexTimeoutMillis, false);
             }
-            catch (AbandonedMutexException ex)
+            catch (AbandonedMutexException)
             {
-                throw new DriverException($"{className} - Abandoned Mutex Exception for method {MethodBase.GetCurrentMethod().Name}. See inner exception for detail", ex);
+                //
+                // The previous owner died without releasing.  THIS EXCEPTION MEANS WE NOW OWN
+                //  IT, so carry on; the finally below releases it.
+                //
+                // Throwing here - the old behaviour - left the mutex held forever, because the
+                //  thrower never released what it had just been granted.  Every replacement
+                //  process then took the same path, so the chain could not recover without a
+                //  full service stop.  Watched happening on 2026-09-24, telescope included.
+                //
+                gotMutex = true;
             }
             catch (Exception ex)
             {
@@ -162,9 +189,18 @@ namespace ASCOM.Wise40.Common
             {
                 gotMutex = mutex.WaitOne(mutexTimeoutMillis, false);
             }
-            catch (AbandonedMutexException ex)
+            catch (AbandonedMutexException)
             {
-                throw new DriverException($"{className} - Abandoned Mutex Exception for method {MethodBase.GetCurrentMethod().Name}. See inner exception for detail", ex);
+                //
+                // The previous owner died without releasing.  THIS EXCEPTION MEANS WE NOW OWN
+                //  IT, so carry on; the finally below releases it.
+                //
+                // Throwing here - the old behaviour - left the mutex held forever, because the
+                //  thrower never released what it had just been granted.  Every replacement
+                //  process then took the same path, so the chain could not recover without a
+                //  full service stop.  Watched happening on 2026-09-24, telescope included.
+                //
+                gotMutex = true;
             }
             catch (Exception ex)
             {
@@ -202,9 +238,18 @@ namespace ASCOM.Wise40.Common
             {
                 gotMutex = mutex.WaitOne(mutexTimeoutMillis, false);
             }
-            catch (AbandonedMutexException ex)
+            catch (AbandonedMutexException)
             {
-                throw new DriverException($"{className} - Abandoned Mutex Exception for method {MethodBase.GetCurrentMethod().Name}. See inner exception for detail", ex);
+                //
+                // The previous owner died without releasing.  THIS EXCEPTION MEANS WE NOW OWN
+                //  IT, so carry on; the finally below releases it.
+                //
+                // Throwing here - the old behaviour - left the mutex held forever, because the
+                //  thrower never released what it had just been granted.  Every replacement
+                //  process then took the same path, so the chain could not recover without a
+                //  full service stop.  Watched happening on 2026-09-24, telescope included.
+                //
+                gotMutex = true;
             }
             catch (Exception ex)
             {
