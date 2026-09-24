@@ -1,4 +1,4 @@
-//tabs=4
+﻿//tabs=4
 // --------------------------------------------------------------------------------
 // TODO fill in this information for your driver, then remove this line!
 //
@@ -89,7 +89,6 @@ namespace ASCOM.CloudSensor
         /// <summary>
         /// Private variable to hold an ASCOM AstroUtilities object to provide the Range method
         /// </summary>
-        private AstroUtils astroUtilities;
 
         private TraceLogger tl;
         private Wise40.Common.Debugger debugger = Wise40.Common.Debugger.Instance;
@@ -110,7 +109,6 @@ namespace ASCOM.CloudSensor
 
             _connected = false; // Initialise connected to false
             utilities = new Util(); //Initialise util object
-            astroUtilities = new AstroUtils(); // Initialise astro utilities object
 
             //if (_dataFile == null || _dataFile == string.Empty)
             //    throw new InvalidValueException("Null or empty data file name");
@@ -228,8 +226,6 @@ namespace ASCOM.CloudSensor
             tl = null;
             utilities.Dispose();
             utilities = null;
-            astroUtilities.Dispose();
-            astroUtilities = null;
         }
 
         public bool Connected

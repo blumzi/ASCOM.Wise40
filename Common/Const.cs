@@ -214,9 +214,27 @@ namespace ASCOM.Wise40.Common
 
         public static class Mutexes
         {
+            //
+            // ONE NATIVE LIBRARY, ONE LOCK.
+            //
+            // NOVAS31 and AstroUtils are two managed facades over the SAME non-reentrant native
+            //  code in ASCOM.Astrometry.  AstroUtil used to have a mutex of its own, which meant
+            //  the two were serialised separately and could therefore run at the same time - a
+            //  lock each is no lock at all.
+            //
+            // That is what killed ASCOM.RemoteServer: the axis monitors call NOVAS through
+            //  WiseSite.LocalSiderealTime and AstroUtils through RenishawEncoder.HourAngle
+            //  twenty times a second, and a moon-position action landing in the middle of that
+            //  died inside AstroUtils.MoonIllumination with a native fast-fail (0xc0000409 in
+            //  ucrtbase), no managed stack, no log line.  Traced to the exact call on
+            //  2026-09-24.
+            //
+            // Sharing a name is safe to nest: mutex ownership is per thread, so a thread that
+            //  already holds it acquires it again immediately, even through a second handle.
+            //
             public static string Novas31 = "24df752f-15a3-4f8f-92cc-ca8ae22a7f39";
             public static string AscomUtil = "24df752f-15a3-4f8f-92cc-ca8ae22a7f39";
-            public static string AstroUtil = "8a91148c-d0bb-4d4f-a06f-280e045305d2";
+            public static string AstroUtil = "24df752f-15a3-4f8f-92cc-ca8ae22a7f39";
             public static string Debug = "ffe8a24d-774e-4252-b163-c79b7ecf94b9";
         }
 

@@ -11,7 +11,27 @@ namespace ASCOM.Wise40.Common
     /// </summary>
     public class SafeNovas31 : IDisposable
     {
-        private NOVAS31 novas31;
+        //
+        // ONE PER PROCESS, AND NEVER RELEASED.
+        //
+        // ASCOM.Astrometry's NOVAS31 and AstroUtils are thin managed facades over a single
+        //  native library holding PROCESS-WIDE state, including the open ephemeris.  Tearing
+        //  down any one instance tears it down for everybody:
+        //
+        //      NOVAS31.Dispose()    while another thread is in the library -> 0xC0000409
+        //      AstroUtils.Dispose() while another thread is in the library -> 0xC0000005
+        //      merely letting one be COLLECTED (no Dispose at all)         -> ExecutionEngine
+        //
+        //  All three measured on 2026-09-24, each inside a second, with one thread looping on
+        //  MoonIllumination and another creating and dropping instances.  Instant process death,
+        //  no managed stack, nothing in any log - which is precisely how ASCOM.RemoteServer was
+        //  dying whenever a moon-position action met a driver tearing down for a client.
+        //
+        // So: one instance, static, created once, and Dispose does NOT touch it.  A wrapper is
+        //  cheap to make and safe to drop; what must never happen is the native side going away
+        //  while the process still lives.
+        //
+        private static readonly NOVAS31 novas31 = new NOVAS31();
         private Mutex mutex;
         private const int mutexTimeout = 5000;
         private bool disposed = false;
@@ -23,7 +43,6 @@ namespace ASCOM.Wise40.Common
 
             try
             {
-                novas31 = new NOVAS31();
                 mutex = new Mutex(false, Const.Mutexes.Novas31);
             }
             catch (Exception ex)
@@ -42,13 +61,7 @@ namespace ASCOM.Wise40.Common
             {
                 if (disposing)
                 {
-                    try
-                    {
-                        novas31.Dispose();
-                        novas31 = null;
-                    }
-                    catch { }
-
+                    // novas31 is deliberately NOT disposed - see the field above.
                     try
                     {
                         mutex.Dispose();

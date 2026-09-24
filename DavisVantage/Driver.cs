@@ -1,4 +1,4 @@
-//tabs=4
+﻿//tabs=4
 // --------------------------------------------------------------------------------
 // TODO fill in this information for your driver, then remove this line!
 //
@@ -93,7 +93,6 @@ namespace ASCOM.Vantage
         /// <summary>
         /// Private variable to hold an ASCOM AstroUtilities object to provide the Range method
         /// </summary>
-        private AstroUtils astroUtilities;
 
         private Wise40.Common.Debugger debugger = Wise40.Common.Debugger.Instance;
         private TraceLogger tl;
@@ -114,7 +113,6 @@ namespace ASCOM.Vantage
 
             _connected = false; // Initialise connected to false
             utilities = new Util(); //Initialise util object
-            astroUtilities = new AstroUtils(); // Initialise astro utilities object
 
             tl.LogMessage("ObservingConditions", "Completed initialisation");
             if (_reportFile != null && _reportFile != string.Empty && File.Exists(_reportFile))
@@ -204,8 +202,6 @@ namespace ASCOM.Vantage
             tl = null;
             utilities.Dispose();
             utilities = null;
-            astroUtilities.Dispose();
-            astroUtilities = null;
         }
 
         public bool Connected

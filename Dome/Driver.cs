@@ -1,4 +1,4 @@
-//tabs=4
+﻿//tabs=4
 // --------------------------------------------------------------------------------
 //
 // ASCOM Dome driver for Wise40
@@ -83,7 +83,6 @@ namespace ASCOM.Wise40 //.Dome
         /// <summary>
         /// Private variable to hold an ASCOM AstroUtilities object to provide the Range method
         /// </summary>
-        private AstroUtils astroUtilities;
 
         private static WiseDome wisedome = WiseDome.Instance;
 
@@ -102,7 +101,6 @@ namespace ASCOM.Wise40 //.Dome
             (wisedome ?? (wisedome = WiseDome.Instance)).ReadProfile(); // Read device configuration from the ASCOM Profile store
 
             utilities = new Util();
-            astroUtilities = new AstroUtils();
 
             wisedome.SetArrivedAtAzEvent(arrived);
         }
@@ -170,8 +168,6 @@ namespace ASCOM.Wise40 //.Dome
             {
                 utilities.Dispose();
                 utilities = null;
-                astroUtilities.Dispose();
-                astroUtilities = null;
 
                 //
                 // Deliberately NOT wisedome.Dispose(), and emphatically not
