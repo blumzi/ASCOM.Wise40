@@ -102,7 +102,49 @@ namespace ASCOM.Wise40
         //  plausible - the worst kind of wrong for something meant to keep the telescope away
         //  from the Moon.
         //
+        //
+        // CACHED, AND NOT AT FULL ACCURACY.  Both matter more than they look.
+        //
+        // Every NOVAS call goes through SafeNovas31's cross-process mutex, because NOVAS is not
+        //  thread-safe.  The Dash already computes the Moon on its refresh timer, and once the
+        //  telescope driver exposed a moon-position action there were two processes competing for
+        //  that mutex - at Accuracy.Full, which for the Moon is an expensive ephemeris.  On
+        //  2026-09-24 that exceeded the 5-second timeout, the resulting DriverException killed the
+        //  Dash while it held the mutex, and the chain could not recover.  SafeNovas31's abandoned
+        //  -mutex handling is fixed now, but the right answer is not to generate the contention.
+        //
+        // The Moon moves about 0.5 deg/hour, so a 30-second cache is good to a quarter of an
+        //  arcminute - far finer than anything this is used for - and it caps NOVAS traffic no
+        //  matter how often callers ask.
+        //
+        // Reduced accuracy is milliarcseconds for the Moon, against a use case measured in
+        //  degrees, and avoids the full JPL series.
+        //
+        private static DateTime _positionComputedAt = DateTime.MinValue;
+        private static double _cachedRA, _cachedDec;
+        private static readonly object _positionLock = new object();
+
+        private static readonly TimeSpan PositionCacheLifetime = TimeSpan.FromSeconds(30);
+
         public void Position(out double raRadians, out double decRadians)
+        {
+            lock (_positionLock)
+            {
+                if (DateTime.UtcNow - _positionComputedAt < PositionCacheLifetime)
+                {
+                    raRadians = _cachedRA;
+                    decRadians = _cachedDec;
+                    return;
+                }
+
+                ComputePosition(out _cachedRA, out _cachedDec);
+                _positionComputedAt = DateTime.UtcNow;
+                raRadians = _cachedRA;
+                decRadians = _cachedDec;
+            }
+        }
+
+        private void ComputePosition(out double raRadians, out double decRadians)
         {
             WiseSite.InitOCH();
             novas31.MakeObserverOnSurface(WiseSite.Latitude, WiseSite.Longitude, WiseSite.Elevation,
@@ -115,7 +157,7 @@ namespace ASCOM.Wise40
                 observer,
                 0.0,
                 CoordSys.Astrometric,
-                Accuracy.Full,
+                Accuracy.Reduced,   // milliarcseconds for the Moon; the full series is not needed here
                 ref moonPos);
 
             if (ret != 0)
