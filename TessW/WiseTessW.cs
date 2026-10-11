@@ -269,6 +269,37 @@ namespace ASCOM.Wise40.TessW
 
         public string IpAddress { get; set; }
 
+        /// <summary>
+        /// A sensor value, or NaN if the station has not been heard from yet.
+        /// </summary>
+        /// <remarks>
+        /// sensorData is populated only by a successful fetch, so a station that is
+        ///  powered down when the driver starts leaves it EMPTY - and a bare
+        ///  sensorData[key] then throws KeyNotFoundException rather than reporting
+        ///  "no value".
+        ///
+        /// That exception did not stay here.  It travelled out through the
+        ///  ObservingConditions hub into SafeToOperate's status digest, which was built
+        ///  in a single object initializer, so the whole document died with it: the Dash
+        ///  blanked every weather field - including the healthy VantagePro ones - and the
+        ///  observatory monitor abandoned its safety evaluation on every cycle.  One
+        ///  silent station must cost one field, not the subsystem.
+        ///
+        /// NaN is what the rest of the chain already expects for "no reading"; staleness
+        ///  is reported separately, through TimeSinceLastUpdate.
+        /// </remarks>
+        private double SensorValue(string key)
+        {
+            try
+            {
+                return Convert.ToDouble(sensorData[key]);
+            }
+            catch
+            {
+                return Double.NaN;
+            }
+        }
+
         #region IObservingConditions Implementation
 
         /// <summary>
@@ -305,14 +336,7 @@ namespace ASCOM.Wise40.TessW
                 if (!Enabled)
                     return double.NaN;
 
-                double ret = double.NaN;
-                try
-                {
-                    ret = Convert.ToDouble(sensorData["cloudCover"]);
-                }
-                catch { }
-                return ret;
-
+                return SensorValue("cloudCover");
             }
         }
 
@@ -397,10 +421,22 @@ namespace ASCOM.Wise40.TessW
                 case "AveragePeriod":
                     return "Average period in hours, immediate values are only available";
 
+                //
+                // THE STATION'S OWN NAME, because this is how provenance reaches the displays.
+                //
+                // The ObservingConditions hub FORWARDS SensorDescription to whichever device it
+                //  has assigned to the property, so asking the hub "who provides SkyTemperature"
+                //  is answered by the device itself - no mapping table in SafeToOperate to drift
+                //  out of step with the hub's configuration.  It also answers while the station
+                //  is unreachable, since this touches no hardware.
+                //
+                // It used to return "SensorDescription - <property>", which told a reader
+                //  nothing they did not already know from the property name.
+                //
                 case "Temperature":
                 case "SkyTemperature":
                 case "CloudCover":
-                    return "SensorDescription - " + PropertyName;
+                    return "TessW";
 
                 case "DewPoint":
                 case "Humidity":
@@ -466,10 +502,8 @@ namespace ASCOM.Wise40.TessW
                 if (!Enabled)
                     return double.NaN;
 
-                double temperature;
-
                 Refresh();
-                temperature = Convert.ToDouble(sensorData["tempSky"]);
+                double temperature = SensorValue("tempSky");
 
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugSafety, string.Format($"TessW: SkyTemperature - get => {temperature}"));
@@ -489,7 +523,7 @@ namespace ASCOM.Wise40.TessW
                     return double.NaN;
 
                 Refresh();
-                double temperature = Convert.ToDouble(sensorData["tempAmb"]);
+                double temperature = SensorValue("tempAmb");
 
                 #region debug
                 debugger.WriteLine(Debugger.DebugLevel.DebugSafety, string.Format($"TessW: Temperature - get => {temperature}"));

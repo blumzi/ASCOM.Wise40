@@ -495,13 +495,18 @@ namespace ASCOM.Wise40.Boltwood
             {
                 case "AveragePeriod":
                     return "Average period in hours, immediate values are only available";
+                //
+                // The station's own name - the hub forwards SensorDescription to the device it
+                //  has assigned to the property, so this is what tells a display where the
+                //  reading came from.
+                //
                 case "DewPoint":
                 case "Humidity":
                 case "SkyTemperature":
                 case "Temperature":
                 case "WindSpeed":
                 case "CloudCover":
-                    return PropertyName + " Description";
+                    return "Boltwood";
                 case "Pressure":
                 case "RainRate":
                 case "SkyBrightness":

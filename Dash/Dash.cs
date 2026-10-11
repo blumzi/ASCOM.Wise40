@@ -1231,12 +1231,30 @@ namespace Dash
                 tip = digest.ToolTip;
             else
                 tip = $"latest reading {DateTime.Now.Subtract(digest.LatestReading.timeOfLastUpdate).TotalSeconds:f1} seconds ago";
-            
-            if (digest.Stale && !tip.Contains("stale"))
+
+            //
+            // "Not accessible" is the whole story - do not decorate it with "(stale)" as well.
+            //
+            if (digest.Stale && tip != Sensor.SensorDigest.NotAccessible && !tip.Contains("stale"))
                 tip += !string.IsNullOrEmpty(tip) ? " (stale)" : "Stale";
 
-            if (!tip.StartsWith(digest.Name + " - "))
-                tip = digest.Name + " - " + tip;
+            //
+            // LEAD WITH THE PROVENANCE - "Davis - ", "TessW - ".  The label beside the value
+            //  already says which quantity this is; what a reader cannot see is which station
+            //  produced it, and that is the first thing worth knowing when a value looks wrong.
+            //
+            // The sensor name is dropped when we know the station, including from the front of a
+            //  detail that already carries it ("Clouds - not ready ..." would otherwise read
+            //  "TessW - Clouds - not ready ...").  Sensors with no station behind them - Sun,
+            //  ComputerControl - have no provenance and keep the old name prefix.
+            //
+            string prefix = string.IsNullOrWhiteSpace(digest.Provenance) ? digest.Name : digest.Provenance;
+
+            if (!string.IsNullOrEmpty(digest.Name) && tip.StartsWith(digest.Name + " - "))
+                tip = tip.Substring(digest.Name.Length + 3);
+
+            if (!tip.StartsWith(prefix + " - "))
+                tip = prefix + " - " + tip;
 
             toolTip.SetToolTip(label, tip);
         }

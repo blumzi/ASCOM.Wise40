@@ -138,21 +138,144 @@ namespace ASCOM.Wise40SafeToOperate
             public Reading LatestReading;
             public string ToolTip;
             public string Name;
+            /// <summary>
+            /// Which station the reading came from - "TessW", "Davis", "Boltwood" - or null for
+            /// a sensor that is not fed by a weather station at all (Sun, ComputerControl, ...).
+            /// </summary>
+            public string Provenance;
+
+            public const string NotAccessible = "Not accessible";
 
             public SensorDigest() { }
             static SensorDigest() { }
 
+            //
+            // Where a reading came from, asked of the ObservingConditions hub.
+            //
+            // The hub FORWARDS SensorDescription to whichever device it has assigned to the
+            //  property, and each Wise station answers with its own name, so this is
+            //  authoritative: no property-to-station table is kept here, and none can drift out
+            //  of step with the hub's configuration.  It also answers while the station is
+            //  unreachable - it touches no hardware - which is exactly when a display most
+            //  needs to be able to name the station.
+            //
+            // Cached because it cannot change without restarting the hub, while the digest is
+            //  built several times a minute.  FAILURES ARE NOT CACHED: och is null until the
+            //  hub connects, and a miss then must not be remembered for the life of the process.
+            //
+            private static readonly Dictionary<string, string> provenanceCache =
+                new Dictionary<string, string>();
+
+            public static string ProvenanceOf(string property)
+            {
+                if (string.IsNullOrEmpty(property))
+                    return null;
+
+                lock (provenanceCache)
+                {
+                    if (provenanceCache.TryGetValue(property, out string cached))
+                        return cached;
+                }
+
+                string provenance = null;
+                try
+                {
+                    provenance = WiseSite.och?.SensorDescription(property);
+                }
+                catch (Exception ex)
+                {
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety,
+                        $"SensorDigest.ProvenanceOf({property}): Caught {ex.Message}");
+                    #endregion
+                }
+
+                if (string.IsNullOrWhiteSpace(provenance))
+                    return null;
+
+                lock (provenanceCache)
+                    provenanceCache[property] = provenance;
+
+                return provenance;
+            }
+
+            //
+            // A digest that says "could not be read" instead of being absent.
+            //
+            // Everything outside this driver reaches the sensors through the status
+            //  digest, and every consumer dereferences these fields without checking
+            //  for null - Dash.RefreshInConditionsformation reads Symbolic, Color,
+            //  ToolTip, Name and LatestReading.timeOfLastUpdate; ObservatoryMonitor
+            //  reads ComputerControl.Safe.  So a field that cannot be produced has to
+            //  be a value, not a hole.
+            //
+            // Unreadable counts as NOT safe wherever safety is concerned - fail safe -
+            //  and as a missing value where the sensor is information only.
+            //
+            public static SensorDigest Unreadable(string name, bool affectsSafety, string provenance = null)
+            {
+                return new SensorDigest
+                {
+                    Name = name,
+                    Provenance = provenance,
+                    State = Sensor.State.None,
+                    Safe = !affectsSafety,
+                    Stale = true,
+                    AffectsSafety = affectsSafety,
+                    ToolTip = affectsSafety ? $"{name} could not be read" : "Does not affect safety",
+                    Symbolic = Const.noValue,
+                    Verbal = Const.noValue,
+                    LatestReading = new Reading
+                    {
+                        value = Double.NaN,
+                        Usable = false,
+                        Stale = true,
+                        Safe = !affectsSafety,
+                        secondsSinceLastUpdate = Double.NaN,
+                        timeOfLastUpdate = DateTime.MinValue,
+                    },
+                };
+            }
+
             public static SensorDigest FromSensor(Sensor sensor)
             {
-                Reading latestReading = sensor.LatestReading;
+                //
+                // LatestReading hands back the raw _latestReading for SingleReading
+                //  sensors, and that is null until the first reading arrives.  A sensor
+                //  whose GetReading() throws on every cycle - which is what an
+                //  unreachable station does - therefore never has one, and dereferencing
+                //  it here took the whole digest down with a NullReferenceException.
+                //
+                Reading latestReading = sensor.LatestReading ?? new Reading();
+                string provenance = ProvenanceOf(sensor.PropertyName);
+
+                //
+                // A station that is not answering reports NaN, which FormatSymbolic already
+                //  renders as Const.noValue ("***").  Say WHY in the tooltip rather than
+                //  leaving the consequence there: "not ready (only 1 of 3 readings)" is true
+                //  but it describes the symptom, and the reader wants the cause.
+                //
+                // Only for a sensor that HAS a provenance, i.e. one actually fed by a station.
+                //  ComputerControl and friends carry no numeric value and would otherwise all
+                //  claim to be inaccessible.
+                //
+                bool notAccessible = provenance != null && Double.IsNaN(latestReading.value);
+
                 SensorDigest digest = new SensorDigest
                 {
                     Name = sensor.WiseName,
+                    Provenance = provenance,
                     State = sensor._state,
                     LatestReading = latestReading,
-                    ToolTip = sensor.ToolTip,
+                    ToolTip = notAccessible ? NotAccessible : sensor.ToolTip,
                     Safe = sensor.IsSafe,
-                    Stale = sensor.IsStale,
+                    //
+                    // Stale drives the colour (Color returns Warning - yellow - when stale), and
+                    //  a station we cannot reach is exactly a warning.  Display only: Safe above
+                    //  still comes from the sensor, so an unreachable Clouds stays UNSAFE and the
+                    //  observatory does not open on a yellow field.
+                    //
+                    Stale = notAccessible || sensor.IsStale,
                     Symbolic = sensor.FormatSymbolic(latestReading.value),
                     Verbal = sensor.FormatVerbal(latestReading.value),
                     AffectsSafety = !sensor.HasAttribute(Attribute.ForInfoOnly)
@@ -165,44 +288,113 @@ namespace ASCOM.Wise40SafeToOperate
             {
                 SensorDigest digest = new SensorDigest();
                 double v, s;
+                string symbolicUnits, verbalUnits;
 
                 digest.Safe = true;
                 digest.Name = property;
-                switch (property)
+                digest.Provenance = ProvenanceOf(property);
+
+                //
+                // These read straight through the ObservingConditions hub, so they carry
+                //  whatever the station behind the property decides to throw - and a
+                //  station that has never answered throws rather than returning NaN (the
+                //  TessW, powered down before the driver started, threw
+                //  KeyNotFoundException from SkyTemperature).  WiseSite.och is also null
+                //  whenever the hub could not be reached at site initialisation, which
+                //  dereferences to a NullReferenceException right here.
+                //
+                // Either one used to escape into the Digest initializer and void the
+                //  entire status document.  Report the one field as unreadable instead.
+                //
+                try
                 {
-                    case "WindDirection":
-                        v = WiseSite.och.WindDirection;
-                        digest.Symbolic = $"{v}°";
-                        digest.Verbal = $"{v} deg";
-                        break;
+                    switch (property)
+                    {
+                        case "WindDirection":
+                            v = WiseSite.och.WindDirection;
+                            symbolicUnits = "°";
+                            verbalUnits = " deg";
+                            break;
 
-                    case "DewPoint":
-                        v = WiseSite.och.DewPoint;
-                        digest.Symbolic = $"{v}°C";
-                        digest.Verbal = $"{v} deg";
-                        break;
+                        case "DewPoint":
+                            v = WiseSite.och.DewPoint;
+                            symbolicUnits = "°C";
+                            verbalUnits = " deg";
+                            break;
 
-                    case "SkyTemperature":
-                        v = WiseSite.och.SkyTemperature;
-                        digest.Symbolic = $"{v}°C";
-                        digest.Verbal = $"{v} deg";
-                        break;
+                        case "SkyTemperature":
+                            v = WiseSite.och.SkyTemperature;
+                            symbolicUnits = "°C";
+                            verbalUnits = " deg";
+                            break;
 
-                    default:
-                        return null;
+                        default:
+                            return null;
+                    }
+
+                    s = WiseSite.och.TimeSinceLastUpdate(property);
+                }
+                catch (Exception ex)
+                {
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety,
+                        $"SensorDigest.FromOCHProperty({property}): Caught {ex.Message} at\n{ex.StackTrace}");
+                    #endregion
+                    return Unreadable(property, affectsSafety: false, provenance: digest.Provenance);
                 }
 
-                s = WiseSite.och.TimeSinceLastUpdate(property);
-                digest.Stale = TooOld(s);
                 digest.AffectsSafety = false;
-                digest.ToolTip = "Does not affect safety";
+
+                //
+                // A station that is not answering reports NaN.  Render that the way the rest of
+                //  the suite does - Const.noValue, "***" - and say WHY in the tooltip, rather
+                //  than printing "NaN°C" at the reader.
+                //
+                // Stale drives the colour: Color returns Warning (yellow) whenever stale, which
+                //  is what an unreachable station should look like.  These three properties are
+                //  information only, so nothing here touches the safety decision.
+                //
+                bool notAccessible = Double.IsNaN(v);
+
+                if (notAccessible)
+                {
+                    digest.Symbolic = Const.noValue;
+                    digest.Verbal = Const.noValue;
+                    digest.Stale = true;
+                    digest.ToolTip = NotAccessible;
+                }
+                else
+                {
+                    digest.Symbolic = $"{v}{symbolicUnits}";
+                    digest.Verbal = $"{v}{verbalUnits}";
+                    digest.Stale = TooOld(s);
+                    digest.ToolTip = "Does not affect safety";
+                }
+
                 DateTime timeOfLastUpdate;
 
+                //
+                // This guard existed but was too narrow, and the gap was measured on the sky
+                //  on 2026-10-11 with the TessW unreachable: a station that has never answered
+                //  reports an age of about 6.4e10 seconds - roughly 2030 years, because
+                //  _lastDataFetch is still DateTime.MinValue - and subtracting that lands
+                //  before year 1.
+                //
+                // DateTime.Subtract throws ArgumentOutOfRangeException for that ("The added or
+                //  subtracted value results in an un-representable DateTime"), NOT
+                //  OverflowException, so it escaped and voided this whole field.  It was the
+                //  per-field guard in Digest that kept the status document alive, which is why
+                //  SkyTemperature read "could not be read" instead of a value plus stale.
+                //
+                // ArgumentException also covers TimeSpan.FromSeconds(NaN), the other way an age
+                //  arrives unusable.  An age we cannot represent is a missing timestamp, not a
+                //  missing field.
+                //
                 try
                 {
                     timeOfLastUpdate = DateTime.Now.Subtract(TimeSpan.FromSeconds(s));
                 }
-                catch (System.OverflowException)
+                catch (Exception ex) when (ex is OverflowException || ex is ArgumentException)
                 {
                     timeOfLastUpdate = DateTime.MinValue;
                 }
@@ -211,8 +403,8 @@ namespace ASCOM.Wise40SafeToOperate
                 {
                     value = v,
                     Safe = true,
-                    Stale = TooOld(s),
-                    Usable = true,
+                    Stale = digest.Stale,
+                    Usable = !notAccessible,
                     secondsSinceLastUpdate = s,
                     timeOfLastUpdate = timeOfLastUpdate,
                 };
@@ -380,6 +572,18 @@ namespace ASCOM.Wise40SafeToOperate
                 before: _sensorState,
                 after: Event.SafetyEvent.SensorState.Init));
             _sensorState = Event.SafetyEvent.SensorState.Init;
+        }
+
+        /// <summary>
+        /// The ObservingConditions property this sensor reads, or "" for a sensor that is not
+        /// fed by a weather station.  Needed to ask the hub where the reading comes from.
+        /// </summary>
+        public string PropertyName
+        {
+            get
+            {
+                return _propertyName;
+            }
         }
 
         public TimeSpan Interval { get; set; }

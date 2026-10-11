@@ -407,6 +407,17 @@ namespace ASCOM.Wise40SafeToOperate
             {
                 _bypassed = Convert.ToBoolean(_profile.GetValue(driverID, Const.ProfileName.SafeToOperate_Bypassed, string.Empty, false.ToString()));
 
+                //
+                // Field by field, deliberately.
+                //
+                // This digest is the only way anything outside this driver - the Dash,
+                //  the observatory monitor, the REST clients - learns the weather or the
+                //  safety decision.  Built in one object initializer, a single sensor
+                //  that threw took the whole document with it, so one powered-down
+                //  station blanked every weather field (including the ones from healthy
+                //  stations) and made ObservatoryMonitor.CheckSituation() bail out of its
+                //  safety evaluation on every cycle.  No sensor gets to do that.
+                //
                 SafeToOperateDigest digest = new SafeToOperateDigest()
                 {
                     Bypassed = _bypassed,
@@ -415,26 +426,70 @@ namespace ASCOM.Wise40SafeToOperate
                     UnsafeReasons = UnsafeReasonsList(),
                     UnsafeBecauseNotReady = _unsafeBecauseNotReady,
                     ShuttingDown = activityMonitor.ShuttingDown,
-                    ComputerControl = Sensor.SensorDigest.FromSensor(computerControlSensor),
-                    SunElevation = Sensor.SensorDigest.FromSensor(sunSensor),
-                    HumanIntervention = Sensor.SensorDigest.FromSensor(humanInterventionSensor),
-                    Platform = Sensor.SensorDigest.FromSensor(platformSensor),
-                    HardLimit = Sensor.SensorDigest.FromSensor(hardLimitSensor),
                     HumanInterventionCampusGlobal = humanInterventionSensor.CampusGlobal,
 
-                    Temperature = Sensor.SensorDigest.FromSensor(temperatureSensor),
-                    Pressure = Sensor.SensorDigest.FromSensor(pressureSensor),
-                    Humidity = Sensor.SensorDigest.FromSensor(humiditySensor),
-                    RainRate = Sensor.SensorDigest.FromSensor(rainSensor),
-                    WindSpeed = Sensor.SensorDigest.FromSensor(windSensor),
-                    CloudCover = Sensor.SensorDigest.FromSensor(cloudsSensor),
+                    ComputerControl = DigestOf(computerControlSensor),
+                    SunElevation = DigestOf(sunSensor),
+                    HumanIntervention = DigestOf(humanInterventionSensor),
+                    Platform = DigestOf(platformSensor),
+                    HardLimit = DigestOf(hardLimitSensor),
 
-                    WindDirection = Sensor.SensorDigest.FromOCHProperty("WindDirection"),
-                    DewPoint = Sensor.SensorDigest.FromOCHProperty("DewPoint"),
-                    SkyTemperature = Sensor.SensorDigest.FromOCHProperty("SkyTemperature"),
+                    Temperature = DigestOf(temperatureSensor),
+                    Pressure = DigestOf(pressureSensor),
+                    Humidity = DigestOf(humiditySensor),
+                    RainRate = DigestOf(rainSensor),
+                    WindSpeed = DigestOf(windSensor),
+                    CloudCover = DigestOf(cloudsSensor),
+
+                    WindDirection = DigestOfOCHProperty("WindDirection"),
+                    DewPoint = DigestOfOCHProperty("DewPoint"),
+                    SkyTemperature = DigestOfOCHProperty("SkyTemperature"),
                 };
 
                 return JsonConvert.SerializeObject(digest);
+            }
+        }
+
+        /// <summary>
+        /// One sensor's digest, or an "unreadable" placeholder if it could not be made.
+        /// A sensor that affects safety reads as NOT safe when it cannot be read.
+        /// </summary>
+        private Sensor.SensorDigest DigestOf(Sensor sensor)
+        {
+            try
+            {
+                return Sensor.SensorDigest.FromSensor(sensor);
+            }
+            catch (Exception ex)
+            {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugSafety,
+                    $"Digest: cannot digest sensor \"{sensor.WiseName}\": caught {ex.Message} at\n{ex.StackTrace}");
+                #endregion
+                return Sensor.SensorDigest.Unreadable(sensor.WiseName,
+                    affectsSafety: !sensor.HasAttribute(Sensor.Attribute.ForInfoOnly),
+                    provenance: Sensor.SensorDigest.ProvenanceOf(sensor.PropertyName));
+            }
+        }
+
+        /// <summary>
+        /// One hub property's digest, or an "unreadable" placeholder.  These properties
+        /// are information only, so an unreadable one never makes the observatory unsafe.
+        /// </summary>
+        private Sensor.SensorDigest DigestOfOCHProperty(string property)
+        {
+            try
+            {
+                return Sensor.SensorDigest.FromOCHProperty(property);
+            }
+            catch (Exception ex)
+            {
+                #region debug
+                debugger.WriteLine(Debugger.DebugLevel.DebugSafety,
+                    $"Digest: cannot digest hub property \"{property}\": caught {ex.Message} at\n{ex.StackTrace}");
+                #endregion
+                return Sensor.SensorDigest.Unreadable(property, affectsSafety: false,
+                    provenance: Sensor.SensorDigest.ProvenanceOf(property));
             }
         }
 
