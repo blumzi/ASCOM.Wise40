@@ -267,11 +267,28 @@ namespace ASCOM.Wise40SafeToOperate
                 digest.ToolTip = "Does not affect safety";
                 DateTime timeOfLastUpdate;
 
+                //
+                // This guard existed but was too narrow, and the gap was measured on the sky
+                //  on 2026-10-11 with the TessW unreachable: a station that has never answered
+                //  reports an age of about 6.4e10 seconds - roughly 2030 years, because
+                //  _lastDataFetch is still DateTime.MinValue - and subtracting that lands
+                //  before year 1.
+                //
+                // DateTime.Subtract throws ArgumentOutOfRangeException for that ("The added or
+                //  subtracted value results in an un-representable DateTime"), NOT
+                //  OverflowException, so it escaped and voided this whole field.  It was the
+                //  per-field guard in Digest that kept the status document alive, which is why
+                //  SkyTemperature read "could not be read" instead of a value plus stale.
+                //
+                // ArgumentException also covers TimeSpan.FromSeconds(NaN), the other way an age
+                //  arrives unusable.  An age we cannot represent is a missing timestamp, not a
+                //  missing field.
+                //
                 try
                 {
                     timeOfLastUpdate = DateTime.Now.Subtract(TimeSpan.FromSeconds(s));
                 }
-                catch (System.OverflowException)
+                catch (Exception ex) when (ex is OverflowException || ex is ArgumentException)
                 {
                     timeOfLastUpdate = DateTime.MinValue;
                 }
