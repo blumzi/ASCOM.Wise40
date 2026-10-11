@@ -55,6 +55,7 @@ create`. If `gh` is unavailable, hand over
 - [Filter wheel firmware validated](.claude/memory/filterwheel-fixes-awaiting-hardware-test.md) — works end to end as of 2026-08-15; the slit detector needs ~40 ms to settle or it lies convincingly
 - [Filter wheel RFID stays on SoftwareSerial](.claude/memory/filterwheel-rfid-stays-on-softwareserial.md) — rewiring D0 to pin 19 was considered and rejected; do not propose it again
 - [Focuser COM interfaces](.claude/memory/focuser-com-interfaces.md) — use FocusMax **v5**, not v4 (Platform 6.5 SP1 has no V1 `IFocuser` to bind to). Swapping the declared interface on a `ClassInterfaceType.None` driver **removes** the old one from QueryInterface — declare both
+- [OCH forwards SensorDescription](.claude/memory/och-forwards-sensordescription.md) — the hub asks the serving device, so it is an authoritative provenance channel that answers even when the station is down
 - [One station voids the weather digest](.claude/memory/one-station-voids-the-weather-digest.md) — a powered-down TessW threw out through the OCH and voided the **whole** `SafeToOperate` status digest; the Dash blanked every weather field and `ObservatoryMonitor` stopped evaluating safety. Fixed — guard every digest field
 
 ## Building

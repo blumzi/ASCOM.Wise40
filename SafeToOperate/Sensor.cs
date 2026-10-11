@@ -138,9 +138,66 @@ namespace ASCOM.Wise40SafeToOperate
             public Reading LatestReading;
             public string ToolTip;
             public string Name;
+            /// <summary>
+            /// Which station the reading came from - "TessW", "Davis", "Boltwood" - or null for
+            /// a sensor that is not fed by a weather station at all (Sun, ComputerControl, ...).
+            /// </summary>
+            public string Provenance;
+
+            public const string NotAccessible = "Not accessible";
 
             public SensorDigest() { }
             static SensorDigest() { }
+
+            //
+            // Where a reading came from, asked of the ObservingConditions hub.
+            //
+            // The hub FORWARDS SensorDescription to whichever device it has assigned to the
+            //  property, and each Wise station answers with its own name, so this is
+            //  authoritative: no property-to-station table is kept here, and none can drift out
+            //  of step with the hub's configuration.  It also answers while the station is
+            //  unreachable - it touches no hardware - which is exactly when a display most
+            //  needs to be able to name the station.
+            //
+            // Cached because it cannot change without restarting the hub, while the digest is
+            //  built several times a minute.  FAILURES ARE NOT CACHED: och is null until the
+            //  hub connects, and a miss then must not be remembered for the life of the process.
+            //
+            private static readonly Dictionary<string, string> provenanceCache =
+                new Dictionary<string, string>();
+
+            public static string ProvenanceOf(string property)
+            {
+                if (string.IsNullOrEmpty(property))
+                    return null;
+
+                lock (provenanceCache)
+                {
+                    if (provenanceCache.TryGetValue(property, out string cached))
+                        return cached;
+                }
+
+                string provenance = null;
+                try
+                {
+                    provenance = WiseSite.och?.SensorDescription(property);
+                }
+                catch (Exception ex)
+                {
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety,
+                        $"SensorDigest.ProvenanceOf({property}): Caught {ex.Message}");
+                    #endregion
+                }
+
+                if (string.IsNullOrWhiteSpace(provenance))
+                    return null;
+
+                lock (provenanceCache)
+                    provenanceCache[property] = provenance;
+
+                return provenance;
+            }
 
             //
             // A digest that says "could not be read" instead of being absent.
@@ -155,11 +212,12 @@ namespace ASCOM.Wise40SafeToOperate
             // Unreadable counts as NOT safe wherever safety is concerned - fail safe -
             //  and as a missing value where the sensor is information only.
             //
-            public static SensorDigest Unreadable(string name, bool affectsSafety)
+            public static SensorDigest Unreadable(string name, bool affectsSafety, string provenance = null)
             {
                 return new SensorDigest
                 {
                     Name = name,
+                    Provenance = provenance,
                     State = Sensor.State.None,
                     Safe = !affectsSafety,
                     Stale = true,
@@ -189,14 +247,35 @@ namespace ASCOM.Wise40SafeToOperate
                 //  it here took the whole digest down with a NullReferenceException.
                 //
                 Reading latestReading = sensor.LatestReading ?? new Reading();
+                string provenance = ProvenanceOf(sensor.PropertyName);
+
+                //
+                // A station that is not answering reports NaN, which FormatSymbolic already
+                //  renders as Const.noValue ("***").  Say WHY in the tooltip rather than
+                //  leaving the consequence there: "not ready (only 1 of 3 readings)" is true
+                //  but it describes the symptom, and the reader wants the cause.
+                //
+                // Only for a sensor that HAS a provenance, i.e. one actually fed by a station.
+                //  ComputerControl and friends carry no numeric value and would otherwise all
+                //  claim to be inaccessible.
+                //
+                bool notAccessible = provenance != null && Double.IsNaN(latestReading.value);
+
                 SensorDigest digest = new SensorDigest
                 {
                     Name = sensor.WiseName,
+                    Provenance = provenance,
                     State = sensor._state,
                     LatestReading = latestReading,
-                    ToolTip = sensor.ToolTip,
+                    ToolTip = notAccessible ? NotAccessible : sensor.ToolTip,
                     Safe = sensor.IsSafe,
-                    Stale = sensor.IsStale,
+                    //
+                    // Stale drives the colour (Color returns Warning - yellow - when stale), and
+                    //  a station we cannot reach is exactly a warning.  Display only: Safe above
+                    //  still comes from the sensor, so an unreachable Clouds stays UNSAFE and the
+                    //  observatory does not open on a yellow field.
+                    //
+                    Stale = notAccessible || sensor.IsStale,
                     Symbolic = sensor.FormatSymbolic(latestReading.value),
                     Verbal = sensor.FormatVerbal(latestReading.value),
                     AffectsSafety = !sensor.HasAttribute(Attribute.ForInfoOnly)
@@ -209,9 +288,11 @@ namespace ASCOM.Wise40SafeToOperate
             {
                 SensorDigest digest = new SensorDigest();
                 double v, s;
+                string symbolicUnits, verbalUnits;
 
                 digest.Safe = true;
                 digest.Name = property;
+                digest.Provenance = ProvenanceOf(property);
 
                 //
                 // These read straight through the ObservingConditions hub, so they carry
@@ -231,20 +312,20 @@ namespace ASCOM.Wise40SafeToOperate
                     {
                         case "WindDirection":
                             v = WiseSite.och.WindDirection;
-                            digest.Symbolic = $"{v}°";
-                            digest.Verbal = $"{v} deg";
+                            symbolicUnits = "°";
+                            verbalUnits = " deg";
                             break;
 
                         case "DewPoint":
                             v = WiseSite.och.DewPoint;
-                            digest.Symbolic = $"{v}°C";
-                            digest.Verbal = $"{v} deg";
+                            symbolicUnits = "°C";
+                            verbalUnits = " deg";
                             break;
 
                         case "SkyTemperature":
                             v = WiseSite.och.SkyTemperature;
-                            digest.Symbolic = $"{v}°C";
-                            digest.Verbal = $"{v} deg";
+                            symbolicUnits = "°C";
+                            verbalUnits = " deg";
                             break;
 
                         default:
@@ -259,12 +340,37 @@ namespace ASCOM.Wise40SafeToOperate
                     debugger.WriteLine(Debugger.DebugLevel.DebugSafety,
                         $"SensorDigest.FromOCHProperty({property}): Caught {ex.Message} at\n{ex.StackTrace}");
                     #endregion
-                    return Unreadable(property, affectsSafety: false);
+                    return Unreadable(property, affectsSafety: false, provenance: digest.Provenance);
                 }
 
-                digest.Stale = TooOld(s);
                 digest.AffectsSafety = false;
-                digest.ToolTip = "Does not affect safety";
+
+                //
+                // A station that is not answering reports NaN.  Render that the way the rest of
+                //  the suite does - Const.noValue, "***" - and say WHY in the tooltip, rather
+                //  than printing "NaN°C" at the reader.
+                //
+                // Stale drives the colour: Color returns Warning (yellow) whenever stale, which
+                //  is what an unreachable station should look like.  These three properties are
+                //  information only, so nothing here touches the safety decision.
+                //
+                bool notAccessible = Double.IsNaN(v);
+
+                if (notAccessible)
+                {
+                    digest.Symbolic = Const.noValue;
+                    digest.Verbal = Const.noValue;
+                    digest.Stale = true;
+                    digest.ToolTip = NotAccessible;
+                }
+                else
+                {
+                    digest.Symbolic = $"{v}{symbolicUnits}";
+                    digest.Verbal = $"{v}{verbalUnits}";
+                    digest.Stale = TooOld(s);
+                    digest.ToolTip = "Does not affect safety";
+                }
+
                 DateTime timeOfLastUpdate;
 
                 //
@@ -297,8 +403,8 @@ namespace ASCOM.Wise40SafeToOperate
                 {
                     value = v,
                     Safe = true,
-                    Stale = TooOld(s),
-                    Usable = true,
+                    Stale = digest.Stale,
+                    Usable = !notAccessible,
                     secondsSinceLastUpdate = s,
                     timeOfLastUpdate = timeOfLastUpdate,
                 };
@@ -466,6 +572,18 @@ namespace ASCOM.Wise40SafeToOperate
                 before: _sensorState,
                 after: Event.SafetyEvent.SensorState.Init));
             _sensorState = Event.SafetyEvent.SensorState.Init;
+        }
+
+        /// <summary>
+        /// The ObservingConditions property this sensor reads, or "" for a sensor that is not
+        /// fed by a weather station.  Needed to ask the hub where the reading comes from.
+        /// </summary>
+        public string PropertyName
+        {
+            get
+            {
+                return _propertyName;
+            }
         }
 
         public TimeSpan Interval { get; set; }

@@ -467,7 +467,8 @@ namespace ASCOM.Wise40SafeToOperate
                     $"Digest: cannot digest sensor \"{sensor.WiseName}\": caught {ex.Message} at\n{ex.StackTrace}");
                 #endregion
                 return Sensor.SensorDigest.Unreadable(sensor.WiseName,
-                    affectsSafety: !sensor.HasAttribute(Sensor.Attribute.ForInfoOnly));
+                    affectsSafety: !sensor.HasAttribute(Sensor.Attribute.ForInfoOnly),
+                    provenance: Sensor.SensorDigest.ProvenanceOf(sensor.PropertyName));
             }
         }
 
@@ -487,7 +488,8 @@ namespace ASCOM.Wise40SafeToOperate
                 debugger.WriteLine(Debugger.DebugLevel.DebugSafety,
                     $"Digest: cannot digest hub property \"{property}\": caught {ex.Message} at\n{ex.StackTrace}");
                 #endregion
-                return Sensor.SensorDigest.Unreadable(property, affectsSafety: false);
+                return Sensor.SensorDigest.Unreadable(property, affectsSafety: false,
+                    provenance: Sensor.SensorDigest.ProvenanceOf(property));
             }
         }
 
