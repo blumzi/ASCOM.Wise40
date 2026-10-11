@@ -142,9 +142,53 @@ namespace ASCOM.Wise40SafeToOperate
             public SensorDigest() { }
             static SensorDigest() { }
 
+            //
+            // A digest that says "could not be read" instead of being absent.
+            //
+            // Everything outside this driver reaches the sensors through the status
+            //  digest, and every consumer dereferences these fields without checking
+            //  for null - Dash.RefreshInConditionsformation reads Symbolic, Color,
+            //  ToolTip, Name and LatestReading.timeOfLastUpdate; ObservatoryMonitor
+            //  reads ComputerControl.Safe.  So a field that cannot be produced has to
+            //  be a value, not a hole.
+            //
+            // Unreadable counts as NOT safe wherever safety is concerned - fail safe -
+            //  and as a missing value where the sensor is information only.
+            //
+            public static SensorDigest Unreadable(string name, bool affectsSafety)
+            {
+                return new SensorDigest
+                {
+                    Name = name,
+                    State = Sensor.State.None,
+                    Safe = !affectsSafety,
+                    Stale = true,
+                    AffectsSafety = affectsSafety,
+                    ToolTip = affectsSafety ? $"{name} could not be read" : "Does not affect safety",
+                    Symbolic = Const.noValue,
+                    Verbal = Const.noValue,
+                    LatestReading = new Reading
+                    {
+                        value = Double.NaN,
+                        Usable = false,
+                        Stale = true,
+                        Safe = !affectsSafety,
+                        secondsSinceLastUpdate = Double.NaN,
+                        timeOfLastUpdate = DateTime.MinValue,
+                    },
+                };
+            }
+
             public static SensorDigest FromSensor(Sensor sensor)
             {
-                Reading latestReading = sensor.LatestReading;
+                //
+                // LatestReading hands back the raw _latestReading for SingleReading
+                //  sensors, and that is null until the first reading arrives.  A sensor
+                //  whose GetReading() throws on every cycle - which is what an
+                //  unreachable station does - therefore never has one, and dereferencing
+                //  it here took the whole digest down with a NullReferenceException.
+                //
+                Reading latestReading = sensor.LatestReading ?? new Reading();
                 SensorDigest digest = new SensorDigest
                 {
                     Name = sensor.WiseName,
@@ -168,31 +212,56 @@ namespace ASCOM.Wise40SafeToOperate
 
                 digest.Safe = true;
                 digest.Name = property;
-                switch (property)
+
+                //
+                // These read straight through the ObservingConditions hub, so they carry
+                //  whatever the station behind the property decides to throw - and a
+                //  station that has never answered throws rather than returning NaN (the
+                //  TessW, powered down before the driver started, threw
+                //  KeyNotFoundException from SkyTemperature).  WiseSite.och is also null
+                //  whenever the hub could not be reached at site initialisation, which
+                //  dereferences to a NullReferenceException right here.
+                //
+                // Either one used to escape into the Digest initializer and void the
+                //  entire status document.  Report the one field as unreadable instead.
+                //
+                try
                 {
-                    case "WindDirection":
-                        v = WiseSite.och.WindDirection;
-                        digest.Symbolic = $"{v}°";
-                        digest.Verbal = $"{v} deg";
-                        break;
+                    switch (property)
+                    {
+                        case "WindDirection":
+                            v = WiseSite.och.WindDirection;
+                            digest.Symbolic = $"{v}°";
+                            digest.Verbal = $"{v} deg";
+                            break;
 
-                    case "DewPoint":
-                        v = WiseSite.och.DewPoint;
-                        digest.Symbolic = $"{v}°C";
-                        digest.Verbal = $"{v} deg";
-                        break;
+                        case "DewPoint":
+                            v = WiseSite.och.DewPoint;
+                            digest.Symbolic = $"{v}°C";
+                            digest.Verbal = $"{v} deg";
+                            break;
 
-                    case "SkyTemperature":
-                        v = WiseSite.och.SkyTemperature;
-                        digest.Symbolic = $"{v}°C";
-                        digest.Verbal = $"{v} deg";
-                        break;
+                        case "SkyTemperature":
+                            v = WiseSite.och.SkyTemperature;
+                            digest.Symbolic = $"{v}°C";
+                            digest.Verbal = $"{v} deg";
+                            break;
 
-                    default:
-                        return null;
+                        default:
+                            return null;
+                    }
+
+                    s = WiseSite.och.TimeSinceLastUpdate(property);
+                }
+                catch (Exception ex)
+                {
+                    #region debug
+                    debugger.WriteLine(Debugger.DebugLevel.DebugSafety,
+                        $"SensorDigest.FromOCHProperty({property}): Caught {ex.Message} at\n{ex.StackTrace}");
+                    #endregion
+                    return Unreadable(property, affectsSafety: false);
                 }
 
-                s = WiseSite.och.TimeSinceLastUpdate(property);
                 digest.Stale = TooOld(s);
                 digest.AffectsSafety = false;
                 digest.ToolTip = "Does not affect safety";
