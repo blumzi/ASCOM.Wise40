@@ -594,6 +594,12 @@ namespace ASCOM.Wise40.VantagePro
                 case "AveragePeriod":
                     return "Average period in hours, immediate values are only available";
 
+                //
+                // The station's own name - the hub forwards SensorDescription to the device it
+                //  has assigned to the property, so this is what tells a display where the
+                //  reading came from.  "Davis" rather than "VantagePro2" because that is what
+                //  the instrument is called at the observatory.
+                //
                 case "DewPoint":
                 case "Humidity":
                 case "Pressure":
@@ -602,7 +608,7 @@ namespace ASCOM.Wise40.VantagePro
                 case "WindSpeed":
                 case "RainRate":
                 case "StarFWHM":
-                    return "SensorDescription - " + PropertyName;
+                    return "Davis";
 
                 case "SkyBrightness":
                 case "SkyQuality":

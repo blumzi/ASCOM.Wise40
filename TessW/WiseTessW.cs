@@ -421,10 +421,22 @@ namespace ASCOM.Wise40.TessW
                 case "AveragePeriod":
                     return "Average period in hours, immediate values are only available";
 
+                //
+                // THE STATION'S OWN NAME, because this is how provenance reaches the displays.
+                //
+                // The ObservingConditions hub FORWARDS SensorDescription to whichever device it
+                //  has assigned to the property, so asking the hub "who provides SkyTemperature"
+                //  is answered by the device itself - no mapping table in SafeToOperate to drift
+                //  out of step with the hub's configuration.  It also answers while the station
+                //  is unreachable, since this touches no hardware.
+                //
+                // It used to return "SensorDescription - <property>", which told a reader
+                //  nothing they did not already know from the property name.
+                //
                 case "Temperature":
                 case "SkyTemperature":
                 case "CloudCover":
-                    return "SensorDescription - " + PropertyName;
+                    return "TessW";
 
                 case "DewPoint":
                 case "Humidity":
