@@ -57,6 +57,8 @@ create`. If `gh` is unavailable, hand over
 - [Focuser COM interfaces](.claude/memory/focuser-com-interfaces.md) — use FocusMax **v5**, not v4 (Platform 6.5 SP1 has no V1 `IFocuser` to bind to). Swapping the declared interface on a `ClassInterfaceType.None` driver **removes** the old one from QueryInterface — declare both
 - [OCH forwards SensorDescription](.claude/memory/och-forwards-sensordescription.md) — the hub asks the serving device, so it is an authoritative provenance channel that answers even when the station is down
 - [One station voids the weather digest](.claude/memory/one-station-voids-the-weather-digest.md) — a powered-down TessW threw out through the OCH and voided the **whole** `SafeToOperate` status digest; the Dash blanked every weather field and `ObservatoryMonitor` stopped evaluating safety. Fixed — guard every digest field
+- [IP9258 power switch](.claude/memory/ip9258-power-switch.md) — the switch that feeds the camera. A wrong password trips the undocumented `HTTPCMD_TRYLIMIT` lockout, which only a box power cycle clears, and the power cycle turns every outlet OFF
+- [Elevated steps from a tool call](.claude/memory/elevated-steps-from-a-tool-call.md) — admin steps as a `.ps1` run with `-File` and a log, never inline `-Command`; replacing a locked DLL; what the harness blocks
 
 ## Building
 
