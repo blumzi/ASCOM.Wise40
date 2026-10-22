@@ -46,5 +46,9 @@ the UAC prompt; see [[wise40-build-and-environment-gotchas]]). Several ways of d
 - **`git push` over HTTPS:** Git Credential Manager throws `HttpRequestException`. For a single command,
   `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push ...` works without
   changing config. See [[work-via-pull-requests]].
-- **Heredocs that contain backticks get re-quoted and executed by the Bash tool.** A PR body in
-  `<<'EOF'` ran every `` `name` `` as a command, harmlessly this time. Write bodies to a file and pass `--body-file`.
+- **Heredocs that contain backticks get re-quoted and executed by the Bash tool**, even quoted
+  `<<'EOF'`: every `` `name` `` in the body runs as a command. It happened **twice** on 2026-10-22, the
+  second time *after* this note was written. A PR body mentioning `` `gh pr merge` `` actually ran
+  `gh pr merge` on ASCOM.Wise40 `master`, and was harmless only because no PR was open. **Write
+  any text containing backticks with the Write tool and pass it as `--body-file`; never put it in a
+  shell heredoc.**
